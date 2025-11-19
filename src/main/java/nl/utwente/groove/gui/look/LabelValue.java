@@ -76,6 +76,7 @@ import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.line.Line.Style;
 import nl.utwente.groove.util.parse.FormatException;
+import nl.utwente.groove.verify.FormulaParser;
 
 /**
  * Visual value refresher for the {@link VisualKey#LABEL}.
@@ -460,7 +461,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
         var gts = jGraph.getGraph();
         assert gts != null;
         for (var prop : gts.getSatisfiedProps(state)) {
-            transLabels.add(Line.atom(prop));
+            transLabels.add(Line.atom(PROP_PREFIX).append(prop).style(Style.ITALIC));
         }
         if (!jVertex.isAllOutVisible()) {
             transLabels.add(RESIDUAL_LINE);
@@ -805,6 +806,8 @@ public class LabelValue implements VisualValue<MultiLabel> {
     static private final Line DEAD_LINE = Line.atom("dead");
     /** Line in a control vertex indicating a final state. */
     static private final Line FINAL_LINE = Line.atom("final");
+    /** Prefix indicating a derived state property. */
+    static private final String PROP_PREFIX = FormulaParser.FLAG_PREFIX; // "" + Util.RT;
     /** Suffix indicating a self-loop on a node label. */
     static private final String LOOP_SUFFIX = " " + Util.CA;
     /** Points-to operator between field name and value. */

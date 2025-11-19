@@ -23,7 +23,6 @@ import static nl.utwente.groove.util.parse.ATermTreeParser.TokenClaz.LPAR;
 import static nl.utwente.groove.util.parse.ATermTreeParser.TokenClaz.NAME;
 import static nl.utwente.groove.util.parse.ATermTreeParser.TokenClaz.RPAR;
 import static nl.utwente.groove.util.parse.ATermTreeParser.TokenClaz.UNDER;
-import static nl.utwente.groove.verify.Proposition.prop;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -52,7 +51,7 @@ public class FormulaParser extends ATermTreeParser<LogicOp,Formula> {
      * Constructs a new parser.
      */
     private FormulaParser(String description) {
-        super(description, new Formula(LogicOp.PROP));
+        super(description, new Formula(LogicOp.CALL_PROP));
         setIdValidator(IdValidator.GROOVE_ID);
         setQualIds(true);
     }
@@ -67,11 +66,13 @@ public class FormulaParser extends ATermTreeParser<LogicOp,Formula> {
         List<LogicOp> prefixOps = findPrefixOps(firstToken.substring());
         if (prefixOps == null) {
             QualName id = parseId();
-            if (consume(LPAR) == null) {
+            if (id.get(0).startsWith(FLAG_PREFIX)) {
+                var flagText = id.toString().substring(FLAG_PREFIX.length());
+                result = Formula.derived(flagText);
+            } else if (consume(LPAR) == null) {
                 // it's an (unquoted) identifier: create an atomic proposition
-                result = Formula.atom(id);
+                result = Formula.call(id);
             } else {
-                result = createTree(LogicOp.PROP);
                 List<Proposition.Arg> args = new ArrayList<>();
                 if (consume(RPAR) == null) {
                     args.add(parseArg());
@@ -82,7 +83,7 @@ public class FormulaParser extends ATermTreeParser<LogicOp,Formula> {
                         throw expectedToken(RPAR, next());
                     }
                 }
-                result.setProp(prop(id, args));
+                result = Formula.call(id, args);
             }
         } else {
             consume(NAME);
@@ -120,7 +121,7 @@ public class FormulaParser extends ATermTreeParser<LogicOp,Formula> {
     /* Converts string constants into label propositions. */
     @Override
     protected Formula parseConst() throws FormatException {
-        Formula result = createTree(LogicOp.PROP);
+        Formula result;
         Token constToken = consume(CONST);
         Sort sort = constToken.type(CONST).sort();
         if (sort != Sort.STRING) {
@@ -128,7 +129,7 @@ public class FormulaParser extends ATermTreeParser<LogicOp,Formula> {
                 constToken.start());
         }
         String label = constToken.createConstant().getStringRepr();
-        result = Formula.atom(label);
+        result = Formula.literal(label);
         setParseString(result, constToken);
         return result;
     }
@@ -148,6 +149,9 @@ public class FormulaParser extends ATermTreeParser<LogicOp,Formula> {
         }
         return result;
     }
+
+    /** Prefix for the label of a special flag proposition. */
+    static public final String FLAG_PREFIX = "$";
 
     /**
      * Returns a mapping from syntax documentation lines to associated (possibly {@code null}) tooltips.

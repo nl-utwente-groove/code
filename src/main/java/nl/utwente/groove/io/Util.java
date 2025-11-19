@@ -317,8 +317,10 @@ public class Util {
     /** HTML right angular bracket symbol. */
     static public final char RANGLE = '>'; // &#9002;
 
-    /** Unicode right-triangle symbol; large/small = ..B6/B8. */
+    /** Unicode small right-triangle symbol; large/small = ..B6/B8. */
     static public final char RT = '\u25B8';
+    /** Unicode large right-triangle symbol; large/small = ..B6/B8. */
+    static public final char RT_LARGE = '\u25B6';
     /** Unicode left-triangle symbol; large/small = ..C0/C2. */
     static public final char LT = '\u25C2';
     /** Unicode up-triangle symbol; large/small = ..B2/B4. */

@@ -41,6 +41,7 @@ import org.kohsuke.args4j.spi.OptionHandler;
 import org.kohsuke.args4j.spi.Parameters;
 import org.kohsuke.args4j.spi.Setter;
 
+import groovyjarjarantlr4.v4.runtime.misc.Nullable;
 import nl.utwente.groove.explore.ExploreResult;
 import nl.utwente.groove.explore.Generator;
 import nl.utwente.groove.explore.Generator.LTSLabelsHandler;
@@ -51,6 +52,7 @@ import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.host.ValueNode;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
+import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
@@ -441,7 +443,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
             var id = label.getAction().getQualName();
             var args = new LinkedList<Arg>();
             Arrays.stream(label.getArguments()).map(this::toArg).forEach(args::add);
-            return Proposition.prop(id, args);
+            return Proposition.call(id, args);
         }
 
         /** Returns a proposition argument for a host node. */
@@ -457,18 +459,22 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
             var result = new LinkedList<Proposition>();
             GraphState state = (GraphState) node;
             if (state.isFinal()) {
-                result.add(Proposition.prop(Flag.FINAL));
+                result.add(Proposition.derived(Flag.FINAL));
             }
             if (!state.isClosed()) {
-                result.add(Proposition.prop(Flag.OPEN));
+                result.add(Proposition.derived(Flag.OPEN));
             }
             if (state == this.gts.startState()) {
-                result.add(Proposition.prop(Flag.START));
+                result.add(Proposition.derived(Flag.START));
             }
             if (this.result.contains(state)) {
-                result.add(Proposition.prop(Flag.RESULT));
+                result.add(Proposition.derived(Flag.RESULT));
             }
-            this.gts.getSatisfiedProps(state).stream().map(Proposition::prop).forEach(result::add);
+            this.gts
+                .getSatisfiedProps(state)
+                .stream()
+                .map(Proposition::derived)
+                .forEach(result::add);
             return result;
         }
     }
@@ -499,25 +505,21 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
          */
         private Node testFormat() throws FormatException {
             Node result = null;
-            for (Node node : nodeSet()) {
-                Set<? extends Edge> outEdges = this.graph.outEdgeSet(node);
-                for (Edge outEdge : outEdges) {
-                    Flag flag = getSpecialFlag(outEdge.label().text());
-                    if (flag == null) {
-                        continue;
-                    }
-                    if (!outEdge.isLoop()) {
+            for (Edge edge : this.graph.edgeSet()) {
+                var label = edge.label().text();
+                if (this.ltsLabels.getDerived().contains(label)) {
+                    if (!edge.isLoop()) {
                         throw new FormatException(
                             "Special state marker '%s' occurs as edge label in model",
-                            outEdge.label());
+                            edge.label());
                     }
-                    if (flag == Flag.START) {
+                    if (label.equals(this.ltsLabels.getStartLabel())) {
                         if (result != null) {
                             throw new FormatException(
                                 "Start state marker '%s' occurs more than once in model",
-                                outEdge.label());
+                                edge.label());
                         } else {
-                            result = node;
+                            result = edge.source();
                         }
                     }
                 }
@@ -547,7 +549,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
             return () -> this.graph
                 .outEdgeSet(node)
                 .stream()
-                .filter(e -> !isFlag(e.label().text()))
+                .filter(e -> !isDerived(e.label().text()))
                 .iterator();
         }
 
@@ -574,35 +576,27 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         }
 
         /** Checks whether a given label is a flag according to {@link #ltsLabels}. */
-        private boolean isFlag(String label) {
-            return this.ltsLabels.getFlags().contains(label);
+        private boolean isDerived(String label) {
+            return this.ltsLabels.getDerived().contains(label);
         }
 
         /**
-         * Returns the flag corresponding to a given label string,
-         * or {@code null} if no special flags are set.
+         * Returns the flag corresponding to a given label, if any.
          */
-        private Flag getSpecialFlag(String label) {
-            Flag result = null;
-            if (this.ltsLabels != null) {
-                return this.ltsLabels.getFlag(label);
-            }
-            return result;
+        private @Nullable Flag getSpecialFlag(String label) {
+            return this.ltsLabels.getFlag(label);
         }
 
         @Override
         public List<Proposition> toProps(Node node) {
             var result = new LinkedList<Proposition>();
-            for (var e : this.graph.outEdgeSet(node)) {
-                var label = e.label().text();
-                if (isFlag(label)) {
-                    result.add(Proposition.prop(label));
-                    var flag = getSpecialFlag(label);
-                    if (flag != null) {
-                        result.add(Proposition.prop(flag));
-                    }
-                }
-            }
+            this.graph
+                .outEdgeSet(node)
+                .stream()
+                .map(Edge::label)
+                .map(Label::text)
+                .map(Proposition::derived)
+                .forEach(result::add);
             return result;
         }
     }

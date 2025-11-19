@@ -45,6 +45,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -54,7 +55,10 @@ import nl.utwente.groove.gui.display.DismissDelayer;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.io.HTMLConverter.HTMLTag;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.FormatException;
+import nl.utwente.groove.util.parse.IdValidator;
+import nl.utwente.groove.verify.FormulaParser;
 
 /**
  * Dialog for entering strings, with a large textfield rather than a text area.
@@ -87,16 +91,23 @@ abstract public class StringDialog {
      * return value is the entered string.
      * @param frame the frame on which the dialog is to be displayed
      */
-    public String showDialog(Component frame) {
+    public NamedEntry showDialog(Component frame) {
         if (this.title != null) {
             loadChoiceBox();
         }
         this.dialog = createDialog(frame);
         getChoiceBox().setSelectedIndex(0);
-        getTextArea()
-            .setText(this.history.isEmpty()
+        var last = this.history.isEmpty()
+            ? null
+            : this.history.getFirst();
+        getNameField()
+            .setText(last == null
                 ? ""
-                : this.history.getFirst());
+                : last.name());
+        getTextArea()
+            .setText(last == null
+                ? ""
+                : last.value());
         processTextChange();
         getChoiceBox().revalidate();
         getTextArea().selectAll();
@@ -114,6 +125,11 @@ abstract public class StringDialog {
      */
     private JDialog createDialog(Component frame) {
         Object[] buttons = {getOkButton(), getCancelButton()};
+        // Name panel
+        JPanel name = new JPanel();
+        name.setLayout(new BorderLayout());
+        name.add(new JLabel("<html><b>Property name: "), BorderLayout.WEST);
+        name.add(getNameField(), BorderLayout.CENTER);
         // input panel with text area and choice box
         JPanel input = new JPanel();
         input.setLayout(new BorderLayout());
@@ -121,13 +137,16 @@ abstract public class StringDialog {
         input.add(new JLabel("<html><b>Enter value:"), BorderLayout.NORTH);
         input.add(new JScrollPane(getTextArea()), BorderLayout.CENTER);
         input.add(getChoiceBox(), BorderLayout.SOUTH);
+        // Error panel
+        JPanel errorPanel = new JPanel(new BorderLayout());
+        errorPanel.add(getErrorLabel());
+        // Main panel
         JPanel main = new JPanel();
         main.setLayout(new BorderLayout());
+        main.add(name, BorderLayout.NORTH);
         main.add(input, BorderLayout.CENTER);
+        main.add(errorPanel, BorderLayout.SOUTH);
         if (this.parsed) {
-            JPanel errorPanel = new JPanel(new BorderLayout());
-            errorPanel.add(getErrorLabel());
-            main.add(errorPanel, BorderLayout.SOUTH);
             main.add(createSyntaxPanel(), BorderLayout.EAST);
         }
         JOptionPane panel = new JOptionPane(main, JOptionPane.PLAIN_MESSAGE,
@@ -160,6 +179,16 @@ abstract public class StringDialog {
         return result;
     }
 
+    private JTextField getNameField() {
+        if (this.nameField == null) {
+            this.nameField = new JTextField();
+            this.nameField.getDocument().addDocumentListener(this.changeListener);
+        }
+        return this.nameField;
+    }
+
+    private JTextField nameField;
+
     private JTextArea getTextArea() {
         if (this.textArea == null) {
             this.textArea = new JTextArea();
@@ -172,24 +201,29 @@ abstract public class StringDialog {
 
     /** Lazily creates and returns the combobox containing the current choices. */
     private JComboBox<String> getChoiceBox() {
-        if (this.choiceBox == null) {
-            this.choiceBox = new JComboBox<>();
-            this.choiceBox
-                .setPrototypeDisplayValue("The longest value we want to display completely");
-            this.choiceBox.addItemListener(new ItemListener() {
+        var result = this.choiceBox;
+        if (result == null) {
+            var choiceBox = new JComboBox<String>();
+            var choiceItems = StringDialog.this.choiceItems;
+            choiceBox.setPrototypeDisplayValue("The longest value we want to display completely");
+            choiceBox.addItemListener(new ItemListener() {
                 @Override
                 public void itemStateChanged(ItemEvent e) {
-                    if (StringDialog.this.choiceBox.getSelectedIndex() != 0) {
-                        var value = StringDialog.this.choiceItems
-                            .get(StringDialog.this.choiceBox.getSelectedItem());
-                        getTextArea().setText(value);
-                        getTextArea().selectAll();
-                        getTextArea().requestFocus();
+                    if (choiceBox.getSelectedIndex() >= 1) {
+                        var selectedItem = choiceBox.getSelectedItem();
+                        if (selectedItem != null) {
+                            var entry = choiceItems.get(selectedItem);
+                            getNameField().setText(entry.name());
+                            getTextArea().setText(entry.value());
+                            getTextArea().selectAll();
+                            getTextArea().requestFocus();
+                        }
                     }
                 }
             });
+            this.choiceBox = result = choiceBox;
         }
-        return this.choiceBox;
+        return result;
     }
 
     private void loadChoiceBox() {
@@ -199,22 +233,37 @@ abstract public class StringDialog {
         getChoiceBox().removeAllItems();
         this.choiceBox.addItem("<html><i>Select a previously entered value</i>");
         for (String value : storedValues) {
+            var entry = new NamedEntry(value);
             // also add unparsable formulas
-            String representation = parseText(value) == null
-                ? error(value)
-                : value;
-            getChoiceBox().addItem(representation);
-            this.choiceItems.put(representation, value);
-            this.history.add(value);
+            String rep = entry.hasName()
+                ? bold(entry.name() + ": ") + entry.value()
+                : entry.value();
+            rep = parseText(entry.name(), entry.value()) == null
+                ? error(rep)
+                : rep;
+            rep = html(rep);
+            getChoiceBox().addItem(rep);
+            this.choiceItems.put(rep, entry);
+            this.history.add(entry);
         }
     }
 
     /** Mapping from items in the choice box to the original value. */
-    private final Map<String,String> choiceItems = new HashMap<>();
+    private final Map<String,NamedEntry> choiceItems = new HashMap<>();
 
-    /** Adds HTML error formatting to a text. */
+    /** Adds HTML error coloring to a text. */
     private String error(String text) {
-        return HTMLConverter.HTML_TAG.on(errorColorTag().on(text));
+        return errorColorTag().on(text);
+    }
+
+    /** Adds bold formatting to a text. */
+    private String bold(String text) {
+        return HTMLConverter.ITALIC_TAG.on(text);
+    }
+
+    /** Adds HTML tag a text. */
+    private String html(String text) {
+        return HTMLConverter.HTML_TAG.on(text);
     }
 
     /** Lazily creates and returns the error colour tag. */
@@ -232,36 +281,44 @@ abstract public class StringDialog {
     private void storeChoiceBox() {
         String[] storedValues = new String[Math.min(this.history.size(), MAX_PERSISTENT_SIZE)];
         for (int i = 0; i < storedValues.length; i++) {
-            storedValues[i] = this.history.get(i);
+            storedValues[i] = this.history.get(i).toString();
         }
         Options.storeUserPrefs(this.title, storedValues);
     }
 
-    /** Reacts to a change in the editor. */
+    /** Reacts to a change in the name field or value text area. */
     private void processTextChange() {
-        final String currentText = getTextArea().getText();
-        String result = parseText(currentText);
-        getOkButton().setEnabled(result != null && !currentText.isEmpty());
+        var currentName = getNameField().getText();
+        var currentValue = getTextArea().getText();
+        var result = parseText(currentName, currentValue);
+        getOkButton().setEnabled(result != null && !result.value().isEmpty());
     }
 
-    /** Attempts to parse the given text.
+    /** Attempts to parse the given name and text value.
      * Calls {@link #parse(String)} for the actual parsing.
-     * @param text the text to be parsed as a property
+     * @param value the text to be parsed as a property
      * @return {@code null} if the text cannot be parsed,
-     * or the parsed result otherwise
+     * or the parsed value otherwise
      */
-    private String parseText(String text) {
-        String result;
-        if (this.parsed) {
+    private NamedEntry parseText(String name, String value) {
+        NamedEntry result;
+        if (!name.isEmpty() || this.parsed) {
+            String error = null;
             try {
-                result = parse(text);
-                getErrorLabel().setText(null);
+                value = parse(value);
+                if (!name.isEmpty() && !isName(name)) {
+                    error = "Name '%s' should be an identifier".formatted(name);
+                    result = null;
+                } else {
+                    result = new NamedEntry(name, value);
+                }
             } catch (FormatException e) {
-                getErrorLabel().setText(e.getErrors().iterator().next().toString());
+                error = e.getErrors().iterator().next().toString();
                 result = null;
             }
+            getErrorLabel().setText(error);
         } else {
-            result = text;
+            result = new NamedEntry(name, value);
         }
         return result;
     }
@@ -325,7 +382,7 @@ abstract public class StringDialog {
 
     private final Map<String,String> docMap;
     /** The history list */
-    private final List<String> history;
+    private final List<NamedEntry> history;
 
     /** The title of the dialog. */
     private final String title;
@@ -335,18 +392,20 @@ abstract public class StringDialog {
      * selection of the choice box.
      * Also adds the result to the history.
      */
-    private boolean setResult(String resultObject) {
+    private boolean setResult(String name, String resultObject) {
+        assert name.isEmpty() || isName(name);
         boolean ok;
         if (resultObject == null) {
             this.result = null;
             ok = true;
         } else {
-            this.result = parseText(resultObject);
+            this.result = parseText(name, resultObject);
             ok = this.result != null;
         }
         if (ok && resultObject != null) {
-            this.history.remove(resultObject);
-            this.history.add(0, resultObject);
+            var entry = new NamedEntry(name, resultObject);
+            this.history.remove(entry);
+            this.history.add(0, entry);
         }
         return ok;
     }
@@ -355,7 +414,7 @@ abstract public class StringDialog {
      * Return the property that is entered for verification.
      * @return the property in String format
      */
-    public String getResult() {
+    public NamedEntry getResult() {
         return this.result;
     }
 
@@ -364,13 +423,26 @@ abstract public class StringDialog {
      */
     private boolean parsed;
     /** The field in which to store the provided data */
-    private String result;
+    private NamedEntry result;
 
     /** The dialog that is currently visible. */
     private JDialog dialog;
 
     /** The singleton action listener. */
     private final CloseListener closeListener = new CloseListener();
+
+    /** Checks whether a given string is a valid entry name. */
+    static public boolean isName(String name) {
+        return ID_VALIDATOR.isValid(name);
+    }
+
+    /** Validator for property names. */
+    static private final IdValidator ID_VALIDATOR = new IdValidator() {
+        @Override
+        public boolean isIdentifierStart(char c) {
+            return c != FormulaParser.FLAG_PREFIX.charAt(0) && super.isIdentifierStart(c);
+        }
+    };
 
     /** Keeps on creating a dialog until the user enters "stop". */
     static public void main(String[] args) {
@@ -379,7 +451,7 @@ abstract public class StringDialog {
         do {
             dialog.showDialog(null);
             System.out.printf("Selected string: %s%n", dialog.getResult());
-            stop = "stop".equals(dialog.getResult());
+            stop = "stop".equals(dialog.getResult().value());
         } while (!stop);
         System.exit(0);
     }
@@ -397,10 +469,8 @@ abstract public class StringDialog {
     /** Maximum number of persistently stored entries. */
     private static final int MAX_PERSISTENT_SIZE = 10;
 
-    /** The singleton document change listener. */
-    private final ChangeListener changeListener = new ChangeListener();
-
-    private class ChangeListener implements DocumentListener {
+    /** The singleton document change listener for the name field. */
+    private final DocumentListener changeListener = new DocumentListener() {
         @Override
         public void changedUpdate(DocumentEvent e) {
             processTextChange();
@@ -415,7 +485,7 @@ abstract public class StringDialog {
         public void removeUpdate(DocumentEvent e) {
             processTextChange();
         }
-    }
+    };
 
     /**
      * Action listener that closes the dialog and makes sure that the property
@@ -426,9 +496,13 @@ abstract public class StringDialog {
         public void actionPerformed(ActionEvent e) {
             boolean ok = false;
             if (e.getSource() == getOkButton()) {
-                ok = setResult(getTextArea().getText());
+                var name = getNameField().getText();
+                if (!isName(name)) {
+                    name = "";
+                }
+                ok = setResult(name, getTextArea().getText());
             } else if (e.getSource() == getCancelButton()) {
-                ok = setResult(null);
+                ok = setResult("", null);
             }
             if (ok) {
                 StringDialog.this.dialog.setVisible(false);
@@ -437,7 +511,7 @@ abstract public class StringDialog {
 
         @Override
         public void windowClosing(WindowEvent e) {
-            if (setResult(null)) {
+            if (setResult("", null)) {
                 StringDialog.this.dialog.setVisible(false);
             }
         }
@@ -464,4 +538,48 @@ abstract public class StringDialog {
         private final Map<String,String> tipMap;
     }
 
+    /** Combination of name and value. */
+    public record NamedEntry(String name, String value) {
+        /** Constructs a new entry out of a given name and value. */
+        public NamedEntry(String name, String value) {
+            if (!name.isEmpty() && !isName(name)) {
+                throw Exceptions.illegalArg("Entry name '%s' is not an allowed identifier", name);
+            }
+            this.name = name;
+            this.value = value;
+        }
+
+        /** Constructs an entry from a single string with {@link #SEPARATOR} as separator between name and value. */
+        NamedEntry(String combi) {
+            this(namePart(combi), valuePart(combi));
+        }
+
+        /** Indicates if this entry has a (non-empty) name. */
+        public boolean hasName() {
+            return !name().isEmpty();
+        }
+
+        @Override
+        public String toString() {
+            return hasName()
+                ? name() + SEPARATOR + value()
+                : value();
+        }
+
+        static private String namePart(String combi) {
+            int i = combi.indexOf(SEPARATOR);
+            return i < 0
+                ? ""
+                : combi.substring(0, i);
+        }
+
+        static private String valuePart(String combi) {
+            int i = combi.indexOf(SEPARATOR);
+            return i < 0
+                ? combi
+                : combi.substring(i + 1);
+        }
+
+        static public final char SEPARATOR = ':';
+    }
 }

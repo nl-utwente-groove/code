@@ -41,16 +41,17 @@ import static nl.utwente.groove.verify.LogicOp.IMPLIES;
 import static nl.utwente.groove.verify.LogicOp.NEXT;
 import static nl.utwente.groove.verify.LogicOp.NOT;
 import static nl.utwente.groove.verify.LogicOp.OR;
-import static nl.utwente.groove.verify.LogicOp.PROP;
 import static nl.utwente.groove.verify.LogicOp.RELEASE;
 import static nl.utwente.groove.verify.LogicOp.S_RELEASE;
 import static nl.utwente.groove.verify.LogicOp.TRUE;
 import static nl.utwente.groove.verify.LogicOp.UNTIL;
 import static nl.utwente.groove.verify.LogicOp.W_UNTIL;
-import static nl.utwente.groove.verify.Proposition.prop;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.grammar.QualName;
@@ -93,8 +94,13 @@ public class Formula extends ATermTree<LogicOp,Formula> {
         this(op, null, null);
     }
 
+    /** Indicates if this formula is a proposition. */
+    public boolean isProp() {
+        return getProp() != null;
+    }
+
     /** Returns the optional proposition in this formula. */
-    public Proposition getProp() {
+    public @Nullable Proposition getProp() {
         return this.prop;
     }
 
@@ -157,12 +163,13 @@ public class Formula extends ATermTree<LogicOp,Formula> {
      */
     private void toString0(StringBuilder b) {
         switch (getOp()) {
-        case TRUE:
-        case FALSE:
+        case TRUE, FALSE:
             b.append(getOp().getSymbol());
             break;
-        case PROP:
-            b.append(getProp().toString());
+        case CALL_PROP, LITERAL_PROP, DERIVED_PROP:
+            var prop = getProp();
+            assert prop != null;
+            b.append(prop.toString());
             break;
         default:
             throw Exceptions.UNREACHABLE;
@@ -278,77 +285,41 @@ public class Formula extends ATermTree<LogicOp,Formula> {
      * that are illegal in CTL.
      */
     private Formula computeCtlFormula() throws FormatException {
-        Formula result;
-        switch (getOp()) {
-        case PROP:
-        case TRUE:
-        case FALSE:
-            result = this;
-            break;
-        case NOT:
-            result = not(getArg1().toCtlFormula());
-            break;
-        case OR:
-        case AND:
-        case IMPLIES:
-        case FOLLOWS:
-        case EQUIV:
-            result = new Formula(getOp(), getArg1().toCtlFormula(), getArg2().toCtlFormula());
-            break;
-        case NEXT:
-        case UNTIL:
-        case ALWAYS:
-        case EVENTUALLY:
-            throw new FormatException(
-                "Temporal operator '%s' should be nested inside path quantifier in CTL formula",
-                getOp());
-        case W_UNTIL:
-        case RELEASE:
-        case S_RELEASE:
-            throw new FormatException("Temporal operator '%s' not allowed in CTL formula", getOp());
-        case FORALL:
-        case EXISTS:
+        Formula result = switch (getOp()) {
+        case CALL_PROP, LITERAL_PROP, DERIVED_PROP, TRUE, FALSE -> this;
+        case NOT -> not(getArg1().toCtlFormula());
+        case OR, AND, IMPLIES, FOLLOWS, EQUIV -> new Formula(getOp(), getArg1().toCtlFormula(),
+            getArg2().toCtlFormula());
+        case NEXT, UNTIL, ALWAYS, EVENTUALLY, W_UNTIL, RELEASE, S_RELEASE -> throw new FormatException(
+            "Temporal operator '%s' should be nested inside path quantifier in CTL formula",
+            getOp());
+        case FORALL, EXISTS -> {
             LogicOp subKind = getArg1().getOp();
             Formula subArg1 = getArg1().getArg1();
             Formula subArg2 = getArg1().getArg2();
-            switch (subKind) {
-            case NEXT:
-                result = new Formula(getOp(), next(subArg1.toCtlFormula()));
-                break;
-            case ALWAYS:
+            yield switch (subKind) {
+            case NEXT -> new Formula(getOp(), next(subArg1.toCtlFormula()));
+            case ALWAYS -> {
                 LogicOp dual = getOp() == EXISTS
                     ? FORALL
                     : EXISTS;
-                result = not(new Formula(dual, until(tt(), not(subArg1.toCtlFormula()))));
-                break;
-            case EVENTUALLY:
-                result = new Formula(getOp(), until(tt(), subArg1.toCtlFormula()));
-                break;
-            case UNTIL:
-                result
-                    = new Formula(getOp(), until(subArg1.toCtlFormula(), subArg2.toCtlFormula()));
-                break;
-            case W_UNTIL:
-                result
-                    = new Formula(getOp(), wUntil(subArg1.toCtlFormula(), subArg2.toCtlFormula()));
-                break;
-            case RELEASE:
-                result
-                    = new Formula(getOp(), release(subArg1.toCtlFormula(), subArg2.toCtlFormula()));
-                break;
-            case S_RELEASE:
-                result = new Formula(getOp(),
-                    sRelease(subArg1.toCtlFormula(), subArg2.toCtlFormula()));
-                break;
-            default:
-                throw new FormatException(
-                    "Path quantifier '%s' must have nested temporal operator in CTL formula",
-                    getOp());
+                yield not(new Formula(dual, until(tt(), not(subArg1.toCtlFormula()))));
             }
-            break;
-        default:
-            throw new FormatException("Unknown temporal operator %s", getOp());
+            case EVENTUALLY -> new Formula(getOp(), until(tt(), subArg1.toCtlFormula()));
+            case UNTIL -> new Formula(getOp(),
+                until(subArg1.toCtlFormula(), subArg2.toCtlFormula()));
+            case W_UNTIL -> new Formula(getOp(),
+                wUntil(subArg1.toCtlFormula(), subArg2.toCtlFormula()));
+            case RELEASE -> new Formula(getOp(),
+                release(subArg1.toCtlFormula(), subArg2.toCtlFormula()));
+            case S_RELEASE -> new Formula(getOp(),
+                sRelease(subArg1.toCtlFormula(), subArg2.toCtlFormula()));
+            default -> throw new FormatException(
+                "Path quantifier '%s' must have nested temporal operator in CTL formula", getOp());
+            };
         }
+        case LPAR, RPAR -> throw Exceptions.UNREACHABLE;
+        };
         result.setParseString(getParseString());
         return result;
     }
@@ -392,45 +363,28 @@ public class Formula extends ATermTree<LogicOp,Formula> {
         gov.nasa.ltl.trans.Formula<Proposition> arg2 = getArg2() == null
             ? null
             : getArg2().toLtlFormula();
-        switch (getOp()) {
-        case FORALL:
-        case EXISTS:
-            throw new FormatException("Path quantifier '%s' not allowed in LTL formula", getOp());
-        case PROP:
-            return Proposition(getProp());
-        case TRUE:
-            return True();
-        case FALSE:
-            return False();
-        case NOT:
-            return Not(arg1);
-        case OR:
-            return Or(arg1, arg2);
-        case AND:
-            return And(arg1, arg2);
-        case NEXT:
-            return Next(arg1);
-        case RELEASE:
-            return Release(arg1, arg2);
-        case S_RELEASE:
-            return Not(WUntil(Not(arg1), Not(arg2)));
-        case UNTIL:
-            return Until(arg1, arg2);
-        case W_UNTIL:
-            return WUntil(arg1, arg2);
-        case ALWAYS:
-            return Always(arg1);
-        case EVENTUALLY:
-            return Eventually(arg1);
-        case EQUIV:
-            return and(implies(getArg1(), getArg2()), follows(getArg1(), getArg2())).toLtlFormula();
-        case FOLLOWS:
-            return or(getArg1(), not(getArg2())).toLtlFormula();
-        case IMPLIES:
-            return or(not(getArg1()), getArg2()).toLtlFormula();
-        default:
-            throw new FormatException("Unknown temporal operator %s", getOp());
-        }
+        return switch (getOp()) {
+        case FORALL, EXISTS -> throw new FormatException(
+            "Path quantifier '%s' not allowed in LTL formula", getOp());
+        case CALL_PROP, LITERAL_PROP, DERIVED_PROP -> Proposition(getProp());
+        case TRUE -> True();
+        case FALSE -> False();
+        case NOT -> Not(arg1);
+        case OR -> Or(arg1, arg2);
+        case AND -> And(arg1, arg2);
+        case NEXT -> Next(arg1);
+        case RELEASE -> Release(arg1, arg2);
+        case S_RELEASE -> Not(WUntil(Not(arg1), Not(arg2)));
+        case UNTIL -> Until(arg1, arg2);
+        case W_UNTIL -> WUntil(arg1, arg2);
+        case ALWAYS -> Always(arg1);
+        case EVENTUALLY -> Eventually(arg1);
+        case EQUIV -> and(implies(getArg1(), getArg2()), follows(getArg1(), getArg2()))
+            .toLtlFormula();
+        case FOLLOWS -> or(getArg1(), not(getArg2())).toLtlFormula();
+        case IMPLIES -> or(not(getArg1()), getArg2()).toLtlFormula();
+        case LPAR, RPAR -> throw Exceptions.UNREACHABLE;
+        };
     }
 
     @Override
@@ -450,8 +404,9 @@ public class Formula extends ATermTree<LogicOp,Formula> {
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        if (getOp() == LogicOp.PROP) {
-            result = prime * result + this.prop.hashCode();
+        var prop = getProp();
+        if (prop != null) {
+            result = prime * result + prop.hashCode();
         }
         return result;
     }
@@ -467,10 +422,7 @@ public class Formula extends ATermTree<LogicOp,Formula> {
         if (!(obj instanceof Formula other)) {
             return false;
         }
-        if (getOp() == PROP && !this.prop.equals(other.prop)) {
-            return false;
-        }
-        return true;
+        return Objects.equals(getProp(), other.getProp());
     }
 
     @Override
@@ -511,26 +463,22 @@ public class Formula extends ATermTree<LogicOp,Formula> {
 
     @Override
     protected Line toAtomLine(boolean spaces) {
-        Line result;
-        switch (getOp()) {
-        case TRUE:
-        case FALSE:
-            result = Line.atom(getOp().getSymbol());
-            break;
-        case PROP:
-            result = getProp().toLine(spaces);
-            break;
-        default:
-            throw Exceptions.UNREACHABLE;
+        return switch (getOp()) {
+        case TRUE, FALSE -> Line.atom(getOp().getSymbol());
+        default -> {
+            var prop = getProp();
+            assert prop != null;
+            yield prop.toLine(spaces);
         }
-        return result;
+        };
     }
 
     /* Atoms without symbols must be propositions. */
     @Override
     protected String toAtomString() {
-        assert getOp() == PROP;
-        return getProp().toString();
+        var prop = getProp();
+        assert prop != null;
+        return prop.toString();
     }
 
     /** Checks if the propositions in the formula are compatible with the given GTS. */
@@ -554,8 +502,8 @@ public class Formula extends ATermTree<LogicOp,Formula> {
                 break;
             default: // do nothing
             }
-        } else if (!prop.canOccur(gts)) {
-            result.add("Proposition '%s' cannot occur in this system", prop);
+        } else {
+            result.addAll(prop.check(gts));
         }
         return result;
     }
@@ -715,14 +663,19 @@ public class Formula extends ATermTree<LogicOp,Formula> {
         return IdValidator.JAVA_ID.isValid(text);
     }
 
-    /** Factory method for an atomic proposition testing for a label constant. */
-    public static Formula atom(String label) {
-        return atom(prop(label));
+    /** Factory method for an atomic proposition testing for a literal string. */
+    public static Formula literal(String label) {
+        return atom(Proposition.literal(label));
     }
 
-    /** Factory method for an atomic proposition testing for an identifier (without arguments). */
-    public static Formula atom(QualName id) throws FormatException {
-        return atom(prop(id));
+    /** Factory method for an atomic proposition testing for a special flag. */
+    public static Formula derived(String name) {
+        return atom(Proposition.derived(name));
+    }
+
+    /** Factory method for an atomic proposition testing for a rule call (without parameter test). */
+    public static Formula call(QualName id) {
+        return atom(Proposition.call(id));
     }
 
     /** Factory method for a propositional formula consisting of a rule call.
@@ -747,12 +700,12 @@ public class Formula extends ATermTree<LogicOp,Formula> {
             }
             callArgs.add(callArg);
         }
-        return atom(prop(id, callArgs));
+        return atom(Proposition.call(id, callArgs));
     }
 
     /** Factory method for an atomic formula wrapping a given proposition. */
     public static Formula atom(Proposition prop) {
-        Formula result = new Formula(PROP);
+        Formula result = new Formula(prop.getOp());
         result.setProp(prop);
         result.setFixed();
         return result;

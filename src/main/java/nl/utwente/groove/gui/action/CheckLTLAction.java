@@ -59,42 +59,39 @@ public class CheckLTLAction extends ExploreAction {
     public void execute() {
         Serialized strategy;
         // prompt for a formula to model check
-        String property = getLtlFormulaDialog().showDialog(getFrame());
-        if (property == null) {
+        var choice = getLtlFormulaDialog().showDialog(getFrame());
+        if (choice == null) {
             return;
         }
+        var property = choice.value();
         // prompt for a boundary, if the LTL strategy is bounded
         if (this.strategyType == StrategyValue.LTL) {
-            strategy = this.strategyType.getTemplate()
-                .toSerialized(property);
+            strategy = this.strategyType.getTemplate().toSerialized(property);
         } else {
             BoundedModelCheckingDialog dialog = new BoundedModelCheckingDialog();
-            dialog.setGrammar(getSimulatorModel().getGTS()
-                .getGrammar());
+            dialog.setGrammar(getSimulatorModel().getGTS().getGrammar());
             dialog.showDialog(getFrame());
             Boundary boundary = dialog.getBoundary();
             if (boundary == null) {
                 return;
             }
-            strategy = this.strategyType.getTemplate()
-                .toSerialized(property, boundary);
+            strategy = this.strategyType.getTemplate().toSerialized(property, boundary);
         }
         ExploreType exploreType = new ExploreType(strategy, AcceptorValue.CYCLE.toSerialized(), 1);
         try {
             getSimulatorModel().setExploreType(exploreType);
-            Exploration exploration = getActions().getExploreAction()
-                .explore(exploreType);
+            Exploration exploration = getActions().getExploreAction().explore(exploreType);
             if (exploration != null) {
-                if (exploration.getResult()
-                    .isEmpty()) {
-                    JOptionPane.showMessageDialog(getFrame(),
-                        String.format("The property '%s' holds for this system", property));
+                if (exploration.getResult().isEmpty()) {
+                    JOptionPane
+                        .showMessageDialog(getFrame(), String
+                            .format("The property '%s' holds for this system", property));
                 } else {
-                    Collection<GraphState> states = exploration.getResult()
-                        .getStates();
+                    Collection<GraphState> states = exploration.getResult().getStates();
                     getLtsDisplay().emphasiseStates(new ArrayList<>(states), true);
-                    JOptionPane.showMessageDialog(getFrame(),
-                        String.format("A counter-example to '%s' is highlighted", property));
+                    JOptionPane
+                        .showMessageDialog(getFrame(), String
+                            .format("A counter-example to '%s' is highlighted", property));
                 }
             }
         } catch (FormatException exc) {
@@ -105,8 +102,8 @@ public class CheckLTLAction extends ExploreAction {
     /** Returns a dialog that will ask for a formula to be entered. */
     private StringDialog getLtlFormulaDialog() {
         if (this.ltlFormulaDialog == null) {
-            this.ltlFormulaDialog =
-                new StringDialog("Enter the LTL Formula", FormulaParser.getDocMap(Logic.LTL)) {
+            this.ltlFormulaDialog
+                = new StringDialog("Enter the LTL Formula", FormulaParser.getDocMap(Logic.LTL)) {
                     @Override
                     public String parse(String text) throws FormatException {
                         Formula.parse(Logic.LTL, text);

@@ -35,8 +35,8 @@ public class CheckCTLAction extends SimulatorAction {
 
     @Override
     public void execute() {
-        String property = getCtlFormulaDialog().showDialog(getFrame());
-        if (property != null) {
+        var choice = getCtlFormulaDialog().showDialog(getFrame());
+        if (choice != null) {
             boolean doCheck = true;
             GTS gts = getSimulatorModel().getGTS();
             // completely re-explore if the GTS has open states
@@ -47,7 +47,8 @@ public class CheckCTLAction extends SimulatorAction {
             }
             if (doCheck) {
                 try {
-                    doCheckProperty(getSimulatorModel().getExploreResult(), property);
+                    doCheckProperty(getSimulatorModel().getExploreResult(), choice.name(),
+                                    choice.value());
                 } catch (FormatException e) {
                     // the property has already been parsed by the dialog
                     assert false;
@@ -74,9 +75,11 @@ public class CheckCTLAction extends SimulatorAction {
 
     /**
      * Model checks a given property on an exploration result.
+     * @param name name of the property to be checked
      * @throws FormatException if the property is not a properly formatted CTL property
      */
-    private void doCheckProperty(ExploreResult result, String property) throws FormatException {
+    private void doCheckProperty(ExploreResult result, String name,
+                                 String property) throws FormatException {
         Formula formula = Formula.parse(property).toCtlFormula();
         formula.check(result.getGTS());
         CTLMarker modelChecker = new CTLMarker(formula, CTLModelChecker.newModel(result));
@@ -103,8 +106,6 @@ public class CheckCTLAction extends SimulatorAction {
             }
         }
         // Create a fresh result to be independent on whatever result states were there
-        formula_count++;
-        var name = "f" + formula_count;
         result = new ExploreResult(name, result.getGTS());
         witnesses.forEach(result::addState);
         result.push();
@@ -124,7 +125,4 @@ public class CheckCTLAction extends SimulatorAction {
      * Dialog for entering temporal formulae.
      */
     private StringDialog ctlFormulaDialog;
-
-    /** Count of all invocations of #execute, used to give unique names to formulas. */
-    static private int formula_count;
 }

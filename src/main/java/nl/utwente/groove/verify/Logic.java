@@ -18,6 +18,7 @@ package nl.utwente.groove.verify;
 
 import static nl.utwente.groove.verify.LogicOp.ALWAYS;
 import static nl.utwente.groove.verify.LogicOp.AND;
+import static nl.utwente.groove.verify.LogicOp.DERIVED_PROP;
 import static nl.utwente.groove.verify.LogicOp.EQUIV;
 import static nl.utwente.groove.verify.LogicOp.EVENTUALLY;
 import static nl.utwente.groove.verify.LogicOp.EXISTS;
@@ -25,11 +26,12 @@ import static nl.utwente.groove.verify.LogicOp.FALSE;
 import static nl.utwente.groove.verify.LogicOp.FOLLOWS;
 import static nl.utwente.groove.verify.LogicOp.FORALL;
 import static nl.utwente.groove.verify.LogicOp.IMPLIES;
+import static nl.utwente.groove.verify.LogicOp.LITERAL_PROP;
 import static nl.utwente.groove.verify.LogicOp.LPAR;
 import static nl.utwente.groove.verify.LogicOp.NEXT;
 import static nl.utwente.groove.verify.LogicOp.NOT;
 import static nl.utwente.groove.verify.LogicOp.OR;
-import static nl.utwente.groove.verify.LogicOp.PROP;
+import static nl.utwente.groove.verify.LogicOp.CALL_PROP;
 import static nl.utwente.groove.verify.LogicOp.RELEASE;
 import static nl.utwente.groove.verify.LogicOp.S_RELEASE;
 import static nl.utwente.groove.verify.LogicOp.TRUE;
@@ -55,12 +57,13 @@ public enum Logic {
         switch (this) {
         case LTL:
             return EnumSet
-                .of(PROP, TRUE, FALSE, NOT, OR, AND, IMPLIES, FOLLOWS, EQUIV, NEXT, UNTIL, W_UNTIL,
-                    RELEASE, S_RELEASE, ALWAYS, EVENTUALLY, LPAR);
+                .of(CALL_PROP, LITERAL_PROP, DERIVED_PROP, TRUE, FALSE, NOT, OR, AND, IMPLIES, FOLLOWS,
+                    EQUIV, NEXT, UNTIL, W_UNTIL, RELEASE, S_RELEASE, ALWAYS, EVENTUALLY, LPAR);
         case CTL:
             return EnumSet
-                .of(PROP, TRUE, FALSE, NOT, OR, AND, IMPLIES, FOLLOWS, EQUIV, NEXT, UNTIL, W_UNTIL,
-                    RELEASE, S_RELEASE, ALWAYS, EVENTUALLY, FORALL, EXISTS, LPAR);
+                .of(CALL_PROP, LITERAL_PROP, DERIVED_PROP, TRUE, FALSE, NOT, OR, AND, IMPLIES, FOLLOWS,
+                    EQUIV, NEXT, UNTIL, W_UNTIL, RELEASE, S_RELEASE, ALWAYS, EVENTUALLY, FORALL,
+                    EXISTS, LPAR);
         default:
             assert false;
             return null;

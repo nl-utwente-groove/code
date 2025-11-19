@@ -28,14 +28,27 @@ import nl.utwente.groove.util.parse.OpKind;
 /** The kind (i.e., top level operator) of a formula. */
 public enum LogicOp implements Op {
     /** Proposition, wrapped in an object of type {@link Proposition}. */
-    @Syntax("rule [LPAR arg_list RPAR] | $.special")
-    @ToolTipHeader("Atomic or rule call proposition, or special flag")
-    @ToolTipBody({"Holds if %s (with optional %2$s) is enabled in the current state",
-            "(note that this does <i>not</i> mean that %1$s has just been executed),",
-            "or the special property encoded by %4$s holds.",
+    @Syntax("name [LPAR arg_list RPAR]")
+    @ToolTipHeader("Rule call proposition")
+    @ToolTipBody({"Holds if the action %s (with optional %2$s) is enabled in the current state",
+            "(note that this does <i>not</i> mean that %1$s has just been executed).",
             "Without %2$s, only the rule name (%1$s) is checked.",
             "%2$s may include the wildcard '_', which matches everything."})
-    PROP("", OpKind.ATOM),
+    CALL_PROP("", OpKind.ATOM),
+
+    /** Proposition, wrapped in an object of type {@link Proposition}. */
+    @Syntax("\'literal\' | \"literal\"")
+    @ToolTipHeader("Literal proposition")
+    @ToolTipBody({"Holds if %s precisely matches the label of a flag or outgoing transition."})
+    LITERAL_PROP("", OpKind.ATOM),
+
+    /** Proposition, wrapped in an object of type {@link Proposition}. */
+    @Syntax("$.derived")
+    @ToolTipHeader("Derived proposition")
+    @ToolTipBody({"Holds for states that satisfy the property encoded by %2$s.",
+            "This can be a special system property (e.g., <i>start</i> or <i>final</i>)",
+            "or a property established through previous analysis."})
+    DERIVED_PROP("", OpKind.ATOM),
 
     /** True. */
     @Syntax("TRUE")
@@ -114,7 +127,7 @@ public enum LogicOp implements Op {
     RELEASE("R", OpKind.TEMP_INFIX),
 
     /** Strong temporal release (first operand must eventually hold). */
-    @Syntax("first RELEASE second")
+    @Syntax("first S_RELEASE second")
     @ToolTipHeader("Strong release")
     @ToolTipBody({"%2$s holds up until (and including) a state where %1$s also holds,",
             "and %1$s will indeed eventually hold."})

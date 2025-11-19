@@ -67,16 +67,6 @@ public class CTLMarker {
         @SuppressWarnings("unchecked")
         List<Integer>[] backward = new List[nodeCount];
         this.outCount = new int[nodeCount];
-        /*
-        // collect the special flag labels used in the formula
-        Map<Flag,Integer> flagNrs = new EnumMap<>(Flag.class);
-        for (Flag flag : Flag.values()) {
-            Integer flagIx = this.propNr.get(flagProps.get(flag));
-            if (flagIx != null) {
-                flagNrs.put(flag, flagIx);
-            }
-        }
-        */
         // build the backward reachability matrix and mark the atomic propositions
         for (Node node : this.model.nodeSet()) {
             // EZ says: change for SF bug #442.
@@ -130,7 +120,7 @@ public class CTLMarker {
      * so they can be precomputed.
      */
     private void registerPropositions(Formula formula) {
-        if (formula.getOp() == LogicOp.PROP) {
+        if (formula.isProp()) {
             var propVector = new PropSatVector(formula.getProp(), createVector());
             this.propVectors.add(propVector);
             this.marking.put(formula, propVector.vector());

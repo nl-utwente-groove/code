@@ -327,7 +327,7 @@ public class LTLStrategy extends Strategy {
                 ? Arg.arg(((ValueNode) a).toTerm())
                 : Arg.arg(a.toString()))
             .collect(Collectors.toList());
-        return Proposition.prop(trans.getAction().getQualName(), args);
+        return Proposition.call(trans.getAction().getQualName(), args);
     }
 
     /**

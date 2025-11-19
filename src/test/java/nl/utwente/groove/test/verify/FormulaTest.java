@@ -21,8 +21,9 @@ import static nl.utwente.groove.algebra.Constant.instance;
 import static nl.utwente.groove.grammar.QualName.name;
 import static nl.utwente.groove.verify.Formula.always;
 import static nl.utwente.groove.verify.Formula.and;
-import static nl.utwente.groove.verify.Formula.atom;
+import static nl.utwente.groove.verify.Formula.literal;
 import static nl.utwente.groove.verify.Formula.call;
+import static nl.utwente.groove.verify.Formula.derived;
 import static nl.utwente.groove.verify.Formula.equiv;
 import static nl.utwente.groove.verify.Formula.eventually;
 import static nl.utwente.groove.verify.Formula.exists;
@@ -61,7 +62,7 @@ public class FormulaTest {
     @Test
     public void testParse() {
         Formula aId = idAtom("a");
-        Formula aString = atom("a");
+        Formula aString = literal("a");
         Formula bId = idAtom("b");
         Formula cId = idAtom("c");
         Formula dcId = idAtom("dc");
@@ -70,7 +71,7 @@ public class FormulaTest {
         testParse("a", aId);
         testParse("'a'", aString);
         testParse("\"a\"", aString);
-        testParse("'a(1)'", atom("a(1)"));
+        testParse("'a(1)'", literal("a(1)"));
         testParse("a(1,id,'value')", call(name("a"), instance(1), "id", instance("value")));
         testParse("a( 1 , id,  \"value\" )", call(name("a"), instance(1), "id", instance("value")));
         testParse("a(a,_)", call(name("a"), "a", Proposition.Arg.WILD_TEXT));
@@ -123,9 +124,9 @@ public class FormulaTest {
     /** Tests the toString method of the Formula class. */
     @Test
     public void testFormulaToString() {
-        Formula a = atom("a");
-        Formula b = atom("b");
-        Formula c = atom("c");
+        Formula a = literal("a");
+        Formula b = literal("b");
+        Formula c = literal("c");
         // atoms
         testEquals("a", a);
         testEquals("true", tt());
@@ -168,9 +169,9 @@ public class FormulaTest {
     /** Tests if a given formula is ripe for CTL verification. */
     @Test
     public void testIsCtlFormula() {
-        Formula a = atom("a");
-        Formula b = atom("b");
-        Formula c = atom("c");
+        Formula a = literal("a");
+        Formula b = literal("b");
+        Formula c = literal("c");
         // Any simple propositional formula
         assertTrue(a.isCtlFormula());
         assertTrue(tt().isCtlFormula());
@@ -217,11 +218,6 @@ public class FormulaTest {
     }
 
     private Formula idAtom(String label) {
-        try {
-            return Formula.atom(name(label));
-        } catch (FormatException exc) {
-            fail(exc.getMessage());
-            return null;
-        }
+        return Formula.call(name(label));
     }
 }

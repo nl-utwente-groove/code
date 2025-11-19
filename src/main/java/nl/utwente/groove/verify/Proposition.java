@@ -17,10 +17,12 @@
 package nl.utwente.groove.verify;
 
 import java.util.ArrayList;
-import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -31,17 +33,20 @@ import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.line.Line;
-import nl.utwente.groove.util.parse.FormatException;
-import nl.utwente.groove.verify.Proposition.CallProp;
-import nl.utwente.groove.verify.Proposition.FlagProp;
-import nl.utwente.groove.verify.Proposition.LabelProp;
+import nl.utwente.groove.util.parse.FormatErrorSet;
+import nl.utwente.groove.verify.Proposition.Call;
+import nl.utwente.groove.verify.Proposition.Derived;
+import nl.utwente.groove.verify.Proposition.Literal;
 
-/** Proposition, wrapped inside a formula of type {@link LogicOp#PROP}. */
+/** Proposition, wrapped inside a formula of type {@link LogicOp#CALL_PROP}, {@link LogicOp#LITERAL_PROP} or {@link LogicOp#DERIVED_PROP}. */
 @NonNullByDefault
-public abstract sealed class Proposition permits LabelProp, FlagProp, CallProp {
+public abstract sealed class Proposition permits Literal, Derived, Call {
+    /** Returns the proposition operator corresponding to the actual concrete proposition type. */
+    abstract public LogicOp getOp();
+
     /**
      * Tests if this proposition matches another.
-     * This is the case if the two are equal, or if this is a parameterless {@link CallProp}
+     * This is the case if the two are equal, or if this is a parameterless {@link Call}
      * and the other a call of that action, or this is a call with wildcards and the other
      * a call that only differs in providing values for the wildcards.
      */
@@ -63,51 +68,42 @@ public abstract sealed class Proposition permits LabelProp, FlagProp, CallProp {
 
     /** Checks if this proposition are compatible with the given GTS,
      * and returns a (possibly empty) set of errors found in this check. */
-    abstract public boolean canOccur(GTS gts);
+    public FormatErrorSet check(GTS gts) {
+        return new FormatErrorSet();
+    }
 
-    /** Returns an {@link LabelProp} or {@link FlagProp} consisting of a given label text.
+    /** Returns an {@link Literal} or {@link Derived} consisting of a given label text.
      */
-    public static Proposition prop(String label) {
-        return new LabelProp(label);
+    public static Proposition literal(String label) {
+        return new Literal(label);
     }
 
-    /** Returns a parameterless {@link CallProp} or a {@link FlagProp}.
-     * @throws IllegalArgumentException if {@code label} starts with {@link #FLAG_PREFIX}
-     * but is not a flag. */
-    public static Proposition prop(QualName id) throws FormatException {
-        if (id.get(0).startsWith(FLAG_PREFIX)) {
-            if (id.size() != 1) {
-                throw new FormatException("Qualified name '%s' is not a flag", id);
-            }
-            var flagText = id.get(0).substring(FLAG_PREFIX.length());
-            var flag = LTSLabels.flag(flagText);
-            if (flag == null) {
-                throw new FormatException("Label '%s' is not a flag", flagText);
-            }
-            return prop(flag);
-        } else {
-            return new CallProp(id);
-        }
+    /** Returns a parameterless {@link Call}. */
+    public static Proposition call(QualName id) {
+        return new Call(id);
     }
 
-    /** Returns a {@link CallProp} consisting of a given identifier and list of arguments. */
-    public static Proposition prop(QualName id, List<Arg> args) {
-        return new CallProp(id, args);
+    /** Returns a {@link Call} proposition consisting of a given identifier and list of arguments. */
+    public static Proposition call(QualName id, List<Arg> args) {
+        return new Call(id, args);
     }
 
-    /** Returns a {@link FlagProp} for a given flag. */
-    public static Proposition prop(Flag flag) {
-        var result = flagPropMap.get(flag);
+    /** Returns a {@link Derived} proposition for a given special flag. */
+    public static Proposition derived(Flag flag) {
+        return derived(flag.getDefault());
+    }
+
+    /** Returns a {@link Derived} proposition for a given name. */
+    public static Proposition derived(String name) {
+        var result = derivedPropMap.get(name);
         if (result == null) {
-            flagPropMap.put(flag, result = new FlagProp(flag));
+            derivedPropMap.put(name, result = new Derived(name));
         }
         return result;
     }
 
-    static private final EnumMap<Flag,@Nullable FlagProp> flagPropMap = new EnumMap<>(Flag.class);
-
-    /** Prefix for the label of a {@link FlagProp}. */
-    static public final String FLAG_PREFIX = "$";
+    /** Collection of previously generated derived properties. */
+    static private final Map<String,@Nullable Derived> derivedPropMap = new HashMap<>();
 
     /**
      * Call argument.
@@ -258,8 +254,8 @@ public abstract sealed class Proposition permits LabelProp, FlagProp, CallProp {
     }
 
     /** Proposition wrapping a literal label. */
-    static public final class LabelProp extends Proposition {
-        private LabelProp(String label) {
+    static public final class Literal extends Proposition {
+        private Literal(String label) {
             this.label = label;
         }
 
@@ -272,13 +268,13 @@ public abstract sealed class Proposition permits LabelProp, FlagProp, CallProp {
         private final String label;
 
         @Override
-        public boolean matches(Proposition other) {
-            return getLabel().equals(other.toString());
+        public @NonNull LogicOp getOp() {
+            return LogicOp.LITERAL_PROP;
         }
 
         @Override
-        public boolean canOccur(GTS gts) {
-            return true;
+        public boolean matches(Proposition other) {
+            return getLabel().equals(other.toString());
         }
 
         @Override
@@ -291,7 +287,7 @@ public abstract sealed class Proposition permits LabelProp, FlagProp, CallProp {
             if (this == obj) {
                 return true;
             }
-            if (!(obj instanceof LabelProp other)) {
+            if (!(obj instanceof Literal other)) {
                 return false;
             }
             return getLabel().equals(other.getLabel());
@@ -308,23 +304,38 @@ public abstract sealed class Proposition permits LabelProp, FlagProp, CallProp {
         }
     }
 
-    /** Proposition wrapping a special flag. */
-    static public final class FlagProp extends Proposition {
-        private FlagProp(Flag flag) {
-            this.flag = flag;
+    /** Derived proposition. */
+    static public final class Derived extends Proposition {
+        private Derived(String name) {
+            this.name = name;
+            this.flag = LTSLabels.flag(name);
         }
 
-        /** Returns the flag in this proposition.
+        /** Returns the name of this proposition. */
+        public String getName() {
+            return this.name;
+        }
+
+        private final String name;
+
+        /**
+         * Returns the special flag of this proposition, if any.
          */
-        public Flag getFlag() {
-            var result = this.flag;
-            if (result == null) {
-                throw new UnsupportedOperationException();
-            }
-            return result;
+        public @Nullable Flag getFlag() {
+            return this.flag;
+        }
+
+        /** Indicates that this is a system property. */
+        public boolean isSpecial() {
+            return getFlag() != null;
         }
 
         private final @Nullable Flag flag;
+
+        @Override
+        public @NonNull LogicOp getOp() {
+            return LogicOp.DERIVED_PROP;
+        }
 
         @Override
         public boolean matches(Proposition other) {
@@ -332,13 +343,17 @@ public abstract sealed class Proposition permits LabelProp, FlagProp, CallProp {
         }
 
         @Override
-        public boolean canOccur(GTS gts) {
-            return true;
+        public @NonNull FormatErrorSet check(GTS gts) {
+            var result = super.check(gts);
+            if (!isSpecial() && !gts.hasStateProperty(getName())) {
+                result.add("Derived property '%s' is not defined in this system", getName());
+            }
+            return result;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(getClass(), getFlag());
+            return Objects.hash(getClass(), getName());
         }
 
         @Override
@@ -346,15 +361,15 @@ public abstract sealed class Proposition permits LabelProp, FlagProp, CallProp {
             if (this == obj) {
                 return true;
             }
-            if (!(obj instanceof FlagProp other)) {
+            if (!(obj instanceof Derived other)) {
                 return false;
             }
-            return getFlag().equals(other.getFlag());
+            return Objects.equals(getName(), other.getName());
         }
 
         @Override
         public String toString() {
-            return getFlag().toString();
+            return getName();
         }
 
         /** Constructs a display line for this proposition.
@@ -368,13 +383,13 @@ public abstract sealed class Proposition permits LabelProp, FlagProp, CallProp {
     }
 
     /** Proposition wrapping a rule call. */
-    static public final class CallProp extends Proposition {
-        private CallProp(QualName id) {
+    static public final class Call extends Proposition {
+        private Call(QualName id) {
             this.id = id;
             this.args = null;
         }
 
-        private CallProp(QualName id, List<Arg> args) {
+        private Call(QualName id, List<Arg> args) {
             this.id = id;
             this.args = args;
         }
@@ -393,6 +408,11 @@ public abstract sealed class Proposition permits LabelProp, FlagProp, CallProp {
             return this.args;
         }
 
+        /** Indicates if this call proposition has arguments. */
+        public boolean hasArgs() {
+            return getArgs() != null;
+        }
+
         /** Returns the argument count of the call,
          * or {@code -1} if the proposition is parameterless. */
         public int arity() {
@@ -405,9 +425,14 @@ public abstract sealed class Proposition permits LabelProp, FlagProp, CallProp {
         private final @Nullable List<Arg> args;
 
         @Override
+        public @NonNull LogicOp getOp() {
+            return LogicOp.CALL_PROP;
+        }
+
+        @Override
         public boolean matches(Proposition other) {
             boolean result = false;
-            if (other instanceof CallProp call) {
+            if (other instanceof Call call) {
                 result = getId().equals(call.getId());
                 var args = getArgs();
                 if (result && args != null) {
@@ -426,19 +451,18 @@ public abstract sealed class Proposition permits LabelProp, FlagProp, CallProp {
         }
 
         @Override
-        public boolean canOccur(GTS gts) {
+        public @NonNull FormatErrorSet check(GTS gts) {
+            var result = super.check(gts);
             var args = getArgs();
             var action = gts.getGrammar().getAction(getId());
-            if (args == null) {
-                if (getId().size() == 1 && gts.hasStateProperty(getId().get(0))) {
-                    return true;
-                } else if (action != null) {
-                    return true;
-                }
-            } else if (action != null) {
-                return args.size() == action.getSignature().size();
+            if (action == null) {
+                result.add("Action '%s' is not defined in this grammar", getId());
+            } else if (args != null && args.size() != action.getSignature().size()) {
+                result
+                    .add("Action '%s' has arity %s, not %s", getId(), action.getSignature().size(),
+                         args.size());
             }
-            return false;
+            return result;
         }
 
         @Override
@@ -451,7 +475,7 @@ public abstract sealed class Proposition permits LabelProp, FlagProp, CallProp {
             if (this == obj) {
                 return true;
             }
-            if (!(obj instanceof CallProp other)) {
+            if (!(obj instanceof Call other)) {
                 return false;
             }
             return getId().equals(other.getId()) && Objects.equals(getArgs(), other.getArgs());

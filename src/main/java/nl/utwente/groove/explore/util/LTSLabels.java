@@ -249,28 +249,29 @@ public class LTSLabels {
         if (oldFlag != null) {
             throw new FormatException("Label '%s' used for two different special labels");
         }
-        this.flags.add(value);
+        this.derived.add(value);
         return this.flagToLabelMap.put(flag, value) == null;
     }
 
     /**
-     * Adds further flag labels to this labels object.
-     * These are treated as flags rather than binary edges during model checking.
+     * Adds further derived labels to this labels object.
+     * These are treated as node labels rather than binary edges during model checking.
      */
-    public void addFlags(String... flags) {
-        Arrays.stream(flags).forEach(this.flags::add);
+    public void addDerived(String... labels) {
+        Arrays.stream(labels).forEach(this.derived::add);
     }
 
-    /** Returns the set of all strings to be treated as flags (including special ones). */
-    public Set<String> getFlags() {
-        return this.flags;
+    /** Returns the set of all names to be treated as derived properties. */
+    public Set<String> getDerived() {
+        return this.derived;
     }
 
-    private final Set<String> flags = new LinkedHashSet<>();
+    /** The set of derived property names. */
+    private final Set<String> derived = new LinkedHashSet<>();
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.flagToLabelMap, this.flags);
+        return Objects.hash(this.flagToLabelMap, this.derived);
     }
 
     @Override
@@ -281,7 +282,8 @@ public class LTSLabels {
         if (!(obj instanceof LTSLabels other)) {
             return false;
         }
-        return this.flagToLabelMap.equals(other.flagToLabelMap) && this.flags.equals(other.flags);
+        return this.flagToLabelMap.equals(other.flagToLabelMap)
+            && this.derived.equals(other.derived);
     }
 
     @Override

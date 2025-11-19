@@ -147,7 +147,7 @@ public class ExploreResult {
      */
     public void push() {
         var name = getName();
-        if (name != null) {
+        if (name != null && !name.isEmpty()) {
             getGTS().addStateProperty(name, state -> getStates().contains(state));
         }
     }
