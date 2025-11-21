@@ -83,7 +83,7 @@ public class FormulaParser extends ATermTreeParser<LogicOp,Formula> {
                         throw expectedToken(RPAR, next());
                     }
                 }
-                result = Formula.call(id, args);
+                result = Formula.atom(Proposition.call(id, args));
             }
         } else {
             consume(NAME);
