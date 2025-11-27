@@ -16,15 +16,17 @@
  */
 package nl.utwente.groove.graph;
 
+import java.util.Objects;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.util.line.Line;
+import nl.utwente.groove.util.line.Line.Style;
 
 /**
  * Abstract label implementation consisting of simple, plain text,
  * passed in at construction time.
- * Text labels are by default binary; comparison and identity are based on label text.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -34,28 +36,39 @@ abstract public class TextLabel implements Label, Cloneable {
      * Constructs a standard implementation of Label on the basis of a given
      * text index. For internal purposes only.
      * @param text the index of the label text
+     * @param role role of the label
      */
-    protected TextLabel(String text) {
-        this.line = Line.atom(text);
+    protected TextLabel(String text, EdgeRole role) {
+        this.text = text;
+        this.role = role;
     }
 
     @Override
     public Line toLine() {
-        return this.line;
+        var result = Line.atom(this.text);
+        return switch (getRole()) {
+        case BINARY -> result;
+        case FLAG -> result.style(Style.ITALIC);
+        case NODE_TYPE -> result.style(Style.BOLD);
+        };
     }
-
-    /** The text line of this label. */
-    private final Line line;
 
     @Override
     public int compareTo(Label o) {
-        return text().compareTo(o.text());
+        int result = getRole().compareTo(o.getRole());
+        if (result == 0) {
+            result = text().compareTo(o.text());
+        }
+        return result;
     }
 
     @Override
     public String text() {
-        return toLine().toFlatString();
+        return this.text;
     }
+
+    /** The text of this label. */
+    private final String text;
 
     /* Parsing is not enabled by default. */
     @Override
@@ -65,8 +78,10 @@ abstract public class TextLabel implements Label, Cloneable {
 
     @Override
     final public EdgeRole getRole() {
-        return EdgeRole.BINARY;
+        return this.role;
     }
+
+    private final EdgeRole role;
 
     @Override
     final protected TextLabel clone() {
@@ -75,7 +90,7 @@ abstract public class TextLabel implements Label, Cloneable {
 
     @Override
     public int hashCode() {
-        return text().hashCode();
+        return Objects.hash(getRole(), text());
     }
 
     @Override
@@ -83,10 +98,10 @@ abstract public class TextLabel implements Label, Cloneable {
         if (obj == this) {
             return true;
         }
-        if (!(obj instanceof TextLabel)) {
+        if (!(obj instanceof TextLabel other)) {
             return false;
         }
-        return text().equals(((TextLabel) obj).text());
+        return getRole().equals(other.getRole()) && text().equals(other.text());
     }
 
     @Override

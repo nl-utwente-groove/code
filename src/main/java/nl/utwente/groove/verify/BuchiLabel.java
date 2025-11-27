@@ -20,6 +20,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import gov.nasa.ltl.graph.Guard;
 import gov.nasa.ltl.graph.Literal;
+import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.TextLabel;
 
 /**
@@ -41,7 +42,7 @@ public class BuchiLabel extends TextLabel {
      *          the guard for the label
      */
     public BuchiLabel(String action, Guard<Proposition> guard) {
-        super(computeText(action, guard));
+        super(computeText(action, guard), EdgeRole.BINARY);
         this.action = action;
         this.guard = guard;
     }

@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.lts;
 
+import java.util.Collection;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -89,6 +90,11 @@ public interface GraphState extends Node, Phase {
     @SuppressWarnings("unchecked")
     public default Set<RuleTransition> getRuleTransitions() {
         return (Set<RuleTransition>) getTransitions(GraphTransition.Claz.RULE);
+    }
+
+    /** Returns the set of state properties satisfied by this state. */
+    default public Collection<StateProperty> getSatisfiedProps() {
+        return getGTS().getSatisfiedProps(this);
     }
 
     /**

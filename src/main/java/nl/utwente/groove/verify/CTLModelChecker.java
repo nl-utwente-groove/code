@@ -57,6 +57,7 @@ import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
+import nl.utwente.groove.lts.StateProperty;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.cli.GrooveCmdLineParser;
 import nl.utwente.groove.util.cli.GrooveCmdLineTool;
@@ -473,6 +474,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
             this.gts
                 .getSatisfiedProps(state)
                 .stream()
+                .map(StateProperty::name)
                 .map(Proposition::derived)
                 .forEach(result::add);
             return result;

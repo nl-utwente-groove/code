@@ -18,20 +18,41 @@ package nl.utwente.groove.lts;
 
 import java.util.function.Predicate;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
+import nl.utwente.groove.graph.FlagLabel;
+import nl.utwente.groove.graph.Label;
+
 /**
- * Named predicate for a graph state.
  * @author Arend Rensink
  * @version $Revision$
  */
-public record StateProperty(String name, Predicate<GraphState> prop)
-    implements Predicate<GraphState>, Comparable<StateProperty> {
+@NonNullByDefault
+public interface StateProperty extends Predicate<GraphState>, Comparable<StateProperty> {
     @Override
-    public int compareTo(StateProperty o) {
+    default public int compareTo(StateProperty o) {
         return name().compareTo(o.name());
     }
 
-    @Override
-    public boolean test(GraphState t) {
-        return this.prop.test(t);
+    /** Returns the name of this property.
+     * This is guaranteed to start with #PREFIX followed by a non-empty identifier not starting with #PREFIX.
+     */
+    public String name();
+
+    /** Returns the name of this property.
+     * This is guaranteed to start with #PREFIX followed by a non-empty identifier not starting with #PREFIX.
+     */
+    default public Label label() {
+        return new FlagLabel(name());
+    }
+
+    /** Default prefix of all property names. */
+    static public final String PREFIX = "$";
+
+    /** Tests if a given name is a state property name
+     * (meaning that it starts with {@link #PREFIX}).
+     */
+    static public boolean isProperty(String name) {
+        return name.startsWith(PREFIX);
     }
 }

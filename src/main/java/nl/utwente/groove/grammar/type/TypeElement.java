@@ -30,7 +30,7 @@ import nl.utwente.groove.graph.Label;
  * @version $Revision$
  */
 @NonNullByDefault
-public interface TypeElement extends Element, AnchorValue, Label {
+public sealed interface TypeElement extends Element, AnchorValue, Label permits TypeNode, TypeEdge {
     /**
      * Returns the type label of this type element.
      * Note that for type edges, the label does not completely determine

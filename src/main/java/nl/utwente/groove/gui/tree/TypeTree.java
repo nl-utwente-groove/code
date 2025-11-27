@@ -42,7 +42,6 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.jgraph.event.GraphModelEvent;
@@ -60,7 +59,6 @@ import nl.utwente.groove.gui.action.CollapseAllAction;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.AspectJModel;
 import nl.utwente.groove.gui.jgraph.JModel;
-import nl.utwente.groove.gui.tree.LabelFilter.Entry;
 import nl.utwente.groove.gui.tree.TypeFilter.TypeEntry;
 import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.util.Factory;
@@ -118,30 +116,32 @@ public class TypeTree extends LabelTree<AspectGraph> {
     }
 
     @Override
-    TypeFilter createLabelFilter() {
-        return new TypeFilter();
-    }
-
-    @Override
     TypeFilter getFilter() {
-        return (TypeFilter) super.getFilter();
+        var result = this.filter;
+        if (result == null) {
+            this.filter = result = new TypeFilter();
+        }
+        return result;
     }
 
+    private @Nullable TypeFilter filter;
+
     @Override
-    protected @NonNull StringBuilder getText(Entry entry) {
+    protected StringBuilder getText(LabelEntry entry) {
         // colour the label, as dictated by the (optional) node colour of this entry or its source node
         var result = super.getText(entry);
         var typeEntry = (TypeEntry) entry;
-        TypeElement typeElement = typeEntry.getType();
-        TypeNode typeNode = typeElement instanceof TypeNode
-            ? (TypeNode) typeElement
-            : ((TypeEdge) typeElement).source();
+        TypeElement typeElement = typeEntry.getContent();
+        TypeNode typeNode = switch (typeElement) {
+        case TypeNode n -> n;
+        case TypeEdge e -> e.source();
+        };
         Color color = typeNode.getColor();
         if (color != null) {
             HTMLConverter.createColorTag(color).on(result);
         }
-        // if this is an edge, add the target type
-        if (typeEntry.getType() instanceof TypeEdge e && e.getRole() == EdgeRole.BINARY) {
+        // if this is a binary edge, add the target type
+        if (typeElement instanceof TypeEdge e && e.getRole() == EdgeRole.BINARY) {
             var target = e.target();
             result.append(": ");
             StringBuilder targetString = new StringBuilder();
@@ -231,7 +231,9 @@ public class TypeTree extends LabelTree<AspectGraph> {
 
     @Override
     void updateFilter() {
-        getFilter().update(getTypeGraph());
+        var typeGraph = getTypeGraph();
+        assert typeGraph != null;
+        getFilter().update(typeGraph);
         super.updateFilter();
     }
 
@@ -259,12 +261,8 @@ public class TypeTree extends LabelTree<AspectGraph> {
         }
     }
 
-    /**
-     * Updates the tree from the information in the type graph.
-     * @return the set of tree nodes created for the types
-     */
     @Override
-    List<TreeNode> fillTree() {
+    Collection<? extends TreeNode> fillTree() {
         List<TreeNode> result = new ArrayList<>();
         TypeGraph typeGraph = getTypeGraph();
         if (typeGraph != null) {
@@ -277,7 +275,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
             } else {
                 result = new ArrayList<>();
                 for (TypeGraph.Sub subTypeGraph : typeGraphMap) {
-                    TypeGraphTreeNode typeGraphNode = new TypeGraphTreeNode(this, subTypeGraph);
+                    TypeGraphTreeNode typeGraphNode = new TypeGraphTreeNode(subTypeGraph);
                     result
                         .addAll(fillTree(typeGraphNode, subTypeGraph.getNodes(),
                                          subTypeGraph.getEdges()));
@@ -341,7 +339,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
                 continue;
             }
             // check duplicates due to equi-labelled edges to different targets
-            Set<Entry> entries = new HashSet<>();
+            Set<LabelEntry> entries = new HashSet<>();
             for (var edge : new TreeSet<>(typeGraph.outEdgeSet(node))) {
                 if (typeEdges.contains(edge)) {
                     TypeEntry edgeEntry = getFilter().getEntry(edge);
@@ -356,7 +354,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
         if (typeGraph.isImplicit()) {
             // add edge entries
             // check duplicates due to equi-labelled edges
-            Set<Entry> entries = new HashSet<>();
+            Set<LabelEntry> entries = new HashSet<>();
             for (TypeEdge edge : typeEdges) {
                 TypeEntry edgeEntry = getFilter().getEntry(edge);
                 if (isShowsAllLabels() || getFilter().hasJCells(edgeEntry)) {
@@ -378,10 +376,10 @@ public class TypeTree extends LabelTree<AspectGraph> {
     @Override
     public String convertValueToText(@Nullable Object value, boolean selected, boolean expanded,
                                      boolean leaf, int row, boolean hasFocus) {
-        if (value instanceof TypeGraphTreeNode) {
+        if (value instanceof TypeGraphTreeNode tt) {
             StringBuilder result = new StringBuilder();
             result.append("Type graph '");
-            result.append(((TypeGraphTreeNode) value).getName());
+            result.append(tt.getName());
             result.append("'");
             return HTML_TAG.on(ITALIC_TAG.on(STRONG_TAG.on(result)).toString());
         } else {
@@ -480,8 +478,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
          * Constructs a new node, for a given type graph component
          * @param subTypeGraph the type graph component
          */
-        TypeGraphTreeNode(TypeTree tree, TypeGraph.Sub subTypeGraph) {
-            this.tree = tree;
+        TypeGraphTreeNode(TypeGraph.Sub subTypeGraph) {
             this.name = subTypeGraph.getName();
             for (TypeNode node : subTypeGraph.getNodes()) {
                 this.entries.add(getFilter().getEntry(node));
@@ -489,11 +486,8 @@ public class TypeTree extends LabelTree<AspectGraph> {
             this.selected = true;
         }
 
-        /** The type tree this is part of. */
-        private final TypeTree tree;
-
         /** The set of node type entries in under this type graph node. */
-        private final Set<Entry> entries = new HashSet<>();
+        private final Set<LabelEntry> entries = new HashSet<>();
 
         @Override
         public int hashCode() {
@@ -520,7 +514,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
 
         @Override
         public boolean hasCheckbox() {
-            return this.tree.isFiltering();
+            return TypeTree.this.isFiltering();
         }
 
         @Override

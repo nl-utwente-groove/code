@@ -29,7 +29,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -60,7 +59,6 @@ import nl.utwente.groove.gui.jgraph.JCell;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.jgraph.JModel;
 import nl.utwente.groove.gui.menu.ShowHideMenu;
-import nl.utwente.groove.gui.tree.LabelFilter.Entry;
 import nl.utwente.groove.io.HTMLConverter;
 
 /**
@@ -70,7 +68,7 @@ import nl.utwente.groove.io.HTMLConverter;
  * @version $Revision$
  */
 @NonNullByDefault
-public class LabelTree<G extends Graph> extends CheckboxTree
+abstract public class LabelTree<G extends Graph> extends CheckboxTree
     implements GraphModelListener, TreeSelectionListener {
     /**
      * Constructs a label list associated with a given jgraph. A further
@@ -78,20 +76,14 @@ public class LabelTree<G extends Graph> extends CheckboxTree
      * @param jGraph the jgraph with which this list is to be associated
      * @param filtering if {@code true}, the panel has checkboxes to filter labels
      */
-    public LabelTree(JGraph<G> jGraph, boolean filtering) {
+    LabelTree(JGraph<G> jGraph, boolean filtering) {
         this.jGraph = jGraph;
-        this.labelFilter = createLabelFilter();
         this.filtering = filtering;
         // make sure tool tips get displayed
         ToolTipManager.sharedInstance().registerComponent(this);
         setEnabled(jGraph.isEnabled());
         setLargeModel(true);
         installListeners();
-    }
-
-    /** Callback factory method for the label filter. */
-    LabelFilter<G> createLabelFilter() {
-        return new LabelFilter<>();
     }
 
     @SuppressWarnings("unchecked")
@@ -169,12 +161,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree
     private @Nullable JModel<G> jModel;
 
     /** Returns the label filter associated with this label tree. */
-    LabelFilter<G> getFilter() {
-        return this.labelFilter;
-    }
-
-    /** Set of filtered labels. */
-    private final LabelFilter<G> labelFilter;
+    abstract LabelFilter<G,?> getFilter();
 
     /** Indicates if this label tree is actively filtering. */
     public boolean isFiltering() {
@@ -185,13 +172,17 @@ public class LabelTree<G extends Graph> extends CheckboxTree
     private final boolean filtering;
 
     /**
-     * Returns the set of labels maintained by this label
-     * tree.
+     * Returns the collection of labels and corresponding sets of cells
+     * maintained by this label tree.
      */
-    public SortedMap<Entry,Set<JCell<G>>> getLabels() {
-        TreeMap<Entry,Set<JCell<G>>> result = new TreeMap<>();
-        for (Entry entry : getFilter().getEntries()) {
-            result.put(entry, getFilter().getJCells(entry));
+    public Collection<LabelledCells<G>> getLabels() {
+        TreeMap<LabelEntry,Set<JCell<G>>> treeMap = new TreeMap<>();
+        for (LabelEntry entry : getFilter().getEntries()) {
+            treeMap.put(entry, getFilter().getJCells(entry));
+        }
+        var result = new ArrayList<LabelledCells<G>>();
+        for (var e : treeMap.entrySet()) {
+            result.add(new LabelledCells<>(e.getKey().getContent(), e.getValue()));
         }
         return result;
     }
@@ -267,7 +258,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree
         clearSelection();
         // clear the list
         getTopNode().removeAllChildren();
-        List<TreeNode> newNodes = fillTree();
+        var newNodes = fillTree();
         getModel().reload(getTopNode());
         // expand those paths that were not collapsed before
         for (TreeNode newNode : newNodes) {
@@ -290,11 +281,13 @@ public class LabelTree<G extends Graph> extends CheckboxTree
         addTreeSelectionListener(this);
     }
 
-    /** Updates the tree from the labels in the filter. */
-    List<TreeNode> fillTree() {
+    /** Updates the tree from the labels in the filter,
+     * and returns the set of visible top node.
+     */
+    Collection<? extends TreeNode> fillTree() {
         List<TreeNode> result = new ArrayList<>();
-        Set<Entry> entries = new TreeSet<>(getFilter().getEntries());
-        for (Entry entry : entries) {
+        Set<LabelEntry> entries = new TreeSet<>(getFilter().getEntries());
+        for (LabelEntry entry : entries) {
             if (getFilter().hasJCells(entry)) {
                 LabelTreeNode labelNode = new LabelTreeNode(this, entry, true);
                 getTopNode().add(labelNode);
@@ -376,11 +369,11 @@ public class LabelTree<G extends Graph> extends CheckboxTree
             for (TreePath selectedPath : selectionPaths) {
                 Object treeNode = selectedPath.getLastPathComponent();
                 if (treeNode instanceof LabelTree.LabelTreeNode) {
-                    Entry entry = ((LabelTreeNode) treeNode).getEntry();
+                    LabelEntry entry = ((LabelTreeNode) treeNode).getEntry();
                     Set<JCell<G>> occurrences = getFilter().getJCells(entry);
-                    if (occurrences != null) {
-                        emphSet.addAll(occurrences);
-                    }
+                    //if (occurrences != null) {
+                    emphSet.addAll(occurrences);
+                    //}
                 }
             }
         }
@@ -439,7 +432,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree
     public String convertValueToText(@Nullable Object value, boolean selected, boolean expanded,
                                      boolean leaf, int row, boolean hasFocus) {
         if (value instanceof LabelTreeNode labelNode) {
-            Entry entry = labelNode.getEntry();
+            LabelEntry entry = labelNode.getEntry();
             return HTML_TAG.on(getText(entry)).toString();
         } else {
             return super.convertValueToText(value, selected, expanded, leaf, row, hasFocus);
@@ -450,7 +443,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree
      * Returns an HTML-formatted string indicating how a label should be
      * displayed.
      */
-    protected StringBuilder getText(Entry entry) {
+    protected StringBuilder getText(LabelEntry entry) {
         StringBuilder result = new StringBuilder();
         var line = entry.getLine();
         boolean specialLabelColour = false;
@@ -498,7 +491,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree
          * @param entry The label wrapped in this node
          * @param topNode flag indicating if this is a top type node in the tree
          */
-        LabelTreeNode(LabelTree<?> tree, Entry entry, boolean topNode) {
+        LabelTreeNode(LabelTree<?> tree, LabelEntry entry, boolean topNode) {
             this.tree = tree;
             this.entry = entry;
             this.topNode = topNode;
@@ -521,7 +514,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree
         }
 
         /** Returns the label of this tree node. */
-        public Entry getEntry() {
+        public LabelEntry getEntry() {
             return this.entry;
         }
 
@@ -557,7 +550,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree
         }
 
         private final LabelTree<?> tree;
-        private final Entry entry;
+        private final LabelEntry entry;
         private final boolean topNode;
     }
 
@@ -582,7 +575,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree
                 if (path != null) {
                     Object treeNode = path.getLastPathComponent();
                     if (treeNode instanceof LabelTree.LabelTreeNode) {
-                        Entry entry = ((LabelTreeNode) treeNode).getEntry();
+                        LabelEntry entry = ((LabelTreeNode) treeNode).getEntry();
                         getFilter().changeSelected(entry);
                     }
                 }
@@ -617,7 +610,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree
             for (TreePath path : cells) {
                 Object treeNode = path.getLastPathComponent();
                 if (treeNode instanceof LabelTree.LabelTreeNode) {
-                    Entry entry = ((LabelTreeNode) treeNode).getEntry();
+                    LabelEntry entry = ((LabelTreeNode) treeNode).getEntry();
                     this.entries.add(entry);
                 }
             }
@@ -629,7 +622,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree
         }
 
         private final boolean filter;
-        private final Collection<Entry> entries;
+        private final Collection<LabelEntry> entries;
     }
 
     /** Adds an icon, tool tip text and label colour. */
@@ -648,7 +641,7 @@ public class LabelTree<G extends Graph> extends CheckboxTree
             // set a sub- or supertype icon if the node label is a subnode
             Icon labelIcon = null;
             if (getTreeNode() instanceof LabelTreeNode entryNode) {
-                Entry entry = entryNode.getEntry();
+                LabelEntry entry = entryNode.getEntry();
                 labelIcon = entryNode.getIcon();
                 // set tool tip text
                 StringBuilder toolTipText = new StringBuilder();
@@ -707,5 +700,10 @@ public class LabelTree<G extends Graph> extends CheckboxTree
             getInner().setIcon(labelIcon);
             return result;
         }
+    }
+
+    /** Labelled set of cells. */
+    public record LabelledCells<G extends Graph>(Label label, Set<JCell<G>> cells) {
+        // empty
     }
 }

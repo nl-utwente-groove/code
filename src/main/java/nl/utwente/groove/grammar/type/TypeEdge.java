@@ -34,7 +34,7 @@ import nl.utwente.groove.util.line.Line;
  * @version $Revision$
  */
 @NonNullByDefault
-public class TypeEdge extends AEdge<TypeNode,TypeLabel> implements TypeElement {
+public final class TypeEdge extends AEdge<TypeNode,TypeLabel> implements TypeElement {
     /**
      * Constructs a new type edge, with explicit multiplicity.
      * Don't call directly; use {@link TypeFactory} methods instead.

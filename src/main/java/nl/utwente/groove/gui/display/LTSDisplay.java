@@ -71,7 +71,7 @@ import nl.utwente.groove.gui.jgraph.LTSJGraph;
 import nl.utwente.groove.gui.jgraph.LTSJModel;
 import nl.utwente.groove.gui.jgraph.LTSJVertex;
 import nl.utwente.groove.gui.list.ErrorListPanel;
-import nl.utwente.groove.gui.tree.LabelTree;
+import nl.utwente.groove.gui.tree.LTSTree;
 import nl.utwente.groove.lts.Filter;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSListener;
@@ -128,7 +128,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
     @Override
     protected JComponent createInfoPanel() {
         var labelTree = getLabelTree();
-        final TitledPanel result = new TitledPanel("Transition labels", labelTree, null, true);
+        final TitledPanel result = new TitledPanel("LTS labels", labelTree, null, true);
         result.setEnabledBackground(JAttr.STATE_BACKGROUND);
         getJGraph().addPropertyChangeListener(new PropertyChangeListener() {
             @Override
@@ -436,24 +436,16 @@ public class LTSDisplay extends Display implements SimulatorListener {
         return getJGraph().getModel();
     }
 
-    private LabelTree<@NonNull GTS> getLabelTree() {
+    private LTSTree getLabelTree() {
         var result = this.labelTree;
         if (result == null) {
-            result = this.labelTree = new LabelTree<>(getJGraph(), true) {
-                @Override
-                protected void paintComponent(Graphics g) {
-                    super.paintComponent(g);
-                    if (getSimulatorModel().hasAbsentState()) {
-                        JAttr.paintHatch(this, g);
-                    }
-                }
-            };
+            result = this.labelTree = new LTSTree(getJGraph());
         }
         return result;
     }
 
     /** The tree component showing (and allowing filtering of) the transitions in the LTS. */
-    private LabelTree<@NonNull GTS> labelTree;
+    private LTSTree labelTree;
 
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel, Set<Change> changes) {

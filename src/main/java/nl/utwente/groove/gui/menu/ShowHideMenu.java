@@ -27,7 +27,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
@@ -52,7 +51,7 @@ import nl.utwente.groove.gui.jgraph.JEdge;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.jgraph.LTSJCell;
 import nl.utwente.groove.gui.jgraph.LTSJGraph;
-import nl.utwente.groove.gui.tree.LabelFilter;
+import nl.utwente.groove.gui.tree.LabelTree.LabelledCells;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.GrooveFileChooser;
 import nl.utwente.groove.io.HTMLConverter;
@@ -491,13 +490,13 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
          * @param entry the label on which this action should test
          */
         protected LabelAction(JGraph<G> jgraph, int showMode,
-                              Map.Entry<LabelFilter.Entry,Set<JCell<G>>> entry) throws IllegalArgumentException {
+                              LabelledCells<G> entry) throws IllegalArgumentException {
             super(jgraph, showMode, "");
-            var key = entry.getKey();
+            var key = entry.label();
             putValue(NAME, key.toString().isEmpty()
                 ? Options.EMPTY_LABEL_TEXT
-                : HTMLConverter.HTML_TAG.on(key.getLine().toHTMLString()));
-            this.cells = entry.getValue();
+                : HTMLConverter.HTML_TAG.on(key.toLine().toHTMLString()));
+            this.cells = entry.cells();
         }
 
         /**
@@ -752,7 +751,7 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
             if (isIncluded) {
                 // now (re-)fill the menu
                 removeAll();
-                for (var entry : getJGraph().getLabelTree().getLabels().entrySet()) {
+                for (var entry : getJGraph().getLabelTree().getLabels()) {
                     add(new LabelAction<>(getJGraph(), this.showMode, entry));
                 }
             }

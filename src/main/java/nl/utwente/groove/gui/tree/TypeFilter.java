@@ -24,7 +24,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.type.TypeEdge;
@@ -34,6 +35,7 @@ import nl.utwente.groove.grammar.type.TypeKey;
 import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.gui.jgraph.JCell;
+import nl.utwente.groove.gui.tree.TypeFilter.TypeEntry;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.line.Line;
 
@@ -45,7 +47,8 @@ import nl.utwente.groove.util.line.Line;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class TypeFilter extends LabelFilter<@NonNull AspectGraph> {
+@NonNullByDefault
+class TypeFilter extends LabelFilter<AspectGraph,TypeEntry> {
     /**
      * Clears the entire filter, and resets it to label- or type-based.
      */
@@ -65,8 +68,8 @@ public class TypeFilter extends LabelFilter<@NonNull AspectGraph> {
     }
 
     @Override
-    protected Set<JCell<@NonNull AspectGraph>> setSelection(Entry entry, boolean selected) {
-        Set<JCell<@NonNull AspectGraph>> result = new HashSet<>();
+    protected Set<JCell<AspectGraph>> setSelection(LabelEntry entry, boolean selected) {
+        Set<JCell<AspectGraph>> result = new HashSet<>();
         var superResult = super.setSelection(entry, selected);
         TypeEntry te = (TypeEntry) entry;
         if (selected) {
@@ -115,39 +118,38 @@ public class TypeFilter extends LabelFilter<@NonNull AspectGraph> {
     }
 
     /** Updates the type graph on which this filter is based. */
-    void update(TypeGraph typeGraph) {
+    EntryMap update(TypeGraph typeGraph) {
+        var result = this.entryMap;
         if (this.stale) {
-            var entryMap = this.entryMap;
-            if (entryMap == null) {
-                this.entryMap = entryMap = new EntryMap(typeGraph);
-            } else if (typeGraph != entryMap.typeGraph()) {
+            if (result == null) {
+                this.entryMap = result = new EntryMap(typeGraph);
+            } else if (typeGraph != result.typeGraph()) {
                 // retrieve the selection status from the previous entry map
-                this.entryMap = entryMap = new EntryMap(typeGraph, entryMap.getSelected(false));
+                this.entryMap = result = new EntryMap(typeGraph, result.getSelected(false));
             }
-            entryMap.entryStream().forEach(this::registerEntry);
+            result.entryStream().forEach(this::registerEntry);
             this.stale = false;
         }
-        assert typeGraph == this.entryMap
-            .typeGraph() : "Type graph has silently changed from %s to %s"
-                .formatted(this.entryMap.typeGraph(), typeGraph);
+        assert result != null;
+        assert typeGraph == result.typeGraph() : "Type graph has silently changed from %s to %s"
+            .formatted(result.typeGraph(), typeGraph);
+        return result;
     }
 
     private EntryMap getEntryMap(TypeGraph typeGraph) {
-        update(typeGraph);
-        return this.entryMap;
+        return update(typeGraph);
     }
 
     /** Flag indicating that the {@link #entryMap} might have to be refreshed. */
     private boolean stale = true;
     /** Mapping from known node type labels to corresponding node type entries. */
-    private EntryMap entryMap;
+    private @Nullable EntryMap entryMap;
 
     /** Type graph-dependent map from type labels to filter entries.
      * @param typeGraph type graph on which this map is based
      * @param keyMap mapping from node type keys to entries
      */
     static private record EntryMap(TypeGraph typeGraph, Map<TypeKey,TypeEntry> keyMap) {
-
         /** Constructs a fresh map from a given type graph. */
         EntryMap(TypeGraph typeGraph) {
             this(typeGraph, new HashMap<>());
@@ -192,6 +194,7 @@ public class TypeFilter extends LabelFilter<@NonNull AspectGraph> {
 
         /** Constructs a fresh map from a given type graph,
          * taking a set of previously selected elements into account. */
+        @SuppressWarnings("null")
         EntryMap(TypeGraph typeGraph, Collection<TypeKey> unselected) {
             this(typeGraph);
             for (var key : unselected) {
@@ -213,31 +216,32 @@ public class TypeFilter extends LabelFilter<@NonNull AspectGraph> {
                 .values()
                 .stream()
                 .filter(e -> e.isSelected() == selected)
-                .map(TypeEntry::getType)
+                .map(TypeEntry::getContent)
                 .map(TypeElement::key)
                 .toList();
         }
     }
 
-    /** Filter entry wrapping a label. */
-    public static class TypeEntry implements Entry {
+    /** Filter entry wrapping a type element. */
+    public static class TypeEntry implements LabelEntry {
         /** Constructs a fresh label entry from a given label. */
         public TypeEntry(TypeElement type) {
-            this.type = type;
+            this.content = type;
             this.selected = true;
         }
 
         /** Returns the type element wrapped in this entry. */
-        public TypeElement getType() {
-            return this.type;
+        @Override
+        public TypeElement getContent() {
+            return this.content;
         }
 
         @Override
         public Line getLine() {
-            return this.type.toLine();
+            return this.content.toLine();
         }
 
-        private final TypeElement type;
+        private final TypeElement content;
 
         @Override
         public boolean isSelected() {
@@ -277,12 +281,12 @@ public class TypeFilter extends LabelFilter<@NonNull AspectGraph> {
 
         @Override
         public boolean isForNode() {
-            return getType() instanceof TypeNode;
+            return getContent() instanceof TypeNode;
         }
 
         @Override
         public boolean matches(Label label) {
-            return getType().label().equals(label);
+            return getContent().label().equals(label);
         }
 
         /** Returns the (subtype-closed) set of source and target (node) type entry. */
@@ -310,10 +314,10 @@ public class TypeFilter extends LabelFilter<@NonNull AspectGraph> {
         private final Set<TypeEntry> edges = new HashSet<>();
 
         @Override
-        public int compareTo(Entry o) {
+        public int compareTo(LabelEntry o) {
             TypeEntry other = (TypeEntry) o;
-            TypeElement type = getType();
-            TypeElement otherType = other.getType();
+            TypeElement type = getContent();
+            TypeElement otherType = other.getContent();
             if (type instanceof TypeNode) {
                 return type.compareTo(otherType);
             }
@@ -331,29 +335,29 @@ public class TypeFilter extends LabelFilter<@NonNull AspectGraph> {
 
         @Override
         public int hashCode() {
-            if (this.type instanceof TypeNode) {
-                return this.type.hashCode();
+            if (this.content instanceof TypeNode) {
+                return this.content.hashCode();
             } else {
-                TypeEdge edge = (TypeEdge) this.type;
+                TypeEdge edge = (TypeEdge) this.content;
                 return Objects.hash(edge.source().label(), edge.label(), edge.target().label());
             }
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (this == obj) {
                 return true;
             }
             if (!(obj instanceof TypeEntry other)) {
                 return false;
             }
-            if (!this.type.label().equals(other.type.label())) {
+            if (!this.content.label().equals(other.content.label())) {
                 return false;
             }
-            if (!(this.type instanceof TypeEdge edge)) {
-                return other.type instanceof TypeNode;
+            if (!(this.content instanceof TypeEdge edge)) {
+                return other.content instanceof TypeNode;
             }
-            if (!(other.type instanceof TypeEdge otherEdge)) {
+            if (!(other.content instanceof TypeEdge otherEdge)) {
                 return false;
             }
             if (!edge.source().label().equals(otherEdge.source().label())) {
@@ -367,7 +371,7 @@ public class TypeFilter extends LabelFilter<@NonNull AspectGraph> {
 
         @Override
         public String toString() {
-            return this.type.toString();
+            return this.content.toString();
         }
     }
 }

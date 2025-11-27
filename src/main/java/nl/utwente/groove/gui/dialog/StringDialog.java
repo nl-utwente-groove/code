@@ -302,25 +302,31 @@ abstract public class StringDialog {
      */
     private NamedEntry parseText(String name, String value) {
         NamedEntry result;
-        if (!name.isEmpty() || this.parsed) {
-            String error = null;
-            try {
+        String error;
+        try {
+            if (this.parsed) {
                 value = parse(value);
-                if (!name.isEmpty() && !isName(name)) {
-                    error = "Name '%s' should be an identifier".formatted(name);
-                    result = null;
-                } else {
-                    result = new NamedEntry(name, value);
-                }
-            } catch (FormatException e) {
-                error = e.getErrors().iterator().next().toString();
-                result = null;
             }
-            getErrorLabel().setText(error);
-        } else {
+            if (!name.isEmpty()) {
+                checkName(name);
+            }
+            error = null;
             result = new NamedEntry(name, value);
+        } catch (FormatException e) {
+            error = e.getErrors().iterator().next().toString();
+            result = null;
         }
+        getErrorLabel().setText(error);
         return result;
+    }
+
+    /** Checks if a given non-empty string can be used as a name.
+     * @throws FormatException if the string is not suitable as a name.
+     */
+    protected void checkName(String name) throws FormatException {
+        if (!isName(name)) {
+            throw new FormatException("Name '%s' should be an identifier", name);
+        }
     }
 
     /**

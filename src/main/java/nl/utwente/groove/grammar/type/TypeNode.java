@@ -40,7 +40,7 @@ import nl.utwente.groove.util.line.Line;
  * @version $Revision$
  */
 @NonNullByDefault
-public class TypeNode implements Node, TypeElement {
+final public class TypeNode implements Node, TypeElement {
     /**
      * Constructs a new type node, with a given number and label.
      * The label must be a node type.

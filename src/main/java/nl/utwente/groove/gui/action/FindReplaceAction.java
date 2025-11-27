@@ -119,7 +119,7 @@ public class FindReplaceAction extends SimulatorAction
         if (selection != null && selection.length > 0) {
             Object treeNode = selection[0].getLastPathComponent();
             if (treeNode instanceof TypeTreeNode en) {
-                this.oldLabel = en.getEntry().getType().label();
+                this.oldLabel = en.getEntry().getContent().label();
             }
         }
     }

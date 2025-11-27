@@ -1,5 +1,7 @@
 package nl.utwente.groove.gui.jgraph;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -8,6 +10,7 @@ import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.control.instance.Frame;
 import nl.utwente.groove.graph.Edge;
+import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.gui.look.Look;
 import nl.utwente.groove.gui.look.VisualKey;
@@ -15,6 +18,7 @@ import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.StartGraphState;
+import nl.utwente.groove.lts.StateProperty;
 
 /**
  * JVertex class that describes the underlying node as a graph state.
@@ -140,6 +144,13 @@ public class LTSJVertex extends AJVertex<@NonNull GTS,LTSJGraph,LTSJModel,LTSJEd
     }
 
     private LTSJEdge parentEdge;
+
+    @Override
+    protected Collection<? extends Label> getNodeKeys() {
+        var result = new ArrayList<Label>();
+        getNode().getSatisfiedProps().stream().map(StateProperty::label).forEach(result::add);
+        return result;
+    }
 
     @Override
     StringBuilder getNodeDescription() {

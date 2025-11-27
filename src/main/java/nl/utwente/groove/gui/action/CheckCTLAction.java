@@ -42,7 +42,6 @@ public class CheckCTLAction extends SimulatorAction {
             // completely re-explore if the GTS has open states
             if (gts.hasOpenStates() && this.full && getSimulatorModel().resetGTS()) {
                 getActions().getExploreAction().explore(getGrammarModel().getDefaultExploreType());
-                gts = getSimulatorModel().getGTS();
                 doCheck = !gts.hasOpenStates();
             }
             if (doCheck) {
@@ -67,6 +66,15 @@ public class CheckCTLAction extends SimulatorAction {
                         var formula = Formula.parse(Logic.CTL, text);
                         formula.check(getSimulatorModel().getGTS());
                         return text;
+                    }
+
+                    @Override
+                    protected void checkName(String name) throws FormatException {
+                        super.checkName(name);
+                        if (getSimulatorModel().getGTS().hasStateProperty(name)) {
+                            throw new FormatException("Property name '%s' has already been used",
+                                name);
+                        }
                     }
                 };
         }

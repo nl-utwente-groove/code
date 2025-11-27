@@ -507,14 +507,14 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      * @see #hasStateProperty
      */
     public void addStateProperty(String name, Predicate<GraphState> prop) {
-        addStateProperty(new StateProperty(name, prop));
+        addStateProperty(new UserStateProperty(name, prop));
     }
 
     /** Adds a named state properties to this LTS.
      * @throws IllegalArgumentException if a state properties with this name already exists.
      * @see #hasStateProperty
      */
-    public void addStateProperty(StateProperty pred) {
+    public void addStateProperty(UserStateProperty pred) {
         var name = pred.name();
         if (hasStateProperty(name)) {
             throw Exceptions.illegalArg("Predicate '%s' already exists", name);
@@ -528,18 +528,13 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     }
 
     /** Returns the set of state property names satisfied by a given state. */
-    public Set<String> getSatisfiedProps(GraphState state) {
-        Set<String> result = new LinkedHashSet<>();
-        this.stateProperties
-            .entrySet()
-            .stream()
-            .filter(e -> e.getValue().test(state))
-            .map(Map.Entry::getKey)
-            .forEach(result::add);
+    public Set<StateProperty> getSatisfiedProps(GraphState state) {
+        Set<StateProperty> result = new LinkedHashSet<>();
+        this.stateProperties.values().stream().filter(p -> p.test(state)).forEach(result::add);
         return result;
     }
 
-    private final Map<String,StateProperty> stateProperties = new TreeMap<>();
+    private final Map<String,UserStateProperty> stateProperties = new TreeMap<>();
 
     /**
      * Returns the (fixed) derivation record for this GTS.
