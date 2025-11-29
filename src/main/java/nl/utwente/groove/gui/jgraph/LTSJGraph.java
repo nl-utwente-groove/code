@@ -24,6 +24,7 @@ import static nl.utwente.groove.gui.Options.SHOW_INVARIANTS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_RECIPE_STEPS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_STATE_STATUS_OPTION;
+import static nl.utwente.groove.gui.Options.SHOW_SYSTEM_STATE_PROPERTIES_OPTION;
 import static nl.utwente.groove.gui.jgraph.JGraphMode.SELECT_MODE;
 
 import java.awt.Point;
@@ -88,6 +89,7 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements Serializable {
         addOptionListener(SHOW_STATE_STATUS_OPTION);
         addOptionListener(SHOW_CALL_NESTING_OPTION);
         addOptionListener(SHOW_CONTROL_STATE_OPTION);
+        addOptionListener(SHOW_SYSTEM_STATE_PROPERTIES_OPTION);
         addOptionListener(SHOW_INVARIANTS_OPTION);
         addOptionListener(SHOW_ABSENT_STATES_OPTION);
         addOptionListener(SHOW_RECIPE_STEPS_OPTION);
@@ -96,31 +98,33 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements Serializable {
 
     @Override
     protected RefreshListener getRefreshListener(String option) {
-        RefreshListener result = null;
-        if (SHOW_RECIPE_STEPS_OPTION.equals(option)) {
-            result = new RefreshListener() {
-                @Override
-                protected void doRefresh() {
-                    GTS gts = getGraph();
-                    if (gts != null && (gts.hasTransientStates() || gts.hasInternalSteps())) {
-                        reloadJModel();
-                    }
+        return switch (option) {
+        case SHOW_RECIPE_STEPS_OPTION -> new RefreshListener() {
+            @Override
+            protected void doRefresh() {
+                GTS gts = getGraph();
+                if (gts != null && (gts.hasTransientStates() || gts.hasInternalSteps())) {
+                    reloadJModel();
                 }
-            };
-        } else if (SHOW_ABSENT_STATES_OPTION.equals(option)) {
-            result = new RefreshListener() {
-                @Override
-                protected void doRefresh() {
-                    GTS gts = getGraph();
-                    if (gts != null && gts.hasAbsentStates()) {
-                        reloadJModel();
-                    }
+            }
+        };
+        case SHOW_ABSENT_STATES_OPTION -> new RefreshListener() {
+            @Override
+            protected void doRefresh() {
+                GTS gts = getGraph();
+                if (gts != null && gts.hasAbsentStates()) {
+                    reloadJModel();
                 }
-            };
-        } else {
-            result = super.getRefreshListener(option);
-        }
-        return result;
+            }
+        };
+        case SHOW_SYSTEM_STATE_PROPERTIES_OPTION -> new RefreshListener() {
+            @Override
+            protected void doRefresh() {
+                reloadJModel();
+            }
+        };
+        default -> super.getRefreshListener(option);
+        };
     }
 
     /** Reloads the graph in the {@link JModel}, after
@@ -180,6 +184,11 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements Serializable {
     /** Indicates if control state info should be shown on states. */
     public boolean isShowControlStates() {
         return getOptionValue(Options.SHOW_CONTROL_STATE_OPTION);
+    }
+
+    /** Indicates if system properties should be shown on states. */
+    public boolean isShowSystemProperties() {
+        return getOptionValue(Options.SHOW_SYSTEM_STATE_PROPERTIES_OPTION);
     }
 
     /** Indicates if invariants should be shown on states. */

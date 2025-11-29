@@ -18,6 +18,7 @@ package nl.utwente.groove.gui.tree;
 
 import static nl.utwente.groove.io.HTMLConverter.HTML_LINEBREAK;
 import static nl.utwente.groove.io.HTMLConverter.HTML_TAG;
+import static nl.utwente.groove.io.HTMLConverter.NBSP;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -26,11 +27,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -60,6 +59,8 @@ import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.jgraph.JModel;
 import nl.utwente.groove.gui.menu.ShowHideMenu;
 import nl.utwente.groove.io.HTMLConverter;
+import nl.utwente.groove.io.Util;
+import nl.utwente.groove.util.Strings;
 
 /**
  * Scroll pane showing the list of labels currently appearing in the graph
@@ -284,17 +285,7 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
     /** Updates the tree from the labels in the filter,
      * and returns the set of visible top node.
      */
-    Collection<? extends TreeNode> fillTree() {
-        List<TreeNode> result = new ArrayList<>();
-        Set<LabelEntry> entries = new TreeSet<>(getFilter().getEntries());
-        for (LabelEntry entry : entries) {
-            if (getFilter().hasJCells(entry)) {
-                LabelTreeNode labelNode = new LabelTreeNode(this, entry, true);
-                getTopNode().add(labelNode);
-            }
-        }
-        return result;
-    }
+    abstract Collection<? extends TreeNode> fillTree();
 
     /**
      * Updates the label list according to the change event.
@@ -433,7 +424,13 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
                                      boolean leaf, int row, boolean hasFocus) {
         if (value instanceof LabelTreeNode labelNode) {
             LabelEntry entry = labelNode.getEntry();
-            return HTML_TAG.on(getText(entry)).toString();
+            var entryText = getText(entry);
+            if (COUNT_ON_LABEL) {
+                var countText
+                    = NBSP + NBSP + NBSP + "[" + getFilter().getCount(entry) + Util.TIMES + "]";
+                entryText.append(COUNT_COLOUR_TAG.on(countText));
+            }
+            return HTML_TAG.on(entryText).toString();
         } else {
             return super.convertValueToText(value, selected, expanded, leaf, row, hasFocus);
         }
@@ -458,9 +455,6 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
         }
         if (specialLabelColour) {
             HTMLConverter.createColorTag(SPECIAL_COLOR).on(result);
-        }
-        if (!entry.isSelected()) {
-            HTMLConverter.STRIKETHROUGH_TAG.on(result);
         }
         return result;
     }
@@ -641,63 +635,79 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
             // set a sub- or supertype icon if the node label is a subnode
             Icon labelIcon = null;
             if (getTreeNode() instanceof LabelTreeNode entryNode) {
-                LabelEntry entry = entryNode.getEntry();
-                labelIcon = entryNode.getIcon();
-                // set tool tip text
-                StringBuilder toolTipText = new StringBuilder();
-                int count = getFilter().getCount(entry);
-                toolTipText.append(count);
-                toolTipText.append(" occurrence");
-                if (count != 1) {
-                    toolTipText.append("s");
-                }
-                if (isFiltering()) {
-                    if (toolTipText.length() != 0) {
-                        toolTipText.append(HTML_LINEBREAK);
-                    }
-                    var labelType = entry.isForNode()
-                        ? "node type"
-                        : "edge label";
-                    if (entry.isSelected()) {
-                        if (entry.isPassive()) {
-                            toolTipText.append("Passively included ");
-                            toolTipText.append(labelType);
-                            toolTipText.append(HTML_LINEBREAK);
-                            toolTipText.append("Excluded if ");
-                            toolTipText
-                                .append(entry.isForNode()
-                                    ? "supertype"
-                                    : "source or target node");
-                            toolTipText.append(" is excluded");
-                            toolTipText.append(HTML_LINEBREAK);
-                            toolTipText.append("Select to actively include");
-                        } else {
-                            toolTipText.append("Actively included ");
-                            toolTipText.append(labelType);
-                            toolTipText.append(HTML_LINEBREAK);
-                            toolTipText.append("Unselect to exclude");
-                        }
-                    } else {
-                        if (entry.isPassive()) {
-                            toolTipText.append("Passively excluded ");
-                            toolTipText.append(labelType);
-                            toolTipText.append(HTML_LINEBREAK);
-                            toolTipText.append("Included if incident edge is actively included");
-                            toolTipText.append(HTML_LINEBREAK);
-                            toolTipText.append("Unselect to actively exclude");
-                        } else {
-                            toolTipText.append("Actively excluded ");
-                            toolTipText.append(labelType);
-                            toolTipText.append(HTML_LINEBREAK);
-                            toolTipText.append("Select to include");
-                        }
-                    }
-                }
+                var entry = entryNode.getEntry();
+                var toolTipText = createToolTipText(entry);
                 if (toolTipText.length() != 0) {
                     result.setToolTipText(HTMLConverter.HTML_TAG.on(toolTipText).toString());
                 }
+                labelIcon = entryNode.getIcon();
             }
             getInner().setIcon(labelIcon);
+            return result;
+        }
+
+        private StringBuilder createToolTipText(LabelEntry entry) {
+            var result = new StringBuilder();
+            // set tool tip text
+            var occurrenceText = new StringBuilder();
+            if (!COUNT_ON_LABEL) {
+                int count = getFilter().getCount(entry);
+                occurrenceText.append(count);
+                occurrenceText.append(" occurrence");
+                if (count != 1) {
+                    occurrenceText.append("s");
+                }
+            }
+            var labelType = Strings.toUpper(entry.getToolTipDescription());
+            if (isFiltering()) {
+                if (entry.isSelected()) {
+                    if (entry.isPassive()) {
+                        result.append(labelType);
+                        result.append(HTML_LINEBREAK);
+                        result.append("Excluded from view if ");
+                        result
+                            .append(entry.isForNode()
+                                ? "supertype"
+                                : "source or target node");
+                        result.append(" is excluded");
+                        result.append(HTML_LINEBREAK);
+                        result.append(occurrenceText);
+                        result.append(HTML_LINEBREAK);
+                        result.append("Select to actively include in view");
+                    } else {
+                        result.append(labelType);
+                        if (!COUNT_ON_LABEL) {
+                            result.append(HTML_LINEBREAK);
+                            result.append(occurrenceText);
+                        }
+                        result.append(HTML_LINEBREAK);
+                        result.append("Actively included in view; unselect to exclude");
+                    }
+                } else {
+                    if (entry.isPassive()) {
+                        result.append(labelType);
+                        result.append(HTML_LINEBREAK);
+                        result.append("Included in view if incident edge is actively included");
+                        if (!COUNT_ON_LABEL) {
+                            result.append(HTML_LINEBREAK);
+                            result.append(occurrenceText);
+                        }
+                        result.append(HTML_LINEBREAK);
+                        result.append("Unselect to actively exclude");
+                    } else {
+                        result.append(labelType);
+                        if (!COUNT_ON_LABEL) {
+                            result.append(HTML_LINEBREAK);
+                            result.append(occurrenceText);
+                        }
+                        result.append(HTML_LINEBREAK);
+                        result.append("Actively excluded from view; select to include");
+                    }
+                }
+            } else {
+                result.append(Strings.toUpper(labelType));
+                result.append(occurrenceText);
+            }
             return result;
         }
     }
@@ -706,4 +716,11 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
     public record LabelledCells<G extends Graph>(Label label, Set<JCell<G>> cells) {
         // empty
     }
+
+    /** Flag determining whether the occurrence count of entries is shown as part of the label
+     * or in the tool tip text.
+     */
+    static private final boolean COUNT_ON_LABEL = true;
+    static private final HTMLConverter.HTMLTag COUNT_COLOUR_TAG
+        = HTMLConverter.createColorTag(Color.GRAY);
 }

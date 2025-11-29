@@ -30,6 +30,7 @@ import nl.utwente.groove.lts.GTSFragment;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.lts.StateProperty;
+import nl.utwente.groove.lts.UserStateProperty;
 
 /**
  * A set of graph states that constitute the result of the execution of some
@@ -41,14 +42,17 @@ public class ExploreResult {
      * Creates a fresh, empty result for a given (non-{@code null}) GTS.
      */
     public ExploreResult(GTS gts) {
-        this(null, gts);
+        this(null, null, gts);
     }
 
     /**
      * Creates a fresh, empty named result for a given (non-{@code null}) GTS.
+     * @param description HTML-formatted user-oriented description of the property checked by this result
      */
-    public ExploreResult(@Nullable String name, GTS gts) {
+    public ExploreResult(@Nullable String name, @Nullable String description, GTS gts) {
+        assert (name == null) == (description == null);
         this.name = name;
+        this.description = description;
         this.gts = gts;
     }
 
@@ -65,6 +69,13 @@ public class ExploreResult {
     }
 
     private final @Nullable String name;
+
+    /** Returns the name of this result. */
+    public @Nullable String getDescription() {
+        return this.description;
+    }
+
+    private final @Nullable String description;
 
     /**
      * Adds a state to the result.
@@ -147,8 +158,12 @@ public class ExploreResult {
      */
     public void push() {
         var name = getName();
+        var descr = getDescription();
         if (name != null && !name.isEmpty()) {
-            getGTS().addStateProperty(name, state -> getStates().contains(state));
+            assert descr != null;
+            getGTS()
+                .addStateProperty(new UserStateProperty(name, descr,
+                    state -> getStates().contains(state)));
         }
     }
 

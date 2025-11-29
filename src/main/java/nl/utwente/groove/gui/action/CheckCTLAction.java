@@ -1,7 +1,5 @@
 package nl.utwente.groove.gui.action;
 
-import static nl.utwente.groove.gui.Options.VERIFY_ALL_STATES_OPTION;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -97,24 +95,13 @@ public class CheckCTLAction extends SimulatorAction {
         if (witnesscCount == 0) {
             message = String.format("The property '%s' does not hold anywhere", property);
         } else {
-            boolean allStates
-                = confirmBehaviour(VERIFY_ALL_STATES_OPTION,
-                                   "Verify all states? Choosing 'No' will report only on the start state.");
-            if (allStates) {
-                modelChecker.stateStream().map(n -> (GraphState) n).forEach(witnesses::add);
-                message = String
-                    .format("The property '%s' holds in the %d highlighted states", property,
-                            witnesscCount);
-            } else if (modelChecker.hasValue()) {
-                witnesses.add(result.getGTS().startState());
-                message = String.format("The property '%s' holds in the initial state", property);
-            } else {
-                message = String
-                    .format("The property '%s' fails to hold in the initial state", property);
-            }
+            modelChecker.stateStream().map(n -> (GraphState) n).forEach(witnesses::add);
+            message = String
+                .format("The property '%s' holds in the %d highlighted states", property,
+                        witnesscCount);
         }
         // Create a fresh result to be independent on whatever result states were there
-        result = new ExploreResult(name, result.getGTS());
+        result = new ExploreResult(name, property, result.getGTS());
         witnesses.forEach(result::addState);
         result.push();
         getSimulatorModel().setExploreResult(result);

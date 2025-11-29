@@ -17,6 +17,7 @@
 package nl.utwente.groove.verify;
 
 import static nl.utwente.groove.explore.Verbosity.LOW;
+import static nl.utwente.groove.lts.StateProperty.isStateProperty;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -474,7 +475,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
             this.gts
                 .getSatisfiedProps(state)
                 .stream()
-                .map(StateProperty::name)
+                .map(StateProperty::getName)
                 .map(Proposition::derived)
                 .forEach(result::add);
             return result;
@@ -551,7 +552,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
             return () -> this.graph
                 .outEdgeSet(node)
                 .stream()
-                .filter(e -> !isDerived(e.label().text()))
+                .filter(e -> !isStateProperty(e.label()))
                 .iterator();
         }
 
@@ -577,11 +578,6 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
             return FormulaParser.instance().parse(label).getProp();
         }
 
-        /** Checks whether a given label is a flag according to {@link #ltsLabels}. */
-        private boolean isDerived(String label) {
-            return this.ltsLabels.getDerived().contains(label);
-        }
-
         /**
          * Returns the flag corresponding to a given label, if any.
          */
@@ -597,6 +593,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
                 .stream()
                 .map(Edge::label)
                 .map(Label::text)
+                .filter(StateProperty::isStateProperty)
                 .map(Proposition::derived)
                 .forEach(result::add);
             return result;

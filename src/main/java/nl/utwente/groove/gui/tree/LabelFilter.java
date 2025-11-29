@@ -354,5 +354,11 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
             }
             return result;
         }
+
+        @Override
+        public String toString() {
+            return "Entry: " + this.entry + "; count: " + this.count.value() + "; cells: "
+                + this.jCells;
+        }
     }
 }

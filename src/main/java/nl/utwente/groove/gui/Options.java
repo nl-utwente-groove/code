@@ -96,11 +96,11 @@ public class Options implements Cloneable {
         addCheckbox(SHOW_STATE_STATUS_OPTION);
         addCheckbox(SHOW_CONTROL_STATE_OPTION);
         addCheckbox(SHOW_CALL_NESTING_OPTION);
+        addCheckbox(SHOW_SYSTEM_STATE_PROPERTIES_OPTION);
         addCheckbox(SHOW_INVARIANTS_OPTION);
         addCheckbox(SHOW_ARROWS_ON_LABELS_OPTION);
         addCheckbox(SHOW_BIDIRECTIONAL_EDGES_OPTION);
         addBehaviour(DELETE_RESOURCE_OPTION, 2);
-        addBehaviour(VERIFY_ALL_STATES_OPTION, 3);
     }
 
     /**
@@ -894,6 +894,9 @@ public class Options implements Cloneable {
     // LTS show options
     /** Show control state option */
     static public final String SHOW_CONTROL_STATE_OPTION = "Show control information";
+    /** Show system state properties option */
+    static public final String SHOW_SYSTEM_STATE_PROPERTIES_OPTION
+        = "Show system properties on the states";
     /** Show invariants option */
     static public final String SHOW_INVARIANTS_OPTION = "Show invariants on the states";
     /** Show absent states option */
@@ -906,9 +909,6 @@ public class Options implements Cloneable {
     static public final String SHOW_ARROWS_ON_LABELS_OPTION = "Show arrows on labels";
     /** Always delete resources without confirmation. */
     static public final String DELETE_RESOURCE_OPTION = "Delete seletected resource?";
-    /** Always check CTL properties on all states, rather than the initial state. */
-    static public final String VERIFY_ALL_STATES_OPTION = "Check CTL on all states?";
-
     /** Default value map for the boolean options. */
     static private final Map<String,Boolean> boolOptionDefaults = new HashMap<>();
     /** Default value map for the behaviour options. */
@@ -925,6 +925,7 @@ public class Options implements Cloneable {
         boolOptionDefaults.put(SHOW_STATE_STATUS_OPTION, true);
         boolOptionDefaults.put(SHOW_CALL_NESTING_OPTION, false);
         boolOptionDefaults.put(SHOW_CONTROL_STATE_OPTION, true);
+        boolOptionDefaults.put(SHOW_SYSTEM_STATE_PROPERTIES_OPTION, false);
         boolOptionDefaults.put(SHOW_INVARIANTS_OPTION, true);
         boolOptionDefaults.put(SHOW_RECIPE_STEPS_OPTION, true);
         boolOptionDefaults.put(SHOW_ABSENT_STATES_OPTION, true);
@@ -933,7 +934,6 @@ public class Options implements Cloneable {
         boolOptionDefaults.put(SHOW_ARROWS_ON_LABELS_OPTION, false);
         boolOptionDefaults.put(SHOW_BIDIRECTIONAL_EDGES_OPTION, true);
         intOptionDefaults.put(DELETE_RESOURCE_OPTION, BehaviourOption.ASK);
-        intOptionDefaults.put(VERIFY_ALL_STATES_OPTION, BehaviourOption.NEVER);
     }
 
     /** Name of the font sub-package of the GROOVE resource package. */

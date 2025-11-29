@@ -35,6 +35,7 @@ import java.util.Map;
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.annotation.Help;
 import nl.utwente.groove.grammar.QualName;
+import nl.utwente.groove.lts.StateProperty;
 import nl.utwente.groove.util.parse.ATermTreeParser;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.IdValidator;
@@ -66,9 +67,8 @@ public class FormulaParser extends ATermTreeParser<LogicOp,Formula> {
         List<LogicOp> prefixOps = findPrefixOps(firstToken.substring());
         if (prefixOps == null) {
             QualName id = parseId();
-            if (id.get(0).startsWith(FLAG_PREFIX)) {
-                var flagText = id.toString().substring(FLAG_PREFIX.length());
-                result = Formula.derived(flagText);
+            if (StateProperty.isStateProperty(id.get(0))) {
+                result = Formula.derived(id.toString());
             } else if (consume(LPAR) == null) {
                 // it's an (unquoted) identifier: create an atomic proposition
                 result = Formula.call(id);
@@ -149,9 +149,6 @@ public class FormulaParser extends ATermTreeParser<LogicOp,Formula> {
         }
         return result;
     }
-
-    /** Prefix for the label of a special flag proposition. */
-    static public final String FLAG_PREFIX = "$";
 
     /**
      * Returns a mapping from syntax documentation lines to associated (possibly {@code null}) tooltips.

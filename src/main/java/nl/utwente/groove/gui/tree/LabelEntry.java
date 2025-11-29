@@ -48,6 +48,9 @@ public interface LabelEntry extends Comparable<LabelEntry> {
     /** Signals that this is a filter entry for nodes. */
     public boolean isForNode();
 
+    /** lowercase description of the kind of entry. */
+    public String getToolTipDescription();
+
     /** Indicates if a given label corresponds to the one wrapped in this {@link LabelEntry}. */
     public boolean matches(Label label);
 }

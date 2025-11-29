@@ -47,7 +47,7 @@ public enum LogicOp implements Op {
     @ToolTipHeader("Derived proposition")
     @ToolTipBody({"Holds for states that satisfy the property encoded by %2$s.",
             "This can be a special system property (e.g., <i>start</i> or <i>final</i>)",
-            "or a property established through previous analysis."})
+            "or a user property established through previous analysis."})
     DERIVED_PROP("", OpKind.ATOM),
 
     /** True. */

@@ -16,12 +16,17 @@
  */
 package nl.utwente.groove.gui.tree;
 
+import java.util.function.Supplier;
+
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
+import nl.utwente.groove.lts.RuleTransitionLabel;
 import nl.utwente.groove.lts.StateProperty;
+import nl.utwente.groove.lts.StatePropertyLabel;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.line.Line;
 
 /**
@@ -30,19 +35,27 @@ import nl.utwente.groove.util.line.Line;
  */
 public class LTSEntry implements LabelEntry {
     /** Constructs an initially selected fresh label entry from a given label. */
-    protected LTSEntry(Label label) {
+    protected LTSEntry(Label label, Supplier<Boolean> showSystemProperties) {
         this.content = label;
         this.line = label.toLine();
         this.role = label.getRole();
         this.selected = true;
+        Supplier<Boolean> showEntry = null;
         if (this.role == EdgeRole.BINARY) {
             this.type = Type.TRANSITION_LABEL;
-        } else if (StateProperty.isProperty(label.text())) {
+        } else if (StateProperty.isStateProperty(label)) {
             this.type = Type.STATE_PROPERTY;
+            if (StateProperty.isSystemStateProperty(label)) {
+                showEntry = showSystemProperties;
+            }
         } else {
             this.type = Type.GRAPH_CONDITION;
         }
+        this.showEntry = showEntry;
+        refreshSelection();
     }
+
+    private final @Nullable Supplier<Boolean> showEntry;
 
     @Override
     public @NonNull Label getContent() {
@@ -66,7 +79,7 @@ public class LTSEntry implements LabelEntry {
 
     private final EdgeRole role;
 
-    /** Returns the type of entry. */
+    /** Returns the entry type. */
     Type getType() {
         return this.type;
     }
@@ -88,6 +101,27 @@ public class LTSEntry implements LabelEntry {
     /** Flag indicating if this entry is currently selected. */
     private boolean selected;
 
+    /** Refreshes the selection state. */
+    void refreshSelection() {
+        var showEntry = this.showEntry;
+        if (showEntry != null) {
+            setSelected(showEntry.get());
+        }
+    }
+
+    @Override
+    public String getToolTipDescription() {
+        return switch (this.content) {
+        case RuleTransitionLabel l -> l.hasRole(EdgeRole.BINARY)
+            ? "transition label"
+            : "graph condition";
+        case StatePropertyLabel l -> (l.prop().isSystem()
+            ? "system-defined"
+            : "user-defined") + " state property: " + l.getDescription();
+        default -> throw Exceptions.UNREACHABLE;
+        };
+    }
+
     @Override
     public boolean matches(Label label) {
         return label.getRole() == this.role && label.text().equals(toString());
@@ -95,7 +129,7 @@ public class LTSEntry implements LabelEntry {
 
     @Override
     public int hashCode() {
-        return getContent().hashCode();
+        return getContent().toString().hashCode();
     }
 
     @Override
@@ -103,13 +137,10 @@ public class LTSEntry implements LabelEntry {
         if (this == obj) {
             return true;
         }
-        if (obj == null) {
-            return false;
-        }
         if (!(obj instanceof LTSEntry other)) {
             return false;
         }
-        return getContent().equals(other.getContent());
+        return getContent().toString().equals(other.getContent().toString());
     }
 
     @Override
@@ -125,8 +156,8 @@ public class LTSEntry implements LabelEntry {
             var thisText = toString();
             var otherText = other.toString();
             // state properties come before other properties
-            boolean thisProperty = StateProperty.isProperty(thisText);
-            boolean otherProperty = StateProperty.isProperty(otherText);
+            boolean thisProperty = StateProperty.isStateProperty(thisText);
+            boolean otherProperty = StateProperty.isStateProperty(otherText);
             if (thisProperty != otherProperty) {
                 result = thisProperty
                     ? -1

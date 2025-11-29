@@ -152,6 +152,9 @@ public class TypeTree extends LabelTree<AspectGraph> {
                 HTMLConverter.createColorTag(color).on(targetString);
             }
         }
+        if (!entry.isSelected()) {
+            HTMLConverter.STRIKETHROUGH_TAG.on(result);
+        }
         return result;
     }
 

@@ -148,7 +148,7 @@ public class LTSJVertex extends AJVertex<@NonNull GTS,LTSJGraph,LTSJModel,LTSJEd
     @Override
     protected Collection<? extends Label> getNodeKeys() {
         var result = new ArrayList<Label>();
-        getNode().getSatisfiedProps().stream().map(StateProperty::label).forEach(result::add);
+        getNode().getSatisfiedProps().stream().map(StateProperty::getLabel).forEach(result::add);
         return result;
     }
 

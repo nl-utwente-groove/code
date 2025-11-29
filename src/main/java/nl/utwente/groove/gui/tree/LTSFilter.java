@@ -23,6 +23,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.graph.Label;
+import nl.utwente.groove.gui.jgraph.LTSJGraph;
 import nl.utwente.groove.lts.GTS;
 
 /**
@@ -31,12 +32,18 @@ import nl.utwente.groove.lts.GTS;
  */
 @NonNullByDefault
 class LTSFilter extends LabelFilter<GTS,LTSEntry> {
+    LTSFilter(LTSJGraph jGraph) {
+        this.jGraph = jGraph;
+    }
+
+    private final LTSJGraph jGraph;
+
     /** Lazily creates and returns a filter entry based on a given label key. */
     @Override
     protected LTSEntry getEntry(Label key) {
         LTSEntry result = this.labelEntryMap.get(key);
         if (result == null) {
-            result = new LTSEntry(key);
+            result = new LTSEntry(key, () -> this.jGraph.isShowSystemProperties());
             // normalise the new entry
             var normal = this.normalMap.get(result);
             if (normal != null) {

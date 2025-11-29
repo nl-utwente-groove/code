@@ -30,9 +30,9 @@ import static nl.utwente.groove.gui.Options.SHOW_INVARIANTS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_RECIPE_STEPS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_STATE_STATUS_OPTION;
+import static nl.utwente.groove.gui.Options.SHOW_SYSTEM_STATE_PROPERTIES_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_USER_NODE_IDS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_VALUE_NODES_OPTION;
-import static nl.utwente.groove.gui.Options.VERIFY_ALL_STATES_OPTION;
 import static nl.utwente.groove.io.FileType.GRAMMAR;
 
 import java.awt.Component;
@@ -700,6 +700,7 @@ public class Simulator implements SimulatorListener {
             result.add(getOptions().getItem(SHOW_STATE_STATUS_OPTION));
             result.add(getOptions().getItem(SHOW_CALL_NESTING_OPTION));
             result.add(getOptions().getItem(SHOW_CONTROL_STATE_OPTION));
+            result.add(getOptions().getItem(SHOW_SYSTEM_STATE_PROPERTIES_OPTION));
             result.add(getOptions().getItem(SHOW_INVARIANTS_OPTION));
             result.add(getOptions().getItem(SHOW_RECIPE_STEPS_OPTION));
             result.add(getOptions().getItem(SHOW_ABSENT_STATES_OPTION));
@@ -710,7 +711,6 @@ public class Simulator implements SimulatorListener {
         }
         result.addSeparator();
         result.add(getOptions().getItem(DELETE_RESOURCE_OPTION));
-        result.add(getOptions().getItem(VERIFY_ALL_STATES_OPTION));
         return result;
     }
 

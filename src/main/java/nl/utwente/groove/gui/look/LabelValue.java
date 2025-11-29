@@ -434,6 +434,17 @@ public class LabelValue implements VisualValue<MultiLabel> {
             }
         }
         MultiLabel transLabels = new MultiLabel();
+        // add state properties
+        var labelTree = jGraph.getLabelTree();
+        var gts = jGraph.getGraph();
+        assert gts != null;
+        gts
+            .getSatisfiedProps(state)
+            .stream()
+            .map(StateProperty::getLabel)
+            .filter(labelTree::isIncluded)
+            .map(Label::toLine)
+            .forEach(transLabels::add);
         // only add edges that have an unfiltered label
         boolean isShowAnchors = jGraph.isShowAnchors();
         boolean isShowInvariants = jGraph.isShowInvariants();
@@ -458,16 +469,6 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 transLabels.add(line);
             }
         }
-        var labelTree = jGraph.getLabelTree();
-        var gts = jGraph.getGraph();
-        assert gts != null;
-        gts
-            .getSatisfiedProps(state)
-            .stream()
-            .map(StateProperty::label)
-            .filter(labelTree::isIncluded)
-            .map(Label::toLine)
-            .forEach(transLabels::add);
         if (!jVertex.isAllOutVisible()) {
             transLabels.add(RESIDUAL_LINE);
         }

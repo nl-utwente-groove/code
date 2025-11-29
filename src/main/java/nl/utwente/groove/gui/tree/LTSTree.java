@@ -56,10 +56,15 @@ public class LTSTree extends LabelTree<GTS> {
     }
 
     @Override
+    public LTSJGraph getJGraph() {
+        return (LTSJGraph) super.getJGraph();
+    }
+
+    @Override
     LTSFilter getFilter() {
         var result = this.filter;
         if (result == null) {
-            this.filter = result = new LTSFilter();
+            this.filter = result = new LTSFilter(getJGraph());
         }
         return result;
     }
@@ -78,6 +83,7 @@ public class LTSTree extends LabelTree<GTS> {
             typedEntries.put(entryType, new TreeSet<>());
         }
         for (var entry : getFilter().getEntries()) {
+            entry.refreshSelection();
             if (getFilter().hasJCells(entry)) {
                 headers |= entry.getType() != Type.GRAPH_CONDITION;
                 typedEntries.get(entry.getType()).add(entry);
@@ -115,10 +121,7 @@ public class LTSTree extends LabelTree<GTS> {
     @Override
     public String convertValueToText(@Nullable Object value, boolean selected, boolean expanded,
                                      boolean leaf, int row, boolean hasFocus) {
-        if (value instanceof LabelTreeNode labelNode) {
-            LabelEntry entry = labelNode.getEntry();
-            return HTML_TAG.on(getText(entry)).toString();
-        } else if (value instanceof HeaderNode header) {
+        if (value instanceof HeaderNode header) {
             return HTML_TAG.on(STRONG_TAG.on(header.getText()));
         } else {
             return super.convertValueToText(value, selected, expanded, leaf, row, hasFocus);

@@ -55,10 +55,10 @@ import nl.utwente.groove.gui.display.DismissDelayer;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.io.HTMLConverter.HTMLTag;
+import nl.utwente.groove.lts.StateProperty;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.IdValidator;
-import nl.utwente.groove.verify.FormulaParser;
 
 /**
  * Dialog for entering strings, with a large textfield rather than a text area.
@@ -446,7 +446,7 @@ abstract public class StringDialog {
     static private final IdValidator ID_VALIDATOR = new IdValidator() {
         @Override
         public boolean isIdentifierStart(char c) {
-            return c != FormulaParser.FLAG_PREFIX.charAt(0) && super.isIdentifierStart(c);
+            return c != StateProperty.PREFIX.charAt(0) && super.isIdentifierStart(c);
         }
     };
 

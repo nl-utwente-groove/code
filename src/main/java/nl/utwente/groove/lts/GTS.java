@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.function.Predicate;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -502,14 +501,6 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         return this.stateProperties.get(name);
     }
 
-    /** Adds a named state predicate to this LTS.
-     * @throws IllegalArgumentException if a state predicate with this name already exists.
-     * @see #hasStateProperty
-     */
-    public void addStateProperty(String name, Predicate<GraphState> prop) {
-        addStateProperty(new UserStateProperty(name, prop));
-    }
-
     /** Adds a named state properties to this LTS.
      * @throws IllegalArgumentException if a state properties with this name already exists.
      * @see #hasStateProperty
@@ -534,7 +525,14 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         return result;
     }
 
-    private final Map<String,UserStateProperty> stateProperties = new TreeMap<>();
+    private final Map<String,StateProperty> stateProperties = new TreeMap<>();
+
+    // add the system state properties
+    {
+        for (var prop : SystemStateProperty.values()) {
+            this.stateProperties.put(prop.getName(), prop);
+        }
+    }
 
     /**
      * Returns the (fixed) derivation record for this GTS.

@@ -31,6 +31,7 @@ import nl.utwente.groove.explore.util.LTSLabels;
 import nl.utwente.groove.explore.util.LTSLabels.Flag;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.lts.GTS;
+import nl.utwente.groove.lts.StateProperty;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.parse.FormatErrorSet;
@@ -72,7 +73,7 @@ public abstract sealed class Proposition permits Literal, Derived, Call {
         return new FormatErrorSet();
     }
 
-    /** Returns an {@link Literal} or {@link Derived} consisting of a given label text.
+    /** Returns a {@link Literal} consisting of a given label text.
      */
     public static Proposition literal(String label) {
         return new Literal(label);
@@ -90,16 +91,25 @@ public abstract sealed class Proposition permits Literal, Derived, Call {
 
     /** Returns a {@link Derived} proposition for a given special flag. */
     public static Proposition derived(Flag flag) {
-        return derived(flag.getDefault());
+        return derived(StateProperty.PREFIX + flag.getDefault());
     }
 
-    /** Returns a {@link Derived} proposition for a given name. */
+    /** Returns a {@link Derived} proposition for a given name.
+     * The name must start with {@link StateProperty#PREFIX}
+     */
     public static Proposition derived(String name) {
         var result = derivedPropMap.get(name);
         if (result == null) {
             derivedPropMap.put(name, result = new Derived(name));
         }
         return result;
+    }
+
+    /** Tests if a given name stands for a derived proposition.
+     * @see StateProperty#isStateProperty(String)
+     */
+    public static boolean isDerived(String name) {
+        return StateProperty.isStateProperty(name);
     }
 
     /** Collection of previously generated derived properties. */
@@ -304,9 +314,14 @@ public abstract sealed class Proposition permits Literal, Derived, Call {
         }
     }
 
-    /** Derived proposition. */
+    /** Derived proposition.
+     * The name must satisfy the requirements of a state property.
+     */
     static public final class Derived extends Proposition {
         private Derived(String name) {
+            assert StateProperty
+                .isStateProperty(name) : "State property name '%s' does not start with $s"
+                    .formatted(name, StateProperty.PREFIX);
             this.name = name;
             this.flag = LTSLabels.flag(name);
         }

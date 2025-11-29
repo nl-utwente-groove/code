@@ -19,6 +19,7 @@ package nl.utwente.groove.lts;
 import java.util.function.Predicate;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.IdValidator;
@@ -31,15 +32,17 @@ import nl.utwente.groove.util.parse.IdValidator;
  * @version $Revision$
  */
 @NonNullByDefault
-public record UserStateProperty(String name, Predicate<GraphState> prop) implements StateProperty {
+public record UserStateProperty(String name, String description, Predicate<GraphState> prop)
+    implements StateProperty {
     /** Constructs a new property, with a given name and predicate.
      * The name should <i>not</i> include the {@link #PREFIX}
-     * @param name optional name of the property; either {@code null} or a non-empty identifier
+     * @param name name of the property: a non-empty identifier
      * not starting with {@link #PREFIX}
+     * @param description description of the property
      * @param prop the wrapped predicate
      * @throws IllegalArgumentException if the name is not well-formatted
      */
-    public UserStateProperty(String name, Predicate<GraphState> prop) {
+    public UserStateProperty(String name, String description, Predicate<GraphState> prop) {
         if (name.isEmpty()) {
             throw Exceptions.illegalArg("Property name '%s' should not be empty");
         } else if (name.startsWith(PREFIX)) {
@@ -49,11 +52,40 @@ public record UserStateProperty(String name, Predicate<GraphState> prop) impleme
             throw Exceptions.illegalArg("Property name '%s' should be an identifier");
         }
         this.name = PREFIX + name;
+        this.description = description;
         this.prop = prop;
+    }
+
+    @Override
+    public String getName() {
+        return this.name;
+    }
+
+    @Override
+    public String getDescription() {
+        return this.description;
     }
 
     @Override
     public boolean test(GraphState t) {
         return this.prop.test(t);
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if (!(obj instanceof UserStateProperty other)) {
+            return false;
+        }
+        return name().equals(other.name());
+    }
+
+    @Override
+    public int hashCode() {
+        return name().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return name();
     }
 }

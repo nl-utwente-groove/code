@@ -29,6 +29,7 @@ import java.util.Set;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.explore.Generator;
+import nl.utwente.groove.lts.StateProperty;
 import nl.utwente.groove.util.Pair;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.StringHandler;
@@ -79,7 +80,9 @@ public class LTSLabels {
         }
     }
 
-    /** Constructs a flag object with default values for selected flags. */
+    /** Constructs a flag object with default values for selected flags.
+     * Note that {@link StateProperty#PREFIX} is prepended to the strings in the map.
+     */
     public LTSLabels(Map<Flag,String> flags) {
         try {
             for (Flag flag : flags.keySet()) {
@@ -244,7 +247,11 @@ public class LTSLabels {
         return setValue(flag, flag.getDefault());
     }
 
+    /** Sets a value of a flag.
+     * Note that the actual value is prepended with {@link StateProperty#PREFIX}
+     */
     private boolean setValue(Flag flag, String value) throws FormatException {
+        value = StateProperty.PREFIX + value;
         Flag oldFlag = this.labelToFlagMap.put(value, flag);
         if (oldFlag != null) {
             throw new FormatException("Label '%s' used for two different special labels");
@@ -295,7 +302,7 @@ public class LTSLabels {
                 result.append(flag.getId());
                 if (!label.equals(flag.getDefault())) {
                     result.append(SINGLE_QUOTE);
-                    result.append(label);
+                    result.append(label.substring(StateProperty.PREFIX.length()));
                     result.append(SINGLE_QUOTE);
                 }
             }
@@ -374,7 +381,7 @@ public class LTSLabels {
             return this.descr;
         }
 
-        /** Returns the default value for this flag. */
+        /** Returns the default value for this flag (without preceding {@link StateProperty#PREFIX}). */
         public String getDefault() {
             return this.def;
         }

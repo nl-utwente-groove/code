@@ -24,6 +24,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -33,6 +34,7 @@ import nl.utwente.groove.grammar.type.TypeElement;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeKey;
 import nl.utwente.groove.grammar.type.TypeNode;
+import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.gui.jgraph.JCell;
 import nl.utwente.groove.gui.tree.TypeFilter.TypeEntry;
@@ -282,6 +284,16 @@ class TypeFilter extends LabelFilter<AspectGraph,TypeEntry> {
         @Override
         public boolean isForNode() {
             return getContent() instanceof TypeNode;
+        }
+
+        @Override
+        public @NonNull String getToolTipDescription() {
+            return switch (this.content) {
+            case TypeNode n -> "node type";
+            case TypeEdge e -> e.label().hasRole(EdgeRole.BINARY)
+                ? "edge label"
+                : "flag";
+            };
         }
 
         @Override
