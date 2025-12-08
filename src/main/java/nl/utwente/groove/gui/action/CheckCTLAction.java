@@ -10,7 +10,6 @@ import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.dialog.StringDialog;
 import nl.utwente.groove.gui.display.DisplayKind;
-import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.verify.CTLMarker;
@@ -36,11 +35,11 @@ public class CheckCTLAction extends SimulatorAction {
         var choice = getCtlFormulaDialog().showDialog(getFrame());
         if (choice != null) {
             boolean doCheck = true;
-            GTS gts = getSimulatorModel().getGTS();
             // completely re-explore if the GTS has open states
-            if (gts.hasOpenStates() && this.full && getSimulatorModel().resetGTS()) {
+            if (getSimulatorModel().getGTS().hasOpenStates() && this.full
+                && getSimulatorModel().resetGTS()) {
                 getActions().getExploreAction().explore(getGrammarModel().getDefaultExploreType());
-                doCheck = !gts.hasOpenStates();
+                doCheck = !getSimulatorModel().getGTS().hasOpenStates();
             }
             if (doCheck) {
                 try {
