@@ -11,6 +11,7 @@ import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.dialog.StringDialog;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.lts.GraphState;
+import nl.utwente.groove.lts.StateProperty;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.verify.CTLMarker;
 import nl.utwente.groove.verify.CTLModelChecker;
@@ -68,9 +69,11 @@ public class CheckCTLAction extends SimulatorAction {
                     @Override
                     protected void checkName(String name) throws FormatException {
                         super.checkName(name);
-                        if (getSimulatorModel().getGTS().hasStateProperty(name)) {
-                            throw new FormatException("Property name '%s' has already been used",
-                                name);
+                        if (getSimulatorModel()
+                            .getGTS()
+                            .hasStateProperty(StateProperty.PREFIX + name)) {
+                            throw new FormatException(
+                                "Property name '%s' already exists in this LTS", name);
                         }
                     }
                 };
