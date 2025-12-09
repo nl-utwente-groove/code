@@ -593,13 +593,17 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements Serializable {
     @Override
     Dimension2D computePreferredSize(JVertexView view) {
         Dimension2D result;
-        JVertex<?> vertex = view.getCell();
-        var label = vertex.getVisuals().getLabel();
-        var matrix = label.toBuilder(MatrixFormat.instance());
-        result = this.sizeMatrix.lookup(matrix.getWidth(), matrix.getHeight());
-        if (result == null) {
+        if (FAST_SIZE) {
+            JVertex<?> vertex = view.getCell();
+            var label = vertex.getVisuals().getLabel();
+            var matrix = label.toBuilder(MatrixFormat.instance());
+            result = this.sizeMatrix.lookup(matrix.getWidth(), matrix.getHeight());
+            if (result == null) {
+                result = super.computePreferredSize(view);
+                this.sizeMatrix.store(matrix.getWidth(), matrix.getHeight(), result);
+            }
+        } else {
             result = super.computePreferredSize(view);
-            this.sizeMatrix.store(matrix.getWidth(), matrix.getHeight(), result);
         }
         return result;
     }
@@ -682,4 +686,7 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements Serializable {
             return new LTSJModel((LTSJGraph) getJGraph());
         }
     }
+
+    /** Flag indicating if the label size computation should be fast and sloppy. */
+    static private final boolean FAST_SIZE = false;
 }

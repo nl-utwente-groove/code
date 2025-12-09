@@ -707,13 +707,17 @@ public class JEdgeView extends EdgeView {
                 // set the text in the label
                 var text = lines.toString(HTMLLineFormat.instance(), start, end);
                 this.jLabel.setText(HTMLLineFormat.toHtml(text, foreground));
-                // look up the size
-                var matrix = lines.toBuilder(MatrixFormat.instance(), start, end);
-                result = this.sizeMatrix.lookup(matrix.getWidth(), matrix.getHeight());
-                if (result == null) {
-                    // there was no lookup value; compute and store the size
+                if (FAST_SIZE) {
+                    // look up the size
+                    var matrix = lines.toBuilder(MatrixFormat.instance(), start, end);
+                    result = this.sizeMatrix.lookup(matrix.getWidth(), matrix.getHeight());
+                    if (result == null) {
+                        // there was no lookup value; compute and store the size
+                        result = this.jLabel.getPreferredSize();
+                        this.sizeMatrix.store(matrix.getWidth(), matrix.getHeight(), result);
+                    }
+                } else {
                     result = this.jLabel.getPreferredSize();
-                    this.sizeMatrix.store(matrix.getWidth(), matrix.getHeight(), result);
                 }
                 this.jLabelSize = result;
             }
@@ -784,4 +788,7 @@ public class JEdgeView extends EdgeView {
         /** Last computed preferred size of the jLabel component. */
         private Dimension jLabelSize;
     }
+
+    /** Flag indicating if the label size computation should be fast and sloppy. */
+    static private final boolean FAST_SIZE = false;
 }
