@@ -110,3 +110,10 @@ The development of GROOVE was assisted by the use of the [Yourkit Java Profiler]
 YourKit supports open source projects with innovative and intelligent tools 
 for monitoring and profiling Java and .NET applications.
 
+
+The **visualizations inside GROOVE** are built with **yFiles for Java (Swing)**
+
+<img src="https://github.com/user-attachments/assets/2f7d7f21-e4fe-434d-8e86-7b110cc7805f" style="width: 4cm;" alt="yFiles logo" type="image/png">
+
+[yFiles](https://www.yfiles.com/?utm_source=groove&utm_medium=web&utm_campaign=promo) is your superior SDK for interactive graph visualization with automatic layout algorithms, available for web, .NET, and Java platforms.
+Developed by [yWorks – the diagramming experts](https://www.yworks.com/?utm_source=groove&utm_medium=web&utm_campaign=promo)
