@@ -269,12 +269,13 @@ public interface Parser<T> {
                 assert result != null;
                 this.defaultValue = result;
             }
-            return result
-                .orElseThrow(() -> Exceptions
-                    .unsupportedOp("This parser does not have a default value"));
+            return result.orElseThrow(() -> NO_DEFAULT_VALUE_EXCEPTION);
         }
 
         private @Nullable Optional<T> defaultValue;
+
+        static private final RuntimeException NO_DEFAULT_VALUE_EXCEPTION
+            = Exceptions.unsupportedOp("This parser does not have a default value");
     }
 
     /** Parser constructed by wrapping/unwrapping the values of wrapping another ('inner') parser.
