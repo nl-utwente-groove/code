@@ -52,6 +52,7 @@ public record Binding(Binding.Source type, Object target, int index, @Nullable E
     }
 
     /** Returns the index, if this is not a value binding. */
+    @Override
     public int index() {
         assert type() != Source.EXPR;
         return this.index;
@@ -83,6 +84,7 @@ public record Binding(Binding.Source type, Object target, int index, @Nullable E
     }
 
     /** Returns the assigned value, if this is a value binding. */
+    @Override
     public Expression expr() {
         assert type() == Source.EXPR;
         Expression result = this.expr;
