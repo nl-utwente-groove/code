@@ -18,7 +18,6 @@ package nl.utwente.groove.test.algebra;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -46,7 +45,7 @@ public class UserSignatureTest {
 
     private void loadFail(String className) {
         try {
-            UserSignature.loadUserClass(PACKAGE_NAME + className);
+            UserSignature.checkUserClass(PACKAGE_NAME + className);
             fail(className + " contains errors and should not be loadable");
         } catch (FormatException exc) {
             assertFalse("Failed to load " + className,
@@ -55,8 +54,13 @@ public class UserSignatureTest {
     }
 
     private void load(String className) {
-        UserSignature.setUserClass(PACKAGE_NAME + className);
-        assertNotNull(UserSignature.getUserClass());
+        var qualClassName = PACKAGE_NAME + className;
+        try {
+            UserSignature.checkUserClass(qualClassName);
+        } catch (FormatException exc) {
+            fail(exc.getMessage());
+        }
+        UserSignature.setUserClass(qualClassName);
         var ops = UserSignature.getOperators();
         assertEquals(5, ops.size());
         for (var op : ops) {

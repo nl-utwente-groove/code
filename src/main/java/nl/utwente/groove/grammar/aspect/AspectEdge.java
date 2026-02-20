@@ -197,8 +197,8 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                 case SORT:
                     if (hasGraphRole(RULE)) {
                         String id = (String) content.get();
-                        if (isLoop()) {
-                            // this is an attribute field on a self-edge
+                        if (isLoop() && !source().has(Category.ATTR)) {
+                            // this is an attribute field specified by a self-edge
                             setField(id);
                             getGraph().setNonNormal();
                         } else {
@@ -321,13 +321,15 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
     public void checkAspects() throws FormatException {
         FormatErrorSet errors = new FormatErrorSet();
         if (hasGraphRole(RULE)) {
+            var source = source();
+            var target = target();
             if (has(CONNECT)) {
-                if (!source().has(EMBARGO)) {
+                if (!source.has(EMBARGO)) {
                     errors
                         .add("Adjacent node of %s-edge should be embargo", CONNECT.getPrefix(),
                              source());
                 }
-                if (!target().has(EMBARGO)) {
+                if (!target.has(EMBARGO)) {
                     errors
                         .add("Adjacent node of %s-edge should be embargo", CONNECT.getPrefix(),
                              target());
@@ -346,12 +348,15 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                 assert test != null;
                 errors.add("Test '%s' cannot be eraser", test.getParseString());
             }
-            if (source().has(PARAM_ASK) || target().has(PARAM_ASK)) {
+            if (source.has(PARAM_ASK) || target().has(PARAM_ASK)) {
                 if (!has(CREATOR) && !has(REMARK) && !has(ARGUMENT)) {
                     errors
                         .add("User-provided parameter '%s' must be unconstrained",
                              target().get(PARAM_ASK));
                 }
+            }
+            if (source.has(AspectKind.PRODUCT) && !(isOperator() || isArgument())) {
+                errors.add("Product node can't have outgoing %s-edge", label());
             }
             AspectKind role = getKind(Category.ROLE);
             if (role != null) {
@@ -368,36 +373,31 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                              targetRole);
                 }
             }
-            var source = source();
-            var target = target();
             if (has(ARGUMENT)) {
                 if (!target.has(Category.SORT)) {
-                    throw new FormatException("Target node of %s-edge should be attribute",
-                        label());
+                    errors.add("Target node of %s-edge should be attribute", label());
                 }
             } else if ((isNestedAt() || isNestedIn()) && !target.has(Category.NESTING)) {
-                throw new FormatException("Target node of %s-edge should be quantifier", label());
+                errors.add("Target node of %s-edge should be quantifier", label());
             } else if (isNestedIn() && !source.has(Category.NESTING)) {
-                throw new FormatException("Source node of %s-edge should be quantifier", label());
+                errors.add("Source node of %s-edge should be quantifier", label());
             } else if (isNestedCount()) {
                 if (!target.has(INT)) {
-                    throw new FormatException("Target node of %s-edge should be int-node", label());
+                    errors.add("Target node of %s-edge should be int-node", label());
                 }
                 if (!source().has(Category.NESTING, AspectKind::isForall)) {
-                    throw new FormatException(
-                        "Source node of %s-edge should be universal quantifier", label());
+                    errors.add("Source node of %s-edge should be universal quantifier", label());
                 }
             } else if (isOperator()) {
                 @SuppressWarnings("null")
                 Sort operSort = getOperator().getResultType();
                 var targetSort = target.getSort();
                 if (targetSort == null) {
-                    throw new FormatException("Target node of %s-edge should be %s-attribute",
-                        label(), operSort);
+                    errors.add("Target node of %s-edge should be %s-attribute", label(), operSort);
                 } else if (targetSort != operSort) {
-                    throw new FormatException(
-                        "Inferred type %s of %s-target conflicts with declared type %s", operSort,
-                        label(), targetSort);
+                    errors
+                        .add("Inferred type %s of %s-target conflicts with declared type %s",
+                             operSort, label(), targetSort);
                 }
             }
         }
@@ -407,6 +407,9 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
 
     /** Tests whether a given edge role is compatible with the role of an adjacent node. */
     private boolean isCompatible(AspectKind edgeRole, AspectKind nodeRole) {
+        if (nodeRole == null) {
+            nodeRole = READER;
+        }
         return edgeRole == nodeRole || switch (edgeRole) {
         case ADDER -> nodeRole == READER;
         case EMBARGO -> nodeRole == READER || nodeRole == ERASER || nodeRole == ADDER;

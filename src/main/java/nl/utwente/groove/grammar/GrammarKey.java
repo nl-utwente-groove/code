@@ -540,7 +540,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
             String className = value.getString();
             if (!className.isEmpty()) {
                 try {
-                    UserSignature.loadUserClass(className);
+                    UserSignature.checkUserClass(className);
                 } catch (FormatException exc) {
                     result.addAll(exc.getErrors());
                 }

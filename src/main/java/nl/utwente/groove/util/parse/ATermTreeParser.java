@@ -323,6 +323,11 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
             result = parseBracketed();
         } else if (nextToken.has(NAME)) {
             result = parseName();
+            // error handling for calling an unknown operator
+            // (leaving this to the general case below gives difficult-to-understand messages)
+            if (has(LPAR)) {
+                throw unexpectedCall(nextToken, result);
+            }
         } else if (nextToken.has(CONST)) {
             result = parseConst();
         } else {
@@ -825,6 +830,11 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
             return new ParseException("Unexpected token '%s' at index %s", token.substring(),
                 token.start());
         }
+    }
+
+    /** Creates an exception reporting an unexpected operation invocation. */
+    protected ParseException unexpectedCall(Token token, X op) {
+        return new ParseException("'%s' is not a known operator", op.getParseString());
     }
 
     /** Creates an exception reporting an mismatch in arity. */

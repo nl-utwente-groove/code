@@ -17,8 +17,9 @@
 package nl.utwente.groove.algebra;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -36,39 +37,48 @@ import nl.utwente.groove.util.parse.FormatException;
 public sealed abstract class UserSignature implements Signature permits UserAlgebra {
     /** Sets the used-defined class containing the operator definitions.
      * All methods with an {@link UserOperation}-annotations are taken as operators.
+    * Silently ignores any annotation errors in the class; to check for those, call {@link #checkUserClass(String)} instead
      */
     public static void setUserClass(String className) {
-        Class<?> userClass = null;
+        methods.clear();
         if (!className.isBlank()) {
             try {
-                userClass = loadUserClass(className);
+                methods.addAll(checkUserClass(className));
             } catch (FormatException exc) {
-                // do nothing
+                // silently ignore the errors
             }
+            resetUsers();
         }
-        setUserClass(userClass);
     }
 
-    /** Returns the currently installed user-operation defining class. */
-    public static Class<?> getUserClass() {
-        return userClass;
-    }
-
-    /** Loads a class with a given name while checking whether it
-     * has suitable user operation definitions.
+    /** Checks whether a class with a given name can be found and has suitable user-defined operations,
+     * and returns the loaded class.
+     * @throws FormatException if there are annotation errors in the class
      */
-    public static Class<?> loadUserClass(String className) throws FormatException {
-        Class<?> result;
+    @SuppressWarnings("null")
+    public static Set<Method> checkUserClass(String className) throws FormatException {
+        var result = new LinkedHashSet<Method>();
         try {
             var errors = new FormatErrorSet();
-            result = ClassLoader.getSystemClassLoader().loadClass(className);
-            for (var m : extractMethods(result)) {
-                try {
-                    new Operator(m);
-                } catch (IllegalArgumentException exc) {
-                    errors
-                        .add("Erroneous user operation in '%s.%s': %s", className, m.getName(),
-                             exc.getMessage());
+            var claz = ClassLoader.getSystemClassLoader().loadClass(className);
+            // retrieve the @UserOperation-annotated methods
+            for (var m : claz.getDeclaredMethods()) {
+                if (m.getAnnotation(UserOperation.class) == null) {
+                    continue;
+                }
+                if (!Modifier.isStatic(m.getModifiers())) {
+                    errors.add("User operation '%s.%s' is not static", className, m.getName());
+                } else if (!m.canAccess(null)) {
+                    errors.add("User operation '%s.%s' is not accessible", className, m.getName());
+                } else {
+                    try {
+                        new Operator(m);
+                        result.add(m);
+                    } catch (IllegalArgumentException exc) {
+                        errors
+                            .add("Erroneous user operation in '%s.%s': %s", className, m.getName(),
+                                 exc.getMessage());
+                    }
                 }
             }
             errors.throwException();
@@ -78,19 +88,13 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
         return result;
     }
 
-    /** (Re)sets the used-defined class containing the operator definitions.
-     * All methods with an {@link UserOperation}-annotations are taken as operators.
-     */
-    private static void setUserClass(Class<?> userClass) {
-        if (userClass != UserSignature.userClass) {
-            methods.reset();
-            resetUsers();
-            UserSignature.userClass = userClass;
-        }
+    /** Returns the set of operators defined in the user class. */
+    public static Set<Method> getMethods() {
+        return methods;
     }
 
-    /** The class containing user operations. */
-    static protected Class<?> userClass;
+    /** Lazily computed set of operators in the user class. */
+    static private final Set<Method> methods = new LinkedHashSet<>();
 
     /** Returns the set of operators defined in the user class. */
     public static Set<Operator> getOperators() {
@@ -101,39 +105,9 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
     static private final Factory<Set<Operator>> operators
         = Factory.lazy(UserSignature::computeOperators);
 
-    /** Computes the value of {@link #operators}. */
     static private Set<Operator> computeOperators() {
-        Set<Operator> result = new HashSet<>();
+        var result = new LinkedHashSet<Operator>();
         getMethods().stream().map(Operator::new).forEach(result::add);
-        return result;
-    }
-
-    /** Returns the set of {@link UserOperation}-annotated methods in the user class. */
-    static protected Set<Method> getMethods() {
-        return methods.get();
-    }
-
-    /** Lazily computed set of {@link UserOperation}-annotated methods in the user class. */
-    static private final Factory<Set<Method>> methods = Factory.lazy(UserSignature::computeMethods);
-
-    /** Computes the value of {@link #methods}. */
-    static private Set<Method> computeMethods() {
-        return extractMethods(userClass);
-    }
-
-    /** Extracts the {@link UserOperation}-annotated methods from a given class. */
-    @SuppressWarnings("null")
-    static private Set<Method> extractMethods(Class<?> claz) {
-        Set<Method> result = new HashSet<>();
-        if (claz != null) {
-            // retrieve the @UserOperation-annotated methods
-            for (Method m : claz.getMethods()) {
-                if (m.getAnnotation(UserOperation.class) == null) {
-                    continue;
-                }
-                result.add(m);
-            }
-        }
         return result;
     }
 
