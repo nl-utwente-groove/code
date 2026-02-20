@@ -19,7 +19,7 @@ package nl.utwente.groove.test.algebra;
 import nl.utwente.groove.annotation.UserOperation;
 
 /**
- * Excample class with user operations.
+ * Example class with user operations.
  * @author Arend Rensink
  * @version $Revision$
  */

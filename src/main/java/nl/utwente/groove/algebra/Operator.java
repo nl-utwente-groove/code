@@ -42,9 +42,9 @@ public class Operator {
         this.name = method.getName();
         this.parameterTypes = new ArrayList<>();
         for (Type t : parTypes) {
-            this.parameterTypes.add(toSort(t));
+            this.parameterTypes.add(toParSort(t));
         }
-        this.returnType = toSort(method.getReturnType());
+        this.returnType = toReturnSort(method.getReturnType());
         this.symbol = null;
         this.kind = OpKind.CALL;
         this.description = "User-defined method '" + this.name + "'";
@@ -80,9 +80,9 @@ public class Operator {
                 }
                 type = ((ParameterizedType) type).getActualTypeArguments()[0];
             }
-            this.parameterTypes.add(toSort(type));
+            this.parameterTypes.add(toParSort(type));
         }
-        this.returnType = toSort(method.getGenericReturnType());
+        this.returnType = toReturnSort(method.getGenericReturnType());
         // look up the corresponding method declaration in GSignature, to find the annotations
         Method superMethod;
         try {
@@ -102,13 +102,23 @@ public class Operator {
         this.indeterminate = false;
     }
 
+    /** Converts a reflected parameter type into a GROOVE sort. */
+    private Sort toParSort(Type type) throws IllegalArgumentException {
+        return toSort(type, "Parameter");
+    }
+
+    /** Converts a reflected return type into a GROOVE sort. */
+    private Sort toReturnSort(Type type) throws IllegalArgumentException {
+        return toSort(type, "Return");
+    }
+
     /** Converts a reflected type into a GROOVE sort. */
-    private Sort toSort(Type type) throws IllegalArgumentException {
+    private Sort toSort(Type type, String kind) throws IllegalArgumentException {
         if (type instanceof TypeVariable) {
             String typeName = ((TypeVariable<?>) type).getName();
             Sort result = Sort.getSort(typeName.toLowerCase());
             if (result == null) {
-                throw Exceptions.illegalArg("Type '%s' is not an existing sort", typeName);
+                throw Exceptions.illegalArg("%s type '%s' is not an existing sort", kind, typeName);
             }
             return result;
         } else {
@@ -122,7 +132,8 @@ public class Operator {
                 return Sort.STRING;
             } else {
                 throw Exceptions
-                    .illegalArg("Type %s cannot be converted to GROOVE sort", type.getTypeName());
+                    .illegalArg("%s type %s cannot be converted to GROOVE sort", kind,
+                                type.getTypeName());
             }
         }
     }

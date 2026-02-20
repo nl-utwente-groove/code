@@ -355,7 +355,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                              target().get(PARAM_ASK));
                 }
             }
-            if (source.has(AspectKind.PRODUCT) && !(isOperator() || isArgument())) {
+            if (source.has(AspectKind.PRODUCT) && !(isOperator() || isArgument() || has(NESTED))) {
                 errors.add("Product node can't have outgoing %s-edge", label());
             }
             AspectKind role = getKind(Category.ROLE);

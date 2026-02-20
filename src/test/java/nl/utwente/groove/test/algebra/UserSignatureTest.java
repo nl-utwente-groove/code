@@ -40,6 +40,8 @@ public class UserSignatureTest {
         loadFail("UserOperationsErr1");
         loadFail("UserOperationsErr2");
         loadFail("UserOperationsErr3");
+        loadFail("UserOperationsErr4");
+        loadFail("UserOperationsErr5");
         load("UserOperations");
     }
 

@@ -60,7 +60,7 @@ public class UserExample {
 
     /** Non-static user operation. */
     @UserOperation
-    public int error(int par) {
+    public static int error(int par) {
         return par;
     }
 }

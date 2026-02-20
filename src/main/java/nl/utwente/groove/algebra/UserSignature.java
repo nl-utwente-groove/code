@@ -26,7 +26,7 @@ import java.util.Set;
 import nl.utwente.groove.annotation.UserOperation;
 import nl.utwente.groove.util.Callback;
 import nl.utwente.groove.util.Factory;
-import nl.utwente.groove.util.parse.FormatErrorSet;
+import nl.utwente.groove.util.parse.FallibleObject;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -41,25 +41,30 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
      */
     public static void setUserClass(String className) {
         methods.clear();
+        operators.reset();
         if (!className.isBlank()) {
-            try {
-                methods.addAll(checkUserClass(className));
-            } catch (FormatException exc) {
-                // silently ignore the errors
-            }
-            resetUsers();
+            methods.addAll(parseUserClass(className).get());
         }
+        resetUsers();
     }
 
     /** Checks whether a class with a given name can be found and has suitable user-defined operations,
      * and returns the loaded class.
      * @throws FormatException if there are annotation errors in the class
      */
-    @SuppressWarnings("null")
     public static Set<Method> checkUserClass(String className) throws FormatException {
-        var result = new LinkedHashSet<Method>();
+        var result = parseUserClass(className);
+        result.getErrors().throwException();
+        return result.get();
+    }
+
+    /** Checks whether a class with a given name can be found and has suitable user-defined operations,
+     * and returns the loaded class.
+     */
+    @SuppressWarnings("null")
+    private static FallibleObject<? extends Set<Method>> parseUserClass(String className) {
+        var result = new FallibleObject<>(new LinkedHashSet<Method>());
         try {
-            var errors = new FormatErrorSet();
             var claz = ClassLoader.getSystemClassLoader().loadClass(className);
             // retrieve the @UserOperation-annotated methods
             for (var m : claz.getDeclaredMethods()) {
@@ -67,23 +72,24 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
                     continue;
                 }
                 if (!Modifier.isStatic(m.getModifiers())) {
-                    errors.add("User operation '%s.%s' is not static", className, m.getName());
+                    result.addError("User operation '%s.%s' is not static", className, m.getName());
                 } else if (!m.canAccess(null)) {
-                    errors.add("User operation '%s.%s' is not accessible", className, m.getName());
+                    result
+                        .addError("User operation '%s.%s' is not accessible", className,
+                                  m.getName());
                 } else {
                     try {
                         new Operator(m);
-                        result.add(m);
+                        result.get().add(m);
                     } catch (IllegalArgumentException exc) {
-                        errors
-                            .add("Erroneous user operation in '%s.%s': %s", className, m.getName(),
-                                 exc.getMessage());
+                        result
+                            .addError("Erroneous user operation '%s.%s': %s", className,
+                                      m.getName(), exc.getMessage());
                     }
                 }
             }
-            errors.throwException();
         } catch (ClassNotFoundException exc) {
-            throw new FormatException("Class '%s' cannot be loaded", className);
+            result.addError("Class '%s' cannot be loaded", className);
         }
         return result;
     }

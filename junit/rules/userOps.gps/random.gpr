@@ -4,9 +4,6 @@
         <attr name="remark">
             <string>Rule disabled because it makes test fail due to non-determinism</string>
         </attr>
-        <attr name="enabled">
-            <string>false</string>
-        </attr>
         <attr name="$version">
             <string>curly</string>
         </attr>
