@@ -16,6 +16,9 @@
  */
 package nl.utwente.groove.match;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.Condition;
 import nl.utwente.groove.grammar.rule.Anchor;
 
@@ -27,6 +30,7 @@ import nl.utwente.groove.grammar.rule.Anchor;
  * @author Arash Jalali
  * @version $Revision$
  */
+@NonNullByDefault
 public abstract class SearchEngine {
     /**
      * Factory method returning a matcher for a graph condition, taking into
@@ -37,6 +41,6 @@ public abstract class SearchEngine {
      *        already; if <code>null</code>, the condition's pattern map values
      *        are used
      */
-    public abstract SearchStrategy createMatcher(Condition condition, Anchor seed);
+    public abstract SearchStrategy createMatcher(Condition condition, @Nullable Anchor seed);
 
 }

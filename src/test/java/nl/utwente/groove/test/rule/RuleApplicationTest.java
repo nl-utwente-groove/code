@@ -239,7 +239,7 @@ public class RuleApplicationTest extends TestCase {
         BitSet found = new BitSet();
         Set<RuleEvent> eventSet = new HashSet<>();
         Optional<MatchChecker> matchFilter = rule.getMatchFilter();
-        for (Proof proof : rule.getAllMatches(start, null)) {
+        for (Proof proof : rule.getProver().getAllMatches(start)) {
             RuleEvent event = proof.newEvent(null);
             boolean errorExpected = start.getName().endsWith("E");
             try {

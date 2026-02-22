@@ -16,6 +16,9 @@
  */
 package nl.utwente.groove.match;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.rule.RuleToHostMap;
 import nl.utwente.groove.match.plan.PlanSearchEngine;
@@ -34,6 +37,7 @@ import nl.utwente.groove.util.Visitor;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public interface SearchStrategy {
     /**
      * Traverses the matches, and calls a visit method on them.
@@ -50,7 +54,8 @@ public interface SearchStrategy {
      * @see Visitor#getResult()
      * @see Visitor#dispose()
      */
-    public <T> T traverse(HostGraph host, RuleToHostMap seedMap, Visitor<TreeMatch,T> visitor);
+    public <T> @Nullable T traverse(HostGraph host, @Nullable RuleToHostMap seedMap,
+                                    Visitor<TreeMatch,T> visitor);
 
     /**
      * Returns the search engine that was used to create this strategy.

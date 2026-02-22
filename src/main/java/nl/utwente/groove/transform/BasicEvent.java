@@ -146,7 +146,7 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
      */
     @Override
     int computeEventHashCode() {
-        int result = getRule().hashCode();
+        int result = getAction().hashCode();
         // we don't use getAnchorImage() because the events are often
         // just created to look up a stored event; then we shouldn't spend too
         // much time on this one
@@ -175,7 +175,7 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
         if (!(obj instanceof BasicEvent other)) {
             return false;
         }
-        if (!getRule().equals(obj.getRule())) {
+        if (!getAction().equals(obj.getAction())) {
             return false;
         }
         if (!Arrays.equals(getAnchorImages(), other.getAnchorImages())) {
@@ -188,7 +188,7 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
     protected Proof extractProof(TreeMatch match) {
         // this is a simple event, so there are no subrules;
         // the match consists only of the pattern map
-        return new Proof(getRule().getCondition(), match.getPatternMap());
+        return new Proof(getAction().getCondition(), match.getPatternMap());
     }
 
     @Override
@@ -202,7 +202,7 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
      */
     @Override
     public int compareTo(RuleEvent other) {
-        int result = getRule().compareTo(other.getRule());
+        int result = getAction().compareTo(other.getAction());
         if (result != 0) {
             return result;
         }
@@ -241,7 +241,7 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
      * the anchor image.
      */
     private AnchorValue[] computeAnchorImage(RuleToHostMap anchorMap) {
-        Anchor anchor = getRule().getAnchor();
+        Anchor anchor = getAction().getAnchor();
         AnchorValue[] result = new AnchorValue[anchor.size()];
         for (int i = 0; i < result.length; i++) {
             AnchorKey key = anchor.get(i);
@@ -310,24 +310,24 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
 
     @Override
     public void recordEffect(RuleEffect record) throws InterruptedException {
-        if (getRule().isModifying()) {
-            if (getRule().getCreatorNodes().length > 0) {
+        if (getAction().isModifying()) {
+            if (getAction().getCreatorNodes().length > 0) {
                 recordCreatedNodes(record);
             }
             if (record.getFragment() != Fragment.NODE_CREATION) {
-                if (getRule().getEraserNodes().length > 0) {
+                if (getAction().getEraserNodes().length > 0) {
                     recordErasedNodes(record);
                 }
-                if (!getRule().getLhsMergeMap().isEmpty()
-                    || !getRule().getRhsMergeMap().isEmpty()) {
+                if (!getAction().getLhsMergeMap().isEmpty()
+                    || !getAction().getRhsMergeMap().isEmpty()) {
                     recordMergeMap(record);
                 }
             }
             if (record.getFragment() == Fragment.ALL) {
-                if (getRule().getEraserEdges().length > 0) {
+                if (getAction().getEraserEdges().length > 0) {
                     recordErasedEdges(record);
                 }
-                if (getRule().getCreatorEdges().length > 0) {
+                if (getAction().getCreatorEdges().length > 0) {
                     recordCreatedEdges(record);
                 }
             }
@@ -346,7 +346,7 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
      * @throws InterruptedException if an oracle input was cancelled
      */
     private void recordCreatedNodes(RuleEffect record) throws InterruptedException {
-        RuleNode[] creatorNodes = getRule().getCreatorNodes();
+        RuleNode[] creatorNodes = getAction().getCreatorNodes();
         if (record.isNodesPredefined()) {
             record.addCreatorNodes(creatorNodes);
         } else {
@@ -364,7 +364,7 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
         record.addCreatedEdges(simpleCreatedEdges);
         Map<RuleNode,HostNode> createdNodeMap = record.getCreatedNodeMap();
         RuleToHostMap anchorMap = getAnchorMap();
-        for (RuleEdge edge : getRule().getComplexCreatorEdges()) {
+        for (RuleEdge edge : getAction().getComplexCreatorEdges()) {
             RuleNode source = edge.source();
             HostNode sourceImage = anchorMap.getNode(source);
             if (sourceImage == null) {
@@ -386,7 +386,7 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
     /** Records the effect of node merging in the application record. */
     private void recordMergeMap(RuleEffect record) {
         MergeMap lhsMergeMap = getCache().getMergeMap();
-        Map<RuleNode,RuleNode> rhsMergers = getRule().getRhsMergeMap();
+        Map<RuleNode,RuleNode> rhsMergers = getAction().getRhsMergeMap();
         if (rhsMergers.isEmpty()) {
             record.addMergeMap(lhsMergeMap);
         } else {
@@ -423,13 +423,13 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
      * eraser nodes. Callback method from {@link #getErasedNodes()}.
      */
     private HostNodeSet computeErasedNodes() {
-        if (getRule().getEraserNodes().length == 0) {
+        if (getAction().getEraserNodes().length == 0) {
             return EMPTY_NODE_SET;
         } else {
             HostNodeSet result = createNodeSet();
             RuleToHostMap anchorMap = getAnchorMap();
             // register the node erasures
-            for (RuleNode node : getRule().getEraserNodes()) {
+            for (RuleNode node : getAction().getEraserNodes()) {
                 result.add(anchorMap.getNode(node));
             }
             return result;
@@ -451,7 +451,7 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
     private HostEdgeSet computeErasedEdges() {
         HostEdgeSet result = createEdgeSet();
         RuleToHostMap anchorMap = getAnchorMap();
-        RuleEdge[] eraserEdges = getRule().getEraserEdges();
+        RuleEdge[] eraserEdges = getAction().getEraserEdges();
         for (RuleEdge edge : eraserEdges) {
             HostEdge edgeImage = anchorMap.getEdge(edge);
             assert edgeImage != null : "Image of " + edge + " cannot be deduced from " + anchorMap;
@@ -475,7 +475,7 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
     private HostEdgeSet computeSimpleCreatedEdges() {
         HostEdgeSet result = createEdgeSet();
         RuleToHostMap coAnchorMap = getCoanchorMap();
-        for (RuleEdge edge : getRule().getSimpleCreatorEdges()) {
+        for (RuleEdge edge : getAction().getSimpleCreatorEdges()) {
             HostEdge edgeImage = coAnchorMap.mapEdge(edge);
             if (edgeImage != null) {
                 result.add(edgeImage);
@@ -493,7 +493,7 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
      */
     private HostNode[] getCreatedNodes(RuleEffect record) throws InterruptedException {
         HostNode[] result;
-        RuleNode[] creatorNodes = getRule().getCreatorNodes();
+        RuleNode[] creatorNodes = getAction().getCreatorNodes();
         int count = creatorNodes.length;
         if (count == 0) {
             result = AbstractRuleEvent.EMPTY_NODE_ARRAY;
@@ -574,7 +574,7 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
      * Creates an array of lists to store the fresh nodes created by this rule.
      */
     private List<List<HostNode>> createFreshNodeList() {
-        int creatorNodeCount = getRule().getCreatorNodes().length;
+        int creatorNodeCount = getAction().getCreatorNodes().length;
         List<List<HostNode>> result = new ArrayList<>();
         for (int i = 0; i < creatorNodeCount; i++) {
             result.add(new ArrayList<>());
@@ -663,14 +663,14 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
          * edges and any variables on them.
          */
         private RuleToHostMap computeAnchorMap() {
-            Anchor anchor = getRule().getAnchor();
+            Anchor anchor = getAction().getAnchor();
             AnchorValue[] anchorImage = getAnchorImages();
             RuleToHostMap result = createRuleToHostMap();
             for (int i = 0; i < anchor.size(); i++) {
                 result.put(anchor.get(i), anchorImage[i]);
             }
             // add the eraser edges
-            for (RuleEdge eraserEdge : getRule().getEraserNonAnchorEdges()) {
+            for (RuleEdge eraserEdge : getAction().getEraserNonAnchorEdges()) {
                 HostEdge eraserImage = result.mapEdge(eraserEdge);
                 assert eraserImage != null : String
                     .format("Eraser edge %s has no image in anchor map %s", eraserEdge, result);
@@ -721,7 +721,7 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
             RuleToHostMap anchorMap = getAnchorMap();
             // add coanchor mappings for creator edge ends that are themselves
             // not creators
-            for (RuleNode creatorEnd : getRule().getCreatorEnds()) {
+            for (RuleNode creatorEnd : getAction().getCreatorEnds()) {
                 HostNode createdValue;
                 createdValue = anchorMap.getNode(creatorEnd);
                 assert createdValue != null : String
@@ -735,7 +735,7 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
                 }
             }
             // add variable images
-            for (LabelVar var : getRule().getCreatorVars()) {
+            for (LabelVar var : getAction().getCreatorVars()) {
                 result.putVar(var, anchorMap.getVar(var));
             }
             return result;
@@ -770,7 +770,7 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
         private MergeMap computeMergeMap() {
             RuleToHostMap anchorMap = getAnchorMap();
             MergeMap mergeMap = createMergeMap();
-            for (Map.Entry<RuleNode,RuleNode> ruleMergeEntry : getRule()
+            for (Map.Entry<RuleNode,RuleNode> ruleMergeEntry : getAction()
                 .getLhsMergeMap()
                 .entrySet()) {
                 HostNode mergeKey = anchorMap.getNode(ruleMergeEntry.getKey());

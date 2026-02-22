@@ -479,14 +479,6 @@ public class Rule implements Action, Fixable {
      */
     private final Supplier<List<Binding>> parBinding = lazy(this::computeParBinding);
 
-    /**
-     * Tests if this condition is ground and has a match to a given host graph.
-     * Convenience method for <code>getMatchIter(host, null).hasNext()</code>
-     */
-    final public boolean hasMatch(HostGraph host) {
-        return this.condition.getInputNodes().isEmpty() && getMatch(host, null) != null;
-    }
-
     @Override
     public Kind getKind() {
         return Kind.RULE;
@@ -527,6 +519,14 @@ public class Rule implements Action, Fixable {
             result = getSignature().stream().noneMatch(UnitPar::isInOnly);
         }
         return result;
+    }
+
+    /**
+     * Tests if this condition is ground and has a match to a given host graph.
+     * Convenience method for <code>getMatchIter(host, null).hasNext()</code>
+     */
+    final public boolean hasMatch(HostGraph host) {
+        return this.condition.getInputNodes().isEmpty() && getMatch(host, null) != null;
     }
 
     /**
@@ -679,7 +679,7 @@ public class Rule implements Action, Fixable {
     }
 
     /**
-     * The fixed simple matching strategy for this graph rule. Initially
+     * The fixed simple graph matching strategy for this graph rule. Initially
      * <code>null</code>; set by {@link #getMatcher(boolean)} upon its first
      * invocation.
      */
@@ -1455,6 +1455,22 @@ public class Rule implements Action, Fixable {
 
     /** Flag indicating that this rule is part of a recipe. */
     private boolean partial;
+
+    /**
+     * Returns a prover for this rule.
+     * Should only be invoked after the rule is fixed.
+     * @see #isFixed()
+     */
+    public Prover getProver() {
+        testFixed(true);
+        var result = this.prover;
+        if (result == null) {
+            result = new Prover(this);
+        }
+        return result;
+    }
+
+    private @Nullable Prover prover;
 
     /** Returns the current anchor factory for all rules. */
     public static AnchorFactory getAnchorFactory() {

@@ -254,7 +254,7 @@ public class STS {
 
         // Create the gate and the switch relation
         Gate gate
-            = addGate(event.getRule().getQualName().toString(), new HashSet<>(iVarMap.values()));
+            = addGate(event.getAction().getQualName().toString(), new HashSet<>(iVarMap.values()));
         Object obj = SwitchRelation.getSwitchIdentifier(gate, guard, update);
         SwitchRelation switchRelation = this.switchRelationMap.get(obj);
         if (switchRelation == null) {
@@ -372,7 +372,7 @@ public class STS {
                                       Map<VariableNode,LocationVariable> lVarMap,
                                       Map<VariableNode,LocationVariable> lValueMap) throws STSException {
 
-        RuleGraph lhs = event.getRule().lhs();
+        RuleGraph lhs = event.getAction().lhs();
         RuleToHostMap ruleMap = event.getMatch(sourceGraph).getPatternMap();
         assert ruleMap != null;
         for (RuleEdge le : lhs.edgeSet()) {
@@ -420,7 +420,7 @@ public class STS {
     private void mapInteractionVariables(RuleEvent event,
                                          Map<VariableNode,InteractionVariable> iVarMap) throws STSException {
 
-        Rule rule = event.getRule();
+        Rule rule = event.getAction();
 
         int end = rule.getSignature().size();
         for (int i = 0; i < end; i++) {
@@ -451,7 +451,7 @@ public class STS {
                                Map<VariableNode,LocationVariable> lValueMap,
                                Set<SwitchRelation> higherPriorityRelations) {
 
-        Rule rule = event.getRule();
+        Rule rule = event.getAction();
         RuleGraph lhs = rule.lhs();
 
         String guard = "";
@@ -503,7 +503,7 @@ public class STS {
      */
     private String createUpdate(RuleEvent event, Map<VariableNode,InteractionVariable> iVarMap,
                                 Map<VariableNode,LocationVariable> lVarMap) throws STSException {
-        Rule rule = event.getRule();
+        Rule rule = event.getAction();
         QualName name = rule.getQualName();
         Condition nac = rule.getCondition();
 

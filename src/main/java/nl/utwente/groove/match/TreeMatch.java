@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.Condition;
 import nl.utwente.groove.grammar.Condition.Op;
 import nl.utwente.groove.grammar.host.AnchorValue;
@@ -139,7 +141,7 @@ public class TreeMatch implements Fixable {
      * all universal sub-conditions.
      * This operation is only allowed if the match condition is a rule.
      */
-    public <R> R traverseProofs(Visitor<Proof,R> visitor) {
+    public <R> @Nullable R traverseProofs(Visitor<Proof,R> visitor) {
         setFixed();
         switch (this.op) {
         case FORALL:

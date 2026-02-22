@@ -463,7 +463,7 @@ public class StateDisplay extends Display implements SimulatorListener {
                     result
                         .append(String
                             .format("with match of <i>%s</i>",
-                                    match.getEvent().getRule().getQualName()));
+                                    match.getEvent().getAction().getQualName()));
                 }
             }
             if (brackets) {

@@ -50,33 +50,31 @@ public class DialogOracle implements ValueOracleFactory, ValueOracle {
 
     @Override
     public Constant getValue(HostGraph host, RuleEvent event, RulePar par) throws FormatException {
-        String ruleName = event.getRule()
-            .getQualName()
-            .toString();
-        Sort sort = par.getType()
-            .getSort();
+        String ruleName = event.getAction().getQualName().toString();
+        Sort sort = par.getType().getSort();
         assert sort != null;
         Constant result = null;
         boolean answered = false;
         do {
-            String value = JOptionPane.showInputDialog(this.parent,
-                String.format("Enter a value of type %s for parameter %s of rule %s",
-                    sort,
-                    par.getName(),
-                    ruleName));
+            String value = JOptionPane
+                .showInputDialog(this.parent,
+                                 String
+                                     .format("Enter a value of type %s for parameter %s of rule %s",
+                                             sort, par.getName(), ruleName));
             if (value == null) {
-                int answer = JOptionPane.showConfirmDialog(this.parent,
-                    "Cancelling means the exploration will be interrupted.\nIs that what you want?",
-                    "Confirm cancel",
-                    JOptionPane.YES_NO_OPTION);
+                int answer = JOptionPane
+                    .showConfirmDialog(this.parent,
+                                       "Cancelling means the exploration will be interrupted.\nIs that what you want?",
+                                       "Confirm cancel", JOptionPane.YES_NO_OPTION);
                 answered = answer == JOptionPane.YES_OPTION;
             } else {
                 try {
                     result = sort.createConstant(value);
                     answered = true;
                 } catch (FormatException exc) {
-                    JOptionPane.showMessageDialog(this.parent,
-                        String.format("Invalid %s value: %s", sort.getName(), exc.getMessage()));
+                    JOptionPane
+                        .showMessageDialog(this.parent, String
+                            .format("Invalid %s value: %s", sort.getName(), exc.getMessage()));
                 }
             }
         } while (!answered);

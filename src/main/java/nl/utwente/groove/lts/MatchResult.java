@@ -108,7 +108,7 @@ public class MatchResult implements GraphTransitionKey {
     /** Returns the underlying rule of this match. */
     @Override
     public Rule getAction() {
-        return getEvent().getRule();
+        return getEvent().getAction();
     }
 
     @Override

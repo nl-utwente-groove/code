@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.UnitPar.Direction;
@@ -38,6 +40,7 @@ import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.match.TreeMatch;
 import nl.utwente.groove.transform.oracle.ValueOracle;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Property;
 import nl.utwente.groove.util.Visitor;
 import nl.utwente.groove.util.Visitor.Finder;
@@ -53,6 +56,7 @@ import nl.utwente.groove.util.Visitor.Finder;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-02-06 17:04:38 $
  */
+@NonNullByDefault
 public class RuleApplication implements DeltaApplier {
     /**
      * Constructs a new application on the basis of a given rule and host
@@ -62,8 +66,7 @@ public class RuleApplication implements DeltaApplier {
      */
     public RuleApplication(RuleEvent event, HostGraph source) {
         this(event, source, (ValueOracle) null);
-        assert !event
-            .getRule()
+        assert !getRule()
             .getSignature()
             .has(Direction.ASK) : "Rule signature should not have user-provided parameters";
     }
@@ -74,7 +77,7 @@ public class RuleApplication implements DeltaApplier {
      * @param event the production rule instance involved
      * @param source the host graph to which the rule is to be applied
      */
-    public RuleApplication(RuleEvent event, HostGraph source, ValueOracle oracle) {
+    public RuleApplication(RuleEvent event, HostGraph source, @Nullable ValueOracle oracle) {
         this(event, source, (HostNode[]) null);
         this.oracle = oracle;
     }
@@ -88,9 +91,9 @@ public class RuleApplication implements DeltaApplier {
      * in the order of the rule's coanchor. If <code>null</code>, the added nodes are yet to be
      * generated.
      */
-    public RuleApplication(final RuleEvent event, HostGraph source, HostNode[] addedNodes) {
+    public RuleApplication(final RuleEvent event, HostGraph source,
+                           HostNode @Nullable [] addedNodes) {
         this.event = event;
-        this.rule = event.getRule();
         this.source = source;
         this.addedNodes = addedNodes;
         assert !DEBUG || testEvent(event, source) : String
@@ -153,16 +156,11 @@ public class RuleApplication implements DeltaApplier {
      * Returns the rule for which this is an application.
      */
     public Rule getRule() {
-        return this.rule;
+        return getEvent().getAction();
     }
 
-    /**
-     * Matching from the rule's lhs to the source graph.
-     */
-    private final Rule rule;
-
     /** Returns the (possibly {@code null}) array of added nodes for the rule application. */
-    private HostNode[] getAddedNodes() {
+    private HostNode @Nullable [] getAddedNodes() {
         return this.addedNodes;
     }
 
@@ -170,28 +168,30 @@ public class RuleApplication implements DeltaApplier {
      * The images of the creator nodes. This is part of the information needed
      * to (re)construct the derivation target.
      */
-    private final HostNode[] addedNodes;
+    private final HostNode @Nullable [] addedNodes;
 
     /** Returns the optional value oracle. */
-    private ValueOracle getOracle() {
+    private @Nullable ValueOracle getOracle() {
         return this.oracle;
     }
 
-    private ValueOracle oracle;
+    private @Nullable ValueOracle oracle;
 
     /**
      * Returns a target graph created as a result of the application. The target
      * is created lazily.
      */
     public HostGraph getTarget() {
-        if (this.target == null) {
-            if (this.rule.isModifying()) {
-                this.target = computeTarget();
+        var result = this.target;
+        if (result == null) {
+            if (getRule().isModifying()) {
+                result = computeTarget();
             } else {
-                this.target = getSource();
+                result = getSource();
             }
+            this.target = result;
         }
-        return this.target;
+        return result;
     }
 
     /**
@@ -217,18 +217,21 @@ public class RuleApplication implements DeltaApplier {
      * The target graph of this derivation, created lazily in
      * {@link #computeTarget()}.
      */
-    private HostGraph target;
+    private @Nullable HostGraph target;
 
     /**
      * Returns the match of the rule's LHS in the source graph of this
      * derivation.
      */
     public Proof getMatch() {
-        if (this.match == null) {
-            this.match = computeMatch();
-        }
-        return this.match;
+        return this.match.get();
     }
+
+    /**
+     * Matching from the rule's LHS to the source. Created lazily in
+     * {@link #getMatch()}.
+     */
+    private Factory<Proof> match = Factory.lazy(this::computeMatch);
 
     /**
      * Callback method to create the matching from the rule's LHS to the source
@@ -240,26 +243,23 @@ public class RuleApplication implements DeltaApplier {
     }
 
     /**
-     * Matching from the rule's LHS to the source. Created lazily in
-     * {@link #getMatch()}.
-     */
-    private Proof match;
-
-    /**
      * Returns the transformation morphism underlying this derivation.
      */
     public HostGraphMorphism getMorphism() {
-        if (this.morphism == null) {
-            this.morphism = computeMorphism(getEffect());
-        }
-        return this.morphism;
+        return this.morphism.get();
     }
+
+    /**
+     * Underlying morphism from the source to the target.
+     */
+    private Factory<HostGraphMorphism> morphism = Factory.lazy(this::computeMorphism);
 
     /**
      * Constructs the morphism between source and target graph from the
      * application.
      */
-    private HostGraphMorphism computeMorphism(RuleEffect record) {
+    private HostGraphMorphism computeMorphism() {
+        RuleEffect record = getEffect();
         HostGraphMorphism result = createMorphism();
         MergeMap mergeMap = record.getMergeMap();
         // copy the source node and edge set, to avoid modification exceptions
@@ -295,33 +295,30 @@ public class RuleApplication implements DeltaApplier {
         return getSource().getFactory().createMorphism();
     }
 
-    /**
-     * Underlying morphism from the source to the target.
-     */
-    private HostGraphMorphism morphism;
-
     private RuleEffect getEffect() {
-        RuleEffect result = this.effect;
-        if (result == null) {
-            // use the predefined created nodes, if available
-            if (getAddedNodes() == null) {
-                result = new RuleEffect(getSource(), getOracle());
-            } else {
-                result = new RuleEffect(getSource(), getAddedNodes());
-            }
-            try {
-                getEvent().recordEffect(result);
-            } catch (InterruptedException exc) {
-                throw Exceptions.illegalState("By assumption, value oracles are ruled out");
-            }
-            result.setFixed();
-            this.effect = result;
-        }
-        return result;
+        return this.effect.get();
     }
 
     /** The application record. */
-    private RuleEffect effect;
+    private Factory<RuleEffect> effect = Factory.lazy(this::computeEffect);
+
+    private RuleEffect computeEffect() {
+        RuleEffect result;
+        // use the predefined created nodes, if available
+        var addedNodes = getAddedNodes();
+        if (addedNodes == null) {
+            result = new RuleEffect(getSource(), getOracle());
+        } else {
+            result = new RuleEffect(getSource(), addedNodes);
+        }
+        try {
+            getEvent().recordEffect(result);
+        } catch (InterruptedException exc) {
+            throw Exceptions.illegalState("By assumption, value oracles are ruled out");
+        }
+        result.setFixed();
+        return result;
+    }
 
     /**
      * Applies the rule to a given delta target. This is presumably the host
@@ -437,7 +434,7 @@ public class RuleApplication implements DeltaApplier {
      * Two rule applications are equal if they have the same source and event.
      */
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (obj == this) {
             return true;
         }
@@ -471,13 +468,14 @@ public class RuleApplication implements DeltaApplier {
      * value node.
      */
     private HostEdgeSet getValueNodeEdges(ValueNode node) {
-        if (this.valueNodeEdgesMap == null) {
-            this.valueNodeEdgesMap = new HashMap<>();
+        var map = this.valueNodeEdgesMap;
+        if (map == null) {
+            this.valueNodeEdgesMap = map = new HashMap<>();
         }
-        HostEdgeSet result = this.valueNodeEdgesMap.get(node);
+        HostEdgeSet result = map.get(node);
         if (result == null) {
             result = new HostEdgeSet(this.source.inEdgeSet(node));
-            this.valueNodeEdgesMap.put(node, result);
+            map.put(node, result);
         }
         return result;
     }
@@ -486,56 +484,63 @@ public class RuleApplication implements DeltaApplier {
      * A mapping from target value nodes of erased edges to their remaining
      * incident edges, used to judge spurious value nodes.
      */
-    private Map<ValueNode,HostEdgeSet> valueNodeEdgesMap;
+    private @Nullable Map<ValueNode,@Nullable HostEdgeSet> valueNodeEdgesMap;
 
     /**
      * Adds a node to the set of value nodes that have become isolated
      * due to edge erasure.
      */
     private void registerIsolatedValueNode(ValueNode node) {
-        if (this.isolatedValueNodes == null) {
-            this.isolatedValueNodes = new HashSet<>();
+        var set = this.isolatedValueNodes;
+        if (set == null) {
+            this.isolatedValueNodes = set = new HashSet<>();
         }
-        this.isolatedValueNodes.add(node);
+        set.add(node);
     }
 
     /**
      * Removes an isolated node (a new edge to it has been added).
      */
     private void unregisterIsolatedValueNode(ValueNode node) {
-        if (this.isolatedValueNodes != null) {
-            this.isolatedValueNodes.remove(node);
+        var set = this.isolatedValueNodes;
+        if (set != null) {
+            set.remove(node);
         }
     }
 
     /** The set of value nodes that have become isolated due to edge erasure. */
-    private Set<ValueNode> isolatedValueNodes;
+    private @Nullable Set<ValueNode> isolatedValueNodes;
 
     /**
      * Registers that a value node has been added.
      * @return {@code true} if this is a newly registered node
      */
     private boolean registerAddedValueNode(ValueNode node) {
-        if (this.addedValueNodes == null) {
-            this.addedValueNodes = new HashSet<>();
+        var set = this.addedValueNodes;
+        if (set == null) {
+            this.addedValueNodes = set = new HashSet<>();
         }
-        return this.addedValueNodes.add(node);
+        return set.add(node);
     }
 
     /** The set of value nodes that have been added due to edge creation. */
-    private Set<ValueNode> addedValueNodes;
+    private @Nullable Set<ValueNode> addedValueNodes;
 
     /** Returns the relation between rule nodes and target graph nodes. */
-    public Map<RuleNode,HostNodeSet> getComatch() {
-        if (this.comatch == null) {
-            this.comatch = computeComatch();
-        }
-        return this.comatch;
+    public Map<RuleNode,@Nullable HostNodeSet> getComatch() {
+        return this.comatch.get();
     }
 
+    /**
+     * Mapping from selected RHS elements to target graph. The comatch is
+     * constructed in the course of rule application.
+     */
+    private Factory<Map<RuleNode,@Nullable HostNodeSet>> comatch
+        = Factory.lazy(this::computeComatch);
+
     /** Computes the relation between rule nodes and target graph nodes. */
-    private Map<RuleNode,HostNodeSet> computeComatch() {
-        Map<RuleNode,HostNodeSet> result = new HashMap<>();
+    private Map<RuleNode,@Nullable HostNodeSet> computeComatch() {
+        Map<RuleNode,@Nullable HostNodeSet> result = new HashMap<>();
         RuleEvent event = getEvent();
         if (event instanceof BasicEvent) {
             collectComatch(result, (BasicEvent) event);
@@ -547,8 +552,8 @@ public class RuleApplication implements DeltaApplier {
         return result;
     }
 
-    private void collectComatch(Map<RuleNode,HostNodeSet> result, BasicEvent event) {
-        Rule rule = event.getRule();
+    private void collectComatch(Map<RuleNode,@Nullable HostNodeSet> result, BasicEvent event) {
+        Rule rule = event.getAction();
         Anchor anchor = rule.getAnchor();
         var anchorImages = event.getAnchorImages();
         for (int i = 0; i < anchor.size(); i++) {
@@ -562,13 +567,17 @@ public class RuleApplication implements DeltaApplier {
             }
         }
         RuleNode[] creators = rule.getCreatorNodes();
-        for (int i = 0; i < creators.length; i++) {
-            addToComatch(result, creators[i], this.addedNodes[i]);
+        if (creators.length > 0) {
+            var addedNodes = getAddedNodes();
+            assert addedNodes != null;
+            for (int i = 0; i < creators.length; i++) {
+                addToComatch(result, creators[i], addedNodes[i]);
+            }
         }
     }
 
     /** Adds a key/value pair to a relational map. */
-    private void addToComatch(Map<RuleNode,HostNodeSet> result, RuleNode ruleNode,
+    private void addToComatch(Map<RuleNode,@Nullable HostNodeSet> result, RuleNode ruleNode,
                               HostNode hostNode) {
         assert hostNode != null;
         HostNodeSet image = result.get(ruleNode);
@@ -577,12 +586,6 @@ public class RuleApplication implements DeltaApplier {
         }
         image.add(hostNode);
     }
-
-    /**
-     * Mapping from selected RHS elements to target graph. The comatch is
-     * constructed in the course of rule application.
-     */
-    private Map<RuleNode,HostNodeSet> comatch;
 
     private final static boolean DEBUG = false;
 }

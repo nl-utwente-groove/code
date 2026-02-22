@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2023 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -17,6 +17,7 @@
 package nl.utwente.groove.explore.result;
 
 import nl.utwente.groove.grammar.Action;
+import nl.utwente.groove.grammar.Prover;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
@@ -27,14 +28,14 @@ import nl.utwente.groove.lts.GraphTransition;
  * Special fields are maintained inside to record if the predicate can be
  * evaluated over graph states or graph transitions. This information is used
  * in the <code>PredicateAcceptor</code>.
- *  
+ *
  * @see PredicateAcceptor
  * @author Maarten de Mol
  */
-public abstract class Predicate<X> {
-    /** 
+public abstract class Predicate<X> implements java.util.function.Predicate<X> {
+    /**
      * Constructor for a state or transition predicate.
-     * 
+     *
      * @param forStates if {@code true}, this is a state predicate;
      * otherwise, it is a transition predicate.
      */
@@ -43,18 +44,13 @@ public abstract class Predicate<X> {
     }
 
     /** Indicates that this predicate tests graph states.
-     * If {@code false}, it tests rule transitions. 
+     * If {@code false}, it tests rule transitions.
      */
     public boolean forStates() {
         return this.forStates;
     }
 
     private final boolean forStates;
-
-    /**
-     * The evaluation method of the predicate.
-     */
-    public abstract boolean eval(X value);
 
     /** Predicate class for graph states. */
     abstract public static class StatePredicate extends Predicate<GraphState> {
@@ -87,8 +83,8 @@ public abstract class Predicate<X> {
         }
 
         @Override
-        public boolean eval(X value) {
-            return !this.P.eval(value);
+        public boolean test(X value) {
+            return !this.P.test(value);
         }
     }
 
@@ -110,8 +106,8 @@ public abstract class Predicate<X> {
         }
 
         @Override
-        public boolean eval(X value) {
-            return this.P.eval(value) && this.Q.eval(value);
+        public boolean test(X value) {
+            return this.P.test(value) && this.Q.test(value);
         }
     }
 
@@ -133,8 +129,8 @@ public abstract class Predicate<X> {
         }
 
         @Override
-        public boolean eval(X value) {
-            return this.P.eval(value) || this.Q.eval(value);
+        public boolean test(X value) {
+            return this.P.test(value) || this.Q.test(value);
         }
     }
 
@@ -156,9 +152,9 @@ public abstract class Predicate<X> {
         }
 
         @Override
-        public boolean eval(X value) {
-            if (this.P.eval(value)) {
-                return this.Q.eval(value);
+        public boolean test(X value) {
+            if (this.P.test(value)) {
+                return this.Q.test(value);
             } else {
                 return true;
             }
@@ -172,16 +168,16 @@ public abstract class Predicate<X> {
      * <======================================================================>
      */
     public static class RuleApplicable extends StatePredicate {
-        private final Rule rule;
-
         /** Default constructor. */
         public RuleApplicable(Rule rule) {
-            this.rule = rule;
+            this.prover = rule.getProver();
         }
 
+        private final Prover prover;
+
         @Override
-        public boolean eval(GraphState value) {
-            return this.rule.hasMatch(value.getGraph());
+        public boolean test(GraphState value) {
+            return this.prover.hasProof(value.getGraph());
         }
     }
 
@@ -200,7 +196,7 @@ public abstract class Predicate<X> {
         }
 
         @Override
-        public boolean eval(GraphTransition value) {
+        public boolean test(GraphTransition value) {
             return value.getAction().equals(this.action);
         }
     }

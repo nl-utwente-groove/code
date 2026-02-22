@@ -116,7 +116,7 @@ public class LTSJEdge extends AJEdge<@NonNull GTS,LTSJGraph,LTSJModel,LTSJVertex
             if (jGraph.isShowAnchors()) {
                 description = trans.getEvent().toString();
             } else {
-                description = trans.getEvent().getRule().getQualName().toString();
+                description = trans.getEvent().getAction().getQualName().toString();
             }
             displayedLabels[labelIndex] = HTMLConverter.STRONG_TAG.on(description, true);
             labelIndex++;

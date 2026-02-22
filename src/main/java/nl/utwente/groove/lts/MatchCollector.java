@@ -61,7 +61,7 @@ public class MatchCollector {
             GraphState parent = ns.source();
             this.parentClosed = parent.isClosed();
             this.parentTransMap = parent.getCache().getTransitionMap();
-            Rule lastRule = ns.getEvent().getRule();
+            Rule lastRule = ns.getEvent().getAction();
             this.enabledRules = this.record.getEnabledRules(lastRule);
             this.disabledRules = this.record.getDisabledRules(lastRule);
         } else {
@@ -82,6 +82,7 @@ public class MatchCollector {
             System.out.printf("Matches for %s, %s%n  ", this.state, this.state.getGraph());
         }
         assert step != null;
+        var rule = step.getRule();
         // there are three reasons to want to use the parent matches: to
         // save matching time, to reuse added nodes, and to find confluent
         // diamonds. The first is only relevant if the rule is not (re)enabled
@@ -92,7 +93,7 @@ public class MatchCollector {
         if (!isDisabled) {
             for (GraphTransition trans : this.parentTransMap) {
                 if (trans instanceof RuleTransition ruleTrans) {
-                    if (ruleTrans.getAction().equals(step.getRule())) {
+                    if (ruleTrans.getAction().equals(rule)) {
                         MatchResult match = ruleTrans.getKey();
                         if (isModifying) {
                             // we can reuse the event but not the control step
@@ -112,7 +113,7 @@ public class MatchCollector {
             RuleToHostMap boundMap = extractBinding(step);
             if (boundMap != null) {
                 final Record record = this.record;
-                Optional<MatchChecker> matchFilter = step.getRule().getMatchFilter();
+                Optional<MatchChecker> matchFilter = rule.getMatchFilter();
                 Visitor<Proof,Boolean> eventCollector = new Visitor<>(false) {
                     @Override
                     protected boolean process(Proof proof) {
@@ -149,7 +150,7 @@ public class MatchCollector {
                         return true;
                     }
                 };
-                step.getRule().traverseMatches(this.state.getGraph(), boundMap, eventCollector);
+                rule.getProver().traverseMatches(this.state.getGraph(), boundMap, eventCollector);
             }
         }
         if (DEBUG) {

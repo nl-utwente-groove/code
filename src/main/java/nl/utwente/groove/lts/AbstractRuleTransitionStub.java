@@ -65,7 +65,7 @@ abstract class AbstractRuleTransitionStub implements RuleTransitionStub {
 
     @Override
     public final Rule getAction() {
-        return getEvent().getRule();
+        return getEvent().getAction();
     }
 
     @Override

@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.transform;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.grammar.host.HostNode;
 
 /**
@@ -26,6 +28,7 @@ import nl.utwente.groove.grammar.host.HostNode;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public interface DeltaApplier {
     /**
      * When invoked, will call {@link DeltaTarget#addNode(HostNode)} and

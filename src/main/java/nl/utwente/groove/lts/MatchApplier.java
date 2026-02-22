@@ -130,7 +130,7 @@ public class MatchApplier {
             RuleTransition parentOut = match.getTransition();
             assert parentOut != null;
             addedNodes = parentOut.getAddedNodes();
-        } else if (event.getRule().hasNodeCreators()) {
+        } else if (event.getAction().hasNodeCreators()) {
             // compute the frame values at the same time, if there are any
             Fragment fragment = hasVars
                 ? Fragment.NODE_ALL

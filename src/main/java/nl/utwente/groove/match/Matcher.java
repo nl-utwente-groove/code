@@ -24,6 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.Condition;
 import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostGraph;
@@ -45,6 +48,7 @@ import nl.utwente.groove.util.Visitor.Finder;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public class Matcher implements SearchStrategy {
     /** Constructs a fresh instance of this strategy, for a given
      * condition and sets of seeded (i.e., pre-matched) nodes and edges.
@@ -52,7 +56,7 @@ public class Matcher implements SearchStrategy {
      * @param condition the condition that the strategy will find matches for
      * @param seed set of nodes that will be pre-matched when the strategy is invoked
      */
-    public Matcher(MatcherFactory factory, Condition condition, Anchor seed) {
+    public Matcher(MatcherFactory factory, Condition condition, @Nullable Anchor seed) {
         this.factory = factory;
         this.condition = condition;
         if (seed == null && condition.getOp().hasPattern()) {
@@ -73,7 +77,7 @@ public class Matcher implements SearchStrategy {
      *        <code>host</code> that all the solutions should respect. May be
      *        <code>null</code> if there is no predefined mapping
      */
-    public TreeMatch find(HostGraph host, RuleToHostMap seedMap) {
+    public @Nullable TreeMatch find(HostGraph host, @Nullable RuleToHostMap seedMap) {
         Finder<TreeMatch> finder = this.finder.newInstance();
         TreeMatch result = traverse(host, seedMap, finder);
         finder.dispose();
@@ -87,7 +91,7 @@ public class Matcher implements SearchStrategy {
      *        <code>host</code> that all the solutions should respect. May be
      *        <code>null</code> if there is no predefined mapping
      */
-    public List<TreeMatch> findAll(HostGraph host, RuleToHostMap seedMap) {
+    public List<TreeMatch> findAll(HostGraph host, @Nullable RuleToHostMap seedMap) {
         List<TreeMatch> result = new ArrayList<>();
         Collector<TreeMatch,List<TreeMatch>> collector = this.collector.newInstance(result);
         traverse(host, seedMap, collector);
@@ -111,7 +115,8 @@ public class Matcher implements SearchStrategy {
      * @see Visitor#dispose()
      */
     @Override
-    public <T> T traverse(HostGraph host, RuleToHostMap seedMap, Visitor<TreeMatch,T> visitor) {
+    public <T> @Nullable T traverse(HostGraph host, @Nullable RuleToHostMap seedMap,
+                                    Visitor<TreeMatch,T> visitor) {
         assert isCorrectSeeding(seedMap);
         assert host.getFactory().getTypeFactory().getGraph() == this.condition.getTypeGraph();
         return getSearchStrategy().traverse(host, seedMap, visitor);
@@ -122,10 +127,14 @@ public class Matcher implements SearchStrategy {
         return this.condition;
     }
 
+    private final Condition condition;
+
     /** Returns the subgraph that should be pre-matched when this strategy is invoked. */
-    public final Anchor getSeed() {
+    public final @Nullable Anchor getSeed() {
         return this.seed;
     }
+
+    private final @Nullable Anchor seed;
 
     @Override
     public SearchEngine getEngine() {
@@ -143,26 +152,28 @@ public class Matcher implements SearchStrategy {
      * @throws IllegalArgumentException if the seed map does not contain the
      * correct elements
      */
-    private final boolean isCorrectSeeding(RuleToHostMap seedMap) throws IllegalArgumentException {
+    private final boolean isCorrectSeeding(@Nullable RuleToHostMap seedMap) throws IllegalArgumentException {
+        var seed = this.seed;
         if (seedMap == null) {
             // the seed map is null, so there should not be any seed nodes or edges
-            if (this.seed != null && !this.seed.isEmpty()) {
+            if (seed != null && !seed.isEmpty()) {
                 throw Exceptions.illegalArg("Unmatched seed keys: %s", this.seed);
             }
         } else {
+            assert seed != null;
             var pattern = this.condition.getPattern();
             assert pattern != null;
-            if (!seedMap.nodeMap().keySet().equals(this.seed.nodeSet())) {
+            if (!seedMap.nodeMap().keySet().equals(seed.nodeSet())) {
                 // test for the difference between seed nodes and the seed map
-                Set<RuleNode> seedNodes = new HashSet<>(this.seed.nodeSet());
+                Set<RuleNode> seedNodes = new HashSet<>(seed.nodeSet());
                 seedNodes.removeAll(seedMap.nodeMap().keySet());
                 if (!seedNodes.isEmpty()) {
                     throw Exceptions.illegalArg("Unmatched seed nodes: %s", seedNodes);
                 }
                 Map<RuleNode,HostNode> seedNodeMap = new HashMap<>(seedMap.nodeMap());
                 Set<RuleNode> seedNodeKeys = seedNodeMap.keySet();
-                seedNodeKeys.removeAll(this.seed.nodeSet());
-                for (RuleEdge edge : this.seed.edgeSet()) {
+                seedNodeKeys.removeAll(seed.nodeSet());
+                for (RuleEdge edge : seed.edgeSet()) {
                     seedNodeKeys.remove(edge.source());
                     seedNodeKeys.remove(edge.target());
                 }
@@ -171,27 +182,27 @@ public class Matcher implements SearchStrategy {
                     throw Exceptions.illegalArg("Spurious node seeding: %s", seedNodeMap);
                 }
             }
-            if (!seedMap.edgeMap().keySet().equals(this.seed.edgeSet())) {
-                Set<RuleEdge> seedEdges = new HashSet<>(this.seed.edgeSet());
+            if (!seedMap.edgeMap().keySet().equals(seed.edgeSet())) {
+                Set<RuleEdge> seedEdges = new HashSet<>(seed.edgeSet());
                 seedEdges.removeAll(seedMap.edgeMap().keySet());
                 if (!seedEdges.isEmpty()) {
                     throw Exceptions.illegalArg("Unmatched seed edges: %s", seedEdges);
                 }
                 Map<RuleEdge,HostEdge> seedEdgeMap = new HashMap<>(seedMap.edgeMap());
-                seedEdgeMap.keySet().removeAll(this.seed.edgeSet());
+                seedEdgeMap.keySet().removeAll(seed.edgeSet());
                 seedEdgeMap.keySet().retainAll(pattern.edgeSet());
                 if (!seedEdges.isEmpty()) {
                     throw Exceptions.illegalArg("Spurious edge seeding: %s", seedEdgeMap);
                 }
             }
-            if (!seedMap.getValuation().keySet().equals(this.seed.varSet())) {
-                Set<LabelVar> seedVars = new HashSet<>(this.seed.varSet());
+            if (!seedMap.getValuation().keySet().equals(seed.varSet())) {
+                Set<LabelVar> seedVars = new HashSet<>(seed.varSet());
                 seedVars.removeAll(seedMap.getValuation().keySet());
                 if (!seedVars.isEmpty()) {
                     throw Exceptions.illegalArg("Unmatched seed variables: %s", seedVars);
                 }
                 Valuation seedValuation = new Valuation(seedMap.getValuation());
-                seedValuation.keySet().removeAll(this.seed.varSet());
+                seedValuation.keySet().removeAll(seed.varSet());
                 seedValuation.keySet().retainAll(pattern.varSet());
                 if (!seedVars.isEmpty()) {
                     throw Exceptions.illegalArg("Spurious variable seeding: %s", seedValuation);
@@ -207,17 +218,15 @@ public class Matcher implements SearchStrategy {
      * search engine wrapped in the matcher factory.
      */
     public final SearchStrategy getSearchStrategy() {
-        if (this.inner == null || this.inner.getEngine() != getEngine()) {
-            this.inner = getEngine().createMatcher(getCondition(), getSeed());
+        var result = this.inner;
+        if (result == null || result.getEngine() != getEngine()) {
+            this.inner = result = getEngine().createMatcher(getCondition(), getSeed());
         }
-        return this.inner;
+        return result;
     }
 
+    private @Nullable SearchStrategy inner;
     private final MatcherFactory factory;
-    private final Condition condition;
-    private final Anchor seed;
-
-    private SearchStrategy inner;
     /** Reusable finder for {@link #find(HostGraph, RuleToHostMap)}. */
     private final Finder<TreeMatch> finder = Visitor.newFinder(null);
     /** Reusable collector for {@link #findAll(HostGraph, RuleToHostMap)}. */

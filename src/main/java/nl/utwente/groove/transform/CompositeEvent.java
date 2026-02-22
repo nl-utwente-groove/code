@@ -85,7 +85,7 @@ public class CompositeEvent extends AbstractRuleEvent<CompositeEvent.CompositeEv
     public String getAnchorImageString() {
         List<String> eventLabels = new ArrayList<>();
         for (BasicEvent event : this.eventArray) {
-            eventLabels.add(event.getRule().getQualName() + event.getAnchorImageString());
+            eventLabels.add(event.getAction().getQualName() + event.getAnchorImageString());
         }
         return Arrays.toString(eventLabels.toArray());
     }
@@ -120,7 +120,7 @@ public class CompositeEvent extends AbstractRuleEvent<CompositeEvent.CompositeEv
 
     @Override
     public int compareTo(RuleEvent other) {
-        int result = getRule().compareTo(other.getRule());
+        int result = getAction().compareTo(other.getAction());
         if (result == 0) {
             // the same rule, so the other is also a composite event
             BasicEvent[] myEventArray = this.eventArray;

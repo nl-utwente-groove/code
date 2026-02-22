@@ -31,10 +31,8 @@ import nl.utwente.groove.grammar.rule.RuleToHostMap;
  * @version $Revision$ $Date: 2008-03-03 21:27:40 $
  */
 public interface RuleEvent extends Comparable<RuleEvent>, Event {
-    /**
-     * Returns the rule for which this is an application.
-     */
-    public Rule getRule();
+    @Override
+    public Rule getAction();
 
     /**
      * Returns a string representation of the anchor image.

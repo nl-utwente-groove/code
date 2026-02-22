@@ -33,7 +33,7 @@ public class Predicate_ruleevent_label extends TransPrologCode {
     public int execute(Interpreter interpreter, boolean backtrackMode,
                        Term[] args) throws PrologException {
         RuleEvent re = getRuleEvent(args[0]);
-        Term lbl = AtomTerm.get(re.getRule().getQualName().toString());
+        Term lbl = AtomTerm.get(re.getAction().getQualName().toString());
         return interpreter.unify(args[1], lbl);
     }
 }

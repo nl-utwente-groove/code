@@ -55,7 +55,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
 
     @Override
     public Rule getAction() {
-        return this.event.getRule();
+        return this.event.getAction();
     }
 
     /** Returns the event wrapped in this label. */

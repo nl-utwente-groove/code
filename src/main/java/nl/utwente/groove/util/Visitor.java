@@ -58,7 +58,7 @@ abstract public class Visitor<T,R> {
      * @see #isContinue()
      */
     final public boolean visit(T object) {
-        assert!isDisposed() && isContinue();
+        assert !isDisposed() && isContinue();
         if (!process(object)) {
             finish();
         }
@@ -145,7 +145,7 @@ abstract public class Visitor<T,R> {
     /** Constructs a collector for a given property and collection. */
     @SuppressWarnings("unchecked")
     static public <T,C extends Collection<T>> Collector<T,C> newCollector(C collection,
-        Property<T> property) {
+                                                                          Property<T> property) {
         if (property == null) {
             return prototypeCollector.newInstance(collection, property);
         } else {
@@ -155,7 +155,7 @@ abstract public class Visitor<T,R> {
 
     /** Constructs a collector. */
     @SuppressWarnings("unchecked")
-    static public <T,C extends Collection<T>> Collector<T,C> newCollector(C collection) {
+    static public <T,C extends Collection<T>> Collector<T,C> newCollector(@Nullable C collection) {
         return prototypeCollector.newInstance(collection);
     }
 
@@ -167,11 +167,11 @@ abstract public class Visitor<T,R> {
         return result;
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"}) private static final Collector prototypeCollector =
-        new Collector(null);
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private static final Collector prototypeCollector = new Collector(null);
 
-    @SuppressWarnings({"rawtypes", "unchecked"}) private static final Finder prototypeFinder =
-        new Finder(null);
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private static final Finder prototypeFinder = new Finder(null);
 
     /** A visitor that stores the first visited object satisfying a given property. */
     static public class Finder<T> extends Visitor<T,T> {

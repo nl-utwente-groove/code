@@ -181,11 +181,12 @@ class ConfluenceAnalyzer {
     private static Set<HostGraphWithMorphism> computeNewStates(Set<HostGraphWithMorphism> states,
                                                                Grammar grammar) {
         Set<Rule> rules = grammar.getAllRules();
+        var provers = rules.stream().map(Rule::getProver).toList();
         Set<HostGraphWithMorphism> result = new HashSet<>();
         for (HostGraphWithMorphism state : states) {
             Record record = new Record(grammar, state.getHostGraph().getFactory());
-            for (Rule rule : rules) {
-                Collection<Proof> matches = rule.getAllMatches(state.getHostGraph(), null);
+            for (var prover : provers) {
+                Collection<Proof> matches = prover.getAllMatches(state.getHostGraph());
                 for (Proof proof : matches) {
                     RuleEvent event = proof.newEvent(record);
                     RuleApplication app = new RuleApplication(event, state.getHostGraph());
