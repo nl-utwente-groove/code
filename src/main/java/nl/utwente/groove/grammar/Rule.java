@@ -34,7 +34,6 @@ import java.util.TreeSet;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -510,7 +509,7 @@ public class Rule implements Action, Fixable {
     private @Nullable Role role;
 
     @Override
-    public @NonNull CheckPolicy getPolicy() {
+    public CheckPolicy getPolicy() {
         CheckPolicy result = getGrammarProperties().getRulePolicy().get(getQualName());
         if (result == null) {
             result = CheckPolicy.ERROR;

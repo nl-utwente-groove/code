@@ -35,7 +35,7 @@ public enum CheckPolicy {
     OFF("off", "The constraint is disabled"),
     /** Violation is checked but not propagated. */
     SILENT("silent", "The constraint is tested silently"),
-    /** Violation is a state error. */
+    /** Violation is a state error (default). */
     ERROR("error", "Constraint violation is a state error"),
     /** Violation removes the state. */
     REMOVE("remove", "Constraint violation causes a state to be removed"),;

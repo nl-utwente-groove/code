@@ -151,8 +151,8 @@ public interface Action extends Callable, Comparable<Action> {
      * If this action is an invariant or forbidden property,
      * returns the consequence of its violation.
      */
-    default public @Nullable CheckPolicy getPolicy() {
-        return null;
+    default public CheckPolicy getPolicy() {
+        return CheckPolicy.ERROR;
     }
 
     /**
