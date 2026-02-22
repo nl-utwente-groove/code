@@ -92,7 +92,9 @@ public class QuantifierCountChecker extends ReteNetworkNode implements ReteState
 
     private void makePattern() {
         ArrayList<RuleNode> rootNodes = new ArrayList<>();
-        rootNodes.addAll(this.condition.getRoot().nodeSet());
+        var root = this.condition.getRoot();
+        assert root != null;
+        rootNodes.addAll(root.nodeSet());
         Collections.sort(rootNodes, NodeComparator.instance());
         this.pattern = new RuleElement[rootNodes.size() + 1];
         int i = 0;
@@ -247,15 +249,16 @@ public class QuantifierCountChecker extends ReteNetworkNode implements ReteState
                 this.matches.add(m);
             }
         }
-        if (this.condition.getCountNode().getConstant() == null) {
+        var countNode = this.condition.getCountNode();
+        if (countNode != null && countNode.getConstant() == null) {
             Algebra<Integer> intAlgebra = JavaIntAlgebra.instance;
-            ValueNode countNode = this
+            ValueNode countValue = this
                 .getOwner()
                 .getOwnerEngine()
                 .getNetwork()
                 .getHostFactory()
                 .createNode(intAlgebra, intAlgebra.toValueFromJava(0));
-            this.dummyMatch = new ReteCountMatch(this, countNode);
+            this.dummyMatch = new ReteCountMatch(this, countValue);
         } else {
             this.dummyMatch = null;
         }
@@ -310,7 +313,9 @@ public class QuantifierCountChecker extends ReteNetworkNode implements ReteState
      * n-node will only produce one count match.
      */
     public boolean isAnchored() {
-        return !this.condition.getRoot().isEmpty();
+        var root = this.condition.getRoot();
+        assert root != null;
+        return !root.isEmpty();
     }
 
     /**

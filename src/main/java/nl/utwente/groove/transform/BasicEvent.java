@@ -59,7 +59,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-03-04 11:01:33 $
  */
-final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEventCache> {
+final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCache> {
     /**
      * Constructs a new event on the basis of a given production rule and anchor
      * map. A further parameter determines whether information should be stored
@@ -646,7 +646,7 @@ final public class BasicEvent extends AbstractRuleEvent<Rule,BasicEvent.BasicEve
         = CacheReference.<BasicEventCache>newInstance(false);
 
     /** Cache holding auxiliary data structures for the event. */
-    final class BasicEventCache extends AbstractRuleEvent<Rule,BasicEventCache>.AbstractEventCache {
+    final class BasicEventCache extends AbstractRuleEvent.AbstractEventCache {
         /**
          * @return Returns the anchorMap.
          */

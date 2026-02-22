@@ -35,6 +35,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.AlgebraFamily;
@@ -66,6 +67,7 @@ import nl.utwente.groove.match.plan.PlanSearchStrategy;
 import nl.utwente.groove.transform.Proof;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
+import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Visitor;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -75,6 +77,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public class Rule implements Action, Fixable {
     /**
      * Constructs a rule that is a sub-condition of another rule.
@@ -83,13 +86,16 @@ public class Rule implements Action, Fixable {
      * @param coRoot map of creator nodes in the parent rule to creator nodes
      *        of this rule
      */
-    public Rule(Condition condition, RuleGraph rhs, RuleGraph coRoot) {
-        assert condition.getTypeGraph().getFactory() == rhs.getFactory().getTypeFactory()
+    public Rule(Condition condition, RuleGraph rhs, @Nullable RuleGraph coRoot) {
+        var typeGraph = condition.getTypeGraph();
+        assert typeGraph != null && typeGraph.getFactory() == rhs.getFactory().getTypeFactory()
             && (coRoot == null || rhs.getFactory() == coRoot.getFactory());
         this.condition = condition;
         this.qualName = QualName.parse(condition.getName());
         this.coRoot = coRoot;
-        this.lhs = condition.getPattern();
+        var pattern = condition.getPattern();
+        assert pattern != null;
+        this.lhs = pattern;
         this.rhs = rhs;
         assert coRoot == null || rhs().nodeSet().containsAll(coRoot.nodeSet()) : String
             .format("RHS nodes %s do not contain all co-root values %s", rhs().nodeSet(),
@@ -106,21 +112,25 @@ public class Rule implements Action, Fixable {
 
     /** Returns the type graph of this rule. */
     public TypeGraph getTypeGraph() {
-        return getCondition().getTypeGraph();
+        var result = getCondition().getTypeGraph();
+        assert result != null;
+        return result;
     }
 
     /** Returns root graph of the condition with which this rule is associated. */
     public RuleGraph getRoot() {
-        return getCondition().getRoot();
+        var result = getCondition().getRoot();
+        assert result != null;
+        return result;
     }
 
     /** Returns the mapping from the parent RHS to this rule's RHS. */
-    final RuleGraph getCoRoot() {
+    final @Nullable RuleGraph getCoRoot() {
         return this.coRoot;
     }
 
     /** Mapping from the context of this rule to the RHS. */
-    private final RuleGraph coRoot;
+    private final @Nullable RuleGraph coRoot;
 
     /**
      * Returns the left hand side of this Rule.
@@ -161,7 +171,9 @@ public class Rule implements Action, Fixable {
     /** Returns the system properties. */
     @Override
     public GrammarProperties getGrammarProperties() {
-        return getCondition().getGrammarProperties();
+        var result = getCondition().getGrammarProperties();
+        assert result != null;
+        return result;
     }
 
     /**
@@ -172,14 +184,13 @@ public class Rule implements Action, Fixable {
      */
     public void setParent(Rule parent, int[] level) {
         testFixed(false);
-        assert getCoRoot() != null : String
+        var coRoot = getCoRoot();
+        assert coRoot != null : String
             .format("Sub-rule at level %s must have a non-trivial co-root map",
                     Arrays.toString(level));
-        if (parent != null) {
-            assert parent.rhs().nodeSet().containsAll(getCoRoot().nodeSet()) : String
-                .format("Rule '%s': Parent nodes %s do not contain all co-roots %s", getQualName(),
-                        parent.rhs().nodeSet(), getCoRoot().nodeSet());
-        }
+        assert parent.rhs().nodeSet().containsAll(coRoot.nodeSet()) : String
+            .format("Rule '%s': Parent nodes %s do not contain all co-roots %s", getQualName(),
+                    parent.rhs().nodeSet(), coRoot.nodeSet());
         this.parent = parent;
     }
 
@@ -187,18 +198,19 @@ public class Rule implements Action, Fixable {
      * Returns the parent rule of this rule. The parent may be this rule itself.
      */
     public Rule getParent() {
-        if (this.parent == null) {
+        var result = this.parent;
+        if (result == null) {
             testFixed(true);
-            this.parent = this;
+            this.parent = result = this;
         }
-        return this.parent;
+        return result;
     }
 
     /**
      * The parent rule of this rule; may be <code>null</code>, if this is a
      * top-level rule.
      */
-    private Rule parent;
+    private @Nullable Rule parent;
 
     /**
      * Sets the rule properties from a graph property map.
@@ -285,7 +297,7 @@ public class Rule implements Action, Fixable {
 
     /** Returns the optional match filter method. */
     public Optional<MatchChecker> getMatchFilter() {
-        return Optional.ofNullable(this.matchFilter);
+        return Groove.ofNullable(this.matchFilter);
     }
 
     private @Nullable MatchChecker matchFilter;
@@ -317,6 +329,7 @@ public class Rule implements Action, Fixable {
         }
     }
 
+    @Nullable
     Set<RuleNode> computeInputNodes() {
         Set<RuleNode> result = null;
         // if this is a top-level rule, the (only) input nodes
@@ -365,13 +378,14 @@ public class Rule implements Action, Fixable {
      */
     private final Supplier<Collection<Rule>> subRules = lazy(() -> {
         var result = new TreeSet<Rule>();
-        getCondition()
-            .getSubConditions()
-            .stream()
-            .flatMap(c -> c.getSubConditions().stream())
-            .filter(c -> c.hasRule())
-            .map(c -> c.getRule())
-            .forEach(r -> result.add(r));
+        for (var subCondition : getCondition().getSubConditions()) {
+            for (var subSubCondition : subCondition.getSubConditions()) {
+                var rule = subSubCondition.getRule();
+                if (rule != null) {
+                    result.add(rule);
+                }
+            }
+        }
         return result;
     });
 
@@ -390,7 +404,7 @@ public class Rule implements Action, Fixable {
             // add the LHS parameters to the root graph
             RuleNode parNode = parList.getPar(i).getNode();
             if (this.lhs.containsNode(parNode)) {
-                this.condition.getRoot().addNode(parNode);
+                getRoot().addNode(parNode);
             }
         }
     }
@@ -414,13 +428,17 @@ public class Rule implements Action, Fixable {
      * rule.
      */
     Set<RuleNode> getHiddenPars() {
-        return this.hiddenPars;
+        var result = this.hiddenPars;
+        if (result == null) {
+            this.hiddenPars = result = new HashSet<>();
+        }
+        return result;
     }
 
     /**
      * Set of anonymous (unnumbered) parameters.
      */
-    private Set<RuleNode> hiddenPars;
+    private @Nullable Set<RuleNode> hiddenPars;
 
     /**
      * Returns, for a given index in the signature, the corresponding
@@ -435,7 +453,7 @@ public class Rule implements Action, Fixable {
      * anchor respectively created node indices.
      * @see #getParBinding(int)
      */
-    private @NonNull List<Binding> computeParBinding() {
+    private List<Binding> computeParBinding() {
         List<Binding> result = new ArrayList<>();
         var creatorNodes = Arrays.asList(getCreatorNodes());
         for (RulePar par : getSignature()) {
@@ -484,14 +502,15 @@ public class Rule implements Action, Fixable {
 
     @Override
     public Role getRole() {
-        assert !this.role.isProperty() || isPropertyLike();
-        return this.role;
+        var result = this.role;
+        assert result != null && (!result.isProperty() || isPropertyLike());
+        return result;
     }
 
-    private Role role;
+    private @Nullable Role role;
 
     @Override
-    public CheckPolicy getPolicy() {
+    public @NonNull CheckPolicy getPolicy() {
         CheckPolicy result = getGrammarProperties().getRulePolicy().get(getQualName());
         if (result == null) {
             result = CheckPolicy.ERROR;
@@ -522,7 +541,7 @@ public class Rule implements Action, Fixable {
      *         <code>patternMatch</code> is not compatible with the pattern
      *         graph
      */
-    public Proof getMatch(HostGraph host, RuleToHostMap contextMap) {
+    public @Nullable Proof getMatch(HostGraph host, @Nullable RuleToHostMap contextMap) {
         return traverseMatches(host, contextMap, Visitor.<Proof>newFinder(null));
     }
 
@@ -536,7 +555,7 @@ public class Rule implements Action, Fixable {
      *         <code>null</code> and the condition is not ground, or if
      *         <code>contextMap</code> is not compatible with the root map
      */
-    public Collection<Proof> getAllMatches(HostGraph host, RuleToHostMap contextMap) {
+    public Collection<Proof> getAllMatches(HostGraph host, @Nullable RuleToHostMap contextMap) {
         List<Proof> result = new ArrayList<>();
         traverseMatches(host, contextMap, Visitor.newCollector(result));
         return result;
@@ -558,7 +577,7 @@ public class Rule implements Action, Fixable {
      *         graph
      * @see Visitor#visit(Object)
      */
-    public <R> R traverseMatches(final HostGraph host, RuleToHostMap contextMap,
+    public <R> R traverseMatches(final HostGraph host, @Nullable RuleToHostMap contextMap,
                                  final Visitor<Proof,R> visitor) {
         assert isFixed();
         RuleToHostMap seedMap = contextMap == null
@@ -646,7 +665,7 @@ public class Rule implements Action, Fixable {
     /**
      * Mapping from sets of initialised parameters to match strategies.
      */
-    private final Map<BitSet,Matcher> matcherMap = new HashMap<>();
+    private final Map<BitSet,@Nullable Matcher> matcherMap = new HashMap<>();
 
     /**
      * Returns a (precomputed) match strategy for the target
@@ -781,7 +800,8 @@ public class Rule implements Action, Fixable {
      * Compares two actions on the basis of their names.
      */
     @Override
-    public int compareTo(Action other) {
+    public int compareTo(@Nullable Action other) {
+        assert other != null;
         return getQualName().compareTo(other.getQualName());
     }
 
@@ -859,7 +879,7 @@ public class Rule implements Action, Fixable {
                 result.add(node);
             }
         }
-        result.removeAll(this.condition.getRoot().nodeSet());
+        result.removeAll(getRoot().nodeSet());
         return result.toArray(new RuleNode[result.size()]);
     }
 
@@ -1023,7 +1043,7 @@ public class Rule implements Action, Fixable {
         Set<RuleNode> result = new HashSet<>(rhs().nodeSet());
         result.removeAll(lhs().nodeSet());
         Rule parent = getParent();
-        if (parent != null && parent != this) {
+        if (parent != this) {
             result.removeAll(parent.rhs().nodeSet());
         }
         return result.toArray(new RuleNode[result.size()]);
@@ -1065,7 +1085,7 @@ public class Rule implements Action, Fixable {
         Set<RuleEdge> result = new HashSet<>(rhs().edgeSet());
         result.removeAll(lhs().edgeSet());
         Rule parent = getParent();
-        if (parent != null && parent != this) {
+        if (parent != this) {
             result.removeAll(parent.rhs().edgeSet());
         }
         result.removeAll(getLhsMergers());

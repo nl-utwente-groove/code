@@ -39,23 +39,26 @@ import nl.utwente.groove.util.cache.CacheReference;
  * @author Arend Rensink
  * @version $Revision$
  */
-public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEvent<R,C>.AbstractEventCache>
+public abstract class AbstractRuleEvent<C extends AbstractRuleEvent.AbstractEventCache>
     extends AbstractCacheHolder<C> implements RuleEvent {
     /** Constructs an event for a given rule. */
-    protected AbstractRuleEvent(CacheReference<C> template, R rule) {
+    protected AbstractRuleEvent(CacheReference<C> template, Rule rule) {
         super(template);
         this.rule = rule;
     }
 
     @Override
-    public R getAction() {
+    public Rule getAction() {
         return getRule();
     }
 
     @Override
-    public R getRule() {
+    public Rule getRule() {
         return this.rule;
     }
+
+    /** The rule for which this is an event. */
+    private final Rule rule;
 
     @Override
     public String toString() {
@@ -88,10 +91,9 @@ public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEve
         if (obj == this) {
             return true;
         }
-        if (!(obj instanceof AbstractRuleEvent)) {
+        if (!(obj instanceof AbstractRuleEvent other)) {
             return false;
         }
-        AbstractRuleEvent<?,?> other = (AbstractRuleEvent<?,?>) obj;
         if (getReuse() != EVENT) {
             return equalsEvent(other);
         }
@@ -160,6 +162,10 @@ public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEve
 
     @Override
     final public Proof getMatch(final HostGraph source) {
+        // This implementation does a linear search through the matches until one is found for
+        // which a proof can be extracted based on this event. For composite events, this may be
+        // super inefficient, and if there are indeterminate operations on lower levels, the
+        // "right" match may never be found
         assert isCorrectFor(source);
         // visitor that selects a proof that corresponds to this event
         Visitor<TreeMatch,Proof> matchVisitor = new Visitor<>() {
@@ -207,8 +213,6 @@ public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEve
      */
     abstract protected Proof extractProof(TreeMatch match);
 
-    /** The rule for which this is an event. */
-    private final R rule;
     /**
      * The precomputed hash code.
      */
@@ -217,7 +221,7 @@ public abstract class AbstractRuleEvent<R extends Rule,C extends AbstractRuleEve
     static final HostNode[] EMPTY_NODE_ARRAY = {};
 
     /** Cache holding the anchor map. */
-    abstract protected class AbstractEventCache implements Cache {
+    static abstract protected class AbstractEventCache implements Cache {
         // nothing here
     }
 }

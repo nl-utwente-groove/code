@@ -116,8 +116,8 @@ public class Record {
      */
     public RuleEvent normaliseEvent(RuleEvent event) {
         RuleEvent result;
-        if (getReuse() == EVENT && event instanceof AbstractRuleEvent<?,?>) {
-            result = this.eventMap.put((AbstractRuleEvent<?,?>) event);
+        if (getReuse() == EVENT && event instanceof AbstractRuleEvent other) {
+            result = this.eventMap.put(other);
             if (result == null) {
                 // the event is new.
                 result = event;

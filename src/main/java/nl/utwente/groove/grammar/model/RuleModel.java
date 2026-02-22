@@ -407,15 +407,16 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                     condition = new Condition(index.getName(), operator);
                 }
                 conditionTree.put(index, condition);
-                if (condition.hasRule() && !index.isTopLevel()) {
+                var rule = condition.getRule();
+                if (rule != null && !index.isTopLevel()) {
                     // look for the first parent rule
                     Index parentIndex = index.getParent();
-                    while (!conditionTree.get(parentIndex).hasRule()) {
+                    var parentRule = conditionTree.get(parentIndex).getRule();
+                    while (parentRule == null) {
                         parentIndex = parentIndex.getParent();
+                        parentRule = conditionTree.get(parentIndex).getRule();
                     }
-                    condition
-                        .getRule()
-                        .setParent(conditionTree.get(parentIndex).getRule(), index.getIntArray());
+                    rule.setParent(parentRule, index.getIntArray());
                 }
             }
             // now add subconditions and fix the conditions
@@ -1484,10 +1485,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             Operator operator = operatorEdge.getOperator();
             assert operator != null;
             if (productNode.getLevelNode() != null && operator.isIndeterminate()) {
-                throw new FormatException(
-                    "Indeterminate operator '%s' not allowed on quantified level "
-                        + "(do a feature request if you want this constraint dropped!)",
-                    operator.getName(), operatorEdge);
+                //                throw new FormatException(
+                //                    "Indeterminate operator '%s' not allowed on quantified level "
+                //                        + "(do a feature request if you want this constraint dropped!)",
+                //                    operator.getName(), operatorEdge);
             }
             boolean embargo = productNode.has(ROLE, AspectKind::inNAC);
             List<VariableNode> arguments = new ArrayList<>();

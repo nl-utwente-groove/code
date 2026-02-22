@@ -89,15 +89,20 @@ public class ControlEdge extends ALabelEdge<ControlNode> {
 
     @Override
     protected Line computeLine() {
-        String text = getCall().map(cs -> cs.toString()).orElse(isSuccess()
-            ? "succ"
-            : "fail");
+        String text = getCall()
+            .map(cs -> cs.toString())
+            .orElse(isSuccess()
+                ? "succ"
+                : "fail");
         Line result = Line.atom(text);
         if (isVerdict() || getRole() == EdgeRole.FLAG) {
             result = result.style(Style.ITALIC);
         }
-        var newColor = getCall().map(cs -> cs.getRule().getRole().getColor())
-            .filter(c -> c != null).map(c -> source().isStart()
+        @SuppressWarnings("null")
+        var newColor = getCall()
+            .map(cs -> cs.getRule().getRole().getColor())
+            .filter(c -> c != null)
+            .map(c -> source().isStart()
                 ? c.brighter().brighter()
                 : c);
         if (newColor.isPresent()) {

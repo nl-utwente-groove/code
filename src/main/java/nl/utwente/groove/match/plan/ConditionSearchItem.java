@@ -27,7 +27,6 @@ import nl.utwente.groove.algebra.Algebra;
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.grammar.Condition;
 import nl.utwente.groove.grammar.Condition.Op;
-import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.host.ValueNode;
 import nl.utwente.groove.grammar.rule.LabelVar;
@@ -52,9 +51,10 @@ class ConditionSearchItem extends AbstractSearchItem {
      */
     public ConditionSearchItem(Condition condition, boolean simple) {
         this.condition = condition;
-        GrammarProperties properties = condition.getGrammarProperties();
         this.matcher = MatcherFactory.instance(simple).createMatcher(condition);
         if (condition.hasPattern()) {
+            var properties = condition.getGrammarProperties();
+            assert properties != null;
             this.intAlgebra = properties.getAlgebraFamily().getAlgebra(Sort.INT);
             this.rootGraph = condition.getRoot();
             this.neededNodes = condition.getInputNodes();
@@ -100,21 +100,16 @@ class ConditionSearchItem extends AbstractSearchItem {
 
     @Override
     int getRating() {
-        switch (this.condition.getOp()) {
-        case EXISTS:
-        case FORALL:
-        case NOT:
-            return -this.condition.getPattern().nodeCount() - (this.rootGraph == null
-                ? 0
-                : this.rootGraph.size());
-        case TRUE:
-            return 0;
-        case FALSE:
-        case AND:
-        case OR:
-        default:
-            throw new IllegalStateException();
-        }
+        var pattern = this.condition.getPattern();
+        var rootGraph = this.rootGraph;
+        assert pattern != null;
+        return switch (this.condition.getOp()) {
+        case EXISTS, FORALL, NOT -> -pattern.nodeCount() - (rootGraph == null
+            ? 0
+            : rootGraph.size());
+        case TRUE -> 0;
+        default -> throw new IllegalStateException();
+        };
     }
 
     @Override
@@ -212,8 +207,9 @@ class ConditionSearchItem extends AbstractSearchItem {
     /** tests if a given condition or one of its subconditions is a modifying rule. */
     private boolean isModifying(Condition condition) {
         boolean result = false;
-        if (condition.hasRule()) {
-            result = condition.getRule().isModifying();
+        var rule = condition.getRule();
+        if (rule != null) {
+            result = rule.isModifying();
         } else {
             for (Condition subCondition : condition.getSubConditions()) {
                 if (isModifying(subCondition)) {

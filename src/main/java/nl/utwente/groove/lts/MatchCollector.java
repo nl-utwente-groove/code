@@ -84,7 +84,8 @@ public class MatchCollector {
         assert step != null;
         // there are three reasons to want to use the parent matches: to
         // save matching time, to reuse added nodes, and to find confluent
-        // diamonds. The first is only relevant if the rule is not (re)enabled,
+        // diamonds. The first is only relevant if the rule is not (re)enabled
+        // by the dependency of this step's rule on the parent step's rule,
         // the third only if the parent match target is already closed
         final boolean isDisabled = isDisabled(step.getInnermostCall());
         boolean isModifying = step.isModifying();

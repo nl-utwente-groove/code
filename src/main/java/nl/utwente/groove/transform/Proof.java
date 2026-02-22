@@ -18,6 +18,7 @@ package nl.utwente.groove.transform;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.SequencedSet;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -64,7 +65,7 @@ public class Proof {
      * Returns the rule of the proved condition, if any.
      * Convenience method for {@code getCondition().getRule()}.
      */
-    public Rule getRule() {
+    public @Nullable Rule getRule() {
         return this.condition.getRule();
     }
 
@@ -100,12 +101,12 @@ public class Proof {
     private final @Nullable RuleToHostMap patternMap;
 
     /** Returns the set of proofs of sub-conditions. */
-    public Collection<Proof> getSubProofs() {
+    public SequencedSet<Proof> getSubProofs() {
         return this.subProofs;
     }
 
     /** The proofs of the sub-conditions. */
-    private final Collection<Proof> subProofs = new java.util.LinkedHashSet<>();
+    private final SequencedSet<Proof> subProofs = new java.util.LinkedHashSet<>();
 
     /** Returns the (host graph) edges used as images in the proof. */
     public HostEdgeSet getEdgeValues() {
@@ -139,11 +140,12 @@ public class Proof {
      * events are not reused among transitions
      */
     public RuleEvent newEvent(@Nullable Record record) {
-        assert hasRule();
+        var rule = getRule();
+        assert rule != null;
         Collection<BasicEvent> eventSet = new ArrayList<>();
         collectEvents(eventSet, record);
         assert !eventSet.isEmpty();
-        if (!getRule().hasSubRules()) {
+        if (!rule.hasSubRules()) {
             assert eventSet.size() == 1;
             return eventSet.iterator().next();
         } else {
@@ -160,7 +162,8 @@ public class Proof {
      * events are not reused among transitions
      */
     private void collectEvents(Collection<BasicEvent> events, @Nullable Record record) {
-        if (hasRule() && (getRule().isTop() || getRule().isLocallyModifying())) {
+        var rule = getRule();
+        if (rule != null && (rule.isTop() || rule.isLocallyModifying())) {
             BasicEvent myEvent = createSimpleEvent(record);
             events.add(myEvent);
         }

@@ -80,9 +80,9 @@ public class PlanSearchEngine extends SearchEngine {
     @Override
     public PlanSearchStrategy createMatcher(Condition condition, Anchor seed) {
         Set<AnchorKey> anchorKeys = new HashSet<>();
-        if (condition.hasRule()) {
-            anchorKeys.addAll(condition.getRule()
-                .getAnchor());
+        var rule = condition.getRule();
+        if (rule != null) {
+            anchorKeys.addAll(rule.getAnchor());
         }
         anchorKeys.addAll(condition.getOutputNodes());
         PlanData planData = new PlanData(condition, this.simple);
@@ -103,25 +103,26 @@ public class PlanSearchEngine extends SearchEngine {
                 // in order not to miss matches
                 relevant |= sub.getOp() == Op.FORALL;
                 // conditions with output nodes are relevant
-                relevant |= !sub.getOutputNodes()
-                    .isEmpty();
+                var subOutputNodes = sub.getOutputNodes();
+                assert subOutputNodes != null;
+                relevant |= !subOutputNodes.isEmpty();
             }
             item.setRelevant(relevant);
         }
         PlanSearchStrategy result = new PlanSearchStrategy(this, plan);
         if (PRINT) {
-            System.out.print(String
-                .format("%nPlan for %s, seed %s:%n    %s", condition.getName(), seed, result));
+            System.out
+                .print(String
+                    .format("%nPlan for %s, seed %s:%n    %s", condition.getName(), seed, result));
             System.out.printf("%n    Dependencies & Relevance: [");
             for (int i = 0; i < plan.size(); i++) {
                 if (i > 0) {
                     System.out.print(", ");
                 }
-                System.out.printf("%d%s: %s",
-                    i,
-                    plan.get(i)
-                        .isRelevant() ? "*" : "",
-                    plan.getDependency(i));
+                System.out
+                    .printf("%d%s: %s", i, plan.get(i).isRelevant()
+                        ? "*"
+                        : "", plan.getDependency(i));
             }
             System.out.println("]");
         }
@@ -135,7 +136,9 @@ public class PlanSearchEngine extends SearchEngine {
     /** Returns an instance of this factory class.
      */
     static public PlanSearchEngine instance(boolean simple) {
-        PlanSearchEngine result = simple ? simpleInstance : multiInstance;
+        PlanSearchEngine result = simple
+            ? simpleInstance
+            : multiInstance;
         if (result == null) {
             if (simple) {
                 result = simpleInstance = new PlanSearchEngine(true);
@@ -176,8 +179,9 @@ public class PlanSearchEngine extends SearchEngine {
             this.boundEdges = new LinkedHashSet<>();
             this.boundVars = new LinkedHashSet<>();
             if (condition.hasPattern()) {
-                this.algebraFamily = condition.getGrammarProperties()
-                    .getAlgebraFamily();
+                var properties = condition.getGrammarProperties();
+                assert properties != null;
+                this.algebraFamily = properties.getAlgebraFamily();
             } else {
                 this.algebraFamily = AlgebraFamily.DEFAULT;
             }
@@ -201,8 +205,7 @@ public class PlanSearchEngine extends SearchEngine {
          * Creates and returns a search plan on the basis of the given data.
          * @param seed the pre-matched subgraph; non-{@code null}
          */
-        public SearchPlan getPlan(@NonNull
-        Anchor seed) {
+        public SearchPlan getPlan(@NonNull Anchor seed) {
             testUsed();
             boolean injective = getInjectivity();
             SearchPlan result = new SearchPlan(this.condition, seed, injective);
@@ -226,6 +229,7 @@ public class PlanSearchEngine extends SearchEngine {
                 return true;
             }
             RuleGraph graph = this.condition.getPattern();
+            assert graph != null;
             Set<RuleEdge> remainingEdges = new HashSet<>(graph.edgeSet());
             remainingEdges.removeAll(this.boundEdges);
             assert remainingEdges.isEmpty() : "Unmatched edges " + remainingEdges;
@@ -260,8 +264,7 @@ public class PlanSearchEngine extends SearchEngine {
          * Computes and returns all search items, without taking dependencies into account.
          * @param seed the pre-matched subgraph
          */
-        private Collection<AbstractSearchItem> computeSearchItems(@NonNull
-        Anchor seed) {
+        private Collection<AbstractSearchItem> computeSearchItems(@NonNull Anchor seed) {
             Collection<AbstractSearchItem> result = new ArrayList<>();
             if (this.condition.hasPattern()) {
                 result.addAll(computePatternSearchItems(seed));
@@ -287,8 +290,7 @@ public class PlanSearchEngine extends SearchEngine {
         private AbstractSearchItem createEdgeEmbargoItem(EdgeEmbargo subCondition) {
             AbstractSearchItem item = null;
             RuleEdge embargoEdge = subCondition.getEmbargoEdge();
-            if (!embargoEdge.label()
-                .isEmpty()) {
+            if (!embargoEdge.label().isEmpty()) {
                 AbstractSearchItem edgeSearchItem = createEdgeSearchItem(embargoEdge);
                 item = createNegatedSearchItem(edgeSearchItem);
             } else {
@@ -304,11 +306,11 @@ public class PlanSearchEngine extends SearchEngine {
          * Adds embargo and injection search items to the super result.
          * @param seed the set of pre-matched nodes
          */
-        Collection<AbstractSearchItem> computePatternSearchItems(@NonNull
-        Anchor seed) {
+        Collection<AbstractSearchItem> computePatternSearchItems(@NonNull Anchor seed) {
             Collection<AbstractSearchItem> result = new ArrayList<>();
             Map<RuleNode,RuleNode> unmatchedNodes = new LinkedHashMap<>();
             RuleGraph graph = this.condition.getPattern();
+            assert graph != null;
             for (RuleNode node : graph.nodeSet()) {
                 unmatchedNodes.put(node, node);
             }
@@ -331,14 +333,11 @@ public class PlanSearchEngine extends SearchEngine {
                 unmatchedEdges.removeAll(seedItem.bindsEdges());
             }
             // match all the value nodes and guard-carrying nodes explicitly
-            Iterator<RuleNode> unmatchedNodeIter = unmatchedNodes.keySet()
-                .iterator();
+            Iterator<RuleNode> unmatchedNodeIter = unmatchedNodes.keySet().iterator();
             while (unmatchedNodeIter.hasNext()) {
                 RuleNode node = unmatchedNodeIter.next();
                 if (node instanceof VariableNode && ((VariableNode) node).getConstant() != null
-                    || !node.getTypeGuards()
-                        .isEmpty()
-                    || constraint.contains(node)) {
+                    || !node.getTypeGuards().isEmpty() || constraint.contains(node)) {
                     AbstractSearchItem nodeItem = createNodeSearchItem(node);
                     if (nodeItem != null) {
                         result.add(nodeItem);
@@ -355,14 +354,12 @@ public class PlanSearchEngine extends SearchEngine {
                     // types are not specialised
                     RuleNode source = edge.source();
                     TypeEdge edgeType = edge.getType();
-                    if (edgeItem.bindsNodes()
-                        .contains(source) && edgeType != null
+                    if (edgeItem.bindsNodes().contains(source) && edgeType != null
                         && edgeType.source() == source.getType()) {
                         unmatchedNodes.remove(source);
                     }
                     RuleNode target = edge.target();
-                    if (edgeItem.bindsNodes()
-                        .contains(target) && edgeType != null
+                    if (edgeItem.bindsNodes().contains(target) && edgeType != null
                         && edgeType.target() == target.getType()) {
                         unmatchedNodes.remove(target);
                     }
@@ -373,11 +370,9 @@ public class PlanSearchEngine extends SearchEngine {
                 AbstractSearchItem nodeItem = createNodeSearchItem(node);
                 if (nodeItem != null) {
                     assert !(node instanceof VariableNode) || ((VariableNode) node).hasConstant()
-                        || this.algebraFamily.supportsSymbolic() || seed.nodeSet()
-                            .contains(node) : String.format(
-                                "Variable node '%s' should be among anchors %s",
-                                node,
-                                seed);
+                        || this.algebraFamily.supportsSymbolic()
+                        || seed.nodeSet().contains(node) : String
+                            .format("Variable node '%s' should be among anchors %s", node, seed);
                     result.add(nodeItem);
                 }
             }
@@ -391,13 +386,14 @@ public class PlanSearchEngine extends SearchEngine {
          *         should be matched
          */
         Collection<Comparator<SearchItem>> computeComparators() {
-            Collection<Comparator<SearchItem>> result =
-                new TreeSet<>(new ItemComparatorComparator());
+            Collection<Comparator<SearchItem>> result
+                = new TreeSet<>(new ItemComparatorComparator());
             result.add(new NeededPartsComparator(this.boundNodes, this.boundVars));
             result.add(new ItemTypeComparator());
             result.add(new ConnectedPartsComparator(this.boundNodes, this.boundVars));
-            result.add(new IndegreeComparator(this.condition.getPattern()
-                .edgeSet()));
+            var pattern = this.condition.getPattern();
+            assert pattern != null;
+            result.add(new IndegreeComparator(pattern.edgeSet()));
             GrammarProperties properties = this.condition.getGrammarProperties();
             if (properties != null) {
                 List<String> controlLabels = properties.getControlLabels();
@@ -443,8 +439,9 @@ public class PlanSearchEngine extends SearchEngine {
                     TypeNode negatedType = this.typeGraph.getNode(negatedLabel);
                     negatedItem = new NodeTypeSearchItem(edge.source(), negatedType);
                 } else {
-                    RuleEdge negatedEdge = this.condition.getFactory()
-                        .createEdge(source, negatedLabel, target);
+                    var factory = this.condition.getFactory();
+                    assert factory != null;
+                    RuleEdge negatedEdge = factory.createEdge(source, negatedLabel, target);
                     negatedItem = createEdgeSearchItem(negatedEdge);
                 }
                 result = createNegatedSearchItem(negatedItem);
@@ -548,8 +545,7 @@ public class PlanSearchEngine extends SearchEngine {
             // compute indegrees
             Bag<RuleNode> indegrees = new HashBag<>();
             for (RuleEdge edge : edges) {
-                if (!edge.target()
-                    .equals(edge.source())) {
+                if (!edge.target().equals(edge.source())) {
                     indegrees.add(edge.target());
                 }
             }
@@ -583,8 +579,7 @@ public class PlanSearchEngine extends SearchEngine {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getNewValue() instanceof Edge2SearchItem item) {
-                this.indegrees.remove(item.getEdge()
-                    .target());
+                this.indegrees.remove(item.getEdge().target());
             }
         }
 
@@ -629,14 +624,10 @@ public class PlanSearchEngine extends SearchEngine {
          * matched, 1 if all needed parts have been matched.
          */
         private int getNeedCount(SearchItem item) {
-            if (item.needsNodes()
-                .stream()
-                .anyMatch(n -> !this.boundNodes.contains(n))) {
+            if (item.needsNodes().stream().anyMatch(n -> !this.boundNodes.contains(n))) {
                 return 0;
             }
-            if (item.needsVars()
-                .stream()
-                .anyMatch(v -> !this.boundVars.contains(v))) {
+            if (item.needsVars().stream().anyMatch(v -> !this.boundVars.contains(v))) {
                 return 0;
             }
             return 1;
@@ -675,12 +666,14 @@ public class PlanSearchEngine extends SearchEngine {
          */
         private int getConnectCount(SearchItem item) {
             int result = 0;
-            result += item.bindsNodes()
+            result += item
+                .bindsNodes()
                 .stream()
                 .filter(i -> !this.boundNodes.contains(i))
                 .mapToInt(i -> 1)
                 .sum();
-            result += item.bindsVars()
+            result += item
+                .bindsVars()
                 .stream()
                 .filter(i -> !this.boundVars.contains(i))
                 .mapToInt(i -> 1)
@@ -731,8 +724,7 @@ public class PlanSearchEngine extends SearchEngine {
             int result = 0;
             Class<?> itemClass = item.getClass();
             if (itemClass == RegExprEdgeSearchItem.class
-                && ((RegExprEdgeSearchItem) item).getEdgeExpr()
-                    .isAcceptsEmptyWord()) {
+                && ((RegExprEdgeSearchItem) item).getEdgeExpr().isAcceptsEmptyWord()) {
                 return result;
             }
             if (itemClass == NodeTypeSearchItem.class) {
@@ -820,10 +812,8 @@ public class PlanSearchEngine extends SearchEngine {
         @Override
         public int compare(SearchItem first, SearchItem second) {
             if (first instanceof Edge2SearchItem && second instanceof Edge2SearchItem) {
-                Label firstLabel = ((Edge2SearchItem) first).getEdge()
-                    .label();
-                Label secondLabel = ((Edge2SearchItem) second).getEdge()
-                    .label();
+                Label firstLabel = ((Edge2SearchItem) first).getEdge().label();
+                Label secondLabel = ((Edge2SearchItem) second).getEdge().label();
                 // compare edge priorities
                 return getEdgePriority(firstLabel) - getEdgePriority(secondLabel);
             } else {

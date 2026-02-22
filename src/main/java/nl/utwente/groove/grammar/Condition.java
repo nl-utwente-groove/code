@@ -27,7 +27,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.AlgebraFamily;
@@ -86,6 +86,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public class Condition implements Fixable {
     /**
      * Constructs a (named) condition for a non-pattern operator.
@@ -115,8 +116,8 @@ public class Condition implements Fixable {
      *        ground
      * @param properties properties for matching the condition
      */
-    public Condition(@NonNull String name, @NonNull Op operator, RuleGraph pattern,
-                     @Nullable RuleGraph root, GrammarProperties properties) {
+    public Condition(String name, Op operator, RuleGraph pattern, @Nullable RuleGraph root,
+                     GrammarProperties properties) {
         assert name != null;
         assert operator.hasPattern();
         this.op = operator;
@@ -131,14 +132,14 @@ public class Condition implements Fixable {
     }
 
     /** Returns the properties of the containing grammar. */
-    public GrammarProperties getGrammarProperties() {
+    public @Nullable GrammarProperties getGrammarProperties() {
         return this.grammarProperties;
     }
 
     /**
      * Properties of the containing grammar.
      */
-    private final GrammarProperties grammarProperties;
+    private final @Nullable GrammarProperties grammarProperties;
 
     /**
      * Sets the type graph of this graph condition.
@@ -155,19 +156,19 @@ public class Condition implements Fixable {
      * Returns the type graph of this graph condition.
      * The type graph must be set before the graph is fixed.
      */
-    public TypeGraph getTypeGraph() {
+    public @Nullable TypeGraph getTypeGraph() {
         return this.typeGraph;
     }
 
     /** Subtyping relation, derived from the SystemProperties. */
-    private TypeGraph typeGraph;
+    private @Nullable TypeGraph typeGraph;
 
     /**
      * Returns the root graph of this condition.
      * The root graph is the subgraph of the pattern that the
      * condition has in common with its parent in the condition tree.
      */
-    public RuleGraph getRoot() {
+    public @Nullable RuleGraph getRoot() {
         return this.root;
     }
 
@@ -175,17 +176,18 @@ public class Condition implements Fixable {
      * The root map of this condition, i.e., the element map from the root
      * graph to the pattern graph.
      */
-    private final RuleGraph root;
+    private final @Nullable RuleGraph root;
 
     /**
      * Returns the subset of the root nodes that are certainly
      * bound before the condition has to be matched.
      */
     final public Set<RuleNode> getInputNodes() {
-        if (this.inputNodes == null) {
-            this.inputNodes = computeInputNodes();
+        var result = this.inputNodes;
+        if (result == null) {
+            this.inputNodes = result = computeInputNodes();
         }
-        return this.inputNodes;
+        return result;
     }
 
     /**
@@ -194,16 +196,22 @@ public class Condition implements Fixable {
      * bound before the condition has to be matched.
      */
     private Set<RuleNode> computeInputNodes() {
-        if (hasRule() && getRule().isTop()) {
+        Set<RuleNode> result;
+        var rule = getRule();
+        if (rule != null && rule.isTop()) {
             // collect the input parameters
-            return this.rule.computeInputNodes();
+            result = rule.computeInputNodes();
+            assert result != null;
         } else {
-            return new HashSet<>(this.root.nodeSet());
+            var root = getRoot();
+            assert root != null;
+            result = new HashSet<>(root.nodeSet());
         }
+        return result;
     }
 
     /** Subset of the root nodes that are bound to be bound before the condition is matched. */
-    private Set<RuleNode> inputNodes;
+    private @Nullable Set<RuleNode> inputNodes;
 
     /** Indicates if this condition has an associated graph pattern.
      * This is the case if and only if the condition operator is a quantifier.
@@ -218,7 +226,7 @@ public class Condition implements Fixable {
      * Returns the pattern of the condition, i.e., the structure that
      * the condition actually tests for.
      */
-    public RuleGraph getPattern() {
+    public @Nullable RuleGraph getPattern() {
         return this.pattern;
     }
 
@@ -230,14 +238,14 @@ public class Condition implements Fixable {
      * The name is guaranteed to be unique across all conditions and subconditions
      * in a grammar.
      */
-    public @NonNull String getName() {
+    public String getName() {
         return this.name;
     }
 
     /**
      * The name of this condition.
      */
-    private final @NonNull String name;
+    private final String name;
 
     /**
      * Indicates if this condition is closed, which is to say that it has
@@ -246,7 +254,8 @@ public class Condition implements Fixable {
      */
     public boolean isGround() {
         assert isFixed();
-        return this.root.isEmpty();
+        var root = this.root;
+        return root != null && root.isEmpty();
     }
 
     /**
@@ -275,9 +284,10 @@ public class Condition implements Fixable {
             condition.setTypeGraph(this.typeGraph);
         }
         getSubConditions().add(condition);
-        if (getRule() != null) {
+        var rule = getRule();
+        if (rule != null) {
             for (Rule subRule : condition.getTopRules()) {
-                getRule().addSubRule(subRule);
+                rule.addSubRule(subRule);
             }
         }
         // A non-embargo subcondition may be disjunctively interpreted
@@ -305,12 +315,13 @@ public class Condition implements Fixable {
      */
     private List<Rule> getTopRules() {
         List<Rule> result = new ArrayList<>();
-        if (getRule() == null) {
+        var rule = getRule();
+        if (rule == null) {
             for (Condition subCond : getSubConditions()) {
                 result.addAll(subCond.getTopRules());
             }
         } else {
-            result.add(getRule());
+            result.add(rule);
         }
         return result;
     }
@@ -329,12 +340,12 @@ public class Condition implements Fixable {
     }
 
     /** Returns the rule factory of this condition. */
-    public RuleFactory getFactory() {
+    public @Nullable RuleFactory getFactory() {
         return this.factory;
     }
 
     /** The factory responsible for creating rule nodes and edges. */
-    private final RuleFactory factory;
+    private final @Nullable RuleFactory factory;
 
     /** Sets a count node for this universal condition.
      * @see #getCountNode() */
@@ -348,7 +359,7 @@ public class Condition implements Fixable {
      * The count node is bound to the number of matches of the condition.
      * @return the count node, or {@code null} if there is none
      */
-    public VariableNode getCountNode() {
+    public @Nullable VariableNode getCountNode() {
         return this.countNode;
     }
 
@@ -360,21 +371,23 @@ public class Condition implements Fixable {
     }
 
     /** Node capturing the match count of this condition. */
-    private VariableNode countNode;
+    private @Nullable VariableNode countNode;
 
     /** Adds a set of nodes to the output nodes of this condition.
      * @see #getOutputNodes()
      */
     public void addOutputNodes(Set<VariableNode> outputNodes) {
-        this.outputNodes.addAll(outputNodes);
+        var myOutputNodes = this.outputNodes;
+        assert myOutputNodes != null;
+        myOutputNodes.addAll(outputNodes);
     }
 
     /** Returns the set of nodes whose values are used by the parent condition. */
-    public Set<VariableNode> getOutputNodes() {
+    public @Nullable Set<VariableNode> getOutputNodes() {
         return this.outputNodes;
     }
 
-    private final Set<VariableNode> outputNodes;
+    private final @Nullable Set<VariableNode> outputNodes;
 
     /** Sets this universal condition to positive (meaning that
      * it should have at least one match). */
@@ -400,7 +413,8 @@ public class Condition implements Fixable {
 
     /** Indicates if this condition should be matched injectively. */
     public boolean isInjective() {
-        return hasPattern() && getPattern().isInjective();
+        var pattern = getPattern();
+        return pattern != null && pattern.isInjective();
     }
 
     /** Sets the associated rule of this condition. */
@@ -426,12 +440,12 @@ public class Condition implements Fixable {
      * @return The rule associated with this condition, or {@code null}
      * if there is no associated rule.
      */
-    public Rule getRule() {
+    public @Nullable Rule getRule() {
         return this.rule;
     }
 
     /** The rule associated with this condition, if any. */
-    private Rule rule;
+    private @Nullable Rule rule;
 
     /** Fixes this condition and all its subconditions. */
     @Override
@@ -443,13 +457,17 @@ public class Condition implements Fixable {
                 subCondition.testFixed(true);
             }
             this.fixed = true;
-            if (hasPattern()) {
-                getPattern().setFixed();
-                if (!getGrammarProperties().getAlgebraFamily().supportsSymbolic()) {
+            var pattern = getPattern();
+            if (pattern != null) {
+                pattern.setFixed();
+                var properties = getGrammarProperties();
+                assert properties != null;
+                if (!properties.getAlgebraFamily().supportsSymbolic()) {
                     checkResolution();
                 }
-                if (getRule() != null) {
-                    getRule().setFixed();
+                var rule = getRule();
+                if (rule != null) {
+                    rule.setFixed();
                 }
             }
             this.fixing = false;
@@ -474,8 +492,9 @@ public class Condition implements Fixable {
      * @throws FormatException if the algebra part cannot be matched
      */
     public void checkResolution() throws FormatException {
+        var properties = getGrammarProperties();
         // if the algebra family allows symbolic exploration, there is nothing to be checked
-        if (getGrammarProperties().getAlgebraFamily().supportsSymbolic()) {
+        if (properties != null && properties.getAlgebraFamily().supportsSymbolic()) {
             return;
         }
         FormatErrorSet errors = new FormatErrorSet();
@@ -496,6 +515,8 @@ public class Condition implements Fixable {
      * for the key to be resolved.
      */
     private Map<VariableNode,List<Set<VariableNode>>> createResolvers() {
+        var pattern = getPattern();
+        assert pattern != null;
         Map<VariableNode,List<Set<VariableNode>>> result = new HashMap<>();
         // Set of variable nodes already found to have been resolved
         Set<VariableNode> resolved = new HashSet<>();
@@ -505,12 +526,12 @@ public class Condition implements Fixable {
             }
         }
         // Set of variable nodes needing resolution
-        for (RuleNode node : getPattern().nodeSet()) {
+        for (RuleNode node : pattern.nodeSet()) {
             if (node instanceof VariableNode v && v.getConstant() == null
                 && !resolved.contains(node)) {
                 VariableNode varNode = (VariableNode) node;
                 boolean isResolved = false;
-                for (RuleEdge inEdge : getPattern().inEdgeSet(node)) {
+                for (RuleEdge inEdge : pattern.inEdgeSet(node)) {
                     RuleLabel inLabel = inEdge.label();
                     if (!inLabel.isEmpty() && !inLabel.isNeg()) {
                         // this is a field value of some real node
@@ -529,8 +550,10 @@ public class Condition implements Fixable {
         // if the subcondition is certainly matched
         // meaning that either this condition has to be conjunctive
         if (isConjunctive()) {
+            var root = getRoot();
+            assert root != null;
             // Collect the set-based operator nodes in this condition
-            Set<OperatorNode> setOps = this.root
+            Set<OperatorNode> setOps = root
                 .nodeSet()
                 .stream()
                 .filter(n -> n instanceof OperatorNode)
@@ -544,9 +567,11 @@ public class Condition implements Fixable {
                     ? Stream.empty()
                     : Stream.of(countNode);
                 // Collect targets of set operators whose sources are in the subcondition
+                var subOutputNodes = sub.getOutputNodes();
+                assert subOutputNodes != null;
                 Stream<VariableNode> setOpDeps = setOps
                     .stream()
-                    .filter(n -> sub.getOutputNodes().contains(n.getArguments().get(0)))
+                    .filter(n -> subOutputNodes.contains(n.getArguments().get(0)))
                     .map(n -> n.getTarget());
                 // combine count node and set operator targets and restrict to non-constants
                 subDeps = Stream.concat(subDeps, setOpDeps).filter(v -> v.getConstant() == null);
@@ -567,7 +592,7 @@ public class Condition implements Fixable {
             }
         }
         // now add resolvers due to operator nodes
-        for (RuleNode node : getPattern().nodeSet()) {
+        for (RuleNode node : pattern.nodeSet()) {
             if (node instanceof OperatorNode opNode) {
                 VariableNode target = opNode.getTarget();
                 if (result.containsKey(target) && !resolved.contains(target)) {
@@ -594,7 +619,7 @@ public class Condition implements Fixable {
     }
 
     /** Adds a value to the list of values for a given key. */
-    private <K,V> void addResolver(Map<K,List<V>> map, K key, V value) {
+    private <K,V> void addResolver(Map<K,@Nullable List<V>> map, K key, V value) {
         List<V> entry = map.get(key);
         if (entry == null) {
             map.put(key, entry = new ArrayList<>());
@@ -644,10 +669,11 @@ public class Condition implements Fixable {
             result.append(prefix);
             result.append(" * Pattern: " + getPattern());
         }
-        if (hasRule()) {
+        var rule = getRule();
+        if (rule != null) {
             result.append('\n');
             result.append(prefix);
-            result.append(" * RHS:     " + getRule().rhs());
+            result.append(" * RHS:     " + rule.rhs());
         }
         if (hasCountNode()) {
             result.append('\n');
@@ -673,7 +699,7 @@ public class Condition implements Fixable {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (this == obj) {
             return true;
         }

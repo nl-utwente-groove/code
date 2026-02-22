@@ -22,6 +22,9 @@ import java.util.IllegalFormatException;
 import java.util.Map;
 import java.util.Optional;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.host.ValueNode;
 import nl.utwente.groove.gui.look.Values;
@@ -36,6 +39,7 @@ import nl.utwente.groove.util.collect.AbstractComparator;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public interface Action extends Callable, Comparable<Action> {
     /** Indicates if this action serves to test a property of a graph.
      * Convenience method for {@code getRole().isProperty()}.
@@ -147,7 +151,9 @@ public interface Action extends Callable, Comparable<Action> {
      * If this action is an invariant or forbidden property,
      * returns the consequence of its violation.
      */
-    public CheckPolicy getPolicy();
+    default public @Nullable CheckPolicy getPolicy() {
+        return null;
+    }
 
     /**
      * A comparator for priorities, encoded as {@link Integer} objects. This
@@ -218,7 +224,7 @@ public interface Action extends Callable, Comparable<Action> {
         /** Action that captures a general graph condition. */
         CONDITION("condition", null),;
 
-        private Role(String text, Color color) {
+        private Role(String text, @Nullable Color color) {
             this.text = text;
             this.color = color;
         }
@@ -257,32 +263,35 @@ public interface Action extends Callable, Comparable<Action> {
         /** Returns the special colour for actions with this role;
          * if {@code null}, there is no special colour.
          */
-        public Color getColor() {
+        public @Nullable Color getColor() {
             return this.color;
         }
 
-        private final Color color;
+        private final @Nullable Color color;
 
         /**
          * Returns an HTML tag for the colour of this role, if the role has a special colour;
          * {@code null} otherwise.
          * @see #getColor()
          */
-        public HTMLTag getColorTag() {
-            if (this.colorTag == null && hasColor()) {
-                this.colorTag = HTMLConverter.createColorTag(getColor());
+        public @Nullable HTMLTag getColorTag() {
+            var result = this.colorTag;
+            var color = this.color;
+            if (result == null && color != null) {
+                this.colorTag = result = HTMLConverter.createColorTag(color);
             }
-            return this.colorTag;
+            return result;
         }
 
-        private HTMLTag colorTag;
+        private @Nullable HTMLTag colorTag;
 
         /** Returns the role corresponding to a given string,
          * or {@code null} if the string does not denote a role.
          */
         static public Role toRole(String text) {
+            var roleMap = Role.roleMap;
             if (roleMap == null) {
-                roleMap = new HashMap<>();
+                Role.roleMap = roleMap = new HashMap<>();
                 for (Role role : Role.values()) {
                     roleMap.put(role.toString(), role);
                 }
@@ -290,6 +299,6 @@ public interface Action extends Callable, Comparable<Action> {
             return roleMap.get(text);
         }
 
-        static private Map<String,Role> roleMap;
+        static private @Nullable Map<String,Role> roleMap;
     }
 }

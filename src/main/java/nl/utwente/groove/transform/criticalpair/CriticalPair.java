@@ -252,8 +252,7 @@ public class CriticalPair {
         //If the rule has no variables, then the algebra does not matter
         assert (!hasVariableNodes(rule1.lhs()) && !hasVariableNodes(rule2.lhs()))
             || rule1.getGrammarProperties().getAlgebraFamily().equals(AlgebraFamily.TERM);
-        if ((rule1.getTypeGraph() == null && rule2.getTypeGraph() != null)
-            || !rule1.getTypeGraph().equals(rule2.getTypeGraph())) {
+        if (!rule1.getTypeGraph().equals(rule2.getTypeGraph())) {
             throw Exceptions.illegalArg("Type graphs must be equal");
         }
         //Special case, both of the two rules are nondeleting, then there are no critical pairs
@@ -597,7 +596,7 @@ public class CriticalPair {
         result &= !rule.getGrammarProperties().isCheckCreatorEdges();
         //The RhsAsNac property must be false
         result &= !rule.getGrammarProperties().isRhsAsNac();
-        if (result && rule.getTypeGraph() != null) {
+        if (result) {
             //check if the typegraph has inheritance
             for (Set<TypeNode> set : rule.getTypeGraph().getDirectSubtypeMap().values()) {
                 result &= set.isEmpty();

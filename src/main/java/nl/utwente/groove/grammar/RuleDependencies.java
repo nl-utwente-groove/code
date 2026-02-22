@@ -453,12 +453,15 @@ public class RuleDependencies {
     void collectPatternCharacteristics(Condition cond, Set<TypeElement> positive,
                                        Set<TypeElement> negative) {
         RuleGraph pattern = cond.getPattern();
+        assert pattern != null;
+        var root = cond.getRoot();
+        assert root != null;
         // collected the isolated fresh nodes
         Set<RuleNode> isolatedNodes = new HashSet<>(pattern.nodeSet());
-        isolatedNodes.removeAll(cond.getRoot().nodeSet());
+        isolatedNodes.removeAll(root.nodeSet());
         // iterate over the edges that are new in the target
         Set<RuleEdge> freshTargetEdges = new HashSet<>(pattern.edgeSet());
-        freshTargetEdges.removeAll(cond.getRoot().edgeSet());
+        freshTargetEdges.removeAll(root.edgeSet());
         for (RuleEdge edge : freshTargetEdges) {
             RuleLabel label = edge.label();
             // flag indicating that the edge always tests positively
@@ -480,7 +483,9 @@ public class RuleDependencies {
         }
         // if there is a dangling edge check, dangling edge types are negative conditions
         if (this.properties.isCheckDangling() && cond.hasRule()) {
-            RuleGraph rhs = cond.getRule().rhs();
+            var rule = cond.getRule();
+            assert rule != null;
+            RuleGraph rhs = rule.rhs();
             for (RuleNode lhsNode : pattern.nodeSet()) {
                 if (!rhs.containsNode(lhsNode)) {
                     Set<TypeEdge> danglingEdges = new HashSet<>();

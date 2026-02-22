@@ -64,11 +64,6 @@ public class Recipe extends Procedure implements Action {
     }
 
     @Override
-    public CheckPolicy getPolicy() {
-        return null;
-    }
-
-    @Override
     public boolean isPartial() {
         return false;
     }

@@ -55,14 +55,13 @@ public class Matcher implements SearchStrategy {
     public Matcher(MatcherFactory factory, Condition condition, Anchor seed) {
         this.factory = factory;
         this.condition = condition;
-        if (seed == null && condition.getOp()
-            .hasPattern()) {
+        if (seed == null && condition.getOp().hasPattern()) {
+            var root = condition.getRoot();
+            assert root != null;
             seed = new Anchor();
             seed.addAll(condition.getInputNodes());
-            seed.addAll(condition.getRoot()
-                .edgeSet());
-            seed.addAll(condition.getRoot()
-                .varSet());
+            seed.addAll(root.edgeSet());
+            seed.addAll(root.varSet());
         }
         this.seed = seed;
     }
@@ -114,9 +113,7 @@ public class Matcher implements SearchStrategy {
     @Override
     public <T> T traverse(HostGraph host, RuleToHostMap seedMap, Visitor<TreeMatch,T> visitor) {
         assert isCorrectSeeding(seedMap);
-        assert host.getFactory()
-            .getTypeFactory()
-            .getGraph() == this.condition.getTypeGraph();
+        assert host.getFactory().getTypeFactory().getGraph() == this.condition.getTypeGraph();
         return getSearchStrategy().traverse(host, seedMap, visitor);
     }
 
@@ -153,13 +150,12 @@ public class Matcher implements SearchStrategy {
                 throw Exceptions.illegalArg("Unmatched seed keys: %s", this.seed);
             }
         } else {
-            if (!seedMap.nodeMap()
-                .keySet()
-                .equals(this.seed.nodeSet())) {
+            var pattern = this.condition.getPattern();
+            assert pattern != null;
+            if (!seedMap.nodeMap().keySet().equals(this.seed.nodeSet())) {
                 // test for the difference between seed nodes and the seed map
                 Set<RuleNode> seedNodes = new HashSet<>(this.seed.nodeSet());
-                seedNodes.removeAll(seedMap.nodeMap()
-                    .keySet());
+                seedNodes.removeAll(seedMap.nodeMap().keySet());
                 if (!seedNodes.isEmpty()) {
                     throw Exceptions.illegalArg("Unmatched seed nodes: %s", seedNodes);
                 }
@@ -170,46 +166,33 @@ public class Matcher implements SearchStrategy {
                     seedNodeKeys.remove(edge.source());
                     seedNodeKeys.remove(edge.target());
                 }
-                seedNodeKeys.retainAll(getCondition().getPattern()
-                    .nodeSet());
+                seedNodeKeys.retainAll(pattern.nodeSet());
                 if (!seedNodeMap.isEmpty()) {
                     throw Exceptions.illegalArg("Spurious node seeding: %s", seedNodeMap);
                 }
             }
-            if (!seedMap.edgeMap()
-                .keySet()
-                .equals(this.seed.edgeSet())) {
+            if (!seedMap.edgeMap().keySet().equals(this.seed.edgeSet())) {
                 Set<RuleEdge> seedEdges = new HashSet<>(this.seed.edgeSet());
-                seedEdges.removeAll(seedMap.edgeMap()
-                    .keySet());
+                seedEdges.removeAll(seedMap.edgeMap().keySet());
                 if (!seedEdges.isEmpty()) {
                     throw Exceptions.illegalArg("Unmatched seed edges: %s", seedEdges);
                 }
                 Map<RuleEdge,HostEdge> seedEdgeMap = new HashMap<>(seedMap.edgeMap());
-                seedEdgeMap.keySet()
-                    .removeAll(this.seed.edgeSet());
-                seedEdgeMap.keySet()
-                    .retainAll(getCondition().getPattern()
-                        .edgeSet());
+                seedEdgeMap.keySet().removeAll(this.seed.edgeSet());
+                seedEdgeMap.keySet().retainAll(pattern.edgeSet());
                 if (!seedEdges.isEmpty()) {
                     throw Exceptions.illegalArg("Spurious edge seeding: %s", seedEdgeMap);
                 }
             }
-            if (!seedMap.getValuation()
-                .keySet()
-                .equals(this.seed.varSet())) {
+            if (!seedMap.getValuation().keySet().equals(this.seed.varSet())) {
                 Set<LabelVar> seedVars = new HashSet<>(this.seed.varSet());
-                seedVars.removeAll(seedMap.getValuation()
-                    .keySet());
+                seedVars.removeAll(seedMap.getValuation().keySet());
                 if (!seedVars.isEmpty()) {
                     throw Exceptions.illegalArg("Unmatched seed variables: %s", seedVars);
                 }
                 Valuation seedValuation = new Valuation(seedMap.getValuation());
-                seedValuation.keySet()
-                    .removeAll(this.seed.varSet());
-                seedValuation.keySet()
-                    .retainAll(getCondition().getPattern()
-                        .varSet());
+                seedValuation.keySet().removeAll(this.seed.varSet());
+                seedValuation.keySet().retainAll(pattern.varSet());
                 if (!seedVars.isEmpty()) {
                     throw Exceptions.illegalArg("Spurious variable seeding: %s", seedValuation);
                 }

@@ -222,7 +222,7 @@ public class TemplateBuilder {
             if (hasProperties() && !isProcStartOrFinal && termKey.isFirstSteady()) {
                 for (Action prop : getProperties()) {
                     assert prop.isProperty() && prop instanceof Rule;
-                    if (((Rule) prop).getPolicy() != CheckPolicy.OFF) {
+                    if (prop.getPolicy() != CheckPolicy.OFF) {
                         NestedSwitch sw = new NestedSwitch();
                         sw.push(new Switch(loc, new Call(prop), 0, loc));
                         switches.add(sw);

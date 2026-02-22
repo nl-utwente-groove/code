@@ -76,10 +76,7 @@ public class DefaultAnchorFactory implements AnchorFactory {
         // add all non-creator parameters explicitly, as they need to be in the anchors
         // to ensure they are correctly bound
         if (rule.isTop()) {
-            Set<RuleNode> hiddenPars = rule.getHiddenPars();
-            if (hiddenPars != null) {
-                result.addAll(hiddenPars);
-            }
+            result.addAll(rule.getHiddenPars());
             rule
                 .getSignature()
                 .stream()

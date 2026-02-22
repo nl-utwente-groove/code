@@ -246,9 +246,11 @@ public class TreeMatch implements Fixable {
                 result = Collections.emptyList();
             } else if (resultSize > MAX_RESULT_SIZE) {
                 // TODO this is very brute-force, but it will have to do for now
+                var rule = getCondition().getRule();
+                assert rule != null;
                 throw Exceptions
                     .illegalState("More than %s matches for %s: giving up...", MAX_RESULT_SIZE,
-                                  this.condition.getRule().getQualName());
+                                  rule.getQualName());
             } else {
                 result = new ArrayList<>(resultSize);
                 Visitor<Proof,?> collector = Visitor.newCollector(result);
@@ -372,9 +374,10 @@ public class TreeMatch implements Fixable {
         result = prime * result + getCondition().hashCode();
         if (this.op.hasPattern()) {
             int patternHashCode = 1;
-            if (getCondition().hasRule()) {
+            var rule = getCondition().getRule();
+            if (rule != null) {
                 // only the anchor images matter to equality of the match
-                Anchor anchor = getCondition().getRule().getAnchor();
+                Anchor anchor = rule.getAnchor();
                 for (int i = 0; i < anchor.size(); i++) {
                     AnchorKey key = anchor.get(i);
                     AnchorValue value = getPatternMap().get(key);
@@ -412,9 +415,10 @@ public class TreeMatch implements Fixable {
         if (getOp().hasPattern()) {
             RuleToHostMap myMap = getPatternMap();
             RuleToHostMap hisMap = other.getPatternMap();
-            if (getCondition().hasRule()) {
+            var rule = getCondition().getRule();
+            if (rule != null) {
                 // only the anchor images matter to equality of the match
-                Anchor anchor = getCondition().getRule().getAnchor();
+                Anchor anchor = rule.getAnchor();
                 for (int i = 0; i < anchor.size(); i++) {
                     AnchorKey key = anchor.get(i);
                     if (!myMap.get(key).equals(hisMap.get(key))) {

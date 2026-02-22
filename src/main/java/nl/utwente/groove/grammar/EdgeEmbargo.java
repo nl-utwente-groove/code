@@ -37,15 +37,19 @@ public class EdgeEmbargo extends Condition {
      * @param properties properties of the graph grammar
      */
     private EdgeEmbargo(String name, RuleGraph context, RuleEdge embargoEdge,
-        GrammarProperties properties) {
+                        GrammarProperties properties) {
         super(name, Condition.Op.NOT, context.newGraph(name), null, properties);
         this.embargoEdge = embargoEdge;
-        getPattern().addEdgeContext(embargoEdge);
-        getRoot().addNode(embargoEdge.source());
-        getRoot().addNode(embargoEdge.target());
-        for (LabelVar var : getPattern().varSet()) {
+        var pattern = getPattern();
+        assert pattern != null;
+        var root = getRoot();
+        assert root != null;
+        pattern.addEdgeContext(embargoEdge);
+        root.addNode(embargoEdge.source());
+        root.addNode(embargoEdge.target());
+        for (LabelVar var : pattern.varSet()) {
             if (context.containsVar(var)) {
-                getRoot().addVar(var);
+                root.addVar(var);
             }
         }
         if (CONSTRUCTOR_DEBUG) {
@@ -62,7 +66,7 @@ public class EdgeEmbargo extends Condition {
      */
     public EdgeEmbargo(RuleGraph graph, RuleEdge embargoEdge, GrammarProperties properties) {
         this(String.format("%s:!(%s)", graph.getName(), embargoEdge), graph, embargoEdge,
-            properties);
+             properties);
     }
 
     /**

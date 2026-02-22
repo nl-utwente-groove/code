@@ -134,9 +134,11 @@ public class ConditionChecker extends ReteNetworkNode
     }
 
     private void makeRootSearchOrder(Condition c) {
-        if (!c.getRoot().isEmpty()) {
+        var root = c.getRoot();
+        assert root != null;
+        if (!root.isEmpty()) {
             ArrayList<RuleNode> nodes = new ArrayList<>();
-            nodes.addAll(c.getRoot().nodeSet());
+            nodes.addAll(root.nodeSet());
             Collections.sort(nodes, NodeComparator.instance());
             this.conflictSetSearchTree = new SearchTree(nodes);
         }
@@ -624,7 +626,8 @@ public class ConditionChecker extends ReteNetworkNode
             HostElement ei
                 = (this.rootSearchOrder[this.rootSearchOrder.length - 1] instanceof RuleNode r)
                     ? anchorMap.nodeMap().get(r)
-                    : anchorMap.edgeMap()
+                    : anchorMap
+                        .edgeMap()
                         .get(this.rootSearchOrder[this.rootSearchOrder.length - 1]);
             Object o = leaf.get(ei);
             if (o == null) {

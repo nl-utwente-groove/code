@@ -93,14 +93,18 @@ public class PlanSearchStrategy implements SearchStrategy {
 
     @Override
     public String toString() {
-        return this.plan.toString() + (isInjective() ? " (injective)" : " (non-injective)");
+        return this.plan.toString() + (isInjective()
+            ? " (injective)"
+            : " (non-injective)");
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + (isInjective() ? 1231 : 1237);
+        result = prime * result + (isInjective()
+            ? 1231
+            : 1237);
         result = prime * result + getPlan().hashCode();
         return result;
     }
@@ -264,7 +268,10 @@ public class PlanSearchStrategy implements SearchStrategy {
      */
     private void testFixed(boolean fixed) {
         if (this.fixed != fixed) {
-            throw Exceptions.illegalState("Search plan is %s fixed", fixed ? "not yet" : "");
+            throw Exceptions
+                .illegalState("Search plan is %s fixed", fixed
+                    ? "not yet"
+                    : "");
         }
     }
 
@@ -345,7 +352,8 @@ public class PlanSearchStrategy implements SearchStrategy {
                 getUsedNodes().clear();
             }
             if (seedMap != null) {
-                for (Map.Entry<RuleNode,? extends HostNode> nodeEntry : seedMap.nodeMap()
+                for (Map.Entry<RuleNode,? extends HostNode> nodeEntry : seedMap
+                    .nodeMap()
                     .entrySet()) {
                     assert isNodeFound(nodeEntry.getKey());
                     int i = getNodeIx(nodeEntry.getKey());
@@ -354,14 +362,14 @@ public class PlanSearchStrategy implements SearchStrategy {
                         getUsedNodes().add(nodeEntry.getValue());
                     }
                 }
-                for (Map.Entry<RuleEdge,? extends HostEdge> edgeEntry : seedMap.edgeMap()
+                for (Map.Entry<RuleEdge,? extends HostEdge> edgeEntry : seedMap
+                    .edgeMap()
                     .entrySet()) {
                     assert isEdgeFound(edgeEntry.getKey());
                     int i = getEdgeIx(edgeEntry.getKey());
                     this.edgeImages[i] = this.edgeSeeds[i] = edgeEntry.getValue();
                 }
-                for (Map.Entry<LabelVar,TypeElement> varEntry : seedMap.getValuation()
-                    .entrySet()) {
+                for (Map.Entry<LabelVar,TypeElement> varEntry : seedMap.getValuation().entrySet()) {
                     assert isVarFound(varEntry.getKey());
                     int i = getVarIx(varEntry.getKey());
                     this.varImages[i] = this.varSeeds[i] = varEntry.getValue();
@@ -424,11 +432,12 @@ public class PlanSearchStrategy implements SearchStrategy {
             this.found = found;
             if (PRINT_MATCHES) {
                 Condition condition = PlanSearchStrategy.this.plan.getCondition();
-                if (condition.hasRule() && condition.getRule()
-                    .isTop()) {
-                    System.out.printf("Next match for %s%s%n",
-                        condition.getName(),
-                        oldFound ? ": " : " in " + this.host);
+                var rule = condition.getRule();
+                if (rule != null && rule.isTop()) {
+                    System.out
+                        .printf("Next match for %s%s%n", condition.getName(), oldFound
+                            ? ": "
+                            : " in " + this.host);
                     if (found) {
                         System.out.print("  " + getMatch());
                     } else {
@@ -475,11 +484,9 @@ public class PlanSearchStrategy implements SearchStrategy {
                 }
             }
             RuleNode nodeKey = PlanSearchStrategy.this.nodeKeys[index];
-            assert image == null || this.nodeSeeds[index] == null : String.format(
-                "Assignment %s=%s replaces pre-matched image %s",
-                nodeKey,
-                image,
-                this.nodeSeeds[index]);
+            assert image == null || this.nodeSeeds[index] == null : String
+                .format("Assignment %s=%s replaces pre-matched image %s", nodeKey, image,
+                        this.nodeSeeds[index]);
             boolean keyIsVariableNode = nodeKey instanceof VariableNode;
             if (image instanceof ValueNode) {
                 // value nodes only matched by value nodes without signature or of the
@@ -582,8 +589,7 @@ public class PlanSearchStrategy implements SearchStrategy {
         public TreeMatch getMatch() {
             TreeMatch result = null;
             if (this.found) {
-                RuleToHostMap patternMap = this.host.getFactory()
-                    .createRuleToHostMap();
+                RuleToHostMap patternMap = this.host.getFactory().createRuleToHostMap();
                 for (int i = 0; i < this.nodeImages.length; i++) {
                     HostNode image = this.nodeImages[i];
                     if (image != null) {

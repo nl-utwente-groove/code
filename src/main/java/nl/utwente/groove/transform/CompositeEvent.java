@@ -36,7 +36,7 @@ import nl.utwente.groove.util.cache.CacheReference;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class CompositeEvent extends AbstractRuleEvent<Rule,CompositeEvent.CompositeEventCache> {
+public class CompositeEvent extends AbstractRuleEvent<CompositeEvent.CompositeEventCache> {
     /**
      * Creates a composite event on the basis of a given (nonempty) constituent event set.
      * @param record the system record from which this event was created; may be
@@ -217,8 +217,7 @@ public class CompositeEvent extends AbstractRuleEvent<Rule,CompositeEvent.Compos
     static private final CacheReference<CompositeEventCache> reference
         = CacheReference.<CompositeEventCache>newInstance(false);
 
-    class CompositeEventCache
-        extends AbstractRuleEvent<Rule,CompositeEventCache>.AbstractEventCache {
+    class CompositeEventCache extends AbstractRuleEvent.AbstractEventCache {
         /**
          * Reconstructs a set of events from the array stored in the composite
          * event.

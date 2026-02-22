@@ -251,8 +251,10 @@ public class ReteNetworkTest extends TestCase {
             checkBilateralConnectivity(ant);
         }
         if (ants.size() == 0) {
-            if (nnode instanceof ConditionChecker) {
-                assertTrue(((ConditionChecker) nnode).getCondition().getPattern().isEmpty());
+            if (nnode instanceof ConditionChecker cc) {
+                var pattern = cc.getCondition().getPattern();
+                assert pattern != null;
+                assertTrue(pattern.isEmpty());
             } else {
                 assertEquals(nnode.getOwner().getRoot(), nnode);
             }

@@ -670,8 +670,9 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         if (model instanceof RuleModel && ((RuleModel) model).isProperty()) {
             HTMLConverter.ITALIC_TAG.on(result);
             Action.Role actionRole = ((RuleModel) model).getRole();
-            if (actionRole.hasColor()) {
-                HTMLConverter.createColorTag(actionRole.getColor()).on(result);
+            var colorTag = actionRole.getColorTag();
+            if (colorTag != null) {
+                colorTag.on(result);
             }
         }
         result.append(suffix);

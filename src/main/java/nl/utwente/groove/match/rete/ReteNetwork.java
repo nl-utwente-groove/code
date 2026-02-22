@@ -535,7 +535,9 @@ public class ReteNetwork {
      * @return A collection of edges of the given condition.
      */
     protected Collection<RuleEdge> getEdgeCollection(Condition c) {
-        List<RuleEdge> result = new ArrayList<>(c.getPattern().edgeSet());
+        var pattern = c.getPattern();
+        assert pattern != null;
+        List<RuleEdge> result = new ArrayList<>(pattern.edgeSet());
         Collections.sort(result, EdgeComparator.instance());
         return result;
     }
@@ -661,9 +663,12 @@ public class ReteNetwork {
     private RuleGraphMorphism createRuleMorphismForCloning(RuleGraph source,
                                                            Condition positiveRule) {
         RuleFactory rfact = positiveRule.getFactory();
+        assert rfact != null;
         RuleGraphMorphism result = rfact.createMorphism();
         int maxNodeNr = 0;
-        for (RuleNode n : positiveRule.getPattern().nodeSet()) {
+        var pattern = positiveRule.getPattern();
+        assert pattern != null;
+        for (RuleNode n : pattern.nodeSet()) {
             if (maxNodeNr < n.getNumber()) {
                 maxNodeNr = n.getNumber();
             }
@@ -769,8 +774,9 @@ public class ReteNetwork {
                 = copyAndRenumberNodes(nac.getPattern(),
                                        positiveConditionChecker.getCondition().getFactory(),
                                        nodeRenumberingMapping);
-            RuleGraphMorphism newRootMap
-                = copyRootMap(nac.getRoot().nodeSet(), nodeRenumberingMapping);
+            var nacRoot = nac.getRoot();
+            assert nacRoot != null;
+            RuleGraphMorphism newRootMap = copyRootMap(nacRoot.nodeSet(), nodeRenumberingMapping);
 
             ReteStaticMapping m1
                 = duplicateAndTranslateMapping(positiveConditionChecker.getCondition().getFactory(),
