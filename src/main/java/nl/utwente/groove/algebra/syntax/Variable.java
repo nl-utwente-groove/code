@@ -120,8 +120,10 @@ public final class Variable extends Expression {
     }
 
     @Override
-    public SortMap computeTyping() {
-        return SortMap.newInstance(getName(), getSort());
+    protected SortMap computeTyping() {
+        var result = super.computeTyping();
+        result.add(getName(), getSort());
+        return result;
     }
 
     @Override

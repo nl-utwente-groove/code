@@ -128,7 +128,7 @@ public class EditorFactory {
             result = new NullEditor(getDialog(), null, key, kind);
             break;
         default:
-            throw Exceptions.UNREACHABLE; // all cases covered
+            throw Exceptions.unreachable(); // all cases covered
         }
         if (result == null) {
             result = new NullEditor(getDialog(), holder, key, kind);

@@ -380,7 +380,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
             case FORALL_POS -> FORALL_POS_LINE;
             case EXISTS -> EXISTS_LINE;
             case EXISTS_OPT -> EXISTS_OPT_LINE;
-            default -> throw Exceptions.UNREACHABLE;
+            default -> throw Exceptions.unreachable();
             });
         }
         return MultiLabel.singleton(line, Direct.NONE);

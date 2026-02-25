@@ -163,7 +163,7 @@ public class RuleInspector {
                     String expr =
                         ("(" + subExpressions[0] + " " + op.getSymbol() + " "
                             + subExpressions[1] + ")");
-                    if (!op.getResultType().equals(Sort.BOOL)) {
+                    if (!op.getResultSort().equals(Sort.BOOL)) {
                         expr = "(" + expr + "== " + value + ")";
                     }
                     result.add(expr);

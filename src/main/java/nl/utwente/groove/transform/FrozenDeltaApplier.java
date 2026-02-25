@@ -43,7 +43,7 @@ public class FrozenDeltaApplier implements StoredDeltaApplier {
             } else if (elem instanceof HostEdge he) {
                 target.addEdge(he);
             } else {
-                throw Exceptions.UNREACHABLE;
+                throw Exceptions.unreachable();
             }
         }
     }

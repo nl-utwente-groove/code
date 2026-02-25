@@ -67,7 +67,7 @@ public class HTMLLineFormat extends LineFormat<HTMLLineFormat.HTMLBuilder> {
             tag = HTMLConverter.SUPER_TAG;
             break;
         default:
-            throw Exceptions.UNREACHABLE;
+            throw Exceptions.unreachable();
         }
         tag.on(subline.getResult());
         return subline;

@@ -28,7 +28,7 @@ public class StringType extends DataType {
     public Value valueFromString(String valueString) {
         try {
             return new StringValue(StringHandler.toUnquoted(valueString,
-                StringHandler.DOUBLE_QUOTE_CHAR));
+                StringHandler.DOUBLE_QUOTE));
         } catch (FormatException e) {
             return null;
         }

@@ -26,6 +26,7 @@ import java.util.function.Function;
 
 import org.eclipse.jdt.annotation.NonNull;
 
+import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.grammar.type.TypeLabel;
@@ -73,14 +74,14 @@ public final class CallExpr extends Expression {
 
     @Override
     protected SortMap computeTyping() {
-        SortMap result = new SortMap();
+        SortMap result = super.computeTyping();
         getArgs().stream().forEach(a -> result.add(a.getTyping()));
         return result;
     }
 
     @Override
     public Sort getSort() {
-        return this.op.getResultType();
+        return this.op.getResultSort();
     }
 
     /** Returns the operator of this term. */
@@ -117,6 +118,13 @@ public final class CallExpr extends Expression {
         List<Expression> newArgs = new ArrayList<>();
         getArgs().stream().map(a -> a.bind(bindMap)).forEach(newArgs::add);
         return new CallExpr(isPrefixed(), getOperator(), newArgs);
+    }
+
+    @Override
+    public boolean isUserConstant() {
+        boolean result = this.op.isConstructor();
+        result = getArgs().stream().allMatch(a -> a instanceof Constant);
+        return result;
     }
 
     @Override
@@ -260,7 +268,7 @@ public final class CallExpr extends Expression {
     /** Method to check the type correctness of the operator/arguments combination. */
     private boolean isTypeCorrect() {
         var args = getArgs();
-        var argTypes = this.op.getParamTypes();
+        var argTypes = this.op.getParamSorts();
         if (!this.op.allowsArgCount(args.size())) {
             return false;
         }

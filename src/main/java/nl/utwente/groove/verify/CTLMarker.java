@@ -200,7 +200,7 @@ public class CTLMarker {
             };
         }
         // other arities do not exist
-        default -> throw Exceptions.UNREACHABLE;
+        default -> throw Exceptions.unreachable();
         };
         if (DEBUG) {
             System.out.printf("Formula %s holds in %s%n", formula, result);
@@ -219,7 +219,7 @@ public class CTLMarker {
             case EVENTUALLY -> mark(Formula.ff().EU(arg1));
             // EG a -> !AF !a
             case ALWAYS -> mark(arg1.neg().AF().neg());
-            default -> throw Exceptions.UNREACHABLE;
+            default -> throw Exceptions.unreachable();
             };
         case 2:
             var arg2 = property.getArg2();
@@ -231,10 +231,10 @@ public class CTLMarker {
             case RELEASE -> mark(arg2.EW(arg1.and(arg2)));
             // E(a M b) = E(b U a&b)
             case S_RELEASE -> mark(arg2.EU(arg1.and(arg2)));
-            default -> throw Exceptions.UNREACHABLE;
+            default -> throw Exceptions.unreachable();
             };
         default:
-            throw Exceptions.UNREACHABLE;
+            throw Exceptions.unreachable();
         }
     }
 
@@ -249,7 +249,7 @@ public class CTLMarker {
             case EVENTUALLY -> mark(Formula.ff().AU(arg1));
             // AG a -> !EF !a
             case ALWAYS -> mark(arg1.neg().EF().neg());
-            default -> throw Exceptions.UNREACHABLE;
+            default -> throw Exceptions.unreachable();
             };
         case 2:
             var arg2 = property.getArg2();
@@ -261,10 +261,10 @@ public class CTLMarker {
             case RELEASE -> mark(arg2.AW(arg1.and(arg2)));
             // A(a M b) = A(b U a&b)
             case S_RELEASE -> mark(arg2.AU(arg1.and(arg2)));
-            default -> throw Exceptions.UNREACHABLE;
+            default -> throw Exceptions.unreachable();
             };
         default:
-            throw Exceptions.UNREACHABLE;
+            throw Exceptions.unreachable();
         }
     }
 

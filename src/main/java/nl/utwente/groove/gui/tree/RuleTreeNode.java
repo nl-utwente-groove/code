@@ -281,7 +281,7 @@ class RuleTreeNode extends ActionTreeNode {
                 injectiveIcon = null;
                 break;
             default:
-                throw Exceptions.UNREACHABLE;
+                throw Exceptions.unreachable();
             }
             if (normalIcon != null) {
                 normalIconMap.put(role, normalIcon);

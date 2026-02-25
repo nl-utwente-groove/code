@@ -19,14 +19,14 @@ package nl.utwente.groove.test.algebra;
 import nl.utwente.groove.annotation.UserOperation;
 
 /**
- * Example class with user operations.
+ * Erroneous example class with user operations: unknown parameter type
  * @author Arend Rensink
  * @version $Revision$
  */
-public class UserOperationsErr2 {
-    /** User operation with erroneous void type. */
+public class UserOpsUnknownParType {
+    /** User operation with erroneous parameter type. */
     @UserOperation
-    static public void errVoidReturn() {
-        // empty
+    static public int errObjectPar(Object par) {
+        return 0;
     }
 }

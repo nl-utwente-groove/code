@@ -111,7 +111,7 @@ public abstract sealed class AbstractStringAlgebra<INT,REAL>
 
     @Override
     public String toValidSymbol(Object value) {
-        return StringHandler.toQuoted((String) value, StringHandler.DOUBLE_QUOTE_CHAR);
+        return StringHandler.toQuoted((String) value, StringHandler.DOUBLE_QUOTE);
     }
 
     @Override

@@ -220,7 +220,7 @@ public class InstanceToGxl extends InstanceExporter<java.lang.Object> {
             cntElem = GxlUtil.g_objectFactory.createSeq((SeqType) cntType);
             break;
         default:
-            throw Exceptions.UNREACHABLE;
+            throw Exceptions.unreachable();
         }
         setElement(containerval, cntElem);
 

@@ -240,8 +240,12 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         var errors = new FormatErrorSet();
         switch (getGraphRole()) {
         case RULE:
-            if (has(PARAM_ASK) && !has(Category.SORT)) {
-                errors.add("User-provided parameter must be a data value");
+            if (has(PARAM_ASK)) {
+                if (!has(Category.SORT)) {
+                    errors.add("User-provided parameter must be a data value");
+                } else if (getSort() == Sort.USER) {
+                    errors.add("User-provided parameter cannot be of user type");
+                }
             }
             if (has(PARAM_IN) && has(CREATOR)) {
                 errors.add("Input parameter can't be %s", get(Category.ROLE));
@@ -391,7 +395,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
             for (var opEdge : opEdges) {
                 var operator = opEdge.getOperator();
                 assert operator != null;
-                var opSignature = operator.getParamTypes();
+                var opSignature = operator.getParamSorts();
                 if (!opSignature.equals(signature)) {
                     errors
                         .add("Product node signature %s does not equal '%s' signature %s",

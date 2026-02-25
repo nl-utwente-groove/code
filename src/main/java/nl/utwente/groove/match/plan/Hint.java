@@ -79,10 +79,10 @@ public record Hint(@NonNull List<String> common, @NonNull List<String> rare) {
             if (text.length() < 2) {
                 throw new FormatException("Label list '%s' should be double-quoted string", text);
             }
-            if (text.charAt(0) != StringHandler.DOUBLE_QUOTE_CHAR) {
+            if (text.charAt(0) != StringHandler.DOUBLE_QUOTE) {
                 throw new FormatException("Label list '%s' should be double-quoted string", text);
             }
-            return StringHandler.toUnquoted(text, StringHandler.DOUBLE_QUOTE_CHAR);
+            return StringHandler.toUnquoted(text, StringHandler.DOUBLE_QUOTE);
         }
 
         @Override

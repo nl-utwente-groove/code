@@ -19,6 +19,7 @@ package nl.utwente.groove.transform.oracle;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.algebra.Constant;
+import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.UnitPar.RulePar;
 import nl.utwente.groove.grammar.host.HostGraph;
@@ -45,7 +46,7 @@ public class DefaultOracle implements ValueOracleFactory, ValueOracle {
     @Override
     public Constant getValue(HostGraph host, RuleEvent event, RulePar par) throws FormatException {
         var sort = par.getType().getSort();
-        assert sort != null;
+        assert sort != null && sort != Sort.USER;
         return sort.getDefaultValue();
     }
 

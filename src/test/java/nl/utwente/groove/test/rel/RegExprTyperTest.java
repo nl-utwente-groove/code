@@ -60,8 +60,8 @@ public class RegExprTyperTest {
 
     static RegExprTyper implicitTyper;
     static RegExprTyper explicitTyper;
-    static TypeNode A, A1, A2, B, B1, C, D, XInt, XBool, XReal, XString;
-    static TypeNode Top, IInt, IBool, IReal, IString;
+    static TypeNode A, A1, A2, B, B1, C, D, XInt, XBool, XReal, XString, XUser;
+    static TypeNode Top, IInt, IBool, IReal, IString, IUser;
     static String xBin, xFlag, xType;
     /** Flag switching between implicit and explicit typing. */
     boolean implicit;
@@ -81,10 +81,10 @@ public class RegExprTyperTest {
             assert startGraph != null; // test grammar has this start graph
         } catch (FormatException e) {
             fail(e.getMessage());
-            throw Exceptions.UNREACHABLE;
+            throw Exceptions.unreachable();
         } catch (IOException e) {
             fail(e.getMessage());
-            throw Exceptions.UNREACHABLE;
+            throw Exceptions.unreachable();
         }
         implicitType = new ImplicitTypeGraph();
         for (HostEdge testEdge : startGraph.edgeSet()) {
@@ -134,12 +134,14 @@ public class RegExprTyperTest {
         XInt = explicitFactory.getDataType(Sort.INT);
         XReal = explicitFactory.getDataType(Sort.REAL);
         XString = explicitFactory.getDataType(Sort.STRING);
+        XUser = explicitFactory.getDataType(Sort.USER);
         Top = implicitType.getTopNode();
         TypeFactory implicitFactory = implicitType.getFactory();
         IBool = implicitFactory.getDataType(Sort.BOOL);
         IInt = implicitFactory.getDataType(Sort.INT);
         IReal = implicitFactory.getDataType(Sort.REAL);
         IString = implicitFactory.getDataType(Sort.STRING);
+        IUser = implicitFactory.getDataType(Sort.USER);
     }
 
     /** Tests the construction of atoms. */
@@ -155,7 +157,8 @@ public class RegExprTyperTest {
         this.implicit = true;
         TypeNode[][] n2 = {{Top, Top}};
         equals("type:A", n2);
-        TypeNode[][] e2 = {{Top, Top}, {Top, IInt}, {Top, IReal}, {Top, IString}, {Top, IBool}};
+        TypeNode[][] e2
+            = {{Top, Top}, {Top, IInt}, {Top, IReal}, {Top, IString}, {Top, IBool}, {Top, IUser}};
         equals("aTo", e2);
         TypeNode[][] f2 = {{Top, Top}};
         equals("flag:a2", f2);
@@ -167,11 +170,11 @@ public class RegExprTyperTest {
         this.implicit = false;
         TypeNode[][] n1 = {{A, A}, {A, A1}, {A, A2}, {A1, A}, {A1, A1}, {A2, A}, {A2, A2}, {B, B},
                 {B, B1}, {B1, B}, {B1, B1}, {C, C}, {D, D}, {XInt, XInt}, {XReal, XReal},
-                {XString, XString}, {XBool, XBool}};
+                {XString, XString}, {XBool, XBool}, {XUser, XUser}};
         equals("=", n1);
         this.implicit = true;
-        TypeNode[][] n2
-            = {{Top, Top}, {IInt, IInt}, {IReal, IReal}, {IString, IString}, {IBool, IBool}};
+        TypeNode[][] n2 = {{Top, Top}, {IInt, IInt}, {IReal, IReal}, {IString, IString},
+                {IBool, IBool}, {IUser, IUser}};
         equals("=", n2);
     }
 
@@ -209,7 +212,8 @@ public class RegExprTyperTest {
         equals("type:?", n2);
         TypeNode[][] f2 = {};
         equals("flag:?[^a,a1,a2]", f2);
-        TypeNode[][] e2 = {{Top, Top}, {Top, IInt}, {Top, IReal}, {Top, IString}, {Top, IBool}};
+        TypeNode[][] e2
+            = {{Top, Top}, {Top, IInt}, {Top, IReal}, {Top, IString}, {Top, IBool}, {Top, IUser}};
         equals("?", e2);
     }
 

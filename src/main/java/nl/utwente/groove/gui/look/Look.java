@@ -441,6 +441,7 @@ public enum Look {
         aspectLookMap.put(AspectKind.INT, DATA);
         aspectLookMap.put(AspectKind.STRING, DATA);
         aspectLookMap.put(AspectKind.REAL, DATA);
+        aspectLookMap.put(AspectKind.USER, DATA);
         aspectLookMap.put(AspectKind.PRODUCT, PRODUCT);
     }
 }

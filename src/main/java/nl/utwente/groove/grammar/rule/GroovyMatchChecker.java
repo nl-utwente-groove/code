@@ -90,10 +90,10 @@ public class GroovyMatchChecker extends MatchChecker {
             case 2:
                 return (Boolean) this.method.invoke(this.target, graph, anchorMap);
             default:
-                throw Exceptions.UNREACHABLE;
+                throw Exceptions.unreachable();
             }
         } catch (IllegalAccessException | IllegalArgumentException exc) {
-            throw Exceptions.UNREACHABLE;
+            throw Exceptions.unreachable();
         }
     }
 }

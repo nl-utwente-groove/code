@@ -121,7 +121,7 @@ public class InArgExpressionTest extends CtrlTester {
             Assert
                 .fail(String
                     .format("%s cannot be parsed as expression: %s", arg, exc.getMessage()));
-            throw Exceptions.UNREACHABLE;
+            throw Exceptions.unreachable();
         }
     }
 

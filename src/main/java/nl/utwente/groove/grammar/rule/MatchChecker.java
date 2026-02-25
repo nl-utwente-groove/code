@@ -139,7 +139,7 @@ abstract public class MatchChecker {
         case GROOVY:
             return new GroovyMatchChecker(method.getQualName(), grammar);
         default:
-            throw Exceptions.UNREACHABLE;
+            throw Exceptions.unreachable();
         }
     }
 

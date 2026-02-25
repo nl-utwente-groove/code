@@ -237,7 +237,7 @@ abstract public class Display extends JPanel {
             result = new PropertiesDisplay(simulator);
             break;
         default:
-            throw Exceptions.UNREACHABLE;
+            throw Exceptions.unreachable();
         }
         result.buildDisplay();
         result.installListeners();

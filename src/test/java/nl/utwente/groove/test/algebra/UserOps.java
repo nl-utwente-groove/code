@@ -19,11 +19,11 @@ package nl.utwente.groove.test.algebra;
 import nl.utwente.groove.annotation.UserOperation;
 
 /**
- * Excample class with user operations.
+ * Example class with user operations.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class UserOperations {
+public class UserOps {
     /** Returns a random integer number between 0 and 9 (inclusive). */
     @UserOperation(indeterminate = true)
     static public int randomInt(int bound) {
@@ -42,15 +42,9 @@ public class UserOperations {
         return 1;
     }
 
-    /** Retrieves the nth character of a string. */
+    /** Constructs a value of a user type. */
     @UserOperation
-    static public String charAt(String input, int n) {
-        return "" + input.charAt(n);
-    }
-
-    /** Tests if a given string is a prefix of another. */
-    @UserOperation
-    static public boolean isPrefix(String prefix, String total) {
-        return total.startsWith(prefix);
+    static public UserTypeIntBool get(int nr, boolean truth) {
+        return new UserTypeIntBool(nr, truth);
     }
 }

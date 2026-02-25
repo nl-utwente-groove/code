@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.algebra;
 
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collections;
@@ -29,10 +30,12 @@ import java.util.TreeMap;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.Signature.OpValue;
+import nl.utwente.groove.algebra.syntax.ExprTreeParser;
 import nl.utwente.groove.annotation.Syntax;
 import nl.utwente.groove.annotation.ToolTipBody;
 import nl.utwente.groove.annotation.ToolTipHeader;
 import nl.utwente.groove.annotation.ToolTipPars;
+import nl.utwente.groove.annotation.UserType;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Keywords;
@@ -150,12 +153,19 @@ public enum Sort {
 
         @Override
         public Constant createValidConstant(String symbol) throws FormatException {
-            throw Exceptions.unsupportedOp();
+            var expr = ExprTreeParser.parseExpr(symbol, false);
+            return expr.toConstant();
         }
 
         @Override
         public boolean denotesValidValue(String symbol) {
             return false;
+            //            try {
+            //                var expr = ExprTreeParser.parseExpr(symbol, false);
+            //                return expr.hasConstant();
+            //            } catch (FormatException exc) {
+            //                return false;
+            //            }
         }
     },
     /** String sort. */
@@ -250,7 +260,7 @@ public enum Sort {
     private SortedMap<String,Operator> computeOperatorMap() {
         SortedMap<String,Operator> result = new TreeMap<>();
         var opStream = switch (this) {
-        case USER -> UserSignature.getOperators().stream();
+        case USER -> UserSignature.getOperators().values().stream();
         default -> this.opValues.stream().map(OpValue::getOperator);
         };
         opStream.forEach(o -> result.put(o.getName(), o));
@@ -264,13 +274,17 @@ public enum Sort {
 
     private final String errorSymbol;
 
+    /** Tests is this is a primitive sort, i.e., not a user sort. */
+    public boolean isPrimitive() {
+        return this != USER;
+    }
+
     /**
      * Creates a (valid or error) constant of this sort
      * from a given symbolic string representation.
      * @param symbol the symbolic representation; non-{@code null}
      * @throws FormatException if {@code symbol} does not represent
      * a value of this sort
-     * @see #denotesValue(String)
      */
     public Constant createConstant(String symbol) throws FormatException {
         try {
@@ -326,13 +340,21 @@ public enum Sort {
     /** Returns the sort for a given sort name.
      * @return the sort for {@code name}, or {@code null} if {@code name} is not a sort name
      */
-    public static Sort getSort(String sortName) {
+    public static @Nullable Sort toSort(String sortName) {
         return sortNameMap.get(sortName);
     }
 
-    /** Returns the sort for a given signature class. */
-    public static Sort getSort(Class<?> sortClass) {
-        return sortClassMap.get(sortClass);
+    /** Returns the sort for a given Java type.
+     * @return the sort for {@code javaType}, or {@code null} if {@code javaType} is not a sort name
+     */
+    @SuppressWarnings("null")
+    public static @Nullable Sort toSort(Type javaType) {
+        var result = sortTypeMap.get(javaType);
+        if (result == null && javaType instanceof Class<?> claz
+            && claz.getAnnotation(UserType.class) != null) {
+            return Sort.USER;
+        }
+        return result;
     }
 
     /** Returns the set of all known signature names. */
@@ -342,13 +364,19 @@ public enum Sort {
 
     /** Inverse mapping from signature names to sorts. */
     private static Map<String,Sort> sortNameMap = new HashMap<>();
-    /** Inverse mapping from signature classes to sorts. */
-    private static Map<Class<? extends Signature>,Sort> sortClassMap = new HashMap<>();
+    /** Inverse mapping from Java types to sorts. */
+    private static Map<Type,Sort> sortTypeMap = new HashMap<>();
 
     static {
         for (Sort kind : Sort.values()) {
             sortNameMap.put(kind.getName(), kind);
-            sortClassMap.put(kind.getSignatureClass(), kind);
+            sortTypeMap.put(switch (kind) {
+            case BOOL -> boolean.class;
+            case INT -> int.class;
+            case REAL -> double.class;
+            case STRING -> String.class;
+            default -> null;
+            }, kind);
         }
     }
 }

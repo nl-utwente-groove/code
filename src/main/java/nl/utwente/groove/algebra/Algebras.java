@@ -58,7 +58,7 @@ public class Algebras {
         for (Sort sigKind : Sort.values()) {
             for (TypeVariable<?> type : sigKind.getSignatureClass().getTypeParameters()) {
                 String typeName = type.getName().toLowerCase();
-                if (Sort.getSort(typeName) == null) {
+                if (Sort.toSort(typeName) == null) {
                     throw Exceptions
                         .illegalArg("Type '%s' not declared by any signature", typeName);
                 }
@@ -104,7 +104,7 @@ public class Algebras {
                     var body = switch (op.kind().getPlace()) {
                     case INFIX -> "Alternative (infix) notation: %%2$s %s %%3$s.";
                     case PREFIX -> "Alternative (prefix) notation: %s %%2$s.";
-                    default -> throw Exceptions.UNREACHABLE;
+                    default -> throw Exceptions.unreachable();
                     };
                     help
                         .addBody("<p style=\"margin-top:5;\"/>"
@@ -185,7 +185,7 @@ public class Algebras {
         try {
             return Help.createHelp(sort.getClass().getField(sort.name()), tokenMap);
         } catch (NoSuchFieldException exc) {
-            throw Exceptions.UNREACHABLE;
+            throw Exceptions.unreachable();
         }
     }
 
@@ -226,7 +226,7 @@ public class Algebras {
         return switch (op.kind().getPlace()) {
         case INFIX -> "expr1 " + convert(op.symbol(), false) + " expr2";
         case PREFIX -> convert(op.symbol(), false) + " expr";
-        default -> throw Exceptions.UNREACHABLE;
+        default -> throw Exceptions.unreachable();
         };
     }
 

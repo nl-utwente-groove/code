@@ -14,19 +14,27 @@
  *
  * $Id$
  */
-package nl.utwente.groove.test.algebra;
+package nl.utwente.groove.algebra;
 
 import nl.utwente.groove.annotation.UserOperation;
+import nl.utwente.groove.annotation.UserType;
 
 /**
- * Example class with user operations.
+ * Example user type record class.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class UserOperationsErr4 {
-    /** Inaccessible user operation. */
+@UserType
+public record UserTypeIntBool(int intField, boolean boolField) {
+    /** Retrieves the int field of an instance of this type. */
     @UserOperation
-    static int errNotPublic() {
-        return 0;
+    static public int getInt(UserTypeIntBool self) {
+        return self.intField();
+    }
+
+    /** Tests whether the int field of an instance of this type has a negative value. */
+    @UserOperation
+    static public boolean isNeg(UserTypeIntBool self) {
+        return self.intField() < 0;
     }
 }

@@ -19,11 +19,11 @@ package nl.utwente.groove.test.algebra;
 import nl.utwente.groove.annotation.UserOperation;
 
 /**
- * Example class with user operations.
+ * Erroneous example class with user operations: unknown return type
  * @author Arend Rensink
  * @version $Revision$
  */
-public class UserOperationsErr1 {
+public class UserOpsUnknownReturnType {
     /** User operation with erroneous return type. */
     @UserOperation
     static public Object errObjectReturn() {

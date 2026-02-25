@@ -396,7 +396,7 @@ public class FormatError
         return switch (el1) {
         case Node n1 -> nodeComparator.compare(n1, (Node) el2);
         case Edge e1 -> edgeComparator.compare(e1, (Edge) el2);
-        default -> throw Exceptions.UNREACHABLE;
+        default -> throw Exceptions.unreachable();
         };
     };
     /** Comparator for lists of graph elements. */

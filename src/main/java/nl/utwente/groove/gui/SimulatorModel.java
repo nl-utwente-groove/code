@@ -92,7 +92,7 @@ public class SimulatorModel implements Cloneable {
             } else if (kind.isGraphBased()) {
                 getStore().deleteGraphs(kind, names);
             } else {
-                throw Exceptions.UNREACHABLE;
+                throw Exceptions.unreachable();
             }
             changeGrammar(change);
         } finally {
@@ -179,7 +179,7 @@ public class SimulatorModel implements Cloneable {
             getStore().putProperties(newProperties);
             break;
         default:
-            throw Exceptions.UNREACHABLE;
+            throw Exceptions.unreachable();
         }
     }
 
@@ -214,7 +214,7 @@ public class SimulatorModel implements Cloneable {
             getStore().putProperties(newProperties);
             break;
         default:
-            throw Exceptions.UNREACHABLE;
+            throw Exceptions.unreachable();
         }
     }
 

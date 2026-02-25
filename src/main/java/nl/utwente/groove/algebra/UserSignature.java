@@ -16,17 +16,23 @@
  */
 package nl.utwente.groove.algebra;
 
+import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import nl.utwente.groove.annotation.UserOperation;
+import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.util.Callback;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.parse.FallibleObject;
+import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -37,83 +43,174 @@ import nl.utwente.groove.util.parse.FormatException;
 public sealed abstract class UserSignature implements Signature permits UserAlgebra {
     /** Sets the used-defined class containing the operator definitions.
      * All methods with an {@link UserOperation}-annotations are taken as operators.
-    * Silently ignores any annotation errors in the class; to check for those, call {@link #checkUserClass(String)} instead
+    * Silently ignores any annotation errors in the class; to check for those, call {@link #checkUserClass} instead
      */
-    public static void setUserClass(String className) {
+    public static void setUserClass(List<QualName> classNames) {
         methods.clear();
         operators.reset();
-        if (!className.isBlank()) {
-            methods.addAll(parseUserClass(className).get());
+        var classes = toClasses(classNames);
+        for (var claz : classes.get()) {
+            methods.putAll(parseUserClass(claz, classes.get()).get());
         }
         resetUsers();
     }
 
-    /** Checks whether a class with a given name can be found and has suitable user-defined operations,
-     * and returns the loaded class.
+    /** Checks whether a given set of named classes can be loaded and have suitable user-defined operations,
+     * and returns the operations as executables.
      * @throws FormatException if there are annotation errors in the class
      */
-    public static Set<Method> checkUserClass(String className) throws FormatException {
-        var result = parseUserClass(className);
-        result.getErrors().throwException();
-        return result.get();
+    public static Map<String,Executable> checkUserClass(List<QualName> classNames) throws FormatException {
+        var result = new LinkedHashMap<String,Executable>();
+        var errors = new FormatErrorSet();
+        var classes = toClasses(classNames);
+        classes.throwException();
+        for (var claz : classes.get()) {
+            var m = parseUserClass(claz, classes.get());
+            result.putAll(m.get());
+            errors.addAll(m.getErrors());
+        }
+        errors.throwException();
+        return result;
     }
 
-    /** Checks whether a class with a given name can be found and has suitable user-defined operations,
-     * and returns the loaded class.
-     */
-    @SuppressWarnings("null")
-    private static FallibleObject<? extends Set<Method>> parseUserClass(String className) {
-        var result = new FallibleObject<>(new LinkedHashSet<Method>());
-        try {
-            var claz = ClassLoader.getSystemClassLoader().loadClass(className);
-            // retrieve the @UserOperation-annotated methods
-            for (var m : claz.getDeclaredMethods()) {
-                if (m.getAnnotation(UserOperation.class) == null) {
-                    continue;
-                }
-                if (!Modifier.isStatic(m.getModifiers())) {
-                    result.addError("User operation '%s.%s' is not static", className, m.getName());
-                } else if (!m.canAccess(null)) {
-                    result
-                        .addError("User operation '%s.%s' is not accessible", className,
-                                  m.getName());
-                } else {
-                    try {
-                        new Operator(m);
-                        result.get().add(m);
-                    } catch (IllegalArgumentException exc) {
-                        result
-                            .addError("Erroneous user operation '%s.%s': %s", className,
-                                      m.getName(), exc.getMessage());
-                    }
-                }
+    /** Returns the loadable classes among a list of class names. */
+    static private FallibleObject<? extends Set<Class<?>>> toClasses(List<QualName> classNames) {
+        var result = new FallibleObject<>(new LinkedHashSet<Class<?>>());
+        var loader = ClassLoader.getSystemClassLoader();
+        for (var className : classNames) {
+            try {
+                result.get().add(loader.loadClass(className.toString()));
+            } catch (ClassNotFoundException exc) {
+                result.addError("Class '%s' cannot be loaded", className);
             }
-        } catch (ClassNotFoundException exc) {
-            result.addError("Class '%s' cannot be loaded", className);
         }
         return result;
     }
 
-    /** Returns the set of operators defined in the user class. */
-    public static Set<Method> getMethods() {
+    /** Checks whether a given class has suitable user-defined operations,
+     * and returns the methods on which those operations are based.
+     */
+    @SuppressWarnings("null")
+    private static FallibleObject<? extends Map<String,Executable>> parseUserClass(Class<?> claz,
+                                                                                   Set<Class<?>> others) {
+        var result = new FallibleObject<>(new LinkedHashMap<String,Executable>());
+        String className = claz.getCanonicalName();
+        // check that the class is public
+        if (!Modifier.isPublic(claz.getModifiers())) {
+            result.addError("Class '%s' is not public", className);
+        }
+        // if the class is annotated as UserType, check that it is a record type with primitively sorted fields
+        if (Sort.toSort(claz) == Sort.USER) {
+            if (!claz.isRecord()) {
+                result.addError("User type '%s' is not a record type", className);
+            } else {
+                var rcs = claz.getRecordComponents();
+                var parTypes = new Class<?>[rcs.length];
+                for (int i = 0; i < rcs.length; i++) {
+                    var rc = rcs[i];
+                    parTypes[i] = rc.getType();
+                    var sort = Sort.toSort(rc.getType());
+                    if (sort == null || !sort.isPrimitive()) {
+                        result
+                            .addError("Type of field '%s.%s' is not primitive", className,
+                                      rc.getName());
+                    }
+                }
+                try {
+                    var name = claz.getSimpleName();
+                    var newConstructor = claz.getConstructor(parTypes);
+                    var oldExecutable = result.get().put(name, newConstructor);
+                    if (oldExecutable != null) {
+                        result
+                            .addError("Duplicate user operation '%s' in '%s' and '%s'", name,
+                                      oldExecutable.getDeclaringClass().getCanonicalName(),
+                                      className);
+                    }
+                } catch (NoSuchMethodException | SecurityException exc) {
+                    throw Exceptions.unreachable();
+                }
+            }
+        }
+        // retrieve the @UserOperation-annotated methods
+        for (var m : claz.getDeclaredMethods()) {
+            if (m.getAnnotation(UserOperation.class) == null) {
+                continue;
+            }
+            if (!Modifier.isStatic(m.getModifiers())) {
+                result.addError("User operation '%s.%s' is not static", className, m.getName());
+            } else if (!m.canAccess(null)) {
+                result.addError("User operation '%s.%s' is not accessible", className, m.getName());
+            } else {
+                try {
+                    var newMethod = checkMethod(m, others);
+                    var oldExecutable = result.get().put(m.getName(), newMethod);
+                    if (oldExecutable != null) {
+                        result
+                            .addError("Duplicate user operation '%s' in '%s' and '%s'", m.getName(),
+                                      oldExecutable.getDeclaringClass().getCanonicalName(),
+                                      className);
+                    }
+                } catch (FormatException exc) {
+                    result.addErrors(exc.getErrors());
+                }
+            }
+        }
+        return result;
+    }
+
+    /** Checks a given method for suitability as the basis for a user-defined operation.
+     * If no error is thrown, returns the method (for the purpose of call chaining).
+     */
+    static private Method checkMethod(Method m, Set<Class<?>> userClasses) throws FormatException {
+        var errors = new FormatErrorSet();
+        var className = m.getClass().getName();
+        try {
+            var op = new Operator(m);
+            for (int i = 0; i < op.getArity(); i++) {
+                var parType = m.getParameterTypes()[i];
+                if (op.getParamSorts().get(i) == Sort.USER && !userClasses.contains(parType)) {
+                    errors
+                        .add("User-defined parameter type %s of user operation '%s.%s' not declared in systems properties",
+                             parType.getName(), className, m.getName());
+                }
+            }
+            var returnType = m.getReturnType();
+            if (op.getResultSort() == Sort.USER && !userClasses.contains(returnType)) {
+                errors
+                    .add("User-defined return type %s of user operation '%s.%s' not declared in systems properties",
+                         returnType.getName(), className, m.getName());
+            }
+        } catch (IllegalArgumentException exc) {
+            errors
+                .add("Erroneous user operation '%s.%s': %s", className, m.getName(),
+                     exc.getMessage());
+        }
+        errors.throwException();
+        return m;
+    }
+
+    /** Returns the set of operators defined in the user classes. */
+    public static Map<String,Executable> getMethods() {
         return methods;
     }
 
     /** Lazily computed set of operators in the user class. */
-    static private final Set<Method> methods = new LinkedHashSet<>();
+    static private final Map<String,Executable> methods = new LinkedHashMap<>();
 
     /** Returns the set of operators defined in the user class. */
-    public static Set<Operator> getOperators() {
+    public static Map<String,Operator> getOperators() {
         return operators.get();
     }
 
     /** Lazily computed set of operators in the user class. */
-    static private final Factory<Set<Operator>> operators
+    static private final Factory<Map<String,Operator>> operators
         = Factory.lazy(UserSignature::computeOperators);
 
-    static private Set<Operator> computeOperators() {
-        var result = new LinkedHashSet<Operator>();
-        getMethods().stream().map(Operator::new).forEach(result::add);
+    static private Map<String,Operator> computeOperators() {
+        var result = new LinkedHashMap<String,Operator>();
+        for (var e : getMethods().entrySet()) {
+            result.put(e.getKey(), new Operator(e.getValue()));
+        }
         return result;
     }
 

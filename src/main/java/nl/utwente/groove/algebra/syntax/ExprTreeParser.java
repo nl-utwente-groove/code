@@ -29,11 +29,14 @@ import java.util.function.Supplier;
 
 import org.eclipse.jdt.annotation.NonNull;
 
+import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.algebra.syntax.ExprTree.ExprOp;
 import nl.utwente.groove.grammar.QualName;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
+import nl.utwente.groove.util.parse.ATermTreeParser;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
@@ -45,8 +48,7 @@ import nl.utwente.groove.util.parse.OpKind;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class ExprTreeParser
-    extends nl.utwente.groove.util.parse.ATermTreeParser<ExprTree.ExprOp,ExprTree> {
+public class ExprTreeParser extends ATermTreeParser<ExprTree.ExprOp,ExprTree> {
     /** Constructs a parser, with optional flags for assignment and test mode.
      * {@code assign} and {@code test} may not be simultaneously true
      * @param assign if {@code true}, the parser expects a top-level assignment
@@ -160,11 +162,11 @@ public class ExprTreeParser
         } else {
             // yes, it's a sort-prefixed expression: parse the sorted sub-expression
             result = super.parse(OpKind.ATOM);
-            if (result.hasSort()) {
+            if (result.hasDeclaredSort()) {
                 throw new FormatException("Repeated sort prefix '%s' and '%s' at index '%s'", sort,
-                    result.getSort(), firstToken.start());
+                    result.getDeclaredSort(), firstToken.start());
             }
-            result.setSort(sort);
+            result.setDeclaredSort(sort);
         }
         setParseString(result, firstToken);
         return result;
@@ -189,12 +191,56 @@ public class ExprTreeParser
     }
 
     @Override
+    protected @NonNull ExprTree parsePrefixed(Token opToken) throws FormatException {
+        var result = super.parsePrefixed(opToken);
+        if (opToken.has(TokenClaz.MINUS)) {
+            var constant = result.getArg(0).getConstant();
+            if (constant != null) {
+                result = createTree(getAtomOp());
+                result.setConstant(switch (constant.getSort()) {
+                case INT -> Constant.instance(constant.getIntRepr().negate());
+                case REAL -> Constant.instance(constant.getRealRepr().negate());
+                default -> throw Exceptions.unreachable();
+                });
+            }
+        }
+        return result;
+    }
+
+    @Override
     protected ExprTree parseConst() throws FormatException {
         ExprTree result = createTree(ExprOp.atom());
         Token constToken = consume(CONST);
         result.setConstant(constToken.createConstant());
         setParseString(result, constToken);
         return result;
+    }
+
+    @Override
+    protected void checkCall(ExprTree tree, Token token) throws FormatException {
+        super.checkCall(tree, token);
+        // now that the super check was passed, we know that the number of arguments is correct
+        ExprOp exprOp = tree.getOp();
+        Operator matchingOp = null;
+        var sig = tree.getArgs().stream().map(ExprTree::getDerivedSort).toList();
+        for (var op : exprOp.getOperators()) {
+            matchingOp = op;
+            for (int i = 0; i < exprOp.getArity(); i++) {
+                var argSort = sig.get(i);
+                if (argSort != null && argSort != op.getParamSorts().get(i)) {
+                    matchingOp = null;
+                    break;
+                }
+            }
+            if (matchingOp != null) {
+                break;
+            }
+        }
+        if (matchingOp == null) {
+            throw new ParseException(
+                "Operator '%s' not compatible with call signature %s at index %s",
+                exprOp.getSymbol(), sig, token.start());
+        }
     }
 
     /** Returns the collection of operators to be recognised by the parser. */

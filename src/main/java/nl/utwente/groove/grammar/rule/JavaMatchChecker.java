@@ -73,10 +73,10 @@ public class JavaMatchChecker extends MatchChecker {
             case 2:
                 return (Boolean) this.method.invoke(null, graph, anchorMap);
             default:
-                throw Exceptions.UNREACHABLE;
+                throw Exceptions.unreachable();
             }
         } catch (IllegalAccessException | IllegalArgumentException exc) {
-            throw Exceptions.UNREACHABLE;
+            throw Exceptions.unreachable();
         }
     }
 

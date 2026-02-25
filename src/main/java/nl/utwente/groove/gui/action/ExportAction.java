@@ -133,7 +133,7 @@ public class ExportAction extends SimulatorAction {
             case LTS:
                 return getLtsDisplay().getJGraph();
             default:
-                throw Exceptions.UNREACHABLE;
+                throw Exceptions.unreachable();
             }
         } else {
             return this.jGraph;

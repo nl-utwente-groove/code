@@ -297,7 +297,7 @@ public class MetaToGroove extends TypeExporter<AbsNode> {
             orderedNode = getMetaNode(MetaType.ContainerOrd);
             break;
         default:
-            throw Exceptions.UNREACHABLE;
+            throw Exceptions.unreachable();
         }
         new AbsEdge(containerNode, orderedNode, "sub:");
 

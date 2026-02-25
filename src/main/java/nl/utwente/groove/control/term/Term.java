@@ -308,7 +308,7 @@ abstract public class Term implements Position<Term,Derivation> {
             result = result + "\nSuccess: " + attempt.onSuccess().toString();
             result = result + "\nFailure: " + attempt.onFailure().toString();
         }
-        default -> throw Exceptions.UNREACHABLE;
+        default -> throw Exceptions.unreachable();
         }
         return result;
     }

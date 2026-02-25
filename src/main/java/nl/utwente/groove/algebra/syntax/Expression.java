@@ -114,6 +114,7 @@ public sealed abstract class Expression permits Constant, Variable, FieldExpr, C
     /**
      * Indicates if this expression is a term,
      * i.e., an element of the appropriate term algebra.
+     * This is the case if it contains no {@link FieldExpr} as argument.
      */
     public abstract boolean isTerm();
 
@@ -142,7 +143,9 @@ public sealed abstract class Expression permits Constant, Variable, FieldExpr, C
     private @Nullable SortMap typing;
 
     /** Factory method to create the variable map for this expression. */
-    abstract protected SortMap computeTyping();
+    protected SortMap computeTyping() {
+        return SortMap.newInstance();
+    }
 
     /**
      * Returns an expression obtained from this one by changing all
@@ -175,6 +178,13 @@ public sealed abstract class Expression permits Constant, Variable, FieldExpr, C
 
     /** Flag indicating if the parsed text for this expression had a type prefix. */
     private final boolean prefixed;
+
+    /** Indicates if this expression represents a constant of a user type.
+     * This is the case if it is a call expression in which the operator is a constructor and the arguments are constants.
+     */
+    public boolean isUserConstant() {
+        return false;
+    }
 
     /** Returns a copy of this Expression in which the variables are enriched
      * with binding information.

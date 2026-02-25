@@ -314,7 +314,7 @@ public abstract class AbstractSearchItem implements SearchItem {
                 nextState = State.FOUND;
                 break;
             default:
-                throw Exceptions.UNREACHABLE;
+                throw Exceptions.unreachable();
             }
             assert this.state.getNext().contains(nextState) : String
                 .format("Illegal transition %s -next-> %s", this.state, nextState);
@@ -459,7 +459,7 @@ public abstract class AbstractSearchItem implements SearchItem {
                 }
                 break;
             default:
-                throw Exceptions.UNREACHABLE;
+                throw Exceptions.unreachable();
             }
             assert this.state.getNext().contains(nextState) : String
                 .format("Illegal transition %s -next-> %s", this.state, nextState);

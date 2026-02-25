@@ -56,7 +56,7 @@ public class ControlModel extends TextBasedModel<Program> {
                 new FormatErrorSet("The control model cannot be built due to the following errors:")
                     .addAll(model.getErrors())
                     .throwException();
-                throw Exceptions.UNREACHABLE;
+                throw Exceptions.unreachable();
             } else {
                 result = model.getProgram();
             }

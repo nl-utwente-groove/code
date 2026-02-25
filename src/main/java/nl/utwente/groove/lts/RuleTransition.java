@@ -127,7 +127,7 @@ public interface RuleTransition extends GraphTransition, RuleTransitionStub {
                 result[i] = switch (bind.type()) {
                 case ANCHOR -> (HostNode) anchorImages[bind.index()];
                 case CREATOR -> getAddedNodes()[bind.index()];
-                default -> throw Exceptions.UNREACHABLE;
+                default -> throw Exceptions.unreachable();
                 };
             }
         }

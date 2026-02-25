@@ -113,11 +113,6 @@ public final class FieldExpr extends Expression {
     }
 
     @Override
-    protected SortMap computeTyping() {
-        return SortMap.newInstance();
-    }
-
-    @Override
     public @NonNull Expression bind(Function<Variable,Object> bindMap) {
         throw Exceptions.unsupportedOp("Field expresstion %s cannot be bound", this);
     }

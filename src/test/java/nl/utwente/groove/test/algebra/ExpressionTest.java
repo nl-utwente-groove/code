@@ -122,14 +122,14 @@ public class ExpressionTest {
                     call = call + ",";
                 }
                 Sort type = i < op.getArity()
-                    ? op.getParamTypes().get(i)
+                    ? op.getParamSorts().get(i)
                     : Sort.STRING;
                 String arg = switch (type) {
                 case BOOL -> this.boolOperands[i];
                 case INT -> this.intOperands[i];
                 case REAL -> this.realOperands[i];
                 case STRING -> this.stringOperands[i];
-                case USER -> throw Exceptions.UNREACHABLE;
+                case USER -> throw Exceptions.unreachable();
                 };
                 args.add(arg);
                 call = call + arg;
@@ -140,7 +140,7 @@ public class ExpressionTest {
                 case INFIX -> assertEquals(result, parse(args.get(0) + symbol + args.get(1)));
                 case POSTFIX -> assertEquals(result, parse(args.get(0) + symbol));
                 case PREFIX -> assertEquals(result, parse(symbol + args.get(0)));
-                default -> throw Exceptions.UNREACHABLE;
+                default -> throw Exceptions.unreachable();
                 }
             }
         }

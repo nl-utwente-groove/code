@@ -120,7 +120,7 @@ public class Anchor extends ArrayList<AnchorKey> implements Comparable<Anchor> {
                 this.varSet.add(AnchorKind.label(key));
             }
             default -> {
-                throw Exceptions.UNREACHABLE;
+                throw Exceptions.unreachable();
             }
             }
         }

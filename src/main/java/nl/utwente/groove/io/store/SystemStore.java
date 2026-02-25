@@ -445,7 +445,7 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
             try {
                 properties = this.loadGrammarProperties();
             } catch (IOException e) {
-                throw Exceptions.UNREACHABLE;
+                throw Exceptions.unreachable();
             }
         }
         return properties;
@@ -1431,7 +1431,7 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
         } catch (IllegalArgumentException exc) {
             result = newStoreFromTmp(url.toString(), Unzipper.instance().unzip(url));
         } catch (URISyntaxException exc) {
-            throw Exceptions.UNREACHABLE;
+            throw Exceptions.unreachable();
         }
         if (load) {
             result.reload();

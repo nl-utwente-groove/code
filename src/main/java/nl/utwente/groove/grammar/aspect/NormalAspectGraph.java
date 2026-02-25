@@ -509,10 +509,10 @@ public class NormalAspectGraph extends AspectGraph {
      */
     private AspectNode addCall(@Nullable AspectNode level, AspectElement holder,
                                CallExpr call) throws FormatException {
-        if (getRole() != RULE) {
-            throw new FormatException("Call expression '%s' only allowed in rules",
-                call.toParseString(), holder);
-        }
+        //        if (getRole() != RULE) {
+        //            throw new FormatException("Call expression '%s' only allowed in rules",
+        //                call.toParseString(), holder);
+        //        }
         var levelErrors = new FormatErrorSet();
         AspectNode argLevel;
         Operator operator = call.getOperator();
@@ -627,7 +627,7 @@ public class NormalAspectGraph extends AspectGraph {
             }
             break;
         default:
-            throw Exceptions.UNREACHABLE;
+            throw Exceptions.unreachable();
         }
         return result;
     }

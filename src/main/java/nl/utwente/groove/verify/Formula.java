@@ -172,7 +172,7 @@ public class Formula extends ATermTree<LogicOp,Formula> {
             b.append(prop.toString());
             break;
         default:
-            throw Exceptions.UNREACHABLE;
+            throw Exceptions.unreachable();
         }
     }
 
@@ -318,7 +318,7 @@ public class Formula extends ATermTree<LogicOp,Formula> {
                 "Path quantifier '%s' must have nested temporal operator in CTL formula", getOp());
             };
         }
-        case LPAR, RPAR -> throw Exceptions.UNREACHABLE;
+        case LPAR, RPAR -> throw Exceptions.unreachable();
         };
         result.setParseString(getParseString());
         return result;
@@ -383,7 +383,7 @@ public class Formula extends ATermTree<LogicOp,Formula> {
             .toLtlFormula();
         case FOLLOWS -> or(getArg1(), not(getArg2())).toLtlFormula();
         case IMPLIES -> or(not(getArg1()), getArg2()).toLtlFormula();
-        case LPAR, RPAR -> throw Exceptions.UNREACHABLE;
+        case LPAR, RPAR -> throw Exceptions.unreachable();
         };
     }
 

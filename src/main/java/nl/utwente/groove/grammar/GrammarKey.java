@@ -80,9 +80,9 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
 
     /** Name of a class containing user-defined algebraic operations. */
     USER_OPS("userOperations",
-        "Qualified class name of a class containing used-defined data operations. "
+        "List of qualified class name of a class containing used-defined data operations. "
             + "<p>Static methods annotated with @UserOperation can be used in rules.",
-        ValueType.STRING),
+        ValueType.QUAL_NAME_LIST),
     /**
      * Flag determining the injectivity of the rule system. If <code>true</code>,
      * all rules should be matched injectively. Default is <code>false</code>.
@@ -304,7 +304,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
             case COMMON_LABELS, CONTROL_LABELS -> Parser.splitter;
             case CREATOR_EDGE, PARALLEL, DANGLING, RHS_AS_NAC, INJECTIVE, STORE_OUT_PARS, USE_STORED_NODE_IDS -> Parser.boolFalse;
             case ISOMORPHISM, LOOPS_AS_LABELS -> Parser.boolTrue;
-            case START_GRAPH_NAMES, CONTROL_NAMES, TYPE_NAMES, PROLOG_NAMES -> QualName
+            case USER_OPS, START_GRAPH_NAMES, CONTROL_NAMES, TYPE_NAMES, PROLOG_NAMES -> QualName
                 .listParser();
             case RULE_ENABLING -> DeltaMap.parser(QualName.parser());
             case TYPE_POLICY -> new Parser.EnumParser<>(CheckPolicy.class, CheckPolicy.ERROR,
@@ -537,10 +537,10 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
         public FormatErrorSet apply(GrammarModel grammar, Entry value) {
             FormatErrorSet result = new FormatErrorSet();
             var family = grammar.getProperties().getAlgebraFamily();
-            String className = value.getString();
-            if (!className.isEmpty()) {
+            var classNames = value.getQualNameList();
+            if (!classNames.isEmpty()) {
                 try {
-                    UserSignature.checkUserClass(className);
+                    UserSignature.checkUserClass(classNames);
                 } catch (FormatException exc) {
                     result.addAll(exc.getErrors());
                 }

@@ -342,7 +342,7 @@ public abstract class Properties implements Fixable {
             }
 
             public String setValue(String value) {
-                throw Exceptions.UNREACHABLE;
+                throw Exceptions.unreachable();
             }
 
             public String getKey() {

@@ -53,7 +53,7 @@ public final class TypeLabel extends ALabel {
         this.role = kind;
         this.text = text;
         this.sort = kind == NODE_TYPE
-            ? Sort.getSort(text)
+            ? Sort.toSort(text)
             : null;
     }
 

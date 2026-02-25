@@ -118,7 +118,7 @@ public class LTSEntry implements LabelEntry {
         case StatePropertyLabel l -> (l.prop().isSystem()
             ? "system-defined"
             : "user-defined") + " state property: " + l.getDescription();
-        default -> throw Exceptions.UNREACHABLE;
+        default -> throw Exceptions.unreachable();
         };
     }
 

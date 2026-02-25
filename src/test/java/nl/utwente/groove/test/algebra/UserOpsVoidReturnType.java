@@ -19,14 +19,14 @@ package nl.utwente.groove.test.algebra;
 import nl.utwente.groove.annotation.UserOperation;
 
 /**
- * Example class with user operations.
+ * Erroneous example class with user operations: void return type
  * @author Arend Rensink
  * @version $Revision$
  */
-public class UserOperationsErr3 {
-    /** User operation with erroneous parameter type. */
+public class UserOpsVoidReturnType {
+    /** User operation with erroneous void type. */
     @UserOperation
-    static public int errObjectPar(Object par) {
-        return 0;
+    static public void errVoidReturn() {
+        // empty
     }
 }

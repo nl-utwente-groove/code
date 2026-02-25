@@ -22,11 +22,6 @@ package nl.utwente.groove.util;
  * @version $Revision$
  */
 public class Exceptions {
-    /** Fixed exception to be thrown at unreachable program locations,
-     * e.g., default clauses of switches where all cases have been dealt with.
-     */
-    public static final RuntimeException UNREACHABLE = new RuntimeException("Unreachable location");
-
     /** Constructs an {@link IllegalArgumentException} for a given message and set of message parameters. */
     public static final IllegalArgumentException illegalArg(String message, Object... args) {
         return new IllegalArgumentException(String.format(message, args));
@@ -48,4 +43,10 @@ public class Exceptions {
         return new UnsupportedOperationException(String.format(message, args));
     }
 
+    /** Returns an exception indicating an unreachable program location,
+     * e.g., the default clause of a switch where all cases have been dealt with.
+     */
+    public static final RuntimeException unreachable() {
+        return new RuntimeException("Unreachable location");
+    }
 }

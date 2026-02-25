@@ -436,7 +436,7 @@ public class GxlUtil {
                     value = attr.getTup();
                     return value;
                 default:
-                    throw Exceptions.UNREACHABLE;
+                    throw Exceptions.unreachable();
                 }
             }
         }
@@ -515,7 +515,7 @@ public class GxlUtil {
             attr.setTup((TupType) value);
             return;
         default:
-            throw Exceptions.UNREACHABLE;
+            throw Exceptions.unreachable();
         }
     }
 
@@ -598,7 +598,7 @@ public class GxlUtil {
             case ORD:
                 throw Exceptions.illegalArg("ORD not supported as GXL import type");
             default:
-                throw Exceptions.UNREACHABLE;
+                throw Exceptions.unreachable();
             }
 
             CompositeValueType gxlContainer = (CompositeValueType) o;
@@ -671,7 +671,7 @@ public class GxlUtil {
                 elem = g_objectFactory.createSeq((SeqType) cvt);
                 break;
             default:
-                throw Exceptions.UNREACHABLE;
+                throw Exceptions.unreachable();
             }
 
             for (Value subVal : cv.getValue()) {

@@ -52,31 +52,46 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
     public ExprTree(ExprOp op) {
         super(op);
         assert op.getKind() != OpKind.NONE;
+        if (op.isConstructor()) {
+            this.userConstArgs = new Constant[op.getArity()];
+        }
     }
 
     /** Sets an explicit (non-{@code null}) sort declaration for this expression. */
-    public void setSort(Sort sort) {
+    public void setDeclaredSort(Sort sort) {
         assert !isFixed();
         assert sort != null;
-        this.sort = sort;
-        if (hasConstant() && sort != getConstant().getSort()) {
+        this.declaredSort = sort;
+        var constant = super.getConstant();
+        if (constant != null && sort != constant.getSort()) {
             getErrors()
-                .add("Invalid sorted expression '%s:%s'", sort.getName(),
-                     getConstant().getSymbol());
+                .add("Invalid sorted expression '%s:%s'", sort.getName(), constant.getSymbol());
         }
     }
 
     /** Indicates if this expression contains an explicit sort declaration. */
-    public boolean hasSort() {
-        return getSort() != null;
+    public boolean hasDeclaredSort() {
+        return getDeclaredSort() != null;
     }
 
     /** Returns the sort declaration wrapped in this expression, if any. */
-    public @Nullable Sort getSort() {
-        return this.sort;
+    public @Nullable Sort getDeclaredSort() {
+        return this.declaredSort;
     }
 
-    private @Nullable Sort sort;
+    private @Nullable Sort declaredSort;
+
+    /** Returns the sort of this {@link ExprTree}, if it can be uniquely determined. */
+    public @Nullable Sort getDerivedSort() {
+        if (getOp().getKind() == OpKind.ATOM) {
+            var c = getConstant();
+            return c == null
+                ? null
+                : c.getSort();
+        } else {
+            return getOp().getSort();
+        }
+    }
 
     /**
      * Converts this parse tree into an {@link Assignment}.
@@ -182,6 +197,35 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
         return result;
     }
 
+    @Override
+    public @Nullable Constant getConstant() {
+        var result = super.getConstant();
+        var userConstArgs = this.userConstArgs;
+        if (result == null && userConstArgs != null) {
+            setConstant(result = Constant.instance(getOp().getOperator(Sort.USER), userConstArgs),
+                        true);
+        }
+        return result;
+    }
+
+    @Override
+    public void addArg(ExprTree arg) {
+        assert super.getConstant() == null;
+        var userConstArgs = this.userConstArgs;
+        if (userConstArgs != null) {
+            var constArg = arg.getConstant();
+            if (constArg != null && constArg.getSort() != Sort.USER) {
+                userConstArgs[getArgs().size()] = constArg;
+            } else {
+                this.userConstArgs = null;
+            }
+        }
+        super.addArg(arg);
+    }
+
+    /** List of constructor arguments, if this expression tree represents a user type constant. */
+    private Constant @Nullable [] userConstArgs;
+
     /**
      * Returns the constant expression this tree represents, if any.
      * @return the constant expression this tree represents
@@ -190,10 +234,11 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
     public Constant toConstant() throws FormatException {
         assert isFixed();
         getErrors().throwException();
-        if (!hasConstant()) {
+        var result = getConstant();
+        if (result == null) {
             throw new FormatException("'%s' does not represent a constant", getParseString());
         }
-        return getConstant();
+        return result;
     }
 
     /**
@@ -207,9 +252,9 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
         // flag determining if this is a variable
         // if not, it must be a (possibly qualified) field
         boolean isVar = getId().size() == 1 && sortMap.contains(getId());
-        if (hasSort()) {
+        if (hasDeclaredSort()) {
             // the expression has a sort prefix
-            Sort sort = getSort();
+            Sort sort = getDeclaredSort();
             assert sort != null;
             if (isSorted(sortMap) && getSort(sortMap) != sort) {
                 throw new FormatException(
@@ -244,12 +289,12 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
         if (id.size() > 2) {
             throw new FormatException("Nested field expression '%s' not supported", id);
         } else if (id.size() > 1) {
-            result = new FieldExpr(hasSort(), id.get(0), id.get(1), sort);
+            result = new FieldExpr(hasDeclaredSort(), id.get(0), id.get(1), sort);
         } else if (isVar) {
             result = toVarExpr(id.get(0), sort);
         } else {
             // this is a self-field
-            result = new FieldExpr(hasSort(), null, id.get(0), sort);
+            result = new FieldExpr(hasDeclaredSort(), null, id.get(0), sort);
         }
         return result;
     }
@@ -283,7 +328,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
      * @param sort expected type of the expression
      */
     private Expression toVarExpr(String name, Sort sort) {
-        return new Variable(hasSort(), name, sort);
+        return new Variable(hasDeclaredSort(), name, sort);
     }
 
     /**
@@ -298,13 +343,13 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
             resultArgs.add(arg.toExpressions(sortMap));
         }
         for (Operator op : getOp().getOperators()) {
-            if (hasSort() && getSort() != op.getSort()) {
+            if (hasDeclaredSort() && getDeclaredSort() != op.getSort()) {
                 // the type of op does not correspond to the known operator type
                 continue;
             }
             boolean duplicate = false;
             try {
-                duplicate = (result.put(op.getResultType(), newCallExpr(op, resultArgs)) != null);
+                duplicate = (result.put(op.getResultSort(), newCallExpr(op, resultArgs)) != null);
             } catch (FormatException e) {
                 // this candidate did not work out; proceed
             }
@@ -337,7 +382,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
                     op.toString(), op.getArity(), args.size());
             }
         }
-        List<Sort> parTypes = op.getParamTypes();
+        List<Sort> parTypes = op.getParamSorts();
         List<Expression> selectedArgs = new ArrayList<>();
         for (int i = 0; i < args.size(); i++) {
             var sort = op.isVarArgs()
@@ -354,10 +399,10 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
         // int:-1 parses to the same expression as -1
         if (op.isInverse() && selectedArgs.get(0) instanceof Constant) {
             return op
-                .getResultType()
+                .getResultSort()
                 .createConstant(op.getSymbol() + selectedArgs.get(0).toDisplayString());
         } else {
-            return new CallExpr(hasSort(), op, selectedArgs);
+            return new CallExpr(hasDeclaredSort(), op, selectedArgs);
         }
     }
 
@@ -418,7 +463,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = prime * result + Objects.hashCode(this.sort);
+        result = prime * result + Objects.hashCode(this.declaredSort);
         return result;
     }
 
@@ -432,7 +477,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
         }
         ExprTree other = (ExprTree) obj;
         assert other != null; // guaranteed by !super.equals
-        if (!Objects.equals(this.sort, other.sort)) {
+        if (!Objects.equals(this.declaredSort, other.declaredSort)) {
             return false;
         }
         return true;
@@ -441,7 +486,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
     @Override
     public String toString() {
         String result = super.toString();
-        var sort = getSort();
+        var sort = getDeclaredSort();
         if (sort != null) {
             result = sort + ":" + result;
         }
@@ -483,6 +528,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
         private ExprOp() {
             this.varArgs = false;
             this.zeroArgs = false;
+            this.constructor = false;
         }
 
         /**
@@ -490,7 +536,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
          * The arity should equal the kind's arity, unless the latter is unspecified.
          */
         public ExprOp(OpKind kind, String symbol, int arity) {
-            this(kind, symbol, arity, false, false);
+            this(kind, symbol, arity, false, false, false);
         }
 
         /**
@@ -499,7 +545,8 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
          * The arity should equal the kind's arity, unless the latter is unspecified.
          */
         public ExprOp(OpKind kind, String symbol, Operator sortOp) {
-            this(kind, symbol, sortOp.getArity(), sortOp.isVarArgs(), sortOp.isZeroArgs());
+            this(kind, symbol, sortOp.getArity(), sortOp.isVarArgs(), sortOp.isZeroArgs(),
+                 sortOp.isConstructor());
         }
 
         /**
@@ -507,10 +554,12 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
          * The arity should equal the kind's arity, unless the latter is unspecified.
          * @param varArgs if {@code true}, the operator allows a variable number of arguments
          */
-        public ExprOp(OpKind kind, String symbol, int arity, boolean varArgs, boolean zeroArgs) {
+        private ExprOp(OpKind kind, String symbol, int arity, boolean varArgs, boolean zeroArgs,
+                       boolean constructor) {
             super(kind, symbol, arity);
             this.varArgs = varArgs;
             this.zeroArgs = zeroArgs;
+            this.constructor = constructor;
             assert !varArgs || arity == 1;
         }
 
@@ -555,6 +604,28 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
 
         /** Flag indicating whether this is a collection-based operator that supports zero arguments. */
         private final boolean zeroArgs;
+
+        @Override
+        public boolean isConstructor() {
+            return this.constructor;
+        }
+
+        /** Flag indicating whether this is user type constructor. */
+        private final boolean constructor;
+
+        /** Returns the (common) sort of all algebra operators collected in this object. */
+        public @Nullable Sort getSort() {
+            Sort result = null;
+            for (var op : getOperators()) {
+                if (result == null) {
+                    result = op.getResultSort();
+                } else if (result != op.getResultSort()) {
+                    result = null;
+                    break;
+                }
+            }
+            return result;
+        }
 
         @Override
         public String toString() {

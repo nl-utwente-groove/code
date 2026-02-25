@@ -16,17 +16,14 @@
  */
 package nl.utwente.groove.test.algebra;
 
-import nl.utwente.groove.annotation.UserOperation;
+import nl.utwente.groove.annotation.UserType;
 
 /**
- * Example class with user operations.
+ * Erroneous user type class: not a record
  * @author Arend Rensink
  * @version $Revision$
  */
-public class UserOperationsErr5 {
-    /** Non-static user operation. */
-    @UserOperation
-    public int errNotStatic() {
-        return 0;
-    }
+@UserType
+public class UserTypeNonRecord {
+    // empty
 }

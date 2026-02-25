@@ -160,7 +160,7 @@ public abstract class AGraph<N extends Node,E extends GEdge<N>>
         try {
             result = this.fixable.setFixed();
         } catch (FormatException exc) {
-            throw Exceptions.UNREACHABLE;
+            throw Exceptions.unreachable();
         }
         if (result) {
             if (hasInfo()) {

@@ -2,6 +2,8 @@ package nl.utwente.groove.algebra;
 
 import static nl.utwente.groove.util.Factory.lazy;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
@@ -32,24 +34,35 @@ import nl.utwente.groove.util.parse.OpKind;
  */
 public class Operator {
     /** Constructs an operator based on a user-defined method. */
-    Operator(Method method) {
-        Type[] parTypes = method.getParameterTypes();
+    Operator(Executable executable) {
+        Type[] parTypes = executable.getParameterTypes();
         this.sort = Sort.USER;
         this.inverse = false;
         this.arity = parTypes.length;
         this.varArgs = false;
         this.zeroArgs = false;
-        this.name = method.getName();
-        this.parameterTypes = new ArrayList<>();
+        this.name = switch (executable) {
+        case Method m -> m.getName();
+        case Constructor<?> c -> c.getDeclaringClass().getSimpleName();
+        };
+        this.parameterSorts = new ArrayList<>();
         for (Type t : parTypes) {
-            this.parameterTypes.add(toParSort(t));
+            this.parameterSorts.add(toParSort(t));
         }
-        this.returnType = toReturnSort(method.getReturnType());
+        var returnType = switch (executable) {
+        case Method m -> m.getReturnType();
+        case Constructor<?> c -> c.getDeclaringClass();
+        };
+        this.returnSort = toReturnSort(returnType);
         this.symbol = null;
         this.kind = OpKind.CALL;
         this.description = "User-defined method '" + this.name + "'";
-        var annotation = method.getAnnotation(UserOperation.class);
-        this.indeterminate = annotation.indeterminate();
+
+        var annotation = executable.getAnnotation(UserOperation.class);
+        this.indeterminate = executable instanceof Method
+            ? annotation.indeterminate()
+            : false;
+        this.constructor = executable instanceof Constructor;
     }
 
     /**
@@ -70,7 +83,7 @@ public class Operator {
         this.varArgs = this.arity == 1 && methodParameterTypes[0] instanceof ParameterizedType;
         this.zeroArgs = opValue.isZeroArgs();
         this.name = method.getName();
-        this.parameterTypes = new ArrayList<>();
+        this.parameterSorts = new ArrayList<>();
         for (int i = 0; i < this.arity; i++) {
             Type type = methodParameterTypes[i];
             if (this.varArgs) {
@@ -80,9 +93,9 @@ public class Operator {
                 }
                 type = ((ParameterizedType) type).getActualTypeArguments()[0];
             }
-            this.parameterTypes.add(toParSort(type));
+            this.parameterSorts.add(toParSort(type));
         }
-        this.returnType = toReturnSort(method.getGenericReturnType());
+        this.returnSort = toReturnSort(method.getGenericReturnType());
         // look up the corresponding method declaration in GSignature, to find the annotations
         Method superMethod;
         try {
@@ -100,6 +113,7 @@ public class Operator {
             : op.kind();
         this.description = superMethod.getAnnotation(ToolTipHeader.class).value();
         this.indeterminate = false;
+        this.constructor = false;
     }
 
     /** Converts a reflected parameter type into a GROOVE sort. */
@@ -114,28 +128,22 @@ public class Operator {
 
     /** Converts a reflected type into a GROOVE sort. */
     private Sort toSort(Type type, String kind) throws IllegalArgumentException {
+        Sort result;
         if (type instanceof TypeVariable) {
             String typeName = ((TypeVariable<?>) type).getName();
-            Sort result = Sort.getSort(typeName.toLowerCase());
+            result = Sort.toSort(typeName.toLowerCase());
             if (result == null) {
                 throw Exceptions.illegalArg("%s type '%s' is not an existing sort", kind, typeName);
             }
-            return result;
         } else {
-            if (type == int.class) {
-                return Sort.INT;
-            } else if (type == double.class) {
-                return Sort.REAL;
-            } else if (type == boolean.class) {
-                return Sort.BOOL;
-            } else if (type == String.class) {
-                return Sort.STRING;
-            } else {
+            result = Sort.toSort(type);
+            if (result == null) {
                 throw Exceptions
                     .illegalArg("%s type %s cannot be converted to GROOVE sort", kind,
                                 type.getTypeName());
             }
         }
+        return result;
     }
 
     /** Returns the sort to which this operator belongs. */
@@ -206,22 +214,22 @@ public class Operator {
     }
 
     /**
-     * Returns the parameter types of this operator.
+     * Returns the parameter sorts of this operator.
      */
-    public List<Sort> getParamTypes() {
-        return this.parameterTypes;
+    public List<Sort> getParamSorts() {
+        return this.parameterSorts;
     }
 
-    private final List<Sort> parameterTypes;
+    private final List<Sort> parameterSorts;
 
     /**
      * Returns the result type of this operator.
      */
-    public Sort getResultType() {
-        return this.returnType;
+    public Sort getResultSort() {
+        return this.returnSort;
     }
 
-    private final Sort returnType;
+    private final Sort returnSort;
 
     /** Indicates if this operator has a (non-<code>null</code>) symbol. */
     public boolean hasSymbol() {
@@ -257,6 +265,16 @@ public class Operator {
     private final String description;
 
     /**
+     * Indicates if this operator is the constructor of a user type.
+     */
+    public boolean isConstructor() {
+        return this.constructor;
+    }
+
+    /** Flag indicating if this operator is the constructor of a user type. */
+    private final boolean constructor;
+
+    /**
      * Indicates if there are more operators with the same name
      * and parameter count.
      */
@@ -283,7 +301,7 @@ public class Operator {
 
     @Override
     public String toString() {
-        return getFullName() + Groove.toString(this.parameterTypes.toArray(), "(", ")", ",");
+        return getFullName() + Groove.toString(this.parameterSorts.toArray(), "(", ")", ",");
     }
 
     /**
@@ -370,7 +388,7 @@ public class Operator {
                     result.add(opValue.getOperator());
                 }
             }
-            result.addAll(UserSignature.getOperators());
+            result.addAll(UserSignature.getOperators().values());
         }
         return result;
     }

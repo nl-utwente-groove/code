@@ -898,7 +898,7 @@ public class RuleTree extends AbstractResourceTree {
                 result.append("These are only applied as part of a recipe");
                 break;
             default:
-                throw Exceptions.UNREACHABLE;
+                throw Exceptions.unreachable();
             }
             return HTMLConverter.HTML_TAG.on(result).toString();
         }
@@ -944,11 +944,11 @@ public class RuleTree extends AbstractResourceTree {
                     // no special text
                     break;
                 default:
-                    throw Exceptions.UNREACHABLE;
+                    throw Exceptions.unreachable();
                 }
                 break;
             default:
-                throw Exceptions.UNREACHABLE;
+                throw Exceptions.unreachable();
             }
             return HTMLConverter.UNDERLINE_TAG.on(result).toString();
         }

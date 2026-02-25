@@ -100,7 +100,7 @@ public class Acceptor extends Setting {
                 var inner = switch (contentType()) {
                 case NULL -> Null.Parser.instance();
                 case STRING -> StringParser.identity();
-                default -> throw Exceptions.UNREACHABLE;
+                default -> throw Exceptions.unreachable();
                 };
                 this.parser = result = new ContentParser(this, inner);
             }

@@ -141,7 +141,7 @@ public record CallStackChange(Kind kind, List<Assignment> assigns, @Nullable Cal
             result = stack;
             break;
         default:
-            throw Exceptions.UNREACHABLE;
+            throw Exceptions.unreachable();
         }
         return result;
     }

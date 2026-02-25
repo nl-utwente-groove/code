@@ -342,7 +342,7 @@ public class JGraphUI<G extends @NonNull Graph> extends BasicGraphUI {
                 this.selectHandler.mouseDragged(e);
                 break;
             default:
-                throw Exceptions.UNREACHABLE;
+                throw Exceptions.unreachable();
             }
             this.dragStart = null;
         }
@@ -369,7 +369,7 @@ public class JGraphUI<G extends @NonNull Graph> extends BasicGraphUI {
                     this.dragOrigX = -1;
                     this.dragOrigY = -1;
                 }
-                default -> throw Exceptions.UNREACHABLE;
+                default -> throw Exceptions.unreachable();
                 }
             }
             getJGraph().setCursor(getJGraph().getMode().getCursor());

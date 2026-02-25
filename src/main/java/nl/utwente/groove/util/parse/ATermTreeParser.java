@@ -26,6 +26,10 @@ import static nl.utwente.groove.util.parse.ATermTreeParser.TokenClaz.LPAR;
 import static nl.utwente.groove.util.parse.ATermTreeParser.TokenClaz.NAME;
 import static nl.utwente.groove.util.parse.ATermTreeParser.TokenClaz.PRE_OP;
 import static nl.utwente.groove.util.parse.ATermTreeParser.TokenClaz.RPAR;
+import static nl.utwente.groove.util.parse.StringHandler.DOUBLE_QUOTE;
+import static nl.utwente.groove.util.parse.StringHandler.HYPHEN;
+import static nl.utwente.groove.util.parse.StringHandler.PERIOD;
+import static nl.utwente.groove.util.parse.StringHandler.SINGLE_QUOTE;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -400,6 +404,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
             result = parseName();
         } else {
             result = parsePrefixed(opToken);
+            setParseString(result, opToken);
         }
         return result;
     }
@@ -428,18 +433,10 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
                 if (consume(RPAR) == null) {
                     throw expectedToken(RPAR, next());
                 }
-                if (!op.allowsArgCount(result.getArgs().size())) {
-                    throw argumentMismatch(op, result.getArgs().size(), opToken);
-                }
+                checkCall(result, opToken);
             } else {
                 // nullary call
-                if (!op.allowsArgCount(0)) {
-                    if (op.isVarArgs()) {
-                        throw zeroArgsMismatch(op, opToken);
-                    } else {
-                        throw argumentMismatch(op, 0, opToken);
-                    }
-                }
+                checkCall(result, opToken);
             }
         } else if (op.getArity() == 1) {
             result.addArg(parse(op.getKind()));
@@ -447,8 +444,20 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
             assert op.getKind() == OpKind.ATOM : String
                 .format("Encountered '%s' in prefix position", op);
         }
-        setParseString(result, opToken);
         return result;
+    }
+
+    /** Format checks a call tree at a given token. */
+    protected void checkCall(X tree, Token token) throws FormatException {
+        O op = tree.getOp();
+        int argCount = tree.getArgs().size();
+        if (!op.allowsArgCount(argCount)) {
+            if (op.isVarArgs()) {
+                throw zeroArgsMismatch(op, token);
+            } else {
+                throw argumentMismatch(op, argCount, token);
+            }
+        }
     }
 
     /**
@@ -578,20 +587,18 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
         } else if (getIdValidator().isIdentifierStart(curChar())) {
             result = scanName();
         } else {
-            switch (curChar()) {
-            case StringHandler.SINGLE_QUOTE_CHAR, StringHandler.DOUBLE_QUOTE_CHAR:
-                result = scanString();
-                break;
-            case '.':
+            result = switch (curChar()) {
+            case SINGLE_QUOTE, DOUBLE_QUOTE -> scanString();
+            case PERIOD -> {
                 incChar();
                 boolean isNumber = !atEnd() && Character.isDigit(curChar());
                 decChar();
-                if (isNumber) {
-                    result = scanNumber();
-                }
-                break;
-            default: // do nothing
+                yield isNumber
+                    ? scanNumber()
+                    : null;
             }
+            default -> null;
+            };
         }
         if (result == null) {
             result = scanStatic();
@@ -646,12 +653,17 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
      * if a decimal point, the next character is a digit.
      */
     private Token scanNumber() throws ScanException {
-        assert Character.isDigit(curChar()) || curChar() == '.' && Character.isDigit(nextChar());
+        assert Character.isDigit(curChar())
+            || (curChar() == PERIOD || curChar() == HYPHEN) && Character.isDigit(nextChar());
         int start = this.ix;
+        boolean negated = curChar() == HYPHEN;
+        if (negated) {
+            incChar();
+        }
         while (!atEnd() && Character.isDigit(curChar())) {
             incChar();
         }
-        Sort sort = !atEnd() && curChar() == '.'
+        Sort sort = !atEnd() && curChar() == PERIOD
             ? REAL
             : INT;
         if (sort == REAL) {
@@ -663,7 +675,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
             if (!atEnd() && Character.toUpperCase(curChar()) == 'E') {
                 // we're in an exponent
                 incChar();
-                if (!atEnd() && curChar() == '-') {
+                if (!atEnd() && curChar() == HYPHEN) {
                     // scan the optional minus sign
                     incChar();
                 }

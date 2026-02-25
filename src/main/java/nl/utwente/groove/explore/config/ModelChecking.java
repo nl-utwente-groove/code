@@ -118,7 +118,7 @@ public final class ModelChecking extends Setting {
                 Parser<?> inner = switch (contentType()) {
                 case FORMULA -> FormulaParser.instance();
                 case NULL -> Null.Parser.instance();
-                default -> throw Exceptions.UNREACHABLE;
+                default -> throw Exceptions.unreachable();
                 };
                 this.parser = result = new ContentParser(this, inner);
             }

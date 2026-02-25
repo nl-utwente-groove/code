@@ -292,7 +292,7 @@ public class SaveLTSAsDialog implements Persistable {
             case FINAL -> "Final states";
             case NONE -> "None";
             case RESULT -> "Result states";
-            default -> throw Exceptions.UNREACHABLE;
+            default -> throw Exceptions.unreachable();
             };
             JRadioButton button
                 = new JRadioButton(text, getPref(STATE_EXPORT_ENTRY).equals(mode.name()));

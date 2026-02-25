@@ -292,7 +292,7 @@ class ParallelPair {
         //now we add all targets of operations to the match (these are not included in the nodeMatch)
         for (RuleNode rn : ruleGraph.nodeSet()) {
             if (rn instanceof OperatorNode opNode) {
-                Sort sig = opNode.getOperator().getResultType();
+                Sort sig = opNode.getOperator().getResultSort();
                 Algebra<?> alg = AlgebraFamily.TERM.getAlgebra(sig);
                 Expression[] args = new Expression[opNode.getArguments().size()];
                 for (int i = 0; i < opNode.getArguments().size(); i++) {

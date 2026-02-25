@@ -129,7 +129,7 @@ public class OracleParser extends Parser.AParser<ValueOracleFactory> {
             }
             return new ReaderOracleFactory(par);
         default:
-            throw Exceptions.UNREACHABLE;
+            throw Exceptions.unreachable();
         }
     }
 
@@ -147,7 +147,7 @@ public class OracleParser extends Parser.AParser<ValueOracleFactory> {
         } else if (value instanceof ReaderOracleFactory factory) {
             result = ValueOracleKind.READER + ":" + factory.getFilename();
         } else {
-            throw Exceptions.UNREACHABLE;
+            throw Exceptions.unreachable();
         }
         return result;
     }

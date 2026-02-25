@@ -51,7 +51,7 @@ public enum ValueOracleKind implements DocumentedEnum {
         case READER:
             return "Reads values from a file";
         default:
-            throw Exceptions.UNREACHABLE;
+            throw Exceptions.unreachable();
         }
     }
 }

@@ -69,7 +69,7 @@ public class WhileTerm extends Term {
             result.setFailure(ders1.onFailure().seq(this));
             break;
         default:
-            throw Exceptions.UNREACHABLE;
+            throw Exceptions.unreachable();
         }
         return result;
     }

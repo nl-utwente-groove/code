@@ -45,6 +45,11 @@ public interface Op {
      */
     public int getArity();
 
+    /** Indicates if this operator is the constructor of a user type. */
+    default boolean isConstructor() {
+        return false;
+    }
+
     /** Signals if this is a collection-based operator, i.e., with a variable number of arguments. */
     default boolean isVarArgs() {
         return false;

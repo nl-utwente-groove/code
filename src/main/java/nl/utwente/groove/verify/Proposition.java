@@ -183,7 +183,7 @@ public abstract sealed class Proposition permits Literal, Derived, Call {
             case WILD:
                 return true;
             default:
-                throw Exceptions.UNREACHABLE;
+                throw Exceptions.unreachable();
             }
         }
 

@@ -71,18 +71,6 @@ public class AspectJVertex extends
     public Set<AspectEdge> getEdges() {
         return (Set<AspectEdge>) super.getEdges();
     }
-    //
-    //    @Override
-    //    public void setNode(Node node) {
-    //        AspectNode aspectNode = (AspectNode) node;
-    //        this.aspect = aspectNode.getKind();
-    //        super.setNode(node);
-    //        if (aspectNode.hasAttrAspect()) {
-    //            setLook(Look.getLookFor(getNode().getAttrKind()), true);
-    //        }
-    //        getErrors().addErrors(aspectNode.getErrors(), true);
-    //        refreshVisual(COLOR);
-    //    }
 
     @Override
     public void initialise() {

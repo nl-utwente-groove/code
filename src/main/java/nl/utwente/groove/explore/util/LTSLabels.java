@@ -321,7 +321,7 @@ public class LTSLabels {
     public static final LTSLabels DEFAULT
         = new LTSLabels(Flag.START, Flag.OPEN, Flag.RESULT, Flag.FINAL);
 
-    private static final char SINGLE_QUOTE = StringHandler.SINGLE_QUOTE_CHAR;
+    private static final char SINGLE_QUOTE = StringHandler.SINGLE_QUOTE;
     private static final StringHandler FLAG_PARSER
         = new StringHandler(SINGLE_QUOTE, "" + SINGLE_QUOTE);
 

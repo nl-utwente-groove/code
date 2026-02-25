@@ -17,12 +17,12 @@
 package nl.utwente.groove.automaton;
 
 import static nl.utwente.groove.graph.EdgeRole.NODE_TYPE;
-import static nl.utwente.groove.util.parse.StringHandler.DOUBLE_QUOTE_CHAR;
+import static nl.utwente.groove.util.parse.StringHandler.DOUBLE_QUOTE;
 import static nl.utwente.groove.util.parse.StringHandler.LANGLE_CHAR;
 import static nl.utwente.groove.util.parse.StringHandler.LPAR_CHAR;
 import static nl.utwente.groove.util.parse.StringHandler.PLACEHOLDER;
 import static nl.utwente.groove.util.parse.StringHandler.RPAR_CHAR;
-import static nl.utwente.groove.util.parse.StringHandler.SINGLE_QUOTE_CHAR;
+import static nl.utwente.groove.util.parse.StringHandler.SINGLE_QUOTE;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -525,12 +525,12 @@ abstract sealed public class RegExpr { // implements VarSetSupport {
     static public void assertAtom(String text) throws FormatException {
         if (text.length() == 0) {
             throw new FormatException("Empty atom");
-        } else if (text.charAt(0) == DOUBLE_QUOTE_CHAR || text.charAt(0) == LANGLE_CHAR) {
+        } else if (text.charAt(0) == DOUBLE_QUOTE || text.charAt(0) == LANGLE_CHAR) {
             // quoted/bracketed atoms
             var parseResult = StringHandler.parseExpr(text);
             if (parseResult.one().length() != 1) {
                 String error;
-                if (text.charAt(0) == DOUBLE_QUOTE_CHAR) {
+                if (text.charAt(0) == DOUBLE_QUOTE) {
                     error = String.format("Atom '%s' has unbalanced quotes", text);
                 } else {
                     error = String.format("Atom '%s' has unbalanced brackets", text);
@@ -1970,7 +1970,7 @@ abstract sealed public class RegExpr { // implements VarSetSupport {
                 return text();
             } else {
                 // the atom text looks like something else if we parse it as is
-                return StringHandler.toQuoted(text(), SINGLE_QUOTE_CHAR);
+                return StringHandler.toQuoted(text(), SINGLE_QUOTE);
             }
         }
 
@@ -2017,8 +2017,8 @@ abstract sealed public class RegExpr { // implements VarSetSupport {
                     String parsedExpr = parseResult.two().get(0);
                     result = switch (parsedExpr.charAt(0)) {
                     case LPAR_CHAR -> parse(parsedExpr.substring(1, expr.length() - 1));
-                    case SINGLE_QUOTE_CHAR -> newInstance(StringHandler
-                        .toUnquoted(parsedExpr, SINGLE_QUOTE_CHAR));
+                    case SINGLE_QUOTE -> newInstance(StringHandler
+                        .toUnquoted(parsedExpr, SINGLE_QUOTE));
                     default -> null;
                     };
                 } else {

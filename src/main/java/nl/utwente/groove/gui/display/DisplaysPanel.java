@@ -224,7 +224,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
         case -1 -> null;
         case 0 -> getUpperListsPanel();
         case 1 -> getLowerListsPanel();
-        default -> throw Exceptions.UNREACHABLE;
+        default -> throw Exceptions.unreachable();
         };
     }
 

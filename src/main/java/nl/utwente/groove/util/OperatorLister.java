@@ -61,14 +61,14 @@ public class OperatorLister extends GrooveCmdLineTool<List<String[]>> {
             for (OpValue opValue : sig.getOpValues()) {
                 Operator op = opValue.getOperator();
                 StringBuilder argTypes = new StringBuilder();
-                for (Sort argType : op.getParamTypes()) {
+                for (Sort argType : op.getParamSorts()) {
                     if (argTypes.length() > 0) {
                         argTypes.append(this.argTypeSeparator);
                     }
                     argTypes.append(argType.getName());
                 }
                 String[] line = {sig.getName(), op.getName(), op.getSymbol(), op.getDescription(),
-                    op.getResultType()
+                    op.getResultSort()
                         .getName(),
                     argTypes.toString()};
                 result.add(line);

@@ -49,7 +49,7 @@ public class SeqTerm extends Term {
             result.setFailure(ders0.onFailure().seq(arg1()));
         }
         case FINAL -> result = arg1().getAttempt(nested);
-        default -> throw Exceptions.UNREACHABLE;
+        default -> throw Exceptions.unreachable();
         }
         return result;
     }

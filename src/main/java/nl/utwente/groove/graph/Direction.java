@@ -53,7 +53,7 @@ public enum Direction {
         case INCOMING:
             return edge.target();
         default:
-            throw Exceptions.UNREACHABLE;
+            throw Exceptions.unreachable();
         }
     }
 
@@ -65,7 +65,7 @@ public enum Direction {
         case INCOMING:
             return edge.source();
         default:
-            throw Exceptions.UNREACHABLE;
+            throw Exceptions.unreachable();
         }
     }
 

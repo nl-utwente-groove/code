@@ -21,11 +21,14 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.Arrays;
+
 import org.junit.Test;
 
 import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.algebra.UserSignature;
+import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -37,51 +40,61 @@ public class UserSignatureTest {
     /** Tests the stand-alone working of UserSignature. */
     @Test
     public void test() {
-        loadFail("UserOperationsErr1");
-        loadFail("UserOperationsErr2");
-        loadFail("UserOperationsErr3");
-        loadFail("UserOperationsErr4");
-        loadFail("UserOperationsErr5");
-        load("UserOperations");
-    }
-
-    private void loadFail(String className) {
-        try {
-            UserSignature.checkUserClass(PACKAGE_NAME + className);
-            fail(className + " contains errors and should not be loadable");
-        } catch (FormatException exc) {
-            assertFalse("Failed to load " + className,
-                        exc.getMessage().contains("cannot be loaded"));
-        }
-    }
-
-    private void load(String className) {
-        var qualClassName = PACKAGE_NAME + className;
-        try {
-            UserSignature.checkUserClass(qualClassName);
-        } catch (FormatException exc) {
-            fail(exc.getMessage());
-        }
-        UserSignature.setUserClass(qualClassName);
+        loadFail("UserOpsNonAccessibleMethod");
+        loadFail("UserOpsNonPublicClass");
+        loadFail("UserOpsNonStaticMethod");
+        loadFail("UserOpsUnknownParType");
+        loadFail("UserOpsUnknownReturnType");
+        loadFail("UserOpsVoidReturnType");
+        loadFail("UserTypeNonRecord");
+        loadFail("UserTypeNonSort");
+        loadFail("UserTypeIntBool", "UserOpsDuplicateMethod");
+        loadFail("UserOps");
+        load("UserOps", "UserTypeIntBool");
         var ops = UserSignature.getOperators();
-        assertEquals(5, ops.size());
-        for (var op : ops) {
+        assertEquals(9, ops.size());
+        for (var op : ops.values()) {
             switch (op.getName()) {
             case "randomInt" -> check(op, true, Sort.INT, Sort.INT);
             case "sqrt" -> check(op, false, Sort.REAL, Sort.REAL);
             case "one" -> check(op, false, Sort.INT);
             case "charAt" -> check(op, false, Sort.STRING, Sort.STRING, Sort.INT);
             case "isPrefix" -> check(op, false, Sort.BOOL, Sort.STRING, Sort.STRING);
+            case "get" -> check(op, false, Sort.USER, Sort.INT, Sort.BOOL);
+            case "getInt" -> check(op, false, Sort.INT, Sort.USER);
+            case "getBool" -> check(op, false, Sort.BOOL, Sort.USER);
+            case "UserTypeIntBool" -> check(op, false, Sort.USER, Sort.INT, Sort.BOOL);
             default -> fail("Unexpected operation " + op.getName());
             }
         }
     }
 
-    private void check(Operator op, boolean indeterminate, Sort returnSort, Sort... parSorts) {
-        assertEquals(indeterminate, op.isIndeterminate());
-        assertEquals(returnSort, op.getResultType());
-        assertArrayEquals(parSorts, op.getParamTypes().toArray(new Sort[0]));
+    private void loadFail(String... classNames) {
+        var qualClassNames = Arrays.stream(classNames).map(PACKAGE_NAME::extend).toList();
+        try {
+            UserSignature.checkUserClass(qualClassNames);
+            fail(classNames + " contain errors and should not be loadable");
+        } catch (FormatException exc) {
+            assertFalse("Failed to load " + classNames,
+                        exc.getMessage().contains("cannot be loaded"));
+        }
     }
 
-    static private final String PACKAGE_NAME = "nl.utwente.groove.test.algebra.";
+    private void load(String... classNames) {
+        var qualClassNames = Arrays.stream(classNames).map(PACKAGE_NAME::extend).toList();
+        try {
+            UserSignature.checkUserClass(qualClassNames);
+        } catch (FormatException exc) {
+            fail(exc.getMessage());
+        }
+        UserSignature.setUserClass(qualClassNames);
+    }
+
+    private void check(Operator op, boolean indeterminate, Sort returnSort, Sort... parSorts) {
+        assertEquals(indeterminate, op.isIndeterminate());
+        assertEquals(returnSort, op.getResultSort());
+        assertArrayEquals(parSorts, op.getParamSorts().toArray(new Sort[0]));
+    }
+
+    static private final QualName PACKAGE_NAME = QualName.name("nl.utwente.groove.test.algebra");
 }

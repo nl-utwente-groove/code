@@ -66,7 +66,7 @@ class TypeFilter extends LabelFilter<AspectGraph,TypeEntry> {
         if (label instanceof TypeElement type) {
             return getEntryMap(type.getGraph()).keyMap().get(type.key());
         }
-        throw Exceptions.UNREACHABLE;
+        throw Exceptions.unreachable();
     }
 
     @Override

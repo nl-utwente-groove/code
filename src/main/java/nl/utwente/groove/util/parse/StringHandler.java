@@ -348,7 +348,7 @@ public class StringHandler {
             }
         default:
             // this case should not occur
-            throw Exceptions.UNREACHABLE;
+            throw Exceptions.unreachable();
         }
     }
 
@@ -551,7 +551,7 @@ public class StringHandler {
             throw new FormatException("Can't unquote empty string");
         }
         char quote = string.charAt(0);
-        if (quote != SINGLE_QUOTE_CHAR && quote != DOUBLE_QUOTE_CHAR) {
+        if (quote != SINGLE_QUOTE && quote != DOUBLE_QUOTE) {
             throw new FormatException("%s is not quoted", string);
         }
         return toUnquoted(string, quote);
@@ -682,10 +682,10 @@ public class StringHandler {
 
     static private void testQuoteString(String string) {
         System.out.print("String " + string);
-        string = toQuoted(string, DOUBLE_QUOTE_CHAR);
+        string = toQuoted(string, DOUBLE_QUOTE);
         System.out.print(". To quoted: " + string);
         try {
-            string = toUnquoted(string, DOUBLE_QUOTE_CHAR);
+            string = toUnquoted(string, DOUBLE_QUOTE);
             System.out.println(". To unquoted: " + string);
         } catch (FormatException e) {
             System.out.println(". Error: " + e);
@@ -765,12 +765,14 @@ public class StringHandler {
     /** The underscore character. This is allowed as part of an identifier, as long
      * as the identifier also contains alphanumeric characters. */
     static public final char UNDER = '_';
-    /** The hyphen character. This is allowed as part of an identifier. */
+    /** The hyphen character. This is allowed as part of an identifier, but also starts a negative number constant. */
     static public final char HYPHEN = '-';
+    /** The period character. This separates the parts of a qualified name, and serves as a decimal point. */
+    static public final char PERIOD = '.';
     /** The single quote character, to control parsing. */
-    static public final char SINGLE_QUOTE_CHAR = '\'';
+    static public final char SINGLE_QUOTE = '\'';
     /** The double quote character, to control parsing. */
-    static public final char DOUBLE_QUOTE_CHAR = '"';
+    static public final char DOUBLE_QUOTE = '"';
     /** The escape character commonly used. */
     static public final char ESCAPE_CHAR = '\\';
     /**
@@ -788,7 +790,7 @@ public class StringHandler {
     /**
      * Right bracket character allowed as atom delimiter
      */
-    static public final char RANGLE_CHAR = '>';
+    static public final char RANGLE = '>';
     /**
      * Left bracket character allowed as atom delimiter
      */
@@ -805,7 +807,7 @@ public class StringHandler {
     /** Pair of square brackets, to control parsing. */
     static private final char[] SQUARE_BRACKETS = {'[', ']'};
     /** Pair of angle brackets, to control parsing. */
-    static private final char[] ANGLE_BRACKETS = {LANGLE_CHAR, RANGLE_CHAR};
+    static private final char[] ANGLE_BRACKETS = {LANGLE_CHAR, RANGLE};
 
     /** Position value for operators. */
     public enum OpPosition {
@@ -839,9 +841,9 @@ public class StringHandler {
 
     /**
      * Array of default quote characters, containing the single and double
-     * quotes ({@link #DOUBLE_QUOTE_CHAR} and {@link #SINGLE_QUOTE_CHAR}).
+     * quotes ({@link #DOUBLE_QUOTE} and {@link #SINGLE_QUOTE}).
      */
-    static private final char[] DEFAULT_QUOTE_CHARS = {DOUBLE_QUOTE_CHAR, SINGLE_QUOTE_CHAR};
+    static private final char[] DEFAULT_QUOTE_CHARS = {DOUBLE_QUOTE, SINGLE_QUOTE};
     /**
      * Array of default bracket pairs: {@link #ROUND_BRACKETS},
      * {@link #ANGLE_BRACKETS}, {@link #CURLY_BRACKETS} and

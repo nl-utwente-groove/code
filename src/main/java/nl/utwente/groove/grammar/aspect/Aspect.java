@@ -195,7 +195,7 @@ public class Aspect {
             case TYPE -> !hasContent();
             case RULE -> !hasContent() || (getContent() instanceof ExprContent);
             case HOST -> (getContent() instanceof ConstContent c) && c.get().isTerm();
-            default -> throw Exceptions.UNREACHABLE;
+            default -> throw Exceptions.unreachable();
             };
         }
         return result;
@@ -222,11 +222,11 @@ public class Aspect {
             case HOST -> new ConstContent(kind.getContentKind(), value);
             case RULE -> new ExprContent(kind.getContentKind(),
                 Expression.parse(value.toParseString()));
-            default -> throw Exceptions.UNREACHABLE;
+            default -> throw Exceptions.unreachable();
             };
             return new Aspect(kind, content);
         } catch (FormatException exc) {
-            throw Exceptions.UNREACHABLE;
+            throw Exceptions.unreachable();
         }
     }
 
@@ -321,7 +321,7 @@ public class Aspect {
                     checkMultAssoc();
                     break;
                 default:
-                    throw Exceptions.UNREACHABLE;
+                    throw Exceptions.unreachable();
                 }
             } finally {
                 if (oldAspect == null) {

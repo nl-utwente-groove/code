@@ -1087,7 +1087,7 @@ public enum AspectKind {
             AspectKind oldKind = kindMap.put(kind.toString(), kind);
             assert oldKind == null;
             tokenMap.put(kind.name(), kind.getName());
-            Sort sigKind = Sort.getSort(kind.getName());
+            Sort sigKind = Sort.toSort(kind.getName());
             if (sigKind != null) {
                 sigKindMap.put(sigKind, kind);
             }
@@ -1132,13 +1132,13 @@ public enum AspectKind {
             Set<AspectKind> nodeKinds, edgeKinds;
             switch (role) {
             case HOST:
-                nodeKinds = EnumSet.of(REMARK, INT, BOOL, REAL, STRING, COLOR, ID);
+                nodeKinds = EnumSet.of(REMARK, INT, BOOL, REAL, STRING, USER, COLOR, ID);
                 edgeKinds = EnumSet.of(REMARK, ATOM, LITERAL, LET);
                 break;
             case RULE:
                 nodeKinds = EnumSet
                     .of(REMARK, READER, ERASER, CREATOR, ADDER, EMBARGO, BOOL, INT, REAL, STRING,
-                        PRODUCT, PARAM_BI, PARAM_IN, PARAM_OUT, PARAM_ASK, FORALL, FORALL_POS,
+                        USER, PRODUCT, PARAM_BI, PARAM_IN, PARAM_OUT, PARAM_ASK, FORALL, FORALL_POS,
                         EXISTS, EXISTS_OPT, ID, COLOR);
                 edgeKinds = EnumSet
                     .of(REMARK, READER, ERASER, CREATOR, ADDER, EMBARGO, CONNECT, BOOL, INT, REAL,

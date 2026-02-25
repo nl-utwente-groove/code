@@ -335,7 +335,7 @@ public abstract class ConfigDialog extends JDialog implements ActionListener {
                 loadModel();
                 break;
             default:
-                throw Exceptions.UNREACHABLE;
+                throw Exceptions.unreachable();
             }
         } catch (ConfigurationException e) {
             //TODO:

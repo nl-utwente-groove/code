@@ -386,17 +386,10 @@ public class GrammarProperties extends Properties {
     }
 
     /**
-     * Sets the user-defined operations class to a given value.
-     */
-    public void setUserOperations(String className) {
-        storeValue(GrammarKey.USER_OPS, className);
-    }
-
-    /**
      * Returns the user-defined operations class.
      */
-    public String getUserOperations() {
-        return parsePropertyOrDefault(GrammarKey.USER_OPS).getString();
+    public List<QualName> getUserOperations() {
+        return parsePropertyOrDefault(GrammarKey.USER_OPS).getQualNameList();
     }
 
     /**

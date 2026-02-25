@@ -16,7 +16,8 @@
  */
 package nl.utwente.groove.algebra;
 
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
@@ -74,7 +75,7 @@ public enum AlgebraFamily implements DocumentedEnum {
         BigRealAlgebra.instance),
     /** Term algebra: symbolic representations for all values. */
     TERM("term", "Symbolic term representations", TermIntAlgebra.instance, TermBoolAlgebra.instance,
-        TermStringAlgebra.instance, TermRealAlgebra.instance);
+        TermStringAlgebra.instance, TermRealAlgebra.instance, UserAlgebra.instance);
 
     /**
      * Constructs a new register, loaded with a given set of algebras.
@@ -293,8 +294,9 @@ public enum AlgebraFamily implements DocumentedEnum {
         Class<?> myClass = algebra.getClass();
         while (!methodNames.isEmpty()) {
             for (Method method : myClass.getDeclaredMethods()) {
-                if (methodNames.remove(method.getName())) {
-                    result.put(method.getName(), createOperation(algebra, method));
+                var name = method.getName();
+                if (methodNames.remove(name)) {
+                    result.put(name, createOperation(algebra, name, method));
                 }
             }
             myClass = myClass.getSuperclass();
@@ -303,14 +305,15 @@ public enum AlgebraFamily implements DocumentedEnum {
     }
 
     /**
-     * Returns a mapping from operation names to operations for a given sort.
+     * Returns a mapping from operation names to operations for user types.
      */
     private Map<String,Operation> computeUserOps() {
         Map<String,Operation> result = new HashMap<>();
         var algebra = getAlgebra(Sort.USER);
-        for (var m : UserSignature.getMethods()) {
-            var operation = createOperation(algebra, m);
-            result.put(m.getName(), operation);
+        for (var exec : UserSignature.getMethods().entrySet()) {
+            var name = exec.getKey();
+            var operation = createOperation(algebra, name, exec.getValue());
+            result.put(name, operation);
         }
         return result;
     }
@@ -319,11 +322,11 @@ public enum AlgebraFamily implements DocumentedEnum {
     private final Map<Sort,Supplier<Map<String,Operation>>> opsMap = new EnumMap<>(Sort.class);
 
     /**
-     * Returns a new algebra operation object for the given method (from a given
+     * Returns a new algebra operation object for the given executable (from a given
      * algebra).
      */
-    private Operation createOperation(Algebra<?> algebra, Method method) {
-        return new Operation(this, algebra, method);
+    private Operation createOperation(Algebra<?> algebra, String name, Executable executable) {
+        return new Operation(this, algebra, name, executable);
     }
 
     @Override
@@ -354,15 +357,16 @@ public enum AlgebraFamily implements DocumentedEnum {
     /** Implementation of an algebra operation. */
     public static class Operation implements nl.utwente.groove.algebra.Operation {
         @SuppressWarnings("null")
-        Operation(AlgebraFamily family, Algebra<?> algebra, Method method) {
+        Operation(AlgebraFamily family, Algebra<?> algebra, String name, Executable executable) {
             this.algebra = algebra;
-            this.method = method;
-            Type[] methodParameterTypes = method.getParameterTypes();
-            this.arity = methodParameterTypes.length;
-            this.varArgs = this.arity == 1 && methodParameterTypes[0].equals(List.class);
-            Sort returnType = algebra.getSort().getOperator(method.getName()).getResultType();
-            this.returnType = family.getAlgebra(returnType);
-            var annotation = method.getAnnotation(UserOperation.class);
+            this.executable = executable;
+            Type[] paramTypes = executable.getParameterTypes();
+            this.arity = paramTypes.length;
+            this.varArgs = this.arity == 1 && paramTypes[0].equals(List.class);
+            this.name = name;
+            Sort returnSort = algebra.getSort().getOperator(name).getResultSort();
+            this.returnType = family.getAlgebra(returnSort);
+            var annotation = executable.getAnnotation(UserOperation.class);
             this.indeterminate = annotation != null && annotation.indeterminate();
         }
 
@@ -374,15 +378,20 @@ public enum AlgebraFamily implements DocumentedEnum {
                 }
             }
             try {
-                if (isVarArgs() && !(args.size() == 1 && args.get(0) instanceof List)) {
-                    return this.method.invoke(this.algebra, args);
-                } else {
-                    var argsArray = args.toArray();
-                    return this.method.invoke(this.algebra, argsArray);
+                switch (this.executable) {
+                case Method m:
+                    if (isVarArgs() && !(args.size() == 1 && args.get(0) instanceof List)) {
+                        return m.invoke(this.algebra, args);
+                    } else {
+                        var argsArray = args.toArray();
+                        return m.invoke(this.algebra, argsArray);
+                    }
+                case Constructor<?> c:
+                    return c.newInstance(args.toArray());
                 }
             } catch (IllegalAccessException exc) {
                 throw Exceptions.illegalArg("Can't apply %s to %s", this, args);
-            } catch (InvocationTargetException | IllegalArgumentException exc) {
+            } catch (ReflectiveOperationException exc) {
                 // this catches any invocation error, including IllegalArgumentExceptions
                 var error = exc.getCause() instanceof Exception inner
                     ? inner
@@ -421,8 +430,10 @@ public enum AlgebraFamily implements DocumentedEnum {
 
         @Override
         public String getName() {
-            return this.method.getName();
+            return this.name;
         }
+
+        private final String name;
 
         @Override
         public boolean isIndeterminate() {
@@ -436,6 +447,6 @@ public enum AlgebraFamily implements DocumentedEnum {
             return getName();
         }
 
-        private final Method method;
+        private final Executable executable;
     }
 }

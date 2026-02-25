@@ -46,4 +46,11 @@ public class FallibleObject<O> implements Fallible {
     }
 
     private final FormatErrorSet errors;
+
+    /** If the object contains errors, throw an exception.
+     * Convenience method for {@code getErrors().throwException()}.
+     */
+    public void throwException() throws FormatException {
+        getErrors().throwException();
+    }
 }

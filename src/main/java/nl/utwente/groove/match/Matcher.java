@@ -54,7 +54,8 @@ public class Matcher implements SearchStrategy {
      * condition and sets of seeded (i.e., pre-matched) nodes and edges.
      * @param factory the matcher factory that has created this matcher object
      * @param condition the condition that the strategy will find matches for
-     * @param seed set of nodes that will be pre-matched when the strategy is invoked
+     * @param seed set of nodes that will be pre-matched when the strategy is invoked;
+     * may be {@code null} if the condition has no pattern
      */
     public Matcher(MatcherFactory factory, Condition condition, @Nullable Anchor seed) {
         this.factory = factory;

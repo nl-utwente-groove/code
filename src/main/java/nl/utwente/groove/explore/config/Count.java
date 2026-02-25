@@ -81,7 +81,7 @@ public final class Count extends Setting {
             return switch (contentType()) {
             case NULL -> new Count(this);
             case INTEGER -> new Count(this, (Integer) content);
-            default -> throw Exceptions.UNREACHABLE;
+            default -> throw Exceptions.unreachable();
             };
         }
 

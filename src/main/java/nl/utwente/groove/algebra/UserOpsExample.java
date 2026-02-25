@@ -25,7 +25,7 @@ import nl.utwente.groove.annotation.UserOperation;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class UserExample {
+public class UserOpsExample {
     static private Random generator = new Random(10000000);
 
     /** Returns a random integer number between 0 (inclusive) and a given bound. */

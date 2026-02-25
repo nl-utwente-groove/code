@@ -37,9 +37,19 @@ public abstract class AExprTree<O extends Op,T extends AExprTree<O,T>> extends A
 
     /** Sets a top-level constant for this expression. */
     public void setConstant(Constant constant) {
-        assert!isFixed();
-        assert this.op.getKind() == OpKind.ATOM;
-        assert!hasId();
+        setConstant(constant, false);
+    }
+
+    /** Sets a top-level constant for this expression,
+     * which is either a user type constructor or a primitive constant. */
+    protected void setConstant(Constant constant, boolean constructor) {
+        if (constructor) {
+            assert this.op.getKind() == OpKind.CALL;
+        } else {
+            assert !isFixed();
+            assert this.op.getKind() == OpKind.ATOM;
+        }
+        assert !hasId();
         this.constant = constant;
     }
 
@@ -50,16 +60,18 @@ public abstract class AExprTree<O extends Op,T extends AExprTree<O,T>> extends A
 
     /** Returns the constant wrapped in this expression, if any. */
     public Constant getConstant() {
-        return this.constant;
+        var result = this.constant;
+        return result;
     }
 
+    /** The constant wrapped in this tree, if any. */
     private Constant constant;
 
     /** Sets a top-level identifier for this expression. */
     public void setId(QualName id) {
-        assert!isFixed();
+        assert !isFixed();
         assert this.op.getKind() == OpKind.ATOM || this.op.getKind() == OpKind.CALL;
-        assert!hasConstant();
+        assert !hasConstant();
         this.id = id;
     }
 
@@ -100,8 +112,12 @@ public abstract class AExprTree<O extends Op,T extends AExprTree<O,T>> extends A
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = prime * result + ((this.constant == null) ? 0 : this.constant.hashCode());
-        result = prime * result + ((this.id == null) ? 0 : this.id.hashCode());
+        result = prime * result + ((this.constant == null)
+            ? 0
+            : this.constant.hashCode());
+        result = prime * result + ((this.id == null)
+            ? 0
+            : this.id.hashCode());
         return result;
     }
 

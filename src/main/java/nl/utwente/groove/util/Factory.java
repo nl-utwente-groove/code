@@ -76,7 +76,7 @@ public abstract class Factory<T> implements Supplier<T> {
         return this.set;
     }
 
-    /** Resets the computer value, if any. */
+    /** Resets the computed value, if any. */
     public void reset() {
         synchronized (lock) {
             this.set = false;
@@ -175,8 +175,12 @@ public abstract class Factory<T> implements Supplier<T> {
             protected T create() {
                 synchronized (lock) {
                     addBuilder(this);
-                    T result = create.get();
-                    removeBuilder(this);
+                    T result = null;
+                    try {
+                        result = create.get();
+                    } finally {
+                        removeBuilder(this);
+                    }
                     return result;
                 }
             }

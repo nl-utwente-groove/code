@@ -366,7 +366,7 @@ public abstract class UnitPar {
             case ASK:
                 return ASK_PREFIX;
             default:
-                throw Exceptions.UNREACHABLE;
+                throw Exceptions.unreachable();
             }
         }
 
@@ -390,7 +390,7 @@ public abstract class UnitPar {
             case ASK:
                 return PARAM_ASK;
             default:
-                throw Exceptions.UNREACHABLE;
+                throw Exceptions.unreachable();
             }
         }
 
@@ -412,7 +412,7 @@ public abstract class UnitPar {
         case PARAM_OUT -> Direction.OUT;
         case PARAM_BI -> Direction.BI;
         case PARAM_ASK -> Direction.ASK;
-        default -> throw Exceptions.UNREACHABLE;
+        default -> throw Exceptions.unreachable();
         };
     }
 

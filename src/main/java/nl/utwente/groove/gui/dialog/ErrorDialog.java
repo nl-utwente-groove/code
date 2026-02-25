@@ -135,7 +135,7 @@ public class ErrorDialog extends JDialog {
             this.detailsArea.scrollRectToVisible(new Rectangle(0, 0, 10, 10));
             break;
         default:
-            throw Exceptions.UNREACHABLE;
+            throw Exceptions.unreachable();
         }
         this.detailsButton.setText(detailsLevel.text());
         repaint();

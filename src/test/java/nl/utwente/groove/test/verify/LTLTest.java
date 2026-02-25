@@ -146,7 +146,7 @@ public class LTLTest {
             strategy = this.strategyTemplate.toSerialized(formula, new GraphNodeSizeBoundary(0, 1));
             break;
         default:
-            throw Exceptions.UNREACHABLE; // there are no other LTL strategies
+            throw Exceptions.unreachable(); // there are no other LTL strategies
         }
         ExploreType exploreType = new ExploreType(strategy, AcceptorValue.CYCLE.toSerialized(), 1);
         try {

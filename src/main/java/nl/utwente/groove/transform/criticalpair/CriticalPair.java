@@ -346,7 +346,7 @@ public class CriticalPair {
             injectiveOnly = rule2.getCondition().isInjective();
             break;
         default:
-            throw Exceptions.UNREACHABLE;
+            throw Exceptions.unreachable();
         }
 
         //Always use the term algebra, other algebras are not yet supported

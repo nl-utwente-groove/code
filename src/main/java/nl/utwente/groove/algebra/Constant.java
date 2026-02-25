@@ -27,10 +27,9 @@ import java.util.function.Function;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.algebra.syntax.CallExpr;
 import nl.utwente.groove.algebra.syntax.Expression;
-import nl.utwente.groove.algebra.syntax.SortMap;
 import nl.utwente.groove.algebra.syntax.Variable;
-import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.parse.OpKind;
 import nl.utwente.groove.util.parse.StringHandler;
@@ -48,6 +47,7 @@ public final class Constant extends Expression {
         this.boolRepr = null;
         this.intRepr = null;
         this.realRepr = null;
+        this.userRepr = null;
     }
 
     /**
@@ -61,6 +61,7 @@ public final class Constant extends Expression {
         this.stringRepr = null;
         this.intRepr = null;
         this.realRepr = null;
+        this.userRepr = null;
     }
 
     /**
@@ -69,11 +70,16 @@ public final class Constant extends Expression {
     Constant(BigDecimal value) {
         super(true);
         this.sort = Sort.REAL;
-        this.symbol = value.toString();
+        var symbol = value.toString();
+        if (value.stripTrailingZeros().scale() <= 0) {
+            symbol += StringHandler.PERIOD;
+        }
+        this.symbol = symbol;
         this.realRepr = value;
         this.boolRepr = null;
         this.intRepr = null;
         this.stringRepr = null;
+        this.userRepr = null;
     }
 
     /**
@@ -87,6 +93,22 @@ public final class Constant extends Expression {
         this.boolRepr = null;
         this.stringRepr = null;
         this.realRepr = null;
+        this.userRepr = null;
+    }
+
+    /**
+     * Constructs a new user type constant from a given constructor operator and constant arguments.
+     */
+    Constant(Operator op, Constant[] args) {
+        super(true);
+        this.sort = Sort.USER;
+        var expr = new CallExpr(op, args);
+        this.symbol = expr.toParseString();
+        this.intRepr = null;
+        this.boolRepr = null;
+        this.stringRepr = null;
+        this.realRepr = null;
+        this.userRepr = expr;
     }
 
     /** Constructs a new error constant for a given sort. */
@@ -98,6 +120,7 @@ public final class Constant extends Expression {
         this.boolRepr = null;
         this.stringRepr = null;
         this.realRepr = null;
+        this.userRepr = null;
     }
 
     @Override
@@ -108,11 +131,6 @@ public final class Constant extends Expression {
     @Override
     public boolean isClosed() {
         return true;
-    }
-
-    @Override
-    protected SortMap computeTyping() {
-        return SortMap.newInstance();
     }
 
     @Override
@@ -160,7 +178,6 @@ public final class Constant extends Expression {
 
     /**
      * Returns the internal integer representation, if this is a {@link Sort#INT} constant.
-     * This is the unquoted version of the constant symbol.
      */
     public BigInteger getIntRepr() {
         assert getSort() == Sort.INT;
@@ -171,8 +188,7 @@ public final class Constant extends Expression {
     private final BigInteger intRepr;
 
     /**
-     * Returns the internal string representation, if this is a {@link Sort#REAL} constant.
-     * This is the unquoted version of the constant symbol.
+     * Returns the internal decimal representation, if this is a {@link Sort#REAL} constant.
      */
     public BigDecimal getRealRepr() {
         assert getSort() == Sort.REAL;
@@ -183,8 +199,7 @@ public final class Constant extends Expression {
     private final BigDecimal realRepr;
 
     /**
-     * Returns the internal string representation, if this is a {@link Sort#BOOL} constant.
-     * This is the unquoted version of the constant symbol.
+     * Returns the internal boolean representation, if this is a {@link Sort#BOOL} constant.
      */
     public Boolean getBoolRepr() {
         assert getSort() == Sort.BOOL;
@@ -194,6 +209,18 @@ public final class Constant extends Expression {
     /** Internal representation in case this is a {@link Sort#BOOL} constant. */
     private final Boolean boolRepr;
 
+    /**
+     * Returns the constructor call, if this is a {@link Sort#BOOL} constant.
+     * This is the unquoted version of the constant symbol.
+     */
+    public CallExpr getUserRepr() {
+        assert getSort() == Sort.USER;
+        return this.userRepr;
+    }
+
+    /** Internal representation in case this is a {@link Sort#USER} constant. */
+    private final CallExpr userRepr;
+
     /** Returns the representational object of this constant. */
     private Object getRepr() {
         return switch (getSort()) {
@@ -201,7 +228,7 @@ public final class Constant extends Expression {
         case INT -> getIntRepr();
         case REAL -> getRealRepr();
         case STRING -> getStringRepr();
-        case USER -> throw Exceptions.unsupportedOp();
+        case USER -> getUserRepr();
         };
     }
 
@@ -211,6 +238,7 @@ public final class Constant extends Expression {
         if (result == null) {
             this.symbol = result = switch (getSort()) {
             case STRING -> StringHandler.toQuoted(getStringRepr(), '"');
+            case USER -> getUserRepr().toDisplayString();
             default -> getRepr().toString();
             };
         }
@@ -250,29 +278,34 @@ public final class Constant extends Expression {
         return new Constant(value);
     }
 
-    /** Returns a string constant containing the given boolean representation. */
+    /** Returns a boolean constant containing the given boolean representation. */
     public static Constant instance(Boolean value) {
         return new Constant(value);
     }
 
-    /** Returns a string constant containing the given real-number representation. */
+    /** Returns a real constant containing the given real-number representation. */
     public static Constant instance(BigDecimal value) {
         return new Constant(value);
     }
 
-    /** Returns a string constant containing the given real-number representation. */
+    /** Returns a big real constant containing the given real-number representation. */
     public static Constant instance(double value) {
         return new Constant(BigDecimal.valueOf(value));
     }
 
-    /** Returns a string constant containing the given integer representation. */
+    /** Returns a big integer constant containing the given integer representation. */
     public static Constant instance(BigInteger value) {
         return new Constant(value);
     }
 
-    /** Returns a string constant containing the given integer representation. */
+    /** Returns an integer constant containing the given integer representation. */
     public static Constant instance(int value) {
         return new Constant(BigInteger.valueOf(value));
+    }
+
+    /** Returns a user constant containing the given constructor and constant arguments. */
+    public static Constant instance(Operator op, Constant... args) {
+        return new Constant(op, args);
     }
 
     /** Returns a (unique) constant representing the error value of a given sort. */

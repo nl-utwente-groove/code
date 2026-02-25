@@ -126,7 +126,7 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
                 mode = Mode.MATH;
                 break;
             default:
-                throw Exceptions.UNREACHABLE;
+                throw Exceptions.unreachable();
             }
             result.put(style, new StyleMarker(new Marker(start, end), mode));
         }

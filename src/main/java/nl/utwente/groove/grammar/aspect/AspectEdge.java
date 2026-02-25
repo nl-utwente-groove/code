@@ -293,7 +293,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         case RULE -> has(Category.ROLE) && !has(Category.ATTR) && !has(Category.SORT)
             && !has(Category.NESTING, k -> !k.isQuantifier());
         case TYPE -> !has(REMARK) && !has(SUBTYPE) && !has(Category.SORT);
-        default -> throw Exceptions.UNREACHABLE;
+        default -> throw Exceptions.unreachable();
         };
         // set the label category if not yet done
         if (hasLabel && !has(Category.LABEL)) {
@@ -390,7 +390,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                 }
             } else if (isOperator()) {
                 @SuppressWarnings("null")
-                Sort operSort = getOperator().getResultType();
+                Sort operSort = getOperator().getResultSort();
                 var targetSort = target.getSort();
                 if (targetSort == null) {
                     errors.add("Target node of %s-edge should be %s-attribute", label(), operSort);
@@ -577,7 +577,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                 }
                 break;
             default:
-                throw Exceptions.UNREACHABLE;
+                throw Exceptions.unreachable();
             }
         } else if (has(Category.SORT)) {
             text = get(Category.SORT, Aspect::getContentString);
@@ -626,7 +626,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                     type = target().getSort();
                     break;
                 default:
-                    throw Exceptions.UNREACHABLE;
+                    throw Exceptions.unreachable();
                 }
             }
             if (type != null) {
@@ -743,7 +743,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                 result = switch (labelKind) {
                 case LITERAL -> TypeLabel.createBinaryLabel(getInnerText());
                 case ATOM -> TypeLabel.createLabelWithCheck(getInnerText());
-                default -> throw Exceptions.UNREACHABLE;
+                default -> throw Exceptions.unreachable();
                 };
             } catch (FormatException exc) {
                 addErrors(exc.getErrors());

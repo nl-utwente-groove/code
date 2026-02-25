@@ -86,7 +86,7 @@ public class RandomOracle implements ValueOracle {
             result = Constant.instance(text.toString());
             break;
         default:
-            throw Exceptions.UNREACHABLE;
+            throw Exceptions.unreachable();
         }
         return result;
     }
