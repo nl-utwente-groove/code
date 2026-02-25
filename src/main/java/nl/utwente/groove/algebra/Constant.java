@@ -158,9 +158,9 @@ public final class Constant extends Expression {
     @Override
     protected String createParseString() {
         String result = toDisplayString();
-        if (isPrefixed()) {
-            result = getSort() + ":" + result;
-        }
+        //        if (isPrefixed()) {
+        //            result = getSort() + ":" + result;
+        //        }
         return result;
     }
 

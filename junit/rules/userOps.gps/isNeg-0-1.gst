@@ -11,17 +11,17 @@
         </node>
         <edge from="n0" to="n0">
             <attr name="label">
-                <string>let:x=UserTypeIntBool(0,true)</string>
-            </attr>
-        </edge>
-        <edge from="n0" to="n0">
-            <attr name="label">
                 <string>let:x=UserTypeIntBool(-1,false)</string>
             </attr>
         </edge>
         <edge from="n0" to="n0">
             <attr name="label">
-                <string>let:b=true</string>
+                <string>let:x=UserTypeIntBool(0,true)</string>
+            </attr>
+        </edge>
+        <edge from="n0" to="n0">
+            <attr name="label">
+                <string>let:b=false</string>
             </attr>
         </edge>
     </graph>
