@@ -572,8 +572,10 @@ public class StateDisplay extends Display implements SimulatorListener {
                 continue;
             }
             AspectJCell graphEdge = startJModel.getJCellForEdge(edge);
-            stateEdge.putVisuals(graphEdge.getVisuals());
-            stateEdge.setGrayedOut(graphEdge.isGrayedOut());
+            if (!(stateEdge instanceof AspectJVertex)) {
+                stateEdge.putVisuals(graphEdge.getVisuals());
+                stateEdge.setGrayedOut(graphEdge.isGrayedOut());
+            }
             result.synchroniseLayout(stateEdge);
         }
         return result;
