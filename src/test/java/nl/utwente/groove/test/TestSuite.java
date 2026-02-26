@@ -1,5 +1,6 @@
 package nl.utwente.groove.test;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.platform.suite.api.SelectPackages;
 import org.junit.platform.suite.api.Suite;
 
@@ -25,6 +26,7 @@ import org.junit.platform.suite.api.Suite;
  * @author Arend Rensink
  * @version $Revision$
  */
+@Tag("all")
 @Suite
 @SelectPackages("nl.utwente.groove.test")
 public class TestSuite {

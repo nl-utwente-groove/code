@@ -540,7 +540,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
         }
 
         /**
-         * Constructs a (possible collection-based) operator with a given kind and symbol,
+         * Constructs a (possibly collection-based) operator with a given kind and symbol,
          * based on a given (sorted) operator.
          * The arity should equal the kind's arity, unless the latter is unspecified.
          */

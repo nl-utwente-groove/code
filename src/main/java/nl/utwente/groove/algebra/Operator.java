@@ -34,21 +34,26 @@ import nl.utwente.groove.util.parse.OpKind;
  */
 public class Operator {
     /** Constructs an operator based on a user-defined method. */
+    @SuppressWarnings("null")
     Operator(Executable executable) {
         Type[] parTypes = executable.getParameterTypes();
         this.sort = Sort.USER;
         this.inverse = false;
-        this.arity = parTypes.length;
         this.varArgs = false;
         this.zeroArgs = false;
+        this.constructor = executable instanceof Constructor;
         this.name = switch (executable) {
         case Method m -> m.getName();
         case Constructor<?> c -> c.getDeclaringClass().getSimpleName();
         };
         this.parameterSorts = new ArrayList<>();
+        if (!this.constructor && !Modifier.isStatic(executable.getModifiers())) {
+            this.parameterSorts.add(Sort.USER);
+        }
         for (Type t : parTypes) {
             this.parameterSorts.add(toParSort(t));
         }
+        this.arity = this.parameterSorts.size();
         var returnType = switch (executable) {
         case Method m -> m.getReturnType();
         case Constructor<?> c -> c.getDeclaringClass();
@@ -59,10 +64,9 @@ public class Operator {
         this.description = "User-defined method '" + this.name + "'";
 
         var annotation = executable.getAnnotation(UserOperation.class);
-        this.indeterminate = executable instanceof Method
-            ? annotation.indeterminate()
-            : false;
-        this.constructor = executable instanceof Constructor;
+        this.indeterminate = annotation == null
+            ? false
+            : annotation.indeterminate();
     }
 
     /**

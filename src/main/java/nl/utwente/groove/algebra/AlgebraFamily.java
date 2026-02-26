@@ -24,6 +24,7 @@ import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -382,6 +383,12 @@ public enum AlgebraFamily implements DocumentedEnum {
                 case Method m:
                     if (isVarArgs() && !(args.size() == 1 && args.get(0) instanceof List)) {
                         return m.invoke(this.algebra, args);
+                    } else if (this.algebra.getSort() == Sort.USER
+                        && !Modifier.isStatic(m.getModifiers())) {
+                        var argsArray = args.toArray();
+                        var self = argsArray[0];
+                        var others = Arrays.copyOfRange(argsArray, 1, argsArray.length);
+                        return m.invoke(self, others);
                     } else {
                         var argsArray = args.toArray();
                         return m.invoke(this.algebra, argsArray);

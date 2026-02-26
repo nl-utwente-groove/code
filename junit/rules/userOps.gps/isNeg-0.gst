@@ -16,7 +16,7 @@
         </node>
         <node id="n2">
             <attr name="layout">
-                <string>360 263 166 18</string>
+                <string>346 263 194 18</string>
             </attr>
         </node>
         <edge from="n0" to="n2">
@@ -36,7 +36,7 @@
         </edge>
         <edge from="n2" to="n2">
             <attr name="label">
-                <string>user:UserTypeIntBool(int:-1, false)</string>
+                <string>user:UserTypeIntBool(-1, false)</string>
             </attr>
         </edge>
     </graph>

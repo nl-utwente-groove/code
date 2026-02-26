@@ -105,15 +105,17 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
                 result.addError("User type '%s' is not a record type", className);
             } else {
                 var rcs = claz.getRecordComponents();
+                // collect the types of the record components
                 var parTypes = new Class<?>[rcs.length];
                 for (int i = 0; i < rcs.length; i++) {
                     var rc = rcs[i];
+                    var name = rc.getName();
                     parTypes[i] = rc.getType();
                     var sort = Sort.toSort(rc.getType());
                     if (sort == null || !sort.isPrimitive()) {
-                        result
-                            .addError("Type of field '%s.%s' is not primitive", className,
-                                      rc.getName());
+                        result.addError("Type of field '%s.%s' is not primitive", className, name);
+                    } else {
+                        result.get().put(name, rc.getAccessor());
                     }
                 }
                 try {

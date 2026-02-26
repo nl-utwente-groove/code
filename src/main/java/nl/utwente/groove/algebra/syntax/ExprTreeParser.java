@@ -193,6 +193,7 @@ public class ExprTreeParser extends ATermTreeParser<ExprTree.ExprOp,ExprTree> {
     @Override
     protected @NonNull ExprTree parsePrefixed(Token opToken) throws FormatException {
         var result = super.parsePrefixed(opToken);
+        // contract unary minus followed by a constant into a negated constant
         if (opToken.has(TokenClaz.MINUS)) {
             var constant = result.getArg(0).getConstant();
             if (constant != null) {
