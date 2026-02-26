@@ -25,28 +25,16 @@ import nl.utwente.groove.annotation.UserType;
  * @version $Revision$
  */
 @UserType
-public record UserTypeIntBool(int intField, boolean boolField) {
-    /** Retrieves the nth character of a string. */
+public record UserTypeIntString(int intField, String stringField) {
+    /** Retrieves the character of the wrapped string at the wrapped position. */
     @UserOperation
-    static public String charAt(String input, int n) {
-        return "" + input.charAt(n);
+    public String charAt() {
+        return "" + stringField().charAt(intField());
     }
 
     /** Tests if a given string is a prefix of another. */
     @UserOperation
-    static public boolean isPrefix(String prefix, String total) {
-        return total.startsWith(prefix);
-    }
-
-    /** Retrieves the int field of an instance of this type. */
-    @UserOperation
-    static public int getInt(UserTypeIntBool self) {
-        return self.intField();
-    }
-
-    /** Retrieves the boolean field of an instance of this type. */
-    @UserOperation
-    static public boolean getBool(UserTypeIntBool self) {
-        return self.boolField();
+    public boolean isPrefixOf(String total) {
+        return total.startsWith(stringField());
     }
 }

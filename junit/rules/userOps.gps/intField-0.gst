@@ -4,24 +4,24 @@
         <attr name="$version">
             <string>curly</string>
         </attr>
-        <node id="n1">
-            <attr name="layout">
-                <string>151 84 19 19</string>
-            </attr>
-        </node>
         <node id="n0">
             <attr name="layout">
                 <string>185 179 19 19</string>
             </attr>
         </node>
-        <edge from="n1" to="n0">
-            <attr name="label">
-                <string>x</string>
+        <node id="n1">
+            <attr name="layout">
+                <string>151 84 19 19</string>
             </attr>
-        </edge>
+        </node>
         <edge from="n0" to="n0">
             <attr name="label">
                 <string>user:UserTypeIntBool(-10, false)</string>
+            </attr>
+        </edge>
+        <edge from="n1" to="n0">
+            <attr name="label">
+                <string>x</string>
             </attr>
         </edge>
     </graph>

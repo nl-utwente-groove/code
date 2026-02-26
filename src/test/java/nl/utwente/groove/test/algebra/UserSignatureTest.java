@@ -48,9 +48,9 @@ public class UserSignatureTest {
         loadFail("UserOpsVoidReturnType");
         loadFail("UserTypeNonRecord");
         loadFail("UserTypeNonSort");
-        loadFail("UserTypeIntBool", "UserOpsDuplicateMethod");
+        loadFail("UserTypeIntString", "UserOpsDuplicateMethod");
         loadFail("UserOps");
-        load("UserOps", "UserTypeIntBool");
+        load("UserOps", "UserTypeIntString");
         var ops = UserSignature.getOperators();
         assertEquals(9, ops.size());
         for (var op : ops.values()) {
@@ -58,12 +58,12 @@ public class UserSignatureTest {
             case "randomInt" -> check(op, true, Sort.INT, Sort.INT);
             case "sqrt" -> check(op, false, Sort.REAL, Sort.REAL);
             case "one" -> check(op, false, Sort.INT);
-            case "charAt" -> check(op, false, Sort.STRING, Sort.STRING, Sort.INT);
-            case "isPrefix" -> check(op, false, Sort.BOOL, Sort.STRING, Sort.STRING);
-            case "get" -> check(op, false, Sort.USER, Sort.INT, Sort.BOOL);
-            case "getInt" -> check(op, false, Sort.INT, Sort.USER);
-            case "getBool" -> check(op, false, Sort.BOOL, Sort.USER);
-            case "UserTypeIntBool" -> check(op, false, Sort.USER, Sort.INT, Sort.BOOL);
+            case "get" -> check(op, false, Sort.USER, Sort.INT, Sort.STRING);
+            case "UserTypeIntString" -> check(op, false, Sort.USER, Sort.INT, Sort.STRING);
+            case "intField" -> check(op, false, Sort.INT, Sort.USER);
+            case "stringField" -> check(op, false, Sort.STRING, Sort.USER);
+            case "charAt" -> check(op, false, Sort.STRING, Sort.USER);
+            case "isPrefixOf" -> check(op, false, Sort.BOOL, Sort.USER, Sort.STRING);
             default -> fail("Unexpected operation " + op.getName());
             }
         }

@@ -4,14 +4,24 @@
         <attr name="$version">
             <string>curly</string>
         </attr>
-        <node id="n0">
+        <node id="n1">
             <attr name="layout">
-                <string>180 148 27 18</string>
+                <string>180 243 19 19</string>
             </attr>
         </node>
-        <edge from="n0" to="n0">
+        <node id="n0">
+            <attr name="layout">
+                <string>177 148 32 18</string>
+            </attr>
+        </node>
+        <edge from="n1" to="n1">
             <attr name="label">
-                <string>let:i=-1</string>
+                <string>int:-1</string>
+            </attr>
+        </edge>
+        <edge from="n0" to="n1">
+            <attr name="label">
+                <string>i</string>
             </attr>
         </edge>
     </graph>

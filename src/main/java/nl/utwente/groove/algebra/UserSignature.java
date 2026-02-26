@@ -100,7 +100,8 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
             result.addError("Class '%s' is not public", className);
         }
         // if the class is annotated as UserType, check that it is a record type with primitively sorted fields
-        if (Sort.toSort(claz) == Sort.USER) {
+        boolean isUserType = Sort.toSort(claz) == Sort.USER;
+        if (isUserType) {
             if (!claz.isRecord()) {
                 result.addError("User type '%s' is not a record type", className);
             } else {
@@ -115,19 +116,13 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
                     if (sort == null || !sort.isPrimitive()) {
                         result.addError("Type of field '%s.%s' is not primitive", className, name);
                     } else {
-                        result.get().put(name, rc.getAccessor());
+                        addExecutable(result, name, rc.getAccessor());
                     }
                 }
                 try {
                     var name = claz.getSimpleName();
                     var newConstructor = claz.getConstructor(parTypes);
-                    var oldExecutable = result.get().put(name, newConstructor);
-                    if (oldExecutable != null) {
-                        result
-                            .addError("Duplicate user operation '%s' in '%s' and '%s'", name,
-                                      oldExecutable.getDeclaringClass().getCanonicalName(),
-                                      className);
-                    }
+                    addExecutable(result, name, newConstructor);
                 } catch (NoSuchMethodException | SecurityException exc) {
                     throw Exceptions.unreachable();
                 }
@@ -138,26 +133,31 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
             if (m.getAnnotation(UserOperation.class) == null) {
                 continue;
             }
-            if (!Modifier.isStatic(m.getModifiers())) {
+            if (!isUserType && !Modifier.isStatic(m.getModifiers())) {
                 result.addError("User operation '%s.%s' is not static", className, m.getName());
-            } else if (!m.canAccess(null)) {
-                result.addError("User operation '%s.%s' is not accessible", className, m.getName());
+            } else if (!Modifier.isPublic(m.getModifiers())) {
+                result.addError("User operation '%s.%s' is not public", className, m.getName());
             } else {
                 try {
                     var newMethod = checkMethod(m, others);
-                    var oldExecutable = result.get().put(m.getName(), newMethod);
-                    if (oldExecutable != null) {
-                        result
-                            .addError("Duplicate user operation '%s' in '%s' and '%s'", m.getName(),
-                                      oldExecutable.getDeclaringClass().getCanonicalName(),
-                                      className);
-                    }
+                    addExecutable(result, m.getName(), newMethod);
                 } catch (FormatException exc) {
                     result.addErrors(exc.getErrors());
                 }
             }
         }
         return result;
+    }
+
+    static private void addExecutable(FallibleObject<? extends Map<String,Executable>> result,
+                                      String name, Executable exec) {
+        var oldExec = result.get().put(name, exec);
+        if (oldExec != null) {
+            result
+                .addError("Duplicate user operation '%s' in '%s' and '%s'", name,
+                          oldExec.getDeclaringClass().getCanonicalName(),
+                          exec.getDeclaringClass().getCanonicalName());
+        }
     }
 
     /** Checks a given method for suitability as the basis for a user-defined operation.
@@ -168,8 +168,13 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
         var className = m.getClass().getName();
         try {
             var op = new Operator(m);
+            boolean isObjectMethod = !Modifier.isStatic(m.getModifiers());
             for (int i = 0; i < op.getArity(); i++) {
-                var parType = m.getParameterTypes()[i];
+                var parType = isObjectMethod
+                    ? (i == 0
+                        ? m.getDeclaringClass()
+                        : m.getParameterTypes()[i - i])
+                    : m.getParameterTypes()[i];
                 if (op.getParamSorts().get(i) == Sort.USER && !userClasses.contains(parType)) {
                     errors
                         .add("User-defined parameter type %s of user operation '%s.%s' not declared in systems properties",

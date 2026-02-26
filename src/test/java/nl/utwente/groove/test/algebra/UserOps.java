@@ -44,7 +44,7 @@ public class UserOps {
 
     /** Constructs a value of a user type. */
     @UserOperation
-    static public UserTypeIntBool get(int nr, boolean truth) {
-        return new UserTypeIntBool(nr, truth);
+    static public UserTypeIntString get(int nr, String line) {
+        return new UserTypeIntString(nr, line);
     }
 }

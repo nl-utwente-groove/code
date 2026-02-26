@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.algebra;
 
+import nl.utwente.groove.annotation.UserOperation;
 import nl.utwente.groove.annotation.UserType;
 
 /**
@@ -25,5 +26,9 @@ import nl.utwente.groove.annotation.UserType;
  */
 @UserType
 public record UserTypeString(String stringField) {
-    // empty
+    /** Returns the length of the string wrapped in this record. */
+    @UserOperation
+    public int size() {
+        return stringField().length();
+    }
 }
