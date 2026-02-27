@@ -253,6 +253,11 @@ public enum Sort {
         return this.operatorMap.get().containsKey(name);
     }
 
+    /** Returns the map from names to operators of this sort. */
+    public Map<String,Operator> getOperatorMap() {
+        return this.operatorMap.get();
+    }
+
     private Factory<? extends Map<String,Operator>> operatorMap
         = Factory.lazy(this::computeOperatorMap);
 
@@ -275,7 +280,7 @@ public enum Sort {
     private final String errorSymbol;
 
     /** Tests is this is a primitive sort, i.e., not a user sort. */
-    public boolean isPrimitive() {
+    public boolean isSystem() {
         return this != USER;
     }
 

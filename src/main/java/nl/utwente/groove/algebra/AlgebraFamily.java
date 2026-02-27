@@ -20,17 +20,14 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -40,7 +37,6 @@ import nl.utwente.groove.algebra.syntax.CallExpr;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.algebra.syntax.Expression.Kind;
 import nl.utwente.groove.algebra.syntax.Variable;
-import nl.utwente.groove.annotation.UserOperation;
 import nl.utwente.groove.util.DocumentedEnum;
 import nl.utwente.groove.util.Exceptions;
 
@@ -255,19 +251,19 @@ public enum AlgebraFamily implements DocumentedEnum {
      * Returns the method associated with a certain operator.
      */
     public Operation getOperation(Operator operator) {
-        return getOpsMap().get(operator.getSort()).get().get(operator.getName());
+        return getOpsMap().get(operator.getDeclaringSort()).get().get(operator);
     }
 
     /**
      * Returns a mapping from sorts to operation maps.
      */
-    private Map<Sort,Supplier<Map<String,Operation>>> getOpsMap() {
+    private Map<Sort,Supplier<Map<Operator,Operation>>> getOpsMap() {
         var result = this.opsMap;
         if (result.isEmpty()) {
             for (Sort sort : Sort.values()) {
-                Supplier<Map<String,Operation>> ops = switch (sort) {
-                case USER -> nl.utwente.groove.util.Factory.lazy(this::computeUserOps);
-                default -> nl.utwente.groove.util.Factory.value(computeSystemOps(sort));
+                Supplier<Map<Operator,Operation>> ops = switch (sort) {
+                case USER -> nl.utwente.groove.util.Factory.lazy(this::computeUserOperations);
+                default -> nl.utwente.groove.util.Factory.value(computeSystemOperations(sort));
                 };
                 result.put(sort, ops);
             }
@@ -278,26 +274,18 @@ public enum AlgebraFamily implements DocumentedEnum {
     /**
      * Returns a mapping from operator names to operations for a given system sort.
      */
-    private Map<String,Operation> computeSystemOps(Sort sort) {
-        var algebra = getAlgebra(sort);
-        Map<String,Operation> result = new HashMap<>();
-        // first find out what methods were declared in the signature
-        Set<String> methodNames = new HashSet<>();
-        Method[] signatureMethods = algebra.getSort().getSignatureClass().getDeclaredMethods();
-        for (Method method : signatureMethods) {
-            if (Modifier.isAbstract(method.getModifiers())
-                && Modifier.isPublic(method.getModifiers())) {
-                methodNames.add(method.getName());
-            }
-        }
+    private Map<Operator,Operation> computeSystemOperations(Sort sort) {
+        Map<Operator,Operation> result = new HashMap<>();
+        var ops = new HashMap<>(sort.getOperatorMap());
         // now create an operation for all those declared methods
         // including those from superclasses
-        Class<?> myClass = algebra.getClass();
-        while (!methodNames.isEmpty()) {
+        Class<?> myClass = getAlgebra(sort).getClass();
+        while (!ops.isEmpty()) {
             for (Method method : myClass.getDeclaredMethods()) {
                 var name = method.getName();
-                if (methodNames.remove(name)) {
-                    result.put(name, createOperation(algebra, name, method));
+                var op = ops.remove(name);
+                if (op != null) {
+                    result.put(op, new SystemOperation(sort, op, method));
                 }
             }
             myClass = myClass.getSuperclass();
@@ -306,29 +294,20 @@ public enum AlgebraFamily implements DocumentedEnum {
     }
 
     /**
-     * Returns a mapping from operation names to operations for user types.
+     * Returns a mapping from operation names to user operations.
      */
-    private Map<String,Operation> computeUserOps() {
-        Map<String,Operation> result = new HashMap<>();
-        var algebra = getAlgebra(Sort.USER);
+    private Map<Operator,Operation> computeUserOperations() {
+        Map<Operator,Operation> result = new HashMap<>();
         for (var exec : UserSignature.getMethods().entrySet()) {
-            var name = exec.getKey();
-            var operation = createOperation(algebra, name, exec.getValue());
-            result.put(name, operation);
+            var op = exec.getKey();
+            var operation = new UserOperation(op, exec.getValue());
+            result.put(op, operation);
         }
         return result;
     }
 
     /** Store of operations created from the algebras. */
-    private final Map<Sort,Supplier<Map<String,Operation>>> opsMap = new EnumMap<>(Sort.class);
-
-    /**
-     * Returns a new algebra operation object for the given executable (from a given
-     * algebra).
-     */
-    private Operation createOperation(Algebra<?> algebra, String name, Executable executable) {
-        return new Operation(this, algebra, name, executable);
-    }
+    private final Map<Sort,Supplier<Map<Operator,Operation>>> opsMap = new EnumMap<>(Sort.class);
 
     @Override
     public String toString() {
@@ -355,103 +334,52 @@ public enum AlgebraFamily implements DocumentedEnum {
         }
     }
 
-    /** Implementation of an algebra operation. */
-    public static class Operation implements nl.utwente.groove.algebra.Operation {
-        @SuppressWarnings("null")
-        Operation(AlgebraFamily family, Algebra<?> algebra, String name, Executable executable) {
-            this.algebra = algebra;
+    /** Implementation of a system-provided operator. */
+    private class SystemOperation extends Operation {
+        SystemOperation(Sort declaringSort, Operator op, Method method) {
+            super(AlgebraFamily.this, op);
+            this.method = method;
+        }
+
+        /** Invokes the executable in this operation with the given list of argument. */
+        @Override
+        protected Object invoke(List<Object> args) throws ReflectiveOperationException {
+            var m = this.method;
+            if (getOperator().isVarArgs() && !(args.size() == 1 && args.get(0) instanceof List)) {
+                return m.invoke(getDeclaringAlgebra(), args);
+            } else {
+                var argsArray = args.toArray();
+                return m.invoke(getDeclaringAlgebra(), argsArray);
+            }
+        }
+
+        /** The method on which this operation is based. */
+        private final Method method;
+    }
+
+    /** Implementation of a user-defined operator. */
+    private class UserOperation extends Operation {
+        UserOperation(Operator op, Executable executable) {
+            super(AlgebraFamily.this, op);
             this.executable = executable;
-            Type[] paramTypes = executable.getParameterTypes();
-            this.arity = paramTypes.length;
-            this.varArgs = this.arity == 1 && paramTypes[0].equals(List.class);
-            this.name = name;
-            Sort returnSort = algebra.getSort().getOperator(name).getResultSort();
-            this.returnType = family.getAlgebra(returnSort);
-            var annotation = executable.getAnnotation(UserOperation.class);
-            this.indeterminate = annotation != null && annotation.indeterminate();
         }
 
+        /** Invokes the executable in this operation with the given list of argument. */
         @Override
-        public Object apply(List<Object> args) throws ErrorValue {
-            for (var arg : args) {
-                if (arg instanceof ErrorValue error) {
-                    throw getResultAlgebra().errorValue(error);
+        protected Object invoke(List<Object> args) throws ReflectiveOperationException {
+            var argsArray = args.toArray();
+            switch (this.executable) {
+            case Method m:
+                if (Modifier.isStatic(m.getModifiers())) {
+                    return m.invoke(getDeclaringAlgebra(), argsArray);
+                } else {
+                    var self = argsArray[0];
+                    var others = Arrays.copyOfRange(argsArray, 1, argsArray.length);
+                    return m.invoke(self, others);
                 }
+            case Constructor<?> c:
+                return c.newInstance(argsArray);
             }
-            try {
-                switch (this.executable) {
-                case Method m:
-                    if (isVarArgs() && !(args.size() == 1 && args.get(0) instanceof List)) {
-                        return m.invoke(this.algebra, args);
-                    } else if (this.algebra.getSort() == Sort.USER
-                        && !Modifier.isStatic(m.getModifiers())) {
-                        var argsArray = args.toArray();
-                        var self = argsArray[0];
-                        var others = Arrays.copyOfRange(argsArray, 1, argsArray.length);
-                        return m.invoke(self, others);
-                    } else {
-                        var argsArray = args.toArray();
-                        return m.invoke(this.algebra, argsArray);
-                    }
-                case Constructor<?> c:
-                    return c.newInstance(args.toArray());
-                }
-            } catch (IllegalAccessException exc) {
-                throw Exceptions.illegalArg("Can't apply %s to %s", this, args);
-            } catch (ReflectiveOperationException exc) {
-                // this catches any invocation error, including IllegalArgumentExceptions
-                var error = exc.getCause() instanceof Exception inner
-                    ? inner
-                    : exc;
-                throw getResultAlgebra().errorValue(error);
-            }
-        }
-
-        @Override
-        public Algebra<?> getAlgebra() {
-            return this.algebra;
-        }
-
-        private final Algebra<?> algebra;
-
-        @Override
-        public int getArity() {
-            return this.arity;
-        }
-
-        private final int arity;
-
-        @Override
-        public boolean isVarArgs() {
-            return this.varArgs;
-        }
-
-        private final boolean varArgs;
-
-        @Override
-        public Algebra<?> getResultAlgebra() {
-            return this.returnType;
-        }
-
-        private final Algebra<?> returnType;
-
-        @Override
-        public String getName() {
-            return this.name;
-        }
-
-        private final String name;
-
-        @Override
-        public boolean isIndeterminate() {
-            return this.indeterminate;
-        }
-
-        private final boolean indeterminate;
-
-        @Override
-        public String toString() {
-            return getName();
         }
 
         private final Executable executable;

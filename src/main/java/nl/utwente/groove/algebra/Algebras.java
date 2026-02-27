@@ -114,7 +114,7 @@ public class Algebras {
                 help.addPar("the sort to which the operator belongs");
                 for (var param : method.getGenericParameterTypes()) {
                     var sortName = param.getTypeName();
-                    if (sortName.equals("MAIN") || sortName.endsWith("List")) {
+                    if (sortName.endsWith("List")) {
                         sortName = "%1$s";
                     }
                     help.addPar(sortName + "-typed expression");
@@ -122,6 +122,24 @@ public class Algebras {
                 result.add(help);
             }
         }
+        for (var e : UserSignature.getMethods().entrySet()) {
+            var name = e.getKey().getName();
+            sigMap.put("Q" + name, name);
+            Help help = Help.createHelp(e.getValue(), sigMap);
+            if (help != null) {
+                help
+                    .addBody("<p style=\"margin-top:5;\"/>Declared in "
+                        + Help.source(e.getValue().getDeclaringClass().getCanonicalName()));
+                // parameter documentation
+                for (var param : e.getValue().getParameterTypes()) {
+                    var sort = Sort.toSort(param);
+                    assert sort != null;
+                    help.addPar(sort.name() + "-typed expression");
+                }
+                result.add(help);
+            }
+        }
+        UserSignature.addUser(() -> opDocMap.reset());
         return result;
     }
 
@@ -301,6 +319,7 @@ public class Algebras {
         tokenMap.put("DOT", ".");
         tokenMap.put("TRUE", "true");
         tokenMap.put("FALSE", "false");
+        tokenMap.put("MAIN", "%1$s");
         for (var sort : Sort.values()) {
             tokenMap.put(sort.name(), sort.getName());
         }

@@ -23,16 +23,23 @@ import static nl.utwente.groove.io.HTMLConverter.STRONG_TAG;
 import static nl.utwente.groove.io.HTMLConverter.toHtml;
 
 import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Executable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.io.HTMLConverter.HTMLTag;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Pair;
 
 /**
@@ -105,6 +112,19 @@ public class Help {
 
     /** Header of the tool tip. */
     private String header;
+
+    /** Returns the result sort, if any. */
+    public String getResultSort() {
+        return this.resultSort;
+    }
+
+    /** Sets the result sort. */
+    public void setResultsort(String sort) {
+        this.resultSort = sort;
+    }
+
+    /** result sort. */
+    private String resultSort;
 
     /** Adds a line to the tool tip main body. */
     public void addBody(String text) {
@@ -183,7 +203,11 @@ public class Help {
     public String getTip() {
         StringBuilder result = new StringBuilder();
         if (this.header != null) {
-            result.append(bf(this.header));
+            result.append(bf(format(this.header)));
+            var resultSort = getResultSort();
+            if (resultSort != null) {
+                result.append(" (yields " + format(resultSort) + " value)");
+            }
             result.append(HTML_LINEBREAK);
         }
         if (this.body.length() > 0) {
@@ -254,17 +278,59 @@ public class Help {
         return createHelp(source, syntax, header, body, pars, tokenMap);
     }
 
+    @SuppressWarnings("null")
     private static Help createHelp(Object source, Syntax syntax, ToolTipHeader header,
                                    ToolTipBody body, ToolTipPars pars,
                                    Map<String,String> tokenMap) {
         Help result = null;
+        String syntaxText = null;
+        String opName = null;
+        String resultSort = null;
         if (syntax != null) {
-            result = new Help(tokenMap);
-            String syntaxText
+            syntaxText
                 = String.format(syntax.value(), getReflectionName(source), getContextName(source));
+            if (source instanceof Method m) {
+                resultSort = m.getGenericReturnType().getTypeName();
+            }
+        } else if (source instanceof Executable x) {
+            var parNames = new LinkedList<String>();
+            switch (x) {
+            case Constructor<?> c:
+                var claz = c.getDeclaringClass();
+                if (claz.getAnnotation(UserType.class) != null) {
+                    opName = claz.getSimpleName();
+                    resultSort = Sort.USER.name();
+                }
+                break;
+            case Method m:
+                if (m.getAnnotation(UserOperation.class) != null) {
+                    opName = m.getName();
+                    if (!Modifier.isStatic(m.getModifiers())) {
+                        parNames.add(SELF_NAME);
+                    }
+                    resultSort = Sort.toSort(m.getReturnType()).name();
+                }
+            }
+            if (opName != null) {
+                Arrays.stream(x.getParameters()).map(Parameter::getName).forEach(parNames::add);
+                syntaxText = "[" + Sort.USER.name() + ":]Q" + opName;
+                syntaxText += Groove.toString(parNames.toArray(), "(", ")", ",");
+            }
+        }
+        if (syntaxText != null) {
+            result = new Help(tokenMap);
             result.setSyntax(syntaxText);
+            String headerString = null;
             if (header != null) {
-                result.setHeader(header.value());
+                headerString = header.value();
+            } else if (opName != null) {
+                headerString = "Operation " + source(opName);
+            }
+            if (headerString != null) {
+                result.setHeader(headerString);
+            }
+            if (resultSort != null) {
+                result.setResultsort(resultSort);
             }
             if (body != null) {
                 result.setBody(body.value());
@@ -438,4 +504,6 @@ public class Help {
     static private final HTMLTag TABLE_TAG = HTMLConverter
         .createHtmlTag(HTMLConverter.TABLE_TAG_NAME, "cellpadding", "0", "valign", "top");
     static private final HTMLTag SOURCE_TAG = HTMLConverter.createHtmlTag("font", "color", "green");
+    /** Parameter name for the receiving object. */
+    static private final String SELF_NAME = "self";
 }

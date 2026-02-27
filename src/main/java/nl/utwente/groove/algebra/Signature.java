@@ -49,10 +49,10 @@ public interface Signature {
         String name();
 
         /** Returns the sort that defines this operator.
-         * Convenience method for {@link Operator#getSort()}.
+         * Convenience method for {@link Operator#getDeclaringSort()}.
          */
         default public Sort getSort() {
-            return getOperator().getSort();
+            return getOperator().getDeclaringSort();
         }
 
         /** Returns the corresponding operator object. */

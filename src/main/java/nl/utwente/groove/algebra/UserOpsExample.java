@@ -18,6 +18,9 @@ package nl.utwente.groove.algebra;
 
 import java.util.Random;
 
+import nl.utwente.groove.annotation.Syntax;
+import nl.utwente.groove.annotation.ToolTipBody;
+import nl.utwente.groove.annotation.ToolTipHeader;
 import nl.utwente.groove.annotation.UserOperation;
 
 /**
@@ -29,6 +32,9 @@ public class UserOpsExample {
     static private Random generator = new Random(10000000);
 
     /** Returns a random integer number between 0 (inclusive) and a given bound. */
+    @Syntax("[USER:]Q%s.LPAR.bound.RPAR")
+    @ToolTipHeader("Random integer value")
+    @ToolTipBody("Yields a random value between 0 and %s.")
     @UserOperation(indeterminate = true)
     static public int randomInt(int bound) {
         return generator.nextInt(bound);

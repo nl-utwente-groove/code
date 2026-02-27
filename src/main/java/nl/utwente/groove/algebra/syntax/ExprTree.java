@@ -343,7 +343,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
             resultArgs.add(arg.toExpressions(sortMap));
         }
         for (Operator op : getOp().getOperators()) {
-            if (hasDeclaredSort() && getDeclaredSort() != op.getSort()) {
+            if (hasDeclaredSort() && getDeclaredSort() != op.getDeclaringSort()) {
                 // the type of op does not correspond to the known operator type
                 continue;
             }
@@ -569,7 +569,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
             assert sortOp.getArity() == getArity();
             assert sortOp.isVarArgs() == isVarArgs();
             assert sortOp.isZeroArgs() == isZeroArgs();
-            Operator old = this.sortOps.put(sortOp.getSort(), sortOp);
+            Operator old = this.sortOps.put(sortOp.getDeclaringSort(), sortOp);
             assert old == null;
         }
 

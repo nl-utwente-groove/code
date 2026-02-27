@@ -111,7 +111,7 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
         }
         OperatorNode hisNode = ((OperatorNodeSearchItem) item).getNode();
         List<VariableNode> hisArguments = hisNode.getArguments();
-        result = this.operation.getName().compareTo(hisNode.getOperator().getName());
+        result = this.operation.getOperator().compareTo(hisNode.getOperator());
         if (result != 0) {
             return result;
         }
@@ -244,7 +244,8 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
                 result = OperatorNodeSearchItem.this.value.equals(outcome);
             } else if (OperatorNodeSearchItem.this.targetFound || this.targetPreMatch != null) {
                 HostNode targetFind = this.targetPreMatch;
-                if (targetFind != null && OperatorNodeSearchItem.this.operation.isIndeterminate()) {
+                if (targetFind != null
+                    && OperatorNodeSearchItem.this.operation.getOperator().isIndeterminate()) {
                     // the value of this indeterminate operation was seeded,
                     // hence this is a reconstruction of the match, hence we're going
                     // to assume the seeded value is correct

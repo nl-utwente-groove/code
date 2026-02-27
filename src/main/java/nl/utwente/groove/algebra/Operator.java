@@ -32,12 +32,12 @@ import nl.utwente.groove.util.parse.OpKind;
 /**
  * Class encoding an operator declaration in a {@link Signature}.
  */
-public class Operator {
+public class Operator implements Comparable<Operator> {
     /** Constructs an operator based on a user-defined method. */
     @SuppressWarnings("null")
     Operator(Executable executable) {
         Type[] parTypes = executable.getParameterTypes();
-        this.sort = Sort.USER;
+        this.declaringSort = Sort.USER;
         this.inverse = false;
         this.varArgs = false;
         this.zeroArgs = false;
@@ -79,9 +79,9 @@ public class Operator {
      * are not type variables.
      */
     @SuppressWarnings("null")
-    private Operator(Sort sort, OpValue opValue, Method method) throws IllegalArgumentException {
+    private Operator(Sort declaringSort, OpValue opValue, Method method) throws IllegalArgumentException {
         Type[] methodParameterTypes = method.getGenericParameterTypes();
-        this.sort = sort;
+        this.declaringSort = declaringSort;
         this.inverse = opValue == IntSignature.Op.NEG || opValue == RealSignature.Op.NEG;
         this.arity = methodParameterTypes.length;
         this.varArgs = this.arity == 1 && methodParameterTypes[0] instanceof ParameterizedType;
@@ -151,11 +151,11 @@ public class Operator {
     }
 
     /** Returns the sort to which this operator belongs. */
-    public Sort getSort() {
-        return this.sort;
+    public Sort getDeclaringSort() {
+        return this.declaringSort;
     }
 
-    private final Sort sort;
+    private final Sort declaringSort;
 
     /** Indicates if this operator is a numeric inverse,
      * which can alternatively be regarded as part of a constant.
@@ -300,12 +300,17 @@ public class Operator {
 
     /** Returns the name of the operator, preceded with its containing signature. */
     public String getFullName() {
-        return getSort() + ":" + getName();
+        return getDeclaringSort() + ":" + getName();
     }
 
     @Override
     public String toString() {
         return getFullName() + Groove.toString(this.parameterSorts.toArray(), "(", ")", ",");
+    }
+
+    @Override
+    public int compareTo(Operator o) {
+        return getFullName().compareTo(o.getFullName());
     }
 
     /**
@@ -451,10 +456,10 @@ public class Operator {
     private static Map<Sort,Map<String,Operator>> computeSortOpLookupMap() {
         Map<Sort,Map<String,Operator>> result = new HashMap<>();
         for (Operator op : getOps()) {
-            var sortOps = result.get(op.getSort());
+            var sortOps = result.get(op.getDeclaringSort());
             if (sortOps == null) {
                 sortOps = new HashMap<>();
-                result.put(op.getSort(), sortOps);
+                result.put(op.getDeclaringSort(), sortOps);
             }
             String opName = op.getName();
             sortOps.put(opName, op);

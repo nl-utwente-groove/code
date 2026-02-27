@@ -38,7 +38,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.AlgebraFamily;
-import nl.utwente.groove.algebra.Operation;
+import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.control.Binding;
 import nl.utwente.groove.grammar.UnitPar.RulePar;
 import nl.utwente.groove.grammar.host.HostEdge;
@@ -261,7 +261,7 @@ public class Rule implements Action, Fixable {
 
     /** Returns {@code true} if the rule (or any of its subrules)
      * contains indeterminate operators.
-     * @see Operation#isIndeterminate()
+     * @see Operator#isIndeterminate()
      */
     public boolean isIndeterminate() {
         return !getIndeterminates().isEmpty()

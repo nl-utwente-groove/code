@@ -65,6 +65,7 @@ import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphUndoManager;
 
 import nl.utwente.groove.algebra.Algebras;
+import nl.utwente.groove.algebra.UserSignature;
 import nl.utwente.groove.annotation.HelpMap;
 import nl.utwente.groove.automaton.RegExpr;
 import nl.utwente.groove.grammar.QualName;
@@ -560,6 +561,7 @@ final public class GraphEditorTab extends ResourceTab
         JComponent result = this.syntaxHelp;
         if (result == null) {
             this.syntaxHelp = result = createSyntaxHelp();
+            UserSignature.addUser(() -> this.syntaxHelp = null);
         }
         return result;
     }

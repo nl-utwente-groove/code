@@ -19,7 +19,6 @@ package nl.utwente.groove.algebra;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -59,8 +58,8 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
      * and returns the operations as executables.
      * @throws FormatException if there are annotation errors in the class
      */
-    public static Map<String,Executable> checkUserClass(List<QualName> classNames) throws FormatException {
-        var result = new LinkedHashMap<String,Executable>();
+    public static Map<Operator,Executable> checkUserClass(List<QualName> classNames) throws FormatException {
+        var result = new LinkedHashMap<Operator,Executable>();
         var errors = new FormatErrorSet();
         var classes = toClasses(classNames);
         classes.throwException();
@@ -91,9 +90,9 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
      * and returns the methods on which those operations are based.
      */
     @SuppressWarnings("null")
-    private static FallibleObject<? extends Map<String,Executable>> parseUserClass(Class<?> claz,
-                                                                                   Set<Class<?>> others) {
-        var result = new FallibleObject<>(new LinkedHashMap<String,Executable>());
+    private static FallibleObject<? extends Map<Operator,Executable>> parseUserClass(Class<?> claz,
+                                                                                     Set<Class<?>> others) {
+        var result = new FallibleObject<>(new LinkedHashMap<Operator,Executable>());
         String className = claz.getCanonicalName();
         // check that the class is public
         if (!Modifier.isPublic(claz.getModifiers())) {
@@ -105,6 +104,7 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
             if (!claz.isRecord()) {
                 result.addError("User type '%s' is not a record type", className);
             } else {
+                boolean clazOk = true;
                 var rcs = claz.getRecordComponents();
                 // collect the types of the record components
                 var parTypes = new Class<?>[rcs.length];
@@ -113,18 +113,21 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
                     var name = rc.getName();
                     parTypes[i] = rc.getType();
                     var sort = Sort.toSort(rc.getType());
-                    if (sort == null || !sort.isPrimitive()) {
-                        result.addError("Type of field '%s.%s' is not primitive", className, name);
+                    if (sort == null || !sort.isSystem()) {
+                        result
+                            .addError("Type of field '%s.%s' is not a system sort", className,
+                                      name);
+                        clazOk = false;
                     } else {
-                        addExecutable(result, name, rc.getAccessor());
+                        addExecutable(result, rc.getAccessor());
                     }
                 }
-                try {
-                    var name = claz.getSimpleName();
-                    var newConstructor = claz.getConstructor(parTypes);
-                    addExecutable(result, name, newConstructor);
-                } catch (NoSuchMethodException | SecurityException exc) {
-                    throw Exceptions.unreachable();
+                if (clazOk) {
+                    try {
+                        addExecutable(result, claz.getConstructor(parTypes));
+                    } catch (NoSuchMethodException | SecurityException exc) {
+                        throw Exceptions.unreachable();
+                    }
                 }
             }
         }
@@ -140,7 +143,7 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
             } else {
                 try {
                     var newMethod = checkMethod(m, others);
-                    addExecutable(result, m.getName(), newMethod);
+                    addExecutable(result, newMethod);
                 } catch (FormatException exc) {
                     result.addErrors(exc.getErrors());
                 }
@@ -149,12 +152,13 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
         return result;
     }
 
-    static private void addExecutable(FallibleObject<? extends Map<String,Executable>> result,
-                                      String name, Executable exec) {
-        var oldExec = result.get().put(name, exec);
+    static private void addExecutable(FallibleObject<? extends Map<Operator,Executable>> result,
+                                      Executable exec) {
+        var op = new Operator(exec);
+        var oldExec = result.get().put(op, exec);
         if (oldExec != null) {
             result
-                .addError("Duplicate user operation '%s' in '%s' and '%s'", name,
+                .addError("Duplicate user operation '%s' in '%s' and '%s'", op.getName(),
                           oldExec.getDeclaringClass().getCanonicalName(),
                           exec.getDeclaringClass().getCanonicalName());
         }
@@ -197,12 +201,12 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
     }
 
     /** Returns the set of operators defined in the user classes. */
-    public static Map<String,Executable> getMethods() {
+    public static Map<Operator,Executable> getMethods() {
         return methods;
     }
 
     /** Lazily computed set of operators in the user class. */
-    static private final Map<String,Executable> methods = new LinkedHashMap<>();
+    static private final Map<Operator,Executable> methods = new LinkedHashMap<>();
 
     /** Returns the set of operators defined in the user class. */
     public static Map<String,Operator> getOperators() {
@@ -215,8 +219,8 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
 
     static private Map<String,Operator> computeOperators() {
         var result = new LinkedHashMap<String,Operator>();
-        for (var e : getMethods().entrySet()) {
-            result.put(e.getKey(), new Operator(e.getValue()));
+        for (var op : getMethods().keySet()) {
+            result.put(op.getName(), op);
         }
         return result;
     }
@@ -227,7 +231,7 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
     }
 
     /** List of dependants that need to be reset when a new user class is loaded. */
-    static private List<Callback> users = new ArrayList<>();
+    static private Set<Callback> users = new LinkedHashSet<>();
 
     /** Calls the {@link Runnable#run()} method on all elements of {@link #users}. */
     static private void resetUsers() {
