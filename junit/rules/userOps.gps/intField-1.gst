@@ -11,7 +11,7 @@
         </node>
         <node id="n0">
             <attr name="layout">
-                <string>117 180 156 18</string>
+                <string>137 179 114 18</string>
             </attr>
         </node>
         <edge from="n1" to="n0">
@@ -21,7 +21,7 @@
         </edge>
         <edge from="n0" to="n0">
             <attr name="label">
-                <string>user:UserTypeIntBool(-11, false)</string>
+                <string>user:UserTypeIntBool(0, true)</string>
             </attr>
         </edge>
     </graph>

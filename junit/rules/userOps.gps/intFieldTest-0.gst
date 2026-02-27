@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph role="graph" edgeids="false" edgemode="directed" id="intField-0">
+    <graph role="graph" edgeids="false" edgemode="directed" id="intFieldTest-0">
         <attr name="$version">
             <string>curly</string>
         </attr>
         <node id="n0">
             <attr name="layout">
-                <string>116 179 156 18</string>
+                <string>185 179 19 19</string>
             </attr>
         </node>
         <node id="n1">
@@ -16,7 +16,7 @@
         </node>
         <edge from="n0" to="n0">
             <attr name="label">
-                <string>user:UserTypeString("a")</string>
+                <string>user:UserTypeIntBool(-10, false)</string>
             </attr>
         </edge>
         <edge from="n1" to="n0">

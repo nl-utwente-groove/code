@@ -6,12 +6,17 @@
         </attr>
         <node id="n1">
             <attr name="layout">
-                <string>151 84 19 19</string>
+                <string>92 75 137 36</string>
             </attr>
         </node>
         <edge from="n1" to="n1">
             <attr name="label">
-                <string>let:x=UserTypeIntBool(-10,false)</string>
+                <string>let:x=UserTypeString("a")</string>
+            </attr>
+        </edge>
+        <edge from="n1" to="n1">
+            <attr name="label">
+                <string>let:i=NaI</string>
             </attr>
         </edge>
     </graph>
