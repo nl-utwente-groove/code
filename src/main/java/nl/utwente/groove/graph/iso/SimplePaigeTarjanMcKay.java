@@ -123,8 +123,9 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
         // first iteration
         split(splitters);
         if (TRACE) {
-            System.out.printf("First iteration done; %d partitions for %d nodes in %d iterations%n",
-                              this.nodePartitionCount, this.nodeCertCount, this.iterateCount);
+            System.out
+                .printf("First iteration done; %d partitions for %d nodes in %d iterations%n",
+                        this.nodePartitionCount, this.nodeCertCount, this.iterateCount);
         }
     }
 
@@ -362,7 +363,6 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
          * Returns the certificate value. Note that this means the hash code is
          * not constant during the initial phase, and so no hash sets or maps
          * should be used.
-         * @ensure <tt>result == getValue()</tt>
          * @see #getValue()
          */
         @Override
@@ -655,8 +655,9 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
                     if (block == null || block.value != node.getValue()) {
                         block = blockMap.get(node.getValue());
                         if (block == null) {
-                            blockMap.put(node.getValue(),
-                                         block = new Block(this.strategy, node.getValue()));
+                            blockMap
+                                .put(node.getValue(),
+                                     block = new Block(this.strategy, node.getValue()));
                         }
                     }
                     block.append(node);

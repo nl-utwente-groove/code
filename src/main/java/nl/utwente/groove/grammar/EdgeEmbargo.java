@@ -79,7 +79,6 @@ public class EdgeEmbargo extends Condition {
 
     /**
      * Returns the source node of the forbidden edge.
-     * @ensure <tt>result != null</tt>
      */
     public Node edgeSource() {
         return this.embargoEdge.source();
@@ -87,7 +86,6 @@ public class EdgeEmbargo extends Condition {
 
     /**
      * Returns the label of the forbidden edge.
-     * @ensure <tt>result != null</tt>
      */
     public Label edgeLabel() {
         return this.embargoEdge.label();

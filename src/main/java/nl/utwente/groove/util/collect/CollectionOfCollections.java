@@ -34,7 +34,6 @@ import org.eclipse.jdt.annotation.Nullable;
 public class CollectionOfCollections<T> extends AbstractCollection<T> {
     /**
      * Constructs a new collection of collections.
-     * @require <tt>collections \subseteq Collection</tt>
      */
     public CollectionOfCollections(Collection<? extends Collection<? extends T>> collections) {
         this.collections = collections;
@@ -42,7 +41,6 @@ public class CollectionOfCollections<T> extends AbstractCollection<T> {
 
     /**
      * Constructs a new collection of collections.
-     * @require <tt>collections \subseteq Collection</tt>
      */
     @SafeVarargs
     public CollectionOfCollections(Collection<? extends T>... collections) {

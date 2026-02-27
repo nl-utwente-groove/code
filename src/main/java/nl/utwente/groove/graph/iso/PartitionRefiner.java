@@ -118,8 +118,9 @@ public class PartitionRefiner extends CertificateStrategy {
         } while (goOn);
         recordIterateCount(this.iterateCount);
         if (TRACE) {
-            System.out.printf("First iteration done; %d partitions for %d nodes in %d iterations%n",
-                              this.nodePartitionCount, this.nodeCertCount, this.iterateCount);
+            System.out
+                .printf("First iteration done; %d partitions for %d nodes in %d iterations%n",
+                        this.nodePartitionCount, this.nodeCertCount, this.iterateCount);
         }
     }
 
@@ -375,7 +376,6 @@ public class PartitionRefiner extends CertificateStrategy {
          * Returns the certificate value. Note that this means the hash code is
          * not constant during the initial phase, and so no hash sets or maps
          * should be used.
-         * @ensure <tt>result == getValue()</tt>
          * @see #getValue()
          */
         @Override

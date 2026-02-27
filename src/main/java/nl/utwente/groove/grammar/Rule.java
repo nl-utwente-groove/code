@@ -133,7 +133,6 @@ public class Rule implements Action, Fixable {
 
     /**
      * Returns the left hand side of this Rule.
-     * @ensure <tt>result == morphism().source()</tt>
      */
     public RuleGraph lhs() {
         return this.lhs;
@@ -147,7 +146,6 @@ public class Rule implements Action, Fixable {
 
     /**
      * Returns the right hand side of this Rule.
-     * @ensure <tt>result == morphism().cod()</tt>
      */
     public RuleGraph rhs() {
         return this.rhs;

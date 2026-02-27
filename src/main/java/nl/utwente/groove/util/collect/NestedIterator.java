@@ -49,7 +49,6 @@ public class NestedIterator<T> extends AbstractNestedIterator<T> {
      * iterator should yield the inner iterators.
      * @param outerIterator the outer iterator from which this nested iterator
      *        is to be constructed
-     * @require <tt>outerIterator.next() instanceof Iterator</tt>
      */
     public NestedIterator(Iterator<? extends Iterator<? extends T>> outerIterator) {
         this.outerIterator = outerIterator;

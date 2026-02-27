@@ -47,7 +47,6 @@ public class NodeSetEdgeSetGraph<N extends @NonNull Node,E extends @NonNull GEdg
     /**
      * Constructs a clone of a given graph.
      * @param graph the graph to be cloned
-     * @require graph != null
      */
     public NodeSetEdgeSetGraph(GGraph<N,E> graph) {
         super(graph.getName(), graph.isSimple());
@@ -223,7 +222,6 @@ public class NodeSetEdgeSetGraph<N extends @NonNull Node,E extends @NonNull GEdg
         /**
          * Overwrites the method from <tt>Set</tt> to ensure proper observer
          * notification in all cases.
-         * @require <tt>elem instanceof Element</tt>
          */
         @SuppressWarnings("unchecked")
         @Override

@@ -88,7 +88,6 @@ public class Grammar {
      * grammar is not yet fixed, as indicated by {@link #isFixed()};
      * moreover, the action name should be new.
      * @param action the production rule to be added
-     * @require <tt>rule != null</tt>
      * @throws IllegalStateException if the rule system is fixed
      * @see #isFixed()
      */

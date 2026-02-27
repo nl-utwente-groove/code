@@ -48,8 +48,6 @@ abstract public class EdgeMapGraph<N extends Node,E extends GEdge<N>> extends AG
     /**
      * Constructs a clone of a given Graph.
      * @param graph the DefaultGraph to be cloned
-     * @require graph != null
-     * @ensure result.equals(graph)
      */
     protected EdgeMapGraph(EdgeMapGraph<N,E> graph) {
         this(graph.getName(), graph.getRole(), graph.isSimple());

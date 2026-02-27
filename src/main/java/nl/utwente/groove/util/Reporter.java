@@ -97,7 +97,6 @@ public class Reporter {
 
     /**
      * Signals the start of a new method to be reported.
-     * @require currentNesting < MAX_NESTING
      */
     final public synchronized void start() {
         if (REPORT) {
@@ -135,7 +134,6 @@ public class Reporter {
 
     /**
      * Reports the end of the most deeply nested method.
-     * @require <tt>currentNesting > 0</tt>
      */
     final public synchronized void stop() {
         if (REPORT) {
@@ -188,15 +186,19 @@ public class Reporter {
         out.println("Reporting " + this.type);
         for (Reporter subreporter : this.subreporters.values()) {
             out.print(INDENT + Strings.pad(subreporter.getName(), methodNameLength, false) + " ");
-            out.print(TOP_COUNT_FIELD + "="
-                + Strings.pad("" + subreporter.topCount, topCountLength, false) + " ");
-            out.print(NESTED_COUNT_FIELD + "="
-                + Strings.pad("" + (subreporter.nestedCount - subreporter.topCount),
-                              nestedCountLength, false)
-                + " ");
+            out
+                .print(TOP_COUNT_FIELD + "="
+                    + Strings.pad("" + subreporter.topCount, topCountLength, false) + " ");
+            out
+                .print(NESTED_COUNT_FIELD + "="
+                    + Strings
+                        .pad("" + (subreporter.nestedCount - subreporter.topCount),
+                             nestedCountLength, false)
+                    + " ");
             if (TIME_METHODS) {
-                out.print(TOT_TIME_FIELD + "="
-                    + Strings.pad("" + subreporter.duration, totTimeLength, false) + " ");
+                out
+                    .print(TOT_TIME_FIELD + "="
+                        + Strings.pad("" + subreporter.duration, totTimeLength, false) + " ");
                 long avgDuration;
                 if (subreporter.duration > 0) {
                     if (TIME_TOP_ONLY) {
@@ -207,8 +209,9 @@ public class Reporter {
                 } else {
                     avgDuration = 0;
                 }
-                out.print(AVG_TIME_FIELD + "=" + Strings.pad("" + avgDuration, avgTimeLength, false)
-                    + " ");
+                out
+                    .print(AVG_TIME_FIELD + "="
+                        + Strings.pad("" + avgDuration, avgTimeLength, false) + " ");
             }
             out.println();
         }
@@ -287,15 +290,17 @@ public class Reporter {
             out.println();
             // print the method reports from the individual reporters
             for (Reporter reporter : getAllReporters()) {
-                reporter.myReport(out, methodNameLength, topCountLength, nestedCountLength,
-                                  totTimeLength, avgTimeLength);
+                reporter
+                    .myReport(out, methodNameLength, topCountLength, nestedCountLength,
+                              totTimeLength, avgTimeLength);
                 out.println();
             }
             // print the total amounts of time measured by the reporters
             out.println("Total measured time spent in");
             for (Reporter reporter : getAllReporters()) {
-                out.println(INDENT + Strings.pad(reporter.type.toString(), classNameLength, false)
-                    + ": " + reporter.totalTime + " ms");
+                out
+                    .println(INDENT + Strings.pad(reporter.type.toString(), classNameLength, false)
+                        + ": " + reporter.totalTime + " ms");
             }
             out.println();
 

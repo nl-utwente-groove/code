@@ -122,7 +122,6 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
 
     /**
      * Returns the underlying Graph of this GraphModel.
-     * @ensure result != null
      */
     public @Nullable G getGraph() {
         return this.graph;
@@ -249,9 +248,6 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
      * a self-edge and <tt>showNodeIdentities</tt> does not hold.
      * @param edge the graph edge we're interested in
      * @return the <tt>JNode</tt> or <tt>JEdge</tt> modelling <tt>edge</tt>
-     * @ensure result instanceof JNode && result.labels().contains(edge.label())
-     *         || result instanceof JEdge &&
-     *         result.labels().contains(edge.label())
      */
     public JCell<G> getJCellForEdge(Edge edge) {
         return this.edgeJCellMap.get(edge);
@@ -261,7 +257,6 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
      * Returns the JNode associated with a given node.
      * @param node the graph node we're interested in
      * @return the JNode modelling node (if node is known)
-     * @ensure result == null || result.getUserObject() == node
      */
     public JVertex<G> getJCellForNode(Node node) {
         return this.nodeJCellMap.get(node);

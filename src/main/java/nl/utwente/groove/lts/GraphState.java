@@ -129,7 +129,6 @@ public interface GraphState extends Node, Phase {
     /**
      * Closes this state. This announces that no more outgoing transitions will
      * be generated. The return value indicates if the state was already closed.
-     * @ensure <tt>isClosed()</tt>
      * @return <code>true</code> if the state was closed as a result of this
      *         call; <code>false</code> if it was already closed
      * @see #isClosed()

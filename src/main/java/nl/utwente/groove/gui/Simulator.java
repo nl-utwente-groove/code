@@ -498,7 +498,6 @@ public class Simulator implements SimulatorListener {
      * Adds the accelerator key for a given action to the action and input maps
      * of the simulator frame's content pane.
      * @param action the action to be added
-     * @require <tt>frame.getContentPane()</tt> should be initialised
      */
     public void addAccelerator(Action action) {
         JComponent contentPane = (JComponent) getFrame().getContentPane();

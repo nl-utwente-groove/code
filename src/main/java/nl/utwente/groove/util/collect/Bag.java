@@ -40,13 +40,11 @@ public interface Bag<T> extends Collection<T> {
 
     /**
      * Returns the multiplicity of a given element in this bag.
-     * @ensure <tt>result >= 0</tt>
      */
     public abstract int multiplicity(Object elem);
 
     /**
      * Returns a mapping from keys to (positive) multiplicities.
-     * @ensure <tt>result.keysSet().equals(elementSet())</tt>
      */
     public abstract Map<T,? extends Multiplicity> multiplicityMap();
 

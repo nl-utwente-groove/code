@@ -35,7 +35,6 @@ public interface Graph {
      * unmodifiable view of the underlying node set, which is <i>not</i>
      * guaranteed to be up-to-date with, or even safe in the face of, concurrent
      * modifications to the graph.
-     * @ensure <tt>result != null</tt>
      */
     Set<? extends Node> nodeSet();
 
@@ -43,7 +42,6 @@ public interface Graph {
      * Returns the number of nodes in this graph. Convenience method for
      * <tt>nodeSet().size()</tt>
      * @return the number of nodes in this graph
-     * @ensure <tt>result == nodeSet().size()</tt>
      */
     default int nodeCount() {
         return nodeSet().size();
@@ -54,7 +52,6 @@ public interface Graph {
      * unmodifiable view of the underlying edge set, which is <i>not</i>
      * guaranteed to remain up-to-date with, or even safe in the face of,
      * concurrent modifications to the graph.
-     * @ensure <tt>result != null</tt>
      */
     Set<? extends Edge> edgeSet();
 
@@ -62,7 +59,6 @@ public interface Graph {
      * Returns the number of edges of this graph. Convenience method for
      * <tt>edgeSet().size()</tt>
      * @return the number of edges in this graph
-     * @ensure <tt>result == edgeSet().size()</tt>
      */
     default int edgeCount() {
         return edgeSet().size();
@@ -73,8 +69,6 @@ public interface Graph {
      * Although the return type is a <tt>Collection</tt> to allow efficient
      * implementation, it is guaranteed to contain distinct elements.
      * @param node the node of which the incident edges are required
-     * @require node != null
-     * @ensure result == { edge \in E | \exists i: edge.end(i).equals(node) }
      */
     Set<? extends Edge> edgeSet(Node node);
 
@@ -101,7 +95,6 @@ public interface Graph {
 
     /**
      * Returns the total number of elements (nodes plus edges) in this graph.
-     * @ensure <tt>result == nodeCount() + edgeCount()</tt>
      */
     default int size() {
         return nodeCount() + edgeCount();
@@ -151,7 +144,6 @@ public interface Graph {
      * <tt>isFixed()</tt> holds. If the graph is fixed, no <tt>add</tt>- or
      * <tt>remove</tt>-method may be invoked any more; moreover, all graph
      * listeners are removed.
-     * @ensure <tt>isFixed()</tt>
      * @see #isFixed()
      */
     boolean setFixed();
@@ -219,7 +211,6 @@ public interface Graph {
     /**
      * Makes a copy of this Graph with cloned (not aliased) node and edge sets
      * but aliased nodes and edges.
-     * @ensure <tt>resultnodeSet().equals(this.nodeSet()) && result.edgeSet().equals(this.edgeSet()</tt>
      */
     Graph clone();
 

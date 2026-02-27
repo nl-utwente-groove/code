@@ -1,17 +1,17 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2023
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package nl.utwente.groove.gui.layout;
@@ -91,9 +91,6 @@ public class JEdgeLayout implements JCellLayout {
      * @param points the list of intermediate points; not <code>null</code>
      * @param labelPosition the label position
      * @param lineStyle the line style
-     * @ensure <code>getPoints().equals(points)</code> and
-     *         <code>getLabelPosition().equals(labelPosition)</code> and
-     *         <code>getLineStyle() == lineStyle</code>
      */
     public JEdgeLayout(List<Point2D> points, Point2D labelPosition, LineStyle lineStyle) {
         this.points = new LinkedList<>(points);
@@ -145,7 +142,9 @@ public class JEdgeLayout implements JCellLayout {
         AttributeMap result = new AttributeMap();
         GraphConstants.setPoints(result, this.points);
         GraphConstants.setLineStyle(result, this.lineStyle.getCode());
-        GraphConstants.setLabelPosition(result, this.labelPosition == null ? defaultLabelPosition
+        GraphConstants
+            .setLabelPosition(result, this.labelPosition == null
+                ? defaultLabelPosition
                 : this.labelPosition);
         return result;
     }
@@ -179,8 +178,7 @@ public class JEdgeLayout implements JCellLayout {
      */
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof JEdgeLayout) {
-            JEdgeLayout other = (JEdgeLayout) obj;
+        if (obj instanceof JEdgeLayout other) {
             return getPoints().equals(other.getPoints())
                 && getLabelPosition().equals(other.getLabelPosition())
                 && getLineStyle() == other.getLineStyle();

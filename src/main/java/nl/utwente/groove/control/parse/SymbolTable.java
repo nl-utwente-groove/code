@@ -58,7 +58,6 @@ public class SymbolTable {
     /**
      * Declares a symbol in the current scope.
      * @param symbolName the name of the symbol to be declared
-     * @require this.scopes.peek().get(symbolName) == null
      * @return true if the declaration succeeded, false if not
      */
     public boolean declareSymbol(String symbolName, CtrlType symbolType) {
@@ -75,7 +74,6 @@ public class SymbolTable {
      * Declares a symbol in the current scope, optionally
      * declaring it to be an output parameter.
      * @param symbolName the name of the symbol to be declared
-     * @require this.scopes.peek().get(symbolName) == null
      * @return true if the declaration succeeded, false if not
      */
     public boolean declareSymbol(String symbolName, CtrlType symbolType, boolean out) {
@@ -112,7 +110,6 @@ public class SymbolTable {
     /**
      * Gets the type of a given symbol
      * @param symbolName the name of the symbol to look up
-     * @require isDeclared(symbolName) == true
      * @return the type of symbolName
      */
     public CtrlType getType(String symbolName) {

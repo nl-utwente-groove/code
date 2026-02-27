@@ -45,7 +45,6 @@ public class JGraphPanel<G extends Graph> extends JPanel {
      * Constructs a view upon a given jgraph, possibly with a status bar.
      *
      * @param jGraph the jgraph on which this panel is a view
-     * @ensure <tt>getJGraph() == jGraph</tt>
      */
     public JGraphPanel(JGraph<? extends G> jGraph) {
         super(false);

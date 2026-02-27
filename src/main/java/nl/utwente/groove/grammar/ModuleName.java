@@ -73,8 +73,6 @@ public class ModuleName {
      * Returns the token in this name at a specific instance
      * @param i the index at which the token is requested
      * @return the token at index <tt>i</tt>
-     * @require <tt>0 <= i && i < size()</tt>
-     * @ensure </tt>return == tokens[i]</tt>
      */
     public String get(int i) {
         return tokens().get(i);

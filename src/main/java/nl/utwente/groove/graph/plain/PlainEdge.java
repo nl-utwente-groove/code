@@ -34,9 +34,6 @@ public class PlainEdge extends AEdge<PlainNode,PlainLabel> {
      * @param source source node of the new edge
      * @param label label of the new edge
      * @param target target node of the new edge
-     * @require <tt>source != null && target != null</tt>
-     * @ensure <tt>source()==source</tt>, <tt>label()==label</tt>,
-     *         <tt>target()==target </tt>
      */
     PlainEdge(PlainNode source, PlainLabel label, PlainNode target, int nr) {
         super(source, label, target, nr);

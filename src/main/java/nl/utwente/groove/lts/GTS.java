@@ -914,7 +914,6 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
          * To determine whether a transition is in the set, we look if the
          * source state is known and if the transition is registered as outgoing
          * transition with the source state.
-         * @require <tt>o instanceof GraphTransition</tt>
          */
         @Override
         public boolean contains(@Nullable Object o) {

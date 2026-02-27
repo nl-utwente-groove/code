@@ -174,7 +174,6 @@ public class CheckboxTree extends JTree {
     private final DefaultMutableTreeNode topNode;
     /**
      * The list model used for the JList.
-     * @require <tt>listModel == listComponent.getModel()</tt>
      */
     private final DefaultTreeModel treeModel;
     /**

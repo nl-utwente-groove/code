@@ -44,8 +44,6 @@ public class SpringLayouter extends AbstractLayouter {
      * @param jgraph graph to be layed out
      * @param rigidity the initial rigidity of the layout action. A higher value
      *        means nodes are pulled closer together.
-     * @require name != null, jgraph != null, rigidity > 0 jgraph.getModel()
-     *          instanceof jgraph.GraphJModel
      */
     private SpringLayouter(String name, JGraph<?> jgraph, float rigidity) {
         super(name, jgraph);

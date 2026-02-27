@@ -441,7 +441,6 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
          * Returns the certificate value. Note that this means the hash code is
          * not constant during the initial phase, and so no hash sets or maps
          * should be used.
-         * @ensure <tt>result == getValue()</tt>
          * @see #getValue()
          */
         @Override

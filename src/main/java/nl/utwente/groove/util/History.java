@@ -31,7 +31,6 @@ import java.util.NoSuchElementException;
 public class History<T> {
     /**
      * Resets the log to empty.
-     * @ensure <tt>isEmpty()</tt>
      */
     public void clear() {
         this.log.clear();
@@ -41,7 +40,6 @@ public class History<T> {
     /**
      * Indicates whether there are elements in the log.
      * @return <tt>true</tt> if there are no elements in the log
-     * @ensure <tt>result</tt> implies <tt>! (hasNext() || hasPrevious())</tt>
      */
     public boolean isEmpty() {
         return this.log.size() == 0;
@@ -68,8 +66,7 @@ public class History<T> {
      */
     public boolean hasPrevious() {
         if (DEBUG) {
-            Groove.message("Invoking History.hasPrevious at index "
-                + this.index);
+            Groove.message("Invoking History.hasPrevious at index " + this.index);
         }
         return this.index > 0;
     }
@@ -78,9 +75,7 @@ public class History<T> {
      * Returns the next element in the history log. After invocation, the
      * elements just returned will be the current one.
      * @return the next element in the history log, if any
-     * @require <tt>hasNext()</tt>
-     * @ensure <tt>result == current()</tt>
-     * @exception NoSuchElementException if there is no next element
+     * @throws NoSuchElementException if there is no next element
      * @see #hasNext()
      */
     public T next() {
@@ -98,9 +93,7 @@ public class History<T> {
     /**
      * Returns the current element in the history log. Does not modify the log.
      * @return the current element in the history log
-     * @require <tt>! isEmpty()</tt>
-     * @ensure <tt>result == current()</tt>
-     * @exception NoSuchElementException if there is no next element
+     * @throws NoSuchElementException if there is no next element
      * @see #isEmpty()
      */
     public T current() {
@@ -118,9 +111,7 @@ public class History<T> {
      * Returns the previous element in the history log. After invocation, the
      * elements just returned will be the current one.
      * @return the previous element in the history log, if any
-     * @require <tt>hasPrevious()</tt>
-     * @ensure <tt>result == current()</tt>
-     * @exception NoSuchElementException if there is no previous element
+     * @throws NoSuchElementException if there is no previous element
      * @see #hasPrevious()
      */
     public T previous() {
@@ -140,22 +131,18 @@ public class History<T> {
      * current and last one, i.e., all existing next elements at the time of
      * invocation will be discarded.
      * @param element the element to be added to the history
-     * @require <tt>! isEmpty()</tt>
-     * @ensure <tt>current() == element</tt>, <tt>! hasNext()</tt>
      * @see #add(Object)
      */
     public void replace(T element) {
         if (DEBUG) {
-            Groove.startMessage("History.replace(" + element + ") at index "
-                + this.index);
+            Groove.startMessage("History.replace(" + element + ") at index " + this.index);
         }
         this.log.set(this.index, element);
         for (int i = this.log.size() - 1; i > this.index; i--) {
             this.log.remove(i);
         }
         if (DEBUG) {
-            Groove.endMessage("History.replace(" + element + ") at index "
-                + this.index);
+            Groove.endMessage("History.replace(" + element + ") at index " + this.index);
         }
     }
 
@@ -165,13 +152,11 @@ public class History<T> {
      * elements at the time of invocation will be discarded. If the element to
      * be added equals <tt>current()</tt>, nothing happens.
      * @param element the element to be added to the history
-     * @ensure <tt>current() == element</tt>, <tt>! hasNext()</tt>
      * @see #replace(Object)
      */
     public void add(T element) {
         if (DEBUG) {
-            Groove.startMessage("History.add(" + element + ") at index "
-                + this.index);
+            Groove.startMessage("History.add(" + element + ") at index " + this.index);
         }
         if (this.index < 0 || !element.equals(current())) {
             assert this.index < this.log.size();
@@ -185,8 +170,7 @@ public class History<T> {
             }
         }
         if (DEBUG) {
-            Groove.endMessage("History.add(" + element + ") at index "
-                + this.index);
+            Groove.endMessage("History.add(" + element + ") at index " + this.index);
         }
     }
 

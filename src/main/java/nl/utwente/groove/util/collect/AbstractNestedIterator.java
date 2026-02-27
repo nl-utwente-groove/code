@@ -56,7 +56,6 @@ abstract public class AbstractNestedIterator<T> implements Iterator<T> {
     /**
      * Returns the next (inner) iterator
      * @return the next (inner) iterator.
-     * @ensure <tt>result != null</tt>
      * @throws NoSuchElementException if there is no next inner iterator (in
      *         which case {@link #hasNextIterator()} returns <tt>false</tt>.
      */
@@ -72,7 +71,7 @@ abstract public class AbstractNestedIterator<T> implements Iterator<T> {
     /**
      * Signals if {@link #currentInnerIter} has a next value.
      * @return <tt>currentInnerIter != null || currentInnerIter.hasNext()</tt>
-     * 
+     *
      */
     private boolean currentIterHasNext() {
         return this.currentInnerIter != null && this.currentInnerIter.hasNext();

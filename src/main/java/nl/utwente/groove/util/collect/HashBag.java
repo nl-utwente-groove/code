@@ -117,7 +117,6 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
 
     /**
      * Returns the multiplicity of a given element in this bag.
-     * @ensure <tt>result >= 0</tt>
      */
     @Override
     public int multiplicity(Object elem) {
@@ -131,7 +130,6 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
 
     /**
      * Returns a mapping from keys to (positive) multiplicities.
-     * @ensure <tt>result.keysSet().equals(elementSet())</tt>
      */
     @Override
     public Map<T,? extends Multiplicity> multiplicityMap() {
@@ -297,7 +295,6 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
     protected class MyMultiplicity implements Multiplicity, Cloneable, Comparable<Object> {
         /**
          * Constructs a fresh multiplicity, with initial value 1.
-         * @ensure <tt>getValue() == 1</tt>
          */
         protected MyMultiplicity() {
             this.value = 1;
@@ -307,7 +304,6 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
         /**
          * Returns the current multiplicity value.
          * @return The multiplicity value
-         * @ensure <tt>result > 0</tt>
          */
         @Override
         public int getValue() {

@@ -1071,7 +1071,6 @@ abstract sealed public class RegExpr { // implements VarSetSupport {
          * guaranteed to be at least 2.
          * @param operandList the list of operands of the infix expression
          * @return a new infix expression based on <tt>operands</tt>
-         * @require <tt>operandList.size() >= 2</tt>
          */
         abstract protected Infix newInstance(List<RegExpr> operandList);
 
@@ -1931,7 +1930,6 @@ abstract sealed public class RegExpr { // implements VarSetSupport {
         /**
          * Creates a new atomic expression, based on a given text.
          * @param token the text to create the atom from
-         * @require <tt>isAtom(token)</tt>
          */
         public Atom(String token) {
             super("", ATOM_SYMBOLIC_NAME);

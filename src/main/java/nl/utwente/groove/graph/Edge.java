@@ -38,7 +38,6 @@ public interface Edge extends Element {
     /**
      * Returns the label of this edge. The label can never be <tt>null</tt>.
      * @return the label of this edge
-     * @ensure <tt>result != null</tt>
      */
     public Label label();
 
