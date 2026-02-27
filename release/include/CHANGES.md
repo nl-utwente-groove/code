@@ -3,6 +3,14 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
+Release 7.5.0, 27 February 2026
+-------------------------------
+- Added support for user-defined types and operations
+- CTL properties are now named, the satisfying states are labelled with those names, 
+  and the names can be used in next CTL properties
+- Improved speed of Simulator exploration & LTS rendering
+- Resolved gh issues #862, #864, #866, #868
+
 Release 7.4.3, 21 April 2025
 -------------------------------
 - Improved exploration for recipes in the absence of parameters

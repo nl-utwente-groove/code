@@ -24,7 +24,8 @@ import java.lang.annotation.Target;
 /**
  * Annotation for a user-defined algebraic operation.
  * The method thus annotated should be static and only have parameters
- * and return type int, double, boolean or String.
+ * and return type int, double, boolean or String, or a {@link UserType}-annotated
+ * record class.
  * @author Arend Rensink
  * @version $Revision$
  */
