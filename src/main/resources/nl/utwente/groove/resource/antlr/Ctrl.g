@@ -497,6 +497,9 @@ var_type
 	| //@S REAL
 	  //@B The type of real number values.
 	  REAL
+	| //@S USER
+	  //@B User-defined type.
+	  USER
 	;
 
 // LEXER RULES
@@ -526,6 +529,7 @@ STRING   : 'string';
 TRY      : 'try';
 TRUE     : 'true';
 UNTIL    : 'until';
+USER     : 'user';
 WHILE    : 'while';
 
 fragment Digit : '0'..'9';

@@ -61,6 +61,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
         } else {
             result = CtrlType.valueOf(getText().toUpperCase());
         }
+        assert result != null;
         return result;
     }
 

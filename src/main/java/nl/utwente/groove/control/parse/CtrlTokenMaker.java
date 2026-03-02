@@ -166,6 +166,7 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
         tokenMap.put("out", dataType);
         tokenMap.put("real", dataType);
         tokenMap.put("string", dataType);
+        tokenMap.put("user", dataType);
 
         return tokenMap;
 

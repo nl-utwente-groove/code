@@ -194,6 +194,7 @@ type
   | STRING -> STRING
   | INT -> INT
   | REAL -> REAL
+  | USER -> USER
   ;
 
 arg_list

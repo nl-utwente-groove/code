@@ -1,4 +1,4 @@
-// $ANTLR 3.5.2 CtrlChecker.g 2025-03-26 17:57:06
+// $ANTLR 3.5.2 CtrlChecker.g 2026-03-02 17:26:00
 
 package nl.utwente.groove.control.parse;
 import nl.utwente.groove.control.*;
@@ -32,7 +32,7 @@ public class CtrlChecker extends TreeParser {
 		"PARS", "PERCENT", "PLUS", "PRIORITY", "PROGRAM", "PosDigit", "QUOTE", 
 		"RANGLE", "RCURLY", "REAL", "REAL_LIT", "RECIPE", "RECIPES", "RPAR", "SEMI", 
 		"SHARP", "SLASH", "SL_COMMENT", "STAR", "STRING", "STRING_LIT", "TRUE", 
-		"TRY", "UNDER", "UNTIL", "VAR", "WHILE", "WS"
+		"TRY", "UNDER", "UNTIL", "USER", "VAR", "WHILE", "WS"
 	};
 	public static final int EOF=-1;
 	public static final int ALAP=4;
@@ -118,9 +118,10 @@ public class CtrlChecker extends TreeParser {
 	public static final int TRY=84;
 	public static final int UNDER=85;
 	public static final int UNTIL=86;
-	public static final int VAR=87;
-	public static final int WHILE=88;
-	public static final int WS=89;
+	public static final int USER=87;
+	public static final int VAR=88;
+	public static final int WHILE=89;
+	public static final int WS=90;
 
 	// delegates
 	public TreeParser[] getDelegates() {
@@ -2372,7 +2373,7 @@ public class CtrlChecker extends TreeParser {
 
 
 	// $ANTLR start "type"
-	// CtrlChecker.g:189:1: type : ( NODE -> NODE | BOOL -> BOOL | STRING -> STRING | INT -> INT | REAL -> REAL );
+	// CtrlChecker.g:189:1: type : ( NODE -> NODE | BOOL -> BOOL | STRING -> STRING | INT -> INT | REAL -> REAL | USER -> USER );
 	public final CtrlChecker.type_return type() throws RecognitionException {
 		CtrlChecker.type_return retval = new CtrlChecker.type_return();
 		retval.start = input.LT(1);
@@ -2388,21 +2389,24 @@ public class CtrlChecker extends TreeParser {
 		CtrlTree STRING83=null;
 		CtrlTree INT84=null;
 		CtrlTree REAL85=null;
+		CtrlTree USER86=null;
 
 		CtrlTree NODE81_tree=null;
 		CtrlTree BOOL82_tree=null;
 		CtrlTree STRING83_tree=null;
 		CtrlTree INT84_tree=null;
 		CtrlTree REAL85_tree=null;
+		CtrlTree USER86_tree=null;
 		RewriteRuleNodeStream stream_BOOL=new RewriteRuleNodeStream(adaptor,"token BOOL");
 		RewriteRuleNodeStream stream_NODE=new RewriteRuleNodeStream(adaptor,"token NODE");
 		RewriteRuleNodeStream stream_REAL=new RewriteRuleNodeStream(adaptor,"token REAL");
 		RewriteRuleNodeStream stream_STRING=new RewriteRuleNodeStream(adaptor,"token STRING");
+		RewriteRuleNodeStream stream_USER=new RewriteRuleNodeStream(adaptor,"token USER");
 		RewriteRuleNodeStream stream_INT=new RewriteRuleNodeStream(adaptor,"token INT");
 
 		try {
-			// CtrlChecker.g:192:3: ( NODE -> NODE | BOOL -> BOOL | STRING -> STRING | INT -> INT | REAL -> REAL )
-			int alt17=5;
+			// CtrlChecker.g:192:3: ( NODE -> NODE | BOOL -> BOOL | STRING -> STRING | INT -> INT | REAL -> REAL | USER -> USER )
+			int alt17=6;
 			switch ( input.LA(1) ) {
 			case NODE:
 				{
@@ -2427,6 +2431,11 @@ public class CtrlChecker extends TreeParser {
 			case REAL:
 				{
 				alt17=5;
+				}
+				break;
+			case USER:
+				{
+				alt17=6;
 				}
 				break;
 			default:
@@ -2610,6 +2619,41 @@ public class CtrlChecker extends TreeParser {
 
 					}
 					break;
+				case 6 :
+					// CtrlChecker.g:197:5: USER
+					{
+					_last = (CtrlTree)input.LT(1);
+					USER86=(CtrlTree)match(input,USER,FOLLOW_USER_in_type1176); 
+					 
+					stream_USER.add(USER86);
+
+					// AST REWRITE
+					// elements: USER
+					// token labels: 
+					// rule labels: retval
+					// token list labels: 
+					// rule list labels: 
+					// wildcard labels: 
+					retval.tree = root_0;
+					RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.getTree():null);
+
+					root_0 = (CtrlTree)adaptor.nil();
+					// 197:10: -> USER
+					{
+						adaptor.addChild(root_0, 
+						stream_USER.nextNode()
+						);
+					}
+
+
+					retval.tree = (CtrlTree)adaptor.rulePostProcessing(root_0);
+					input.replaceChildren(adaptor.getParent(retval.start),
+										  adaptor.getChildIndex(retval.start),
+										  adaptor.getChildIndex(_last),
+										  retval.tree);
+
+					}
+					break;
 
 			}
 		}
@@ -2633,7 +2677,7 @@ public class CtrlChecker extends TreeParser {
 
 
 	// $ANTLR start "arg_list"
-	// CtrlChecker.g:199:1: arg_list : ^( ARGS ( arg )* RPAR ) ;
+	// CtrlChecker.g:200:1: arg_list : ^( ARGS ( arg )* RPAR ) ;
 	public final CtrlChecker.arg_list_return arg_list() throws RecognitionException {
 		CtrlChecker.arg_list_return retval = new CtrlChecker.arg_list_return();
 		retval.start = input.LT(1);
@@ -2644,27 +2688,27 @@ public class CtrlChecker extends TreeParser {
 		CtrlTree _last = null;
 
 
-		CtrlTree ARGS86=null;
-		CtrlTree RPAR88=null;
-		TreeRuleReturnScope arg87 =null;
+		CtrlTree ARGS87=null;
+		CtrlTree RPAR89=null;
+		TreeRuleReturnScope arg88 =null;
 
-		CtrlTree ARGS86_tree=null;
-		CtrlTree RPAR88_tree=null;
+		CtrlTree ARGS87_tree=null;
+		CtrlTree RPAR89_tree=null;
 
 		try {
-			// CtrlChecker.g:200:3: ( ^( ARGS ( arg )* RPAR ) )
-			// CtrlChecker.g:200:5: ^( ARGS ( arg )* RPAR )
+			// CtrlChecker.g:201:3: ( ^( ARGS ( arg )* RPAR ) )
+			// CtrlChecker.g:201:5: ^( ARGS ( arg )* RPAR )
 			{
 			_last = (CtrlTree)input.LT(1);
 			{
 			CtrlTree _save_last_1 = _last;
 			CtrlTree _first_1 = null;
 			_last = (CtrlTree)input.LT(1);
-			ARGS86=(CtrlTree)match(input,ARGS,FOLLOW_ARGS_in_arg_list1184); 
+			ARGS87=(CtrlTree)match(input,ARGS,FOLLOW_ARGS_in_arg_list1194); 
 
-			if ( _first_0==null ) _first_0 = ARGS86;
+			if ( _first_0==null ) _first_0 = ARGS87;
 			match(input, Token.DOWN, null); 
-			// CtrlChecker.g:200:12: ( arg )*
+			// CtrlChecker.g:201:12: ( arg )*
 			loop18:
 			while (true) {
 				int alt18=2;
@@ -2675,15 +2719,15 @@ public class CtrlChecker extends TreeParser {
 
 				switch (alt18) {
 				case 1 :
-					// CtrlChecker.g:200:12: arg
+					// CtrlChecker.g:201:12: arg
 					{
 					_last = (CtrlTree)input.LT(1);
-					pushFollow(FOLLOW_arg_in_arg_list1186);
-					arg87=arg();
+					pushFollow(FOLLOW_arg_in_arg_list1196);
+					arg88=arg();
 					state._fsp--;
 
 					 
-					if ( _first_1==null ) _first_1 = (CtrlTree)arg87.getTree();
+					if ( _first_1==null ) _first_1 = (CtrlTree)arg88.getTree();
 
 					retval.tree = _first_0;
 					if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
@@ -2698,9 +2742,9 @@ public class CtrlChecker extends TreeParser {
 			}
 
 			_last = (CtrlTree)input.LT(1);
-			RPAR88=(CtrlTree)match(input,RPAR,FOLLOW_RPAR_in_arg_list1189); 
+			RPAR89=(CtrlTree)match(input,RPAR,FOLLOW_RPAR_in_arg_list1199); 
 			 
-			if ( _first_1==null ) _first_1 = RPAR88;
+			if ( _first_1==null ) _first_1 = RPAR89;
 
 			match(input, Token.UP, null); 
 			_last = _save_last_1;
@@ -2734,7 +2778,7 @@ public class CtrlChecker extends TreeParser {
 
 
 	// $ANTLR start "arg"
-	// CtrlChecker.g:203:1: arg : ( ^( ARG_OUT ID ) | ^( ARG_WILD ) | ^( ARG_ID ID ) | ^( ARG_LIT literal ) | ^( ARG_OP operator arg ( arg )? ) | ^( ARG_CALL ID arg_list ) );
+	// CtrlChecker.g:204:1: arg : ( ^( ARG_OUT ID ) | ^( ARG_WILD ) | ^( ARG_ID ID ) | ^( ARG_LIT literal ) | ^( ARG_OP operator arg ( arg )? ) | ^( ARG_CALL ID arg_list ) );
 	public final CtrlChecker.arg_return arg() throws RecognitionException {
 		CtrlChecker.arg_return retval = new CtrlChecker.arg_return();
 		retval.start = input.LT(1);
@@ -2745,33 +2789,33 @@ public class CtrlChecker extends TreeParser {
 		CtrlTree _last = null;
 
 
-		CtrlTree ARG_OUT89=null;
-		CtrlTree ID90=null;
-		CtrlTree ARG_WILD91=null;
-		CtrlTree ARG_ID92=null;
-		CtrlTree ID93=null;
-		CtrlTree ARG_LIT94=null;
-		CtrlTree ARG_OP96=null;
-		CtrlTree ARG_CALL100=null;
-		CtrlTree ID101=null;
-		TreeRuleReturnScope literal95 =null;
-		TreeRuleReturnScope operator97 =null;
-		TreeRuleReturnScope arg98 =null;
+		CtrlTree ARG_OUT90=null;
+		CtrlTree ID91=null;
+		CtrlTree ARG_WILD92=null;
+		CtrlTree ARG_ID93=null;
+		CtrlTree ID94=null;
+		CtrlTree ARG_LIT95=null;
+		CtrlTree ARG_OP97=null;
+		CtrlTree ARG_CALL101=null;
+		CtrlTree ID102=null;
+		TreeRuleReturnScope literal96 =null;
+		TreeRuleReturnScope operator98 =null;
 		TreeRuleReturnScope arg99 =null;
-		TreeRuleReturnScope arg_list102 =null;
+		TreeRuleReturnScope arg100 =null;
+		TreeRuleReturnScope arg_list103 =null;
 
-		CtrlTree ARG_OUT89_tree=null;
-		CtrlTree ID90_tree=null;
-		CtrlTree ARG_WILD91_tree=null;
-		CtrlTree ARG_ID92_tree=null;
-		CtrlTree ID93_tree=null;
-		CtrlTree ARG_LIT94_tree=null;
-		CtrlTree ARG_OP96_tree=null;
-		CtrlTree ARG_CALL100_tree=null;
-		CtrlTree ID101_tree=null;
+		CtrlTree ARG_OUT90_tree=null;
+		CtrlTree ID91_tree=null;
+		CtrlTree ARG_WILD92_tree=null;
+		CtrlTree ARG_ID93_tree=null;
+		CtrlTree ID94_tree=null;
+		CtrlTree ARG_LIT95_tree=null;
+		CtrlTree ARG_OP97_tree=null;
+		CtrlTree ARG_CALL101_tree=null;
+		CtrlTree ID102_tree=null;
 
 		try {
-			// CtrlChecker.g:204:3: ( ^( ARG_OUT ID ) | ^( ARG_WILD ) | ^( ARG_ID ID ) | ^( ARG_LIT literal ) | ^( ARG_OP operator arg ( arg )? ) | ^( ARG_CALL ID arg_list ) )
+			// CtrlChecker.g:205:3: ( ^( ARG_OUT ID ) | ^( ARG_WILD ) | ^( ARG_ID ID ) | ^( ARG_LIT literal ) | ^( ARG_OP operator arg ( arg )? ) | ^( ARG_CALL ID arg_list ) )
 			int alt20=6;
 			switch ( input.LA(1) ) {
 			case ARG_OUT:
@@ -2811,23 +2855,23 @@ public class CtrlChecker extends TreeParser {
 			}
 			switch (alt20) {
 				case 1 :
-					// CtrlChecker.g:204:5: ^( ARG_OUT ID )
+					// CtrlChecker.g:205:5: ^( ARG_OUT ID )
 					{
 					_last = (CtrlTree)input.LT(1);
 					{
 					CtrlTree _save_last_1 = _last;
 					CtrlTree _first_1 = null;
 					_last = (CtrlTree)input.LT(1);
-					ARG_OUT89=(CtrlTree)match(input,ARG_OUT,FOLLOW_ARG_OUT_in_arg1205); 
+					ARG_OUT90=(CtrlTree)match(input,ARG_OUT,FOLLOW_ARG_OUT_in_arg1215); 
 
-					if ( _first_0==null ) _first_0 = ARG_OUT89;
+					if ( _first_0==null ) _first_0 = ARG_OUT90;
 					match(input, Token.DOWN, null); 
 					_last = (CtrlTree)input.LT(1);
-					ID90=(CtrlTree)match(input,ID,FOLLOW_ID_in_arg1207); 
+					ID91=(CtrlTree)match(input,ID,FOLLOW_ID_in_arg1217); 
 					 
-					if ( _first_1==null ) _first_1 = ID90;
+					if ( _first_1==null ) _first_1 = ID91;
 
-					 helper.checkVarArg(ARG_OUT89); 
+					 helper.checkVarArg(ARG_OUT90); 
 					match(input, Token.UP, null); 
 					_last = _save_last_1;
 					}
@@ -2840,17 +2884,17 @@ public class CtrlChecker extends TreeParser {
 					}
 					break;
 				case 2 :
-					// CtrlChecker.g:205:5: ^( ARG_WILD )
+					// CtrlChecker.g:206:5: ^( ARG_WILD )
 					{
 					_last = (CtrlTree)input.LT(1);
 					{
 					CtrlTree _save_last_1 = _last;
 					CtrlTree _first_1 = null;
 					_last = (CtrlTree)input.LT(1);
-					ARG_WILD91=(CtrlTree)match(input,ARG_WILD,FOLLOW_ARG_WILD_in_arg1219); 
+					ARG_WILD92=(CtrlTree)match(input,ARG_WILD,FOLLOW_ARG_WILD_in_arg1229); 
 
-					if ( _first_0==null ) _first_0 = ARG_WILD91;
-					 helper.checkDontCareArg(ARG_WILD91); 
+					if ( _first_0==null ) _first_0 = ARG_WILD92;
+					 helper.checkDontCareArg(ARG_WILD92); 
 					if ( input.LA(1)==Token.DOWN ) {
 						match(input, Token.DOWN, null); 
 						match(input, Token.UP, null); 
@@ -2866,23 +2910,23 @@ public class CtrlChecker extends TreeParser {
 					}
 					break;
 				case 3 :
-					// CtrlChecker.g:206:5: ^( ARG_ID ID )
+					// CtrlChecker.g:207:5: ^( ARG_ID ID )
 					{
 					_last = (CtrlTree)input.LT(1);
 					{
 					CtrlTree _save_last_1 = _last;
 					CtrlTree _first_1 = null;
 					_last = (CtrlTree)input.LT(1);
-					ARG_ID92=(CtrlTree)match(input,ARG_ID,FOLLOW_ARG_ID_in_arg1231); 
+					ARG_ID93=(CtrlTree)match(input,ARG_ID,FOLLOW_ARG_ID_in_arg1241); 
 
-					if ( _first_0==null ) _first_0 = ARG_ID92;
+					if ( _first_0==null ) _first_0 = ARG_ID93;
 					match(input, Token.DOWN, null); 
 					_last = (CtrlTree)input.LT(1);
-					ID93=(CtrlTree)match(input,ID,FOLLOW_ID_in_arg1233); 
+					ID94=(CtrlTree)match(input,ID,FOLLOW_ID_in_arg1243); 
 					 
-					if ( _first_1==null ) _first_1 = ID93;
+					if ( _first_1==null ) _first_1 = ID94;
 
-					 helper.checkVarArg(ARG_ID92); 
+					 helper.checkVarArg(ARG_ID93); 
 					match(input, Token.UP, null); 
 					_last = _save_last_1;
 					}
@@ -2895,26 +2939,26 @@ public class CtrlChecker extends TreeParser {
 					}
 					break;
 				case 4 :
-					// CtrlChecker.g:207:5: ^( ARG_LIT literal )
+					// CtrlChecker.g:208:5: ^( ARG_LIT literal )
 					{
 					_last = (CtrlTree)input.LT(1);
 					{
 					CtrlTree _save_last_1 = _last;
 					CtrlTree _first_1 = null;
 					_last = (CtrlTree)input.LT(1);
-					ARG_LIT94=(CtrlTree)match(input,ARG_LIT,FOLLOW_ARG_LIT_in_arg1245); 
+					ARG_LIT95=(CtrlTree)match(input,ARG_LIT,FOLLOW_ARG_LIT_in_arg1255); 
 
-					if ( _first_0==null ) _first_0 = ARG_LIT94;
+					if ( _first_0==null ) _first_0 = ARG_LIT95;
 					match(input, Token.DOWN, null); 
 					_last = (CtrlTree)input.LT(1);
-					pushFollow(FOLLOW_literal_in_arg1247);
-					literal95=literal();
+					pushFollow(FOLLOW_literal_in_arg1257);
+					literal96=literal();
 					state._fsp--;
 
 					 
-					if ( _first_1==null ) _first_1 = (CtrlTree)literal95.getTree();
+					if ( _first_1==null ) _first_1 = (CtrlTree)literal96.getTree();
 
-					 helper.checkInArg(ARG_LIT94); 
+					 helper.checkInArg(ARG_LIT95); 
 					match(input, Token.UP, null); 
 					_last = _save_last_1;
 					}
@@ -2927,34 +2971,34 @@ public class CtrlChecker extends TreeParser {
 					}
 					break;
 				case 5 :
-					// CtrlChecker.g:208:5: ^( ARG_OP operator arg ( arg )? )
+					// CtrlChecker.g:209:5: ^( ARG_OP operator arg ( arg )? )
 					{
 					_last = (CtrlTree)input.LT(1);
 					{
 					CtrlTree _save_last_1 = _last;
 					CtrlTree _first_1 = null;
 					_last = (CtrlTree)input.LT(1);
-					ARG_OP96=(CtrlTree)match(input,ARG_OP,FOLLOW_ARG_OP_in_arg1259); 
+					ARG_OP97=(CtrlTree)match(input,ARG_OP,FOLLOW_ARG_OP_in_arg1269); 
 
-					if ( _first_0==null ) _first_0 = ARG_OP96;
+					if ( _first_0==null ) _first_0 = ARG_OP97;
 					match(input, Token.DOWN, null); 
 					_last = (CtrlTree)input.LT(1);
-					pushFollow(FOLLOW_operator_in_arg1261);
-					operator97=operator();
+					pushFollow(FOLLOW_operator_in_arg1271);
+					operator98=operator();
 					state._fsp--;
 
 					 
-					if ( _first_1==null ) _first_1 = (CtrlTree)operator97.getTree();
+					if ( _first_1==null ) _first_1 = (CtrlTree)operator98.getTree();
 
 					_last = (CtrlTree)input.LT(1);
-					pushFollow(FOLLOW_arg_in_arg1263);
-					arg98=arg();
+					pushFollow(FOLLOW_arg_in_arg1273);
+					arg99=arg();
 					state._fsp--;
 
 					 
-					if ( _first_1==null ) _first_1 = (CtrlTree)arg98.getTree();
+					if ( _first_1==null ) _first_1 = (CtrlTree)arg99.getTree();
 
-					// CtrlChecker.g:208:28: ( arg )?
+					// CtrlChecker.g:209:28: ( arg )?
 					int alt19=2;
 					int LA19_0 = input.LA(1);
 					if ( ((LA19_0 >= ARG_CALL && LA19_0 <= ARG_WILD)) ) {
@@ -2962,15 +3006,15 @@ public class CtrlChecker extends TreeParser {
 					}
 					switch (alt19) {
 						case 1 :
-							// CtrlChecker.g:208:28: arg
+							// CtrlChecker.g:209:28: arg
 							{
 							_last = (CtrlTree)input.LT(1);
-							pushFollow(FOLLOW_arg_in_arg1265);
-							arg99=arg();
+							pushFollow(FOLLOW_arg_in_arg1275);
+							arg100=arg();
 							state._fsp--;
 
 							 
-							if ( _first_1==null ) _first_1 = (CtrlTree)arg99.getTree();
+							if ( _first_1==null ) _first_1 = (CtrlTree)arg100.getTree();
 
 							retval.tree = _first_0;
 							if ( adaptor.getParent(retval.tree)!=null && adaptor.isNil( adaptor.getParent(retval.tree) ) )
@@ -2981,7 +3025,7 @@ public class CtrlChecker extends TreeParser {
 
 					}
 
-					 helper.checkInArg(ARG_OP96); 
+					 helper.checkInArg(ARG_OP97); 
 					match(input, Token.UP, null); 
 					_last = _save_last_1;
 					}
@@ -2994,31 +3038,31 @@ public class CtrlChecker extends TreeParser {
 					}
 					break;
 				case 6 :
-					// CtrlChecker.g:209:5: ^( ARG_CALL ID arg_list )
+					// CtrlChecker.g:210:5: ^( ARG_CALL ID arg_list )
 					{
 					_last = (CtrlTree)input.LT(1);
 					{
 					CtrlTree _save_last_1 = _last;
 					CtrlTree _first_1 = null;
 					_last = (CtrlTree)input.LT(1);
-					ARG_CALL100=(CtrlTree)match(input,ARG_CALL,FOLLOW_ARG_CALL_in_arg1278); 
+					ARG_CALL101=(CtrlTree)match(input,ARG_CALL,FOLLOW_ARG_CALL_in_arg1288); 
 
-					if ( _first_0==null ) _first_0 = ARG_CALL100;
+					if ( _first_0==null ) _first_0 = ARG_CALL101;
 					match(input, Token.DOWN, null); 
 					_last = (CtrlTree)input.LT(1);
-					ID101=(CtrlTree)match(input,ID,FOLLOW_ID_in_arg1280); 
+					ID102=(CtrlTree)match(input,ID,FOLLOW_ID_in_arg1290); 
 					 
-					if ( _first_1==null ) _first_1 = ID101;
+					if ( _first_1==null ) _first_1 = ID102;
 
 					_last = (CtrlTree)input.LT(1);
-					pushFollow(FOLLOW_arg_list_in_arg1282);
-					arg_list102=arg_list();
+					pushFollow(FOLLOW_arg_list_in_arg1292);
+					arg_list103=arg_list();
 					state._fsp--;
 
 					 
-					if ( _first_1==null ) _first_1 = (CtrlTree)arg_list102.getTree();
+					if ( _first_1==null ) _first_1 = (CtrlTree)arg_list103.getTree();
 
-					 helper.checkInArg(ARG_CALL100); 
+					 helper.checkInArg(ARG_CALL101); 
 					match(input, Token.UP, null); 
 					_last = _save_last_1;
 					}
@@ -3053,7 +3097,7 @@ public class CtrlChecker extends TreeParser {
 
 
 	// $ANTLR start "literal"
-	// CtrlChecker.g:212:1: literal : ( TRUE | FALSE | STRING_LIT | INT_LIT | REAL_LIT );
+	// CtrlChecker.g:213:1: literal : ( TRUE | FALSE | STRING_LIT | INT_LIT | REAL_LIT );
 	public final CtrlChecker.literal_return literal() throws RecognitionException {
 		CtrlChecker.literal_return retval = new CtrlChecker.literal_return();
 		retval.start = input.LT(1);
@@ -3064,16 +3108,16 @@ public class CtrlChecker extends TreeParser {
 		CtrlTree _last = null;
 
 
-		CtrlTree set103=null;
+		CtrlTree set104=null;
 
-		CtrlTree set103_tree=null;
+		CtrlTree set104_tree=null;
 
 		try {
-			// CtrlChecker.g:213:3: ( TRUE | FALSE | STRING_LIT | INT_LIT | REAL_LIT )
+			// CtrlChecker.g:214:3: ( TRUE | FALSE | STRING_LIT | INT_LIT | REAL_LIT )
 			// CtrlChecker.g:
 			{
 			_last = (CtrlTree)input.LT(1);
-			set103=(CtrlTree)input.LT(1);
+			set104=(CtrlTree)input.LT(1);
 			if ( input.LA(1)==FALSE||input.LA(1)==INT_LIT||input.LA(1)==REAL_LIT||(input.LA(1) >= STRING_LIT && input.LA(1) <= TRUE) ) {
 				input.consume();
 				state.errorRecovery=false;
@@ -3111,7 +3155,7 @@ public class CtrlChecker extends TreeParser {
 
 
 	// $ANTLR start "operator"
-	// CtrlChecker.g:217:1: operator : ( LANGLE | RANGLE | LEQ | GEQ | EQ | NEQ | PLUS | MINUS | PERCENT | ASTERISK | SLASH | AMP | BAR | NOT | LPAR );
+	// CtrlChecker.g:218:1: operator : ( LANGLE | RANGLE | LEQ | GEQ | EQ | NEQ | PLUS | MINUS | PERCENT | ASTERISK | SLASH | AMP | BAR | NOT | LPAR );
 	public final CtrlChecker.operator_return operator() throws RecognitionException {
 		CtrlChecker.operator_return retval = new CtrlChecker.operator_return();
 		retval.start = input.LT(1);
@@ -3122,16 +3166,16 @@ public class CtrlChecker extends TreeParser {
 		CtrlTree _last = null;
 
 
-		CtrlTree set104=null;
+		CtrlTree set105=null;
 
-		CtrlTree set104_tree=null;
+		CtrlTree set105_tree=null;
 
 		try {
-			// CtrlChecker.g:218:3: ( LANGLE | RANGLE | LEQ | GEQ | EQ | NEQ | PLUS | MINUS | PERCENT | ASTERISK | SLASH | AMP | BAR | NOT | LPAR )
+			// CtrlChecker.g:219:3: ( LANGLE | RANGLE | LEQ | GEQ | EQ | NEQ | PLUS | MINUS | PERCENT | ASTERISK | SLASH | AMP | BAR | NOT | LPAR )
 			// CtrlChecker.g:
 			{
 			_last = (CtrlTree)input.LT(1);
-			set104=(CtrlTree)input.LT(1);
+			set105=(CtrlTree)input.LT(1);
 			if ( input.LA(1)==AMP||input.LA(1)==ASTERISK||input.LA(1)==BAR||input.LA(1)==EQ||input.LA(1)==GEQ||input.LA(1)==LANGLE||(input.LA(1) >= LEQ && input.LA(1) <= LPAR)||input.LA(1)==MINUS||input.LA(1)==NEQ||input.LA(1)==NOT||(input.LA(1) >= PERCENT && input.LA(1) <= PLUS)||input.LA(1)==RANGLE||input.LA(1)==SLASH ) {
 				input.consume();
 				state.errorRecovery=false;
@@ -3194,11 +3238,11 @@ public class CtrlChecker extends TreeParser {
 	public static final BitSet FOLLOW_par_decl_in_function306 = new BitSet(new long[]{0x2000000000000008L});
 	public static final BitSet FOLLOW_block_in_function317 = new BitSet(new long[]{0x0000000000000008L});
 	public static final BitSet FOLLOW_PAR_in_par_decl350 = new BitSet(new long[]{0x0000000000000004L});
-	public static final BitSet FOLLOW_OUT_in_par_decl352 = new BitSet(new long[]{0x0040080000080000L,0x0000000000020080L});
+	public static final BitSet FOLLOW_OUT_in_par_decl352 = new BitSet(new long[]{0x0040080000080000L,0x0000000000820080L});
 	public static final BitSet FOLLOW_type_in_par_decl355 = new BitSet(new long[]{0x0000008000000000L});
 	public static final BitSet FOLLOW_ID_in_par_decl357 = new BitSet(new long[]{0x0000000000000008L});
 	public static final BitSet FOLLOW_BLOCK_in_block381 = new BitSet(new long[]{0x0000000000000004L});
-	public static final BitSet FOLLOW_stat_in_block399 = new BitSet(new long[]{0x0000014000C68018L,0x0000000001591000L});
+	public static final BitSet FOLLOW_stat_in_block399 = new BitSet(new long[]{0x0000014000C68018L,0x0000000002591000L});
 	public static final BitSet FOLLOW_block_in_stat429 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_SEMI_in_stat436 = new BitSet(new long[]{0x0000000000000004L});
 	public static final BitSet FOLLOW_var_decl_in_stat438 = new BitSet(new long[]{0x0000000000000008L});
@@ -3209,21 +3253,21 @@ public class CtrlChecker extends TreeParser {
 	public static final BitSet FOLLOW_ATOM_in_stat524 = new BitSet(new long[]{0x0000000000000004L});
 	public static final BitSet FOLLOW_stat_in_stat526 = new BitSet(new long[]{0x0000000000000008L});
 	public static final BitSet FOLLOW_WHILE_in_stat535 = new BitSet(new long[]{0x0000000000000004L});
-	public static final BitSet FOLLOW_stat_in_stat544 = new BitSet(new long[]{0x0000014000C68010L,0x0000000001591000L});
+	public static final BitSet FOLLOW_stat_in_stat544 = new BitSet(new long[]{0x0000014000C68010L,0x0000000002591000L});
 	public static final BitSet FOLLOW_stat_in_stat562 = new BitSet(new long[]{0x0000000000000008L});
 	public static final BitSet FOLLOW_UNTIL_in_stat611 = new BitSet(new long[]{0x0000000000000004L});
-	public static final BitSet FOLLOW_stat_in_stat620 = new BitSet(new long[]{0x0000014000C68010L,0x0000000001591000L});
+	public static final BitSet FOLLOW_stat_in_stat620 = new BitSet(new long[]{0x0000014000C68010L,0x0000000002591000L});
 	public static final BitSet FOLLOW_stat_in_stat638 = new BitSet(new long[]{0x0000000000000008L});
 	public static final BitSet FOLLOW_TRY_in_stat687 = new BitSet(new long[]{0x0000000000000004L});
-	public static final BitSet FOLLOW_stat_in_stat705 = new BitSet(new long[]{0x0000014000C68018L,0x0000000001591000L});
+	public static final BitSet FOLLOW_stat_in_stat705 = new BitSet(new long[]{0x0000014000C68018L,0x0000000002591000L});
 	public static final BitSet FOLLOW_stat_in_stat727 = new BitSet(new long[]{0x0000000000000008L});
 	public static final BitSet FOLLOW_IF_in_stat761 = new BitSet(new long[]{0x0000000000000004L});
-	public static final BitSet FOLLOW_stat_in_stat780 = new BitSet(new long[]{0x0000014000C68010L,0x0000000001591000L});
-	public static final BitSet FOLLOW_stat_in_stat790 = new BitSet(new long[]{0x0000014000C68018L,0x0000000001591000L});
+	public static final BitSet FOLLOW_stat_in_stat780 = new BitSet(new long[]{0x0000014000C68010L,0x0000000002591000L});
+	public static final BitSet FOLLOW_stat_in_stat790 = new BitSet(new long[]{0x0000014000C68018L,0x0000000002591000L});
 	public static final BitSet FOLLOW_stat_in_stat808 = new BitSet(new long[]{0x0000000000000008L});
 	public static final BitSet FOLLOW_CHOICE_in_stat833 = new BitSet(new long[]{0x0000000000000004L});
-	public static final BitSet FOLLOW_stat_in_stat851 = new BitSet(new long[]{0x0000014000C68018L,0x0000000001591000L});
-	public static final BitSet FOLLOW_stat_in_stat874 = new BitSet(new long[]{0x0000014000C68018L,0x0000000001591000L});
+	public static final BitSet FOLLOW_stat_in_stat851 = new BitSet(new long[]{0x0000014000C68018L,0x0000000002591000L});
+	public static final BitSet FOLLOW_stat_in_stat874 = new BitSet(new long[]{0x0000014000C68018L,0x0000000002591000L});
 	public static final BitSet FOLLOW_HALT_in_stat906 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_STAR_in_stat914 = new BitSet(new long[]{0x0000000000000004L});
 	public static final BitSet FOLLOW_stat_in_stat932 = new BitSet(new long[]{0x0000000000000008L});
@@ -3249,21 +3293,22 @@ public class CtrlChecker extends TreeParser {
 	public static final BitSet FOLLOW_STRING_in_type1146 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_INT_in_type1156 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_REAL_in_type1166 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_ARGS_in_arg_list1184 = new BitSet(new long[]{0x0000000000000004L});
-	public static final BitSet FOLLOW_arg_in_arg_list1186 = new BitSet(new long[]{0x0000000000003F00L,0x0000000000000800L});
-	public static final BitSet FOLLOW_RPAR_in_arg_list1189 = new BitSet(new long[]{0x0000000000000008L});
-	public static final BitSet FOLLOW_ARG_OUT_in_arg1205 = new BitSet(new long[]{0x0000000000000004L});
-	public static final BitSet FOLLOW_ID_in_arg1207 = new BitSet(new long[]{0x0000000000000008L});
-	public static final BitSet FOLLOW_ARG_WILD_in_arg1219 = new BitSet(new long[]{0x0000000000000004L});
-	public static final BitSet FOLLOW_ARG_ID_in_arg1231 = new BitSet(new long[]{0x0000000000000004L});
-	public static final BitSet FOLLOW_ID_in_arg1233 = new BitSet(new long[]{0x0000000000000008L});
-	public static final BitSet FOLLOW_ARG_LIT_in_arg1245 = new BitSet(new long[]{0x0000000000000004L});
-	public static final BitSet FOLLOW_literal_in_arg1247 = new BitSet(new long[]{0x0000000000000008L});
-	public static final BitSet FOLLOW_ARG_OP_in_arg1259 = new BitSet(new long[]{0x0000000000000004L});
-	public static final BitSet FOLLOW_operator_in_arg1261 = new BitSet(new long[]{0x0000000000003F00L});
-	public static final BitSet FOLLOW_arg_in_arg1263 = new BitSet(new long[]{0x0000000000003F08L});
-	public static final BitSet FOLLOW_arg_in_arg1265 = new BitSet(new long[]{0x0000000000000008L});
-	public static final BitSet FOLLOW_ARG_CALL_in_arg1278 = new BitSet(new long[]{0x0000000000000004L});
-	public static final BitSet FOLLOW_ID_in_arg1280 = new BitSet(new long[]{0x0000000000000080L});
-	public static final BitSet FOLLOW_arg_list_in_arg1282 = new BitSet(new long[]{0x0000000000000008L});
+	public static final BitSet FOLLOW_USER_in_type1176 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_ARGS_in_arg_list1194 = new BitSet(new long[]{0x0000000000000004L});
+	public static final BitSet FOLLOW_arg_in_arg_list1196 = new BitSet(new long[]{0x0000000000003F00L,0x0000000000000800L});
+	public static final BitSet FOLLOW_RPAR_in_arg_list1199 = new BitSet(new long[]{0x0000000000000008L});
+	public static final BitSet FOLLOW_ARG_OUT_in_arg1215 = new BitSet(new long[]{0x0000000000000004L});
+	public static final BitSet FOLLOW_ID_in_arg1217 = new BitSet(new long[]{0x0000000000000008L});
+	public static final BitSet FOLLOW_ARG_WILD_in_arg1229 = new BitSet(new long[]{0x0000000000000004L});
+	public static final BitSet FOLLOW_ARG_ID_in_arg1241 = new BitSet(new long[]{0x0000000000000004L});
+	public static final BitSet FOLLOW_ID_in_arg1243 = new BitSet(new long[]{0x0000000000000008L});
+	public static final BitSet FOLLOW_ARG_LIT_in_arg1255 = new BitSet(new long[]{0x0000000000000004L});
+	public static final BitSet FOLLOW_literal_in_arg1257 = new BitSet(new long[]{0x0000000000000008L});
+	public static final BitSet FOLLOW_ARG_OP_in_arg1269 = new BitSet(new long[]{0x0000000000000004L});
+	public static final BitSet FOLLOW_operator_in_arg1271 = new BitSet(new long[]{0x0000000000003F00L});
+	public static final BitSet FOLLOW_arg_in_arg1273 = new BitSet(new long[]{0x0000000000003F08L});
+	public static final BitSet FOLLOW_arg_in_arg1275 = new BitSet(new long[]{0x0000000000000008L});
+	public static final BitSet FOLLOW_ARG_CALL_in_arg1288 = new BitSet(new long[]{0x0000000000000004L});
+	public static final BitSet FOLLOW_ID_in_arg1290 = new BitSet(new long[]{0x0000000000000080L});
+	public static final BitSet FOLLOW_arg_list_in_arg1292 = new BitSet(new long[]{0x0000000000000008L});
 }

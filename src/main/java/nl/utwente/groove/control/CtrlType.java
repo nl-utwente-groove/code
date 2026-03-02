@@ -40,7 +40,9 @@ public enum CtrlType {
     /** Real number type. */
     REAL(Sort.REAL),
     /** String type. */
-    STRING(Sort.STRING);
+    STRING(Sort.STRING),
+    /** User-defined type. */
+    USER(Sort.USER);
 
     /** Constructs the unique a control node type. */
     private CtrlType() {
