@@ -3,6 +3,11 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
+Release 7.5.1, 3 March 2026
+-------------------------------
+- Extended added support for user types and operations to parameters and control programs
+- Removed spurious code in side module "user"
+
 Release 7.5.0, 27 February 2026
 -------------------------------
 - Added support for user-defined types and operations
@@ -15,7 +20,6 @@ Release 7.4.3, 21 April 2025
 -------------------------------
 - Improved exploration for recipes in the absence of parameters
 - GTS exploration bound & acceptor now disregards inner states & steps
-
 
 Release 7.4.2, 20 April 2025
 -------------------------------
