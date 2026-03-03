@@ -64,11 +64,10 @@ import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
- * <!=========================================================================>
  * Dialog that allows the user to compose an exploration out of a strategy, an
  * acceptor and a result. The dialog combines the editors from
- * StrategyEnumerator and AcceptorEnumerator, and adds an editor for Result.
- * <!=========================================================================>
+ * {@link StrategyEnumerator} and {@link AcceptorEnumerator}, and adds an editor for Result.
+ *
  * @author Maarten de Mol
  */
 public class ExplorationDialog extends JDialog implements TemplateListener {
@@ -488,11 +487,9 @@ public class ExplorationDialog extends JDialog implements TemplateListener {
         }
     }
 
-    /*
-     * <!--------------------------------------------------------------------->
-     * A ResultPanel is a panel in which the size of the Result set of the
+    /**
+     * panel in which the size of the Result set of the
      * exploration can be selected.
-     * <!--------------------------------------------------------------------->
      */
     private static class ResultPanel extends JPanel implements ActionListener {
 

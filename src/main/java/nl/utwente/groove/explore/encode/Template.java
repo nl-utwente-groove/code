@@ -242,11 +242,9 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
         = new HTMLTag("FONT", "color", ExplorationDialog.INFO_COLOR);
 
     /**
-     * <!--------------------------------------------------------------------->
-     * A TemplateEditor<A> is the type-specific editor that is associated
+     * Type-specific editor that is associated
      * with the Template. It basically is an info panel that contains both
      * documentation for the keyword and editors for the arguments.
-     * <!--------------------------------------------------------------------->
      */
     private class TemplateEditor<X> extends EncodedTypeEditor<X,Serialized> {
         private final Map<String,EncodedTypeEditor<?,String>> editors = new TreeMap<>();

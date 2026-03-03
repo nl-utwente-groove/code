@@ -154,12 +154,12 @@ public record CallStackChange(Kind kind, List<Assignment> assigns, @Nullable Cal
             : pred.toString() + "; ") + this.kind.name() + this.assigns;
     }
 
-    /** Returns a new {@link #NONE} change (which does not change the stack. */
+    /** Returns a new {@link Kind#NONE} change (which does not change the stack. */
     public static CallStackChange none() {
         return new CallStackChange(NONE);
     }
 
-    /** Creates a new {@link #PUSH} action with a given list of assignments. */
+    /** Creates a new {@link Kind#PUSH} action with a given list of assignments. */
     public static CallStackChange push(Assignment... assigs) {
         return new CallStackChange(PUSH, assigs);
     }

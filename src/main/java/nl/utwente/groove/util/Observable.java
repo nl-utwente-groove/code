@@ -20,7 +20,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
 /**
- * Replacement for the deprecated Java </<code>Observable</code> class.
+ * Replacement for the deprecated Java <code>Observable</code> class.
  * @author Arend Rensink
  * @version $Revision$
  */

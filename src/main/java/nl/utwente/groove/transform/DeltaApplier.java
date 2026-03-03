@@ -18,22 +18,19 @@ package nl.utwente.groove.transform;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
-import nl.utwente.groove.grammar.host.HostNode;
+import nl.utwente.groove.graph.Edge;
 
 /**
- * Interface for an object that can process a {@link DeltaTarget}, by invoking
- * its {@link DeltaTarget#addNode(HostNode)} and
- * {@link DeltaTarget#removeNode(HostNode)} and the corresponding <code>Edge</code>
- * methods multiple times.
+ * Interface for an object that can process a {@link DeltaTarget}.
  * @author Arend Rensink
  * @version $Revision$
  */
 @NonNullByDefault
 public interface DeltaApplier {
     /**
-     * When invoked, will call {@link DeltaTarget#addNode(HostNode)} and
-     * {@link DeltaTarget#removeNode(HostNode)} and the corresponding
-     * <code>Edge</code> methods on a given target.
+     * When invoked, will call {@link DeltaTarget#addNode} and
+     * {@link DeltaTarget#removeNode} and the corresponding
+     * {@link Edge} methods on a given target.
      * @param target the target to be processed
      */
     void applyDelta(DeltaTarget target);

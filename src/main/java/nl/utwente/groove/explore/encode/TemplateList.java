@@ -170,13 +170,11 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
     }
 
     /**
-     * <!--------------------------------------------------------------------->
-     * A TemplateListEditor<A> is the type-specific editor that is associated
+     * Type-specific editor that is associated
      * with the TemplateList. It consists of two components: a listPanel,
      * which displays a list of the names of the available templates, and an
      * infoPanel, which is a CardLayout of the editors belonging to the
      * templates.
-     * <!--------------------------------------------------------------------->
      */
     private class TemplateListEditor<X> extends EncodedTypeEditor<X,Serialized>
         implements ListSelectionListener {
