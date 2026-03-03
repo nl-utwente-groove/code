@@ -3,6 +3,10 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
+Release 7.5.2, 3 March 2026
+-------------------------------
+- Bug fix release to support ICGT 2026 submission <https://github.com/nl-utwente-groove/userops.git>
+
 Release 7.5.1, 3 March 2026
 -------------------------------
 - Extended added support for user types and operations to parameters and control programs
