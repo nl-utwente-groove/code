@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -79,7 +80,8 @@ public class Operator implements Comparable<Operator> {
      * are not type variables.
      */
     @SuppressWarnings("null")
-    private Operator(Sort declaringSort, OpValue opValue, Method method) throws IllegalArgumentException {
+    private Operator(Sort declaringSort, OpValue opValue,
+                     Method method) throws IllegalArgumentException {
         Type[] methodParameterTypes = method.getGenericParameterTypes();
         this.declaringSort = declaringSort;
         this.inverse = opValue == IntSignature.Op.NEG || opValue == RealSignature.Op.NEG;
@@ -311,6 +313,25 @@ public class Operator implements Comparable<Operator> {
     @Override
     public int compareTo(Operator o) {
         return getFullName().compareTo(o.getFullName());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.declaringSort, this.name);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof Operator other)) {
+            return false;
+        }
+        return this.declaringSort == other.declaringSort && Objects.equals(this.name, other.name);
     }
 
     /**

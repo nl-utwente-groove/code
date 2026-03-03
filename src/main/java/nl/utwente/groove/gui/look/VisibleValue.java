@@ -23,6 +23,7 @@ import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
 
+import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.graph.Graph;
@@ -127,6 +128,10 @@ public class VisibleValue implements VisualValue<Boolean> {
         if (node.hasExpression() && !node.hasConstant()) {
             return true;
         }
+        // data nodes with test edges should always be shown
+        if (jVertex.getEdges().stream().anyMatch(e -> e.has(AspectKind.TEST))) {
+            return true;
+        }
         // data type nodes in type graphs should never be shown
         if (node.getGraphRole() == GraphRole.TYPE) {
             return false;
@@ -135,7 +140,9 @@ public class VisibleValue implements VisualValue<Boolean> {
         @SuppressWarnings({"cast", "unchecked"})
         var edges = (Set<AspectJEdge>) jVertex.getPort().getEdges();
         // any non-source-label of an incoming edge makes the node visible
-        return edges.stream().anyMatch(e -> e.getTargetVertex() == jVertex && !e.isSourceLabel());
+        return edges
+            .stream()
+            .anyMatch(e -> e.getTargetVertex() == jVertex && (e.isLoop() || !e.isSourceLabel()));
     }
 
     private boolean getAspectEdgeValue(AspectJGraph jGraph, AspectJEdge jEdge) {
