@@ -1,15 +1,15 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2023 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
@@ -20,11 +20,9 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * <!=========================================================================>
- * A Serialized is a textual representation consisting of a keyword (String)
- * and a mapping of named arguments (a Map<String,String>). The arguments can
- * be changed, but the keyword is fixed.  
- * <!=========================================================================>
+ * Textual representation consisting of a keyword (String)
+ * and a mapping of named arguments (a {@link Map}). The arguments can
+ * be changed, but the keyword is fixed.
  * @author Maarten de Mol
  */
 public class Serialized implements Cloneable {
@@ -33,8 +31,8 @@ public class Serialized implements Cloneable {
     private final TreeMap<String,String> arguments;
 
     /**
-     * Build a Serialized with the indicated keyword.
-     * Always initializes with the empty argument map. 
+     * Build a {@link Serialized} with the indicated keyword.
+     * Always initializes with the empty argument map.
      */
     public Serialized(String keyword) {
         this.keyword = keyword;
@@ -61,7 +59,7 @@ public class Serialized implements Cloneable {
     }
 
     /**
-     * Set the argument with the indicated name. If the name occurs in the 
+     * Set the argument with the indicated name. If the name occurs in the
      * map, the argument is overwritten. If it does not occur in the map, it
      * it stored as a new argument.
      */

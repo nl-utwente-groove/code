@@ -173,8 +173,8 @@ public class Version {
      * numbers separated with dots, with same length.
      * @param version String of the form 0.0.0...
      * @return 0 if the major versions are equal,
-     *         1 if current > version,
-     *         -1 if version < current
+     *         1 if {@code current > version},
+     *         -1 if{@code version < current}
      */
     public static int compareGrammarVersion(String version) {
         String current = getCurrentGrammarVersion();

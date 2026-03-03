@@ -367,12 +367,10 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
     }
 
     /**
-     * <!---------------------------------------------------------------------->
-     * A Template0<X> describes the encoding of values of type X by means of a
+     * Describes the encoding of values of type X by means of a
      * Serialized that starts with a given keyword and has no arguments.
      * Implements the method parse, but in turns requires the method create
      * to be defined by any concrete subclass.
-     * <!---------------------------------------------------------------------->
      */
     public static abstract class Template0<X> extends Template<X> {
 
@@ -405,13 +403,11 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
     }
 
     /**
-     * <!---------------------------------------------------------------------->
-     * A Template1<X,P1> describes the encoding of values of type X by means of
+     * Describes the encoding of values of type X by means of
      * a Serialized that starts with a given keyword and has one argument of
-     * type EncodedType<P1,String>.
+     * type {@link EncodedType}.
      * Implements the method parse, but in turns requires the method create
      * to be defined by any concrete subclass.
-     * <!---------------------------------------------------------------------->
      */
     public static abstract class Template1<X,P1> extends Template<X> {
 
@@ -470,14 +466,11 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
     }
 
     /**
-     * <!---------------------------------------------------------------------->
-     * A Template2<X,P1,P2> describes the encoding of values of type X by means
-     * of a Serialized that starts with a given keyword and has two argument, of
-     * types EncodedType<P1,String> and EncodedType<P2,String> respectively.
+     * Describes the encoding of values of type X by means
+     * of a {@link Serialized} that starts with a given keyword and has two argument, of
+     * types {@link EncodedType}.
      * Implements the method parse, but in turns requires the method create
-     * to be defined by any concrete subclass.
-     * <!---------------------------------------------------------------------->
-     */
+     * to be defined by any concrete subclass.     */
     public static abstract class Template2<X,P1,P2> extends Template<X> {
 
         private final EncodedType<P1,String> type1;
@@ -543,10 +536,9 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
     }
 
     /**
-     * <!---------------------------------------------------------------------->
-     * A TemplateN<X> describes the encoding of values of type X by means
-     * of a Serialized that starts with a given keyword and has n arguments, of
-     * n types EncodedType<Object,String>.
+     * Describes the encoding of values of type X by means
+     * of a {@link Serialized} that starts with a given keyword and has n arguments, of
+     * n types {@link EncodedType}.
      * Implements the method parse, but in turns requires the method create
      * to be defined by any concrete subclass.
      * <!---------------------------------------------------------------------->

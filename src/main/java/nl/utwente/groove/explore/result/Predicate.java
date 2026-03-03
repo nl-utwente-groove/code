@@ -69,9 +69,7 @@ public abstract class Predicate<X> implements java.util.function.Predicate<X> {
     }
 
     /**
-     * <======================================================================>
-     * Convenience class for defining the predicate !P.
-     * <======================================================================>
+     * Convenience class for defining the predicate {@code !P}.
      */
     public static class Not<X> extends Predicate<X> {
         private final Predicate<X> P;
@@ -89,9 +87,7 @@ public abstract class Predicate<X> implements java.util.function.Predicate<X> {
     }
 
     /**
-     * <======================================================================>
-     * Convenience class for defining the predicate (P1 && P2 && .. && Pn).
-     * <======================================================================>
+     * Convenience class for defining the predicate {@code (P1 && P2 && .. && Pn)}.
      */
     public static class And<X> extends Predicate<X> {
         private final Predicate<X> P;
@@ -112,9 +108,7 @@ public abstract class Predicate<X> implements java.util.function.Predicate<X> {
     }
 
     /**
-     * <======================================================================>
-     * Convenience class for defining the predicate (P1 || P2 || ... || Pn).
-     * <======================================================================>
+     * Convenience class for defining the predicate {@code (P1 || P2 || ... || Pn)}.
      */
     public static class Or<X> extends Predicate<X> {
         private final Predicate<X> P;
@@ -135,9 +129,7 @@ public abstract class Predicate<X> implements java.util.function.Predicate<X> {
     }
 
     /**
-     * <======================================================================>
-     * Convenience class for defining the predicate (P -> Q).
-     * <======================================================================>
+     * Convenience class for defining the predicate {@code (P -> Q)}.
      */
     public static class Implies<X> extends Predicate<X> {
         private final Predicate<X> P;
@@ -162,10 +154,8 @@ public abstract class Predicate<X> implements java.util.function.Predicate<X> {
     }
 
     /**
-     * <======================================================================>
      * Convenience class for defining the predicate on graph states that
      * checks whether a given rule is applicable.
-     * <======================================================================>
      */
     public static class RuleApplicable extends StatePredicate {
         /** Default constructor. */
@@ -182,10 +172,8 @@ public abstract class Predicate<X> implements java.util.function.Predicate<X> {
     }
 
     /**
-     * <======================================================================>
      * Convenience class for defining the predicate on graph transitions that
      * checks whether a given rule has been applied.
-     * <======================================================================>
      */
     public static class ActionApplied extends TransitionPredicate {
         private final Action action;

@@ -306,9 +306,9 @@ public class Util {
     /** Upper case letter omega. */
     static public final char UC_OMEGA = '\u03A9';
 
-    /** HTML opening << quote symbol. */
+    /** HTML opening {@code <<} quote symbol. */
     static public final char FRENCH_QUOTES_OPEN = '\u00AB';
-    /** HTML closing >> quote symbol. */
+    /** HTML closing {@code >>} quote symbol. */
     static public final char FRENCH_QUOTES_CLOSED = '\u00BB';
     /** HTML greater than symbol. */
     static public final char GT = '>';
