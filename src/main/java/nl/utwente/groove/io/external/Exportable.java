@@ -91,6 +91,7 @@ public record Exportable(Set<ExportKind> exportKinds, @NonNull QualName qualName
         var graph = jModel == null
             ? null
             : jModel.getGraph();
+        assert graph != null;
         var resourceModel = jModel instanceof AspectJModel am
             ? am.getResourceModel()
             : null;
@@ -98,7 +99,7 @@ public record Exportable(Set<ExportKind> exportKinds, @NonNull QualName qualName
         if (resourceModel != null) {
             kinds.add(ExportKind.RESOURCE);
         }
-        var name = QualName.parse(graph.getName());
+        var name = QualName.parse(jGraph.getName());
         return new Exportable(kinds, name, jGraph, graph, resourceModel);
     }
 

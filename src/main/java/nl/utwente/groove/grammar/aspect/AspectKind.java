@@ -1149,8 +1149,8 @@ public enum AspectKind {
                 nodeKinds
                     = EnumSet.of(REMARK, INT, BOOL, REAL, STRING, ABSTRACT, IMPORT, COLOR, EDGE);
                 edgeKinds = EnumSet
-                    .of(REMARK, ATOM, INT, BOOL, REAL, STRING, ABSTRACT, SUBTYPE, MULT_IN, MULT_OUT,
-                        COMPOSITE);
+                    .of(REMARK, ATOM, INT, BOOL, REAL, STRING, USER, ABSTRACT, SUBTYPE, MULT_IN,
+                        MULT_OUT, COMPOSITE);
                 break;
             default:
                 assert !role.inGrammar();
