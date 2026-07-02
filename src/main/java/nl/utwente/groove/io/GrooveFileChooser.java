@@ -176,7 +176,7 @@ public class GrooveFileChooser extends JFileChooser {
                 default:
                     return;
                 }
-            } else {
+            } else if (f != null) {
                 // Approve if file doesn't exist yet
                 super.approveSelection();
                 return;
