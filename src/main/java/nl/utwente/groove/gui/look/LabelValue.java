@@ -699,7 +699,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
             } catch (FormatException e) {
                 // assert false;
             }
-        } else if (!jEdge.isNodeEdgeOut() && !jEdge.isSourceLabel()) {
+        } else if (!jEdge.isNodeEdgeOut()) {
             for (AspectEdge edge : jEdge.getEdges()) {
                 // only add edges that have an unfiltered label
                 if (isVisible(jGraph, jEdge, edge)) {
