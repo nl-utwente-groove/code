@@ -95,6 +95,7 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
     * @return this object itself, for chaining
     */
     public FormatErrorSet addAll(FormatErrorSet other) {
+        getProjection().putAll(other.getProjection());
         other.getErrorSet().forEach(this::add);
         return this;
     }
