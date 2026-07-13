@@ -177,7 +177,7 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
                 var parType = isObjectMethod
                     ? (i == 0
                         ? m.getDeclaringClass()
-                        : m.getParameterTypes()[i - i])
+                        : m.getParameterTypes()[i - 1])
                     : m.getParameterTypes()[i];
                 if (op.getParamSorts().get(i) == Sort.USER && !userClasses.contains(parType)) {
                     errors

@@ -18,13 +18,19 @@ package nl.utwente.groove.test.algebra;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
+import org.junit.After;
 import org.junit.Test;
 
+import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.algebra.UserSignature;
@@ -36,6 +42,37 @@ import nl.utwente.groove.util.parse.FormatException;
  * @version $Revision$
  */
 public class UserSignatureTest {
+    /** Resets the user signature, so that the test classes loaded here
+     * do not leak into tests that run later in the same JVM.
+     */
+    @After
+    public void resetUserSignature() {
+        UserSignature.setUserClass(Collections.emptyList());
+    }
+
+    /** Tests that caches derived from the user signature (in particular the
+     * {@link AlgebraFamily} operation maps) are refreshed when a new user class is loaded.
+     * Regression test for the non-deterministic failure of RuleApplicationTest.testUserOps.
+     */
+    @Test
+    public void testUserClassReload() {
+        load("UserOps", "UserTypeIntString");
+        var one = UserSignature.getOperators().get("one");
+        assertNotNull(one);
+        // force computation of the (lazily created) user operation map
+        var operation = AlgebraFamily.DEFAULT.getOperation(one);
+        assertEquals(1, operation.applyStrict(List.of()));
+        // now unload the user classes: the operation map must be recomputed
+        UserSignature.setUserClass(Collections.emptyList());
+        assertNull(UserSignature.getOperators().get("one"));
+        assertNull(AlgebraFamily.DEFAULT.getOperation(one));
+        // and reloading must make the operation available again
+        load("UserOps", "UserTypeIntString");
+        assertEquals(1,
+                     AlgebraFamily.DEFAULT
+                         .getOperation(UserSignature.getOperators().get("one"))
+                         .applyStrict(List.of()));
+    }
 
     /** Tests the stand-alone working of UserSignature. */
     @Test

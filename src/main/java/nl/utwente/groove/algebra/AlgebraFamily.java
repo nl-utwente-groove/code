@@ -262,7 +262,15 @@ public enum AlgebraFamily implements DocumentedEnum {
         if (result.isEmpty()) {
             for (Sort sort : Sort.values()) {
                 Supplier<Map<Operator,Operation>> ops = switch (sort) {
-                case USER -> nl.utwente.groove.util.Factory.lazy(this::computeUserOperations);
+                case USER -> {
+                    var userOps
+                        = nl.utwente.groove.util.Factory.lazy(this::computeUserOperations);
+                    // the user operations are based on UserSignature#getMethods, which is
+                    // not itself factory-tracked, so the cached map must be explicitly
+                    // invalidated whenever a new user class is loaded
+                    UserSignature.addUser(userOps::reset);
+                    yield userOps;
+                }
                 default -> nl.utwente.groove.util.Factory.value(computeSystemOperations(sort));
                 };
                 result.put(sort, ops);
