@@ -101,7 +101,7 @@ Match the existing style: a single short subject line in sentence case, usually 
 ## Coding conventions
 
 - **Null annotations**: the codebase uses `org.eclipse.jdt.annotation` (`@NonNullByDefault` on classes, `@Nullable`/`@NonNull` on members). Follow this in new and modified code.
-- **Generated code**: `CtrlLexer`, `CtrlParser`, and `CtrlChecker` (package `nl.utwente.groove.control.parse`) are generated at build time by the `antlr3-maven-plugin` from `src/main/resources/nl/utwente/groove/resource/antlr/Ctrl.g` and `CtrlChecker.g` into `target/generated-sources/antlr3`; they are not checked in. To change them, edit the `.g` files and rebuild. Other files in `control/parse` (`CtrlTree`, `CtrlHelper`, …) are hand-written.
+- **Generated code**: `CtrlLexer`, `CtrlParser`, and `CtrlChecker` (package `nl.utwente.groove.control.parse`) are generated at build time by the `antlr3-maven-plugin` from `Ctrl.g` and `CtrlChecker.g` in `src/main/antlr3/nl/utwente/groove/control/parse/` into `target/generated-sources/antlr3`; they are not checked in. To change them, edit the `.g` files and rebuild. Other files in `control/parse` (`CtrlTree`, `CtrlHelper`, …) are hand-written.
 
 ## Test fixtures
 
