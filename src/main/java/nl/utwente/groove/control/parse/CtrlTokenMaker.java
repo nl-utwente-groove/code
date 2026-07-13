@@ -119,7 +119,7 @@ public class CtrlTokenMaker extends AbstractTokenMaker {
      * @return The start and end strings to add to a line to "comment" it out.
      */
     @Override
-    public String[] getLineCommentStartAndEnd() {
+    public String[] getLineCommentStartAndEnd(int languageIndex) {
         return new String[] {"//", null};
     }
 

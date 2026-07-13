@@ -10,8 +10,8 @@ import java.io.IOException;
 import javax.swing.text.Segment;
 
 import org.fife.ui.rsyntaxtextarea.AbstractJFlexTokenMaker;
-import org.fife.ui.rsyntaxtextarea.DefaultToken;
 import org.fife.ui.rsyntaxtextarea.Token;
+import org.fife.ui.rsyntaxtextarea.TokenImpl;
 
 /**
  * Token maker for syntax highlighting in Prolog.
@@ -1148,7 +1148,7 @@ public class PrologTokenMaker extends AbstractJFlexTokenMaker {
      *         it out.
      */
     @Override
-    public String[] getLineCommentStartAndEnd() {
+    public String[] getLineCommentStartAndEnd(int languageIndex) {
         return null;
     }
 
@@ -1190,7 +1190,7 @@ public class PrologTokenMaker extends AbstractJFlexTokenMaker {
             return yylex();
         } catch (IOException ioe) {
             // ignore
-            return new DefaultToken();
+            return new TokenImpl();
         }
 
     }
@@ -1293,6 +1293,14 @@ public class PrologTokenMaker extends AbstractJFlexTokenMaker {
      */
     public final void yybegin(int newState) {
         this.zzLexicalState = newState;
+    }
+
+    /**
+     * Returns the current lexical state.
+     */
+    @Override
+    public final int yystate() {
+        return this.zzLexicalState;
     }
 
     /**
