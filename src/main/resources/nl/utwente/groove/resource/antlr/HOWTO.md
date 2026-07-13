@@ -1,17 +1,12 @@
-How to generate the parser and checker files from a `?.g` grammar
+How the parser and checker files are generated from the `?.g` grammars
 ---------
 
-- Assume the JVM is on the path
+`CtrlLexer`, `CtrlParser` and `CtrlChecker` (package `nl.utwente.groove.control.parse`)
+are generated automatically at build time by the `antlr3-maven-plugin`, from the grammars
+`Ctrl.g` and `CtrlChecker.g` in this directory, into `target/generated-sources/antlr3`.
+They are not checked in to version control. There is no need to run ANTLR manually:
 
-- Open a terminal in this directory (`src\main\resources\nl\utwente\groove\resource\antlr`)
+- `mvn compile` (or any later build phase) regenerates them whenever a grammar has changed
+- In Eclipse, m2e runs the generation as part of the project build
 
-- Invoke (for the specific cases of `Ctrl.g` and `CtrlChecker.g`)
-
-	```
-	java -jar ..\..\..\..\..\..\..\..\lib\antlr-complete-3.5.2.jar Ctrl.g
-	java -jar ..\..\..\..\..\..\..\..\lib\antlr-complete-3.5.2.jar CtrlChecker.g
-	copy *.java ..\..\..\..\..\..\java\nl\utwente\groove\control\parse
-	rm *.java
-	```
-
-Mutatis mutandis if this is not on Windows
+To change the parser or checker, edit the grammar files; never edit the generated `.java` files.

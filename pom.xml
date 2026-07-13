@@ -63,6 +63,28 @@
 			</plugin>
 
 			<plugin>
+				<!-- Generates CtrlLexer, CtrlParser and CtrlChecker in
+				     nl.utwente.groove.control.parse from the ANTLR 3 grammars
+				     Ctrl.g and CtrlChecker.g at build time -->
+				<groupId>org.antlr</groupId>
+				<artifactId>antlr3-maven-plugin</artifactId>
+				<version>3.5.2</version>
+				<configuration>
+					<sourceDirectory>src/main/resources/nl/utwente/groove/resource/antlr</sourceDirectory>
+					<outputDirectory>${project.build.directory}/generated-sources/antlr3/nl/utwente/groove/control/parse</outputDirectory>
+					<libDirectory>${project.build.directory}/generated-sources/antlr3/nl/utwente/groove/control/parse</libDirectory>
+				</configuration>
+				<executions>
+					<execution>
+						<?m2e execute onConfiguration,onIncremental?>
+						<goals>
+							<goal>antlr</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.12.1</version>
@@ -144,12 +166,6 @@
 		</plugins>
 
 		<resources>
-			<resource>
-				<directory>src/main/java/nl/utwente/groove/control/parse</directory>
-				<includes>
-					<include>Ctrl.g</include>
-				</includes>
-			</resource>
 			<resource>
 				<directory>src/main/java/nl/utwente/groove/io/conceptual/configuration</directory>
 				<includes>
