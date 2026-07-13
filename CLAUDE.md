@@ -8,18 +8,9 @@ GROOVE is a tool for graph transformation and verification (state-space explorat
 
 ## Building and testing
 
-### One-time setup: install local libraries
+### Dependencies
 
-Four dependencies are not on Maven Central and must be installed into the local Maven repository once per machine:
-
-```
-mvn -B install:install-file -DpomFile=lib/pom/gnuprolog.pom -Dfile=lib/gnuprologjava-0.2.6.jar -Dsources=lib/src/gnuprologjava-0.2.6-src.zip
-mvn -B install:install-file -DpomFile=lib/pom/groove-gxl.pom -Dfile=lib/groove-gxl-3.0.jar -Dsources=lib/src/groove-gxl-3.0-sources.jar
-mvn -B install:install-file -DpomFile=lib/pom/ltl2buchi.pom -Dfile=lib/ltl2buchi-2010.12.jar -Dsources=lib/src/ltl2buchi-2010.12.zip
-mvn -B install:install-file -DpomFile=lib/pom/osxadapter.pom -Dfile=lib/osxadapter-2.0.jar -Dsources=lib/src/osxadapter-2.0-src.zip
-```
-
-In Eclipse, the launch group `GROOVE core - install local mvn-deps` (in `launch/`) does all four at once.
+All dependencies resolve automatically; a fresh clone builds without setup. Four libraries not available on Maven Central (`gnuprologjava`, `ltl2buchi`, `osxadapter`, `groove-gxl`) are served from the project-local Maven repository checked in at `lib/repo` (declared as a `<repository>` in the pom). To add or upgrade such a library, place jar + pom (+ optional sources jar) in the standard Maven layout under `lib/repo` and commit.
 
 ### Commands
 
@@ -36,7 +27,7 @@ mvn test -Dmaven.test.skip=false -Dtest=AlgebraTest   # run a single test class
 
 ### Eclipse
 
-Development also happens in Eclipse; ready-made launch configurations live in `launch/` (Eclipse picks them up automatically): `GROOVE - all JUnit tests`, `GROOVE - maven test`, `GROOVE - build local maven artefact`, `GROOVE - generate javadoc`, `GROOVE - build local release (all)`, plus the local-dependency installers.
+Development also happens in Eclipse; ready-made launch configurations live in `launch/` (Eclipse picks them up automatically): `GROOVE - all JUnit tests`, `GROOVE - maven test`, `GROOVE - build local maven artefact`, `GROOVE - generate javadoc`, `GROOVE - build local release (all)`.
 
 ## Entry points
 
