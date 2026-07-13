@@ -32,7 +32,10 @@ import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 
-import au.com.bytecode.opencsv.CSVReader;
+import com.opencsv.CSVParserBuilder;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVReaderBuilder;
+import com.opencsv.exceptions.CsvException;
 
 /**
  * Useful file system functionalities for performing I/O.
@@ -272,9 +275,11 @@ public class Util {
         List<String[]> result = null;
         name = FileType.CSV.addExtension(name);
         try (CSVReader reader
-            = new CSVReader(getResourceStream(RESOURCE_PACKAGE.extend(name)), sep)) {
+            = new CSVReaderBuilder(getResourceStream(RESOURCE_PACKAGE.extend(name)))
+                .withCSVParser(new CSVParserBuilder().withSeparator(sep).build())
+                .build()) {
             result = reader.readAll();
-        } catch (IOException e) {
+        } catch (IOException | CsvException e) {
             // no result
         }
         return result;

@@ -11,8 +11,8 @@ Jakarta bind;mapping between XML documents and Java objects;https://jakarta.ee/s
 Java Annotations;runtime analysis of Java annotations;https://wiki.eclipse.org/JDT_Core/Null_Analysis;2.2.700
 JGoodies Looks;platform-dependent look&feel;http://www.jgoodies.com/freeware/libraries/looks/;2.4.1
 JGraph;displaying graphs and rules;http://www.jgraph.com;5.13.0.0
-ltl2buchi;translating LTL formulae to Büchi automata;https://github.com/esb-lwb/lwb;2010.12
-OpenCSV;reading (and writing) comma-separated value files;http://opencsv.sourceforge.net/;2.3
+ltl2buchi;translating LTL formulae to Bï¿½chi automata;https://github.com/esb-lwb/lwb;2010.12
+OpenCSV;reading (and writing) comma-separated value files;https://opencsv.sourceforge.net/;5.12.0
 OSXAdapter;supporting Mac OS X-specific features;https://developer.apple.com/library/archive/samplecode/OSXAdapter;2.0
 RSyntaxTextArea;editing syntax-highlighted control and Prolog programs;http://fifesoft.com/rsyntaxtextarea;1.5.2
 Xerces;XML parsing;http://xerces.apache.org;2.11.0

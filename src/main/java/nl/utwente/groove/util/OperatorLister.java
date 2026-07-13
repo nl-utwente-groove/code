@@ -23,7 +23,8 @@ import java.util.List;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 
-import au.com.bytecode.opencsv.CSVWriter;
+import com.opencsv.CSVWriter;
+
 import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.algebra.Signature.OpValue;

@@ -230,9 +230,9 @@
     </profiles>
 	<dependencies>
 		<dependency>
-			<groupId>au.com.bytecode</groupId>
+			<groupId>com.opencsv</groupId>
 			<artifactId>opencsv</artifactId>
-			<version>2.4</version>
+			<version>5.12.0</version>
 		</dependency>
 		<dependency>
 			<groupId>jakarta.xml.bind</groupId>

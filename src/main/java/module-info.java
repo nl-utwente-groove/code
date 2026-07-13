@@ -98,7 +98,7 @@ module nl.utwente.groove {
     requires transitive jgraph;
     requires ltl2buchi;
     requires transitive nl.utwente.groove.gxl;
-    requires opencsv;
+    requires com.opencsv;
     requires org.apache.groovy;
     requires org.eclipse.emf.common;
     requires org.eclipse.emf.ecore;
