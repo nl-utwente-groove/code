@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.grammar.host;
 
+import java.util.Objects;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -69,6 +71,16 @@ final public class ValueNode extends ANode implements HostNode {
         var result = this.value;
         assert result != null;
         return result;
+    }
+
+    /* Also takes the algebra and value into account: value nodes stemming from
+     * different host factories may carry the same node number but represent
+     * different values, and must then not be considered equal. */
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        return super.equals(obj) && obj instanceof ValueNode other
+            && Objects.equals(this.algebra, other.algebra)
+            && Objects.equals(this.value, other.value);
     }
 
     /**

@@ -26,6 +26,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Assert;
+import nl.utwente.groove.algebra.AlgebraFamily;
+import nl.utwente.groove.algebra.Constant;
+import nl.utwente.groove.algebra.Sort;
+import nl.utwente.groove.grammar.host.DefaultHostGraph;
+import nl.utwente.groove.grammar.host.HostNode;
+import nl.utwente.groove.grammar.type.TypeFactory;
 import nl.utwente.groove.graph.iso.IsoChecker;
 import nl.utwente.groove.graph.plain.PlainGraph;
 import nl.utwente.groove.util.Groove;
@@ -81,6 +87,36 @@ public class IsoTest {
     @Test
     public void testBridges() {
         test("bridges", true);
+    }
+
+    /** Tests that host graphs differing only in the value of a value node
+     * (with coincidentally equal node numbers, and sharing a type factory, as is
+     * the case for graphs stemming from the same grammar) are not considered
+     * isomorphic. Regression test for the residual non-deterministic failure of
+     * RuleApplicationTest.testUserOps.
+     */
+    @Test
+    public void testValueNodeValues() {
+        TypeFactory typeFactory = TypeFactory.newInstance();
+        Assert
+            .assertTrue(checker
+                .areIsomorphic(createBoolGraph(typeFactory, true),
+                               createBoolGraph(typeFactory, true)));
+        Assert
+            .assertFalse(checker
+                .areIsomorphic(createBoolGraph(typeFactory, true),
+                               createBoolGraph(typeFactory, false)));
+    }
+
+    /** Creates a host graph with a single b-labelled edge to a boolean value node. */
+    private DefaultHostGraph createBoolGraph(TypeFactory typeFactory, boolean value) {
+        DefaultHostGraph result = new DefaultHostGraph("bool", typeFactory);
+        var algebra = AlgebraFamily.DEFAULT.getAlgebra(Sort.BOOL);
+        HostNode source = result.addNode();
+        HostNode valueNode
+            = result.addNode(algebra, algebra.toValueFromConstant(Constant.instance(value)));
+        result.addEdge(source, "b", valueNode);
+        return result;
     }
 
     /** Tests all rules in a named grammar (to be loaded from {@link #INPUT_DIR}). */
