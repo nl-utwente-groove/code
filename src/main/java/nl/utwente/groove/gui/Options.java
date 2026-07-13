@@ -58,13 +58,11 @@ import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.plaf.metal.MetalLookAndFeel;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.jgraph.graph.GraphConstants;
 
-import com.jgoodies.looks.plastic.PlasticLookAndFeel;
-import com.jgoodies.looks.plastic.theme.DesertBlue;
+import com.formdev.flatlaf.FlatLightLaf;
 
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.ResourceKind;
@@ -1010,9 +1008,8 @@ public class Options implements Cloneable {
             try {
                 // LAF specific options that should be done before setting the LAF
                 // go here
-                MetalLookAndFeel.setCurrentTheme(new DesertBlue());
                 // Set the look and feel
-                UIManager.setLookAndFeel(new PlasticLookAndFeel());
+                UIManager.setLookAndFeel(new FlatLightLaf());
             } catch (Exception e) {
                 throw new IllegalStateException(e);
             }
@@ -1023,7 +1020,7 @@ public class Options implements Cloneable {
     public static Font getDefaultFont() {
         if (DEFAULT_FONT == null) {
             initLookAndFeel();
-            DEFAULT_FONT = MetalLookAndFeel.getCurrentTheme().getUserTextFont();
+            DEFAULT_FONT = UIManager.getFont("Label.font");
         }
         return DEFAULT_FONT;
     }
