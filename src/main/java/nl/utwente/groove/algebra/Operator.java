@@ -476,6 +476,11 @@ public class Operator implements Comparable<Operator> {
     /** Adds an operator to the store, both by symbol and by name. */
     private static Map<Sort,Map<String,Operator>> computeSortOpLookupMap() {
         Map<Sort,Map<String,Operator>> result = new HashMap<>();
+        // pre-populate all sorts, so lookup does not fail for sorts without
+        // operators (in particular USER when no user class is loaded)
+        for (Sort sort : Sort.values()) {
+            result.put(sort, new HashMap<>());
+        }
         for (Operator op : getOps()) {
             var sortOps = result.get(op.getDeclaringSort());
             if (sortOps == null) {

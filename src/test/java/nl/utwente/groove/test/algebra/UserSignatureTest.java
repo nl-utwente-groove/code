@@ -20,6 +20,8 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -72,6 +74,34 @@ public class UserSignatureTest {
                      AlgebraFamily.DEFAULT
                          .getOperation(UserSignature.getOperators().get("one"))
                          .applyStrict(List.of()));
+    }
+
+    /** Tests that the statically cached operator tables in {@link Operator} and
+     * {@link Sort} are refreshed when a new user class is loaded.
+     * Regression test for the residual non-deterministic failure of
+     * RuleApplicationTest.testUserOps.
+     */
+    @Test
+    public void testOperatorTableReload() {
+        load("UserOps", "UserTypeIntString");
+        var one = UserSignature.getOperators().get("one");
+        assertNotNull(one);
+        // force computation of the (lazily created) static operator tables
+        assertTrue(Operator.getOps().contains(one));
+        assertSame(one, Operator.getOp(Sort.USER, "one"));
+        assertSame(one, Sort.USER.getOperator("one"));
+        // now unload the user classes: the tables must be recomputed
+        UserSignature.setUserClass(Collections.emptyList());
+        assertFalse(Operator.getOps().contains(one));
+        assertNull(Operator.getOp(Sort.USER, "one"));
+        assertNull(Sort.USER.getOperator("one"));
+        // and reloading must make the operators available again
+        load("UserOps", "UserTypeIntString");
+        var one2 = UserSignature.getOperators().get("one");
+        assertNotNull(one2);
+        assertTrue(Operator.getOps().contains(one2));
+        assertSame(one2, Operator.getOp(Sort.USER, "one"));
+        assertSame(one2, Sort.USER.getOperator("one"));
     }
 
     /** Tests the stand-alone working of UserSignature. */
