@@ -24,6 +24,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.Imager;
@@ -33,6 +34,7 @@ import nl.utwente.groove.io.Imager;
  * @author Arend Rensink
  * @version $Revision$
  */
+@Category(SlowTest.class)
 @SuppressWarnings("javadoc")
 public class ImagerTest {
     private final static String TEST_DIR = "junit/samples/ferryman.gps";

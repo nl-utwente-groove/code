@@ -17,9 +17,9 @@
 package nl.utwente.groove.test;
 
 import java.io.File;
-import java.io.IOException;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 
 import nl.utwente.groove.io.FileType;
@@ -46,17 +46,10 @@ public class GrammarsTest {
 
     private void testDir(String dirName) {
         File location = new File(dirName);
-        if (!location.isDirectory()) {
-            try {
-                Assert
-                    .fail(String
-                        .format("Directory %s cannot be found", location.getCanonicalPath()));
-            } catch (IOException e) {
-                Assert
-                    .fail(String
-                        .format("Directory %s cannot be parsed", location.getAbsolutePath()));
-            }
-        }
+        // skip (rather than fail) if the external checkout is not present
+        Assume
+            .assumeTrue(String.format("Directory %s cannot be found", location.getAbsolutePath()),
+                        location.isDirectory());
         for (File file : location.listFiles()) {
             if (FileType.GRAMMAR.hasExtension(file)) {
                 testGrammar(file);

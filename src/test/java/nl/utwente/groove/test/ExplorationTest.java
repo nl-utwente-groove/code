@@ -25,6 +25,7 @@ import java.io.IOException;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.explore.ExploreType;
@@ -48,6 +49,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * @author Arend Rensink
  * @version $Revision$
  */
+@Category(SlowTest.class)
 public class ExplorationTest {
     /** Location of the samples. */
     static public final String INPUT_DIR = "junit/samples";

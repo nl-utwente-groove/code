@@ -26,6 +26,7 @@ import java.net.URL;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.grammar.Grammar;
@@ -40,6 +41,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * @author Tom Staijen
  */
+@Category(SlowTest.class)
 @SuppressWarnings("all")
 public class IOTest {
 

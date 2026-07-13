@@ -21,6 +21,9 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import nl.utwente.groove.test.SlowTest;
 
 /**
  * Shows up some erroneous behaviour in {@link java.util.IdentityHashMap}. The
@@ -29,6 +32,7 @@ import org.junit.Test;
  * @author Arend Rensink
  * @version $Revision$
  */
+@Category(SlowTest.class)
 @SuppressWarnings("all")
 public class IdentityHashMapTest {
 
