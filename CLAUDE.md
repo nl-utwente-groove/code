@@ -17,13 +17,12 @@ All dependencies resolve automatically; a fresh clone builds without setup. Four
 ```
 mvn clean package                              # build (shade plugin bundles the local libs into the jar)
 mvn compile                                    # compile only
-mvn test -Dmaven.test.skip=false               # run all tests
-mvn test -Dmaven.test.skip=false -Dtest=AlgebraTest   # run a single test class
+mvn test                                       # fast test suite (slow tests excluded)
+mvn test -Dexcluded.test.groups=               # full suite including slow tests
+mvn test -Dtest=AlgebraTest                    # run a single test class
 ```
 
-**Tests are skipped by default** (`maven.test.skip=true` in pom.xml); always pass `-Dmaven.test.skip=false` to run them.
-
-**Slow tests — avoid running by default**: `ExplorationTest` (full state-space exploration), `ImagerTest` and `IOTest` (image rendering / I/O round-trips), and the `test/performance` package. Prefer running the specific test class relevant to your change.
+**Slow tests are excluded by default**: `ExplorationTest` (full state-space exploration), `ImagerTest` and `IOTest` (image rendering / I/O round-trips), and `test/performance` carry the `nl.utwente.groove.test.SlowTest` category, which Surefire excludes via the `excluded.test.groups` pom property. Override with `-Dexcluded.test.groups=` to run everything.
 
 ### Eclipse
 
