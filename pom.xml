@@ -37,6 +37,21 @@
 	    <url>https://github.com/nl-utwente-groove/code.git</url>
 	</scm>
 
+	<repositories>
+		<!-- Project-local repository holding the libraries that are not available
+		     on Maven Central (see lib/repo); no manual installation needed -->
+		<repository>
+			<id>groove-project-local</id>
+			<url>file:${project.basedir}/lib/repo</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
 	<build>
 		<plugins>
 			<plugin>
