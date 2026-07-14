@@ -89,6 +89,7 @@ module nl.utwente.groove {
     requires antlr.complete;
     requires antlrworks;
     requires transitive args4j;
+    requires transitive info.picocli;
     requires transitive gnuprologjava;
     requires transitive jakarta.xml.bind;
     requires transitive java.desktop;
@@ -111,14 +112,14 @@ module nl.utwente.groove {
     requires transitive jdk.xml.dom;
     requires transitive fop.core;
 
-    opens nl.utwente.groove.explore to args4j;
-    opens nl.utwente.groove.verify to args4j;
-    opens nl.utwente.groove.gui to args4j;
-    opens nl.utwente.groove.io to args4j;
-    opens nl.utwente.groove.match.rete to args4j;
-    opens nl.utwente.groove.prolog to args4j;
-    opens nl.utwente.groove.util to args4j;
-    opens nl.utwente.groove.util.cli to args4j;
+    opens nl.utwente.groove.explore to args4j, info.picocli;
+    opens nl.utwente.groove.verify to args4j, info.picocli;
+    opens nl.utwente.groove.gui to args4j, info.picocli;
+    opens nl.utwente.groove.io to args4j, info.picocli;
+    opens nl.utwente.groove.match.rete to args4j, info.picocli;
+    opens nl.utwente.groove.prolog to args4j, info.picocli;
+    opens nl.utwente.groove.util to args4j, info.picocli;
+    opens nl.utwente.groove.util.cli to args4j, info.picocli;
 
     // the following opens clauses are required to allow GROOVE to access
     // these resources at runtime
