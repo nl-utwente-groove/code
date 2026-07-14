@@ -119,9 +119,28 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
         return createEdge(source, type, target);
     }
 
+    @Override
+    public HostEdge createEdge(HostNode source, Label label, HostNode target, int nr) {
+        TypeEdge type = getTypeFactory()
+            .createEdge(source.getType(), (TypeLabel) label, target.getType(), false);
+        assert type != null;
+        return createEdge(source, type, target, nr);
+    }
+
     /** Creates a host edge with given source and target nodes, and edge type. */
     public HostEdge createEdge(HostNode source, TypeEdge type, HostNode target) {
-        HostEdge edge = newEdge(source, type, target, getEdgeCount());
+        HostEdge edge = newEdge(source, type, target, getNextEdgeNr());
+        return storeEdge(edge);
+    }
+
+    /**
+     * Returns a suitable host edge with given source and target nodes,
+     * edge type, and edge number.
+     * See {@link #createEdge(HostNode, Label, HostNode, int)} for the
+     * reuse-or-create semantics of the edge number.
+     */
+    public HostEdge createEdge(HostNode source, TypeEdge type, HostNode target, int nr) {
+        HostEdge edge = newEdge(source, type, target, nr);
         return storeEdge(edge);
     }
 
