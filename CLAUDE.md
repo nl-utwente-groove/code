@@ -102,6 +102,7 @@ Match the existing style: a single short subject line in sentence case, usually 
 
 - **Null annotations**: the codebase uses `org.eclipse.jdt.annotation` (`@NonNullByDefault` on classes, `@Nullable`/`@NonNull` on members). Follow this in new and modified code.
 - **Generated code**: `CtrlLexer`, `CtrlParser`, and `CtrlChecker` (package `nl.utwente.groove.control.parse`) are generated at build time by the `antlr3-maven-plugin` from `Ctrl.g` and `CtrlChecker.g` in `src/main/antlr3/nl/utwente/groove/control/parse/` into `target/generated-sources/antlr3`; they are not checked in. To change them, edit the `.g` files and rebuild. Other files in `control/parse` (`CtrlTree`, `CtrlHelper`, …) are hand-written.
+- **Determinism**: successive explorations of the same rule system must behave identically (guarded by `DeterminismTest`). Therefore: hash codes of objects on the exploration path must be deterministic across runs (number- or content-based, never `System.identityHashCode` — see `ANode.computeHashCode` for the house pattern); collections that are *iterated* must be insertion-ordered (`LinkedHashSet`/`LinkedHashMap`/`ArrayList`) or sorted, never plain `HashSet`/`HashMap` unless their keys' hashes are deterministic; and `TreeHashSet.iterator()` iterates in insertion order — code relies on this, so it must stay that way.
 
 ## Test fixtures
 
