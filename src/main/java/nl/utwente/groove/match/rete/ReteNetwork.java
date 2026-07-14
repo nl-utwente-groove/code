@@ -19,7 +19,6 @@ package nl.utwente.groove.match.rete;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -480,30 +479,7 @@ public class ReteNetwork {
             }
         }
         if (!candidates.isEmpty()) {
-            OperatorNode[] resultCandidates = new OperatorNode[candidates.keySet().size()];
-            candidates.keySet().toArray(resultCandidates);
-            Arrays.sort(resultCandidates, new Comparator<OperatorNode>() {
-
-                @Override
-                public int compare(OperatorNode arg0, OperatorNode arg1) {
-                    int result = candidates.get(arg0).size() - candidates.get(arg1).size();
-                    if (result == 0) {
-                        result = getTotalSize(candidates.get(arg0))
-                            - getTotalSize(candidates.get(arg1));
-                    }
-                    return 0;
-                }
-
-                private int getTotalSize(List<ReteStaticMapping> argumentComps) {
-                    int result = 0;
-                    for (int i = 0; i < argumentComps.size(); i++) {
-                        result += argumentComps.get(i).getElements().length;
-                    }
-                    return result;
-                }
-
-            });
-            result = resultCandidates[0];
+            result = candidates.keySet().iterator().next();
             argumentSources.clear();
             argumentSources.addAll(candidates.get(result));
         }
