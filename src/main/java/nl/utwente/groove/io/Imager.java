@@ -58,14 +58,10 @@ import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 
-import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineParser;
-import org.kohsuke.args4j.Option;
-import org.kohsuke.args4j.OptionDef;
-import org.kohsuke.args4j.spi.FileOptionHandler;
-import org.kohsuke.args4j.spi.OneArgumentOptionHandler;
-import org.kohsuke.args4j.spi.Setter;
+import picocli.CommandLine.ITypeConverter;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
+import picocli.CommandLine.TypeConversionException;
 
 import nl.utwente.groove.explore.Verbosity;
 import nl.utwente.groove.grammar.QualName;
@@ -86,6 +82,7 @@ import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.cli.CmdLineException;
 import nl.utwente.groove.util.cli.ExistingFileHandler;
 import nl.utwente.groove.util.cli.GrooveCmdLineTool;
 import nl.utwente.groove.util.parse.FormatException;
@@ -348,24 +345,23 @@ public class Imager extends GrooveCmdLineTool<Object> {
     private final ImagerFrame imagerFrame;
 
     /** The location of the file to be imaged. */
-    @Argument(metaVar = "input", usage = "Input file or directory", required = true,
-        handler = ExistingFileHandler.class)
+    @Parameters(index = "0", paramLabel = "input", description = "Input file or directory",
+        converter = ExistingFileHandler.class)
     private File inFile;
 
     /** The  optional location of the output file to be imaged. */
-    @Argument(metaVar = "output", index = 1,
-        usage = "Output file name; if omitted, the input file name is used. "
+    @Parameters(index = "1", arity = "0..1", paramLabel = "output",
+        description = "Output file name; if omitted, the input file name is used. "
             + "In the absence of the '-f' option, the "
-            + "extension of <output> is taken to specify the output format",
-        handler = FileOptionHandler.class)
+            + "extension of <output> is taken to specify the output format")
     private File outFile;
 
     /** Name of the image format to which the imager converts. */
-    @Option(name = "-f", metaVar = "ext", usage = FormatHandler.USAGE,
-        handler = FormatHandler.class)
+    @Option(names = "-f", paramLabel = "ext", description = FormatHandler.USAGE,
+        converter = FormatHandler.class)
     private String outFormatExt;
 
-    @Option(name = "-e", usage = "Enforces editor view export")
+    @Option(names = "-e", description = "Enforces editor view export")
     private boolean editorView;
 
     /**
@@ -478,20 +474,14 @@ public class Imager extends GrooveCmdLineTool<Object> {
     static public final String BROWSE_LABEL = "Browse...";
 
     /** Option handler for output format extension. */
-    public static class FormatHandler extends OneArgumentOptionHandler<String> {
-        /** Required constructor. */
-        public FormatHandler(CmdLineParser parser, OptionDef option,
-                             Setter<? super String> setter) {
-            super(parser, option, setter);
-        }
-
+    public static class FormatHandler implements ITypeConverter<String> {
         @Override
-        protected String parse(String argument) throws CmdLineException {
+        public String convert(String value) throws TypeConversionException {
             // first check if parameter is a valid format name
-            if (!getFormatMap().containsKey(argument)) {
-                throw new CmdLineException(this.owner, "Unknown format: " + argument);
+            if (!getFormatMap().containsKey(value)) {
+                throw new TypeConversionException("Unknown format: " + value);
             }
-            return argument;
+            return value;
         }
 
         /** Usage message for the -f option. */

@@ -21,8 +21,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.eclipse.jdt.annotation.Nullable;
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.Option;
+
+import picocli.CommandLine.Option;
 
 import nl.utwente.groove.explore.Verbosity;
 
@@ -86,7 +86,8 @@ public abstract class GrooveCmdLineTool<T> {
         return this.help;
     }
 
-    @Option(name = HelpHandler.NAME, usage = HelpHandler.USAGE, handler = HelpHandler.class)
+    @Option(names = HelpHandler.NAME, description = HelpHandler.USAGE, usageHelp = true,
+        parameterConsumer = HelpHandler.class)
     private boolean help;
 
     /** Returns the verbosity of the tool. */
@@ -99,8 +100,8 @@ public abstract class GrooveCmdLineTool<T> {
         this.verbosity = verbosity;
     }
 
-    @Option(name = VerbosityHandler.NAME, metaVar = VerbosityHandler.VAR,
-        usage = VerbosityHandler.USAGE, handler = VerbosityHandler.class)
+    @Option(names = VerbosityHandler.NAME, paramLabel = VerbosityHandler.VAR,
+        description = VerbosityHandler.USAGE, converter = VerbosityHandler.class)
     private Verbosity verbosity = Verbosity.MEDIUM;
 
     /**
