@@ -492,7 +492,7 @@ public class StateCache implements Cache {
     private Set<RecipeTarget> computeForwOuter() {
         assert getState().isFull() && getState().getPrimeFrame().isInner();
         Set<RecipeTarget> result = new LinkedHashSet<>();
-        Set<GraphState> known = new HashSet<>();
+        Set<GraphState> known = new LinkedHashSet<>();
         Queue<StateCache> queue = new LinkedList<>();
         queue.add(this);
         while (!queue.isEmpty()) {

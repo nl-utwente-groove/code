@@ -19,7 +19,9 @@ package nl.utwente.groove.lts;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -159,7 +161,7 @@ public class RecipeTransition extends ALabelEdge<GraphState>
 
     private Set<RuleTransition> computeSteps() {
         // mapping from states to sets of incoming transitions
-        Map<GraphState,@Nullable Set<RuleTransition>> inMap = new HashMap<>();
+        Map<GraphState,@Nullable Set<RuleTransition>> inMap = new LinkedHashMap<>();
         // build the incoming transition map
         Stack<GraphState> pool = new Stack<>();
         pool.add(getLaunch().target());
@@ -171,7 +173,7 @@ public class RecipeTransition extends ALabelEdge<GraphState>
                     var inSet = inMap.get(target);
                     boolean fresh = inSet == null;
                     if (fresh) {
-                        inMap.put(target, inSet = new HashSet<>());
+                        inMap.put(target, inSet = new LinkedHashSet<>());
                     }
                     assert inSet != null; // just set in case it was not set
                     inSet.add(trans);
@@ -183,7 +185,7 @@ public class RecipeTransition extends ALabelEdge<GraphState>
         }
         assert getLaunch().target().equals(target()) || inMap.containsKey(target());
         // backward reachability to build up the result set
-        Set<RuleTransition> result = new HashSet<>();
+        Set<RuleTransition> result = new LinkedHashSet<>();
         result.add(getLaunch());
         pool.add(target());
         while (!pool.isEmpty()) {

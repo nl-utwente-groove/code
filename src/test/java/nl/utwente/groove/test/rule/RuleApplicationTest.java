@@ -25,6 +25,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -237,7 +238,7 @@ public class RuleApplicationTest extends TestCase {
                       int expectedErrorCount) throws IllegalArgumentException {
         IsoChecker checker = IsoChecker.getInstance(true);
         BitSet found = new BitSet();
-        Set<RuleEvent> eventSet = new HashSet<>();
+        Set<RuleEvent> eventSet = new LinkedHashSet<>();
         Optional<MatchChecker> matchFilter = rule.getMatchFilter();
         for (Proof proof : rule.getProver().getAllMatches(start)) {
             RuleEvent event = proof.newEvent(null);

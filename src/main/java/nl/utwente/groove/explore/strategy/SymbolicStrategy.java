@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -155,11 +156,11 @@ public class SymbolicStrategy extends GTSStrategy {
         Collections.sort(sortedMatches, new PriorityComparator());
         List<Collection<? extends MatchResult>> priorityGroups = new ArrayList<>();
         int priority = sortedMatches.get(0).getAction().getPriority();
-        Collection<MatchResult> current = new HashSet<>();
+        Collection<MatchResult> current = new LinkedHashSet<>();
         for (MatchResult match : sortedMatches) {
             if (match.getAction().getPriority() != priority) {
                 priorityGroups.add(current);
-                current = new HashSet<>();
+                current = new LinkedHashSet<>();
                 priority = match.getAction().getPriority();
             }
             current.add(match);
