@@ -24,7 +24,10 @@ import org.junit.Test;
 
 import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.grammar.model.GrammarModel;
+import nl.utwente.groove.lts.AbstractGraphState;
 import nl.utwente.groove.lts.GTS;
+import nl.utwente.groove.lts.GTSListener;
+import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -56,8 +59,9 @@ public class DeterminismTest {
     }
 
     /**
-     * Explores a named grammar twice with a given strategy, perturbing the
-     * identity hash code sequence in between, and asserts that both
+     * Explores a named grammar repeatedly with a given strategy — perturbing
+     * the identity hash code sequence in between, and aggressively collapsing
+     * state caches during the later explorations — and asserts that all
      * explorations enumerate identical states and transitions in identical
      * order.
      */
@@ -65,20 +69,46 @@ public class DeterminismTest {
         try {
             GrammarModel grammarModel = Groove.loadGrammar(INPUT_DIR + "/" + grammarName);
             ExploreType exploreType = new ExploreType(strategy, "final", 0);
-            String first = explore(grammarModel, exploreType);
+            String first = explore(grammarModel, exploreType, false);
             perturbIdentityHashes();
-            String second = explore(grammarModel, exploreType);
+            String second = explore(grammarModel, exploreType, false);
             assertEquals(String
                 .format("Non-deterministic %s exploration of grammar %s", strategy, grammarName),
                          first, second);
+            for (int i = 0; i < 3; i++) {
+                perturbIdentityHashes();
+                String third = explore(grammarModel, exploreType, true);
+                assertEquals(String
+                    .format("Non-deterministic %s exploration of grammar %s under cache collapse",
+                            strategy, grammarName),
+                             first, third);
+            }
         } catch (Exception e) {
             fail(e.toString());
         }
     }
 
-    /** Explores a grammar and returns the enumeration signature of the resulting GTS. */
-    private String explore(GrammarModel grammarModel, ExploreType exploreType) throws FormatException {
+    /**
+     * Explores a grammar and returns the enumeration signature of the resulting GTS.
+     * @param collapseCaches if {@code true}, every state's cache is cleared as
+     * soon as the state is closed. This simulates the garbage collector
+     * clearing the (softly referenced) caches under memory pressure, which
+     * forces graphs and transition data to be reconstructed on next use —
+     * the enumeration must be insensitive to such reconstructions.
+     */
+    private String explore(GrammarModel grammarModel, ExploreType exploreType,
+                           boolean collapseCaches) throws FormatException {
         GTS gts = new GTS(grammarModel.toGrammar());
+        if (collapseCaches) {
+            gts.addLTSListener(new GTSListener() {
+                @Override
+                public void statusUpdate(GTS observed, GraphState state, int change) {
+                    if (state.isClosed() && state instanceof AbstractGraphState closed) {
+                        closed.clearCache();
+                    }
+                }
+            });
+        }
         exploreType.newExploration(gts, null).play();
         StringBuilder result = new StringBuilder();
         gts.nodeSet().forEach(n -> result.append(n).append('\n'));
