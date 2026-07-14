@@ -41,7 +41,7 @@ Thin wrappers in `src/main/java/nl/utwente/groove/` delegate to the real impleme
 | `PrologChecker` | CLI | Prolog queries over a grammar/GTS (`prolog.PrologChecker`) |
 | `Imager` | GUI/CLI | Renders graphs/grammars to image files (`io.Imager`) |
 
-CLI argument parsing uses args4j via `util.cli`.
+CLI argument parsing uses picocli via `util.cli`.
 
 ## Architecture
 

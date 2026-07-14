@@ -28,7 +28,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
 
-import org.kohsuke.args4j.Argument;
+import picocli.CommandLine.Parameters;
 
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.graph.Graph;
@@ -111,9 +111,9 @@ public class Viewer extends GrooveCmdLineTool<Object> {
     }
 
     /** The location of the file to be viewer. */
-    @Argument(metaVar = "input",
-        usage = "Graph file to be viewed. Its extension is used to guess its format and type",
-        required = true, handler = ExistingFileHandler.class)
+    @Parameters(index = "0", paramLabel = "input",
+        description = "Graph file to be viewed. Its extension is used to guess its format and type",
+        converter = ExistingFileHandler.class)
     private File inFile;
 
     /**

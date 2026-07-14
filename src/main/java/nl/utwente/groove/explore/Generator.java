@@ -23,15 +23,15 @@ import java.io.InputStream;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 
-import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineParser;
-import org.kohsuke.args4j.Option;
-import org.kohsuke.args4j.OptionDef;
-import org.kohsuke.args4j.spi.MapOptionHandler;
-import org.kohsuke.args4j.spi.OneArgumentOptionHandler;
-import org.kohsuke.args4j.spi.Setter;
+import picocli.CommandLine.IParameterConsumer;
+import picocli.CommandLine.ITypeConverter;
+import picocli.CommandLine.Model.ArgSpec;
+import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.ParameterException;
+import picocli.CommandLine.Parameters;
 
 import nl.utwente.groove.explore.encode.Serialized;
 import nl.utwente.groove.explore.util.CompositeReporter;
@@ -47,6 +47,7 @@ import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.lts.Filter;
 import nl.utwente.groove.transform.Transformer;
 import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.cli.CmdLineException;
 import nl.utwente.groove.util.cli.DirectoryHandler;
 import nl.utwente.groove.util.cli.GrammarHandler;
 import nl.utwente.groove.util.cli.GrooveCmdLineParser;
@@ -54,7 +55,7 @@ import nl.utwente.groove.util.cli.GrooveCmdLineTool;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
- * New command-line Generator class, using the Agrs4J library.
+ * New command-line Generator class, using the picocli library.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -97,6 +98,17 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
     }
 
     private final static String SOFT_REF_POLICY_NAME = "-XX:SoftRefLRUPolicyMSPerMB";
+
+    /* Additionally checks the dependency of the "-ef" option upon "-o". */
+    @Override
+    protected void parseArguments() throws CmdLineException {
+        super.parseArguments();
+        if (!isHelp() && this.ltsLabels != null && this.ltsPattern == null) {
+            throw new CmdLineException(String
+                .format("Error: option \"-ef\" requires the option(s) [-o]%n%s",
+                        getParser().getUsageLine()));
+        }
+    }
 
     /**
      * Compute the exploration out of the command line options.
@@ -167,9 +179,9 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
         return this.logdir;
     }
 
-    @Option(name = "-l", metaVar = "dir",
-        usage = "Log the generation process in the directory <dir>",
-        handler = DirectoryHandler.class)
+    @Option(names = "-l", paramLabel = "dir",
+        description = "Log the generation process in the directory <dir>",
+        converter = DirectoryHandler.class)
     private File logdir;
 
     /**
@@ -187,7 +199,7 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
         return this.strategy;
     }
 
-    @Option(name = STRATEGY_NAME, metaVar = STRATEGY_VAR, usage = STRATEGY_USAGE)
+    @Option(names = STRATEGY_NAME, paramLabel = STRATEGY_VAR, description = STRATEGY_USAGE)
     private String strategy;
 
     /**
@@ -205,7 +217,7 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
         return this.acceptor;
     }
 
-    @Option(name = ACCEPTOR_NAME, metaVar = ACCEPTOR_VAR, usage = ACCEPTOR_USAGE)
+    @Option(names = ACCEPTOR_NAME, paramLabel = ACCEPTOR_VAR, description = ACCEPTOR_USAGE)
     private String acceptor;
 
     /**
@@ -216,7 +228,7 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
         return this.resultCount;
     }
 
-    @Option(name = RESULT_NAME, metaVar = RESULT_VAR, usage = RESULT_USAGE)
+    @Option(names = RESULT_NAME, paramLabel = RESULT_VAR, description = RESULT_USAGE)
     private int resultCount;
 
     /** Returns the name of the properties file, if any. */
@@ -224,8 +236,8 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
         return this.propertiesFile;
     }
 
-    @Option(name = "-P", metaVar = "file",
-        usage = "Read the system properties from a given properties file.\n"
+    @Option(names = "-P", paramLabel = "file",
+        description = "Read the system properties from a given properties file.\n"
             + "The default extension is '.properties'. Absolute and relative paths can be used.")
     private String propertiesFile;
 
@@ -234,12 +246,12 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
         return this.grammarProperties;
     }
 
-    @Option(name = "-D", metaVar = "key[+]=val", usage = ""
+    @Option(names = "-D", paramLabel = "key[+]=val", description = ""
         + "Set grammar property <key> to <val> (for =), or appends <val> to the current value (for +=). Examples:\n"
         + "  - checkIsomorphism=boolean - switch isomorphism checking on or off\n"
         + "  - typeGraph+=names - extends the type graphs to be used\n" + "See "
         + Groove.GROOVE_BASE + ".grammar.GrammarProperties " + "for other allowed key/value pairs",
-        handler = PropertiesHandler.class)
+        parameterConsumer = PropertiesHandler.class)
     private Map<GrammarKey,PropertySetting> grammarProperties;
 
     /**
@@ -249,8 +261,8 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
         return this.ltsLabels;
     }
 
-    @Option(name = "-ef", metaVar = "flags", depends = "-o",
-        usage = "" + "Flags for the \"-o\" option. Legal values are:\n" //
+    @Option(names = "-ef", paramLabel = "flags",
+        description = "" + "Flags for the \"-o\" option. Legal values are:\n" //
             + "  s - label start state (default: 'start')\n" //
             + "  f - label final states (default: 'final')\n" //
             + "  o - label open states (default: 'open')\n" //
@@ -258,7 +270,7 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
             + "  t - include transient states (label: 't#', '#' replaced by depth)\n" //
             + "  r - result state label (default: 'result')\n" //
             + "Specify label to be used by appending flag with 'label' (single-quoted)",
-        handler = LTSLabelsHandler.class)
+        converter = LTSLabelsHandler.class)
     private LTSLabels ltsLabels;
 
     /**
@@ -277,8 +289,8 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
         return this.ltsPattern;
     }
 
-    @Option(name = "-o", metaVar = "file",
-        usage = "Save the generated LTS to a file with name derived from <file>, "
+    @Option(names = "-o", paramLabel = "file",
+        description = "Save the generated LTS to a file with name derived from <file>, "
             + "in which '#' is instantiated with the grammar ID. "
             + "The \"-ef\"-option controls some additional state labels. "
             + "The optional extension determines the output format (default is .gxl)")
@@ -303,8 +315,8 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
         return this.statePattern;
     }
 
-    @Option(name = "-f", metaVar = "file",
-        usage = "Save result states in separate files, with names derived from <file>, "
+    @Option(names = "-f", paramLabel = "file",
+        description = "Save result states in separate files, with names derived from <file>, "
             + "in which the mandatory '#' is instantiated with the state number. "
             + "The optional extension determines the output format (default is .gst)")
     private String statePattern;
@@ -318,12 +330,12 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
                 : Filter.NONE;
     }
 
-    @Option(name = "-spanning",
-        usage = "If switched on, only the spanning tree of the LTS will be saved")
+    @Option(names = "-spanning",
+        description = "If switched on, only the spanning tree of the LTS will be saved")
     private boolean spanning;
 
-    @Option(name = "-traces",
-        usage = "If switched on, only the result traces of the LTS will be saved "
+    @Option(names = "-traces",
+        description = "If switched on, only the result traces of the LTS will be saved "
             + "(which may be only the start state, if there are no result states). "
             + "Overrides -spanning if both are given")
     private boolean traces;
@@ -337,8 +349,8 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
         return this.grammar;
     }
 
-    @Argument(metaVar = GrammarHandler.META_VAR, required = true, usage = GrammarHandler.USAGE,
-        handler = GrammarHandler.class)
+    @Parameters(index = "0", paramLabel = GrammarHandler.META_VAR,
+        description = GrammarHandler.USAGE, converter = GrammarHandler.class)
     private File grammar;
 
     /**
@@ -351,8 +363,8 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
         return this.startGraphs;
     }
 
-    @Argument(index = 1, metaVar = "start", multiValued = true,
-        usage = "Start graph names (defined in grammar, no extension) "
+    @Parameters(index = "1..*", arity = "0..*", paramLabel = "start",
+        description = "Start graph names (defined in grammar, no extension) "
             + "or start graph files (extension .gst)")
     private List<String> startGraphs;
 
@@ -484,71 +496,53 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
     private static ExploreResult staticResult;
 
     /** Handler for the {@link #ltsLabels} option. */
-    public static class LTSLabelsHandler extends OneArgumentOptionHandler<LTSLabels> {
-        /** The required constructor. */
-        public LTSLabelsHandler(CmdLineParser parser, OptionDef option,
-                                Setter<? super LTSLabels> setter) {
-            super(parser, option, setter);
-        }
-
+    public static class LTSLabelsHandler implements ITypeConverter<LTSLabels> {
         @Override
-        protected LTSLabels parse(String argument) throws NumberFormatException, CmdLineException {
-            try {
-                return new LTSLabels(argument);
-            } catch (FormatException e) {
-                throw new CmdLineException(this.owner, e);
-            }
+        public LTSLabels convert(String value) throws FormatException {
+            return new LTSLabels(value);
         }
     }
 
     /** Handler for the {@link #grammarProperties} option. */
-    public static class PropertiesHandler extends MapOptionHandler {
-        /** The required constructor. */
-        public PropertiesHandler(CmdLineParser parser, OptionDef option,
-                                 Setter<? super Map<?,?>> setter) {
-            super(parser, option, setter);
-        }
-
-        @SuppressWarnings("rawtypes")
+    public static class PropertiesHandler implements IParameterConsumer {
         @Override
-        protected void addToMap(String argument, Map m) throws CmdLineException {
-            super.addToMap(argument, m);
-            if (this.error != null) {
-                throw new CmdLineException(this.owner, this.error);
+        public void consumeParameters(Stack<String> args, ArgSpec argSpec,
+                                      CommandSpec commandSpec) {
+            if (args.isEmpty()) {
+                throw new ParameterException(commandSpec.commandLine(),
+                    "Missing required parameter for option \"-D\"");
             }
-        }
-
-        @SuppressWarnings("rawtypes")
-        @Override
-        protected Map<GrammarKey,String> createNewCollection(Class<? extends Map> type) {
-            return new EnumMap<>(GrammarKey.class);
-        }
-
-        @SuppressWarnings({"rawtypes", "unchecked"})
-        @Override
-        protected void addToMap(Map m, String key, String value) {
-            this.error = null;
+            String argument = args.pop();
+            int idx = argument.indexOf('=');
+            if (idx < 0) {
+                throw new ParameterException(commandSpec.commandLine(),
+                    "An argument for setting a Map must contain a '='");
+            }
+            String key = argument.substring(0, idx);
+            String value = argument.substring(idx + 1);
+            String error = null;
             boolean plus = !key.isEmpty() && key.charAt(key.length() - 1) == '+';
             if (plus) {
                 key = key.substring(0, key.length() - 1);
             }
             var property = GrammarKey.getKey(key);
             if (property.isEmpty()) {
-                this.error = String.format("Unknown property key '%s'", key);
+                error = String.format("Unknown property key '%s'", key);
             } else if (property.get().isSystem()) {
-                this.error = String.format("Cannot set system property '%s'", key);
+                error = String.format("Cannot set system property '%s'", key);
             } else if (!property.get().parser().accepts(value)) {
-                this.error = String.format("Incorrect value '%s' for property '%s'", value, key);
-            } else {
-                m.put(property.get(), new PropertySetting(plus, value));
+                error = String.format("Incorrect value '%s' for property '%s'", value, key);
             }
+            if (error != null) {
+                throw new ParameterException(commandSpec.commandLine(), error);
+            }
+            Map<GrammarKey,PropertySetting> map = argSpec.getValue();
+            if (map == null) {
+                map = new EnumMap<>(GrammarKey.class);
+                argSpec.setValue(map);
+            }
+            map.put(property.get(), new PropertySetting(plus, value));
         }
-
-        /**
-         * Error detected in {@link #addToMap(Map, String, String)}
-         * and to be reported in {@link #addToMap(String, Map)}.
-         */
-        private String error;
     }
 
     /** Parsed value of a -D option. */

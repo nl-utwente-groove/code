@@ -1,8 +1,10 @@
 eclipse.preferences.version=1
+encoding//src/main/antlr3/nl/utwente/groove/control/parse=UTF-8
 encoding//src/main/java=UTF-8
 encoding//src/main/java/nl/utwente/groove/control/parse=UTF-8
 encoding//src/main/java/nl/utwente/groove/io/conceptual/configuration=UTF-8
 encoding//src/main/resources=UTF-8
 encoding//src/test/java=UTF-8
 encoding//src/test/resources=UTF-8
+encoding//target/generated-sources/antlr3=UTF-8
 encoding/<project>=UTF-8

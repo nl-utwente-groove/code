@@ -1,67 +1,61 @@
 /* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2023 University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * $Id$
  */
 package nl.utwente.groove.util.cli;
 
-import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.util.ResourceBundle;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineParser;
-import org.kohsuke.args4j.OptionHandlerFilter;
-import org.kohsuke.args4j.spi.MapOptionHandler;
-import org.kohsuke.args4j.spi.OptionHandler;
+import org.eclipse.jdt.annotation.Nullable;
+
+import picocli.CommandLine;
+import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Model.OptionSpec;
+import picocli.CommandLine.Model.PositionalParamSpec;
+import picocli.CommandLine.ParameterException;
 
 /**
- * Specialised command-line parser that provides better help support.
+ * Specialised command-line parser (wrapping a picocli {@link CommandLine})
+ * that provides better help support.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GrooveCmdLineParser extends CmdLineParser {
-    /** 
+public class GrooveCmdLineParser {
+    /**
      * Constructs an instance for a given options object.
      * @param appName the name of the application, printed in the usage message
      * @param bean the options object
      */
     public GrooveCmdLineParser(String appName, Object bean) {
-        super(bean);
         this.appName = appName;
-    }
-
-    /**
-     * Called when the help option has been invoked.
-     * This causes the parser to stop parsing and never give a {@link CmdLineException}. 
-     */
-    public void setHelp() {
-        this.help = true;
-        stopOptionParsing();
+        this.commandLine = new CommandLine(bean);
+        this.commandLine.setCommandName(appName);
+        // do not let (e.g.) "-ef" be mistaken for a cluster of "-e" and "-f"
+        this.commandLine.setPosixClusteredShortOptionsAllowed(false);
     }
 
     /** Returns a single-line description of the tool usage. */
     public String getUsageLine() {
         StringBuilder result = new StringBuilder();
-        OutputStream stream = new ByteArrayOutputStream();
-        printSingleLineUsage(stream);
         result.append("Usage: \"");
         result.append(this.appName);
-        result.append(stream.toString());
+        result.append(getSingleLineUsage());
         result.append("\"");
         return result.toString();
     }
@@ -70,38 +64,28 @@ public class GrooveCmdLineParser extends CmdLineParser {
     public void printHelp() {
         System.out.println(getUsageLine());
         System.out.println();
-        setUsageWidth(100);
-        printUsage(System.out);
-    }
-
-    /* Copied from superclass; Adds a few intermediate lines. */
-    @Override
-    public void printUsage(Writer out, ResourceBundle rb,
-            OptionHandlerFilter filter) {
-        PrintWriter w = new PrintWriter(out);
+        PrintWriter w = new PrintWriter(System.out);
         // determine the length of the option + metavar first
         int len = 0;
-        for (OptionHandler<?> h : getArguments()) {
-            int curLen = getPrefixLen(h, rb);
-            len = Math.max(len, curLen);
+        for (PositionalParamSpec arg : getArguments()) {
+            len = Math.max(len, getNameAndMeta(arg).length());
         }
-        for (OptionHandler<?> h : getOptions()) {
-            int curLen = getPrefixLen(h, rb);
-            len = Math.max(len, curLen);
+        for (OptionSpec option : getOptions()) {
+            len = Math.max(len, getNameAndMeta(option).length());
         }
 
         // then print
         if (!getArguments().isEmpty()) {
             w.println("ARGUMENTS");
-            for (OptionHandler<?> h : getArguments()) {
-                printOption(w, h, len, rb, filter);
+            for (PositionalParamSpec arg : getArguments()) {
+                printUsage(w, getNameAndMeta(arg), getDescription(arg.description()), len);
             }
             w.println();
         }
         if (!getOptions().isEmpty()) {
             w.println("OPTIONS");
-            for (OptionHandler<?> h : getOptions()) {
-                printOption(w, h, len, rb, filter);
+            for (OptionSpec option : getOptions()) {
+                printUsage(w, getNameAndMeta(option), getDescription(option.description()), len);
             }
             w.println();
         }
@@ -109,81 +93,165 @@ public class GrooveCmdLineParser extends CmdLineParser {
         w.flush();
     }
 
-    /* Copied from superclass (unfortunately not accessible). */
-    private int getPrefixLen(OptionHandler<?> h, ResourceBundle rb) {
-        if (h.option.usage().length() == 0) {
-            return 0;
+    /** Prints the aligned name + description of a single option or argument. */
+    private void printUsage(PrintWriter w, String nameAndMeta, String usage, int len) {
+        w.print(' ');
+        w.print(nameAndMeta);
+        for (int i = nameAndMeta.length(); i < len; i++) {
+            w.print(' ');
         }
+        w.print(" : ");
+        boolean first = true;
+        for (String line : wrapLines(usage, USAGE_WIDTH - len - 4)) {
+            if (!first) {
+                for (int i = 0; i < len + 4; i++) {
+                    w.print(' ');
+                }
+            }
+            w.println(line);
+            first = false;
+        }
+    }
 
-        return h.getNameAndMeta(rb).length();
+    /** Joins the (potentially multi-part) description of an option or argument. */
+    private String getDescription(String[] description) {
+        return String.join("\n", description);
+    }
+
+    /** Breaks a description into lines, wrapping at a given maximum length. */
+    static private List<String> wrapLines(String text, int maxLength) {
+        List<String> result = new ArrayList<>();
+        for (String line : text.split("\n")) {
+            while (line.length() > maxLength) {
+                int ix = line.lastIndexOf(' ', maxLength);
+                if (ix <= 0) {
+                    ix = maxLength;
+                }
+                result.add(line.substring(0, ix));
+                line = line.substring(ix).trim();
+            }
+            result.add(line);
+        }
+        return result;
     }
 
     /** Returns a single-line string describing the usage of a command. */
     public String getSingleLineUsage() {
-        Writer stringWriter = new StringWriter();
-        printSingleLineUsage(stringWriter, null);
-        return stringWriter.toString();
-    }
-
-    /* First prints options, then arguments. */
-    @Override
-    public void printSingleLineUsage(Writer w, ResourceBundle rb) {
-        PrintWriter pw = new PrintWriter(w);
-        for (OptionHandler<?> h : getOptions()) {
-            printSingleLineOption(pw, h, rb, true);
+        StringBuilder result = new StringBuilder();
+        for (OptionSpec option : getOptions()) {
+            appendSingleLineOption(result, option, true);
         }
         int optArgCount = 0;
         // nest the argument meta-variables
-        for (OptionHandler<?> h : getArguments()) {
-            printSingleLineOption(pw, h, rb, false);
-            if (!h.option.required()) {
+        for (PositionalParamSpec arg : getArguments()) {
+            result.append(' ');
+            if (!arg.required()) {
+                result.append('[');
                 optArgCount++;
+            }
+            result.append(arg.paramLabel());
+            if (arg.isMultiValue()) {
+                result.append(" ...");
             }
         }
         for (int i = 0; i < optArgCount; i++) {
-            pw.print(']');
+            result.append(']');
         }
-        pw.flush();
+        return result.toString();
     }
 
-    /** Modified from superclass to add parameter controlling
+    /** Appends the single-line usage of an option, with a parameter controlling
      * closing bracket printing. */
-    protected void printSingleLineOption(PrintWriter pw, OptionHandler<?> h,
-            ResourceBundle rb, boolean closeOpt) {
-        pw.print(' ');
-        boolean multiOccurrences =
-            (h instanceof MapOptionHandler) || h.option.isMultiValued();
-        boolean brackets = !h.option.required() || multiOccurrences;
+    protected void appendSingleLineOption(StringBuilder result, OptionSpec option,
+                                          boolean closeOpt) {
+        result.append(' ');
+        boolean multiOccurrences = Map.class.isAssignableFrom(option.type());
+        boolean brackets = !option.required() || multiOccurrences;
         if (brackets) {
-            pw.print('[');
+            result.append('[');
         }
-        pw.print(h.getNameAndMeta(rb));
-        if (h.option.isArgument() && h.option.isMultiValued()) {
-            pw.print(" ...");
-        }
+        result.append(getNameAndMeta(option));
         if (brackets && closeOpt) {
-            pw.print(']');
+            result.append(']');
         }
-        if (!h.option.isArgument() && multiOccurrences) {
-            pw.print(h.option.required() ? '+' : '*');
+        if (multiOccurrences) {
+            result.append(option.required()
+                ? '+'
+                : '*');
         }
     }
 
-    /* Does not generate an exception if the help has been invoked. */
-    @Override
+    /** Returns the name of an option, followed by its meta-variable if it has one. */
+    protected String getNameAndMeta(OptionSpec option) {
+        String result = option.names()[0];
+        if (option.arity().max() > 0) {
+            result += " " + option.paramLabel();
+        }
+        return result;
+    }
+
+    /** Returns the meta-variable of an argument. */
+    protected String getNameAndMeta(PositionalParamSpec arg) {
+        return arg.paramLabel();
+    }
+
+    /**
+     * Parses the given command-line arguments into the options object
+     * passed in at construction time.
+     * @throws CmdLineException if the arguments could not be parsed; the
+     * exception message includes the usage line
+     */
     public void parseArgument(String... args) throws CmdLineException {
         try {
-            super.parseArgument(args);
-        } catch (CmdLineException e) {
-            if (!this.help) {
-                throw new CmdLineException(this, String.format("Error: %s%n%s",
-                    e.getMessage(), getUsageLine()));
-            }
+            this.commandLine.parseArgs(args);
+        } catch (ParameterException e) {
+            throw new CmdLineException(String
+                .format("Error: %s%n%s", e.getMessage(), getUsageLine()), e);
         }
     }
+
+    /** Moves the option with a given name to the final position
+     * in the usage message. */
+    public void setLastOption(String name) {
+        this.lastOption = name;
+    }
+
+    /** Name of the option to be listed last in the usage message, if any. */
+    private @Nullable String lastOption;
+
+    /** Returns the options of the wrapped command, in the order
+     * in which they are listed in the usage message. */
+    protected List<OptionSpec> getOptions() {
+        List<OptionSpec> result = new ArrayList<>(getCommandSpec().options());
+        Comparator<OptionSpec> byName = Comparator.comparing(o -> o.names()[0]);
+        String last = this.lastOption;
+        if (last == null) {
+            result.sort(byName);
+        } else {
+            result
+                .sort(Comparator
+                    .<OptionSpec,Boolean>comparing(o -> last.equals(o.names()[0]))
+                    .thenComparing(byName));
+        }
+        return result;
+    }
+
+    /** Returns the positional arguments of the wrapped command. */
+    protected List<PositionalParamSpec> getArguments() {
+        return getCommandSpec().positionalParameters();
+    }
+
+    /** Returns the command model of the wrapped command line. */
+    protected CommandSpec getCommandSpec() {
+        return this.commandLine.getCommandSpec();
+    }
+
+    /** The wrapped picocli command line. */
+    private final CommandLine commandLine;
 
     /** Name of the application of which the command-line options are parsed. */
     private final String appName;
-    /** Flag indicating that the help option has been invoked. */
-    private boolean help;
+
+    /** Width (in characters) at which the help message is wrapped. */
+    static private final int USAGE_WIDTH = 100;
 }

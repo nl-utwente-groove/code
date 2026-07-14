@@ -18,15 +18,12 @@ package nl.utwente.groove.prolog;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineParser;
-import org.kohsuke.args4j.Option;
-import org.kohsuke.args4j.OptionDef;
-import org.kohsuke.args4j.spi.OneArgumentOptionHandler;
-import org.kohsuke.args4j.spi.OptionHandler;
-import org.kohsuke.args4j.spi.Parameters;
-import org.kohsuke.args4j.spi.Setter;
+import picocli.CommandLine.IParameterConsumer;
+import picocli.CommandLine.Model.ArgSpec;
+import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Option;
 
 import nl.utwente.groove.explore.Generator;
 import nl.utwente.groove.grammar.Grammar;
@@ -52,15 +49,7 @@ public class PrologChecker extends GrooveCmdLineTool<Object> {
     protected GrooveCmdLineParser createParser(String appName) {
         GrooveCmdLineParser result = new GrooveCmdLineParser(appName, this);
         // move -g to the final position
-        @SuppressWarnings("rawtypes") List<OptionHandler> handlers = result.getOptions();
-        OptionHandler<?> genHandler = null;
-        for (OptionHandler<?> handler : handlers) {
-            if (handler instanceof GeneratorHandler) {
-                genHandler = handler;
-            }
-        }
-        handlers.remove(genHandler);
-        handlers.add(genHandler);
+        result.setLastOption("-g");
         return result;
     }
 
@@ -102,12 +91,12 @@ public class PrologChecker extends GrooveCmdLineTool<Object> {
         emit("** Total Running Time (ms):\t%d%n", endTime - genStartTime);
     }
 
-    @Option(name = "-p", metaVar = "query", usage = "Performs the given query (multiple allowed)",
-        handler = QueryHandler.class, required = true)
+    @Option(names = "-p", paramLabel = "query",
+        description = "Performs the given query (multiple allowed)", required = true)
     private List<String> queries;
-    @Option(name = "-g", metaVar = "args",
-        usage = "Invoke the generator using <args> as options + arguments",
-        handler = GeneratorHandler.class, required = true)
+    @Option(names = "-g", paramLabel = "args",
+        description = "Invoke the generator using <args> as options + arguments",
+        parameterConsumer = GeneratorHandler.class, required = true)
     private GeneratorArgs genArgs;
 
     /**
@@ -128,55 +117,26 @@ public class PrologChecker extends GrooveCmdLineTool<Object> {
         new PrologChecker(args).start();
     }
 
-    /** Option handler for Prolog queries. */
-    public static class QueryHandler extends OneArgumentOptionHandler<String> {
-        /**
-         * Required constructor.
-         */
-        public QueryHandler(CmdLineParser parser, OptionDef option, Setter<? super String> setter) {
-            super(parser, option, setter);
-        }
-
+    /** Option handler for the '-g' option, consuming all remaining arguments. */
+    public static class GeneratorHandler implements IParameterConsumer {
         @Override
-        protected String parse(String argument) {
-            return argument;
-        }
-    }
-
-    /** Option handler for the '-g' option. */
-    public static class GeneratorHandler extends OptionHandler<GeneratorArgs> {
-        /** Required constructor. */
-        public GeneratorHandler(CmdLineParser parser, OptionDef option,
-            Setter<? super GeneratorArgs> setter) {
-            super(parser, option, setter);
-        }
-
-        @Override
-        public int parseArguments(Parameters params) throws CmdLineException {
-            ArrayList<String> genArgs = new ArrayList<>();
-            for (int ix = 0; ix < params.size(); ix++) {
-                genArgs.add(params.getParameter(ix));
+        public void consumeParameters(Stack<String> args, ArgSpec argSpec,
+                                      CommandSpec commandSpec) {
+            List<String> genArgs = new ArrayList<>();
+            while (!args.isEmpty()) {
+                genArgs.add(args.pop());
             }
-            this.setter.addValue(new GeneratorArgs(params));
-            return params.size();
-        }
-
-        @Override
-        public String getDefaultMetaVariable() {
-            return "generator-args";
+            argSpec.setValue(new GeneratorArgs(genArgs));
         }
     }
 
     /**
      * Option value class collecting all remaining arguments.
-     * Wrapped into a class to fool Args4J into understanding this is not a multiple value.
+     * Wrapped into a class so that the option is not treated as multi-valued.
      */
     public static class GeneratorArgs {
-        GeneratorArgs(Parameters params) throws CmdLineException {
-            this.args = new ArrayList<>();
-            for (int ix = 0; ix < params.size(); ix++) {
-                this.args.add(params.getParameter(ix));
-            }
+        GeneratorArgs(List<String> args) {
+            this.args = new ArrayList<>(args);
         }
 
         /** Returns the content of this argument, as a string array. */

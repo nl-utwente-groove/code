@@ -20,27 +20,22 @@ import static nl.utwente.groove.explore.Verbosity.LOW;
 import static nl.utwente.groove.lts.StateProperty.isStateProperty;
 
 import java.io.File;
-import java.io.PrintWriter;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.Stack;
 
-import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineParser;
-import org.kohsuke.args4j.Option;
-import org.kohsuke.args4j.OptionDef;
-import org.kohsuke.args4j.spi.FileOptionHandler;
-import org.kohsuke.args4j.spi.OneArgumentOptionHandler;
-import org.kohsuke.args4j.spi.OptionHandler;
-import org.kohsuke.args4j.spi.Parameters;
-import org.kohsuke.args4j.spi.Setter;
+import picocli.CommandLine.IParameterConsumer;
+import picocli.CommandLine.ITypeConverter;
+import picocli.CommandLine.Model.ArgSpec;
+import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
+import picocli.CommandLine.TypeConversionException;
 
 import groovyjarjarantlr4.v4.runtime.misc.Nullable;
 import nl.utwente.groove.explore.ExploreResult;
@@ -85,26 +80,23 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
     protected GrooveCmdLineParser createParser(String appName) {
         GrooveCmdLineParser result = new GrooveCmdLineParser(appName, this) {
             @Override
-            public void printSingleLineUsage(Writer w, ResourceBundle rb) {
-                int optionCount = getOptions().size();
-                PrintWriter pw = new PrintWriter(w);
+            public String getSingleLineUsage() {
+                StringBuilder usage = new StringBuilder();
+                var options = getOptions();
+                int optionCount = options.size();
                 for (int ix = 0; ix < optionCount - 1; ix++) {
-                    printSingleLineOption(pw, getOptions().get(ix), rb, true);
+                    appendSingleLineOption(usage, options.get(ix), true);
                 }
-                pw.print(" [");
-                pw.print(getOptions().get(optionCount - 1).getNameAndMeta(rb));
-                pw.print(" | ");
-                pw.print(getArguments().get(0).getNameAndMeta(rb));
-                pw.print(']');
-                pw.flush();
+                usage.append(" [");
+                usage.append(getNameAndMeta(options.get(optionCount - 1)));
+                usage.append(" | ");
+                usage.append(getNameAndMeta(getArguments().get(0)));
+                usage.append(']');
+                return usage.toString();
             }
         };
         // move -g to the final position
-        var handlers = result.getOptions();
-        var genHandler
-            = handlers.stream().filter(h -> h instanceof GeneratorHandler).findFirst().get();
-        handlers.remove(genHandler);
-        handlers.add(genHandler);
+        result.setLastOption("-g");
         return result;
     }
 
@@ -189,32 +181,32 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         }
     }
 
-    @Option(name = "-ef", metaVar = "flags", usage = "" + "Special GTS labels. Legal values are:\n" //
-        + "  s - start state label (default: 'start')\n" //
-        + "  f - final states label (default: 'final')\n" //
-        + "  o - open states label (default: 'open')\n" //
-        + "  r - result state label (default: 'result')\n" //
-        + "Specify the label to be used by appending flag with 'label' (single-quoted)\n"
-        + "Example: -ef s'begin'f'end' specifies that the start state is labelled 'begin' and final states are labelled 'end'",
-        handler = LTSLabelsHandler.class)
+    @Option(names = "-ef", paramLabel = "flags",
+        description = "" + "Special GTS labels. Legal values are:\n" //
+            + "  s - start state label (default: 'start')\n" //
+            + "  f - final states label (default: 'final')\n" //
+            + "  o - open states label (default: 'open')\n" //
+            + "  r - result state label (default: 'result')\n" //
+            + "Specify the label to be used by appending flag with 'label' (single-quoted)\n"
+            + "Example: -ef s'begin'f'end' specifies that the start state is labelled 'begin' and final states are labelled 'end'",
+        converter = LTSLabelsHandler.class)
     private LTSLabels ltsLabels;
 
-    @Option(name = "-ltl", metaVar = "prop",
-        usage = "Check the LTL property <prop> (multiple allowed)",
-        handler = LTLFormulaHandler.class)
+    @Option(names = "-ltl", paramLabel = "prop",
+        description = "Check the LTL property <prop> (multiple allowed)",
+        converter = LTLFormulaHandler.class)
     private List<gov.nasa.ltl.trans.Formula<String>> ltlProps;
-    @Option(name = "-ctl", metaVar = "prop",
-        usage = "Check the CTL property <prop> (multiple allowed)",
-        handler = CLTFormulaHandler.class)
+    @Option(names = "-ctl", paramLabel = "prop",
+        description = "Check the CTL property <prop> (multiple allowed)",
+        converter = CLTFormulaHandler.class)
     private List<Formula> ctlProps;
-    @Option(name = "-g", metaVar = "args",
-        usage = "Invoke the generator using <args> as options + arguments",
-        handler = GeneratorHandler.class)
+    @Option(names = "-g", paramLabel = "args",
+        description = "Invoke the generator using <args> as options + arguments",
+        parameterConsumer = GeneratorHandler.class)
     private GeneratorArgs genArgs;
 
-    @Argument(metaVar = "model",
-        usage = "File name of GXL graph (CTL only) or directory of production system to be checked",
-        handler = FileOptionHandler.class)
+    @Parameters(index = "0", arity = "0..1", paramLabel = "model",
+        description = "File name of GXL graph (CTL only) or directory of production system to be checked")
     private File modelGraph;
 
     /**
@@ -236,81 +228,47 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
     }
 
     /** Option handler for CTL formulas. */
-    public static class CLTFormulaHandler extends OneArgumentOptionHandler<Formula> {
-        /**
-         * Required constructor.
-         */
-        public CLTFormulaHandler(CmdLineParser parser, OptionDef option,
-                                 Setter<? super Formula> setter) {
-            super(parser, option, setter);
-        }
-
+    public static class CLTFormulaHandler implements ITypeConverter<Formula> {
         @Override
-        protected Formula parse(String argument) throws CmdLineException {
+        public Formula convert(String value) throws TypeConversionException {
             try {
-                return Formula.parse(Logic.CTL, argument).toCtlFormula();
+                return Formula.parse(Logic.CTL, value).toCtlFormula();
             } catch (FormatException e) {
-                throw new CmdLineException(this.owner,
-                    "Error while parsing '%s': %s".formatted(argument, e.getMessage()));
+                throw new TypeConversionException("Error while parsing '%s': %s"
+                    .formatted(value, e.getMessage()));
             }
         }
     }
 
     /** Option handler for LTL formulas. */
     public static class LTLFormulaHandler
-        extends OneArgumentOptionHandler<gov.nasa.ltl.trans.Formula<Proposition>> {
-        /**
-         * Required constructor.
-         */
-        public LTLFormulaHandler(CmdLineParser parser, OptionDef option,
-                                 Setter<? super gov.nasa.ltl.trans.Formula<Proposition>> setter) {
-            super(parser, option, setter);
-        }
-
+        implements ITypeConverter<gov.nasa.ltl.trans.Formula<Proposition>> {
         @Override
-        protected gov.nasa.ltl.trans.Formula<Proposition> parse(String argument) throws CmdLineException {
-            try {
-                return Formula.parse(Logic.LTL, argument).toLtlFormula();
-            } catch (FormatException e) {
-                throw new CmdLineException(this.owner, e);
-            }
+        public gov.nasa.ltl.trans.Formula<Proposition> convert(String value) throws FormatException {
+            return Formula.parse(Logic.LTL, value).toLtlFormula();
         }
     }
 
-    /** Option handler for the '-g' option. */
-    public static class GeneratorHandler extends OptionHandler<GeneratorArgs> {
-        /** Required constructor. */
-        public GeneratorHandler(CmdLineParser parser, OptionDef option,
-                                Setter<? super GeneratorArgs> setter) {
-            super(parser, option, setter);
-        }
-
+    /** Option handler for the '-g' option, consuming all remaining arguments. */
+    public static class GeneratorHandler implements IParameterConsumer {
         @Override
-        public int parseArguments(Parameters params) throws CmdLineException {
-            ArrayList<String> genArgs = new ArrayList<>();
-            for (int ix = 0; ix < params.size(); ix++) {
-                genArgs.add(params.getParameter(ix));
+        public void consumeParameters(Stack<String> args, ArgSpec argSpec,
+                                      CommandSpec commandSpec) {
+            List<String> genArgs = new ArrayList<>();
+            while (!args.isEmpty()) {
+                genArgs.add(args.pop());
             }
-            this.setter.addValue(new GeneratorArgs(params));
-            return params.size();
-        }
-
-        @Override
-        public String getDefaultMetaVariable() {
-            return "generator-args";
+            argSpec.setValue(new GeneratorArgs(genArgs));
         }
     }
 
     /**
      * Option value class collecting all remaining arguments.
-     * Wrapped into a class to fool Args4J into understanding this is not a multiple value.
+     * Wrapped into a class so that the option is not treated as multi-valued.
      */
     public static class GeneratorArgs {
-        GeneratorArgs(Parameters params) throws CmdLineException {
-            this.args = new ArrayList<>();
-            for (int ix = 0; ix < params.size(); ix++) {
-                this.args.add(params.getParameter(ix));
-            }
+        GeneratorArgs(List<String> args) {
+            this.args = new ArrayList<>(args);
         }
 
         /** Returns the content of this argument, as a string array. */
