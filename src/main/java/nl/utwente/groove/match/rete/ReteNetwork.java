@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -73,6 +74,14 @@ public class ReteNetwork {
     private final TypeGraph typeGraph;
     private final boolean injective;
     private final RootNode root;
+
+    /** Counter for the (creation-order) sequence numbers of the n-nodes in this network. */
+    private int nodeCounter;
+
+    /** Returns the next n-node sequence number; used by the {@link ReteNetworkNode} constructor. */
+    int getNextNodeNr() {
+        return this.nodeCounter++;
+    }
 
     //Due to typing, RETE now can have many node checkers, one for each
     //type of node occurring as an isolated node
@@ -173,7 +182,7 @@ public class ReteNetwork {
             //in the open list (disconnected islands in the lhs of this rule)
             //that can no longer be merged with other connected
             //checkers in the open list
-            HashSet<ReteStaticMapping> isolatedComponents = new HashSet<>();
+            HashSet<ReteStaticMapping> isolatedComponents = new LinkedHashSet<>();
             while (((openList.size() > 1) && (isolatedComponents.size() < openList.size()))
                 || !operatorNodes.isEmpty()) {
 
@@ -334,8 +343,8 @@ public class ReteNetwork {
             result.setCountCheckerNode(qcc);
         }
         if (condition.getSubConditions().size() > 0) {
-            Set<Condition> nacs = new HashSet<>();
-            Set<Condition> positiveSubConditions = new HashSet<>();
+            Set<Condition> nacs = new LinkedHashSet<>();
+            Set<Condition> positiveSubConditions = new LinkedHashSet<>();
             for (Condition c : condition.getSubConditions()) {
                 if (c.getOp() == Op.NOT) {
                     nacs.add(c);

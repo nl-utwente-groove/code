@@ -74,11 +74,31 @@ public abstract class ReteNetworkNode {
      */
     protected ReteNetworkNode(ReteNetwork network) {
         this.owner = network;
+        this.nr = network.getNextNodeNr();
         this.successors = new ArrayList<>();
         if (this instanceof ReteStateSubscriber sb) {
             network.getState()
                 .subscribe(sb);
         }
+    }
+
+    /** Returns the sequence number of this n-node, in creation order within its network. */
+    public int getNumber() {
+        return this.nr;
+    }
+
+    /** The sequence number of this n-node within its network. */
+    private final int nr;
+
+    /* N-nodes are equal only if identical, unless a subclass overrides equals
+     * (in which case it also overrides hashCode). This creation-order hash is
+     * consistent with identity equality and, in contrast to the identity hash,
+     * deterministic across runs; it propagates to the (cached) hash codes of
+     * the RETE matches, which include the hash of their origin n-node.
+     */
+    @Override
+    public int hashCode() {
+        return this.nr;
     }
 
     /**

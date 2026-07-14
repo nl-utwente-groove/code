@@ -181,12 +181,15 @@ public class RetePathMatch extends AbstractReteMatch {
 
     @Override
     protected int computeHashCode() {
-        // hashcode computation reflects strong equality
+        // hashcode computation reflects strong equality:
+        // longer path matches are only equal if identical, for which the
+        // (deterministic) content-based hash of the superclass is also
+        // consistent, in contrast to the formerly used identity hash
         int result;
         if (this.pathLength == 1 && this.associatedEdge != null) {
             result = this.associatedEdge.hashCode();
         } else {
-            result = System.identityHashCode(this);
+            result = super.computeHashCode();
         }
         return result;
     }

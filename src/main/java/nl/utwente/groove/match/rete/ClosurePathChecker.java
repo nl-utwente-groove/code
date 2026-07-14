@@ -18,6 +18,7 @@ package nl.utwente.groove.match.rete;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -61,8 +62,8 @@ public class ClosurePathChecker extends AbstractPathChecker implements ReteState
         super(network, expression, isLoop);
 
         assert (expression.getPlusOperand() != null) || (expression.getStarOperand() != null);
-        this.leftMemory = new HashSet<>();
-        this.rightMemory = new HashSet<>();
+        this.leftMemory = new LinkedHashSet<>();
+        this.rightMemory = new LinkedHashSet<>();
     }
 
     @Override

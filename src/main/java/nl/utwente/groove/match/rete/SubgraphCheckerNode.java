@@ -17,6 +17,7 @@
 package nl.utwente.groove.match.rete;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -42,22 +43,22 @@ public class SubgraphCheckerNode<LeftMatchType extends AbstractReteMatch,RightMa
     /**
      * left on-demand buffer
      */
-    protected HashSet<LeftMatchType> leftOnDemandBuffer = new HashSet<>();
+    protected HashSet<LeftMatchType> leftOnDemandBuffer = new LinkedHashSet<>();
 
     /**
      * memory containing the matches received from the left antecedent
      */
-    protected HashSet<LeftMatchType> leftMemory = new HashSet<>();
+    protected HashSet<LeftMatchType> leftMemory = new LinkedHashSet<>();
 
     /**
      * left on-demand buffer
      */
-    protected HashSet<RightMatchType> rightOnDemandBuffer = new HashSet<>();
+    protected HashSet<RightMatchType> rightOnDemandBuffer = new LinkedHashSet<>();
 
     /**
      * memory containing the matches received from the right antecedent
      */
-    protected HashSet<RightMatchType> rightMemory = new HashSet<>();
+    protected HashSet<RightMatchType> rightMemory = new LinkedHashSet<>();
 
     /**
      * This is a fast lookup table for equality checking of left and
