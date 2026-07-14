@@ -205,7 +205,7 @@ abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label
         return edge;
     }
 
-    /*
+    /**
      * Puts an edge into the store kept by this factory.
      * This is only allowed if there is no edge with this number.
      */
