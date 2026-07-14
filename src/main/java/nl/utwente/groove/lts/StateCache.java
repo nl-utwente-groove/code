@@ -64,7 +64,7 @@ public class StateCache implements Cache {
         this.record = state.getRecord();
         this.freezeGraphs = this.record.isCollapse();
         this.graphFactory
-            = DeltaHostGraph.getInstance(state.isSimple(), this.record.isCopyGraphs());
+            = DeltaHostGraph.getInstance(state.hasSimpleGraph(), this.record.isCopyGraphs());
         if (DEBUG && state.isFull()) {
             System.out.printf("Recreating cache for full state %s%n", state);
         }
