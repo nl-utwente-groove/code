@@ -62,7 +62,7 @@ public interface GraphState extends Node, Phase {
 
     /** Indicates if the underlying graph is simple. */
     default public boolean isSimple() {
-        return !getGTS().hasSimpleGraphs();
+        return getGTS().hasSimpleGraphs();
     }
 
     /**
