@@ -293,12 +293,27 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
      */
     @Override
     public int hashCode() {
+        // lazily computed and cached for efficiency
+        if (this.hashCode == 0) {
+            int result = computeHashCode();
+            this.hashCode = result == 0
+                ? 1
+                : result;
+        }
+        return this.hashCode;
+    }
+
+    /** Computes the value of {@link #hashCode}. */
+    private int computeHashCode() {
         final int prime = 31;
         int result = prime + getSource().getNumber();
         result = prime * result + getStack().hashCode();
         result = prime * result + onFinish().getNumber();
         return result;
     }
+
+    /** The (lazily computed) hash code of this step. */
+    private int hashCode;
 
     @Override
     public boolean equals(@Nullable Object other) {

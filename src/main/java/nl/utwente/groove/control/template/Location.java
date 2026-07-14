@@ -109,12 +109,27 @@ public class Location
      */
     @Override
     public int hashCode() {
+        // lazily computed and cached for efficiency
+        if (this.hashCode == 0) {
+            int result = computeHashCode();
+            this.hashCode = result == 0
+                ? 1
+                : result;
+        }
+        return this.hashCode;
+    }
+
+    /** Computes the value of {@link #hashCode}. */
+    private int computeHashCode() {
         final int prime = 31;
         int result = prime + this.nr;
         result = prime * result + this.transience;
         result = prime * result + this.template.map(Template::hashCode).orElse(0);
         return result;
     }
+
+    /** The (lazily computed) hash code of this location. */
+    private int hashCode;
 
     /** Indicates whether this is an error location.
      * @see #isSpecial()
