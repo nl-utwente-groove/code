@@ -93,7 +93,9 @@ public class RecipeEvent
         final int prime = 31;
         int result = 1;
         result = prime * result + this.initial.hashCode();
-        result = prime * result + this.target.hashCode();
+        // use the state number rather than the (identity-based) state hash,
+        // for determinism across runs
+        result = prime * result + this.target.getNumber();
         result = prime * result + Arrays.hashCode(this.arguments);
         return result;
     }

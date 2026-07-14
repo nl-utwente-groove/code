@@ -240,12 +240,12 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     }
 
     /*
-     * This implementation combines the hash codes of the rule and the anchor
-     * images.
+     * This implementation combines the source state number and the event hash;
+     * both are deterministic across runs, in contrast to identity hash codes.
      */
     @Override
     protected int computeHashCode() {
-        return System.identityHashCode(source()) + System.identityHashCode(getEvent());
+        return 31 * source().getNumber() + getEvent().hashCode();
     }
 
     @Override

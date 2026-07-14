@@ -137,11 +137,12 @@ abstract class AbstractRuleTransitionStub implements RuleTransitionStub {
     }
 
     /**
-     * This implementation returns the identity of the event.
+     * This implementation combines the event hash and the target state number;
+     * both are deterministic across runs.
      */
     @Override
     public int hashCode() {
-        return getEvent().hashCode() + this.target.hashCode();
+        return getEvent().hashCode() + this.target.getNumber();
     }
 
     /**

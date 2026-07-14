@@ -65,13 +65,14 @@ public abstract class AbstractRuleEvent<C extends AbstractRuleEvent.AbstractEven
 
     /**
      * The hash code is based on that of the rule and an initial fragment of the
-     * anchor images.
+     * anchor images. This is deliberately also used when events are reused
+     * (in which case any hash consistent with the identity-based {@link #equals}
+     * would do): a content-based hash makes the iteration order of hash-keyed
+     * event collections deterministic across runs.
      */
     @Override
     public int hashCode() {
-        return getReuse() == EVENT
-            ? System.identityHashCode(this)
-            : eventHashCode();
+        return eventHashCode();
     }
 
     /**
