@@ -162,12 +162,7 @@ abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label
 
     /** Callback factory method to initialise the edge store. */
     protected TreeHashSet<E> createEdgeStore() {
-        return new TreeHashSet<>() {
-            @Override
-            final protected boolean allEqual() {
-                return false;
-            }
-        };
+        return new TreeHashSet<>();
     }
 
     /**
