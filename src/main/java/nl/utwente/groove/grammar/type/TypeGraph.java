@@ -892,7 +892,12 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
      */
     public HostGraphMorphism analyzeHost(HostGraph source) throws FormatException {
         testFixed(true);
-        HostFactory hostFactory = HostFactory.newInstance(getFactory(), source.isSimple());
+        // reuse the source's host factory if it is based on this type graph's factory,
+        // so that the typed image lives in the same node namespace as the source
+        HostFactory sourceFactory = source.getFactory();
+        HostFactory hostFactory = sourceFactory.getTypeFactory() == getFactory()
+            ? sourceFactory
+            : HostFactory.newInstance(getFactory(), source.isSimple());
         HostGraphMorphism morphism = new HostGraphMorphism(hostFactory);
         FormatErrorSet errors = new FormatErrorSet();
         for (HostNode node : source.nodeSet()) {
