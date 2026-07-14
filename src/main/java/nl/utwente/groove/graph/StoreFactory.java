@@ -19,7 +19,6 @@ package nl.utwente.groove.graph;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.graph.plain.PlainEdge;
 import nl.utwente.groove.util.Dispenser;
 import nl.utwente.groove.util.collect.TreeHashSet;
@@ -164,16 +163,6 @@ abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label
     /** Callback factory method to initialise the edge store. */
     protected TreeHashSet<E> createEdgeStore() {
         return new TreeHashSet<>() {
-            /**
-             * As {@link HostEdge}s test equality by object identity,
-             * we need to weaken the set's equality test.
-             */
-            @Override
-            final protected boolean areEqual(E o1, E o2) {
-                return o1.source().equals(o2.source()) && o1.target().equals(o2.target())
-                    && o1.label().equals(o2.label());
-            }
-
             @Override
             final protected boolean allEqual() {
                 return false;
