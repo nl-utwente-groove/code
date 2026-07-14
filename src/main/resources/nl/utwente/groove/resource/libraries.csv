@@ -1,7 +1,7 @@
 Antlr;compiling control programs and expressions;http://www.antlr.org;3.5.2
 Apache Batik;exporting images to SVG, EPS, ...;https://xmlgraphics.apache.org/batik/;1.17
 Apache FOP;exporting displayed graphs to PDF format;https://xmlgraphics.apache.org/fop/;2.9
-Args4J;command-line option parsing;http://args4j.kohsuke.org/;2.0.26
+picocli;command-line option parsing;https://picocli.info/;4.7.7
 JAXB;access to an XML document from a Java program;https://eclipse-ee4j.github.io/jaxb-ri/;3.0.2
 EMF;converting to and from Eclipse ecore format;http://eclipse.org;2.7.0
 Gnu Prolog;interpreting Prolog queries;http://www.gnu.org/software/gnuprologjava/;0.2.6
