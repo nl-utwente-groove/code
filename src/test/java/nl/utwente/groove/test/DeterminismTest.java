@@ -32,8 +32,12 @@ import nl.utwente.groove.util.parse.FormatException;
  * Tests that successive explorations of the same rule system, within one JVM,
  * enumerate exactly the same states and transitions in the same order.
  * This guards against run-to-run nondeterminism creeping in through
- * identity-based hash codes in iterated hash collections, or through
- * unordered collections on the exploration path.
+ * identity-based hash codes in iterated hash collections, through
+ * unordered collections on the exploration path, or through
+ * garbage-collection timing: when a state cache is collected, the state graph
+ * is reconstructed along a different basis chain, so the iteration order of
+ * its (insertion-ordered) element sets may change, and enumeration order on
+ * the exploration path must not depend on it.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -102,7 +106,9 @@ public class DeterminismTest {
      * Advances the JVM's identity hash code sequence, so that objects created
      * by a subsequent exploration receive different identity hashes than in a
      * previous one. This is what exposes iteration over identity-hash-keyed
-     * collections.
+     * collections. The allocations also perturb garbage-collection timing,
+     * which exposes order dependence on cache-driven state graph
+     * reconstruction.
      */
     private void perturbIdentityHashes() {
         int sink = 0;
