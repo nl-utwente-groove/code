@@ -18,6 +18,7 @@ package nl.utwente.groove.match.rete;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -31,7 +32,9 @@ import nl.utwente.groove.grammar.rule.RuleToHostMap;
 import nl.utwente.groove.grammar.rule.Valuation;
 import nl.utwente.groove.grammar.rule.VarMap;
 import nl.utwente.groove.grammar.type.TypeElement;
+import nl.utwente.groove.graph.EdgeComparator;
 import nl.utwente.groove.graph.Node;
+import nl.utwente.groove.graph.NodeComparator;
 
 /**
  * @author Arash Jalali
@@ -413,6 +416,42 @@ public abstract class AbstractReteMatch implements VarMap {
             }
         }
         return result;
+    }
+
+    /**
+     * Returns a comparator establishing a canonical total order over matches
+     * of the same origin, by lexicographic comparison of the match units.
+     * The order is content-based and thus independent of the insertion history
+     * of the collections holding the matches.
+     */
+    public static Comparator<AbstractReteMatch> comparator() {
+        return MATCH_COMPARATOR;
+    }
+
+    /** Comparator instance underlying {@link #comparator()}. */
+    private static final Comparator<AbstractReteMatch> MATCH_COMPARATOR = (m1, m2) -> {
+        Object[] units1 = m1.getAllUnits();
+        Object[] units2 = m2.getAllUnits();
+        int result = units1.length - units2.length;
+        for (int i = 0; result == 0 && i < units1.length; i++) {
+            result = compareUnits(units1[i], units2[i]);
+        }
+        return result;
+    };
+
+    /** Compares two match units of the same kind, in a content-based manner. */
+    private static int compareUnits(Object unit1, Object unit2) {
+        if (unit1 instanceof HostNode n1 && unit2 instanceof HostNode n2) {
+            return NodeComparator.instance().compare(n1, n2);
+        }
+        if (unit1 instanceof HostEdge e1 && unit2 instanceof HostEdge e2) {
+            return EdgeComparator.instance().compare(e1, e2);
+        }
+        if (unit1 instanceof RetePathMatch p1 && unit2 instanceof RetePathMatch p2) {
+            return p1.compareTo(p2);
+        }
+        // fallback for mixed unit kinds, which do not occur for same-origin matches
+        return Integer.compare(unit1.hashCode(), unit2.hashCode());
     }
 
     @Override

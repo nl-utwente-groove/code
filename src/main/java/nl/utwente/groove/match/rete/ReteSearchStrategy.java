@@ -82,9 +82,19 @@ public class ReteSearchStrategy implements SearchStrategy {
             } else {
                 iter = cc.getConflictSetIterator();
             }
+            // enumerate the matches in canonical order: the conflict set's insertion
+            // order depends on the history of host graph (re)processing, which is
+            // sensitive to garbage collection timing through the cache-dependent
+            // reconstruction of state graphs (see DeterminismTest)
+            List<ReteSimpleMatch> matches = new ArrayList<>();
+            iter.forEachRemaining(matches::add);
+            matches.sort(AbstractReteMatch.comparator());
             boolean cont = true;
-            while (cont && iter.hasNext()) {
-                cont = visitor.visit(createTreeMatch(iter.next(), host));
+            for (ReteSimpleMatch match : matches) {
+                cont = visitor.visit(createTreeMatch(match, host));
+                if (!cont) {
+                    break;
+                }
             }
         }
         return visitor.getResult();
