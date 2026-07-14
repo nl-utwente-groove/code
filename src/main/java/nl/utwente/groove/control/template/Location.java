@@ -103,6 +103,19 @@ public class Location
         return this.nr;
     }
 
+    /* Locations are equal only if identical (there is no equals override);
+     * this content-based hash is consistent with that, and (unlike the
+     * inherited identity hash) deterministic across runs.
+     */
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = prime + this.nr;
+        result = prime * result + this.transience;
+        result = prime * result + this.template.map(Template::hashCode).orElse(0);
+        return result;
+    }
+
     /** Indicates whether this is an error location.
      * @see #isSpecial()
      */

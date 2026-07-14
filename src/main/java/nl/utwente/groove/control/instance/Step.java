@@ -287,9 +287,17 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
         return result;
     }
 
+    /* Steps are equal only if identical; this content-based hash (mirroring
+     * the fields of compareTo) is consistent with that, and (unlike the
+     * former identity hash) deterministic across runs.
+     */
     @Override
     public int hashCode() {
-        return System.identityHashCode(this);
+        final int prime = 31;
+        int result = prime + getSource().getNumber();
+        result = prime * result + getStack().hashCode();
+        result = prime * result + onFinish().getNumber();
+        return result;
     }
 
     @Override

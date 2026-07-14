@@ -828,7 +828,9 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         protected int getCode(GraphState stateKey) {
             int result;
             if (this.collapse == COLLAPSE_NONE) {
-                result = System.identityHashCode(stateKey);
+                // states are numbered at creation, so (unlike the identity
+                // hash) the number is deterministic across runs
+                result = stateKey.getNumber();
             } else if (this.collapse == COLLAPSE_EQUAL) {
                 HostGraph graph = stateKey.getGraph();
                 result = graph.nodeSet().hashCode() + graph.edgeSet().hashCode();
@@ -846,7 +848,9 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                     += CallStack.hashCode(stateKey.getPrimeStack(), certifier.getCertificateMap());
             }
             if (CHECK_CONTROL_LOCATION) {
-                result += System.identityHashCode(stateKey.getPrimeFrame());
+                // prime frames are normalised, so their canonical numbers can
+                // be used; this is deterministic across runs
+                result += stateKey.getPrimeFrame().getNumber();
             }
             return result;
         }

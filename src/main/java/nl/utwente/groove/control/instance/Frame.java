@@ -472,11 +472,16 @@ public class Frame implements Position<Frame,Step>, Fixable {
     public int hashCode() {
         assert isFixed();
         final int prime = 31;
-        // use identity of prime frame as it has already been normalised
+        // the prime and pred frames have already been normalised, so
+        // (consistently with the identity-based comparison in equals) their
+        // canonical numbers can be used; this makes the hash deterministic
+        // across runs, in contrast to identity hash codes
         int result = (isPrime()
             ? 1237
-            : System.identityHashCode(this.prime));
-        result = prime * result + System.identityHashCode(this.pred);
+            : this.prime.getNumber());
+        result = prime * result + (this.pred == null
+            ? 1231
+            : this.pred.getNumber());
         result = prime * result + this.location.hashCode();
         result = prime * result + this.pops.hashCode();
         result = prime * result + this.contextStack.hashCode();
