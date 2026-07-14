@@ -30,13 +30,27 @@ import nl.utwente.groove.util.collect.TreeHashSet;
  */
 abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label>
     extends ElementFactory<N,E> {
-    /** Constructor for a fresh factory. */
+    /** Constructor for a fresh factory.
+     * @param simple indicates if the edges created by this factory are simple
+     */
     @SuppressWarnings("unchecked")
-    protected StoreFactory() {
+    protected StoreFactory(boolean simple) {
+        this.simple = simple;
         this.nodes = (N[]) new Node[INIT_CAPACITY];
         this.edges = (E[]) new Edge[INIT_CAPACITY];
         this.edgeStore = createEdgeStore();
     }
+
+    /** Indicates if the edges created by this factory are simple
+     * (see {@link Edge#isSimple()}).
+     * Edge simplicity is homogeneous over all edges of a given factory.
+     */
+    public boolean isSimple() {
+        return this.simple;
+    }
+
+    /** Flag indicating if the edges created by this factory are simple. */
+    private final boolean simple;
 
     /** Tests if a given node number is currently in use. */
     public boolean isUsed(int nr) {
@@ -186,7 +200,9 @@ abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label
      * its content matches.
      */
     protected E storeEdge(@NonNull E edge) {
-        if (edge.isSimple()) {
+        assert edge.isSimple() == isSimple() : "Simplicity of " + edge
+            + " differs from the factory's";
+        if (isSimple()) {
             @Nullable
             E pooled = this.edgeStore.put(edge);
             if (pooled != null) {

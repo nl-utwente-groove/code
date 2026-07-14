@@ -25,7 +25,8 @@ import nl.utwente.groove.util.collect.TreeHashSet;
 public class PlainFactory extends StoreFactory<PlainNode,PlainEdge,PlainLabel> {
     /** Private constructor. */
     protected PlainFactory() {
-        // empty
+        // plain edges are always simple
+        super(true);
     }
 
     @Override

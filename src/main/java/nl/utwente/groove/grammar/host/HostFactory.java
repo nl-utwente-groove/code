@@ -49,8 +49,8 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
      * @param simple indicates if host edges are simple or not
      */
     protected HostFactory(TypeFactory typeFactory, boolean simple) {
+        super(simple);
         this.typeFactory = typeFactory;
-        this.simple = simple;
     }
 
     /*
@@ -213,14 +213,6 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
 
     /** Store of normalised host node arrays. */
     private Map<List<HostNode>,HostNode[]> normalHostNodeMap;
-
-    /** Indicates if host edges are simple or not. */
-    public boolean isSimple() {
-        return this.simple;
-    }
-
-    /** Flag indicating if host edges are simple or not. */
-    private final boolean simple;
 
     /**
      * Returns a fresh instance of this factory, with a fresh type graph.
