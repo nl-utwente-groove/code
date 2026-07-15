@@ -262,7 +262,42 @@ abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label
 
     /** Callback factory method to initialise the edge store. */
     protected TreeHashSet<E> createEdgeStore() {
-        return new TreeHashSet<>();
+        return new TreeHashSet<>() {
+            @Override
+            final protected boolean areEqual(E newKey, E oldKey) {
+                return areStoredEqual(newKey, oldKey);
+            }
+
+            @Override
+            final protected int getCode(E key) {
+                return getStoredCode(key);
+            }
+        };
+    }
+
+    /**
+     * Callback method determining the equality used by the edge store:
+     * content-based, i.e., on source, target and label.
+     * This is deliberately independent of the edge class's own equality,
+     * as the store's task is to find the canonical representative
+     * for a freshly created (hence not yet canonical) edge.
+     */
+    protected boolean areStoredEqual(E one, E two) {
+        return one.source().equals(two.source()) && one.target().equals(two.target())
+            && one.label().equals(two.label());
+    }
+
+    /**
+     * Callback method determining the hash code used by the edge store:
+     * content-based, consistent with {@link #areStoredEqual}.
+     * The computation mirrors {@link AEdge#computeHashCode()} for simple edges.
+     */
+    protected int getStoredCode(E edge) {
+        int labelCode = edge.label().hashCode();
+        int sourceCode = 3 * edge.source().hashCode();
+        int targetCode = (labelCode + 2) * edge.target().hashCode();
+        return labelCode ^ ((sourceCode << 1) + (sourceCode >>> 31))
+            + ((targetCode << 2) + (targetCode >>> 30));
     }
 
     /**

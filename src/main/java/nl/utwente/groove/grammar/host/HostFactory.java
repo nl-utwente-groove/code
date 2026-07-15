@@ -163,6 +163,15 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
         return new DefaultHostEdge(source, type, target, nr, isSimple());
     }
 
+    /*
+     * In addition to source, target and label, also compares the edge type,
+     * as host edges with equal labels may still have distinct types.
+     */
+    @Override
+    protected boolean areStoredEqual(HostEdge one, HostEdge two) {
+        return super.areStoredEqual(one, two) && one.getType() == two.getType();
+    }
+
     @Override
     public TypeLabel createLabel(String text) {
         return getTypeFactory().createLabel(text);
