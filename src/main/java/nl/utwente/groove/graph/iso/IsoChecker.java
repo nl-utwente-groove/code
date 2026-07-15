@@ -150,8 +150,12 @@ public class IsoChecker {
      */
     private boolean areGraphEqual(Graph dom, Graph cod, Object[] domValues, Object[] codValues) {
         equalsTestReporter.start();
+        // element-wise equality is only meaningful for graphs whose elements
+        // come from the same factory (element numbers are factory-scoped);
+        // for other graph pairs, fall through to the isomorphism check proper
+        boolean result = dom.getFactory() == cod.getFactory();
         // test if the value lists of domain and codomain coincide
-        boolean result = (domValues == null || CallStack.areEqual(domValues, codValues));
+        result = result && (domValues == null || CallStack.areEqual(domValues, codValues));
         if (result) {
             CertificateStrategy domCertifier = getCertifier(dom, false);
             CertificateStrategy codCertifier = getCertifier(cod, false);

@@ -19,7 +19,6 @@ package nl.utwente.groove.graph.plain;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.Morphism;
 import nl.utwente.groove.graph.StoreFactory;
-import nl.utwente.groove.util.collect.TreeHashSet;
 
 /** Factory class for graph elements. */
 public class PlainFactory extends StoreFactory<PlainNode,PlainEdge,PlainLabel> {
@@ -47,21 +46,6 @@ public class PlainFactory extends StoreFactory<PlainNode,PlainEdge,PlainLabel> {
     @Override
     protected PlainEdge newEdge(PlainNode source, Label label, PlainNode target, int nr) {
         return new PlainEdge(source, (PlainLabel) label, target, nr);
-    }
-
-    @Override
-    protected TreeHashSet<PlainEdge> createEdgeStore() {
-        return new TreeHashSet<>() {
-            /**
-             * As {@link PlainEdge}s test equality by object identity,
-             * the store has to compare source, label and target instead.
-             */
-            @Override
-            final protected boolean areEqual(PlainEdge o1, PlainEdge o2) {
-                return o1.source().equals(o2.source()) && o1.target().equals(o2.target())
-                    && o1.label().equals(o2.label());
-            }
-        };
     }
 
     /** Returns the singleton instance of this factory. */
