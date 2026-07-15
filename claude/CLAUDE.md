@@ -92,6 +92,8 @@ CLI argument parsing uses picocli via `util.cli`.
 
 **Confirmation.** Never `git push` or open a PR without explicit confirmation in the current session.
 
+**Review handoff.** The user reviews branches in Eclipse by switching the main checkout onto them, hand-fixing and committing there. To make that a legitimate single checkout: when a branch is ready for review, detach the worktree's HEAD (`git switch --detach` in the worktree) and tell the user the branch is free. When the user says to continue working on a branch, assume the review is finished — re-attach the worktree (`git switch <branch>`) and continue on the current tip without asking. If git refuses the re-attach because the main checkout still holds the branch, report that and wait; never manipulate the main checkout to free it.
+
 **Sub-agent model policy.** Default sub-agents to Opus (`model: "opus"`) for well-scoped, verifiable work: code search, mechanical refactors, dependency bumps, compile/test-fix loops. Reserve Fable-tier reasoning for orchestration, architecture and design decisions, adversarial verification, and changes with subtle correctness risk. If a specific task would likely suffer from Opus-level sub-agents, say so and ask the user before proceeding.
 
 **Claude files.** Files created primarily for Claude's own use — these instructions, and any future notes or plans worth committing — live in the `claude/` subdirectory. The root `CLAUDE.md` is only a stub that imports `claude/CLAUDE.md` (Claude Code auto-loads only the root file); keep it that way.
