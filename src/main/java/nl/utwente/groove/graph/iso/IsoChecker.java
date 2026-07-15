@@ -167,9 +167,16 @@ public class IsoChecker {
                 // the node sets must be compared as well as the edge sets, since
                 // isolated nodes' identities and types are not determined by the edges
                 if (domCertifier == null || codCertifier == null) {
-                    // copy the node and edge sets of the codomain to avoid sharing problems
-                    result = dom.nodeSet().equals(new HashSet<Node>(cod.nodeSet()))
-                        && dom.edgeSet().equals(new HashSet<Edge>(cod.edgeSet()));
+                    // the sets returned by nodeSet() and edgeSet() may alias the graphs'
+                    // internal data structures, which (for delta graphs in swing mode,
+                    // see DeltaHostGraph#getDataTarget) are delta-mutated in place when
+                    // a derived graph's data is lazily initialised - as may happen below
+                    // when the domain's sets are fetched; hence the codomain's sets
+                    // must be copied first
+                    Set<?> codNodeSet = new HashSet<Node>(cod.nodeSet());
+                    Set<?> codEdgeSet = new HashSet<Edge>(cod.edgeSet());
+                    result = dom.nodeSet().equals(codNodeSet)
+                        && dom.edgeSet().equals(codEdgeSet);
                 } else {
                     // the certificate map keys comprise both the nodes and the edges
                     result = domCertifier
