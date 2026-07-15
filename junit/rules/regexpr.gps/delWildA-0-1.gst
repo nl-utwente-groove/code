@@ -16,7 +16,7 @@
         </node>
         <edge to="n0" from="n0">
             <attr name="label">
-                <string>type:A</string>
+                <string>type:A1</string>
             </attr>
         </edge>
         <edge to="n1" from="n1">

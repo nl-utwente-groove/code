@@ -163,17 +163,20 @@ public class IsoChecker {
                 : codCertifier.getNodeCertificates().length;
             result = domNodeCount == codNodeCount;
             if (result) {
-                // test if the edge sets of domain and codomain coincide
-                Set<?> domEdgeSet, codEdgeSet;
+                // test if the node and edge sets of domain and codomain coincide;
+                // the node sets must be compared as well as the edge sets, since
+                // isolated nodes' identities and types are not determined by the edges
                 if (domCertifier == null || codCertifier == null) {
-                    // copy the edge set of the codomain to avoid sharing problems
-                    codEdgeSet = new HashSet<Edge>(cod.edgeSet());
-                    domEdgeSet = dom.edgeSet();
+                    // copy the node and edge sets of the codomain to avoid sharing problems
+                    result = dom.nodeSet().equals(new HashSet<Node>(cod.nodeSet()))
+                        && dom.edgeSet().equals(new HashSet<Edge>(cod.edgeSet()));
                 } else {
-                    codEdgeSet = codCertifier.getCertificateMap().keySet();
-                    domEdgeSet = domCertifier.getCertificateMap().keySet();
+                    // the certificate map keys comprise both the nodes and the edges
+                    result = domCertifier
+                        .getCertificateMap()
+                        .keySet()
+                        .equals(codCertifier.getCertificateMap().keySet());
                 }
-                result = domEdgeSet.equals(codEdgeSet);
             }
         }
         equalsTestReporter.stop();
