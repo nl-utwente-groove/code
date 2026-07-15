@@ -19,7 +19,7 @@ package nl.utwente.groove.graph.multi;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.graph.AEdge;
+import nl.utwente.groove.graph.ANumberedEdge;
 
 /**
  * Default implementation of a multi-graph edge, with an identity
@@ -28,7 +28,7 @@ import nl.utwente.groove.graph.AEdge;
  * @version $Revision$ $Date: 2008-02-12 15:15:31 $
  */
 @NonNullByDefault
-public class MultiEdge extends AEdge<MultiNode,MultiLabel> {
+public class MultiEdge extends ANumberedEdge<MultiNode,MultiLabel> {
     /**
      * Constructs a new, numbered edge on the basis of a given source, label and target.
      * @param source source node of the new edge

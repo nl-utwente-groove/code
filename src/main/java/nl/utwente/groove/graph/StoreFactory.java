@@ -28,7 +28,7 @@ import nl.utwente.groove.util.collect.TreeHashSet;
  * @author Arend Rensink
  * @version $Revision$
  */
-abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label>
+abstract public class StoreFactory<N extends Node,E extends NumberedEdge,L extends Label>
     extends ElementFactory<N,E> {
     /** Constructor for a fresh factory.
      * @param simple indicates if the edges created by this factory are simple
@@ -37,7 +37,7 @@ abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label
     protected StoreFactory(boolean simple) {
         this.simple = simple;
         this.nodes = (N[]) new Node[INIT_CAPACITY];
-        this.edges = (E[]) new Edge[INIT_CAPACITY];
+        this.edges = (E[]) new NumberedEdge[INIT_CAPACITY];
         this.edgeStore = createEdgeStore();
     }
 
@@ -232,7 +232,7 @@ abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label
             // extend the edges array
             int newSize = Math.max((int) (this.edges.length * GROWTH_FACTOR), nr + 1);
             @SuppressWarnings("unchecked")
-            E[] newEdges = (E[]) new Edge[newSize];
+            E[] newEdges = (E[]) new NumberedEdge[newSize];
             System.arraycopy(this.edges, 0, newEdges, 0, this.edges.length);
             this.edges = newEdges;
         }

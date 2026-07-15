@@ -45,7 +45,7 @@ public class EdgeComparator implements Comparator<Edge> {
         if (result != 0) {
             return result;
         }
-        if (o1 instanceof AEdge<?,?> e1 && o2 instanceof AEdge<?,?> e2) {
+        if (o1 instanceof NumberedEdge e1 && o2 instanceof NumberedEdge e2) {
             if (!e1.isSimple()) {
                 result = e1.getNumber() - e2.getNumber();
             }

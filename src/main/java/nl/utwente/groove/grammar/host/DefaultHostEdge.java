@@ -22,14 +22,14 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.grammar.AnchorKind;
 import nl.utwente.groove.grammar.type.TypeEdge;
 import nl.utwente.groove.grammar.type.TypeLabel;
-import nl.utwente.groove.graph.AEdge;
+import nl.utwente.groove.graph.ANumberedEdge;
 
 /**
  * Class that implements the edges of a host graph.
  * @author Arend Rensink
  */
 @NonNullByDefault
-public class DefaultHostEdge extends AEdge<HostNode,TypeLabel> implements HostEdge {
+public class DefaultHostEdge extends ANumberedEdge<HostNode,TypeLabel> implements HostEdge {
     /** Constructor for a typed edge.
      * @param simple indicates if this is a simple or multi-edge.
      */

@@ -61,7 +61,7 @@ import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.rule.RuleLabel;
 import nl.utwente.groove.grammar.type.Multiplicity;
 import nl.utwente.groove.grammar.type.TypeLabel;
-import nl.utwente.groove.graph.AEdge;
+import nl.utwente.groove.graph.ANumberedEdge;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.plain.PlainLabel;
@@ -83,7 +83,7 @@ import nl.utwente.groove.util.parse.StringHandler;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
+public class AspectEdge extends ANumberedEdge<@NonNull AspectNode,@NonNull AspectLabel>
     implements AspectElement, Fixable {
     /**
      * Constructs a new, numbered edge.

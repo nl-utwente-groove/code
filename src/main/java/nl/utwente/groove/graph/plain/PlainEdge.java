@@ -19,7 +19,7 @@ package nl.utwente.groove.graph.plain;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.graph.AEdge;
+import nl.utwente.groove.graph.ANumberedEdge;
 
 /**
  * Default implementation of an (immutable) graph edge, as a triple consisting
@@ -28,7 +28,7 @@ import nl.utwente.groove.graph.AEdge;
  * @version $Revision$ $Date: 2008-02-12 15:15:31 $
  */
 @NonNullByDefault
-public class PlainEdge extends AEdge<PlainNode,PlainLabel> {
+public class PlainEdge extends ANumberedEdge<PlainNode,PlainLabel> {
     /**
      * Constructs a new edge on the basis of a given source, label and target.
      * @param source source node of the new edge
