@@ -99,6 +99,7 @@ public abstract class AEdge<N extends Node,L extends Label> implements GEdge<N> 
      * then the edge number is also taken into account.
      * @return {@code true} if this edge is simple.
      */
+    @Override
     public abstract boolean isSimple();
 
     @Override

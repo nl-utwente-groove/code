@@ -18,7 +18,7 @@ package nl.utwente.groove.util;
 
 import java.util.Map;
 
-import org.kohsuke.args4j.Argument;
+import picocli.CommandLine.Parameters;
 
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
@@ -69,7 +69,7 @@ public class GraphReporter extends GrooveCmdLineTool<String> {
         return result;
     }
 
-    @Argument(metaVar = "graph", required = true, usage = "graph location")
+    @Parameters(index = "0", paramLabel = "graph", description = "graph location")
     private String graphLocation;
 
     /**

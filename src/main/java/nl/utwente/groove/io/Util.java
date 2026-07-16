@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.opencsv.CSVParserBuilder;
-import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvException;
 
@@ -274,10 +273,10 @@ public class Util {
     public final static List<String[]> readCSV(String name, char sep) {
         List<String[]> result = null;
         name = FileType.CSV.addExtension(name);
-        try (CSVReader reader
-            = new CSVReaderBuilder(getResourceStream(RESOURCE_PACKAGE.extend(name)))
-                .withCSVParser(new CSVParserBuilder().withSeparator(sep).build())
-                .build()) {
+        try (var stream = getResourceStream(RESOURCE_PACKAGE.extend(name));
+             var reader = new CSVReaderBuilder(stream)
+                 .withCSVParser(new CSVParserBuilder().withSeparator(sep).build())
+                 .build()) {
             result = reader.readAll();
         } catch (IOException | CsvException e) {
             // no result

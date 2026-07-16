@@ -49,8 +49,8 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
      * @param simple indicates if host edges are simple or not
      */
     protected HostFactory(TypeFactory typeFactory, boolean simple) {
+        super(simple);
         this.typeFactory = typeFactory;
-        this.simple = simple;
     }
 
     /*
@@ -119,9 +119,28 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
         return createEdge(source, type, target);
     }
 
+    @Override
+    public HostEdge createEdge(HostNode source, Label label, HostNode target, int nr) {
+        TypeEdge type = getTypeFactory()
+            .createEdge(source.getType(), (TypeLabel) label, target.getType(), false);
+        assert type != null;
+        return createEdge(source, type, target, nr);
+    }
+
     /** Creates a host edge with given source and target nodes, and edge type. */
     public HostEdge createEdge(HostNode source, TypeEdge type, HostNode target) {
-        HostEdge edge = newEdge(source, type, target, getEdgeCount());
+        HostEdge edge = newEdge(source, type, target, getNextEdgeNr());
+        return storeEdge(edge);
+    }
+
+    /**
+     * Returns a suitable host edge with given source and target nodes,
+     * edge type, and edge number.
+     * See {@link #createEdge(HostNode, Label, HostNode, int)} for the
+     * reuse-or-create semantics of the edge number.
+     */
+    public HostEdge createEdge(HostNode source, TypeEdge type, HostNode target, int nr) {
+        HostEdge edge = newEdge(source, type, target, nr);
         return storeEdge(edge);
     }
 
@@ -142,6 +161,15 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
     protected @NonNull HostEdge newEdge(HostNode source, TypeEdge type, HostNode target, int nr) {
         assert type.getGraph() == getTypeGraph();
         return new DefaultHostEdge(source, type, target, nr, isSimple());
+    }
+
+    /*
+     * In addition to source, target and label, also compares the edge type,
+     * as host edges with equal labels may still have distinct types.
+     */
+    @Override
+    protected boolean areStoredEqual(HostEdge one, HostEdge two) {
+        return super.areStoredEqual(one, two) && one.getType() == two.getType();
     }
 
     @Override
@@ -194,14 +222,6 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
 
     /** Store of normalised host node arrays. */
     private Map<List<HostNode>,HostNode[]> normalHostNodeMap;
-
-    /** Indicates if host edges are simple or not. */
-    public boolean isSimple() {
-        return this.simple;
-    }
-
-    /** Flag indicating if host edges are simple or not. */
-    private final boolean simple;
 
     /**
      * Returns a fresh instance of this factory, with a fresh type graph.

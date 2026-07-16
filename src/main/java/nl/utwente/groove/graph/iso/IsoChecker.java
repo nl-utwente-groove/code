@@ -150,8 +150,12 @@ public class IsoChecker {
      */
     private boolean areGraphEqual(Graph dom, Graph cod, Object[] domValues, Object[] codValues) {
         equalsTestReporter.start();
+        // element-wise equality is only meaningful for graphs whose elements
+        // come from the same factory (element numbers are factory-scoped);
+        // for other graph pairs, fall through to the isomorphism check proper
+        boolean result = dom.getFactory() == cod.getFactory();
         // test if the value lists of domain and codomain coincide
-        boolean result = (domValues == null || CallStack.areEqual(domValues, codValues));
+        result = result && (domValues == null || CallStack.areEqual(domValues, codValues));
         if (result) {
             CertificateStrategy domCertifier = getCertifier(dom, false);
             CertificateStrategy codCertifier = getCertifier(cod, false);
@@ -163,17 +167,27 @@ public class IsoChecker {
                 : codCertifier.getNodeCertificates().length;
             result = domNodeCount == codNodeCount;
             if (result) {
-                // test if the edge sets of domain and codomain coincide
-                Set<?> domEdgeSet, codEdgeSet;
+                // test if the node and edge sets of domain and codomain coincide;
+                // the node sets must be compared as well as the edge sets, since
+                // isolated nodes' identities and types are not determined by the edges
                 if (domCertifier == null || codCertifier == null) {
-                    // copy the edge set of the codomain to avoid sharing problems
-                    codEdgeSet = new HashSet<Edge>(cod.edgeSet());
-                    domEdgeSet = dom.edgeSet();
+                    // the sets returned by nodeSet() and edgeSet() may alias the graphs'
+                    // internal data structures, which (for delta graphs in swing mode,
+                    // see DeltaHostGraph#getDataTarget) are delta-mutated in place when
+                    // a derived graph's data is lazily initialised - as may happen below
+                    // when the domain's sets are fetched; hence the codomain's sets
+                    // must be copied first
+                    Set<?> codNodeSet = new HashSet<Node>(cod.nodeSet());
+                    Set<?> codEdgeSet = new HashSet<Edge>(cod.edgeSet());
+                    result = dom.nodeSet().equals(codNodeSet)
+                        && dom.edgeSet().equals(codEdgeSet);
                 } else {
-                    codEdgeSet = codCertifier.getCertificateMap().keySet();
-                    domEdgeSet = domCertifier.getCertificateMap().keySet();
+                    // the certificate map keys comprise both the nodes and the edges
+                    result = domCertifier
+                        .getCertificateMap()
+                        .keySet()
+                        .equals(codCertifier.getCertificateMap().keySet());
                 }
-                result = domEdgeSet.equals(codEdgeSet);
             }
         }
         equalsTestReporter.stop();

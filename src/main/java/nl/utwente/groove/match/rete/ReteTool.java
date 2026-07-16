@@ -19,8 +19,8 @@ package nl.utwente.groove.match.rete;
 import java.io.File;
 import java.io.IOException;
 
-import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.Option;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.io.FileType;
@@ -80,10 +80,11 @@ public class ReteTool extends GrooveCmdLineTool<Object> {
         return this.outFileName;
     }
 
-    @Argument(metaVar = GrammarHandler.META_VAR, required = true, usage = GrammarHandler.USAGE,
-        handler = GrammarHandler.class)
+    @Parameters(index = "0", paramLabel = GrammarHandler.META_VAR,
+        description = GrammarHandler.USAGE, converter = GrammarHandler.class)
     private File grammarDir;
-    @Option(name = "-s", metaVar = "file", usage = "Save the shape of the RETE network in <file>")
+    @Option(names = "-s", paramLabel = "file",
+        description = "Save the shape of the RETE network in <file>")
     private String outFileName;
 
     /**

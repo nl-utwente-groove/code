@@ -45,7 +45,7 @@ public enum AnchorKind implements Comparable<AnchorKind> {
      */
     public static int compare(AnchorValue one, AnchorValue two) {
         int result = one.getAnchorKind()
-            .compareTo(one.getAnchorKind());
+            .compareTo(two.getAnchorKind());
         if (result == 0) {
             result = switch (one.getAnchorKind()) {
             case NODE -> NodeComparator.instance()

@@ -20,8 +20,8 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.kohsuke.args4j.Argument;
-import org.kohsuke.args4j.Option;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 import com.opencsv.CSVWriter;
 
@@ -78,10 +78,10 @@ public class OperatorLister extends GrooveCmdLineTool<List<String[]>> {
         return result;
     }
 
-    @Argument(metaVar = "file", usage = "Output file name", required = true)
+    @Parameters(index = "0", paramLabel = "file", description = "Output file name")
     private String outFileName;
 
-    @Option(name = "-s", metaVar = "sep", usage = "Argument type separator")
+    @Option(names = "-s", paramLabel = "sep", description = "Argument type separator")
     private String argTypeSeparator = ", ";
 
     /**

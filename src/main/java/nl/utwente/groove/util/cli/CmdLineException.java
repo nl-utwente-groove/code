@@ -16,25 +16,22 @@
  */
 package nl.utwente.groove.util.cli;
 
-import java.util.Stack;
-
-import picocli.CommandLine.IParameterConsumer;
-import picocli.CommandLine.Model.ArgSpec;
-import picocli.CommandLine.Model.CommandSpec;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * Option handler for the (no-argument) help option.
- * Stops option parsing when invoked, by consuming all remaining arguments.
+ * Exception signalling an error in the command-line arguments of a tool.
+ * @author Arend Rensink
+ * @version $Revision$
  */
-public class HelpHandler implements IParameterConsumer {
-    @Override
-    public void consumeParameters(Stack<String> args, ArgSpec argSpec, CommandSpec commandSpec) {
-        argSpec.setValue(Boolean.TRUE);
-        args.clear();
+@NonNullByDefault
+public class CmdLineException extends Exception {
+    /** Constructs an exception with a given message. */
+    public CmdLineException(String message) {
+        super(message);
     }
 
-    /** Name of the help option. */
-    public final static String NAME = "-h";
-    /** Usage message for the help option. */
-    public final static String USAGE = "Print this help message and exit";
+    /** Constructs an exception with a given message and cause. */
+    public CmdLineException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

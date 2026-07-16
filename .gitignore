@@ -5,3 +5,5 @@
 /doc/exploration/explore.pdf
 /doc/exploration/*.gz
 /doc/exploration/texput.log
+/.claude/worktrees/
+/.claude/settings.local.json
