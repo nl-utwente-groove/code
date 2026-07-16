@@ -100,7 +100,7 @@ CLI argument parsing uses picocli via `util.cli`.
 
 ## Commit messages
 
-Match the existing style: a single short subject line in sentence case, usually past tense ("Resolved regression bug gh #873", "Added user aspect to type graph aspects"). Reference GitHub issues as `gh #N` and SourceForge issues as `SF issue #N`. No body unless a brief parenthetical note is needed, and **no trailers** — do not add `Co-Authored-By` or other AI-attribution lines.
+Match the existing subject style: a short subject line in sentence case, usually past tense ("Resolved regression bug gh #873", "Added user aspect to type graph aspects"). Reference GitHub issues as `gh #N` and SourceForge issues as `SF issue #N`. Add a body as extensive as the change warrants — explain the why, rejected alternatives, and surprises rather than restating the diff; trivial changes can stay subject-only. **No trailers** — do not add `Co-Authored-By` or other AI-attribution lines.
 
 ## Coding conventions
 
