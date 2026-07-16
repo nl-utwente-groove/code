@@ -28,6 +28,7 @@ import nl.utwente.groove.lts.AbstractGraphState;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSListener;
 import nl.utwente.groove.lts.GraphState;
+import nl.utwente.groove.lts.Status;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -64,27 +65,35 @@ public class DeterminismTest {
 
     /**
      * Explores a named grammar repeatedly with a given strategy — perturbing
-     * the identity hash code sequence in between, and aggressively collapsing
-     * state caches during the later explorations — and asserts that all
-     * explorations enumerate identical states and transitions in identical
-     * order.
+     * the identity hash code sequence in between, and simulating a
+     * garbage-collection sweep of the state caches at various points during
+     * the later explorations — and asserts that all explorations enumerate
+     * identical states and transitions in identical order.
      */
     private void test(String grammarName, String strategy) {
         try {
             GrammarModel grammarModel = Groove.loadGrammar(INPUT_DIR + "/" + grammarName);
             ExploreType exploreType = new ExploreType(strategy, "final", 0);
-            String first = explore(grammarModel, exploreType, false);
+            String first = explore(grammarModel, exploreType, NO_COLLAPSE);
+            int closures = this.closureCount;
             perturbIdentityHashes();
-            String second = explore(grammarModel, exploreType, false);
+            String second = explore(grammarModel, exploreType, NO_COLLAPSE);
             assertEquals(String
                 .format("Non-deterministic %s exploration of grammar %s", strategy, grammarName),
                          first, second);
-            for (int i = 0; i < 3; i++) {
+            for (int collapseAt : new int[] {COLLAPSE_ALWAYS, 1, closures / 4, closures / 2,
+                3 * closures / 4}) {
+                if (collapseAt == 0) {
+                    continue;
+                }
                 perturbIdentityHashes();
-                String third = explore(grammarModel, exploreType, true);
+                String third = explore(grammarModel, exploreType, collapseAt);
                 assertEquals(String
-                    .format("Non-deterministic %s exploration of grammar %s under cache collapse",
-                            strategy, grammarName),
+                    .format("Non-deterministic %s exploration of grammar %s"
+                        + " under cache collapse at %s", strategy, grammarName,
+                            collapseAt == COLLAPSE_ALWAYS
+                                ? "every closure"
+                                : "closure " + collapseAt),
                              first, third);
             }
         } catch (Exception e) {
@@ -92,27 +101,42 @@ public class DeterminismTest {
         }
     }
 
+    /** Value for the collapse parameter of {@link #explore} that disables cache collapse. */
+    private static final int NO_COLLAPSE = -1;
+    /** Value for the collapse parameter of {@link #explore} that collapses at every closure. */
+    private static final int COLLAPSE_ALWAYS = -2;
+
     /**
      * Explores a grammar and returns the enumeration signature of the resulting GTS.
-     * @param collapseCaches if {@code true}, every state's cache is cleared as
-     * soon as the state is closed. This simulates the garbage collector
-     * clearing the (softly referenced) caches under memory pressure, which
-     * forces graphs and transition data to be reconstructed on next use —
-     * the enumeration must be insensitive to such reconstructions.
+     * @param collapseAt if {@code collapseAt > 0}, then at the moment the
+     * so-manieth state closure happens, the caches of all closed states are
+     * cleared at once; if {@link #COLLAPSE_ALWAYS}, this happens at every
+     * closure. This simulates a garbage collection sweep clearing the (softly
+     * referenced) caches under memory pressure, which forces graphs and
+     * transition data to be reconstructed on next use, along basis chains
+     * that differ from the original construction — the enumeration must be
+     * insensitive to such reconstructions, wherever they occur.
      */
     private String explore(GrammarModel grammarModel, ExploreType exploreType,
-                           boolean collapseCaches) throws FormatException {
+                           int collapseAt) throws FormatException {
         GTS gts = new GTS(grammarModel.toGrammar());
-        if (collapseCaches) {
-            gts.addLTSListener(new GTSListener() {
-                @Override
-                public void statusUpdate(GTS observed, GraphState state, int change) {
-                    if (state.isClosed() && state instanceof AbstractGraphState closed) {
-                        closed.clearCache();
+        this.closureCount = 0;
+        gts.addLTSListener(new GTSListener() {
+            @Override
+            public void statusUpdate(GTS observed, GraphState state, int change) {
+                if (Status.Flag.CLOSED.test(change) && state.isClosed()) {
+                    DeterminismTest.this.closureCount++;
+                    if (collapseAt == COLLAPSE_ALWAYS
+                        || DeterminismTest.this.closureCount == collapseAt) {
+                        for (GraphState s : observed.nodeSet().toArray(new GraphState[0])) {
+                            if (s.isClosed() && s instanceof AbstractGraphState closed) {
+                                closed.clearCache();
+                            }
+                        }
                     }
                 }
-            });
-        }
+            }
+        });
         exploreType.newExploration(gts, null).play();
         StringBuilder result = new StringBuilder();
         gts.nodeSet().forEach(n -> result.append(n).append('\n'));
@@ -131,6 +155,9 @@ public class DeterminismTest {
                 .append('\n'));
         return result.toString();
     }
+
+    /** Number of state closures observed during the last call to {@link #explore}. */
+    private int closureCount;
 
     /**
      * Advances the JVM's identity hash code sequence, so that objects created
