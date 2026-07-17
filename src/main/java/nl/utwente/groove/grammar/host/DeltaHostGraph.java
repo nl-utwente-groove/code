@@ -47,6 +47,30 @@ import nl.utwente.groove.util.parse.FormatErrorSet;
  * Class to serve to capture the graphs associated with graph states. These have
  * the characteristic that they are fixed, and are defined by a delta to another
  * graph (where the delta is the result of a rule application).
+ * <p>
+ * <b>Note on element set iteration order.</b> Unless the graph was created with
+ * {@code copyData} set, materialising its data structures does not build fresh
+ * node and edge sets: the delta is applied through a {@code SwingTarget}, which
+ * mutates the <i>basis graph's own</i> set objects in place and then re-roots
+ * the basis on this graph, with the inverted delta (see
+ * {@code SwingTarget.install}). A lineage of graphs thus shares one physical
+ * family of element sets, "swung" from graph to graph as different graphs are
+ * materialised. The sets are insertion-ordered, and removal followed by
+ * re-insertion is not order-neutral, so iteration order is a function of the
+ * entire swing history, not of the graph's content: take a shared edge set with
+ * insertion order [a, b, c], and let it swing to a child graph whose delta
+ * removes b, leaving [a, c]; swinging back to the parent re-adds b at the end,
+ * giving [a, c, b]: the same graph as at the start, with a different iteration
+ * order. Moreover, the swing history itself depends on which state
+ * caches the garbage collector happens to have cleared: after a cache collapse,
+ * {@link nl.utwente.groove.lts.StateCache} reconstructs the graph by replaying
+ * deltas from the nearest ancestor whose cache survived. Iteration order over
+ * host graph element sets during exploration is therefore irreducibly
+ * GC-dependent; order-bearing decisions must never rely on it, but must be made
+ * canonical by explicit content-based comparison, as
+ * {@code MatchCollector.canonicalise} does for the match application order.
+ * (See {@code claude/determinism-ferryman-flake.md} for the analysis that
+ * prompted this note.)
  * @author Arend Rensink
  * @version $Revision$
  */
