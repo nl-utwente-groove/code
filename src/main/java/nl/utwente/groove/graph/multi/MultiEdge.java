@@ -40,11 +40,6 @@ public class MultiEdge extends ANumberedEdge<MultiNode,MultiLabel> {
     }
 
     @Override
-    public boolean isSimple() {
-        return false;
-    }
-
-    @Override
     public boolean equals(@Nullable Object obj) {
         if (obj == this) {
             return true;

@@ -50,15 +50,6 @@ public interface Edge extends Element {
     /** Checks if the edge role equals a given role. */
     public boolean hasRole(EdgeRole role);
 
-    /** Indicates if this edge is uniquely
-     * identified by source, target and label.
-     * If the edge is not simple, its identity is
-     * instead determined by an edge number.
-     * @return {@code true} if this edge is simple.
-     * @see AEdge#isSimple()
-     */
-    public boolean isSimple();
-
     /** Convenience method to tests if the source and target nodes of this edge coincide. */
     public default boolean isLoop() {
         return source() == target();

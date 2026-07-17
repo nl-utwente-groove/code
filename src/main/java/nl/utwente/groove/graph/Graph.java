@@ -109,9 +109,10 @@ public interface Graph {
     }
 
     /** Indicates if this is a simple graph.
-     * A simple graph is one in which edge identity is entirely determined by
-     * source and target node plus label.
-     * @see AEdge#isSimple()
+     * A simple graph is one in which no two distinct edges share the same
+     * source and target node and label; a non-simple (multi-)graph may
+     * contain such parallel edges, distinguished by their edge number
+     * (see {@link NumberedEdge}).
      */
     public boolean isSimple();
 

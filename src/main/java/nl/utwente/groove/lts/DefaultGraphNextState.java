@@ -57,13 +57,6 @@ public class DefaultGraphNextState extends AbstractGraphState
         }
     }
 
-    /* As an edge of the GTS, this transition is identified
-     * by its source, label and target. */
-    @Override
-    public boolean isSimple() {
-        return true;
-    }
-
     @Override
     public RuleEvent getEvent() {
         return this.event;

@@ -112,11 +112,6 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
     }
 
     @Override
-    public boolean isSimple() {
-        return true;
-    }
-
-    @Override
     public AspectGraph getGraph() {
         return this.graph;
     }

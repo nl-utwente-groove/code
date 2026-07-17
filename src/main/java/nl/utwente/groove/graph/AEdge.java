@@ -80,16 +80,6 @@ public abstract class AEdge<N extends Node,L extends Label> implements GEdge<N> 
      */
     private final @NonNull L label;
 
-    /** Indicates if this edge is uniquely
-     * identified by source, target and label.
-     * If the edge is not simple, it must carry an edge number
-     * (see {@link ANumberedEdge}), which is then also taken into
-     * account in the hash code and equality test.
-     * @return {@code true} if this edge is simple.
-     */
-    @Override
-    public abstract boolean isSimple();
-
     /**
      * Returns a description consisting of the source node, an arrow with the
      * label inscribed, and the target node.

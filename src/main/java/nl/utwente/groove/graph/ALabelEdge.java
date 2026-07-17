@@ -36,11 +36,6 @@ public abstract class ALabelEdge<N extends Node> extends AEdge<N,ALabelEdge<N>> 
     }
 
     @Override
-    public boolean isSimple() {
-        return true;
-    }
-
-    @Override
     final public String text() {
         return toLine().toFlatString();
     }

@@ -22,9 +22,11 @@ import org.eclipse.jdt.annotation.Nullable;
 /**
  * Abstract edge class for edges carrying an edge number.
  * The number is factory-scoped: within the creating factory, it uniquely
- * identifies the edge. If the edge is not simple, the number also enters
- * the equality test and hash code, so that edges with the same content
- * can coexist (parallel edges).
+ * identifies the edge. The number also enters the equality test and hash
+ * code, so that edges with the same content can coexist (parallel edges).
+ * Whether such parallel edges actually occur is determined by the creating
+ * factory, which in simple mode pools content-equal edges
+ * (see {@link StoreFactory#isSimple()}).
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -48,28 +50,23 @@ public abstract class ANumberedEdge<N extends Node,L extends Label> extends AEdg
 
     /*
      * In addition to the content-based super implementation, takes the
-     * edge number into account if this edge is not simple.
+     * edge number into account.
      */
     @Override
     protected int computeHashCode() {
-        int result = super.computeHashCode();
-        if (!isSimple()) {
-            result = 31 * result + getNumber();
-        }
-        return result;
+        return 31 * super.computeHashCode() + getNumber();
     }
 
     /*
      * In addition to the content-based super implementation, tests for
-     * equality of the edge number if this edge is not simple.
+     * equality of the edge number.
      */
     @Override
     public boolean equals(@Nullable Object obj) {
         if (this == obj) {
             return true;
         }
-        if (!isSimple()
-            && !(obj instanceof NumberedEdge other && other.getNumber() == getNumber())) {
+        if (!(obj instanceof NumberedEdge other && other.getNumber() == getNumber())) {
             return false;
         }
         return super.equals(obj);

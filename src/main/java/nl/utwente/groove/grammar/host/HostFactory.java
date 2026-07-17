@@ -160,7 +160,7 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
      */
     protected @NonNull HostEdge newEdge(HostNode source, TypeEdge type, HostNode target, int nr) {
         assert type.getGraph() == getTypeGraph();
-        return new DefaultHostEdge(source, type, target, nr, isSimple());
+        return new DefaultHostEdge(source, type, target, nr);
     }
 
     /*

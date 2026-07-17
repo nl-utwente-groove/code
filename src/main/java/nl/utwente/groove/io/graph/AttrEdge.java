@@ -40,11 +40,6 @@ public class AttrEdge extends ANumberedEdge<AttrNode,PlainLabel> {
         this.attributeMap = new LinkedHashMap<>();
     }
 
-    @Override
-    public boolean isSimple() {
-        return false;
-    }
-
     /** Returns a deep copy of this edge. */
     @Override
     public AttrEdge clone() {

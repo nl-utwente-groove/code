@@ -30,24 +30,15 @@ import nl.utwente.groove.graph.ANumberedEdge;
  */
 @NonNullByDefault
 public class DefaultHostEdge extends ANumberedEdge<HostNode,TypeLabel> implements HostEdge {
-    /** Constructor for a typed edge.
-     * @param simple indicates if this is a simple or multi-edge.
-     */
-    protected DefaultHostEdge(HostNode source, TypeEdge type, HostNode target, int nr,
-                              boolean simple) {
+    /** Constructor for a typed edge. */
+    protected DefaultHostEdge(HostNode source, TypeEdge type, HostNode target, int nr) {
         super(source, type.label(), target, nr);
         this.type = type;
-        this.simple = simple;
     }
 
     // ------------------------------------------------------------------------
     // Overridden methods
     // ------------------------------------------------------------------------
-
-    @Override
-    public boolean isSimple() {
-        return this.simple;
-    }
 
     @Override
     protected boolean isTypeEqual(@Nullable Object obj) {
@@ -82,8 +73,6 @@ public class DefaultHostEdge extends ANumberedEdge<HostNode,TypeLabel> implement
         return AnchorKind.EDGE;
     }
 
-    /** Flag indicating whether this is a simple or multi-edge. */
-    private final boolean simple;
     /** Non-{@code null} type of this edge. */
     private final TypeEdge type;
 }

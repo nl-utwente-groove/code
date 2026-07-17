@@ -40,11 +40,6 @@ public class PlainEdge extends ANumberedEdge<PlainNode,PlainLabel> {
     }
 
     @Override
-    public boolean isSimple() {
-        return true;
-    }
-
-    @Override
     public boolean equals(@Nullable Object obj) {
         if (obj == null) {
             return false;
@@ -55,9 +50,10 @@ public class PlainEdge extends ANumberedEdge<PlainNode,PlainLabel> {
         assert result == (obj instanceof PlainEdge pe && getNumber() == pe.getNumber()) : String
             .format("Distinct %s and %s %s with the same number %d", getClass().getName(),
                     obj.getClass().getName(), this, getNumber());
-        assert result == (obj instanceof PlainEdge && super.equals(obj)) : String
-            .format("Distinct %s and %s %s with the same content", getClass().getName(),
-                    obj.getClass().getName(), this);
+        assert result == (obj instanceof PlainEdge pe && source().equals(pe.source())
+            && label().equals(pe.label()) && target().equals(pe.target())) : String
+                .format("Distinct %s and %s %s with the same content", getClass().getName(),
+                        obj.getClass().getName(), this);
         return result;
     }
 
