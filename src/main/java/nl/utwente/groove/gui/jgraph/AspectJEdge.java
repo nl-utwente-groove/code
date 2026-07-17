@@ -119,7 +119,7 @@ public class AspectJEdge extends
                 edge.label(), this);
         }
         if (error != null) {
-            edge = new AspectEdge(edge.source(), edge.label(), edge.target(), edge.getNumber());
+            edge = new AspectEdge(edge.source(), edge.label(), edge.target());
             edge.addError(error);
             edge.setFixed();
         }

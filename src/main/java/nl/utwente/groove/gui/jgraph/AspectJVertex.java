@@ -338,14 +338,8 @@ public class AspectJVertex extends
         // collect edges to be added explicitly
         List<AspectEdge> newEdges = new ArrayList<>();
         // now process the edge labels
-        int remarkCount = 0;
         for (AspectLabel label : edgeLabels) {
-            int nr = 0;
-            if (label.has(REMARK)) {
-                nr = remarkCount;
-                remarkCount++;
-            }
-            AspectEdge edge = new AspectEdge(node, label, node, nr);
+            AspectEdge edge = new AspectEdge(node, label, node);
             newEdges.add(edge);
         }
         // turn the collected remark text into a single edge

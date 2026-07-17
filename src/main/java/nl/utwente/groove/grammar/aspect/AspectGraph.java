@@ -61,7 +61,6 @@ import nl.utwente.groove.graph.plain.PlainNode;
 import nl.utwente.groove.gui.layout.JVertexLayout;
 import nl.utwente.groove.gui.layout.LayoutMap;
 import nl.utwente.groove.gui.list.SearchResult;
-import nl.utwente.groove.util.Dispenser;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Keywords;
 import nl.utwente.groove.util.parse.FormatError;
@@ -86,9 +85,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         //            .format("Cannot create aspect graph for %s", graphRole.toString());
         this.role = graphRole;
         this.normal = true;
-        this.edgeNumber = simple
-            ? Dispenser.constant(0)
-            : Dispenser.counter();
         // make sure the properties object is initialised
         addErrors(this.qualName.getErrors());
     }
@@ -633,13 +629,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         return result;
     }
 
-    /** Returns a number for the next edge to be created for this graph. */
-    int getEdgeNumber() {
-        return this.edgeNumber.getNext();
-    }
-
-    private final Dispenser edgeNumber;
-
     /** Returns a hash code for this graph based on normal status, name and role. */
     int externalHashCode() {
         return Objects.hash(isNormal(), getRole(), getName());
@@ -786,7 +775,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             // Copy the edges
             for (AspectEdge edge : graph.edgeSet()) {
                 AspectEdge fresh = new AspectEdge(nodeMap.get(edge.source()), edge.label(),
-                    nodeMap.get(edge.target()), edge.getNumber());
+                    nodeMap.get(edge.target()));
                 newLayoutMap.copyEdgeWithOffset(fresh, edge, oldLayoutMap, offsetX, offsetY);
                 result.addEdgeContext(fresh);
                 transfer.putEdge(edge, fresh);
@@ -836,19 +825,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
 
         @Override
         public AspectEdge createEdge(AspectNode source, Label label, AspectNode target) {
-            int nr = 0;
-            AspectLabel aLabel = (AspectLabel) label;
-            if (aLabel.has(AspectKind.REMARK)) {
-                nr = this.remarkCount.getNext();
-            } else {
-                // non-remark edges are all numbered 0
-                // nr = this.graph.getEdgeNumber();
-            }
-            return new AspectEdge(source, (AspectLabel) label, target, nr);
+            return new AspectEdge(source, (AspectLabel) label, target);
         }
-
-        /** Number of remark edges encountered thus far. */
-        private final Dispenser remarkCount = Dispenser.counter();
 
         @Override
         public AspectGraphMorphism createMorphism() {

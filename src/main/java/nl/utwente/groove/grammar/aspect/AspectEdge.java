@@ -61,7 +61,7 @@ import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.rule.RuleLabel;
 import nl.utwente.groove.grammar.type.Multiplicity;
 import nl.utwente.groove.grammar.type.TypeLabel;
-import nl.utwente.groove.graph.ANumberedEdge;
+import nl.utwente.groove.graph.AEdge;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.plain.PlainLabel;
@@ -83,17 +83,16 @@ import nl.utwente.groove.util.parse.StringHandler;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class AspectEdge extends ANumberedEdge<@NonNull AspectNode,@NonNull AspectLabel>
+public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
     implements AspectElement, Fixable {
     /**
-     * Constructs a new, numbered edge.
+     * Constructs a new edge.
      * @param source the source node for this edge
      * @param label the label for this edge
      * @param target the target node for this edge
-     * @param number the edge number
      */
-    public AspectEdge(AspectNode source, AspectLabel label, AspectNode target, int number) {
-        super(source, label, target, number);
+    public AspectEdge(AspectNode source, AspectLabel label, AspectNode target) {
+        super(source, label, target);
         assert label.isFixed();
         this.graph = source.getGraph();
         this.aspects = new Aspect.Map(false, this.graph.getRole());
@@ -108,19 +107,9 @@ public class AspectEdge extends ANumberedEdge<@NonNull AspectNode,@NonNull Aspec
         label.getAspects().forEach(this::set);
     }
 
-    /**
-     * Constructs a new edge, with edge number {@code 0}.
-     * @param source the source node for this edge
-     * @param label the label for this edge
-     * @param target the target node for this edge
-     */
-    public AspectEdge(AspectNode source, AspectLabel label, AspectNode target) {
-        this(source, label, target, 0);
-    }
-
     @Override
     public boolean isSimple() {
-        return false;
+        return true;
     }
 
     @Override
