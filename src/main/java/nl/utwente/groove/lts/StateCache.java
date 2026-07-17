@@ -160,6 +160,14 @@ public class StateCache implements Cache {
 
     /**
      * Compute the graph from the information in the state.
+     * If the state has neither a frozen graph nor a live cache, the graph is
+     * reconstructed by replaying deltas forward from the nearest ancestor that
+     * still has one. The reconstruction path thus depends on GC timing (on
+     * which caches happen to have survived); in combination with the structure
+     * sharing of {@link DeltaHostGraph} (see the note on element set iteration
+     * order there), the element sets of the resulting graph, though equal in
+     * content to any previous materialisation, may iterate in a different
+     * order.
      */
     private DeltaHostGraph computeGraph() {
         HostElement[] frozenGraph = this.state.getFrozenGraph();

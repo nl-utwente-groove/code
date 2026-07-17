@@ -17,6 +17,9 @@
 package nl.utwente.groove.lts;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -156,6 +159,29 @@ public class MatchCollector {
         if (DEBUG) {
             System.out.println();
         }
+        return canonicalise(result);
+    }
+
+    /**
+     * Returns a match set with the same content as a given one, in which the
+     * matches occur in canonical (comparison-based) order. The order in which
+     * matches are found reflects the iteration order of the host graph's edge
+     * and node sets, which for a state whose cache was collapsed and
+     * reconstructed may differ from that of a previous run; imposing a
+     * canonical order keeps the exploration sequence deterministic
+     * nevertheless.
+     */
+    private MatchResultSet canonicalise(MatchResultSet matches) {
+        if (matches.size() <= 1) {
+            return matches;
+        }
+        List<MatchResult> sorted = new ArrayList<>(matches);
+        sorted
+            .sort(Comparator
+                .comparing(MatchResult::getEvent)
+                .thenComparing(MatchResult::getStep));
+        MatchResultSet result = new MatchResultSet();
+        result.addAll(sorted);
         return result;
     }
 

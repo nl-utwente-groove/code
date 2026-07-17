@@ -1,5 +1,9 @@
 # Investigation note: rare DeterminismTest flake (ferryman, transition order)
 
+*Status (2026-07-16): **resolved** — mechanism confirmed, reproduced on demand, fixed by
+the canonical match order of branch `canonical-match-order`. See the Resolution section
+at the end; the sections in between are the state of knowledge of 2026-07-15.*
+
 *Status (2026-07-15): observed once, not reproduced, cause narrowed down but not found.
 This documents everything known, so the investigation can be picked up on any machine.*
 
@@ -75,3 +79,43 @@ match order within one rule at one state.
   state; `DeterminismTest` alone has too little GC activity even at `-Xmx40m`.
 - Related: `claude/randomness-seeding.md` (step 3 of the determinism program; this flake
   is a residual hole in the earlier steps, independent of intentional randomness).
+
+## Resolution (2026-07-16)
+
+Pursued via idea 1 (deterministically induced cache loss), which confirmed the suspected
+mechanism and validated the fix that branch `canonical-match-order` had already proposed
+(idea 3, authored 2026-07-14 — one day *before* the flake was observed).
+
+**The effective perturbation is a simulated GC sweep**: at the moment of the *N*-th state
+closure, clear the caches of *all* closed states at once (via `AbstractGraphState.clearCache`,
+which only acts on closed states). A sweep of this kind at almost *any* single point of the
+ferryman bfs exploration flips the enumeration order of two same-rule transitions of one
+state, with the identical states/hashes/flipped-order signature of the original observation
+(a probe sweeping all 228 closure points found the majority divergent; in one JVM run the
+exact `s108--eat->{s84,s78}` flip of the observation reappeared verbatim). Two collapse
+patterns that do **not** reproduce it, for the record: natural GC pressure (`-Xmx40m`, see
+statistics above), and clearing only the *closing state's own* cache at every closure — the
+first version of the strengthened `DeterminismTest` on the branch used the latter and
+therefore passed even without the fix. The asymmetry of the sweep matters: it also clears
+caches that were *reincarnated* by reconstruction since their state closed.
+
+**Refined mechanism** (sharpening the 2→3→4 chain above): a state graph's node/edge sets
+live in a web of `DeltaHostGraph` objects that pass the *same underlying set objects*
+around — `SwingTarget` applies a delta by mutating the basis's sets in place and re-roots
+the basis on the child with an inverted delta. Each such swing changes the sets' insertion
+order (removal + re-insertion). Collecting a `StateCache` does not destroy this web; it
+makes the next `getGraph()` build a *new* `DeltaHostGraph` whose materialisation re-mutates
+the shared sets along a different path than the surviving-cache route would have taken —
+and `StateCache.computeGraph` chooses its reconstruction chain by `hasCache()`, i.e., by
+which caches happen to have survived GC. So host-set iteration order at match time is
+irreducibly GC-dependent; the only robust fix is to make the match *application order*
+independent of iteration order.
+
+**The fix** is exactly that: `MatchCollector.canonicalise` sorts every computed match set
+by `(RuleEvent, Step)` — both comparators are content-based (rule + anchor images; frame
+numbers + switch stack), and `MatchResult` equality is the same `(event, step)` pair, so
+the order is total, canonical, and reconstruction-independent. With the fix, the 228-point
+probe sweep shows 0 divergent points (vs. majority divergent without). Note the sweep
+reproducer retains some JVM-run-to-run variance (natural GC interacts with the induced
+sweeps), which is why `DeterminismTest` now exercises several collapse points — at
+quarters of the closure count, plus a sweep at every closure — per grammar and strategy.
