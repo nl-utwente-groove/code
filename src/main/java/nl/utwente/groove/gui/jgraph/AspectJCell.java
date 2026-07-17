@@ -16,12 +16,17 @@
  */
 package nl.utwente.groove.gui.jgraph;
 
+import java.util.Comparator;
 import java.util.Iterator;
 
 import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.grammar.aspect.Aspect;
+import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
+import nl.utwente.groove.grammar.aspect.AspectKind;
+import nl.utwente.groove.graph.Edge;
+import nl.utwente.groove.graph.EdgeComparator;
 
 /**
  * Instantiation of a {@link JCell} with an {@link AspectJObject}
@@ -55,4 +60,20 @@ public interface AspectJCell extends JCell<@NonNull AspectGraph> {
 
     /** Separator between level name and edge label. */
     static final char LEVEL_NAME_SEPARATOR = '@';
+
+    /** Comparator ordering remark edges strictly before all other edges,
+     * without ordering among the remark or non-remark edges themselves.
+     */
+    static final Comparator<Edge> REMARK_FIRST_COMPARATOR = (e1, e2) -> {
+        boolean r1 = e1 instanceof AspectEdge ae1 && ae1.has(AspectKind.REMARK);
+        boolean r2 = e2 instanceof AspectEdge ae2 && ae2.has(AspectKind.REMARK);
+        return Boolean.compare(r2, r1);
+    };
+
+    /** Comparator for the edges wrapped in an aspect JCell:
+     * remark edges are ordered strictly first, all other edges are ordered
+     * as by {@link EdgeComparator}.
+     */
+    static final Comparator<Edge> EDGE_COMPARATOR
+        = REMARK_FIRST_COMPARATOR.thenComparing(EdgeComparator.instance());
 }

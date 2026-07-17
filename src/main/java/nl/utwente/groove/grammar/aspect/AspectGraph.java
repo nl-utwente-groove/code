@@ -17,6 +17,7 @@
 package nl.utwente.groove.grammar.aspect;
 
 import static nl.utwente.groove.grammar.aspect.AspectKind.COLOR;
+import static nl.utwente.groove.grammar.aspect.AspectKind.REMARK;
 import static nl.utwente.groove.graph.GraphRole.HOST;
 import static nl.utwente.groove.util.Factory.lazy;
 
@@ -25,6 +26,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -58,11 +60,13 @@ import nl.utwente.groove.graph.plain.PlainFactory;
 import nl.utwente.groove.graph.plain.PlainGraph;
 import nl.utwente.groove.graph.plain.PlainLabel;
 import nl.utwente.groove.graph.plain.PlainNode;
+import nl.utwente.groove.gui.layout.JEdgeLayout;
 import nl.utwente.groove.gui.layout.JVertexLayout;
 import nl.utwente.groove.gui.layout.LayoutMap;
 import nl.utwente.groove.gui.list.SearchResult;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Keywords;
+import nl.utwente.groove.util.Pair;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 
@@ -387,6 +391,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         boolean result = !isFixed();
         if (result) {
             FormatErrorSet errors = new FormatErrorSet();
+            // merge parallel remark edges into single multi-line remark edges
+            mergeRemarkEdges();
             // first parse all nodes and edges
             nodeSet().forEach(AspectNode::setParsed);
             edgeSet().forEach(AspectEdge::setParsed);
@@ -412,6 +418,49 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             super.setFixed();
         }
         return result;
+    }
+
+    /**
+     * Merges all remark edges with the same source and target into a single
+     * remark edge, whose text consists of the original texts in insertion
+     * order, separated by newlines. Called upon fixing the graph, so that
+     * every fixed graph has at most one remark edge per node pair; this makes
+     * the relative order of the remark text lines independent of the (set-based)
+     * edge containment and display machinery.
+     */
+    private void mergeRemarkEdges() {
+        Map<Pair<AspectNode,AspectNode>,List<AspectEdge>> remarks = new LinkedHashMap<>();
+        for (AspectEdge edge : edgeSet()) {
+            if (edge.label().has(REMARK)) {
+                remarks
+                    .computeIfAbsent(Pair.newPair(edge.source(), edge.target()),
+                                     k -> new ArrayList<>())
+                    .add(edge);
+            }
+        }
+        LayoutMap layoutMap = GraphInfo.getLayoutMap(this);
+        for (List<AspectEdge> group : remarks.values()) {
+            if (group.size() > 1) {
+                StringBuilder text = new StringBuilder(REMARK.getPrefix());
+                for (int i = 0; i < group.size(); i++) {
+                    if (i > 0) {
+                        text.append('\n');
+                    }
+                    text.append(group.get(i).label().getInnerText());
+                }
+                AspectEdge first = group.get(0);
+                AspectEdge merged = new AspectEdge(first.source(),
+                    parser.parse(text.toString(), getRole()), first.target());
+                group.forEach(this::removeEdge);
+                addEdgeContext(merged);
+                if (layoutMap != null) {
+                    JEdgeLayout layout = layoutMap.getLayout(first);
+                    if (layout != null) {
+                        layoutMap.putEdge(merged, layout);
+                    }
+                }
+            }
+        }
     }
 
     /** Changes the status of this graph. */

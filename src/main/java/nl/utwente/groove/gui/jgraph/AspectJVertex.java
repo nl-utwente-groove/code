@@ -6,6 +6,7 @@ import static nl.utwente.groove.gui.look.VisualKey.COLOR;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
@@ -334,20 +335,28 @@ public class AspectJVertex extends
         }
         node.setParsed();
         // collect remark edges
+        boolean hasRemark = false;
         StringBuilder remarkText = new StringBuilder();
         // collect edges to be added explicitly
         List<AspectEdge> newEdges = new ArrayList<>();
         // now process the edge labels
         for (AspectLabel label : edgeLabels) {
-            AspectEdge edge = new AspectEdge(node, label, node);
-            newEdges.add(edge);
+            if (label.has(REMARK)) {
+                if (hasRemark) {
+                    remarkText.append(AspectJObject.NEWLINE);
+                }
+                remarkText.append(label.getInnerText());
+                hasRemark = true;
+            } else {
+                AspectEdge edge = new AspectEdge(node, label, node);
+                newEdges.add(edge);
+            }
         }
         // turn the collected remark text into a single edge
-        if (remarkText.length() > 0) {
+        if (hasRemark) {
             remarkText.insert(0, REMARK.getPrefix());
             AspectEdge edge
                 = new AspectEdge(node, parser.parse(remarkText.toString(), graph.getRole()), node);
-            edge.setFixed();
             newEdges.add(edge);
         }
         setNode(node);
@@ -380,6 +389,12 @@ public class AspectJVertex extends
     @Override
     public AspectJObject getUserObject() {
         return (AspectJObject) super.getUserObject();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    protected <E extends Edge> Comparator<E> edgeComparator() {
+        return (Comparator<E>) EDGE_COMPARATOR;
     }
 
     /**

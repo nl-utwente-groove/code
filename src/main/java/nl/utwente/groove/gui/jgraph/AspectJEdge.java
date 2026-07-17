@@ -274,18 +274,41 @@ public class AspectJEdge extends
         boolean bidirectional = getLooks().contains(Look.BIDIRECTIONAL);
         initialise();
         AspectParser parser = AspectParser.getInstance();
+        // collect remark edges
+        boolean hasRemark = false;
+        StringBuilder remarkText = new StringBuilder();
         for (String text : getUserObject()) {
             AspectLabel label = parser.parse(text, graph.getRole());
-            AspectEdge edge = new AspectEdge(getSourceNode(), label, getTargetNode());
-            edge.setParsed();
-            addEdge(edge);
-            if (bidirectional) {
-                edge = new AspectEdge(getTargetNode(), label, getSourceNode());
-                edge.setParsed();
-                addEdge(edge);
+            if (label.has(AspectKind.REMARK)) {
+                if (hasRemark) {
+                    remarkText.append(AspectJObject.NEWLINE);
+                }
+                remarkText.append(label.getInnerText());
+                hasRemark = true;
+            } else {
+                addEdges(label, bidirectional);
             }
         }
+        // turn the collected remark text into a single edge
+        if (hasRemark) {
+            remarkText.insert(0, AspectKind.REMARK.getPrefix());
+            addEdges(parser.parse(remarkText.toString(), graph.getRole()), bidirectional);
+        }
         setStale(VisualKey.refreshables());
+    }
+
+    /** Adds an edge with a given label between this JEdge's source and target
+     * node, and the inverse edge if {@code bidirectional} is {@code true}.
+     */
+    private void addEdges(AspectLabel label, boolean bidirectional) {
+        AspectEdge edge = new AspectEdge(getSourceNode(), label, getTargetNode());
+        edge.setParsed();
+        addEdge(edge);
+        if (bidirectional) {
+            edge = new AspectEdge(getTargetNode(), label, getSourceNode());
+            edge.setParsed();
+            addEdge(edge);
+        }
     }
 
     /**
@@ -319,7 +342,11 @@ public class AspectJEdge extends
     private final static Comparator<Edge> COMPARATOR = new Comparator<>() {
         @Override
         public int compare(Edge o1, Edge o2) {
-            int result = getAspects(o1).compareTo(getAspects(o2));
+            int result = REMARK_FIRST_COMPARATOR.compare(o1, o2);
+            if (result != 0) {
+                return result;
+            }
+            result = getAspects(o1).compareTo(getAspects(o2));
             if (result != 0) {
                 return result;
             }

@@ -156,6 +156,10 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 // show the visible self-edges
                 for (AspectEdge edge : jVertex.getEdges()) {
                     if (isVisible(jGraph, jVertex, edge)) {
+                        if (edge.has(REMARK)) {
+                            edge.toLines(true, jVertex.getAspects()).forEach(result::add);
+                            continue;
+                        }
                         Line line = edge.toLine(true, jVertex.getAspects());
                         if (edge.getRole() == NODE_TYPE) {
                             line = insertUserId(idLine, line);
@@ -181,7 +185,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
             }
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
                 if (isVisible(jGraph, jVertex, edge)) {
-                    result.add(edge.toLine(true, jVertex.getAspects()));
+                    edge.toLines(true, jVertex.getAspects()).forEach(result::add);
                 }
             }
         }
@@ -243,6 +247,10 @@ public class LabelValue implements VisualValue<MultiLabel> {
             // show the visible self-edges
             for (AspectEdge edge : jVertex.getEdges()) {
                 if (isVisible(jGraph, jVertex, edge)) {
+                    if (edge.has(REMARK)) {
+                        edge.toLines(true, jVertex.getAspects()).forEach(result::add);
+                        continue;
+                    }
                     Line line = edge.toLine(true, jVertex.getAspects());
                     if (showLoopSuffix(jVertex, edge)) {
                         line = line.append(LOOP_SUFFIX);
@@ -252,7 +260,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
             }
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
                 if (isVisible(jGraph, jVertex, edge)) {
-                    result.add(edge.toLine(true, jVertex.getAspects()));
+                    edge.toLines(true, jVertex.getAspects()).forEach(result::add);
                 }
             }
             if (node.has(EDGE)) {
@@ -306,6 +314,10 @@ public class LabelValue implements VisualValue<MultiLabel> {
             // show the visible self-edges
             for (AspectEdge edge : jVertex.getEdges()) {
                 if (isVisible(jGraph, jVertex, edge)) {
+                    if (edge.has(REMARK)) {
+                        edge.toLines(true, jVertex.getAspects()).forEach(result::add);
+                        continue;
+                    }
                     Line line = edge.toLine(true, jVertex.getAspects());
                     if (edge.getRole() == NODE_TYPE) {
                         line = insertUserId(idLine, line);
@@ -328,7 +340,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
             }
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
                 if (isVisible(jGraph, jVertex, edge)) {
-                    result.add(edge.toLine(true, jVertex.getAspects()));
+                    edge.toLines(true, jVertex.getAspects()).forEach(result::add);
                 }
             }
             Aspect color = node.get(COLOR);
@@ -703,13 +715,13 @@ public class LabelValue implements VisualValue<MultiLabel> {
             for (AspectEdge edge : jEdge.getEdges()) {
                 // only add edges that have an unfiltered label
                 if (isVisible(jGraph, jEdge, edge)) {
-                    Line line;
                     if (jGraph.isShowAspects()) {
-                        line = edge.label().toLine();
+                        result.add(edge.label().toLine(), jEdge.getDirect(edge));
                     } else {
-                        line = edge.toLine(false, jEdge.getAspects());
+                        for (Line line : edge.toLines(false, jEdge.getAspects())) {
+                            result.add(line, jEdge.getDirect(edge));
+                        }
                     }
-                    result.add(line, jEdge.getDirect(edge));
                 }
             }
         }
