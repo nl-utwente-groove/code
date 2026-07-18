@@ -17,7 +17,6 @@
 package nl.utwente.groove.graph.plain;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.graph.ANumberedEdge;
 
@@ -37,24 +36,6 @@ public class PlainEdge extends ANumberedEdge<PlainNode,PlainLabel> {
      */
     PlainEdge(PlainNode source, PlainLabel label, PlainNode target, int nr) {
         super(source, label, target, nr);
-    }
-
-    @Override
-    public boolean equals(@Nullable Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        boolean result = this == obj;
-        // test that the result is the same as number equality
-        // or source-label-target equality
-        assert result == (obj instanceof PlainEdge pe && getNumber() == pe.getNumber()) : String
-            .format("Distinct %s and %s %s with the same number %d", getClass().getName(),
-                    obj.getClass().getName(), this, getNumber());
-        assert result == (obj instanceof PlainEdge pe && source().equals(pe.source())
-            && label().equals(pe.label()) && target().equals(pe.target())) : String
-                .format("Distinct %s and %s %s with the same content", getClass().getName(),
-                        obj.getClass().getName(), this);
-        return result;
     }
 
     /**

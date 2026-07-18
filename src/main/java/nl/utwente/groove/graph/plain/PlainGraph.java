@@ -36,20 +36,48 @@ import nl.utwente.groove.graph.Node;
 @NonNullByDefault
 public class PlainGraph extends EdgeMapGraph<PlainNode,PlainEdge> implements Cloneable {
     /**
-     * Constructs a new, empty Graph with a given graph role.
+     * Constructs a new, empty simple Graph with a given graph role.
      * @param name the (non-{@code null}) name of the graph.
      * @param role the (non-{@code null}) role of the graph.
      */
     public PlainGraph(String name, GraphRole role) {
-        super(name, role, true);
+        this(name, role, true);
+    }
+
+    /**
+     * Constructs a new, empty Graph with a given graph role.
+     * @param name the (non-{@code null}) name of the graph.
+     * @param role the (non-{@code null}) role of the graph.
+     * @param simple flag indicating if this is to be a simple graph;
+     * if {@code true}, the graph is based on the singleton (simple) factory,
+     * otherwise it gets a fresh, non-simple factory
+     */
+    public PlainGraph(String name, GraphRole role, boolean simple) {
+        this(name, role, simple
+            ? PlainFactory.instance()
+            : PlainFactory.newInstance(false));
+    }
+
+    /**
+     * Constructs a new, empty Graph with a given graph role, based on a given factory.
+     * Simplicity of the graph is determined by the factory.
+     * @param name the (non-{@code null}) name of the graph.
+     * @param role the (non-{@code null}) role of the graph.
+     * @param factory the (non-{@code null}) element factory of the graph.
+     */
+    public PlainGraph(String name, GraphRole role, PlainFactory factory) {
+        super(name, role, factory.isSimple());
+        this.factory = factory;
     }
 
     /**
      * Constructs a clone of a given {@link PlainGraph}.
+     * The element factory is shared.
      * @param graph the (non-{@code null}) graph to be cloned
      */
     protected PlainGraph(PlainGraph graph) {
         super(graph);
+        this.factory = graph.getFactory();
     }
 
     @Override
@@ -60,20 +88,24 @@ public class PlainGraph extends EdgeMapGraph<PlainNode,PlainEdge> implements Clo
 
     @Override
     public PlainGraph newGraph(String name) {
-        return new PlainGraph(name, getRole());
+        return new PlainGraph(name, getRole(), getFactory());
     }
 
     @Override
     public PlainFactory getFactory() {
-        return PlainFactory.instance();
+        return this.factory;
     }
+
+    /** The element factory of this graph. */
+    private final PlainFactory factory;
 
     /**
      * Creates a {@link PlainGraph} from an arbitrary graph,
      * using {@link PlainLabel}s based on the string values of the edge labels.
+     * Simplicity of the source graph is preserved.
      */
     static public PlainGraph instance(Graph source) {
-        var result = new PlainGraph(source.getName(), source.getRole());
+        var result = new PlainGraph(source.getName(), source.getRole(), source.isSimple());
         var map = new PlainGraphMap(result.getFactory());
         source.nodeSet().forEach(n -> map.putNode(n, result.addNode(n.getNumber())));
         source.edgeSet().forEach(e -> result.addEdge(map.mapEdge(e)));
