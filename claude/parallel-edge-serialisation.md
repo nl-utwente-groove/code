@@ -118,6 +118,36 @@ so the role-based rule is the whole story there.)
   consumers (LTS export/import, `Viewer`, `CTLModelChecker`'s `GraphFacade`,
   `IsoChecker`) need real parallel edges, and those all work on `PlainGraph`.
 
+## Compatibility with old GROOVE versions
+
+**Grammar files are untouched.** Simple graphs are written byte-identically to
+today (`edgeids="false"`, no edge ids), so `.gps` directories remain fully
+interchangeable between old and new versions.
+
+**New non-simple files (LTS exports) load fine in old GROOVE.** The changed
+files carry `edgeids="true"` and `id` attributes on edges — both part of the
+GXL 1.0 schema that old versions already ship in their JAXB binding, so
+unmarshalling succeeds (and is non-validating anyway). Old load code never
+reads `edgeids` and touches edge ids only in error messages. Old versions will
+collapse the parallel edges on load — but that is exactly what they already do
+with today's LTS files, so nothing regresses; the information loss was always
+on their side.
+
+**Old files load correctly in new GROOVE.** Grammar files (`edgeids="false"`)
+load simple, as always. MultiGraph-era LTS files are the reason for the
+role-based override in step 2: they contain parallel edges yet say
+`edgeids="false"`, and `role="lts"` makes them load non-simple. Third-party GXL
+files that happen to declare `edgeids="true"` now load non-simple; if imported
+as grammar resources they are collapsed by the aspect-graph conversion as
+before, so this only matters for plain-graph viewing, where honouring the
+declaration is correct.
+
+**The GXL version marker stays `"curly"`.** `isKnownGxlVersion` accepts only
+exact equality, and the `$version` attribute is written into *every* file — so
+bumping the version would make old GROOVE warn about all new files, including
+byte-identical grammar files. Since the format change is additive, confined to
+non-simple files, and gracefully handled by old versions, no bump is warranted.
+
 ## Rejected alternative: a `$simple` graph property
 
 Simplicity could be stored as a graph attribute instead of `edgeids`. Rejected
