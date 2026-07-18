@@ -83,8 +83,30 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
 
     @Override
     public ElementFactory<AttrNode,AttrEdge> getFactory() {
-        return AttrFactory.instance();
+        return this.factory;
     }
+
+    private final AttrFactory factory = new AttrFactory();
+
+    /** Indicates if the serialised graph represented by this XML graph is simple.
+     * This is metadata about the represented graph: the XML graph itself always
+     * stores its edges set-based and number-distinguished, so that it can
+     * faithfully hold parallel edges regardless of this flag.
+     */
+    @Override
+    public boolean isSimple() {
+        return this.simple;
+    }
+
+    /** Sets the simplicity of the serialised graph represented by this XML graph.
+     * @see #isSimple()
+     */
+    public void setSimple(boolean simple) {
+        testFixed(false);
+        this.simple = simple;
+    }
+
+    private boolean simple = true;
 
     /**
      * Adds a fresh node based on a given string id.
@@ -238,7 +260,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
      * Any attributes and hyperedges of the XML graph are discarded.
      */
     public PlainGraph toPlainGraph() {
-        PlainGraph result = new PlainGraph(getName(), getRole());
+        PlainGraph result = new PlainGraph(getName(), getRole(), isSimple());
         copyTo(result);
         result.setFixed();
         return result;
@@ -260,7 +282,8 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
     public static AttrGraph newInstance(AspectGraph graph) {
         AttrGraph result = new AttrGraph(graph.getName());
         result.setRole(graph.getRole());
-        AspectToAttrMap elementMap = new AspectToAttrMap();
+        result.setSimple(graph.isSimple());
+        AspectToAttrMap elementMap = new AspectToAttrMap(result.getFactory());
         for (AspectNode node : graph.nodeSet()) {
             AttrNode nodeImage = result.addNode(node.getNumber());
             elementMap.putNode(node, nodeImage);
@@ -287,9 +310,9 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
 
     private static class AspectToAttrMap
         extends AGraphMap<AspectNode,AspectEdge,@Nullable AttrNode,AttrEdge> {
-        /** Constructs a new, empty map. */
-        public AspectToAttrMap() {
-            super(AttrFactory.instance());
+        /** Constructs a new, empty map, creating images through a given factory. */
+        public AspectToAttrMap(ElementFactory<AttrNode,AttrEdge> factory) {
+            super(factory);
         }
 
         @Override

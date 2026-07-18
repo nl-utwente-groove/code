@@ -172,7 +172,10 @@ public class AutIO extends GraphIO<PlainGraph> {
      * @see #setGraphRole(GraphRole)
      */
     private PlainGraph createGraph() {
-        PlainGraph result = new PlainGraph(getGraphName(), getGraphRole());
+        // LTS graphs may contain parallel transitions, so they are non-simple;
+        // the .aut format has no way to declare this, hence the role decides
+        GraphRole role = getGraphRole();
+        PlainGraph result = new PlainGraph(getGraphName(), role, role != GraphRole.LTS);
         return result;
     }
 

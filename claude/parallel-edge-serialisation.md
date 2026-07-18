@@ -1,6 +1,6 @@
 # Proposal: parallel-edge-preserving GXL serialisation
 
-Status: proposed (2026-07-18), not yet implemented. Branch: `parallel-edges`.
+Status: implemented on this branch (2026-07-18). Branch: `parallel-edges`.
 
 ## Problem
 
@@ -156,6 +156,25 @@ have identity beyond source/label/target), it comes for free in the existing
 JAXB binding, and writing edge ids makes non-simple files self-describing for
 external GXL tools. A property would also pollute the graph-properties
 namespace, which is user-visible in the Simulator.
+
+## Findings during implementation
+
+- **The `parallelEdges` grammar property** (`GrammarKey.PARALLEL`, pre-GitHub
+  vintage) already governs the simplicity of GUI-*created* aspect graphs
+  (`NewAction`, `AspectJModel`, groovy `GraphManager`), but is not consulted on
+  the load path. `NewAction` passed the property *un-negated* as the `simple`
+  flag of `AspectGraph.emptyGraph` — inverted with respect to the other two
+  sites, since the property's inception. Latent until now (the flag never
+  influenced saving); fixed on this branch, because with simplicity-aware
+  saving the inversion would have made every GUI-created graph in a default
+  grammar save as `edgeids="true"`.
+- **Host-graph compilation ignores aspect-graph simplicity**:
+  `HostModelMorphism` hard-codes `new DefaultHostGraph(source.getName())`,
+  which is simple. So the flag restored on load does not (yet) reach
+  exploration semantics; wiring the `parallelEdges` property and/or the
+  aspect-graph flag into host-model compilation is the natural next step
+  towards exploring with parallel edges, and will need a decision on
+  precedence between the grammar property and the per-file `edgeids` flag.
 
 ## Verification plan
 
