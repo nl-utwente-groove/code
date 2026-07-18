@@ -35,14 +35,16 @@ import nl.utwente.groove.graph.plain.PlainNode;
  */
 @SuppressWarnings("all")
 public class BinaryEdgeTest {
+    static PlainFactory factory;
     static PlainNode n1, n2;
     static PlainEdge e;
 
     @BeforeClass
     public static void setUp() {
-        n1 = PlainFactory.instance().createNode();
-        n2 = PlainFactory.instance().createNode();
-        e = PlainEdge.createEdge(n1, "a", n2);
+        factory = PlainFactory.newInstance(true);
+        n1 = factory.createNode();
+        n2 = factory.createNode();
+        e = factory.createEdge(n1, "a", n2);
     }
 
     @Test
@@ -54,20 +56,19 @@ public class BinaryEdgeTest {
 
     @Test
     public void testCreateAndCompare() {
-        PlainEdge e2 = PlainEdge.createEdge(n1, "a", n2);
+        PlainEdge e2 = factory.createEdge(n1, "a", n2);
 
         assertEquals(e, e2);
         assertEquals(e2, e);
 
-        assertTrue(!e.equals(PlainEdge.createEdge(n1, "a", n1)));
-        assertTrue(!e.equals(PlainEdge.createEdge(n1, "b", n2)));
-        assertTrue(!e.equals(PlainEdge.createEdge(n2, "a", n2)));
+        assertTrue(!e.equals(factory.createEdge(n1, "a", n1)));
+        assertTrue(!e.equals(factory.createEdge(n1, "b", n2)));
+        assertTrue(!e.equals(factory.createEdge(n2, "a", n2)));
     }
 
     @Test
     public void testCopyAndCompare() {
-        PlainEdge e2 =
-            PlainEdge.createEdge(e.source(), e.label(), e.target());
+        PlainEdge e2 = factory.createEdge(e.source(), e.label(), e.target());
 
         assertEquals(e, e2);
         assertEquals(e2, e);
@@ -75,7 +76,7 @@ public class BinaryEdgeTest {
 
     @Test
     public void testHashSetEquals() {
-        PlainEdge e2 = PlainEdge.createEdge(n1, "a", n2);
+        PlainEdge e2 = factory.createEdge(n1, "a", n2);
 
         Set<PlainEdge> s1 = new HashSet<>();
         s1.add(e);

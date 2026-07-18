@@ -153,8 +153,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
      * for the edges, and as special edges for the nodes.
      */
     public PlainGraph toPlainGraph() {
-        AspectToPlainMap elementMap = new AspectToPlainMap();
         PlainGraph result = createPlainGraph();
+        AspectToPlainMap elementMap = new AspectToPlainMap(result.getFactory());
         for (AspectNode node : nodeSet()) {
             PlainNode nodeImage = result.addNode(node.getNumber());
             elementMap.putNode(node, nodeImage);
@@ -251,7 +251,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
     public AspectGraph relabel(TypeLabel oldLabel, TypeLabel newLabel) {
         // create a plain graph under relabelling
         PlainGraph result = createPlainGraph();
-        AspectToPlainMap elementMap = new AspectToPlainMap();
+        AspectToPlainMap elementMap = new AspectToPlainMap(result.getFactory());
         // flag registering if anything changed due to relabelling
         boolean graphChanged = false;
         for (AspectNode node : nodeSet()) {
@@ -323,7 +323,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         boolean graphChanged = false;
         // create a plain graph
         PlainGraph result = createPlainGraph();
-        AspectToPlainMap elementMap = new AspectToPlainMap();
+        AspectToPlainMap elementMap = new AspectToPlainMap(result.getFactory());
         // construct the plain graph for the aspect nodes,
         // except for the colour aspects of the changed node
         for (AspectNode node : nodeSet()) {
@@ -938,9 +938,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
 
     private static class AspectToPlainMap
         extends AGraphMap<AspectNode,AspectEdge,PlainNode,PlainEdge> {
-        /** Constructs a new, empty map. */
-        public AspectToPlainMap() {
-            super(PlainFactory.instance());
+        /** Constructs a new, empty map, based on a given element factory. */
+        public AspectToPlainMap(PlainFactory factory) {
+            super(factory);
         }
 
         @Override

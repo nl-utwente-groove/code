@@ -1067,7 +1067,7 @@ public class ReteNetwork {
             if (qcc != null) {
                 PlainNode qccNode = graph.addNode();
                 map.put(qcc, qccNode);
-                PlainEdge[] flags = makeNNodeLabels(qcc, qccNode);
+                PlainEdge[] flags = makeNNodeLabels(graph, qcc, qccNode);
                 for (PlainEdge f : flags) {
                     graph.addEdgeContext(f);
                 }
@@ -1082,7 +1082,7 @@ public class ReteNetwork {
             if (cc.isEmpty()) {
                 PlainNode conditionCheckerNode = graph.addNode();
                 map.put(cc, conditionCheckerNode);
-                PlainEdge[] flags = makeNNodeLabels(cc, conditionCheckerNode);
+                PlainEdge[] flags = makeNNodeLabels(graph, cc, conditionCheckerNode);
                 for (PlainEdge f : flags) {
                     graph.addEdgeContext(f);
                 }
@@ -1123,7 +1123,7 @@ public class ReteNetwork {
                 PlainNode childJNode = map.get(childNNode);
                 if (childJNode == null) {
                     childJNode = graph.addNode();
-                    PlainEdge[] flags = makeNNodeLabels(childNNode, childJNode);
+                    PlainEdge[] flags = makeNNodeLabels(graph, childNNode, childJNode);
                     for (PlainEdge f : flags) {
                         graph.addEdgeContext(f);
                     }
@@ -1156,18 +1156,20 @@ public class ReteNetwork {
         }
     }
 
-    private PlainEdge[] makeNNodeLabels(ReteNetworkNode nnode, PlainNode source) {
+    private PlainEdge[] makeNNodeLabels(PlainGraph graph, ReteNetworkNode nnode,
+                                        PlainNode source) {
+        var factory = graph.getFactory();
         ArrayList<PlainEdge> result = new ArrayList<>();
         if (nnode instanceof RootNode) {
-            result.add(PlainEdge.createEdge(source, "ROOT", source));
+            result.add(factory.createEdge(source, "ROOT", source));
         } else if (nnode instanceof DefaultNodeChecker) {
-            result.add(PlainEdge.createEdge(source, "Node Checker", source));
+            result.add(factory.createEdge(source, "Node Checker", source));
             result
-                .add(PlainEdge
+                .add(factory
                     .createEdge(source, ((DefaultNodeChecker) nnode).getNode().toString(), source));
         } else if (nnode instanceof ValueNodeChecker) {
             result
-                .add(PlainEdge
+                .add(factory
                     .createEdge(source,
                                 String
                                     .format("Value Node Checker - %s ",
@@ -1175,52 +1177,52 @@ public class ReteNetwork {
                                                 .getConstant()),
                                 source));
             result
-                .add(PlainEdge
+                .add(factory
                     .createEdge(source, ":" + ((ValueNodeChecker) nnode).getNode().toString(),
                                 source));
         } else if (nnode instanceof QuantifierCountChecker) {
             result
-                .add(PlainEdge
+                .add(factory
                     .createEdge(source, String.format("- Quantifier Count Checker "), source));
             for (int i = 0; i < ((QuantifierCountChecker) nnode).getPattern().length; i++) {
                 RuleElement e = ((QuantifierCountChecker) nnode).getPattern()[i];
                 result
-                    .add(PlainEdge.createEdge(source, ":" + "--" + i + " " + e.toString(), source));
+                    .add(factory.createEdge(source, ":" + "--" + i + " " + e.toString(), source));
             }
 
         } else if (nnode instanceof EdgeCheckerNode) {
-            result.add(PlainEdge.createEdge(source, "Edge Checker", source));
+            result.add(factory.createEdge(source, "Edge Checker", source));
             result
-                .add(PlainEdge
+                .add(factory
                     .createEdge(source, ":" + ((EdgeCheckerNode) nnode).getEdge().toString(),
                                 source));
         } else if (nnode instanceof SubgraphCheckerNode) {
             String[] lines = nnode.toString().split("\n");
             for (String s : lines) {
-                result.add(PlainEdge.createEdge(source, s, source));
+                result.add(factory.createEdge(source, s, source));
             }
         } else if (nnode instanceof DisconnectedSubgraphChecker) {
-            result.add(PlainEdge.createEdge(source, "DisconnectedSubgraphChecker", source));
+            result.add(factory.createEdge(source, "DisconnectedSubgraphChecker", source));
         } else if (nnode instanceof ProductionNode) {
             result
-                .add(PlainEdge
+                .add(factory
                     .createEdge(source,
                                 "- Production Node " + (((ConditionChecker) nnode).isIndexed()
                                     ? "(idx)"
                                     : "()"),
                                 source));
             result
-                .add(PlainEdge
+                .add(factory
                     .createEdge(source, "-" + ((ProductionNode) nnode).getCondition().getName(),
                                 source));
             for (int i = 0; i < ((ProductionNode) nnode).getPattern().length; i++) {
                 RuleElement e = ((ProductionNode) nnode).getPattern()[i];
                 result
-                    .add(PlainEdge.createEdge(source, ":" + "--" + i + " " + e.toString(), source));
+                    .add(factory.createEdge(source, ":" + "--" + i + " " + e.toString(), source));
             }
         } else if (nnode instanceof ConditionChecker) {
             result
-                .add(PlainEdge
+                .add(factory
                     .createEdge(source,
                                 "- Condition Checker " + (((ConditionChecker) nnode).isIndexed()
                                     ? "(idx)"
@@ -1229,12 +1231,12 @@ public class ReteNetwork {
             for (int i = 0; i < ((ConditionChecker) nnode).getPattern().length; i++) {
                 RuleElement e = ((ConditionChecker) nnode).getPattern()[i];
                 result
-                    .add(PlainEdge.createEdge(source, ":" + "--" + i + " " + e.toString(), source));
+                    .add(factory.createEdge(source, ":" + "--" + i + " " + e.toString(), source));
             }
         } else {
             String[] lines = nnode.toString().split("\n");
             for (String s : lines) {
-                result.add(PlainEdge.createEdge(source, s, source));
+                result.add(factory.createEdge(source, s, source));
             }
         }
         PlainEdge[] res = new PlainEdge[result.size()];

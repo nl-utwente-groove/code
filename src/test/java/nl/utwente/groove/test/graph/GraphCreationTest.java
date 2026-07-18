@@ -54,13 +54,14 @@ public class GraphCreationTest extends TestCase {
                 .createNode();
         }
 
-        this.e[0] = PlainEdge.createEdge(this.n[0], "a", this.n[1]);
-        this.e[1] = PlainEdge.createEdge(this.n[0], "b", this.n[3]);
-        this.e[2] = PlainEdge.createEdge(this.n[3], "a", this.n[3]);
-        this.e[3] = PlainEdge.createEdge(this.n[5], "b", this.n[4]);
-        this.e[4] = PlainEdge.createEdge(this.n[4], "b", this.n[6]);
-        this.e[5] = PlainEdge.createEdge(this.n[7], "a", this.n[8]);
-        this.e[6] = PlainEdge.createEdge(this.n[8], "b", this.n[8]);
+        var factory = this.g.getFactory();
+        this.e[0] = factory.createEdge(this.n[0], "a", this.n[1]);
+        this.e[1] = factory.createEdge(this.n[0], "b", this.n[3]);
+        this.e[2] = factory.createEdge(this.n[3], "a", this.n[3]);
+        this.e[3] = factory.createEdge(this.n[5], "b", this.n[4]);
+        this.e[4] = factory.createEdge(this.n[4], "b", this.n[6]);
+        this.e[5] = factory.createEdge(this.n[7], "a", this.n[8]);
+        this.e[6] = factory.createEdge(this.n[8], "b", this.n[8]);
 
         for (int i = 0; i < NR_NODES_IN_GRAPH; i++) {
             this.g.addNode(this.n[i]);

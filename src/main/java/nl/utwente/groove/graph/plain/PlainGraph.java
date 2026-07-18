@@ -48,14 +48,10 @@ public class PlainGraph extends EdgeMapGraph<PlainNode,PlainEdge> implements Clo
      * Constructs a new, empty Graph with a given graph role.
      * @param name the (non-{@code null}) name of the graph.
      * @param role the (non-{@code null}) role of the graph.
-     * @param simple flag indicating if this is to be a simple graph;
-     * if {@code true}, the graph is based on the singleton (simple) factory,
-     * otherwise it gets a fresh, non-simple factory
+     * @param simple flag indicating if this is to be a simple graph
      */
     public PlainGraph(String name, GraphRole role, boolean simple) {
-        this(name, role, simple
-            ? PlainFactory.instance()
-            : PlainFactory.newInstance(false));
+        this(name, role, PlainFactory.newInstance(simple));
     }
 
     /**

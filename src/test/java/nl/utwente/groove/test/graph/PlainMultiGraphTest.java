@@ -27,7 +27,6 @@ import org.junit.Test;
 
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.multi.MultiGraph;
-import nl.utwente.groove.graph.plain.PlainFactory;
 import nl.utwente.groove.graph.plain.PlainGraph;
 
 /**
@@ -48,10 +47,12 @@ public class PlainMultiGraphTest {
         PlainGraph multiGraph = createGraph();
         assertFalse(multiGraph.isSimple());
         assertFalse(multiGraph.getFactory().isSimple());
-        // simple plain graphs are based on the singleton factory
         PlainGraph simpleGraph = new PlainGraph("simple", GraphRole.NONE);
         assertTrue(simpleGraph.isSimple());
-        assertSame(PlainFactory.instance(), simpleGraph.getFactory());
+        assertTrue(simpleGraph.getFactory().isSimple());
+        // every graph family gets a factory of its own
+        assertNotSame(simpleGraph.getFactory(),
+                      new PlainGraph("simple2", GraphRole.NONE).getFactory());
     }
 
     @Test

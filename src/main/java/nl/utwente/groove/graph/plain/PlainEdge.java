@@ -38,27 +38,4 @@ public class PlainEdge extends ANumberedEdge<PlainNode,PlainLabel> {
         super(source, label, target, nr);
     }
 
-    /**
-     * Creates an default edge from a given source node, label text and target
-     * node. To save space, a set of standard instances is kept internally, and
-     * consulted to return the same object whenever an edge is requested with
-     * the same end nodes and label text.
-     * @param source the source node of the new edge; should not be
-     *        <code>null</code>
-     * @param text the text of the new edge; should not be <code>null</code>
-     * @param target the target node of the new edge; should not be
-     *        <code>null</code>
-     * @return an edge based on <code>source</code>, <code>text</code> and
-     *         <code>target</code>; the label is a {@link PlainLabel}
-     * @see #createEdge(PlainNode, PlainLabel, PlainNode)
-     */
-    static public PlainEdge createEdge(PlainNode source, String text, PlainNode target) {
-        return PlainFactory.instance().createEdge(source, text, target);
-    }
-
-    /** Default method that uses the DefaultEdge constructor. */
-    static public PlainEdge createEdge(PlainNode source, PlainLabel label, PlainNode target) {
-        return PlainFactory.instance().createEdge(source, label, target);
-    }
-
 }

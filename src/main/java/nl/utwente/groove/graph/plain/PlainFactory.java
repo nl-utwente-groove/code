@@ -55,16 +55,4 @@ public class PlainFactory extends StoreFactory<PlainNode,PlainEdge,PlainLabel> {
     public static PlainFactory newInstance(boolean simple) {
         return new PlainFactory(simple);
     }
-
-    /** Returns the singleton simple instance of this factory. */
-    public static PlainFactory instance() {
-        // initialise lazily to avoid initialisation circularities
-        if (instance == null) {
-            instance = new PlainFactory(true);
-        }
-        return instance;
-    }
-
-    /** Singleton simple instance of this factory. */
-    private static PlainFactory instance;
 }
