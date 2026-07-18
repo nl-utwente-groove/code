@@ -25,8 +25,6 @@ import nl.utwente.groove.grammar.rule.RuleEdge;
 import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.grammar.type.TypeElement;
 import nl.utwente.groove.grammar.type.TypeLabel;
-import nl.utwente.groove.graph.EdgeComparator;
-import nl.utwente.groove.graph.NodeComparator;
 
 /**
  * Kind of anchor keys and images.
@@ -41,6 +39,8 @@ public enum AnchorKind implements Comparable<AnchorKind> {
 
     /**
      * Establishes a total ordering of anchor values.
+     * Nodes and edges are ordered by their number, which is sound
+     * because anchor values all stem from the same (host) factory.
      * For the meaning of the return values see {@link Comparable#compareTo(Object)}.
      */
     public static int compare(AnchorValue one, AnchorValue two) {
@@ -48,10 +48,8 @@ public enum AnchorKind implements Comparable<AnchorKind> {
             .compareTo(two.getAnchorKind());
         if (result == 0) {
             result = switch (one.getAnchorKind()) {
-            case NODE -> NodeComparator.instance()
-                .compare(AnchorKind.node(one), AnchorKind.node(two));
-            case EDGE -> EdgeComparator.instance()
-                .compare(AnchorKind.edge(one), AnchorKind.edge(two));
+            case NODE -> AnchorKind.node(one).getNumber() - AnchorKind.node(two).getNumber();
+            case EDGE -> AnchorKind.edge(one).getNumber() - AnchorKind.edge(two).getNumber();
             case LABEL -> AnchorKind.label(one)
                 .compareTo(AnchorKind.label(two));
             };
