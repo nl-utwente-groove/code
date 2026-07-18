@@ -55,11 +55,6 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     }
 
     @Override
-    public boolean isSimple() {
-        return true;
-    }
-
-    @Override
     public RuleEvent getEvent() {
         return label().getEvent();
     }

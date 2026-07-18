@@ -22,7 +22,7 @@ import java.util.Map;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
-import nl.utwente.groove.graph.AEdge;
+import nl.utwente.groove.graph.ANumberedEdge;
 import nl.utwente.groove.graph.plain.PlainLabel;
 
 /**
@@ -33,16 +33,11 @@ import nl.utwente.groove.graph.plain.PlainLabel;
  * @version $Revision$
  */
 @NonNullByDefault
-public class AttrEdge extends AEdge<AttrNode,PlainLabel> {
+public class AttrEdge extends ANumberedEdge<AttrNode,PlainLabel> {
     /** Construct a new edge. */
     AttrEdge(AttrNode source, PlainLabel label, AttrNode target, int number) {
         super(source, label, target, number);
         this.attributeMap = new LinkedHashMap<>();
-    }
-
-    @Override
-    public boolean isSimple() {
-        return false;
     }
 
     /** Returns a deep copy of this edge. */

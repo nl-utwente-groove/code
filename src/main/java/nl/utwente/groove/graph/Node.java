@@ -25,5 +25,10 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  */
 @NonNullByDefault
 public interface Node extends Element {
-    // empty
+    /**
+     * Returns the node number.
+     * Within a given graph, the node number, together
+     * with its actual type, uniquely defines the node.
+     */
+    public int getNumber();
 }

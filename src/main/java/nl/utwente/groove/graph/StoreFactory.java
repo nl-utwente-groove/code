@@ -28,7 +28,7 @@ import nl.utwente.groove.util.collect.TreeHashSet;
  * @author Arend Rensink
  * @version $Revision$
  */
-abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label>
+abstract public class StoreFactory<N extends Node,E extends NumberedEdge,L extends Label>
     extends ElementFactory<N,E> {
     /** Constructor for a fresh factory.
      * @param simple indicates if the edges created by this factory are simple
@@ -37,13 +37,14 @@ abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label
     protected StoreFactory(boolean simple) {
         this.simple = simple;
         this.nodes = (N[]) new Node[INIT_CAPACITY];
-        this.edges = (E[]) new Edge[INIT_CAPACITY];
+        this.edges = (E[]) new NumberedEdge[INIT_CAPACITY];
         this.edgeStore = createEdgeStore();
     }
 
-    /** Indicates if the edges created by this factory are simple
-     * (see {@link Edge#isSimple()}).
-     * Edge simplicity is homogeneous over all edges of a given factory.
+    /** Indicates if the edges created by this factory are simple,
+     * meaning that content-equal edges (same source, target and label)
+     * are pooled, so that no two distinct such edges (parallel edges)
+     * can coexist within this factory.
      */
     public boolean isSimple() {
         return this.simple;
@@ -200,8 +201,6 @@ abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label
      * its content matches.
      */
     protected E storeEdge(@NonNull E edge) {
-        assert edge.isSimple() == isSimple() : "Simplicity of " + edge
-            + " differs from the factory's";
         if (isSimple()) {
             @Nullable
             E pooled = this.edgeStore.put(edge);
@@ -232,7 +231,7 @@ abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label
             // extend the edges array
             int newSize = Math.max((int) (this.edges.length * GROWTH_FACTOR), nr + 1);
             @SuppressWarnings("unchecked")
-            E[] newEdges = (E[]) new Edge[newSize];
+            E[] newEdges = (E[]) new NumberedEdge[newSize];
             System.arraycopy(this.edges, 0, newEdges, 0, this.edges.length);
             this.edges = newEdges;
         }
@@ -315,10 +314,11 @@ abstract public class StoreFactory<N extends Node,E extends Edge,L extends Label
     private int nextEdgeNr;
 
     /**
-     * Store of canonical edge representatives, used to ensure that
-     * simple edges (see {@link AEdge#isSimple()}) with the same
-     * content are reused. Non-simple edges, which are identified by their
-     * number, are only kept in the {@link #edges} array.
+     * Store of canonical edge representatives, used in simple mode
+     * (see {@link #isSimple()}) to ensure that edges with the same
+     * content are reused. In non-simple mode, where content-equal edges
+     * with distinct numbers may coexist, edges are only kept in the
+     * {@link #edges} array.
      */
     private final TreeHashSet<E> edgeStore;
 

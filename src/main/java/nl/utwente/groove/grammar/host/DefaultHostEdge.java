@@ -22,32 +22,23 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.grammar.AnchorKind;
 import nl.utwente.groove.grammar.type.TypeEdge;
 import nl.utwente.groove.grammar.type.TypeLabel;
-import nl.utwente.groove.graph.AEdge;
+import nl.utwente.groove.graph.ANumberedEdge;
 
 /**
  * Class that implements the edges of a host graph.
  * @author Arend Rensink
  */
 @NonNullByDefault
-public class DefaultHostEdge extends AEdge<HostNode,TypeLabel> implements HostEdge {
-    /** Constructor for a typed edge.
-     * @param simple indicates if this is a simple or multi-edge.
-     */
-    protected DefaultHostEdge(HostNode source, TypeEdge type, HostNode target, int nr,
-                              boolean simple) {
+public class DefaultHostEdge extends ANumberedEdge<HostNode,TypeLabel> implements HostEdge {
+    /** Constructor for a typed edge. */
+    protected DefaultHostEdge(HostNode source, TypeEdge type, HostNode target, int nr) {
         super(source, type.label(), target, nr);
         this.type = type;
-        this.simple = simple;
     }
 
     // ------------------------------------------------------------------------
     // Overridden methods
     // ------------------------------------------------------------------------
-
-    @Override
-    public boolean isSimple() {
-        return this.simple;
-    }
 
     @Override
     protected boolean isTypeEqual(@Nullable Object obj) {
@@ -82,8 +73,6 @@ public class DefaultHostEdge extends AEdge<HostNode,TypeLabel> implements HostEd
         return AnchorKind.EDGE;
     }
 
-    /** Flag indicating whether this is a simple or multi-edge. */
-    private final boolean simple;
     /** Non-{@code null} type of this edge. */
     private final TypeEdge type;
 }

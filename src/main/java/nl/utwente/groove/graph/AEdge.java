@@ -28,27 +28,17 @@ import org.eclipse.jdt.annotation.Nullable;
 @NonNullByDefault
 public abstract class AEdge<N extends Node,L extends Label> implements GEdge<N> {
     /**
-     * Creates a numbered edge with a given source and target node and label.
+     * Creates an edge with a given source and target node and label.
      */
-    protected AEdge(N source, L label, N target, int number) {
+    protected AEdge(N source, L label, N target) {
         assert source != null && label != null && target != null;
         this.source = source;
         this.label = label;
         this.target = target;
-        this.number = number;
     }
 
     /**
-     * Creates an unnumbered edge with a given source and target node and label.
-     * (Unnumbered means that the edge number will be 0.)
-     */
-    protected AEdge(N source, L label, N target) {
-        this(source, label, target, 0);
-        assert isSimple() : "Non-simple edges should have a proper edge number";
-    }
-
-    /**
-     * Creates an unnumbered edge with a given source and target node.
+     * Creates an edge with a given source and target node.
      * Only for subclasses that overwrite {@link #label()} to
      * return a non-{@code null} value
      */
@@ -58,8 +48,6 @@ public abstract class AEdge<N extends Node,L extends Label> implements GEdge<N> 
         this.source = source;
         this.target = target;
         this.label = (L) this;
-        this.number = 0;
-        assert isSimple() : "Non-simple edges should have a proper edge number";
         assert label() != null;
     }
 
@@ -91,23 +79,6 @@ public abstract class AEdge<N extends Node,L extends Label> implements GEdge<N> 
      * @invariant label != null
      */
     private final @NonNull L label;
-
-    /** Indicates if this edge is uniquely
-     * identified by source, target and label.
-     * If the edge is simple, the edge number is ignored
-     * in hash code and equality test; if it is not simple,
-     * then the edge number is also taken into account.
-     * @return {@code true} if this edge is simple.
-     */
-    @Override
-    public abstract boolean isSimple();
-
-    @Override
-    public int getNumber() {
-        return this.number;
-    }
-
-    private final int number;
 
     /**
      * Returns a description consisting of the source node, an arrow with the
@@ -159,9 +130,6 @@ public abstract class AEdge<N extends Node,L extends Label> implements GEdge<N> 
         int result = labelCode // + 3 * sourceCode - 2 * targetCode;
             ^ ((sourceCode << SOURCE_SHIFT) + (sourceCode >>> SOURCE_RIGHT_SHIFT))
                 + ((targetCode << TARGET_SHIFT) + (targetCode >>> TARGET_RIGHT_SHIFT));
-        if (!isSimple()) {
-            result = 31 * result + getNumber();
-        }
         return result;
     }
 
@@ -183,9 +151,6 @@ public abstract class AEdge<N extends Node,L extends Label> implements GEdge<N> 
         }
         assert obj != null;
         Edge other = (Edge) obj;
-        if (!isSimple() && other.getNumber() != getNumber()) {
-            return false;
-        }
         return isEndEqual(other) && isLabelEqual(other);
     }
 

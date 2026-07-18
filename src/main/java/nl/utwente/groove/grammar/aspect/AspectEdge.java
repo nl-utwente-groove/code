@@ -39,6 +39,10 @@ import static nl.utwente.groove.graph.GraphRole.RULE;
 import static nl.utwente.groove.graph.GraphRole.TYPE;
 import static nl.utwente.groove.util.Factory.lazy;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -86,14 +90,13 @@ import nl.utwente.groove.util.parse.StringHandler;
 public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
     implements AspectElement, Fixable {
     /**
-     * Constructs a new, numbered edge.
+     * Constructs a new edge.
      * @param source the source node for this edge
      * @param label the label for this edge
      * @param target the target node for this edge
-     * @param number the edge number
      */
-    public AspectEdge(AspectNode source, AspectLabel label, AspectNode target, int number) {
-        super(source, label, target, number);
+    public AspectEdge(AspectNode source, AspectLabel label, AspectNode target) {
+        super(source, label, target);
         assert label.isFixed();
         this.graph = source.getGraph();
         this.aspects = new Aspect.Map(false, this.graph.getRole());
@@ -106,21 +109,6 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         }
         addErrors(label.getErrors());
         label.getAspects().forEach(this::set);
-    }
-
-    /**
-     * Constructs a new edge, with edge number {@code 0}.
-     * @param source the source node for this edge
-     * @param label the label for this edge
-     * @param target the target node for this edge
-     */
-    public AspectEdge(AspectNode source, AspectLabel label, AspectNode target) {
-        this(source, label, target, 0);
-    }
-
-    @Override
-    public boolean isSimple() {
-        return false;
     }
 
     @Override
@@ -674,6 +662,32 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         Line levelSuffix = toLevelName();
         if (levelSuffix != null) {
             result = result.append(levelSuffix);
+        }
+        return result;
+    }
+
+    /**
+     * Returns the display lines corresponding to this aspect edge.
+     * For all edges except multi-line remark edges this is the singleton list
+     * of {@link #toLine(boolean, Aspect.Map)}; the text of a remark edge is
+     * split into one display line per (newline-separated) text line.
+     * @param onNode if {@code true}, the lines will be part of the node label,
+     * otherwise they are labelling a binary edge
+     * @param context aspect map of the element on which the lines should be displayed.
+     * If different from this aspect kind, the prefix will be displayed
+     */
+    public List<Line> toLines(boolean onNode, Aspect.Map context) {
+        String text = getInnerText();
+        if (!has(REMARK) || text.indexOf('\n') < 0) {
+            return Collections.singletonList(toLine(onNode, context));
+        }
+        List<Line> result = new ArrayList<>();
+        for (String part : text.split("\n", -1)) {
+            Line line = Line.atom(part);
+            if (!context.has(REMARK)) {
+                line = Line.atom(REM_PREFIX + SPACE).append(line);
+            }
+            result.add(line.color(ColorType.REMARK));
         }
         return result;
     }

@@ -26,11 +26,5 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  */
 @NonNullByDefault
 public interface Element extends java.io.Serializable {
-    /**
-     * Returns the element number.
-     * Within a given graph, the element number, together
-     * with its actual type, uniquely defines
-     * the element.
-     */
-    public int getNumber();
+    // no functionality; see the subinterfaces
 }

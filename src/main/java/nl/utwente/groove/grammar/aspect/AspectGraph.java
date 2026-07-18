@@ -17,6 +17,7 @@
 package nl.utwente.groove.grammar.aspect;
 
 import static nl.utwente.groove.grammar.aspect.AspectKind.COLOR;
+import static nl.utwente.groove.grammar.aspect.AspectKind.REMARK;
 import static nl.utwente.groove.graph.GraphRole.HOST;
 import static nl.utwente.groove.util.Factory.lazy;
 
@@ -25,6 +26,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -58,12 +60,13 @@ import nl.utwente.groove.graph.plain.PlainFactory;
 import nl.utwente.groove.graph.plain.PlainGraph;
 import nl.utwente.groove.graph.plain.PlainLabel;
 import nl.utwente.groove.graph.plain.PlainNode;
+import nl.utwente.groove.gui.layout.JEdgeLayout;
 import nl.utwente.groove.gui.layout.JVertexLayout;
 import nl.utwente.groove.gui.layout.LayoutMap;
 import nl.utwente.groove.gui.list.SearchResult;
-import nl.utwente.groove.util.Dispenser;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Keywords;
+import nl.utwente.groove.util.Pair;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 
@@ -86,9 +89,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         //            .format("Cannot create aspect graph for %s", graphRole.toString());
         this.role = graphRole;
         this.normal = true;
-        this.edgeNumber = simple
-            ? Dispenser.constant(0)
-            : Dispenser.counter();
         // make sure the properties object is initialised
         addErrors(this.qualName.getErrors());
     }
@@ -153,8 +153,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
      * for the edges, and as special edges for the nodes.
      */
     public PlainGraph toPlainGraph() {
-        AspectToPlainMap elementMap = new AspectToPlainMap();
         PlainGraph result = createPlainGraph();
+        AspectToPlainMap elementMap = new AspectToPlainMap(result.getFactory());
         for (AspectNode node : nodeSet()) {
             PlainNode nodeImage = result.addNode(node.getNumber());
             elementMap.putNode(node, nodeImage);
@@ -251,7 +251,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
     public AspectGraph relabel(TypeLabel oldLabel, TypeLabel newLabel) {
         // create a plain graph under relabelling
         PlainGraph result = createPlainGraph();
-        AspectToPlainMap elementMap = new AspectToPlainMap();
+        AspectToPlainMap elementMap = new AspectToPlainMap(result.getFactory());
         // flag registering if anything changed due to relabelling
         boolean graphChanged = false;
         for (AspectNode node : nodeSet()) {
@@ -323,7 +323,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         boolean graphChanged = false;
         // create a plain graph
         PlainGraph result = createPlainGraph();
-        AspectToPlainMap elementMap = new AspectToPlainMap();
+        AspectToPlainMap elementMap = new AspectToPlainMap(result.getFactory());
         // construct the plain graph for the aspect nodes,
         // except for the colour aspects of the changed node
         for (AspectNode node : nodeSet()) {
@@ -391,6 +391,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         boolean result = !isFixed();
         if (result) {
             FormatErrorSet errors = new FormatErrorSet();
+            // merge parallel remark edges into single multi-line remark edges
+            mergeRemarkEdges();
             // first parse all nodes and edges
             nodeSet().forEach(AspectNode::setParsed);
             edgeSet().forEach(AspectEdge::setParsed);
@@ -416,6 +418,49 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             super.setFixed();
         }
         return result;
+    }
+
+    /**
+     * Merges all remark edges with the same source and target into a single
+     * remark edge, whose text consists of the original texts in insertion
+     * order, separated by newlines. Called upon fixing the graph, so that
+     * every fixed graph has at most one remark edge per node pair; this makes
+     * the relative order of the remark text lines independent of the (set-based)
+     * edge containment and display machinery.
+     */
+    private void mergeRemarkEdges() {
+        Map<Pair<AspectNode,AspectNode>,List<AspectEdge>> remarks = new LinkedHashMap<>();
+        for (AspectEdge edge : edgeSet()) {
+            if (edge.label().has(REMARK)) {
+                remarks
+                    .computeIfAbsent(Pair.newPair(edge.source(), edge.target()),
+                                     k -> new ArrayList<>())
+                    .add(edge);
+            }
+        }
+        LayoutMap layoutMap = GraphInfo.getLayoutMap(this);
+        for (List<AspectEdge> group : remarks.values()) {
+            if (group.size() > 1) {
+                StringBuilder text = new StringBuilder(REMARK.getPrefix());
+                for (int i = 0; i < group.size(); i++) {
+                    if (i > 0) {
+                        text.append('\n');
+                    }
+                    text.append(group.get(i).label().getInnerText());
+                }
+                AspectEdge first = group.get(0);
+                AspectEdge merged = new AspectEdge(first.source(),
+                    parser.parse(text.toString(), getRole()), first.target());
+                group.forEach(this::removeEdge);
+                addEdgeContext(merged);
+                if (layoutMap != null) {
+                    JEdgeLayout layout = layoutMap.getLayout(first);
+                    if (layout != null) {
+                        layoutMap.putEdge(merged, layout);
+                    }
+                }
+            }
+        }
     }
 
     /** Changes the status of this graph. */
@@ -633,13 +678,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         return result;
     }
 
-    /** Returns a number for the next edge to be created for this graph. */
-    int getEdgeNumber() {
-        return this.edgeNumber.getNext();
-    }
-
-    private final Dispenser edgeNumber;
-
     /** Returns a hash code for this graph based on normal status, name and role. */
     int externalHashCode() {
         return Objects.hash(isNormal(), getRole(), getName());
@@ -786,7 +824,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             // Copy the edges
             for (AspectEdge edge : graph.edgeSet()) {
                 AspectEdge fresh = new AspectEdge(nodeMap.get(edge.source()), edge.label(),
-                    nodeMap.get(edge.target()), edge.getNumber());
+                    nodeMap.get(edge.target()));
                 newLayoutMap.copyEdgeWithOffset(fresh, edge, oldLayoutMap, offsetX, offsetY);
                 result.addEdgeContext(fresh);
                 transfer.putEdge(edge, fresh);
@@ -836,19 +874,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
 
         @Override
         public AspectEdge createEdge(AspectNode source, Label label, AspectNode target) {
-            int nr = 0;
-            AspectLabel aLabel = (AspectLabel) label;
-            if (aLabel.has(AspectKind.REMARK)) {
-                nr = this.remarkCount.getNext();
-            } else {
-                // non-remark edges are all numbered 0
-                // nr = this.graph.getEdgeNumber();
-            }
-            return new AspectEdge(source, (AspectLabel) label, target, nr);
+            return new AspectEdge(source, (AspectLabel) label, target);
         }
-
-        /** Number of remark edges encountered thus far. */
-        private final Dispenser remarkCount = Dispenser.counter();
 
         @Override
         public AspectGraphMorphism createMorphism() {
@@ -911,9 +938,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
 
     private static class AspectToPlainMap
         extends AGraphMap<AspectNode,AspectEdge,PlainNode,PlainEdge> {
-        /** Constructs a new, empty map. */
-        public AspectToPlainMap() {
-            super(PlainFactory.instance());
+        /** Constructs a new, empty map, based on a given element factory. */
+        public AspectToPlainMap(PlainFactory factory) {
+            super(factory);
         }
 
         @Override

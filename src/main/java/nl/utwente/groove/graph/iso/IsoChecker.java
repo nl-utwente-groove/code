@@ -1038,7 +1038,7 @@ public class IsoChecker {
                     checker.getCertifier(graph1, true).getGraphCertificate());
         for (int i = 0; i < 1000; i++) {
             PlainGraph graph2 = new PlainGraph(name, GraphRole.NONE);
-            PlainMorphism nodeMap = new PlainMorphism();
+            PlainMorphism nodeMap = new PlainMorphism(graph2.getFactory());
             for (PlainNode node : graph1.nodeSet()) {
                 PlainNode newNode = graph2.addNode();
                 nodeMap.putNode(node, newNode);

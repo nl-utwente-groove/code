@@ -61,9 +61,7 @@ public interface GraphState extends Node, Phase {
     public GTS getGTS();
 
     /** Indicates if the underlying graph is simple.
-     * Named so as not to clash with {@link nl.utwente.groove.graph.Edge#isSimple()},
-     * which has a different meaning (edge identity) and is inherited
-     * by states that are also transitions (see {@link GraphNextState}).
+     * Convenience method delegating to {@link GTS#hasSimpleGraphs()}.
      */
     default public boolean hasSimpleGraph() {
         return getGTS().hasSimpleGraphs();

@@ -57,11 +57,6 @@ public final class TypeEdge extends AEdge<TypeNode,TypeLabel> implements TypeEle
 
     private final TypeEdgeKey key;
 
-    @Override
-    public boolean isSimple() {
-        return true;
-    }
-
     /** Indicates if this edge type is composite. */
     public final boolean isComposite() {
         return this.isComposite;

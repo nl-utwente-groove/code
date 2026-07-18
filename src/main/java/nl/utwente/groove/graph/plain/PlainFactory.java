@@ -22,10 +22,11 @@ import nl.utwente.groove.graph.StoreFactory;
 
 /** Factory class for graph elements. */
 public class PlainFactory extends StoreFactory<PlainNode,PlainEdge,PlainLabel> {
-    /** Private constructor. */
-    protected PlainFactory() {
-        // plain edges are always simple
-        super(true);
+    /** Constructor for a fresh factory.
+     * @param simple indicates if the edges created by this factory are simple
+     */
+    protected PlainFactory(boolean simple) {
+        super(simple);
     }
 
     @Override
@@ -48,15 +49,10 @@ public class PlainFactory extends StoreFactory<PlainNode,PlainEdge,PlainLabel> {
         return new PlainEdge(source, (PlainLabel) label, target, nr);
     }
 
-    /** Returns the singleton instance of this factory. */
-    public static PlainFactory instance() {
-        // initialise lazily to avoid initialisation circularities
-        if (instance == null) {
-            instance = new PlainFactory();
-        }
-        return instance;
+    /** Returns a fresh instance of this factory.
+     * @param simple indicates if the edges created by the factory are simple
+     */
+    public static PlainFactory newInstance(boolean simple) {
+        return new PlainFactory(simple);
     }
-
-    /** Singleton instance of this factory. */
-    private static PlainFactory instance;
 }

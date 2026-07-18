@@ -36,8 +36,8 @@ import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.graph.AGraph;
 import nl.utwente.groove.graph.GGraph;
 import nl.utwente.groove.graph.GraphRole;
-import nl.utwente.groove.graph.multi.MultiGraph;
-import nl.utwente.groove.graph.multi.MultiNode;
+import nl.utwente.groove.graph.plain.PlainGraph;
+import nl.utwente.groove.graph.plain.PlainNode;
 
 /**
  * Fragment of a GTS, consisting of a subset of the states and transitions
@@ -234,9 +234,9 @@ public class GTSFragment extends AGraph<GraphState,GraphTransition> {
      * @param answer if non-{@code null}, the result that should be saved.
      * Only used if {@code filter} equals {@link Filter#RESULT}
      */
-    public MultiGraph toPlainGraph(LTSLabels flags, @Nullable ExploreResult answer) {
-        MultiGraph result = new MultiGraph(getName(), GraphRole.LTS);
-        Map<GraphState,MultiNode> nodeMap = new HashMap<>();
+    public PlainGraph toPlainGraph(LTSLabels flags, @Nullable ExploreResult answer) {
+        PlainGraph result = new PlainGraph(getName(), GraphRole.LTS, false);
+        Map<GraphState,PlainNode> nodeMap = new HashMap<>();
         for (GraphState state : nodeSet()) {
             // don't include transient states unless forced to
             if (state.isInner() && !flags.showRecipes()) {
@@ -245,7 +245,7 @@ public class GTSFragment extends AGraph<GraphState,GraphTransition> {
             if (state.isAbsent()) {
                 continue;
             }
-            MultiNode image = result.addNode(state.getNumber());
+            PlainNode image = result.addNode(state.getNumber());
             nodeMap.put(state, image);
             if (flags.showResult() && answer != null && answer.contains(state)) {
                 result.addEdge(image, flags.getResultLabel(), image);
@@ -287,8 +287,8 @@ public class GTSFragment extends AGraph<GraphState,GraphTransition> {
             if (transition.isInnerStep() && !flags.showRecipes()) {
                 continue;
             }
-            MultiNode sourceImage = nodeMap.get(transition.source());
-            MultiNode targetImage = nodeMap.get(transition.target());
+            PlainNode sourceImage = nodeMap.get(transition.source());
+            PlainNode targetImage = nodeMap.get(transition.target());
             result.addEdge(sourceImage, transition.label().text(), targetImage);
         }
         return result;

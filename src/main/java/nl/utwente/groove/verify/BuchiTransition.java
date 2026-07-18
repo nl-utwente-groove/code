@@ -35,11 +35,6 @@ public class BuchiTransition extends AEdge<BuchiLocation,BuchiLabel> {
         super(source, label, target);
     }
 
-    @Override
-    public boolean isSimple() {
-        return true;
-    }
-
     /**
      * Determines whether the transition is enabled based on the given set of satisfied propositions.
      *

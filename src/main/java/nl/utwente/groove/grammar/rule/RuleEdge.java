@@ -62,11 +62,6 @@ public class RuleEdge extends AEdge<RuleNode,RuleLabel> implements RuleElement {
         }
     }
 
-    @Override
-    public boolean isSimple() {
-        return true;
-    }
-
     /**
      * Returns the (possibly {@code null}) edge type of this edge.
      */

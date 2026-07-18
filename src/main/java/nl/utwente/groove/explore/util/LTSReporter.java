@@ -20,7 +20,7 @@ import java.io.File;
 import java.io.IOException;
 
 import nl.utwente.groove.explore.ExploreResult;
-import nl.utwente.groove.graph.multi.MultiGraph;
+import nl.utwente.groove.graph.plain.PlainGraph;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Exporter.ExportKind;
@@ -84,7 +84,7 @@ public class LTSReporter extends AExplorationReporter {
         case RESULT -> answer.toFragment(internal);
         };
         ExplorationReporter.time("Turn LTS fragment into plain graph");
-        MultiGraph ltsGraph = gtsFragment.toPlainGraph(labels, answer);
+        PlainGraph ltsGraph = gtsFragment.toPlainGraph(labels, answer);
         // Export GTS.
         String ltsName;
         File dir = new File(filePattern);

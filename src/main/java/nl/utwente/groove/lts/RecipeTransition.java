@@ -78,11 +78,6 @@ public class RecipeTransition extends ALabelEdge<GraphState>
     }
 
     @Override
-    public boolean isSimple() {
-        return true;
-    }
-
-    @Override
     public String text(boolean anchored) {
         return text();
     }

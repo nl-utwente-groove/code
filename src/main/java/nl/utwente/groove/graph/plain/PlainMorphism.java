@@ -26,9 +26,9 @@ import nl.utwente.groove.graph.Morphism;
  * @version $Revision$
  */
 public class PlainMorphism extends Morphism<PlainNode,PlainEdge> {
-    /** Constructs an empty morphism. */
-    public PlainMorphism() {
-        super(PlainFactory.instance());
+    /** Constructs an empty morphism, based on a given element factory. */
+    public PlainMorphism(PlainFactory factory) {
+        super(factory);
     }
 
     @Override
@@ -38,7 +38,7 @@ public class PlainMorphism extends Morphism<PlainNode,PlainEdge> {
 
     @Override
     protected PlainMorphism newMap() {
-        return new PlainMorphism();
+        return new PlainMorphism((PlainFactory) getFactory());
     }
 
     @Override
