@@ -183,8 +183,12 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
         GraphRole role = getNonNullGraph().getRole();
         Map<AspectNode,AspectJVertex> nodeJVertexMap = new HashMap<>();
         Map<AspectEdge,AspectJCell> edgeJCellMap = new HashMap<>();
-        AspectGraph graph
-            = new AspectGraph(getName(), role, !getGrammar().getProperties().isHasParallelEdges());
+        // the graph is non-simple if either it already was (per-file flag,
+        // preserved by the load path) or the grammar property asks for it;
+        // in particular, resynchronisation never collapses parallel edges
+        boolean simple = getNonNullGraph().isSimple()
+            && !getGrammar().getProperties().isHasParallelEdges();
+        AspectGraph graph = new AspectGraph(getName(), role, simple);
         graph.setTypeSortMap(getGrammar().getTypeModel().getTypeSortMap());
         for (AspectJCell jCell : getRoots()) {
             if (jCell instanceof AspectJVertex jVertex) {

@@ -65,8 +65,9 @@ public class AbsEdge {
         for (String sublabel : labels) {
             AspectLabel alabel = AspectParser.getInstance().parse(sublabel, graph.getRole());
             if (alabel.isEdgeOnly()) {
-                AspectEdge newEdge
-                    = new AspectEdge(this.m_source.getAspect(), alabel, this.m_target.getAspect());
+                AspectEdge newEdge = graph
+                    .getFactory()
+                    .createEdge(this.m_source.getAspect(), alabel, this.m_target.getAspect());
                 this.m_aspectEdges.add(newEdge);
             } else {
                 // error

@@ -86,6 +86,26 @@ public class GxlSimplicityTest {
         assertEquals(1, image.edgeCount());
     }
 
+    /** Round-trips a non-simple host graph through the full load path of
+     * grammar resources: GXL file, {@code AttrGraph}, {@code AspectGraph},
+     * and back to a plain graph. The parallel edges must survive throughout. */
+    @Test
+    public void testAspectRoundTrip() throws IOException {
+        PlainGraph graph = new PlainGraph("host", GraphRole.HOST, false);
+        var source = graph.addNode();
+        var target = graph.addNode();
+        graph.addEdge(source, "a", target);
+        graph.addEdge(source, "a", target);
+        graph.addEdge(source, "b", target);
+        File file = save(graph);
+        var aspectGraph = GxlIO.instance().loadGraph(file).toAspectGraph();
+        assertFalse(aspectGraph.isSimple());
+        assertEquals(3, aspectGraph.edgeCount());
+        PlainGraph image = aspectGraph.toPlainGraph();
+        assertFalse(image.isSimple());
+        assertEquals(3, image.edgeCount());
+    }
+
     /** Loads an LTS file without declared edge identities, as saved by
      * older GROOVE versions: the LTS role alone must make it non-simple,
      * so that its parallel edges survive. */

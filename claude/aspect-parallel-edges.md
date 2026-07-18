@@ -1,6 +1,6 @@
 # Proposal: parallel-edge support in AspectGraph
 
-Status: proposed (2026-07-18). Branch: `parallel-edges`.
+Status: implemented on this branch (2026-07-18). Branch: `parallel-edges`.
 Builds on the GXL serialisation work in [parallel-edge-serialisation.md](parallel-edge-serialisation.md).
 
 ## Problem

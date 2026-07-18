@@ -65,7 +65,7 @@ import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.rule.RuleLabel;
 import nl.utwente.groove.grammar.type.Multiplicity;
 import nl.utwente.groove.grammar.type.TypeLabel;
-import nl.utwente.groove.graph.AEdge;
+import nl.utwente.groove.graph.ANumberedEdge;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.plain.PlainLabel;
@@ -87,16 +87,22 @@ import nl.utwente.groove.util.parse.StringHandler;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
+public class AspectEdge extends ANumberedEdge<@NonNull AspectNode,@NonNull AspectLabel>
     implements AspectElement, Fixable {
     /**
      * Constructs a new edge.
+     * The number is a parallel index: it is 0 unless the edge is created to
+     * coexist with content-equal (parallel) edges, in which case it counts up.
+     * All construction should go through {@link AspectGraph.AspectFactory#createEdge},
+     * which maintains the parallel count, except when re-creating an existing
+     * edge, which should reuse that edge's number.
      * @param source the source node for this edge
      * @param label the label for this edge
      * @param target the target node for this edge
+     * @param number the parallel index of this edge
      */
-    public AspectEdge(AspectNode source, AspectLabel label, AspectNode target) {
-        super(source, label, target);
+    public AspectEdge(AspectNode source, AspectLabel label, AspectNode target, int number) {
+        super(source, label, target, number);
         assert label.isFixed();
         this.graph = source.getGraph();
         this.aspects = new Aspect.Map(false, this.graph.getRole());
