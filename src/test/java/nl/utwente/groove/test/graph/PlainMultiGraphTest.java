@@ -26,7 +26,6 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import nl.utwente.groove.graph.GraphRole;
-import nl.utwente.groove.graph.multi.MultiGraph;
 import nl.utwente.groove.graph.plain.PlainGraph;
 
 /**
@@ -93,13 +92,14 @@ public class PlainMultiGraphTest {
 
     @Test
     public void testInstancePreservesParallelEdges() {
-        MultiGraph multi = new MultiGraph("multi", GraphRole.NONE);
-        var source = multi.addNode();
-        var target = multi.addNode();
-        multi.addEdge(source, "a", target);
-        multi.addEdge(source, "a", target);
-        assertEquals(2, multi.edgeCount());
-        PlainGraph image = PlainGraph.instance(multi);
+        PlainGraph graph = createGraph();
+        var source = graph.addNode();
+        var target = graph.addNode();
+        graph.addEdge(source, "a", target);
+        graph.addEdge(source, "a", target);
+        assertEquals(2, graph.edgeCount());
+        PlainGraph image = PlainGraph.instance(graph);
+        assertNotSame(graph.getFactory(), image.getFactory());
         assertFalse(image.isSimple());
         assertEquals(2, image.edgeCount());
     }

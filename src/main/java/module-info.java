@@ -39,7 +39,6 @@ module nl.utwente.groove {
     exports nl.utwente.groove.explore.config;
     exports nl.utwente.groove.io.conceptual.lang.ecore;
     exports nl.utwente.groove.transform.oracle;
-    exports nl.utwente.groove.graph.multi;
     exports nl.utwente.groove.io.graph;
     exports nl.utwente.groove;
     exports nl.utwente.groove.io.conceptual.configuration.schema;
