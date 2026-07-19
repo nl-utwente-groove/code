@@ -112,32 +112,87 @@ condition. Fixture fallout, each verified as a delete-wins pin:
 - exploration pins: samples `mergers.gps` 66/143 → 52/98 states/transitions,
   `recipes_conditions.gps` 15 → 9 resp. 2 → 1 transitions.
 
-## Step 3, pending: cross-level injectivity
+## The quantifier semantics: match-level filtering (user, 2026-07-20)
 
-Key finding: `ConditionSearchItem.PatternRecord.createContextMap()` seeds the
-child search with the images of the condition **root graph** — nodes, *edges*
-and variables — and seeded edge images land in the child's `edgeImages`
-array, which the conflict machinery reads. So the natural mechanism is
-**root extension**, not anchor extension: during rule compilation, add each
-parent edge that conflicts with a child-level eraser (and vice versa) to the
-child condition's root graph (with its end nodes). The child search then
-sees the parent image, the conflict-pair computation covers the pair
-automatically (root edges are pattern edges), and — because a condition
-needs its root elements bound before it runs — the parent always binds the
-conflicting edge before the subcondition, collapsing both checking
-directions into one. No anchor inflation, no change to event identity.
-Root extension must propagate transitively through intermediate levels.
-The same mechanism supplies cross-level *node* pairs for step 2's merge
-embargoes (both nodes must be in one pattern).
+Designing step 3 surfaced a fork: what does an eraser overlap involving a
+forall instance mean for the amalgamated application? Case matrix for a
+forall level (e = eraser, kernel = the parent match):
 
-## Step 4, pending: inter-instance eraser overlap within one quantifier
+| case | overlap | resolution |
+|---|---|---|
+| A | instance e vs same instance element | in-search: not a legal match |
+| B | instance e vs kernel e | in-search (root extension): not a legal match |
+| C | instance e vs kernel reader | in-search (root extension): not a legal match |
+| D | kernel e vs instance reader | in-search (root extension): reroute or drop |
+| E | instance e vs other-instance e | post-hoc proof filter: **invalidate** |
+| F | instance reader vs other-instance e | permitted |
 
-Two forall sub-matches may map their (non-root) eraser edges to the same
-host edge; the amalgamated match then identifies two erasers. **Decided
-(user, 2026-07-19): such overlap invalidates the whole quantified
-application** — the identification condition is applied to the amalgamated
-rule, not weakened to shared deletion. In-search machinery cannot express
-constraints on match *sets*; the natural enforcement point is
-`ConditionSearchItem.QuantifierRecord.find()`, after `findAll`. The check
-must cover eraser edges and, once step 2 gives nodes the same semantics,
-eraser nodes.
+**Decided: match-level filtering.** The identification condition is a
+*matching* condition: a candidate sub-match that identifies an eraser with
+any other element of its own (root-extended) pattern is simply not a legal
+match — like a NAC violation — and hence not an instance; a forall over an
+empty legal-instance set is vacuously satisfied. Rejected alternatives,
+recorded for the theory-minded: *morphism-strict* (any overlapping morphism
+of any instance class invalidates) makes deleting rules under broad foralls
+inapplicable in most hosts, since readers can typically roam onto a deleted
+element's image; *class-strict* (an instance class **forced** into an
+overlap invalidates, an avoidable overlap reroutes) was on the table but
+the user chose uniform match-level filtering. Note the determinism
+constraint that shaped the options: eraser images are anchors and stable
+across state-cache reconstruction, reader images in a representative match
+are not (cf. the ferryman analysis), so only eraser–eraser overlaps can be
+checked post-hoc (E); cross-instance reader–eraser overlap (F) is
+undetectable deterministically and stays permitted — the deleted element
+wins there, an accepted residue confined to cross-instance reads (this also
+covers the implicit deletion of a node's incident edges vs. another
+instance's explicit edge eraser, which reduces to F).
+
+## Step 3, implemented: cross-level injectivity via root extension
+
+`ConditionSearchItem.PatternRecord.createContextMap()` seeds the child
+search with the images of the condition **root graph** — nodes, *edges* and
+variables — and seeded edge images land in the child's `edgeImages` array,
+which the conflict machinery reads. So the mechanism is **root extension**:
+`RuleModel.Level4.importEraserConflicts` (run top-down over the level tree,
+before any condition is built) walks each level's ancestor chain and, for
+every ancestor element whose image may coincide with an eraser of this
+level (or ancestor eraser that may coincide with any element of this
+level), adds that element as a *reader* (LHS + RHS) to every level from
+just below the ancestor down to this one. The child search then sees the
+ancestor image seeded; because a condition needs its root elements bound
+before it runs, the ancestor always binds the conflicting element first.
+No anchor inflation, no change to event identity. Imported ancestor
+*erasers* are additionally recorded — on the `Condition`
+(`addAncestorEraserEdges`) for edges, consumed by
+`SearchPlan.computeEraserConflicts`; level-locally for nodes, consumed by
+`addEraserNodeEmbargoes` — so they take part in conflict generation as
+erasers. Pairs of elements both shared with the parent level are skipped:
+they are checked at the ancestor level where both first coexist. Under
+injective matching no conflicts are generated, but the root extension still
+matters: seeded images enter the search's used-nodes/used-edges sets, which
+is exactly what makes injective matching subsume the cross-level condition.
+Note `canShareImage` moved from `SearchPlan` to `RuleEdge` so that rule
+compilation can use it.
+
+## Step 4, implemented: inter-instance eraser overlap invalidates
+
+Two individually-legal instances whose *eraser images* coincide cannot be
+arbitrated by match-level filtering (dropping either would be arbitrary),
+so the whole amalgamated application is invalid. Enforcement is a proof
+filter, not an in-search check: exists-alternatives are only resolved when
+a `TreeMatch` is expanded into `Proof`s (one proof = one amalgamated
+application, `TreeMatch.traverseMatrix`), so the filter lives there —
+active only for top rules with eraser-bearing subrules
+(`Rule.hasEraserSubRules`) — and rejects proofs in which two (sub)proofs
+claim the same eraser node or edge image. Eraser images are anchors, so
+the check is deterministic. This placement also catches collisions between
+instances of *different* quantifiers and across nesting branches, which a
+per-quantifier check after `findAll` would miss.
+
+Fixtures (`erasers.gps`, one per case family, each `-0`/`-1` start pair
+verified against engine-generated ground truth): `eraseForallReader`
+(case D: forced instance drops, forall vacuous; avoidable overlap
+reroutes), `eraseForallOnReader` (case C: "delete all a-edges" skips the
+kernel-read edge), `eraseForallEraser` (case E: two instances deleting the
+same edge make the rule inapplicable), `eraseForallNode` (node variant of
+C/D via merge embargo against the imported kernel eraser node).
