@@ -37,7 +37,32 @@ public enum Bound implements Setting.Kind {
         Setting.ContentType.LIMIT),
     /** Bound on the total number of graph elements of a state. */
     SIZE("size", "States are bounded by the total number of their graph elements",
-        Setting.ContentType.LIMIT),;
+        Setting.ContentType.LIMIT),
+    /** Bound on the number of nodes of a state. */
+    NODES("nodes", "States are bounded by their number of nodes",
+        Setting.ContentType.LIMIT),
+    /**
+     * Bound on the number of edges of given types, as a comma-separated list
+     * of <i>label</i>{@code >}<i>bound</i> pairs.
+     */
+    EDGES("edges", "States are bounded by their number of edges of given types"
+        + " (a comma-separated list of label>bound pairs)",
+        Setting.ContentType.STRING),
+    /**
+     * Condition bound: states satisfying the named rule condition (negated if
+     * prefixed with {@code !}) are not explored.
+     */
+    UPTO("upto", "States satisfying the named rule condition"
+        + " (negated if prefixed with '!') are not explored",
+        Setting.ContentType.STRING),
+    /**
+     * Condition bound: states satisfying the named rule condition (negated if
+     * prefixed with {@code !}) are the last to be explored, and their
+     * successors are not.
+     */
+    INCLUDE("include", "States satisfying the named rule condition"
+        + " (negated if prefixed with '!') are the last to be explored",
+        Setting.ContentType.STRING),;
 
     private Bound(String name, String explanation, Setting.ContentType contentType) {
         this.name = name;

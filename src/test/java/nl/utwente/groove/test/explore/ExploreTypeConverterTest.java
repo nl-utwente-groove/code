@@ -58,6 +58,13 @@ public class ExploreTypeConverterTest {
             "matcher=rete frontier=single successor=single-random",
             "cost=uniform bound=cost:5",
             "next=newest cost=uniform bound=cost:5",
+            "bound=nodes:20",
+            "bound=edges:a>2,b>3",
+            "bound=upto:load",
+            "bound=upto:!load",
+            "next=newest bound=upto:load",
+            "bound=include:load",
+            "next=newest bound=include:!load count=first",
             "goal=none",
             "goal=any",
             "goal=any count=first",
@@ -106,11 +113,60 @@ public class ExploreTypeConverterTest {
         for (String strategy : new String[] {"bfs", "dfs"}) {
             Serialized bounded = createStrategy(strategy);
             bounded.setArgument("bound", "7");
-            ExploreType type = new ExploreType(bounded, createAcceptor("final"), 0);
-            ExploreType back
-                = ExploreTypeConverter.toExploreType(ExploreTypeConverter.toConfig(type));
-            assertEquals(type.getIdentifier(), back.getIdentifier());
+            assertLegacyRoundTrip(new ExploreType(bounded, createAcceptor("final"), 0));
         }
+        // so do the conditional strategies
+        Serialized cnbound = new Serialized("cnbound");
+        cnbound.setArgument("node-bound", "20");
+        assertLegacyRoundTrip(new ExploreType(cnbound, createAcceptor("final"), 0));
+        Serialized cebound = new Serialized("cebound");
+        cebound.setArgument("edge-bound", "a>2,b>3");
+        assertLegacyRoundTrip(new ExploreType(cebound, createAcceptor("final"), 0));
+        for (String search : new String[] {"bfs", "dfs"}) {
+            for (String stop : new String[] {"->", "=>"}) {
+                for (String polarity : new String[] {"Positive", "Negative"}) {
+                    assertLegacyRoundTrip(new ExploreType(createUptoRule(search, stop, polarity,
+                                                                         "0"),
+                        createAcceptor("final"), 0));
+                }
+            }
+        }
+    }
+
+    /** Asserts that a legacy exploration type survives the round trip. */
+    private void assertLegacyRoundTrip(ExploreType type) throws FormatException {
+        ExploreType back = ExploreTypeConverter.toExploreType(ExploreTypeConverter.toConfig(type));
+        assertEquals(type.getIdentifier(), back.getIdentifier());
+    }
+
+    /** Creates a serialised uptorule strategy with the given arguments. */
+    private Serialized createUptoRule(String search, String stop, String polarity, String bound) {
+        Serialized result = new Serialized("uptorule");
+        result.setArgument("search", search);
+        result.setArgument("stop", stop);
+        result.setArgument("polarity", polarity);
+        result.setArgument("rule", "load");
+        result.setArgument("bound", bound);
+        return result;
+    }
+
+    /**
+     * Tests the conversions of legacy types that map to the feature model but
+     * do not round-trip to themselves.
+     */
+    @Test
+    public void testLegacyOneWay() throws FormatException {
+        // crule converts to the same config as the equivalent uptorule
+        Serialized crule = new Serialized("crule");
+        crule.setArgument("rule", "load");
+        crule.setArgument("polarity", "Positive");
+        assertEquals(ExploreConfig.parse("bound=upto:load"),
+                     ExploreTypeConverter.toConfig(new ExploreType(crule,
+                         createAcceptor("final"), 0)));
+        // uptorule with a nonzero depth bound cannot be expressed
+        ExploreType bounded = new ExploreType(createUptoRule("bfs", "->", "Positive", "7"),
+            createAcceptor("final"), 0);
+        assertThrows(FormatException.class, () -> ExploreTypeConverter.toConfig(bounded));
     }
 
     /** Creates a serialised strategy with the given keyword. */
@@ -157,7 +213,12 @@ public class ExploreTypeConverterTest {
             "goal=any outcome=violate",
             "bound=size:100",
             "cost=uniform bound=cost:10+5",
-            "frontier=single successor=single cost=uniform bound=cost:5",};
+            "frontier=single successor=single cost=uniform bound=cost:5",
+            "bound=nodes:20+5",
+            "next=newest bound=nodes:20",
+            "next=newest bound=edges:a>2",
+            "matcher=rete next=newest bound=upto:load",
+            "frontier=single successor=single bound=upto:load",};
         for (String text : configs) {
             assertThrows(FormatException.class, () -> ExploreTypeConverter
                 .toExploreType(ExploreConfig.parse(text)), "Config '%s' should be rejected"
@@ -168,7 +229,7 @@ public class ExploreTypeConverterTest {
     /** Tests that legacy types without feature-model equivalent are rejected. */
     @Test
     public void testInexpressibleLegacy() {
-        String[][] types = {{"state", "final"}, {"uptorule", "final"}, {"ltl", "cycle"},
+        String[][] types = {{"state", "final"}, {"ltl", "cycle"},
             {"minimax", "final"}, {"remote", "final"}, {"bfs", "cycle"},};
         for (String[] pair : types) {
             ExploreType type = new ExploreType(pair[0], pair[1], 0);

@@ -16,8 +16,10 @@
  */
 package nl.utwente.groove.explore.config;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -150,7 +152,7 @@ public class ExploreConfig {
             result.append(key.getName());
             result.append(ASSIGN);
             String value = key.parser().unparse(entry.getValue());
-            if (value.chars().anyMatch(Character::isWhitespace)) {
+            if (value.chars().anyMatch(c -> Character.isWhitespace(c) || c == QUOTE)) {
                 value = StringHandler.toQuoted(value, QUOTE);
             }
             result.append(value);
@@ -168,10 +170,7 @@ public class ExploreConfig {
         var result = new ExploreConfig();
         var errors = new FormatErrorSet();
         var seen = new EnumMap<ExploreKey,Boolean>(ExploreKey.class);
-        for (String token : StringHandler.splitExpr(text, " ")) {
-            if (token.isEmpty()) {
-                continue;
-            }
+        for (String token : splitTokens(text)) {
             int pos = token.indexOf(ASSIGN);
             if (pos < 0) {
                 errors.add("Token '%s' is not of the form key%svalue", token, ASSIGN);
@@ -198,6 +197,44 @@ public class ExploreConfig {
             }
         }
         errors.throwException();
+        return result;
+    }
+
+    /**
+     * Splits a configuration text into its whitespace-separated tokens,
+     * treating (escape-aware) quoted sections as atomic. Deliberately not
+     * based on {@link StringHandler#splitExpr}, which also treats bracket
+     * characters specially and so would choke on values containing (say)
+     * comparison operators.
+     */
+    private static List<String> splitTokens(String text) throws FormatException {
+        List<String> result = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        boolean quoted = false;
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (quoted && c == StringHandler.ESCAPE_CHAR && i + 1 < text.length()) {
+                current.append(c);
+                current.append(text.charAt(i + 1));
+                i++;
+            } else if (c == QUOTE) {
+                quoted = !quoted;
+                current.append(c);
+            } else if (Character.isWhitespace(c) && !quoted) {
+                if (current.length() > 0) {
+                    result.add(current.toString());
+                    current.setLength(0);
+                }
+            } else {
+                current.append(c);
+            }
+        }
+        if (quoted) {
+            throw new FormatException("Unbalanced quote in '%s'", text);
+        }
+        if (current.length() > 0) {
+            result.add(current.toString());
+        }
         return result;
     }
 
