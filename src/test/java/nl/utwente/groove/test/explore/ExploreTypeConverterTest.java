@@ -169,9 +169,14 @@ public class ExploreTypeConverterTest {
         assertThrows(FormatException.class, () -> ExploreTypeConverter.toConfig(bounded));
     }
 
-    /** Creates a serialised strategy with the given keyword. */
+    /** Creates a serialised strategy with the given keyword, in canonical form
+     * (i.e., with the depth bound argument that a parsed bfs/dfs always carries). */
     private Serialized createStrategy(String keyword) {
-        return new Serialized(keyword);
+        Serialized result = new Serialized(keyword);
+        if ("bfs".equals(keyword) || "dfs".equals(keyword)) {
+            result.setArgument("bound", "0");
+        }
+        return result;
     }
 
     /** Creates a serialised acceptor with the given keyword, with arguments where needed. */

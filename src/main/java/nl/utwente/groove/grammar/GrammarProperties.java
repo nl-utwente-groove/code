@@ -18,6 +18,8 @@ import java.util.TreeSet;
 
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.explore.ExploreType;
+import nl.utwente.groove.explore.config.ExploreConfig;
+import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.grammar.CheckPolicy.PolicyMap;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
@@ -315,7 +317,8 @@ public class GrammarProperties extends Properties {
     }
 
     /**
-     * Sets the exploration strategy to a certain value.
+     * Sets the legacy exploration strategy to a certain value.
+     * Superseded by {@link #setExploreConfig}; retained for the legacy key.
      * @param exploreType the new exploration strategy
      */
     public void setExploreType(ExploreType exploreType) {
@@ -324,10 +327,48 @@ public class GrammarProperties extends Properties {
 
     /**
      * Returns the exploration strategy, or {@link ExploreType#DEFAULT} if there
-     * is no strategy set.
+     * is no strategy set. If the exploration configuration key is set, it
+     * takes precedence over the legacy exploration strategy key; a stored
+     * configuration that cannot be realised gives rise to the default (the
+     * errors are reported through the key checker).
      */
     public ExploreType getExploreType() {
+        if (containsKey(GrammarKey.EXPLORE_CONFIG)) {
+            try {
+                return ExploreTypeConverter
+                    .toExploreType(parseProperty(GrammarKey.EXPLORE_CONFIG).getExploreConfig());
+            } catch (FormatException exc) {
+                return ExploreType.DEFAULT;
+            }
+        }
         return parsePropertyOrDefault(GrammarKey.EXPLORATION).getExploreType();
+    }
+
+    /**
+     * Sets the exploration configuration, removing any stored legacy
+     * exploration strategy it supersedes.
+     */
+    public void setExploreConfig(ExploreConfig config) {
+        storeValue(GrammarKey.EXPLORE_CONFIG, config);
+        remove(GrammarKey.EXPLORATION);
+    }
+
+    /**
+     * Returns the exploration configuration. If only the legacy exploration
+     * strategy key is set, its value is converted; if it is inexpressible in
+     * the feature model (or nothing is stored), the default configuration is
+     * returned.
+     */
+    public ExploreConfig getExploreConfig() {
+        if (containsKey(GrammarKey.EXPLORE_CONFIG)) {
+            return parsePropertyOrDefault(GrammarKey.EXPLORE_CONFIG).getExploreConfig();
+        }
+        try {
+            return ExploreTypeConverter
+                .toConfig(parsePropertyOrDefault(GrammarKey.EXPLORATION).getExploreType());
+        } catch (FormatException exc) {
+            return new ExploreConfig();
+        }
     }
 
     /**

@@ -28,6 +28,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
+import nl.utwente.groove.util.parse.Parser;
 import nl.utwente.groove.util.parse.StringHandler;
 
 /**
@@ -237,6 +238,26 @@ public class ExploreConfig {
         }
         return result;
     }
+
+    /** Returns a parser for configurations, with the default configuration as default value. */
+    public static Parser<ExploreConfig> parser() {
+        return PARSER;
+    }
+
+    private static final Parser<ExploreConfig> PARSER
+        = new Parser.AParser<>("Space-separated list of <i>key</i>=<i>value</i> exploration"
+            + " settings; see the exploration dialog for the keys and values",
+            new ExploreConfig()) {
+            @Override
+            public ExploreConfig parse(String input) throws FormatException {
+                return ExploreConfig.parse(input);
+            }
+
+            @Override
+            public <V extends ExploreConfig> String unparse(V value) {
+                return value.unparse();
+            }
+        };
 
     @Override
     public String toString() {

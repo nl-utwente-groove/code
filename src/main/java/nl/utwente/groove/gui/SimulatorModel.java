@@ -22,6 +22,7 @@ import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.explore.ExplorationListener;
 import nl.utwente.groove.explore.ExploreResult;
 import nl.utwente.groove.explore.ExploreType;
+import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.util.StatisticsReporter;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.GrammarProperties;
@@ -320,15 +321,15 @@ public class SimulatorModel implements Cloneable {
     }
 
     /**
-     * Changes the default exploration in the system properties.
-     * @param exploreType the new default exploration
+     * Changes the default exploration configuration in the system properties.
+     * @param config the new default exploration configuration
      * @return {@code true} if the GTS was invalidated as a result of the action
      * @throws IOException if the action failed
      */
-    public boolean doSetDefaultExploreType(ExploreType exploreType) throws IOException {
+    public boolean doSetDefaultExploreConfig(ExploreConfig config) throws IOException {
         GrammarProperties properties = getGrammar().getProperties();
         GrammarProperties newProperties = properties.clone();
-        newProperties.setExploreType(exploreType);
+        newProperties.setExploreConfig(config);
         return doSetProperties(newProperties);
     }
 

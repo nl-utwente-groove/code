@@ -160,7 +160,14 @@ public class ExploreTypeConverter {
         Object content = config.get(ExploreKey.BOUND).content();
         Serialized result = null;
         switch ((Bound) config.getKind(ExploreKey.BOUND)) {
-        case NONE -> result = new Serialized(keyword);
+        case NONE -> {
+            result = new Serialized(keyword);
+            if (searching) {
+                // a well-formed bfs/dfs Serialized always carries the (depth)
+                // bound argument; 0 means unbounded
+                result.setArgument("bound", "0");
+            }
+        }
         case COST -> {
             // consistency of cost != NONE is guaranteed by check()
             if (config.getKind(ExploreKey.COST) != Cost.UNIFORM) {
@@ -170,9 +177,7 @@ public class ExploreTypeConverter {
                     .add("A depth bound requires breadth-first or depth-first exploration");
             } else if (getLimit(content, errors) instanceof Bound.Limit limit) {
                 result = new Serialized(keyword);
-                if (limit.max() > 0) {
-                    result.setArgument("bound", Integer.toString(limit.max()));
-                }
+                result.setArgument("bound", Integer.toString(limit.max()));
             }
         }
         case SIZE -> errors.add("A graph size bound is not yet supported");

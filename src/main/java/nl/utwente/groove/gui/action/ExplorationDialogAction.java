@@ -1,6 +1,7 @@
 package nl.utwente.groove.gui.action;
 
 import static nl.utwente.groove.grammar.GrammarKey.EXPLORATION;
+import static nl.utwente.groove.grammar.GrammarKey.EXPLORE_CONFIG;
 
 import javax.swing.Action;
 
@@ -31,8 +32,13 @@ public class ExplorationDialogAction extends SimulatorAction {
             var error = false;
             var properties = grammar.getProperties();
             try {
-                var exploreType = properties.parseProperty(EXPLORATION);
-                error = !EXPLORATION.check(grammar, exploreType).isEmpty();
+                if (properties.containsKey(EXPLORE_CONFIG)) {
+                    var entry = properties.parseProperty(EXPLORE_CONFIG);
+                    error = !EXPLORE_CONFIG.apply(grammar, entry).isEmpty();
+                } else {
+                    var exploreType = properties.parseProperty(EXPLORATION);
+                    error = !EXPLORATION.check(grammar, exploreType).isEmpty();
+                }
             } catch (FormatException e) {
                 error = true;
             }

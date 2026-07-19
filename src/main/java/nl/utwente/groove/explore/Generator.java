@@ -33,6 +33,8 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.Parameters;
 
+import nl.utwente.groove.explore.config.ExploreConfig;
+import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.explore.encode.Serialized;
 import nl.utwente.groove.explore.util.CompositeReporter;
 import nl.utwente.groove.explore.util.ExplorationReporter;
@@ -99,13 +101,21 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
 
     private final static String SOFT_REF_POLICY_NAME = "-XX:SoftRefLRUPolicyMSPerMB";
 
-    /* Additionally checks the dependency of the "-ef" option upon "-o". */
+    /* Additionally checks the dependency of the "-ef" option upon "-o",
+     * and the mutual exclusion of "-x" with the deprecated "-s", "-a" and "-r". */
     @Override
     protected void parseArguments() throws CmdLineException {
         super.parseArguments();
         if (!isHelp() && this.ltsLabels != null && this.ltsPattern == null) {
             throw new CmdLineException(String
                 .format("Error: option \"-ef\" requires the option(s) [-o]%n%s",
+                        getParser().getUsageLine()));
+        }
+        if (!isHelp() && hasExploreConfig()
+            && (hasStrategy() || hasAcceptor() || getResultCount() != 0)) {
+            throw new CmdLineException(String
+                .format("Error: option \"%s\" cannot be combined with \"%s\", \"%s\" or \"%s\"%n%s",
+                        EXPLORE_NAME, STRATEGY_NAME, ACCEPTOR_NAME, RESULT_NAME,
                         getParser().getUsageLine()));
         }
     }
@@ -116,6 +126,16 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
      */
     private Transformer computeTransformer() throws IOException, FormatException {
         Transformer result = new Transformer(getGrammar());
+        if (hasExploreConfig()) {
+            ExploreType exploreType
+                = ExploreTypeConverter.toExploreType(ExploreConfig.parse(getExploreConfig()));
+            result.setStrategy(exploreType.getStrategy());
+            result.setAcceptor(exploreType.getAcceptor());
+            result.setResultCount(exploreType.getBound());
+        }
+        if (hasStrategy() || hasAcceptor()) {
+            emitDeprecationWarning();
+        }
         if (hasStrategy()) {
             Serialized strategy = StrategyEnumerator.parseCommandLineStrategy(getStrategy());
             result.setStrategy(strategy);
@@ -159,8 +179,33 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
                 result.setProperty(e.getKey(), value);
             }
         }
-        result.setResultCount(getResultCount());
+        if (!hasExploreConfig()) {
+            result.setResultCount(getResultCount());
+        }
         return result;
+    }
+
+    /**
+     * Emits a deprecation warning for the "-s" and "-a" options, including
+     * the equivalent "-x" invocation if the given values are expressible in
+     * the exploration feature model.
+     */
+    private void emitDeprecationWarning() {
+        emit("Warning: options %s and %s are deprecated; use %s instead%n", STRATEGY_NAME,
+             ACCEPTOR_NAME, EXPLORE_NAME);
+        try {
+            Serialized strategy = hasStrategy()
+                ? StrategyEnumerator.parseCommandLineStrategy(getStrategy())
+                : ExploreType.DEFAULT.getStrategy();
+            Serialized acceptor = hasAcceptor()
+                ? AcceptorEnumerator.parseCommandLineAcceptor(getAcceptor())
+                : ExploreType.DEFAULT.getAcceptor();
+            var config = ExploreTypeConverter
+                .toConfig(new ExploreType(strategy, acceptor, getResultCount()));
+            emit("The equivalent invocation is %s \"%s\"%n", EXPLORE_NAME, config.unparse());
+        } catch (FormatException exc) {
+            // the legacy exploration is not expressible; no equivalent to suggest
+        }
     }
 
     /**
@@ -183,6 +228,24 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
         description = "Log the generation process in the directory <dir>",
         converter = DirectoryHandler.class)
     private File logdir;
+
+    /**
+     * Indicates if the exploration configuration option is set.
+     * @return {@code true} if {@link #getExploreConfig()} is not {@code null}
+     */
+    public boolean hasExploreConfig() {
+        return getExploreConfig() != null;
+    }
+
+    /**
+     * Returns the optional exploration configuration value.
+     */
+    public String getExploreConfig() {
+        return this.exploreConfig;
+    }
+
+    @Option(names = EXPLORE_NAME, paramLabel = EXPLORE_VAR, description = EXPLORE_USAGE)
+    private String exploreConfig;
 
     /**
      * Indicates if the strategy option is set.
@@ -395,6 +458,36 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
     /** The reporters that can be built on the basis of the options. */
     private CompositeReporter reporter;
 
+    /** Option name for the exploration configuration option. */
+    public final static String EXPLORE_NAME = "-x";
+    /** Meta-variable name for the exploration configuration option. */
+    public final static String EXPLORE_VAR = "config";
+    /** Usage message for the exploration configuration option.
+     * The keys and values must be kept in sync with the
+     * {@code nl.utwente.groove.explore.config} package. */
+    public final static String EXPLORE_USAGE
+        = "Set the exploration to <config>: a space-separated list of key=value settings\n"
+            + "(quote the argument if it contains spaces). Omitted keys get their default\n"
+            + "(marked *). Keys and values:\n"
+            + "  next        - next state to explore: oldest*, newest, random\n"
+            + "  successor   - successors to generate: all*, all-random, single, single-random\n"
+            + "  frontier    - frontier size restriction: complete*, single, <n> (beam width)\n"
+            + "  heuristic   - state quality function: none*, nen\n"
+            + "  cost        - transition cost: none*, uniform, rule\n"
+            + "  goal        - result condition: final*, none, any, graph:id, rule:id,\n"
+            + "                applied:id, formula:f, ltl:prop, ctl:prop\n"
+            + "  outcome     - desired goal outcome: satisfy*, violate\n"
+            + "  result      - result type: state*, trace\n"
+            + "  count       - results before halting: all*, first, <n>\n"
+            + "  bound       - exploration bound: none*, cost:max[+inc], size:max[+inc],\n"
+            + "                nodes:max[+inc], edges:id_1>n_1,...,id_k>n_k,\n"
+            + "                upto:[!]id, include:[!]id\n"
+            + "  persistence - state storage: all*, none\n"
+            + "  collapse    - state equivalence: grammar*, equality, isomorphism, hash\n"
+            + "  matcher     - match engine: plan*, rete\n"
+            + "  algebra     - data values: grammar*, default, big, point, term\n"
+            + "Example: -x \"next=newest count=first goal=rule:mygoal\"";
+
     /**
      * Name of the acceptor option.
      */
@@ -405,7 +498,8 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
     public static final String ACCEPTOR_VAR = "acc";
 
     /** Usage message for the acceptor option. */
-    public final static String ACCEPTOR_USAGE = "" + "Set the acceptor to <acc>. "
+    public final static String ACCEPTOR_USAGE = ""
+        + "(Deprecated; use " + EXPLORE_NAME + " instead.) Set the acceptor to <acc>. "
         + "The acceptor determines when a state is counted as a result of the exploration. "
         + "Legal values are:\n" //
         + "    final      - When final (default)\n" //
@@ -438,7 +532,8 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
     public final static String STRATEGY_VAR = "strgy";
     /** Usage message for the strategy option. */
     public final static String STRATEGY_USAGE
-        = "Set the exploration strategy to <strgy>. Legal values are:\n"
+        = "(Deprecated; use " + EXPLORE_NAME
+            + " instead.) Set the exploration strategy to <strgy>. Legal values are:\n"
             + "  bfs[:n]     - Optionally bounded Breadth-First exploration: \n"
             + "                if n>0, exploration stops at depth n\n" //
             + "  dfs[:n]     - Optionally bounded Depth-First exploration: \n"

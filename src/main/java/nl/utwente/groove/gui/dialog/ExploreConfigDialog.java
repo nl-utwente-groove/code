@@ -178,15 +178,9 @@ public class ExploreConfigDialog extends JDialog {
         try {
             return ExploreTypeConverter.toConfig(getSimulatorModel().getExploreType());
         } catch (FormatException exc) {
-            // fall through to the grammar default
-        }
-        try {
-            return ExploreTypeConverter
-                .toConfig(getGrammar().getProperties().getExploreType());
-        } catch (FormatException exc) {
             this.legacyNotice = "The current exploration strategy cannot be expressed"
-                + " in the feature model; showing the default configuration";
-            return new ExploreConfig();
+                + " in the feature model; showing the grammar default";
+            return getGrammar().getProperties().getExploreConfig();
         }
     }
 
@@ -366,14 +360,15 @@ public class ExploreConfigDialog extends JDialog {
         }
     }
 
-    /** Stores the composed exploration as the grammar default. */
+    /** Stores the composed configuration as the grammar default. */
     private void setDefaultExploreType() {
-        ExploreType exploreType = createExploreType();
-        if (exploreType == null) {
+        var errors = new FormatErrorSet();
+        ExploreConfig config = storeConfig(errors);
+        if (config == null || !errors.isEmpty()) {
             return;
         }
         try {
-            getSimulatorModel().doSetDefaultExploreType(exploreType);
+            getSimulatorModel().doSetDefaultExploreConfig(config);
         } catch (IOException exc) {
             // do nothing
         }
