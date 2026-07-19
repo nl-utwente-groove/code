@@ -570,6 +570,9 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         } else if (has(Category.SORT)) {
             text = get(Category.SORT, Aspect::getContentString);
         }
+        // level suffix, to be appended directly after the edge name
+        // so that it is not separated from the name by a value or type suffix
+        Line levelSuffix = toLevelName();
         if (result == null) {
             if (text == null) {
                 Label label = hasGraphRole(RULE)
@@ -584,6 +587,10 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                 }
             } else {
                 result = Line.atom(text);
+            }
+            if (levelSuffix != null) {
+                result = result.append(levelSuffix);
+                levelSuffix = null;
             }
         }
         if (onNode) {
@@ -659,7 +666,6 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         if (color != null) {
             result = result.color(color);
         }
-        Line levelSuffix = toLevelName();
         if (levelSuffix != null) {
             result = result.append(levelSuffix);
         }
