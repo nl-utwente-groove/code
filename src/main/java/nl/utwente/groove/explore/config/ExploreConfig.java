@@ -110,7 +110,7 @@ public class ExploreConfig {
             result.add("Beam frontier size %s should be larger than 1", size);
         }
         var goal = getKind(ExploreKey.GOAL);
-        if ((goal == Goal.NONE || goal == Goal.FINAL)
+        if ((goal == Goal.NONE || goal == Goal.ANY || goal == Goal.FINAL)
             && getKind(ExploreKey.OUTCOME) == Outcome.VIOLATE) {
             result
                 .add("Goal '%s' cannot be combined with outcome '%s'", goal.getName(),

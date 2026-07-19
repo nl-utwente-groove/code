@@ -33,7 +33,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * strategies cannot realise is rejected with an explanatory error, as is an
  * {@link ExploreType} whose strategy or acceptor has no feature-model
  * equivalent (the LTL strategies, the conditional and development strategies,
- * and the post-application and any-state acceptors).
+ * and the cycle acceptor).
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -183,9 +183,18 @@ public class ExploreTypeConverter {
         var satisfy = config.getKind(ExploreKey.OUTCOME) == Outcome.SATISFY;
         Serialized result = null;
         switch ((Goal) config.getKind(ExploreKey.GOAL)) {
-        // the outcome for NONE and FINAL is guaranteed by check() to be SATISFY
+        // the outcome for NONE, ANY and FINAL is guaranteed by check() to be SATISFY
         case NONE -> result = new Serialized("none");
+        case ANY -> result = new Serialized("any");
         case FINAL -> result = new Serialized("final");
+        case APPLIED -> {
+            if (satisfy) {
+                result = new Serialized("ruleapp");
+                result.setArgument("rule", (String) config.get(ExploreKey.GOAL).content());
+            } else {
+                errors.add("A violated application goal is not yet supported");
+            }
+        }
         case RULE -> {
             result = new Serialized("inv");
             result.setArgument("rule", (String) config.get(ExploreKey.GOAL).content());
@@ -265,6 +274,9 @@ public class ExploreTypeConverter {
             // the default goal
         }
         case "none" -> result.put(ExploreKey.GOAL, Goal.NONE.createSetting());
+        case "any" -> result.put(ExploreKey.GOAL, Goal.ANY.createSetting());
+        case "ruleapp" -> result
+            .put(ExploreKey.GOAL, Goal.APPLIED.createSetting(acceptor.getArgument("rule")));
         case "inv" -> {
             result.put(ExploreKey.GOAL, Goal.RULE.createSetting(acceptor.getArgument("rule")));
             if (EncodedPolarity.NEGATIVE.equals(acceptor.getArgument("polarity"))) {

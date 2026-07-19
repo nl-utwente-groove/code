@@ -151,6 +151,8 @@ public class ExploreConfigTest {
         config = new ExploreConfig();
         config.put(ExploreKey.OUTCOME, Outcome.VIOLATE.createSetting());
         assertFalse(config.check().isEmpty());
+        config.put(ExploreKey.GOAL, Goal.ANY.createSetting());
+        assertFalse(config.check().isEmpty());
         config.put(ExploreKey.GOAL, Goal.RULE.createSetting("someRule"));
         assertTrue(config.check().isEmpty());
 

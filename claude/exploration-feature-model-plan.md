@@ -206,7 +206,7 @@ CLI aliases and the legacy property key.
   only the feature model's internal consistency rules; what is *implementable* is
   reported by the phase-2 assembler, which is the component that actually knows.
 
-## Design proposal: goal kinds `any` and `applied` (2026-07-19, awaiting approval)
+## Design proposal: goal kinds `any` and `applied` (2026-07-19, approved and implemented)
 
 Following Arend's decisions that (a) the `any` acceptor gets a goal value and (b)
 pre- and post-application rule goals are different and must both be expressible.

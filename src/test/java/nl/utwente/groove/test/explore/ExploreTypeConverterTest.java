@@ -59,8 +59,12 @@ public class ExploreTypeConverterTest {
             "cost=uniform bound=cost:5",
             "next=newest cost=uniform bound=cost:5",
             "goal=none",
+            "goal=any",
+            "goal=any count=first",
             "goal=rule:load",
             "goal=rule:load outcome=violate",
+            "goal=applied:load",
+            "goal=applied:load count=3",
             "goal=formula:load count=first",
             "count=3",};
         for (String text : configs) {
@@ -80,7 +84,7 @@ public class ExploreTypeConverterTest {
     public void testLegacyRoundTrip() throws FormatException {
         String[] strategies = {"bfs", "dfs", "linear", "random", "rete", "retelinear",
             "reterandom"};
-        String[] acceptors = {"final", "none", "inv", "formula"};
+        String[] acceptors = {"final", "none", "any", "inv", "ruleapp", "formula"};
         int[] bounds = {0, 1, 3};
         for (String strategy : strategies) {
             for (String acceptor : acceptors) {
@@ -122,6 +126,7 @@ public class ExploreTypeConverterTest {
             result.setArgument("rule", "load");
             result.setArgument("polarity", "Positive");
         }
+        case "ruleapp" -> result.setArgument("rule", "load");
         case "formula" -> result.setArgument("formula", "load");
         default -> {
             // no arguments
@@ -148,6 +153,8 @@ public class ExploreTypeConverterTest {
             "goal=graph:someGraph",
             "goal=ltl:someProp",
             "goal=formula:load outcome=violate",
+            "goal=applied:load outcome=violate",
+            "goal=any outcome=violate",
             "bound=size:100",
             "cost=uniform bound=cost:10+5",
             "frontier=single successor=single cost=uniform bound=cost:5",};
@@ -162,8 +169,7 @@ public class ExploreTypeConverterTest {
     @Test
     public void testInexpressibleLegacy() {
         String[][] types = {{"state", "final"}, {"uptorule", "final"}, {"ltl", "cycle"},
-            {"minimax", "final"}, {"remote", "final"}, {"bfs", "any"}, {"bfs", "ruleapp"},
-            {"bfs", "cycle"},};
+            {"minimax", "final"}, {"remote", "final"}, {"bfs", "cycle"},};
         for (String[] pair : types) {
             ExploreType type = new ExploreType(pair[0], pair[1], 0);
             assertThrows(FormatException.class, () -> ExploreTypeConverter.toConfig(type),

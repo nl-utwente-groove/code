@@ -32,14 +32,22 @@ public enum Goal implements Setting.Kind {
     /** No goal; exploration continues until the frontier is empty. */
     NONE("none", "There is no goal; exploration continues until the frontier is empty",
         Setting.ContentType.NULL),
+    /** Every state is a result. */
+    ANY("any", "Every state is a result",
+        Setting.ContentType.NULL),
     /** Final states, i.e., states without outgoing transitions. */
     FINAL("final", "A state without outgoing transitions",
         Setting.ContentType.NULL),
     /** States isomorphic to a given graph. */
     GRAPH("graph", "A state whose graph is isomorphic to the named graph",
         Setting.ContentType.STRING),
-    /** States satisfying a given rule condition. */
-    RULE("rule", "A state whose graph satisfies the named rule condition",
+    /** States satisfying a given rule condition (pre-application). */
+    RULE("rule", "A state whose graph satisfies the named rule condition"
+        + " (regardless of whether the rule is scheduled)",
+        Setting.ContentType.STRING),
+    /** States reached by an application of a given action (post-application). */
+    APPLIED("applied", "A state reached by an application of the named action"
+        + " (a rule or recipe, as scheduled)",
         Setting.ContentType.STRING),
     /** States satisfying a propositional formula over rule conditions. */
     FORMULA("formula", "A state whose graph satisfies a propositional formula over rule conditions",
