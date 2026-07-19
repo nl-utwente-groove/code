@@ -6,11 +6,6 @@
                 <string>188 268 34 46</string>
             </attr>
         </node>
-        <node id="n5">
-            <attr name="layout">
-                <string>313 337 34 46</string>
-            </attr>
-        </node>
         <node id="n0">
             <attr name="layout">
                 <string>184 176 34 46</string>
@@ -49,11 +44,6 @@
         <edge to="n2" from="n2">
             <attr name="label">
                 <string>type:A</string>
-            </attr>
-        </edge>
-        <edge to="n5" from="n5">
-            <attr name="label">
-                <string>type:B</string>
             </attr>
         </edge>
     </graph>

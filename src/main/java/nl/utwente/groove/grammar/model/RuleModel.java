@@ -38,6 +38,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -2365,8 +2366,53 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                     errors.addAll(e.getErrors());
                 }
             }
+            addEraserNodeEmbargoes(result);
             errors.throwException();
             return result;
+        }
+
+        /**
+         * Adds merge embargoes to the level condition for every pair of a
+         * deleted node and another type-compatible LHS node, enforcing the
+         * DPO identification condition on nodes: if a deleted node is
+         * identified with any other matched node, the pushout complement is
+         * not unique. Skipped under injective matching, which subsumes the
+         * condition; the generated embargoes compile to equality tests in
+         * the search plan.
+         */
+        private void addEraserNodeEmbargoes(Condition condition) throws FormatException {
+            if (!this.isRule || isInjective()) {
+                return;
+            }
+            Set<RuleNode> erasers = new LinkedHashSet<>(this.lhs.nodeSet());
+            erasers.removeAll(this.rhs.nodeSet());
+            if (erasers.isEmpty()) {
+                return;
+            }
+            RuleLabel equality = new RuleLabel(RegExpr.empty());
+            List<RuleNode> nodes = new ArrayList<>(this.lhs.nodeSet());
+            for (int i = 0; i < nodes.size(); i++) {
+                RuleNode one = nodes.get(i);
+                if (!(one instanceof DefaultRuleNode)) {
+                    continue;
+                }
+                for (int j = i + 1; j < nodes.size(); j++) {
+                    RuleNode two = nodes.get(j);
+                    if (!(two instanceof DefaultRuleNode)) {
+                        continue;
+                    }
+                    if (!erasers.contains(one) && !erasers.contains(two)) {
+                        continue;
+                    }
+                    if (Collections.disjoint(one.getMatchingTypes(), two.getMatchingTypes())) {
+                        continue;
+                    }
+                    RuleEdge embargoEdge = this.lhs.getFactory().createEdge(one, equality, two);
+                    EdgeEmbargo embargo = createEdgeEmbargo(this.lhs, embargoEdge);
+                    embargo.setFixed();
+                    condition.addSubCondition(embargo);
+                }
+            }
         }
 
         /**

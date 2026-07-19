@@ -129,7 +129,7 @@ public class ExplorationTest {
     /** Tests the mergers sample. */
     @Test
     public void testMergers() {
-        testExploration("mergers.gps", "start", "bfs", 66, 143);
+        testExploration("mergers.gps", "start", "bfs", 52, 98);
     }
 
     /** Tests the regexpr sample. */
@@ -251,8 +251,8 @@ public class ExplorationTest {
     public void testSubsets() {
         testExploration("subsets.gps", "start-small", "bfs", 2, 1);
         testExploration("subsets.gps", "start", "bfs", 34, 74);
-        testExploration("recipes_conditions.gps", "start", "bfs", 3, 15);
-        testExploration("recipes_conditions.gps", "start1", "bfs", 1, 2);
+        testExploration("recipes_conditions.gps", "start", "bfs", 3, 9);
+        testExploration("recipes_conditions.gps", "start1", "bfs", 1, 1);
     }
 
     /** Tests various parameters settable through the system properties. */

@@ -1,7 +1,8 @@
 # Injective matching of eraser edges (DPO identification condition)
 
-Status: decided 2026-07-19; step 1 (within-level eraser *edges*, plan-based
-matcher) implemented on branch `parallel-edges`. Related to, but distinct
+Status: decided 2026-07-19; steps 1 (within-level eraser *edges*, plan-based
+matcher) and 2 (within-level eraser *nodes*, compile-time merge embargoes)
+implemented on branch `parallel-edges`. Related to, but distinct
 from, the parallel-edge work in
 [aspect-parallel-edges.md](aspect-parallel-edges.md): the machinery lives in
 the same code region as the edge-injectivity support for non-simple patterns,
@@ -86,14 +87,30 @@ Surprises hit during implementation:
   semantics. `erasers.gps/eraseTwoExplicit` pins the current *node*
   delete-wins behaviour (9 outcomes) and is step 2's fixture to update.
 
-## Step 2, pending: eraser nodes via compile-time merge embargoes
+## Step 2, implemented: eraser nodes via compile-time merge embargoes
 
-For every eraser node and every type-compatible other node of the same
-pattern, rule compilation adds a merge embargo (unless the condition is
-matched injectively — the existing `createEdgeEmbargoItem` logic already
-skips equality tests in that case). Expected fixture fallout:
-`eraseTwoExplicit` (9 → fewer outcomes), possibly sample grammars; the
-critical-pair filter must learn the node condition too.
+`RuleModel.Level4.addEraserNodeEmbargoes` adds, per level, a merge embargo
+(`EdgeEmbargo` with an empty-label edge) for every pair of a deleted node
+and another LHS node whose `getMatchingTypes()` overlap, skipped entirely
+under grammar-wide injective matching (which subsumes the condition; the
+planner's `createEdgeEmbargoItem` would drop the equality items anyway).
+Only `DefaultRuleNode` pairs participate — value/operator nodes can never
+share an image with them. The critical-pair filter learned the node
+condition. Fixture fallout, each verified as a delete-wins pin:
+
+- `erasers.gps/eraseTwoExplicit`: 9 → 6 outcomes (diagonal x=y matches gone);
+- `erasers.gps/eraseCreate`: 4 → 2 (create-onto-deleted diagonal gone);
+- `erasers.gps/eraseOverlap`: result `-0-1` (eraser node bound to the
+  reader end of the eraser edge) gone;
+- `mergers.gps/mergeDeleteNode` and `regexpr.gps/deleteANode`: the single
+  match identified the eraser with a reader (via a single host candidate
+  resp. a shared type wildcard `?x`), so start `-0` became inapplicable;
+  per the house pattern the `-0` start stays as inapplicability witness and
+  a new `-1` start pins the new semantics. The `mergeDeleteNode` old result
+  showed delete swallowing the merge *and* the created node; the new one
+  shows the merge retyping the surviving node (specialisation to B);
+- exploration pins: samples `mergers.gps` 66/143 → 52/98 states/transitions,
+  `recipes_conditions.gps` 15 → 9 resp. 2 → 1 transitions.
 
 ## Step 3, pending: cross-level injectivity
 

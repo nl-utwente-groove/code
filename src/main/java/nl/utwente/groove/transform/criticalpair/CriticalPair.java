@@ -295,11 +295,11 @@ public class CriticalPair {
     }
 
     /**
-     * Checks that neither match of a critical pair maps an eraser edge of its
-     * rule onto the image of another edge of the same rule. Eraser edges are
-     * matched injectively with respect to all other edges (the DPO
+     * Checks that neither match of a critical pair maps an eraser node or edge
+     * of its rule onto the image of another element of the same rule. Erasers
+     * are matched injectively with respect to all other elements (the DPO
      * identification condition, needed for unique pushout complements), so an
-     * overlap identifying an eraser edge with another edge does not correspond
+     * overlap identifying an eraser with another element does not correspond
      * to two legal rule applications and is not a critical pair.
      */
     private static boolean satisfiesIdentificationCondition(CriticalPair pair) {
@@ -308,10 +308,18 @@ public class CriticalPair {
     }
 
     /**
-     * Checks that a match does not map an eraser edge of the given rule onto
-     * the image of another edge of the same rule.
+     * Checks that a match does not map an eraser node or edge of the given
+     * rule onto the image of another node or edge of the same rule.
      */
     private static boolean satisfiesIdentificationCondition(Rule rule, RuleToHostMap match) {
+        for (RuleNode eraser : rule.getEraserNodes()) {
+            HostNode eraserImage = match.getNode(eraser);
+            for (var nodeEntry : match.nodeMap().entrySet()) {
+                if (nodeEntry.getKey() != eraser && nodeEntry.getValue().equals(eraserImage)) {
+                    return false;
+                }
+            }
+        }
         for (RuleEdge eraser : rule.getEraserEdges()) {
             HostEdge eraserImage = match.getEdge(eraser);
             for (var edgeEntry : match.edgeMap().entrySet()) {

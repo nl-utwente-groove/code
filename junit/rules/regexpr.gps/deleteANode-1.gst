@@ -1,19 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph edgemode="directed" edgeids="false" role="graph" id="eraseCreate-0-2">
-        <node id="n2">
-            <attr name="layout">
-                <string>427 181 34 46</string>
-            </attr>
-        </node>
-        <node id="n5">
-            <attr name="layout">
-                <string>313 337 34 46</string>
-            </attr>
-        </node>
+    <graph edgemode="directed" edgeids="false" role="graph" id="deleteANode-1">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
         <node id="n0">
             <attr name="layout">
-                <string>184 176 34 46</string>
+                <string>49 83 9 15</string>
+            </attr>
+        </node>
+        <node id="n1">
+            <attr name="layout">
+                <string>46 164 17 30</string>
+            </attr>
+        </node>
+        <node id="n2">
+            <attr name="layout">
+                <string>130 164 17 30</string>
             </attr>
         </node>
         <edge to="n0" from="n0">
@@ -21,14 +24,19 @@
                 <string>type:A</string>
             </attr>
         </edge>
-        <edge to="n5" from="n5">
+        <edge to="n1" from="n1">
             <attr name="label">
-                <string>type:B</string>
+                <string>flag:a</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n1">
+            <attr name="label">
+                <string>type:A1</string>
             </attr>
         </edge>
         <edge to="n2" from="n2">
             <attr name="label">
-                <string>type:C</string>
+                <string>type:A1</string>
             </attr>
         </edge>
     </graph>
