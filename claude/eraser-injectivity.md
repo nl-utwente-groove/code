@@ -22,10 +22,16 @@ one. Recorded decisions:
 - **Eraser nodes get the same treatment**, but via **compile-time merge
   embargoes** (NACs) generated during rule compilation — no matcher change
   needed, and `EqualitySearchItem`s participate in the search plan with
-  proper backtracking, so the approach is sound. *Not yet implemented.*
+  proper backtracking, so the approach is sound. *Approved for
+  implementation (user, 2026-07-19).*
 - **Cross-level injectivity must be guarded** as well (an eraser at one
-  quantification level vs. an edge at another). *Not yet implemented*, see
-  below.
+  quantification level vs. an edge at another). *Approved for
+  implementation (user, 2026-07-19)*, see below.
+- **Inter-instance eraser overlap invalidates the amalgamated application**
+  (user decision, 2026-07-19, resolving the open question below): if two
+  instances of one universal quantifier map erasers to the same host
+  element, the whole quantified application is invalid — DPO on the
+  amalgamated rule, not shared deletion.
 - **RETE is exempt for now**: that engine is unmaintained and may be retired
   altogether; it retains the old delete-wins behaviour. This subsumes the
   previously planned "guard RETE against non-simple patterns" work item.
@@ -77,7 +83,7 @@ Surprises hit during implementation:
   outcomes (results `-0-2..-0-4`, from matches identifying the merged nodes
   and thereby the eraser with the reader edge); removed. New fixtures
   `erasers.gps/eraseReaderOverlap` and `eraseEraserOverlap` pin the new
-  semantics. `mergers.gps/eraseTwoExplicit` pins the current *node*
+  semantics. `erasers.gps/eraseTwoExplicit` pins the current *node*
   delete-wins behaviour (9 outcomes) and is step 2's fixture to update.
 
 ## Step 2, pending: eraser nodes via compile-time merge embargoes
@@ -107,11 +113,14 @@ Root extension must propagate transitively through intermediate levels.
 The same mechanism supplies cross-level *node* pairs for step 2's merge
 embargoes (both nodes must be in one pattern).
 
-**Open semantic question (user to decide):** eraser overlap *between
-instances* of one universal quantifier. Two forall sub-matches may map their
-(non-root) eraser edges to the same host edge; the amalgamated match then
-identifies two erasers. In-search machinery cannot express constraints on
-match *sets*; the natural enforcement point would be
-`ConditionSearchItem.QuantifierRecord.find()`, after `findAll`. Whether such
-overlap should invalidate the whole quantified application (DPO on the
-amalgamated rule) or be permitted (shared deletion) is a theory decision.
+## Step 4, pending: inter-instance eraser overlap within one quantifier
+
+Two forall sub-matches may map their (non-root) eraser edges to the same
+host edge; the amalgamated match then identifies two erasers. **Decided
+(user, 2026-07-19): such overlap invalidates the whole quantified
+application** — the identification condition is applied to the amalgamated
+rule, not weakened to shared deletion. In-search machinery cannot express
+constraints on match *sets*; the natural enforcement point is
+`ConditionSearchItem.QuantifierRecord.find()`, after `findAll`. The check
+must cover eraser edges and, once step 2 gives nodes the same semantics,
+eraser nodes.
