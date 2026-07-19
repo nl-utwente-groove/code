@@ -194,14 +194,10 @@ CLI aliases and the legacy property key.
 
 ## Open points (to be settled during the phases, with Arend where marked)
 
-- **AnyStateAcceptor mapping** (Arend): `any` collects *every* state as a result, which
-  the feature model has no goal value for (Goal None yields no results). Add a goal
-  value *Any*, or drop the acceptor?
-- **RuleApp acceptor mapping** (Arend): the feature model's rule goal is a *state*
-  condition and maps to the `inv` acceptor (rule applicable, pre-application). The
-  `ruleapp` acceptor (transition of the rule added, post-application, respecting
-  scheduling) is semantically different and currently has no feature-model
-  counterpart. Distinguish by a goal content flag, or drop `ruleapp`?
+- ~~**AnyStateAcceptor mapping**~~ *Decided 2026-07-19: add a goal value `any`.* See
+  the goal-kind proposal below.
+- ~~**RuleApp acceptor mapping**~~ *Decided 2026-07-19: pre- and post-application are
+  different and both must be expressible.* See the goal-kind proposal below.
 - **Exact textual syntax** of the config (separators, content notation) — proposed
   during phase 1 review.
 - **CLI option naming** for the new settings — phase 4 review.
@@ -209,3 +205,79 @@ CLI aliases and the legacy property key.
   the phase-1 vocabulary so it is stable. *Resolved during phase 1:* `check()` verifies
   only the feature model's internal consistency rules; what is *implementable* is
   reported by the phase-2 assembler, which is the component that actually knows.
+
+## Design proposal: goal kinds `any` and `applied` (2026-07-19, awaiting approval)
+
+Following Arend's decisions that (a) the `any` acceptor gets a goal value and (b)
+pre- and post-application rule goals are different and must both be expressible.
+
+### The underlying distinction: state goals versus transition goals
+
+The legacy predicate classes already carve the semantics at the right joint:
+`Predicate.RuleApplicable` is a *state* predicate (does the rule's condition match
+the state graph?), while `Predicate.ActionApplied` is a *transition* predicate over
+an `Action` — the supertype of rules *and* recipes (is the incoming transition an
+application of this action?). So the two rule goals do not differ merely in timing;
+they differ in **referent domain**:
+
+- *pre-application* refers to a **graph condition** (a rule used as a property of the
+  state graph, ignoring scheduling and priorities);
+- *post-application* refers to an **action** (a rule or recipe whose scheduled
+  application produced the state).
+
+This argues for two distinct goal kinds rather than a mode flag inside one kind's
+content: the content of the two kinds names different things, and their future
+evolution differs (conditions become their own resource kind per the side note in
+the feature model document; actions include recipes).
+
+### Proposed goal vocabulary
+
+| kind | content | condition on | meaning |
+|---|---|---|---|
+| `none` | – | – | no goal; no results |
+| `any` | – | state | every state is a result *(new)* |
+| `final` | – | state | no outgoing transitions |
+| `graph` | graph name | state | state graph isomorphic to the named graph |
+| `rule` | rule name | state | the named rule's condition matches the state graph (pre-application; ignores scheduling) |
+| `applied` | action name | transition | the state was reached by an application of the named action (post-application; respects scheduling; actions include recipes) *(new)* |
+| `formula` | formula | state | propositional formula over rule conditions |
+| `ltl` / `ctl` | formula | trace / state space | temporal properties (deferred) |
+
+Naming: `rule` keeps its document name for now; when rule conditions become a
+separate resource kind, renaming it to `condition` is the natural follow-up. The
+post-application kind is `applied` (reads as `goal=applied:load`).
+
+### Semantic details to pin down
+
+- **Outcome interaction.** `any` requires outcome `satisfy` (a violated any-goal is
+  the none-goal); add this to `check()`. `applied` composes with both outcomes:
+  violated means "reached by no application of the action" — which makes the start
+  state (no incoming transition) a result under `violate` and never a result under
+  `satisfy`. This matches the transition-predicate semantics of the legacy classes.
+- **Late results.** A state can gain an incoming transition after its discovery, so
+  under `applied` a state may *become* a result later in the exploration. With
+  result count `first` this stops exploration at the first such transition, which is
+  the legacy `ruleapp` behaviour and the intended one.
+- **Trace results (future).** Under result type `trace`, an `applied` goal marks the
+  transition that ends the trace; a state goal marks its final state. The
+  distinction thus carries over cleanly to traces.
+- **Formula alignment (future).** When the formula goal gets a structured atom
+  language, `rule` and `applied` become the two atom forms (`r` and `applied(r)`),
+  keeping the distinction inside formulas without further vocabulary.
+
+### Bridge mapping
+
+- `any` + satisfy → the `any` acceptor; legacy `any` → goal `any`.
+- `applied` + satisfy → the `ruleapp` acceptor; legacy `ruleapp` → goal `applied`.
+- `applied` + violate → **not realisable via the current acceptor keywords**: the
+  predicate (`Not(ActionApplied)`) exists, but the `ruleapp` template has no
+  polarity argument. Options: (i) reject until phase 5, or (ii) a small legacy
+  extension giving the `ruleapp` template an optional polarity like `inv` has.
+  Proposal: (i), unless the combination is wanted in the dialog now — the legacy
+  extension touches the machinery this branch is trying to retire.
+
+### Implementation sketch (once approved)
+
+Goal enum: add `ANY` (no content) and `APPLIED` (string content); `check()`: `any`
+requires satisfy; converter: the three mappings above plus rejection of
+`applied`+violate; tests: extend both round-trip matrices and the rejection lists.
