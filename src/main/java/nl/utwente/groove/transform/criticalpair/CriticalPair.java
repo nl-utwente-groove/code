@@ -287,11 +287,40 @@ public class CriticalPair {
         LinkedHashSet<CriticalPair> critPairs = new LinkedHashSet<>();
         for (ParallelPair pair : parrPairs) {
             CriticalPair criticalPair = pair.getCriticalPair();
-            if (criticalPair != null) {
+            if (criticalPair != null && satisfiesIdentificationCondition(criticalPair)) {
                 critPairs.add(criticalPair);
             }
         }
         return critPairs;
+    }
+
+    /**
+     * Checks that neither match of a critical pair maps an eraser edge of its
+     * rule onto the image of another edge of the same rule. Eraser edges are
+     * matched injectively with respect to all other edges (the DPO
+     * identification condition, needed for unique pushout complements), so an
+     * overlap identifying an eraser edge with another edge does not correspond
+     * to two legal rule applications and is not a critical pair.
+     */
+    private static boolean satisfiesIdentificationCondition(CriticalPair pair) {
+        return satisfiesIdentificationCondition(pair.getRule1(), pair.getMatch1())
+            && satisfiesIdentificationCondition(pair.getRule2(), pair.getMatch2());
+    }
+
+    /**
+     * Checks that a match does not map an eraser edge of the given rule onto
+     * the image of another edge of the same rule.
+     */
+    private static boolean satisfiesIdentificationCondition(Rule rule, RuleToHostMap match) {
+        for (RuleEdge eraser : rule.getEraserEdges()) {
+            HostEdge eraserImage = match.getEdge(eraser);
+            for (var edgeEntry : match.edgeMap().entrySet()) {
+                if (edgeEntry.getKey() != eraser && edgeEntry.getValue().equals(eraserImage)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**

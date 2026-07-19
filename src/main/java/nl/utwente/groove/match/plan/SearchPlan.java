@@ -19,8 +19,11 @@ package nl.utwente.groove.match.plan;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -28,6 +31,8 @@ import java.util.Set;
 import nl.utwente.groove.grammar.Condition;
 import nl.utwente.groove.grammar.rule.Anchor;
 import nl.utwente.groove.grammar.rule.LabelVar;
+import nl.utwente.groove.grammar.rule.RuleEdge;
+import nl.utwente.groove.grammar.rule.RuleLabel;
 import nl.utwente.groove.grammar.rule.RuleNode;
 
 /** List of search items with backwards dependencies. */
@@ -44,7 +49,71 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
         // only non-simple patterns (with parallel edges) need the edge check
         var pattern = condition.getPattern();
         this.edgeInjective = injective && pattern != null && !pattern.isSimple();
+        this.eraserConflicts = computeEraserConflicts();
         this.seed = seed;
+    }
+
+    /**
+     * Computes, for the relevant edges of the condition pattern, the set of other
+     * pattern edges with which they may not share an image: eraser edges must
+     * be matched injectively with respect to all other edges, so that pushout
+     * complements are unique (the DPO identification condition). Under
+     * injective matching this holds automatically, so the map is only filled
+     * for non-injective matching of a rule condition with eraser edges.
+     * The map is symmetric: it contains entries for the eraser edges themselves
+     * as well as for their potential conflict partners, so the check can be
+     * performed by whichever edge is bound later in the search.
+     */
+    private Map<RuleEdge,Set<RuleEdge>> computeEraserConflicts() {
+        Map<RuleEdge,Set<RuleEdge>> result = Collections.emptyMap();
+        var rule = this.condition.getRule();
+        var pattern = this.condition.getPattern();
+        if (!this.injective && rule != null && pattern != null) {
+            for (RuleEdge eraser : rule.getEraserEdges()) {
+                for (RuleEdge other : pattern.edgeSet()) {
+                    if (other != eraser && canShareImage(eraser, other)) {
+                        if (result.isEmpty()) {
+                            result = new LinkedHashMap<>();
+                        }
+                        result.computeIfAbsent(eraser, e -> new LinkedHashSet<>()).add(other);
+                        result.computeIfAbsent(other, e -> new LinkedHashSet<>()).add(eraser);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Conservatively determines if two distinct rule edges may be matched to
+     * the same host edge. Only edges that are bound to a single host edge
+     * image are considered; regular expression and (in)equality edges have no
+     * edge image.
+     */
+    private static boolean canShareImage(RuleEdge one, RuleEdge two) {
+        RuleLabel oneLabel = one.label();
+        RuleLabel twoLabel = two.label();
+        if (!hasEdgeImage(oneLabel) || !hasEdgeImage(twoLabel)) {
+            return false;
+        }
+        if (oneLabel.getRole() != twoLabel.getRole()) {
+            return false;
+        }
+        if (oneLabel.isWildcard() || twoLabel.isWildcard()) {
+            return true;
+        }
+        var oneType = one.getType();
+        var twoType = two.getType();
+        if (oneType != null && twoType != null) {
+            // images of differently-labelled edges are always distinct
+            return oneType.label().equals(twoType.label());
+        }
+        return oneLabel.equals(twoLabel);
+    }
+
+    /** Indicates if edges with a given label are matched to a single host edge image. */
+    private static boolean hasEdgeImage(RuleLabel label) {
+        return label.isSharp() || label.isAtom() || label.isWildcard();
     }
 
     /** Returns the condition for which this is the search plan. */
@@ -104,6 +173,25 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
                 }
             }
         }
+        // add dependencies due to eraser-edge injectivity:
+        // a binding refused because of a conflicting edge image can be
+        // resolved by backtracking to the item that bound the conflicting edge
+        if (!this.eraserConflicts.isEmpty()) {
+            Set<RuleEdge> conflicts = new HashSet<>();
+            for (RuleEdge edge : e.bindsEdges()) {
+                var edgeConflicts = this.eraserConflicts.get(edge);
+                if (edgeConflicts != null) {
+                    conflicts.addAll(edgeConflicts);
+                }
+            }
+            if (!conflicts.isEmpty()) {
+                for (int i = 0; i < position; i++) {
+                    if (!Collections.disjoint(get(i).bindsEdges(), conflicts)) {
+                        depend = Math.max(depend, i);
+                    }
+                }
+            }
+        }
         e.bindsNodes()
             .stream()
             .forEach(n -> this.nodeBinding.put(n, e));
@@ -155,6 +243,17 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
         return this.injective;
     }
 
+    /**
+     * Returns the (symmetric) map from pattern edges to the sets of other
+     * pattern edges with which they may not share an image, due to the
+     * injective matching of eraser edges.
+     * The map is empty if the search is injective or the condition has no
+     * eraser edges.
+     */
+    public Map<RuleEdge,Set<RuleEdge>> getEraserConflicts() {
+        return this.eraserConflicts;
+    }
+
     /** The condition for which this is the search plan. */
     private final Condition condition;
     /** The subgraph whose image is pre-matched before invoking the search plan. */
@@ -166,6 +265,10 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
     /** Flag indicating that the search should also be injective on edges;
      * set for injective matching of a non-simple pattern. */
     private final boolean edgeInjective;
+    /** Symmetric map from pattern edges to the sets of other pattern edges
+     * with which they may not share an image, due to the injective matching
+     * of eraser edges. */
+    private final Map<RuleEdge,Set<RuleEdge>> eraserConflicts;
 
     /** Returns the last search item binding a given rule node. */
     public SearchItem getBinder(RuleNode node) {

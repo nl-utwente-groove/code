@@ -99,8 +99,12 @@ counts per node, `mult=` states parallel copy counts per edge.
   backtracking dependencies in `SearchPlan`, both active only for injective
   matching of non-simple patterns, so simple matching pays nothing.
   `ParallelEdgeMatchingTest` pins these counts. The RETE engine does not yet
-  handle parallel rule edges; before the MULT step activates non-simple rule
-  graphs, RETE must either be taught the same or guarded.
+  handle parallel rule edges; per user decision (2026-07-19) RETE is
+  unmaintained and will be treated later, possibly retired altogether — see
+  [eraser-injectivity.md](eraser-injectivity.md), which also covers the
+  related decision that eraser edges must *always* be matched injectively
+  (the DPO identification condition), implemented for the plan engine on
+  this branch.
 - **Match relevance prunes reader-bundle symmetry for free.** The plan
   engine only distinguishes matches that differ on *relevant* elements —
   those bound to the rule anchor or condition output nodes; matches that

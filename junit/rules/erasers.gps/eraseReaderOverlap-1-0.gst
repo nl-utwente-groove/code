@@ -1,41 +1,29 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph edgemode="directed" edgeids="false" role="graph" id="mergeDeleteEdge-0-3">
+    <graph edgemode="directed" edgeids="false" role="graph" id="eraseReaderOverlap-1-0">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
         <node id="n0">
             <attr name="layout">
-                <string>290 50 34 46</string>
-            </attr>
-        </node>
-        <node id="n3">
-            <attr name="layout">
-                <string>399 148 34 46</string>
-            </attr>
-        </node>
-        <node id="n4">
-            <attr name="layout">
-                <string>336 248 34 46</string>
+                <string>100 100 34 46</string>
             </attr>
         </node>
         <node id="n1">
             <attr name="layout">
-                <string>255 150 34 46</string>
+                <string>220 100 34 46</string>
             </attr>
         </node>
-        <edge to="n3" from="n0">
-            <attr name="label">
-                <string>a</string>
+        <node id="n2">
+            <attr name="layout">
+                <string>100 200 34 46</string>
             </attr>
-        </edge>
-        <edge to="n4" from="n4">
-            <attr name="label">
-                <string>type:B</string>
+        </node>
+        <node id="n3">
+            <attr name="layout">
+                <string>220 200 34 46</string>
             </attr>
-        </edge>
-        <edge to="n3" from="n3">
-            <attr name="label">
-                <string>type:B</string>
-            </attr>
-        </edge>
+        </node>
         <edge to="n0" from="n0">
             <attr name="label">
                 <string>type:A</string>
@@ -43,10 +31,20 @@
         </edge>
         <edge to="n1" from="n1">
             <attr name="label">
+                <string>type:B</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n2">
+            <attr name="label">
                 <string>type:A</string>
             </attr>
         </edge>
-        <edge to="n3" from="n1">
+        <edge to="n3" from="n3">
+            <attr name="label">
+                <string>type:B</string>
+            </attr>
+        </edge>
+        <edge to="n3" from="n2">
             <attr name="label">
                 <string>a</string>
             </attr>

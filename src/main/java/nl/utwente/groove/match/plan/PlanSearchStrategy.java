@@ -266,6 +266,23 @@ public class PlanSearchStrategy implements SearchStrategy {
             for (Map.Entry<RuleEdge,Integer> edgeIxEntry : this.edgeIxMap.entrySet()) {
                 this.edgeKeys[edgeIxEntry.getValue()] = edgeIxEntry.getKey();
             }
+            // convert the eraser conflicts of the plan into arrays of edge indices
+            var eraserConflicts = this.plan.getEraserConflicts();
+            if (!eraserConflicts.isEmpty()) {
+                this.conflictIxs = new int[this.edgeKeys.length][];
+                for (var conflictEntry : eraserConflicts.entrySet()) {
+                    Integer edgeIx = this.edgeIxMap.get(conflictEntry.getKey());
+                    if (edgeIx != null) {
+                        this.conflictIxs[edgeIx] = conflictEntry
+                            .getValue()
+                            .stream()
+                            .map(this.edgeIxMap::get)
+                            .filter(ix -> ix != null)
+                            .mapToInt(Integer::intValue)
+                            .toArray();
+                    }
+                }
+            }
             this.varKeys = new LabelVar[this.varIxMap.size()];
             for (Map.Entry<LabelVar,Integer> varIxEntry : this.varIxMap.entrySet()) {
                 this.varKeys[varIxEntry.getValue()] = varIxEntry.getKey();
@@ -326,6 +343,12 @@ public class PlanSearchStrategy implements SearchStrategy {
      * Array of source graph edges, which is the inverse of {@link #edgeIxMap} .
      */
     RuleEdge[] edgeKeys;
+    /**
+     * Per edge index, the indices of the edges with which that edge may not
+     * share an image, in order to keep eraser edges injectively matched;
+     * {@code null} if there are no such conflicts.
+     */
+    int[][] conflictIxs;
     /**
      * Array of source graph variables, which is the inverse of
      * {@link #varIxMap} .
@@ -546,6 +569,20 @@ public class PlanSearchStrategy implements SearchStrategy {
                 if (image != null && !this.host.containsEdge(image)) {
                     assert false : String
                         .format("Edge %s does not occur in graph %s", image, this.host);
+                }
+            }
+            // refuse images that coincide with that of a conflicting edge,
+            // to keep eraser edges injectively matched
+            int[][] conflictIxs = PlanSearchStrategy.this.conflictIxs;
+            if (conflictIxs != null && image != null) {
+                int[] conflicts = conflictIxs[index];
+                if (conflicts != null) {
+                    for (int conflictIx : conflicts) {
+                        if (image.equals(this.edgeImages[conflictIx])) {
+                            this.edgeImages[index] = null;
+                            return false;
+                        }
+                    }
                 }
             }
             if (isEdgeInjective()) {

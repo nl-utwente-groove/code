@@ -1,0 +1,117 @@
+# Injective matching of eraser edges (DPO identification condition)
+
+Status: decided 2026-07-19; step 1 (within-level eraser *edges*, plan-based
+matcher) implemented on branch `parallel-edges`. Related to, but distinct
+from, the parallel-edge work in
+[aspect-parallel-edges.md](aspect-parallel-edges.md): the machinery lives in
+the same code region as the edge-injectivity support for non-simple patterns,
+and parallel eraser *bundles* will rely on it.
+
+## The requirement (user decision, 2026-07-19)
+
+Eraser edges must always be matched injectively — *independent* of the
+grammar's injectivity property — to correctly reflect double-pushout
+semantics: if a deleted edge is identified with any other edge (eraser or
+reader), the pushout complement is not unique. Previously GROOVE resolved
+such identifications by letting deletion win (SPO-style), silently deleting
+edges the rule claims to preserve, or collapsing two claimed deletions into
+one. Recorded decisions:
+
+- **Eraser vs. *any* edge**, not just eraser vs. eraser: the full
+  identification condition on edges.
+- **Eraser nodes get the same treatment**, but via **compile-time merge
+  embargoes** (NACs) generated during rule compilation — no matcher change
+  needed, and `EqualitySearchItem`s participate in the search plan with
+  proper backtracking, so the approach is sound. *Not yet implemented.*
+- **Cross-level injectivity must be guarded** as well (an eraser at one
+  quantification level vs. an edge at another). *Not yet implemented*, see
+  below.
+- **RETE is exempt for now**: that engine is unmaintained and may be retired
+  altogether; it retains the old delete-wins behaviour. This subsumes the
+  previously planned "guard RETE against non-simple patterns" work item.
+
+## Step 1, implemented: within-level eraser edges in the plan engine
+
+Design constraints discovered during investigation:
+
+- **Enforcement must live inside the search, not post-hoc.** The relevance
+  mechanism reports one representative per class of matches differing only in
+  irrelevant images (`Record.repeat()` replays previous images). A filter on
+  completed matches (or at Proof/RuleEvent level) would discard an invalid
+  representative while its valid class members are never enumerated — the
+  rule would wrongly be judged inapplicable. Inside the search, a refused
+  binding triggers genuine backtracking and the valid representative is
+  found. Eraser edges are anchor keys, so reported matches differing in
+  eraser images remain distinct.
+- **`putEdge` is hot**, so the check is statically targeted: `SearchPlan`
+  computes *conflict pairs* — (eraser, other edge) pairs whose images could
+  coincide, conservatively by equal type-edge labels / wildcard role
+  compatibility — only for non-injective matching of rule conditions with
+  erasers (injective matching subsumes the constraint; for injective
+  non-simple patterns the global used-edges machinery does). The strategy
+  translates them to per-edge-index `int[][] conflictIxs`; `Search.putEdge`
+  refuses an image equal to a conflicting edge's current image. Zero
+  overhead when there are no conflicts (one null check).
+- **Backtracking dependencies are load-bearing, not an optimisation**:
+  `SearchPlan.add` adds a dependency from an item binding a conflicted edge
+  to earlier items binding its conflict partners, mirroring (but more
+  precise than) the blanket edge-injective dependencies. Without them an
+  exhausted record would jump back past the binder of the conflicting image.
+
+Surprises hit during implementation:
+
+- `Edge2SingularRecord.find()` **ignored the return value of `write()`**
+  (safe before, because `putEdge` could never fail on simple patterns) —
+  a refused binding was treated as success, leaving a null anchor image
+  (NPE in `TreeMatch.computeHashCode`). Fixed; the `assert result` on the
+  FULL-state re-write path doubles as a soundness check on the new
+  dependencies.
+- The **critical-pair construction** (`CriticalPair.computeCriticalPairs`,
+  Welling's module) enumerated overlaps whose constituent matches identify
+  eraser edges — under the new semantics these are not legal matches, so the
+  joinability analysis (which uses the matcher) could no longer join them
+  and `phil-getBoth` stopped being strictly confluent. Fixed by filtering
+  pairs on the identification condition at construction. The same will be
+  needed for eraser *nodes* when step 2 lands.
+- Fixture `junit/rules/mergers.gps/mergeDeleteEdge` pinned the delete-wins
+  outcomes (results `-0-2..-0-4`, from matches identifying the merged nodes
+  and thereby the eraser with the reader edge); removed. New fixtures
+  `erasers.gps/eraseReaderOverlap` and `eraseEraserOverlap` pin the new
+  semantics. `mergers.gps/eraseTwoExplicit` pins the current *node*
+  delete-wins behaviour (9 outcomes) and is step 2's fixture to update.
+
+## Step 2, pending: eraser nodes via compile-time merge embargoes
+
+For every eraser node and every type-compatible other node of the same
+pattern, rule compilation adds a merge embargo (unless the condition is
+matched injectively — the existing `createEdgeEmbargoItem` logic already
+skips equality tests in that case). Expected fixture fallout:
+`eraseTwoExplicit` (9 → fewer outcomes), possibly sample grammars; the
+critical-pair filter must learn the node condition too.
+
+## Step 3, pending: cross-level injectivity
+
+Key finding: `ConditionSearchItem.PatternRecord.createContextMap()` seeds the
+child search with the images of the condition **root graph** — nodes, *edges*
+and variables — and seeded edge images land in the child's `edgeImages`
+array, which the conflict machinery reads. So the natural mechanism is
+**root extension**, not anchor extension: during rule compilation, add each
+parent edge that conflicts with a child-level eraser (and vice versa) to the
+child condition's root graph (with its end nodes). The child search then
+sees the parent image, the conflict-pair computation covers the pair
+automatically (root edges are pattern edges), and — because a condition
+needs its root elements bound before it runs — the parent always binds the
+conflicting edge before the subcondition, collapsing both checking
+directions into one. No anchor inflation, no change to event identity.
+Root extension must propagate transitively through intermediate levels.
+The same mechanism supplies cross-level *node* pairs for step 2's merge
+embargoes (both nodes must be in one pattern).
+
+**Open semantic question (user to decide):** eraser overlap *between
+instances* of one universal quantifier. Two forall sub-matches may map their
+(non-root) eraser edges to the same host edge; the amalgamated match then
+identifies two erasers. In-search machinery cannot express constraints on
+match *sets*; the natural enforcement point would be
+`ConditionSearchItem.QuantifierRecord.find()`, after `findAll`. Whether such
+overlap should invalidate the whole quantified application (DPO on the
+amalgamated rule) or be permitted (shared deletion) is a theory decision.

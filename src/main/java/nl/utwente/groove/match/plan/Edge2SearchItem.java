@@ -290,7 +290,9 @@ class Edge2SearchItem extends AbstractSearchItem {
             boolean result = isImageCorrect(image);
             if (result) {
                 this.image = image;
-                write();
+                // writing may fail, e.g. because the image coincides
+                // with that of a conflicting eraser edge
+                result = write();
             }
             return result;
         }
