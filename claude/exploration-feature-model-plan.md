@@ -197,6 +197,11 @@ CLI aliases and the legacy property key.
 - **AnyStateAcceptor mapping** (Arend): `any` collects *every* state as a result, which
   the feature model has no goal value for (Goal None yields no results). Add a goal
   value *Any*, or drop the acceptor?
+- **RuleApp acceptor mapping** (Arend): the feature model's rule goal is a *state*
+  condition and maps to the `inv` acceptor (rule applicable, pre-application). The
+  `ruleapp` acceptor (transition of the rule added, post-application, respecting
+  scheduling) is semantically different and currently has no feature-model
+  counterpart. Distinguish by a goal content flag, or drop `ruleapp`?
 - **Exact textual syntax** of the config (separators, content notation) — proposed
   during phase 1 review.
 - **CLI option naming** for the new settings — phase 4 review.
