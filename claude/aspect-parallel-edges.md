@@ -2,8 +2,9 @@
 
 Status: design decided (2026-07-19). Step 1 — the `RuleGraph` parallel-edge
 representation (numbered `RuleEdge`s with explicit parallel indices,
-non-simple rule graphs, index-preserving morphisms and typing) — is
-implemented on branch `parallel-edges`; matching support and the MULT
+non-simple rule graphs, index-preserving morphisms and typing) and
+plan-engine matching of parallel bundles (including edge injectivity) — is
+implemented on branch `parallel-edges`; RETE matching and the MULT
 aspect are pending. Builds on the GXL serialisation work in
 [parallel-edge-serialisation.md](parallel-edge-serialisation.md).
 An earlier implementation that made `AspectGraph` itself a multigraph was
@@ -85,12 +86,40 @@ counts per node, `mult=` states parallel copy counts per edge.
 
 ## Concerns to address during implementation
 
-- **Edge-injectivity in matching.** In simple graphs, edge-injectivity of a
-  match is free (distinct edges differ in content). With parallel LHS edges,
-  two content-equal rule edges enumerate the same candidate host edges, so
-  without an explicit constraint both could bind the same host copy — a
-  non-injective edge map. The search plan (and the RETE network) must enforce
-  injectivity within parallel bundles.
+- **Edge-injectivity in matching** — *resolved for the plan engine*. In
+  simple patterns, edge-injectivity of a match follows from node-injectivity
+  (a host edge is determined by its content), so it was never checked. For
+  non-simple patterns it is not implied: parallel rule edges enumerate the
+  same candidate host edges and could bind the same copy. Following the
+  standard morphism semantics, non-injective matching (the default) *allows*
+  this — a k-bundle maps into an n-bundle in n^k ways — while injective
+  matching admits only the n!/(n-k)! injective assignments. The plan engine
+  now enforces the latter with a used-edges set in `Search.putEdge`
+  (mirroring the used-nodes set for node injectivity) plus the corresponding
+  backtracking dependencies in `SearchPlan`, both active only for injective
+  matching of non-simple patterns, so simple matching pays nothing.
+  `ParallelEdgeMatchingTest` pins these counts. The RETE engine does not yet
+  handle parallel rule edges; before the MULT step activates non-simple rule
+  graphs, RETE must either be taught the same or guarded.
+- **Match relevance prunes reader-bundle symmetry for free.** The plan
+  engine only distinguishes matches that differ on *relevant* elements —
+  those bound to the rule anchor or condition output nodes; matches that
+  differ only in irrelevant images collapse to one witness. Eraser edges are
+  anchors, so distinct host copies deleted remain distinct matches (as they
+  must — the transformations differ); a parallel *reader* bundle, by
+  contrast, is typically not in the anchor, so the k! symmetric ways of
+  binding it collapse automatically. The feared symmetry blowup is thereby
+  confined to eraser bundles, where it is semantically meaningful.
+- **Counting NACs presuppose edge-injective embargo matching** — *open
+  decision for the MULT step*. The reading "`not:mult=2:a` = at most 1 copy"
+  holds only if the embargo bundle must match injectively; under the default
+  non-injective matching, both embargo edges can bind the same host copy,
+  making `not:mult=2` equivalent to `not:mult=1`. NAC subconditions
+  currently inherit the rule's injectivity property. Standard theory (NACs
+  as "no injective image") argues for always matching embargo bundles
+  edge-injectively; uniformity with GROOVE's non-injective default argues
+  against. To be decided when the MULT aspect gives users a way to write
+  such NACs.
 - **Determinism of match order.** Matches that differ *only* in which
   parallel host copy they bind are content-identical; the canonical match
   order (`MatchCollector.canonicalise`, cf. the ferryman-flake analysis) must

@@ -40,6 +40,10 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
     public SearchPlan(Condition condition, Anchor seed, boolean injective) {
         this.condition = condition;
         this.injective = injective;
+        // for simple patterns, node injectivity implies edge injectivity;
+        // only non-simple patterns (with parallel edges) need the edge check
+        var pattern = condition.getPattern();
+        this.edgeInjective = injective && pattern != null && !pattern.isSimple();
         this.seed = seed;
     }
 
@@ -87,6 +91,16 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
                     if (bindsNewNodes.get(i)) {
                         depend = i;
                     }
+                }
+            }
+        }
+        // add dependencies due to edge-injective matching:
+        // a failure to bind an edge can be resolved by backtracking to any
+        // earlier item that binds an edge (which may free up the edge image)
+        if (this.edgeInjective && !e.bindsEdges().isEmpty()) {
+            for (int i = 0; i < position; i++) {
+                if (!get(i).bindsEdges().isEmpty()) {
+                    depend = Math.max(depend, i);
                 }
             }
         }
@@ -149,6 +163,9 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
     private final List<Integer> dependencies = new ArrayList<>();
     /** Flag indicating that the search should be injective on non-attribute nodes. */
     private final boolean injective;
+    /** Flag indicating that the search should also be injective on edges;
+     * set for injective matching of a non-simple pattern. */
+    private final boolean edgeInjective;
 
     /** Returns the last search item binding a given rule node. */
     public SearchItem getBinder(RuleNode node) {
