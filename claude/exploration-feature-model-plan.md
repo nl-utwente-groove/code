@@ -107,9 +107,9 @@ programme (possibly as successive PRs off the same line).
   `gui.dialog.ExploreConfigDialog` and `gui.dialog.config` in a first commit (mining
   anything useful as we go), freeing the `explore.config` package name.
 - New `explore.config` package:
-  - `ExploreKey` — enum with one constant per feature above (NEXT_STATE, SUCCESSOR,
-    FRONTIER, HEURISTIC, COST, GOAL, RESULT_TYPE, RESULT_COUNT, BOUND, PERSISTENCE,
-    COLLAPSE, MATCHER, ALGEBRA).
+  - `ExploreKey` — enum with one constant per feature above (as built: NEXT, SUCCESSOR,
+    FRONTIER, HEURISTIC, COST, GOAL, OUTCOME, RESULT, COUNT, BOUND, PERSISTENCE,
+    COLLAPSE, MATCHER, ALGEBRA; the goal's desired outcome became its own key).
   - Per-key value types: an interface `Setting` (kind + optional content), with kinds as
     enums and contents as small records (e.g. `Beam(int bound)`, `Count(int n)`,
     `Bound(Function, int max, int increment)`, `Goal(kind, ref, Polarity)`).
@@ -200,7 +200,7 @@ CLI aliases and the legacy property key.
 - **Exact textual syntax** of the config (separators, content notation) — proposed
   during phase 1 review.
 - **CLI option naming** for the new settings — phase 4 review.
-- **Trace result type**: modelled in `ExploreKey` from the start but rejected by
-  `check()` as unsupported, or omitted until phase 5? Current plan: model it, reject it,
-  so the vocabulary is stable.
-- **Beam/heuristic/cost placeholders**: same question; same proposed answer.
+- **Trace result type / beam / heuristic / cost placeholders**: these are modelled in
+  the phase-1 vocabulary so it is stable. *Resolved during phase 1:* `check()` verifies
+  only the feature model's internal consistency rules; what is *implementable* is
+  reported by the phase-2 assembler, which is the component that actually knows.
