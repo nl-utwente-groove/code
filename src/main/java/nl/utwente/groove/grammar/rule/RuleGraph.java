@@ -39,11 +39,22 @@ import nl.utwente.groove.graph.NodeSetEdgeSetGraph;
  */
 public class RuleGraph extends NodeSetEdgeSetGraph<@NonNull RuleNode,@NonNull RuleEdge> {
     /**
-     * Constructs a new, empty rule graph.
+     * Constructs a new, empty simple rule graph.
      * @param name the name of the new rule graph
      */
     public RuleGraph(String name, boolean injective, RuleFactory factory) {
-        super(name, true);
+        this(name, injective, true, factory);
+    }
+
+    /**
+     * Constructs a new, empty rule graph.
+     * @param name the name of the new rule graph
+     * @param simple flag indicating if this is a simple graph; a non-simple
+     * rule graph can contain parallel (content-equal) edges, distinguished
+     * by their parallel index (see {@link RuleFactory#createEdge(RuleNode, nl.utwente.groove.graph.Label, RuleNode, int)})
+     */
+    public RuleGraph(String name, boolean injective, boolean simple, RuleFactory factory) {
+        super(name, simple);
         this.factory = factory;
         if (injective) {
             GraphInfo.setInjective(this, true);
@@ -70,7 +81,7 @@ public class RuleGraph extends NodeSetEdgeSetGraph<@NonNull RuleNode,@NonNull Ru
 
     @Override
     public RuleGraph newGraph(String name) {
-        return new RuleGraph(name, isInjective(), getFactory());
+        return new RuleGraph(name, isInjective(), isSimple(), getFactory());
     }
 
     @SuppressWarnings("unchecked")

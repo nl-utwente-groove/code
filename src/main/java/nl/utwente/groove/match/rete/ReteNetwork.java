@@ -546,7 +546,8 @@ public class ReteNetwork {
             RuleNode n1 = translate(factory, translationMap, edge.source());
             RuleNode n2 = translate(factory, translationMap, edge.target());
             if (!edge.source().equals(n1) || !edge.target().equals(n2)) {
-                result = factory.createEdge(n1, edge.label(), n2);
+                // the parallel index is preserved: this is the same edge with renamed ends
+                result = factory.createEdge(n1, edge.label(), n2, edge.getNumber());
             }
         }
         return result;

@@ -1,7 +1,10 @@
 # Parallel edges at the aspect level: decided architecture
 
-Status: design decided (2026-07-19); implementation pending on branch
-`parallel-edges`. Builds on the GXL serialisation work in
+Status: design decided (2026-07-19). Step 1 — the `RuleGraph` parallel-edge
+representation (numbered `RuleEdge`s with explicit parallel indices,
+non-simple rule graphs, index-preserving morphisms and typing) — is
+implemented on branch `parallel-edges`; matching support and the MULT
+aspect are pending. Builds on the GXL serialisation work in
 [parallel-edge-serialisation.md](parallel-edge-serialisation.md).
 An earlier implementation that made `AspectGraph` itself a multigraph was
 rolled back — see the final section for what it was and why it was rejected.

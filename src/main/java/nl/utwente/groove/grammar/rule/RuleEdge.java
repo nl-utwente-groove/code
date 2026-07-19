@@ -28,14 +28,23 @@ import nl.utwente.groove.grammar.AnchorKind;
 import nl.utwente.groove.grammar.type.TypeEdge;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeGuard;
-import nl.utwente.groove.graph.AEdge;
+import nl.utwente.groove.graph.ANumberedEdge;
 
 /** Rule edge that is not attribute-related. */
 @NonNullByDefault
-public class RuleEdge extends AEdge<RuleNode,RuleLabel> implements RuleElement {
-    /** Constructs a rule edge from a given rule label and/or type edge. */
-    public RuleEdge(RuleNode source, RuleLabel label, @Nullable TypeEdge type, RuleNode target) {
-        super(source, label, target);
+public class RuleEdge extends ANumberedEdge<RuleNode,RuleLabel> implements RuleElement {
+    /** Constructs a rule edge from a given rule label and/or type edge.
+     * The edge number is a <i>parallel index</i>: it is 0 for all edges except
+     * deliberately created parallel copies of a content-equal edge, which carry
+     * indices 1, 2, ... to keep them distinct (the number enters the equality
+     * test, see {@link ANumberedEdge}). Indices are always assigned explicitly
+     * by the caller (see {@link RuleFactory#createEdge(RuleNode, nl.utwente.groove.graph.Label, RuleNode, int)}),
+     * never counted implicitly, so that repeatedly deriving the same conceptual
+     * edge yields equal results.
+     */
+    public RuleEdge(RuleNode source, RuleLabel label, @Nullable TypeEdge type, RuleNode target,
+                    int nr) {
+        super(source, label, target, nr);
         var tl = label.getTypeLabel();
         assert tl == null || type != null && tl.equals(type.label());
         this.type = type;

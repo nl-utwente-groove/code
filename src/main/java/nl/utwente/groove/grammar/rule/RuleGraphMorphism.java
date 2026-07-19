@@ -21,6 +21,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.type.TypeElement;
 import nl.utwente.groove.graph.AGraphMap;
 import nl.utwente.groove.graph.Morphism;
@@ -67,6 +69,24 @@ public class RuleGraphMorphism extends Morphism<RuleNode,RuleEdge> {
     @Override
     protected RuleGraphMorphism newMap() {
         return new RuleGraphMorphism(getFactory());
+    }
+
+    /*
+     * Overridden to preserve the parallel index of the key edge, so that
+     * parallel (content-equal) edges keep distinct images under this morphism.
+     */
+    @Override
+    protected @Nullable RuleEdge createImage(RuleEdge key) {
+        RuleNode sourceImage = getNode(key.source());
+        if (sourceImage == null) {
+            return null;
+        }
+        RuleNode targetImage = getNode(key.target());
+        if (targetImage == null) {
+            return null;
+        }
+        return getFactory().createEdge(sourceImage, mapLabel(key.label()), targetImage,
+                                       key.getNumber());
     }
 
     /** 

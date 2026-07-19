@@ -90,15 +90,31 @@ public class RuleFactory extends ElementFactory<RuleNode,RuleEdge> {
         return new RuleLabel(text);
     }
 
-    /** Gets the appropriate type edge from the type factory. */
+    /** Gets the appropriate type edge from the type factory.
+     * The resulting edge has parallel index 0; see {@link #createEdge(RuleNode, Label, RuleNode, int)}.
+     */
     @Override
     public RuleEdge createEdge(RuleNode source, Label label, RuleNode target) {
+        return createEdge(source, label, target, 0);
+    }
+
+    /** Creates a rule edge with a given parallel index.
+     * The index distinguishes content-equal (parallel) edges: it enters the
+     * equality test, so that copies with distinct indices can coexist in a
+     * non-simple rule graph. Callers creating a bundle of parallel copies
+     * assign indices 0, 1, ..., k-1; all other callers use index 0 (or
+     * equivalently {@link #createEdge(RuleNode, Label, RuleNode)}), or
+     * propagate the index of the edge they are mapping. The index is never
+     * counted implicitly by this factory, so creating the same conceptual
+     * edge twice yields equal (though not identical) results.
+     */
+    public RuleEdge createEdge(RuleNode source, Label label, RuleNode target, int nr) {
         RuleLabel ruleLabel = (RuleLabel) label;
         TypeLabel typeLabel = ruleLabel.getTypeLabel();
         TypeEdge type = typeLabel == null
             ? null
             : getTypeFactory().createEdge(source.getType(), typeLabel, target.getType(), false);
-        return new RuleEdge(source, ruleLabel, type, target);
+        return new RuleEdge(source, ruleLabel, type, target, nr);
     }
 
     @Override
