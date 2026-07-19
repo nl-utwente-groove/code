@@ -30,13 +30,11 @@ module nl.utwente.groove {
     exports nl.utwente.groove.explore.encode;
     exports nl.utwente.groove.match.plan;
     exports nl.utwente.groove.graph;
-    exports nl.utwente.groove.gui.dialog.config;
     exports nl.utwente.groove.explore.result;
     exports nl.utwente.groove.io.external;
     exports nl.utwente.groove.explore.strategy;
     exports nl.utwente.groove.grammar.rule;
     exports nl.utwente.groove.io.conceptual.property;
-    exports nl.utwente.groove.explore.config;
     exports nl.utwente.groove.io.conceptual.lang.ecore;
     exports nl.utwente.groove.transform.oracle;
     exports nl.utwente.groove.io.graph;
