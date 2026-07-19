@@ -23,7 +23,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import nl.utwente.groove.grammar.model.GrammarModel;
-import nl.utwente.groove.gui.dialog.ExplorationDialog;
 import nl.utwente.groove.gui.layout.SpringUtilities;
 
 /**
@@ -51,7 +50,7 @@ public class StringEditor<A> extends EncodedTypeEditor<A,String> {
             this.nr_components = 1;
         }
         this.editor = new JTextField(initValue, nrColumns);
-        this.editor.setBackground(ExplorationDialog.INFO_BOX_BG_COLOR);
+        this.editor.setBackground(EncodedTypeEditor.INFO_BOX_BG_COLOR);
         this.editor.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void removeUpdate(DocumentEvent e) {
@@ -69,7 +68,7 @@ public class StringEditor<A> extends EncodedTypeEditor<A,String> {
             }
         });
         this.syntax = syntax;
-        setBackground(ExplorationDialog.INFO_BG_COLOR);
+        setBackground(EncodedTypeEditor.INFO_BG_COLOR);
         refresh();
     }
 
@@ -85,7 +84,7 @@ public class StringEditor<A> extends EncodedTypeEditor<A,String> {
     public void refresh() {
         removeAll();
         if (!this.syntax.equals("")) {
-            add(new JLabel("<HTML><FONT color=" + ExplorationDialog.INFO_COLOR + "><B>Syntax:</B> "
+            add(new JLabel("<HTML><FONT color=" + EncodedTypeEditor.INFO_COLOR + "><B>Syntax:</B> "
                 + this.syntax + "</FONT></HTML>"));
         }
         add(this.editor);

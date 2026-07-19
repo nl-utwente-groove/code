@@ -42,6 +42,27 @@ public abstract class EncodedTypeEditor<A,B> extends JPanel {
     }
 
     /**
+     * Colour to be used for headers in the editors.
+     * (Moved here from the retired ExplorationDialog.)
+     */
+    public static final String HEADER_COLOR = "green";
+    /**
+     * Colour to be used for text in the info panel.
+     * (Moved here from the retired ExplorationDialog.)
+     */
+    public static final String INFO_COLOR = "#005050";
+    /**
+     * Colour to be used for the background of the info panel.
+     * (Moved here from the retired ExplorationDialog.)
+     */
+    public static final java.awt.Color INFO_BG_COLOR = new java.awt.Color(230, 230, 255);
+    /**
+     * Colour to be used for the background boxes on the info panel.
+     * (Moved here from the retired ExplorationDialog.)
+     */
+    public static final java.awt.Color INFO_BOX_BG_COLOR = new java.awt.Color(210, 210, 255);
+
+    /**
      * Getter for the current value. Returns null if no valid value is
      * currently selected.
      */

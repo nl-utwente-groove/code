@@ -43,7 +43,6 @@ import javax.swing.event.ListSelectionListener;
 import nl.utwente.groove.explore.ParsableValue;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.model.GrammarModel;
-import nl.utwente.groove.gui.dialog.ExplorationDialog;
 import nl.utwente.groove.gui.layout.SpringUtilities;
 import nl.utwente.groove.util.Version;
 import nl.utwente.groove.util.parse.FormatException;
@@ -226,7 +225,7 @@ public abstract class TemplateList<A> implements EncodedType<A,Serialized> {
         }
 
         private void addHeaderText() {
-            JLabel headerText = new JLabel("<HTML><B><FONT color=" + ExplorationDialog.HEADER_COLOR
+            JLabel headerText = new JLabel("<HTML><B><FONT color=" + EncodedTypeEditor.HEADER_COLOR
                 + ">Select " + TemplateList.this.typeIdentifier + ":");
             headerText.setToolTipText(TemplateList.this.typeToolTip);
             add(headerText);

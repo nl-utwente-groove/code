@@ -34,7 +34,6 @@ import nl.utwente.groove.explore.prettyparse.SerializedParser;
 import nl.utwente.groove.explore.prettyparse.StringConsumer;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.model.GrammarModel;
-import nl.utwente.groove.gui.dialog.ExplorationDialog;
 import nl.utwente.groove.gui.layout.SpringUtilities;
 import nl.utwente.groove.io.HTMLConverter.HTMLTag;
 import nl.utwente.groove.util.Exceptions;
@@ -239,7 +238,7 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
     }
 
     private static final HTMLTag INFO_FONT
-        = new HTMLTag("FONT", "color", ExplorationDialog.INFO_COLOR);
+        = new HTMLTag("FONT", "color", EncodedTypeEditor.INFO_COLOR);
 
     /**
      * Type-specific editor that is associated
@@ -251,7 +250,7 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
 
         public TemplateEditor(GrammarModel grammar) {
             super(grammar, new SpringLayout());
-            setBackground(ExplorationDialog.INFO_BG_COLOR);
+            setBackground(EncodedTypeEditor.INFO_BG_COLOR);
             addName();
             addExplanation();
             add(Box.createRigidArea(new Dimension(0, 6)));
@@ -274,7 +273,7 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
         }
 
         private void addName() {
-            add(new JLabel("<HTML><B><U><FONT color=" + ExplorationDialog.INFO_COLOR + ">"
+            add(new JLabel("<HTML><B><U><FONT color=" + EncodedTypeEditor.INFO_COLOR + ">"
                 + Template.this.getName() + ":</FONT></U></B></HTML>"));
         }
 
@@ -298,7 +297,7 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
 
         private void addNrArguments() {
             add(new JLabel(
-                "<HTML><FONT color=" + ExplorationDialog.INFO_COLOR + ">Additional arguments: <B>"
+                "<HTML><FONT color=" + EncodedTypeEditor.INFO_COLOR + ">Additional arguments: <B>"
                     + Integer.toString(Template.this.argumentNames.length) + "</B>"
                     + ((Template.this.argumentNames.length == 0)
                         ? "."
@@ -310,14 +309,14 @@ public abstract class Template<A> implements EncodedType<A,Serialized> {
             EncodedTypeEditor<?,String> editor
                 = Template.this.argumentTypes.get(argName).createEditor(getGrammar());
             JPanel line = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-            line.setBackground(ExplorationDialog.INFO_BG_COLOR);
+            line.setBackground(EncodedTypeEditor.INFO_BG_COLOR);
             if (editor != null) {
                 this.editors.put(argName, editor);
                 line.add(editor);
             }
             line.add(Box.createRigidArea(new Dimension(5, 0)));
             line
-                .add(new JLabel("<HTML><B><FONT color=" + ExplorationDialog.INFO_COLOR + ">("
+                .add(new JLabel("<HTML><B><FONT color=" + EncodedTypeEditor.INFO_COLOR + ">("
                     + argName + ")</B></HTML>"));
             add(line);
         }

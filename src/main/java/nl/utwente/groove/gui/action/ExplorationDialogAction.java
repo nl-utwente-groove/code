@@ -8,7 +8,7 @@ import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
-import nl.utwente.groove.gui.dialog.ExplorationDialog;
+import nl.utwente.groove.gui.dialog.ExploreConfigDialog;
 import nl.utwente.groove.util.parse.FormatException;
 
 /** Action to open the Exploration Dialog. */
@@ -20,7 +20,7 @@ public class ExplorationDialogAction extends SimulatorAction {
 
     @Override
     public void execute() {
-        new ExplorationDialog(getSimulator(), getFrame());
+        new ExploreConfigDialog(getSimulator(), getFrame());
     }
 
     @Override

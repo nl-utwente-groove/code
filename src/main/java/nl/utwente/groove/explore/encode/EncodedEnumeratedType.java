@@ -24,7 +24,6 @@ import java.util.Map;
 import javax.swing.JComboBox;
 
 import nl.utwente.groove.grammar.model.GrammarModel;
-import nl.utwente.groove.gui.dialog.ExplorationDialog;
 
 /**
  * An EncodedEnumeratedType<A> represents a (partial) encoding of a value of
@@ -64,11 +63,11 @@ public abstract class EncodedEnumeratedType<A> implements EncodedType<A,String> 
 
         public EnumeratedEditor(GrammarModel grammar, Map<String,String> options) {
             super(grammar, new FlowLayout(FlowLayout.LEFT, 0, 0));
-            setBackground(ExplorationDialog.INFO_BG_COLOR);
+            setBackground(EncodedTypeEditor.INFO_BG_COLOR);
             this.selector = new JComboBox<>();
             // MdM - line below causes selector not to appear at all
             // this.selector.setMinimumSize(new Dimension(50, 20));
-            this.selector.setBackground(ExplorationDialog.INFO_BOX_BG_COLOR);
+            this.selector.setBackground(EncodedTypeEditor.INFO_BOX_BG_COLOR);
             this.selector.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -93,7 +92,7 @@ public abstract class EncodedEnumeratedType<A> implements EncodedType<A,String> 
             this.selector.removeAllItems();
             for (Map.Entry<String,String> optionEntry : generateOptions(getGrammar()).entrySet()) {
                 this.selector
-                    .addItem("<HTML><FONT color=" + ExplorationDialog.INFO_COLOR + ">"
+                    .addItem("<HTML><FONT color=" + EncodedTypeEditor.INFO_COLOR + ">"
                         + optionEntry.getValue() + "</FONT></HTML>");
                 this.keys[this.nrKeys] = optionEntry.getKey();
                 this.nrKeys++;
