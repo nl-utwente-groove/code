@@ -130,6 +130,38 @@ public class RuleEdge extends ANumberedEdge<RuleNode,RuleLabel> implements RuleE
         return AnchorKind.EDGE;
     }
 
+    /**
+     * Conservatively determines if this and another, distinct rule edge may be
+     * matched to the same host edge. Only edges that are bound to a single
+     * host edge image are considered; regular expression and (in)equality
+     * edges have no edge image.
+     */
+    public boolean canShareImage(RuleEdge other) {
+        RuleLabel myLabel = label();
+        RuleLabel otherLabel = other.label();
+        if (!hasEdgeImage(myLabel) || !hasEdgeImage(otherLabel)) {
+            return false;
+        }
+        if (myLabel.getRole() != otherLabel.getRole()) {
+            return false;
+        }
+        if (myLabel.isWildcard() || otherLabel.isWildcard()) {
+            return true;
+        }
+        var myType = getType();
+        var otherType = other.getType();
+        if (myType != null && otherType != null) {
+            // images of differently-labelled edges are always distinct
+            return myType.label().equals(otherType.label());
+        }
+        return myLabel.equals(otherLabel);
+    }
+
+    /** Indicates if edges with a given label are matched to a single host edge image. */
+    private static boolean hasEdgeImage(RuleLabel label) {
+        return label.isSharp() || label.isAtom() || label.isWildcard();
+    }
+
     /** Convenience method to assert non-nullness of singleton set. */
     private static <T> List<T> singletonList(T element) {
         return Collections.singletonList(element);

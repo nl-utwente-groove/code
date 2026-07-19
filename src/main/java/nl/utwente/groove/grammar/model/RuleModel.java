@@ -33,6 +33,7 @@ import static nl.utwente.groove.grammar.model.ResourceKind.PROPERTIES;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -396,6 +397,11 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         FormatErrorSet errors = createErrors();
         // store the derived subrules in order
         TreeMap<Index,Condition> conditionTree = new TreeMap<>();
+        // import cross-level eraser-conflict elements (root extension);
+        // this must happen top-down and before any condition is built
+        for (Level4 level : levelTree.getLevel4Map().values()) {
+            level.importEraserConflicts();
+        }
         // construct the rule tree and add parent rules
         try {
             for (Level4 level : levelTree.getLevel4Map().values()) {
@@ -2345,6 +2351,108 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         }
 
         /**
+         * Imports ancestor-level elements whose image may coincide with that
+         * of an eraser at this or the ancestor level (root extension): such
+         * an element is added, as a reader, to the LHS and RHS of every level
+         * from just below its own down to this one, so that its image is
+         * seeded into the search of this level's condition, where the
+         * conflict machinery enforces the cross-level DPO identification
+         * condition. Imported ancestor erasers are additionally recorded, to
+         * take part in the conflict computation as erasers.
+         * Must be called top-down over the level tree, before any condition
+         * is built.
+         */
+        public void importEraserConflicts() {
+            // snapshots of this level's own elements, before any imports
+            List<RuleNode> myNodes = new ArrayList<>(this.lhs.nodeSet());
+            List<RuleEdge> myEdges = new ArrayList<>(this.lhs.edgeSet());
+            Set<RuleNode> myEraserNodes = new LinkedHashSet<>(myNodes);
+            myEraserNodes.removeAll(this.rhs.nodeSet());
+            Set<RuleEdge> myEraserEdges = new LinkedHashSet<>(myEdges);
+            myEraserEdges.removeAll(this.rhs.edgeSet());
+            // the levels from just below the currently inspected ancestor
+            // down to this level, into which conflicting elements are imported
+            List<Level4> path = new ArrayList<>();
+            path.add(this);
+            for (Level4 anc = this.parent; anc != null; anc = anc.parent) {
+                Set<RuleEdge> ancEraserEdges = new LinkedHashSet<>(anc.lhs.edgeSet());
+                ancEraserEdges.removeAll(anc.rhs.edgeSet());
+                for (RuleEdge ancEdge : anc.lhs.edgeSet()) {
+                    boolean ancIsEraser = ancEraserEdges.contains(ancEdge);
+                    // a non-eraser ancestor edge only conflicts with my erasers
+                    Collection<RuleEdge> mine = ancIsEraser
+                        ? myEdges
+                        : myEraserEdges;
+                    boolean conflict = false;
+                    for (RuleEdge myEdge : mine) {
+                        if (myEdge != ancEdge && myEdge.canShareImage(ancEdge)) {
+                            conflict = true;
+                            break;
+                        }
+                    }
+                    if (conflict) {
+                        importEdge(ancEdge, path);
+                        if (ancIsEraser) {
+                            this.ancestorEraserEdges.add(ancEdge);
+                        }
+                    }
+                }
+                Set<RuleNode> ancEraserNodes = new LinkedHashSet<>(anc.lhs.nodeSet());
+                ancEraserNodes.removeAll(anc.rhs.nodeSet());
+                for (RuleNode ancNode : anc.lhs.nodeSet()) {
+                    if (!(ancNode instanceof DefaultRuleNode)) {
+                        continue;
+                    }
+                    boolean ancIsEraser = ancEraserNodes.contains(ancNode);
+                    Collection<RuleNode> mine = ancIsEraser
+                        ? myNodes
+                        : myEraserNodes;
+                    boolean conflict = false;
+                    for (RuleNode myNode : mine) {
+                        if (myNode != ancNode && myNode instanceof DefaultRuleNode
+                            && !Collections
+                                .disjoint(myNode.getMatchingTypes(), ancNode.getMatchingTypes())) {
+                            conflict = true;
+                            break;
+                        }
+                    }
+                    if (conflict) {
+                        importNode(ancNode, path);
+                        if (ancIsEraser) {
+                            this.ancestorEraserNodes.add(ancNode);
+                        }
+                    }
+                }
+                path.add(anc);
+            }
+        }
+
+        /** Adds an ancestor edge, with its end nodes, as reader to the given levels. */
+        private void importEdge(RuleEdge edge, List<Level4> levels) {
+            for (Level4 level : levels) {
+                if (!level.lhs.containsEdge(edge)) {
+                    level.lhs.addEdgeContext(edge);
+                }
+                if (!level.rhs.containsEdge(edge)) {
+                    level.rhs.addEdgeContext(edge);
+                }
+            }
+        }
+
+        /** Adds an ancestor node as reader to the given levels. */
+        private void importNode(RuleNode node, List<Level4> levels) {
+            for (Level4 level : levels) {
+                level.lhs.addNode(node);
+                level.rhs.addNode(node);
+            }
+        }
+
+        /** Ancestor-level eraser edges imported into this level's pattern. */
+        private final Set<RuleEdge> ancestorEraserEdges = new LinkedHashSet<>();
+        /** Ancestor-level eraser nodes imported into this level's pattern. */
+        private final Set<RuleNode> ancestorEraserNodes = new LinkedHashSet<>();
+
+        /**
          * Callback method to compute the rule on this nesting level.
          * The resulting condition is not fixed (see {@link Condition#isFixed()}).
          */
@@ -2353,6 +2461,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             FormatErrorSet errors = createErrors();
             // the resulting rule
             result = createCondition(getRootGraph(), this.lhs);
+            result.addAncestorEraserEdges(this.ancestorEraserEdges);
             if (this.isRule) {
                 Rule rule = createRule(result, this.rhs, getCoRootGraph());
                 rule.addColorMap(this.colorMap);
@@ -2376,17 +2485,21 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
          * deleted node and another type-compatible LHS node, enforcing the
          * DPO identification condition on nodes: if a deleted node is
          * identified with any other matched node, the pushout complement is
-         * not unique. Skipped under injective matching, which subsumes the
-         * condition; the generated embargoes compile to equality tests in
-         * the search plan.
+         * not unique. Deleted nodes are the eraser nodes of this level plus
+         * the imported ancestor-level eraser nodes; for the latter, pairs
+         * with other nodes shared with the parent level are skipped, as they
+         * are already checked at the ancestor level where both nodes first
+         * coexist. Skipped altogether under injective matching, which
+         * subsumes the condition; the generated embargoes compile to
+         * equality tests in the search plan.
          */
         private void addEraserNodeEmbargoes(Condition condition) throws FormatException {
-            if (!this.isRule || isInjective()) {
+            if (isInjective()) {
                 return;
             }
             Set<RuleNode> erasers = new LinkedHashSet<>(this.lhs.nodeSet());
             erasers.removeAll(this.rhs.nodeSet());
-            if (erasers.isEmpty()) {
+            if (erasers.isEmpty() && this.ancestorEraserNodes.isEmpty()) {
                 return;
             }
             RuleLabel equality = new RuleLabel(RegExpr.empty());
@@ -2401,7 +2514,14 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                     if (!(two instanceof DefaultRuleNode)) {
                         continue;
                     }
-                    if (!erasers.contains(one) && !erasers.contains(two)) {
+                    boolean needed = erasers.contains(one) || erasers.contains(two);
+                    if (!needed) {
+                        // pairs of nodes shared with the parent level are
+                        // checked at the ancestor level where both first coexist
+                        needed = this.ancestorEraserNodes.contains(one) && !inParentLhs(two)
+                            || this.ancestorEraserNodes.contains(two) && !inParentLhs(one);
+                    }
+                    if (!needed) {
                         continue;
                     }
                     if (Collections.disjoint(one.getMatchingTypes(), two.getMatchingTypes())) {
@@ -2413,6 +2533,11 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                     condition.addSubCondition(embargo);
                 }
             }
+        }
+
+        /** Tests if a given node occurs in the parent level's LHS. */
+        private boolean inParentLhs(RuleNode node) {
+            return this.parent != null && this.parent.lhs.containsNode(node);
         }
 
         /**

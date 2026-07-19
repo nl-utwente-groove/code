@@ -17,6 +17,7 @@
 package nl.utwente.groove.match.plan;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
@@ -32,7 +33,6 @@ import nl.utwente.groove.grammar.Condition;
 import nl.utwente.groove.grammar.rule.Anchor;
 import nl.utwente.groove.grammar.rule.LabelVar;
 import nl.utwente.groove.grammar.rule.RuleEdge;
-import nl.utwente.groove.grammar.rule.RuleLabel;
 import nl.utwente.groove.grammar.rule.RuleNode;
 
 /** List of search items with backwards dependencies. */
@@ -60,6 +60,11 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
      * complements are unique (the DPO identification condition). Under
      * injective matching this holds automatically, so the map is only filled
      * for non-injective matching of a rule condition with eraser edges.
+     * The eraser edges considered are those of the condition's own rule, plus
+     * the ancestor-level eraser edges propagated into the condition's root
+     * (see {@link Condition#getAncestorEraserEdges()}); for the latter, pairs
+     * with other root edges are skipped, as those are already checked at the
+     * ancestor level where both edges first coexist.
      * The map is symmetric: it contains entries for the eraser edges themselves
      * as well as for their potential conflict partners, so the check can be
      * performed by whichever edge is bound later in the search.
@@ -68,15 +73,32 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
         Map<RuleEdge,Set<RuleEdge>> result = Collections.emptyMap();
         var rule = this.condition.getRule();
         var pattern = this.condition.getPattern();
-        if (!this.injective && rule != null && pattern != null) {
-            for (RuleEdge eraser : rule.getEraserEdges()) {
+        var ancestorErasers = this.condition.getAncestorEraserEdges();
+        if (!this.injective && pattern != null && (rule != null || !ancestorErasers.isEmpty())) {
+            var root = this.condition.getRoot();
+            Set<RuleEdge> erasers = new LinkedHashSet<>();
+            if (rule != null) {
+                erasers.addAll(Arrays.asList(rule.getEraserEdges()));
+            }
+            for (RuleEdge eraser : erasers) {
                 for (RuleEdge other : pattern.edgeSet()) {
-                    if (other != eraser && canShareImage(eraser, other)) {
-                        if (result.isEmpty()) {
-                            result = new LinkedHashMap<>();
-                        }
-                        result.computeIfAbsent(eraser, e -> new LinkedHashSet<>()).add(other);
-                        result.computeIfAbsent(other, e -> new LinkedHashSet<>()).add(eraser);
+                    if (other != eraser && eraser.canShareImage(other)) {
+                        result = addEraserConflict(result, eraser, other);
+                    }
+                }
+            }
+            for (RuleEdge eraser : ancestorErasers) {
+                for (RuleEdge other : pattern.edgeSet()) {
+                    if (other == eraser || erasers.contains(other)) {
+                        continue;
+                    }
+                    // pairs of root edges are checked at the ancestor level
+                    // where both edges first coexist
+                    if (root != null && root.containsEdge(other)) {
+                        continue;
+                    }
+                    if (eraser.canShareImage(other)) {
+                        result = addEraserConflict(result, eraser, other);
                     }
                 }
             }
@@ -84,36 +106,15 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
         return result;
     }
 
-    /**
-     * Conservatively determines if two distinct rule edges may be matched to
-     * the same host edge. Only edges that are bound to a single host edge
-     * image are considered; regular expression and (in)equality edges have no
-     * edge image.
-     */
-    private static boolean canShareImage(RuleEdge one, RuleEdge two) {
-        RuleLabel oneLabel = one.label();
-        RuleLabel twoLabel = two.label();
-        if (!hasEdgeImage(oneLabel) || !hasEdgeImage(twoLabel)) {
-            return false;
-        }
-        if (oneLabel.getRole() != twoLabel.getRole()) {
-            return false;
-        }
-        if (oneLabel.isWildcard() || twoLabel.isWildcard()) {
-            return true;
-        }
-        var oneType = one.getType();
-        var twoType = two.getType();
-        if (oneType != null && twoType != null) {
-            // images of differently-labelled edges are always distinct
-            return oneType.label().equals(twoType.label());
-        }
-        return oneLabel.equals(twoLabel);
-    }
-
-    /** Indicates if edges with a given label are matched to a single host edge image. */
-    private static boolean hasEdgeImage(RuleLabel label) {
-        return label.isSharp() || label.isAtom() || label.isWildcard();
+    /** Adds a symmetric pair to the eraser conflict map, creating the map if it is still empty. */
+    private Map<RuleEdge,Set<RuleEdge>> addEraserConflict(Map<RuleEdge,Set<RuleEdge>> map,
+                                                          RuleEdge one, RuleEdge two) {
+        var result = map.isEmpty()
+            ? new LinkedHashMap<RuleEdge,Set<RuleEdge>>()
+            : map;
+        result.computeIfAbsent(one, e -> new LinkedHashSet<>()).add(two);
+        result.computeIfAbsent(two, e -> new LinkedHashSet<>()).add(one);
+        return result;
     }
 
     /** Returns the condition for which this is the search plan. */
