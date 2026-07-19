@@ -1,6 +1,6 @@
 # Proposal: parallel-edge support in AspectGraph
 
-Status: implemented on this branch (2026-07-18). Branch: `parallel-edges`.
+Status: proposed (2026-07-18). Branch: `parallel-edges`.
 Builds on the GXL serialisation work in [parallel-edge-serialisation.md](parallel-edge-serialisation.md).
 
 ## Problem
@@ -138,32 +138,10 @@ parallel keys distinct:
   (factory, see table).
 - Host/Type → Aspect: `GraphConverter.toAspectMap` (per-key images → factory).
 
-## Host-graph compilation (added in a follow-up commit)
-
-Aspect → Host (`HostModelMorphism`) now applies the same monotone rule as the
-editor: the compiled host graph is non-simple if either the source aspect
-graph is or the grammar's `parallelEdges` property asks for it. From there the
-flag flows by itself: the typing step (`TypeGraph.analyzeHost` /
-`HostGraphMorphism.createImage`) preserves factory simplicity and maps
-parallel edges per key, and `DeltaHostGraph` picks its non-simple prototype
-from the factory. `ParallelEdgeExplorationTest` (with the new
-`junit/rules/parallelEdges.gps` fixture) shows the consequence: a start graph
-stored with `edgeids="true"` enters exploration with its parallel edges
-intact, an eraser matches each parallel copy separately and deletes exactly
-the matched one, and the intermediate states are collapsed correctly by the
-isomorphism check.
-
-**Parallel *creation* is not yet expressible**, and this is a rule-graph
-limitation, not a host-graph one: rule graphs are simple, so a creator edge
-parallel to a reader edge between the same nodes is pooled with the reader at
-rule compilation time and drops out of the creator set — the compiled rule
-creates nothing (verified by probing `Rule.getCreatorEdges()`). Making rule
-graphs non-simple is the next, genuinely semantic nut: it raises questions
-(what does a creator parallel to a reader mean when applied repeatedly? how do
-NACs count parallel edges? what does an eraser mean when fewer copies exist
-than the rule shows?) that need deliberate answers rather than incidental
-behaviour. `testParallelCreationAbsorbed` documents the current absorption and
-will fail — prompting an update — when this changes.
+Aspect → Host (`HostModelMorphism`) still compiles into a hard-coded simple
+host graph; wiring the flag into grammar compilation — where it starts to
+affect exploration semantics — remains the deliberate next step, out of scope
+here.
 
 ## Non-goals and accepted limitations
 
@@ -183,8 +161,7 @@ will fail — prompting an update — when this changes.
   reconstruction stability, which creation order provides.
 - **Rule and type compilation still collapse**: parallel edges in a RULE or
   TYPE aspect graph do not survive into `Rule`/`TypeGraph` (nor should they,
-  until rule-level multigraph semantics are defined — see the host-graph
-  compilation section for what this implies for parallel creation).
+  until exploration-side semantics are defined).
 
 ## Verification plan
 

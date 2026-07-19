@@ -50,13 +50,7 @@ class HostModelMorphism {
      */
     private HostModelMorphism(@Nullable GrammarModel grammar, AspectGraph source) {
         this.source = source;
-        // the host graph is non-simple if either the source aspect graph is
-        // (from the per-file edgeids flag, preserved by the load path) or the
-        // grammar opts in through the parallelEdges property; this mirrors
-        // the precedence rule of AspectJModel.syncGraph
-        boolean simple = source.isSimple()
-            && (grammar == null || !grammar.getProperties().isHasParallelEdges());
-        var target = new DefaultHostGraph(source.getName(), simple);
+        var target = new DefaultHostGraph(source.getName());
         var map = new HostModelMap(target.getFactory());
         var normalSource = source.normalise();
         var errors = new FormatErrorSet();

@@ -348,16 +348,15 @@ public class AspectJVertex extends
                 remarkText.append(label.getInnerText());
                 hasRemark = true;
             } else {
-                AspectEdge edge = graph.getFactory().createEdge(node, label, node);
+                AspectEdge edge = new AspectEdge(node, label, node);
                 newEdges.add(edge);
             }
         }
         // turn the collected remark text into a single edge
         if (hasRemark) {
             remarkText.insert(0, REMARK.getPrefix());
-            AspectEdge edge = graph
-                .getFactory()
-                .createEdge(node, parser.parse(remarkText.toString(), graph.getRole()), node);
+            AspectEdge edge
+                = new AspectEdge(node, parser.parse(remarkText.toString(), graph.getRole()), node);
             newEdges.add(edge);
         }
         setNode(node);

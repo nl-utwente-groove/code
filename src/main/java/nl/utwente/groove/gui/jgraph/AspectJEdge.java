@@ -119,9 +119,7 @@ public class AspectJEdge extends
                 edge.label(), this);
         }
         if (error != null) {
-            // re-create the edge with the same parallel index, as the copy
-            // replaces the original rather than coexisting with it
-            edge = new AspectEdge(edge.source(), edge.label(), edge.target(), edge.getNumber());
+            edge = new AspectEdge(edge.source(), edge.label(), edge.target());
             edge.addError(error);
             edge.setFixed();
         }
@@ -303,12 +301,11 @@ public class AspectJEdge extends
      * node, and the inverse edge if {@code bidirectional} is {@code true}.
      */
     private void addEdges(AspectLabel label, boolean bidirectional) {
-        var factory = getSourceNode().getGraph().getFactory();
-        AspectEdge edge = factory.createEdge(getSourceNode(), label, getTargetNode());
+        AspectEdge edge = new AspectEdge(getSourceNode(), label, getTargetNode());
         edge.setParsed();
         addEdge(edge);
         if (bidirectional) {
-            edge = factory.createEdge(getTargetNode(), label, getSourceNode());
+            edge = new AspectEdge(getTargetNode(), label, getSourceNode());
             edge.setParsed();
             addEdge(edge);
         }

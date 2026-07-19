@@ -449,9 +449,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
                     text.append(group.get(i).label().getInnerText());
                 }
                 AspectEdge first = group.get(0);
-                AspectEdge merged = getFactory()
-                    .createEdge(first.source(), parser.parse(text.toString(), getRole()),
-                                first.target());
+                AspectEdge merged = new AspectEdge(first.source(),
+                    parser.parse(text.toString(), getRole()), first.target());
                 group.forEach(this::removeEdge);
                 addEdgeContext(merged);
                 if (layoutMap != null) {
@@ -709,9 +708,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         }
         // look for node aspect indicators
         // and put all correct aspect vales in a map
-        // linked map, so that parallel indices in the aspect graph are
-        // assigned in the source graph's edge order
-        Map<Edge,AspectLabel> edgeDataMap = new LinkedHashMap<>();
+        Map<Edge,AspectLabel> edgeDataMap = new HashMap<>();
         for (Edge edge : graph.edgeSet()) {
             AspectLabel label = parser.parse(edge.label().text(), role);
             if (label.isNodeOnly()) {
@@ -826,10 +823,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             transfer.nodeMap().putAll(nodeMap);
             // Copy the edges
             for (AspectEdge edge : graph.edgeSet()) {
-                AspectEdge fresh = result
-                    .getFactory()
-                    .createEdge(nodeMap.get(edge.source()), edge.label(),
-                                nodeMap.get(edge.target()));
+                AspectEdge fresh = new AspectEdge(nodeMap.get(edge.source()), edge.label(),
+                    nodeMap.get(edge.target()));
                 newLayoutMap.copyEdgeWithOffset(fresh, edge, oldLayoutMap, offsetX, offsetY);
                 result.addEdgeContext(fresh);
                 transfer.putEdge(edge, fresh);
@@ -879,14 +874,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
 
         @Override
         public AspectEdge createEdge(AspectNode source, Label label, AspectNode target) {
-            int nr = 0;
-            if (!this.graph.isSimple()) {
-                // dispense the parallel index: the count of content-equal
-                // edges created before this one
-                var key = new EdgeContent(source, (AspectLabel) label, target);
-                nr = this.parallelCount.merge(key, 1, Integer::sum) - 1;
-            }
-            return new AspectEdge(source, (AspectLabel) label, target, nr);
+            return new AspectEdge(source, (AspectLabel) label, target);
         }
 
         @Override
@@ -896,17 +884,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
 
         /** The graph role of the created elements. */
         private final AspectGraph graph;
-
-        /** Number of edges created per content triple; only maintained for
-         * non-simple graphs. The map is never iterated, so the plain
-         * {@link HashMap} does not endanger determinism.
-         */
-        private final Map<EdgeContent,Integer> parallelCount = new HashMap<>();
-
-        /** Content triple of a created edge, keying the parallel count. */
-        private record EdgeContent(AspectNode source, AspectLabel label, AspectNode target) {
-            // no additional functionality
-        }
     }
 
     /** Mapping from one aspect graph to another. */

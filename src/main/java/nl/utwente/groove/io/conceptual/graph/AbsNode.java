@@ -139,8 +139,7 @@ public class AbsNode {
             AspectLabel alabel = AspectParser.getInstance().parse(sublabel, graph.getRole());
             // add self edge
             if (alabel.isEdgeOnly()) {
-                AspectEdge newEdge
-                    = graph.getFactory().createEdge(this.m_aspectNode, alabel, this.m_aspectNode);
+                AspectEdge newEdge = new AspectEdge(this.m_aspectNode, alabel, this.m_aspectNode);
                 this.m_aspectEdges.add(newEdge);
             } else {
                 this.m_aspectNode.addLabel(alabel);
