@@ -1,174 +1,143 @@
-# Proposal: parallel-edge support in AspectGraph
+# Parallel edges at the aspect level: decided architecture
 
-Status: proposed (2026-07-18). Branch: `parallel-edges`.
-Builds on the GXL serialisation work in [parallel-edge-serialisation.md](parallel-edge-serialisation.md).
+Status: design decided (2026-07-19); implementation pending on branch
+`parallel-edges`. Builds on the GXL serialisation work in
+[parallel-edge-serialisation.md](parallel-edge-serialisation.md).
+An earlier implementation that made `AspectGraph` itself a multigraph was
+rolled back — see the final section for what it was and why it was rejected.
 
-## Problem
+## The architecture: counts as syntax, parallel edges as semantics
 
-Since the serialisation change, the `isSimple` flag survives every conversion in
-which `AspectGraph` participates — but the *parallel edges themselves* do not,
-because `AspectEdge` cannot be parallel: it is content-identified (source,
-label, target, plus the graph's external identity), so the set-based edge
-containment of `NodeSetEdgeSetGraph` collapses equi-labelled duplicates
-regardless of the flag. Consequently a non-simple host graph loaded from a
-`.gst` file with `edgeids="true"` reaches the aspect level with its parallel
-edges silently merged, and the next save writes a graph that *claims*
-non-simplicity but has lost the duplicates. `AspectGraph` supports the flag
-without supporting the thing the flag describes.
+`AspectGraph` — the gateway to the GUI and the user-facing representation of
+host, rule and type graphs — stays **simple**. Edge multiplicity is expressed
+in the concrete syntax by a new **MULT aspect** (working syntax `mult=k:`),
+and is **expanded into genuine parallel edges** when the aspect graph is
+compiled into its semantic counterpart:
 
-## History: why AspectEdge is unnumbered, and why that was right until now
+- `RuleModel` compilation expands counted rule edges into parallel `RuleEdge`s
+  in a non-simple `RuleGraph`;
+- `HostModelMorphism` expands counted host edges into parallel `HostEdge`s in
+  a non-simple `HostGraph` (the typed-level multigraph support merged earlier
+  is exactly the substrate for this).
 
-`AspectEdge` *was* numbered until recently. The history is instructive because
-it demarcates exactly what a re-introduction of numbers must avoid:
+The reverse direction (displaying a semantic multigraph, e.g. an LTS state)
+**aggregates**: parallel copies collapse into one aspect edge whose label is
+decorated with `(x2)` etc., the same convention already used for parallel
+transitions in the LTS display.
 
-- Originally, aspect edges were numbered from a graph-level dispenser in
-  creation order, and the number participated in equality.
-- gh #806/#809 (Nov 2024, commit e489d84e7): GUI state — label-tree filters,
-  layout — is keyed by graph elements and must survive the boundary between
-  the display tab and the editor tab, which hold *distinct* `AspectGraph`
-  instances of the same resource. Creation-order numbers differ between
-  independently constructed instances, so equality-based lookups failed. The
-  fix zeroed the number for all non-remark edges (remarks kept distinct
-  numbers so that identical remarks between the same nodes could coexist) and
-  relaxed the graph component of element equality to `externalEquals`
-  (name/role/normal-status).
-- Commit 93239449c (this month's numbered-edge-split work) removed the number
-  entirely: identical remark edges were instead merged into one multi-line
-  remark (d9c5806ae), leaving the number without any remaining purpose.
+### Why the semantic level must have real parallel edges, not counts
 
-The lesson: **numbers in `AspectEdge` equality must be stable across
-independent reconstructions of the same graph**, or GUI element lookups break.
-Creation-order numbers are not; a constant is. The design below picks the
-minimal deviation from a constant.
+In the category of multigraphs, edges carry identity: a morphism maps edges to
+edges, so a 2-edge parallel bundle in a rule has 4 morphisms onto a 2-edge
+host bundle, 2 of them injective. Match counts and the injective/non-injective
+distinction are semantically load-bearing. Treating counts as the semantics
+would silently replace the standard theory; treating them as concrete syntax
+that expands away preserves it. A pleasant corollary: most semantic questions
+about parallel edges in rules need no ad-hoc decisions — they become theorems
+of standard multigraph matching:
 
-## Proposal: the parallel index
+- `del:mult=2:a` with only one host copy has no injective match → rule
+  inapplicable;
+- `not:mult=2:a` expands to a 2-edge embargo bundle → "no injective image of
+  2 copies" = "at most 1 copy exists" — counting NACs for free;
+- ranges, if ever wanted: `mult=m..n:` on a reader = m parallel readers plus
+  an (n+1)-copy embargo.
 
-Make `AspectEdge` a `NumberedEdge` again (extending `ANumberedEdge`, so the
-number enters equality and the cached hash code), but let the number be a
-**parallel index**: the count of content-equal edges created before it by the
-same factory.
+### Why counts are the right *concrete* syntax
 
-- In a **simple** graph, the factory always assigns index 0. No two
-  content-equal edges are ever meant to coexist, duplicates collapse in the
-  edge set exactly as today, and — crucially — every edge of every existing
-  grammar keeps precisely its current equality behaviour, including
-  cross-instance equality between display and editor tabs. (Only the raw hash
-  values change, by the `ANumberedEdge` chaining; nothing persists or
-  iterates on them.)
-- In a **non-simple** graph, `AspectFactory.createEdge` counts per content
-  triple (source, label, target — all content-identified themselves) and
-  assigns indices 0, 1, 2, …. Parallel edges are thus unequal and coexist in
-  the edge set.
+- A jCell's user object is a set of label lines, so duplicate lines on one
+  edge collapse by construction; drawn parallel edges would need separate
+  overlapping jEdges — awkward to create, unreadable to view. One annotated
+  label line fits the aspect model.
+- `AspectGraph` stays simple, so cross-instance element equality
+  (gh #806/#809, see below) is preserved exactly.
+- Labels are just strings: the annotation round-trips through every existing
+  pipeline (GXL, copy-paste, display) with no serialisation change.
+- Backward compatible: no annotation means multiplicity 1.
 
-Cross-instance stability for non-simple graphs is best-effort: the k-th
-created copy of a content triple always gets index k, so two reconstructions
-agree as long as they create parallel copies in the same relative order —
-which holds for all order-preserving pipelines (file order, `edgeSet()`
-iteration order, jCell root order). If orders ever diverge, the failure is
-confined to a parallel bundle whose members are visually indistinguishable
-anyway, and degrades to the pre-existing fallback (error marked on the source
-node instead of the edge).
+### Syntax: a separate aspect, not content on the role aspects
 
-### No pooling
+The role aspects `use:`, `del:`, `new:`, `cnew:`, `not:` already carry
+content: `ContentKind.LEVEL`, the quantifier-level binding (`use=q:`). Their
+`=`-slot is taken. So multiplicity gets its own `AspectKind` in its own
+category, combinable with role prefixes the way `in=`/`out=`/`part:` combine
+on type edges: `new:mult=2:a`, `del:mult=2:a`, and bare `mult=2:a` on host
+edges (which have no role prefix to extend). `ContentKind.MULTIPLICITY`
+(already used by the type-graph `in=`/`out=` aspects) can be reused; note the
+documentation must distinguish the two: `in=`/`out=` constrain incident edge
+counts per node, `mult=` states parallel copy counts per edge.
 
-Unlike `StoreFactory`, the factory does *not* pool content-equal edges in
-simple mode: it keeps returning fresh instances (all with index 0), and the
-set-based containment discards duplicates on add, exactly as today. Pooling
-was considered and rejected: `AspectEdge` is stateful (parse status, errors),
-and several call sites mutate the edge after creation (`setParsed`,
-`addError`), which must not hit a shared canonical instance.
+## Recorded decisions (user, 2026-07-19)
 
-### All construction routed through the factory
+- **`cnew:mult=2:a`** expands to 2 adder edges, i.e. NAC "at most 1 copy
+  exists" plus "create 2 more". Deemed sufficiently intuitive; no special
+  treatment.
+- **No cap or warning on large multiplicities**: `mult=1000:a` is one label
+  but a thousand edges per state — a user who writes that deserves what they
+  get.
+- **Aggregated display** appends `(x2)` etc. to the label, mirroring the
+  existing parallel-transition convention in the LTS view.
+- **Implementation order**: (1) parallel-edge support in `RuleGraph` first;
+  (2) then, as a separate step, a worked example introducing the MULT aspect.
 
-Every `AspectEdge` that ends up in a graph must carry an index consistent with
-that graph's factory count. The 3-argument constructor is therefore removed;
-the eight direct construction sites become:
+## Concerns to address during implementation
 
-| Site | Treatment |
-|---|---|
-| `AspectFactory.createEdge` | the one remaining constructor call (with index) |
-| `AspectGraph.mergeRemarkEdges` | factory (merged multi-line label is new content) |
-| `AspectGraph.mergeGraphs` | factory of the merged graph |
-| `AspectJEdge.addEdges` (2×) | factory of the graph under (re)construction |
-| `AspectJVertex.loadFromUserObject` (2×) | factory of the graph under (re)construction |
-| `AbsNode`/`AbsEdge.buildAspect` (io.conceptual) | factory of the target graph |
-| `AspectJEdge.addEdge` error copy | 4-arg constructor, **preserving** the original's index (the copy replaces the original; a fresh index would double-count) |
+- **Edge-injectivity in matching.** In simple graphs, edge-injectivity of a
+  match is free (distinct edges differ in content). With parallel LHS edges,
+  two content-equal rule edges enumerate the same candidate host edges, so
+  without an explicit constraint both could bind the same host copy — a
+  non-injective edge map. The search plan (and the RETE network) must enforce
+  injectivity within parallel bundles.
+- **Determinism of match order.** Matches that differ *only* in which
+  parallel host copy they bind are content-identical; the canonical match
+  order (`MatchCollector.canonicalise`, cf. the ferryman-flake analysis) must
+  tie-break on edge identity, i.e. edge numbers enter an order-bearing
+  decision. That is only sound if those numbers are stable across state-cache
+  reconstruction.
+- **Creator-edge number stability.** `RuleEffect.addCreateEdge` derives
+  created edges from the factory per event derivation; after a GC-induced
+  cache collapse, re-derivation must yield the *same* edge identities, or
+  reconstructed graphs number their parallel copies differently and the
+  previous point breaks. This was observed live on this branch with the
+  (rolled-back) non-simple host compilation; it is the ferryman flake's
+  shape one level down and must be solved before `DeterminismTest` and
+  parallel edges can coexist.
+- **Symmetry blowup, accepted.** A k-copy eraser bundle onto a k-copy host
+  bundle yields k! injective matches, all leading to isomorphic states; iso
+  collapse merges the states but the matcher does the work and transitions
+  multiply.
+- **Display mapping.** Aggregation is many-to-one, so match highlighting and
+  element-keyed GUI state must map each semantic edge to its aggregated
+  aspect edge.
+- **Parallel creation absorbed today.** With simple rule graphs, a creator
+  edge parallel to a reader edge between the same nodes is pooled with the
+  reader at rule compilation time and drops out of the creator set — the
+  compiled rule creates nothing (verified by probing
+  `Rule.getCreatorEdges()`). This is the behaviour the RuleGraph step must
+  replace.
 
-The count map lives in the per-graph `AspectFactory` and is only consulted for
-non-simple graphs; it is never iterated, so a `HashMap` keyed by a content
-record is deterministic-safe.
+## Rejected alternative: AspectGraph as a multigraph (rolled back)
 
-## Editor round-trip: flag precedence resolved
+Commits 16413901c and 722ac7032 (reverted in 98757f8f1) made `AspectEdge` a
+`NumberedEdge` whose number was a *parallel index* (0 for all edges of a
+simple graph and for the first copy of each content triple; 1, 2, … for
+duplicates, assigned by a per-graph counting factory), so that parallel
+aspect edges could coexist in the set-based edge store. It worked for
+host-graph pass-through (a `.gst` with `edgeids="true"` survived load →
+aspect → host compilation → exploration), but was rejected because:
 
-`AspectJModel.syncGraph` rebuilds the aspect graph from the jCells on every
-edit; it decided simplicity purely from the grammar's `parallelEdges`
-property. That collapses a non-simple *file* opened in a grammar without the
-property — the editor would destroy parallel edges the load path just
-preserved. The new rule is monotone towards non-simplicity:
+- it solved only pass-through — rule-level parallelism, in particular
+  parallel *creation*, remained inexpressible without also making rule
+  graphs multigraphs, which the counted syntax needs anyway;
+- the editor cannot naturally create or show parallel edges (set-based user
+  objects; overlapping jEdges);
+- cross-instance equality of aspect elements was only best-effort for
+  parallel bundles, where the counted design preserves it exactly.
 
-```
-simple  =  editedGraph.isSimple()  &&  !properties.isHasParallelEdges()
-```
-
-i.e. a graph is non-simple if *either* it already was (per-file `edgeids`
-flag, restored on load) *or* the grammar property asks for it. Turning the
-property **on** upgrades existing graphs as they are edited; turning it
-**off** does not silently re-collapse non-simple graphs (collapse is lossy —
-if wanted, it must be explicit). This settles the property-vs-file-flag
-precedence question left open in the serialisation note.
-
-## Conversions audited
-
-With the factory in place, the conversions between non-simplicity-supporting
-graph versions preserve both flag and parallel edges without further work,
-because they all funnel through `addEdge(source, label, target)` → factory, or
-through `AGraphMap`s whose per-key image caching keeps distinct (now unequal)
-parallel keys distinct:
-
-- Plain/Attr → Aspect: `AspectGraph.newInstance` (one `addEdge` per source
-  edge). Its `edgeDataMap` becomes a `LinkedHashMap` so parallel indices are
-  assigned in source-graph edge order rather than hash order.
-- Aspect → Plain: `toPlainGraph` via `AspectToPlainMap` (per-key images,
-  non-simple `PlainFactory`).
-- Aspect → Attr: `AttrGraph.newInstance` via `AspectToAttrMap` (per-key
-  images, counter-numbered `AttrEdge`s).
-- Aspect → Aspect: `clone`/`rename`/`unwrap` (morphism → factory),
-  `relabel`/`colour` (round-trip through a plain graph, both directions
-  covered above), `NormalAspectGraph` (`addEdge` → factory), `mergeGraphs`
-  (factory, see table).
-- Host/Type → Aspect: `GraphConverter.toAspectMap` (per-key images → factory).
-
-Aspect → Host (`HostModelMorphism`) still compiles into a hard-coded simple
-host graph; wiring the flag into grammar compilation — where it starts to
-affect exploration semantics — remains the deliberate next step, out of scope
-here.
-
-## Non-goals and accepted limitations
-
-- **Within one jEdge, duplicate label lines still collapse**: a jCell's user
-  object is a set of label lines, so typing the same label twice on one edge
-  yields a single aspect edge. Drawing two *separate* jEdges with equal labels
-  does work in a non-simple graph — each produces its own `createEdge` call on
-  sync, so both survive as parallels. GUI creation of parallel edges is thus
-  possible, just not via duplicate lines on a single edge.
-- **Remark merging is unchanged**: even in non-simple graphs, remark edges
-  between the same node pair merge into one multi-line remark on fix. Remarks
-  are annotations, not graph structure; keeping at most one per node pair is a
-  display decision independent of simplicity.
-- **Parallel indices are not serialised**: the GXL `id` attributes are written
-  but not read back into indices (same accepted limitation as for plain edge
-  numbers). Indices only need in-graph distinctness plus best-effort
-  reconstruction stability, which creation order provides.
-- **Rule and type compilation still collapse**: parallel edges in a RULE or
-  TYPE aspect graph do not survive into `Rule`/`TypeGraph` (nor should they,
-  until exploration-side semantics are defined).
-
-## Verification plan
-
-- New `AspectSimplicityTest`: parallel edges survive Plain → Aspect → Plain
-  and Attr → Aspect; `clone` preserves them; duplicates still collapse in
-  simple graphs; cross-instance equality of identically-built graphs holds
-  (the gh #806/#809 guard); remark merging unaffected.
-- `GxlSimplicityTest` gains an end-to-end case: non-simple GXL file → load →
-  `toAspectGraph` → `toPlainGraph` retains the parallel edges.
-- Full suite including slow groups.
+The history that shaped it remains relevant should anyone revisit: aspect
+edges were once numbered in creation order, and gh #806/#809 (Nov 2024,
+e489d84e7) showed that GUI state — label-tree filters, layout — is keyed by
+graph elements across *distinct* `AspectGraph` instances of the same resource
+(display tab vs. editor tab), so numbers participating in `AspectEdge`
+equality must be stable across independent reconstructions. Creation-order
+numbers are not. Keeping `AspectGraph` simple sidesteps the issue entirely.
