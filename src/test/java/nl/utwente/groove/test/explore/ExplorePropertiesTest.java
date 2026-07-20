@@ -102,7 +102,7 @@ public class ExplorePropertiesTest {
     @Test
     public void testUnrealisableConfig() throws FormatException {
         var properties = new GrammarProperties();
-        var config = ExploreConfig.parse("result=trace");
+        var config = ExploreConfig.parse("shape=trace");
         properties.setExploreConfig(config);
         assertEquals(config, properties.getExploreConfig());
         assertEquals(ExploreType.DEFAULT.unparse(), properties.getExploreType().unparse());

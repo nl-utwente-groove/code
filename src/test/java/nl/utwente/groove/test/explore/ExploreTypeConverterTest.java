@@ -207,7 +207,7 @@ public class ExploreTypeConverterTest {
             "matcher=rete",
             "heuristic=nen",
             "cost=rule",
-            "result=trace",
+            "shape=trace",
             "persistence=none",
             "collapse=equality",
             "algebra=point",

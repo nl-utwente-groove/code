@@ -47,8 +47,8 @@ public enum ExploreKey implements ParsableKey<Setting> {
     /** Desired outcome of the goal condition. */
     OUTCOME("outcome", "Whether the goal condition is to be satisfied or violated",
         Outcome.SATISFY),
-    /** Type of result the exploration yields. */
-    RESULT("result", "Type of result the exploration yields", Result.STATE),
+    /** Shape of the results the exploration yields. */
+    SHAPE("shape", "Shape of the results the exploration yields", Shape.STATE),
     /** Number of results after which exploration halts. */
     COUNT("count", "Number of results after which exploration halts", Count.ALL),
     /** Bound on the states to be explored. */

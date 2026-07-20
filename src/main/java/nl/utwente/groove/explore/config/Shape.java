@@ -19,19 +19,19 @@ package nl.utwente.groove.explore.config;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * Feature values for {@link ExploreKey#RESULT}: the type of result the
+ * Feature values for {@link ExploreKey#SHAPE}: the shape of the results the
  * exploration is supposed to yield.
  * @author Arend Rensink
  * @version $Revision$
  */
 @NonNullByDefault
-public enum Result implements Setting.Kind {
+public enum Shape implements Setting.Kind {
     /** Results are states. */
     STATE("state", "A result is a state"),
     /** Results are traces from the start state to a goal state. */
     TRACE("trace", "A result is a trace from the start state to a goal state"),;
 
-    private Result(String name, String explanation) {
+    private Shape(String name, String explanation) {
         this.name = name;
         this.explanation = explanation;
     }

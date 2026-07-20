@@ -60,7 +60,7 @@ while the legacy Strategy/Acceptor machinery still executes underneath. Phases 5
 ## Deliberately unsupported (converter errors, awaiting phase 5)
 
 heuristic≠none, cost=rule, frontier=beam, next=random, successor=all-random,
-single-successor on unrestricted frontier, result=trace, persistence=none,
+single-successor on unrestricted frontier, shape=trace, persistence=none,
 collapse/algebra overrides (kinds `grammar` = inherit), goal=graph, goal=ltl/ctl
 (stay with the CheckLTL/CTL actions), iterative deepening (`+inc`), bound=size,
 `applied`+violate (legacy ruleapp has no polarity), condition bound + depth bound

@@ -477,7 +477,7 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
             + "  goal        - result condition: final*, none, any, graph:id, rule:id,\n"
             + "                applied:id, formula:f, ltl:prop, ctl:prop\n"
             + "  outcome     - desired goal outcome: satisfy*, violate\n"
-            + "  result      - result type: state*, trace\n"
+            + "  shape       - shape of the results: state*, trace\n"
             + "  count       - results before halting: all*, first, <n>\n"
             + "  bound       - exploration bound: none*, cost:max[+inc], size:max[+inc],\n"
             + "                nodes:max[+inc], edges:id_1>n_1,...,id_k>n_k,\n"

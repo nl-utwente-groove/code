@@ -71,7 +71,7 @@ public class ExploreTypeConverter {
         if (config.getKind(ExploreKey.COST) == Cost.RULE) {
             errors.add("Rule-based transition cost is not yet supported");
         }
-        if (config.getKind(ExploreKey.RESULT) == Result.TRACE) {
+        if (config.getKind(ExploreKey.SHAPE) == Shape.TRACE) {
             errors.add("Trace results are not yet supported");
         }
         if (config.getKind(ExploreKey.PERSISTENCE) != Persistence.ALL) {

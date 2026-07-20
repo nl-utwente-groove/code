@@ -109,7 +109,7 @@ public class ExploreConfigDialog extends JDialog {
                                ExploreKey.BOUND));
         content
             .add(createSection("Goal and results", ExploreKey.GOAL, ExploreKey.OUTCOME,
-                               ExploreKey.RESULT, ExploreKey.COUNT));
+                               ExploreKey.SHAPE, ExploreKey.COUNT));
         content
             .add(createSection("Engine", ExploreKey.MATCHER, ExploreKey.COLLAPSE,
                                ExploreKey.ALGEBRA, ExploreKey.PERSISTENCE));
