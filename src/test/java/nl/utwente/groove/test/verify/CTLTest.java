@@ -110,6 +110,32 @@ public class CTLTest {
         testFormula("EXEX add_score(n0,'100')", 0);
     }
 
+    /** Test the treatment of special transition labels (gh #855). */
+    @Test
+    public void testTransitionLabels() {
+        setGTS("mc-label", "start");
+        // rule p has special transition label 'go'
+        testFormula("go & !q", 1);
+        testFormula("E(go U r)", 3);
+        testFormula("AG(go|q)", 3);
+        testFormula("AG go", 0);
+        // the special label replaces the rule name
+        testFormula("EF p", 0);
+        setGTS("attributes-label", "start");
+        // rule set_gravity has special label 'grav %s', which does not
+        // format to a parseable call and so is matched as a literal
+        testFormula("EF 'grav 9.81'", 1);
+        testFormula("EF grav", 0);
+        testFormula("EF set_gravity(_)", 0);
+        // rule add_score has special label 'sc(%s,%s)', which formats
+        // to a parseable call and so supports argument matching
+        testFormula("EXEX sc(n0, 100)", 2);
+        testFormula("EXEX sc(_, _)", 2);
+        testFormula("EXEX sc(n3, _)", 0);
+        testFormula("EXEX sc", 2);
+        testFormula("EXEX add_score(n0, 100)", 0);
+    }
+
     /** Test on a specially designed transition system. */
     @Test
     public void testSpecialLabels() {

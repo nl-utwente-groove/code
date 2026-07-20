@@ -43,9 +43,6 @@ import nl.utwente.groove.explore.Generator;
 import nl.utwente.groove.explore.Generator.LTSLabelsHandler;
 import nl.utwente.groove.explore.util.LTSLabels;
 import nl.utwente.groove.explore.util.LTSLabels.Flag;
-import nl.utwente.groove.grammar.host.DefaultHostNode;
-import nl.utwente.groove.grammar.host.HostNode;
-import nl.utwente.groove.grammar.host.ValueNode;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Label;
@@ -59,7 +56,6 @@ import nl.utwente.groove.util.cli.GrooveCmdLineParser;
 import nl.utwente.groove.util.cli.GrooveCmdLineTool;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
-import nl.utwente.groove.verify.Proposition.Arg;
 
 /**
  * Command-line tool directing the model checking process.
@@ -398,20 +394,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         /** Converts a model edge to a proposition that holds for its source. */
         @Override
         public Proposition toProp(Edge edge) {
-            var trans = (GraphTransition) edge;
-            var label = trans.label();
-            var id = label.getAction().getQualName();
-            var args = new LinkedList<Arg>();
-            Arrays.stream(label.getArguments()).map(this::toArg).forEach(args::add);
-            return Proposition.call(id, args);
-        }
-
-        /** Returns a proposition argument for a host node. */
-        private Arg toArg(HostNode n) {
-            return switch (n) {
-            case DefaultHostNode d -> Arg.arg(d.toString());
-            case ValueNode v -> Arg.arg(v.toTerm());
-            };
+            return Proposition.prop(((GraphTransition) edge).label());
         }
 
         @Override
@@ -531,9 +514,8 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
 
         @Override
         public Proposition toProp(Edge edge) {
-            var label = edge.label().toString();
-            // try the label as a parsable ID or CALL
-            return FormulaParser.instance().parse(label).getProp();
+            // parse the label as an ID or CALL if possible, else wrap it in a literal
+            return Proposition.parse(edge.label().text());
         }
 
         /**
