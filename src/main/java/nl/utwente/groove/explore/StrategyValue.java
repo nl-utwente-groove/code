@@ -48,9 +48,6 @@ import nl.utwente.groove.explore.strategy.LinearStrategy;
 import nl.utwente.groove.explore.strategy.MinimaxStrategy;
 import nl.utwente.groove.explore.strategy.RandomLinearStrategy;
 import nl.utwente.groove.explore.strategy.RemoteStrategy;
-import nl.utwente.groove.explore.strategy.ReteLinearStrategy;
-import nl.utwente.groove.explore.strategy.ReteRandomLinearStrategy;
-import nl.utwente.groove.explore.strategy.ReteStrategy;
 import nl.utwente.groove.explore.strategy.StopMode;
 import nl.utwente.groove.explore.strategy.Strategy;
 import nl.utwente.groove.grammar.Rule;
@@ -79,19 +76,6 @@ public enum StrategyValue implements ParsableValue {
             + "The transition is chosen randomly."),
     /** Single-state strategy. */
     STATE("state", "Single-State Exploration", "This strategy fully explores the current state."),
-    /** Depth-first RETE strategy. */
-    RETE("rete", "Rete Strategy (DFS based)",
-        "This strategy finds all possible transitions from the Rete "
-            + "network, and continues in a depth-first fashion using "
-            + "virtual events when possible. Rete updates are applied " + "accumulatively"),
-    /** Linear RETE strategy. */
-    RETE_LINEAR("retelinear", "Rete Linear Exploration",
-        "This strategy chooses one transition from each open state. "
-            + "The transition of choice will be the same within one " + "incarnation of Groove."),
-    /** Random linear RETE strategy. */
-    RETE_RANDOM("reterandom", "Rete Random Linear Exploration",
-        "This strategy chooses one transition from each open state. "
-            + "The transition is chosen randomly."),
     /** BFS or DFS exploration up to (and possibly including) a rule-based condition. */
     UPTO_RULE("uptorule", "Exploration Up To Rule Applicability",
         "This strategy performs a conditional, optionally bounded, depth- or breadth-first exploration. "
@@ -178,31 +162,6 @@ public enum StrategyValue implements ParsableValue {
     /** Creates the appropriate template for this strategy. */
     public Template<Strategy> getTemplate() {
         switch (this) {
-        case RETE:
-            return new MyTemplate0() {
-                @Override
-                public Strategy create() {
-                    return new ReteStrategy();
-                }
-            };
-
-        case RETE_LINEAR:
-            return new MyTemplate0() {
-
-                @Override
-                public Strategy create() {
-                    return new ReteLinearStrategy();
-                }
-            };
-
-        case RETE_RANDOM:
-            return new MyTemplate0() {
-                @Override
-                public Strategy create() {
-                    return new ReteRandomLinearStrategy();
-                }
-            };
-
         case BFS:
             return new MyTemplate1<>(new PNumber("bound", 0), "bound", new EncodedInt(0, -1),
                 true) {
@@ -409,7 +368,7 @@ public enum StrategyValue implements ParsableValue {
     public final static EnumSet<StrategyValue> DIALOG_STRATEGIES;
     /** Special mask for development strategies only. Treated specially. */
     public final static EnumSet<StrategyValue> DEVELOPMENT_ONLY_STRATEGIES
-        = EnumSet.of(RETE, RETE_LINEAR, RETE_RANDOM, BFS_UPTO_RULE, MINIMAX);
+        = EnumSet.of(BFS_UPTO_RULE, MINIMAX);
 
     static {
         DIALOG_STRATEGIES = EnumSet.complementOf(LTL_STRATEGIES);
