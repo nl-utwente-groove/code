@@ -46,7 +46,6 @@ module nl.utwente.groove {
     exports nl.utwente.groove.io.store;
     exports nl.utwente.groove.transform.criticalpair;
     exports nl.utwente.groove.io.conceptual.type;
-    exports nl.utwente.groove.match.rete;
     exports nl.utwente.groove.gui.layout;
     exports nl.utwente.groove.transform;
     exports nl.utwente.groove.graph.iso;
@@ -114,7 +113,6 @@ module nl.utwente.groove {
     opens nl.utwente.groove.verify to info.picocli;
     opens nl.utwente.groove.gui to info.picocli;
     opens nl.utwente.groove.io to info.picocli;
-    opens nl.utwente.groove.match.rete to info.picocli;
     opens nl.utwente.groove.prolog to info.picocli;
     opens nl.utwente.groove.util to info.picocli;
     opens nl.utwente.groove.util.cli to info.picocli;

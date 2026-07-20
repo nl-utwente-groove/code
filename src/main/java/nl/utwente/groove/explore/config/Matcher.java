@@ -35,9 +35,7 @@ public class Matcher extends Setting {
     /** The matching strategy. */
     public enum Key implements Setting.Key {
         /** Search plan-based matching. */
-        PLAN("plan", "Match hint", "Search plan-based matching", ContentType.HINT),
-        /** RETE-based incremental matching. */
-        RETE("rete", "", "Incremental (rete-based) matching", ContentType.NULL),;
+        PLAN("plan", "Match hint", "Search plan-based matching", ContentType.HINT),;
 
         private Key(String name, String contentName, String explanation, ContentType contentType) {
             this.name = name;
@@ -80,7 +78,6 @@ public class Matcher extends Setting {
             if (result == null) {
                 var inner = switch (this) {
                 case PLAN -> Hint.Parser.instance();
-                case RETE -> Null.Parser.instance();
                 };
                 this.parser = result = new ContentParser(this, inner);
             }

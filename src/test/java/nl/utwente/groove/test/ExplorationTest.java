@@ -94,7 +94,6 @@ public class ExplorationTest {
         testExploration("append.gps", "append-2-list-5", "bfs", 145, 256);
         testExploration("append.gps", "append-2-list-5", "dfs", 145, 256);
         testExploration("append.gps", "append-2-list-5", null, 145, 256);
-        testExploration("append.gps", "append-2-list-5", "rete", 145, 256);
         testExploration("append.gps", "append-2-list-5", "cnbound:20", 62, 88, 13);
         testExploration("append.gps", "append-2-list-5", "cebound:append>6", 79, 108, 12);
     }
@@ -106,7 +105,6 @@ public class ExplorationTest {
     public void testCarPlatooning() {
         testExploration("car-platooning-no-reg-exp.gps", "start-03", "bfs", 268, 561);
         testExploration("car-platooning-no-reg-exp.gps", "start-03", "dfs", 268, 561);
-        testExploration("car-platooning-no-reg-exp.gps", "start-03", "rete", 268, 561);
     }
 
     /** Tests the complete Car Platooning example
@@ -115,14 +113,12 @@ public class ExplorationTest {
     public void testCarPlatooningFull() {
         testExploration("car-platooning.gps", "start-03", "bfs", 268, 561);
         testExploration("car-platooning.gps", "start-03", "dfs", 268, 561);
-        testExploration("car-platooning.gps", "start-03", "rete", 268, 561);
     }
 
     /** Tests the ferryman sample. */
     @Test
     public void testFerryman() {
         testExploration("ferryman.gps", "start", "bfs", 114, 198);
-        testExploration("ferryman.gps", "start", "rete", 114, 198);
         testExploration("ferryman.gps", "start", "crule:eat", 40, 51);
     }
 
@@ -136,7 +132,6 @@ public class ExplorationTest {
     @Test
     public void testRegExpr() {
         testExploration("regexpr.gps", "start", "bfs", 16, 48);
-        testExploration("regexpr.gps", "start", "rete", 16, 48);
     }
 
     /** Tests the As-and-Bs grammar meant to test path-match cache behavior  sample. */
@@ -144,7 +139,6 @@ public class ExplorationTest {
     public void testAsAndBs() {
         if (!DEBUG) {
             testExploration("As-and-Bs-reg-exp-benchmark.gps", "start", "bfs", 8240, 44774);
-            testExploration("As-and-Bs-reg-exp-benchmark.gps", "start", "rete", 8240, 44774);
         }
     }
 
@@ -152,7 +146,6 @@ public class ExplorationTest {
     @Test
     public void testLooseNodes() {
         testExploration("loose-nodes.gps", 104, 468);
-        testExploration("loose-nodes.gps", "start", "rete", 104, 468);
         testExploration("loose-nodes.gps", "start", "linear", 10, 9);
     }
 
@@ -170,21 +163,18 @@ public class ExplorationTest {
     @Test
     public void testVariables() {
         testExploration("variables.gps", "start-smaller", "bfs", 61, 176);
-        testExploration("variables.gps", "start-smaller", "rete", 61, 176);
     }
 
     /** Tests the counting sample. */
     @Test
     public void testCounting() {
         testExploration("counting.gps", "start", "bfs", 10, 9);
-        testExploration("counting.gps", "start", "rete", 10, 9);
     }
 
     /** A very simple/pure tests for the quantifier counting. */
     @Test
     public void testQuantifierCounter() {
         testExploration("quantifierCounter.gps", 16, 41);
-        testExploration("quantifierCounter.gps", "start", "rete", 16, 41);
     }
 
     /** Tests the quantifier counting sample. */
@@ -197,7 +187,6 @@ public class ExplorationTest {
     @Test
     public void testAttributes() {
         testExploration("attributed-graphs.gps", "start", "bfs", 6, 16);
-        testExploration("attributed-graphs.gps", "start", "rete", 6, 16);
     }
 
     /** Tests the Siespinsky sample. */
@@ -214,7 +203,6 @@ public class ExplorationTest {
     @Test
     public void testPetrinet() {
         testExploration("petrinet.gps", 6, 9);
-        testExploration("petrinet.gps", "start", "rete", 6, 9);
     }
 
     /** Tests the fibonacci sample. */
@@ -229,21 +217,18 @@ public class ExplorationTest {
     @Test
     public void testWildcards() {
         testExploration("wildcards.gps", 8, 12);
-        testExploration("wildcards.gps", "start", "rete", 8, 12);
     }
 
     /** tests the subtyping functionality. */
     @Test
     public void testInheritance() {
         testExploration("inheritance.gps", "start", "bfs", 756, 5374);
-        testExploration("inheritance.gps", "start", "rete", 756, 5374);
     }
 
     /** tests attributes, quantifiers and NACs */
     @Test
     public void testLeaderElection() {
         testExploration("leader-election.gps", "start-2", "bfs", 21, 29);
-        testExploration("leader-election.gps", "start-2", "rete", 21, 29);
     }
 
     /** tests recipes */
