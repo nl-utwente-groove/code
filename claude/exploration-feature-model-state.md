@@ -7,9 +7,10 @@ state, the invariants discovered along the way, and where to pick up.
 
 ## Status: branch programme complete, awaiting review/merge
 
-Phases 1–4 of the plan are implemented on `worktree-explore-feature-model`
-(nine commits, `895dc3068..ca388bedc`). The full test suite **including slow tests**
-(`mvn test -Dexcluded.test.groups=`) passes at 409 tests. The feature model is now the
+Phases 1–4 of the plan are implemented on `explore-feature-model` (renamed from
+`worktree-explore-feature-model` and pushed to origin 2026-07-20), followed by the
+fixes and vocabulary revision from Arend's dialog review. The full test suite
+**including slow tests** (`mvn test -Dexcluded.test.groups=`) passes. The feature model is now the
 only user-facing way to express exploration — GUI dialog, CLI and grammar properties —
 while the legacy Strategy/Acceptor machinery still executes underneath. Phases 5
 (parametric engine) and 6 (demolition) are future branches.
@@ -18,7 +19,7 @@ while the legacy Strategy/Acceptor machinery still executes underneath. Phases 5
 
 - `explore.config` — the model. `ExploreKey` (14 keys), `Setting` (record: `Kind` +
   content), one kind enum per key (`NextState`, `Successor`, `Frontier`, `Heuristic`,
-  `Cost`, `Goal`, `Outcome`, `Result`, `Count`, `Bound`, `Persistence`, `Collapse`,
+  `Cost`, `Goal`, `Outcome`, `Shape`, `Count`, `Bound`, `Persistence`, `Collapse`,
   `Matcher`, `Algebra`), `SettingParser`/`SettingKindMap`/`Null`, and `ExploreConfig`
   (EnumMap; text form = space-separated `key=value`, non-default entries only;
   `check()` = cross-feature consistency only — *realisability* is the converter's job).
@@ -63,16 +64,20 @@ heuristic≠none, cost=rule, frontier=beam, next=random, successor=all-random,
 single-successor on unrestricted frontier, shape=trace, persistence=none,
 collapse/algebra overrides (kinds `grammar` = inherit), goal=graph, goal=ltl/ctl
 (stay with the CheckLTL/CTL actions), iterative deepening (`+inc`), bound=size,
-`applied`+violate (legacy ruleapp has no polarity), condition bound + depth bound
-together (BOUND is a single key). Legacy without feature equivalent: `state`,
+`fires`+violate (legacy ruleapp has no polarity), condition bound + depth bound
+together (BOUND is a single key). Goal vocabulary since the 2026-07-20 review:
+`condition` (merged rule+formula; bare `[!]name` → inv, compound → formula,
+violate normalised into the condition) and `fires` (source-state semantics —
+PredicateAcceptor records transition.source()). Legacy without feature equivalent: `state`,
 `minimax`, `remote` (CLI-only per Arend), LTL strategies, `cycle` acceptor.
 
 ## Open threads for later phases
 
 - Phase 5: one parametric frontier-based search algorithm; then the unsupported list
-  above becomes implementable feature by feature; revisit LTL/CTL goals; possible
-  `rule` → `condition` goal rename when rule conditions become their own resource kind;
-  structured formula atoms `r` / `applied(r)`.
+  above becomes implementable feature by feature; revisit LTL/CTL goals; possibly a
+  target-state counterpart to `fires` ("reached by the action"), and `fires(r)` as an
+  atom of the condition language. Arend does not (currently) want conditions as a
+  separate resource kind; they remain rules, distinguished at most by role/display.
 - Phase 6: delete `explore.encode`, `explore.prettyparse`, `Serialized`,
   `ExploreType`, `StrategyValue`/`AcceptorValue`, legacy property key, `-s/-a/-r`.
   Note: `EncodedTypeEditor` now hosts the colour constants of the deleted

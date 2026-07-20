@@ -68,11 +68,12 @@ public class ExploreTypeConverterTest {
             "goal=none",
             "goal=any",
             "goal=any count=first",
-            "goal=rule:load",
-            "goal=rule:load outcome=violate",
-            "goal=applied:load",
-            "goal=applied:load count=3",
-            "goal=formula:load count=first",
+            "goal=condition:load",
+            "goal=condition:!load",
+            "goal=\"condition:load || eat\"",
+            "goal=condition:load count=first",
+            "goal=fires:load",
+            "goal=fires:load count=3",
             "count=3",};
         for (String text : configs) {
             ExploreConfig config = ExploreConfig.parse(text);
@@ -167,6 +168,37 @@ public class ExploreTypeConverterTest {
         ExploreType bounded = new ExploreType(createUptoRule("bfs", "->", "Positive", "7"),
             createAcceptor("final"), 0);
         assertThrows(FormatException.class, () -> ExploreTypeConverter.toConfig(bounded));
+        // a formula acceptor holding a bare rule name normalises to inv
+        Serialized bareFormula = new Serialized("formula");
+        bareFormula.setArgument("formula", "load");
+        ExploreType viaFormula = new ExploreType(createStrategy("bfs"), bareFormula, 0);
+        ExploreType normalised
+            = ExploreTypeConverter.toExploreType(ExploreTypeConverter.toConfig(viaFormula));
+        assertEquals(new ExploreType(createStrategy("bfs"), createAcceptor("inv"), 0)
+            .getIdentifier(), normalised.getIdentifier());
+    }
+
+    /**
+     * Tests that a violated outcome is absorbed into the condition: as the
+     * inv acceptor's polarity for a bare rule name, and as a negation of the
+     * whole condition otherwise.
+     */
+    @Test
+    public void testViolatedCondition() throws FormatException {
+        // bare rule name: polarity absorbs outcome and content negation
+        ExploreType bare = ExploreTypeConverter
+            .toExploreType(ExploreConfig.parse("goal=condition:load outcome=violate"));
+        assertEquals("inv(polarity=Negative, rule=load)", bare.getAcceptor().toString());
+        assertEquals(ExploreConfig.parse("goal=condition:!load"),
+                     ExploreTypeConverter.toConfig(bare));
+        ExploreType doubleNeg = ExploreTypeConverter
+            .toExploreType(ExploreConfig.parse("goal=condition:!load outcome=violate"));
+        assertEquals("inv(polarity=Positive, rule=load)", doubleNeg.getAcceptor().toString());
+        // compound condition: the whole condition is negated
+        ExploreType compound = ExploreTypeConverter
+            .toExploreType(ExploreConfig
+                .parse("goal=\"condition:load || eat\" outcome=violate"));
+        assertEquals("formula(formula=!(load || eat))", compound.getAcceptor().toString());
     }
 
     /** Creates a serialised strategy with the given keyword, in canonical form
@@ -188,7 +220,9 @@ public class ExploreTypeConverterTest {
             result.setArgument("polarity", "Positive");
         }
         case "ruleapp" -> result.setArgument("rule", "load");
-        case "formula" -> result.setArgument("formula", "load");
+        // a bare rule name would normalise to the inv acceptor, so use a
+        // compound formula for the identity round trip
+        case "formula" -> result.setArgument("formula", "load || eat");
         default -> {
             // no arguments
         }
@@ -213,8 +247,7 @@ public class ExploreTypeConverterTest {
             "algebra=point",
             "goal=graph:someGraph",
             "goal=ltl:someProp",
-            "goal=formula:load outcome=violate",
-            "goal=applied:load outcome=violate",
+            "goal=fires:load outcome=violate",
             "goal=any outcome=violate",
             "bound=size:100",
             "cost=uniform bound=cost:10+5",
@@ -265,12 +298,11 @@ public class ExploreTypeConverterTest {
         assertEquals(gtsDirect.edgeCount(), gtsFromConfig.edgeCount());
         // a goal referring to an actual rule of the grammar validates
         ExploreTypeConverter
-            .toExploreType(ExploreConfig.parse("goal=rule:load count=first"))
+            .toExploreType(ExploreConfig.parse("goal=condition:load count=first"))
             .test(grammar);
-        // so do formula goals, with and without operators
-        ExploreTypeConverter.toExploreType(ExploreConfig.parse("goal=formula:load")).test(grammar);
+        // so do compound conditions
         ExploreTypeConverter
-            .toExploreType(ExploreConfig.parse("goal=\"formula:load || eat\""))
+            .toExploreType(ExploreConfig.parse("goal=\"condition:load || eat\""))
             .test(grammar);
         // and an edge bound over a label actually occurring in the grammar
         var label = grammar

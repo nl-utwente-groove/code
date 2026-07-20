@@ -22,7 +22,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  * Feature values for {@link ExploreKey#GOAL}: the condition that determines
  * whether a result has been found. Whether the condition is to be satisfied or
  * violated is determined by {@link ExploreKey#OUTCOME}. The content of the
- * name- and formula-carrying kinds is kept as a string here; it is resolved
+ * name- and condition-carrying kinds is kept as a string here; it is resolved
  * against the grammar when the configuration is put into effect.
  * @author Arend Rensink
  * @version $Revision$
@@ -41,16 +41,12 @@ public enum Goal implements Setting.Kind {
     /** States isomorphic to a given graph. */
     GRAPH("graph", "A state whose graph is isomorphic to the named graph",
         Setting.ContentType.STRING),
-    /** States satisfying a given rule condition (pre-application). */
-    RULE("rule", "A state whose graph satisfies the named rule condition"
-        + " (regardless of whether the rule is scheduled)",
+    /** States satisfying a propositional condition over rule conditions. */
+    CONDITION("condition", "A state whose graph satisfies a propositional condition"
+        + " over rule names (regardless of whether the rules are scheduled)",
         Setting.ContentType.STRING),
-    /** States reached by an application of a given action (post-application). */
-    APPLIED("applied", "A state reached by an application of the named action"
-        + " (a rule or recipe, as scheduled)",
-        Setting.ContentType.STRING),
-    /** States satisfying a propositional formula over rule conditions. */
-    FORMULA("formula", "A state whose graph satisfies a propositional formula over rule conditions",
+    /** States in which a given action fires. */
+    FIRES("fires", "A state in which the named action (a rule or recipe) fires, as scheduled",
         Setting.ContentType.STRING),
     /** Traces satisfying an LTL formula. */
     LTL("ltl", "A trace satisfying an LTL formula",

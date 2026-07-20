@@ -282,7 +282,17 @@ Goal enum: add `ANY` (no content) and `APPLIED` (string content); `check()`: `an
 requires satisfy; converter: the three mappings above plus rejection of
 `applied`+violate; tests: extend both round-trip matrices and the rejection lists.
 
-## Design proposal: goal vocabulary revision (2026-07-20, awaiting decision)
+## Design proposal: goal vocabulary revision (2026-07-20, approved and implemented)
+
+*Arend approved both parts, with `condition` as the surviving name for the merged
+rule/formula kind. As implemented: goal kinds are now `none`, `any`, `final`,
+`graph`, `condition` (propositional condition over rule names), `fires` (action
+fires in the state, as scheduled), `ltl`, `ctl`. A bare `[!]name` condition maps to
+the legacy `inv` acceptor (polarity absorbing negation and outcome), compound
+conditions to the `formula` acceptor (a violated outcome negates the whole
+condition); on conversion the outcome is normalised into the condition. Arend also
+noted he no longer favours conditions as a separate resource kind; the `condition`
+goal kind is agnostic on that question — it references rule names either way.*
 
 Follow-up to Arend's dialog review, which raised two goal-vocabulary issues that are
 not mechanical: the semantics/name of `applied`, and the redundancy of `rule` next to

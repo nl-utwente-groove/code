@@ -88,12 +88,12 @@ public class ExploreConfigTest {
         var config = new ExploreConfig();
         config.put(ExploreKey.NEXT, NextState.NEWEST.createSetting());
         config.put(ExploreKey.FRONTIER, Frontier.BEAM.createSetting(8));
-        config.put(ExploreKey.GOAL, Goal.FORMULA.createSetting("a & b"));
+        config.put(ExploreKey.GOAL, Goal.CONDITION.createSetting("a & b"));
         config.put(ExploreKey.COUNT, Count.COUNT.createSetting(3));
         config.put(ExploreKey.BOUND, Bound.SIZE.createSetting(new Bound.Limit(100, 20)));
         config.put(ExploreKey.COLLAPSE, Collapse.EQUALITY.createSetting());
         String text = config.unparse();
-        assertEquals("next=newest frontier=8 goal=\"formula:a & b\" count=3"
+        assertEquals("next=newest frontier=8 goal=\"condition:a & b\" count=3"
             + " bound=size:100+20 collapse=equality", text);
         assertEquals(config, ExploreConfig.parse(text));
     }
@@ -153,7 +153,7 @@ public class ExploreConfigTest {
         assertFalse(config.check().isEmpty());
         config.put(ExploreKey.GOAL, Goal.ANY.createSetting());
         assertFalse(config.check().isEmpty());
-        config.put(ExploreKey.GOAL, Goal.RULE.createSetting("someRule"));
+        config.put(ExploreKey.GOAL, Goal.CONDITION.createSetting("someRule"));
         assertTrue(config.check().isEmpty());
 
         // without a goal there are no results to count

@@ -543,8 +543,8 @@ public class ExploreConfigDialog extends JDialog {
          * expected for a given kind, or {@code null} if the kind has no content.
          */
         private String createContentToolTip(Setting.Kind kind) {
-            if (kind == Goal.FORMULA) {
-                return "a propositional formula over rule names:"
+            if (kind == Goal.CONDITION) {
+                return "a propositional condition over rule names:"
                     + " <i>rule</i>; !P; P&amp;&amp;Q; P||Q; P-&gt;Q; (P)";
             }
             if (kind == Goal.LTL) {
@@ -553,8 +553,8 @@ public class ExploreConfigDialog extends JDialog {
             if (kind == Goal.CTL) {
                 return "a CTL formula over rule names";
             }
-            if (kind == Goal.RULE || kind == Goal.APPLIED) {
-                return "a rule name";
+            if (kind == Goal.FIRES) {
+                return "an action (rule or recipe) name";
             }
             if (kind == Goal.GRAPH) {
                 return "a host graph name";
@@ -704,7 +704,9 @@ public class ExploreConfigDialog extends JDialog {
          * if the kind's content is not name-based.
          */
         private List<String> getNames(Setting.Kind kind) {
-            if (kind == Goal.RULE || kind == Goal.APPLIED || kind == Bound.UPTO
+            // a condition is usually a bare rule name, so the editable name
+            // combo doubles as its editor, leaving room for compound formulas
+            if (kind == Goal.CONDITION || kind == Goal.FIRES || kind == Bound.UPTO
                 || kind == Bound.INCLUDE) {
                 return ExploreConfigDialog.this.ruleNames;
             }
