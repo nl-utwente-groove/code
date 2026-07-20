@@ -281,3 +281,59 @@ post-application kind is `applied` (reads as `goal=applied:load`).
 Goal enum: add `ANY` (no content) and `APPLIED` (string content); `check()`: `any`
 requires satisfy; converter: the three mappings above plus rejection of
 `applied`+violate; tests: extend both round-trip matrices and the rejection lists.
+
+## Design proposal: goal vocabulary revision (2026-07-20, awaiting decision)
+
+Follow-up to Arend's dialog review, which raised two goal-vocabulary issues that are
+not mechanical: the semantics/name of `applied`, and the redundancy of `rule` next to
+`formula`. (The review's mechanical points — per-kind content memory, inline errors,
+content syntax tooltips, default marking, richer feature tooltips, and the
+`result` → `shape` rename — are implemented.)
+
+### 1. The `applied` goal is a *source*-state condition
+
+Confirmed in `PredicateAcceptor.addUpdate(GTS, GraphTransition)`: when a transition
+matching the action is added, `transition.source()` becomes the result. So the goal
+holds for the state *in which* the named action is applied (taken, as scheduled), not
+for the state produced by it — the name `applied` (past tense) wrongly suggests the
+latter. Options:
+
+- **(a) Rename, keep source semantics** *(recommended)*. Candidate names:
+  - `fires` — "a state in which the named action fires"; natural production-system
+    terminology, present tense matches the source-state reading. `goal=fires:load`.
+  - `taken` / `applies` — same semantics, weaker idiom.
+  No engine change; the bridge keeps mapping to `ruleapp`.
+- **(b) Switch to target-state semantics, keep the name `applied`.** Requires a new
+  transition-predicate variant recording `transition.target()` — a change to (or next
+  to) the legacy acceptor machinery this branch avoids touching; better done in
+  phase 5.
+- **(c) Both.** Rename to `fires` now (option a); add a separate target-state kind
+  (`reached`?) in phase 5 if wanted. The two are genuinely different conditions, and
+  traces end differently under them.
+
+Proposal: (a) now, leaving (c)'s second kind as a phase-5 candidate.
+
+### 2. `formula` subsumes `rule`
+
+`goal=rule:r` and `goal=formula:r` build the identical predicate
+(`Predicate.RuleApplicable`), since a bare rule name is a valid formula. Proposal:
+**drop the `rule` kind**:
+
+- The converter maps a formula that is a single `[!]name` to the legacy `inv`
+  acceptor (identical semantics, nicer identifier), and anything else to `formula`;
+  legacy `inv` converts back to `formula:[!]r`.
+- `outcome=violate` becomes uniformly expressible by wrapping the formula in
+  `!(...)` at conversion time — today violate works for `rule` but is rejected for
+  `formula`; after the merge it works for every formula.
+- The dialog keeps the rule-name convenience by using an editable rule-name dropdown
+  as the formula editor (free text allowed) — a formula usually starts with a rule
+  name.
+- Naming: with `rule` gone, the kind could be renamed `condition`, anticipating the
+  planned separation of rule conditions into their own resource kind; and if the
+  `fires(r)` form of issue 1 later becomes a formula *atom* (as sketched in the
+  earlier goal-kind proposal), `condition` becomes the single state-condition
+  language. Keeping the name `formula` is the conservative alternative.
+
+Decisions needed from Arend: (i) rename `applied` to `fires` (or another name /
+option b/c)? (ii) drop `rule` in favour of the formula kind, and if so, keep the
+name `formula` or rename to `condition`?
