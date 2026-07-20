@@ -267,5 +267,22 @@ public class ExploreTypeConverterTest {
         ExploreTypeConverter
             .toExploreType(ExploreConfig.parse("goal=rule:load count=first"))
             .test(grammar);
+        // so do formula goals, with and without operators
+        ExploreTypeConverter.toExploreType(ExploreConfig.parse("goal=formula:load")).test(grammar);
+        ExploreTypeConverter
+            .toExploreType(ExploreConfig.parse("goal=\"formula:load || eat\""))
+            .test(grammar);
+        // and an edge bound over a label actually occurring in the grammar
+        var label = grammar
+            .getTypeGraph()
+            .getLabels()
+            .stream()
+            .map(l -> l.text())
+            .sorted()
+            .findFirst()
+            .orElseThrow();
+        ExploreTypeConverter
+            .toExploreType(ExploreConfig.parse("bound=edges:" + label + ">2"))
+            .test(grammar);
     }
 }

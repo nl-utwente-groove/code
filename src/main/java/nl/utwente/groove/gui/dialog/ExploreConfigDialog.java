@@ -24,15 +24,17 @@ import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JList;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -92,6 +94,7 @@ public class ExploreConfigDialog extends JDialog {
         });
         this.ruleNames = getResourceNames(ResourceKind.RULE);
         this.hostNames = getResourceNames(ResourceKind.HOST);
+        this.defaultConfig = getGrammar().getProperties().getExploreConfig();
         this.rows = new EnumMap<>(ExploreKey.class);
         for (var key : ExploreKey.values()) {
             this.rows.put(key, new KeyRow(key));
@@ -267,26 +270,7 @@ public class ExploreConfigDialog extends JDialog {
 
     /** Refreshes the status label and the enabling of the buttons. */
     private void refreshStatus(ExploreType exploreType, FormatErrorSet errors) {
-        String status;
         boolean runnable = exploreType != null;
-        if (!errors.isEmpty()) {
-            var text = new StringBuilder("<html><font color='red'>");
-            for (var error : errors) {
-                text.append(HTMLConverter.toHtml(new StringBuilder(error.toString())));
-                text.append("<br>");
-            }
-            text.append("</font></html>");
-            status = text.toString();
-        } else if (this.legacyNotice != null) {
-            status = "<html><font color='" + INFO_COLOR + "'>" + this.legacyNotice
-                + "</font></html>";
-            this.legacyNotice = null;
-        } else {
-            assert exploreType != null;
-            status = "<html><font color='" + INFO_COLOR + "'>Runs as: "
-                + exploreType.getIdentifier() + "</font></html>";
-        }
-        this.statusLabel.setText(status);
         // like the old dialog, running additionally requires an error-free grammar
         // that is compatible with the exploration
         boolean explorable = runnable;
@@ -304,6 +288,28 @@ public class ExploreConfigDialog extends JDialog {
                 problem = exc.getMessage();
             }
         }
+        String status;
+        if (!errors.isEmpty()) {
+            var text = new StringBuilder("<html><font color='red'>");
+            for (var error : errors) {
+                text.append(HTMLConverter.toHtml(new StringBuilder(error.toString())));
+                text.append("<br>");
+            }
+            text.append("</font></html>");
+            status = text.toString();
+        } else if (problem != null) {
+            status = "<html><font color='red'>"
+                + HTMLConverter.toHtml(new StringBuilder(problem)) + "</font></html>";
+        } else if (this.legacyNotice != null) {
+            status = "<html><font color='" + INFO_COLOR + "'>" + this.legacyNotice
+                + "</font></html>";
+            this.legacyNotice = null;
+        } else {
+            assert exploreType != null;
+            status = "<html><font color='" + INFO_COLOR + "'>Runs as: "
+                + exploreType.getIdentifier() + "</font></html>";
+        }
+        this.statusLabel.setText(status);
         this.defaultButton.setEnabled(runnable);
         this.defaultButton.setToolTipText(DEFAULT_TOOLTIP);
         this.startButton.setEnabled(explorable);
@@ -411,6 +417,8 @@ public class ExploreConfigDialog extends JDialog {
     private final Map<ExploreKey,KeyRow> rows;
     private final List<String> ruleNames;
     private final List<String> hostNames;
+    /** The grammar's default configuration, used to mark defaults in the rows. */
+    private final ExploreConfig defaultConfig;
     private JTextField previewField;
     private JLabel statusLabel;
     private JButton defaultButton;
@@ -446,11 +454,29 @@ public class ExploreConfigDialog extends JDialog {
     private class KeyRow {
         KeyRow(ExploreKey key) {
             this.key = key;
+            this.defaultKindName
+                = ExploreConfigDialog.this.defaultConfig.get(key).kind().getName();
             this.kindBox = new JComboBox<>();
             for (var kind : key.getKindType().getEnumConstants()) {
                 this.kindBox.addItem(kind.getName());
             }
-            this.kindBox.setToolTipText(createKindToolTip(key));
+            this.kindBox.setRenderer(new DefaultListCellRenderer() {
+                @Override
+                public java.awt.Component getListCellRendererComponent(JList<?> list,
+                                                                       Object value, int index,
+                                                                       boolean isSelected,
+                                                                       boolean cellHasFocus) {
+                    var result = super
+                        .getListCellRendererComponent(list, value, index, isSelected,
+                                                      cellHasFocus);
+                    if (KeyRow.this.defaultKindName.equals(value)) {
+                        setText(value + " (default)");
+                    }
+                    return result;
+                }
+            });
+            String kindToolTip = createKindToolTip(key);
+            this.kindBox.setToolTipText(kindToolTip);
             this.kindBox.addActionListener(e -> refresh());
             this.textField = new JTextField(12);
             this.textField.getDocument().addDocumentListener(new DocumentListener() {
@@ -478,25 +504,76 @@ public class ExploreConfigDialog extends JDialog {
             this.contentCards.add(this.namesBox, CARD_NAMES);
             this.panel = new JPanel(new java.awt.GridLayout(1, 3, 5, 0));
             JLabel label = new JLabel(key.getKeyPhrase());
-            label.setToolTipText(key.getExplanation());
+            label.setToolTipText(kindToolTip);
             this.panel.add(label);
             this.panel.add(this.kindBox);
             this.panel.add(this.contentCards);
         }
 
-        /** Creates an HTML tooltip listing the kinds of the key. */
+        /**
+         * Creates an HTML tooltip stating the meaning of the key and listing
+         * its kinds, with their content syntax and the grammar default marked.
+         */
         private String createKindToolTip(ExploreKey key) {
-            var result = new StringBuilder("<html>");
+            var result = new StringBuilder("<html><b>");
+            result.append(key.getKeyPhrase());
+            result.append("</b>: ");
             result.append(key.getExplanation());
-            result.append(":");
+            result.append(". Possible values:");
             for (var kind : key.getKindType().getEnumConstants()) {
                 result.append("<br>- <i>");
                 result.append(kind.getName());
                 result.append("</i>: ");
                 result.append(kind.getExplanation());
+                String contentTip = createContentToolTip(kind);
+                if (contentTip != null) {
+                    result.append("; content: ");
+                    result.append(contentTip);
+                }
+                if (kind.getName().equals(this.defaultKindName)) {
+                    result.append(" <b>(default)</b>");
+                }
             }
             result.append("</html>");
             return result.toString();
+        }
+
+        /**
+         * Returns a (plain-text or HTML-fragment) description of the content
+         * expected for a given kind, or {@code null} if the kind has no content.
+         */
+        private String createContentToolTip(Setting.Kind kind) {
+            if (kind == Goal.FORMULA) {
+                return "a propositional formula over rule names:"
+                    + " <i>rule</i>; !P; P&amp;&amp;Q; P||Q; P-&gt;Q; (P)";
+            }
+            if (kind == Goal.LTL) {
+                return "an LTL formula over rule names";
+            }
+            if (kind == Goal.CTL) {
+                return "a CTL formula over rule names";
+            }
+            if (kind == Goal.RULE || kind == Goal.APPLIED) {
+                return "a rule name";
+            }
+            if (kind == Goal.GRAPH) {
+                return "a host graph name";
+            }
+            if (kind == Bound.EDGES) {
+                return "a comma-separated list of <i>label</i>&gt;<i>bound</i> pairs,"
+                    + " e.g. a&gt;2,b&gt;3";
+            }
+            if (kind == Bound.UPTO || kind == Bound.INCLUDE) {
+                return "a rule name, optionally negated by a '!' prefix";
+            }
+            return switch (kind.contentType()) {
+            case INTEGER -> this.key == ExploreKey.FRONTIER
+                ? "the maximal frontier size (at least 2)"
+                : "the number of results (at least 2)";
+            case LIMIT -> "a maximum, optionally followed by +<i>inc</i>"
+                + " for iterative deepening, e.g. 200 or 200+50";
+            default -> null;
+            };
         }
 
         /** Returns the row panel. */
@@ -544,10 +621,9 @@ public class ExploreConfigDialog extends JDialog {
         /** Loads a setting into the row widgets. */
         void loadSetting(Setting setting) {
             this.kindBox.setSelectedItem(setting.kind().getName());
-            String content = setting.kind().parser().unparse(setting);
-            this.textField.setText(content);
-            refreshNames(setting.kind());
-            this.namesBox.setSelectedItem(content);
+            this.contentMap.put(setting.kind(), setting.kind().parser().unparse(setting));
+            // force the content editors to be reloaded from the content map
+            this.shownKind = null;
             refreshContentCard();
         }
 
@@ -563,16 +639,54 @@ public class ExploreConfigDialog extends JDialog {
             this.namesBox.setEnabled(enabled);
         }
 
-        /** Shows the content card appropriate for the selected kind. */
+        /**
+         * Shows the content card appropriate for the selected kind. Each kind
+         * has its own content: on a kind switch, the previous kind's content
+         * is remembered and the new kind's content restored, so (say) a
+         * formula does not linger in the field when an LTL goal is selected.
+         */
         void refreshContentCard() {
             var kind = getKind();
+            if (kind != this.shownKind) {
+                if (this.shownKind != null) {
+                    this.contentMap.put(this.shownKind, getContentText(this.shownKind));
+                }
+                setContentText(kind, kind == null
+                    ? ""
+                    : this.contentMap.getOrDefault(kind, ""));
+                this.shownKind = kind;
+            }
             String card = kind == null
                 ? CARD_NONE
                 : getCard(kind);
             if (CARD_NAMES.equals(card)) {
                 refreshNames(kind);
             }
+            String contentTip = kind == null
+                ? null
+                : createContentToolTip(kind);
+            String contentTipHtml = contentTip == null
+                ? null
+                : "<html>" + Character.toUpperCase(contentTip.charAt(0)) + contentTip.substring(1)
+                    + "</html>";
+            this.textField.setToolTipText(contentTipHtml);
+            this.namesBox.setToolTipText(contentTipHtml);
             ((CardLayout) this.contentCards.getLayout()).show(this.contentCards, card);
+        }
+
+        /** Sets the content editors to a given text, without triggering a refresh. */
+        private void setContentText(Setting.Kind kind, String text) {
+            boolean wasRefreshing = ExploreConfigDialog.this.refreshing;
+            ExploreConfigDialog.this.refreshing = true;
+            try {
+                this.textField.setText(text);
+                if (kind != null) {
+                    refreshNames(kind);
+                }
+                this.namesBox.setSelectedItem(text);
+            } finally {
+                ExploreConfigDialog.this.refreshing = wasRefreshing;
+            }
         }
 
         /** Determines the content card for a given kind. */
@@ -621,10 +735,15 @@ public class ExploreConfigDialog extends JDialog {
         }
 
         private final ExploreKey key;
+        private final String defaultKindName;
         private final JComboBox<String> kindBox;
         private final JTextField textField;
         private final JComboBox<String> namesBox;
         private final JPanel contentCards;
         private final JPanel panel;
+        /** Content last entered for each kind of this key. */
+        private final Map<Setting.Kind,String> contentMap = new HashMap<>();
+        /** The kind whose content is currently shown in the editors. */
+        private Setting.Kind shownKind;
     }
 }
