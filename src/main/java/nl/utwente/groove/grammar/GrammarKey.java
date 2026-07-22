@@ -32,6 +32,7 @@ import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.algebra.UserSignature;
 import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
+import nl.utwente.groove.explore.config.ExploreConfigChecker;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
@@ -585,11 +586,16 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
         return result;
     };
 
-    /** Checker that tests whether an exploration configuration is realisable. */
+    /**
+     * Checker that tests whether an exploration configuration is realisable
+     * and whether its grammar-dependent contents (condition formulas, rule
+     * names, edge labels) are valid in the grammar.
+     */
     private static GrammarChecker exploreConfigChecker = (g, v) -> {
         FormatErrorSet result = new FormatErrorSet();
         try {
             ExploreTypeConverter.toExploreType(v.getExploreConfig());
+            result.addAll(ExploreConfigChecker.check(g, v.getExploreConfig()));
         } catch (FormatException exc) {
             result.addAll(exc.getErrors());
         }
