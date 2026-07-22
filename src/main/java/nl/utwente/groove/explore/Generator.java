@@ -486,7 +486,7 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
             + "  persistence - state storage: all*, none\n"
             + "  collapse    - state equivalence: grammar*, equality, isomorphism, hash\n"
             + "  algebra     - data values: grammar*, default, big, point, term\n"
-            + "Example: -x \"next=newest count=first goal=rule:mygoal\"";
+            + "Example: -x \"next=newest count=first goal=condition:mygoal\"";
 
     /**
      * Name of the acceptor option.
