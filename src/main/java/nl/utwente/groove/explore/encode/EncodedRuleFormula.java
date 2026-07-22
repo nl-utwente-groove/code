@@ -39,7 +39,23 @@ public class EncodedRuleFormula implements EncodedType<Predicate<GraphState>,Str
     private String text;
     private int i;
     private int last_i;
-    private Grammar ruleSystem;
+    private RuleResolver resolver;
+
+    /**
+     * Resolver from rule names to the corresponding rule-applicability
+     * predicates. The standard resolver looks up the rule in a {@link Grammar}
+     * (see {@link #parse(Grammar, String)}); a checking client can substitute
+     * a resolver that only validates the name, so that a formula can be
+     * syntax- and name-checked without an instantiated grammar.
+     */
+    @FunctionalInterface
+    public static interface RuleResolver {
+        /**
+         * Returns the applicability predicate for a given rule name.
+         * @throws FormatException if the name does not denote an enabled rule
+         */
+        Predicate<GraphState> resolve(QualName name) throws FormatException;
+    }
 
     @Override
     public EncodedTypeEditor<Predicate<GraphState>,String> createEditor(GrammarModel grammar) {
@@ -49,12 +65,24 @@ public class EncodedRuleFormula implements EncodedType<Predicate<GraphState>,Str
 
     @Override
     public Predicate<GraphState> parse(Grammar rules, String text) throws FormatException {
+        return parse(name -> {
+            Rule rule = rules.getRule(name);
+            if (rule == null) {
+                throw new FormatException(
+                    "'" + name + "' is not an enabled rule in the loaded grammar.");
+            }
+            return new Predicate.RuleApplicable(rule);
+        }, text);
+    }
+
+    /** Parses a rule formula, with rule names looked up by a given resolver. */
+    public Predicate<GraphState> parse(RuleResolver resolver, String text) throws FormatException {
         this.text = text;
         this.i = 0;
         this.last_i = this.text.length() - 1;
-        this.ruleSystem = rules;
+        this.resolver = resolver;
         Predicate<GraphState> predicate = parseFormula();
-        this.ruleSystem = null; // erase local reference to rule system
+        this.resolver = null; // erase local reference to the resolver
         if (this.i <= this.last_i) {
             throw new FormatException("Unable to consume the entire input.");
         } else {
@@ -111,12 +139,7 @@ public class EncodedRuleFormula implements EncodedType<Predicate<GraphState>,Str
             throw new FormatException("Expected a rule name at character index " + this.i + " .");
         }
         QualName ruleName = QualName.parse(this.text.substring(start_i, this.i));
-        Rule rule = this.ruleSystem.getRule(ruleName);
-        if (rule == null) {
-            throw new FormatException(
-                "'" + ruleName + "' is not an enabled rule in the loaded grammar.");
-        }
-        return new Predicate.RuleApplicable(rule);
+        return this.resolver.resolve(ruleName);
     }
 
     /**

@@ -77,6 +77,11 @@ public class EncodedEdgeMap implements EncodedType<Map<TypeLabel,Integer>,String
      */
     @Override
     public Map<TypeLabel,Integer> parse(Grammar rules, String source) throws FormatException {
+        return parse(rules.getTypeGraph(), source);
+    }
+
+    /** Parses an edge-bound map, with labels resolved in a given type graph. */
+    public Map<TypeLabel,Integer> parse(TypeGraph typeGraph, String source) throws FormatException {
 
         // Disallow the empty string.
         if (source.equals("")) {
@@ -85,9 +90,6 @@ public class EncodedEdgeMap implements EncodedType<Map<TypeLabel,Integer>,String
 
         // Allocate the result map.
         Map<TypeLabel,Integer> edgeMap = new TreeMap<>();
-
-        // Get the type graph from the GTS.
-        TypeGraph typeGraph = rules.getTypeGraph();
 
         // Split the source String (assumed to be a comma separated list).
         String[] units = source.split(",");
