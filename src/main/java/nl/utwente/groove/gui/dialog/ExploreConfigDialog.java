@@ -94,7 +94,6 @@ public class ExploreConfigDialog extends JDialog {
         });
         this.ruleNames = getResourceNames(ResourceKind.RULE);
         this.hostNames = getResourceNames(ResourceKind.HOST);
-        this.defaultConfig = getGrammar().getProperties().getExploreConfig();
         this.rows = new EnumMap<>(ExploreKey.class);
         for (var key : ExploreKey.values()) {
             this.rows.put(key, new KeyRow(key));
@@ -417,8 +416,6 @@ public class ExploreConfigDialog extends JDialog {
     private final Map<ExploreKey,KeyRow> rows;
     private final List<String> ruleNames;
     private final List<String> hostNames;
-    /** The grammar's default configuration, used to mark defaults in the rows. */
-    private final ExploreConfig defaultConfig;
     private JTextField previewField;
     private JLabel statusLabel;
     private JButton defaultButton;
@@ -454,8 +451,7 @@ public class ExploreConfigDialog extends JDialog {
     private class KeyRow {
         KeyRow(ExploreKey key) {
             this.key = key;
-            this.defaultKindName
-                = ExploreConfigDialog.this.defaultConfig.get(key).kind().getName();
+            this.defaultKindName = key.getDefaultKind().getName();
             this.kindBox = new JComboBox<>();
             for (var kind : key.getKindType().getEnumConstants()) {
                 this.kindBox.addItem(kind.getName());
@@ -470,7 +466,7 @@ public class ExploreConfigDialog extends JDialog {
                         .getListCellRendererComponent(list, value, index, isSelected,
                                                       cellHasFocus);
                     if (KeyRow.this.defaultKindName.equals(value)) {
-                        setText(value + " (default)");
+                        setText(value + "*");
                     }
                     return result;
                 }
