@@ -1,19 +1,24 @@
-# State of the exploration feature model branch (2026-07-20)
+# State of the exploration feature model programme (2026-07-22)
 
 Note to a future Claude session. Companion to
 [exploration-feature-model-plan.md](exploration-feature-model-plan.md), which holds the
 feature model, the phase plan and the decision log; this note records the *as-built*
 state, the invariants discovered along the way, and where to pick up.
 
-## Status: branch programme complete, awaiting review/merge
+## Status: phases 1–4 done; phase 5a done on sub-branch
 
-Phases 1–4 of the plan are implemented on `explore-feature-model` (renamed from
-`worktree-explore-feature-model` and pushed to origin 2026-07-20), followed by the
-fixes and vocabulary revision from Arend's dialog review. The full test suite
-**including slow tests** (`mvn test -Dexcluded.test.groups=`) passes. The feature model is now the
-only user-facing way to express exploration — GUI dialog, CLI and grammar properties —
-while the legacy Strategy/Acceptor machinery still executes underneath. Phases 5
-(parametric engine) and 6 (demolition) are future branches.
+Phases 1–4 of the plan are implemented on `explore-feature-model` (pushed to origin
+2026-07-20), followed by the fixes and vocabulary revision from Arend's dialog
+review, and on 2026-07-22 a merge of master reconciling the RETE retirement (the
+`matcher` key was dropped — a single engine carries no information). Phase 5a (the
+engine skeleton, see the plan's phase 5a section) lives on sub-branch
+`explore-parametric-engine`, branched off `explore-feature-model`: configuration-based
+exploration now instantiates the `explore.engine` classes directly, without the
+encode/Template machinery; the deprecated keyword path (`-s/-a`, legacy property)
+still runs the enumerator-instantiated legacy classes. The full test suite
+**including slow tests** (`mvn test -Dexcluded.test.groups=`) passes on both branches.
+Phases 5b+ (priority pools, trace results, overrides, persistence) and 6 (demolition)
+are future branches.
 
 ## As-built map
 
@@ -27,7 +32,20 @@ while the legacy Strategy/Acceptor machinery still executes underneath. Phases 5
   `check()` = cross-feature consistency only — *realisability* is the converter's job).
 - `explore.config.ExploreTypeConverter` — bidirectional partial bridge to legacy
   `ExploreType` (`toExploreType` / `toConfig`); single place that knows what the legacy
-  engine can realise. Everything inexpressible errors with an explanation.
+  engine can realise. Everything inexpressible errors with an explanation. Since 5a,
+  `toExploreType` returns a `ConfiguredExploreType` (subclass holding the config)
+  whose `getParsedStrategy`/`getParsedAcceptor` instantiate directly — the engine
+  classes below, and the acceptor classes — from the converter-computed legacy
+  descriptors, reusing the `Encoded*` semantic parsers but bypassing
+  Template/enumerator parsing. All config consumers funnel through `toExploreType`,
+  so this one return type switched the GUI, CLI and property paths to the engine.
+- `explore.engine` (5a) — `Pool` (take/add/readd/clear; may impose a depth bound;
+  stateful, not shareable between explorations) with `QueuePool`/`StackPool`
+  replicating the legacy BFS/DFS orderings verbatim; `FrontierStrategy extends
+  ClosingStrategy` delegating the pool hooks to an injected `Pool` — deliberately
+  *inheriting* `doNext()` (transient stack, KNOWN re-traversal, stop modes) instead
+  of re-porting it. `test.explore.EngineParityTest` A/B-compares engine vs enumerator
+  paths on ferryman (order proved bit-identical) and checks re-run determinism.
 - `gui.dialog.ExploreConfigDialog` — replaces `ExplorationDialog`; rows per key,
   dependency-aware enabling, preview + "Runs as", buttons enabled via conversion +
   `ExploreType.test(grammar)`. Stores defaults as config
@@ -75,20 +93,31 @@ PredicateAcceptor records transition.source()). Legacy without feature equivalen
 
 ## Open threads for later phases
 
-- Phase 5: one parametric frontier-based search algorithm; then the unsupported list
-  above becomes implementable feature by feature; revisit LTL/CTL goals; possibly a
-  target-state counterpart to `fires` ("reached by the action"), and `fires(r)` as an
-  atom of the condition language. Arend does not (currently) want conditions as a
-  separate resource kind; they remain rules, distinguished at most by role/display.
+- Phase 5b+ (5a — the engine skeleton — is done, see the plan): priority/beam/random
+  orders as new `Pool` implementations; trace results; collapse/algebra overrides;
+  persistence None (the one feature that forces rewriting the inherited `doNext()`
+  protocol); then the unsupported list above becomes implementable feature by
+  feature; revisit LTL/CTL goals; possibly a target-state counterpart to `fires`
+  ("reached by the action"), and `fires(r)` as an atom of the condition language.
+  Arend does not (currently) want conditions as a separate resource kind; they
+  remain rules, distinguished at most by role/display.
 - Phase 6: delete `explore.encode`, `explore.prettyparse`, `Serialized`,
   `ExploreType`, `StrategyValue`/`AcceptorValue`, legacy property key, `-s/-a/-r`.
   Note: `EncodedTypeEditor` now hosts the colour constants of the deleted
   `ExplorationDialog`; the `encode` editors are unreachable from the GUI already.
+  Note: `ConfiguredExploreType` still realises the converter's legacy `Serialized`
+  descriptors and reuses the `Encoded*` semantic parsers (`EncodedEnabledRule`,
+  `EncodedRuleFormula`, `EncodedEdgeMap`); demolition must first move those parsers
+  out of `encode` and re-key the direct instantiation on the config itself.
 - Randomness features (`next=random`, `successor=*-random`) must respect the pending
-  deterministic-seeding design (see memory: randomness-seeding-design).
+  deterministic-seeding design (see memory: randomness-seeding-design; design note
+  committed as claude/randomness-seeding.md).
 
 ## Working agreements in force
 
-Worktree `.claude/worktrees/explore-feature-model`; detach HEAD when handing over for
-Eclipse review, re-attach on "continue". No pom or generated-code changes on this
-branch ⇒ Eclipse refresh suffices after merge. Commits: house style, no trailers.
+Worktrees `.claude/worktrees/explore-feature-model` (phases 1–4) and
+`.claude/worktrees/explore-parametric-engine` (5a, branched off the former); detach
+HEAD when handing over for Eclipse review, re-attach on "continue". No pom or
+generated-code changes on these branches ⇒ Eclipse refresh suffices after merge
+(module-info gained the `explore.engine` export, which a refresh picks up).
+Commits: house style, no trailers.

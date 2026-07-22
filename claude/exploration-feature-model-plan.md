@@ -179,7 +179,7 @@ programme (possibly as successive PRs off the same line).
   back to converting a legacy `explorationStrategy` value; saving from the dialog
   writes the new key and drops the old one.
 
-### Phase 5 (later branch) — engine unification
+### Phase 5 (later branches) — engine unification
 
 One parametric frontier-based search algorithm (frontier + next-state policy +
 successor policy + goal + bound + persistence hooks) replacing the `ClosingStrategy`
@@ -187,6 +187,37 @@ family, so feature values compose instead of multiplying strategy classes. Only 
 heuristic, cost, beam, hash-collapse, persistence None, trace results, iterative
 deepening become implementable as ordinary feature values. LTL/CTL as goal types are
 revisited here.
+
+#### Phase 5a (branch `explore-parametric-engine`, 2026-07-22) — engine skeleton
+
+*Decisions (with Arend): strategy-subclass strangler; legacy strategy classes stay
+for the deprecated keyword path; parity bar = same GTS (state/transition/result
+counts), free order; RETE divergence reconciled on `explore-feature-model` first.*
+
+Reconnaissance showed `ClosingStrategy` is already pool-parametric — the BFS/DFS
+subclasses contain nothing but pool orderings. 5a therefore extracts the pool as a
+first-class injected policy instead of re-porting the exploration protocol:
+
+- `explore.engine`: `Pool` (take/add/readd/clear, may impose a depth bound) with
+  `QueuePool` (breadth-first) and `StackPool` (depth-first) replicating the legacy
+  orderings verbatim; `FrontierStrategy extends ClosingStrategy` delegating its pool
+  hooks to an injected `Pool`, inheriting the battle-tested `doNext()` protocol
+  (transient stack, KNOWN re-traversal, stop modes, oracle interruption) unchanged.
+- `explore.config.ConfiguredExploreType extends ExploreType`, produced by
+  `ExploreTypeConverter.toExploreType`: holds the config and *directly* instantiates
+  strategy (engine classes; `LinearStrategy`/`RandomLinearStrategy` for the
+  single-path family) and acceptors from the converter-computed legacy descriptors,
+  reusing the `Encoded*` semantic parsers (`EncodedEnabledRule`, `EncodedRuleFormula`,
+  `EncodedEdgeMap`) but bypassing Template/enumerator machinery. Since every config
+  consumer (grammar property, `-x`, dialog) funnels through `toExploreType`, routing
+  needed zero call-site changes; the deprecated `-s/-a` keyword path still uses the
+  enumerators and legacy classes.
+- `EngineParityTest`: ~20 configs × ferryman, A/B against the enumerator path,
+  asserting equal state/transition counts and result-state numbers (order proved
+  bit-identical, stronger than the agreed bar) plus engine-re-run determinism.
+
+The full protocol rewrite (needed for persistence None) is deferred until a feature
+demands it; heuristic/beam/random orders become `Pool` implementations in 5b+.
 
 ### Phase 6 (later branch) — demolition
 
