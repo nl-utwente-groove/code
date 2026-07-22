@@ -17,6 +17,7 @@
 package nl.utwente.groove.explore.config;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.explore.encode.EncodedEdgeMap;
 import nl.utwente.groove.explore.encode.EncodedRuleFormula;
@@ -128,7 +129,7 @@ public class ExploreConfigChecker {
     /** Trivial state predicate, used as a placeholder during formula checking. */
     private static final Predicate<GraphState> TRUE = new Predicate.StatePredicate() {
         @Override
-        public boolean test(GraphState state) {
+        public boolean test(@Nullable GraphState state) {
             return true;
         }
     };
