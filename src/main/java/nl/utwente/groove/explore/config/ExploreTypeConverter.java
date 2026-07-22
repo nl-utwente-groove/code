@@ -60,7 +60,7 @@ public class ExploreTypeConverter {
         Serialized acceptor = computeAcceptor(config, errors);
         errors.throwException();
         assert strategy != null && acceptor != null;
-        return new ExploreType(strategy, acceptor, getResultBound(config));
+        return new ConfiguredExploreType(config, strategy, acceptor, getResultBound(config));
     }
 
     /** Collects errors for the feature values no legacy strategy can realise. */
