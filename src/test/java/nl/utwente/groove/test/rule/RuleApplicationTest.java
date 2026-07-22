@@ -129,6 +129,15 @@ public class RuleApplicationTest extends TestCase {
         test("regression");
     }
 
+    /** Regression test for gh #859: order-dependent normalisation of attribute
+     * expressions wrongly quantified the target node of a cross-level field expression.
+     * The edge order in the rule file is chosen to trigger the original bug;
+     * beware that normalisation order is sensitive to that order. */
+    @Test
+    public void testRegressionGh859() {
+        test("regression-gh859");
+    }
+
     /** Tests the working of some oracles. */
     @Test
     public void testOracle() {

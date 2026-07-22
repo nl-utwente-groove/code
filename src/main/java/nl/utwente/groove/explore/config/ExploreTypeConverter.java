@@ -107,17 +107,12 @@ public class ExploreTypeConverter {
                                                      FormatErrorSet errors) {
         var next = (NextState) config.getKind(ExploreKey.NEXT);
         var successor = (Successor) config.getKind(ExploreKey.SUCCESSOR);
-        var rete = config.getKind(ExploreKey.MATCHER) == Matcher.RETE;
         String result = null;
         if (config.getKind(ExploreKey.FRONTIER) == Frontier.SINGLE) {
             // linear search; the next-state selection is irrelevant
             switch (successor) {
-            case SINGLE -> result = rete
-                ? "retelinear"
-                : "linear";
-            case SINGLE_RANDOM -> result = rete
-                ? "reterandom"
-                : "random";
+            case SINGLE -> result = "linear";
+            case SINGLE_RANDOM -> result = "random";
             case ALL, ALL_RANDOM -> errors
                 .add("A single-state frontier requires single-successor generation");
             }
@@ -125,16 +120,8 @@ public class ExploreTypeConverter {
             switch (successor) {
             case ALL -> {
                 switch (next) {
-                case OLDEST -> {
-                    if (rete) {
-                        errors.add("The RETE strategy only supports depth-first search");
-                    } else {
-                        result = "bfs";
-                    }
-                }
-                case NEWEST -> result = rete
-                    ? "rete"
-                    : "dfs";
+                case OLDEST -> result = "bfs";
+                case NEWEST -> result = "dfs";
                 case RANDOM -> errors.add("Random next-state selection is not yet supported");
                 }
             }
@@ -335,20 +322,6 @@ public class ExploreTypeConverter {
             result.put(ExploreKey.SUCCESSOR, Successor.SINGLE.createSetting());
         }
         case "random" -> {
-            result.put(ExploreKey.FRONTIER, Frontier.SINGLE.createSetting());
-            result.put(ExploreKey.SUCCESSOR, Successor.SINGLE_RANDOM.createSetting());
-        }
-        case "rete" -> {
-            result.put(ExploreKey.MATCHER, Matcher.RETE.createSetting());
-            result.put(ExploreKey.NEXT, NextState.NEWEST.createSetting());
-        }
-        case "retelinear" -> {
-            result.put(ExploreKey.MATCHER, Matcher.RETE.createSetting());
-            result.put(ExploreKey.FRONTIER, Frontier.SINGLE.createSetting());
-            result.put(ExploreKey.SUCCESSOR, Successor.SINGLE.createSetting());
-        }
-        case "reterandom" -> {
-            result.put(ExploreKey.MATCHER, Matcher.RETE.createSetting());
             result.put(ExploreKey.FRONTIER, Frontier.SINGLE.createSetting());
             result.put(ExploreKey.SUCCESSOR, Successor.SINGLE_RANDOM.createSetting());
         }

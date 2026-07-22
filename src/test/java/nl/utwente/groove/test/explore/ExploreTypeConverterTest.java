@@ -53,9 +53,6 @@ public class ExploreTypeConverterTest {
             "next=newest",
             "frontier=single successor=single",
             "frontier=single successor=single-random",
-            "matcher=rete next=newest",
-            "matcher=rete frontier=single successor=single",
-            "matcher=rete frontier=single successor=single-random",
             "cost=uniform bound=cost:5",
             "next=newest cost=uniform bound=cost:5",
             "bound=nodes:20",
@@ -90,8 +87,7 @@ public class ExploreTypeConverterTest {
      */
     @Test
     public void testLegacyRoundTrip() throws FormatException {
-        String[] strategies = {"bfs", "dfs", "linear", "random", "rete", "retelinear",
-            "reterandom"};
+        String[] strategies = {"bfs", "dfs", "linear", "random"};
         String[] acceptors = {"final", "none", "any", "inv", "ruleapp", "formula"};
         int[] bounds = {0, 1, 3};
         for (String strategy : strategies) {
@@ -238,7 +234,6 @@ public class ExploreTypeConverterTest {
             "next=random",
             "successor=all-random",
             "successor=single",
-            "matcher=rete",
             "heuristic=nen",
             "cost=rule",
             "shape=trace",
@@ -255,7 +250,6 @@ public class ExploreTypeConverterTest {
             "bound=nodes:20+5",
             "next=newest bound=nodes:20",
             "next=newest bound=edges:a>2",
-            "matcher=rete next=newest bound=upto:load",
             "frontier=single successor=single bound=upto:load",};
         for (String text : configs) {
             assertThrows(FormatException.class, () -> ExploreTypeConverter

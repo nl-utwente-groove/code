@@ -111,8 +111,8 @@ public class ExploreConfigDialog extends JDialog {
             .add(createSection("Goal and results", ExploreKey.GOAL, ExploreKey.OUTCOME,
                                ExploreKey.SHAPE, ExploreKey.COUNT));
         content
-            .add(createSection("Engine", ExploreKey.MATCHER, ExploreKey.COLLAPSE,
-                               ExploreKey.ALGEBRA, ExploreKey.PERSISTENCE));
+            .add(createSection("Engine", ExploreKey.COLLAPSE, ExploreKey.ALGEBRA,
+                               ExploreKey.PERSISTENCE));
         content.add(createPreviewPanel());
         content.add(createButtonPanel());
 

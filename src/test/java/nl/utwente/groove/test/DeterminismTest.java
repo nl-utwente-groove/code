@@ -56,13 +56,6 @@ public class DeterminismTest {
         test("loose-nodes", "bfs");
     }
 
-    /** Tests determinism of the RETE-based exploration. */
-    @Test
-    public void testReteEngineDeterminism() {
-        test("ferryman", "rete");
-        test("loose-nodes", "rete");
-    }
-
     /**
      * Explores a named grammar repeatedly with a given strategy — perturbing
      * the identity hash code sequence in between, and simulating a

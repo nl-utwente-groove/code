@@ -59,8 +59,6 @@ public enum ExploreKey implements ParsableKey<Setting> {
     /** Condition under which a fresh state equals a known state. */
     COLLAPSE("collapse", "Condition under which a fresh state is considered equal to a known state",
         Collapse.GRAMMAR),
-    /** Engine used to find rule matches. */
-    MATCHER("matcher", "Engine used to find rule matches", Matcher.PLAN),
     /** Interpretation of data values. */
     ALGEBRA("algebra", "Interpretation of data values", Algebra.GRAMMAR),;
 

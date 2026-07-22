@@ -21,8 +21,6 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.rule.RuleToHostMap;
-import nl.utwente.groove.match.plan.PlanSearchEngine;
-import nl.utwente.groove.match.rete.ReteSearchEngine;
 import nl.utwente.groove.util.Visitor;
 
 /**
@@ -30,8 +28,7 @@ import nl.utwente.groove.util.Visitor;
  * Note that this type is not intended to be exposed: the actual
  * condition and rule matching should use {@link Matcher} objects instead,
  * since these provide more functionality and, more importantly, are
- * refreshed in reaction to changes of the search engine (from
- * {@link PlanSearchEngine} to {@link ReteSearchEngine} and back).
+ * refreshed in reaction to changes of the search engine.
  * @see MatcherFactory
  * @see Matcher
  * @author Arend Rensink

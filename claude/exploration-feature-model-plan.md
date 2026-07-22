@@ -60,7 +60,9 @@ state is done by saving that state and starting a new exploration.
     *Isomorphism*, *Hash* (iso hash only; may collapse non-isomorphic states; weaker
     hashes conceivable at the price of losing the morphism).
 12. **Matcher**: *Plan* (with common/control edge types to tune the search plan),
-    *Rete* (currently incomplete).
+    *Rete* (currently incomplete). *[Dimension dropped 2026-07-22: RETE was retired
+    on master (see rete-retirement.md), leaving a single engine, so the `matcher`
+    key carries no information. Reintroduce the key if another engine ever appears.]*
 13. **Algebra**: *Default*, *Big*, *Point*, *Term*.
 
 ## Decisions taken (with Arend, 2026-07-19)
@@ -79,7 +81,8 @@ state is done by saving that state and starting a new exploration.
 - **Matcher/algebra/collapse: explore config overrides grammar default.** `algebraFamily`
   and `checkIsomorphism` remain grammar properties; the exploration config may override
   them per run (absent = inherit the grammar property). The matcher feature likewise
-  replaces choosing Rete via dedicated strategies.
+  replaces choosing Rete via dedicated strategies. *[Overtaken by the RETE retirement;
+  the matcher key was dropped 2026-07-22, see the feature list above.]*
 
 ## Current architecture (what we are migrating away from)
 
@@ -135,7 +138,6 @@ programme (possibly as successive PRs off the same line).
   | Newest, All-InOrder, Complete | `DFSStrategy` |
   | Frontier Single, Single-InOrder | `LinearStrategy` |
   | Frontier Single, Single-Random | `RandomLinearStrategy` |
-  | Matcher Rete + the above | `ReteStrategy` / `ReteLinearStrategy` / `ReteRandomLinearStrategy` |
   | Bound (graph size / rule set) | bounded BFS/DFS variants, `Boundary` |
   | Goal Final | `FinalStateAcceptor` |
   | Goal None | `NoStateAcceptor` |

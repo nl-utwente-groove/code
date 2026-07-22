@@ -36,8 +36,6 @@ public enum GraphRole {
     TYPE("type", "Type Graph"),
     /** LTS graph role. */
     LTS("lts", "LTS"),
-    /** RETE graph role. */
-    RETE("rete", "Rete Network"),
     /** Control automaton role. */
     CTRL("control", "Control Automaton"),
     /** Buchi automaton role. */

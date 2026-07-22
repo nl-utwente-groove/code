@@ -485,7 +485,6 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
             + "                upto:[!]id, include:[!]id\n"
             + "  persistence - state storage: all*, none\n"
             + "  collapse    - state equivalence: grammar*, equality, isomorphism, hash\n"
-            + "  matcher     - match engine: plan*, rete\n"
             + "  algebra     - data values: grammar*, default, big, point, term\n"
             + "Example: -x \"next=newest count=first goal=rule:mygoal\"";
 

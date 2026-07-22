@@ -17,10 +17,12 @@ while the legacy Strategy/Acceptor machinery still executes underneath. Phases 5
 
 ## As-built map
 
-- `explore.config` — the model. `ExploreKey` (14 keys), `Setting` (record: `Kind` +
-  content), one kind enum per key (`NextState`, `Successor`, `Frontier`, `Heuristic`,
-  `Cost`, `Goal`, `Outcome`, `Shape`, `Count`, `Bound`, `Persistence`, `Collapse`,
-  `Matcher`, `Algebra`), `SettingParser`/`SettingKindMap`/`Null`, and `ExploreConfig`
+- `explore.config` — the model. `ExploreKey` (13 keys; the `matcher` key was dropped
+  2026-07-22 when the RETE retirement on master left a single engine), `Setting`
+  (record: `Kind` + content), one kind enum per key (`NextState`, `Successor`,
+  `Frontier`, `Heuristic`, `Cost`, `Goal`, `Outcome`, `Shape`, `Count`, `Bound`,
+  `Persistence`, `Collapse`, `Algebra`),
+  `SettingParser`/`SettingKindMap`/`Null`, and `ExploreConfig`
   (EnumMap; text form = space-separated `key=value`, non-default entries only;
   `check()` = cross-feature consistency only — *realisability* is the converter's job).
 - `explore.config.ExploreTypeConverter` — bidirectional partial bridge to legacy
