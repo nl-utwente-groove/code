@@ -30,6 +30,7 @@ module nl.utwente.groove {
     exports nl.utwente.groove.graph.layout;
     exports nl.utwente.groove.explore.config;
     exports nl.utwente.groove.gui.export;
+    exports nl.utwente.groove.explore.engine;
     exports nl.utwente.groove.explore.result;
     exports nl.utwente.groove.io.external;
     exports nl.utwente.groove.explore.strategy;
