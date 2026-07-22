@@ -1,24 +1,39 @@
-# State of the exploration feature model programme (2026-07-22)
+# State of the exploration feature model programme (2026-07-22, frozen)
 
 Note to a future Claude session. Companion to
 [exploration-feature-model-plan.md](exploration-feature-model-plan.md), which holds the
 feature model, the phase plan and the decision log; this note records the *as-built*
 state, the invariants discovered along the way, and where to pick up.
 
-## Status: phases 1–4 done; phase 5a done on sub-branch
+## Status: phases 1–4 done; phase 5a done; both awaiting merge to master
 
-Phases 1–4 of the plan are implemented on `explore-feature-model` (pushed to origin
-2026-07-20), followed by the fixes and vocabulary revision from Arend's dialog
-review, and on 2026-07-22 a merge of master reconciling the RETE retirement (the
-`matcher` key was dropped — a single engine carries no information). Phase 5a (the
-engine skeleton, see the plan's phase 5a section) lives on sub-branch
-`explore-parametric-engine`, branched off `explore-feature-model`: configuration-based
-exploration now instantiates the `explore.engine` classes directly, without the
-encode/Template machinery; the deprecated keyword path (`-s/-a`, legacy property)
-still runs the enumerator-instantiated legacy classes. The full test suite
-**including slow tests** (`mvn test -Dexcluded.test.groups=`) passes on both branches.
-Phases 5b+ (priority pools, trace results, overrides, persistence) and 6 (demolition)
-are future branches.
+Frozen 2026-07-22 at Arend's request. Branch topology at freeze time (nothing
+pushed beyond `explore-feature-model`@defa76d8f; the RETE-merge and later commits
+are local only):
+
+    master (8376effe7, incl. RETE retirement)
+      ⊂ explore-feature-model (094ff6e39)
+          phases 1–4 + dialog-review fixes + master merge (matcher key dropped)
+          + second dialog-review round + Arend's @Nullable touch-up
+      ⊂ explore-parametric-engine (1ac3de828)
+          phase 5a (engine skeleton) + merge of the above
+
+Merging to master in that order fast-forwards; the engine branch subsumes both.
+Suite at freeze, measured at the engine tip: 368 fast, **399 including slow tests**
+(`mvn test -Dexcluded.test.groups=`), all green. Phases 1–4: the feature model is the
+only user-facing way to express exploration (dialog, `-x`, grammar property).
+Phase 5a: configuration-based exploration instantiates the `explore.engine` classes
+directly, without the encode/Template machinery; the deprecated keyword path
+(`-s/-a`, legacy property) still runs the enumerator-instantiated legacy classes as
+the parity reference. Phases 5b+ (priority pools, trace results, overrides,
+persistence) and 6 (demolition) are future branches — do not start unprompted.
+
+The second dialog-review round (2026-07-22, commits 6718ad5db + 571c958e3) settled:
+drop-down defaults are marked with a trailing `*` only ("(default)" stays in the
+tooltip), keyed to the *key-inherent* defaults (`ExploreKey.getDefaultKind`), not
+the grammar's stored configuration; and the grammar-dependent contents of a stored
+configuration are validated by the property checker (see `ExploreConfigChecker`
+below), so condition/rule/label errors surface on the system properties.
 
 ## As-built map
 
@@ -46,10 +61,23 @@ are future branches.
   *inheriting* `doNext()` (transient stack, KNOWN re-traversal, stop modes) instead
   of re-porting it. `test.explore.EngineParityTest` A/B-compares engine vs enumerator
   paths on ferryman (order proved bit-identical) and checks re-run determinism.
+- `explore.config.ExploreConfigChecker` — validates the grammar-dependent contents
+  of a configuration (condition formula syntax, rule existence/enabledness, edge
+  labels) against the **GrammarModel**, invoked from the `exploration` property
+  checker in `GrammarKey`. It must NOT instantiate the grammar: the property checker
+  runs inside `GrammarModel.toGrammar()`, so calling `toGrammar()` there recurses.
+  Model-level stand-ins: `getActiveNames(RULE)` for rule enabledness,
+  `getTypeGraph()` for labels, and `EncodedRuleFormula`'s `RuleResolver` hook (added
+  for this purpose; the `Grammar`-based parse is now one resolver instance) for
+  formula checking with a placeholder predicate. `EncodedEdgeMap` gained a
+  type-graph `parse` overload likewise. `test.explore.ExploreConfigCheckerTest`
+  covers broken and valid contents.
 - `gui.dialog.ExploreConfigDialog` — replaces `ExplorationDialog`; rows per key,
   dependency-aware enabling, preview + "Runs as", buttons enabled via conversion +
   `ExploreType.test(grammar)`. Stores defaults as config
-  (`SimulatorModel.doSetDefaultExploreConfig`).
+  (`SimulatorModel.doSetDefaultExploreConfig`). Drop-downs mark the key-inherent
+  default kind with a trailing `*` (the "(default)" wording lives in the tooltip);
+  the grammar's stored choice is visible as the initial selection, not marked.
 - Persistence — `GrammarKey.EXPLORE_CONFIG` ("exploration",
   `ValueType.EXPLORE_CONFIG`); precedence over legacy `EXPLORATION`
   ("explorationStrategy") in `GrammarProperties.getExploreType/getExploreConfig`; lazy
