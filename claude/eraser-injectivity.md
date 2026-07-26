@@ -206,22 +206,34 @@ so the identification condition cannot be enforced for them — erasure of a
 witness silently proceeds (SPO residue). Tracking all witnesses at match
 time was rejected outright (user). The resolution has three parts.
 
-**Atom choices get real edge images.** A choice between atoms (`a|b`,
-uniformly binary or flag) is the one composite whose every witness is a
-single host edge, so it is matched like a guarded wildcard:
-`ChoiceEdgeSearchItem` (an `Edge2SearchItem` subclass minus the variable
-plumbing of `VarEdgeSearchItem`) binds the image, and the existing conflict
-machinery covers it with no further change. `RuleEdge.hasEdgeImage` (now
-public) includes atom choices; `canShareImage` intersects possible image
-label sets. **Gated on multigraph mode** (user decision): with an edge
-image, distinct witnesses of a forall-quantified choice count as distinct
+**Edge-image expressions get real edge images.** The property "every
+witness is a single host edge" holds for atoms and unnamed wildcards and is
+preserved by choice and inversion (user, 2026-07-26) — so the qualifying
+expressions are the closure of those atoms under the two operators:
+`a|b`, `-a`, `-(a|b)`, `-a|b`, `?[b]|a`, …
+(`RuleLabel.getImageAlts` flattens them into alternatives, each with its
+own match direction; a uniform binary-or-flag role is required, and
+*named* wildcards disqualify, since a variable cannot be bound
+conditionally on the choice — a lone named wildcard is still handled by
+`VarEdgeSearchItem`). `ChoiceEdgeSearchItem` binds the image; because an
+inverse alternative binds the rule source to the host edge *target* and
+vice versa, and both orientations of one host edge count as distinct
+morphisms (`a|-a` on a single a-edge yields two), the item is a standalone
+`AbstractSearchItem` iterating oriented candidates rather than an
+`Edge2SearchItem` subclass, whose record is orientation-fixed. `RuleEdge`
+computes per-direction matching-type sets; `canShareImage` simplifies to
+an intersection of matching types (position-filtered, hence at least as
+precise as the previous label comparison — orientation is deliberately
+ignored there, since it is the host edge identity that must not be
+shared). **Gated on multigraph mode** (user decision): with an edge image,
+distinct witnesses of a forall-quantified expression count as distinct
 instances — consistent with atom edges in multigraphs, but an observable
 change — so simple-graph mode keeps the automaton item and its counting
-bit-for-bit. Compiling `a|b` into an unnamed guarded wildcard was rejected:
-`isWildcard()` is load-bearing across typing, display and validation.
-Inverse atoms `-a` are an analogous future widening (image with flipped
-ends); until then they stay untracked. Fixture `parallelChoice.gps`;
-programmatic pins in `ChoiceEdgeMatchingTest`.
+bit-for-bit. Compiling choices into unnamed guarded wildcards was
+rejected: `isWildcard()` is load-bearing across typing, display and
+validation. Fixture `parallelChoice.gps` (incl. `invChoiceReaderConflict`
+for an inverse alternative vs. an eraser); programmatic pins in
+`ChoiceEdgeMatchingTest`.
 
 **Remaining composites are statically checked** (`ignoreRegExp`, default
 false — the check is active when `parallelEdges` is set and `ignoreRegExp`

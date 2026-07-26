@@ -114,16 +114,19 @@ counts per node, `mult=` states parallel copy counts per edge.
   contrast, is typically not in the anchor, so the k! symmetric ways of
   binding it collapse automatically. The feared symmetry blowup is thereby
   confined to eraser bundles, where it is semantically meaningful.
-- **Counting NACs presuppose edge-injective embargo matching** — *open
-  decision for the MULT step*. The reading "`not:mult=2:a` = at most 1 copy"
-  holds only if the embargo bundle must match injectively; under the default
+- **Counting NACs presuppose edge-injective embargo matching** — *resolved
+  by prohibition (user, 2026-07-26): counting NACs are disallowed until
+  further notice.* The reading "`not:mult=2:a` = at most 1 copy" holds only
+  if the embargo bundle must match injectively; under the default
   non-injective matching, both embargo edges can bind the same host copy,
   making `not:mult=2` equivalent to `not:mult=1`. NAC subconditions
-  currently inherit the rule's injectivity property. Standard theory (NACs
-  as "no injective image") argues for always matching embargo bundles
-  edge-injectively; uniformity with GROOVE's non-injective default argues
-  against. To be decided when the MULT aspect gives users a way to write
-  such NACs.
+  currently inherit the rule's injectivity property, so neither reading is
+  uniformly right. Rather than deciding the semantics now, the MULT
+  implementation must reject `mult=` with `not:` (multiplicity ≥ 2 on an
+  embargo edge) with an understandable error message explaining that
+  counting NACs are not (yet) supported. This is a **MULT-step work item**;
+  it cannot be enforced earlier, since without the aspect there is no syntax
+  that can express a counting NAC.
 - **Determinism of match order.** Matches that differ *only* in which
   parallel host copy they bind are content-identical; the canonical match
   order (`MatchCollector.canonicalise`, cf. the ferryman-flake analysis) must

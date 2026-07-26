@@ -28,7 +28,6 @@ import nl.utwente.groove.grammar.AnchorKind;
 import nl.utwente.groove.grammar.type.TypeEdge;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeGuard;
-import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.ANumberedEdge;
 
 /** Rule edge that is not attribute-related. */
@@ -50,7 +49,7 @@ public class RuleEdge extends ANumberedEdge<RuleNode,RuleLabel> implements RuleE
         assert tl == null || type != null && tl.equals(type.label());
         this.type = type;
         TypeGuard guard = label.getWildcardGuard();
-        List<TypeLabel> choiceLabels = label.getAtomChoiceLabels();
+        List<RuleLabel.ImageAlt> imageAlts = label.getImageAlts();
         if (guard != null) {
             this.typeGuards = guard.isNamed()
                 ? singletonList(guard)
@@ -64,24 +63,48 @@ public class RuleEdge extends ANumberedEdge<RuleNode,RuleLabel> implements RuleE
                 .filter(e -> target.isTypedBy(e.target()))
                 .filter(guard::test)
                 .forEach(this.matchingTypes::add);
-        } else if (choiceLabels != null) {
-            // a choice between atoms is matched to a single host edge image,
-            // whose type must carry one of the operand labels
+            this.forwardMatchingTypes = this.matchingTypes;
+            this.inverseMatchingTypes = emptySet();
+        } else if (type == null && imageAlts != null) {
+            // a composite edge-image expression (choices and inversions of
+            // atoms and unnamed wildcards) is matched to a single host edge
+            // image, whose type must fit one of the alternatives, in the
+            // direction of that alternative
             TypeGraph typeGraph = source.getType().getGraph();
-            this.matchingTypes = new HashSet<>();
-            typeGraph
-                .edgeSet()
-                .stream()
-                .filter(e -> source.isTypedBy(e.source()))
-                .filter(e -> target.isTypedBy(e.target()))
-                .filter(e -> choiceLabels.contains(e.label()))
-                .forEach(this.matchingTypes::add);
+            var forward = new HashSet<TypeEdge>();
+            var inverse = new HashSet<TypeEdge>();
+            for (var alt : imageAlts) {
+                RuleNode from = alt.inverse()
+                    ? target
+                    : source;
+                RuleNode to = alt.inverse()
+                    ? source
+                    : target;
+                Set<TypeEdge> set = alt.inverse()
+                    ? inverse
+                    : forward;
+                typeGraph
+                    .edgeSet()
+                    .stream()
+                    .filter(e -> from.isTypedBy(e.source()))
+                    .filter(e -> to.isTypedBy(e.target()))
+                    .filter(alt::test)
+                    .forEach(set::add);
+            }
+            this.forwardMatchingTypes = forward;
+            this.inverseMatchingTypes = inverse;
+            this.matchingTypes = new HashSet<>(forward);
+            this.matchingTypes.addAll(inverse);
             this.typeGuards = emptyList();
         } else if (type == null) {
             this.matchingTypes = emptySet();
+            this.forwardMatchingTypes = emptySet();
+            this.inverseMatchingTypes = emptySet();
             this.typeGuards = emptyList();
         } else {
             this.matchingTypes = new HashSet<>(type.getSubtypes());
+            this.forwardMatchingTypes = this.matchingTypes;
+            this.inverseMatchingTypes = emptySet();
             this.typeGuards = emptyList();
         }
     }
@@ -108,6 +131,24 @@ public class RuleEdge extends ANumberedEdge<RuleNode,RuleLabel> implements RuleE
 
     /** Set of possible edge types, if the label is a wildcard. */
     private final Set<TypeEdge> matchingTypes;
+
+    /**
+     * Returns the possible edge types of the host edge image when this edge
+     * is matched in a given direction. An inverse match means the host edge
+     * image runs from the target to the source end; only composite
+     * edge-image expressions (see {@link RuleLabel#getImageAlts()}) have
+     * inversely matchable types.
+     */
+    public Set<TypeEdge> getMatchingTypes(boolean inverse) {
+        return inverse
+            ? this.inverseMatchingTypes
+            : this.forwardMatchingTypes;
+    }
+
+    /** Set of possible edge types of a forwards-matched image. */
+    private final Set<TypeEdge> forwardMatchingTypes;
+    /** Set of possible edge types of an inversely-matched image. */
+    private final Set<TypeEdge> inverseMatchingTypes;
 
     @Override
     public List<TypeGuard> getTypeGuards() {
@@ -149,51 +190,27 @@ public class RuleEdge extends ANumberedEdge<RuleNode,RuleLabel> implements RuleE
      * Conservatively determines if this and another, distinct rule edge may be
      * matched to the same host edge. Only edges that are bound to a single
      * host edge image are considered; composite regular expression and
-     * (in)equality edges have no edge image.
+     * (in)equality edges have no edge image. The edges may share an image if
+     * their possible image types (in either match direction) overlap.
      */
     public boolean canShareImage(RuleEdge other) {
-        RuleLabel myLabel = label();
-        RuleLabel otherLabel = other.label();
-        if (!hasEdgeImage(myLabel) || !hasEdgeImage(otherLabel)) {
+        if (!hasEdgeImage() || !other.hasEdgeImage()) {
             return false;
         }
-        if (myLabel.getRole() != otherLabel.getRole()) {
+        if (label().getRole() != other.label().getRole()) {
             return false;
         }
-        if (myLabel.isWildcard() || otherLabel.isWildcard()) {
-            return true;
-        }
-        // both labels determine a set of possible image labels:
-        // a singleton for atoms and sharps, the operand labels for atom choices
-        return !Collections.disjoint(getImageLabels(), other.getImageLabels());
-    }
-
-    /**
-     * Returns the possible labels of the host edge image of this edge,
-     * if the label is an atom, sharp or atom choice.
-     */
-    private List<TypeLabel> getImageLabels() {
-        List<TypeLabel> result = label().getAtomChoiceLabels();
-        if (result == null) {
-            TypeLabel typeLabel = label().getTypeLabel();
-            result = typeLabel == null
-                ? emptyList()
-                : singletonList(typeLabel);
-        }
-        return result;
+        return !Collections.disjoint(getMatchingTypes(), other.getMatchingTypes());
     }
 
     /** Indicates if this edge is matched to a single host edge image.
-     * This is the case if the label is a sharp, atom, wildcard or atom choice;
-     * composite regular expression and (in)equality edges have no edge image.
+     * This is the case if the label is a sharp, a wildcard, or an
+     * edge-image expression (see {@link RuleLabel#hasEdgeImage()});
+     * other composite regular expression and (in)equality edges have no
+     * edge image.
      */
     public boolean hasEdgeImage() {
-        return hasEdgeImage(label());
-    }
-
-    /** Indicates if edges with a given label are matched to a single host edge image. */
-    private static boolean hasEdgeImage(RuleLabel label) {
-        return label.isSharp() || label.isAtom() || label.isWildcard() || label.isAtomChoice();
+        return label().hasEdgeImage();
     }
 
     /** Convenience method to assert non-nullness of singleton set. */

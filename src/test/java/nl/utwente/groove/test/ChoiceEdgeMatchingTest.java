@@ -37,12 +37,14 @@ import nl.utwente.groove.match.MatcherFactory;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
- * Tests matching of atom-choice rule edges ({@code a|b}).
- * In multigraph mode, such edges bind a genuine host edge image (any witness
- * of the choice is a single host edge), so distinct witnesses give distinct
- * morphisms, and the edge image participates in the edge-injectivity check.
- * In simple-graph mode, choices keep the automaton-based semantics, where
- * only the end nodes are bound and witnesses are not distinguished.
+ * Tests matching of composite edge-image expressions: choices and inversions
+ * of atoms and unnamed wildcards, such as {@code a|b}, {@code -a} or
+ * {@code ?[b]|a}. In multigraph mode, such edges bind a genuine host edge
+ * image (any witness is a single host edge, possibly matched inversely), so
+ * distinct witnesses and orientations give distinct morphisms, and the edge
+ * image participates in the edge-injectivity check. In simple-graph mode,
+ * these expressions keep the automaton-based semantics, where only the end
+ * nodes are bound and witnesses are not distinguished.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -55,21 +57,23 @@ public class ChoiceEdgeMatchingTest {
         ImplicitTypeGraph typeGraph = new ImplicitTypeGraph();
         typeGraph.addLabel("a");
         typeGraph.addLabel("b");
+        typeGraph.addLabel("c");
         typeGraph.setFixed();
         this.typeGraph = typeGraph;
     }
 
-    /** Creates a condition whose pattern consists of two nodes connected
-     * by a choice edge {@code a|b}, and optionally also an atom edge {@code a}. */
-    private Condition createCondition(Condition.Op op, boolean injective, boolean simple,
-                                      boolean atomEdge) throws FormatException {
+    /** Creates a condition whose pattern consists of two nodes r0, r1 connected
+     * by an edge with the given (parsed) label from r0 to r1, and optionally
+     * also an atom edge {@code a} from r0 to r1. */
+    private Condition createCondition(String labelText, Condition.Op op, boolean injective,
+                                      boolean simple, boolean atomEdge) throws FormatException {
         RuleFactory factory = RuleFactory.newInstance(this.typeGraph.getFactory());
         RuleGraph pattern = new RuleGraph("pattern", injective, simple, factory);
         RuleNode r0 = factory.createNode();
         RuleNode r1 = factory.createNode();
         pattern.addNode(r0);
         pattern.addNode(r1);
-        pattern.addEdge(factory.createEdge(r0, new RuleLabel(RegExpr.parse("a|b")), r1));
+        pattern.addEdge(factory.createEdge(r0, new RuleLabel(RegExpr.parse(labelText)), r1));
         if (atomEdge) {
             pattern.addEdge(factory.createEdge(r0, factory.createLabel("a"), r1));
         }
@@ -79,83 +83,127 @@ public class ChoiceEdgeMatchingTest {
         return result;
     }
 
-    /** Creates a host graph with two nodes connected by
-     * {@code aCopies} a-edges and {@code bCopies} b-edges. */
-    private HostGraph createHost(boolean simple, int aCopies, int bCopies) {
+    /** Creates a host graph with two nodes h0, h1 and an edge per given
+     * specification: a plain label means an edge from h0 to h1, a label
+     * prefixed with {@code -} means an edge from h1 to h0. */
+    private HostGraph createHost(boolean simple, String... edges) {
         HostFactory factory = HostFactory.newInstance(this.typeGraph.getFactory(), simple);
         DefaultHostGraph result = new DefaultHostGraph("host", factory);
         HostNode h0 = result.addNode();
         HostNode h1 = result.addNode();
-        for (int i = 0; i < aCopies; i++) {
-            result.addEdge(h0, "a", h1);
-        }
-        for (int i = 0; i < bCopies; i++) {
-            result.addEdge(h0, "b", h1);
+        for (String edge : edges) {
+            if (edge.startsWith("-")) {
+                result.addEdge(h1, edge.substring(1), h0);
+            } else {
+                result.addEdge(h0, edge, h1);
+            }
         }
         result.setFixed();
         return result;
     }
 
-    /** Returns the number of matches of the choice pattern into a host with
-     * the given numbers of a- and b-edges, in multigraph mode. */
-    private int matchCount(Condition.Op op, boolean injective, boolean atomEdge, int aCopies,
-                           int bCopies) throws FormatException {
-        Condition condition = createCondition(op, injective, false, atomEdge);
-        HostGraph host = createHost(false, aCopies, bCopies);
+    /** Returns the number of matches of the pattern into the host,
+     * in multigraph mode. */
+    private int matchCount(String labelText, Condition.Op op, boolean injective, boolean atomEdge,
+                           String... hostEdges) throws FormatException {
+        Condition condition = createCondition(labelText, op, injective, false, atomEdge);
+        HostGraph host = createHost(false, hostEdges);
         return MatcherFactory.instance(false).createMatcher(condition).findAll(host, null).size();
     }
 
     /** Universally quantified, every witness of the choice is a separate morphism. */
     @Test
     public void testForallTwoWitnesses() throws FormatException {
-        assertEquals(2, matchCount(Condition.Op.FORALL, false, false, 1, 1));
+        assertEquals(2, matchCount("a|b", Condition.Op.FORALL, false, false, "a", "b"));
     }
 
     /** A single witness gives a single morphism. */
     @Test
     public void testForallOneWitness() throws FormatException {
-        assertEquals(1, matchCount(Condition.Op.FORALL, false, false, 1, 0));
+        assertEquals(1, matchCount("a|b", Condition.Op.FORALL, false, false, "a"));
     }
 
     /** Parallel copies of one operand are distinct witnesses. */
     @Test
     public void testForallParallelWitnesses() throws FormatException {
-        assertEquals(2, matchCount(Condition.Op.FORALL, false, false, 2, 0));
+        assertEquals(2, matchCount("a|b", Condition.Op.FORALL, false, false, "a", "a"));
     }
 
     /** Existentially quantified, the choice edge image is irrelevant,
      * so all witnesses collapse to a single proof. */
     @Test
     public void testExistsCollapse() throws FormatException {
-        assertEquals(1, matchCount(Condition.Op.EXISTS, false, false, 1, 1));
+        assertEquals(1, matchCount("a|b", Condition.Op.EXISTS, false, false, "a", "b"));
     }
 
     /** Under injective matching, the choice edge may not share its image
      * with the atom edge, so it must fall back to the b-witness. */
     @Test
     public void testInjectiveDistinctWitness() throws FormatException {
-        assertEquals(1, matchCount(Condition.Op.FORALL, true, true, 1, 1));
+        assertEquals(1, matchCount("a|b", Condition.Op.FORALL, true, true, "a", "b"));
     }
 
     /** Under injective matching, a single shared witness is not enough. */
     @Test
     public void testInjectiveNoFreeWitness() throws FormatException {
-        assertEquals(0, matchCount(Condition.Op.FORALL, true, true, 1, 0));
+        assertEquals(0, matchCount("a|b", Condition.Op.FORALL, true, true, "a"));
     }
 
     /** Under non-injective matching, the choice edge may share its image
      * with the atom edge. */
     @Test
     public void testNonInjectiveSharedWitness() throws FormatException {
-        assertEquals(1, matchCount(Condition.Op.FORALL, false, true, 1, 0));
+        assertEquals(1, matchCount("a|b", Condition.Op.FORALL, false, true, "a"));
     }
 
-    /** In simple-graph mode, the choice retains the automaton-based
+    /** An inverse atom matches a host edge from the target to the source image. */
+    @Test
+    public void testInverseAtom() throws FormatException {
+        assertEquals(1, matchCount("-a", Condition.Op.FORALL, false, false, "-a"));
+        assertEquals(0, matchCount("-a", Condition.Op.FORALL, false, false, "-b"));
+    }
+
+    /** A nested inversion distributes over the choice. */
+    @Test
+    public void testInverseChoice() throws FormatException {
+        assertEquals(1, matchCount("-(a|b)", Condition.Op.FORALL, false, false, "-b"));
+        assertEquals(2, matchCount("-(a|b)", Condition.Op.FORALL, false, false, "-a", "-b"));
+        // without further constraints, a forward witness is matched with
+        // swapped end bindings; with the atom edge pinning the node images,
+        // an inversely directed witness is required
+        assertEquals(1, matchCount("-(a|b)", Condition.Op.FORALL, false, false, "a"));
+        assertEquals(0, matchCount("-(a|b)", Condition.Op.FORALL, false, true, "a"));
+    }
+
+    /** A single host edge matched by both operand directions counts as two
+     * morphisms, with opposite end node bindings. */
+    @Test
+    public void testBothOrientations() throws FormatException {
+        assertEquals(2, matchCount("a|-a", Condition.Op.FORALL, false, false, "a"));
+    }
+
+    /** An unnamed guarded wildcard can be a choice operand. */
+    @Test
+    public void testWildcardChoice() throws FormatException {
+        assertEquals(2, matchCount("?[b]|a", Condition.Op.FORALL, false, false, "a", "b"));
+        assertEquals(0, matchCount("?[b]|a", Condition.Op.FORALL, false, false, "c"));
+    }
+
+    /** Under injective matching, the forward alternative may not reuse the
+     * edge taken by the atom edge, and the inverse alternative needs an
+     * oppositely directed witness. */
+    @Test
+    public void testInjectiveInverse() throws FormatException {
+        assertEquals(0, matchCount("a|-a", Condition.Op.FORALL, true, true, "a"));
+        assertEquals(2, matchCount("a|-a", Condition.Op.FORALL, true, true, "a", "a"));
+    }
+
+    /** In simple-graph mode, composite expressions retain the automaton-based
      * semantics: witnesses are not distinguished, even universally. */
     @Test
     public void testSimpleModeCollapse() throws FormatException {
-        Condition condition = createCondition(Condition.Op.FORALL, false, true, false);
-        HostGraph host = createHost(true, 1, 1);
+        Condition condition = createCondition("a|b", Condition.Op.FORALL, false, true, false);
+        HostGraph host = createHost(true, "a", "b");
         assertEquals(1,
                      MatcherFactory.instance(true).createMatcher(condition).findAll(host, null)
                          .size());

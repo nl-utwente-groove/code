@@ -453,11 +453,13 @@ public class PlanSearchEngine extends SearchEngine {
                 result = new EqualitySearchItem(edge, true);
             } else if (label.isSharp() || label.isAtom()) {
                 result = new Edge2SearchItem(edge, this.simple);
-            } else if (!this.simple && label.isAtomChoice()) {
-                // in multigraph mode, choices between atoms bind a genuine host
-                // edge image, so that the injective matching of eraser edges
-                // (the DPO identification condition) extends to them; in
-                // simple-graph mode they keep the automaton-based semantics
+            } else if (!this.simple && label.getImageAlts() != null) {
+                // in multigraph mode, composite edge-image expressions
+                // (choices and inversions of atoms and unnamed wildcards)
+                // bind a genuine host edge image, so that the injective
+                // matching of eraser edges (the DPO identification condition)
+                // extends to them; in simple-graph mode they keep the
+                // automaton-based semantics
                 result = new ChoiceEdgeSearchItem(edge);
             } else {
                 result = new RegExprEdgeSearchItem(edge, this.typeGraph);
