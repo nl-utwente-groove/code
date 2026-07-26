@@ -17,6 +17,7 @@
 package nl.utwente.groove.explore.config;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Feature values for {@link ExploreKey#NEXT}: the choice of the next state
@@ -28,14 +29,17 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 @NonNullByDefault
 public enum NextState implements Setting.Kind {
     /** Explore the oldest state in the frontier first. */
-    OLDEST("oldest", "The oldest state in the frontier is explored next (breadth-first search)"),
+    OLDEST("oldest", "bfs",
+        "The oldest state in the frontier is explored next (breadth-first search)"),
     /** Explore the most recently added state first. */
-    NEWEST("newest", "The newest state in the frontier is explored next (depth-first search)"),
+    NEWEST("newest", "dfs",
+        "The newest state in the frontier is explored next (depth-first search)"),
     /** Explore a random state from the frontier. */
-    RANDOM("random", "A random state in the frontier is explored next"),;
+    RANDOM("random", null, "A random state in the frontier is explored next"),;
 
-    private NextState(String name, String explanation) {
+    private NextState(String name, @Nullable String hint, String explanation) {
         this.name = name;
+        this.hint = hint;
         this.explanation = explanation;
     }
 
@@ -45,6 +49,13 @@ public enum NextState implements Setting.Kind {
     }
 
     private final String name;
+
+    @Override
+    public @Nullable String getHint() {
+        return this.hint;
+    }
+
+    private final @Nullable String hint;
 
     @Override
     public String getExplanation() {

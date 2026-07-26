@@ -34,7 +34,6 @@ import java.util.Objects;
 import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
@@ -174,24 +173,10 @@ public class ExploreConfigDialog extends JDialog {
         this.previewField = new JTextField();
         this.previewField.setEditable(false);
         this.statusLabel = new JLabel(" ");
-        this.revertButton = new JButton(REVERT_COMMAND);
-        this.revertButton.setToolTipText(REVERT_TOOLTIP);
-        this.revertButton.addActionListener(e -> resetTo(this.revertConfig));
-        this.savedButton = new JButton(SAVED_COMMAND);
-        this.savedButton.setToolTipText(SAVED_TOOLTIP);
-        this.savedButton
-            .addActionListener(e -> resetTo(getGrammar().getProperties().getExploreConfig()));
-        Box resetBox = Box.createHorizontalBox();
-        resetBox.add(this.revertButton);
-        resetBox.add(Box.createHorizontalStrut(5));
-        resetBox.add(this.savedButton);
-        JPanel south = new JPanel(new BorderLayout(5, 0));
-        south.add(this.statusLabel, BorderLayout.CENTER);
-        south.add(resetBox, BorderLayout.EAST);
-        // anchor everything to the top, so surplus vertical space stays below
+        // anchor both to the top, so surplus vertical space stays below them
         JPanel inner = new JPanel(new BorderLayout(0, 2));
         inner.add(this.previewField, BorderLayout.NORTH);
-        inner.add(south, BorderLayout.SOUTH);
+        inner.add(this.statusLabel, BorderLayout.SOUTH);
         result.add(inner, BorderLayout.NORTH);
         return result;
     }
@@ -231,6 +216,15 @@ public class ExploreConfigDialog extends JDialog {
         this.defaultButton = new JButton(DEFAULT_COMMAND);
         this.defaultButton.addActionListener(e -> setDefaultExploreType());
         result.add(this.defaultButton);
+        this.revertButton = new JButton(REVERT_COMMAND);
+        this.revertButton.setToolTipText(REVERT_TOOLTIP);
+        this.revertButton.addActionListener(e -> resetTo(this.revertConfig));
+        result.add(this.revertButton);
+        this.savedButton = new JButton(SAVED_COMMAND);
+        this.savedButton.setToolTipText(SAVED_TOOLTIP);
+        this.savedButton
+            .addActionListener(e -> resetTo(getGrammar().getProperties().getExploreConfig()));
+        result.add(this.savedButton);
         this.startButton = new JButton(START_COMMAND);
         this.startButton.addActionListener(e -> startExploration());
         result.add(this.startButton);
@@ -606,8 +600,8 @@ public class ExploreConfigDialog extends JDialog {
     private final int oldDismissDelay;
 
     private static final String DEFAULT_COMMAND = "Save";
-    private static final String START_COMMAND = "Start";
-    private static final String EXPLORE_COMMAND = "Run";
+    private static final String START_COMMAND = "Restart";
+    private static final String EXPLORE_COMMAND = "Continue";
     private static final String CANCEL_COMMAND = "Cancel";
     private static final String REVERT_COMMAND = "Revert";
     private static final String SAVED_COMMAND = "Reset to Saved";
@@ -617,9 +611,10 @@ public class ExploreConfigDialog extends JDialog {
         = "Discard the changes and return to the exploration in force when the dialog was opened";
     private static final String SAVED_TOOLTIP
         = "Load the exploration saved with the grammar";
-    private static final String START_TOOLTIP = "Restart with the composed exploration";
+    private static final String START_TOOLTIP
+        = "Discard the current state space and explore afresh with the composed exploration";
     private static final String EXPLORE_TOOLTIP
-        = "Run the composed exploration on the currently explored state space";
+        = "Continue exploring the current state space with the composed exploration";
     /** Colour of informational status text. */
     private static final String INFO_COLOR = "#005050";
 
@@ -650,8 +645,16 @@ public class ExploreConfigDialog extends JDialog {
                                                                        boolean cellHasFocus) {
                     var result = super.getListCellRendererComponent(list, value, index, isSelected,
                                                                     cellHasFocus);
-                    if (KeyRow.this.defaultKindName.equals(value)) {
-                        setText(value + "*");
+                    if (value != null) {
+                        var text = new StringBuilder(value.toString());
+                        String hint = getKindHint(value.toString());
+                        if (hint != null) {
+                            text.append(" (").append(hint).append(")");
+                        }
+                        if (KeyRow.this.defaultKindName.equals(value)) {
+                            text.append("*");
+                        }
+                        setText(text.toString());
                     }
                     return result;
                 }
@@ -694,6 +697,16 @@ public class ExploreConfigDialog extends JDialog {
             valuePanel.add(this.kindBox, BorderLayout.WEST);
             valuePanel.add(this.contentCards, BorderLayout.CENTER);
             this.panel.add(valuePanel, BorderLayout.CENTER);
+        }
+
+        /** Returns the display hint of the kind with a given name, if any. */
+        private String getKindHint(String kindName) {
+            for (var kind : this.key.getKindType().getEnumConstants()) {
+                if (kind.getName().equals(kindName)) {
+                    return kind.getHint();
+                }
+            }
+            return null;
         }
 
         /** Sets the widths of the key and kind columns (shared by all rows). */
