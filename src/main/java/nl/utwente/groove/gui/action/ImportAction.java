@@ -55,6 +55,11 @@ public class ImportAction extends SimulatorAction {
         int approve = getFormatChooser().showDialog(getFrame(), "Import");
         // now load, if so required
         if (approve == JFileChooser.APPROVE_OPTION) {
+            // the Ecore formats have encoding options, which have to be settled
+            // (and stored) before the importer reads them from the grammar
+            if (!askEcoreOptions(getFormatChooser().getFileType())) {
+                return;
+            }
             try {
                 doChosenImport(getGrammarModel());
             } catch (PortException | FormatException e) {
