@@ -16,23 +16,18 @@
  */
 package nl.utwente.groove.io.external;
 
-import java.awt.Component;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.gui.Simulator;
-import nl.utwente.groove.gui.dialog.ErrorDialog;
-import nl.utwente.groove.gui.dialog.SaveDialog;
 import nl.utwente.groove.io.FileType;
-import nl.utwente.groove.io.GrooveFileChooser;
 import nl.utwente.groove.io.external.Exporter.ExportKind;
 import nl.utwente.groove.io.external.format.AutPorter;
 import nl.utwente.groove.io.external.format.FsmExporter;
@@ -47,55 +42,11 @@ import nl.utwente.groove.io.external.format.VectorExporter;
 import nl.utwente.groove.util.Factory;
 
 /**
- * Support class for {@link Exporter}s.
+ * Registry of the known {@link Exporter}s.
  * @author Harold Bruijntjes
  * @version $Revision$
  */
 public class Exporters {
-    /**
-     * Exports the object contained in an exportable, using an
-     * exporter chosen through a dialog.
-     * @param exportable container with object to export
-     * @param simulator parent of save dialog; may be {@code null}
-     */
-    public static void doExport(Exportable exportable, Simulator simulator) {
-        // determine the set of suitable file types and exporters
-        Map<FileType,Exporter> exporters = new EnumMap<>(FileType.class);
-        for (Exporter exporter : getExporters()) {
-            exporter.getFileTypes(exportable).forEach(ft -> exporters.put(ft, exporter));
-        }
-        assert !exporters.isEmpty();
-        // choose a file and exporter
-        GrooveFileChooser chooser = GrooveFileChooser.getInstance(exporters.keySet());
-        chooser.setSelectedFile(exportable.qualName().toFile());
-        File selectedFile = SaveDialog
-            .show(chooser, simulator == null
-                ? null
-                : simulator.getFrame(), null);
-        // now save, if so required
-        if (selectedFile != null) {
-            try {
-                // Get exporter
-                FileType fileType = chooser.getFileType();
-                Exporter e = exporters.get(fileType);
-                e.doExport(exportable, selectedFile, fileType);
-            } catch (PortException e) {
-                showErrorDialog(simulator == null
-                    ? null
-                    : simulator.getFrame(), e, "Error while exporting to " + selectedFile);
-            }
-        }
-    }
-
-    /**
-     * Creates and shows an {@link ErrorDialog} for a given message and
-     * exception.
-     */
-    private static void showErrorDialog(Component parent, Throwable exc, String message,
-                                        Object... args) {
-        new ErrorDialog(parent, String.format(message, args), exc).setVisible(true);
-    }
-
     /** Returns the exporter for a given export kind and file type, if any.
      * Returns {@code null} if the file type is {@code null}.
      */
@@ -140,9 +91,7 @@ public class Exporters {
     /** Creates the list of all known dedicated exporters. */
     private static Map<ExportKind,Map<FileType,Exporter>> createExporterMap() {
         Map<ExportKind,Map<FileType,Exporter>> result = new EnumMap<>(ExportKind.class);
-        Arrays
-            .stream(ExportKind.values())
-            .forEach(k -> result.put(k, new EnumMap<>(FileType.class)));
+        Arrays.stream(ExportKind.values()).forEach(k -> result.put(k, new LinkedHashMap<>()));
         for (Exporter exporter : getExporters()) {
             var exportKind = exporter.getExportKind();
             var localMap = result.get(exportKind);

@@ -1,11 +1,16 @@
 package nl.utwente.groove.gui.action;
 
+import java.io.File;
+import java.util.EnumMap;
+import java.util.Map;
+
 import nl.utwente.groove.grammar.model.NamedResourceModel;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
+import nl.utwente.groove.gui.dialog.SaveDialog;
 import nl.utwente.groove.gui.display.Display;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.display.GraphEditorTab;
@@ -14,8 +19,12 @@ import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.gui.display.ResourceTab;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.JGraph;
+import nl.utwente.groove.io.FileType;
+import nl.utwente.groove.io.GrooveFileChooser;
 import nl.utwente.groove.io.external.Exportable;
+import nl.utwente.groove.io.external.Exporter;
 import nl.utwente.groove.io.external.Exporters;
+import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.util.Exceptions;
 
 /**
@@ -23,7 +32,7 @@ import nl.utwente.groove.util.Exceptions;
  * as a graph or in some export format.
  * There is a discrepancy between exporter action for JGraphs and for displays: JGraph exports have no access to the original resource (if any)
  * and so an export initiated from a JGraph directly (as opposed for example form the menu) will never show an export option that requires a resource
- * @see Exporters#doExport
+ * Doubles as the dialog-based driver of the {@link Exporters} registry.
  */
 public class ExportAction extends SimulatorAction {
     /** Constructs an instance of the action for a given display. */
@@ -58,7 +67,35 @@ public class ExportAction extends SimulatorAction {
             // Export resource
             exportable = Exportable.resource(getResource());
         }
-        Exporters.doExport(exportable, getSimulator());
+        doExport(exportable);
+    }
+
+    /**
+     * Exports the object contained in an exportable, using an
+     * exporter chosen through a save dialog.
+     * @param exportable container with object to export
+     */
+    private void doExport(Exportable exportable) {
+        // determine the set of suitable file types and exporters
+        Map<FileType,Exporter> exporters = new EnumMap<>(FileType.class);
+        for (Exporter exporter : Exporters.getExporters()) {
+            exporter.getFileTypes(exportable).forEach(ft -> exporters.put(ft, exporter));
+        }
+        assert !exporters.isEmpty();
+        // choose a file and exporter
+        GrooveFileChooser chooser = GrooveFileChooser.getInstance(exporters.keySet());
+        chooser.setSelectedFile(exportable.qualName().toFile());
+        File selectedFile = SaveDialog.show(chooser, getFrame(), null);
+        // now save, if so required
+        if (selectedFile != null) {
+            try {
+                // Get exporter
+                FileType fileType = chooser.getFileType();
+                exporters.get(fileType).doExport(exportable, selectedFile, fileType);
+            } catch (PortException e) {
+                showErrorDialog(e, "Error while exporting to " + selectedFile);
+            }
+        }
     }
 
     /** Refreshes the name of this action. */
