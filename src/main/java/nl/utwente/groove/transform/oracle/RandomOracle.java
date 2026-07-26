@@ -27,6 +27,8 @@ import nl.utwente.groove.grammar.UnitPar.RulePar;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.transform.RuleEvent;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.Randomness;
+import nl.utwente.groove.util.Randomness.Purpose;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -36,13 +38,15 @@ import nl.utwente.groove.util.parse.FormatException;
  */
 @NonNullByDefault
 public class RandomOracle implements ValueOracle {
-    /** Constructor for an optionally seeded oracle. */
+    /** Constructor for an optionally seeded oracle. An unseeded oracle
+     * draws from the master-seed registry ({@link Purpose#ORACLE}), so its
+     * values remain reproducible via the master seed. */
     RandomOracle(boolean hasSeed, long seed) {
         this.hasSeed = hasSeed;
         this.seed = seed;
         this.random = hasSeed
             ? new Random(seed)
-            : new Random();
+            : Randomness.newRandom(Purpose.ORACLE);
     }
 
     /** Indicates if this random value oracle is seeded. */

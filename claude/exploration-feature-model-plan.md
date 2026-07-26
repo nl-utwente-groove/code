@@ -219,6 +219,26 @@ first-class injected policy instead of re-porting the exploration protocol:
 The full protocol rewrite (needed for persistence None) is deferred until a feature
 demands it; heuristic/beam/random orders become `Pool` implementations in 5b+.
 
+#### Phase 5b slice 1 (2026-07-26) — seeded randomness
+
+*Decisions (with Arend): randomness first among the 5b slices; the two open
+seeding decisions resolved — streams re-derived per exploration with no run
+counter (fixed seed ⇒ identical explorations), seed settable via the
+`groove.randomSeed` system property and a `-seed` Generator option.*
+
+- `util.Randomness`: the master-seed registry from `claude/randomness-seeding.md`
+  (per-purpose streams EXPLORATION/ORACLE, splitmix64 derivation, lazy resolution
+  explicit → property → generated-and-logged).
+- `next=random` realised by `explore.engine.RandomPool`, converter keyword
+  `random-frontier` (engine-only; combines only with `bound=none`).
+- Existing random sites seeded: `RandomLinearStrategy` (was `Math.random`),
+  `RandomChooserInSequence` (was a static unseeded `Random`), `RandomOracle`
+  (unseeded default now draws from the ORACLE stream).
+- `RandomnessTest`: stream derivation, seeded-run reproducibility (incl.
+  order-dependent state numbering), random-frontier coverage.
+- Still unsupported: `successor=all-random` (needs a hook in the inherited
+  match-application order, not a pool); GTS-info seed storage (logged only).
+
 ### Phase 6 (later branch) — demolition
 
 Delete `explore.encode`, `explore.prettyparse`, `Serialized`, `ExploreType`,

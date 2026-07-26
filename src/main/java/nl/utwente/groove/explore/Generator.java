@@ -49,6 +49,7 @@ import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.lts.Filter;
 import nl.utwente.groove.transform.Transformer;
 import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.Randomness;
 import nl.utwente.groove.util.cli.CmdLineException;
 import nl.utwente.groove.util.cli.DirectoryHandler;
 import nl.utwente.groove.util.cli.GrammarHandler;
@@ -293,6 +294,14 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
 
     @Option(names = RESULT_NAME, paramLabel = RESULT_VAR, description = RESULT_USAGE)
     private int resultCount;
+
+    @Option(names = "-seed", paramLabel = "num",
+        description = "Set the master random seed, making runs with random choices "
+            + "reproducible.\nEquivalent to setting the system property "
+            + Randomness.SEED_PROPERTY + ".")
+    private void setSeed(long seed) {
+        Randomness.setMasterSeed(seed);
+    }
 
     /** Returns the name of the properties file, if any. */
     public String getPropertiesFile() {

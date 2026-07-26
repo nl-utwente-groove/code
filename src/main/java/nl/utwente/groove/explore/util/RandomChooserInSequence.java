@@ -4,6 +4,9 @@ import java.util.Random;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.util.Randomness;
+import nl.utwente.groove.util.Randomness.Purpose;
+
 /**
  * Allows to choose a random element from a sequence without storing all the
  * elements of the sequence. On can "show" objects from the sequence to the
@@ -63,9 +66,10 @@ public class RandomChooserInSequence<E> {
     /** The current randomly chosen element, among those already seen. */
     private @Nullable E current;
     /**
-     * A random generator. Give it a seed (e.g. 0) if for debugging purposes or
-     * other reasons you want all explorations of a strategy to be the same.
+     * A random generator, seeded from the {@link Randomness} registry at
+     * construction (hence per consumer), so that a fixed master seed makes
+     * the choices reproducible.
      */
-    private static final Random rgen = new Random();
+    private final Random rgen = Randomness.newRandom(Purpose.EXPLORATION);
 
 }

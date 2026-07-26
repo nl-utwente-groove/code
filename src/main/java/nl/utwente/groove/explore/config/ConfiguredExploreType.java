@@ -26,6 +26,7 @@ import nl.utwente.groove.explore.encode.Serialized;
 import nl.utwente.groove.explore.engine.FrontierStrategy;
 import nl.utwente.groove.explore.engine.Pool;
 import nl.utwente.groove.explore.engine.QueuePool;
+import nl.utwente.groove.explore.engine.RandomPool;
 import nl.utwente.groove.explore.engine.StackPool;
 import nl.utwente.groove.explore.result.Acceptor;
 import nl.utwente.groove.explore.result.AnyStateAcceptor;
@@ -92,6 +93,7 @@ public class ConfiguredExploreType extends ExploreType {
         case "dfs" -> new FrontierStrategy(new StackPool(getIntArgument(strategy, "bound")));
         case "linear" -> new LinearStrategy();
         case "random" -> new RandomLinearStrategy();
+        case "random-frontier" -> new FrontierStrategy(new RandomPool());
         case "cnbound" -> new FrontierStrategy(StopMode.UP_TO,
             new NodeBoundCondition(getIntArgument(strategy, "node-bound")), new QueuePool(0));
         case "cebound" -> new FrontierStrategy(StopMode.UP_TO,

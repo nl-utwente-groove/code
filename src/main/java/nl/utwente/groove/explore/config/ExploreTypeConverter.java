@@ -122,7 +122,9 @@ public class ExploreTypeConverter {
                 switch (next) {
                 case OLDEST -> result = "bfs";
                 case NEWEST -> result = "dfs";
-                case RANDOM -> errors.add("Random next-state selection is not yet supported");
+                // engine-only: realised directly by the parametric engine
+                // (RandomPool); there is no legacy strategy of this name
+                case RANDOM -> result = "random-frontier";
                 }
             }
             case ALL_RANDOM -> errors
@@ -325,6 +327,8 @@ public class ExploreTypeConverter {
             result.put(ExploreKey.FRONTIER, Frontier.SINGLE.createSetting());
             result.put(ExploreKey.SUCCESSOR, Successor.SINGLE_RANDOM.createSetting());
         }
+        case "random-frontier" -> result
+            .put(ExploreKey.NEXT, NextState.RANDOM.createSetting());
         case "cnbound" -> setCountBound(result, Bound.NODES, strategy, "node-bound", errors);
         case "cebound" -> result
             .put(ExploreKey.BOUND, Bound.EDGES.createSetting(strategy.getArgument("edge-bound")));
