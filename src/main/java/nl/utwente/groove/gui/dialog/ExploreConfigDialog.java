@@ -149,13 +149,16 @@ public class ExploreConfigDialog extends JDialog {
 
     /** Creates the panel showing the textual form and status of the configuration. */
     private JPanel createPreviewPanel() {
-        JPanel result = new JPanel(new BorderLayout(0, 2));
+        JPanel result = new JPanel(new BorderLayout());
         result.setBorder(BorderFactory.createTitledBorder("Configuration"));
         this.previewField = new JTextField();
         this.previewField.setEditable(false);
-        result.add(this.previewField, BorderLayout.NORTH);
         this.statusLabel = new JLabel(" ");
-        result.add(this.statusLabel, BorderLayout.SOUTH);
+        // anchor both to the top, so surplus vertical space stays below them
+        JPanel inner = new JPanel(new BorderLayout(0, 2));
+        inner.add(this.previewField, BorderLayout.NORTH);
+        inner.add(this.statusLabel, BorderLayout.SOUTH);
+        result.add(inner, BorderLayout.NORTH);
         return result;
     }
 
@@ -373,9 +376,14 @@ public class ExploreConfigDialog extends JDialog {
                 + "</font></html>";
         this.startButton.setToolTipText(startTip);
         this.exploreButton.setToolTipText(exploreTip);
-        // grow the dialog if the error area no longer fits
-        if (isVisible() && getPreferredSize().height > getHeight()) {
-            pack();
+        // grow the dialog height if the error area no longer fits; only the
+        // height, as pack() would also snap the width back to its preferred
+        // value, causing a spurious horizontal resize
+        if (isVisible()) {
+            int prefHeight = getPreferredSize().height;
+            if (prefHeight > getHeight()) {
+                setSize(getWidth(), prefHeight);
+            }
         }
     }
 
