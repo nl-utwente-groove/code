@@ -162,6 +162,23 @@ PredicateAcceptor records transition.source()). Legacy without feature equivalen
 
 ## Open threads for later phases
 
+Dialog/Simulator threads (2026-07-26, from Arend's review):
+
+- Three exploration settings are in play at any moment: factory default (the `*`
+  in the dialog), **saved** (the grammar's `exploration` property — "saved" is
+  the agreed term, "default" is reserved for the factory defaults), and
+  **current** (the transient per-run override held by `SimulatorModel`). The
+  dialog marks deviation from the current one (bold keys, tooltip, Revert /
+  Reset to Saved buttons, commit a2eb94d16). Arend is **unsure about the
+  usefulness of the transient override** (its rationale: continue exploration
+  *from* a given state under a deviating strategy without touching the saved
+  one) — reconsider; if it goes, "current" collapses into "saved" and the
+  dialog simplifies.
+- Arend wants a **history of past settings**, as the LTL/CTL formula dialogs
+  already offer — future dialog round.
+- A **sub-dialog for the more involved content editors** (formulas etc.) is
+  planned as a later refinement; content editors stay as they are until then.
+
 - Phase 5b+ (5a — the engine skeleton — is done, see the plan): priority/beam/random
   orders as new `Pool` implementations; trace results; collapse/algebra overrides;
   persistence None (the one feature that forces rewriting the inherited `doNext()`
