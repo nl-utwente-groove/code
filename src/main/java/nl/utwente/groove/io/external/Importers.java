@@ -27,6 +27,7 @@ import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.format.AutPorter;
 import nl.utwente.groove.io.external.format.ColImporter;
 import nl.utwente.groove.io.external.format.NativeResourcePorter;
+import nl.utwente.groove.io.external.format.ecore.EcorePorter;
 
 /**
  * Registry of the known {@link Importer}s.
@@ -47,6 +48,7 @@ public class Importers {
         result.add(NativeResourcePorter.getInstance());
         result.add(AutPorter.instance());
         result.add(ColImporter.getInstance());
+        result.add(EcorePorter.instance());
         return Collections.unmodifiableList(result);
     }
 

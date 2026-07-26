@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<shop:Shop xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:shop="http://groove.utwente.nl/ecore/shop"
+    xmi:id="theShop" name="Books&amp;Co" open="true">
+  <items xsi:type="shop:Book" xmi:id="book1" code="1" price="9.99" isbn="978-1"
+      category="FICTION"/>
+  <items xsi:type="shop:Book" xmi:id="book2" code="2" price="19.5"
+      category="NONFICTION"/>
+  <customers xmi:id="alice" name="Alice" favourites="book1 book2"/>
+  <customers xmi:id="bob" name="Bob" favourites="book2"/>
+</shop:Shop>
