@@ -16,9 +16,9 @@
  */
 package nl.utwente.groove.io.external;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -29,13 +29,13 @@ import nl.utwente.groove.io.external.format.GraphExportListener.DotListener;
 import nl.utwente.groove.io.external.format.LTS2ControlExporter;
 import nl.utwente.groove.io.external.format.ListenerExporter;
 import nl.utwente.groove.io.external.format.NativeResourcePorter;
-import nl.utwente.groove.io.external.format.RasterExporter;
-import nl.utwente.groove.io.external.format.TikzExporter;
-import nl.utwente.groove.io.external.format.VectorExporter;
 import nl.utwente.groove.util.Factory;
 
 /**
  * Registry of the known {@link Exporter}s.
+ * The registry initially contains the exporters of the io framework itself;
+ * exporters that require the GUI (because they work by rendering a graph)
+ * are added by the GUI at start-up, through {@link #register(Exporter)}.
  * @author Harold Bruijntjes
  * @version $Revision$
  */
@@ -70,25 +70,29 @@ public class Exporters {
         return null;
     }
 
-    /** Returns the list of all known exporters. */
-    public static List<Exporter> getExporters() {
-        return exporters.get();
+    /** Adds an exporter to the registry, if it is not already registered.
+     * The registration order is the order in which the exporters are consulted.
+     */
+    public static void register(Exporter exporter) {
+        exporters.get().add(exporter);
     }
 
-    static private final Factory<List<Exporter>> exporters
+    /** Returns the set of all registered exporters, in registration order. */
+    public static Set<Exporter> getExporters() {
+        return Collections.unmodifiableSet(exporters.get());
+    }
+
+    static private final Factory<Set<Exporter>> exporters
         = Factory.lazy(Exporters::createExporters);
 
-    /** Creates the list of all known exporters. */
-    private static List<Exporter> createExporters() {
-        List<Exporter> result = new ArrayList<>();
+    /** Creates the set of exporters of the io framework itself. */
+    private static Set<Exporter> createExporters() {
+        Set<Exporter> result = new LinkedHashSet<>();
         result.add(NativeResourcePorter.getInstance());
-        result.add(RasterExporter.getInstance());
-        result.add(VectorExporter.getInstance());
         result.add(AutPorter.instance());
         result.add(FsmExporter.getInstance());
-        result.add(TikzExporter.getInstance());
         result.add(ListenerExporter.instance(DotListener.instance()));
         result.add(LTS2ControlExporter.instance());
-        return Collections.unmodifiableList(result);
+        return result;
     }
 }

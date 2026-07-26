@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.io.external.format;
+package nl.utwente.groove.gui.export;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -24,7 +24,6 @@ import java.util.Map;
 
 import javax.imageio.ImageIO;
 
-import nl.utwente.groove.gui.export.JGraphExportable;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.AbstractExporter;

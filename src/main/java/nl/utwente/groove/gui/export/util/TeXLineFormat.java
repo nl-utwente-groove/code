@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.io.external.util;
+package nl.utwente.groove.gui.export.util;
 
 import java.awt.Color;
 import java.util.EnumMap;

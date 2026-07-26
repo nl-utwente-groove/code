@@ -14,20 +14,19 @@
  *
  * $Id$
  */
-package nl.utwente.groove.io.external.format;
+package nl.utwente.groove.gui.export;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import nl.utwente.groove.gui.export.JGraphExportable;
+import nl.utwente.groove.gui.export.util.GraphToTikz;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.AbstractExporter;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Exporter;
 import nl.utwente.groove.io.external.PortException;
-import nl.utwente.groove.io.external.util.GraphToTikz;
 
 /**
  * Class that implements saving graphs in the Tikz format.

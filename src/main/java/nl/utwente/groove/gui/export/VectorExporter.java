@@ -14,23 +14,21 @@
  *
  * $Id$
  */
-package nl.utwente.groove.io.external.format;
+package nl.utwente.groove.gui.export;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 import java.util.EnumMap;
 import java.util.Map;
 
-import nl.utwente.groove.gui.export.JGraphExportable;
+import nl.utwente.groove.gui.export.util.GraphToEPS;
+import nl.utwente.groove.gui.export.util.GraphToPDF;
+import nl.utwente.groove.gui.export.util.GraphToSVG;
+import nl.utwente.groove.gui.export.util.GraphToVector;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.AbstractExporter;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Exporter;
 import nl.utwente.groove.io.external.PortException;
-import nl.utwente.groove.io.external.util.GraphToEPS;
-import nl.utwente.groove.io.external.util.GraphToPDF;
-import nl.utwente.groove.io.external.util.GraphToSVG;
-import nl.utwente.groove.io.external.util.GraphToVector;
 
 /**
  * Class that implements saving graphs as vectorised EPS (Embedded PostScript) or PDF images.
@@ -42,25 +40,14 @@ public class VectorExporter extends AbstractExporter {
     /** Private constructor for the singleton instance. */
     private VectorExporter() {
         super(Exporter.ExportKind.JGRAPH);
-        addFormat(FileType.EPS, GraphToEPS.class);
-        addFormat(FileType.PDF, GraphToPDF.class);
-        addFormat(FileType.SVG, GraphToSVG.class);
+        addFormat(FileType.EPS, new GraphToEPS());
+        addFormat(FileType.PDF, new GraphToPDF());
+        addFormat(FileType.SVG, new GraphToSVG());
     }
 
-    private void addFormat(FileType fileType, Class<? extends GraphToVector> formatClass) {
+    private void addFormat(FileType fileType, GraphToVector format) {
         register(fileType);
-        this.formats.put(fileType, getGraphToVector(formatClass));
-    }
-
-    private GraphToVector getGraphToVector(Class<? extends GraphToVector> formatClass) {
-        GraphToVector result = null;
-        try {
-            result = formatClass.getConstructor().newInstance();
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-            | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-            // Just return
-        }
-        return result;
+        this.formats.put(fileType, format);
     }
 
     @Override

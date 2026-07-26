@@ -14,7 +14,7 @@
  *
  * $Id: GraphToSVG.java 6232 2023-10-17 15:49:19Z rensink $
  */
-package nl.utwente.groove.io.external.util;
+package nl.utwente.groove.gui.export.util;
 
 import java.awt.geom.Rectangle2D;
 import java.io.File;

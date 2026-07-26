@@ -65,7 +65,7 @@ module nl.utwente.groove {
     exports nl.utwente.groove.prolog.builtin.algebra;
     exports nl.utwente.groove.prolog.exception;
     exports nl.utwente.groove.util;
-    exports nl.utwente.groove.io.external.util;
+    exports nl.utwente.groove.gui.export.util;
     exports nl.utwente.groove.prolog.builtin.graph;
     exports nl.utwente.groove.explore.util;
     exports nl.utwente.groove.prolog.builtin.rule;
@@ -99,7 +99,6 @@ module nl.utwente.groove {
     opens nl.utwente.groove.explore to info.picocli;
     opens nl.utwente.groove.verify to info.picocli;
     opens nl.utwente.groove.gui to info.picocli;
-    opens nl.utwente.groove.io to info.picocli;
     opens nl.utwente.groove.prolog to info.picocli;
     opens nl.utwente.groove.util to info.picocli;
     opens nl.utwente.groove.util.cli to info.picocli;

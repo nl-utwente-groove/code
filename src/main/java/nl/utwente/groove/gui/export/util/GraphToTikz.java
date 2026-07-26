@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.io.external.util;
+package nl.utwente.groove.gui.export.util;
 
 import static nl.utwente.groove.grammar.aspect.AspectKind.PRODUCT;
 
@@ -50,7 +50,7 @@ import nl.utwente.groove.gui.layout.JVertexLayout;
 import nl.utwente.groove.gui.layout.LayoutMap;
 import nl.utwente.groove.gui.look.Look;
 import nl.utwente.groove.gui.look.MultiLabel;
-import nl.utwente.groove.io.external.util.TikzStylesExtractor.Style;
+import nl.utwente.groove.gui.export.util.TikzStylesExtractor.Style;
 import nl.utwente.groove.util.Exceptions;
 
 /**

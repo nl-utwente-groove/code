@@ -34,6 +34,7 @@ import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.gui.dialog.GraphPreviewDialog;
 import nl.utwente.groove.gui.dialog.GraphPreviewDialog.GraphPreviewPanel;
+import nl.utwente.groove.gui.export.JGraphExporters;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.graph.GraphIO;
 import nl.utwente.groove.util.Groove;
@@ -54,6 +55,9 @@ public class Viewer extends GrooveCmdLineTool<Object> {
         super("Viewer", args);
         // force the LAF to be set
         Options.initLookAndFeel();
+        // the viewer can export by rendering, so it contributes
+        // the JGraph-based exporters to the exporter registry
+        JGraphExporters.register();
     }
 
     @Override

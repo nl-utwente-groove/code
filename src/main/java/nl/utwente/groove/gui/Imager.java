@@ -14,7 +14,7 @@
 /*
  * $Id$
  */
-package nl.utwente.groove.io;
+package nl.utwente.groove.gui;
 
 import static nl.utwente.groove.explore.Verbosity.MEDIUM;
 import static nl.utwente.groove.io.FileType.GRAMMAR;
@@ -69,12 +69,13 @@ import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.GraphBasedModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
-import nl.utwente.groove.gui.Icons;
-import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.export.JGraphExportable;
+import nl.utwente.groove.gui.export.JGraphExporters;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.AspectJModel;
+import nl.utwente.groove.io.FileType;
+import nl.utwente.groove.io.GrooveFileChooser;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Exporter;
 import nl.utwente.groove.io.external.Exporters;
@@ -110,7 +111,9 @@ public class Imager extends GrooveCmdLineTool<Object> {
     public Imager(boolean gui, String... args) {
         super("Imager", args);
         // force the LAF to be set
-        nl.utwente.groove.gui.Options.initLookAndFeel();
+        Options.initLookAndFeel();
+        // the imager exports by rendering, so it needs the JGraph-based exporters
+        JGraphExporters.register();
         if (gui) {
             if (args.length > 0) {
                 throw Exceptions

@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.io.external.util;
+package nl.utwente.groove.gui.export.util;
 
 import static nl.utwente.groove.gui.look.EdgeEnd.ARROW;
 import static nl.utwente.groove.gui.look.Look.ABSENT;

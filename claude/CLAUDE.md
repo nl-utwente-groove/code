@@ -39,7 +39,7 @@ Thin wrappers in `src/main/java/nl/utwente/groove/` delegate to the real impleme
 | `Generator` | CLI | Headless state-space exploration (`explore.Generator`) |
 | `ModelChecker` | CLI | CTL model checking (`verify.CTLModelChecker`) |
 | `PrologChecker` | CLI | Prolog queries over a grammar/GTS (`prolog.PrologChecker`) |
-| `Imager` | GUI/CLI | Renders graphs/grammars to image files (`io.Imager`) |
+| `Imager` | GUI/CLI | Renders graphs/grammars to image files (`gui.Imager`) |
 
 CLI argument parsing uses picocli via `util.cli`.
 
