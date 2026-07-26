@@ -10,6 +10,7 @@ module nl.utwente.groove {
     exports nl.utwente.groove.grammar.groovy;
     exports nl.utwente.groove.prolog.util;
     exports nl.utwente.groove.io.external.format;
+    exports nl.utwente.groove.io.external.format.ecore;
     exports nl.utwente.groove.automaton;
     exports nl.utwente.groove.grammar;
     exports nl.utwente.groove.gui.action;
@@ -85,6 +86,9 @@ module nl.utwente.groove {
     requires jgoodies.looks;
     requires transitive jgraph;
     requires ltl2buchi;
+    requires org.eclipse.emf.common;
+    requires org.eclipse.emf.ecore;
+    requires org.eclipse.emf.ecore.xmi;
     requires transitive nl.utwente.groove.gxl;
     requires com.opencsv;
     requires org.apache.groovy;

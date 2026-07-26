@@ -78,6 +78,8 @@ public enum FileType {
     CSV("Comma-separated values", ".csv"),
     /**  DOT (GraphViz) files. */
     DOT("GraphViz .dot files", ".dot"),
+    /** Ecore meta-model files. */
+    ECORE("Ecore meta-models", ".ecore"),
     /**  EPS (Embedded PostScript) files. */
     EPS("EPS image files", ".eps"),
     /**  FSM (Finite State Machine) files. */
@@ -94,6 +96,8 @@ public enum FileType {
     PNG("PNG image files", ".png"),
     /** LaTeX TikZ files. */
     TIKZ("LaTeX TikZ files", ".tikz"),
+    /** XMI (XML Metadata Interchange) instance model files. */
+    XMI("XMI instance models", ".xmi"),
     /** ZIP files. */
     ZIP("ZIP files", ".zip"),
 
