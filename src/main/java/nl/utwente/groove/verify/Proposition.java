@@ -29,7 +29,12 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.explore.util.LTSLabels;
 import nl.utwente.groove.explore.util.LTSLabels.Flag;
+import nl.utwente.groove.grammar.Action;
 import nl.utwente.groove.grammar.QualName;
+import nl.utwente.groove.grammar.host.DefaultHostNode;
+import nl.utwente.groove.grammar.host.HostNode;
+import nl.utwente.groove.grammar.host.ValueNode;
+import nl.utwente.groove.lts.ActionLabel;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.StateProperty;
 import nl.utwente.groove.util.Exceptions;
@@ -88,6 +93,55 @@ public abstract sealed class Proposition permits Literal, Derived, Call {
     public static Proposition call(QualName id, List<Arg> args) {
         return new Call(id, args);
     }
+
+    /** Returns the proposition satisfied by a graph transition with a given label.
+     * If the underlying action has a special transition label
+     * (see {@link Action#getSpecialLabel()}), the proposition is derived from the
+     * actual label text, as it would appear in a saved LTS (see {@link #parse(String)});
+     * otherwise, it is a {@link Call} of the action's qualified name upon the
+     * transition arguments.
+     */
+    public static Proposition prop(ActionLabel label) {
+        Action action = label.getAction();
+        if (action.getSpecialLabel().isBlank()) {
+            var args = new ArrayList<Arg>();
+            for (var node : label.getArguments()) {
+                args.add(toArg(node));
+            }
+            return call(action.getQualName(), args);
+        } else {
+            return parse(action.toLabelString(label.getArguments(), true));
+        }
+    }
+
+    /** Converts a host node to a proposition argument. */
+    private static Arg toArg(HostNode node) {
+        return switch (node) {
+        case DefaultHostNode d -> Arg.arg(d.toString());
+        case ValueNode v -> Arg.arg(v.toTerm());
+        };
+    }
+
+    /** Returns the proposition corresponding to a given transition label text.
+     * The text is parsed as an identifier or call if possible;
+     * otherwise, the result is a {@link Literal} wrapping the text.
+     */
+    public static Proposition parse(String text) {
+        var result = textPropMap.get(text);
+        if (result == null) {
+            var formula = FormulaParser.instance().parse(text);
+            var prop = formula.hasErrors()
+                ? null
+                : formula.getProp();
+            textPropMap.put(text, result = prop == null
+                ? literal(text)
+                : prop);
+        }
+        return result;
+    }
+
+    /** Collection of previously computed label text propositions. */
+    static private final Map<String,@Nullable Proposition> textPropMap = new HashMap<>();
 
     /** Returns a {@link Derived} proposition for a given special flag. */
     public static Proposition derived(Flag flag) {
@@ -468,16 +522,45 @@ public abstract sealed class Proposition permits Literal, Derived, Call {
         @Override
         public @NonNull FormatErrorSet check(GTS gts) {
             var result = super.check(gts);
-            var args = getArgs();
-            var action = gts.getGrammar().getAction(getId());
-            if (action == null) {
-                result.add("Action '%s' is not defined in this grammar", getId());
-            } else if (args != null && args.size() != action.getSignature().size()) {
-                result
-                    .add("Action '%s' has arity %s, not %s", getId(), action.getSignature().size(),
-                         args.size());
+            var grammar = gts.getGrammar();
+            var action = grammar.getAction(getId());
+            if (action != null && action.getSpecialLabel().isBlank()) {
+                var args = getArgs();
+                if (args != null && args.size() != action.getSignature().size()) {
+                    result
+                        .add("Action '%s' has arity %s, not %s", getId(),
+                             action.getSignature().size(), args.size());
+                }
+            } else if (grammar.getActions().stream().noneMatch(this::matchesSpecialLabel)) {
+                if (action == null) {
+                    result.add("Action '%s' is not defined in this grammar", getId());
+                } else {
+                    result
+                        .add("Transitions of action '%s' are labelled by its special label '%s'",
+                             getId(), action.getSpecialLabel());
+                }
             }
             return result;
+        }
+
+        /** Tests if this call's identifier may match transition labels generated
+         * by the special transition label of a given action.
+         */
+        private boolean matchesSpecialLabel(Action action) {
+            var special = action.getSpecialLabel();
+            if (special.isBlank()) {
+                return false;
+            }
+            if (Proposition.parse(special) instanceof Call call) {
+                return getId().equals(call.getId());
+            }
+            // the special label is not parseable as a call, e.g., because it
+            // contains format specifiers; accept if the identifier is a prefix
+            // of the label, followed by a non-identifier character
+            var id = getId().toString();
+            return special.startsWith(id)
+                && (special.length() == id.length()
+                    || !Character.isJavaIdentifierPart(special.charAt(id.length())));
         }
 
         @Override

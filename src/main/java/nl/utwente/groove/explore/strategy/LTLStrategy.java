@@ -17,8 +17,6 @@
  */
 package nl.utwente.groove.explore.strategy;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
@@ -32,7 +30,6 @@ import nl.utwente.groove.explore.result.Acceptor;
 import nl.utwente.groove.explore.result.CycleAcceptor;
 import nl.utwente.groove.explore.util.RandomChooserInSequence;
 import nl.utwente.groove.explore.util.RandomNewStateChooser;
-import nl.utwente.groove.grammar.host.ValueNode;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
@@ -47,7 +44,6 @@ import nl.utwente.groove.verify.ProductState;
 import nl.utwente.groove.verify.ProductStateSet;
 import nl.utwente.groove.verify.ProductTransition;
 import nl.utwente.groove.verify.Proposition;
-import nl.utwente.groove.verify.Proposition.Arg;
 
 /**
  * This class provides some default implementations for the methods that are
@@ -321,13 +317,7 @@ public class LTLStrategy extends Strategy {
     }
 
     private Proposition toProp(GraphTransition trans) {
-        List<Arg> args = Arrays
-            .stream(trans.label().getArguments())
-            .map(a -> a instanceof ValueNode
-                ? Arg.arg(((ValueNode) a).toTerm())
-                : Arg.arg(a.toString()))
-            .collect(Collectors.toList());
-        return Proposition.call(trans.getAction().getQualName(), args);
+        return Proposition.prop(trans.label());
     }
 
     /**
