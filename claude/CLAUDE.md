@@ -75,7 +75,7 @@ CLI argument parsing uses picocli via `util.cli`.
 - **Control language** (`control`): steers which rules fire when (sequencing, choice, loops, recipes/functions with parameters). Compiled via `control/template` into an executable automaton (`control/instance.Automaton`) that exploration walks in lock-step with matching.
 - **Verification** (`verify`): CTL checking via `CTLModelChecker`/`CTLMarker`; LTL via Büchi automata (external `ltl2buchi` lib) and a product construction.
 - **Algebras** (`algebra`): data attribute semantics. `AlgebraFamily` selects the interpretation: DEFAULT/BIG (concrete Java/BigInteger), POINT (collapsed, for abstraction), TERM (symbolic).
-- **I/O** (`io`): `io/store.SystemStore` for `.gps` bundles; `io/graph` for native formats (GXL is the native graph serialization); `io/external` for the `Importer`/`Exporter` framework; `io/conceptual` is a metamodel-neutral IR used to round-trip with EMF/Ecore.
+- **I/O** (`io`): `io/store.SystemStore` for `.gps` bundles; `io/graph` for native formats (GXL is the native graph serialization); `io/external` for the headless `Importer`/`Exporter` framework and registries (`Exporters`/`Importers`). Exporters that work by rendering a graph via JGraph live on the GUI side (`gui/export`) and are contributed to the registry at start-up through `Exporters.register`.
 - **GUI** (`gui`): Swing `Simulator` around a central `SimulatorModel`; graphs rendered with JGraph (`gui/jgraph`, `AspectJGraph` etc.).
 
 ### Naming conventions
