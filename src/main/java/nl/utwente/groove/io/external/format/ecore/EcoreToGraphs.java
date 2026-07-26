@@ -288,7 +288,9 @@ public class EcoreToGraphs {
                 }
                 append(features, this.names.labelFor(eClass), this.names.labelFor(feature),
                        declaredType, Boolean.toString(feature.isOrdered()),
-                       Boolean.toString(feature.isUnique()));
+                       Boolean.toString(feature.isUnique()),
+                       Integer.toString(Math.max(feature.getLowerBound(), 0)),
+                       Integer.toString(feature.getUpperBound()));
             }
         }
         result.setProperty(FEATURES_KEY, features.toString());
@@ -364,6 +366,7 @@ public class EcoreToGraphs {
         PlainGraph result = new PlainGraph(name, GraphRole.HOST);
         Map<EObject,PlainNode> nodeMap = new LinkedHashMap<>();
         Map<EEnumLiteral,PlainNode> literalNodes = new LinkedHashMap<>();
+        Map<String,PlainNode> valueNodes = new LinkedHashMap<>();
         List<EObject> objects = new ArrayList<>();
         for (var it = resource.getAllContents(); it.hasNext();) {
             objects.add(it.next());
@@ -395,7 +398,7 @@ public class EcoreToGraphs {
                     continue;
                 }
                 if (feature instanceof EAttribute attribute) {
-                    addHostAttribute(result, node, object, attribute, literalNodes);
+                    addHostAttribute(result, node, object, attribute, literalNodes, valueNodes);
                 } else if (feature instanceof EReference reference) {
                     addHostReference(result, node, object, reference, nodeMap);
                 }
@@ -404,9 +407,16 @@ public class EcoreToGraphs {
         return AspectGraph.newInstance(result);
     }
 
-    /** Adds the values of a single attribute of an object to the host graph. */
+    /**
+     * Adds the values of a single attribute of an object to the host graph.
+     * A single-valued attribute becomes a compact {@code let:}-assignment; a
+     * many-valued one becomes an edge per value to a shared constant node, since
+     * a {@code let:}-assignment can only express one value of a field. Under
+     * {@link Ordering#INDEX}, the edges run through intermediate nodes instead.
+     */
     private void addHostAttribute(PlainGraph graph, PlainNode node, EObject object,
-                                  EAttribute attribute, Map<EEnumLiteral,PlainNode> literalNodes) {
+                                  EAttribute attribute, Map<EEnumLiteral,PlainNode> literalNodes,
+                                  Map<String,PlainNode> valueNodes) {
         List<Object> values = valuesOf(object, attribute);
         String label = this.names.labelFor(attribute);
         int index = 0;
@@ -442,14 +452,33 @@ public class EcoreToGraphs {
         }
         for (var value : values) {
             index++;
-            String symbol = symbolOf(sort, dataType, value);
+            String text = textOf(dataType, value);
+            String symbol = symbolOf(sort, text);
+            if (symbol == null) {
+                graph
+                    .addError("Value '%s' of attribute '%s' has no GROOVE representation", text,
+                              attribute.getName(), node);
+                continue;
+            }
             if (isIndexed(attribute)) {
                 PlainNode interNode = addHostIntermediate(graph, node, attribute, index);
-                graph.addEdge(interNode, LET + VALUE + "=" + symbol, interNode);
-            } else if (index == 1) {
+                graph.addEdge(interNode, VALUE, addValueNode(graph, valueNodes, sort, symbol));
+            } else if (isMultiple(attribute)) {
+                graph.addEdge(node, label, addValueNode(graph, valueNodes, sort, symbol));
+            } else {
                 graph.addEdge(node, LET + label + "=" + symbol, node);
             }
         }
+    }
+
+    /** Returns the (shared) node holding a given constant value. */
+    private PlainNode addValueNode(PlainGraph graph, Map<String,PlainNode> valueNodes, Sort sort,
+                                   String symbol) {
+        return valueNodes.computeIfAbsent(sort.getName() + SEP + symbol, l -> {
+            PlainNode result = graph.addNode();
+            graph.addEdge(result, l, result);
+            return result;
+        });
     }
 
     /** Adds the targets of a single reference of an object to the host graph. */
@@ -532,14 +561,16 @@ public class EcoreToGraphs {
         return feature.getUpperBound() > 1 || feature.getUpperBound() == -1;
     }
 
-    /** Indicates if the order or the duplicates of a feature's values matter. */
-    private static boolean isLossy(EStructuralFeature feature) {
-        return isMultiple(feature) && (feature.isOrdered() || !feature.isUnique());
-    }
-
-    /** Indicates if a feature is to be encoded through intermediate nodes. */
+    /** Indicates if a feature is to be encoded through intermediate nodes.
+     * Under {@link Ordering#INDEX} this holds for every many-valued feature: the
+     * intermediates are what make the order and the duplicates representable, and
+     * whether they are actually needed depends on the instance, not on the
+     * declaration (an {@code unique="false"} flag is not the only way to end up
+     * with duplicates in an instance, and even a set-valued feature has an order
+     * in the file it came from).
+     */
     private boolean isIndexed(EStructuralFeature feature) {
-        return this.options.ordering() == Ordering.INDEX && isLossy(feature);
+        return this.options.ordering() == Ordering.INDEX && isMultiple(feature);
     }
 
     /** Returns the multiplicity text of a feature, or {@code null} if it is the default. */
@@ -563,14 +594,24 @@ public class EcoreToGraphs {
         return SORT_MAP.get(dataType.getName());
     }
 
-    /** Returns the parsable GROOVE representation of a data value. */
-    private static String symbolOf(Sort sort, EDataType dataType, @Nullable Object value) {
-        String text = value == null
+    /** Returns the textual form in which EMF serialises a data value. */
+    private static String textOf(EDataType dataType, @Nullable Object value) {
+        String result = value == null
             ? ""
             : org.eclipse.emf.ecore.util.EcoreUtil.convertToString(dataType, value);
-        if (text == null) {
-            text = "";
-        }
+        return result == null
+            ? ""
+            : result;
+    }
+
+    /** Returns the parsable GROOVE representation of a data value,
+     * or {@code null} if the value has none.
+     * The latter happens for the numeric values that GROOVE's algebras do not
+     * have, such as {@code NaN} and the infinities: unlike the approximations
+     * that the encoding makes by design, these are input that the encoding
+     * cannot represent at all, and hence a format error.
+     */
+    private static @Nullable String symbolOf(Sort sort, String text) {
         return switch (sort) {
         case BOOL -> Boolean.toString(Boolean.parseBoolean(text));
         case INT -> toIntSymbol(text);
@@ -579,25 +620,27 @@ public class EcoreToGraphs {
         };
     }
 
-    /** Converts a textual value to an integer constant symbol. */
-    private static String toIntSymbol(String text) {
+    /** Converts a textual value to an integer constant symbol,
+     * or returns {@code null} if it does not denote an integer. */
+    private static @Nullable String toIntSymbol(String text) {
         try {
             return new BigInteger(text.trim()).toString();
         } catch (NumberFormatException exc) {
-            return "0";
+            return null;
         }
     }
 
-    /** Converts a textual value to a real constant symbol.
+    /** Converts a textual value to a real constant symbol,
+     * or returns {@code null} if it does not denote a real number.
      * GROOVE distinguishes reals from integers by the decimal point,
      * so one is appended if the value does not have one.
      */
-    private static String toRealSymbol(String text) {
+    private static @Nullable String toRealSymbol(String text) {
         String result;
         try {
             result = new BigDecimal(text.trim()).toPlainString();
         } catch (NumberFormatException exc) {
-            result = "0.0";
+            return null;
         }
         if (result.indexOf('.') < 0) {
             result += ".0";
@@ -605,12 +648,63 @@ public class EcoreToGraphs {
         return result;
     }
 
-    /** Appends a record of fields to a metadata property value. */
+    /** Appends a record of (escaped) fields to a metadata property value. */
     private static void append(StringBuilder text, String... fields) {
         if (!text.isEmpty()) {
             text.append(RECORD_SEP);
         }
-        text.append(String.join(FIELD_SEP, fields));
+        for (int i = 0; i < fields.length; i++) {
+            if (i > 0) {
+                text.append(FIELD_SEP);
+            }
+            text.append(escape(fields[i]));
+        }
+    }
+
+    /** Escapes the separators (and the escape character) in a metadata field. */
+    public static String escape(String field) {
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < field.length(); i++) {
+            char c = field.charAt(i);
+            if (c == ESCAPE_CHAR || c == RECORD_SEP_CHAR || c == FIELD_SEP_CHAR) {
+                result.append(ESCAPE_CHAR);
+            }
+            result.append(c);
+        }
+        return result.toString();
+    }
+
+    /**
+     * Splits a metadata property value at its unescaped separators.
+     * @param text the value to be split
+     * @param separator the separator to split at
+     * @param unescape if {@code true}, the escape characters are removed from the
+     * result; if {@code false} they are retained, so that the parts can be split
+     * again at a finer separator
+     */
+    public static List<String> split(String text, char separator, boolean unescape) {
+        List<String> result = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        boolean escaped = false;
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (escaped) {
+                current.append(c);
+                escaped = false;
+            } else if (c == ESCAPE_CHAR) {
+                if (!unescape) {
+                    current.append(c);
+                }
+                escaped = true;
+            } else if (c == separator) {
+                result.add(current.toString());
+                current.setLength(0);
+            } else {
+                current.append(c);
+            }
+        }
+        result.add(current.toString());
+        return result;
     }
 
     /** Returns a given string, or the empty string if it is {@code null}. */
@@ -668,15 +762,21 @@ public class EcoreToGraphs {
     /** Graph property key under which the per-feature data is recorded.
      * Only features are recorded whose Ecore declaration cannot be reconstructed
      * from the type graph alone; the records are
-     * {@code owner|feature|declaredType|ordered|unique}.
+     * {@code owner|feature|declaredType|ordered|unique|lower|upper}.
      */
     public static final String FEATURES_KEY = "ecoreFeatures";
     /** Graph property key under which the opposite reference pairs are recorded. */
     public static final String OPPOSITES_KEY = "ecoreOpposites";
     /** Separator between the records of a metadata property value. */
-    public static final String RECORD_SEP = ";";
+    public static final char RECORD_SEP_CHAR = ';';
     /** Separator between the fields of a metadata record. */
-    public static final String FIELD_SEP = "|";
+    public static final char FIELD_SEP_CHAR = '|';
+    /** Character escaping a separator (or itself) inside a metadata field. */
+    public static final char ESCAPE_CHAR = '\\';
+    /** Separator between the records of a metadata property value. */
+    public static final String RECORD_SEP = String.valueOf(RECORD_SEP_CHAR);
+    /** Separator between the fields of a metadata record. */
+    public static final String FIELD_SEP = String.valueOf(FIELD_SEP_CHAR);
 
     /** Separator between an aspect prefix and what follows it. */
     private static final String SEP = ":";

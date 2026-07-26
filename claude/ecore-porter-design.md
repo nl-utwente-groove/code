@@ -69,9 +69,13 @@ legal, `.` is not). Default: the simple EClass/EEnum name, repaired via
 `IdValidator` if needed. On a cross-package collision, the colliding names are
 qualified as `pkg$Name` (recursively up the package path until unique) —
 deterministic, no configuration. Enum literals are `E$L` (the `$` echoes the
-old encoding and keeps literals visually grouped under their enum).
-Multiplicity of mandatory attributes is *not* enforced (GROOVE does not check
-attribute-edge presence); noted limitation, Phase 4 territory.
+old encoding and keeps literals visually grouped under their enum). Feature
+labels are repaired the same way and, within one class, disambiguated by a
+`$2`, `$3`, … suffix, so that two features whose names repair to the same
+identifier do not silently merge into one type graph element; features of
+*different* classes may share a label, since their source node type tells them
+apart. Multiplicity of mandatory attributes is *not* enforced (GROOVE does not
+check attribute-edge presence); noted limitation, Phase 4 territory.
 
 **Ordering** (`ordering` option, default `none`):
 - `none` — many-valued features become plain edges; order is not represented,
@@ -80,11 +84,20 @@ attribute-edge presence); noted limitation, Phase 4 territory.
   the Ecore default for many-valued features, so flagging it would mean
   flagging nearly every reference of every metamodel. Choosing `index` is the
   way to keep the information.
-- `index` — an ordered or non-unique feature `r` gets the old intermediate
+- `index` — *every* many-valued feature `r` gets the old intermediate
   encoding, minus the parts that multiplicities now cover: nodified-edge node
   `type:C$r` with `edge:"r"` pattern, `in=1:r` edge from `C`, `out=1:val` to
-  the target, `int:index` attribute (1-based in instances); `part:` moves to
-  the `val` edge for containments.
+  the target (or a `<sort>:val` self-loop for a data attribute), `int:index`
+  attribute (1-based in instances); `part:` moves to the `val` edge for
+  containments. The declared `ordered`/`unique` flags do not enter into it:
+  whether an instance actually has duplicates or a meaningful order is a
+  property of the instance, not of the declaration, and a set-valued feature
+  still has an order in the file it came from.
+
+**Metadata format.** The round-trip properties are `;`-separated records of
+`|`-separated fields. A field containing `;`, `|` or `\` is escaped with a
+leading `\`, so that an nsURI or an original name can contain them without
+fragmenting the record.
 
 ## Instance encoding (.xmi → host graph)
 
@@ -95,13 +108,23 @@ attribute-edge presence); noted limitation, Phase 4 territory.
   **off**, no `id:` aspects are generated at all and the nodes are anonymous.
   The old code ignored `xmi:id`; using it is what makes instance round-trips
   stable.
-- Attribute values → `let:a=<constant>` self-loops (the compact host form;
-  normalisation desugars them). Strings quoted/escaped per GROOVE syntax.
+- Single-valued attribute values → `let:a=<constant>` self-loops (the compact
+  host form; normalisation desugars them). Strings quoted/escaped per GROOVE
+  syntax. A value that GROOVE's algebras cannot represent at all (`NaN`, the
+  infinities) is a `FormatError`, not a substituted zero — unlike the
+  approximations the encoding makes by design, this is input the encoding
+  cannot express.
+- Many-valued attribute values → an edge `a` per value to a shared constant
+  node (one node per distinct value, as for enum literals). A `let:`-assignment
+  can only carry one value of a field, so the compact form is not an option
+  here; under `none`, duplicates therefore collapse, as for references.
 - Enum values → edge `a` to a shared literal node `type:E$L` (one node per
   literal used in the graph).
 - References → plain edges `r` (containment and cross-references look alike
   in the host graph; the type graph carries the distinction — as before).
-- `ordering=index` → intermediates with `let:index=1..n`.
+- `ordering=index` → intermediates with `let:index=1..n` and a `val` edge to
+  the target object or constant node. Since each occurrence gets its own
+  intermediate, duplicates survive.
 - Roots are unmarked (they are the nodes without incoming `part:`-typed edges).
 
 Importing an `.xmi` resolves its metamodel through EMF (registered packages,
@@ -113,13 +136,37 @@ Unresolvable metamodel → `PortException` advising to co-locate the `.ecore`.
 ## Export (type graph → .ecore, host graph → .xmi)
 
 Reverse of the above. Package metadata comes from the recorded graph
-properties; for hand-made type graphs without them, defaults are derived
+properties; for hand-made type graphs *without* them, defaults are derived
 (package name = graph name, nsURI `http://nl.utwente.groove/<name>`) and every
 non-sort node type is a class (enums/interfaces only round-trip — no
-heuristics). Host-graph export requires each object to have exactly one
-containment chain to a root; violations (orphans, `part:` cycles — the latter
-already excluded by GROOVE's containment checker) become `FormatError`s.
-`xmi:id`s come from `id:` aspects when present.
+heuristics). Note the asymmetry: the "every node type is a class" rule applies
+only to metadata-free graphs. When classifier metadata *is* present it is the
+authority, so a node type added to an imported type graph by hand is silently
+omitted from the export until the metadata mentions it. That is deliberate —
+guessing a package, an nsURI and a kind for a hand-added type would be exactly
+the heuristics this design avoids — but it is a trap worth knowing about.
+
+Feature bounds come from the type graph's multiplicity annotation where there
+is one (it is what a user editing the graph would change) and from the recorded
+bounds otherwise: attributes are self-loops and carry no multiplicity, and
+neither does the intermediate encoding.
+
+Host-graph export derives the containment tree from the `part:`-typed edges. An
+object with more than one container, or on a containment cycle, is a
+`FormatError`; an object with *no* container is simply an additional root of
+the XMI resource, which is legal XMI and the natural reading of a host graph
+with several unconnected components. Since an export has no graph to attach
+errors to, they are collected in a `FormatErrorSet` and reported as the message
+of a `PortException`. `xmi:id`s come from `id:` aspects when present.
+
+**Remaining metamodel drift** (deliberate, deferred). The exported `.ecore` is
+not byte-identical to the imported one, beyond feature ordering: enum literal
+`value`s are renumbered 0,1,2,… and their `literal` fields are dropped;
+attribute `defaultValueLiteral`s are not preserved; and the lower bound of a
+single-valued mandatory attribute is lost with the multiplicity that the type
+graph never carried. None of this affects XMI instance round-trips — XMI
+serialises enum values by literal *name* — so it is recorded here rather than
+fixed with three more metadata fields.
 
 ## Options, persistence, GUI
 

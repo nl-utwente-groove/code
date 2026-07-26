@@ -71,7 +71,7 @@ public class EcoreTest {
         Map<String,Set<String>> expected = new LinkedHashMap<>();
         expected.put("Shop", labels("type:Shop", "string:name", "bool:open"));
         expected.put("shop$Item", labels("type:shop$Item", "abs:", "int:code", "real:price"));
-        expected.put("Book", labels("type:Book", "string:isbn"));
+        expected.put("Book", labels("type:Book", "string:isbn", "string:tags"));
         expected.put("Customer", labels("type:Customer", "string:name"));
         expected.put("Category", labels("type:Category", "abs:"));
         expected.put("Category$UNKNOWN", labels("type:Category$UNKNOWN"));
@@ -112,10 +112,11 @@ public class EcoreTest {
         assertEquals("Shop.items|shop$Item.shop",
                      properties.getProperty(EcoreToGraphs.OPPOSITES_KEY));
         // only the features that the type graph does not determine completely:
-        // the many-valued ones (whose order and uniqueness are not encoded) and
-        // the ones over a data type other than the sort's default
-        assertEquals("Shop|customers||false|true;Shop|items||false|true;Book|isbn|Isbn|true|true;"
-            + "Customer|favourites||false|true",
+        // the many-valued ones (whose order, uniqueness and bounds are not
+        // encoded) and the ones over a data type other than the sort's default
+        assertEquals("Shop|customers||false|true|0|-1;Shop|items||false|true|1|-1;"
+            + "Book|isbn|Isbn|true|true|0|1;Book|tags||false|true|0|-1;"
+            + "Customer|favourites||false|true|0|-1",
                      properties.getProperty(EcoreToGraphs.FEATURES_KEY));
     }
 
@@ -161,10 +162,16 @@ public class EcoreTest {
         expected.put("book2", labels("type:Book", "id:book2", "let:code=2", "let:price=19.5"));
         expected.put("alice", labels("type:Customer", "id:alice", "let:name=\"Alice\""));
         expected.put("bob", labels("type:Customer", "id:bob", "let:name=\"Bob\""));
+        // the values of the many-valued 'tags' attribute cannot go into a
+        // let:-assignment, and become shared constant nodes instead
+        expected.put("string:\"fiction\"", labels("string:\"fiction\""));
+        expected.put("string:\"classic\"", labels("string:\"classic\""));
         expected.put("Category$FICTION", labels("type:Category$FICTION"));
         expected.put("Category$NONFICTION", labels("type:Category$NONFICTION"));
         assertEquals(expected, selfLabels(host));
         Set<String> expectedEdges = new TreeSet<>();
+        expectedEdges.add("book1 -tags-> string:\"fiction\"");
+        expectedEdges.add("book1 -tags-> string:\"classic\"");
         expectedEdges.add("theShop -items-> book1");
         expectedEdges.add("theShop -items-> book2");
         expectedEdges.add("theShop -customers-> alice");
@@ -221,9 +228,13 @@ public class EcoreTest {
         expectedTypes
             .put("List$elements",
                  labels("type:List$elements", "edge:\"elements\"", "int:index"));
+        expectedTypes
+            .put("List$labels",
+                 labels("type:List$labels", "edge:\"labels\"", "int:index", "string:val"));
         assertEquals(expectedTypes, selfLabels(type));
         assertEquals(Set.of("List -in=1:elements-> List$elements",
-                            "List$elements -out=1:part:val-> Element"),
+                            "List$elements -out=1:part:val-> Element",
+                            "List -in=1:labels-> List$labels"),
                      binaryEdges(type));
         assertEquals(Collections.emptyList(), messages(type.getErrors()));
         AspectGraph host = single(imported, ResourceKind.HOST);
@@ -235,13 +246,21 @@ public class EcoreTest {
         for (int i = 1; i <= 3; i++) {
             expectedHost
                 .put("List$elements#" + i, labels("type:List$elements", "let:index=" + i));
+            expectedHost.put("List$labels#" + i, labels("type:List$labels", "let:index=" + i));
         }
+        expectedHost.put("string:\"x\"", labels("string:\"x\""));
+        expectedHost.put("string:\"y\"", labels("string:\"y\""));
         assertEquals(expectedHost, selfLabels(host));
         assertEquals(Set.of("theList -elements-> List$elements#1",
                             "theList -elements-> List$elements#2",
                             "theList -elements-> List$elements#3",
                             "List$elements#1 -val-> first", "List$elements#2 -val-> second",
-                            "List$elements#3 -val-> third"),
+                            "List$elements#3 -val-> third", "theList -labels-> List$labels#1",
+                            "theList -labels-> List$labels#2", "theList -labels-> List$labels#3",
+                            // the duplicate value survives: the intermediates differ
+                            "List$labels#1 -val-> string:\"x\"",
+                            "List$labels#2 -val-> string:\"y\"",
+                            "List$labels#3 -val-> string:\"x\""),
                      binaryEdges(host));
         // the indexed encoding is a valid type graph as well
         GrammarModel grammar
@@ -301,13 +320,37 @@ public class EcoreTest {
         assertIsomorphic(type, single(result, ResourceKind.TYPE));
         AspectGraph resultHost = single(result, ResourceKind.HOST);
         assertIsomorphic(host, resultHost);
-        // spelled out, since isomorphism alone reads as a weak statement about order
+        // spelled out, since isomorphism alone reads as a weak statement about
+        // order — and the duplicate value of the non-unique 'labels' attribute
+        // must not be swallowed on the way out either
         assertEquals(Set.of("theList -elements-> List$elements#1",
                             "theList -elements-> List$elements#2",
                             "theList -elements-> List$elements#3",
                             "List$elements#1 -val-> first", "List$elements#2 -val-> second",
-                            "List$elements#3 -val-> third"),
+                            "List$elements#3 -val-> third", "theList -labels-> List$labels#1",
+                            "theList -labels-> List$labels#2", "theList -labels-> List$labels#3",
+                            "List$labels#1 -val-> string:\"x\"",
+                            "List$labels#2 -val-> string:\"y\"",
+                            "List$labels#3 -val-> string:\"x\""),
                      binaryEdges(resultHost));
+    }
+
+    /**
+     * Tests that all values of a many-valued attribute survive the import and the
+     * round trip, and that the recorded metadata is reproduced exactly.
+     */
+    @Test
+    public void testManyValuedAttribute() throws Exception {
+        Set<Imported> imported = importFrom("shop.xmi", Ordering.NONE, true);
+        AspectGraph type = single(imported, ResourceKind.TYPE);
+        AspectGraph host = single(imported, ResourceKind.HOST);
+        Set<String> tags = Set.of("string:\"fiction\"", "string:\"classic\"");
+        assertEquals(tags, targets(host, "tags"));
+        File dir = newDir();
+        exportTo(newGrammar(type, host, Ordering.NONE, true), dir);
+        Set<Imported> result = importFrom(new File(dir, "shop.xmi"), Ordering.NONE, true);
+        assertEquals(tags, targets(single(result, ResourceKind.HOST), "tags"));
+        assertEquals(metadata(type), metadata(single(result, ResourceKind.TYPE)));
     }
 
     // ----------------------------------------------------------------------
@@ -412,6 +455,17 @@ public class EcoreTest {
         return result;
     }
 
+    /** Returns the keys of the targets of the edges with a given label. */
+    static private Set<String> targets(AspectGraph graph, String label) {
+        Set<String> result = new TreeSet<>();
+        for (var edge : graph.edgeSet()) {
+            if (edge.source() != edge.target() && edge.label().text().equals(label)) {
+                result.add(key(graph, edge.target()));
+            }
+        }
+        return result;
+    }
+
     /** Returns the identifiers declared in a graph. */
     static private Set<String> identifiers(AspectGraph graph) {
         Set<String> result = new LinkedHashSet<>();
@@ -430,6 +484,11 @@ public class EcoreTest {
      * otherwise its type label, optionally suffixed with its index attribute.
      */
     static private String key(AspectGraph graph, AspectNode node) {
+        var value = node.getValue();
+        if (value != null) {
+            // this is a constant node, holding a value of a many-valued attribute
+            return value.toString();
+        }
         String type = null;
         String id = null;
         String index = null;

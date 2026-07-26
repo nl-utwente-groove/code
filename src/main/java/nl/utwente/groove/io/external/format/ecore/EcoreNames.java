@@ -63,7 +63,9 @@ public class EcoreNames {
         this.classifiers = collectClassifiers(this.packages);
         this.labelMap = new LinkedHashMap<>();
         this.literalMap = new LinkedHashMap<>();
+        this.featureMap = new LinkedHashMap<>();
         computeLabels();
+        computeFeatureLabels();
     }
 
     /** Returns all packages covered by this naming, sub-packages included, in model order. */
@@ -102,8 +104,19 @@ public class EcoreNames {
         return result;
     }
 
-    /** Returns the GROOVE edge label of a given structural feature. */
+    /** Returns the GROOVE edge label of a given structural feature.
+     * Features of classes outside this naming (which can only be reached through
+     * an {@code eOpposite}) are named by repair alone.
+     */
     public String labelFor(EStructuralFeature feature) {
+        var result = this.featureMap.get(feature);
+        return result == null
+            ? repair(feature)
+            : result;
+    }
+
+    /** Returns the repaired name of a structural feature, before disambiguation. */
+    private static String repair(EStructuralFeature feature) {
         return IdValidator.GROOVE_ID_NON_RESERVED.repair(feature.getName());
     }
 
@@ -116,6 +129,28 @@ public class EcoreNames {
     private final Map<EClassifier,String> labelMap;
     /** Mapping from enum literals to their type labels. */
     private final Map<EEnumLiteral,String> literalMap;
+    /** Mapping from structural features to their edge labels. */
+    private final Map<EStructuralFeature,String> featureMap;
+
+    /**
+     * Computes the value of {@link #featureMap}.
+     * Two features of one class whose names repair to the same identifier would
+     * otherwise silently merge into a single type graph element, so they are
+     * disambiguated by a numeric suffix, just like the classifiers. Features of
+     * different classes may share a label: they are distinguished by their
+     * source node type.
+     */
+    private void computeFeatureLabels() {
+        for (var classifier : this.classifiers) {
+            if (!(classifier instanceof EClass eClass)) {
+                continue;
+            }
+            Set<String> used = new LinkedHashSet<>();
+            for (var feature : eClass.getEStructuralFeatures()) {
+                this.featureMap.put(feature, disambiguate(repair(feature), used));
+            }
+        }
+    }
 
     /** Computes the values of {@link #labelMap} and {@link #literalMap}. */
     private void computeLabels() {

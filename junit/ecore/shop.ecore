@@ -25,6 +25,8 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Book" eSuperTypes="#//Item">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="isbn" eType="#//Isbn"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="tags" upperBound="-1"
+        ordered="false" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="category" eType="#//Category"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="entry" eType="#//catalog/Item"/>
   </eClassifiers>

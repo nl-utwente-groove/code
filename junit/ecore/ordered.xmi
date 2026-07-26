@@ -2,7 +2,7 @@
 <ordered:List xmi:version="2.0"
     xmlns:xmi="http://www.omg.org/XMI"
     xmlns:ordered="http://groove.utwente.nl/ecore/ordered"
-    xmi:id="theList">
+    xmi:id="theList" labels="x y x">
   <elements xmi:id="first" name="a"/>
   <elements xmi:id="second" name="b"/>
   <elements xmi:id="third" name="c"/>

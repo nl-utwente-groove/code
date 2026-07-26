@@ -153,11 +153,21 @@ public class GraphsToEcore {
 
     /** Collects the per-feature metadata records. */
     private void collectFeatureData(GraphProperties properties) {
-        for (var record : records(properties, EcoreToGraphs.FEATURES_KEY, 5)) {
+        for (var record : records(properties, EcoreToGraphs.FEATURES_KEY, 7)) {
             this.featureData
                 .put(record[0] + FEATURE_SEP + record[1],
                      new FeatureData(record[2], Boolean.parseBoolean(record[3]),
-                         Boolean.parseBoolean(record[4])));
+                         Boolean.parseBoolean(record[4]), bound(record[5], 0),
+                         bound(record[6], 1)));
+        }
+    }
+
+    /** Parses a recorded multiplicity bound, falling back to a default. */
+    private static int bound(String text, int fallback) {
+        try {
+            return Integer.parseInt(text);
+        } catch (NumberFormatException exc) {
+            return fallback;
         }
     }
 
@@ -393,7 +403,7 @@ public class GraphsToEcore {
             result = attribute;
         }
         result.setName(descriptor.name());
-        setBounds(result, descriptor);
+        setBounds(result, descriptor, data);
         if (data != null) {
             result.setOrdered(data.ordered());
             result.setUnique(data.unique());
@@ -401,28 +411,33 @@ public class GraphsToEcore {
         return result;
     }
 
-    /** Sets the multiplicity bounds of a newly created feature. */
-    private void setBounds(EStructuralFeature feature, Descriptor descriptor) {
-        if (descriptor.indexed()) {
-            // the intermediate encoding is only used for many-valued features,
-            // and does not record their bounds
-            feature.setLowerBound(0);
-            feature.setUpperBound(-1);
-            return;
-        }
-        Multiplicity mult = descriptor.mult();
-        if (mult == null) {
+    /**
+     * Sets the multiplicity bounds of a newly created feature.
+     * The multiplicity annotation of the type graph wins, since that is what a
+     * user editing the type graph would change; where there is none — for
+     * attributes, which the encoding writes as self-loops, and for the
+     * intermediate encoding — the recorded bounds are used.
+     */
+    private void setBounds(EStructuralFeature feature, Descriptor descriptor,
+                           @Nullable FeatureData data) {
+        Multiplicity mult = descriptor.indexed()
+            ? null
+            : descriptor.mult();
+        if (mult != null) {
+            feature.setLowerBound(mult.lower());
+            feature.setUpperBound(mult.isUnbounded()
+                ? -1
+                : mult.upper());
+        } else if (data != null) {
+            feature.setLowerBound(data.lower());
+            feature.setUpperBound(data.upper());
+        } else {
             // an attribute self-loop stands for a single value; an unannotated
             // edge for the Ecore default 0..*
             feature.setLowerBound(0);
             feature.setUpperBound(descriptor.targetLabel() == null
                 ? 1
                 : -1);
-        } else {
-            feature.setLowerBound(mult.lower());
-            feature.setUpperBound(mult.isUnbounded()
-                ? -1
-                : mult.upper());
         }
     }
 
@@ -604,10 +619,13 @@ public class GraphsToEcore {
         if (feature.isMany()) {
             @SuppressWarnings("unchecked")
             List<Object> list = (List<Object>) object.eGet(feature);
-            // an opposite reference may have inserted the value already
-            if (!list.contains(value)) {
-                list.add(value);
+            // an opposite reference may have inserted the value already; this can
+            // only happen for references, which are unique in Ecore anyway, so
+            // for attributes every value is added, duplicates included
+            if (feature instanceof EReference && list.contains(value)) {
+                return;
             }
+            list.add(value);
         } else {
             object.eSet(feature, value);
         }
@@ -761,10 +779,10 @@ public class GraphsToEcore {
         if (text == null || text.isEmpty()) {
             return result;
         }
-        for (var record : text.split(EcoreToGraphs.RECORD_SEP, -1)) {
-            String[] fields = record.split(FIELD_SEP_REGEX, -1);
-            if (fields.length == arity) {
-                result.add(fields);
+        for (var record : EcoreToGraphs.split(text, EcoreToGraphs.RECORD_SEP_CHAR, false)) {
+            var fields = EcoreToGraphs.split(record, EcoreToGraphs.FIELD_SEP_CHAR, true);
+            if (fields.size() == arity) {
+                result.add(fields.toArray(new String[0]));
             } else {
                 this.errors.add("Malformed '%s' metadata record '%s'", key, record);
             }
@@ -807,8 +825,11 @@ public class GraphsToEcore {
      * @param declaredType the name of the declared data type, or the empty string
      * @param ordered the recorded {@code ordered} flag
      * @param unique the recorded {@code unique} flag
+     * @param lower the recorded lower bound
+     * @param upper the recorded upper bound ({@code -1} if unbounded)
      */
-    private static record FeatureData(String declaredType, boolean ordered, boolean unique) {
+    private static record FeatureData(String declaredType, boolean ordered, boolean unique,
+        int lower, int upper) {
         // no additional members
     }
 
@@ -818,8 +839,6 @@ public class GraphsToEcore {
     private static final char PATH_SEP = '.';
     /** Separator between the owner and the name in a feature reference. */
     private static final String FEATURE_SEP = ".";
-    /** Regular expression matching the field separator of a metadata record. */
-    private static final String FIELD_SEP_REGEX = "\\" + EcoreToGraphs.FIELD_SEP;
     /** Prefix of the namespace URI derived for a type graph without metadata. */
     private static final String DEFAULT_NS_URI_PREFIX = "http://nl.utwente.groove/";
     /** Name of the value feature of an intermediate node. */
