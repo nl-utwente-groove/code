@@ -36,7 +36,13 @@ import nl.utwente.groove.io.FileType;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface Exporter extends Porter {
+public interface Exporter {
+    /**
+     * Get list of file types this exporter can handle.
+     * @return list of supported file types.
+     */
+    public Set<FileType> getFileTypes();
+
     /** Returns the export kind supported by this exporter. */
     public ExportKind getExportKind();
 

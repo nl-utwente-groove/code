@@ -16,7 +16,6 @@
  */
 package nl.utwente.groove.io.external;
 
-import java.awt.Frame;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -24,7 +23,6 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 
-import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.io.FileType;
 
 /** Abstract superclass for {@link Exporter}s, containing a few helper methods. */
@@ -75,25 +73,6 @@ public abstract class AbstractExporter implements Exporter {
             return Collections.emptySet();
         }
     }
-
-    /** Returns the parent component for a dialog. */
-    protected final Frame getParent() {
-        return this.simulator == null
-            ? null
-            : this.simulator.getFrame();
-    }
-
-    /** Returns the simulator on which this exporter works. */
-    protected final Simulator getSimulator() {
-        return this.simulator;
-    }
-
-    @Override
-    public void setSimulator(Simulator simulator) {
-        this.simulator = simulator;
-    }
-
-    private Simulator simulator;
 
     /** Subclass of AbstractExporter containing functionality to write to a PrintWriter. */
     static public abstract class Writer extends AbstractExporter {

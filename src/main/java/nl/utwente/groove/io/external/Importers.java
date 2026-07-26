@@ -70,7 +70,6 @@ public class Importers {
                                                              IOException {
         FileType fileType = getFormatChooser().getFileType();
         Importer ri = getImporter(fileType);
-        ri.setSimulator(simulator);
         var store = simulator.getModel().getStore();
         Set<Imported> resources = new HashSet<>();
         for (var file : getFormatChooser().getSelectedFiles()) {

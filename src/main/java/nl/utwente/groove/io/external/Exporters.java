@@ -78,7 +78,6 @@ public class Exporters {
                 // Get exporter
                 FileType fileType = chooser.getFileType();
                 Exporter e = exporters.get(fileType);
-                e.setSimulator(simulator);
                 e.doExport(exportable, selectedFile, fileType);
             } catch (PortException e) {
                 showErrorDialog(simulator == null
