@@ -50,7 +50,11 @@ class HostModelMorphism {
      */
     private HostModelMorphism(@Nullable GrammarModel grammar, AspectGraph source) {
         this.source = source;
-        var target = new DefaultHostGraph(source.getName());
+        // the host graph is a multigraph if the grammar allows parallel edges;
+        // this determines the matching mode of the entire grammar, as the
+        // GTS host factory is taken from the start graph
+        var simple = grammar == null || !grammar.getProperties().isHasParallelEdges();
+        var target = new DefaultHostGraph(source.getName(), simple);
         var map = new HostModelMap(target.getFactory());
         var normalSource = source.normalise();
         var errors = new FormatErrorSet();
