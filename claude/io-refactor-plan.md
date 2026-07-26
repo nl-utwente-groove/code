@@ -81,17 +81,48 @@ from the import/export dropdowns (they are non-functional today):
 Kept: the `groove-gxl` local library and the JAXB dependencies — the native
 `GxlIO` uses them independently of the conceptual layer.
 
-## Phase 2 — straighten the remaining framework
+## Phase 2 — straighten the remaining framework (branch `worktree-io-framework`)
 
-- Remove `setSimulator` from `Porter`; registries become headless
-  (`Exporters`/`Importers` split into format registry + Swing driver next to
-  `gui/action`), so `Generator`/`Imager` CLI paths no longer touch Swing.
-- Single save path: `GraphIO` as the one marshalling backend, porters as thin
-  adapters; merge `NativeGraphExporter`/`NativeResourcePorter`; remove
-  `Imager`'s JGRAPH→RESOURCE→GRAPH fallback ladder.
-- Move the `FileType → GraphIO` mapping out of the enum (breaks the cycle).
+Decisions refined with Arend after Phase 1 review:
+
+- **Delete `Porter` entirely** (not just `setSimulator`). Its whole contract
+  was `getFileTypes()` + `setSimulator()`; nothing ever treats importers and
+  exporters uniformly through it, and after Phase 1 the injected `Simulator`
+  is stored but never read by any implementation. `Importer` and `Exporter`
+  become unrelated interfaces, each declaring `getFileTypes()`; classes that
+  do both simply implement both. The Importer/Exporter asymmetry itself is
+  genuine (import maps files to grammar resources; export consumes graphs,
+  rendered JGraphs, or resources) and is kept.
+- Registries become headless: `Exporters`/`Importers` keep only the format
+  registry; the Swing dialog logic moves to drivers next to `gui/action`.
+- **Rendering exporters move to the `gui` side** (`RasterExporter`,
+  `VectorExporter`, `TikzExporter`, the `GraphTo*` back-ends,
+  `TikzStylesExtractor`): they work by drawing a JGraph off-screen, so the
+  GUI dependency is irreducible and should be placed honestly. The `io`
+  registry gains a registration hook through which the GUI and the Imager
+  contribute them at startup. `io.Imager` itself moves to `gui` for the same
+  reason (its rendering core is an off-screen `AspectJGraph`).
+- Single save path: `GraphIO` as the one marshalling backend; merge
+  `NativeGraphExporter` into `NativeResourcePorter`; with the overlap gone,
+  `Imager`'s JGRAPH→RESOURCE→GRAPH fallback ladder disappears.
+- Move the `FileType → GraphIO` mapping out of the enum (breaks the
+  `io → io.external.format` cycle).
 - Relocate `GrooveFileChooser`, `GrooveFileView`, `HTMLConverter` to `gui`
-  (isolated final commit, rename-only).
+  (isolated commit, rename-only); drop `SystemStore`'s `gui.Options` import
+  by moving the undo-edit name constants somewhere neutral.
+- `SystemStore`'s edit history stays on `javax.swing.undo` (headless-safe
+  data structure; cosmetic coupling only — decision: leave as-is).
+
+### Open ends (deliberately deferred)
+
+- `GxlIO`/`LayoutIO` persist layout via `gui.layout.LayoutMap`, whose classes
+  are entangled with JGraph internals (`AttributeMap`, `GraphConstants`,
+  `PortView`, `VisualMap`). Extracting neutral layout-data classes would make
+  `io` fully GUI-free but risks file-format fidelity; candidate for a later
+  phase of its own.
+- `src/main/resources/nl/utwente/groove/resource/{Ecore.ecore, groove.ecore}`
+  were already orphaned before Phase 1 and are left in place; revisit in
+  Phase 3 (candidate test fixtures).
 
 ## Phase 3 — fresh Ecore support
 
