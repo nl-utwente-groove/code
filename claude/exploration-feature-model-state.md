@@ -60,7 +60,14 @@ never widens the dialog; the generic "The grammar has errors" message is gone
 from the error area (tooltip of the disabled run buttons only) — but an
 unparseable stored exploration value (feature-model or legacy key), which cannot
 be loaded into the widgets, is reported in the error area via
-`Properties.parseProperty` until a new default is stored over it.
+`Properties.parseProperty` until a new default is stored over it. Further
+(d7057d384, delivered on temp branch `explore-feature-model-fixes` while Arend's
+checkout held the branch): the error panel reports preferred width 0 (it wraps
+anyway, so it must not influence the dialog width), and the equal-thirds
+GridLayout rows became BorderLayout rows with the key and kind columns sized to
+their widest values (aligned across rows); the content editors keep the
+remaining width, deliberately untouched — **Arend plans a sub-dialog for the
+more involved contents (such as formulas) as a later refinement**.
 Note: the "Runs as" status line shows the legacy `ExploreType` identifier and
 disappears in phase 6; the preview field (the config's own text form) stays.
 
