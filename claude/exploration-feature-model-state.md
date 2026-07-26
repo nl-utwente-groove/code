@@ -10,16 +10,14 @@ state, the invariants discovered along the way, and where to pick up.
 Branch topology (2026-07-26; nothing pushed beyond
 `explore-feature-model`@defa76d8f — later commits are local only):
 
-    master (c3a6db7b2, gh #855 fix — NOT yet merged into the branches below)
-      … 8376effe7 (incl. RETE retirement)
-      ⊂ explore-feature-model (211d204f9)
-          phases 1–4 + three dialog-review rounds + master(8376effe7) merge
-      ⊂ explore-parametric-engine (a950c6f8d)
+    master (c3a6db7b2, incl. RETE retirement and the gh #855 fix)
+      ⊂ explore-feature-model (fbfa74d6a)
+          phases 1–4 + three dialog-review rounds (+ layout fixes) + master merges
+      ⊂ explore-parametric-engine (dab65ebfc)
           phase 5a (engine skeleton) + merges of the above
 
-The branches contain master up to 8376effe7; master has since advanced with the
-gh #855 fix (c3a6db7b2), so merging to master no longer fast-forwards — Arend
-decides when to reconcile. The engine branch subsumes the feature-model branch.
+Merging to master in that order fast-forwards; the engine branch subsumes the
+feature-model branch.
 Suite at the 5a freeze, measured at the engine tip: 368 fast, **399 including slow
 tests** (`mvn test -Dexcluded.test.groups=`), all green; fast suite re-verified
 green after the third review round on both branches. Phases 1–4: the feature model
@@ -53,7 +51,11 @@ borderless top-aligned area between the Configuration panel and the buttons
 content-syntax tooltip moved off the key/kind tooltip onto the content editor
 only; and "Set Default" refreshes the status afterwards (it is now disabled while
 grammar-dependent content is invalid — previously a broken config could be stored,
-immediately breaking the grammar).
+immediately breaking the grammar). Follow-up fixes (716c5dc67): the dialog grows
+in height only when errors appear (pack() caused a spurious horizontal resize),
+and the Configuration panel's preview + status are anchored to the panel top.
+Note: the "Runs as" status line shows the legacy `ExploreType` identifier and
+disappears in phase 6; the preview field (the config's own text form) stays.
 
 ## As-built map
 
