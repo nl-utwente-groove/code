@@ -275,6 +275,23 @@ public class EcoreToGraphs {
             }
         }
         result.setProperty(TYPES_KEY, types.toString());
+        StringBuilder features = new StringBuilder();
+        for (var classifier : this.names.classifiers()) {
+            if (!(classifier instanceof EClass eClass)) {
+                continue;
+            }
+            for (var feature : sortedFeatures(eClass)) {
+                String declaredType = declaredTypeOf(feature);
+                if (declaredType.isEmpty() && !isMultiple(feature)) {
+                    // the declaration is completely reconstructible from the type graph
+                    continue;
+                }
+                append(features, this.names.labelFor(eClass), this.names.labelFor(feature),
+                       declaredType, Boolean.toString(feature.isOrdered()),
+                       Boolean.toString(feature.isUnique()));
+            }
+        }
+        result.setProperty(FEATURES_KEY, features.toString());
         StringBuilder opposites = new StringBuilder();
         Set<EReference> seen = new LinkedHashSet<>();
         for (var eClass : this.classes) {
@@ -288,6 +305,44 @@ public class EcoreToGraphs {
         }
         result.setProperty(OPPOSITES_KEY, opposites.toString());
         return result;
+    }
+
+    /** Returns the features declared by a given class, ordered by their GROOVE label.
+     * The order is canonical rather than the model order, so that the metadata
+     * survives an export (which cannot know the original model order) unchanged.
+     */
+    private List<EStructuralFeature> sortedFeatures(EClass eClass) {
+        List<EStructuralFeature> result = new ArrayList<>(eClass.getEStructuralFeatures());
+        result.sort((f1, f2) -> this.names.labelFor(f1).compareTo(this.names.labelFor(f2)));
+        return result;
+    }
+
+    /**
+     * Returns the name under which the declared data type of a given feature is
+     * recorded in the metadata, or the empty string if the type graph determines
+     * the data type already. The latter is the case for references, for
+     * enum-typed attributes, and for attributes whose data type is the default
+     * Ecore type of the GROOVE sort it is mapped to.
+     */
+    private String declaredTypeOf(EStructuralFeature feature) {
+        if (!(feature instanceof EAttribute attribute)) {
+            return "";
+        }
+        if (!(attribute.getEType() instanceof EDataType dataType) || dataType instanceof EEnum) {
+            return "";
+        }
+        Sort sort = sortOf(dataType);
+        if (sort == null) {
+            // a custom data type: record it under the label of its classifier,
+            // so that it can be looked up among the recorded types
+            return this.names.classifiers().contains(dataType)
+                ? this.names.labelFor(dataType)
+                : nonNull(dataType.getName());
+        }
+        String name = nonNull(dataType.getName());
+        return name.equals(DEFAULT_TYPE_MAP.get(sort))
+            ? ""
+            : name;
     }
 
     /** Returns the {@code type.feature} reference of a given structural feature. */
@@ -565,8 +620,27 @@ public class EcoreToGraphs {
             : text;
     }
 
+    /** Returns the standard Ecore data type name that a given GROOVE sort is
+     * mapped back to if the metadata does not record a more specific one. */
+    public static String defaultTypeName(Sort sort) {
+        String result = DEFAULT_TYPE_MAP.get(sort);
+        assert result != null;
+        return result;
+    }
+
     /** Mapping from standard Ecore data type names to GROOVE sorts. */
     private static final Map<String,Sort> SORT_MAP = createSortMap();
+    /** Mapping from GROOVE sorts to the Ecore data types they are mapped back to. */
+    private static final Map<Sort,String> DEFAULT_TYPE_MAP = createDefaultTypeMap();
+
+    private static Map<Sort,String> createDefaultTypeMap() {
+        Map<Sort,String> result = new LinkedHashMap<>();
+        result.put(Sort.BOOL, "EBoolean");
+        result.put(Sort.INT, "EInt");
+        result.put(Sort.REAL, "EDouble");
+        result.put(Sort.STRING, "EString");
+        return result;
+    }
 
     private static Map<String,Sort> createSortMap() {
         Map<String,Sort> result = new LinkedHashMap<>();
@@ -591,6 +665,12 @@ public class EcoreToGraphs {
     public static final String PACKAGES_KEY = "ecorePackages";
     /** Graph property key under which the classifier data is recorded. */
     public static final String TYPES_KEY = "ecoreTypes";
+    /** Graph property key under which the per-feature data is recorded.
+     * Only features are recorded whose Ecore declaration cannot be reconstructed
+     * from the type graph alone; the records are
+     * {@code owner|feature|declaredType|ordered|unique}.
+     */
+    public static final String FEATURES_KEY = "ecoreFeatures";
     /** Graph property key under which the opposite reference pairs are recorded. */
     public static final String OPPOSITES_KEY = "ecoreOpposites";
     /** Separator between the records of a metadata property value. */

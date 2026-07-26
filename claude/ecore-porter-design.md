@@ -25,9 +25,11 @@ ordering and uniqueness of many-valued features are handled only through the
    express enums; no meta-graph sidecar, no generated constraint rules
    (deferred to Phase 4), no intermediate nodes except for ordering.
 3. **Round-trip metadata rides on the graphs, not in extra resources.**
-   Package data (name, nsURI, nsPrefix), the enum/interface classification and
-   the opposite pairing are recorded as graph properties (`GraphInfo`) of the
-   type graph, so a re-export reproduces the metamodel without heuristics.
+   Package data (name, nsURI, nsPrefix), the enum/interface classification, the
+   opposite pairing and the per-feature data that the type graph does not
+   determine (declared data type, order and uniqueness) are recorded as graph
+   properties (`GraphInfo`) of the type graph, so a re-export reproduces the
+   metamodel without heuristics.
    (Implementation must verify these persist through GXL; if not, fall back to
    a dedicated `rem:` node with a fixed prefix.)
 4. **Errors via `FormatErrorSet` on the graph elements** (surfaced in the GUI
@@ -57,7 +59,10 @@ ordering and uniqueness of many-valued features are handled only through the
 Datatype table (as the old code, plus the gaps filled): `EBoolean(Object)` →
 `bool`; `EInt/ELong/EShort/EByte(+Objects)/EBigInteger` → `int`;
 `EFloat/EDouble(+Objects)/EBigDecimal` → `real`; `EString/EChar(acterObject)`
-→ `string`; `EDate` and anything else → `string` + warning.
+→ `string`; `EDate` and anything else → `string`. All of these mappings are
+silent; the declared Ecore type is recorded in the round-trip metadata whenever
+it is not the default type of the sort it maps to, so the approximation is
+reversible.
 
 **Naming.** GROOVE type labels are unqualified Java-style identifiers (`$` is
 legal, `.` is not). Default: the simple EClass/EEnum name, repaired via

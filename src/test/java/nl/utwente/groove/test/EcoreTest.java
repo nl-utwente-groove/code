@@ -108,6 +108,12 @@ public class EcoreTest {
                      properties.getProperty(EcoreToGraphs.TYPES_KEY));
         assertEquals("Shop.items|shop$Item.shop",
                      properties.getProperty(EcoreToGraphs.OPPOSITES_KEY));
+        // only the features that the type graph does not determine completely:
+        // the many-valued ones (whose order and uniqueness are not encoded) and
+        // the ones over a data type other than the sort's default
+        assertEquals("Shop|customers||false|true;Shop|items||false|true;Book|isbn|Isbn|true|true;"
+            + "Customer|favourites||false|true",
+                     properties.getProperty(EcoreToGraphs.FEATURES_KEY));
     }
 
     /**
