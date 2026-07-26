@@ -97,6 +97,31 @@ public class LTLTest {
         testFormula("F set_score(_, 100)", false);
     }
 
+    /** Test the treatment of special transition labels (gh #855). */
+    @Test
+    public void testTransitionLabels() {
+        prepare(StrategyValue.LTL);
+        prepare("mc-label");
+        // rule p has special transition label 'go'
+        testFormula("go U r", false);
+        testFormula("go W r", true);
+        testFormula("G(go|q)", true);
+        testFormula("G go", false);
+        // the special label replaces the rule name
+        testFormula("G(p|q)", false);
+        prepare("attributes-label");
+        // rule set_gravity has special label 'grav %s', which does not
+        // format to a parseable call and so is matched as a literal
+        testFormula("F 'grav 9.81'", true);
+        testFormula("F set_gravity(_)", false);
+        // rule add_score has special label 'sc(%s,%s)', which formats
+        // to a parseable call and so supports argument matching
+        testFormula("F sc(n0, 100)", true);
+        testFormula("F sc(n0, _)", true);
+        testFormula("F sc(n3, _)", false);
+        testFormula("F add_score", false);
+    }
+
     /** Test on a specially designed transition system. */
     private void testMC() {
         prepare("mc");
