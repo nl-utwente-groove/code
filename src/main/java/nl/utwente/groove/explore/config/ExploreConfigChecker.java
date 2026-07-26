@@ -53,34 +53,48 @@ public class ExploreConfigChecker {
      */
     public static FormatErrorSet check(GrammarModel grammar, ExploreConfig config) {
         var result = new FormatErrorSet();
-        var goal = (Goal) config.getKind(ExploreKey.GOAL);
-        switch (goal) {
-        case CONDITION -> checkCondition(grammar, goalContent(config), result);
-        case FIRES -> checkRuleName(grammar, goalContent(config), result);
-        default -> {
-            // no grammar-dependent content
+        for (var key : ExploreKey.values()) {
+            result.addAll(check(grammar, key, config.get(key)));
         }
+        return result;
+    }
+
+    /**
+     * Checks the grammar-dependent content of the setting for a single key,
+     * returning the errors found. Settings without grammar-dependent content
+     * check without errors.
+     */
+    public static FormatErrorSet check(GrammarModel grammar, ExploreKey key, Setting setting) {
+        var result = new FormatErrorSet();
+        switch (key) {
+        case GOAL -> {
+            switch ((Goal) setting.kind()) {
+            case CONDITION -> checkCondition(grammar, (String) setting.content(), result);
+            case FIRES -> checkRuleName(grammar, (String) setting.content(), result);
+            default -> {
+                // no grammar-dependent content
+            }
+            }
         }
-        var bound = (Bound) config.getKind(ExploreKey.BOUND);
-        switch (bound) {
-        case UPTO, INCLUDE -> {
-            String condition = (String) config.get(ExploreKey.BOUND).content();
-            checkRuleName(grammar, condition.startsWith("!")
-                ? condition.substring(1)
-                : condition, result);
+        case BOUND -> {
+            switch ((Bound) setting.kind()) {
+            case UPTO, INCLUDE -> {
+                String condition = (String) setting.content();
+                checkRuleName(grammar, condition.startsWith("!")
+                    ? condition.substring(1)
+                    : condition, result);
+            }
+            case EDGES -> checkEdgeBounds(grammar, (String) setting.content(), result);
+            default -> {
+                // no grammar-dependent content
+            }
+            }
         }
-        case EDGES -> checkEdgeBounds(grammar, (String) config.get(ExploreKey.BOUND).content(),
-                                      result);
         default -> {
             // no grammar-dependent content
         }
         }
         return result;
-    }
-
-    /** Returns the (string) content of the goal setting. */
-    private static String goalContent(ExploreConfig config) {
-        return (String) config.get(ExploreKey.GOAL).content();
     }
 
     /**

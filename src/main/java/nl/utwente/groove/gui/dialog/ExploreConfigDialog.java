@@ -18,6 +18,7 @@ package nl.utwente.groove.gui.dialog;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -27,6 +28,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
@@ -34,22 +36,24 @@ import javax.swing.BoxLayout;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JList;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ToolTipManager;
 import javax.swing.WindowConstants;
+import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.config.Bound;
 import nl.utwente.groove.explore.config.ExploreConfig;
+import nl.utwente.groove.explore.config.ExploreConfigChecker;
 import nl.utwente.groove.explore.config.ExploreKey;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.explore.config.Frontier;
@@ -60,6 +64,7 @@ import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.SimulatorModel;
+import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
@@ -113,6 +118,7 @@ public class ExploreConfigDialog extends JDialog {
             .add(createSection("Engine", ExploreKey.COLLAPSE, ExploreKey.ALGEBRA,
                                ExploreKey.PERSISTENCE));
         content.add(createPreviewPanel());
+        content.add(createErrorPanel());
         content.add(createButtonPanel());
 
         KeyStroke escape = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
@@ -150,6 +156,20 @@ public class ExploreConfigDialog extends JDialog {
         result.add(this.previewField, BorderLayout.NORTH);
         this.statusLabel = new JLabel(" ");
         result.add(this.statusLabel, BorderLayout.SOUTH);
+        return result;
+    }
+
+    /**
+     * Creates the (borderless) area listing the problems of the composed
+     * configuration. The area is invisible while there are no problems; its
+     * text is top-aligned and shown in full, with the dialog growing as
+     * needed (see {@link #refreshStatus}).
+     */
+    private JPanel createErrorPanel() {
+        JPanel result = new JPanel(new BorderLayout());
+        this.errorLabel = new JLabel();
+        this.errorLabel.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
+        result.add(this.errorLabel, BorderLayout.NORTH);
         return result;
     }
 
@@ -228,15 +248,33 @@ public class ExploreConfigDialog extends JDialog {
             for (var row : this.rows.values()) {
                 row.refreshContentCard();
             }
-            // recompute the configuration and status
+            // recompute the configuration and status; errors in the value of
+            // a particular key are marked at the key's row, and collected
+            // (with the key phrase prefixed) for the central error area
             var errors = new FormatErrorSet();
-            ExploreConfig config = storeConfig(errors);
+            var config = new ExploreConfig();
+            for (var key : ExploreKey.values()) {
+                var rowErrors = new FormatErrorSet();
+                try {
+                    Setting setting = getRow(key).getSetting();
+                    if (setting != null) {
+                        config.put(key, setting);
+                        rowErrors.addAll(ExploreConfigChecker.check(getGrammar(), key, setting));
+                    }
+                } catch (FormatException exc) {
+                    rowErrors.addAll(exc.getErrors());
+                }
+                getRow(key).setErrors(rowErrors);
+                for (var error : rowErrors) {
+                    errors.add("Error in value for '%s': %s", key.getKeyPhrase(), error.toString());
+                }
+            }
             this.previewField
-                .setText(config == null || config.unparse().isEmpty()
+                .setText(config.unparse().isEmpty()
                     ? "(default configuration)"
                     : config.unparse());
             ExploreType exploreType = null;
-            if (config != null && errors.isEmpty()) {
+            if (errors.isEmpty()) {
                 try {
                     exploreType = ExploreTypeConverter.toExploreType(config);
                 } catch (FormatException exc) {
@@ -259,15 +297,13 @@ public class ExploreConfigDialog extends JDialog {
                     result.put(key, setting);
                 }
             } catch (FormatException exc) {
-                errors
-                    .add("Error in value for '%s': %s", key.getKeyPhrase(),
-                         exc.getMessage());
+                errors.add("Error in value for '%s': %s", key.getKeyPhrase(), exc.getMessage());
             }
         }
         return result;
     }
 
-    /** Refreshes the status label and the enabling of the buttons. */
+    /** Refreshes the error area, the status label and the enabling of the buttons. */
     private void refreshStatus(ExploreType exploreType, FormatErrorSet errors) {
         boolean runnable = exploreType != null;
         // like the old dialog, running additionally requires an error-free grammar
@@ -277,9 +313,12 @@ public class ExploreConfigDialog extends JDialog {
         GrammarModel grammar = getGrammar();
         if (explorable && grammar.hasErrors()) {
             explorable = false;
+            // the composed configuration itself is error-free at this point;
+            // the details of general grammar errors are not relevant here
             problem = "The grammar has errors";
         }
         if (explorable) {
+            assert exploreType != null;
             try {
                 exploreType.test(grammar.toGrammar());
             } catch (FormatException exc) {
@@ -287,24 +326,35 @@ public class ExploreConfigDialog extends JDialog {
                 problem = exc.getMessage();
             }
         }
-        String status;
-        if (!errors.isEmpty()) {
-            var text = new StringBuilder("<html><font color='red'>");
-            for (var error : errors) {
-                text.append(HTMLConverter.toHtml(new StringBuilder(error.toString())));
-                text.append("<br>");
+        // compose the problems text, for the error area and button tooltips
+        var problems = new StringBuilder();
+        for (var error : errors) {
+            if (!problems.isEmpty()) {
+                problems.append("<br>");
             }
-            text.append("</font></html>");
-            status = text.toString();
-        } else if (problem != null) {
-            status = "<html><font color='red'>"
-                + HTMLConverter.toHtml(new StringBuilder(problem)) + "</font></html>";
-        } else if (this.legacyNotice != null) {
-            status = "<html><font color='" + INFO_COLOR + "'>" + this.legacyNotice
-                + "</font></html>";
+            problems.append(HTMLConverter.toHtml(new StringBuilder(error.toString())));
+        }
+        if (problem != null) {
+            if (!problems.isEmpty()) {
+                problems.append("<br>");
+            }
+            problems.append(HTMLConverter.toHtml(new StringBuilder(problem)));
+        }
+        String problemsHtml = problems.isEmpty()
+            ? null
+            : problems.toString();
+        this.errorLabel
+            .setText(problemsHtml == null
+                ? null
+                : "<html><body style='width:400px'><font color='red'>" + problemsHtml
+                    + "</font></body></html>");
+        // the status label only carries informational messages
+        String status = " ";
+        if (this.legacyNotice != null) {
+            status
+                = "<html><font color='" + INFO_COLOR + "'>" + this.legacyNotice + "</font></html>";
             this.legacyNotice = null;
-        } else {
-            assert exploreType != null;
+        } else if (exploreType != null) {
             status = "<html><font color='" + INFO_COLOR + "'>Runs as: "
                 + exploreType.getIdentifier() + "</font></html>";
         }
@@ -313,19 +363,20 @@ public class ExploreConfigDialog extends JDialog {
         this.defaultButton.setToolTipText(DEFAULT_TOOLTIP);
         this.startButton.setEnabled(explorable);
         this.exploreButton.setEnabled(explorable);
-        String problemHtml = problem == null
-            ? null
-            : HTMLConverter.toHtml(new StringBuilder(problem)).toString();
-        String exploreTip = problemHtml == null
+        String exploreTip = problemsHtml == null
             ? EXPLORE_TOOLTIP
-            : "<html>" + EXPLORE_TOOLTIP + "<br><font color='red'>" + problemHtml
+            : "<html>" + EXPLORE_TOOLTIP + "<br><font color='red'>" + problemsHtml
                 + "</font></html>";
-        String startTip = problemHtml == null
+        String startTip = problemsHtml == null
             ? START_TOOLTIP
-            : "<html>" + START_TOOLTIP + "<br><font color='red'>" + problemHtml
+            : "<html>" + START_TOOLTIP + "<br><font color='red'>" + problemsHtml
                 + "</font></html>";
         this.startButton.setToolTipText(startTip);
         this.exploreButton.setToolTipText(exploreTip);
+        // grow the dialog if the error area no longer fits
+        if (isVisible() && getPreferredSize().height > getHeight()) {
+            pack();
+        }
     }
 
     /** Returns the currently composed exploration type, or {@code null} if invalid. */
@@ -360,8 +411,7 @@ public class ExploreConfigDialog extends JDialog {
             this.simulator.getActions().getExploreAction().execute();
         } catch (FormatException exc) {
             new ErrorDialog(this.simulator.getFrame(),
-                "<HTML><B>Invalid exploration.</B><BR> " + exc.getMessage(), exc)
-                    .setVisible(true);
+                "<HTML><B>Invalid exploration.</B><BR> " + exc.getMessage(), exc).setVisible(true);
         }
     }
 
@@ -377,6 +427,8 @@ public class ExploreConfigDialog extends JDialog {
         } catch (IOException exc) {
             // do nothing
         }
+        // the grammar has changed, so the status may have as well
+        refresh();
     }
 
     /** Disposes the dialog and resets the tooltip dismiss delay. */
@@ -418,6 +470,7 @@ public class ExploreConfigDialog extends JDialog {
     private final List<String> hostNames;
     private JTextField previewField;
     private JLabel statusLabel;
+    private JLabel errorLabel;
     private JButton defaultButton;
     private JButton startButton;
     private JButton exploreButton;
@@ -458,21 +511,20 @@ public class ExploreConfigDialog extends JDialog {
             }
             this.kindBox.setRenderer(new DefaultListCellRenderer() {
                 @Override
-                public java.awt.Component getListCellRendererComponent(JList<?> list,
-                                                                       Object value, int index,
+                public java.awt.Component getListCellRendererComponent(JList<?> list, Object value,
+                                                                       int index,
                                                                        boolean isSelected,
                                                                        boolean cellHasFocus) {
-                    var result = super
-                        .getListCellRendererComponent(list, value, index, isSelected,
-                                                      cellHasFocus);
+                    var result = super.getListCellRendererComponent(list, value, index, isSelected,
+                                                                    cellHasFocus);
                     if (KeyRow.this.defaultKindName.equals(value)) {
                         setText(value + "*");
                     }
                     return result;
                 }
             });
-            String kindToolTip = createKindToolTip(key);
-            this.kindBox.setToolTipText(kindToolTip);
+            this.kindToolTip = createKindToolTip(key);
+            this.kindBox.setToolTipText("<html>" + this.kindToolTip + "</html>");
             this.kindBox.addActionListener(e -> refresh());
             this.textField = new JTextField(12);
             this.textField.getDocument().addDocumentListener(new DocumentListener() {
@@ -498,20 +550,24 @@ public class ExploreConfigDialog extends JDialog {
             this.contentCards.add(new JLabel(), CARD_NONE);
             this.contentCards.add(this.textField, CARD_TEXT);
             this.contentCards.add(this.namesBox, CARD_NAMES);
+            this.textBorder = this.textField.getBorder();
+            this.namesBorder = this.namesBox.getBorder();
             this.panel = new JPanel(new java.awt.GridLayout(1, 3, 5, 0));
-            JLabel label = new JLabel(key.getKeyPhrase());
-            label.setToolTipText(kindToolTip);
-            this.panel.add(label);
+            this.label = new JLabel(key.getKeyPhrase());
+            this.labelColor = this.label.getForeground();
+            this.label.setToolTipText("<html>" + this.kindToolTip + "</html>");
+            this.panel.add(this.label);
             this.panel.add(this.kindBox);
             this.panel.add(this.contentCards);
         }
 
         /**
-         * Creates an HTML tooltip stating the meaning of the key and listing
-         * its kinds, with their content syntax and the grammar default marked.
+         * Creates an HTML fragment stating the meaning of the key and listing
+         * its kinds, with the key default marked. (The syntax of a kind's
+         * content is documented on the content editor instead.)
          */
         private String createKindToolTip(ExploreKey key) {
-            var result = new StringBuilder("<html><b>");
+            var result = new StringBuilder("<b>");
             result.append(key.getKeyPhrase());
             result.append("</b>: ");
             result.append(key.getExplanation());
@@ -519,18 +575,13 @@ public class ExploreConfigDialog extends JDialog {
             for (var kind : key.getKindType().getEnumConstants()) {
                 result.append("<br>- <i>");
                 result.append(kind.getName());
-                result.append("</i>: ");
-                result.append(kind.getExplanation());
-                String contentTip = createContentToolTip(kind);
-                if (contentTip != null) {
-                    result.append("; content: ");
-                    result.append(contentTip);
-                }
+                result.append("</i>");
                 if (kind.getName().equals(this.defaultKindName)) {
-                    result.append(" <b>(default)</b>");
+                    result.append(" (default)");
                 }
+                result.append(": ");
+                result.append(kind.getExplanation());
             }
-            result.append("</html>");
             return result.toString();
         }
 
@@ -580,9 +631,11 @@ public class ExploreConfigDialog extends JDialog {
         /** Returns the currently selected kind. */
         Setting.Kind getKind() {
             var name = (String) this.kindBox.getSelectedItem();
-            return this.key.getKindMap().get(name == null
-                ? ""
-                : name);
+            return this.key
+                .getKindMap()
+                .get(name == null
+                    ? ""
+                    : name);
         }
 
         /**
@@ -636,6 +689,49 @@ public class ExploreConfigDialog extends JDialog {
         }
 
         /**
+         * Marks or unmarks the row as erroneous: the key phrase turns red,
+         * the content editor gets a red border, and the row tooltips lead
+         * with the error text.
+         */
+        void setErrors(FormatErrorSet errors) {
+            String errorHtml = null;
+            if (!errors.isEmpty()) {
+                var text = new StringBuilder();
+                for (var error : errors) {
+                    if (!text.isEmpty()) {
+                        text.append("<br>");
+                    }
+                    text.append(HTMLConverter.toHtml(new StringBuilder(error.toString())));
+                }
+                errorHtml = text.toString();
+            }
+            if (Objects.equals(errorHtml, this.errorHtml)) {
+                // nothing changed, in particular not the widget state below
+                return;
+            }
+            this.errorHtml = errorHtml;
+            boolean hasErrors = errorHtml != null;
+            this.label
+                .setForeground(hasErrors
+                    ? Values.ERROR_NORMAL_FOREGROUND
+                    : this.labelColor);
+            String labelTip = hasErrors
+                ? "<html><font color='red'>" + errorHtml + "</font><hr>" + this.kindToolTip
+                    + "</html>"
+                : "<html>" + this.kindToolTip + "</html>";
+            this.label.setToolTipText(labelTip);
+            this.textField
+                .setBorder(hasErrors
+                    ? BorderFactory.createCompoundBorder(ERROR_BORDER, this.textBorder)
+                    : this.textBorder);
+            this.namesBox
+                .setBorder(hasErrors
+                    ? BorderFactory.createCompoundBorder(ERROR_BORDER, this.namesBorder)
+                    : this.namesBorder);
+            refreshContentToolTip();
+        }
+
+        /**
          * Shows the content card appropriate for the selected kind. Each kind
          * has its own content: on a kind switch, the previous kind's content
          * is remembered and the new kind's content restored, so (say) a
@@ -658,16 +754,35 @@ public class ExploreConfigDialog extends JDialog {
             if (CARD_NAMES.equals(card)) {
                 refreshNames(kind);
             }
+            refreshContentToolTip();
+            ((CardLayout) this.contentCards.getLayout()).show(this.contentCards, card);
+        }
+
+        /**
+         * Refreshes the tooltip of the content editors: the syntax of the
+         * selected kind's content, led by the current errors of this row
+         * (if any).
+         */
+        private void refreshContentToolTip() {
+            var kind = getKind();
             String contentTip = kind == null
                 ? null
                 : createContentToolTip(kind);
-            String contentTipHtml = contentTip == null
-                ? null
-                : "<html>" + Character.toUpperCase(contentTip.charAt(0)) + contentTip.substring(1)
-                    + "</html>";
-            this.textField.setToolTipText(contentTipHtml);
-            this.namesBox.setToolTipText(contentTipHtml);
-            ((CardLayout) this.contentCards.getLayout()).show(this.contentCards, card);
+            if (contentTip != null) {
+                contentTip = Character.toUpperCase(contentTip.charAt(0)) + contentTip.substring(1);
+            }
+            String html;
+            if (this.errorHtml != null) {
+                html = "<html><font color='red'>" + this.errorHtml + "</font>" + (contentTip == null
+                    ? ""
+                    : "<hr>" + contentTip) + "</html>";
+            } else {
+                html = contentTip == null
+                    ? null
+                    : "<html>" + contentTip + "</html>";
+            }
+            this.textField.setToolTipText(html);
+            this.namesBox.setToolTipText(html);
         }
 
         /** Sets the content editors to a given text, without triggering a refresh. */
@@ -734,14 +849,28 @@ public class ExploreConfigDialog extends JDialog {
 
         private final ExploreKey key;
         private final String defaultKindName;
+        private final JLabel label;
+        /** The normal (non-error) colour of the key phrase label. */
+        private final Color labelColor;
+        /** HTML fragment documenting the key and its kinds. */
+        private final String kindToolTip;
         private final JComboBox<String> kindBox;
         private final JTextField textField;
         private final JComboBox<String> namesBox;
+        /** The normal (non-error) borders of the content editors. */
+        private final Border textBorder;
+        private final Border namesBorder;
         private final JPanel contentCards;
         private final JPanel panel;
         /** Content last entered for each kind of this key. */
         private final Map<Setting.Kind,String> contentMap = new HashMap<>();
         /** The kind whose content is currently shown in the editors. */
         private Setting.Kind shownKind;
+        /** HTML fragment with the current errors of this row, or {@code null}. */
+        private String errorHtml;
     }
+
+    /** Border marking an erroneous content editor. */
+    private static final Border ERROR_BORDER
+        = BorderFactory.createLineBorder(Values.ERROR_NORMAL_FOREGROUND);
 }
