@@ -14,7 +14,7 @@
 /*
  * $Id$
  */
-package nl.utwente.groove.io;
+package nl.utwente.groove.gui.dialog;
 
 import static nl.utwente.groove.io.FileType.CONTROL;
 import static nl.utwente.groove.io.FileType.GRAMMAR;

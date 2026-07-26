@@ -24,7 +24,7 @@ import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.io.FileType;
-import nl.utwente.groove.io.HTMLConverter;
+import nl.utwente.groove.util.HTMLConverter;
 
 /**
  * Listener superclass for graph exporters.

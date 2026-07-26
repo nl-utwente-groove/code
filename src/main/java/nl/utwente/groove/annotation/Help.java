@@ -16,11 +16,11 @@
  */
 package nl.utwente.groove.annotation;
 
-import static nl.utwente.groove.io.HTMLConverter.HTML_LINEBREAK;
-import static nl.utwente.groove.io.HTMLConverter.HTML_TAG;
-import static nl.utwente.groove.io.HTMLConverter.ITALIC_TAG;
-import static nl.utwente.groove.io.HTMLConverter.STRONG_TAG;
-import static nl.utwente.groove.io.HTMLConverter.toHtml;
+import static nl.utwente.groove.util.HTMLConverter.HTML_LINEBREAK;
+import static nl.utwente.groove.util.HTMLConverter.HTML_TAG;
+import static nl.utwente.groove.util.HTMLConverter.ITALIC_TAG;
+import static nl.utwente.groove.util.HTMLConverter.STRONG_TAG;
+import static nl.utwente.groove.util.HTMLConverter.toHtml;
 
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Constructor;
@@ -36,10 +36,10 @@ import java.util.List;
 import java.util.Map;
 
 import nl.utwente.groove.algebra.Sort;
-import nl.utwente.groove.io.HTMLConverter;
-import nl.utwente.groove.io.HTMLConverter.HTMLTag;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.HTMLConverter;
+import nl.utwente.groove.util.HTMLConverter.HTMLTag;
 import nl.utwente.groove.util.Pair;
 
 /**

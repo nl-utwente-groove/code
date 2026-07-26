@@ -17,7 +17,7 @@
 package nl.utwente.groove.gui.jgraph;
 
 import static nl.utwente.groove.graph.EdgeRole.BINARY;
-import static nl.utwente.groove.io.HTMLConverter.ITALIC_TAG;
+import static nl.utwente.groove.util.HTMLConverter.ITALIC_TAG;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,7 +31,7 @@ import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.Node;
-import nl.utwente.groove.io.HTMLConverter;
+import nl.utwente.groove.util.HTMLConverter;
 
 /**
  * Generic abstract JCell subclass implementing the {@link JVertex} interface.

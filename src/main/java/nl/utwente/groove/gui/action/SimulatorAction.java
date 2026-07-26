@@ -21,12 +21,12 @@ import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.gui.BehaviourOption;
 import nl.utwente.groove.gui.Icons;
-import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.gui.dialog.ErrorDialog;
 import nl.utwente.groove.gui.dialog.FindReplaceDialog;
 import nl.utwente.groove.gui.dialog.FreshNameDialog;
+import nl.utwente.groove.gui.dialog.GrooveFileChooser;
 import nl.utwente.groove.gui.dialog.SaveDialog;
 import nl.utwente.groove.gui.display.ControlDisplay;
 import nl.utwente.groove.gui.display.DisplayKind;
@@ -38,7 +38,6 @@ import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.gui.display.RuleDisplay;
 import nl.utwente.groove.gui.display.StateDisplay;
 import nl.utwente.groove.io.FileType;
-import nl.utwente.groove.io.GrooveFileChooser;
 import nl.utwente.groove.io.store.EditType;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.util.parse.FormatException;
@@ -82,7 +81,7 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
      * The action adds itself to the refreshables of the simulator.
      */
     protected SimulatorAction(Simulator simulator, EditType edit, ResourceKind resource) {
-        this(simulator, Options.getEditActionName(edit, resource, false),
+        this(simulator, EditType.getEditActionName(edit, resource, false),
              Icons.getEditIcon(edit, resource), edit, resource);
     }
 
@@ -91,7 +90,7 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
         if (getEditType() == null) {
             return null;
         } else {
-            return Options.getEditActionName(getEditType(), getResourceKind(), false);
+            return EditType.getEditActionName(getEditType(), getResourceKind(), false);
         }
     }
 

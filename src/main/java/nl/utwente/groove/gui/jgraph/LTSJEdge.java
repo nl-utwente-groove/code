@@ -8,13 +8,13 @@ import org.eclipse.jdt.annotation.NonNull;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.gui.look.Look;
 import nl.utwente.groove.gui.look.VisualKey;
-import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphNextState;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.lts.RuleTransition;
 import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.HTMLConverter;
 
 /**
  * JEdge class that describes the underlying edge as a graph transition.

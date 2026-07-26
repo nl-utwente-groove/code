@@ -69,7 +69,6 @@ import nl.utwente.groove.gui.display.ControlDisplay;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.display.RuleDisplay;
 import nl.utwente.groove.gui.display.TextTab;
-import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.lts.GraphTransition.Claz;
@@ -80,6 +79,7 @@ import nl.utwente.groove.lts.RecipeTransition;
 import nl.utwente.groove.lts.RuleTransition;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
+import nl.utwente.groove.util.HTMLConverter;
 
 /**
  * Panel that displays a two-level directory of rules and matches.

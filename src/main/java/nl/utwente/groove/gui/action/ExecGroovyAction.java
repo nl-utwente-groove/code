@@ -10,7 +10,7 @@ import nl.utwente.groove.grammar.model.GroovyModel;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.display.GroovyDisplay;
-import nl.utwente.groove.io.HTMLConverter;
+import nl.utwente.groove.util.HTMLConverter;
 
 /** Action to execute the currently selected Groovy script. */
 public class ExecGroovyAction extends SimulatorAction {

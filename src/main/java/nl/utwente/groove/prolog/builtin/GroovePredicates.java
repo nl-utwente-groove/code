@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.prolog.builtin;
 
-import static nl.utwente.groove.io.HTMLConverter.HTML_LINEBREAK;
+import static nl.utwente.groove.util.HTMLConverter.HTML_LINEBREAK;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

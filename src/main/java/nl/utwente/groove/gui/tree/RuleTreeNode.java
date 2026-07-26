@@ -16,10 +16,10 @@
  */
 package nl.utwente.groove.gui.tree;
 
-import static nl.utwente.groove.io.HTMLConverter.HTML_LINEBREAK;
-import static nl.utwente.groove.io.HTMLConverter.HTML_PAR_5PT;
-import static nl.utwente.groove.io.HTMLConverter.HTML_TAG;
-import static nl.utwente.groove.io.HTMLConverter.STRONG_TAG;
+import static nl.utwente.groove.util.HTMLConverter.HTML_LINEBREAK;
+import static nl.utwente.groove.util.HTMLConverter.HTML_PAR_5PT;
+import static nl.utwente.groove.util.HTMLConverter.HTML_TAG;
+import static nl.utwente.groove.util.HTMLConverter.STRONG_TAG;
 import static nl.utwente.groove.util.Properties.INFO_COLOR_TAG;
 
 import java.util.EnumMap;
@@ -38,11 +38,11 @@ import nl.utwente.groove.graph.GraphProperties;
 import nl.utwente.groove.graph.GraphProperties.Key;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.display.ResourceDisplay;
-import nl.utwente.groove.io.HTMLConverter;
-import nl.utwente.groove.io.HTMLConverter.HTMLTag;
 import nl.utwente.groove.io.Util;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.HTMLConverter;
+import nl.utwente.groove.util.HTMLConverter.HTMLTag;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

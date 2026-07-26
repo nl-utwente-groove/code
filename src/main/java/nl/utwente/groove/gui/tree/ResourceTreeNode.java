@@ -21,7 +21,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.gui.display.ResourceDisplay;
-import nl.utwente.groove.io.HTMLConverter;
+import nl.utwente.groove.util.HTMLConverter;
 
 /**
  * A {@link ResourceTreeNode} is a {@link DefaultMutableTreeNode} that

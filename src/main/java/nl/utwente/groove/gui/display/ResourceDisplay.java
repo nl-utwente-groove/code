@@ -61,7 +61,7 @@ import nl.utwente.groove.gui.action.EnableUniqueAction;
 import nl.utwente.groove.gui.action.SaveAction;
 import nl.utwente.groove.gui.action.SimulatorAction;
 import nl.utwente.groove.gui.tree.ResourceTree;
-import nl.utwente.groove.io.HTMLConverter;
+import nl.utwente.groove.util.HTMLConverter;
 
 /**
  * Resource display class that includes a tabbed pane,

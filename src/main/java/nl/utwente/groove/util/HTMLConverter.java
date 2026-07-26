@@ -14,7 +14,7 @@
 /*
  * $Id$
  */
-package nl.utwente.groove.io;
+package nl.utwente.groove.util;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -25,7 +25,7 @@ import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.look.Values;
-import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.io.Util;
 
 /**
  * Performs conversions to and from HTML code.

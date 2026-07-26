@@ -14,7 +14,7 @@
 /*
  * $Id$
  */
-package nl.utwente.groove.io;
+package nl.utwente.groove.gui.dialog;
 
 import java.io.File;
 import java.util.BitSet;
@@ -37,6 +37,8 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.gui.Options;
+import nl.utwente.groove.io.ExtensionFilter;
+import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.util.Groove;
 
 /**

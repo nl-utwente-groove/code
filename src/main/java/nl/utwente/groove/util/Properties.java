@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.util;
 
-import static nl.utwente.groove.io.HTMLConverter.TABLE_TAG_NAME;
+import static nl.utwente.groove.util.HTMLConverter.TABLE_TAG_NAME;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,9 +39,9 @@ import nl.utwente.groove.grammar.CheckPolicy.PolicyMap;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.rule.MethodName;
 import nl.utwente.groove.gui.look.Values;
-import nl.utwente.groove.io.HTMLConverter;
-import nl.utwente.groove.io.HTMLConverter.HTMLTag;
 import nl.utwente.groove.transform.oracle.ValueOracleFactory;
+import nl.utwente.groove.util.HTMLConverter;
+import nl.utwente.groove.util.HTMLConverter.HTMLTag;
 import nl.utwente.groove.util.collect.DeltaMap;
 import nl.utwente.groove.util.parse.FormatChecker;
 import nl.utwente.groove.util.parse.FormatException;

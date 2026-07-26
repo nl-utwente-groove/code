@@ -20,7 +20,7 @@ import java.io.File;
 
 import javax.swing.JFileChooser;
 
-import nl.utwente.groove.io.GrooveFileChooser;
+import nl.utwente.groove.gui.dialog.GrooveFileChooser;
 
 /**
  * Class that shows a dialog for saving files.

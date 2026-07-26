@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.util.parse;
 
-import static nl.utwente.groove.io.HTMLConverter.ITALIC_TAG;
+import static nl.utwente.groove.util.HTMLConverter.ITALIC_TAG;
 
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -34,9 +34,9 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.Strings;
 
 /**

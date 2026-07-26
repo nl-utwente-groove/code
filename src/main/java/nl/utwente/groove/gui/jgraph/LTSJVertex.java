@@ -14,11 +14,11 @@ import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.gui.look.Look;
 import nl.utwente.groove.gui.look.VisualKey;
-import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.StartGraphState;
 import nl.utwente.groove.lts.StateProperty;
+import nl.utwente.groove.util.HTMLConverter;
 
 /**
  * JVertex class that describes the underlying node as a graph state.

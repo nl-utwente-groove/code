@@ -44,7 +44,7 @@ import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.GraphProperties.Key;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.look.Values.Mode;
-import nl.utwente.groove.io.HTMLConverter;
+import nl.utwente.groove.util.HTMLConverter;
 
 /**
  * Panel showing a list of messages. The panel hides itself when the

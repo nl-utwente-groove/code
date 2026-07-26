@@ -25,9 +25,9 @@ import javax.swing.JFrame;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 
+import nl.utwente.groove.gui.dialog.GrooveFileChooser;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.display.LTSDisplay;
-import nl.utwente.groove.io.GrooveFileChooser;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.util.Exceptions;
 

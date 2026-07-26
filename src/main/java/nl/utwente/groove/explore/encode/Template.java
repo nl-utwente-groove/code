@@ -16,8 +16,8 @@
  */
 package nl.utwente.groove.explore.encode;
 
-import static nl.utwente.groove.io.HTMLConverter.HTML_TAG;
-import static nl.utwente.groove.io.HTMLConverter.STRONG_TAG;
+import static nl.utwente.groove.util.HTMLConverter.HTML_TAG;
+import static nl.utwente.groove.util.HTMLConverter.STRONG_TAG;
 
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -36,8 +36,8 @@ import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.gui.dialog.ExplorationDialog;
 import nl.utwente.groove.gui.layout.SpringUtilities;
-import nl.utwente.groove.io.HTMLConverter.HTMLTag;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.HTMLConverter.HTMLTag;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

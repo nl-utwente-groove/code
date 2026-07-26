@@ -16,8 +16,8 @@
  */
 package nl.utwente.groove.gui.dialog;
 
-import static nl.utwente.groove.io.HTMLConverter.HTML_TAG;
-import static nl.utwente.groove.io.HTMLConverter.UNDERLINE_TAG;
+import static nl.utwente.groove.util.HTMLConverter.HTML_TAG;
+import static nl.utwente.groove.util.HTMLConverter.UNDERLINE_TAG;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -37,8 +37,8 @@ import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 
-import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.io.Util;
+import nl.utwente.groove.util.HTMLConverter;
 
 /**
  * Table containing information about the auxiliary libraries used in Groove.

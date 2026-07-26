@@ -38,7 +38,7 @@ import nl.utwente.groove.explore.config.Setting;
 import nl.utwente.groove.explore.config.Setting.ContentType;
 import nl.utwente.groove.gui.action.Refreshable;
 import nl.utwente.groove.gui.dialog.ExploreConfigDialog;
-import nl.utwente.groove.io.HTMLConverter;
+import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.parse.FormatException;
 

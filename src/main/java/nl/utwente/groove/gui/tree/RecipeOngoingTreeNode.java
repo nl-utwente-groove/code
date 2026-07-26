@@ -20,13 +20,13 @@ import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.gui.SimulatorModel;
-import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.lts.GraphNextState;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.MatchResult;
 import nl.utwente.groove.lts.RecipeTransition;
 import nl.utwente.groove.lts.RuleTransition;
 import nl.utwente.groove.util.Factory;
+import nl.utwente.groove.util.HTMLConverter;
 
 /**
  * Tree node wrapping a potential recipe transition.

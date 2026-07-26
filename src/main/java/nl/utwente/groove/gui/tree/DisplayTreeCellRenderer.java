@@ -29,7 +29,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.tree.DisplayTreeNode.Status;
-import nl.utwente.groove.io.HTMLConverter;
+import nl.utwente.groove.util.HTMLConverter;
 
 /**
  * Cell renderer for display trees.

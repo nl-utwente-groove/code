@@ -16,8 +16,8 @@
  */
 package nl.utwente.groove.explore.config;
 
-import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.IdValidator;

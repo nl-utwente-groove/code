@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.util;
 
-import nl.utwente.groove.io.HTMLConverter;
+import nl.utwente.groove.util.HTMLConverter;
 
 /**
  * Interface to provide documentation for a publicly visible enum type.

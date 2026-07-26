@@ -55,7 +55,7 @@ import nl.utwente.groove.explore.util.LTSLabels.Flag;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.UserSettings;
 import nl.utwente.groove.gui.UserSettings.Persistable;
-import nl.utwente.groove.io.GrooveFileChooser;
+import nl.utwente.groove.gui.dialog.GrooveFileChooser;
 import nl.utwente.groove.util.Exceptions;
 
 /**

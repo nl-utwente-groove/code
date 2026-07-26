@@ -15,8 +15,8 @@ import nl.utwente.groove.io.store.SystemStore;
 public class RedoSimulatorAction extends SimulatorAction {
     /** Constructs an instance of the action. */
     public RedoSimulatorAction(Simulator simulator) {
-        super(simulator, Options.REDO_ACTION_NAME, Icons.REDO_ICON);
-        putValue(SHORT_DESCRIPTION, Options.REDO_ACTION_NAME);
+        super(simulator, EditType.REDO_ACTION_NAME, Icons.REDO_ICON);
+        putValue(SHORT_DESCRIPTION, EditType.REDO_ACTION_NAME);
         putValue(ACCELERATOR_KEY, Options.REDO_KEY);
         setEnabled(false);
         this.undoManager = simulator.getUndoManager();
@@ -36,7 +36,7 @@ public class RedoSimulatorAction extends SimulatorAction {
             putValue(Action.NAME, this.undoManager.getRedoPresentationName());
         } else {
             setEnabled(false);
-            putValue(Action.NAME, Options.REDO_ACTION_NAME);
+            putValue(Action.NAME, EditType.REDO_ACTION_NAME);
         }
     }
 

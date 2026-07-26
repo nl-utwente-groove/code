@@ -16,9 +16,9 @@
  */
 package nl.utwente.groove.gui.tree;
 
-import static nl.utwente.groove.io.HTMLConverter.HTML_LINEBREAK;
-import static nl.utwente.groove.io.HTMLConverter.HTML_TAG;
-import static nl.utwente.groove.io.HTMLConverter.NBSP;
+import static nl.utwente.groove.util.HTMLConverter.HTML_LINEBREAK;
+import static nl.utwente.groove.util.HTMLConverter.HTML_TAG;
+import static nl.utwente.groove.util.HTMLConverter.NBSP;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -58,8 +58,8 @@ import nl.utwente.groove.gui.jgraph.JCell;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.jgraph.JModel;
 import nl.utwente.groove.gui.menu.ShowHideMenu;
-import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.io.Util;
+import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.Strings;
 
 /**
