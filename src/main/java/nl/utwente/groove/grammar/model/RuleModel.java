@@ -39,6 +39,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -58,6 +59,7 @@ import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.algebra.syntax.Variable;
+import nl.utwente.groove.automaton.RegAutCoverage;
 import nl.utwente.groove.automaton.RegExpr;
 import nl.utwente.groove.grammar.Action.Role;
 import nl.utwente.groove.grammar.CheckPolicy;
@@ -441,6 +443,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         } catch (FormatException exc) {
             errors.addAll(exc.getErrors());
         }
+        checkRegExprErasure(levelTree, errors);
         // infer and set the role
         Role role = getRole();
         if (role.isProperty()) {
@@ -484,6 +487,93 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         errors.applyInverse(levelTree.getModelMap()).throwException();
         assert result != null;
         return result;
+    }
+
+    /**
+     * Checks, for grammars with parallel edges, that no composite regular
+     * expression edge can match a path through an edge that the rule erases.
+     * Composite regular expressions (those without a single host edge image)
+     * have untracked path witnesses, so the identification condition on
+     * erasers cannot be enforced for them at match time; rather than
+     * silently transforming away such witnesses, potential overlaps are
+     * reported as errors, unless the ignoreRegExp grammar property is set.
+     * The check spans the entire quantification tree in both directions,
+     * since amalgamation lets erasers at any level destroy witnesses matched
+     * at any other level. The traversable edge types of a regular expression
+     * are computed positionally, by {@link RegAutCoverage}. Eraser nodes
+     * contribute the incident edge types of their matching node types, as
+     * node deletion erases the incident edges; under the dangling-edge check
+     * deletion of unmatched edges cannot happen, so then they contribute
+     * nothing. Negated expressions are exempt, as erasure cannot invalidate
+     * an established negative condition; the empty expression traverses
+     * nothing.
+     */
+    private void checkRegExprErasure(LevelTree levelTree, FormatErrorSet errors) {
+        var properties = getGrammarProperties();
+        if (!properties.isHasParallelEdges() || properties.isIgnoreRegExp()) {
+            return;
+        }
+        // collect the possibly erased edge types over all levels,
+        // with a witnessing eraser element for error reporting
+        Map<TypeEdge,RuleElement> erasedTypes = new LinkedHashMap<>();
+        var typeGraph = getTypeGraph();
+        for (Level4 level : levelTree.getLevel4Map().values()) {
+            if (!level.getIndex().getOperator().isQuantifier()) {
+                continue;
+            }
+            Set<RuleEdge> eraserEdges = new LinkedHashSet<>(level.lhs.edgeSet());
+            eraserEdges.removeAll(level.rhs.edgeSet());
+            for (RuleEdge eraser : eraserEdges) {
+                for (TypeEdge type : eraser.getMatchingTypes()) {
+                    erasedTypes.putIfAbsent(type, eraser);
+                }
+            }
+            if (!properties.isCheckDangling()) {
+                Set<RuleNode> eraserNodes = new LinkedHashSet<>(level.lhs.nodeSet());
+                eraserNodes.removeAll(level.rhs.nodeSet());
+                for (RuleNode eraser : eraserNodes) {
+                    var nodeTypes = eraser.getMatchingTypes();
+                    for (TypeEdge type : typeGraph.edgeSet()) {
+                        if (!Collections.disjoint(type.source().getSubtypes(), nodeTypes)
+                            || !Collections.disjoint(type.target().getSubtypes(), nodeTypes)) {
+                            erasedTypes.putIfAbsent(type, eraser);
+                        }
+                    }
+                }
+            }
+        }
+        if (erasedTypes.isEmpty()) {
+            return;
+        }
+        // check the composite regular expression edges of all levels
+        Set<RuleEdge> checked = new HashSet<>();
+        for (Level4 level : levelTree.getLevel4Map().values()) {
+            if (!level.getIndex().getOperator().isQuantifier()) {
+                continue;
+            }
+            for (RuleEdge edge : level.lhs.edgeSet()) {
+                RuleLabel label = edge.label();
+                if (edge.hasEdgeImage() || label.isEmpty() || label.isNeg()) {
+                    continue;
+                }
+                if (!checked.add(edge)) {
+                    // root edges are shared between levels; check them once
+                    continue;
+                }
+                var coverage = new RegAutCoverage(label.getAutomaton(typeGraph),
+                    edge.source().getMatchingTypes(), edge.target().getMatchingTypes());
+                for (var erasedEntry : erasedTypes.entrySet()) {
+                    if (coverage.result().contains(erasedEntry.getKey())) {
+                        errors
+                            .add("Regular expression %s may match a path through a %s-edge "
+                                + "erased by this rule (set the ignoreRegExp grammar property "
+                                + "to accept this)", label, erasedEntry.getKey().label(), edge,
+                                 erasedEntry.getValue());
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     /** Returns the normalised aspect graph underlying this rule model. */

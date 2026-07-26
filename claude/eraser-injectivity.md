@@ -196,3 +196,78 @@ reroutes), `eraseForallOnReader` (case C: "delete all a-edges" skips the
 kernel-read edge), `eraseForallEraser` (case E: two instances deleting the
 same edge make the rule inapplicable), `eraseForallNode` (node variant of
 C/D via merge embargo against the imported kernel eraser node).
+
+## Step 5, implemented: regular expressions vs. erasers (2026-07-26)
+
+The machinery above covers rule edges with a *host edge image*. Composite
+regular expressions (sequence, closure, inverse, general choice) bind only
+their end nodes; the host edges witnessing the matched path are untracked,
+so the identification condition cannot be enforced for them — erasure of a
+witness silently proceeds (SPO residue). Tracking all witnesses at match
+time was rejected outright (user). The resolution has three parts.
+
+**Atom choices get real edge images.** A choice between atoms (`a|b`,
+uniformly binary or flag) is the one composite whose every witness is a
+single host edge, so it is matched like a guarded wildcard:
+`ChoiceEdgeSearchItem` (an `Edge2SearchItem` subclass minus the variable
+plumbing of `VarEdgeSearchItem`) binds the image, and the existing conflict
+machinery covers it with no further change. `RuleEdge.hasEdgeImage` (now
+public) includes atom choices; `canShareImage` intersects possible image
+label sets. **Gated on multigraph mode** (user decision): with an edge
+image, distinct witnesses of a forall-quantified choice count as distinct
+instances — consistent with atom edges in multigraphs, but an observable
+change — so simple-graph mode keeps the automaton item and its counting
+bit-for-bit. Compiling `a|b` into an unnamed guarded wildcard was rejected:
+`isWildcard()` is load-bearing across typing, display and validation.
+Inverse atoms `-a` are an analogous future widening (image with flipped
+ends); until then they stay untracked. Fixture `parallelChoice.gps`;
+programmatic pins in `ChoiceEdgeMatchingTest`.
+
+**Remaining composites are statically checked** (`ignoreRegExp`, default
+false — the check is active when `parallelEdges` is set and `ignoreRegExp`
+is not). `RuleModel.checkRegExprErasure` reports a rule error iff an
+untracked positive regexpr edge can traverse an edge type that the rule may
+erase. Design points, all user-decided:
+
+- *Traversability is positional*, not label-based: `RegAutCoverage`
+  explores the product of the label automaton with the type graph between
+  the edge's end node types (forward + backward marking), so an unguarded
+  wildcard traverses only what can occur between the node types at its
+  position, and only edge types on genuinely accepting paths count.
+- *Erased edge types* are the matching types of eraser edges plus the
+  incident edge types of eraser nodes' matching types (node deletion
+  erases incident edges) — the precision option; under `checkDangling`
+  eraser nodes contribute nothing, since deletion of unmatched edges is
+  then forbidden anyway. Whole quantification tree × whole tree, both
+  directions: amalgamation lets erasers at any level destroy witnesses at
+  any other level.
+- *Exempt*: `=` traverses nothing; `!r` and NAC-internal expressions are
+  immune (erasure cannot invalidate an established negative condition);
+  everything with an edge image is covered by the match-time machinery.
+- *Independent of `matchInjective`*: that property is shorthand for global
+  node injectivity only and does not constrain untracked witnesses.
+
+Fixtures `regExprErasure.gps` / `regExprErasureIgnored.gps` with
+`RegExprErasureCheckTest`; `wildcardPositional` pins that a label-based
+approximation would over-flag.
+
+**Discovered in passing: `parallelEdges` was never wired.** The grammar
+key predates GitHub, but `HostModelMorphism` unconditionally built simple
+host graphs, and the GTS host factory (hence the engine mode of every
+rule) derives from the start graph — so no disk-loaded grammar ever ran
+in multigraph mode; all prior multi-mode work was exercised
+programmatically. Wiring it exposed a second latent bug:
+`HostGraphMorphism.createImage` recreated edge images through the factory
+without a number, which in a non-simple factory mints a fresh parallel
+copy — multigraph clones lost all edge identity and application deltas
+silently erased nothing. Fixed by returning the key edge itself when its
+end nodes map to themselves.
+
+**Deferred (user, 2026-07-22: bring back up later): dynamic censored
+re-match.** Re-running the automaton on the host minus the erased edges
+(anchor-derived, hence deterministic) would turn the flag into a real
+strict/sloppy semantics switch. Only sound for regexprs at the same or
+deeper quantification level than the erasers, whose censoring context is
+fixed when legality is decided (cf. case C); a kernel-level regexpr vs.
+instance erasers fails because witness destruction can be joint across
+instances — no coherent per-instance legality verdict.

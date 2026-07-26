@@ -298,6 +298,25 @@ public class GrammarProperties extends Properties {
     }
 
     /**
+     * Sets the ignore-regular-expressions property to a given value.
+     * @param ignore if <code>true</code>, rules in which a composite regular
+     * expression may match a path through an erased edge are accepted.
+     */
+    public void setIgnoreRegExp(boolean ignore) {
+        storeValue(GrammarKey.IGNORE_REG_EXP, ignore);
+    }
+
+    /**
+     * Returns the value of the ignore-regular-expressions property.
+     * @return if <code>true</code>, rules in which a composite regular
+     * expression may match a path through an erased edge are accepted
+     * rather than reported as errors.
+     */
+    public boolean isIgnoreRegExp() {
+        return parsePropertyOrDefault(GrammarKey.IGNORE_REG_EXP).getBoolean();
+    }
+
+    /**
      * Sets the dangling edge check to a certain value.
      * @param dangling if <code>true</code>, matches with dangling edges are
      *        disallowed

@@ -100,6 +100,17 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
             + "if they are multi-sorted graphs. If false (the default), simple graphs are used instead.",
         ValueType.BOOLEAN),
     /**
+     * Flag accepting rules in which a composite regular expression may match a
+     * path through an edge that the rule erases. Default is {@code false}.
+     */
+    IGNORE_REG_EXP("ignoreRegExp",
+        "Flag accepting rules in which a composite regular expression may match a path "
+            + "through an edge that the rule erases. The matched path is not tracked, so such "
+            + "an overlap escapes the identification condition that otherwise governs erasure "
+            + "under parallel edges. If false (the default), such rules are errors; "
+            + "only relevant if parallelEdges is set.",
+        ValueType.BOOLEAN),
+    /**
      * Dangling edge check. If <code>true</code>, all
      * matches that leave dangling edges are invalid. Default is
      * <code>false</code>.
@@ -302,7 +313,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
             var inner = switch (this) {
             case ALGEBRA -> new Parser.EnumParser<>(AlgebraFamily.class, AlgebraFamily.DEFAULT);
             case COMMON_LABELS, CONTROL_LABELS -> Parser.splitter;
-            case CREATOR_EDGE, PARALLEL, DANGLING, RHS_AS_NAC, INJECTIVE, STORE_OUT_PARS, USE_STORED_NODE_IDS -> Parser.boolFalse;
+            case CREATOR_EDGE, PARALLEL, IGNORE_REG_EXP, DANGLING, RHS_AS_NAC, INJECTIVE, STORE_OUT_PARS, USE_STORED_NODE_IDS -> Parser.boolFalse;
             case ISOMORPHISM, LOOPS_AS_LABELS -> Parser.boolTrue;
             case USER_OPS, START_GRAPH_NAMES, CONTROL_NAMES, TYPE_NAMES, PROLOG_NAMES -> QualName
                 .listParser();
