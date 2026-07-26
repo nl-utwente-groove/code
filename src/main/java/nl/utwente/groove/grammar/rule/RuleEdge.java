@@ -28,6 +28,7 @@ import nl.utwente.groove.grammar.AnchorKind;
 import nl.utwente.groove.grammar.type.TypeEdge;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeGuard;
+import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.ANumberedEdge;
 
 /** Rule edge that is not attribute-related. */
@@ -49,6 +50,7 @@ public class RuleEdge extends ANumberedEdge<RuleNode,RuleLabel> implements RuleE
         assert tl == null || type != null && tl.equals(type.label());
         this.type = type;
         TypeGuard guard = label.getWildcardGuard();
+        List<TypeLabel> choiceLabels = label.getAtomChoiceLabels();
         if (guard != null) {
             this.typeGuards = guard.isNamed()
                 ? singletonList(guard)
@@ -62,6 +64,19 @@ public class RuleEdge extends ANumberedEdge<RuleNode,RuleLabel> implements RuleE
                 .filter(e -> target.isTypedBy(e.target()))
                 .filter(guard::test)
                 .forEach(this.matchingTypes::add);
+        } else if (choiceLabels != null) {
+            // a choice between atoms is matched to a single host edge image,
+            // whose type must carry one of the operand labels
+            TypeGraph typeGraph = source.getType().getGraph();
+            this.matchingTypes = new HashSet<>();
+            typeGraph
+                .edgeSet()
+                .stream()
+                .filter(e -> source.isTypedBy(e.source()))
+                .filter(e -> target.isTypedBy(e.target()))
+                .filter(e -> choiceLabels.contains(e.label()))
+                .forEach(this.matchingTypes::add);
+            this.typeGuards = emptyList();
         } else if (type == null) {
             this.matchingTypes = emptySet();
             this.typeGuards = emptyList();
@@ -133,8 +148,8 @@ public class RuleEdge extends ANumberedEdge<RuleNode,RuleLabel> implements RuleE
     /**
      * Conservatively determines if this and another, distinct rule edge may be
      * matched to the same host edge. Only edges that are bound to a single
-     * host edge image are considered; regular expression and (in)equality
-     * edges have no edge image.
+     * host edge image are considered; composite regular expression and
+     * (in)equality edges have no edge image.
      */
     public boolean canShareImage(RuleEdge other) {
         RuleLabel myLabel = label();
@@ -148,18 +163,37 @@ public class RuleEdge extends ANumberedEdge<RuleNode,RuleLabel> implements RuleE
         if (myLabel.isWildcard() || otherLabel.isWildcard()) {
             return true;
         }
-        var myType = getType();
-        var otherType = other.getType();
-        if (myType != null && otherType != null) {
-            // images of differently-labelled edges are always distinct
-            return myType.label().equals(otherType.label());
+        // both labels determine a set of possible image labels:
+        // a singleton for atoms and sharps, the operand labels for atom choices
+        return !Collections.disjoint(getImageLabels(), other.getImageLabels());
+    }
+
+    /**
+     * Returns the possible labels of the host edge image of this edge,
+     * if the label is an atom, sharp or atom choice.
+     */
+    private List<TypeLabel> getImageLabels() {
+        List<TypeLabel> result = label().getAtomChoiceLabels();
+        if (result == null) {
+            TypeLabel typeLabel = label().getTypeLabel();
+            result = typeLabel == null
+                ? emptyList()
+                : singletonList(typeLabel);
         }
-        return myLabel.equals(otherLabel);
+        return result;
+    }
+
+    /** Indicates if this edge is matched to a single host edge image.
+     * This is the case if the label is a sharp, atom, wildcard or atom choice;
+     * composite regular expression and (in)equality edges have no edge image.
+     */
+    public boolean hasEdgeImage() {
+        return hasEdgeImage(label());
     }
 
     /** Indicates if edges with a given label are matched to a single host edge image. */
     private static boolean hasEdgeImage(RuleLabel label) {
-        return label.isSharp() || label.isAtom() || label.isWildcard();
+        return label.isSharp() || label.isAtom() || label.isWildcard() || label.isAtomChoice();
     }
 
     /** Convenience method to assert non-nullness of singleton set. */

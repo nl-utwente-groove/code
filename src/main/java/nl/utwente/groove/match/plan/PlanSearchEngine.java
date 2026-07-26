@@ -453,6 +453,12 @@ public class PlanSearchEngine extends SearchEngine {
                 result = new EqualitySearchItem(edge, true);
             } else if (label.isSharp() || label.isAtom()) {
                 result = new Edge2SearchItem(edge, this.simple);
+            } else if (!this.simple && label.isAtomChoice()) {
+                // in multigraph mode, choices between atoms bind a genuine host
+                // edge image, so that the injective matching of eraser edges
+                // (the DPO identification condition) extends to them; in
+                // simple-graph mode they keep the automaton-based semantics
+                result = new ChoiceEdgeSearchItem(edge);
             } else {
                 result = new RegExprEdgeSearchItem(edge, this.typeGraph);
             }
@@ -702,7 +708,7 @@ public class PlanSearchEngine extends SearchEngine {
          * <li> {@link NodeTypeSearchItem}s
          * <li> {@link ConditionSearchItem}s
          * <li> {@link RegExprEdgeSearchItem}s
-         * <li> {@link VarEdgeSearchItem}s
+         * <li> {@link VarEdgeSearchItem}s and {@link ChoiceEdgeSearchItem}s
          * <li> {@link Edge2SearchItem}s
          * <li> {@link EqualitySearchItem}s
          * <li> {@link NegatedSearchItem}s
@@ -739,7 +745,7 @@ public class PlanSearchEngine extends SearchEngine {
                 return result;
             }
             result++;
-            if (itemClass == VarEdgeSearchItem.class) {
+            if (itemClass == VarEdgeSearchItem.class || itemClass == ChoiceEdgeSearchItem.class) {
                 return result;
             }
             result++;

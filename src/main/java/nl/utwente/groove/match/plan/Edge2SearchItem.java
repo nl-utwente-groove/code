@@ -42,10 +42,10 @@ class Edge2SearchItem extends AbstractSearchItem {
      * @param edge the edge to be matched
      */
     public Edge2SearchItem(RuleEdge edge, boolean simple) {
-        // as this is subclassed by VarEdgeSearchItem,
-        // the label may actually be an arbitrary regular expression
-        assert edge.label().isSharp() || edge.label().isAtom() || edge.label().isWildcard();
-        assert edge.getType() != null || edge.label().isWildcard();
+        // as this is subclassed by VarEdgeSearchItem and ChoiceEdgeSearchItem,
+        // the label may also be a wildcard or a choice between atoms
+        assert edge.hasEdgeImage();
+        assert edge.getType() != null || edge.label().isWildcard() || edge.label().isAtomChoice();
         this.edge = edge;
         this.simple = simple;
         this.type = edge.getType();

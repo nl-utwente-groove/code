@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.grammar.rule;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -239,6 +240,61 @@ public class RuleLabel extends ALabel {
     public boolean isChoice() {
         return getChoiceOperands() != null;
     }
+
+    /**
+     * Tests if this label wraps a {@link Choice} between atoms
+     * that all have the same binary or flag role.
+     * Such a choice is matched to a single host edge image, like the atoms
+     * themselves (see {@link RuleEdge#hasEdgeImage()}).
+     */
+    public boolean isAtomChoice() {
+        return getAtomChoiceLabels() != null;
+    }
+
+    /**
+     * If this label wraps a {@link Choice} between atoms that all have the
+     * same role, being either {@link EdgeRole#BINARY} or {@link EdgeRole#FLAG},
+     * returns the type labels of the atoms, in operand order.
+     * Returns <code>null</code> otherwise.
+     */
+    public @Nullable List<TypeLabel> getAtomChoiceLabels() {
+        var result = this.atomChoiceLabels;
+        if (!this.atomChoiceLabelsSet) {
+            this.atomChoiceLabels = result = computeAtomChoiceLabels();
+            this.atomChoiceLabelsSet = true;
+        }
+        return result;
+    }
+
+    /** Computes the value of {@link #getAtomChoiceLabels()}. */
+    private @Nullable List<TypeLabel> computeAtomChoiceLabels() {
+        if (!(getMatchExpr() instanceof Choice choice)) {
+            return null;
+        }
+        List<TypeLabel> result = new ArrayList<>();
+        EdgeRole role = null;
+        for (RegExpr operand : choice.getOperands()) {
+            if (!(operand instanceof Atom atom)) {
+                return null;
+            }
+            TypeLabel label = atom.toTypeLabel();
+            if (label.getRole() == EdgeRole.NODE_TYPE) {
+                return null;
+            }
+            if (role == null) {
+                role = label.getRole();
+            } else if (role != label.getRole()) {
+                return null;
+            }
+            result.add(label);
+        }
+        return result;
+    }
+
+    /** The atom labels of the wrapped choice, if {@link #atomChoiceLabelsSet}. */
+    private @Nullable List<TypeLabel> atomChoiceLabels;
+    /** Flag indicating that {@link #atomChoiceLabels} has been computed. */
+    private boolean atomChoiceLabelsSet;
 
     /**
      * If this label wraps a

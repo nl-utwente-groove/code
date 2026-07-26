@@ -99,6 +99,13 @@ public class RuleApplicationTest extends TestCase {
         test("embargoes");
     }
 
+    /** Tests the rules in the parallelChoice grammar
+     * (regular-expression choices under parallel-edge semantics). */
+    @Test
+    public void testParallelChoice() {
+        test("parallelChoice");
+    }
+
     /** Tests the rules in the forallCount grammar. */
     @Test
     public void testForallCount() {
