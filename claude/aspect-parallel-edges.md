@@ -1,11 +1,13 @@
 # Parallel edges at the aspect level: decided architecture
 
-Status: design decided (2026-07-19). Step 1 — the `RuleGraph` parallel-edge
-representation (numbered `RuleEdge`s with explicit parallel indices,
-non-simple rule graphs, index-preserving morphisms and typing) and
-plan-engine matching of parallel bundles (including edge injectivity) — is
-implemented on branch `parallel-edges`; RETE matching and the MULT
-aspect are pending. Builds on the GXL serialisation work in
+Status: design decided (2026-07-19); **implemented** (2026-07-26). Step 1 —
+the `RuleGraph` parallel-edge representation (numbered `RuleEdge`s with
+explicit parallel indices, non-simple rule graphs, index-preserving
+morphisms and typing) and plan-engine matching of parallel bundles
+(including edge injectivity) — and step 2, the MULT aspect itself (syntax,
+checks, and expansion; see the implementation section below), are both on
+branch `parallel-edges`. RETE was retired from master instead of being
+adapted. Builds on the GXL serialisation work in
 [parallel-edge-serialisation.md](parallel-edge-serialisation.md).
 An earlier implementation that made `AspectGraph` itself a multigraph was
 rolled back — see the final section for what it was and why it was rejected.
@@ -75,7 +77,10 @@ counts per node, `mult=` states parallel copy counts per edge.
 
 - **`cnew:mult=2:a`** expands to 2 adder edges, i.e. NAC "at most 1 copy
   exists" plus "create 2 more". Deemed sufficiently intuitive; no special
-  treatment.
+  treatment. **Superseded (user, 2026-07-26)**: the NAC/MULT combination is
+  disallowed *entirely* (for now), for any multiplicity value including 1,
+  and this extends to `cnew:` because its implicit NAC would be a counting
+  NAC. See the counting-NACs concern below.
 - **No cap or warning on large multiplicities**: `mult=1000:a` is one label
   but a thousand edges per state — a user who writes that deserves what they
   get.
@@ -116,17 +121,21 @@ counts per node, `mult=` states parallel copy counts per edge.
   confined to eraser bundles, where it is semantically meaningful.
 - **Counting NACs presuppose edge-injective embargo matching** — *resolved
   by prohibition (user, 2026-07-26): counting NACs are disallowed until
-  further notice.* The reading "`not:mult=2:a` = at most 1 copy" holds only
-  if the embargo bundle must match injectively; under the default
-  non-injective matching, both embargo edges can bind the same host copy,
-  making `not:mult=2` equivalent to `not:mult=1`. NAC subconditions
+  further notice, and the NAC/MULT combination is disallowed **entirely**,
+  not just for multiplicity ≥ 2.* The reading "`not:mult=2:a` = at most 1
+  copy" holds only if the embargo bundle must match injectively; under the
+  default non-injective matching, both embargo edges can bind the same host
+  copy, making `not:mult=2` equivalent to `not:mult=1`. NAC subconditions
   currently inherit the rule's injectivity property, so neither reading is
   uniformly right. Rather than deciding the semantics now, the MULT
-  implementation must reject `mult=` with `not:` (multiplicity ≥ 2 on an
-  embargo edge) with an understandable error message explaining that
-  counting NACs are not (yet) supported. This is a **MULT-step work item**;
-  it cannot be enforced earlier, since without the aspect there is no syntax
-  that can express a counting NAC.
+  implementation (`AspectEdge.checkMult`) rejects `mult=` in combination
+  with `not:` for *any* value (including 1), and likewise with `cnew:`
+  (whose implicit NAC would be a counting NAC), each with an error message
+  explaining that counting NACs are not (yet) supported. Not enforced:
+  the *implicit* NAC bundles arising from a creator with multiplicity under
+  the `rhsAsNac` or `checkCreatorEdges` grammar properties; those NACs do
+  not promise counting semantics to the user (under non-injective matching
+  they degenerate to the 1-copy test, which is sound, just not counting).
 - **Determinism of match order.** Matches that differ *only* in which
   parallel host copy they bind are content-identical; the canonical match
   order (`MatchCollector.canonicalise`, cf. the ferryman-flake analysis) must
@@ -154,6 +163,82 @@ counts per node, `mult=` states parallel copy counts per edge.
   compiled rule creates nothing (verified by probing
   `Rule.getCreatorEdges()`). This is the behaviour the RuleGraph step must
   replace.
+
+## Implementation record (2026-07-26)
+
+The MULT aspect is implemented as follows.
+
+### Syntax and static checks
+
+- `AspectKind.MULT` (name `mult`, reusing `ContentKind.MULTIPLICITY`) in its
+  own `Category.MULT`, declared compatible with the ROLE and LABEL
+  categories; allowed on HOST and RULE edges (not TYPE — there `in=`/`out=`
+  serve a different purpose). Parser status is preserved after parsing the
+  aspect, so `del:mult=2:a` and `mult=2:del:a` both parse; serialisation
+  falls out of the existing MULTIPLICITY content handling (`mult=2:`).
+- `AspectEdge` stores the multiplicity (`getMult()`/`getMultCount()`);
+  `checkMult` (called from `checkAspects` for host and rule graphs alike)
+  rejects: non-constant or zero values (ranges like `mult=1..2` would need
+  the counting-NAC expansion), non-binary edges (parallel flags or node
+  types are not meaningful), the NAC roles `not:` and `cnew:` entirely (see
+  above), and rule labels without edge images (a regexpr path witness has
+  no edge identity to multiply). Display appends `(x2)` to the label line,
+  the convention intended for aggregated semantic multigraphs as well.
+- Multiplicity ≥ 2 additionally requires the **parallelEdges grammar
+  property**, checked during compilation (`RuleModel.Level2.processEdge`,
+  `HostModelMorphism.processModelEdge`) — in a simple-graph grammar the
+  copies would silently collapse, so this is an error, with a message
+  naming the property.
+
+### Expansion
+
+- **Rules** (`RuleModel.Level2.processEdge`): the model edge's rule image
+  (parallel index 0) plus `k-1` extra copies with indices `1..k-1` are each
+  placed into LHS/RHS via the extracted `placeEdge` helper. The level
+  graphs (`Level2.createGraph`, `Level3.createGraph`) are now created
+  **non-simple iff the grammar has parallelEdges**, which is what activates
+  edge-injectivity in `SearchPlan`/`PlanSearchStrategy` (both key off
+  `pattern.isSimple()`).
+- **Index-overlap semantics**: parallel indices are assigned *per aspect
+  edge*, starting at 0, so distinct aspect edges between the same nodes
+  with the same label overlap on their low indices and denote the *same*
+  copies there; on a shared index, the eraser role wins over the reader
+  role (the pre-existing `freshInLhs` logic, unchanged). Consequently
+  `use:mult=3:a` + `del:mult=2:a` means "match 3 distinct copies, delete
+  2, keep 1" — pinned by the `readerEraserMult` fixture, which also pins
+  that a 2-copy host graph then admits *no* match (erasers must be matched
+  edge-injectively, and a reader may not share an eraser's image). This
+  also preserves the existing behaviour of uncounted reader/eraser
+  duplicates (both index 0: eraser absorbs reader).
+- **Host graphs** (`HostModelMorphism.processModelEdge`): `k-1` further
+  `addEdge` calls; the non-simple host factory mints a fresh edge number
+  per call. The model map maps the aspect edge to the first copy only.
+- The MULT aspect makes parallel host graphs *expressible on disk*
+  (`.gst` with `mult=2:a`), which is what allows `RuleApplicationTest`
+  fixtures (`junit/rules/mult.gps`) to state expected multigraph results;
+  note that an expected result with two isomorphic events needs duplicate
+  result files (`eraserMult-1-0/-1-1`: the two ordered assignments of the
+  eraser bundle are distinct events).
+
+### Open items after this step
+
+- **Creator-edge number stability under cache collapse is now a live
+  concern**: host graphs of parallelEdges grammars are non-simple, and a
+  creator edge's host image is minted with a fresh edge number on every
+  event re-derivation. Deltas are recomputed when a state cache is
+  collapsed and reconstructed, so re-derivation may yield different edge
+  identities than the original application — the multigraph analogue of
+  the added-nodes problem, which is solved for nodes by storing the added
+  node numbers in the transition. `DeterminismTest`'s fixtures contain no
+  multigraph grammars, so this is currently *untested*, not disproven.
+  Probable solution shape: store added edges (or their numbers) with the
+  transition, mirroring `addedNodes`.
+- **Display mapping of expanded copies**: the model map maps a counted
+  aspect edge to parallel copy 0 only; match highlighting for copies
+  1..k-1 falls back to nothing. Aggregated display of semantic multigraphs
+  (LTS states) as `(x2)`-decorated aspect edges is likewise still to do.
+- Error contexts of host-graph mult errors reference the normalised graph's
+  edges; transfer to the original graph is best-effort.
 
 ## Rejected alternative: AspectGraph as a multigraph (rolled back)
 

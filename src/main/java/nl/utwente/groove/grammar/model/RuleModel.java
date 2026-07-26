@@ -1514,6 +1514,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
 
         /**
          * Adds an edge to the LHS, RHS or NAC edge set, whichever is appropriate.
+         * An edge with a parallel-edge multiplicity is expanded into that many
+         * parallel rule edges, with parallel indices 0,...,k-1.
          */
         private void processEdge(AspectEdge modelEdge) throws FormatException {
             AspectKind roleKind = modelEdge.getKind(ROLE);
@@ -1525,6 +1527,25 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 // it has been processed by adding the info to the operator node
                 return;
             }
+            int mult = modelEdge.getMultCount();
+            if (mult > 1 && !getGrammarProperties().isHasParallelEdges()) {
+                throw new FormatException(
+                    "Edge multiplicity requires the parallelEdges grammar property", modelEdge);
+            }
+            placeEdge(roleKind, modelEdge, ruleEdge);
+            // add the further parallel copies of a counted edge
+            for (int i = 1; i < mult; i++) {
+                placeEdge(roleKind, modelEdge, this.factory
+                    .createEdge(ruleEdge.source(), ruleEdge.label(), ruleEdge.target(), i));
+            }
+        }
+
+        /**
+         * Adds a rule edge to the LHS, RHS or NAC edge set, whichever is
+         * appropriate for the given role.
+         */
+        private void placeEdge(AspectKind roleKind, AspectEdge modelEdge,
+                               RuleEdge ruleEdge) throws FormatException {
             if (roleKind.inLHS()) {
                 // flag indicating that the rule edge is fresh in the LHS
                 boolean freshInLhs = this.lhs.addEdgeContext(ruleEdge);
@@ -2026,10 +2047,12 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
 
         /**
          * Callback method to create an untyped graph that can serve as LHS or RHS of a rule.
+         * The graph is non-simple if the grammar allows parallel edges.
          * @see #getSource()
          */
         private RuleGraph createGraph(String name) {
-            return new RuleGraph(name, isInjective(), this.factory);
+            return new RuleGraph(name, isInjective(),
+                !getGrammarProperties().isHasParallelEdges(), this.factory);
         }
 
         @Override
@@ -2384,10 +2407,12 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
 
         /**
          * Callback method to create an untyped graph that can serve as LHS or RHS of a rule.
+         * The graph is non-simple if the grammar allows parallel edges.
          * @see #getSource()
          */
         private RuleGraph createGraph(String name) {
-            return new RuleGraph(name, isInjective(), this.factory);
+            return new RuleGraph(name, isInjective(),
+                !getGrammarProperties().isHasParallelEdges(), this.factory);
         }
 
         private final Level3 parent;

@@ -106,6 +106,13 @@ public class RuleApplicationTest extends TestCase {
         test("parallelChoice");
     }
 
+    /** Tests the rules in the mult grammar
+     * (parallel-edge multiplicities on rule and host edges). */
+    @Test
+    public void testMult() {
+        test("mult");
+    }
+
     /** Tests the rules in the forallCount grammar. */
     @Test
     public void testForallCount() {

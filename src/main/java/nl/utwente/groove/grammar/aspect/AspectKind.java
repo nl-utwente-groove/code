@@ -109,6 +109,8 @@ public enum AspectKind {
     MULT_OUT(Category.MULT_OUT, "out", ContentKind.MULTIPLICITY),
     /** Indicates an outgoing multiplicity. */
     COMPOSITE(Category.ASSOC, "part", ContentKind.NONE),
+    /** Indicates a parallel-edge multiplicity in a host graph or rule. */
+    MULT(Category.MULT, "mult", ContentKind.MULTIPLICITY),
 
     // label-related aspects
     /** Default label mode, if none is specified. */
@@ -351,7 +353,7 @@ public enum AspectKind {
     Status newStatus(Status current) {
         return switch (getCategory()) {
         case ROLE -> Status.ROLE;
-        case MULT_IN, MULT_OUT, ASSOC -> current;
+        case MULT_IN, MULT_OUT, ASSOC, MULT -> current;
         default -> Status.DONE;
         };
     }
@@ -868,6 +870,15 @@ public enum AspectKind {
             p.add("label of the outgoing edge");
             break;
 
+        case MULT:
+            s = "%s.EQUALS.count.COLON.label";
+            h = "Parallel edge multiplicity";
+            b.add("Declares the %2$s-edge to stand for %1$s parallel copies.");
+            b.add("Only allowed if the parallelEdges grammar property is set.");
+            p.add("number of parallel copies; a positive constant");
+            p.add(edgePar);
+            break;
+
         case NESTED:
             s = "[%s.COLON](AT|IN|COUNT)";
             h = "Structural nesting edge";
@@ -1133,7 +1144,7 @@ public enum AspectKind {
             switch (role) {
             case HOST:
                 nodeKinds = EnumSet.of(REMARK, INT, BOOL, REAL, STRING, USER, COLOR, ID);
-                edgeKinds = EnumSet.of(REMARK, ATOM, LITERAL, LET);
+                edgeKinds = EnumSet.of(REMARK, ATOM, LITERAL, LET, MULT);
                 break;
             case RULE:
                 nodeKinds = EnumSet
@@ -1143,7 +1154,7 @@ public enum AspectKind {
                 edgeKinds = EnumSet
                     .of(REMARK, READER, ERASER, CREATOR, ADDER, EMBARGO, CONNECT, BOOL, INT, REAL,
                         STRING, USER, ARGUMENT, ATOM, PATH, LITERAL, FORALL, FORALL_POS, EXISTS,
-                        EXISTS_OPT, NESTED, LET, TEST);
+                        EXISTS_OPT, NESTED, LET, TEST, MULT);
                 break;
             case TYPE:
                 nodeKinds
@@ -1212,7 +1223,9 @@ public enum AspectKind {
         /** Outgoing multiplicity declaration. */
         MULT_OUT(SORT, LABEL, TYPE, MULT_IN),
         /** Relational nature of an edge. */
-        ASSOC(LABEL, TYPE, MULT_IN, MULT_OUT),;
+        ASSOC(LABEL, TYPE, MULT_IN, MULT_OUT),
+        /** Parallel-edge multiplicity declaration. */
+        MULT(ROLE, LABEL),;
 
         /** Declares a category and its compatibility with other ("smaller") categories. */
         private Category(Category... ok) {
