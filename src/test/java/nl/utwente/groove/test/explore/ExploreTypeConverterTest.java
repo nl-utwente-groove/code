@@ -53,6 +53,7 @@ public class ExploreTypeConverterTest {
             "next=newest",
             "frontier=single successor=single",
             "frontier=single successor=single-random",
+            "next=random",
             "cost=uniform bound=cost:5",
             "next=newest cost=uniform bound=cost:5",
             "bound=nodes:20",
@@ -231,7 +232,7 @@ public class ExploreTypeConverterTest {
     public void testInexpressibleConfig() {
         String[] configs = {
             "frontier=beam:5",
-            "next=random",
+            "next=random cost=uniform bound=cost:3",
             "successor=all-random",
             "successor=single",
             "heuristic=nen",
