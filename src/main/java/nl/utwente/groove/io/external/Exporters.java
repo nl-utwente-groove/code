@@ -35,7 +35,6 @@ import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.GrooveFileChooser;
 import nl.utwente.groove.io.external.Exporter.ExportKind;
 import nl.utwente.groove.io.external.format.AutPorter;
-import nl.utwente.groove.io.external.format.EcorePorter;
 import nl.utwente.groove.io.external.format.FsmExporter;
 import nl.utwente.groove.io.external.format.GraphExportListener.DotListener;
 import nl.utwente.groove.io.external.format.LTS2ControlExporter;
@@ -137,7 +136,6 @@ public class Exporters {
         result.add(AutPorter.instance());
         result.add(FsmExporter.getInstance());
         result.add(TikzExporter.getInstance());
-        result.add(EcorePorter.instance());
         result.add(ListenerExporter.instance(DotListener.instance()));
         result.add(LTS2ControlExporter.instance());
         return Collections.unmodifiableList(result);

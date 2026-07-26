@@ -28,10 +28,8 @@ import java.util.Map;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.graph.GraphRole;
-import nl.utwente.groove.io.external.format.EcorePorter;
 import nl.utwente.groove.io.graph.AutIO;
 import nl.utwente.groove.io.graph.ColIO;
-import nl.utwente.groove.io.graph.ConceptualIO;
 import nl.utwente.groove.io.graph.GraphIO;
 import nl.utwente.groove.io.graph.GxlIO;
 import nl.utwente.groove.util.Exceptions;
@@ -72,8 +70,6 @@ public enum FileType {
     PROLOG1("Prolog files", ".pro"),
     /** Prolog files. */
     PROLOG2("Prolog files", ".pl"),
-    /** Configuration files. */
-    CONFIG("Configuration files", ".xml"),
     /** Groovy files. */
     GROOVY("Groovy files", ".groovy"),
 
@@ -86,18 +82,10 @@ public enum FileType {
     CSV("Comma-separated values", ".csv"),
     /**  DOT (GraphViz) files. */
     DOT("GraphViz .dot files", ".dot"),
-    /** ECore meta-models. */
-    ECORE_META("ECore meta-models", ".ecore"),
-    /** ECore instance models. */
-    ECORE_MODEL("ECore instance models", ".xmi"),
     /**  EPS (Embedded PostScript) files. */
     EPS("EPS image files", ".eps"),
     /**  FSM (Finite State Machine) files. */
     FSM("FSM layout files", ".fsm"),
-    /** GXL type graph files. */
-    GXL_META("GXL type graphs", ".gxltype"),
-    /** GXL instance graph files. */
-    GXL_MODEL("GXL instance graphs", ".gxlinstance"),
     /** JAR files. */
     JAR("JAR files", ".jar"),
     /** JPEG files. */
@@ -110,8 +98,6 @@ public enum FileType {
     PNG("PNG image files", ".png"),
     /** LaTeX TikZ files. */
     TIKZ("LaTeX TikZ files", ".tikz"),
-    /** KTH file format, used by Marieke et al. */
-    KTH("Simple KTH files", ".kth"),
     /** ZIP files. */
     ZIP("ZIP files", ".zip"),
 
@@ -315,10 +301,6 @@ public enum FileType {
             return new AutIO();
         case COL:
             return new ColIO();
-        case ECORE_META:
-            return new ConceptualIO(EcorePorter.instance(), GXL_META, GraphRole.TYPE);
-        case ECORE_MODEL:
-            return new ConceptualIO(EcorePorter.instance(), GXL_META, GraphRole.HOST);
         case GXL:
         case RULE:
         case TYPE:

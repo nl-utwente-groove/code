@@ -666,8 +666,6 @@ public class GrammarModel implements PropertyChangeListener {
             newActiveNames.removeAll(getProperties().getRuleEnabling().getKeys(Delta.REMOVE));
             newActiveNames.addAll(getProperties().getRuleEnabling().getKeys(Delta.ADD));
             break;
-        case CONFIG:
-            break;
         default:
             newActiveNames.addAll(getProperties().getActiveNames(kind));
         }
@@ -703,9 +701,6 @@ public class GrammarModel implements PropertyChangeListener {
                     break;
                 case GROOVY:
                     result = new GroovyModel(this, name, text);
-                    break;
-                case CONFIG:
-                    result = new ConfigModel(this, name, text);
                     break;
                 default:
                     assert false;

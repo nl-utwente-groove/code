@@ -5,25 +5,21 @@ module nl.utwente.groove {
     exports nl.utwente.groove.control.template;
     exports nl.utwente.groove.gui.menu;
     exports nl.utwente.groove.gui.display;
-    exports nl.utwente.groove.io.conceptual.configuration;
     exports nl.utwente.groove.algebra;
     exports nl.utwente.groove.prolog;
     exports nl.utwente.groove.grammar.groovy;
     exports nl.utwente.groove.prolog.util;
     exports nl.utwente.groove.io.external.format;
     exports nl.utwente.groove.automaton;
-    exports nl.utwente.groove.io.conceptual.graph;
     exports nl.utwente.groove.grammar;
     exports nl.utwente.groove.gui.action;
     exports nl.utwente.groove.control.parse;
-    exports nl.utwente.groove.io.conceptual;
     exports nl.utwente.groove.prolog.builtin.lts;
     exports nl.utwente.groove.gui.dialog;
     exports nl.utwente.groove.control.instance;
     exports nl.utwente.groove.gui.list;
     exports nl.utwente.groove.gui.look;
     exports nl.utwente.groove.gui.tree;
-    exports nl.utwente.groove.io.conceptual.lang;
     exports nl.utwente.groove.algebra.syntax;
     exports nl.utwente.groove.explore;
     exports nl.utwente.groove.util.line;
@@ -35,17 +31,13 @@ module nl.utwente.groove {
     exports nl.utwente.groove.io.external;
     exports nl.utwente.groove.explore.strategy;
     exports nl.utwente.groove.grammar.rule;
-    exports nl.utwente.groove.io.conceptual.property;
     exports nl.utwente.groove.explore.config;
-    exports nl.utwente.groove.io.conceptual.lang.ecore;
     exports nl.utwente.groove.transform.oracle;
     exports nl.utwente.groove.io.graph;
     exports nl.utwente.groove;
-    exports nl.utwente.groove.io.conceptual.configuration.schema;
     exports nl.utwente.groove.util.parse;
     exports nl.utwente.groove.io.store;
     exports nl.utwente.groove.transform.criticalpair;
-    exports nl.utwente.groove.io.conceptual.type;
     exports nl.utwente.groove.gui.layout;
     exports nl.utwente.groove.transform;
     exports nl.utwente.groove.graph.iso;
@@ -61,7 +53,6 @@ module nl.utwente.groove {
     exports nl.utwente.groove.gui.jgraph;
     exports nl.utwente.groove.prolog.builtin;
     exports nl.utwente.groove.grammar.aspect;
-    exports nl.utwente.groove.io.conceptual.value;
     exports nl.utwente.groove.io;
     exports nl.utwente.groove.util.antlr;
     exports nl.utwente.groove.control.graph;
@@ -72,8 +63,6 @@ module nl.utwente.groove {
     exports nl.utwente.groove.grammar.host;
     exports nl.utwente.groove.prolog.builtin.algebra;
     exports nl.utwente.groove.prolog.exception;
-    exports nl.utwente.groove.io.conceptual.lang.groove;
-    exports nl.utwente.groove.io.conceptual.lang.gxl;
     exports nl.utwente.groove.util;
     exports nl.utwente.groove.io.external.util;
     exports nl.utwente.groove.prolog.builtin.graph;
@@ -98,9 +87,6 @@ module nl.utwente.groove {
     requires transitive nl.utwente.groove.gxl;
     requires com.opencsv;
     requires org.apache.groovy;
-    requires org.eclipse.emf.common;
-    requires org.eclipse.emf.ecore;
-    requires org.eclipse.emf.ecore.xmi;
     requires transitive org.eclipse.jdt.annotation;
     requires osxadapter;
     requires org.fife.RSyntaxTextArea;
@@ -124,4 +110,4 @@ module nl.utwente.groove {
     opens nl.utwente.groove.resource.font;
     opens nl.utwente.groove.resource.version;
     opens nl.utwente.groove.resource.antlr;
-}
+}

@@ -347,7 +347,7 @@ public class GrammarProperties extends Properties {
      */
     public Set<QualName> getActiveNames(ResourceKind kind) {
         var names = switch (kind) {
-        case CONFIG, GROOVY, PROPERTIES, RULE -> Collections.<QualName>emptyList();
+        case GROOVY, PROPERTIES, RULE -> Collections.<QualName>emptyList();
         default -> parsePropertyOrDefault(resourceKeyMap.get(kind)).getQualNameList();
         };
         return new TreeSet<>(names);
