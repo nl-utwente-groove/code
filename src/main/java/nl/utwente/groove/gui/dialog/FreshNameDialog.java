@@ -52,11 +52,17 @@ abstract public class FreshNameDialog<Name> {
     public FreshNameDialog(Set<Name> existingNames, String suggestion, boolean mustBeFresh) {
         this.existingNames
             = existingNames.stream().map(n -> n.toString()).collect(Collectors.toSet());
-        this.existingLowerCaseNames
-            = this.existingNames.stream().map(n -> n.toLowerCase()).collect(Collectors.toSet());
         this.suggestion = mustBeFresh
             ? generateNewName(suggestion)
             : suggestion;
+        // the suggestion is exempted from the case-insensitive clash check:
+        // when renaming, it is the resource's own current name, so a mere
+        // change of case does not clash on a case-insensitive file system
+        this.existingLowerCaseNames = this.existingNames
+            .stream()
+            .filter(n -> !n.equals(this.suggestion))
+            .map(n -> n.toLowerCase())
+            .collect(Collectors.toSet());
     }
 
     /**
