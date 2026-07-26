@@ -19,6 +19,7 @@ package nl.utwente.groove.gui.dialog;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -104,6 +105,17 @@ public class ExploreConfigDialog extends JDialog {
         for (var key : ExploreKey.values()) {
             this.rows.put(key, new KeyRow(key));
         }
+        // narrow the key and kind columns to their widest values, aligned
+        // across all rows; the content editors get the remaining width
+        int keyWidth = 0;
+        int kindWidth = 0;
+        for (var row : this.rows.values()) {
+            keyWidth = Math.max(keyWidth, row.label.getPreferredSize().width);
+            kindWidth = Math.max(kindWidth, row.kindBox.getPreferredSize().width);
+        }
+        for (var row : this.rows.values()) {
+            row.setColumnWidths(keyWidth, kindWidth);
+        }
 
         JPanel content = new JPanel();
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
@@ -170,7 +182,16 @@ public class ExploreConfigDialog extends JDialog {
      * needed (see {@link #refreshStatus}).
      */
     private JPanel createErrorPanel() {
-        JPanel result = new JPanel(new BorderLayout());
+        JPanel result = new JPanel(new BorderLayout()) {
+            // the error text wraps to whatever width the rest of the dialog
+            // establishes, so it must never influence the dialog width
+            @Override
+            public Dimension getPreferredSize() {
+                var size = super.getPreferredSize();
+                size.width = 0;
+                return size;
+            }
+        };
         this.errorLabel = new JLabel();
         this.errorLabel.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
         result.add(this.errorLabel, BorderLayout.NORTH);
@@ -604,13 +625,25 @@ public class ExploreConfigDialog extends JDialog {
             this.contentCards.add(this.namesBox, CARD_NAMES);
             this.textBorder = this.textField.getBorder();
             this.namesBorder = this.namesBox.getBorder();
-            this.panel = new JPanel(new java.awt.GridLayout(1, 3, 5, 0));
             this.label = new JLabel(key.getKeyPhrase());
             this.labelColor = this.label.getForeground();
             this.label.setToolTipText("<html>" + this.kindToolTip + "</html>");
-            this.panel.add(this.label);
-            this.panel.add(this.kindBox);
-            this.panel.add(this.contentCards);
+            this.panel = new JPanel(new BorderLayout(5, 0));
+            this.panel.add(this.label, BorderLayout.WEST);
+            JPanel valuePanel = new JPanel(new BorderLayout(5, 0));
+            valuePanel.add(this.kindBox, BorderLayout.WEST);
+            valuePanel.add(this.contentCards, BorderLayout.CENTER);
+            this.panel.add(valuePanel, BorderLayout.CENTER);
+        }
+
+        /** Sets the widths of the key and kind columns (shared by all rows). */
+        void setColumnWidths(int keyWidth, int kindWidth) {
+            this.label
+                .setPreferredSize(new Dimension(keyWidth,
+                    this.label.getPreferredSize().height));
+            this.kindBox
+                .setPreferredSize(new Dimension(kindWidth,
+                    this.kindBox.getPreferredSize().height));
         }
 
         /**
