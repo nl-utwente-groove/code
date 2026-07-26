@@ -1,4 +1,4 @@
-# State of the exploration feature model programme (2026-07-22, frozen)
+# State of the exploration feature model programme (2026-07-26)
 
 Note to a future Claude session. Companion to
 [exploration-feature-model-plan.md](exploration-feature-model-plan.md), which holds the
@@ -7,26 +7,29 @@ state, the invariants discovered along the way, and where to pick up.
 
 ## Status: phases 1–4 done; phase 5a done; both awaiting merge to master
 
-Frozen 2026-07-22 at Arend's request. Branch topology at freeze time (nothing
-pushed beyond `explore-feature-model`@defa76d8f; the RETE-merge and later commits
-are local only):
+Branch topology (2026-07-26; nothing pushed beyond
+`explore-feature-model`@defa76d8f — later commits are local only):
 
-    master (8376effe7, incl. RETE retirement)
-      ⊂ explore-feature-model (094ff6e39)
-          phases 1–4 + dialog-review fixes + master merge (matcher key dropped)
-          + second dialog-review round + Arend's @Nullable touch-up
-      ⊂ explore-parametric-engine (1ac3de828)
-          phase 5a (engine skeleton) + merge of the above
+    master (c3a6db7b2, gh #855 fix — NOT yet merged into the branches below)
+      … 8376effe7 (incl. RETE retirement)
+      ⊂ explore-feature-model (211d204f9)
+          phases 1–4 + three dialog-review rounds + master(8376effe7) merge
+      ⊂ explore-parametric-engine (a950c6f8d)
+          phase 5a (engine skeleton) + merges of the above
 
-Merging to master in that order fast-forwards; the engine branch subsumes both.
-Suite at freeze, measured at the engine tip: 368 fast, **399 including slow tests**
-(`mvn test -Dexcluded.test.groups=`), all green. Phases 1–4: the feature model is the
-only user-facing way to express exploration (dialog, `-x`, grammar property).
-Phase 5a: configuration-based exploration instantiates the `explore.engine` classes
-directly, without the encode/Template machinery; the deprecated keyword path
-(`-s/-a`, legacy property) still runs the enumerator-instantiated legacy classes as
-the parity reference. Phases 5b+ (priority pools, trace results, overrides,
-persistence) and 6 (demolition) are future branches — do not start unprompted.
+The branches contain master up to 8376effe7; master has since advanced with the
+gh #855 fix (c3a6db7b2), so merging to master no longer fast-forwards — Arend
+decides when to reconcile. The engine branch subsumes the feature-model branch.
+Suite at the 5a freeze, measured at the engine tip: 368 fast, **399 including slow
+tests** (`mvn test -Dexcluded.test.groups=`), all green; fast suite re-verified
+green after the third review round on both branches. Phases 1–4: the feature model
+is the only user-facing way to express exploration (dialog, `-x`, grammar
+property). Phase 5a: configuration-based exploration instantiates the
+`explore.engine` classes directly, without the encode/Template machinery; the
+deprecated keyword path (`-s/-a`, legacy property) still runs the
+enumerator-instantiated legacy classes as the parity reference. Phases 5b+
+(priority pools, trace results, overrides, persistence) and 6 (demolition) are
+future branches — do not start unprompted.
 
 The second dialog-review round (2026-07-22, commits 6718ad5db + 571c958e3) settled:
 drop-down defaults are marked with a trailing `*` only ("(default)" stays in the
@@ -34,6 +37,23 @@ tooltip), keyed to the *key-inherent* defaults (`ExploreKey.getDefaultKind`), no
 the grammar's stored configuration; and the grammar-dependent contents of a stored
 configuration are validated by the property checker (see `ExploreConfigChecker`
 below), so condition/rule/label errors surface on the system properties.
+Arend's fe1a4a74b then fixed the tooltip "(default)" placement (plain, directly
+after the kind name).
+
+The third dialog-review round (2026-07-26, commits 8840e76b2 + 211d204f9, decisions
+per AskUserQuestion: error area below the Configuration panel; red label + border
+for key marking) reworked error display: the dialog computes the composed
+configuration's errors itself (per-key parse + `ExploreConfigChecker`, which
+gained a per-key `check(GrammarModel, ExploreKey, Setting)` for attribution), so
+actual errors show instead of "The grammar has errors" (that text remains only for
+unrelated grammar errors); erroneous keys are marked at their row (red key phrase,
+red-bordered content editor, tooltips lead with the error); errors live in a
+borderless top-aligned area between the Configuration panel and the buttons
+(invisible when empty, full text, dialog grows via pack-on-overflow); the
+content-syntax tooltip moved off the key/kind tooltip onto the content editor
+only; and "Set Default" refreshes the status afterwards (it is now disabled while
+grammar-dependent content is invalid — previously a broken config could be stored,
+immediately breaking the grammar).
 
 ## As-built map
 
@@ -71,13 +91,18 @@ below), so condition/rule/label errors surface on the system properties.
   for this purpose; the `Grammar`-based parse is now one resolver instance) for
   formula checking with a placeholder predicate. `EncodedEdgeMap` gained a
   type-graph `parse` overload likewise. `test.explore.ExploreConfigCheckerTest`
-  covers broken and valid contents.
+  covers broken and valid contents. Since the third review round the aggregate
+  check delegates to a per-key `check(GrammarModel, ExploreKey, Setting)`, which
+  the dialog uses to attribute errors to key rows.
 - `gui.dialog.ExploreConfigDialog` — replaces `ExplorationDialog`; rows per key,
   dependency-aware enabling, preview + "Runs as", buttons enabled via conversion +
   `ExploreType.test(grammar)`. Stores defaults as config
   (`SimulatorModel.doSetDefaultExploreConfig`). Drop-downs mark the key-inherent
   default kind with a trailing `*` (the "(default)" wording lives in the tooltip);
   the grammar's stored choice is visible as the initial selection, not marked.
+  Error display (third round): per-key marking + a dedicated error area below the
+  Configuration panel; the status label is informational only; content-syntax
+  tooltips live on the content editors only.
 - Persistence — `GrammarKey.EXPLORE_CONFIG` ("exploration",
   `ValueType.EXPLORE_CONFIG`); precedence over legacy `EXPLORATION`
   ("explorationStrategy") in `GrammarProperties.getExploreType/getExploreConfig`; lazy
