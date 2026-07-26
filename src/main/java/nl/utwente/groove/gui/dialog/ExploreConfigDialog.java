@@ -20,6 +20,7 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -33,6 +34,7 @@ import java.util.Objects;
 import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
@@ -106,11 +108,16 @@ public class ExploreConfigDialog extends JDialog {
             this.rows.put(key, new KeyRow(key));
         }
         // narrow the key and kind columns to their widest values, aligned
-        // across all rows; the content editors get the remaining width
+        // across all rows; the content editors get the remaining width.
+        // The key labels are measured in bold, the widest form they can take
+        // (see KeyRow.refreshLabel), so that bolding never shifts the layout
         int keyWidth = 0;
         int kindWidth = 0;
         for (var row : this.rows.values()) {
+            var font = row.label.getFont();
+            row.label.setFont(font.deriveFont(Font.BOLD));
             keyWidth = Math.max(keyWidth, row.label.getPreferredSize().width);
+            row.label.setFont(font);
             kindWidth = Math.max(kindWidth, row.kindBox.getPreferredSize().width);
         }
         for (var row : this.rows.values()) {
@@ -141,7 +148,7 @@ public class ExploreConfigDialog extends JDialog {
         content
             .registerKeyboardAction(e -> doExploration(), enter, JComponent.WHEN_IN_FOCUSED_WINDOW);
 
-        loadConfig(createInitialConfig());
+        loadConfig(this.revertConfig = createInitialConfig());
         refresh();
 
         add(content);
@@ -167,12 +174,32 @@ public class ExploreConfigDialog extends JDialog {
         this.previewField = new JTextField();
         this.previewField.setEditable(false);
         this.statusLabel = new JLabel(" ");
-        // anchor both to the top, so surplus vertical space stays below them
+        this.revertButton = new JButton(REVERT_COMMAND);
+        this.revertButton.setToolTipText(REVERT_TOOLTIP);
+        this.revertButton.addActionListener(e -> resetTo(this.revertConfig));
+        this.savedButton = new JButton(SAVED_COMMAND);
+        this.savedButton.setToolTipText(SAVED_TOOLTIP);
+        this.savedButton
+            .addActionListener(e -> resetTo(getGrammar().getProperties().getExploreConfig()));
+        Box resetBox = Box.createHorizontalBox();
+        resetBox.add(this.revertButton);
+        resetBox.add(Box.createHorizontalStrut(5));
+        resetBox.add(this.savedButton);
+        JPanel south = new JPanel(new BorderLayout(5, 0));
+        south.add(this.statusLabel, BorderLayout.CENTER);
+        south.add(resetBox, BorderLayout.EAST);
+        // anchor everything to the top, so surplus vertical space stays below
         JPanel inner = new JPanel(new BorderLayout(0, 2));
         inner.add(this.previewField, BorderLayout.NORTH);
-        inner.add(this.statusLabel, BorderLayout.SOUTH);
+        inner.add(south, BorderLayout.SOUTH);
         result.add(inner, BorderLayout.NORTH);
         return result;
+    }
+
+    /** Loads a given configuration into the widgets, replacing the composed one. */
+    private void resetTo(ExploreConfig config) {
+        loadConfig(config);
+        refresh();
     }
 
     /**
@@ -218,15 +245,15 @@ public class ExploreConfigDialog extends JDialog {
 
     /**
      * Computes the initial configuration: the simulator's current exploration
-     * type if it is expressible, otherwise the grammar's default exploration
-     * type, otherwise the default configuration (with a notice).
+     * type if it is expressible, otherwise the configuration saved with the
+     * grammar (with a notice).
      */
     private ExploreConfig createInitialConfig() {
         try {
             return ExploreTypeConverter.toConfig(getSimulatorModel().getExploreType());
         } catch (FormatException exc) {
             this.legacyNotice = "The current exploration strategy cannot be expressed"
-                + " in the feature model; showing the grammar default";
+                + " in the feature model; showing the saved configuration";
             return getGrammar().getProperties().getExploreConfig();
         }
     }
@@ -306,7 +333,7 @@ public class ExploreConfigDialog extends JDialog {
                     errors.addAll(exc.getErrors());
                 }
             }
-            refreshStatus(exploreType, errors);
+            refreshStatus(config, exploreType, errors);
         } finally {
             this.refreshing = false;
         }
@@ -329,7 +356,8 @@ public class ExploreConfigDialog extends JDialog {
     }
 
     /** Refreshes the error area, the status label and the enabling of the buttons. */
-    private void refreshStatus(ExploreType exploreType, FormatErrorSet errors) {
+    private void refreshStatus(ExploreConfig config, ExploreType exploreType,
+                               FormatErrorSet errors) {
         boolean runnable = exploreType != null;
         // like the old dialog, running additionally requires an error-free grammar
         // that is compatible with the exploration
@@ -403,6 +431,28 @@ public class ExploreConfigDialog extends JDialog {
                 + exploreType.getIdentifier() + "</font></html>";
         }
         this.statusLabel.setText(status);
+        // mark the keys whose composed value deviates from the exploration
+        // in force when the dialog was opened, and enable the reset buttons
+        boolean deviating = false;
+        for (var key : ExploreKey.values()) {
+            var revertSetting = this.revertConfig.get(key);
+            boolean rowDeviates = !config.get(key).equals(revertSetting);
+            deviating |= rowDeviates;
+            String deviationHtml = null;
+            if (rowDeviates) {
+                String text = key.parser().unparse(revertSetting);
+                if (text.isEmpty()) {
+                    text = revertSetting.kind().getName();
+                }
+                deviationHtml = "Current exploration uses: <b>"
+                    + HTMLConverter.toHtml(new StringBuilder(text)) + "</b>";
+            }
+            getRow(key).setDeviating(deviationHtml);
+        }
+        this.revertButton.setEnabled(deviating || !errors.isEmpty());
+        var savedConfig = getGrammar().getProperties().getExploreConfig();
+        this.savedButton
+            .setEnabled(!errors.isEmpty() || !config.unparse().equals(savedConfig.unparse()));
         this.defaultButton.setEnabled(runnable);
         this.defaultButton.setToolTipText(DEFAULT_TOOLTIP);
         this.startButton.setEnabled(explorable);
@@ -488,7 +538,7 @@ public class ExploreConfigDialog extends JDialog {
         }
     }
 
-    /** Stores the composed configuration as the grammar default. */
+    /** Saves the composed configuration with the grammar. */
     private void setDefaultExploreType() {
         var errors = new FormatErrorSet();
         ExploreConfig config = storeConfig(errors);
@@ -547,16 +597,26 @@ public class ExploreConfigDialog extends JDialog {
     private JButton defaultButton;
     private JButton startButton;
     private JButton exploreButton;
+    private JButton revertButton;
+    private JButton savedButton;
+    /** The exploration in force when the dialog was opened; target of {@link #revertButton}. */
+    private ExploreConfig revertConfig;
     private boolean refreshing;
     private String legacyNotice;
     private final int oldDismissDelay;
 
-    private static final String DEFAULT_COMMAND = "Set Default";
+    private static final String DEFAULT_COMMAND = "Save";
     private static final String START_COMMAND = "Start";
     private static final String EXPLORE_COMMAND = "Run";
     private static final String CANCEL_COMMAND = "Cancel";
+    private static final String REVERT_COMMAND = "Revert";
+    private static final String SAVED_COMMAND = "Reset to Saved";
     private static final String DEFAULT_TOOLTIP
-        = "Set the currently composed exploration as the default for this grammar";
+        = "Save the composed exploration with the grammar (as the 'exploration' system property)";
+    private static final String REVERT_TOOLTIP
+        = "Discard the changes and return to the exploration in force when the dialog was opened";
+    private static final String SAVED_TOOLTIP
+        = "Load the exploration saved with the grammar";
     private static final String START_TOOLTIP = "Restart with the composed exploration";
     private static final String EXPLORE_TOOLTIP
         = "Run the composed exploration on the currently explored state space";
@@ -796,15 +856,6 @@ public class ExploreConfigDialog extends JDialog {
             }
             this.errorHtml = errorHtml;
             boolean hasErrors = errorHtml != null;
-            this.label
-                .setForeground(hasErrors
-                    ? Values.ERROR_NORMAL_FOREGROUND
-                    : this.labelColor);
-            String labelTip = hasErrors
-                ? "<html><font color='red'>" + errorHtml + "</font><hr>" + this.kindToolTip
-                    + "</html>"
-                : "<html>" + this.kindToolTip + "</html>";
-            this.label.setToolTipText(labelTip);
             this.textField
                 .setBorder(hasErrors
                     ? BorderFactory.createCompoundBorder(ERROR_BORDER, this.textBorder)
@@ -813,7 +864,51 @@ public class ExploreConfigDialog extends JDialog {
                 .setBorder(hasErrors
                     ? BorderFactory.createCompoundBorder(ERROR_BORDER, this.namesBorder)
                     : this.namesBorder);
+            refreshLabel();
             refreshContentToolTip();
+        }
+
+        /**
+         * Marks or unmarks the row as deviating from the exploration in
+         * force when the dialog was opened: the key phrase turns bold, and
+         * the label tooltip shows the value the row deviates from.
+         * @param deviationHtml HTML fragment describing the current value,
+         * or {@code null} if the row does not deviate
+         */
+        void setDeviating(String deviationHtml) {
+            if (Objects.equals(deviationHtml, this.deviationHtml)) {
+                return;
+            }
+            this.deviationHtml = deviationHtml;
+            refreshLabel();
+        }
+
+        /**
+         * Refreshes colour, font and tooltip of the key label from the
+         * error and deviation states.
+         */
+        private void refreshLabel() {
+            boolean hasErrors = this.errorHtml != null;
+            this.label
+                .setForeground(hasErrors
+                    ? Values.ERROR_NORMAL_FOREGROUND
+                    : this.labelColor);
+            this.label
+                .setFont(this.label
+                    .getFont()
+                    .deriveFont(this.deviationHtml == null
+                        ? Font.PLAIN
+                        : Font.BOLD));
+            var tip = new StringBuilder("<html>");
+            if (hasErrors) {
+                tip.append("<font color='red'>" + this.errorHtml + "</font><hr>");
+            }
+            tip.append(this.kindToolTip);
+            if (this.deviationHtml != null) {
+                tip.append("<hr>" + this.deviationHtml);
+            }
+            tip.append("</html>");
+            this.label.setToolTipText(tip.toString());
         }
 
         /**
@@ -953,6 +1048,8 @@ public class ExploreConfigDialog extends JDialog {
         private Setting.Kind shownKind;
         /** HTML fragment with the current errors of this row, or {@code null}. */
         private String errorHtml;
+        /** HTML description of the current value this row deviates from, if any. */
+        private String deviationHtml;
     }
 
     /** Border marking an erroneous content editor. */
