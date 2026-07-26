@@ -34,11 +34,11 @@ import javax.swing.BoxLayout;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JList;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
@@ -259,9 +259,7 @@ public class ExploreConfigDialog extends JDialog {
                     result.put(key, setting);
                 }
             } catch (FormatException exc) {
-                errors
-                    .add("Error in value for '%s': %s", key.getKeyPhrase(),
-                         exc.getMessage());
+                errors.add("Error in value for '%s': %s", key.getKeyPhrase(), exc.getMessage());
             }
         }
         return result;
@@ -280,6 +278,7 @@ public class ExploreConfigDialog extends JDialog {
             problem = "The grammar has errors";
         }
         if (explorable) {
+            assert exploreType != null;
             try {
                 exploreType.test(grammar.toGrammar());
             } catch (FormatException exc) {
@@ -297,11 +296,11 @@ public class ExploreConfigDialog extends JDialog {
             text.append("</font></html>");
             status = text.toString();
         } else if (problem != null) {
-            status = "<html><font color='red'>"
-                + HTMLConverter.toHtml(new StringBuilder(problem)) + "</font></html>";
-        } else if (this.legacyNotice != null) {
-            status = "<html><font color='" + INFO_COLOR + "'>" + this.legacyNotice
+            status = "<html><font color='red'>" + HTMLConverter.toHtml(new StringBuilder(problem))
                 + "</font></html>";
+        } else if (this.legacyNotice != null) {
+            status
+                = "<html><font color='" + INFO_COLOR + "'>" + this.legacyNotice + "</font></html>";
             this.legacyNotice = null;
         } else {
             assert exploreType != null;
@@ -322,8 +321,7 @@ public class ExploreConfigDialog extends JDialog {
                 + "</font></html>";
         String startTip = problemHtml == null
             ? START_TOOLTIP
-            : "<html>" + START_TOOLTIP + "<br><font color='red'>" + problemHtml
-                + "</font></html>";
+            : "<html>" + START_TOOLTIP + "<br><font color='red'>" + problemHtml + "</font></html>";
         this.startButton.setToolTipText(startTip);
         this.exploreButton.setToolTipText(exploreTip);
     }
@@ -360,8 +358,7 @@ public class ExploreConfigDialog extends JDialog {
             this.simulator.getActions().getExploreAction().execute();
         } catch (FormatException exc) {
             new ErrorDialog(this.simulator.getFrame(),
-                "<HTML><B>Invalid exploration.</B><BR> " + exc.getMessage(), exc)
-                    .setVisible(true);
+                "<HTML><B>Invalid exploration.</B><BR> " + exc.getMessage(), exc).setVisible(true);
         }
     }
 
@@ -458,13 +455,12 @@ public class ExploreConfigDialog extends JDialog {
             }
             this.kindBox.setRenderer(new DefaultListCellRenderer() {
                 @Override
-                public java.awt.Component getListCellRendererComponent(JList<?> list,
-                                                                       Object value, int index,
+                public java.awt.Component getListCellRendererComponent(JList<?> list, Object value,
+                                                                       int index,
                                                                        boolean isSelected,
                                                                        boolean cellHasFocus) {
-                    var result = super
-                        .getListCellRendererComponent(list, value, index, isSelected,
-                                                      cellHasFocus);
+                    var result = super.getListCellRendererComponent(list, value, index, isSelected,
+                                                                    cellHasFocus);
                     if (KeyRow.this.defaultKindName.equals(value)) {
                         setText(value + "*");
                     }
@@ -519,15 +515,16 @@ public class ExploreConfigDialog extends JDialog {
             for (var kind : key.getKindType().getEnumConstants()) {
                 result.append("<br>- <i>");
                 result.append(kind.getName());
-                result.append("</i>: ");
+                result.append("</i>");
+                if (kind.getName().equals(this.defaultKindName)) {
+                    result.append(" (default)");
+                }
+                result.append(": ");
                 result.append(kind.getExplanation());
                 String contentTip = createContentToolTip(kind);
                 if (contentTip != null) {
                     result.append("; content: ");
                     result.append(contentTip);
-                }
-                if (kind.getName().equals(this.defaultKindName)) {
-                    result.append(" <b>(default)</b>");
                 }
             }
             result.append("</html>");
@@ -580,9 +577,11 @@ public class ExploreConfigDialog extends JDialog {
         /** Returns the currently selected kind. */
         Setting.Kind getKind() {
             var name = (String) this.kindBox.getSelectedItem();
-            return this.key.getKindMap().get(name == null
-                ? ""
-                : name);
+            return this.key
+                .getKindMap()
+                .get(name == null
+                    ? ""
+                    : name);
         }
 
         /**
