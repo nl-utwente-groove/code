@@ -51,9 +51,16 @@ borderless top-aligned area between the Configuration panel and the buttons
 content-syntax tooltip moved off the key/kind tooltip onto the content editor
 only; and "Set Default" refreshes the status afterwards (it is now disabled while
 grammar-dependent content is invalid — previously a broken config could be stored,
-immediately breaking the grammar). Follow-up fixes (716c5dc67): the dialog grows
-in height only when errors appear (pack() caused a spurious horizontal resize),
-and the Configuration panel's preview + status are anchored to the panel top.
+immediately breaking the grammar). Follow-up fixes (716c5dc67, e1540b7b3): the
+dialog grows in height only when errors appear (pack() caused a spurious
+horizontal resize); the Configuration panel's preview + status are anchored to
+the panel top; the error wrap width is the laid-out error-area width (falling
+back to the widest sibling's preferred width during construction), so error text
+never widens the dialog; the generic "The grammar has errors" message is gone
+from the error area (tooltip of the disabled run buttons only) — but an
+unparseable stored exploration value (feature-model or legacy key), which cannot
+be loaded into the widgets, is reported in the error area via
+`Properties.parseProperty` until a new default is stored over it.
 Note: the "Runs as" status line shows the legacy `ExploreType` identifier and
 disappears in phase 6; the preview field (the config's own text form) stays.
 
