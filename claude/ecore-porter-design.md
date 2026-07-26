@@ -32,7 +32,14 @@ ordering and uniqueness of many-valued features are handled only through the
    a dedicated `rem:` node with a fixed prefix.)
 4. **Errors via `FormatErrorSet` on the graph elements** (surfaced in the GUI
    error panel); `PortException` only for I/O-level failure (unreadable file,
-   unresolvable metamodel).
+   unresolvable metamodel). `FormatError`s are reserved for input the encoding
+   cannot represent *at all* (a reference to a class outside the imported
+   packages, an attribute without a data type). The approximations the encoding
+   makes by design are **silent**: GROOVE has no warning severity, and any
+   error on a graph makes the resource fail to compile
+   (`TypeModel.Converter.convert` rethrows the source graph's errors), so a
+   diagnostic for configured, documented behaviour would render every import of
+   a normal metamodel useless.
 
 ## Metamodel encoding (.ecore → type graph)
 
@@ -45,7 +52,7 @@ ordering and uniqueness of many-valued features are handled only through the
 | containment | `part:` prefix on the reference edge (native semantics: `in=0..1` + acyclicity — exactly Ecore's) |
 | eOpposite | both edges emitted normally; pairing recorded in graph properties (no structural enforcement in v1) |
 | EEnum `E` | `type:E` with `abs:`; literal `L` → `type:E$L` with `sub:` to `type:E` |
-| EDataType (custom) | mapped to `string`, with a `FormatError` warning on the owning attribute |
+| EDataType (custom) | mapped to `string`; silent — the data type is recorded in the graph properties, so the approximation is reversible |
 
 Datatype table (as the old code, plus the gaps filled): `EBoolean(Object)` →
 `bool`; `EInt/ELong/EShort/EByte(+Objects)/EBigInteger` → `int`;
@@ -62,9 +69,12 @@ Multiplicity of mandatory attributes is *not* enforced (GROOVE does not check
 attribute-edge presence); noted limitation, Phase 4 territory.
 
 **Ordering** (`ordering` option, default `none`):
-- `none` — many-valued features become plain edges; order is not represented
-  (a warning `FormatError` is attached when an ordered feature is imported).
-  Non-unique features collapse duplicates (host graphs are simple); warning.
+- `none` — many-valued features become plain edges; order is not represented,
+  and non-unique features collapse duplicates (host graphs are simple). Both
+  losses are silent: this is exactly what the option selects, and `ordered` is
+  the Ecore default for many-valued features, so flagging it would mean
+  flagging nearly every reference of every metamodel. Choosing `index` is the
+  way to keep the information.
 - `index` — an ordered or non-unique feature `r` gets the old intermediate
   encoding, minus the parts that multiplicities now cover: nodified-edge node
   `type:C$r` with `edge:"r"` pattern, `in=1:r` edge from `C`, `out=1:val` to
@@ -73,10 +83,13 @@ attribute-edge presence); noted limitation, Phase 4 territory.
 
 ## Instance encoding (.xmi → host graph)
 
-- EObject → node `type:C` (the concrete class). `id:` aspect from `xmi:id`
-  when present (repaired/uniquified), else from the EMF URI fragment — the old
-  code ignored `xmi:id`; keeping it is what makes instance round-trips stable.
-  Governed by the `useIdentifiers` option (default on).
+- EObject → node `type:C` (the concrete class). The `useIdentifiers` option
+  (default on) governs node identity: **on**, every object gets an `id:`
+  aspect, taken from its `xmi:id` and falling back to the EMF URI fragment for
+  objects that have none (repaired via `IdValidator`, then uniquified);
+  **off**, no `id:` aspects are generated at all and the nodes are anonymous.
+  The old code ignored `xmi:id`; using it is what makes instance round-trips
+  stable.
 - Attribute values → `let:a=<constant>` self-loops (the compact host form;
   normalisation desugars them). Strings quoted/escaped per GROOVE syntax.
 - Enum values → edge `a` to a shared literal node `type:E$L` (one node per

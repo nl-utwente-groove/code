@@ -58,10 +58,17 @@ import nl.utwente.groove.util.parse.StringHandler;
  * <p>
  * The conversion is direct: the Ecore objects are walked in model order and the
  * corresponding nodes and (aspect-prefixed) edge labels are added to a plain
- * graph, which is turned into an {@link AspectGraph} at the end. Shortcomings of
- * the encoding (approximated data types, lost order, elements outside the
- * imported packages) are recorded as format errors on the resulting graph, so
- * that they show up in the GUI error panel.
+ * graph, which is turned into an {@link AspectGraph} at the end.
+ * <p>
+ * The approximations the encoding makes by design — a custom
+ * {@link EDataType} becomes a string, and under
+ * {@link Ordering#NONE} the order and the duplicates of a many-valued feature
+ * are dropped — are silent: they are documented behaviour, and the information
+ * needed to reverse them is kept in the round-trip metadata. Format errors are
+ * reserved for input that the encoding cannot represent at all, such as a
+ * reference to a class outside the imported packages; since GROOVE has no
+ * warning severity, an error keeps the resulting graph from compiling, which is
+ * only appropriate for input that really is broken.
  * @author Arend Rensink
  */
 @NonNullByDefault
@@ -177,18 +184,14 @@ public class EcoreToGraphs {
         }
         Sort sort = sortOf(dataType);
         if (sort == null) {
+            // a custom data type is approximated by a string; the data type itself
+            // is recorded in the metadata, so the approximation is reversible
             sort = Sort.STRING;
-            graph
-                .addError("Custom data type '%s' of attribute '%s' is encoded as a string",
-                          dataType.getName(), attribute.getName(), node);
         }
         if (isIndexed(attribute)) {
             PlainNode interNode = addIntermediateNode(graph, node, eClass, attribute);
             graph.addEdge(interNode, sort.getName() + SEP + VALUE, interNode);
         } else {
-            if (isLossy(attribute)) {
-                graph.addError(LOSSY_MESSAGE, attribute.getName(), node);
-            }
             graph.addEdge(node, sort.getName() + SEP + label, node);
         }
     }
@@ -228,9 +231,6 @@ public class EcoreToGraphs {
         }
         text.append(label);
         graph.addEdge(source, text.toString(), target);
-        if (isLossy(feature)) {
-            graph.addError(LOSSY_MESSAGE, feature.getName(), source);
-        }
     }
 
     /**
@@ -597,11 +597,6 @@ public class EcoreToGraphs {
     public static final String RECORD_SEP = ";";
     /** Separator between the fields of a metadata record. */
     public static final String FIELD_SEP = "|";
-
-    /** Message of the format error signalling that order or duplicates are lost. */
-    private static final String LOSSY_MESSAGE
-        = "Order and duplicates of many-valued feature '%s' are not represented; "
-            + "set the grammar property 'Ecore ordering' to 'index' to preserve them";
 
     /** Separator between an aspect prefix and what follows it. */
     private static final String SEP = ":";

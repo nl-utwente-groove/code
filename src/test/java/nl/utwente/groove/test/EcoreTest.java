@@ -18,7 +18,6 @@ package nl.utwente.groove.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -39,8 +38,6 @@ import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.graph.GraphInfo;
-import nl.utwente.groove.graph.plain.PlainGraph;
-import nl.utwente.groove.graph.plain.PlainNode;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.Imported;
 import nl.utwente.groove.io.external.format.ecore.EcoreOptions.Ordering;
@@ -91,9 +88,8 @@ public class EcoreTest {
         expectedEdges.add("Category$FICTION -sub:-> Category");
         expectedEdges.add("Category$NONFICTION -sub:-> Category");
         assertEquals(expectedEdges, binaryEdges(type));
-        // the custom data type is the only thing the porter cannot represent
-        assertEquals(1, type.getErrors().stream().count());
-        assertTrue(type.getErrors().toString().contains("Isbn"));
+        // the approximations the encoding makes are silent
+        assertEquals(Collections.emptyList(), messages(type.getErrors()));
     }
 
     /** Tests the round-trip metadata recorded on the imported type graph. */
@@ -116,14 +112,14 @@ public class EcoreTest {
 
     /**
      * Tests that the imported type graph is a valid GROOVE type graph, and that
-     * the imported host graph type-checks against it.
-     * The import diagnostics (here: the approximated custom data type) are
-     * stripped first, since they would block the type graph from compiling.
+     * the imported host graph type-checks against it. The graphs are used as
+     * imported: since the encoding's approximations are silent, an import of
+     * well-formed input carries no format errors at all.
      */
     @Test
     public void testCompilation() throws Exception {
         Set<Imported> imported = importFrom("shop.xmi", Ordering.NONE, true);
-        AspectGraph type = withoutErrors(single(imported, ResourceKind.TYPE));
+        AspectGraph type = single(imported, ResourceKind.TYPE);
         AspectGraph host = single(imported, ResourceKind.HOST).rename(QualName.name("start"));
         GrammarModel grammar = newGrammar(type, host);
         assertEquals(Collections.emptyList(), messages(grammar.getTypeModel().getErrors()));
@@ -172,7 +168,7 @@ public class EcoreTest {
         expectedEdges.add("alice -favourites-> book2");
         expectedEdges.add("bob -favourites-> book2");
         assertEquals(expectedEdges, binaryEdges(host));
-        assertTrue(host.getErrors().isEmpty());
+        assertEquals(Collections.emptyList(), messages(host.getErrors()));
     }
 
     /** Tests the effect of the {@code ecoreUseIdentifiers} option. */
@@ -192,15 +188,17 @@ public class EcoreTest {
     // Ordering
     // ----------------------------------------------------------------------
 
-    /** Tests that an ordered many-valued feature is flagged in {@code none} mode. */
+    /**
+     * Tests that an ordered many-valued feature becomes a plain edge in
+     * {@code none} mode, without complaint: dropping the order is documented
+     * behaviour of that mode, not an error.
+     */
     @Test
     public void testOrderingNone() throws Exception {
         AspectGraph type
             = single(importFrom("ordered.ecore", Ordering.NONE, true), ResourceKind.TYPE);
         assertEquals(Set.of("List -part:elements-> Element"), binaryEdges(type));
-        assertEquals(1, type.getErrors().stream().count());
-        assertTrue(type.getErrors().toString().contains("elements"));
-        assertTrue(type.getErrors().toString().contains("index"));
+        assertEquals(Collections.emptyList(), messages(type.getErrors()));
     }
 
     /** Tests the intermediate encoding of an ordered feature in {@code index} mode. */
@@ -218,7 +216,7 @@ public class EcoreTest {
         assertEquals(Set.of("List -in=1:elements-> List$elements",
                             "List$elements -out=1:part:val-> Element"),
                      binaryEdges(type));
-        assertTrue(type.getErrors().isEmpty());
+        assertEquals(Collections.emptyList(), messages(type.getErrors()));
         AspectGraph host = single(imported, ResourceKind.HOST);
         Map<String,Set<String>> expectedHost = new LinkedHashMap<>();
         expectedHost.put("theList", labels("type:List", "id:theList"));
@@ -351,26 +349,6 @@ public class EcoreTest {
     /** Convenience method to build a set of labels. */
     static private Set<String> labels(String... labels) {
         return new TreeSet<>(List.of(labels));
-    }
-
-    /**
-     * Returns a copy of a graph without its format errors.
-     * Used to check that the encoding produced by the porter is structurally valid
-     * even where the porter has flagged an approximation.
-     */
-    static private AspectGraph withoutErrors(AspectGraph graph) {
-        PlainGraph source = graph.toPlainGraph();
-        PlainGraph result = new PlainGraph(source.getName(), source.getRole());
-        Map<PlainNode,PlainNode> nodeMap = new LinkedHashMap<>();
-        for (var node : source.nodeSet()) {
-            nodeMap.put(node, result.addNode(node.getNumber()));
-        }
-        for (var edge : source.edgeSet()) {
-            result
-                .addEdge(nodeMap.get(edge.source()), edge.label().text(),
-                         nodeMap.get(edge.target()));
-        }
-        return AspectGraph.newInstance(result);
     }
 
     /** Creates an empty grammar model with given Ecore encoding options. */
