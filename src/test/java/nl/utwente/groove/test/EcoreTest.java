@@ -18,6 +18,7 @@ package nl.utwente.groove.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -38,7 +39,9 @@ import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.graph.GraphInfo;
+import nl.utwente.groove.graph.iso.IsoChecker;
 import nl.utwente.groove.io.FileType;
+import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Imported;
 import nl.utwente.groove.io.external.format.ecore.EcoreOptions.Ordering;
 import nl.utwente.groove.io.external.format.ecore.EcorePorter;
@@ -248,16 +251,123 @@ public class EcoreTest {
     }
 
     // ----------------------------------------------------------------------
+    // Export
+    // ----------------------------------------------------------------------
+
+    /**
+     * Tests that the shop meta-model survives an export and a re-import: the
+     * type graph is isomorphic to the original and carries the same round-trip
+     * metadata.
+     */
+    @Test
+    public void testMetamodelExport() throws Exception {
+        AspectGraph type = single(importFrom("shop.ecore", Ordering.NONE, true), ResourceKind.TYPE);
+        File dir = newDir();
+        exportTo(newGrammar(type, null, Ordering.NONE, true), dir);
+        AspectGraph result
+            = single(importFrom(new File(dir, "shop.ecore"), Ordering.NONE, true),
+                     ResourceKind.TYPE);
+        assertIsomorphic(type, result);
+        assertEquals(metadata(type), metadata(result));
+    }
+
+    /**
+     * Tests that the shop instance model survives an export and a re-import,
+     * identifiers included.
+     */
+    @Test
+    public void testInstanceExport() throws Exception {
+        Set<Imported> imported = importFrom("shop.xmi", Ordering.NONE, true);
+        AspectGraph type = single(imported, ResourceKind.TYPE);
+        AspectGraph host = single(imported, ResourceKind.HOST);
+        File dir = newDir();
+        exportTo(newGrammar(type, host, Ordering.NONE, true), dir);
+        Set<Imported> result = importFrom(new File(dir, "shop.xmi"), Ordering.NONE, true);
+        assertIsomorphic(type, single(result, ResourceKind.TYPE));
+        AspectGraph resultHost = single(result, ResourceKind.HOST);
+        assertIsomorphic(host, resultHost);
+        assertEquals(identifiers(host), identifiers(resultHost));
+    }
+
+    /** Tests that the element order of an indexed feature survives a round trip. */
+    @Test
+    public void testOrderingExport() throws Exception {
+        Set<Imported> imported = importFrom("ordered.xmi", Ordering.INDEX, true);
+        AspectGraph type = single(imported, ResourceKind.TYPE);
+        AspectGraph host = single(imported, ResourceKind.HOST);
+        File dir = newDir();
+        exportTo(newGrammar(type, host, Ordering.INDEX, true), dir);
+        Set<Imported> result = importFrom(new File(dir, "ordered.xmi"), Ordering.INDEX, true);
+        assertIsomorphic(type, single(result, ResourceKind.TYPE));
+        AspectGraph resultHost = single(result, ResourceKind.HOST);
+        assertIsomorphic(host, resultHost);
+        // spelled out, since isomorphism alone reads as a weak statement about order
+        assertEquals(Set.of("theList -elements-> List$elements#1",
+                            "theList -elements-> List$elements#2",
+                            "theList -elements-> List$elements#3",
+                            "List$elements#1 -val-> first", "List$elements#2 -val-> second",
+                            "List$elements#3 -val-> third"),
+                     binaryEdges(resultHost));
+    }
+
+    // ----------------------------------------------------------------------
     // Helper methods
     // ----------------------------------------------------------------------
 
     /** Imports a fixture file with given encoding options. */
     static private Set<Imported> importFrom(String fixture, Ordering ordering,
                                             boolean useIds) throws Exception {
-        File file = new File(DIR + fixture);
+        return importFrom(new File(DIR + fixture), ordering, useIds);
+    }
+
+    /** Imports a file with given encoding options. */
+    static private Set<Imported> importFrom(File file, Ordering ordering,
+                                            boolean useIds) throws Exception {
         FileType fileType = FileType.getType(file);
         assertNotNull(fileType);
         return EcorePorter.instance().doImport(file, fileType, newGrammar(ordering, useIds));
+    }
+
+    /** Exports the active type graph and start graph of a grammar to a directory. */
+    static private void exportTo(GrammarModel grammar, File dir) throws Exception {
+        for (var kind : List.of(ResourceKind.TYPE, ResourceKind.HOST)) {
+            FileType fileType = kind == ResourceKind.TYPE
+                ? FileType.ECORE
+                : FileType.XMI;
+            for (var name : grammar.getActiveNames(kind)) {
+                var model = grammar.getResource(kind, name);
+                assertNotNull(model);
+                File file = new File(dir, name + fileType.getExtension());
+                EcorePorter.instance().doExport(Exportable.resource(model), file, fileType);
+            }
+        }
+    }
+
+    /** Asserts that two aspect graphs are isomorphic. */
+    static private void assertIsomorphic(AspectGraph one, AspectGraph two) {
+        assertEquals(Collections.emptyList(), messages(two.getErrors()));
+        assertTrue("Graphs are not isomorphic",
+                   IsoChecker
+                       .getInstance(true)
+                       .areIsomorphic(one.toPlainGraph(), two.toPlainGraph()));
+    }
+
+    /** Returns the Ecore round-trip metadata of a graph, as a key-to-value map. */
+    static private Map<String,String> metadata(AspectGraph graph) {
+        var properties = GraphInfo.getProperties(graph);
+        Map<String,String> result = new LinkedHashMap<>();
+        for (var key : List.of(EcoreToGraphs.PACKAGES_KEY, EcoreToGraphs.TYPES_KEY,
+                               EcoreToGraphs.FEATURES_KEY, EcoreToGraphs.OPPOSITES_KEY)) {
+            result.put(key, properties.getProperty(key));
+        }
+        return result;
+    }
+
+    /** Creates a fresh temporary directory for exported files. */
+    static private File newDir() throws Exception {
+        File result = Files.createTempDirectory("ecore-export").toFile();
+        result.deleteOnExit();
+        return result;
     }
 
     /** Returns the unique imported resource of a given kind. */
@@ -369,12 +479,28 @@ public class EcoreTest {
 
     /** Creates a grammar model containing a given type graph and start graph. */
     static private GrammarModel newGrammar(AspectGraph type, AspectGraph host) throws Exception {
+        return newGrammar(type, host, Ordering.NONE, true);
+    }
+
+    /** Creates a grammar model containing a given type graph and optional start
+     * graph, with given Ecore encoding options. */
+    static private GrammarModel newGrammar(AspectGraph type, AspectGraph host, Ordering ordering,
+                                           boolean useIds) throws Exception {
         SystemStore store = newStore();
         store.putGraphs(ResourceKind.TYPE, List.of(type), false);
-        store.putGraphs(ResourceKind.HOST, List.of(host), false);
+        if (host != null) {
+            store.putGraphs(ResourceKind.HOST, List.of(host), false);
+        }
         GrammarModel result = new GrammarModel(store);
+        GrammarProperties properties = new GrammarProperties();
+        properties.setEcoreOrdering(ordering);
+        properties.setEcoreUseIdentifiers(useIds);
+        result.setProperties(properties);
         result.setLocalActiveNames(ResourceKind.TYPE, type.getQualName());
-        result.setLocalActiveNames(ResourceKind.HOST, host.getQualName());
+        result
+            .setLocalActiveNames(ResourceKind.HOST, host == null
+                ? new QualName[0]
+                : new QualName[] {host.getQualName()});
         return result;
     }
 

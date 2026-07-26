@@ -216,16 +216,26 @@ public class EcoreNames {
     /** Returns the kind recorded for a given classifier in the round-trip metadata. */
     public static String kindOf(EClassifier classifier) {
         if (classifier instanceof EEnum) {
-            return "enum";
+            return ENUM_KIND;
         } else if (classifier instanceof EClass c) {
             return c.isInterface()
-                ? "interface"
-                : "class";
+                ? INTERFACE_KIND
+                : CLASS_KIND;
         } else {
-            return "datatype";
+            return DATATYPE_KIND;
         }
     }
 
     /** Separator between name fragments in a qualified type label. */
     public static final String SEPARATOR = "$";
+    /** Metadata kind of an ordinary class. */
+    public static final String CLASS_KIND = "class";
+    /** Metadata kind of an interface. */
+    public static final String INTERFACE_KIND = "interface";
+    /** Metadata kind of an enumeration. */
+    public static final String ENUM_KIND = "enum";
+    /** Metadata kind of a data type. */
+    public static final String DATATYPE_KIND = "datatype";
+    /** Metadata kind of an enumeration literal. */
+    public static final String LITERAL_KIND = "literal";
 }

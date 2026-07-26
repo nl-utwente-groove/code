@@ -29,6 +29,7 @@ import nl.utwente.groove.io.external.format.GraphExportListener.DotListener;
 import nl.utwente.groove.io.external.format.LTS2ControlExporter;
 import nl.utwente.groove.io.external.format.ListenerExporter;
 import nl.utwente.groove.io.external.format.NativeResourcePorter;
+import nl.utwente.groove.io.external.format.ecore.EcorePorter;
 import nl.utwente.groove.util.Factory;
 
 /**
@@ -89,6 +90,7 @@ public class Exporters {
     private static Set<Exporter> createExporters() {
         Set<Exporter> result = new LinkedHashSet<>();
         result.add(NativeResourcePorter.getInstance());
+        result.add(EcorePorter.instance());
         result.add(AutPorter.instance());
         result.add(FsmExporter.getInstance());
         result.add(ListenerExporter.instance(DotListener.instance()));

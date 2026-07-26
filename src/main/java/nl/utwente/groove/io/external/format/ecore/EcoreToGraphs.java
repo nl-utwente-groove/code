@@ -270,7 +270,7 @@ public class EcoreToGraphs {
                 for (var literal : eEnum.getELiterals()) {
                     append(types, this.names.labelFor(literal),
                            this.names.pathOf(eEnum.getEPackage()), nonNull(literal.getName()),
-                           "literal");
+                           EcoreNames.LITERAL_KIND);
                 }
             }
         }
