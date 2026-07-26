@@ -66,8 +66,11 @@ public class Viewer extends GrooveCmdLineTool<Object> {
     public void show(File file, boolean modal) throws IOException, FormatException {
         GraphIO<?> io = null;
         var type = FileType.getType(file);
-        if (type != null && type.hasGraphIO() && type.getGraphIO().canLoad()) {
-            io = type.getGraphIO();
+        if (type != null) {
+            var typeIO = GraphIO.instance(type);
+            if (typeIO != null && typeIO.canLoad()) {
+                io = typeIO;
+            }
         }
         GrammarModel grammar = getGrammar();
         final Graph graph;

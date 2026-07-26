@@ -21,7 +21,6 @@ import java.util.Set;
 
 import nl.utwente.groove.grammar.model.ResourceModel;
 import nl.utwente.groove.graph.Graph;
-import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.io.FileType;
 
 /**
@@ -74,7 +73,7 @@ public interface Exporter {
     enum ExportKind {
         /** Instances of {@link Graph}. */
         GRAPH,
-        /** Instances of {@link JGraph}. */
+        /** Rendered graphs, wrapped by the GUI-side subclass of {@link Exportable}. */
         JGRAPH,
         /** Instances of {@link ResourceModel}. */
         RESOURCE;

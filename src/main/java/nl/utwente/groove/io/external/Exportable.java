@@ -28,37 +28,68 @@ import nl.utwente.groove.grammar.model.NamedResourceModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.ResourceModel;
 import nl.utwente.groove.graph.Graph;
-import nl.utwente.groove.gui.jgraph.AspectJModel;
-import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.io.external.Exporter.ExportKind;
 
 /**
  * Wrapper class for resources to be exported.
- * Can wrap either {@link Graph}s, {@link JGraph}s or {@link ResourceModel}s (or a combination).
- * @param exportKinds the kind of exportable objects that this {@link Exportable} contains
- * The export kind determines which of the fields of this {@link Exportable} is non-{@code null}:
+ * Can wrap either {@link Graph}s or {@link ResourceModel}s (or a combination).
+ * Rendered graphs are wrapped by a GUI-side subclass, as they require a
+ * JGraph and hence cannot be constructed headlessly.
+ * The export kinds determine which of the fields of this {@link Exportable} is non-{@code null}:
  * <ul>
- * <li> {@link ExportKind#JGRAPH} is an element if and only if {@link #jGraph()} is non-{@code null}
- * (note that this may but does not have to imply that {@link ExportKind#RESOURCE} is also contained)
  * <li> {@link ExportKind#RESOURCE} is an element if and only if {@link #resourceModel()} is non-{@code null}
  * (note that then {@link ExportKind#GRAPH} also holds if and only if the resource is graph-based)
  * <li> {@link ExportKind#GRAPH} is an element if and only if {@link #graph()} is non-{@code null}
  * </ul>
- * @param qualName the name of the exportable object
- * @param jGraph the optional {@link JGraph} contained in this exportable object
- * @param graph the optional {@link Graph} contained in this exportable object
- * @param resourceModel the optional {@link ResourceModel} contained in this exportable object
  * @author Harold Bruijntjes
  * @version $Revision$
  */
-public record Exportable(Set<ExportKind> exportKinds, @NonNull QualName qualName,
-    @Nullable JGraph<?> jGraph, @Nullable Graph graph, @Nullable ResourceModel<?> resourceModel) {
+public class Exportable {
+    /** Constructs an exportable with given export kinds and payloads.
+     * @param exportKinds the kinds of exportable objects that this {@link Exportable} contains
+     * @param qualName the name of the exportable object
+     * @param graph the optional {@link Graph} contained in this exportable object
+     * @param resourceModel the optional {@link ResourceModel} contained in this exportable object
+     */
+    protected Exportable(Set<ExportKind> exportKinds, @NonNull QualName qualName,
+                         @Nullable Graph graph, @Nullable ResourceModel<?> resourceModel) {
+        this.exportKinds = exportKinds;
+        this.qualName = qualName;
+        this.graph = graph;
+        this.resourceModel = resourceModel;
+    }
+
+    /** Returns the kinds of exportable objects that this {@link Exportable} contains. */
+    public Set<ExportKind> exportKinds() {
+        return this.exportKinds;
+    }
+
+    private final Set<ExportKind> exportKinds;
+
+    /** Returns the name of the exportable object. */
+    public @NonNull QualName qualName() {
+        return this.qualName;
+    }
+
+    private final @NonNull QualName qualName;
+
+    /** Returns the optional {@link Graph} contained in this exportable object. */
+    public @Nullable Graph graph() {
+        return this.graph;
+    }
+
+    private final @Nullable Graph graph;
+
+    /** Returns the optional {@link ResourceModel} contained in this exportable object. */
+    public @Nullable ResourceModel<?> resourceModel() {
+        return this.resourceModel;
+    }
+
+    private final @Nullable ResourceModel<?> resourceModel;
 
     /** Indicates if this exportable contains an object of a given export kind.
      * The export kind determines which of the fields of this {@link Exportable} is non-{@code null}:
      * <ul>
-     * <li> {@code hasExportKind(JGRAPH)} holds if and only if {@link #jGraph()} is non-{@code null}
-     * (note that this may but does not have to imply that {@code hasExportKind(RESOURCE)} also holds)
      * <li> {@code hasExportKind(RESOURCE)} holds if and only if {@link #resourceModel()} is non-{@code null}
      * (note that then {@code hasExportKind(GRAPH)} also holds if and only if the resource is graph-based)
      * <li> {@code hasExportKind(GRAPH)} holds if and only if {@link #graph()} is non-{@code null}
@@ -82,25 +113,7 @@ public record Exportable(Set<ExportKind> exportKinds, @NonNull QualName qualName
     /** Constructs an exportable for a given {@link Graph}. */
     static public Exportable graph(Graph graph) {
         var kinds = EnumSet.of(ExportKind.GRAPH);
-        return new Exportable(kinds, QualName.parse(graph.getName()), null, graph, null);
-    }
-
-    /** Constructs an exportable for a given {@link JGraph}. */
-    static public <G extends @NonNull Graph> Exportable jGraph(JGraph<G> jGraph) {
-        var jModel = jGraph.getModel();
-        var graph = jModel == null
-            ? null
-            : jModel.getGraph();
-        assert graph != null;
-        var resourceModel = jModel instanceof AspectJModel am
-            ? am.getResourceModel()
-            : null;
-        var kinds = EnumSet.of(ExportKind.JGRAPH, ExportKind.GRAPH);
-        if (resourceModel != null) {
-            kinds.add(ExportKind.RESOURCE);
-        }
-        var name = QualName.parse(jGraph.getName());
-        return new Exportable(kinds, name, jGraph, graph, resourceModel);
+        return new Exportable(kinds, QualName.parse(graph.getName()), graph, null);
     }
 
     /** Constructs an exportable for a given {@link ResourceModel}. */
@@ -112,6 +125,6 @@ public record Exportable(Set<ExportKind> exportKinds, @NonNull QualName qualName
             graph = graphModel.getSource();
             kinds.add(ExportKind.GRAPH);
         }
-        return new Exportable(kinds, name, null, graph, resourceModel);
+        return new Exportable(kinds, name, graph, resourceModel);
     }
 }

@@ -20,6 +20,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.EnumMap;
+import java.util.Map;
+
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphRole;
@@ -138,4 +142,30 @@ public abstract class GraphIO<G extends Graph> {
 
     private GraphRole graphRole = GraphRole.UNKNOWN;
 
+    /**
+     * Returns the default loader/saver for graphs to and from a given file type,
+     * if there is one.
+     * Note that this only applies to structural graph formats, not image or
+     * vector formats.
+     * @return the (shared) loader/saver for {@code fileType},
+     * or {@code null} if the file type has none
+     */
+    static public @Nullable GraphIO<?> instance(FileType fileType) {
+        return ioMap.computeIfAbsent(fileType, GraphIO::createInstance);
+    }
+
+    /** Creates the loader/saver for a given file type, if there is one. */
+    static private @Nullable GraphIO<?> createInstance(FileType fileType) {
+        return switch (fileType) {
+        case AUT -> new AutIO();
+        case COL -> new ColIO();
+        case GXL, RULE, TYPE, STATE -> GxlIO.instance();
+        default -> null;
+        };
+    }
+
+    /** Mapping from file types to their (lazily created) loaders/savers.
+     * File types without loader/saver are simply never entered into the map.
+     */
+    static private final Map<FileType,GraphIO<?>> ioMap = new EnumMap<>(FileType.class);
 }

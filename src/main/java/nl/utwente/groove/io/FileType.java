@@ -28,10 +28,6 @@ import java.util.Map;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.graph.GraphRole;
-import nl.utwente.groove.io.graph.AutIO;
-import nl.utwente.groove.io.graph.ColIO;
-import nl.utwente.groove.io.graph.GraphIO;
-import nl.utwente.groove.io.graph.GxlIO;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
 
@@ -273,45 +269,6 @@ public enum FileType {
     public boolean hasExtension(Path path) {
         return hasExtension(path.toString());
     }
-
-    /** Indicates if this file format has an associated loader/saver for graphs.
-     * @see #getGraphIO()
-     */
-    public boolean hasGraphIO() {
-        return getGraphIO() != null;
-    }
-
-    /** Returns the default loader/saver for graphs to and from this file type, if any.
-     * Note that this only applies to structural graph formats, not image or vector formats.
-     */
-    public GraphIO<?> getGraphIO() {
-        if (this.io == null) {
-            this.io = computeGraphIO();
-        }
-        return this.io;
-    }
-
-    /**
-     * Computes the default loader/saver for graphs to and from this file type, if any.
-     * Note that this only applies to structural graph formats, not image or vector formats.
-     */
-    public GraphIO<?> computeGraphIO() {
-        switch (this) {
-        case AUT:
-            return new AutIO();
-        case COL:
-            return new ColIO();
-        case GXL:
-        case RULE:
-        case TYPE:
-        case STATE:
-            return GxlIO.instance();
-        default:
-            return null;
-        }
-    }
-
-    private GraphIO<?> io;
 
     /** Tests if this is a file type with multiple extensions. */
     public boolean isMultiple() {

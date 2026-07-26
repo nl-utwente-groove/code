@@ -24,6 +24,7 @@ import java.util.Map;
 
 import javax.imageio.ImageIO;
 
+import nl.utwente.groove.gui.export.JGraphExportable;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.AbstractExporter;
@@ -52,13 +53,18 @@ public class RasterExporter extends AbstractExporter {
     private final Map<FileType,String> formats = new EnumMap<>(FileType.class);
 
     @Override
+    public boolean exports(Exportable exportable) {
+        return exportable instanceof JGraphExportable;
+    }
+
+    @Override
     public void doExport(Exportable exportable, File file, FileType fileType) throws PortException {
-        JGraph<?> jGraph = exportable.jGraph();
-        if (jGraph == null) {
+        if (!(exportable instanceof JGraphExportable jExportable)) {
             throw new PortException(String
                 .format("'%s' does not contain a rasterable image and hence cannot be exported to %s",
                         exportable.qualName(), fileType.getExtension()));
         }
+        JGraph<?> jGraph = jExportable.jGraph();
         BufferedImage image = jGraph.toImage();
         if (image == null) {
             throw new PortException("Cannot export blank image");

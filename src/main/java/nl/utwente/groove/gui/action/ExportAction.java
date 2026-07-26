@@ -17,6 +17,7 @@ import nl.utwente.groove.gui.display.GraphEditorTab;
 import nl.utwente.groove.gui.display.GraphTab;
 import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.gui.display.ResourceTab;
+import nl.utwente.groove.gui.export.JGraphExportable;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.io.FileType;
@@ -62,7 +63,7 @@ public class ExportAction extends SimulatorAction {
         Exportable exportable;
         if (this.isGraph) {
             // Export graph
-            exportable = Exportable.jGraph(getJGraph());
+            exportable = JGraphExportable.instance(getJGraph());
         } else {
             // Export resource
             exportable = Exportable.resource(getResource());

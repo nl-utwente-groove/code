@@ -17,24 +17,17 @@
 package nl.utwente.groove.io.external;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.EnumMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.io.FileType;
-import nl.utwente.groove.io.external.Exporter.ExportKind;
 import nl.utwente.groove.io.external.format.AutPorter;
 import nl.utwente.groove.io.external.format.FsmExporter;
 import nl.utwente.groove.io.external.format.GraphExportListener.DotListener;
 import nl.utwente.groove.io.external.format.LTS2ControlExporter;
 import nl.utwente.groove.io.external.format.ListenerExporter;
-import nl.utwente.groove.io.external.format.NativeGraphExporter;
 import nl.utwente.groove.io.external.format.NativeResourcePorter;
 import nl.utwente.groove.io.external.format.RasterExporter;
 import nl.utwente.groove.io.external.format.TikzExporter;
@@ -47,14 +40,34 @@ import nl.utwente.groove.util.Factory;
  * @version $Revision$
  */
 public class Exporters {
-    /** Returns the exporter for a given export kind and file type, if any.
+    /** Returns the first registered exporter supporting a given file type, if any.
      * Returns {@code null} if the file type is {@code null}.
      */
-    public static Exporter getExporter(@NonNull ExportKind exportKind,
-                                       @Nullable FileType fileType) {
-        return fileType == null
-            ? null
-            : getExporterMap(exportKind).get(fileType);
+    public static @Nullable Exporter getExporter(@Nullable FileType fileType) {
+        if (fileType != null) {
+            for (Exporter exporter : getExporters()) {
+                if (exporter.getFileTypes().contains(fileType)) {
+                    return exporter;
+                }
+            }
+        }
+        return null;
+    }
+
+    /** Returns the first registered exporter that can export a given exportable
+     * to a given file type, if any.
+     * Returns {@code null} if the file type is {@code null}.
+     */
+    public static @Nullable Exporter getExporter(@Nullable FileType fileType,
+                                                 Exportable exportable) {
+        if (fileType != null) {
+            for (Exporter exporter : getExporters()) {
+                if (exporter.getFileTypes(exportable).contains(fileType)) {
+                    return exporter;
+                }
+            }
+        }
+        return null;
     }
 
     /** Returns the list of all known exporters. */
@@ -69,7 +82,6 @@ public class Exporters {
     private static List<Exporter> createExporters() {
         List<Exporter> result = new ArrayList<>();
         result.add(NativeResourcePorter.getInstance());
-        result.add(NativeGraphExporter.getInstance());
         result.add(RasterExporter.getInstance());
         result.add(VectorExporter.getInstance());
         result.add(AutPorter.instance());
@@ -78,30 +90,5 @@ public class Exporters {
         result.add(ListenerExporter.instance(DotListener.instance()));
         result.add(LTS2ControlExporter.instance());
         return Collections.unmodifiableList(result);
-    }
-
-    /** Returns the mapping from file types to exporters for those file types. */
-    public static Map<FileType,Exporter> getExporterMap(ExportKind exportKind) {
-        return exporterMap.get().get(exportKind);
-    }
-
-    private static Factory<Map<ExportKind,Map<FileType,Exporter>>> exporterMap
-        = Factory.lazy(Exporters::createExporterMap);
-
-    /** Creates the list of all known dedicated exporters. */
-    private static Map<ExportKind,Map<FileType,Exporter>> createExporterMap() {
-        Map<ExportKind,Map<FileType,Exporter>> result = new EnumMap<>(ExportKind.class);
-        Arrays.stream(ExportKind.values()).forEach(k -> result.put(k, new LinkedHashMap<>()));
-        for (Exporter exporter : getExporters()) {
-            var exportKind = exporter.getExportKind();
-            var localMap = result.get(exportKind);
-            for (FileType fileType : exporter.getFileTypes()) {
-                Exporter oldValue = localMap.put(fileType, exporter);
-                assert oldValue == null : String
-                    .format("Duplicate exporter for export kind %s and file type %s", exportKind,
-                            fileType);
-            }
-        }
-        return Collections.unmodifiableMap(result);
     }
 }

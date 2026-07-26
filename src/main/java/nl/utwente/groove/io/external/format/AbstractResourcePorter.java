@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,7 +34,7 @@ import nl.utwente.groove.grammar.aspect.GraphConverter;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.TextBasedModel;
-import nl.utwente.groove.graph.GraphRole;
+import nl.utwente.groove.graph.plain.PlainGraph;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.AbstractExporter;
 import nl.utwente.groove.io.external.Exportable;
@@ -46,6 +47,8 @@ import nl.utwente.groove.io.graph.GxlIO;
 /**
  * Imports and exports (certain types of) resources.
  * Enforces a (partial) one-to-one mapping of resource kinds and file types.
+ * Doubles as the exporter of graphs that are not grammar resources (such as
+ * LTSs), which are saved as plain graphs in the native format.
  * @author Harold Bruijntjes
  * @version $Revision$
  */
@@ -55,6 +58,7 @@ public class AbstractResourcePorter extends AbstractExporter implements Importer
         super(ExportKind.RESOURCE);
         this.fileTypeMap = new EnumMap<>(ResourceKind.class);
         this.resourceKindMap = new EnumMap<>(FileType.class);
+        this.graphFileTypes = EnumSet.noneOf(FileType.class);
     }
 
     /**
@@ -68,7 +72,18 @@ public class AbstractResourcePorter extends AbstractExporter implements Importer
         var oldKind = this.resourceKindMap.put(fileType, kind);
         assert oldKind == null : String
             .format("Duplicate resource kinds %s and %s for file type %s", oldKind, kind, fileType);
+        if (kind.isGraphBased()) {
+            this.graphFileTypes.add(fileType);
+        }
     }
+
+    /** Returns the registered file types of the graph-based resource kinds. */
+    protected final Set<FileType> getGraphFileTypes() {
+        return this.graphFileTypes;
+    }
+
+    /** The registered file types of the graph-based resource kinds. */
+    private final Set<FileType> graphFileTypes;
 
     /** Returns the file type registered for a given resource kind, if any. */
     protected final @Nullable FileType getFileType(ResourceKind kind) {
@@ -84,24 +99,28 @@ public class AbstractResourcePorter extends AbstractExporter implements Importer
     /** Map from file type the native file type. */
     private final Map<FileType,ResourceKind> resourceKindMap;
 
+    /** This implementation accepts every exportable that either contains a graph
+     * (which is saved in the native graph format) or is a resource of a
+     * registered kind (which is saved as its source text).
+     */
     @Override
     public boolean exports(Exportable exportable) {
-        boolean result = super.exports(exportable);
-        if (result) {
-            var graph = exportable.graph();
-            assert graph != null;
-            var graphRole = graph.getRole();
-            result = graphRole == GraphRole.HOST || graphRole == GraphRole.TYPE;
-        }
-        return result;
+        var resourceKind = exportable.getResourceKind();
+        return exportable.graph() != null
+            || resourceKind != null && getFileType(resourceKind) != null;
     }
 
+    /** This implementation returns the native graph file types for exportables
+     * containing a graph, and the file type of the resource kind for the others.
+     */
     @Override
     public Set<FileType> getFileTypes(Exportable exportable) {
-        if (exports(exportable)) {
+        if (!exports(exportable)) {
+            return Collections.emptySet();
+        } else if (exportable.graph() == null) {
             return Collections.singleton(getFileType(exportable.getResourceKind()));
         } else {
-            return Collections.emptySet();
+            return getGraphFileTypes();
         }
     }
 
@@ -157,19 +176,31 @@ public class AbstractResourcePorter extends AbstractExporter implements Importer
     @Override
     public void doExport(Exportable exportable, File file, FileType fileType) throws PortException {
         var resourceKind = exportable.getResourceKind();
-        if (resourceKind == null) {
+        var graph = exportable.graph();
+        if (graph != null && resourceKind == null) {
+            // this is a graph outside the grammar, such as an LTS;
+            // it is saved as a plain graph
+            var plainGraph = graph.getRole().inGrammar()
+                ? GraphConverter.toAspect(graph).toPlainGraph()
+                : PlainGraph.instance(graph);
+            try {
+                GxlIO.instance().saveGraph(plainGraph, file);
+            } catch (IOException e) {
+                throw new PortException(e);
+            }
+        } else if (resourceKind == null) {
             throw new PortException(String
                 .format("'%s' is not a grammar resource and hence cannot be exported as %s",
                         exportable.qualName(), fileType.getExtension()));
         } else if (resourceKind.isGraphBased()) {
-            AspectGraph graph = GraphConverter.toAspect(exportable.graph());
+            AspectGraph aspectGraph = GraphConverter.toAspect(graph);
             if (resourceKind == ResourceKind.HOST && fileType != FileType.STATE) {
                 // we are converting a host graph to a rule or type graph
                 // so unwrap any literal labels
-                graph = graph.unwrap();
+                aspectGraph = aspectGraph.unwrap();
             }
             try {
-                GxlIO.instance().saveGraph(graph.toPlainGraph(), file);
+                GxlIO.instance().saveGraph(aspectGraph.toPlainGraph(), file);
             } catch (IOException e) {
                 throw new PortException(e);
             }

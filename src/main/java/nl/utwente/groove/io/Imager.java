@@ -72,11 +72,11 @@ import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.display.DisplayKind;
+import nl.utwente.groove.gui.export.JGraphExportable;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.AspectJModel;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Exporter;
-import nl.utwente.groove.io.external.Exporter.ExportKind;
 import nl.utwente.groove.io.external.Exporters;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.io.store.SystemStore;
@@ -234,15 +234,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
             final FileType fileType = outFileType == null
                 ? getFormatMap().values().iterator().next()
                 : outFileType;
-            /** Find the richest exporter for the given file type. */
-            Exporter tmpExp = Exporters.getExporter(ExportKind.JGRAPH, fileType);
-            if (tmpExp == null) {
-                tmpExp = Exporters.getExporter(ExportKind.RESOURCE, fileType);
-            }
-            if (tmpExp == null) {
-                tmpExp = Exporters.getExporter(ExportKind.GRAPH, fileType);
-            }
-            final Exporter exporter = tmpExp;
+            final Exporter exporter = Exporters.getExporter(fileType);
             final File exportFile = new File(outParent, fileType.addExtension(outFileName));
 
             emit(MEDIUM, "Imaging %s as %s%n", inFile, exportFile);
@@ -301,7 +293,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
             Dimension oldPrefSize = jGraph.getPreferredSize();
             Dimension newPrefSize = new Dimension(oldPrefSize.width * 2, oldPrefSize.height * 2);
             jGraph.setSize(newPrefSize);
-            yield Exportable.jGraph(jGraph);
+            yield JGraphExportable.instance(jGraph);
         }
         };
         return result;
@@ -443,15 +435,24 @@ public class Imager extends GrooveCmdLineTool<Object> {
         if (result == null) {
             result = formatMap = new HashMap<>();
             for (Exporter exporter : Exporters.getExporters()) {
-                if (exporter.hasExportKind(Exporter.ExportKind.RESOURCE)) {
-                    continue;
-                }
                 for (FileType fileType : exporter.getFileTypes()) {
+                    if (isTextResourceType(fileType)) {
+                        // the imager only creates images of graphs
+                        continue;
+                    }
                     result.put(fileType.getExtensionName(), fileType); //strip dot
                 }
             }
         }
         return result;
+    }
+
+    /** Indicates if a given file type is the file type of a text-based resource kind. */
+    private static boolean isTextResourceType(FileType fileType) {
+        return Arrays
+            .stream(ResourceKind.values())
+            .filter(ResourceKind::isTextBased)
+            .anyMatch(k -> k.getFileType() == fileType);
     }
 
     /** An array of all file types that can be imaged. */

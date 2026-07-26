@@ -21,6 +21,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.EnumMap;
 import java.util.Map;
 
+import nl.utwente.groove.gui.export.JGraphExportable;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.AbstractExporter;
 import nl.utwente.groove.io.external.Exportable;
@@ -63,8 +64,18 @@ public class VectorExporter extends AbstractExporter {
     }
 
     @Override
+    public boolean exports(Exportable exportable) {
+        return exportable instanceof JGraphExportable;
+    }
+
+    @Override
     public void doExport(Exportable exportable, File file, FileType fileType) throws PortException {
-        this.formats.get(fileType).renderGraph(exportable.jGraph(), file);
+        if (!(exportable instanceof JGraphExportable jExportable)) {
+            throw new PortException(String
+                .format("'%s' does not contain a rendered graph and hence cannot be exported to %s",
+                        exportable.qualName(), fileType.getExtension()));
+        }
+        this.formats.get(fileType).renderGraph(jExportable.jGraph(), file);
     }
 
     private final Map<FileType,GraphToVector> formats = new EnumMap<>(FileType.class);
