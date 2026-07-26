@@ -200,6 +200,26 @@ public class EcoreTest {
         assertEquals(with.edgeCount(), without.edgeCount());
     }
 
+    /**
+     * Tests that a data value which GROOVE's algebras cannot represent at all
+     * is reported rather than approximated. This is the one place where the
+     * instance encoding does raise a format error: unlike the mappings it makes
+     * by design, {@code NaN} has no GROOVE counterpart to be lossy about.
+     */
+    @Test
+    public void testUnrepresentableValue() throws Exception {
+        AspectGraph host
+            = single(importFrom("broken.xmi", Ordering.NONE, true), ResourceKind.HOST);
+        List<String> errors = messages(host.getErrors());
+        assertEquals(1, errors.size());
+        assertTrue(errors.get(0),
+                   errors
+                       .get(0)
+                       .contains("Value 'NaN' of attribute 'value' has no GROOVE representation"));
+        // the value is dropped, not silently substituted by 0.0
+        assertEquals(Map.of("m1", labels("type:Measurement", "id:m1")), selfLabels(host));
+    }
+
     // ----------------------------------------------------------------------
     // Ordering
     // ----------------------------------------------------------------------
@@ -215,6 +235,22 @@ public class EcoreTest {
             = single(importFrom("ordered.ecore", Ordering.NONE, true), ResourceKind.TYPE);
         assertEquals(Set.of("List -part:elements-> Element"), binaryEdges(type));
         assertEquals(Collections.emptyList(), messages(type.getErrors()));
+    }
+
+    /**
+     * Tests that many-valued features with set semantics keep the direct
+     * encoding even in {@code index} mode. Every many-valued feature of the shop
+     * meta-model — the {@code items} and {@code customers} containments, the
+     * {@code favourites} reference, the {@code tags} attribute — is declared
+     * {@code ordered="false"} and is unique, so there is nothing for an
+     * intermediate node to preserve and the two modes have to agree.
+     */
+    @Test
+    public void testOrderingSetSemantics() throws Exception {
+        AspectGraph none = single(importFrom("shop.xmi", Ordering.NONE, true), ResourceKind.HOST);
+        AspectGraph index = single(importFrom("shop.xmi", Ordering.INDEX, true), ResourceKind.HOST);
+        assertEquals(selfLabels(none), selfLabels(index));
+        assertEquals(binaryEdges(none), binaryEdges(index));
     }
 
     /** Tests the intermediate encoding of an ordered feature in {@code index} mode. */

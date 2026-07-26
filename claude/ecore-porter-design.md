@@ -84,15 +84,22 @@ check attribute-edge presence); noted limitation, Phase 4 territory.
   the Ecore default for many-valued features, so flagging it would mean
   flagging nearly every reference of every metamodel. Choosing `index` is the
   way to keep the information.
-- `index` — *every* many-valued feature `r` gets the old intermediate
-  encoding, minus the parts that multiplicities now cover: nodified-edge node
-  `type:C$r` with `edge:"r"` pattern, `in=1:r` edge from `C`, `out=1:val` to
-  the target (or a `<sort>:val` self-loop for a data attribute), `int:index`
-  attribute (1-based in instances); `part:` moves to the `val` edge for
-  containments. The declared `ordered`/`unique` flags do not enter into it:
-  whether an instance actually has duplicates or a meaningful order is a
-  property of the instance, not of the declaration, and a set-valued feature
-  still has an order in the file it came from.
+- `index` — an ordered or non-unique feature `r` — attribute or reference —
+  gets the old intermediate encoding, minus the parts that multiplicities now
+  cover: nodified-edge node `type:C$r` with `edge:"r"` pattern, `in=1:r` edge
+  from `C`, `out=1:val` to the target (or a `<sort>:val` self-loop for a data
+  attribute), `int:index` attribute (1-based in instances); `part:` moves to
+  the `val` edge for containments.
+
+  A many-valued feature that is *both* unordered and unique keeps the direct
+  edge encoding even in this mode. It has set semantics, which direct edges
+  express exactly — there is no order and there are no duplicates to preserve,
+  so nodifying it would buy nothing and cost a great deal: these graphs are
+  what users write transformation rules against, and an intermediate node turns
+  a one-edge rule pattern into a three-element one. Note that `ordered` is the
+  Ecore *default*, so this exemption applies only to features explicitly
+  declared `ordered="false" unique="true"`; a plain `[0..*]` reference is still
+  nodified under `index`.
 
 **Metadata format.** The round-trip properties are `;`-separated records of
 `|`-separated fields. A field containing `;`, `|` or `\` is escaped with a

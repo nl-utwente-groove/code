@@ -561,16 +561,22 @@ public class EcoreToGraphs {
         return feature.getUpperBound() > 1 || feature.getUpperBound() == -1;
     }
 
+    /** Indicates if the order or the duplicates of a feature's values matter.
+     * A many-valued feature that is unordered <i>and</i> unique has set
+     * semantics, which direct edges already express exactly.
+     */
+    private static boolean isLossy(EStructuralFeature feature) {
+        return isMultiple(feature) && (feature.isOrdered() || !feature.isUnique());
+    }
+
     /** Indicates if a feature is to be encoded through intermediate nodes.
-     * Under {@link Ordering#INDEX} this holds for every many-valued feature: the
-     * intermediates are what make the order and the duplicates representable, and
-     * whether they are actually needed depends on the instance, not on the
-     * declaration (an {@code unique="false"} flag is not the only way to end up
-     * with duplicates in an instance, and even a set-valued feature has an order
-     * in the file it came from).
+     * Only the features whose information the direct encoding would lose are
+     * nodified, even under {@link Ordering#INDEX}: the graphs are written
+     * transformation rules against, so a feature that has nothing to preserve
+     * keeps its lean direct-edge form.
      */
     private boolean isIndexed(EStructuralFeature feature) {
-        return this.options.ordering() == Ordering.INDEX && isMultiple(feature);
+        return this.options.ordering() == Ordering.INDEX && isLossy(feature);
     }
 
     /** Returns the multiplicity text of a feature, or {@code null} if it is the default. */
