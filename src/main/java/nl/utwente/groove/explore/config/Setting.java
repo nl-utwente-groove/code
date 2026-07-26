@@ -17,6 +17,7 @@
 package nl.utwente.groove.explore.config;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.ParsableKey;
@@ -52,6 +53,16 @@ public record Setting(Kind kind, Object content) {
     public interface Kind extends ParsableKey<Setting> {
         /** Returns the type of content that settings of this kind carry. */
         public ContentType contentType();
+
+        /**
+         * Returns an optional short hint shown after the kind name in the GUI
+         * (e.g., a well-known equivalent name), or {@code null} if there is
+         * none. The hint is display-only; it never occurs in the textual form
+         * of a configuration.
+         */
+        default public @Nullable String getHint() {
+            return null;
+        }
 
         /**
          * Creates a setting of this kind with given content.
