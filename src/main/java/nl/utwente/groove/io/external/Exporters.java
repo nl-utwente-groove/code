@@ -97,17 +97,6 @@ public class Exporters {
         new ErrorDialog(parent, String.format(message, args), exc).setVisible(true);
     }
 
-    /** Returns the exporter for a given filename, if any.
-     * Convenience method for {@code getExporter(FileType.getType(filename))},
-     * taking {@code null} values into account.
-     */
-    public static Exporter getExporter(@NonNull ExportKind exportKind, @NonNull String filename) {
-        var fileType = FileType.getExtension(filename);
-        return fileType == null
-            ? null
-            : getExporter(exportKind, fileType);
-    }
-
     /** Returns the exporter for a given export kind and file type, if any.
      * Returns {@code null} if the file type is {@code null}.
      */

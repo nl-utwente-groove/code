@@ -99,11 +99,6 @@ public class GxlIO extends GraphIO<AttrGraph> {
     }
 
     @Override
-    public boolean canSave() {
-        return true;
-    }
-
-    @Override
     public void saveGraph(Graph graph, File file) throws IOException {
         super.saveGraph(graph, file);
         // layout is now saved in the gxl file; delete the layout file

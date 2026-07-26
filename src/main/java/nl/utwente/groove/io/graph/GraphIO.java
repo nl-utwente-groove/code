@@ -33,12 +33,6 @@ import nl.utwente.groove.util.parse.FormatException;
  * @version $Revision$
  */
 public abstract class GraphIO<G extends Graph> {
-    /** Indicates if this IO implementation can save graphs.
-     * If {@code false}, {@link #saveGraph(Graph, File)} and {@link #doSaveGraph(Graph, File)}
-     * will throw {@link UnsupportedOperationException}s.
-     */
-    abstract public boolean canSave();
-
     /**
      * Saves a graph to file.
      * @param graph the graph to be saved
