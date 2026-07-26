@@ -59,6 +59,7 @@ import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.explore.config.Frontier;
 import nl.utwente.groove.explore.config.Goal;
 import nl.utwente.groove.explore.config.Setting;
+import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.Options;
@@ -313,12 +314,13 @@ public class ExploreConfigDialog extends JDialog {
         // that is compatible with the exploration
         boolean explorable = runnable;
         String problem = null;
+        // reason for disabled run buttons, shown in their tooltips only:
+        // the details of general grammar errors are of no interest here
+        String disabledReason = null;
         GrammarModel grammar = getGrammar();
         if (explorable && grammar.hasErrors()) {
             explorable = false;
-            // the composed configuration itself is error-free at this point;
-            // the details of general grammar errors are not relevant here
-            problem = "The grammar has errors";
+            disabledReason = "The grammar has errors";
         }
         if (explorable) {
             assert exploreType != null;
@@ -343,14 +345,32 @@ public class ExploreConfigDialog extends JDialog {
             }
             problems.append(HTMLConverter.toHtml(new StringBuilder(problem)));
         }
+        // an unparseable stored exploration value cannot be loaded into the
+        // dialog widgets, so its error has to be reported here explicitly
+        for (var key : new GrammarKey[] {GrammarKey.EXPLORE_CONFIG, GrammarKey.EXPLORATION}) {
+            if (!grammar.getProperties().containsKey(key)) {
+                continue;
+            }
+            try {
+                grammar.getProperties().parseProperty(key);
+            } catch (FormatException exc) {
+                if (!problems.isEmpty()) {
+                    problems.append("<br>");
+                }
+                problems
+                    .append(HTMLConverter
+                        .toHtml(new StringBuilder("The stored '" + key.getName()
+                            + "' property does not parse: " + exc.getMessage())));
+            }
+        }
         String problemsHtml = problems.isEmpty()
             ? null
             : problems.toString();
         this.errorLabel
             .setText(problemsHtml == null
                 ? null
-                : "<html><body style='width:400px'><font color='red'>" + problemsHtml
-                    + "</font></body></html>");
+                : "<html><body style='width:" + getErrorWrapWidth()
+                    + "px'><font color='red'>" + problemsHtml + "</font></body></html>");
         // the status label only carries informational messages
         String status = " ";
         if (this.legacyNotice != null) {
@@ -366,14 +386,19 @@ public class ExploreConfigDialog extends JDialog {
         this.defaultButton.setToolTipText(DEFAULT_TOOLTIP);
         this.startButton.setEnabled(explorable);
         this.exploreButton.setEnabled(explorable);
-        String exploreTip = problemsHtml == null
+        String tipHtml = problemsHtml;
+        if (disabledReason != null) {
+            tipHtml = (tipHtml == null
+                ? ""
+                : tipHtml + "<br>") + HTMLConverter.toHtml(new StringBuilder(disabledReason));
+        }
+        String exploreTip = tipHtml == null
             ? EXPLORE_TOOLTIP
-            : "<html>" + EXPLORE_TOOLTIP + "<br><font color='red'>" + problemsHtml
+            : "<html>" + EXPLORE_TOOLTIP + "<br><font color='red'>" + tipHtml
                 + "</font></html>";
-        String startTip = problemsHtml == null
+        String startTip = tipHtml == null
             ? START_TOOLTIP
-            : "<html>" + START_TOOLTIP + "<br><font color='red'>" + problemsHtml
-                + "</font></html>";
+            : "<html>" + START_TOOLTIP + "<br><font color='red'>" + tipHtml + "</font></html>";
         this.startButton.setToolTipText(startTip);
         this.exploreButton.setToolTipText(exploreTip);
         // grow the dialog height if the error area no longer fits; only the
@@ -385,6 +410,25 @@ public class ExploreConfigDialog extends JDialog {
                 setSize(getWidth(), prefHeight);
             }
         }
+    }
+
+    /**
+     * Computes the wrap width for the error text: the available width of the
+     * error area, so that the text never widens the dialog. Before the first
+     * layout (during construction), this falls back to the preferred width of
+     * the widest other dialog component.
+     */
+    private int getErrorWrapWidth() {
+        var parent = this.errorLabel.getParent();
+        int result = parent.getWidth();
+        if (result == 0) {
+            for (var sibling : parent.getParent().getComponents()) {
+                if (sibling != parent) {
+                    result = Math.max(result, sibling.getPreferredSize().width);
+                }
+            }
+        }
+        return Math.max(100, result - 30);
     }
 
     /** Returns the currently composed exploration type, or {@code null} if invalid. */
