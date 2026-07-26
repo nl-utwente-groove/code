@@ -5,29 +5,32 @@ Note to a future Claude session. Companion to
 feature model, the phase plan and the decision log; this note records the *as-built*
 state, the invariants discovered along the way, and where to pick up.
 
-## Status: phases 1–4 done; phase 5a done; both awaiting merge to master
+## Status: phases 1–4 done; 5a done; 5b started (slice 1: randomness)
 
 Branch topology (2026-07-26; nothing pushed beyond
 `explore-feature-model`@defa76d8f — later commits are local only):
 
-    master (c3a6db7b2, incl. RETE retirement and the gh #855 fix)
-      ⊂ explore-feature-model (fbfa74d6a)
-          phases 1–4 + three dialog-review rounds (+ layout fixes) + master merges
-      ⊂ explore-parametric-engine (dab65ebfc)
-          phase 5a (engine skeleton) + merges of the above
+    master (4fc62b467, incl. RETE retirement, gh #855, gh #853)
+      ⊂ explore-feature-model
+          phases 1–4 + six dialog-review rounds + master merges
+      ⊂ explore-parametric-engine
+          phase 5a (engine skeleton) + 5b slice 1 (seeded randomness)
 
 Merging to master in that order fast-forwards; the engine branch subsumes the
-feature-model branch.
+feature-model branch. Arend was asked (2026-07-26) to fast-forward master onto
+`explore-feature-model` in his own checkout (it held master at the time).
 Suite at the 5a freeze, measured at the engine tip: 368 fast, **399 including slow
 tests** (`mvn test -Dexcluded.test.groups=`), all green; fast suite re-verified
-green after the third review round on both branches. Phases 1–4: the feature model
-is the only user-facing way to express exploration (dialog, `-x`, grammar
-property). Phase 5a: configuration-based exploration instantiates the
-`explore.engine` classes directly, without the encode/Template machinery; the
-deprecated keyword path (`-s/-a`, legacy property) still runs the
-enumerator-instantiated legacy classes as the parity reference. Phases 5b+
-(priority pools, trace results, overrides, persistence) and 6 (demolition) are
-future branches — do not start unprompted.
+green after every later round. Phases 1–4: the feature model is the only
+user-facing way to express exploration (dialog, `-x`, grammar property). Phase 5a:
+configuration-based exploration instantiates the `explore.engine` classes
+directly, without the encode/Template machinery; the deprecated keyword path
+(`-s/-a`, legacy property) still runs the enumerator-instantiated legacy classes
+as the parity reference. Phase 5b slice 1 (2026-07-26): seeded randomness — see
+the `util.Randomness` entry below and `claude/randomness-seeding.md`. Remaining
+5b slices (ordered pools incl. heuristic/cost/beam, overrides + trace,
+persistence=none) and phase 6 (demolition) are future work — do not start
+unprompted.
 
 The second dialog-review round (2026-07-22, commits 6718ad5db + 571c958e3) settled:
 drop-down defaults are marked with a trailing `*` only ("(default)" stays in the
@@ -97,6 +100,15 @@ disappears in phase 6; the preview field (the config's own text form) stays.
   *inheriting* `doNext()` (transient stack, KNOWN re-traversal, stop modes) instead
   of re-porting it. `test.explore.EngineParityTest` A/B-compares engine vs enumerator
   paths on ferryman (order proved bit-identical) and checks re-run determinism.
+  Since 5b slice 1 also `RandomPool` (uniform swap-remove take, seeded), realising
+  `next=random` under the engine-only converter keyword `random-frontier`.
+- `util.Randomness` (5b slice 1, 2026-07-26) — the master-seed registry of
+  `claude/randomness-seeding.md` (decisions resolved, see there): per-purpose
+  streams (EXPLORATION, ORACLE) derived per obtainment, so a fixed master seed
+  (explicit `-seed` / `groove.randomSeed` property / generated-and-logged) makes
+  every exploration identical. Seeded consumers: `RandomLinearStrategy`,
+  `RandomChooserInSequence`, `RandomOracle`. `test.explore.RandomnessTest` covers
+  derivation and seeded-run reproducibility.
 - `explore.config.ExploreConfigChecker` — validates the grammar-dependent contents
   of a configuration (condition formula syntax, rule existence/enabledness, edge
   labels) against the **GrammarModel**, invoked from the `exploration` property
@@ -149,7 +161,7 @@ disappears in phase 6; the preview field (the config's own text form) stays.
 
 ## Deliberately unsupported (converter errors, awaiting phase 5)
 
-heuristic≠none, cost=rule, frontier=beam, next=random, successor=all-random,
+heuristic≠none, cost=rule, frontier=beam, successor=all-random,
 single-successor on unrestricted frontier, shape=trace, persistence=none,
 collapse/algebra overrides (kinds `grammar` = inherit), goal=graph, goal=ltl/ctl
 (stay with the CheckLTL/CTL actions), iterative deepening (`+inc`), bound=size,

@@ -1,9 +1,14 @@
 # Design note: seedable randomness in exploration
 
-*Status (2026-07-14): designed, not implemented — step 3 of the determinism program
-(the other steps are on master: deterministic hash codes, insertion-ordered collections,
-`DeterminismTest`, and the determinism/performance conventions in `claude/CLAUDE.md`).
-Two design decisions are still open; see the end of this note.*
+*Status (2026-07-26): implemented on branch `explore-parametric-engine` (phase 5b
+slice 1) — `util.Randomness` registry, seeded `RandomLinearStrategy` /
+`RandomChooserInSequence` / `RandomOracle`, `Generator -seed`, `RandomnessTest`.
+The two design decisions were resolved by Arend 2026-07-26: (1) streams are
+re-derived per exploration with no run counter, so a fixed seed makes every
+exploration identical (Simulator "explore again" repeats the identical trace);
+(2) the seed is settable via the system property and a `-seed` Generator option.
+Still open: storing the (generated) seed in the GTS info so saved LTS files
+carry it — currently the generated seed is only logged to stdout.*
 
 ## The remaining nondeterministic sites
 
@@ -50,12 +55,29 @@ system-property configuration, but a run-level cross-cutting knob is exactly wha
 properties are for; the grammar-property and strategy-level mechanisms stay authoritative
 where they exist.
 
-## Open decisions
+## Open decisions — RESOLVED 2026-07-26
 
-1. **Re-seed semantics**: derive the streams afresh at each `Exploration.play()`?
-   Then a fixed seed makes *every* exploration of the same grammar identical, which
-   composes with `DeterminismTest` (it could then also cover the random strategies).
-   If so: should the Simulator's "explore again" repeat the identical trace, or mix a
-   run counter into the derivation to sample a fresh one?
-2. **Discoverability**: system property only, or additionally a `-seed` option on the
-   Generator command line (same underlying channel, but visible in `--help`)?
+1. **Re-seed semantics**: streams are derived afresh whenever a consumer obtains its
+   generator (at exploration preparation), as a pure function of master seed and
+   purpose — no run counter. A fixed seed makes *every* exploration of the same
+   grammar identical, composing with `DeterminismTest`; the Simulator's "explore
+   again" repeats the identical trace. Users wanting variation set no seed.
+2. **Discoverability**: both — the system property `groove.randomSeed` as the
+   universal channel, plus the `-seed` Generator option (same channel, visible in
+   `--help`). The oracle seed remains expressible in the grammar properties.
+
+## Implementation notes (2026-07-26)
+
+- `util.Randomness`: master seed resolved lazily (explicit `setMasterSeed` →
+  system property → generated + logged); per-purpose seeds via a splitmix64 mix
+  of the purpose name into the master seed. Each `newRandom` call returns a fresh
+  generator drawing the same sequence — deterministic, though consumers created
+  within one exploration for the same purpose draw *identical* sequences (each
+  `RandomChooserInSequence` instance starts the same stream). If correlated
+  choices ever matter statistically, a play-scoped draw counter can be mixed in.
+- `next=random` is realised by `explore.engine.RandomPool` (uniform swap-remove
+  take) under the converter keyword `random-frontier` — engine-only, no legacy
+  strategy; combines only with `bound=none` (the other bounds require bfs/dfs,
+  enforced by the existing converter guards).
+- `successor=all-random` remains unsupported: it needs a hook in the inherited
+  match-application order (`MatchCollector.canonicalise` territory), not a pool.
