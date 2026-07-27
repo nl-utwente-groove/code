@@ -178,7 +178,7 @@ example is *not* round-tripped.
 | `doubleValue` | `EDouble` | `real:doubleValue` | `let:doubleValue=-0.5` |
 | `doubleObject` | `EDoubleObject` | `real:doubleObject` | `let:doubleObject=0.001` |
 | `bigDecimal` | `EBigDecimal` | `real:bigDecimal` | `let:bigDecimal=-123.456` |
-| `stringValue` | `EString` | `string:stringValue` | `let:stringValue="He said \"hi\", path C:\temp"` |
+| `stringValue` | `EString` | `string:stringValue` | `let:stringValue="He said \"hi\", path C:\\temp"` |
 | `charValue` | `EChar` | `string:charValue` | `let:charValue="65"` |
 | `characterObject` | `ECharacterObject` | `string:characterObject` | `let:characterObject="122"` |
 | `dateValue` | `EDate` | `string:dateValue` | `let:dateValue="2026-03-01T12:00:00.000+0100"` |
@@ -201,8 +201,9 @@ Three of these rows deserve a second look.
   `2026-03-01T12:00:00.000+01:00`; elsewhere the rendering differs, which is why
   the test only pins down its shape.
 
-String values are quoted GROOVE-style: a `"` inside the value is escaped, a
-backslash is not (`\` only escapes a following quote, so it does not need it).
+String values are quoted GROOVE-style: both a `"` and a `\` inside the value
+are escaped with a backslash (since grammar version 3.12; before that only the
+quote was escaped, so a value ending in a backslash broke the graph).
 `EDate` and the custom `Colour` are both approximated by strings; the declared
 type is kept in the metadata (`Values|dateValue|EDate|...`,
 `Values|customValue|Colour|...`), so an export puts it back.
@@ -383,12 +384,3 @@ Under `ordering=index` the intermediate node of `core$Item.details` is named
 after the *already qualified* owner label: `type:core$Item$details`.
 
 **Covering tests.** `testPackages`, `testPackagesNames`, `testPackagesIndexed`.
-
-## Known gaps
-
-Things these examples deliberately stay clear of, because the porter does not
-handle them today:
-
-* **A string value ending in a backslash breaks the graph.** The value is quoted
-  by escaping the quote character only, so a trailing `\` escapes the closing
-  quote.

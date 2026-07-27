@@ -410,8 +410,8 @@ public class EcoreTest {
                             "let:bigInteger=170141183460469231731687303715884105727",
                             "let:floatValue=-1.5", "let:floatObject=0.25", "let:doubleValue=-0.5",
                             "let:doubleObject=0.001", "let:bigDecimal=-123.456",
-                            // the quote is escaped; the backslash needs no escaping
-                            "let:stringValue=\"He said \\\"hi\\\", path C:\\temp\"",
+                            // the quote and the backslash are both escaped (grammar 3.12)
+                            "let:stringValue=\"He said \\\"hi\\\", path C:\\\\temp\"",
                             // EMF serialises a character as its numeric code
                             "let:charValue=\"65\"", "let:characterObject=\"122\"",
                             "let:customValue=\"#ff8800\""),
