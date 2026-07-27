@@ -287,11 +287,11 @@ public class TreeMatch implements Fixable {
      */
     private void traverseMatrix(List<Proof>[] matrix, int[] rowSize, Visitor<Proof,?> visitor) {
         var rule = getCondition().getRule();
-        // the DPO identification condition on the amalgamated rule applies
-        // only to parallel-edge grammars (non-simple patterns); simple-graph
-        // grammars retain the SPO semantics, in which shared deletion is fine
-        boolean checkErasers = rule != null && rule.isTop() && !rule.lhs().isSimple()
-            && rule.hasEraserSubRules();
+        // the identification condition on the amalgamated rule applies only
+        // under DPO semantics; under SPO (simple graphs or multigraphs
+        // alike), shared deletion between instances is fine
+        boolean checkErasers = rule != null && rule.isTop()
+            && rule.getGrammarProperties().getParallelMode().isDPO() && rule.hasEraserSubRules();
         int rowCount = rowSize.length;
         int index[] = new int[rowCount];
         do {

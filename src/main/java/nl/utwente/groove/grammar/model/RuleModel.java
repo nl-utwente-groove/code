@@ -402,10 +402,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         TreeMap<Index,Condition> conditionTree = new TreeMap<>();
         // import cross-level eraser-conflict elements (root extension);
         // this must happen top-down and before any condition is built.
-        // The DPO identification condition applies only to parallel-edge
-        // grammars; simple-graph grammars retain the SPO semantics, in which
-        // identifications are resolved by letting deletion win
-        if (getGrammarProperties().isHasParallelEdges()) {
+        // The identification condition applies only under DPO semantics;
+        // under SPO (simple graphs or multigraphs alike), identifications
+        // are resolved by letting deletion win
+        if (getGrammarProperties().getParallelMode().isDPO()) {
             for (Level4 level : levelTree.getLevel4Map().values()) {
                 level.importEraserConflicts();
             }
@@ -507,16 +507,14 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
      * since amalgamation lets erasers at any level destroy witnesses matched
      * at any other level. The traversable edge types of a regular expression
      * are computed positionally, by {@link RegAutCoverage}. Eraser nodes
-     * contribute the incident edge types of their matching node types, as
-     * node deletion erases the incident edges; under the dangling-edge check
-     * deletion of unmatched edges cannot happen, so then they contribute
-     * nothing. Negated expressions are exempt, as erasure cannot invalidate
-     * an established negative condition; the empty expression traverses
-     * nothing.
+     * contribute nothing: DPO semantics implies the dangling-edge condition,
+     * so node deletion can never erase unmatched edges. Negated expressions
+     * are exempt, as erasure cannot invalidate an established negative
+     * condition; the empty expression traverses nothing.
      */
     private void checkRegExprErasure(LevelTree levelTree, FormatErrorSet errors) {
         var properties = getGrammarProperties();
-        if (!properties.isHasParallelEdges() || properties.isIgnoreRegExp()) {
+        if (!properties.getParallelMode().isDPO() || properties.isIgnoreRegExp()) {
             return;
         }
         // collect the possibly erased edge types over all levels,
@@ -532,19 +530,6 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             for (RuleEdge eraser : eraserEdges) {
                 for (TypeEdge type : eraser.getMatchingTypes()) {
                     erasedTypes.putIfAbsent(type, eraser);
-                }
-            }
-            if (!properties.isCheckDangling()) {
-                Set<RuleNode> eraserNodes = new LinkedHashSet<>(level.lhs.nodeSet());
-                eraserNodes.removeAll(level.rhs.nodeSet());
-                for (RuleNode eraser : eraserNodes) {
-                    var nodeTypes = eraser.getMatchingTypes();
-                    for (TypeEdge type : typeGraph.edgeSet()) {
-                        if (!Collections.disjoint(type.source().getSubtypes(), nodeTypes)
-                            || !Collections.disjoint(type.target().getSubtypes(), nodeTypes)) {
-                            erasedTypes.putIfAbsent(type, eraser);
-                        }
-                    }
                 }
             }
         }
@@ -1539,9 +1524,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 return;
             }
             int mult = modelEdge.getMultCount();
-            if (mult > 1 && !getGrammarProperties().isHasParallelEdges()) {
+            if (mult > 1 && !getGrammarProperties().getParallelMode().isMulti()) {
                 throw new FormatException(
-                    "Edge multiplicity requires the parallelEdges grammar property", modelEdge);
+                    "Edge multiplicity requires the parallelEdges grammar property to be SPO or DPO",
+                    modelEdge);
             }
             placeEdge(roleKind, modelEdge, ruleEdge);
             // add the further parallel copies of a counted edge
@@ -2063,7 +2049,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
          */
         private RuleGraph createGraph(String name) {
             return new RuleGraph(name, isInjective(),
-                !getGrammarProperties().isHasParallelEdges(), this.factory);
+                !getGrammarProperties().getParallelMode().isMulti(), this.factory);
         }
 
         @Override
@@ -2423,7 +2409,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
          */
         private RuleGraph createGraph(String name) {
             return new RuleGraph(name, isInjective(),
-                !getGrammarProperties().isHasParallelEdges(), this.factory);
+                !getGrammarProperties().getParallelMode().isMulti(), this.factory);
         }
 
         private final Level3 parent;
@@ -2615,14 +2601,14 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
          * the imported ancestor-level eraser nodes; for the latter, pairs
          * with other nodes shared with the parent level are skipped, as they
          * are already checked at the ancestor level where both nodes first
-         * coexist. The identification condition applies only to parallel-edge
-         * grammars; simple-graph grammars retain the SPO semantics, in which
+         * coexist. The identification condition applies only under DPO
+         * semantics; under SPO (simple graphs or multigraphs alike),
          * identifications are resolved by letting deletion win. Also skipped
          * under injective matching, which subsumes the condition; the
          * generated embargoes compile to equality tests in the search plan.
          */
         private void addEraserNodeEmbargoes(Condition condition) throws FormatException {
-            if (this.lhs.isSimple() || isInjective()) {
+            if (!getGrammarProperties().getParallelMode().isDPO() || isInjective()) {
                 return;
             }
             Set<RuleNode> erasers = new LinkedHashSet<>(this.lhs.nodeSet());

@@ -68,7 +68,7 @@ public class GraphManager {
             return null;
         }
         AspectGraph newGraph = new AspectGraph(name, role,
-            !this.simulatorModel.getGrammar().getProperties().isHasParallelEdges());
+            !this.simulatorModel.getGrammar().getProperties().getParallelMode().isMulti());
 
         // Do not insert layout yet, rather postpone until graph is done,
         // otherwise half finished layouts may be created

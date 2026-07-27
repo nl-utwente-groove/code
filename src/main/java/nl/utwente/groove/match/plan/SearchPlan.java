@@ -58,12 +58,11 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
      * pattern edges with which they may not share an image: eraser edges must
      * be matched injectively with respect to all other edges, so that pushout
      * complements are unique (the DPO identification condition). This applies
-     * only to non-simple patterns (of parallel-edge grammars); simple-graph
-     * grammars retain the SPO semantics, in which identifications are
-     * resolved by letting deletion win. Under injective matching the
-     * condition holds automatically, so the map is only filled for
-     * non-injective matching of a non-simple rule condition with eraser
-     * edges.
+     * only under DPO semantics; under SPO (simple graphs or multigraphs
+     * alike), identifications are resolved by letting deletion win. Under
+     * injective matching the condition holds automatically, so the map is
+     * only filled for non-injective matching of a DPO rule condition with
+     * eraser edges.
      * The eraser edges considered are those of the condition's own rule, plus
      * the ancestor-level eraser edges propagated into the condition's root
      * (see {@link Condition#getAncestorEraserEdges()}); for the latter, pairs
@@ -78,7 +77,9 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
         var rule = this.condition.getRule();
         var pattern = this.condition.getPattern();
         var ancestorErasers = this.condition.getAncestorEraserEdges();
-        if (!this.injective && pattern != null && !pattern.isSimple()
+        var properties = this.condition.getGrammarProperties();
+        boolean dpo = properties != null && properties.getParallelMode().isDPO();
+        if (!this.injective && dpo && pattern != null
             && (rule != null || !ancestorErasers.isEmpty())) {
             var root = this.condition.getRoot();
             Set<RuleEdge> erasers = new LinkedHashSet<>();

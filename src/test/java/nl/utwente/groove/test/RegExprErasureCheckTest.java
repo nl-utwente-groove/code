@@ -78,11 +78,13 @@ public class RegExprErasureCheckTest {
         assertFalse(getRuleModel("regExprErasure", "wildcardPositional").hasErrors());
     }
 
-    /** An eraser node erases its incident edges, here including b-edges,
-     * which the sequence a.b may run through. */
+    /** An eraser node does not contribute erased edge types: DPO semantics
+     * implies the dangling-edge condition, so node deletion can never erase
+     * unmatched edges — in particular not the b-edges that the sequence a.b
+     * runs through. */
     @Test
     public void testNodeEraserIncident() {
-        assertErasureError(getRuleModel("regExprErasure", "nodeEraserIncident"));
+        assertFalse(getRuleModel("regExprErasure", "nodeEraserIncident").hasErrors());
     }
 
     /** The ignoreRegExp property accepts the overlapping rule. */
