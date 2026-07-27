@@ -145,7 +145,8 @@ public class ExploreConfigDialog extends JDialog {
         content
             .registerKeyboardAction(e -> closeDialog(), escape, JComponent.WHEN_IN_FOCUSED_WINDOW);
         content
-            .registerKeyboardAction(e -> doExploration(), enter, JComponent.WHEN_IN_FOCUSED_WINDOW);
+            .registerKeyboardAction(e -> doDefaultExploration(), enter,
+                                    JComponent.WHEN_IN_FOCUSED_WINDOW);
 
         loadConfig(this.revertConfig = createInitialConfig());
         refresh();
@@ -445,25 +446,37 @@ public class ExploreConfigDialog extends JDialog {
         }
         this.revertButton.setEnabled(deviating || !errors.isEmpty());
         var savedConfig = getGrammar().getProperties().getExploreConfig();
-        this.savedButton
-            .setEnabled(!errors.isEmpty() || !config.unparse().equals(savedConfig.unparse()));
-        this.defaultButton.setEnabled(runnable);
+        boolean savedDiffers = !config.unparse().equals(savedConfig.unparse());
+        this.savedButton.setEnabled(!errors.isEmpty() || savedDiffers);
+        // there is nothing to save if the composition equals the saved setting
+        this.defaultButton.setEnabled(runnable && savedDiffers);
         this.defaultButton.setToolTipText(DEFAULT_TOOLTIP);
+        // on a fresh state space there is no difference between restarting
+        // and continuing: the start button reads "Start" and Continue is off
+        boolean fresh = isFreshGTS();
+        this.startButton.setText(fresh
+            ? START_FRESH_COMMAND
+            : START_COMMAND);
         this.startButton.setEnabled(explorable);
-        this.exploreButton.setEnabled(explorable);
+        this.exploreButton.setEnabled(explorable && !fresh);
         String tipHtml = problemsHtml;
         if (disabledReason != null) {
             tipHtml = (tipHtml == null
                 ? ""
                 : tipHtml + "<br>") + HTMLConverter.toHtml(new StringBuilder(disabledReason));
         }
-        String exploreTip = tipHtml == null
-            ? EXPLORE_TOOLTIP
-            : "<html>" + EXPLORE_TOOLTIP + "<br><font color='red'>" + tipHtml
-                + "</font></html>";
+        String startTipBase = fresh
+            ? START_FRESH_TOOLTIP
+            : START_TOOLTIP;
+        String exploreTip = tipHtml != null
+            ? "<html>" + EXPLORE_TOOLTIP + "<br><font color='red'>" + tipHtml + "</font></html>"
+            : fresh
+                ? "<html>" + EXPLORE_TOOLTIP
+                    + "<br><i>Nothing to continue: the state space is still unexplored</i></html>"
+                : EXPLORE_TOOLTIP;
         String startTip = tipHtml == null
-            ? START_TOOLTIP
-            : "<html>" + START_TOOLTIP + "<br><font color='red'>" + tipHtml + "</font></html>";
+            ? startTipBase
+            : "<html>" + startTipBase + "<br><font color='red'>" + tipHtml + "</font></html>";
         this.startButton.setToolTipText(startTip);
         this.exploreButton.setToolTipText(exploreTip);
         // grow the dialog height if the error area no longer fits; only the
@@ -507,6 +520,28 @@ public class ExploreConfigDialog extends JDialog {
             return ExploreTypeConverter.toExploreType(config);
         } catch (FormatException exc) {
             return null;
+        }
+    }
+
+    /**
+     * Indicates if the current LTS consists of just the unexplored start
+     * state (or there is none at all).
+     */
+    private boolean isFreshGTS() {
+        var gts = getSimulatorModel().getGTS();
+        return gts == null || gts.nodeCount() == 1 && !gts.startState().isClosed();
+    }
+
+    /**
+     * Runs the exploration appropriate for the state of the LTS: a fresh
+     * (re)start if nothing has been explored yet, otherwise a continuation.
+     * Bound to the Enter key.
+     */
+    private void doDefaultExploration() {
+        if (isFreshGTS()) {
+            startExploration();
+        } else {
+            doExploration();
         }
     }
 
@@ -611,8 +646,11 @@ public class ExploreConfigDialog extends JDialog {
         = "Discard the changes and return to the exploration in force when the dialog was opened";
     private static final String SAVED_TOOLTIP
         = "Load the exploration saved with the grammar";
+    private static final String START_FRESH_COMMAND = "Start";
     private static final String START_TOOLTIP
         = "Discard the current state space and explore afresh with the composed exploration";
+    private static final String START_FRESH_TOOLTIP
+        = "Explore the state space with the composed exploration";
     private static final String EXPLORE_TOOLTIP
         = "Continue exploring the current state space with the composed exploration";
     /** Colour of informational status text. */
