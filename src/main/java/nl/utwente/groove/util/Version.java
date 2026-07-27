@@ -11,6 +11,9 @@ import java.io.IOException;
 
 import javax.swing.JOptionPane;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.QualName;
 
 /**
@@ -19,6 +22,7 @@ import nl.utwente.groove.grammar.QualName;
  * @author Arend Rensink, at the suggestion of Christian Hofmann
  * @version $Revision$
  */
+@NonNullByDefault
 public class Version {
     /**
      * Print version information to system console (System.out).
@@ -64,7 +68,7 @@ public class Version {
     }
 
     /** Tests if a given string represents a known GXL file format. */
-    static public boolean isKnownGxlVersion(String version) {
+    static public boolean isKnownGxlVersion(@Nullable String version) {
         return version == null || version.isEmpty() || GXL_VERSION.equals(version);
     }
 
@@ -131,7 +135,7 @@ public class Version {
      * @return the latest grammar version.
      */
     public static String getCurrentGrammarVersion() {
-        return GRAMMAR_VERSION_3_11;
+        return GRAMMAR_VERSION_3_12;
     }
 
     /**
@@ -320,4 +324,17 @@ public class Version {
      * The {@code halt} keyword was added to the control language.
      */
     public static final String GRAMMAR_VERSION_3_11 = "3.11";
+    /**
+     * This is the grammar version introduced with Groove version 7.5.3.
+     * String constants are now saved with escaped backslashes, as the
+     * documentation of {@code StringHandler#toQuoted} always promised;
+     * previously only quote characters were escaped, so that string values
+     * ending in a backslash produced unparsable labels. Reading is lenient:
+     * a backslash followed by anything other than a quote or another
+     * backslash is kept literally, so grammars saved by older versions read
+     * back unchanged unless a string value contained two consecutive
+     * backslashes (now read as one) or a backslash directly before a quote
+     * (now a load error).
+     */
+    public static final String GRAMMAR_VERSION_3_12 = "3.12";
 }
