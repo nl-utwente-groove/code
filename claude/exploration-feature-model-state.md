@@ -7,18 +7,16 @@ state, the invariants discovered along the way, and where to pick up.
 
 ## Status: phases 1–4 done; 5a done; 5b started (slice 1: randomness)
 
-Branch topology (2026-07-26; nothing pushed beyond
-`explore-feature-model`@defa76d8f — later commits are local only):
+Branch topology (2026-07-26): **phases 1–4 are merged to master and pushed**
+(master fast-forwarded onto `explore-feature-model`@64e5813ed at Arend's request;
+the `explore-feature-model` branch is deleted — dialog work now happens on
+branches off master). The engine branch continues:
 
-    master (4fc62b467, incl. RETE retirement, gh #855, gh #853)
-      ⊂ explore-feature-model
-          phases 1–4 + six dialog-review rounds + master merges
+    master (64e5813ed, incl. phases 1–4 + eight dialog-review rounds)
       ⊂ explore-parametric-engine
           phase 5a (engine skeleton) + 5b slice 1 (seeded randomness)
 
-Merging to master in that order fast-forwards; the engine branch subsumes the
-feature-model branch. Arend was asked (2026-07-26) to fast-forward master onto
-`explore-feature-model` in his own checkout (it held master at the time).
+Merging the engine branch to master fast-forwards (unless master moves on).
 Suite at the 5a freeze, measured at the engine tip: 368 fast, **399 including slow
 tests** (`mvn test -Dexcluded.test.groups=`), all green; fast suite re-verified
 green after every later round. Phases 1–4: the feature model is the only
