@@ -21,6 +21,8 @@
     <eClassifiers xsi:type="ecore:EClass" name="Line-Item" eSuperTypes="#//core/Item">
       <eStructuralFeatures xsi:type="ecore:EAttribute" name="unit.price"
           eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EDouble"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="unit-price"
+          eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EDouble"/>
       <eStructuralFeatures xsi:type="ecore:EAttribute" name="self"
           eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     </eClassifiers>

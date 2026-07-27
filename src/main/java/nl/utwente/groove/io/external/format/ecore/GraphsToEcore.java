@@ -137,6 +137,10 @@ public class GraphsToEcore {
     private final Map<String,@Nullable FeatureData> featureData = new LinkedHashMap<>();
     /** Mapping from {@code owner.feature} references to the created features. */
     private final Map<String,EStructuralFeature> features = new LinkedHashMap<>();
+    /** Mapping from the created features to the edge labels they came from.
+     * The two differ whenever a repaired name was restored on creation, so this
+     * is what a host graph's edge labels have to be resolved against. */
+    private final Map<EStructuralFeature,@Nullable String> featureLabels = new LinkedHashMap<>();
 
     /** Collects the node type labels of a graph. */
     private void collectNodes(AspectGraph graph) {
@@ -153,12 +157,12 @@ public class GraphsToEcore {
 
     /** Collects the per-feature metadata records. */
     private void collectFeatureData(GraphProperties properties) {
-        for (var record : records(properties, EcoreToGraphs.FEATURES_KEY, 7)) {
+        for (var record : records(properties, EcoreToGraphs.FEATURES_KEY, 8)) {
             this.featureData
                 .put(record[0] + FEATURE_SEP + record[1],
                      new FeatureData(record[2], Boolean.parseBoolean(record[3]),
-                         Boolean.parseBoolean(record[4]), bound(record[5], 0),
-                         bound(record[6], 1)));
+                         Boolean.parseBoolean(record[4]), bound(record[5], 0), bound(record[6], 1),
+                         record[7]));
         }
     }
 
@@ -318,6 +322,7 @@ public class GraphsToEcore {
                 if (feature != null) {
                     eClass.getEStructuralFeatures().add(feature);
                     this.features.put(entry.getKey() + FEATURE_SEP + descriptor.name(), feature);
+                    this.featureLabels.put(feature, descriptor.name());
                 }
             }
         }
@@ -402,7 +407,11 @@ public class GraphsToEcore {
             attribute.setEType(dataTypeOf(sort, data));
             result = attribute;
         }
-        result.setName(descriptor.name());
+        // the label is the repaired name; the metadata has the original one
+        result
+            .setName(data == null || data.originalName().isEmpty()
+                ? descriptor.name()
+                : data.originalName());
         setBounds(result, descriptor, data);
         if (data != null) {
             result.setOrdered(data.ordered());
@@ -580,7 +589,7 @@ public class GraphsToEcore {
             if (name == null) {
                 continue;
             }
-            EStructuralFeature feature = eClass.getEStructuralFeature(name);
+            EStructuralFeature feature = featureOf(eClass, name);
             if (feature == null) {
                 this.errors.add("Node type '%s' has no feature '%s'", eClass.getName(), name);
                 continue;
@@ -605,6 +614,18 @@ public class GraphsToEcore {
                 setValue(graph, object, entry.getKey(), value.node(), objects, node, containers);
             }
         }
+    }
+
+    /** Returns the feature of a class that a given edge label stands for,
+     * inherited features included. The lookup goes by label rather than by
+     * Ecore name, since the two differ for a restored name. */
+    private @Nullable EStructuralFeature featureOf(EClass eClass, String label) {
+        for (var feature : eClass.getEAllStructuralFeatures()) {
+            if (label.equals(this.featureLabels.get(feature))) {
+                return feature;
+            }
+        }
+        return null;
     }
 
     /** Sets or adds a single feature value of an object. */
@@ -833,9 +854,11 @@ public class GraphsToEcore {
      * @param unique the recorded {@code unique} flag
      * @param lower the recorded lower bound
      * @param upper the recorded upper bound ({@code -1} if unbounded)
+     * @param originalName the Ecore name the label was repaired from, or the
+     * empty string if the label reproduces it
      */
     private static record FeatureData(String declaredType, boolean ordered, boolean unique,
-        int lower, int upper) {
+        int lower, int upper, String originalName) {
         // no additional members
     }
 

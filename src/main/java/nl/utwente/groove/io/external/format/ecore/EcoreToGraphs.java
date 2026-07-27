@@ -283,7 +283,8 @@ public class EcoreToGraphs {
             }
             for (var feature : sortedFeatures(eClass)) {
                 String declaredType = declaredTypeOf(feature);
-                if (declaredType.isEmpty() && !isMultiple(feature)) {
+                String originalName = originalNameOf(feature);
+                if (declaredType.isEmpty() && originalName.isEmpty() && !isMultiple(feature)) {
                     // the declaration is completely reconstructible from the type graph
                     continue;
                 }
@@ -291,7 +292,7 @@ public class EcoreToGraphs {
                        declaredType, Boolean.toString(feature.isOrdered()),
                        Boolean.toString(feature.isUnique()),
                        Integer.toString(Math.max(feature.getLowerBound(), 0)),
-                       Integer.toString(feature.getUpperBound()));
+                       Integer.toString(feature.getUpperBound()), originalName);
             }
         }
         result.setProperty(FEATURES_KEY, features.toString());
@@ -344,6 +345,20 @@ public class EcoreToGraphs {
         }
         String name = nonNull(dataType.getName());
         return name.equals(DEFAULT_TYPE_MAP.get(sort))
+            ? ""
+            : name;
+    }
+
+    /**
+     * Returns the Ecore name of a feature if its label does not reproduce it,
+     * and the empty string otherwise. A classifier name is recorded
+     * unconditionally, since it is what identifies the classifier; a feature is
+     * identified by its owner and its label, so its name only has to be
+     * recorded when the repair changed it.
+     */
+    private String originalNameOf(EStructuralFeature feature) {
+        String name = nonNull(feature.getName());
+        return name.equals(this.names.labelFor(feature))
             ? ""
             : name;
     }
@@ -769,7 +784,9 @@ public class EcoreToGraphs {
     /** Graph property key under which the per-feature data is recorded.
      * Only features are recorded whose Ecore declaration cannot be reconstructed
      * from the type graph alone; the records are
-     * {@code owner|feature|declaredType|ordered|unique|lower|upper}.
+     * {@code owner|feature|declaredType|ordered|unique|lower|upper|originalName},
+     * with {@code originalName} empty unless the feature label had to be
+     * repaired.
      */
     public static final String FEATURES_KEY = "ecoreFeatures";
     /** Graph property key under which the opposite reference pairs are recorded. */

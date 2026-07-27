@@ -8,5 +8,6 @@
   <entries xmi:id="entry" code="1">
     <details xmi:id="footnote" note="see page 3"/>
   </entries>
-  <entries xsi:type="core:Line-Item" xmi:id="line" code="2" unit.price="9.5" self="own"/>
+  <entries xsi:type="core:Line-Item" xmi:id="line" code="2" unit.price="9.5" unit-price="7.25"
+      self="own"/>
 </packages:Item>

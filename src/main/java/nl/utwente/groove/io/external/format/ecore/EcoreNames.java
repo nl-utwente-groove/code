@@ -115,9 +115,22 @@ public class EcoreNames {
             : result;
     }
 
-    /** Returns the repaired name of a structural feature, before disambiguation. */
+    /**
+     * Returns the repaired name of a structural feature, before disambiguation.
+     * A feature label has to be usable as an attribute field name, which is a
+     * Java identifier: unlike a type label, it may not contain a hyphen. A
+     * hyphen is therefore mapped to an underscore, which reads better than the
+     * {@code _HYPH_} the validator would insert; the mapping is not reversible,
+     * but the original name is recorded in the round-trip metadata. References
+     * follow the same rule although a hyphen would do them no harm: one rule is
+     * easier to predict than two.
+     */
     private static String repair(EStructuralFeature feature) {
-        return IdValidator.GROOVE_ID_NON_RESERVED.repair(feature.getName());
+        String name = feature.getName();
+        if (name != null) {
+            name = name.replace(HYPHEN, UNDERSCORE);
+        }
+        return IdValidator.JAVA_ID_NON_RESERVED.repair(name);
     }
 
     /** Returns the dot-separated path of a given package, relative to its root package. */
@@ -263,6 +276,10 @@ public class EcoreNames {
 
     /** Separator between name fragments in a qualified type label. */
     public static final String SEPARATOR = "$";
+    /** Character that a feature name may not contain. */
+    private static final char HYPHEN = '-';
+    /** Character that a hyphen in a feature name is replaced by. */
+    private static final char UNDERSCORE = '_';
     /** Metadata kind of an ordinary class. */
     public static final String CLASS_KIND = "class";
     /** Metadata kind of an interface. */

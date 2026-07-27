@@ -113,10 +113,12 @@ public class EcoreTest {
                      properties.getProperty(EcoreToGraphs.OPPOSITES_KEY));
         // only the features that the type graph does not determine completely:
         // the many-valued ones (whose order, uniqueness and bounds are not
-        // encoded) and the ones over a data type other than the sort's default
-        assertEquals("Shop|customers||false|true|0|-1;Shop|items||false|true|1|-1;"
-            + "Book|isbn|Isbn|true|true|0|1;Book|tags||false|true|0|-1;"
-            + "Customer|favourites||false|true|0|-1",
+        // encoded), the ones over a data type other than the sort's default, and
+        // the ones whose name had to be repaired — none, in this meta-model,
+        // which is why every record ends in an empty field
+        assertEquals("Shop|customers||false|true|0|-1|;Shop|items||false|true|1|-1|;"
+            + "Book|isbn|Isbn|true|true|0|1|;Book|tags||false|true|0|-1|;"
+            + "Customer|favourites||false|true|0|-1|",
                      properties.getProperty(EcoreToGraphs.FEATURES_KEY));
     }
 
@@ -530,11 +532,12 @@ public class EcoreTest {
         // the three colliding 'Item' classes are qualified by one package segment
         expected.put("packages$Item", labels("type:packages$Item", "string:name"));
         expected.put("core$Item", labels("type:core$Item", "int:code"));
-        // 'Line-Item' is repaired as a Java identifier, 'unit.price' and the
-        // reserved keyword 'self' as GROOVE attribute names
+        // the class name is repaired as a type label, which may contain a
+        // hyphen; the feature names as attribute field names, which may not
         expected
             .put("Line_HYPH_Item",
-                 labels("type:Line_HYPH_Item", "real:unit_UNKN_price", "string:_self_"));
+                 labels("type:Line_HYPH_Item", "real:unit_UNKN_price", "real:unit_price",
+                        "string:_self_"));
         expected.put("detail$Item", labels("type:detail$Item", "string:note"));
         assertEquals(expected, selfLabels(type));
         assertEquals(Set.of("packages$Item -part:entries-> core$Item",
@@ -552,6 +555,33 @@ public class EcoreTest {
             + "detail$Item|packages.core.detail|Item|class",
                      properties.getProperty(EcoreToGraphs.TYPES_KEY));
         assertRoundTrip("packages.xmi", Ordering.NONE);
+    }
+
+    /**
+     * Tests that a feature name that the encoding had to repair is recorded and
+     * restored. The repair is not reversible by rule — {@code unit-price} and
+     * {@code unit.price} both become an identifier, and only one of them keeps
+     * enough of its shape to be guessed back — so the name is carried in the
+     * metadata, exactly as a classifier name is.
+     */
+    @Test
+    public void testPackagesNames() throws Exception {
+        AspectGraph type
+            = single(importFrom("packages.xmi", Ordering.NONE, true), ResourceKind.TYPE);
+        String expected = "packages$Item|entries||false|true|0|-1|;"
+            + "core$Item|details||true|true|0|-1|;"
+            // the repaired names, each with the Ecore name it came from
+            + "Line_HYPH_Item|_self_||true|true|0|1|self;"
+            + "Line_HYPH_Item|unit_UNKN_price||true|true|0|1|unit.price;"
+            + "Line_HYPH_Item|unit_price||true|true|0|1|unit-price";
+        assertEquals(expected,
+                     GraphInfo.getProperties(type).getProperty(EcoreToGraphs.FEATURES_KEY));
+        // the re-import can only record 'unit-price' again if the export wrote
+        // the attribute back under that name
+        AspectGraph result
+            = single(assertRoundTrip("packages.xmi", Ordering.NONE), ResourceKind.TYPE);
+        assertEquals(expected,
+                     GraphInfo.getProperties(result).getProperty(EcoreToGraphs.FEATURES_KEY));
     }
 
     /** Tests that the intermediate node of an indexed feature is named after the

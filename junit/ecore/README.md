@@ -312,7 +312,7 @@ files, since an export writes both directions of every pair.
 repair of names that GROOVE cannot use as identifiers.
 
 **Features.** Two levels of sub-package, a three-way name collision across them,
-a class name that is not a Java identifier, an attribute name that is not one,
+a class name that is not a Java identifier, two attribute names that are not,
 and an attribute named after a GROOVE keyword.
 
 ```
@@ -330,24 +330,35 @@ Three classifiers called `Item` collide, so each is qualified with one segment
 of its package path — enough to separate them, so the policy stops there. Note
 that `Line-Item` is *not* qualified: its simple name never collided.
 
-The repairs use two different validators, which is why the same character can
-fare differently:
+Classifier and feature names are repaired under different rules, which is why
+the same character can fare differently:
 
 | Ecore name | kind | GROOVE label | why |
 |---|---|---|---|
-| `Line-Item` | classifier | `Line_HYPH_Item` | a classifier label must be a Java identifier |
+| `Line-Item` | classifier | `Line_HYPH_Item` | a type label must be a Java identifier |
+| `unit-price` | attribute | `unit_price` | a hyphen is mapped to an underscore |
 | `unit.price` | attribute | `unit_UNKN_price` | `.` has no dedicated replacement |
 | `self` | attribute | `_self_` | `self` is a reserved GROOVE keyword |
 
-so the instance reads
+A feature label has to be usable as an *attribute field name*, which is a Java
+identifier, so it is repaired more strictly than a type label: a hyphen would be
+legal in a GROOVE identifier, but `real:unit-price` does not parse. Mapping it
+to an underscore rather than to the `_HYPH_` a classifier gets keeps the label
+readable, at the price of not being reversible by rule — which does not matter,
+since the name is recorded (see below). References are repaired by the same rule
+as attributes, although a hyphen would do them no harm: one rule is easier to
+predict than two.
+
+So the instance reads
 
 ```
-line   type:Line_HYPH_Item  id:line  let:code=2  let:unit_UNKN_price=9.5  let:_self_="own"
+line   type:Line_HYPH_Item  id:line  let:code=2
+       let:unit_UNKN_price=9.5  let:unit_price=7.25  let:_self_="own"
 ```
 
-The package metadata carries the full paths, and the classifier metadata the
-original names, so an export reconstructs the package tree and puts `Line-Item`
-back:
+The metadata carries the package paths, the classifier names, and the name of
+every feature whose label does not reproduce it, so an export reconstructs the
+package tree and puts all four names back:
 
 ```
 ecorePackages = packages|http://groove.utwente.nl/ecore/packages|packages;
@@ -356,30 +367,28 @@ ecorePackages = packages|http://groove.utwente.nl/ecore/packages|packages;
 ecoreTypes    = packages$Item|packages|Item|class;core$Item|packages.core|Item|class;
                 Line_HYPH_Item|packages.core|Line-Item|class;
                 detail$Item|packages.core.detail|Item|class
+ecoreFeatures = packages$Item|entries||false|true|0|-1|;
+                core$Item|details||true|true|0|-1|;
+                Line_HYPH_Item|_self_||true|true|0|1|self;
+                Line_HYPH_Item|unit_UNKN_price||true|true|0|1|unit.price;
+                Line_HYPH_Item|unit_price||true|true|0|1|unit-price
 ```
 
-(the line breaks are for readability; the recorded values have none).
+(the line breaks are for readability; the recorded values have none). A feature
+record is `owner|feature|declaredType|ordered|unique|lower|upper|originalName`,
+with the last field empty — as in the first two records above — whenever the
+label already is the Ecore name.
 
 Under `ordering=index` the intermediate node of `core$Item.details` is named
 after the *already qualified* owner label: `type:core$Item$details`.
 
-**Covering tests.** `testPackages`, `testPackagesIndexed`.
+**Covering tests.** `testPackages`, `testPackagesNames`, `testPackagesIndexed`.
 
 ## Known gaps
 
 Things these examples deliberately stay clear of, because the porter does not
 handle them today:
 
-* **Feature names are not restored on export.** Classifier names are recorded in
-  the metadata and put back, but feature names are not: exporting `packages`
-  yields a class `Line-Item` with an attribute `unit_UNKN_price`, not
-  `unit.price`. The round trip is still stable — a re-import repairs the already
-  repaired name to itself.
-* **A hyphen in an attribute name breaks the graph.** Feature labels are
-  repaired with the GROOVE identifier validator, which allows `-`, but a GROOVE
-  *attribute field* name may not contain one. An Ecore attribute `unit-price`
-  therefore yields `real:unit-price`, which does not parse
-  (`Illegal field name 'unit-price'`). A *reference* of that name is fine.
 * **A string value ending in a backslash breaks the graph.** The value is quoted
   by escaping the quote character only, so a trailing `\` escapes the closing
   quote.
