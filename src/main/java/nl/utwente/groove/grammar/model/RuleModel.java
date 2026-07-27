@@ -1096,13 +1096,14 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                                                      RuleModelMap modelMap) throws FormatException {
             SortedMap<Index,Level2> result = new TreeMap<>();
             FormatErrorSet errors = createErrors();
+            var allocator = new ParallelIndexAllocator();
             for (Level1 level1 : level1Map.values()) {
                 try {
                     Index index = level1.getIndex();
                     Level2 parent = index.isTopLevel()
                         ? null
                         : result.get(index.parent);
-                    Level2 level2 = new Level2(level1, parent, modelMap);
+                    Level2 level2 = new Level2(level1, parent, modelMap, allocator);
                     result.put(index, level2);
                 } catch (FormatException e) {
                     errors.addAll(e.getErrors());
@@ -1411,11 +1412,13 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
          * @param origin the level 1 object from which this level 2 object is created
          * @param parent the parent's level 2 object, if this is not a top level
          */
-        public Level2(Level1 origin, Level2 parent, RuleModelMap modelMap) throws FormatException {
+        public Level2(Level1 origin, Level2 parent, RuleModelMap modelMap,
+                      ParallelIndexAllocator allocator) throws FormatException {
             this.factory = modelMap.getFactory();
             Index index = this.index = origin.index;
             this.parent = parent;
             this.modelMap = modelMap;
+            this.allocator = allocator;
             this.isRule = index.isTopLevel();
             // initialise the rule data structures
             this.lhs = createGraph(getQualName() + "-" + index + "-lhs");
@@ -1530,10 +1533,13 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                     modelEdge);
             }
             placeEdge(roleKind, modelEdge, ruleEdge);
-            // add the further parallel copies of a counted edge
+            // add the further parallel copies of a counted edge, with
+            // indices consecutive to the base index of the first copy
             for (int i = 1; i < mult; i++) {
-                placeEdge(roleKind, modelEdge, this.factory
-                    .createEdge(ruleEdge.source(), ruleEdge.label(), ruleEdge.target(), i));
+                placeEdge(roleKind, modelEdge,
+                          this.factory
+                              .createEdge(ruleEdge.source(), ruleEdge.label(), ruleEdge.target(),
+                                          ruleEdge.getNumber() + i));
             }
         }
 
@@ -2039,7 +2045,22 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                     "Cannot compute image of '%s'-edge: target node does not have image",
                     edge.label(), edge.target());
             }
-            return this.factory.createEdge(sourceImage, edge.getRuleLabel(), targetImage);
+            RuleEdge result = this.factory.createEdge(sourceImage, edge.getRuleLabel(), targetImage);
+            // in multigraph mode, every aspect edge gets its own disjoint
+            // range of parallel indices for its content, so that copies
+            // declared by distinct aspect edges never coalesce; in
+            // particular, created copies are always fresh with respect to
+            // matched copies. Embargo edges are exempt: they declare no
+            // copies of their own
+            if (getGrammarProperties().getParallelMode().isMulti()
+                && edge.has(ROLE, k -> k != AspectKind.EMBARGO)) {
+                int base = this.allocator.getBaseIndex(edge, result, edge.getMultCount());
+                if (base > 0) {
+                    result = this.factory
+                        .createEdge(sourceImage, edge.getRuleLabel(), targetImage, base);
+                }
+            }
+            return result;
         }
 
         /**
@@ -2065,6 +2086,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         private final RuleFactory factory;
         /** Mapping from aspect graph elements to rule elements. */
         private final RuleModelMap modelMap;
+        /** Parallel-index allocator, shared between the levels of this rule. */
+        private final ParallelIndexAllocator allocator;
         /** Index of this level. */
         private final Index index;
         /** Parent level. */
@@ -2093,6 +2116,41 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         private final List<RuleGraph> nacs = new ArrayList<>();
         /** Variables bound at the parent level. */
         private final Set<LabelVar> parentVars = new HashSet<>();
+    }
+
+    /**
+     * Allocator of parallel-edge indices for the (possibly counted) aspect
+     * edges of a multigraph rule: every aspect edge gets its own disjoint
+     * range of parallel indices for its content, so that the copies declared
+     * by distinct aspect edges never coalesce — in particular, created copies
+     * are always fresh with respect to matched copies. Shared between all
+     * levels of one rule, so that an aspect edge occurring at several
+     * quantification levels keeps the same copies.
+     */
+    static private class ParallelIndexAllocator {
+        /**
+         * Returns the base parallel index allocated to a given aspect edge,
+         * allocating a fresh range of {@code count} indices for its content
+         * on the first call.
+         * @param modelEdge the aspect edge for which the range is allocated
+         * @param edge0 the index-0 rule edge image of the aspect edge,
+         * serving as the content representative
+         * @param count the number of parallel copies the aspect edge declares
+         */
+        int getBaseIndex(AspectEdge modelEdge, RuleEdge edge0, int count) {
+            Integer result = this.baseIndexMap.get(modelEdge);
+            if (result == null) {
+                result = this.nextIndexMap.getOrDefault(edge0, 0);
+                this.baseIndexMap.put(modelEdge, result);
+                this.nextIndexMap.put(edge0, result + count);
+            }
+            return result;
+        }
+
+        /** Map from aspect edges to their allocated base index. */
+        private final Map<AspectEdge,Integer> baseIndexMap = new HashMap<>();
+        /** Map from index-0 content representatives to the next free index. */
+        private final Map<RuleEdge,Integer> nextIndexMap = new HashMap<>();
     }
 
     /**
