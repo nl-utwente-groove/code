@@ -89,11 +89,11 @@ public record EcoreOptions(Ordering ordering, boolean useIdentifiers) {
         }
 
         /** Lazily computed mapping from textual representations to values. */
-        private static final Factory<Map<String,Ordering>> textMap
+        private static final Factory<Map<String,@Nullable Ordering>> textMap
             = Factory.lazy(Ordering::createTextMap);
 
-        private static Map<String,Ordering> createTextMap() {
-            Map<String,Ordering> result = new LinkedHashMap<>();
+        private static Map<String,@Nullable Ordering> createTextMap() {
+            Map<String,@Nullable Ordering> result = new LinkedHashMap<>();
             Arrays.stream(values()).forEach(o -> result.put(o.text(), o));
             return result;
         }

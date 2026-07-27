@@ -224,7 +224,7 @@ public class EcorePorter extends AbstractExporter implements Importer {
         private final EcoreOptions options;
         private final ResourceSet resourceSet;
         /** Mapping from root packages to the name of the file they were loaded from. */
-        private final Map<EPackage,String> sources = new LinkedHashMap<>();
+        private final Map<EPackage,@Nullable String> sources = new LinkedHashMap<>();
 
         /**
          * Registers the packages declared by the {@code .ecore} files in a given

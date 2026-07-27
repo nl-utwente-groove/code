@@ -126,11 +126,11 @@ public class EcoreNames {
     }
 
     /** Mapping from classifiers to their type labels. */
-    private final Map<EClassifier,String> labelMap;
+    private final Map<EClassifier,@Nullable String> labelMap;
     /** Mapping from enum literals to their type labels. */
-    private final Map<EEnumLiteral,String> literalMap;
+    private final Map<EEnumLiteral,@Nullable String> literalMap;
     /** Mapping from structural features to their edge labels. */
-    private final Map<EStructuralFeature,String> featureMap;
+    private final Map<EStructuralFeature,@Nullable String> featureMap;
 
     /**
      * Computes the value of {@link #featureMap}.

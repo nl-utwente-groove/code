@@ -112,8 +112,8 @@ public class EcoreToGraphs {
      */
     public AspectGraph toTypeGraph(String name) {
         PlainGraph result = new PlainGraph(name, GraphRole.TYPE);
-        Map<EClass,PlainNode> classNodes = new LinkedHashMap<>();
-        Map<EEnum,PlainNode> enumNodes = new LinkedHashMap<>();
+        Map<EClass,@Nullable PlainNode> classNodes = new LinkedHashMap<>();
+        Map<EEnum,@Nullable PlainNode> enumNodes = new LinkedHashMap<>();
         // first create the nodes for all classes, enums and enum literals
         for (var classifier : this.names.classifiers()) {
             if (classifier instanceof EClass eClass) {
@@ -162,7 +162,7 @@ public class EcoreToGraphs {
 
     /** Adds the encoding of a single attribute to the type graph. */
     private void addTypeAttribute(PlainGraph graph, PlainNode node, EClass eClass,
-                                  EAttribute attribute, Map<EEnum,PlainNode> enumNodes) {
+                                  EAttribute attribute, Map<EEnum,@Nullable PlainNode> enumNodes) {
         String label = this.names.labelFor(attribute);
         if (attribute.getEType() instanceof EEnum eEnum) {
             PlainNode enumNode = enumNodes.get(eEnum);
@@ -198,7 +198,8 @@ public class EcoreToGraphs {
 
     /** Adds the encoding of a single reference to the type graph. */
     private void addTypeReference(PlainGraph graph, PlainNode node, EClass eClass,
-                                  EReference reference, Map<EClass,PlainNode> classNodes) {
+                                  EReference reference,
+                                  Map<EClass,@Nullable PlainNode> classNodes) {
         EClass target = reference.getEReferenceType();
         PlainNode targetNode = classNodes.get(target);
         if (targetNode == null) {
@@ -364,7 +365,7 @@ public class EcoreToGraphs {
      */
     public AspectGraph toHostGraph(String name, Resource resource) {
         PlainGraph result = new PlainGraph(name, GraphRole.HOST);
-        Map<EObject,PlainNode> nodeMap = new LinkedHashMap<>();
+        Map<EObject,@Nullable PlainNode> nodeMap = new LinkedHashMap<>();
         Map<EEnumLiteral,PlainNode> literalNodes = new LinkedHashMap<>();
         Map<String,PlainNode> valueNodes = new LinkedHashMap<>();
         List<EObject> objects = new ArrayList<>();
@@ -483,7 +484,7 @@ public class EcoreToGraphs {
 
     /** Adds the targets of a single reference of an object to the host graph. */
     private void addHostReference(PlainGraph graph, PlainNode node, EObject object,
-                                  EReference reference, Map<EObject,PlainNode> nodeMap) {
+                                  EReference reference, Map<EObject,@Nullable PlainNode> nodeMap) {
         String label = this.names.labelFor(reference);
         int index = 0;
         for (var value : valuesOf(object, reference)) {

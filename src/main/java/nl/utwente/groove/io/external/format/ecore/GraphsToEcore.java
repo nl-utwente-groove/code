@@ -122,19 +122,19 @@ public class GraphsToEcore {
     }
 
     /** Mapping from node type labels to the type graph nodes declaring them. */
-    private final Map<String,AspectNode> typeNodes = new LinkedHashMap<>();
+    private final Map<String,@Nullable AspectNode> typeNodes = new LinkedHashMap<>();
     /** Mapping from package paths to the packages created for them. */
-    private final Map<String,EPackage> packages = new LinkedHashMap<>();
+    private final Map<String,@Nullable EPackage> packages = new LinkedHashMap<>();
     /** The package that classifiers go into if the metadata does not say. */
     private @Nullable EPackage defaultPackage;
     /** Mapping from node type labels to the classifiers created for them. */
     private final Map<String,EClassifier> classifiers = new LinkedHashMap<>();
     /** Mapping from node type labels to the enum literals created for them. */
-    private final Map<String,EEnumLiteral> literals = new LinkedHashMap<>();
+    private final Map<String,@Nullable EEnumLiteral> literals = new LinkedHashMap<>();
     /** Mapping from node type labels to the nodified-edge data of intermediate nodes. */
     private final Map<String,Intermediate> intermediates = new LinkedHashMap<>();
     /** Mapping from {@code owner.feature} references to the recorded feature data. */
-    private final Map<String,FeatureData> featureData = new LinkedHashMap<>();
+    private final Map<String,@Nullable FeatureData> featureData = new LinkedHashMap<>();
     /** Mapping from {@code owner.feature} references to the created features. */
     private final Map<String,EStructuralFeature> features = new LinkedHashMap<>();
 
@@ -509,7 +509,7 @@ public class GraphsToEcore {
             this.errors.add("Host graph '%s' cannot be normalised", hostGraph.getName());
             return new ArrayList<>();
         }
-        Map<AspectNode,EObject> objects = new LinkedHashMap<>();
+        Map<AspectNode,@Nullable EObject> objects = new LinkedHashMap<>();
         for (var node : graph.nodeSet()) {
             if (node.getValue() != null) {
                 // this is a data value node
@@ -540,15 +540,21 @@ public class GraphsToEcore {
                 }
             }
         }
-        Map<AspectNode,AspectNode> containers = new LinkedHashMap<>();
+        Map<AspectNode,@Nullable AspectNode> containers = new LinkedHashMap<>();
         for (var entry : objects.entrySet()) {
-            addValues(graph, entry.getKey(), entry.getValue(), objects, containers);
+            // the map is only ever filled with non-null objects;
+            // null is what a lookup of an unexportable node yields
+            var object = entry.getValue();
+            assert object != null;
+            addValues(graph, entry.getKey(), object, objects, containers);
         }
         checkContainment(graph, objects.keySet(), containers);
         List<EObject> result = new ArrayList<>();
         for (var entry : objects.entrySet()) {
             if (!containers.containsKey(entry.getKey())) {
-                result.add(entry.getValue());
+                var object = entry.getValue();
+                assert object != null;
+                result.add(object);
             }
         }
         return result;
@@ -564,8 +570,8 @@ public class GraphsToEcore {
 
     /** Adds the feature values of a single object. */
     private void addValues(AspectGraph graph, AspectNode node, EObject object,
-                           Map<AspectNode,EObject> objects,
-                           Map<AspectNode,AspectNode> containers) {
+                           Map<AspectNode,@Nullable EObject> objects,
+                           Map<AspectNode,@Nullable AspectNode> containers) {
         EClass eClass = object.eClass();
         // the values of an indexed feature are collected first, and set in index order
         Map<EStructuralFeature,List<Indexed>> indexed = new LinkedHashMap<>();
@@ -603,8 +609,8 @@ public class GraphsToEcore {
 
     /** Sets or adds a single feature value of an object. */
     private void setValue(AspectGraph graph, EObject object, EStructuralFeature feature,
-                          AspectNode target, Map<AspectNode,EObject> objects, AspectNode node,
-                          Map<AspectNode,AspectNode> containers) {
+                          AspectNode target, Map<AspectNode,@Nullable EObject> objects,
+                          AspectNode node, Map<AspectNode,@Nullable AspectNode> containers) {
         Object value = valueOf(graph, feature, target, objects);
         if (value == null) {
             return;
@@ -633,7 +639,7 @@ public class GraphsToEcore {
 
     /** Returns the Ecore value that a target node stands for. */
     private @Nullable Object valueOf(AspectGraph graph, EStructuralFeature feature,
-                                     AspectNode target, Map<AspectNode,EObject> objects) {
+                                     AspectNode target, Map<AspectNode,@Nullable EObject> objects) {
         Constant constant = target.getValue();
         if (constant != null) {
             if (!(feature.getEType() instanceof EDataType dataType)) {
@@ -678,7 +684,7 @@ public class GraphsToEcore {
 
     /** Reports the objects that do not have a unique containment path to a root. */
     private void checkContainment(AspectGraph graph, Set<AspectNode> objects,
-                                  Map<AspectNode,AspectNode> containers) {
+                                  Map<AspectNode,@Nullable AspectNode> containers) {
         for (var node : objects) {
             Set<AspectNode> seen = new LinkedHashSet<>();
             AspectNode current = node;
