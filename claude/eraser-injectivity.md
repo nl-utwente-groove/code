@@ -8,7 +8,18 @@ from, the parallel-edge work in
 the same code region as the edge-injectivity support for non-simple patterns,
 and parallel eraser *bundles* will rely on it.
 
-## The requirement (user decision, 2026-07-19)
+**SCOPE REVISED (user, 2026-07-27): the identification condition applies to
+parallel-edge grammars only.** The original decision below conflated two
+axes — parallel edges and SPO-vs-DPO semantics. Simple-graph grammars keep
+GROOVE's classic SPO semantics, in which an identification of a deleted
+element with any other element is not a conflict but is resolved by letting
+deletion win; there, none of the machinery of steps 1–4 applies. For
+multigraph (parallelEdges) grammars the machinery stands as implemented
+(DPO), but SPO for multigraphs is still under investigation as an option —
+DPO is the current behaviour, not a final commitment. See the scoping
+section at the end for the gates and the fixture relocation.
+
+## The requirement (user decision, 2026-07-19; scope revised 2026-07-27)
 
 Eraser edges must always be matched injectively — *independent* of the
 grammar's injectivity property — to correctly reflect double-pushout
@@ -16,7 +27,9 @@ semantics: if a deleted edge is identified with any other edge (eraser or
 reader), the pushout complement is not unique. Previously GROOVE resolved
 such identifications by letting deletion win (SPO-style), silently deleting
 edges the rule claims to preserve, or collapsing two claimed deletions into
-one. Recorded decisions:
+one. *(2026-07-27: "always" now means "always within a parallel-edge
+grammar"; in simple-graph grammars the delete-wins resolution is the
+intended SPO semantics and remains in force.)* Recorded decisions:
 
 - **Eraser vs. *any* edge**, not just eraser vs. eraser: the full
   identification condition on edges.
@@ -283,3 +296,52 @@ deeper quantification level than the erasers, whose censoring context is
 fixed when legality is decided (cf. case C); a kernel-level regexpr vs.
 instance erasers fails because witness destruction can be joint across
 instances — no coherent per-instance legality verdict.
+
+## Scoping to parallel-edge grammars (2026-07-27)
+
+Simple-graph grammars keep SPO delete-wins semantics; the identification
+condition of steps 1–4 is active only in parallelEdges grammars. Since rule
+patterns are compiled non-simple exactly for those grammars, one predicate
+gates everything — `!pattern.isSimple()` on the matcher side, the
+parallelEdges property (or `lhs.isSimple()`) at compile time:
+
+- step 1: `SearchPlan.computeEraserConflicts` requires a non-simple pattern;
+- step 2: `RuleModel.Level4.addEraserNodeEmbargoes` returns early for a
+  simple LHS;
+- step 3: the `importEraserConflicts` root-extension loop in
+  `RuleModel.computeResource` runs only for parallelEdges grammars (this
+  also restores per-condition-scoped injective matching for simple
+  grammars, since seeded ancestor images no longer extend the root);
+- step 4: `TreeMatch.traverseMatrix` checks amalgamated eraser disjointness
+  only for rules with a non-simple LHS;
+- the critical-pair filter `CriticalPair.satisfiesIdentificationCondition`
+  passes trivially for rules with a simple LHS.
+
+Unconditional remains: the `Edge2SingularRecord.find()` fix from step 1 (a
+genuine latent bug), and the edge-injectivity of *parallel bundles* under
+grammar-wide injective matching (part of the multigraph representation, not
+of the identification condition).
+
+Fixtures: the delete-wins pins reverted by steps 1–2 were restored from
+master (`erasers.gps` — eraseTwoExplicit back to 9 outcomes, eraseCreate,
+eraseOverlap; `mergers.gps` — mergeDeleteEdge, mergeDeleteNode;
+`regexpr.gps` — deleteANode; `ExplorationTest` counts for the mergers and
+recipes_conditions samples). The DPO-pinning fixtures added by steps 1–4
+(eraseEraserOverlap, eraseReaderOverlap, eraseForallNode,
+eraseForallOnReader, eraseForallReader, eraseForallEraser) moved unchanged
+into the new parallelEdges grammar `junit/rules/dpoErasers.gps`, joined by
+a copy of eraseTwoExplicit with the 6-outcome DPO expectations — so both
+semantics are pinned, each in its scope.
+
+Fallout fix in the ignoreRegExp erasure check: a lone node-type atom
+(`type:A`) has no edge image and was treated as an untracked regexpr; in an
+*implicitly* typed grammar node types are self-loop type edges, so any node
+eraser made any typed LHS node error out. Node typings are not paths — the
+witness is the (tracked) node itself — so the check now skips labels with
+role NODE_TYPE.
+
+**Open: SPO for multigraphs.** DPO is the implemented behaviour for
+parallelEdges grammars, but not a final commitment — the user wants to
+investigate an SPO option for multigraphs as well (what delete-wins means
+for bundles, non-injective eraser bundles, amalgamation). If it becomes
+costly in case distinctions, parallelEdges=DPO stays the answer.

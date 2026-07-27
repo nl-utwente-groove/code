@@ -113,6 +113,13 @@ public class RuleApplicationTest extends TestCase {
         test("mult");
     }
 
+    /** Tests the rules in the dpoErasers grammar
+     * (the DPO identification condition, active in parallel-edge grammars). */
+    @Test
+    public void testDpoErasers() {
+        test("dpoErasers");
+    }
+
     /** Tests the rules in the forallCount grammar. */
     @Test
     public void testForallCount() {

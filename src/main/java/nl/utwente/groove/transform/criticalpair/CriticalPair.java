@@ -310,8 +310,14 @@ public class CriticalPair {
     /**
      * Checks that a match does not map an eraser node or edge of the given
      * rule onto the image of another node or edge of the same rule.
+     * The condition applies only to rules of parallel-edge grammars;
+     * simple-graph grammars retain the SPO semantics, in which such
+     * identifications are legal and resolved by letting deletion win.
      */
     private static boolean satisfiesIdentificationCondition(Rule rule, RuleToHostMap match) {
+        if (rule.lhs().isSimple()) {
+            return true;
+        }
         for (RuleNode eraser : rule.getEraserNodes()) {
             HostNode eraserImage = match.getNode(eraser);
             for (var nodeEntry : match.nodeMap().entrySet()) {

@@ -16,21 +16,11 @@
                 <string>187 337 34 46</string>
             </attr>
         </node>
-        <node id="n3">
+        <node id="n1">
             <attr name="layout">
-                <string>313 260 34 46</string>
+                <string>312 179 34 46</string>
             </attr>
         </node>
-        <edge to="n3" from="n0">
-            <attr name="label">
-                <string>a</string>
-            </attr>
-        </edge>
-        <edge to="n3" from="n3">
-            <attr name="label">
-                <string>type:B</string>
-            </attr>
-        </edge>
         <edge to="n4" from="n4">
             <attr name="label">
                 <string>type:A</string>
@@ -41,9 +31,14 @@
                 <string>type:A</string>
             </attr>
         </edge>
-        <edge to="n3" from="n2">
+        <edge to="n1" from="n0">
             <attr name="label">
                 <string>a</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n1">
+            <attr name="label">
+                <string>type:B</string>
             </attr>
         </edge>
         <edge to="n2" from="n2">

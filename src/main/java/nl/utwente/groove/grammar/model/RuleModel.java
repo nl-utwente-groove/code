@@ -100,6 +100,7 @@ import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.graph.EdgeComparator;
+import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.GraphProperties;
@@ -400,9 +401,14 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         // store the derived subrules in order
         TreeMap<Index,Condition> conditionTree = new TreeMap<>();
         // import cross-level eraser-conflict elements (root extension);
-        // this must happen top-down and before any condition is built
-        for (Level4 level : levelTree.getLevel4Map().values()) {
-            level.importEraserConflicts();
+        // this must happen top-down and before any condition is built.
+        // The DPO identification condition applies only to parallel-edge
+        // grammars; simple-graph grammars retain the SPO semantics, in which
+        // identifications are resolved by letting deletion win
+        if (getGrammarProperties().isHasParallelEdges()) {
+            for (Level4 level : levelTree.getLevel4Map().values()) {
+                level.importEraserConflicts();
+            }
         }
         // construct the rule tree and add parent rules
         try {
@@ -554,6 +560,11 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             for (RuleEdge edge : level.lhs.edgeSet()) {
                 RuleLabel label = edge.label();
                 if (edge.hasEdgeImage() || label.isEmpty() || label.isNeg()) {
+                    continue;
+                }
+                // a lone node type atom is not a path: its witness is the
+                // (tracked) node itself, not an edge traversal
+                if (label.getRole() == EdgeRole.NODE_TYPE) {
                     continue;
                 }
                 if (!checked.add(edge)) {
@@ -2604,12 +2615,14 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
          * the imported ancestor-level eraser nodes; for the latter, pairs
          * with other nodes shared with the parent level are skipped, as they
          * are already checked at the ancestor level where both nodes first
-         * coexist. Skipped altogether under injective matching, which
-         * subsumes the condition; the generated embargoes compile to
-         * equality tests in the search plan.
+         * coexist. The identification condition applies only to parallel-edge
+         * grammars; simple-graph grammars retain the SPO semantics, in which
+         * identifications are resolved by letting deletion win. Also skipped
+         * under injective matching, which subsumes the condition; the
+         * generated embargoes compile to equality tests in the search plan.
          */
         private void addEraserNodeEmbargoes(Condition condition) throws FormatException {
-            if (isInjective()) {
+            if (this.lhs.isSimple() || isInjective()) {
                 return;
             }
             Set<RuleNode> erasers = new LinkedHashSet<>(this.lhs.nodeSet());
