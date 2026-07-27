@@ -23,6 +23,7 @@ import nl.utwente.groove.explore.encode.EncodedPolarity;
 import nl.utwente.groove.explore.encode.EncodedRuleFormula;
 import nl.utwente.groove.explore.encode.EncodedStopMode;
 import nl.utwente.groove.explore.encode.Serialized;
+import nl.utwente.groove.explore.engine.BeamPool;
 import nl.utwente.groove.explore.engine.FrontierStrategy;
 import nl.utwente.groove.explore.engine.Pool;
 import nl.utwente.groove.explore.engine.QueuePool;
@@ -94,6 +95,17 @@ public class ConfiguredExploreType extends ExploreType {
         case "linear" -> new LinearStrategy();
         case "random" -> new RandomLinearStrategy();
         case "random-frontier" -> new FrontierStrategy(new RandomPool());
+        case "beam" -> {
+            BeamPool.Order order = switch (strategy.getArgument("next")) {
+            case "oldest" -> BeamPool.Order.OLDEST;
+            case "newest" -> BeamPool.Order.NEWEST;
+            case "random" -> BeamPool.Order.RANDOM;
+            default -> throw Exceptions
+                .illegalState("Converter produced unknown next-state selection '%s'",
+                              strategy.getArgument("next"));
+            };
+            yield new FrontierStrategy(new BeamPool(order, getIntArgument(strategy, "size")));
+        }
         case "cnbound" -> new FrontierStrategy(StopMode.UP_TO,
             new NodeBoundCondition(getIntArgument(strategy, "node-bound")), new QueuePool(0));
         case "cebound" -> new FrontierStrategy(StopMode.UP_TO,

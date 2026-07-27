@@ -1,11 +1,11 @@
-# State of the exploration feature model programme (2026-07-26)
+# State of the exploration feature model programme (2026-07-27)
 
 Note to a future Claude session. Companion to
 [exploration-feature-model-plan.md](exploration-feature-model-plan.md), which holds the
 feature model, the phase plan and the decision log; this note records the *as-built*
 state, the invariants discovered along the way, and where to pick up.
 
-## Status: phases 1–4 done; 5a done; 5b started (slice 1: randomness)
+## Status: phases 1–4 done; 5a done; 5b ongoing (slices 1–2: randomness, beam)
 
 Branch topology (2026-07-26): **phases 1–4 are merged to master and pushed**
 (master fast-forwarded onto `explore-feature-model`@64e5813ed at Arend's request;
@@ -14,7 +14,8 @@ branches off master). The engine branch continues:
 
     master (64e5813ed, incl. phases 1–4 + eight dialog-review rounds)
       ⊂ explore-parametric-engine
-          phase 5a (engine skeleton) + 5b slice 1 (seeded randomness)
+          phase 5a (engine skeleton) + 5b slices 1–2 (seeded randomness,
+          beam search)
 
 Merging the engine branch to master fast-forwards (unless master moves on).
 Suite at the 5a freeze, measured at the engine tip: 368 fast, **399 including slow
@@ -25,10 +26,12 @@ configuration-based exploration instantiates the `explore.engine` classes
 directly, without the encode/Template machinery; the deprecated keyword path
 (`-s/-a`, legacy property) still runs the enumerator-instantiated legacy classes
 as the parity reference. Phase 5b slice 1 (2026-07-26): seeded randomness — see
-the `util.Randomness` entry below and `claude/randomness-seeding.md`. Remaining
-5b slices (ordered pools incl. heuristic/cost/beam, overrides + trace,
-persistence=none) and phase 6 (demolition) are future work — do not start
-unprompted.
+the `util.Randomness` entry below and `claude/randomness-seeding.md`. Slice 2
+(2026-07-27): beam search (`BeamPool`); **the heuristic dimension (and with it
+cost-based ordering) was deferred by Arend at slice start** — he wants to
+design that dimension carefully rather than start from `nen` (see the open
+threads below). Remaining 5b slices (overrides + trace, persistence=none) and
+phase 6 (demolition) are future work — do not start unprompted.
 
 The second dialog-review round (2026-07-22, commits 6718ad5db + 571c958e3) settled:
 drop-down defaults are marked with a trailing `*` only ("(default)" stays in the
@@ -100,6 +103,16 @@ disappears in phase 6; the preview field (the config's own text form) stays.
   paths on ferryman (order proved bit-identical) and checks re-run determinism.
   Since 5b slice 1 also `RandomPool` (uniform swap-remove take, seeded), realising
   `next=random` under the engine-only converter keyword `random-frontier`.
+  Since 5b slice 2 also `BeamPool` (engine-only keyword `beam`, arguments
+  `next` + `size`), realising `frontier=beam:n`: a size-capped pool whose
+  order within the beam is the next-state selection and which on overflow
+  drops the state that would be explored last (`oldest` → the incoming state,
+  `newest` → the oldest, `random` → a seeded uniform pick, incoming included).
+  An unrestricted beam is bit-identical to the corresponding plain pool for
+  all three orders (`BeamSearchTest` asserts this, including the seeded
+  random draws — `BeamPool.readd` appends under the random order to
+  replicate `RandomPool` exactly); a re-added transient state may hit a full
+  beam, so `readd` also trims.
 - `util.Randomness` (5b slice 1, 2026-07-26) — the master-seed registry of
   `claude/randomness-seeding.md` (decisions resolved, see there): per-purpose
   streams (EXPLORATION, ORACLE) derived per obtainment, so a fixed master seed
@@ -159,8 +172,9 @@ disappears in phase 6; the preview field (the config's own text form) stays.
 
 ## Deliberately unsupported (converter errors, awaiting phase 5)
 
-heuristic≠none, cost=rule, frontier=beam, successor=all-random,
-single-successor on unrestricted frontier, shape=trace, persistence=none,
+heuristic≠none (the whole dimension deferred by Arend pending a careful
+design, along with cost-based ordering), cost=rule, successor=all-random,
+single-successor on a multi-state frontier, shape=trace, persistence=none,
 collapse/algebra overrides (kinds `grammar` = inherit), goal=graph, goal=ltl/ctl
 (stay with the CheckLTL/CTL actions), iterative deepening (`+inc`), bound=size,
 `fires`+violate (legacy ruleapp has no polarity), condition bound + depth bound
@@ -189,12 +203,23 @@ Dialog/Simulator threads (2026-07-26, from Arend's review):
 - A **sub-dialog for the more involved content editors** (formulas etc.) is
   planned as a later refinement; content editors stay as they are until then.
 
-- Phase 5b+ (5a — the engine skeleton — is done, see the plan): priority/beam/random
-  orders as new `Pool` implementations; trace results; collapse/algebra overrides;
-  persistence None (the one feature that forces rewriting the inherited `doNext()`
-  protocol); then the unsupported list above becomes implementable feature by
-  feature; revisit LTL/CTL goals; possibly a target-state counterpart to `fires`
-  ("reached by the action"), and `fires(r)` as an atom of the condition language.
+- Phase 5b+ (random and beam orders are done as `Pool` implementations):
+  trace results; collapse/algebra overrides; persistence None (the one
+  feature that forces rewriting the inherited `doNext()` protocol); then the
+  unsupported list above becomes implementable feature by feature; revisit
+  LTL/CTL goals; possibly a target-state counterpart to `fires` ("reached by
+  the action"), and `fires(r)` as an atom of the condition language.
+- **Heuristic dimension: deferred by Arend (2026-07-27), design-first.** When
+  asked to pick the nen referent for the ordered-pools slice he chose to omit
+  heuristics from the slice altogether: "heuristics open the door to a wealth
+  of possibilities, nen just scratches the surface; I want to design this
+  carefully". Two sub-decisions from the same exchange survive for that
+  future design round: cost-based ordering engages only in combination with
+  a heuristic (`cost=uniform` alone remains a bound enabler, so legacy
+  bfs/dfs + depth-bound configs keep their meaning), and a full beam drops
+  the take-order-last state (implemented in `BeamPool`; a quality ordering
+  would slot in as the primary sort key above the tie-breaking next policy).
+  Do not implement `nen` or priority pools unprompted.
   Arend does not (currently) want conditions as a separate resource kind; they
   remain rules, distinguished at most by role/display.
 - Phase 6: delete `explore.encode`, `explore.prettyparse`, `Serialized`,

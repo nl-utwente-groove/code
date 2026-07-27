@@ -239,6 +239,33 @@ counter (fixed seed ⇒ identical explorations), seed settable via the
 - Still unsupported: `successor=all-random` (needs a hook in the inherited
   match-application order, not a pool); GTS-info seed storage (logged only).
 
+#### Phase 5b slice 2 (2026-07-27) — beam search
+
+*Decisions (with Arend): the **heuristic dimension is deferred entirely** — no
+`nen`, no priority ordering yet ("heuristics open the door to a wealth of
+possibilities, nen just scratches the surface; I want to design this
+carefully"). Cost-based ordering was decided to engage only in combination
+with a heuristic, so it is deferred along with it; `cost=uniform` keeps its
+current role as bound enabler. What remains of the ordered-pools slice is
+beam search, with the drop rule: a full beam drops the state that would be
+explored <i>last</i> (the take-order dual of take()).*
+
+- `frontier=beam:n` realised by `explore.engine.BeamPool` (converter keyword
+  `beam`, engine-only, with `next` and `size` arguments): a size-capped pool
+  whose exploration order within the beam is the next-state selection —
+  under `oldest` a full beam drops the incoming (newest) state, under
+  `newest` the oldest, under `random` a uniformly random one (incoming
+  included, seeded via `util.Randomness`).
+- Combines with all three `next` values and the goal/outcome/count features;
+  bounds still require plain bfs/dfs, single-successor generation still
+  requires a single-state frontier (error message generalised from
+  "unrestricted" to "multi-state" frontier).
+- `BeamSearchTest`: an unrestricted beam (capacity never reached) is
+  bit-identical to the corresponding plain pool for all three orders
+  (including the seeded random draws — `BeamPool.readd` appends under the
+  random order, replicating `RandomPool`); a restrictive beam explores
+  strictly less than the full state space, reproducibly.
+
 ### Phase 6 (later branch) — demolition
 
 Delete `explore.encode`, `explore.prettyparse`, `Serialized`, `ExploreType`,
