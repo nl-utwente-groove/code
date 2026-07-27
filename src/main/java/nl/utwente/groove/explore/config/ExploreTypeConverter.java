@@ -83,9 +83,6 @@ public class ExploreTypeConverter {
         if (config.getKind(ExploreKey.ALGEBRA) != Algebra.GRAMMAR) {
             errors.add("Overriding the grammar's algebra family is not yet supported");
         }
-        if (config.getKind(ExploreKey.FRONTIER) == Frontier.BEAM) {
-            errors.add("Beam search is not yet supported");
-        }
     }
 
     /**
@@ -99,7 +96,15 @@ public class ExploreTypeConverter {
         if (keyword == null) {
             return null;
         }
-        return applyBound(config, keyword, errors);
+        Serialized result = applyBound(config, keyword, errors);
+        if (result != null && "beam".equals(keyword)) {
+            var next = (NextState) config.getKind(ExploreKey.NEXT);
+            result.setArgument("next", next.getName());
+            result
+                .setArgument("size",
+                             config.get(ExploreKey.FRONTIER).content().toString());
+        }
+        return result;
     }
 
     /** Computes the baseline traversal keyword for a configuration. */
@@ -119,18 +124,25 @@ public class ExploreTypeConverter {
         } else {
             switch (successor) {
             case ALL -> {
-                switch (next) {
-                case OLDEST -> result = "bfs";
-                case NEWEST -> result = "dfs";
-                // engine-only: realised directly by the parametric engine
-                // (RandomPool); there is no legacy strategy of this name
-                case RANDOM -> result = "random-frontier";
+                if (config.getKind(ExploreKey.FRONTIER) == Frontier.BEAM) {
+                    // engine-only: realised directly by the parametric engine
+                    // (BeamPool, with the next-state selection as an argument);
+                    // there is no legacy strategy of this name
+                    result = "beam";
+                } else {
+                    switch (next) {
+                    case OLDEST -> result = "bfs";
+                    case NEWEST -> result = "dfs";
+                    // engine-only: realised directly by the parametric engine
+                    // (RandomPool); there is no legacy strategy of this name
+                    case RANDOM -> result = "random-frontier";
+                    }
                 }
             }
             case ALL_RANDOM -> errors
                 .add("Randomised successor generation is not yet supported");
             case SINGLE, SINGLE_RANDOM -> errors
-                .add("Single-successor generation with an unrestricted frontier"
+                .add("Single-successor generation with a multi-state frontier"
                     + " is not yet supported");
             }
         }
@@ -329,6 +341,7 @@ public class ExploreTypeConverter {
         }
         case "random-frontier" -> result
             .put(ExploreKey.NEXT, NextState.RANDOM.createSetting());
+        case "beam" -> setBeam(result, strategy, errors);
         case "cnbound" -> setCountBound(result, Bound.NODES, strategy, "node-bound", errors);
         case "cebound" -> result
             .put(ExploreKey.BOUND, Bound.EDGES.createSetting(strategy.getArgument("edge-bound")));
@@ -389,6 +402,28 @@ public class ExploreTypeConverter {
                                       String argName, FormatErrorSet errors) {
         int bound = parseBound(strategy, argName, errors);
         result.put(ExploreKey.BOUND, kind.createSetting(new Bound.Limit(bound, 0)));
+    }
+
+    /**
+     * Translates an engine-only {@code beam} strategy into the corresponding
+     * frontier and next-state selection features.
+     */
+    private static void setBeam(ExploreConfig result, Serialized strategy,
+                                FormatErrorSet errors) {
+        String nextName = strategy.getArgument("next");
+        NextState next = null;
+        for (var kind : NextState.values()) {
+            if (kind.getName().equals(nextName)) {
+                next = kind;
+            }
+        }
+        if (next == null) {
+            errors.add("Unknown next-state selection '%s'", nextName);
+        } else if (next != NextState.OLDEST) {
+            result.put(ExploreKey.NEXT, next.createSetting());
+        }
+        int size = parseBound(strategy, "size", errors);
+        result.put(ExploreKey.FRONTIER, Frontier.BEAM.createSetting(size));
     }
 
     /**
