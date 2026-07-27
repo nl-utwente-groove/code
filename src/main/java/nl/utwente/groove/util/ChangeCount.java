@@ -16,12 +16,16 @@
  */
 package nl.utwente.groove.util;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 /**
  * Class that records the change count of a given structure,
  * and allows observers to keep track of the count.
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public class ChangeCount extends Observable {
     /** Increases the change count without notifying registered observers. */
     public void increaseSilent() {
@@ -53,9 +57,6 @@ public class ChangeCount extends Observable {
     }
 
     private int value;
-
-    /** Dummy tracker that never gets stale. */
-    public static final Tracker DUMMY_TRACKER = new DummyTracker();
 
     /** Tracker of an update count. */
     static public class Tracker {
@@ -97,12 +98,6 @@ public class ChangeCount extends Observable {
         private int last;
     }
 
-    static private class DummyTracker extends Tracker {
-        private DummyTracker() {
-            super(new ChangeCount());
-        }
-    }
-
     /**
      * Class wrapping a value that is derived from a structure with a {@link ChangeCount},
      * with capability to recompute the value whenever it gets stale with respect
@@ -118,16 +113,17 @@ public class ChangeCount extends Observable {
 
         /** Gets the (possibly recomputed) value. */
         public O getValue() {
-            if (this.tracker.isStale() || this.value == null) {
-                this.value = computeValue();
+            var result = this.value;
+            if (this.tracker.isStale() || result == null) {
+                this.value = result = computeValue();
             }
-            return this.value;
+            return result;
         }
 
         /** Callback method to recompute the value. */
         abstract protected O computeValue();
 
         private final Tracker tracker;
-        private O value;
+        private @Nullable O value;
     }
 }
