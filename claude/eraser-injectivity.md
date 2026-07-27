@@ -8,16 +8,15 @@ from, the parallel-edge work in
 the same code region as the edge-injectivity support for non-simple patterns,
 and parallel eraser *bundles* will rely on it.
 
-**SCOPE REVISED (user, 2026-07-27): the identification condition applies to
-parallel-edge grammars only.** The original decision below conflated two
-axes — parallel edges and SPO-vs-DPO semantics. Simple-graph grammars keep
-GROOVE's classic SPO semantics, in which an identification of a deleted
-element with any other element is not a conflict but is resolved by letting
-deletion win; there, none of the machinery of steps 1–4 applies. For
-multigraph (parallelEdges) grammars the machinery stands as implemented
-(DPO), but SPO for multigraphs is still under investigation as an option —
-DPO is the current behaviour, not a final commitment. See the scoping
-section at the end for the gates and the fixture relocation.
+**SCOPE REVISED (user, 2026-07-27): the identification condition applies
+under DPO semantics only.** The original decision below conflated two
+axes — parallel edges and SPO-vs-DPO semantics. GROOVE now supports three
+modes, selected by the (enum-valued) parallelEdges grammar property:
+`none` (simple graphs, classic SPO-style semantics — the previous
+behaviour, preserved), `SPO` (multigraphs, deletion wins) and `DPO`
+(multigraphs, the full gluing condition: identification condition via the
+machinery of steps 1–4, plus the implied dangling condition). See the
+scoping section at the end for the gates and the fixture relocation.
 
 ## The requirement (user decision, 2026-07-19; scope revised 2026-07-27)
 
@@ -27,9 +26,9 @@ semantics: if a deleted edge is identified with any other edge (eraser or
 reader), the pushout complement is not unique. Previously GROOVE resolved
 such identifications by letting deletion win (SPO-style), silently deleting
 edges the rule claims to preserve, or collapsing two claimed deletions into
-one. *(2026-07-27: "always" now means "always within a parallel-edge
-grammar"; in simple-graph grammars the delete-wins resolution is the
-intended SPO semantics and remains in force.)* Recorded decisions:
+one. *(2026-07-27: "always" now means "always within a DPO grammar"; under
+SPO — simple graphs and multigraphs alike — the delete-wins resolution is
+the intended semantics and remains in force.)* Recorded decisions:
 
 - **Eraser vs. *any* edge**, not just eraser vs. eraser: the full
   identification condition on edges.
@@ -345,3 +344,47 @@ parallelEdges grammars, but not a final commitment — the user wants to
 investigate an SPO option for multigraphs as well (what delete-wins means
 for bundles, non-injective eraser bundles, amalgamation). If it becomes
 costly in case distinctions, parallelEdges=DPO stays the answer.
+
+## Three modes (2026-07-27, second revision)
+
+The boolean parallelEdges property became a three-valued enum
+(`ParallelMode`: none/SPO/DPO, default none; the boolean was never
+functional in a release, so a stale boolean value simply produces a parse
+error). The mode splits into two orthogonal predicates:
+
+- `isMulti()` (SPO and DPO): graph *structure* — non-simple host and rule
+  graphs, the mult aspect, regexpr edge images, edge-injective matching
+  under matchInjective;
+- `isDPO()`: the identification-condition machinery of steps 1–4, the
+  critical-pair filter, and the ignoreRegExp erasure check. These gates
+  read the mode from the grammar properties (carried by Condition and
+  Rule) — pattern simplicity no longer discriminates, since multigraph
+  SPO patterns are non-simple too.
+
+**DPO implies checkDangling** (user decision): DPO mode is the full
+gluing condition. Consequently the eraser-node contribution to the
+ignoreRegExp erasure check died (node deletion can no longer erase
+unmatched edges), and two dpoErasers fixtures whose starts relied on
+dangling deletion were re-pinned (eraseTwoExplicit deletes two isolated
+nodes; eraseForallNode's old starts became inapplicability witnesses).
+An insight recorded for later: under full DPO, eraser-node identification
+conflicts are partly masked by the dangling condition, since an
+identification in which the other occurrence reads an incident edge is
+already dangling-illegal.
+
+**Multigraph SPO is realised at execution, not compilation.** Rule
+compilation is mode-independent within multigraph mode: the disjoint
+parallel-index allocation gives every aspect edge its own copies (created
+copies always fresh — the creator-absorption effect was declared a no-go).
+Under SPO, non-injective matching may collapse a reader copy onto an
+eraser copy, and deletion wins — which costs nothing, because readers
+contribute no delta entries and node delete-wins (with dangling-edge
+deletion) is the pre-existing application machinery. Fixture family
+junit/rules/spoErasers.gps pins the semantics: del:mult=2:a on a single
+host copy matches (both eraser copies collapse) and deletes that copy;
+on a 2-copy host it admits four events (two collapsed, two spread); a
+reader/eraser pair of the same content collapses on a single copy with
+the copy deleted. One observable consequence of the disjoint reading:
+on a 2-copy host, the reader/eraser pair also admits the spread matches
+(keep one copy, delete the other) — under the old shared-index
+compilation only the deletion would have existed.

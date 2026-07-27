@@ -199,17 +199,20 @@ The MULT aspect is implemented as follows.
   **non-simple iff the grammar has parallelEdges**, which is what activates
   edge-injectivity in `SearchPlan`/`PlanSearchStrategy` (both key off
   `pattern.isSimple()`).
-- **Index-overlap semantics**: parallel indices are assigned *per aspect
-  edge*, starting at 0, so distinct aspect edges between the same nodes
-  with the same label overlap on their low indices and denote the *same*
-  copies there; on a shared index, the eraser role wins over the reader
-  role (the pre-existing `freshInLhs` logic, unchanged). Consequently
-  `use:mult=3:a` + `del:mult=2:a` means "match 3 distinct copies, delete
-  2, keep 1" — pinned by the `readerEraserMult` fixture, which also pins
-  that a 2-copy host graph then admits *no* match (erasers must be matched
-  edge-injectively, and a reader may not share an eraser's image). This
-  also preserves the existing behaviour of uncounted reader/eraser
-  duplicates (both index 0: eraser absorbs reader).
+- **Index semantics — SUPERSEDED 2026-07-27 by disjoint allocation**: the
+  original scheme assigned indices per aspect edge starting at 0, letting
+  distinct same-content aspect edges overlap on low indices with
+  eraser-wins resolution. That encoded SPO conflict resolution into
+  compilation and silently reintroduced creator absorption. Now
+  (`ParallelIndexAllocator`, per rule, shared across quantification
+  levels) every aspect edge gets its own disjoint index range for its
+  content — the multiset reading: `use:a` + `del:a` declares 2 copies,
+  `use:a` + `new:mult=2:a` creates 2 fresh copies next to the matched one
+  (pinned by `creatorReaderMult`), and `use:mult=3:a` + `del:mult=2:a`
+  declares 5 copies of which 2 are deleted. Embargo edges are exempt
+  (they declare no copies). The SPO/DPO difference is thereby confined to
+  matching and application; see eraser-injectivity.md for the three-mode
+  (`parallelEdges=none|SPO|DPO`) design and gates.
 - **Host graphs** (`HostModelMorphism.processModelEdge`): `k-1` further
   `addEdge` calls; the non-simple host factory mints a fresh edge number
   per call. The model map maps the aspect edge to the first copy only.

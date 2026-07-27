@@ -120,6 +120,13 @@ public class RuleApplicationTest extends TestCase {
         test("dpoErasers");
     }
 
+    /** Tests the rules in the spoErasers grammar
+     * (multigraph SPO: non-injective eraser matching with delete-wins). */
+    @Test
+    public void testSpoErasers() {
+        test("spoErasers");
+    }
+
     /** Tests the rules in the forallCount grammar. */
     @Test
     public void testForallCount() {
