@@ -220,23 +220,74 @@ The MULT aspect is implemented as follows.
   result files (`eraserMult-1-0/-1-1`: the two ordered assignments of the
   eraser bundle are distinct events).
 
+### Added-edge stability under cache collapse — RESOLVED (2026-07-27)
+
+The added edges of a transition over a non-simple host graph are now
+recorded in the transition and replayed on re-derivation, mirroring the
+added-nodes mechanism:
+
+- `DefaultGraphNextState` stores a `HostEdge[] addedEdges` — and *only*
+  that class: reconstruction only ever runs through a state's own primary
+  transition, so the stubs, `DefaultRuleTransition` and the transition
+  labels stay untouched (one null field per *state*, not per transition,
+  and only in multigraph mode is it ever filled).
+- `StateCache.createDelta` is the single hook: at the first derivation of
+  a non-simple state it extracts `RuleApplication.getAddedEdgeArray()`
+  into the state; re-derivations pass the stored array back in.
+- `RuleApplication.addEdges` substitutes the recorded identities for the
+  freshly minted ones by *content-matched multiset consumption* at the
+  output level (the enumerated added-edge set), leaving all three minting
+  sites untouched: the event-cached simple-creator sets, the per-record
+  complex creator edges, and the merge-redirected images minted by
+  `MergeMap.mapEdge` inside `RuleEffect.getAddedEdges`. Positional replay
+  would be unsound for the merge path (its iteration order follows
+  source-graph edge sets, which are not reconstruction-stable);
+  content-keyed consumption is order-independent, and content-equal
+  parallel copies are interchangeable at creation time, so any consistent
+  assignment reproduces the recorded graph.
+
+Findings from the investigation, worth keeping:
+
+- **The node/edge asymmetry has a precise cause**: created-*node*
+  identities are pinned *hard* — `BasicEvent.freshNodeList` is a plain
+  field, and the added-node array is stored in the transition — while
+  created-*edge* identities lived only in *soft* state (the event cache's
+  `simpleCreatedEdgeSet`, the merge map's lazily filled edge images, the
+  application record). A sweep that clears only *state* caches loses no
+  edge identities (the events re-supply them); the loss occurs when the
+  *event* caches are collected too, which the GC can equally do
+  (`BasicEvent`'s cache reference is soft from creation).
+- **Test**: `CacheReconstructionTest` explores a grammar fully, snapshots
+  every state graph's node and edge identities, clears all state *and
+  event* caches, re-materialises, and asserts element-identical graphs.
+  Red without the fix (multigraph sample), green with; `ferryman` pins
+  that simple mode holds by content pooling alone.
+- **Sample** `junit/samples/parallel-pump.gps`: a multigraph grammar with
+  parallel creators (`new:mult=2:`), erasers over parallel bundles, and a
+  merger rule whose redirects create parallel copies.
+- **Cross-run drift is inherent and out of scope**: two explorations
+  sharing one grammar instance see different created-element numbers
+  (the shared factory's dispensers advance monotonically), for nodes and
+  edges, in simple and multi mode alike. This is why the sample could not
+  be added to `DeterminismTest`: its enumeration signature includes
+  content-based hashes over element numbers. The existing DeterminismTest
+  samples never mint any fresh element during exploration (verified
+  empirically), so they are insensitive to this. Making cross-run
+  identities reproducible would require canonical per-state numbering — a
+  deep change serving no user-visible property, since a fresh GTS
+  renumbers states anyway. Re-loading the grammar per exploration is no
+  alternative: control-automaton and type objects then differ and their
+  identity-based hashes change the signature (verified with ferryman).
+
 ### Open items after this step
 
-- **Creator-edge number stability under cache collapse is now a live
-  concern**: host graphs of parallelEdges grammars are non-simple, and a
-  creator edge's host image is minted with a fresh edge number on every
-  event re-derivation. Deltas are recomputed when a state cache is
-  collapsed and reconstructed, so re-derivation may yield different edge
-  identities than the original application — the multigraph analogue of
-  the added-nodes problem, which is solved for nodes by storing the added
-  node numbers in the transition. `DeterminismTest`'s fixtures contain no
-  multigraph grammars, so this is currently *untested*, not disproven.
-  Probable solution shape: store added edges (or their numbers) with the
-  transition, mirroring `addedNodes`.
 - **Display mapping of expanded copies**: the model map maps a counted
   aspect edge to parallel copy 0 only; match highlighting for copies
   1..k-1 falls back to nothing. Aggregated display of semantic multigraphs
   (LTS states) as `(x2)`-decorated aspect edges is likewise still to do.
+- `DefaultRuleTransition.getMorphism()` (GUI-informational) re-derives
+  without the recorded edges, so in multigraph mode it maps onto
+  content-equal rather than identical edges.
 - Error contexts of host-graph mult errors reference the normalised graph's
   edges; transfer to the original graph is best-effort.
 

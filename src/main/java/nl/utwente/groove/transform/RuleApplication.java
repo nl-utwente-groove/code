@@ -16,8 +16,11 @@
  */
 package nl.utwente.groove.transform;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -93,9 +96,30 @@ public class RuleApplication implements DeltaApplier {
      */
     public RuleApplication(final RuleEvent event, HostGraph source,
                            HostNode @Nullable [] addedNodes) {
+        this(event, source, addedNodes, null);
+    }
+
+    /**
+     * Constructs a new derivation on the basis of a given production rule, host
+     * graph, and added node and edge sets.
+     * @param event the production rule instance involved
+     * @param source the host graph to which the rule is to be applied
+     * @param addedNodes the non-<code>null</code> array of created nodes,
+     * in the order of the rule's coanchor. If <code>null</code>, the added nodes are yet to be
+     * generated.
+     * @param addedEdges the array of added edges recorded by a previous
+     * derivation of the same event and source graph. If <code>null</code>,
+     * the added edges are yet to be generated. Only relevant for non-simple
+     * host graphs, where the factory mints a fresh edge identity on every
+     * creation, so that a re-derivation would not reproduce the previously
+     * derived target graph; see {@link #getAddedEdgeArray()}.
+     */
+    public RuleApplication(final RuleEvent event, HostGraph source,
+                           HostNode @Nullable [] addedNodes, HostEdge @Nullable [] addedEdges) {
         this.event = event;
         this.source = source;
         this.addedNodes = addedNodes;
+        this.addedEdges = addedEdges;
         assert !DEBUG || testEvent(event, source) : String
             .format("Event error for %s applied to %s", event, source);
     }
@@ -169,6 +193,38 @@ public class RuleApplication implements DeltaApplier {
      * to (re)construct the derivation target.
      */
     private final HostNode @Nullable [] addedNodes;
+
+    /**
+     * Returns the edges added by this application, as an array.
+     * If the application was constructed with a predefined added-edge array,
+     * that array is returned; otherwise it is derived from the application
+     * record (forcing its computation). In a non-simple host graph, added
+     * edges are minted with fresh identities on every derivation, so a
+     * re-derivation of the same event (e.g., after a state cache collapse)
+     * does not reproduce the target graph; recording this array in the graph
+     * transition and passing it into the re-derivation restores
+     * reproducibility, in the same way that the added node array does for
+     * created nodes.
+     */
+    public HostEdge[] getAddedEdgeArray() {
+        HostEdge[] result = this.addedEdges;
+        if (result == null) {
+            List<HostEdge> edges = new ArrayList<>();
+            RuleEffect record = getEffect();
+            if (record.hasAddedEdges()) {
+                record.getAddedEdges().forEach(edges::add);
+            }
+            result = edges.toArray(new HostEdge[edges.size()]);
+        }
+        return result;
+    }
+
+    /**
+     * The identities of the added edges, recorded by a previous derivation.
+     * This is part of the information needed to reconstruct the derivation
+     * target of a non-simple host graph.
+     */
+    private final HostEdge @Nullable [] addedEdges;
 
     /** Returns the optional value oracle. */
     private @Nullable ValueOracle getOracle() {
@@ -408,7 +464,17 @@ public class RuleApplication implements DeltaApplier {
      */
     private void addEdges(RuleEffect record, DeltaTarget target) {
         if (record.hasAddedEdges()) {
+            // in a re-derivation with predefined added edges, substitute the
+            // recorded edge identities for the freshly minted ones, which (in
+            // a non-simple graph) are not reproducible
+            HostEdge[] replay = this.addedEdges;
+            boolean[] consumed = replay == null
+                ? null
+                : new boolean[replay.length];
             for (HostEdge edge : record.getAddedEdges()) {
+                if (replay != null) {
+                    edge = findAddedEdge(replay, consumed, edge);
+                }
                 HostNode targetNode = edge.target();
                 if (targetNode instanceof ValueNode valueNode) {
                     if (this.source.containsNode(targetNode)) {
@@ -420,6 +486,29 @@ public class RuleApplication implements DeltaApplier {
                 target.addEdge(edge);
             }
         }
+    }
+
+    /**
+     * Retrieves the not-yet-consumed predefined added edge with the same
+     * content as a given (freshly minted) added edge, and marks it as
+     * consumed. Content-equal parallel copies are interchangeable at this
+     * point, so any consistent assignment reproduces the recorded target
+     * graph.
+     */
+    private HostEdge findAddedEdge(HostEdge[] replay, boolean[] consumed, HostEdge edge) {
+        for (int i = 0; i < replay.length; i++) {
+            HostEdge stored = replay[i];
+            if (!consumed[i] && stored.label().equals(edge.label())
+                && stored.source().equals(edge.source())
+                && stored.target().equals(edge.target())) {
+                consumed[i] = true;
+                return stored;
+            }
+        }
+        assert false : String
+            .format("Re-derived added edge %s not among predefined %s", edge,
+                    Arrays.toString(replay));
+        return edge;
     }
 
     /**
