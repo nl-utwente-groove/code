@@ -74,6 +74,8 @@ public class StateReporter extends AExplorationReporter {
         var exportable = Exportable.graph(state.getGraph());
         var exporter = Exporters.getExporter(fileType, exportable);
         if (exporter != null) {
+            // an exporter is only found for a non-null file type
+            assert fileType != null;
             try {
                 exporter.doExport(exportable, stateFile, fileType);
             } catch (PortException e1) {

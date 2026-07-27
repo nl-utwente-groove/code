@@ -21,6 +21,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.gui.export.util.GraphToTikz;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.AbstractExporter;
@@ -34,6 +36,7 @@ import nl.utwente.groove.io.external.PortException;
  *
  * @author Eduardo Zambon
  */
+@NonNullByDefault
 public final class TikzExporter extends AbstractExporter {
     private static final TikzExporter instance = new TikzExporter();
 

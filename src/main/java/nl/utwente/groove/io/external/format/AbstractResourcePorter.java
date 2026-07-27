@@ -26,6 +26,7 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.QualName;
@@ -52,6 +53,7 @@ import nl.utwente.groove.io.graph.GxlIO;
  * @author Harold Bruijntjes
  * @version $Revision$
  */
+@NonNullByDefault
 public class AbstractResourcePorter extends AbstractExporter implements Importer {
     /** Constructor for subclasses. */
     protected AbstractResourcePorter() {
@@ -66,12 +68,16 @@ public class AbstractResourcePorter extends AbstractExporter implements Importer
      */
     protected final void register(ResourceKind kind, FileType fileType) {
         register(fileType);
-        var oldType = this.fileTypeMap.put(kind, fileType);
-        assert oldType == null : String
-            .format("Duplicate file types %s and %s for file type %s", oldType, fileType, kind);
-        var oldKind = this.resourceKindMap.put(fileType, kind);
-        assert oldKind == null : String
-            .format("Duplicate resource kinds %s and %s for file type %s", oldKind, kind, fileType);
+        // the absence of a previous entry is tested before rather than after
+        // insertion, as the value type of the maps is non-null
+        assert !this.fileTypeMap.containsKey(kind) : String
+            .format("Duplicate file types %s and %s for file type %s", getFileType(kind), fileType,
+                    kind);
+        this.fileTypeMap.put(kind, fileType);
+        assert !this.resourceKindMap.containsKey(fileType) : String
+            .format("Duplicate resource kinds %s and %s for file type %s",
+                    getResourceKind(fileType), kind, fileType);
+        this.resourceKindMap.put(fileType, kind);
         if (kind.isGraphBased()) {
             this.graphFileTypes.add(fileType);
         }
@@ -118,7 +124,12 @@ public class AbstractResourcePorter extends AbstractExporter implements Importer
         if (!exports(exportable)) {
             return Collections.emptySet();
         } else if (exportable.graph() == null) {
-            return Collections.singleton(getFileType(exportable.getResourceKind()));
+            // by exports(exportable), this is a resource of a registered kind
+            var resourceKind = exportable.getResourceKind();
+            assert resourceKind != null;
+            var fileType = getFileType(resourceKind);
+            assert fileType != null;
+            return Collections.singleton(fileType);
         } else {
             return getGraphFileTypes();
         }

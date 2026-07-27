@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.io.FileType;
@@ -40,6 +41,7 @@ import nl.utwente.groove.util.Factory;
  * @author Harold Bruijntjes
  * @version $Revision$
  */
+@NonNullByDefault
 public class Exporters {
     /** Returns the first registered exporter supporting a given file type, if any.
      * Returns {@code null} if the file type is {@code null}.

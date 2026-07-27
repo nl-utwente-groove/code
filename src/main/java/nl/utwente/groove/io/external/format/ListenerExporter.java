@@ -18,6 +18,9 @@ package nl.utwente.groove.io.external.format;
 
 import java.util.Collection;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Graph;
@@ -34,6 +37,7 @@ import nl.utwente.groove.lts.GTS;
  *
  * @author Arend Rensink
  */
+@NonNullByDefault
 public class ListenerExporter extends AbstractExporter.Writer {
     private ListenerExporter(GraphExportListener listener) {
         super(Exporter.ExportKind.GRAPH);
@@ -57,7 +61,7 @@ public class ListenerExporter extends AbstractExporter.Writer {
 
     @Override
     protected void execute() throws PortException {
-        var graph = this.graph;
+        var graph = getGraph();
         var listener = this.listener;
         listener.enterGraph(graph);
         Collection<? extends Node> nodeSet = graph instanceof GTS gts
@@ -71,7 +75,15 @@ public class ListenerExporter extends AbstractExporter.Writer {
         listener.exitGraph(graph);
     }
 
-    private Graph graph;
+    /** Returns the graph set by {@link #initialise(Exportable, FileType)}. */
+    private Graph getGraph() {
+        var result = this.graph;
+        assert result != null : "Graph not initialised";
+        return result;
+    }
+
+    /** The graph to be exported; only set from {@link #initialise(Exportable, FileType)} on. */
+    private @Nullable Graph graph;
 
     /** Creates and returns an instance for a given listener. */
     static public ListenerExporter instance(GraphExportListener listener) {

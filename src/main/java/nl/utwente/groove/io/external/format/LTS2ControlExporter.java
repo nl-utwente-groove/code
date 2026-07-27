@@ -19,6 +19,9 @@ package nl.utwente.groove.io.external.format;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.AbstractExporter;
@@ -35,6 +38,7 @@ import nl.utwente.groove.util.Groove;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public class LTS2ControlExporter extends AbstractExporter.Writer {
     /**
      * Constructor for the singleton instance.
@@ -63,12 +67,20 @@ public class LTS2ControlExporter extends AbstractExporter.Writer {
         }
     }
 
-    private GTSFragment gts;
+    /** Returns the LTS fragment set by {@link #initialise(Exportable, FileType)}. */
+    private GTSFragment getGts() {
+        var result = this.gts;
+        assert result != null : "LTS not initialised";
+        return result;
+    }
+
+    /** The LTS to be exported; only set from {@link #initialise(Exportable, FileType)} on. */
+    private @Nullable GTSFragment gts;
 
     @Override
     protected void execute() throws PortException {
         this.covered.clear();
-        var start = this.gts.startState();
+        var start = getGts().startState();
         this.covered.add(start);
         emit(start);
     }
@@ -76,6 +88,7 @@ public class LTS2ControlExporter extends AbstractExporter.Writer {
     /** Recursively emits the properties that hold in this states, followed by the choice of outgoing transitions. */
     private void emit(GraphState state) {
         assert this.covered.contains(state);
+        var gts = getGts();
         emit("// state " + state);
         state
             .getTransitions()
@@ -86,17 +99,17 @@ public class LTS2ControlExporter extends AbstractExporter.Writer {
         var outs = state
             .getTransitions()
             .stream()
-            .filter(t -> this.gts.edgeSet().contains(t))
+            .filter(t -> gts.edgeSet().contains(t))
             .filter(t -> this.covered.add(t.target()))
             .toList();
         if (outs.isEmpty()) {
-            if (this.gts.isFinal(state)) {
+            if (gts.isFinal(state)) {
                 emit("// final state");
             } else {
                 emit("// deadlocked state");
                 emit("halt");
             }
-        } else if (outs.size() == 1 && !this.gts.isFinal(state)) {
+        } else if (outs.size() == 1 && !gts.isFinal(state)) {
             var out = outs.get(0);
             emitTransition(out);
             emit(out.target());
@@ -114,7 +127,7 @@ public class LTS2ControlExporter extends AbstractExporter.Writer {
                 emit(out.target());
                 decreaseIndent();
             }
-            if (this.gts.isFinal(state)) {
+            if (gts.isFinal(state)) {
                 emit("} or { // final state");
             }
             emit("}");

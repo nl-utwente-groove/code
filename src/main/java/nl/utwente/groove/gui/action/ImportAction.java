@@ -72,6 +72,8 @@ public class ImportAction extends SimulatorAction {
                                                       IOException {
         FileType fileType = getFormatChooser().getFileType();
         Importer ri = Importers.getImporter(fileType);
+        // the chooser only offers file types for which there is an importer
+        assert ri != null;
         var store = getGrammarStore();
         Set<Imported> resources = new HashSet<>();
         for (var file : getFormatChooser().getSelectedFiles()) {

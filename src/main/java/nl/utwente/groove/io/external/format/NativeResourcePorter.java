@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.io.external.format;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.grammar.model.ResourceKind;
 
 /**
@@ -23,6 +25,7 @@ import nl.utwente.groove.grammar.model.ResourceKind;
  * @author Harold Bruijntjes
  * @version $Revision$
  */
+@NonNullByDefault
 public class NativeResourcePorter extends AbstractResourcePorter {
     private NativeResourcePorter() {
         register(ResourceKind.TYPE);

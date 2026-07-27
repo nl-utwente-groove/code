@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.gui.export;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.io.external.Exporters;
 
 /**
@@ -25,6 +27,7 @@ import nl.utwente.groove.io.external.Exporters;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public class JGraphExporters {
     private JGraphExporters() {
         // empty, to prevent instantiation

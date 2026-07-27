@@ -19,6 +19,8 @@ package nl.utwente.groove.io.external;
 import java.io.File;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.grammar.model.ResourceModel;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.io.FileType;
@@ -35,6 +37,7 @@ import nl.utwente.groove.io.FileType;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public interface Exporter {
     /**
      * Get list of file types this exporter can handle.

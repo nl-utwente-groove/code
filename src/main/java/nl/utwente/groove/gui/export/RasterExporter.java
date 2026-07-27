@@ -24,6 +24,8 @@ import java.util.Map;
 
 import javax.imageio.ImageIO;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.AbstractExporter;
@@ -37,6 +39,7 @@ import nl.utwente.groove.io.external.PortException;
  *
  * @author Arend Rensink
  */
+@NonNullByDefault
 public class RasterExporter extends AbstractExporter {
     private RasterExporter() {
         super(Exporter.ExportKind.JGRAPH);

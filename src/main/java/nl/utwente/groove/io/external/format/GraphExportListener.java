@@ -18,6 +18,9 @@ package nl.utwente.groove.io.external.format;
 
 import java.util.ArrayList;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.graph.Edge;
@@ -31,6 +34,7 @@ import nl.utwente.groove.util.HTMLConverter;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 abstract public class GraphExportListener {
     /** Constructs a listener for a given file type. */
     GraphExportListener(FileType fileType) {
@@ -50,11 +54,19 @@ abstract public class GraphExportListener {
         this.exporter = exporter;
     }
 
-    private ListenerExporter exporter;
+    /** Returns the exporter set by {@link #setExporter(ListenerExporter)}. */
+    private ListenerExporter getExporter() {
+        var result = this.exporter;
+        assert result != null : "Exporter not set";
+        return result;
+    }
+
+    /** The exporter this listener works for; set upon construction of that exporter. */
+    private @Nullable ListenerExporter exporter;
 
     /** Prints a line to the output file. */
     void emit(String line) {
-        this.exporter.emit(line);
+        getExporter().emit(line);
     }
 
     /** Starts processing a graph. */
@@ -87,7 +99,15 @@ abstract public class GraphExportListener {
             emit("}");
         }
 
-        private Graph graph;
+        /** Returns the graph set by {@link #enterGraph(Graph)}. */
+        private Graph getGraph() {
+            var result = this.graph;
+            assert result != null : "Graph not entered";
+            return result;
+        }
+
+        /** The graph currently being visited; only set from {@link #enterGraph(Graph)} on. */
+        private @Nullable Graph graph;
 
         @Override
         public void visitNode(Node node) {
@@ -99,7 +119,7 @@ abstract public class GraphExportListener {
             } else {
                 label.append("\\N<br/>");
             }
-            for (var edge : this.graph.outEdgeSet(node)) {
+            for (var edge : getGraph().outEdgeSet(node)) {
                 String line;
                 if (edge instanceof AspectEdge ae) {
                     line = ae.toLine(true, ae.source().getAspects()).toHTMLString();
