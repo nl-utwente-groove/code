@@ -59,10 +59,20 @@ abstract public class ClosingStrategy extends GTSStrategy {
         GraphState state = getNextState();
         List<MatchResult> matches = state.getMatches();
         if (state.getActualFrame().isTrial()) {
-            //assert !state.isTransient();
             // there are potential rule matches now blocked until
             // the previous ones have been explored
-            putBackInPool(state);
+            if (state.isTransient()) {
+                // a transient state is part of a nested sub-exploration that
+                // must complete before the surrounding exploration goes on,
+                // so it bypasses the pool, like in addExplorable: it is
+                // re-explored once its successors (pushed on top of it
+                // during the match application below) have been fully
+                // explored, by which time the pending verdicts of its
+                // control-frame attempt have propagated in
+                this.transientStack.push(state);
+            } else {
+                putBackInPool(state);
+            }
         }
         // explore known outgoing transitions of known states
         if (state.setFlag(Flag.KNOWN, false)) {

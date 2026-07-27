@@ -32,6 +32,12 @@ import nl.utwente.groove.lts.GraphState;
  * A pool may also impose a depth bound, by silently refusing to
  * {@link #add} states beyond the bound.
  * <p>
+ * A pool never receives transient states: those are part of a nested
+ * sub-exploration, ending in an atomic (transactional) transition, which the
+ * strategy runs to completion on an internal stack, bypassing the pool.
+ * Pool implementations may therefore drop or reorder states freely without
+ * ever cutting into a transaction.
+ * <p>
  * A pool instance is stateful and must not be shared between explorations.
  * @author Arend Rensink
  * @version $Revision$

@@ -266,6 +266,25 @@ explored <i>last</i> (the take-order dual of take()).*
   random order, replicating `RandomPool`); a restrictive beam explores
   strictly less than the full state space, reproducibly.
 
+#### Phase 5b transient-nesting fix (2026-07-27)
+
+*Prompted by Arend's question whether transient states bypass the entire
+exploration machinery (they are part of a sub-exploration that ends in a
+single atomic transition). Investigation showed the bypass held at discovery
+time but leaked through the trial re-add of `ClosingStrategy.doNext` —
+triggered by recursive recipes (`fibonacci.gps`), where a try/else verdict
+around a nested recipe call cannot be decided at match time. Arend asked for
+the cleanup before further slices; livelock is not a concern because verdict
+resolution is push-driven and only a non-terminating transient descent (a
+rule-system error) stays pending, diverging under any scheme.*
+
+Fix: transient trial states are pushed back on the strategy's transient
+stack instead of the pool, symmetrically to `addExplorable`; the
+pools-never-see-transient-states contract is documented on `Pool` and
+asserted in `FrontierStrategy`; `TransientNestingTest` (fibonacci under all
+engine orders, incl. beam:2) guards the invariant that no transient state is
+left unexplored, and fails against the pre-fix code.
+
 ### Phase 6 (later branch) — demolition
 
 Delete `explore.encode`, `explore.prettyparse`, `Serialized`, `ExploreType`,
