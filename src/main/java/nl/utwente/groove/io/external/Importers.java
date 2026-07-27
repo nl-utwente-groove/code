@@ -23,6 +23,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.format.AutPorter;
 import nl.utwente.groove.io.external.format.ColImporter;
@@ -33,13 +36,15 @@ import nl.utwente.groove.io.external.format.NativeResourcePorter;
  * @author Harold Bruijntjes
  * @version $Revision$
  */
+@NonNullByDefault
 public class Importers {
     /** Returns the list of all known importers. */
     public static List<Importer> getImporters() {
-        if (importers == null) {
-            importers = createImporters();
+        var result = importers;
+        if (result == null) {
+            importers = result = createImporters();
         }
-        return importers;
+        return result;
     }
 
     private static List<Importer> createImporters() {
@@ -51,10 +56,10 @@ public class Importers {
     }
 
     /** List of importers */
-    private static List<Importer> importers;
+    private static @Nullable List<Importer> importers;
 
     /** Returns the importer for a given file type, if any. */
-    public static Importer getImporter(FileType fileType) {
+    public static @Nullable Importer getImporter(FileType fileType) {
         return getImporterMap().get(fileType);
     }
 
@@ -65,10 +70,11 @@ public class Importers {
 
     /** Returns the mapping from file types to importers supporting them. */
     private static Map<FileType,Importer> getImporterMap() {
-        if (importerMap == null) {
-            importerMap = createImporterMap();
+        var result = importerMap;
+        if (result == null) {
+            importerMap = result = createImporterMap();
         }
-        return importerMap;
+        return result;
     }
 
     /** Creates the mapping from file types to importers supporting them. */
@@ -83,5 +89,5 @@ public class Importers {
     }
 
     /** Mapping from file types to importers supporting them. */
-    private static Map<FileType,Importer> importerMap;
+    private static @Nullable Map<FileType,Importer> importerMap;
 }

@@ -110,6 +110,8 @@ public class LTSReporter extends AExplorationReporter {
             }
             Groove.saveGraph(ltsGraph, outFile);
         } else {
+            // an exporter is only found for a non-null file type
+            assert fileType != null;
             try {
                 ExplorationReporter.time("Do export");
                 exporter.doExport(exportable, outFile, fileType);

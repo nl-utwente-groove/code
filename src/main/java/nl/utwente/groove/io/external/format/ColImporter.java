@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.GraphConverter;
@@ -49,6 +51,7 @@ import nl.utwente.groove.io.graph.ColIO;
  *
  * @author Arend Rensink
  */
+@NonNullByDefault
 public class ColImporter implements Importer {
     private ColImporter() {
         this.fileTypes = EnumSet.of(FileType.COL);

@@ -20,6 +20,8 @@ import java.io.File;
 import java.util.EnumMap;
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.gui.export.util.GraphToEPS;
 import nl.utwente.groove.gui.export.util.GraphToPDF;
 import nl.utwente.groove.gui.export.util.GraphToSVG;
@@ -36,6 +38,7 @@ import nl.utwente.groove.io.external.PortException;
  *
  * @author Arend Rensink / Harold Bruintjes
  */
+@NonNullByDefault
 public class VectorExporter extends AbstractExporter {
     /** Private constructor for the singleton instance. */
     private VectorExporter() {

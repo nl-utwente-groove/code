@@ -19,7 +19,7 @@ package nl.utwente.groove.gui.export;
 import java.util.EnumSet;
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.QualName;
@@ -38,23 +38,23 @@ import nl.utwente.groove.io.external.Exporter.ExportKind;
  * @author Harold Bruijntjes
  * @version $Revision$
  */
+@NonNullByDefault
 public class JGraphExportable extends Exportable {
-    private JGraphExportable(Set<ExportKind> exportKinds, @NonNull QualName qualName,
-                             @NonNull JGraph<?> jGraph, @Nullable Graph graph,
-                             @Nullable ResourceModel<?> resourceModel) {
+    private JGraphExportable(Set<ExportKind> exportKinds, QualName qualName, JGraph<?> jGraph,
+                             @Nullable Graph graph, @Nullable ResourceModel<?> resourceModel) {
         super(exportKinds, qualName, graph, resourceModel);
         this.jGraph = jGraph;
     }
 
     /** Returns the {@link JGraph} contained in this exportable object. */
-    public @NonNull JGraph<?> jGraph() {
+    public JGraph<?> jGraph() {
         return this.jGraph;
     }
 
-    private final @NonNull JGraph<?> jGraph;
+    private final JGraph<?> jGraph;
 
     /** Constructs an exportable for a given {@link JGraph}. */
-    static public <G extends @NonNull Graph> JGraphExportable instance(JGraph<G> jGraph) {
+    static public <G extends Graph> JGraphExportable instance(JGraph<G> jGraph) {
         var jModel = jGraph.getModel();
         var graph = jModel == null
             ? null

@@ -19,7 +19,7 @@ package nl.utwente.groove.io.external;
 import java.util.EnumSet;
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.QualName;
@@ -44,6 +44,7 @@ import nl.utwente.groove.io.external.Exporter.ExportKind;
  * @author Harold Bruijntjes
  * @version $Revision$
  */
+@NonNullByDefault
 public class Exportable {
     /** Constructs an exportable with given export kinds and payloads.
      * @param exportKinds the kinds of exportable objects that this {@link Exportable} contains
@@ -51,8 +52,8 @@ public class Exportable {
      * @param graph the optional {@link Graph} contained in this exportable object
      * @param resourceModel the optional {@link ResourceModel} contained in this exportable object
      */
-    protected Exportable(Set<ExportKind> exportKinds, @NonNull QualName qualName,
-                         @Nullable Graph graph, @Nullable ResourceModel<?> resourceModel) {
+    protected Exportable(Set<ExportKind> exportKinds, QualName qualName, @Nullable Graph graph,
+                         @Nullable ResourceModel<?> resourceModel) {
         this.exportKinds = exportKinds;
         this.qualName = qualName;
         this.graph = graph;
@@ -67,11 +68,11 @@ public class Exportable {
     private final Set<ExportKind> exportKinds;
 
     /** Returns the name of the exportable object. */
-    public @NonNull QualName qualName() {
+    public QualName qualName() {
         return this.qualName;
     }
 
-    private final @NonNull QualName qualName;
+    private final QualName qualName;
 
     /** Returns the optional {@link Graph} contained in this exportable object. */
     public @Nullable Graph graph() {
