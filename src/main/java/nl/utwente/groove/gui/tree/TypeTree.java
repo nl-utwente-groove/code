@@ -16,9 +16,9 @@
  */
 package nl.utwente.groove.gui.tree;
 
-import static nl.utwente.groove.io.HTMLConverter.HTML_TAG;
-import static nl.utwente.groove.io.HTMLConverter.ITALIC_TAG;
-import static nl.utwente.groove.io.HTMLConverter.STRONG_TAG;
+import static nl.utwente.groove.util.HTMLConverter.HTML_TAG;
+import static nl.utwente.groove.util.HTMLConverter.ITALIC_TAG;
+import static nl.utwente.groove.util.HTMLConverter.STRONG_TAG;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -60,8 +60,8 @@ import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.AspectJModel;
 import nl.utwente.groove.gui.jgraph.JModel;
 import nl.utwente.groove.gui.tree.TypeFilter.TypeEntry;
-import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.util.Factory;
+import nl.utwente.groove.util.HTMLConverter;
 
 /**
  * Scroll pane showing the list of labels currently appearing in the graph

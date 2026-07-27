@@ -22,7 +22,6 @@ import java.io.IOException;
 import nl.utwente.groove.grammar.aspect.GraphConverter;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.Exportable;
-import nl.utwente.groove.io.external.Exporter.ExportKind;
 import nl.utwente.groove.io.external.Exporters;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.lts.GraphState;
@@ -45,7 +44,7 @@ public class StateReporter extends AExplorationReporter {
     @Override
     public void report() throws IOException {
         var fileType = FileType.getType(this.statePattern);
-        var exporter = Exporters.getExporter(ExportKind.GRAPH, fileType);
+        var exporter = Exporters.getExporter(fileType);
         if (exporter == null) {
             this.logger
                 .append("Pattern %s does not specify known export format: states saved in native %s%n",
@@ -72,10 +71,13 @@ public class StateReporter extends AExplorationReporter {
         String stateFilename = pattern.replace(PLACEHOLDER, "" + state.getNumber());
         File stateFile = new File(stateFilename);
         var fileType = FileType.getType(stateFile);
-        var exporter = Exporters.getExporter(ExportKind.GRAPH, fileType);
+        var exportable = Exportable.graph(state.getGraph());
+        var exporter = Exporters.getExporter(fileType, exportable);
         if (exporter != null) {
+            // an exporter is only found for a non-null file type
+            assert fileType != null;
             try {
-                exporter.doExport(Exportable.graph(state.getGraph()), stateFile, fileType);
+                exporter.doExport(exportable, stateFile, fileType);
             } catch (PortException e1) {
                 throw new IOException(e1);
             }

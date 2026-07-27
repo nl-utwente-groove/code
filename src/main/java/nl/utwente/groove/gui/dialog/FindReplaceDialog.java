@@ -45,7 +45,7 @@ import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.graph.EdgeRole;
-import nl.utwente.groove.io.HTMLConverter;
+import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

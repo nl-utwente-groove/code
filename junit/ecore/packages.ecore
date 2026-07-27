@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    name="packages" nsURI="http://groove.utwente.nl/ecore/packages" nsPrefix="packages">
+  <eClassifiers xsi:type="ecore:EClass" name="Item">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="entries" upperBound="-1"
+        ordered="false" containment="true" eType="#//core/Item"/>
+  </eClassifiers>
+  <eSubpackages name="core" nsURI="http://groove.utwente.nl/ecore/packages/core"
+      nsPrefix="core">
+    <eClassifiers xsi:type="ecore:EClass" name="Item">
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="code"
+          eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+      <eStructuralFeatures xsi:type="ecore:EReference" name="details" upperBound="-1"
+          containment="true" eType="#//core/detail/Item"/>
+    </eClassifiers>
+    <eClassifiers xsi:type="ecore:EClass" name="Line-Item" eSuperTypes="#//core/Item">
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="unit.price"
+          eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EDouble"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="unit-price"
+          eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EDouble"/>
+      <eStructuralFeatures xsi:type="ecore:EAttribute" name="self"
+          eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eClassifiers>
+    <eSubpackages name="detail" nsURI="http://groove.utwente.nl/ecore/packages/core/detail"
+        nsPrefix="detail">
+      <eClassifiers xsi:type="ecore:EClass" name="Item">
+        <eStructuralFeatures xsi:type="ecore:EAttribute" name="note"
+            eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+      </eClassifiers>
+    </eSubpackages>
+  </eSubpackages>
+</ecore:EPackage>

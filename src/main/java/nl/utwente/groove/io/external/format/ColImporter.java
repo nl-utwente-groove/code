@@ -16,7 +16,6 @@
  */
 package nl.utwente.groove.io.external.format;
 
-import java.awt.Frame;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -25,13 +24,14 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.GraphConverter;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
-import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.Imported;
 import nl.utwente.groove.io.external.Importer;
@@ -51,6 +51,7 @@ import nl.utwente.groove.io.graph.ColIO;
  *
  * @author Arend Rensink
  */
+@NonNullByDefault
 public class ColImporter implements Importer {
     private ColImporter() {
         this.fileTypes = EnumSet.of(FileType.COL);
@@ -92,17 +93,6 @@ public class ColImporter implements Importer {
         }
     }
 
-    /** Returns the parent component for a dialog. */
-    protected Frame getParent() {
-        return this.parent;
-    }
-
-    @Override
-    public void setSimulator(Simulator simulator) {
-        this.parent = simulator.getFrame();
-    }
-
-    private Frame parent;
     /** Reader for the .col format */
     private final ColIO io = new ColIO();
 

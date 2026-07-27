@@ -38,9 +38,9 @@ import javax.swing.table.TableCellEditor;
 
 import nl.utwente.groove.gui.display.DismissDelayer;
 import nl.utwente.groove.gui.look.Values;
-import nl.utwente.groove.io.HTMLConverter;
-import nl.utwente.groove.io.HTMLConverter.HTMLTag;
 import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.HTMLConverter;
+import nl.utwente.groove.util.HTMLConverter.HTMLTag;
 import nl.utwente.groove.util.Properties;
 import nl.utwente.groove.util.Properties.CheckerMap;
 import nl.utwente.groove.util.Properties.Key;

@@ -23,6 +23,8 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
@@ -42,6 +44,7 @@ import nl.utwente.groove.io.graph.AutIO;
  * Class that implements load/save of graphs in the CADP .aut format.
  * @author Eduardo Zambon
  */
+@NonNullByDefault
 public final class AutPorter extends AbstractExporter implements Importer {
     private AutPorter() {
         super(Exporter.ExportKind.GRAPH);

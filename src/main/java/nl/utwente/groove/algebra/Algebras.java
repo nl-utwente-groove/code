@@ -32,10 +32,10 @@ import nl.utwente.groove.annotation.HelpMap;
 import nl.utwente.groove.annotation.OpSymbol;
 import nl.utwente.groove.annotation.ToolTipBody;
 import nl.utwente.groove.annotation.ToolTipHeader;
-import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.parse.OpKind.Placement;
 

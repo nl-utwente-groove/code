@@ -144,8 +144,11 @@ public class Groove {
     static public PlainGraph loadGraph(File file) throws IOException {
         GraphIO<?> io = null;
         var type = FileType.getType(file);
-        if (type != null && type.hasGraphIO() && type.getGraphIO().canLoad()) {
-            io = type.getGraphIO();
+        if (type != null) {
+            var typeIO = GraphIO.instance(type);
+            if (typeIO != null && typeIO.canLoad()) {
+                io = typeIO;
+            }
         }
         if (io == null) {
             io = GxlIO.instance();

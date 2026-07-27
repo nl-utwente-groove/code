@@ -16,8 +16,8 @@
  */
 package nl.utwente.groove.explore.encode;
 
-import static nl.utwente.groove.io.HTMLConverter.HTML_TAG;
-import static nl.utwente.groove.io.HTMLConverter.STRONG_TAG;
+import static nl.utwente.groove.util.HTMLConverter.HTML_TAG;
+import static nl.utwente.groove.util.HTMLConverter.STRONG_TAG;
 
 import java.awt.CardLayout;
 import java.awt.Color;

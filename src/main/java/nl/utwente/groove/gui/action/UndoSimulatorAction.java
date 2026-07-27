@@ -15,8 +15,8 @@ import nl.utwente.groove.io.store.SystemStore;
 public class UndoSimulatorAction extends SimulatorAction {
     /** Constructs an instance of the action. */
     public UndoSimulatorAction(Simulator simulator) {
-        super(simulator, Options.UNDO_ACTION_NAME, Icons.UNDO_ICON);
-        putValue(SHORT_DESCRIPTION, Options.UNDO_ACTION_NAME);
+        super(simulator, EditType.UNDO_ACTION_NAME, Icons.UNDO_ICON);
+        putValue(SHORT_DESCRIPTION, EditType.UNDO_ACTION_NAME);
         putValue(ACCELERATOR_KEY, Options.UNDO_KEY);
         setEnabled(false);
         this.undoManager = simulator.getUndoManager();
@@ -36,7 +36,7 @@ public class UndoSimulatorAction extends SimulatorAction {
             putValue(Action.NAME, this.undoManager.getUndoPresentationName());
         } else {
             setEnabled(false);
-            putValue(Action.NAME, Options.UNDO_ACTION_NAME);
+            putValue(Action.NAME, EditType.UNDO_ACTION_NAME);
         }
     }
 

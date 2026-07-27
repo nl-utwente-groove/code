@@ -16,7 +16,6 @@
  */
 package nl.utwente.groove.io.external;
 
-import java.awt.Frame;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -24,10 +23,13 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 
-import nl.utwente.groove.gui.Simulator;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.io.FileType;
 
 /** Abstract superclass for {@link Exporter}s, containing a few helper methods. */
+@NonNullByDefault
 public abstract class AbstractExporter implements Exporter {
     /** Constructor for subclassing. */
     protected AbstractExporter(ExportKind exportKind) {
@@ -76,25 +78,6 @@ public abstract class AbstractExporter implements Exporter {
         }
     }
 
-    /** Returns the parent component for a dialog. */
-    protected final Frame getParent() {
-        return this.simulator == null
-            ? null
-            : this.simulator.getFrame();
-    }
-
-    /** Returns the simulator on which this exporter works. */
-    protected final Simulator getSimulator() {
-        return this.simulator;
-    }
-
-    @Override
-    public void setSimulator(Simulator simulator) {
-        this.simulator = simulator;
-    }
-
-    private Simulator simulator;
-
     /** Subclass of AbstractExporter containing functionality to write to a PrintWriter. */
     static public abstract class Writer extends AbstractExporter {
         /**
@@ -135,7 +118,9 @@ public abstract class AbstractExporter implements Exporter {
 
         /** Writes a line to the export file. */
         public void emit(String line) {
-            this.writer.println(this.indent + line);
+            var writer = this.writer;
+            assert writer != null : "Writer not opened";
+            writer.println(this.indent + line);
         }
 
         /** Adds an step to the space indentation prefixed to every {@link #emit(String)} line. */
@@ -154,6 +139,9 @@ public abstract class AbstractExporter implements Exporter {
         /** Increase to the indent upon invocation of {@link #increaseIndent()}. */
         static private final String INDENT_STEP = "  ";
 
-        private PrintWriter writer;
+        /** The writer to which {@link #emit(String)} sends its output;
+         * only set while {@link #doExport(Exportable, File, FileType)} is in progress.
+         */
+        private @Nullable PrintWriter writer;
     }
 }

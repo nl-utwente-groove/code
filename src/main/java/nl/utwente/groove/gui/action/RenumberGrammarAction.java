@@ -18,8 +18,8 @@ package nl.utwente.groove.gui.action;
 
 import java.io.IOException;
 
-import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
+import nl.utwente.groove.io.store.EditType;
 
 /**
  * Action for renumbering all node numbers in host graphs and rules
@@ -28,7 +28,7 @@ import nl.utwente.groove.gui.Simulator;
 public class RenumberGrammarAction extends SimulatorAction {
     /** Constructs an instance of the action, for a given simulator. */
     public RenumberGrammarAction(Simulator simulator) {
-        super(simulator, Options.RENUMBER_ACTION_NAME, null);
+        super(simulator, EditType.RENUMBER_ACTION_NAME, null);
     }
 
     @Override

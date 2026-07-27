@@ -71,7 +71,6 @@ import nl.utwente.groove.gui.action.ActionStore;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.gui.jgraph.JAttr;
-import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
@@ -83,6 +82,7 @@ import nl.utwente.groove.lts.RecipeTransition;
 import nl.utwente.groove.lts.RuleTransition;
 import nl.utwente.groove.lts.StartGraphState;
 import nl.utwente.groove.transform.RuleEvent;
+import nl.utwente.groove.util.HTMLConverter;
 
 /**
  * List of states in the LTS.

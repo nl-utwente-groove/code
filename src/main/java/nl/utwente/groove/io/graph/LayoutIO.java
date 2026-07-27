@@ -35,7 +35,7 @@ import nl.utwente.groove.gui.layout.JEdgeLayout;
 import nl.utwente.groove.gui.layout.JVertexLayout;
 import nl.utwente.groove.gui.layout.LayoutMap;
 import nl.utwente.groove.io.FileType;
-import nl.utwente.groove.io.HTMLConverter;
+import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.line.LineStyle;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;

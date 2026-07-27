@@ -16,17 +16,17 @@
  */
 package nl.utwente.groove.util.line;
 
-import static nl.utwente.groove.io.HTMLConverter.HTML_TAG;
-import static nl.utwente.groove.io.HTMLConverter.createColorTag;
-import static nl.utwente.groove.io.HTMLConverter.createSpanTag;
+import static nl.utwente.groove.util.HTMLConverter.HTML_TAG;
+import static nl.utwente.groove.util.HTMLConverter.createColorTag;
+import static nl.utwente.groove.util.HTMLConverter.createSpanTag;
 
 import java.awt.Color;
 import java.awt.Font;
 
 import nl.utwente.groove.gui.Options;
-import nl.utwente.groove.io.HTMLConverter;
-import nl.utwente.groove.io.HTMLConverter.HTMLTag;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.HTMLConverter;
+import nl.utwente.groove.util.HTMLConverter.HTMLTag;
 import nl.utwente.groove.util.line.Line.ColorType;
 import nl.utwente.groove.util.line.Line.Style;
 

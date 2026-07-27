@@ -1480,10 +1480,6 @@ public class SimulatorModel implements Cloneable {
          */
         PROLOG(ResourceKind.PROLOG),
         /**
-         * The selected config file has changed.
-         */
-        CONFIG(ResourceKind.CONFIG),
-        /**
          * The selected Groovy script has changed.
          */
         GROOVY(ResourceKind.GROOVY),

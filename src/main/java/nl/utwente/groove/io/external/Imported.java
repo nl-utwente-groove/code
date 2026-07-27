@@ -16,6 +16,9 @@
  */
 package nl.utwente.groove.io.external;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.ResourceKind;
@@ -23,10 +26,14 @@ import nl.utwente.groove.grammar.model.ResourceKind;
 /**
  * An imported grammar resource: either a graph or text (not both).
  * Simply union for both types.
+ * Precisely one of {@link #graph()} and {@link #text()} is non-{@code null};
+ * {@link #isGraph()} tells which.
  * @author Harold Bruintjes
  * @version $Revision$
  */
-public record Imported(QualName qualName, ResourceKind kind, AspectGraph graph, String text) {
+@NonNullByDefault
+public record Imported(QualName qualName, ResourceKind kind, @Nullable AspectGraph graph,
+                       @Nullable String text) {
     /** Constructs a graph-based resource. */
     public Imported(ResourceKind kind, AspectGraph resource) {
         this(resource.getQualName(), kind, resource, null);

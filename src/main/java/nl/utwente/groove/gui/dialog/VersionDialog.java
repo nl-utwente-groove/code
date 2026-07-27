@@ -31,7 +31,7 @@ import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 
 import nl.utwente.groove.grammar.GrammarProperties;
-import nl.utwente.groove.io.HTMLConverter;
+import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.Version;
 
 /**

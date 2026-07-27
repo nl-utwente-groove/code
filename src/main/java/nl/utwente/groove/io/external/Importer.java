@@ -32,7 +32,13 @@ import nl.utwente.groove.io.FileType;
  * @version $Revision$
  */
 @NonNullByDefault
-public interface Importer extends Porter {
+public interface Importer {
+    /**
+     * Get list of file types this importer can handle.
+     * @return list of supported file types.
+     */
+    public Set<FileType> getFileTypes();
+
     /**
      * Imports resource from file.
      * @param file file to read from

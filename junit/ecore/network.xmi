@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The 'next' references point backwards (to a station declared earlier):
+     EMF only resolves a single-valued reference with a single-valued
+     eOpposite if its target has already been read. -->
+<network:Network xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:network="http://groove.utwente.nl/ecore/network"
+    xmi:id="net">
+  <stations xmi:id="south" name="South"/>
+  <stations xmi:id="middle" name="Middle" next="south"/>
+  <stations xmi:id="north" name="North" next="middle" route="south middle"/>
+</network:Network>

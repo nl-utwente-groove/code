@@ -90,6 +90,7 @@ import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.jgraph.JGraphMode;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.tree.TypeTree;
+import nl.utwente.groove.io.store.EditType;
 import nl.utwente.groove.util.parse.FormatError;
 
 /**
@@ -839,7 +840,7 @@ final public class GraphEditorTab extends ResourceTab
     private Action getRedoAction() {
         if (this.redoAction == null) {
             this.redoAction
-                = new ToolbarAction(Options.REDO_ACTION_NAME, Options.REDO_KEY, Icons.REDO_ICON) {
+                = new ToolbarAction(EditType.REDO_ACTION_NAME, Options.REDO_KEY, Icons.REDO_ICON) {
                     @Override
                     public void actionPerformed(ActionEvent evt) {
                         if (isEnabled()) {
@@ -862,7 +863,7 @@ final public class GraphEditorTab extends ResourceTab
     private Action getUndoAction() {
         if (this.undoAction == null) {
             this.undoAction
-                = new ToolbarAction(Options.UNDO_ACTION_NAME, Options.UNDO_KEY, Icons.UNDO_ICON) {
+                = new ToolbarAction(EditType.UNDO_ACTION_NAME, Options.UNDO_KEY, Icons.UNDO_ICON) {
                     @Override
                     public void actionPerformed(ActionEvent evt) {
                         if (isEnabled()) {

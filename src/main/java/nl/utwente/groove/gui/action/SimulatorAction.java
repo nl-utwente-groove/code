@@ -15,18 +15,20 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.gui.BehaviourOption;
 import nl.utwente.groove.gui.Icons;
-import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.SimulatorModel;
+import nl.utwente.groove.gui.dialog.EcoreOptionsDialog;
 import nl.utwente.groove.gui.dialog.ErrorDialog;
 import nl.utwente.groove.gui.dialog.FindReplaceDialog;
 import nl.utwente.groove.gui.dialog.FreshNameDialog;
+import nl.utwente.groove.gui.dialog.GrooveFileChooser;
 import nl.utwente.groove.gui.dialog.SaveDialog;
 import nl.utwente.groove.gui.display.ControlDisplay;
 import nl.utwente.groove.gui.display.DisplayKind;
@@ -38,7 +40,7 @@ import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.gui.display.RuleDisplay;
 import nl.utwente.groove.gui.display.StateDisplay;
 import nl.utwente.groove.io.FileType;
-import nl.utwente.groove.io.GrooveFileChooser;
+import nl.utwente.groove.io.external.format.ecore.EcoreOptions;
 import nl.utwente.groove.io.store.EditType;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.util.parse.FormatException;
@@ -82,7 +84,7 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
      * The action adds itself to the refreshables of the simulator.
      */
     protected SimulatorAction(Simulator simulator, EditType edit, ResourceKind resource) {
-        this(simulator, Options.getEditActionName(edit, resource, false),
+        this(simulator, EditType.getEditActionName(edit, resource, false),
              Icons.getEditIcon(edit, resource), edit, resource);
     }
 
@@ -91,7 +93,7 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
         if (getEditType() == null) {
             return null;
         } else {
-            return Options.getEditActionName(getEditType(), getResourceKind(), false);
+            return EditType.getEditActionName(getEditType(), getResourceKind(), false);
         }
     }
 
@@ -255,6 +257,37 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
             };
         nameDialog.showDialog(getFrame(), title);
         return nameDialog.getName();
+    }
+
+    /**
+     * Asks the user for the Ecore encoding options, if a given file type calls
+     * for them, and stores the chosen options in the grammar properties.
+     * The properties are changed through the (undoable) store, so that the
+     * subsequent port sees them; this is why the dialog is shown before the
+     * port rather than as part of it.
+     * @param fileType the file type chosen for the import or export
+     * @return {@code false} if the user cancelled the dialog, in which case the
+     * port should not go ahead
+     * @throws IOException if storing the changed properties failed
+     */
+    final protected boolean askEcoreOptions(FileType fileType) throws IOException {
+        if (fileType != FileType.ECORE && fileType != FileType.XMI) {
+            return true;
+        }
+        GrammarProperties properties = getGrammarModel().getProperties();
+        EcoreOptions oldOptions = EcoreOptions.of(properties);
+        EcoreOptionsDialog dialog = new EcoreOptionsDialog(oldOptions);
+        if (!dialog.showDialog(getFrame(), null)) {
+            return false;
+        }
+        EcoreOptions newOptions = dialog.getOptions();
+        if (!newOptions.equals(oldOptions)) {
+            GrammarProperties newProperties = properties.clone();
+            newProperties.setEcoreOrdering(newOptions.ordering());
+            newProperties.setEcoreUseIdentifiers(newOptions.useIdentifiers());
+            getSimulatorModel().doSetProperties(newProperties);
+        }
+        return true;
     }
 
     /**

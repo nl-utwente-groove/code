@@ -68,7 +68,7 @@ import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.gui.look.Values;
-import nl.utwente.groove.io.HTMLConverter;
+import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 

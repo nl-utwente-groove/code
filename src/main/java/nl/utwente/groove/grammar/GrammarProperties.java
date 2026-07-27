@@ -24,6 +24,7 @@ import nl.utwente.groove.grammar.CheckPolicy.PolicyMap;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.type.TypeLabel;
+import nl.utwente.groove.io.external.format.ecore.EcoreOptions.Ordering;
 import nl.utwente.groove.transform.oracle.DefaultOracle;
 import nl.utwente.groove.transform.oracle.ValueOracle;
 import nl.utwente.groove.transform.oracle.ValueOracleFactory;
@@ -388,7 +389,7 @@ public class GrammarProperties extends Properties {
      */
     public Set<QualName> getActiveNames(ResourceKind kind) {
         var names = switch (kind) {
-        case CONFIG, GROOVY, PROPERTIES, RULE -> Collections.<QualName>emptyList();
+        case GROOVY, PROPERTIES, RULE -> Collections.<QualName>emptyList();
         default -> parsePropertyOrDefault(resourceKeyMap.get(kind)).getQualNameList();
         };
         return new TreeSet<>(names);
@@ -529,6 +530,38 @@ public class GrammarProperties extends Properties {
      */
     public boolean isUseStoredNodeIds() {
         return parsePropertyOrDefault(GrammarKey.USE_STORED_NODE_IDS).getBoolean();
+    }
+
+    /**
+     * Sets the encoding of ordered or non-unique many-valued Ecore features.
+     * @param ordering the new ordering encoding
+     */
+    public void setEcoreOrdering(Ordering ordering) {
+        storeValue(GrammarKey.ECORE_ORDERING, ordering.text());
+    }
+
+    /**
+     * Returns the encoding of ordered or non-unique many-valued Ecore features.
+     * @return the ordering encoding; {@link Ordering#NONE} by default
+     */
+    public Ordering getEcoreOrdering() {
+        return Ordering.valueOfText(parsePropertyOrDefault(GrammarKey.ECORE_ORDERING).getString());
+    }
+
+    /**
+     * Sets the use of {@code xmi:id} values as node identifiers upon Ecore porting.
+     * @param use if <code>true</code>, {@code xmi:id} values are used as node identifiers
+     */
+    public void setEcoreUseIdentifiers(boolean use) {
+        storeValue(GrammarKey.ECORE_USE_IDENTIFIERS, use);
+    }
+
+    /**
+     * Returns the use of {@code xmi:id} values as node identifiers upon Ecore porting.
+     * @return if <code>true</code>, {@code xmi:id} values are used as node identifiers
+     */
+    public boolean isEcoreUseIdentifiers() {
+        return parsePropertyOrDefault(GrammarKey.ECORE_USE_IDENTIFIERS).getBoolean();
     }
 
     /**

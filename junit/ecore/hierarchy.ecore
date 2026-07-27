@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    name="hierarchy" nsURI="http://groove.utwente.nl/ecore/hierarchy" nsPrefix="hierarchy">
+  <eClassifiers xsi:type="ecore:EClass" name="Named" abstract="true" interface="true">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Trackable" abstract="true" interface="true">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="status" eType="#//Status"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Element" abstract="true" eSuperTypes="#//Named">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="rank"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Task" eSuperTypes="#//Element #//Trackable"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Subtask" eSuperTypes="#//Task">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="depth"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Project" eSuperTypes="#//Named">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="tasks" upperBound="-1"
+        containment="true" eType="#//Task"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EEnum" name="Status">
+    <eLiterals name="NEW"/>
+    <eLiterals name="IN-PROGRESS" value="1"/>
+    <eLiterals name="DONE" value="2"/>
+  </eClassifiers>
+</ecore:EPackage>

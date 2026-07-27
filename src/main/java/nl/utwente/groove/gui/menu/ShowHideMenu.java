@@ -46,6 +46,7 @@ import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.dialog.FormulaDialog;
+import nl.utwente.groove.gui.dialog.GrooveFileChooser;
 import nl.utwente.groove.gui.jgraph.JCell;
 import nl.utwente.groove.gui.jgraph.JEdge;
 import nl.utwente.groove.gui.jgraph.JGraph;
@@ -53,10 +54,9 @@ import nl.utwente.groove.gui.jgraph.LTSJCell;
 import nl.utwente.groove.gui.jgraph.LTSJGraph;
 import nl.utwente.groove.gui.tree.LabelTree.LabelledCells;
 import nl.utwente.groove.io.FileType;
-import nl.utwente.groove.io.GrooveFileChooser;
-import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphTransition;
+import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

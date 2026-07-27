@@ -16,7 +16,10 @@
  */
 package nl.utwente.groove.util;
 
-import nl.utwente.groove.io.HTMLConverter;
+import static nl.utwente.groove.util.HTMLConverter.ITALIC_TAG;
+import static nl.utwente.groove.util.HTMLConverter.createHtmlTag;
+
+import nl.utwente.groove.util.HTMLConverter.HTMLTag;
 
 /**
  * Interface to provide documentation for a publicly visible enum type.
@@ -36,11 +39,11 @@ public interface DocumentedEnum {
      */
     static <T extends Enum<?> & DocumentedEnum> String document(Class<T> claz) {
         StringBuffer result = new StringBuffer();
-        HTMLConverter.HTMLTag liTag = HTMLConverter.createHtmlTag("li");
+        HTMLTag liTag = createHtmlTag("li");
         for (T value : claz.getEnumConstants()) {
             StringBuilder line = new StringBuilder();
             line.append("- ");
-            line.append(HTMLConverter.ITALIC_TAG.on(value.getName()));
+            line.append(ITALIC_TAG.on(value.getName()));
             line.append(": ");
             line.append(value.getExplanation());
             result.append(liTag.on(line));

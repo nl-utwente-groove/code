@@ -64,7 +64,6 @@ import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.type.TypeLabel;
-import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.io.ExtensionFilter;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.Util;
@@ -502,7 +501,7 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
      * an undoable edit wrapping this functionality.
      */
     MyCompoundEdit doRelabel(TypeLabel oldLabel, TypeLabel newLabel) throws IOException {
-        MyCompoundEdit result = new MyCompoundEdit(Options.REPLACE_ACTION_NAME);
+        MyCompoundEdit result = new MyCompoundEdit(EditType.REPLACE_ACTION_NAME);
         for (ResourceKind kind : ResourceKind.values()) {
             if (kind.isGraphBased()) {
                 List<AspectGraph> newGraphs = new ArrayList<>(getGraphs(kind).size());
@@ -654,7 +653,7 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
      * an undoable edit wrapping this functionality.
      */
     private MyCompoundEdit doRenumber() throws IOException {
-        MyCompoundEdit result = new MyCompoundEdit(Options.RENUMBER_ACTION_NAME);
+        MyCompoundEdit result = new MyCompoundEdit(EditType.RENUMBER_ACTION_NAME);
         for (ResourceKind kind : ResourceKind.values()) {
             if (kind.isGraphBased()) {
                 List<AspectGraph> newGraphs = new ArrayList<>(getGraphs(kind).size());
@@ -1073,7 +1072,7 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
 
         @Override
         public String getPresentationName() {
-            String result = Options.getEditActionName(getType(), getResourceKind(), false);
+            String result = EditType.getEditActionName(getType(), getResourceKind(), false);
             if (this.newTexts.size() > 1 || this.oldTexts.size() > 1) {
                 result += "s";
             }
@@ -1146,7 +1145,7 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
 
         @Override
         public String getPresentationName() {
-            String result = Options.getEditActionName(getType(), getResourceKind(), false);
+            String result = EditType.getEditActionName(getType(), getResourceKind(), false);
             if (this.newGraphs.size() > 1 || this.oldGraphs.size() > 1) {
                 result += "s";
             }
@@ -1233,7 +1232,7 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
 
         @Override
         public String getPresentationName() {
-            return Options.SYSTEM_PROPERTIES_ACTION_NAME;
+            return EditType.SYSTEM_PROPERTIES_ACTION_NAME;
         }
 
         @Override
@@ -1283,12 +1282,12 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
 
         @Override
         public String getRedoPresentationName() {
-            return Options.REDO_ACTION_NAME + " " + getPresentationName();
+            return EditType.REDO_ACTION_NAME + " " + getPresentationName();
         }
 
         @Override
         public String getUndoPresentationName() {
-            return Options.UNDO_ACTION_NAME + " " + getPresentationName();
+            return EditType.UNDO_ACTION_NAME + " " + getPresentationName();
         }
 
         @Override

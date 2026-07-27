@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.gui.display;
 
-import static nl.utwente.groove.io.HTMLConverter.HTML_TAG;
+import static nl.utwente.groove.util.HTMLConverter.HTML_TAG;
 
 import java.awt.CardLayout;
 import java.awt.Component;
@@ -53,8 +53,8 @@ import nl.utwente.groove.gui.SimulatorListener;
 import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.gui.SimulatorModel.Change;
 import nl.utwente.groove.gui.display.Display.ListPanel;
-import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.Properties;
 import nl.utwente.groove.util.parse.FormatException;
 

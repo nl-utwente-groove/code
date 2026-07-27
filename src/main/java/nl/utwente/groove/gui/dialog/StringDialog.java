@@ -53,10 +53,10 @@ import javax.swing.event.DocumentListener;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.display.DismissDelayer;
 import nl.utwente.groove.gui.look.Values;
-import nl.utwente.groove.io.HTMLConverter;
-import nl.utwente.groove.io.HTMLConverter.HTMLTag;
 import nl.utwente.groove.lts.StateProperty;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.HTMLConverter;
+import nl.utwente.groove.util.HTMLConverter.HTMLTag;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.IdValidator;
 
