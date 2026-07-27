@@ -109,8 +109,9 @@ public class BeamPool implements Pool {
         // scheduled for exploration; under the random order append instead,
         // replicating RandomPool so that an unrestricted beam draws the
         // same states from the same seed; a slot is normally free because
-        // the state was just taken, but a re-added transient state may find
-        // a full beam
+        // the state was just taken, but a state whose transience was
+        // resolved between its discovery and its exploration reaches this
+        // method without a preceding take, so trim for robustness
         var states = this.states;
         int index = switch (this.order) {
         case OLDEST, NEWEST -> 0;

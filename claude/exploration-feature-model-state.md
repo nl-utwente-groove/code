@@ -111,8 +111,9 @@ disappears in phase 6; the preview field (the config's own text form) stays.
   An unrestricted beam is bit-identical to the corresponding plain pool for
   all three orders (`BeamSearchTest` asserts this, including the seeded
   random draws — `BeamPool.readd` appends under the random order to
-  replicate `RandomPool` exactly); a re-added transient state may hit a full
-  beam, so `readd` also trims.
+  replicate `RandomPool` exactly); `readd` also trims, for robustness (a
+  state whose transience resolves between discovery and exploration reaches
+  it without a preceding take).
 - `util.Randomness` (5b slice 1, 2026-07-26) — the master-seed registry of
   `claude/randomness-seeding.md` (decisions resolved, see there): per-purpose
   streams (EXPLORATION, ORACLE) derived per obtainment, so a fixed master seed
@@ -166,6 +167,23 @@ disappears in phase 6; the preview field (the config's own text form) stays.
 - Tests: use `org.junit.Test` (JUnit 4 annotation, public class/methods) + jupiter
   assertions; a jupiter-annotated `@Test` class is *silently skipped* by surefire.
   Single-class runs: `mvn test -Dtest=Name` (jupiter-annotated would show 0 tests).
+- **Pools never see transient states** (since the 5b transient-nesting fix,
+  2026-07-27): transient states belong to a nested sub-exploration ending in
+  an atomic (transactional) transition, run to completion on the strategy's
+  internal stack. Historically the trial re-add in `ClosingStrategy.doNext`
+  leaked verdict-pending transient states into the pool (the commented-out
+  `assert !state.isTransient()` there marked the broken assumption; trigger:
+  a try/else around a *recipe* call inside a recipe, i.e. recursion, as in
+  `fibonacci.gps` — a plain rule-call try inside a recipe resolves at match
+  time and never leaked). Now such states are pushed back on the transient
+  stack; verdict resolution is push-driven (closure/transience propagation
+  through `StateCache`), so a terminating sub-exploration always resolves
+  before the stack drains back to the state — only a non-terminating
+  transient descent stays pending, and that diverges under any scheme (rule
+  system error, per Arend). The contract is documented on `Pool` and
+  asserted in `FrontierStrategy`; `TransientNestingTest` guards it (it also
+  fails pre-fix). Pool implementations may therefore drop/reorder freely
+  without cutting into transactions.
 - `storeValue` removes a key when the value is the key default — hence
   `setExploreConfig` must (and does) delete the legacy key explicitly, or a leftover
   legacy value would win after storing an explicit default config.

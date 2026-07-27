@@ -65,11 +65,13 @@ public class FrontierStrategy extends ClosingStrategy {
 
     @Override
     protected void putInPool(GraphState state) {
+        assert !state.isTransient();
         this.pool.add(state);
     }
 
     @Override
     protected void putBackInPool(GraphState state) {
+        assert !state.isTransient();
         this.pool.readd(state);
     }
 
