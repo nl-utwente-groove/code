@@ -58,11 +58,6 @@ import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 
-import picocli.CommandLine.ITypeConverter;
-import picocli.CommandLine.Option;
-import picocli.CommandLine.Parameters;
-import picocli.CommandLine.TypeConversionException;
-
 import nl.utwente.groove.explore.Verbosity;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
@@ -87,6 +82,10 @@ import nl.utwente.groove.util.cli.CmdLineException;
 import nl.utwente.groove.util.cli.ExistingFileHandler;
 import nl.utwente.groove.util.cli.GrooveCmdLineTool;
 import nl.utwente.groove.util.parse.FormatException;
+import picocli.CommandLine.ITypeConverter;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
+import picocli.CommandLine.TypeConversionException;
 
 /**
  * Application to create image files for one or more graph files in a directory.
@@ -238,6 +237,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
                 ? getFormatMap().values().iterator().next()
                 : outFileType;
             final Exporter exporter = Exporters.getExporter(fileType);
+            assert exporter != null;
             final File exportFile = new File(outParent, fileType.addExtension(outFileName));
 
             emit(MEDIUM, "Imaging %s as %s%n", inFile, exportFile);

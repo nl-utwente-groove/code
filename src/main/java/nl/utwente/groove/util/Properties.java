@@ -40,7 +40,6 @@ import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.rule.MethodName;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.transform.oracle.ValueOracleFactory;
-import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.HTMLConverter.HTMLTag;
 import nl.utwente.groove.util.collect.DeltaMap;
 import nl.utwente.groove.util.parse.FormatChecker;
