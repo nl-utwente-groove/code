@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    name="datatypes" nsURI="http://groove.utwente.nl/ecore/datatypes" nsPrefix="datatypes">
+  <eClassifiers xsi:type="ecore:EClass" name="Values">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="booleanValue"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="booleanObject"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBooleanObject"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="byteValue"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EByte"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="byteObject"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EByteObject"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="shortValue"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EShort"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="shortObject"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EShortObject"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="intValue"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="integerObject"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EIntegerObject"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="longValue"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//ELong"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="longObject"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//ELongObject"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="bigInteger"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBigInteger"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="floatValue"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EFloat"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="floatObject"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EFloatObject"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="doubleValue"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EDouble"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="doubleObject"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EDoubleObject"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="bigDecimal"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBigDecimal"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="stringValue"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="charValue"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EChar"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="characterObject"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//ECharacterObject"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="dateValue"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EDate"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="customValue" eType="#//Colour"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="aliases" upperBound="-1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="Colour" instanceClassName="java.lang.String"/>
+</ecore:EPackage>

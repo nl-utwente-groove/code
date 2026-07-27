@@ -316,14 +316,7 @@ public class EcoreTest {
      */
     @Test
     public void testMetamodelExport() throws Exception {
-        AspectGraph type = single(importFrom("shop.ecore", Ordering.NONE, true), ResourceKind.TYPE);
-        File dir = newDir();
-        exportTo(newGrammar(type, null, Ordering.NONE, true), dir);
-        AspectGraph result
-            = single(importFrom(new File(dir, "shop.ecore"), Ordering.NONE, true),
-                     ResourceKind.TYPE);
-        assertIsomorphic(type, result);
-        assertEquals(metadata(type), metadata(result));
+        assertRoundTrip("shop.ecore", Ordering.NONE);
     }
 
     /**
@@ -332,30 +325,14 @@ public class EcoreTest {
      */
     @Test
     public void testInstanceExport() throws Exception {
-        Set<Imported> imported = importFrom("shop.xmi", Ordering.NONE, true);
-        AspectGraph type = single(imported, ResourceKind.TYPE);
-        AspectGraph host = single(imported, ResourceKind.HOST);
-        File dir = newDir();
-        exportTo(newGrammar(type, host, Ordering.NONE, true), dir);
-        Set<Imported> result = importFrom(new File(dir, "shop.xmi"), Ordering.NONE, true);
-        assertIsomorphic(type, single(result, ResourceKind.TYPE));
-        AspectGraph resultHost = single(result, ResourceKind.HOST);
-        assertIsomorphic(host, resultHost);
-        assertEquals(identifiers(host), identifiers(resultHost));
+        assertRoundTrip("shop.xmi", Ordering.NONE);
     }
 
     /** Tests that the element order of an indexed feature survives a round trip. */
     @Test
     public void testOrderingExport() throws Exception {
-        Set<Imported> imported = importFrom("ordered.xmi", Ordering.INDEX, true);
-        AspectGraph type = single(imported, ResourceKind.TYPE);
-        AspectGraph host = single(imported, ResourceKind.HOST);
-        File dir = newDir();
-        exportTo(newGrammar(type, host, Ordering.INDEX, true), dir);
-        Set<Imported> result = importFrom(new File(dir, "ordered.xmi"), Ordering.INDEX, true);
-        assertIsomorphic(type, single(result, ResourceKind.TYPE));
-        AspectGraph resultHost = single(result, ResourceKind.HOST);
-        assertIsomorphic(host, resultHost);
+        AspectGraph resultHost
+            = single(assertRoundTrip("ordered.xmi", Ordering.INDEX), ResourceKind.HOST);
         // spelled out, since isomorphism alone reads as a weak statement about
         // order — and the duplicate value of the non-unique 'labels' attribute
         // must not be swallowed on the way out either
@@ -377,21 +354,261 @@ public class EcoreTest {
      */
     @Test
     public void testManyValuedAttribute() throws Exception {
-        Set<Imported> imported = importFrom("shop.xmi", Ordering.NONE, true);
-        AspectGraph type = single(imported, ResourceKind.TYPE);
-        AspectGraph host = single(imported, ResourceKind.HOST);
+        AspectGraph host = single(importFrom("shop.xmi", Ordering.NONE, true), ResourceKind.HOST);
         Set<String> tags = Set.of("string:\"fiction\"", "string:\"classic\"");
         assertEquals(tags, targets(host, "tags"));
-        File dir = newDir();
-        exportTo(newGrammar(type, host, Ordering.NONE, true), dir);
-        Set<Imported> result = importFrom(new File(dir, "shop.xmi"), Ordering.NONE, true);
+        Set<Imported> result = assertRoundTrip("shop.xmi", Ordering.NONE);
         assertEquals(tags, targets(single(result, ResourceKind.HOST), "tags"));
-        assertEquals(metadata(type), metadata(single(result, ResourceKind.TYPE)));
+    }
+
+    // ----------------------------------------------------------------------
+    // Feature-group examples
+    //
+    // One fixture pair per group of Ecore features, each round-tripped in the
+    // ordering modes it can tell apart, and each with spot assertions on the
+    // labels that showcase its group. The fixtures are documented in
+    // junit/ecore/README.md; the assertions below are what that documentation
+    // is checked against.
+    // ----------------------------------------------------------------------
+
+    /** Tests the encoding of the supported EMF data types, and of the data
+     * values in an instance of them. */
+    @Test
+    public void testDatatypes() throws Exception {
+        Set<Imported> imported = importFrom("datatypes.xmi", Ordering.NONE, true);
+        AspectGraph type = single(imported, ResourceKind.TYPE);
+        // every data type maps to the sort of its attribute self-loop;
+        // the custom data type 'Colour' and 'EDate' are approximated by strings
+        assertEquals(Map
+            .of("Values",
+                labels("type:Values", "bool:booleanValue", "bool:booleanObject", "int:byteValue",
+                       "int:byteObject", "int:shortValue", "int:shortObject", "int:intValue",
+                       "int:integerObject", "int:longValue", "int:longObject", "int:bigInteger",
+                       "real:floatValue", "real:floatObject", "real:doubleValue",
+                       "real:doubleObject", "real:bigDecimal", "string:stringValue",
+                       "string:charValue", "string:characterObject", "string:dateValue",
+                       "string:customValue", "string:aliases")),
+                     selfLabels(type));
+        AspectGraph host = single(imported, ResourceKind.HOST);
+        Set<String> values = new TreeSet<>(selfLabels(host).get("values"));
+        // EMF renders an EDate in the time zone of the machine reading it,
+        // so only the shape of that one value can be pinned down here
+        Set<String> dates = new TreeSet<>();
+        values.stream().filter(l -> l.startsWith("let:dateValue=")).forEach(dates::add);
+        assertEquals(1, dates.size());
+        assertTrue(dates.toString(),
+                   dates.iterator().next().matches("let:dateValue=\"\\d{4}-\\d{2}-\\d{2}T.*\""));
+        values.removeAll(dates);
+        assertEquals(labels("type:Values", "id:values", "let:booleanValue=true",
+                            "let:booleanObject=false", "let:byteValue=-128", "let:byteObject=127",
+                            "let:shortValue=-32768", "let:shortObject=32767",
+                            "let:intValue=-2147483648", "let:integerObject=2147483647",
+                            "let:longValue=-9223372036854775808",
+                            "let:longObject=9223372036854775807",
+                            "let:bigInteger=170141183460469231731687303715884105727",
+                            "let:floatValue=-1.5", "let:floatObject=0.25", "let:doubleValue=-0.5",
+                            "let:doubleObject=0.001", "let:bigDecimal=-123.456",
+                            // the quote is escaped; the backslash needs no escaping
+                            "let:stringValue=\"He said \\\"hi\\\", path C:\\temp\"",
+                            // EMF serialises a character as its numeric code
+                            "let:charValue=\"65\"", "let:characterObject=\"122\"",
+                            "let:customValue=\"#ff8800\""),
+                     values);
+        // the many-valued attribute goes to shared constant nodes instead
+        assertEquals(Set.of("string:\"plain\"", "string:\"quo\\\"ted\""),
+                     targets(host, "aliases"));
+        assertRoundTrip("datatypes.xmi", Ordering.NONE);
+    }
+
+    /** Tests the indexed encoding of the many-valued attribute of the data type
+     * example, and its round trip. */
+    @Test
+    public void testDatatypesIndexed() throws Exception {
+        Set<Imported> imported = assertRoundTrip("datatypes.xmi", Ordering.INDEX);
+        AspectGraph type = single(imported, ResourceKind.TYPE);
+        assertEquals(labels("type:Values$aliases", "edge:\"aliases\"", "int:index", "string:val"),
+                     selfLabels(type).get("Values$aliases"));
+        assertEquals(Set.of("Values -in=1:aliases-> Values$aliases"), binaryEdges(type));
+        AspectGraph host = single(imported, ResourceKind.HOST);
+        assertEquals(Set.of("values -aliases-> Values$aliases#1",
+                            "values -aliases-> Values$aliases#2",
+                            "Values$aliases#1 -val-> string:\"plain\"",
+                            "Values$aliases#2 -val-> string:\"quo\\\"ted\""),
+                     binaryEdges(host));
+    }
+
+    /** Tests the encoding of abstract classes, interfaces, multiple inheritance
+     * and enumerations. */
+    @Test
+    public void testHierarchy() throws Exception {
+        Set<Imported> imported = importFrom("hierarchy.xmi", Ordering.NONE, true);
+        AspectGraph type = single(imported, ResourceKind.TYPE);
+        Map<String,Set<String>> expected = new LinkedHashMap<>();
+        // an interface is encoded exactly like an abstract class
+        expected.put("Named", labels("type:Named", "abs:", "string:name"));
+        expected.put("Trackable", labels("type:Trackable", "abs:"));
+        expected.put("Element", labels("type:Element", "abs:", "int:rank"));
+        expected.put("Task", labels("type:Task"));
+        expected.put("Subtask", labels("type:Subtask", "int:depth"));
+        expected.put("Project", labels("type:Project"));
+        expected.put("Status", labels("type:Status", "abs:"));
+        expected.put("Status$NEW", labels("type:Status$NEW"));
+        // the hyphen is not a legal Java identifier character
+        expected.put("Status$IN_HYPH_PROGRESS", labels("type:Status$IN_HYPH_PROGRESS"));
+        expected.put("Status$DONE", labels("type:Status$DONE"));
+        assertEquals(expected, selfLabels(type));
+        assertEquals(Set.of("Element -sub:-> Named",
+                            // the two super-types of the multiply inheriting class
+                            "Task -sub:-> Element", "Task -sub:-> Trackable",
+                            "Subtask -sub:-> Task", "Project -sub:-> Named",
+                            "Project -part:tasks-> Task",
+                            // an enum-typed attribute is an edge, not a self-loop
+                            "Trackable -out=0..1:status-> Status", "Status$NEW -sub:-> Status",
+                            "Status$IN_HYPH_PROGRESS -sub:-> Status", "Status$DONE -sub:-> Status"),
+                     binaryEdges(type));
+        AspectGraph host = single(imported, ResourceKind.HOST);
+        // only the literals used in the instance get a node
+        assertEquals(Set.of("Status$IN_HYPH_PROGRESS", "Status$DONE"), targets(host, "status"));
+        assertRoundTrip("hierarchy.xmi", Ordering.NONE);
+    }
+
+    /** Tests that the containment of the hierarchy example moves to the value
+     * edge of the intermediate node under {@code index} ordering. */
+    @Test
+    public void testHierarchyIndexed() throws Exception {
+        AspectGraph type
+            = single(assertRoundTrip("hierarchy.xmi", Ordering.INDEX), ResourceKind.TYPE);
+        assertEquals(labels("type:Project$tasks", "edge:\"tasks\"", "int:index"),
+                     selfLabels(type).get("Project$tasks"));
+        assertTrue(binaryEdges(type).toString(),
+                   binaryEdges(type).contains("Project -in=1:tasks-> Project$tasks"));
+        assertTrue(binaryEdges(type).toString(),
+                   binaryEdges(type).contains("Project$tasks -out=1:part:val-> Task"));
+    }
+
+    /** Tests the encoding of self-references, opposite pairs and explicitly
+     * bounded multiplicities. */
+    @Test
+    public void testNetwork() throws Exception {
+        Set<Imported> imported = importFrom("network.xmi", Ordering.NONE, true);
+        AspectGraph type = single(imported, ResourceKind.TYPE);
+        // the self-references of a class are loops of its type node
+        assertEquals(labels("type:Station", "string:name", "out=0..1:next", "out=0..1:previous",
+                            "route"),
+                     selfLabels(type).get("Station"));
+        assertEquals(Set.of("Network -out=2..4:part:stations-> Station"), binaryEdges(type));
+        // the opposite pairing is not structural: it lives in the metadata
+        assertEquals("Station.next|Station.previous",
+                     GraphInfo.getProperties(type).getProperty(EcoreToGraphs.OPPOSITES_KEY));
+        AspectGraph host = single(imported, ResourceKind.HOST);
+        // both directions of an opposite pair are present as ordinary edges
+        assertEquals(Set.of("north -next-> middle", "middle -next-> south"),
+                     edgesWith(host, "next"));
+        assertEquals(Set.of("middle -previous-> north", "south -previous-> middle"),
+                     edgesWith(host, "previous"));
+        assertRoundTrip("network.xmi", Ordering.NONE);
+    }
+
+    /** Tests that the order of the cross-reference of the network example
+     * survives a round trip in {@code index} mode. */
+    @Test
+    public void testNetworkIndexed() throws Exception {
+        AspectGraph host
+            = single(assertRoundTrip("network.xmi", Ordering.INDEX), ResourceKind.HOST);
+        assertEquals(Set.of("north -route-> Station$route#1", "north -route-> Station$route#2",
+                            "Station$route#1 -val-> south", "Station$route#2 -val-> middle"),
+                     edgesAt(host, "Station$route"));
+    }
+
+    /** Tests the qualification of colliding classifier names over nested
+     * packages, and the repair of names that are not GROOVE identifiers. */
+    @Test
+    public void testPackages() throws Exception {
+        Set<Imported> imported = importFrom("packages.xmi", Ordering.NONE, true);
+        AspectGraph type = single(imported, ResourceKind.TYPE);
+        Map<String,Set<String>> expected = new LinkedHashMap<>();
+        // the three colliding 'Item' classes are qualified by one package segment
+        expected.put("packages$Item", labels("type:packages$Item", "string:name"));
+        expected.put("core$Item", labels("type:core$Item", "int:code"));
+        // 'Line-Item' is repaired as a Java identifier, 'unit.price' and the
+        // reserved keyword 'self' as GROOVE attribute names
+        expected
+            .put("Line_HYPH_Item",
+                 labels("type:Line_HYPH_Item", "real:unit_UNKN_price", "string:_self_"));
+        expected.put("detail$Item", labels("type:detail$Item", "string:note"));
+        assertEquals(expected, selfLabels(type));
+        assertEquals(Set.of("packages$Item -part:entries-> core$Item",
+                            "core$Item -part:details-> detail$Item",
+                            "Line_HYPH_Item -sub:-> core$Item"),
+                     binaryEdges(type));
+        var properties = GraphInfo.getProperties(type);
+        assertEquals("packages|http://groove.utwente.nl/ecore/packages|packages;"
+            + "packages.core|http://groove.utwente.nl/ecore/packages/core|core;"
+            + "packages.core.detail|http://groove.utwente.nl/ecore/packages/core/detail|detail",
+                     properties.getProperty(EcoreToGraphs.PACKAGES_KEY));
+        // the metadata keeps the original names, so an export restores them
+        assertEquals("packages$Item|packages|Item|class;core$Item|packages.core|Item|class;"
+            + "Line_HYPH_Item|packages.core|Line-Item|class;"
+            + "detail$Item|packages.core.detail|Item|class",
+                     properties.getProperty(EcoreToGraphs.TYPES_KEY));
+        assertRoundTrip("packages.xmi", Ordering.NONE);
+    }
+
+    /** Tests that the intermediate node of an indexed feature is named after the
+     * (already qualified) label of its owner. */
+    @Test
+    public void testPackagesIndexed() throws Exception {
+        AspectGraph type
+            = single(assertRoundTrip("packages.xmi", Ordering.INDEX), ResourceKind.TYPE);
+        assertEquals(labels("type:core$Item$details", "edge:\"details\"", "int:index"),
+                     selfLabels(type).get("core$Item$details"));
     }
 
     // ----------------------------------------------------------------------
     // Helper methods
     // ----------------------------------------------------------------------
+
+    /**
+     * Imports a fixture, checks that what comes out is a compilable grammar,
+     * exports it again and imports the result back, and asserts that the two
+     * imports agree: isomorphic graphs, the same round-trip metadata and the
+     * same identifiers.
+     * @param fixture the name of the fixture file in {@link #DIR}
+     * @param ordering the ordering mode to use throughout
+     * @return the resources of the <i>second</i> import, for further assertions
+     */
+    static private Set<Imported> assertRoundTrip(String fixture,
+                                                 Ordering ordering) throws Exception {
+        Set<Imported> imported = importFrom(fixture, ordering, true);
+        AspectGraph type = single(imported, ResourceKind.TYPE);
+        AspectGraph host = optional(imported, ResourceKind.HOST);
+        assertEquals(Collections.emptyList(), messages(type.getErrors()));
+        // the imported graphs are used as they are: since the approximations
+        // of the encoding are silent, a well-formed input carries no errors
+        GrammarModel grammar = newGrammar(type, host == null
+            ? null
+            : host.rename(QualName.name("start")), ordering, true);
+        assertEquals(Collections.emptyList(), messages(grammar.getTypeModel().getErrors()));
+        if (host != null) {
+            assertEquals(Collections.emptyList(), messages(host.getErrors()));
+            var hostModel = grammar.getHostModel(QualName.name("start"));
+            assertNotNull(hostModel);
+            assertEquals(Collections.emptyList(), messages(hostModel.getErrors()));
+            assertEquals(Collections.emptyList(), messages(grammar.getErrors()));
+        }
+        File dir = newDir();
+        exportTo(newGrammar(type, host, ordering, true), dir);
+        Set<Imported> result = importFrom(new File(dir, fixture), ordering, true);
+        AspectGraph resultType = single(result, ResourceKind.TYPE);
+        assertIsomorphic(type, resultType);
+        assertEquals(metadata(type), metadata(resultType));
+        if (host != null) {
+            AspectGraph resultHost = single(result, ResourceKind.HOST);
+            assertIsomorphic(host, resultHost);
+            assertEquals(identifiers(host), identifiers(resultHost));
+        }
+        return result;
+    }
 
     /** Imports a fixture file with given encoding options. */
     static private Set<Imported> importFrom(String fixture, Ordering ordering,
@@ -451,6 +668,13 @@ public class EcoreTest {
 
     /** Returns the unique imported resource of a given kind. */
     static private AspectGraph single(Set<Imported> imported, ResourceKind kind) {
+        AspectGraph result = optional(imported, kind);
+        assertNotNull(result);
+        return result;
+    }
+
+    /** Returns the unique imported resource of a given kind, if there is one. */
+    static private AspectGraph optional(Set<Imported> imported, ResourceKind kind) {
         AspectGraph result = null;
         for (var res : imported) {
             if (res.kind() == kind) {
@@ -458,7 +682,6 @@ public class EcoreTest {
                 result = res.graph();
             }
         }
-        assertNotNull(result);
         return result;
     }
 
@@ -486,6 +709,30 @@ public class EcoreTest {
                 result
                     .add(key(graph, edge.source()) + " -" + edge.label().text() + "-> "
                         + key(graph, edge.target()));
+            }
+        }
+        return result;
+    }
+
+    /** Returns the descriptions of the non-self edges with a given label. */
+    static private Set<String> edgesWith(AspectGraph graph, String label) {
+        Set<String> result = new TreeSet<>();
+        for (var edge : binaryEdges(graph)) {
+            if (edge.contains(" -" + label + "-> ")) {
+                result.add(edge);
+            }
+        }
+        return result;
+    }
+
+    /** Returns the descriptions of the non-self edges incident with a node of a
+     * given type: those with such a node as source as well as those with one as
+     * target. */
+    static private Set<String> edgesAt(AspectGraph graph, String type) {
+        Set<String> result = new TreeSet<>();
+        for (var edge : binaryEdges(graph)) {
+            if (edge.contains(type + "#")) {
+                result.add(edge);
             }
         }
         return result;
