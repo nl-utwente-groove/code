@@ -109,7 +109,8 @@ public enum AspectKind {
     MULT_OUT(Category.MULT_OUT, "out", ContentKind.MULTIPLICITY),
     /** Indicates an outgoing multiplicity. */
     COMPOSITE(Category.ASSOC, "part", ContentKind.NONE),
-    /** Indicates a parallel-edge multiplicity in a host graph.
+    /** Indicates a parallel-edge multiplicity in a host graph, on binary
+     * edges, flags and field initialisers alike.
      * (Deliberately not allowed in rules: bulk creation or deletion of
      * parallel copies is deferred until a real use case comes by;
      * rules can still grow and shrink parallel bundles copy by copy,
@@ -1229,8 +1230,10 @@ public enum AspectKind {
         MULT_OUT(SORT, LABEL, TYPE, MULT_IN),
         /** Relational nature of an edge. */
         ASSOC(LABEL, TYPE, MULT_IN, MULT_OUT),
-        /** Parallel-edge multiplicity declaration. */
-        MULT(ROLE, LABEL),;
+        /** Parallel-edge multiplicity declaration.
+         * Compatible with ATTR so that field initialisers ({@code let:})
+         * can carry a multiplicity. */
+        MULT(ROLE, ATTR, LABEL),;
 
         /** Declares a category and its compatibility with other ("smaller") categories. */
         private Category(Category... ok) {

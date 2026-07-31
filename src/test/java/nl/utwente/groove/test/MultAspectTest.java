@@ -93,10 +93,28 @@ public class MultAspectTest {
         assertError(getHostModel("multErrors", "hostZero"), "Multiplicity 0");
     }
 
-    /** A multiplicity is only allowed on binary edges. */
+    /** A multiplicity is not allowed on node type edges: a node's typing is
+     * not a host graph edge. */
     @Test
-    public void testHostFlag() {
-        assertError(getHostModel("multErrors", "hostFlag"), "binary");
+    public void testHostType() {
+        assertError(getHostModel("multErrors", "hostType"), "node type");
+    }
+
+    /** A flag with multiplicity 2 compiles into 2 parallel flag edges. */
+    @Test
+    public void testHostFlagMult() throws FormatException {
+        var hostModel = getGrammar("multErrors").getHostModel(QualName.parse("hostFlag"));
+        assertFalse("Unexpected errors: " + hostModel.getErrors(), hostModel.hasErrors());
+        assertEquals(2, hostModel.toResource().edgeSet().size());
+    }
+
+    /** A field initialiser with multiplicity 2 compiles into 2 parallel
+     * value edges (to the same value node). */
+    @Test
+    public void testHostLetMult() throws FormatException {
+        var hostModel = getGrammar("multErrors").getHostModel(QualName.parse("hostLet"));
+        assertFalse("Unexpected errors: " + hostModel.getErrors(), hostModel.hasErrors());
+        assertEquals(2, hostModel.toResource().edgeSet().size());
     }
 
     /** A host graph multiplicity above 1 requires the parallelEdges property. */
@@ -120,7 +138,27 @@ public class MultAspectTest {
      * copy). */
     @Test
     public void testAspectAggregation() throws FormatException {
-        var hostModel = getGrammar("multErrors").getHostModel(QualName.parse("hostMult"));
+        testAggregation("hostMult");
+    }
+
+    /** Parallel flags aggregate like parallel binary edges. */
+    @Test
+    public void testFlagAggregation() throws FormatException {
+        testAggregation("hostFlag");
+    }
+
+    /** Parallel value edges aggregate like parallel binary edges. */
+    @Test
+    public void testLetAggregation() throws FormatException {
+        testAggregation("hostLet");
+    }
+
+    /** Converts the (2-copy multigraph) host graph of a named multErrors
+     * host model back to an aspect graph, and asserts that the copies are
+     * aggregated into a single mult=2 aspect edge to which both copies map.
+     */
+    private void testAggregation(String hostName) throws FormatException {
+        var hostModel = getGrammar("multErrors").getHostModel(QualName.parse(hostName));
         HostGraph host = hostModel.toResource();
         assertEquals(2, host.edgeSet().size());
         HostToAspectMap map = GraphConverter.toAspectMap(host);

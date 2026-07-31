@@ -457,7 +457,9 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
 
     /**
      * Tests if a declared parallel-edge multiplicity is used correctly:
-     * as a positive constant, on a binary edge.
+     * as a positive constant, not on a node type edge (a node's typing is
+     * not a host graph edge; binary edges, flags and field initialisers all
+     * admit parallel copies).
      * @param errors the error set to which any errors should be added
      */
     private void checkMult(FormatErrorSet errors) {
@@ -472,8 +474,8 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         } else if (mult.lower() == 0) {
             errors.add("Multiplicity 0 not allowed", this);
         }
-        if (getRole() != EdgeRole.BINARY) {
-            errors.add("Multiplicity only allowed on binary edges", this);
+        if (getRole() == EdgeRole.NODE_TYPE) {
+            errors.add("Multiplicity not allowed on node type edges", this);
         }
     }
 

@@ -335,10 +335,27 @@ The concern had two halves, and both closed:
   aspect image is now always constructed simple, which also keeps saved
   `.gst` files free of spurious `edgeids` attributes. Pinned by
   `MultAspectTest.testAspectAggregation`.
-- Remaining limitation: parallel copies of *non-binary* edges (flags can
-  arise from merging in multigraph mode) have no aspect representation
-  and still collapse in display and save — `mult=` is restricted to
-  binary edges.
+- **Extended to flags and field initialisers (2026-07-31)**: `mult=` is
+  admitted on everything except node type edges (a node's typing is not a
+  host graph edge) — `mult=2:flag:f` and `mult=2:let:f=5` parse, expand
+  and aggregate like binary edges. For field initialisers this required
+  `Category.MULT`/`Category.ATTR` compatibility and propagation of the
+  multiplicity through `NormalAspectGraph.addAssignment` onto the
+  normalised field edge (the `let:` edge itself is removed and rebuilt
+  during normalisation). Parallel value edges are reachable without any
+  syntax — a creator assignment next to an existing equal field, or a
+  merge of nodes with equal fields — so this closes their save/display
+  loss as well. The `RuleApplication` isolated-value-node bookkeeping was
+  verified sound for parallel copies (it is identity-based over the
+  actual incident edge set). **Recorded semantics decision (user,
+  2026-07-31): assignment replaces *one* copy** — `let:f=e` compiles to a
+  single eraser plus creator, so a same-value parallel twin survives an
+  assignment; this is the multigraph face of GROOVE's existing
+  non-functional field semantics (multi-valued fields already exist in
+  simple mode, with `let` erasing only the matched edge and matching
+  branching over the choices). The erase-all-copies alternative would
+  need a universally quantified eraser in the normalisation; recorded as
+  an option, not implemented.
 
 ### Open items after this step
 

@@ -145,10 +145,10 @@ public class GraphConverter {
             }
         }
         // group the edges by content: parallel copies are aggregated into a
-        // single aspect edge, for binary edges decorated with a mult= aspect
-        // (the aspect-level representation of multigraphs, which also makes
-        // saved states reload to the same multigraph); parallel copies of
-        // non-binary edges have no aspect representation and collapse
+        // single aspect edge decorated with a mult= aspect — the
+        // aspect-level representation of multigraphs, which also makes
+        // saved states reload to the same multigraph. This applies to
+        // binary edges, flags and field (value) edges alike
         Map<EdgeContent,List<HostEdge>> edgeGroups = new LinkedHashMap<>();
         for (HostEdge edge : host.edgeSet()) {
             edgeGroups.computeIfAbsent(EdgeContent.of(edge), c -> new ArrayList<>()).add(edge);
@@ -175,13 +175,13 @@ public class GraphConverter {
                 } else {
                     text = edgeText;
                 }
-                if (group.size() > 1) {
-                    text = new MultiplicityContent(new Multiplicity(group.size(), group.size()))
-                        .toParsableString(AspectKind.MULT) + text;
-                }
             } else {
                 imageTarget = imageSource;
                 text = edge.label().toString();
+            }
+            if (group.size() > 1) {
+                text = new MultiplicityContent(new Multiplicity(group.size(), group.size()))
+                    .toParsableString(AspectKind.MULT) + text;
             }
             AspectEdge edgeImage = targetGraph.addEdge(imageSource, text, imageTarget);
             // map all parallel copies to the aggregated image, so that
