@@ -298,6 +298,10 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
      */
     TextBasedEdit doPutTexts(ResourceKind kind, Map<QualName,String> newTexts) throws IOException {
         testInit();
+        // test all names before saving any of them, to avoid a partial edit
+        for (QualName name : newTexts.keySet()) {
+            testNotReserved(kind, name);
+        }
         Map<QualName,String> oldTexts = new HashMap<>();
         List<QualName> newNames = new ArrayList<>();
         for (Map.Entry<QualName,String> entry : newTexts.entrySet()) {
@@ -389,6 +393,7 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
     TextBasedEdit doRenameText(ResourceKind kind, QualName oldName,
                                QualName newName) throws IOException {
         testInit();
+        testNotReserved(kind, newName);
         Map<QualName,String> oldTexts = new HashMap<>();
         Map<QualName,String> newTexts = new HashMap<>();
         String text = getTextMap(kind).remove(oldName);
@@ -784,12 +789,41 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
             QualName qualFileName = pathName.extend(fileName).testValid();
             if (file.isDirectory()) {
                 result.putAll(collectResources(kind, file, qualFileName));
-            } else {
+            } else if (!isReservedName(kind, qualFileName)) {
                 result.put(qualFileName, file);
             }
         }
         errors.throwException();
         return result;
+    }
+
+    /**
+     * Indicates if a resource name is reserved for another purpose than the
+     * given resource kind, and hence should neither be loaded nor stored as a
+     * resource of that kind.
+     * {@link ResourceKind#SETTINGS} shares its file type with
+     * {@link ResourceKind#PROPERTIES}: a top-level {@code system.properties}
+     * (or, for backwards compatibility, {@code <grammar name>.properties}) is
+     * the grammar properties singleton, so the kinds are told apart by name.
+     * Nested properties files are settings resources without exception.
+     */
+    private boolean isReservedName(ResourceKind kind, QualName name) {
+        if (kind != ResourceKind.SETTINGS || name.size() > 1) {
+            return false;
+        }
+        String lastName = name.last();
+        return lastName.equals(Groove.PROPERTY_NAME) || lastName.equals(this.name);
+    }
+
+    /** Tests that a resource name is not reserved for another resource kind.
+     * @throws IOException if the name is reserved
+     * @see #isReservedName
+     */
+    private void testNotReserved(ResourceKind kind, QualName name) throws IOException {
+        if (isReservedName(kind, name)) {
+            throw new IOException(
+                String.format("Name '%s' is reserved for the grammar properties file", name));
+        }
     }
 
     /**

@@ -379,6 +379,10 @@ public class GrammarProperties extends Properties {
      */
     public void setActiveNames(ResourceKind kind, List<QualName> names) {
         assert kind != ResourceKind.RULE;
+        // the kinds without an active-names key (see #getActiveNames) never get here,
+        // as their set of active names is invariably empty
+        assert resourceKeyMap
+            .containsKey(kind) : String.format("Resource kind %s has no active names", kind);
         storeValue(resourceKeyMap.get(kind), names);
     }
 
@@ -389,7 +393,7 @@ public class GrammarProperties extends Properties {
      */
     public Set<QualName> getActiveNames(ResourceKind kind) {
         var names = switch (kind) {
-        case GROOVY, PROPERTIES, RULE -> Collections.<QualName>emptyList();
+        case GROOVY, PROPERTIES, RULE, SETTINGS -> Collections.<QualName>emptyList();
         default -> parsePropertyOrDefault(resourceKeyMap.get(kind)).getQualNameList();
         };
         return new TreeSet<>(names);

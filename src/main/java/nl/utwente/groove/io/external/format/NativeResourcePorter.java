@@ -34,6 +34,7 @@ public class NativeResourcePorter extends AbstractResourcePorter {
         register(ResourceKind.CONTROL);
         register(ResourceKind.PROLOG);
         register(ResourceKind.GROOVY);
+        register(ResourceKind.SETTINGS);
     }
 
     /** Registers a resource kind with its default file type. */

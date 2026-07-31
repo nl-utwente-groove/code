@@ -841,7 +841,8 @@ public class Options implements Cloneable {
 
     /** Set of resource kinds for which the display tab is optional. */
     private static final Set<ResourceKind> optionalTabs = EnumSet
-        .of(ResourceKind.CONTROL, ResourceKind.PROLOG, ResourceKind.TYPE, ResourceKind.GROOVY);
+        .of(ResourceKind.CONTROL, ResourceKind.PROLOG, ResourceKind.TYPE, ResourceKind.GROOVY,
+            ResourceKind.SETTINGS);
 
     // Host graph show options
     /** Show anchors option */

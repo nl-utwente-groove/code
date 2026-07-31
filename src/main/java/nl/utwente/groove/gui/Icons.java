@@ -56,6 +56,7 @@ public final class Icons {
             case PROLOG:
                 return NEW_PROLOG_ICON;
             case GROOVY:
+            case SETTINGS:
                 return NEW_ICON;
             case RULE:
                 return NEW_RULE_ICON;
@@ -82,6 +83,8 @@ public final class Icons {
             case GROOVY:
                 return EDIT_ICON;
             case PROPERTIES:
+                return EDIT_ICON;
+            case SETTINGS:
                 return EDIT_ICON;
             case RULE:
                 return EDIT_RULE_ICON;
@@ -115,6 +118,8 @@ public final class Icons {
             return PROLOG_FILE_ICON;
         case GROOVY:
             return GROOVY_FILE_ICON;
+        case SETTINGS:
+            return PROPERTIES_FRAME_ICON;
         case RULE:
             return RULE_MODE_ICON;
         case TYPE:
@@ -138,6 +143,7 @@ public final class Icons {
         case PROLOG:
             return EDIT_PROLOG_ICON;
         case GROOVY:
+        case SETTINGS:
             return EDIT_ICON;
         case RULE:
             return EDIT_RULE_ICON;
@@ -159,6 +165,7 @@ public final class Icons {
         case HOST:
         case PROLOG:
         case GROOVY:
+        case SETTINGS:
         case TYPE:
             return EDIT_ICON;
         case RULE:
@@ -183,6 +190,8 @@ public final class Icons {
             return PROLOG_LIST_ICON;
         case GROOVY:
             return GROOVY_LIST_ICON;
+        case SETTINGS:
+            return PROPERTIES_FRAME_ICON;
         case RULE:
             return RULE_TREE_ICON;
         case TYPE:

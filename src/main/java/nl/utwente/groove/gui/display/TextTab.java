@@ -219,6 +219,10 @@ final public class TextTab extends ResourceTab {
                 .getTokenMaker(SyntaxConstants.SYNTAX_STYLE_GROOVY);
         case CONTROL:
             return new CtrlTokenMaker();
+        case SETTINGS:
+            return TokenMakerFactory
+                .getDefaultInstance()
+                .getTokenMaker(SyntaxConstants.SYNTAX_STYLE_PROPERTIES_FILE);
         default:
             return TokenMakerFactory
                 .getDefaultInstance()

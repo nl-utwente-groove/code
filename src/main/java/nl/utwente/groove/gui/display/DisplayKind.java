@@ -23,6 +23,8 @@ public enum DisplayKind {
     PROLOG(ResourceKind.PROLOG, Icons.PROLOG_FRAME_ICON, "Prolog", "Prolog programs"),
     /** Groovy panel. */
     GROOVY(ResourceKind.GROOVY, Icons.GROOVY_FRAME_ICON, "Groovy", "Groovy scripts"),
+    /** Settings display. */
+    SETTINGS(ResourceKind.SETTINGS, Icons.PROPERTIES_FRAME_ICON, "Settings", "Settings files"),
     /** State display. */
     STATE(null, Icons.STATE_FRAME_ICON, "State", "State panel"),
     /** LTS display. */
@@ -74,6 +76,7 @@ public enum DisplayKind {
         case TYPE:
         case PROLOG:
         case GROOVY:
+        case SETTINGS:
             result = 1;
             break;
         default:

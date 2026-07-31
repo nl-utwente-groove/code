@@ -1488,6 +1488,10 @@ public class SimulatorModel implements Cloneable {
          */
         RULE(ResourceKind.RULE),
         /**
+         * The selected settings resource has changed.
+         */
+        SETTINGS(ResourceKind.SETTINGS),
+        /**
          * The selected and/or active state has changed.
          * @see SimulatorModel#getState()
          */

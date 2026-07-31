@@ -153,6 +153,8 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
             return getTypeDisplay();
         case GROOVY:
             return getGroovyDisplay();
+        case SETTINGS:
+            return getSettingsDisplay();
         case PROPERTIES:
         default:
             assert false;
@@ -188,6 +190,11 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
     /** Returns the groovy panel that owns the action. */
     final protected GroovyDisplay getGroovyDisplay() {
         return (GroovyDisplay) getDisplaysPanel().getDisplay(DisplayKind.GROOVY);
+    }
+
+    /** Returns the settings panel that owns the action. */
+    final protected ResourceDisplay getSettingsDisplay() {
+        return (ResourceDisplay) getDisplaysPanel().getDisplay(DisplayKind.SETTINGS);
     }
 
     /** Returns the LTS panel that owns the action. */
