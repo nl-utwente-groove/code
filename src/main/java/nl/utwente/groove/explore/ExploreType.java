@@ -187,9 +187,13 @@ public class ExploreType {
     /**
      * Callback method allowing the exploration type to configure the GTS
      * before an exploration of this type starts; called from the
-     * {@link Exploration} constructor. This implementation does nothing.
+     * {@link Exploration} constructor, and from {@link #newExploration}
+     * before the start state is materialised (so that per-GTS features can
+     * still be applied on a fresh GTS). This implementation does nothing.
+     * @throws FormatException if the GTS was explored under per-GTS
+     * features that are inconsistent with this exploration type
      */
-    public void prepareGTS(GTS gts) {
+    public void prepareGTS(GTS gts) throws FormatException {
         // does nothing by default
     }
 
@@ -201,7 +205,7 @@ public class ExploreType {
      * @see #test(Grammar)
      */
     final public Exploration newExploration(GTS gts) throws FormatException {
-        return new Exploration(this, gts.startState());
+        return newExploration(gts, null);
     }
 
     /**
@@ -214,9 +218,13 @@ public class ExploreType {
      * @see #test(Grammar)
      */
     final public Exploration newExploration(GTS gts, GraphState start) throws FormatException {
-        return new Exploration(this, start == null
-            ? gts.startState()
-            : start);
+        if (start == null) {
+            // prepare before materialising the start state, so that on a
+            // fresh GTS the per-GTS features can still be applied
+            prepareGTS(gts);
+            start = gts.startState();
+        }
+        return new Exploration(this, start);
     }
 
     /**

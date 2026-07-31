@@ -16,6 +16,9 @@
  */
 package nl.utwente.groove.explore.config;
 
+import org.eclipse.jdt.annotation.Nullable;
+
+import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.encode.EncodedEdgeMap;
 import nl.utwente.groove.explore.encode.EncodedEnabledRule;
@@ -47,6 +50,7 @@ import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -82,13 +86,96 @@ public class ConfiguredExploreType extends ExploreType {
     private final ExploreConfig config;
 
     /**
-     * Applies the persistence feature: without state persistence, the GTS
-     * stores neither the discovered states nor the transitions, and state
-     * collapse is inoperative (there is nothing to collapse against).
+     * Applies or verifies the per-GTS features of the configuration:
+     * collapse mode, algebra family and persistence. These determine what
+     * the state space <i>is</i>, so they must be constant for the lifetime
+     * of the GTS. On a fresh GTS they are applied; on an explored GTS
+     * (i.e., when continuing) they are verified against the recorded
+     * values, and any deviation is an error — a fresh state space (Restart)
+     * is needed to change them. On a successful verification the
+     * operational persistence switch is re-engaged, since trace retention
+     * flips it back on at the end of an unstored run.
      */
     @Override
-    public void prepareGTS(GTS gts) {
-        gts.setStoring(getConfig().getKind(ExploreKey.PERSISTENCE) == Persistence.ALL);
+    public void prepareGTS(GTS gts) throws FormatException {
+        if (gts.isFresh()) {
+            var collapse = getCollapseMode();
+            if (collapse != null) {
+                gts.setCollapseMode(collapse);
+            }
+            var algebra = getAlgebraFamily();
+            if (algebra != null) {
+                gts.setAlgebraFamily(algebra);
+            }
+            gts.setPersistent(isPersistent());
+        } else {
+            checkGTS(gts).throwException();
+            gts.setStoring(gts.isPersistent());
+        }
+    }
+
+    /**
+     * Checks the per-GTS features of this configuration against the values
+     * recorded in a given (explored) GTS. A non-empty result means the
+     * configuration cannot continue the exploration of this GTS; a fresh
+     * state space is needed.
+     */
+    public FormatErrorSet checkGTS(GTS gts) {
+        var errors = new FormatErrorSet();
+        var collapse = getCollapseMode();
+        if (collapse == null) {
+            // inherit the grammar-determined mode, as a fresh GTS would
+            collapse = gts.getGrammar().getProperties().isCheckIsomorphism()
+                ? GTS.CollapseMode.COLLAPSE_ISO_STRONG
+                : GTS.CollapseMode.COLLAPSE_EQUAL;
+        }
+        if (collapse != gts.getCollapseMode()) {
+            errors
+                .add("Continuing cannot change the state collapse condition"
+                    + " of the explored state space; use Restart");
+        }
+        var algebra = getAlgebraFamily();
+        if (algebra == null) {
+            algebra = gts.getGrammar().getProperties().getAlgebraFamily();
+        }
+        if (algebra != gts.getAlgebraFamily()) {
+            errors
+                .add("Continuing cannot change the algebra family"
+                    + " of the explored state space; use Restart");
+        }
+        if (isPersistent() != gts.isPersistent()) {
+            errors
+                .add("Continuing cannot change the state persistence"
+                    + " of the explored state space; use Restart");
+        }
+        return errors;
+    }
+
+    /** Resolves the collapse feature of the configuration to a collapse
+     * mode; {@code null} means the grammar-determined mode. */
+    private GTS.@Nullable CollapseMode getCollapseMode() {
+        return switch ((Collapse) getConfig().getKind(ExploreKey.COLLAPSE)) {
+        case GRAMMAR, HASH -> null;
+        case EQUALITY -> GTS.CollapseMode.COLLAPSE_EQUAL;
+        case ISOMORPHISM -> GTS.CollapseMode.COLLAPSE_ISO_STRONG;
+        };
+    }
+
+    /** Resolves the algebra feature of the configuration to an algebra
+     * family; {@code null} means the grammar's family. */
+    private @Nullable AlgebraFamily getAlgebraFamily() {
+        return switch ((Algebra) getConfig().getKind(ExploreKey.ALGEBRA)) {
+        case GRAMMAR -> null;
+        case DEFAULT -> AlgebraFamily.DEFAULT;
+        case BIG -> AlgebraFamily.BIG;
+        case POINT -> AlgebraFamily.POINT;
+        case TERM -> AlgebraFamily.TERM;
+        };
+    }
+
+    /** Indicates if the configuration's persistence feature stores states. */
+    private boolean isPersistent() {
+        return getConfig().getKind(ExploreKey.PERSISTENCE) == Persistence.ALL;
     }
 
     /**

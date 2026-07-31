@@ -545,6 +545,10 @@ public class SimulatorModel implements Cloneable {
         try {
             Grammar grammar = getGrammar().toGrammar();
             GTS gts = new GTS(grammar);
+            // apply the per-GTS features of the current exploration while
+            // the GTS is still fresh (before the record and start state are
+            // built below and by the GUI)
+            getExploreType().prepareGTS(gts);
             gts.getRecord().setRandomAccess(true);
             return setGTS(gts);
         } catch (FormatException e) {

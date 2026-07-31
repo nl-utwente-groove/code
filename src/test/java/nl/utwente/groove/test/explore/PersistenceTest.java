@@ -18,6 +18,7 @@ package nl.utwente.groove.test.explore;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
@@ -34,6 +35,7 @@ import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.transform.Transformer;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Randomness;
+import nl.utwente.groove.util.parse.FormatException;
 
 /**
  * Tests the persistence feature: under {@code persistence=none}, discovered
@@ -181,6 +183,36 @@ public class PersistenceTest {
         assertTrue(gts.nodeCount() > 1, "The trace of the last state should be retained");
         assertTrue(gts.nodeCount() < gts.getNextStateNr(),
                    "Persistence should have been honoured");
+    }
+
+    /**
+     * Tests that persistence is guarded per GTS: continuing under the same
+     * persistence is allowed (re-disabling the storing switch that trace
+     * retention flipped back on), but a continued exploration cannot change
+     * the recorded persistence — that needs a fresh state space.
+     */
+    @Test
+    public void testPersistenceGuard() throws Exception {
+        Grammar grammar = loadGrammar("ferryman");
+        Randomness.setMasterSeed(42);
+        GTS gts = new GTS(grammar);
+        var none = ExploreTypeConverter
+            .toExploreType(ExploreConfig.parse("persistence=none " + BOUND));
+        none.newExploration(gts, null).play();
+        assertFalse(gts.isPersistent());
+        assertTrue(gts.isStoring(), "Trace retention should have re-engaged storing");
+        // continuing under the same persistence is allowed
+        none.newExploration(gts, gts.startState());
+        assertFalse(gts.isStoring(), "Continuing unstored should re-disable storing");
+        // continuing under full persistence is rejected
+        var all = ExploreTypeConverter.toExploreType(ExploreConfig.parse(BOUND));
+        assertThrows(FormatException.class, () -> all.newExploration(gts, gts.startState()));
+        assertThrows(FormatException.class, () -> all.newExploration(gts, null));
+        // and the reverse: an unstored continuation of a stored GTS is rejected
+        GTS storedGts = new GTS(grammar);
+        all.newExploration(storedGts, null).play();
+        assertThrows(FormatException.class,
+                     () -> none.newExploration(storedGts, storedGts.startState()));
     }
 
     /**

@@ -54,6 +54,7 @@ import javax.swing.event.DocumentListener;
 
 import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.config.Bound;
+import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreConfigChecker;
 import nl.utwente.groove.explore.config.ExploreKey;
@@ -458,7 +459,17 @@ public class ExploreConfigDialog extends JDialog {
             ? START_FRESH_COMMAND
             : START_COMMAND);
         this.startButton.setEnabled(explorable);
-        this.exploreButton.setEnabled(explorable && !fresh);
+        // continuing cannot change the per-GTS features (collapse, algebra,
+        // persistence) recorded in the explored state space
+        String continueProblem = null;
+        var gts = getSimulatorModel().getGTS();
+        if (!fresh && gts != null && exploreType instanceof ConfiguredExploreType configured) {
+            var gtsErrors = configured.checkGTS(gts);
+            if (!gtsErrors.isEmpty()) {
+                continueProblem = gtsErrors.iterator().next().toString();
+            }
+        }
+        this.exploreButton.setEnabled(explorable && !fresh && continueProblem == null);
         String tipHtml = problemsHtml;
         if (disabledReason != null) {
             tipHtml = (tipHtml == null
@@ -474,6 +485,10 @@ public class ExploreConfigDialog extends JDialog {
                 ? "<html>" + EXPLORE_TOOLTIP
                     + "<br><i>Nothing to continue: the state space is still unexplored</i></html>"
                 : EXPLORE_TOOLTIP;
+        if (continueProblem != null) {
+            exploreTip = "<html>" + EXPLORE_TOOLTIP + "<br><font color='red'>"
+                + HTMLConverter.toHtml(new StringBuilder(continueProblem)) + "</font></html>";
+        }
         String startTip = tipHtml == null
             ? startTipBase
             : "<html>" + startTipBase + "<br><font color='red'>" + tipHtml + "</font></html>";
