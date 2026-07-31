@@ -175,9 +175,37 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     /** Unique factory for host elements, associated with this GTS. */
     private @Nullable HostFactory hostFactory;
 
-    /** Returns the algebra family of the GTS. */
+    /** Returns the algebra family of the GTS: the per-GTS override if set,
+     * otherwise the grammar's algebra family. */
     public AlgebraFamily getAlgebraFamily() {
-        return getGrammar().getProperties().getAlgebraFamily();
+        var result = this.algebraFamily;
+        if (result == null) {
+            result = getGrammar().getProperties().getAlgebraFamily();
+        }
+        return result;
+    }
+
+    /**
+     * Overrides the algebra family for this GTS. Only allowed on a fresh
+     * GTS: the family determines the data values in every state graph, so
+     * it must be constant for the lifetime of the GTS (it is baked into the
+     * start graph and the derivation record).
+     */
+    public void setAlgebraFamily(AlgebraFamily family) {
+        assert isFresh() && this.record == null : "Algebra family must be set on a fresh GTS";
+        this.algebraFamily = family;
+    }
+
+    /** Per-GTS override of the grammar's algebra family, if any. */
+    private @Nullable AlgebraFamily algebraFamily;
+
+    /**
+     * Indicates that nothing has been built on this GTS yet: no start state
+     * has been materialised, so the per-GTS features (algebra family,
+     * collapse mode, persistence) can still be set.
+     */
+    public boolean isFresh() {
+        return this.startState == null;
     }
 
     // ----------------------- OBJECT OVERRIDES ------------------------
@@ -252,6 +280,35 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
 
     /** Flag indicating if discovered states and transitions are stored. */
     private boolean storing = true;
+
+    /**
+     * Indicates if this GTS persists its discovered states. In contrast to
+     * {@link #isStoring()} — the operational switch, which is temporarily
+     * re-engaged at the end of an unstored exploration to retain the result
+     * traces — this records the persistence feature the GTS was explored
+     * under, and never changes after {@link #setPersistent}. It is the
+     * stable value to verify a continued exploration against.
+     */
+    public boolean isPersistent() {
+        return this.persistent;
+    }
+
+    /**
+     * Records the persistence feature for this GTS and engages the
+     * corresponding storing switch. Like the other per-GTS features, the
+     * recorded value must be constant for the lifetime of the GTS; it is
+     * (re-)applied per exploration run, which for an unstored GTS also
+     * re-disables the storing switch that trace retention flipped back on.
+     */
+    public void setPersistent(boolean persistent) {
+        assert isFresh() || persistent == this.persistent
+            : "Persistence must be constant for the lifetime of the GTS";
+        this.persistent = persistent;
+        setStoring(persistent);
+    }
+
+    /** Flag recording the persistence feature of this GTS. */
+    private boolean persistent = true;
 
     /**
      * Indicates if a given state is retained in this GTS, so that its
@@ -375,21 +432,56 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     }
 
     /**
-     * Method to determine the collapse strategy of the state set. This is
-     * determined by {@link Record#isCollapse()} and
-     * {@link Record#isCheckIso()}.
+     * Method to determine the collapse strategy of the state set: the
+     * per-GTS override if set, otherwise as determined by
+     * {@link Record#isCollapse()} and {@link Record#isCheckIso()}.
      */
     protected CollapseMode getCollapse() {
-        CollapseMode result;
-        if (!getRecord().isCollapse()) {
-            result = COLLAPSE_NONE;
-        } else if (!getRecord().isCheckIso()) {
-            result = COLLAPSE_EQUAL;
-        } else {
-            result = COLLAPSE_ISO_STRONG;
+        CollapseMode result = this.collapseMode;
+        if (result == null) {
+            if (!getRecord().isCollapse()) {
+                result = COLLAPSE_NONE;
+            } else if (!getRecord().isCheckIso()) {
+                result = COLLAPSE_EQUAL;
+            } else {
+                result = COLLAPSE_ISO_STRONG;
+            }
         }
         return result;
     }
+
+    /**
+     * Returns the collapse mode recorded for this GTS: the per-GTS override
+     * if set, otherwise the mode determined by the grammar properties. In
+     * contrast to {@link #getCollapse()}, this is independent of later
+     * changes to the derivation record (such as the collapse switch-off by
+     * the linear strategies), so it is the stable value to verify a
+     * continued exploration against.
+     */
+    public CollapseMode getCollapseMode() {
+        CollapseMode result = this.collapseMode;
+        if (result == null) {
+            result = getGrammar().getProperties().isCheckIsomorphism()
+                ? COLLAPSE_ISO_STRONG
+                : COLLAPSE_EQUAL;
+        }
+        return result;
+    }
+
+    /**
+     * Overrides the collapse mode for this GTS. Only allowed on a fresh
+     * GTS: the mode determines when two states are the same state, so it
+     * must be constant for the lifetime of the GTS (it is baked into the
+     * state set and the derivation record).
+     */
+    public void setCollapseMode(CollapseMode collapse) {
+        assert isFresh() && this.allStateSet == null && this.record == null
+            : "Collapse mode must be set on a fresh GTS";
+        this.collapseMode = collapse;
+    }
+
+    /** Per-GTS override of the grammar-determined collapse mode, if any. */
+    private @Nullable CollapseMode collapseMode;
 
     /**
      * Returns a view on the set of <i>public</i> states in the GTS.
@@ -681,7 +773,15 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     public final Record getRecord() {
         var result = this.record;
         if (result == null) {
-            this.record = result = new Record(this.grammar, getHostFactory());
+            this.record = result = new Record(this.grammar, getHostFactory(), getAlgebraFamily());
+            var collapse = this.collapseMode;
+            if (collapse != null) {
+                // keep the record's collapse flags consistent with the override
+                result.setCollapse(collapse != CollapseMode.COLLAPSE_NONE);
+                result
+                    .setCheckIso(collapse == COLLAPSE_ISO_STRONG
+                        || collapse == CollapseMode.COLLAPSE_ISO_WEAK);
+            }
         }
         return result;
     }

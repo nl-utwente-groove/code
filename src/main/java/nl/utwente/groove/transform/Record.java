@@ -50,11 +50,23 @@ public class Record {
      *         {@link Grammar#testFixed(boolean)}.
      */
     public Record(Grammar grammar, HostFactory hostFactory) throws IllegalStateException {
+        this(grammar, hostFactory, grammar.getProperties().getAlgebraFamily());
+    }
+
+    /**
+     * Constructs a derivation record with an explicit algebra family,
+     * overriding the family of the grammar properties. Used when the GTS
+     * carries a per-GTS algebra override.
+     * @throws IllegalStateException if the grammar is not fixed according to
+     *         {@link Grammar#testFixed(boolean)}.
+     */
+    public Record(Grammar grammar, HostFactory hostFactory,
+                  AlgebraFamily family) throws IllegalStateException {
         this.grammar = grammar;
         this.hostFactory = hostFactory;
         grammar.testFixed(true);
         this.checkIso = grammar.getProperties().isCheckIsomorphism();
-        this.family = grammar.getProperties().getAlgebraFamily();
+        this.family = family;
         this.valuator = new Valuator();
         this.valuator.setExprInfo(this.family, hostFactory);
     }
