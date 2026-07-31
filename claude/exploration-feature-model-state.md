@@ -42,10 +42,13 @@ persistence and breaking engine-only keywords. Notable: recipe transitions
 are *reconstructed* from spanning rule-step stubs by the transition
 machinery, so the public-level trace of even an unstored run shows recipe
 transitions once caches are gone (TraceShapeTest guards this; a fallback in
-`GTSFragment.complete` was prototyped and found unnecessary). Remaining 5b
-slice (collapse/algebra overrides — needs Arend's Continue-semantics
-decision) and phase 6 (demolition) are future work — do not start
-unprompted.
+`GTSFragment.complete` was prototyped and found unnecessary). Slice 5
+(2026-07-31): per-GTS guard + collapse/algebra overrides — **Arend's
+decision: Continue can never change collapse, algebra or (per the
+approved analysis) persistence; these per-GTS features are recorded on
+the GTS at Restart and verified on Continue** (see the guard entry
+below); all other keys are per-run. With this, 5b is complete; phase 6
+(demolition) is future work — do not start unprompted.
 
 The second dialog-review round (2026-07-22, commits 6718ad5db + 571c958e3) settled:
 drop-down defaults are marked with a trailing `*` only ("(default)" stays in the
@@ -245,6 +248,24 @@ disappears in phase 6; the preview field (the config's own text form) stays.
   persistence lives one step later, in `setClosed`'s
   `setStoredTransitionStubs` copy; that copy is the only place the storing
   flag needs to intervene on the transition side.
+- **The per-GTS features {collapse, algebra, persistence} are recorded at
+  Restart and verified on Continue** (slice 5, Arend's decision: a GTS
+  mixing them has no sensible semantic interpretation; all other keys are
+  per-run — which also justifies the transient per-run override).
+  Mechanics: `GTS.setCollapseMode`/`setAlgebraFamily` (fresh-only; algebra
+  threads into the `Record` constructor, collapse also sets the record
+  flags) and `setPersistent` (stable, unlike the operational storing
+  switch). `ConfiguredExploreType.prepareGTS` applies on a fresh GTS —
+  **before the start state materialises**: `newExploration` prepares
+  first, `SimulatorModel.resetGTS` applies the current type at GTS
+  creation (order matters: the record and start graph bake the values in)
+  — and verifies via `checkGTS` on an explored one (also used by the
+  dialog to disable Continue with the reason in the tooltip).
+  Verification compares against the *recorded* values, never the live
+  record: the linear strategies switch the record's collapse flag off
+  mid-run. Collapse kind `hash` has no `CollapseMode` equivalent and
+  stays converter-rejected. `OverridesTest` + `testPersistenceGuard`
+  cover it.
 - **Recipes do not compose usefully with persistence=none**: a transient
   sub-exploration is exhaustive by design (it runs on the internal stack,
   bypassing any frontier restriction incl. beam), so without collapse a
@@ -259,7 +280,7 @@ disappears in phase 6; the preview field (the config's own text form) stays.
 heuristic≠none (the whole dimension deferred by Arend pending a careful
 design, along with cost-based ordering), cost=rule, successor=all-random,
 single-successor on a multi-state frontier,
-collapse/algebra overrides (kinds `grammar` = inherit), goal=graph, goal=ltl/ctl
+collapse=hash (no `CollapseMode` equivalent), goal=graph, goal=ltl/ctl
 (stay with the CheckLTL/CTL actions), iterative deepening (`+inc`), bound=size,
 `fires`+violate (legacy ruleapp has no polarity), condition bound + depth bound
 together (BOUND is a single key). Goal vocabulary since the 2026-07-20 review:
@@ -287,16 +308,16 @@ Dialog/Simulator threads (2026-07-26, from Arend's review):
 - A **sub-dialog for the more involved content editors** (formulas etc.) is
   planned as a later refinement; content editors stay as they are until then.
 
-- Phase 5b+ (random/beam orders, persistence and trace shape are done):
-  collapse/algebra overrides (baked into the GTS at construction — what
-  Continue over an existing GTS means under a different override needs an
-  Arend decision; the same question exists in miniature for a
-  persistence-flipping Continue, currently just documented on
-  `setStoring`); then the unsupported list above becomes implementable
-  feature by feature; revisit LTL/CTL goals; possibly a target-state
-  counterpart to `fires` ("reached by the action"), and `fires(r)` as an
-  atom of the condition language. If persistence=none sees real use, a
-  depth bound for the random/beam orders is the natural termination aid.
+- Phase 5b is complete (random/beam orders, persistence, trace shape,
+  collapse/algebra overrides with the per-GTS guard). Still open from the
+  unsupported list: the heuristic dimension (design-first), cost=rule,
+  successor=all-random, collapse=hash, bound=size, iterative deepening;
+  revisit LTL/CTL goals; possibly a target-state counterpart to `fires`
+  ("reached by the action"), and `fires(r)` as an atom of the condition
+  language. If persistence=none sees real use, a depth bound for the
+  random/beam orders is the natural termination aid. The dialog's
+  "Engine" section groups exactly the per-GTS keys — a rename to
+  "State space" was suggested to Arend as an option.
 - **Heuristic dimension: deferred by Arend (2026-07-27), design-first.** When
   asked to pick the nen referent for the ordered-pools slice he chose to omit
   heuristics from the slice altogether: "heuristics open the door to a wealth

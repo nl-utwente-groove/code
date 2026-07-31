@@ -83,7 +83,12 @@ public class ExploreTypeConverterTest {
             "persistence=none cost=uniform bound=cost:5",
             "shape=trace",
             "shape=trace goal=condition:load count=first",
-            "persistence=none shape=trace",};
+            "persistence=none shape=trace",
+            "collapse=equality",
+            "collapse=isomorphism",
+            "algebra=point",
+            "algebra=big",
+            "collapse=equality algebra=point persistence=none",};
         for (String text : configs) {
             ExploreConfig config = ExploreConfig.parse(text);
             ExploreType type = ExploreTypeConverter.toExploreType(config);
@@ -255,8 +260,7 @@ public class ExploreTypeConverterTest {
             "heuristic=nen",
             "cost=rule",
             "shape=trace goal=none",
-            "collapse=equality",
-            "algebra=point",
+            "collapse=hash",
             "goal=graph:someGraph",
             "goal=ltl:someProp",
             "goal=fires:load outcome=violate",

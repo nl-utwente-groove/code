@@ -381,6 +381,39 @@ rule-step stubs, so even the retained trace of an unstored exploration
 shows recipe-level transitions after its caches are gone
 (`TraceShapeTest.testRecipeTransitionWithoutPersistence` guards this).
 
+#### Phase 5b slice 5 (2026-07-31) — per-GTS guard + collapse/algebra overrides
+
+*Arend's decision: "continue can never change basic assumptions about
+algebra or collapse: those must be consistent for the entire GTS, otherwise
+there is no sensible semantic interpretation." Analysis (approved): the
+per-GTS features are exactly {collapse, algebra, persistence} — those
+determine what the state space *is*; all other keys only select which part
+of a semantically fixed space is explored and reported, and stay freely
+changeable between runs (which also justifies keeping the transient per-run
+override). Litmus test: could runs with different values contribute to one
+GTS that is still a partial view of a single semantics?*
+
+Implementation (two commits):
+
+1. **The guard**: GTS records the three per-GTS features — overridable
+   collapse mode and algebra family (settable only on a fresh GTS; the
+   algebra is threaded into the `Record` via a new constructor, a collapse
+   override also sets the record flags) and the persistence flag (stable,
+   unlike the operational storing switch). `ConfiguredExploreType.prepareGTS`
+   is now apply-or-verify: apply on a fresh GTS (before the start state
+   materialises — `newExploration` prepares first, `SimulatorModel.resetGTS`
+   applies the current type at creation), verify on an explored one
+   (`checkGTS`, also used by the dialog to disable Continue with the reason
+   in its tooltip). Verification compares against the *recorded* values,
+   not the live record — the linear strategies switch the record's collapse
+   flag off mid-run. Closes the persistence mixed-mode corner.
+2. **The overrides**: converter accepts collapse=equality/isomorphism
+   (hash has no CollapseMode equivalent and stays rejected) and
+   algebra=default/big/point/term; kinds resolve in
+   `ConfiguredExploreType`. `OverridesTest` covers recorded values,
+   behavioural effects and the guard (including that an explicit override
+   resolving to the recorded value is allowed).
+
 ### Phase 6 (later branch) — demolition
 
 Delete `explore.encode`, `explore.prettyparse`, `Serialized`, `ExploreType`,
