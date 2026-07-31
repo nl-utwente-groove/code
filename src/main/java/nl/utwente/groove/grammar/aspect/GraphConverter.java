@@ -24,6 +24,9 @@ import static nl.utwente.groove.grammar.aspect.AspectKind.SUBTYPE;
 import static nl.utwente.groove.graph.GraphRole.HOST;
 import static nl.utwente.groove.graph.GraphRole.TYPE;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -32,6 +35,7 @@ import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.host.ValueNode;
+import nl.utwente.groove.grammar.type.Multiplicity;
 import nl.utwente.groove.grammar.type.TypeEdge;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeLabel;
@@ -126,7 +130,9 @@ public class GraphConverter {
      * from the host graph to the aspect graph.
      */
     static public HostToAspectMap toAspectMap(HostGraph host) {
-        AspectGraph targetGraph = new AspectGraph(host.getName(), HOST, host.isSimple());
+        // the aspect graph is always simple: parallel edges of a multigraph
+        // host are aggregated into single aspect edges with a multiplicity
+        AspectGraph targetGraph = new AspectGraph(host.getName(), HOST, true);
         HostToAspectMap result = new HostToAspectMap(targetGraph);
         for (HostNode node : host.nodeSet()) {
             if (!(node instanceof ValueNode)) {
@@ -138,8 +144,17 @@ public class GraphConverter {
                 }
             }
         }
-        // add edge images
+        // group the edges by content: parallel copies are aggregated into a
+        // single aspect edge, for binary edges decorated with a mult= aspect
+        // (the aspect-level representation of multigraphs, which also makes
+        // saved states reload to the same multigraph); parallel copies of
+        // non-binary edges have no aspect representation and collapse
+        Map<EdgeContent,List<HostEdge>> edgeGroups = new LinkedHashMap<>();
         for (HostEdge edge : host.edgeSet()) {
+            edgeGroups.computeIfAbsent(EdgeContent.of(edge), c -> new ArrayList<>()).add(edge);
+        }
+        for (List<HostEdge> group : edgeGroups.values()) {
+            HostEdge edge = group.get(0);
             String edgeText = edge.label().text();
             AspectNode imageSource = result.getNode(edge.source());
             assert imageSource != null;
@@ -160,16 +175,33 @@ public class GraphConverter {
                 } else {
                     text = edgeText;
                 }
+                if (group.size() > 1) {
+                    text = new MultiplicityContent(new Multiplicity(group.size(), group.size()))
+                        .toParsableString(AspectKind.MULT) + text;
+                }
             } else {
                 imageTarget = imageSource;
                 text = edge.label().toString();
             }
             AspectEdge edgeImage = targetGraph.addEdge(imageSource, text, imageTarget);
-            result.putEdge(edge, edgeImage);
+            // map all parallel copies to the aggregated image, so that
+            // element-keyed GUI state (such as match highlighting) reaches
+            // every copy
+            for (HostEdge groupEdge : group) {
+                result.putEdge(groupEdge, edgeImage);
+            }
         }
         GraphInfo.transferAll(host, targetGraph, result);
         targetGraph.setFixed();
         return result;
+    }
+
+    /** Content of a host edge, as a grouping key for parallel copies. */
+    static private record EdgeContent(HostNode source, TypeLabel label, HostNode target) {
+        /** Returns the content of a given host edge. */
+        static EdgeContent of(HostEdge edge) {
+            return new EdgeContent(edge.source(), edge.label(), edge.target());
+        }
     }
 
     /**

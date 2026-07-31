@@ -18,6 +18,7 @@ package nl.utwente.groove.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -26,6 +27,12 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import nl.utwente.groove.grammar.QualName;
+import nl.utwente.groove.grammar.aspect.AspectEdge;
+import nl.utwente.groove.grammar.aspect.AspectGraph;
+import nl.utwente.groove.grammar.aspect.GraphConverter;
+import nl.utwente.groove.grammar.aspect.GraphConverter.HostToAspectMap;
+import nl.utwente.groove.grammar.host.HostEdge;
+import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.ResourceModel;
@@ -104,5 +111,28 @@ public class MultAspectTest {
         var hostModel = getGrammar("multErrors").getHostModel(QualName.parse("hostMult"));
         assertFalse("Unexpected errors: " + hostModel.getErrors(), hostModel.hasErrors());
         assertEquals(2, hostModel.toResource().edgeSet().size());
+    }
+
+    /** Converting a multigraph host graph back to an aspect graph aggregates
+     * parallel copies into a single mult= edge (so a saved graph reloads to
+     * the same multigraph), with every copy mapping to the aggregated image
+     * (so element-keyed GUI state, such as match highlighting, reaches every
+     * copy). */
+    @Test
+    public void testAspectAggregation() throws FormatException {
+        var hostModel = getGrammar("multErrors").getHostModel(QualName.parse("hostMult"));
+        HostGraph host = hostModel.toResource();
+        assertEquals(2, host.edgeSet().size());
+        HostToAspectMap map = GraphConverter.toAspectMap(host);
+        AspectGraph aspect = map.getAspectGraph();
+        assertTrue(aspect.isSimple());
+        assertEquals(1, aspect.edgeSet().size());
+        AspectEdge image = aspect.edgeSet().iterator().next();
+        var mult = image.getMult();
+        assertNotNull(mult);
+        assertEquals(2, mult.lower());
+        for (HostEdge edge : host.edgeSet()) {
+            assertEquals(image, map.getEdge(edge));
+        }
     }
 }

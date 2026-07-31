@@ -311,12 +311,37 @@ all preserved in the history of this note and of `AspectEdge.checkMult`.
 The counting-NAC prohibition thereby reverts to a recorded decision
 without enforceable syntax.
 
+### Display mapping — RESOLVED (2026-07-31)
+
+The concern had two halves, and both closed:
+
+- **Rule side**: dissolved by the rule-mult deferral — every aspect edge
+  maps 1:1 to its (index-allocated) rule edge in the model map, so match
+  highlighting in rule displays works through the existing inverse map.
+- **Host/state side**: `GraphConverter.toAspectMap(HostGraph)` — the
+  single conversion behind the state display, state saving
+  (`StateReporter`) and the `Transformer`/`Model` API — now *aggregates*
+  parallel copies of binary edges into one aspect edge carrying the
+  `mult=k:` aspect. This kills three birds: the display shows the
+  `(x2)`-decorated label (via the existing `AspectEdge.toLine` suffix,
+  fulfilling the aggregated-display decision); a saved state reloads to
+  the same multigraph (the mult aspect round-trips through the host-model
+  expansion); and the conversion map sends *every* parallel copy to the
+  aggregated image, so element-keyed GUI state (match highlighting)
+  reaches all copies. Previously the copies collapsed silently into one
+  undecorated aspect edge (content-equal `AspectEdge`s pool regardless of
+  the graph's simplicity flag, as `AspectEdge` carries no number), so the
+  displayed and saved edge counts were simply wrong for multigraphs. The
+  aspect image is now always constructed simple, which also keeps saved
+  `.gst` files free of spurious `edgeids` attributes. Pinned by
+  `MultAspectTest.testAspectAggregation`.
+- Remaining limitation: parallel copies of *non-binary* edges (flags can
+  arise from merging in multigraph mode) have no aspect representation
+  and still collapse in display and save — `mult=` is restricted to
+  binary edges.
+
 ### Open items after this step
 
-- **Display mapping of expanded copies**: the model map maps a counted
-  aspect edge to parallel copy 0 only; match highlighting for copies
-  1..k-1 falls back to nothing. Aggregated display of semantic multigraphs
-  (LTS states) as `(x2)`-decorated aspect edges is likewise still to do.
 - `DefaultRuleTransition.getMorphism()` (GUI-informational) re-derives
   without the recorded edges, so in multigraph mode it maps onto
   content-equal rather than identical edges.
