@@ -153,8 +153,8 @@ public class MatchApplier {
         } else {
             stack = EMPTY_NODE_ARRAY;
         }
-        return new DefaultGraphNextState(this.gts.nodeCount(), (AbstractGraphState) source, match,
-            addedNodes, stack);
+        return new DefaultGraphNextState(this.gts.getNextStateNr(), (AbstractGraphState) source,
+            match, addedNodes, stack);
     }
 
     /**
