@@ -196,6 +196,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         GraphState result = allStateSet().put(newState);
         if (result == null) {
             // otherwise, add it to the GTS
+            this.nextStateNr = Math.max(this.nextStateNr, newState.getNumber() + 1);
             fireAddNode(newState);
             if (newState instanceof AbstractGraphState s) {
                 s.checkInitConstraints();
@@ -203,6 +204,19 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         }
         return result;
     }
+
+    /**
+     * Returns the number to be used for the next state added to this GTS.
+     * This exceeds the highest state number added so far; as long as states
+     * are numbered consecutively (as they are during exploration), it equals
+     * the number of states discovered.
+     */
+    public int getNextStateNr() {
+        return this.nextStateNr;
+    }
+
+    /** Number to be used for the next state added to this GTS. */
+    private int nextStateNr;
 
     /** Returns the policy for type checking. */
     public CheckPolicy getTypePolicy() {
