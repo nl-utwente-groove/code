@@ -309,7 +309,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
     // ------------------------------------------------------------------------
 
     private static class AspectToAttrMap
-        extends AGraphMap<AspectNode,AspectEdge,@Nullable AttrNode,AttrEdge> {
+        extends AGraphMap<AspectNode,AspectEdge,AttrNode,AttrEdge> {
         /** Constructs a new, empty map, creating images through a given factory. */
         public AspectToAttrMap(ElementFactory<AttrNode,AttrEdge> factory) {
             super(factory);
