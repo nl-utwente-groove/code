@@ -71,11 +71,8 @@ public class ExploreTypeConverter {
         if (config.getKind(ExploreKey.COST) == Cost.RULE) {
             errors.add("Rule-based transition cost is not yet supported");
         }
-        if (config.getKind(ExploreKey.COLLAPSE) != Collapse.GRAMMAR) {
-            errors.add("Overriding the grammar's state collapse setting is not yet supported");
-        }
-        if (config.getKind(ExploreKey.ALGEBRA) != Algebra.GRAMMAR) {
-            errors.add("Overriding the grammar's algebra family is not yet supported");
+        if (config.getKind(ExploreKey.COLLAPSE) == Collapse.HASH) {
+            errors.add("Hash-based state collapse is not yet supported");
         }
     }
 

@@ -179,10 +179,9 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      * otherwise the grammar's algebra family. */
     public AlgebraFamily getAlgebraFamily() {
         var result = this.algebraFamily;
-        if (result == null) {
-            result = getGrammar().getProperties().getAlgebraFamily();
-        }
-        return result;
+        return result == null
+            ? getGrammar().getProperties().getAlgebraFamily()
+            : result;
     }
 
     /**
