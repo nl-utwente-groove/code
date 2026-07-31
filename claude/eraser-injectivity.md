@@ -353,13 +353,28 @@ functional in a release, so a stale boolean value simply produces a parse
 error). The mode splits into two orthogonal predicates:
 
 - `isMulti()` (SPO and DPO): graph *structure* — non-simple host and rule
-  graphs, the mult aspect, regexpr edge images, edge-injective matching
-  under matchInjective;
+  graphs, the mult aspect, edge-injective matching under matchInjective;
 - `isDPO()`: the identification-condition machinery of steps 1–4, the
-  critical-pair filter, and the ignoreRegExp erasure check. These gates
-  read the mode from the grammar properties (carried by Condition and
-  Rule) — pattern simplicity no longer discriminates, since multigraph
+  critical-pair filter, the ignoreRegExp erasure check, and (since
+  2026-07-31) the regexpr *edge images* (`ChoiceEdgeSearchItem`). These
+  gates read the mode from the grammar properties (carried by Condition
+  and Rule) — pattern simplicity no longer discriminates, since multigraph
   SPO patterns are non-simple too.
+
+**Edge images are DPO-only (user decision, 2026-07-31).** They exist as
+enforcement plumbing for the identification condition; under SPO a witness
+overlapping an eraser is simply legal (deletion wins), so images would
+enforce nothing and only import the per-witness forall counting. Under
+SPO, all regular expressions therefore uniformly keep the automaton-based
+(navigational, ends-only) semantics — which also removes the would-be
+inconsistency between trackable (`a|b`) and untrackable (`a.b`)
+expressions within SPO. Accepted price: an atom/regexpr counting seam
+inside SPO (a forall over atom `a` counts parallel copies, a forall over
+`a|b` does not), with the legacy story that atoms are edges (mapped by
+the morphism) while regexprs are path tests (only end nodes bound); and
+`mult=` on a regexpr label is admitted but vacuous in SPO (checkMult is
+aspect-level and mode-blind). Pinned by
+`ChoiceEdgeMatchingTest.testSpoModeCollapse`.
 
 **DPO implies checkDangling** (user decision): DPO mode is the full
 gluing condition. Consequently the eraser-node contribution to the

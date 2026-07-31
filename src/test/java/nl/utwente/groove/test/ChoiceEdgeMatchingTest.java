@@ -23,6 +23,7 @@ import org.junit.Test;
 import nl.utwente.groove.automaton.RegExpr;
 import nl.utwente.groove.grammar.Condition;
 import nl.utwente.groove.grammar.GrammarProperties;
+import nl.utwente.groove.grammar.ParallelMode;
 import nl.utwente.groove.grammar.host.DefaultHostGraph;
 import nl.utwente.groove.grammar.host.HostFactory;
 import nl.utwente.groove.grammar.host.HostGraph;
@@ -66,7 +67,8 @@ public class ChoiceEdgeMatchingTest {
      * by an edge with the given (parsed) label from r0 to r1, and optionally
      * also an atom edge {@code a} from r0 to r1. */
     private Condition createCondition(String labelText, Condition.Op op, boolean injective,
-                                      boolean simple, boolean atomEdge) throws FormatException {
+                                      boolean simple, boolean atomEdge,
+                                      ParallelMode mode) throws FormatException {
         RuleFactory factory = RuleFactory.newInstance(this.typeGraph.getFactory());
         RuleGraph pattern = new RuleGraph("pattern", injective, simple, factory);
         RuleNode r0 = factory.createNode();
@@ -77,7 +79,9 @@ public class ChoiceEdgeMatchingTest {
         if (atomEdge) {
             pattern.addEdge(factory.createEdge(r0, factory.createLabel("a"), r1));
         }
-        Condition result = new Condition("choice", op, pattern, null, new GrammarProperties());
+        GrammarProperties properties = new GrammarProperties();
+        properties.setParallelMode(mode);
+        Condition result = new Condition("choice", op, pattern, null, properties);
         result.setTypeGraph(this.typeGraph);
         result.setFixed();
         return result;
@@ -103,10 +107,11 @@ public class ChoiceEdgeMatchingTest {
     }
 
     /** Returns the number of matches of the pattern into the host,
-     * in multigraph mode. */
+     * in multigraph DPO mode (the only mode binding edge images). */
     private int matchCount(String labelText, Condition.Op op, boolean injective, boolean atomEdge,
                            String... hostEdges) throws FormatException {
-        Condition condition = createCondition(labelText, op, injective, false, atomEdge);
+        Condition condition
+            = createCondition(labelText, op, injective, false, atomEdge, ParallelMode.DPO);
         HostGraph host = createHost(false, hostEdges);
         return MatcherFactory.instance(false).createMatcher(condition).findAll(host, null).size();
     }
@@ -202,10 +207,24 @@ public class ChoiceEdgeMatchingTest {
      * semantics: witnesses are not distinguished, even universally. */
     @Test
     public void testSimpleModeCollapse() throws FormatException {
-        Condition condition = createCondition("a|b", Condition.Op.FORALL, false, true, false);
+        Condition condition
+            = createCondition("a|b", Condition.Op.FORALL, false, true, false, ParallelMode.DPO);
         HostGraph host = createHost(true, "a", "b");
         assertEquals(1,
                      MatcherFactory.instance(true).createMatcher(condition).findAll(host, null)
+                         .size());
+    }
+
+    /** In multigraph SPO mode, composite expressions likewise retain the
+     * automaton-based semantics: edge images serve the identification
+     * condition and are bound under DPO only. */
+    @Test
+    public void testSpoModeCollapse() throws FormatException {
+        Condition condition
+            = createCondition("a|b", Condition.Op.FORALL, false, false, false, ParallelMode.SPO);
+        HostGraph host = createHost(false, "a", "b");
+        assertEquals(1,
+                     MatcherFactory.instance(false).createMatcher(condition).findAll(host, null)
                          .size());
     }
 }
