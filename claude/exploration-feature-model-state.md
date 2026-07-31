@@ -30,7 +30,8 @@ the `util.Randomness` entry below and `claude/randomness-seeding.md`. Slice 2
 (2026-07-27): beam search (`BeamPool`); **the heuristic dimension (and with it
 cost-based ordering) was deferred by Arend at slice start** — he wants to
 design that dimension carefully rather than start from `nen` (see the open
-threads below). Remaining 5b slices (overrides + trace, persistence=none) and
+threads below). Slice 3 (2026-07-31): persistence=none — see the storing-seam
+entry and invariant below. Remaining 5b slices (overrides + trace) and
 phase 6 (demolition) are future work — do not start unprompted.
 
 The second dialog-review round (2026-07-22, commits 6718ad5db + 571c958e3) settled:
@@ -114,6 +115,24 @@ disappears in phase 6; the preview field (the config's own text form) stays.
   replicate `RandomPool` exactly); `readd` also trims, for robustness (a
   state whose transience resolves between discovery and exploration reaches
   it without a preceding take).
+- Persistence feature (5b slice 3, 2026-07-31) — `GTS.setStoring(boolean)` is
+  the seam: without storing, `addState` skips the state-set put (every
+  discovered state is fresh — **no revisit detection, collapse inoperative**,
+  per Arend's decisions) and `AbstractGraphState.setClosed` skips persisting
+  the cached transition stubs into the state's hard array, so a closed state
+  does not pin its successors; listeners fire as always, so acceptors see the
+  full exploration and pin their result states in `ExploreResult`. Memory
+  release is pure garbage collection (never-enter, nothing to evict): live =
+  frontier + ancestor delta chains + results. Fresh-state numbering comes
+  from the explicit counter `GTS.getNextStateNr` (also the discovery count;
+  under storing identical to the old `nodeCount()` numbering). Applied per
+  run by `ExploreType.prepareGTS(GTS)` (no-op default, called from the
+  `Exploration` constructor; `ConfiguredExploreType` overrides). The GTS
+  counts and flagged state lists reflect only the retained part (Arend:
+  "GUI shows what is retained"). `toConfig` short-circuits for
+  `ConfiguredExploreType` (returns a copy of the authoritative config;
+  persistence leaves no trace in the legacy descriptors — the copy uses the
+  new `ExploreConfig` copy constructor). `PersistenceTest` covers it.
 - `util.Randomness` (5b slice 1, 2026-07-26) — the master-seed registry of
   `claude/randomness-seeding.md` (decisions resolved, see there): per-purpose
   streams (EXPLORATION, ORACLE) derived per obtainment, so a fixed master seed
@@ -187,12 +206,29 @@ disappears in phase 6; the preview field (the config's own text form) stays.
 - `storeValue` removes a key when the value is the key default — hence
   `setExploreConfig` must (and does) delete the legacy key explicitly, or a leftover
   legacy value would win after storing an explicit default config.
+- **`GTS.addTransition` → `StateCache.addTransition` is protocol, not just
+  storage** (learnt the hard way in slice 3): it removes the explored match
+  from the state's match set and closes the state when the set is finished.
+  Bypassing it (the first attempt at persistence=none) left every state
+  open. The cache is the *working set* of an open state — protected from
+  collapse while open (`AbstractGraphState.clearCache` refuses) — and
+  persistence lives one step later, in `setClosed`'s
+  `setStoredTransitionStubs` copy; that copy is the only place the storing
+  flag needs to intervene on the transition side.
+- **Recipes do not compose usefully with persistence=none**: a transient
+  sub-exploration is exhaustive by design (it runs on the internal stack,
+  bypassing any frontier restriction incl. beam), so without collapse a
+  diamond-rich recipe body is explored as its full tree unfolding —
+  fibonacci OOMs. Inherent, not a bug: under `none` the terminating-tree
+  requirement extends to every recipe body. Termination in general needs a
+  finite tree unfolding: cyclic grammars need a depth bound, which is
+  currently expressible only for bfs/dfs orders (not random/beam).
 
 ## Deliberately unsupported (converter errors, awaiting phase 5)
 
 heuristic≠none (the whole dimension deferred by Arend pending a careful
 design, along with cost-based ordering), cost=rule, successor=all-random,
-single-successor on a multi-state frontier, shape=trace, persistence=none,
+single-successor on a multi-state frontier, shape=trace,
 collapse/algebra overrides (kinds `grammar` = inherit), goal=graph, goal=ltl/ctl
 (stay with the CheckLTL/CTL actions), iterative deepening (`+inc`), bound=size,
 `fires`+violate (legacy ruleapp has no polarity), condition bound + depth bound
@@ -221,12 +257,18 @@ Dialog/Simulator threads (2026-07-26, from Arend's review):
 - A **sub-dialog for the more involved content editors** (formulas etc.) is
   planned as a later refinement; content editors stay as they are until then.
 
-- Phase 5b+ (random and beam orders are done as `Pool` implementations):
-  trace results; collapse/algebra overrides; persistence None (the one
-  feature that forces rewriting the inherited `doNext()` protocol); then the
-  unsupported list above becomes implementable feature by feature; revisit
-  LTL/CTL goals; possibly a target-state counterpart to `fires` ("reached by
-  the action"), and `fires(r)` as an atom of the condition language.
+- Phase 5b+ (random/beam orders and persistence are done):
+  trace results (note: under persistence=none the ancestor chain of a
+  pinned result state survives by construction — the trace is nearly free);
+  collapse/algebra overrides (baked into the GTS at construction — what
+  Continue over an existing GTS means under a different override needs an
+  Arend decision; the same question exists in miniature for a
+  persistence-flipping Continue, currently just documented on
+  `setStoring`); then the unsupported list above becomes implementable
+  feature by feature; revisit LTL/CTL goals; possibly a target-state
+  counterpart to `fires` ("reached by the action"), and `fires(r)` as an
+  atom of the condition language. If persistence=none sees real use, a
+  depth bound for the random/beam orders is the natural termination aid.
 - **Heuristic dimension: deferred by Arend (2026-07-27), design-first.** When
   asked to pick the nen referent for the ordered-pools slice he chose to omit
   heuristics from the slice altogether: "heuristics open the door to a wealth

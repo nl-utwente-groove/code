@@ -74,9 +74,6 @@ public class ExploreTypeConverter {
         if (config.getKind(ExploreKey.SHAPE) == Shape.TRACE) {
             errors.add("Trace results are not yet supported");
         }
-        if (config.getKind(ExploreKey.PERSISTENCE) != Persistence.ALL) {
-            errors.add("Partial state persistence is not yet supported");
-        }
         if (config.getKind(ExploreKey.COLLAPSE) != Collapse.GRAMMAR) {
             errors.add("Overriding the grammar's state collapse setting is not yet supported");
         }
@@ -322,6 +319,12 @@ public class ExploreTypeConverter {
      * type has no feature-model equivalent
      */
     public static ExploreConfig toConfig(ExploreType type) throws FormatException {
+        if (type instanceof ConfiguredExploreType configured) {
+            // the type was created from a configuration, which is authoritative;
+            // reconstruction from the legacy descriptors would lose the features
+            // that leave no trace there (such as persistence)
+            return new ExploreConfig(configured.getConfig());
+        }
         var result = new ExploreConfig();
         var errors = new FormatErrorSet();
         Serialized strategy = type.getStrategy();
