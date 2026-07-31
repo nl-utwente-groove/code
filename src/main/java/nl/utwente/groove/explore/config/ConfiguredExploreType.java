@@ -44,6 +44,7 @@ import nl.utwente.groove.explore.strategy.StopMode;
 import nl.utwente.groove.explore.strategy.Strategy;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.Rule;
+import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.FormatException;
@@ -79,6 +80,16 @@ public class ConfiguredExploreType extends ExploreType {
     }
 
     private final ExploreConfig config;
+
+    /**
+     * Applies the persistence feature: without state persistence, the GTS
+     * stores neither the discovered states nor the transitions, and state
+     * collapse is inoperative (there is nothing to collapse against).
+     */
+    @Override
+    public void prepareGTS(GTS gts) {
+        gts.setStoring(getConfig().getKind(ExploreKey.PERSISTENCE) == Persistence.ALL);
+    }
 
     /**
      * Instantiates the strategy directly from the legacy descriptor computed

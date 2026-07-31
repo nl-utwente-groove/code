@@ -42,6 +42,7 @@ public class Exploration {
         this.type = type;
         this.gts = start.getGTS();
         this.start = start;
+        this.type.prepareGTS(this.gts);
         Grammar grammar = this.gts.getGrammar();
         // parse the strategy
         this.strategy = this.type.getParsedStrategy(grammar);
