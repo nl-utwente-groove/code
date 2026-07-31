@@ -805,14 +805,19 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
      * {@link ResourceKind#PROPERTIES}: a top-level {@code system.properties}
      * (or, for backwards compatibility, {@code <grammar name>.properties}) is
      * the grammar properties singleton, so the kinds are told apart by name.
-     * Nested properties files are settings resources without exception.
+     * The grammar name is only reserved while the old-style file actually
+     * serves as the properties file (see {@link #loadGrammarProperties()});
+     * once {@code system.properties} exists, a settings resource may carry the
+     * grammar name. Nested properties files are settings resources without
+     * exception.
      */
     private boolean isReservedName(ResourceKind kind, QualName name) {
         if (kind != ResourceKind.SETTINGS || name.size() > 1) {
             return false;
         }
         String lastName = name.last();
-        return lastName.equals(Groove.PROPERTY_NAME) || lastName.equals(this.name);
+        return lastName.equals(Groove.PROPERTY_NAME)
+            || this.legacyPropertiesFile && lastName.equals(this.name);
     }
 
     /** Tests that a resource name is not reserved for another resource kind.
@@ -844,8 +849,10 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
         GrammarProperties result = new GrammarProperties();
         File propertiesFile = getDefaultPropertiesFile();
         // backwards compatibility: <grammar name>.properties
+        this.legacyPropertiesFile = false;
         if (!propertiesFile.exists()) {
             propertiesFile = getOldDefaultPropertiesFile();
+            this.legacyPropertiesFile = propertiesFile.exists();
         }
         if (propertiesFile.exists()) {
             var grammarProperties = new GrammarProperties();
@@ -899,6 +906,12 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
     /** Flag whether this store contains a 'system.properties' file. */
     private boolean hasSystemPropertiesFile = false;
 
+    /** Flag whether the old-style {@code <grammar name>.properties} file is
+     * currently serving as the properties file (see {@link #loadGrammarProperties()}).
+     * While it does, its name is reserved and may not be used by a settings
+     * resource; the next properties save migrates it to {@code system.properties}. */
+    private boolean legacyPropertiesFile = false;
+
     /** Saves the currently stored grammar properties. */
     private void saveProperties() throws IOException {
         var properties = this.properties;
@@ -913,10 +926,11 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
         try (Writer propertiesWriter = new FileWriter(propertiesFile)) {
             properties.store(propertiesWriter);
         }
-        // delete the old-style properties file, if any
-        File oldPropertiesFile = getOldDefaultPropertiesFile();
-        if (oldPropertiesFile.exists()) {
-            oldPropertiesFile.delete();
+        // delete the old-style properties file if it was the properties source;
+        // otherwise a file of that name is a settings resource and must survive
+        if (this.legacyPropertiesFile) {
+            getOldDefaultPropertiesFile().delete();
+            this.legacyPropertiesFile = false;
         }
     }
 

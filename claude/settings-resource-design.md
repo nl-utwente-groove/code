@@ -18,14 +18,17 @@ plus a registry, so a new settings family is a schema class, not enum surgery.
   `FileType.PROPERTY`: `FileType.createExtensionMap` forbids a second FileType
   with extension `.properties`, so kind dispatch for `.properties` files is by
   *name*, not extension.
-- **The name rule**: a top-level `system.properties` (and the legacy
-  `<grammarName>.properties`) is the PROPERTIES singleton; every other
-  `*.properties` in the `.gps` is a SETTINGS resource, named by its qualified
-  path (subfolders = name segments, as for all named kinds). Implemented in
-  exactly two places: `SystemStore.collectResources` (read side: skip the
-  reserved top-level names when collecting SETTINGS) and the save path
-  (write side: `putTexts`/`rename`/`copy` reject the reserved top-level names
-  for SETTINGS with an error, so `system.properties` can never be clobbered).
+- **The name rule**: a top-level `system.properties` is the PROPERTIES
+  singleton; every other `*.properties` in the `.gps` is a SETTINGS resource,
+  named by its qualified path (subfolders = name segments, as for all named
+  kinds). Implemented in exactly two places: `SystemStore.collectResources`
+  (read side: skip the reserved top-level names when collecting SETTINGS) and
+  the save path (write side: `putTexts`/`rename` reject the reserved top-level
+  names for SETTINGS with an error, so `system.properties` can never be
+  clobbered). The legacy `<grammarName>.properties` form is reserved only
+  *while it actually serves as the properties file* (i.e. in a store without
+  `system.properties`); the next properties save migrates it and frees the
+  name — so a grammar named `ecore.gps` can hold the `ecore` mapping resource.
 - **Enabledness**: opted out, GROOVY-style, in all three places
   (`ResourceKind.isEnableable()`, `GrammarProperties.getActiveNames`,
   `GrammarModel.syncResource` all-active arm). Settings are read by their
