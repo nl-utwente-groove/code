@@ -472,12 +472,11 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      * @param trans the source state of the transition to be added
      */
     public void addTransition(GraphTransition trans) {
-        if (!isStoring()) {
-            // the transition is not retained, but the listeners
-            // (in particular the acceptors) must still see it
-            fireAddEdge(trans);
-        } else if (trans.source().addTransition(trans)) {
-            // add (possibly isomorphically modified) edge to LTS
+        // add (possibly isomorphically modified) edge to LTS;
+        // note that this also does the match and closure bookkeeping in the
+        // source state's cache, so it is needed even without storing - the
+        // transition is then retained only as long as the cache lives
+        if (trans.source().addTransition(trans)) {
             fireAddEdge(trans);
         } else {
             spuriousTransitionCount++;
