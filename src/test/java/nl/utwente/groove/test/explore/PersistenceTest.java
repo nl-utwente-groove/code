@@ -20,6 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.File;
+
 import org.junit.Test;
 
 import nl.utwente.groove.explore.Exploration;
@@ -29,6 +31,7 @@ import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphNextState;
 import nl.utwente.groove.lts.GraphState;
+import nl.utwente.groove.transform.Transformer;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Randomness;
 
@@ -159,6 +162,25 @@ public class PersistenceTest {
                            .formatted(config));
             assertTraceTree(gts, config);
         }
+    }
+
+    /**
+     * Tests that the Generator's {@code -x} route (via {@link Transformer})
+     * honours the configuration-only features: the configured type must be
+     * passed through intact, not decomposed into its serialised components,
+     * which carry neither persistence nor the engine-only keywords.
+     */
+    @Test
+    public void testTransformerHonoursConfig() throws Exception {
+        var transformer = new Transformer(new File(INPUT_DIR + "/ferryman.gps"));
+        transformer
+            .setExploreType(ExploreTypeConverter
+                .toExploreType(ExploreConfig.parse("persistence=none " + BOUND)));
+        Randomness.setMasterSeed(42);
+        GTS gts = transformer.explore().getGTS();
+        assertTrue(gts.nodeCount() > 1, "The trace of the last state should be retained");
+        assertTrue(gts.nodeCount() < gts.getNextStateNr(),
+                   "Persistence should have been honoured");
     }
 
     /**

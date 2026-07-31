@@ -128,11 +128,13 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
     private Transformer computeTransformer() throws IOException, FormatException {
         Transformer result = new Transformer(getGrammar());
         if (hasExploreConfig()) {
-            ExploreType exploreType
-                = ExploreTypeConverter.toExploreType(ExploreConfig.parse(getExploreConfig()));
-            result.setStrategy(exploreType.getStrategy());
-            result.setAcceptor(exploreType.getAcceptor());
-            result.setResultCount(exploreType.getBound());
+            // pass the configured type through intact: decomposing it into
+            // its serialised components would silently drop the features
+            // that only the type itself carries (persistence, shape) and
+            // break the engine-only strategy keywords
+            result
+                .setExploreType(ExploreTypeConverter
+                    .toExploreType(ExploreConfig.parse(getExploreConfig())));
         }
         if (hasStrategy() || hasAcceptor()) {
             emitDeprecationWarning();

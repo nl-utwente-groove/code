@@ -323,8 +323,31 @@ public class Transformer {
         return this.exploreType;
     }
 
+    /**
+     * Sets the complete exploration type to be used in the next exploration.
+     * In contrast to setting the individual components through
+     * {@link #setStrategy}, {@link #setAcceptor} and {@link #setResultCount},
+     * this passes the type through intact, so that behaviour carried only by
+     * the type itself (such as the persistence and shape features of a
+     * configuration-based type) is preserved. Component setters invoked in
+     * addition override the corresponding components, rebuilding a plain
+     * type from the serialised descriptors.
+     * @param exploreType the exploration type to be used; if {@code null},
+     * the default exploration type of the grammar will be used
+     */
+    public void setExploreType(ExploreType exploreType) {
+        this.fixedExploreType = exploreType;
+        // reset the exploration, so that it will be regenerated
+        this.exploreType = null;
+    }
+
+    /** The explicitly set exploration type, if any. */
+    private ExploreType fixedExploreType;
+
     private ExploreType computeExploreType() {
-        ExploreType result = getGrammarModel().getDefaultExploreType();
+        ExploreType result = this.fixedExploreType == null
+            ? getGrammarModel().getDefaultExploreType()
+            : this.fixedExploreType;
         boolean rebuild = hasStrategy() || hasAcceptor() || hasResultCount();
         if (rebuild) {
             Serialized strategy = hasStrategy()
