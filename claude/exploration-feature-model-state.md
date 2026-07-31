@@ -133,6 +133,23 @@ disappears in phase 6; the preview field (the config's own text form) stays.
   `ConfiguredExploreType` (returns a copy of the authoritative config;
   persistence leaves no trace in the legacy descriptors — the copy uses the
   new `ExploreConfig` copy constructor). `PersistenceTest` covers it.
+  **Trace retention (follow-up, 2026-07-31, at Arend's request — an empty
+  Simulator panel after a none-run "is not what a user would expect"):** at
+  the end of an unstored run, `Exploration.play` calls `GTS.retainTraces`
+  with the result states + the last explored state: their spines (alive by
+  construction — pinned results keep their ancestor chains) are entered
+  into the GTS root-first, with the spanning stub appended to each source's
+  *stored* stubs explicitly (`AbstractGraphState.addStoredTransitionStub` —
+  the closure-time copy was skipped, and the cache is soft, so appending
+  via the cache would lose the stub on GC). The state set is replaced by a
+  `StateSet(COLLAPSE_NONE)` (identity equality, number-based hash —
+  deterministic): trace states stay distinct even when isomorphic, and its
+  `put` doubles as the identity membership test that stops the spine walk.
+  Storing flips back on, so the GTS ends consistent (a later stored
+  exploration of the same GTS simply no longer collapses — documented).
+  The exploration status message gains "(discovered N states, retained
+  M)". A goal-less none-run retains the last state's trace — which for a
+  linear random walk is the whole walk, the natural Simulator use case.
 - `util.Randomness` (5b slice 1, 2026-07-26) — the master-seed registry of
   `claude/randomness-seeding.md` (decisions resolved, see there): per-purpose
   streams (EXPLORATION, ORACLE) derived per obtainment, so a fixed master seed

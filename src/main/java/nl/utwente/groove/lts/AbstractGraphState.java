@@ -144,6 +144,18 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     }
 
     /**
+     * Adds a single stub to the stored transition stubs. Used to retain a
+     * spanning transition after an unstored exploration (see
+     * {@link GTS#retainTraces}), where the closure-time copy of the cached
+     * stubs was deliberately skipped.
+     */
+    void addStoredTransitionStub(GraphTransitionStub stub) {
+        var stubs = Arrays.copyOf(this.transitionStubs, this.transitionStubs.length + 1);
+        stubs[stubs.length - 1] = stub;
+        this.transitionStubs = stubs;
+    }
+
+    /**
      * Stores a set of outgoing transition stubs in a memory efficient way.
      */
     private void setStoredTransitionStubs(Collection<GraphTransitionStub> outTransitionSet) {
