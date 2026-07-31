@@ -79,7 +79,7 @@ public class EcoreToGraphs {
      * @param options the encoding options to be used
      */
     public EcoreToGraphs(Collection<EPackage> roots, EcoreMapping options) {
-        this.names = new EcoreNames(roots);
+        this.names = new EcoreNames(roots, options);
         this.options = options;
         for (var classifier : this.names.classifiers()) {
             if (classifier instanceof EClass eClass) {
@@ -112,6 +112,7 @@ public class EcoreToGraphs {
      */
     public AspectGraph toTypeGraph(String name) {
         PlainGraph result = new PlainGraph(name, GraphRole.TYPE);
+        result.addErrors(this.names.getErrors());
         Map<EClass,@Nullable PlainNode> classNodes = new LinkedHashMap<>();
         Map<EEnum,@Nullable PlainNode> enumNodes = new LinkedHashMap<>();
         // first create the nodes for all classes, enums and enum literals
@@ -380,6 +381,7 @@ public class EcoreToGraphs {
      */
     public AspectGraph toHostGraph(String name, Resource resource) {
         PlainGraph result = new PlainGraph(name, GraphRole.HOST);
+        result.addErrors(this.names.getErrors());
         Map<EObject,@Nullable PlainNode> nodeMap = new LinkedHashMap<>();
         Map<EEnumLiteral,PlainNode> literalNodes = new LinkedHashMap<>();
         Map<String,PlainNode> valueNodes = new LinkedHashMap<>();
@@ -586,13 +588,18 @@ public class EcoreToGraphs {
     }
 
     /** Indicates if a feature is to be encoded through intermediate nodes.
-     * Only the features whose information the direct encoding would lose are
+     * A per-feature mapping override wins in both directions; without one,
+     * only the features whose information the direct encoding would lose are
      * nodified, even under {@link Ordering#INDEX}: the graphs are written
      * transformation rules against, so a feature that has nothing to preserve
-     * keeps its lean direct-edge form.
+     * keeps its lean direct-edge form. An explicit override on a
+     * set-semantics feature <i>is</i> honoured: the user asked for it.
      */
     private boolean isIndexed(EStructuralFeature feature) {
-        return this.options.ordering() == Ordering.INDEX && isLossy(feature);
+        var override = this.names.orderingFor(feature);
+        return override == null
+            ? this.options.ordering() == Ordering.INDEX && isLossy(feature)
+            : override == Ordering.INDEX;
     }
 
     /** Returns the multiplicity text of a feature, or {@code null} if it is the default. */

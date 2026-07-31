@@ -23,6 +23,7 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.nio.file.Files;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -33,6 +34,10 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EReference;
+import org.eclipse.emf.ecore.EcoreFactory;
 import org.junit.Test;
 
 import nl.utwente.groove.grammar.QualName;
@@ -50,6 +55,7 @@ import nl.utwente.groove.io.external.format.ecore.EcoreMapping;
 import nl.utwente.groove.io.external.format.ecore.EcoreMapping.LiteralStyle;
 import nl.utwente.groove.io.external.format.ecore.EcoreMapping.Ordering;
 import nl.utwente.groove.io.external.format.ecore.EcoreMappingSchema;
+import nl.utwente.groove.io.external.format.ecore.EcoreNames;
 import nl.utwente.groove.io.external.format.ecore.EcorePorter;
 import nl.utwente.groove.io.external.format.ecore.EcoreToGraphs;
 import nl.utwente.groove.io.store.SystemStore;
@@ -605,6 +611,85 @@ public class EcoreTest {
     // Mapping settings
     // ----------------------------------------------------------------------
 
+    /** Tests the per-feature ordering override in both directions. */
+    @Test
+    public void testOrderingOverride() throws Exception {
+        // an index override for the elements feature only, under global none
+        AspectGraph type = single(importFrom("ordered.ecore",
+                                             mappingText(Ordering.NONE, true,
+                                                         "List.elements.ordering = index")),
+                                  ResourceKind.TYPE);
+        assertEquals(Set.of("List", "Element", "List$elements"), selfLabels(type).keySet());
+        assertTrue(selfLabels(type).get("List").contains("string:labels"));
+        assertEquals(Collections.emptyList(), messages(type.getErrors()));
+        // a none override for the labels feature, under global index;
+        // the element path may be package-qualified
+        type = single(importFrom("ordered.ecore",
+                                 mappingText(Ordering.INDEX, true,
+                                             "ordered.List.labels.ordering = none")),
+                      ResourceKind.TYPE);
+        assertEquals(Set.of("List", "Element", "List$elements"), selfLabels(type).keySet());
+        assertTrue(selfLabels(type).get("List").contains("string:labels"));
+        assertEquals(Collections.emptyList(), messages(type.getErrors()));
+    }
+
+    /** Tests the instance encoding and the round trip under an override. */
+    @Test
+    public void testOrderingOverrideRoundTrip() throws Exception {
+        String mappingText = mappingText(Ordering.NONE, true, "List.elements.ordering = index");
+        Set<Imported> imported = assertRoundTrip("ordered.xmi", mappingText);
+        AspectGraph host = single(imported, ResourceKind.HOST);
+        // the elements containment is nodified, the labels attribute is not
+        assertTrue(selfLabels(host).keySet().stream().anyMatch(k -> k.startsWith("List$elements")));
+        assertTrue(selfLabels(host).keySet().stream().noneMatch(k -> k.startsWith("List$labels")));
+    }
+
+    /** Tests the leniency and the errors of mapping resolution. */
+    @Test
+    public void testOrderingResolution() throws Exception {
+        // an entry about another metamodel is silently ignored
+        AspectGraph type = single(importFrom("ordered.ecore",
+                                             mappingText(Ordering.NONE, true,
+                                                         "Shop.orders.ordering = index")),
+                                  ResourceKind.TYPE);
+        assertEquals(Collections.emptyList(), messages(type.getErrors()));
+        // an entry resolving to a single-valued feature is an error
+        type = single(importFrom("ordered.ecore",
+                                 mappingText(Ordering.NONE, true,
+                                             "Element.name.ordering = index")),
+                      ResourceKind.TYPE);
+        List<String> errors = messages(type.getErrors());
+        assertEquals(errors.toString(), 1, errors.size());
+        assertTrue(errors.get(0), errors.get(0).contains("single-valued"));
+    }
+
+    /** Tests that an ambiguously resolving entry is an error, and that
+     * package qualification resolves the ambiguity. */
+    @Test
+    public void testAmbiguousResolution() throws Exception {
+        // two packages, each holding a class Thing with a many-valued feature items
+        List<EPackage> roots = new ArrayList<>();
+        for (String pkgName : List.of("one", "two")) {
+            EPackage pkg = EcoreFactory.eINSTANCE.createEPackage();
+            pkg.setName(pkgName);
+            EClass thing = EcoreFactory.eINSTANCE.createEClass();
+            thing.setName("Thing");
+            EReference items = EcoreFactory.eINSTANCE.createEReference();
+            items.setName("items");
+            items.setUpperBound(-1);
+            items.setEType(thing);
+            thing.getEStructuralFeatures().add(items);
+            pkg.getEClassifiers().add(thing);
+            roots.add(pkg);
+        }
+        EcoreNames names = new EcoreNames(roots, mapping("Thing.items.ordering = index"));
+        List<String> errors = messages(names.getErrors());
+        assertEquals(errors.toString(), 1, errors.size());
+        assertTrue(errors.get(0), errors.get(0).contains("Ambiguous"));
+        names = new EcoreNames(roots, mapping("one.Thing.items.ordering = index"));
+        assertEquals(Collections.emptyList(), messages(names.getErrors()));
+    }
+
     /** Tests that a grammar without an {@code ecore} settings resource, and a
      * {@code null} grammar, both yield the default mapping. */
     @Test
@@ -702,7 +787,14 @@ public class EcoreTest {
      */
     static private Set<Imported> assertRoundTrip(String fixture,
                                                  Ordering ordering) throws Exception {
-        Set<Imported> imported = importFrom(fixture, ordering, true);
+        return assertRoundTrip(fixture, mappingText(ordering, true));
+    }
+
+    /** Variant of {@link #assertRoundTrip(String, Ordering)} that threads a
+     * full mapping resource text through both imports and the export. */
+    static private Set<Imported> assertRoundTrip(String fixture,
+                                                 String mappingText) throws Exception {
+        Set<Imported> imported = importFrom(new File(DIR + fixture), mappingText);
         AspectGraph type = single(imported, ResourceKind.TYPE);
         AspectGraph host = optional(imported, ResourceKind.HOST);
         assertEquals(Collections.emptyList(), messages(type.getErrors()));
@@ -710,7 +802,7 @@ public class EcoreTest {
         // of the encoding are silent, a well-formed input carries no errors
         GrammarModel grammar = newGrammar(type, host == null
             ? null
-            : host.rename(QualName.name("start")), ordering, true);
+            : host.rename(QualName.name("start")), mappingText);
         assertEquals(Collections.emptyList(), messages(grammar.getTypeModel().getErrors()));
         if (host != null) {
             assertEquals(Collections.emptyList(), messages(host.getErrors()));
@@ -720,8 +812,8 @@ public class EcoreTest {
             assertEquals(Collections.emptyList(), messages(grammar.getErrors()));
         }
         File dir = newDir();
-        exportTo(newGrammar(type, host, ordering, true), dir);
-        Set<Imported> result = importFrom(new File(dir, fixture), ordering, true);
+        exportTo(newGrammar(type, host, mappingText), dir);
+        Set<Imported> result = importFrom(new File(dir, fixture), mappingText);
         AspectGraph resultType = single(result, ResourceKind.TYPE);
         assertIsomorphic(type, resultType);
         assertEquals(metadata(type), metadata(resultType));
@@ -736,15 +828,19 @@ public class EcoreTest {
     /** Imports a fixture file with given encoding options. */
     static private Set<Imported> importFrom(String fixture, Ordering ordering,
                                             boolean useIds) throws Exception {
-        return importFrom(new File(DIR + fixture), ordering, useIds);
+        return importFrom(new File(DIR + fixture), mappingText(ordering, useIds));
     }
 
-    /** Imports a file with given encoding options. */
-    static private Set<Imported> importFrom(File file, Ordering ordering,
-                                            boolean useIds) throws Exception {
+    /** Imports a fixture file with a given mapping resource text. */
+    static private Set<Imported> importFrom(String fixture, String mappingText) throws Exception {
+        return importFrom(new File(DIR + fixture), mappingText);
+    }
+
+    /** Imports a file with a given mapping resource text. */
+    static private Set<Imported> importFrom(File file, String mappingText) throws Exception {
         FileType fileType = FileType.getType(file);
         assertNotNull(fileType);
-        return EcorePorter.instance().doImport(file, fileType, newGrammar(ordering, useIds));
+        return EcorePorter.instance().doImport(file, fileType, newGrammar(mappingText));
     }
 
     /** Exports the active type graph and start graph of a grammar to a directory. */
@@ -934,35 +1030,51 @@ public class EcoreTest {
 
     /** Creates an empty grammar model with given Ecore encoding options. */
     static private GrammarModel newGrammar(Ordering ordering, boolean useIds) throws Exception {
+        return newGrammar(mappingText(ordering, useIds));
+    }
+
+    /** Creates an empty grammar model with a given mapping resource text. */
+    static private GrammarModel newGrammar(String mappingText) throws Exception {
         SystemStore store = newStore();
-        putMapping(store, ordering, useIds);
+        putMapping(store, mappingText);
         return new GrammarModel(store);
     }
 
-    /** Stores an {@code ecore} settings resource with given global options. */
-    static private void putMapping(SystemStore store, Ordering ordering,
-                                   boolean useIds) throws Exception {
-        String text = "$schema = " + EcoreMappingSchema.NAME + "\n" + EcoreMapping.ORDERING_KEY
-            + " = " + ordering.text() + "\n" + EcoreMapping.USE_IDENTIFIERS_KEY + " = " + useIds
-            + "\n";
-        store.putTexts(ResourceKind.SETTINGS, Map.of(EcoreMapping.RESOURCE_QUAL_NAME, text));
+    /** Stores an {@code ecore} settings resource with a given text. */
+    static private void putMapping(SystemStore store, String mappingText) throws Exception {
+        store
+            .putTexts(ResourceKind.SETTINGS,
+                      Map.of(EcoreMapping.RESOURCE_QUAL_NAME, mappingText));
+    }
+
+    /** Builds the text of an {@code ecore} settings resource from global
+     * options and optional per-element entries. */
+    static private String mappingText(Ordering ordering, boolean useIds, String... extras) {
+        StringBuilder result = new StringBuilder();
+        result.append("$schema = " + EcoreMappingSchema.NAME + "\n");
+        result.append(EcoreMapping.ORDERING_KEY + " = " + ordering.text() + "\n");
+        result.append(EcoreMapping.USE_IDENTIFIERS_KEY + " = " + useIds + "\n");
+        for (String extra : extras) {
+            result.append(extra + "\n");
+        }
+        return result.toString();
     }
 
     /** Creates a grammar model containing a given type graph and start graph. */
     static private GrammarModel newGrammar(AspectGraph type, AspectGraph host) throws Exception {
-        return newGrammar(type, host, Ordering.NONE, true);
+        return newGrammar(type, host, mappingText(Ordering.NONE, true));
     }
 
     /** Creates a grammar model containing a given type graph and optional start
-     * graph, with given Ecore encoding options. */
-    static private GrammarModel newGrammar(AspectGraph type, AspectGraph host, Ordering ordering,
-                                           boolean useIds) throws Exception {
+     * graph, with a given mapping resource text. */
+    static private GrammarModel newGrammar(AspectGraph type, AspectGraph host,
+                                           String mappingText) throws Exception {
         SystemStore store = newStore();
         store.putGraphs(ResourceKind.TYPE, List.of(type), false);
         if (host != null) {
             store.putGraphs(ResourceKind.HOST, List.of(host), false);
         }
-        putMapping(store, ordering, useIds);
+        putMapping(store, mappingText);
         GrammarModel result = new GrammarModel(store);
         result.setLocalActiveNames(ResourceKind.TYPE, type.getQualName());
         result

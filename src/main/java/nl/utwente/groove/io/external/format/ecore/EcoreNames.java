@@ -17,12 +17,14 @@
 package nl.utwente.groove.io.external.format.ecore;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EClassifier;
@@ -34,6 +36,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.IdValidator;
 
 /**
@@ -56,14 +59,26 @@ import nl.utwente.groove.util.parse.IdValidator;
 public class EcoreNames {
     /**
      * Constructs a naming for the classifiers of a given set of (root) packages,
-     * including their sub-packages.
+     * including their sub-packages, without mapping entries.
      */
     public EcoreNames(Collection<EPackage> roots) {
+        this(roots, EcoreMapping.getDefault());
+    }
+
+    /**
+     * Constructs a naming for the classifiers of a given set of (root) packages,
+     * including their sub-packages, resolving the per-element entries of a
+     * given mapping against them. Resolution problems are collected in
+     * {@link #getErrors()}; an entry that resolves to nothing is silently
+     * ignored (it may concern a metamodel other than this one).
+     */
+    public EcoreNames(Collection<EPackage> roots, EcoreMapping mapping) {
         this.packages = collectPackages(roots);
         this.classifiers = collectClassifiers(this.packages);
         this.labelMap = new LinkedHashMap<>();
         this.literalMap = new LinkedHashMap<>();
         this.featureMap = new LinkedHashMap<>();
+        resolveOrdering(mapping);
         computeLabels();
         computeFeatureLabels();
     }
@@ -136,6 +151,96 @@ public class EcoreNames {
     /** Returns the dot-separated path of a given package, relative to its root package. */
     public String pathOf(EPackage pkg) {
         return String.join(".", segmentsOf(pkg));
+    }
+
+    /** Returns the resolved ordering override of a given feature, if any. */
+    public EcoreMapping.@Nullable Ordering orderingFor(EStructuralFeature feature) {
+        return this.orderingMap.get(feature);
+    }
+
+    /** Mapping from features to their resolved ordering overrides. */
+    private final Map<EStructuralFeature,EcoreMapping.Ordering> orderingMap
+        = new LinkedHashMap<>();
+
+    /** Returns the errors found in resolving the mapping entries against this
+     * metamodel. */
+    public FormatErrorSet getErrors() {
+        return this.errors;
+    }
+
+    /** The errors found in resolving the mapping entries. */
+    private final FormatErrorSet errors = new FormatErrorSet();
+
+    /** Resolves the per-feature ordering entries of a mapping. */
+    private void resolveOrdering(EcoreMapping mapping) {
+        for (var entry : mapping.featureOrdering().entrySet()) {
+            EStructuralFeature feature
+                = resolveFeature(entry.getKey() + "." + EcoreMapping.ORDERING_KEY,
+                                 Arrays.asList(entry.getKey().split("\\.")));
+            if (feature == null) {
+                continue;
+            }
+            if (feature.getUpperBound() >= 0 && feature.getUpperBound() <= 1) {
+                this.errors
+                    .add("Mapping entry '%s.%s' refers to a single-valued feature",
+                         entry.getKey(), EcoreMapping.ORDERING_KEY);
+            } else {
+                this.orderingMap.put(feature, entry.getValue());
+            }
+        }
+    }
+
+    /**
+     * Resolves a dotted element path to a structural feature, by suffix match
+     * on the raw (unrepaired) qualified Ecore names, using the declaring class.
+     * @param key the full mapping key, for error reporting
+     * @param path the element path to resolve
+     * @return the unique match; {@code null} if there is none (silently, the
+     * entry may concern another metamodel) or more than one (with an error)
+     */
+    private @Nullable EStructuralFeature resolveFeature(String key, List<String> path) {
+        List<EStructuralFeature> matches = new ArrayList<>();
+        for (var classifier : this.classifiers) {
+            if (classifier instanceof EClass eClass) {
+                for (var feature : eClass.getEStructuralFeatures()) {
+                    List<String> full = rawSegmentsOf(eClass.getEPackage());
+                    full.add(eClass.getName());
+                    full.add(feature.getName());
+                    if (isSuffix(path, full)) {
+                        matches.add(feature);
+                    }
+                }
+            }
+        }
+        if (matches.size() > 1) {
+            this.errors
+                .add("Ambiguous mapping entry '%s': matches %s", key,
+                     matches
+                         .stream()
+                         .map(f -> f.getEContainingClass().getName() + "." + f.getName())
+                         .collect(Collectors.joining(" and ")));
+            return null;
+        }
+        return matches.isEmpty()
+            ? null
+            : matches.get(0);
+    }
+
+    /** Tests if one list of segments is a suffix of another. */
+    private static boolean isSuffix(List<String> suffix, List<String> full) {
+        return full.size() >= suffix.size()
+            && full.subList(full.size() - suffix.size(), full.size()).equals(suffix);
+    }
+
+    /** Returns the raw (unrepaired) name segments of a package, from outermost
+     * to innermost. Mapping entries are written in Ecore names, so resolution
+     * must not see the repaired forms. */
+    private static List<String> rawSegmentsOf(@Nullable EPackage pkg) {
+        List<String> result = new ArrayList<>();
+        for (var p = pkg; p != null; p = p.getESuperPackage()) {
+            result.add(0, p.getName());
+        }
+        return result;
     }
 
     /** Mapping from classifiers to their type labels. */
