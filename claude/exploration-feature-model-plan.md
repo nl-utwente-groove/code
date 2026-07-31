@@ -336,6 +336,19 @@ anatomy):
   need a depth bound, and the depth bound is currently expressible only for
   bfs/dfs (not random/beam) — a candidate refinement if none gets real use.
 
+Follow-up (same day, at Arend's request): an unstored run left the
+Simulator's LTS panel effectively empty, which "is not what a user would
+expect". Chosen alternative (from the options: flat result states, bounded
+recency window, Generator-only): **retain the result traces** — at the end
+of the run, `GTS.retainTraces` enters the result states, the last explored
+state, and their ancestor spines (alive anyway: pinned results keep their
+delta chains) into the GTS, together with the spanning transitions, so the
+GTS ends as the trace tree of what the run produced. The state set becomes
+non-collapsing (`COLLAPSE_NONE`: identity equality — isomorphic trace nodes
+stay distinct), storing flips back on, and the status message reports
+"(discovered N states, retained M)". This is de facto the retention layer
+of shape=trace; that slice reduces to presentation.
+
 ### Phase 6 (later branch) — demolition
 
 Delete `explore.encode`, `explore.prettyparse`, `Serialized`, `ExploreType`,

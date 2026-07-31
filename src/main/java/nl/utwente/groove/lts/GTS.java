@@ -264,6 +264,84 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         return isStoring() || state == this.startState;
     }
 
+    /**
+     * Retains the traces leading up to a given collection of states, at the
+     * end of an exploration that did not store its discovered states. Every
+     * given state and its ancestors (up to the first state already in the
+     * GTS) are entered into the GTS, together with the spanning transitions
+     * between them, so that the GTS afterwards contains the tree of traces
+     * to the given states. The state set is replaced by a non-collapsing
+     * one, because a trace may revisit a configuration: isomorphic trace
+     * states remain distinct nodes. Storing is switched back on, leaving
+     * the GTS in an ordinary consistent (though partial) shape; note that
+     * the state set stays non-collapsing, so a subsequent stored
+     * exploration of this GTS will not collapse fresh states either.
+     */
+    public void retainTraces(Collection<GraphState> tips) {
+        assert !isStoring();
+        StateSet traceSet = new StateSet(COLLAPSE_NONE, null);
+        for (GraphState state : allStateSet()) {
+            traceSet.put(state);
+        }
+        this.allStateSet = traceSet;
+        setStoring(true);
+        tips.forEach(this::retainTrace);
+    }
+
+    /**
+     * Retains the trace of a single state: enters the state and its
+     * ancestors into the (non-collapsing) state set until reaching a state
+     * that is already present, together with the spanning transition of
+     * every state entered.
+     */
+    private void retainTrace(GraphState tip) {
+        // collect the not-yet-retained part of the trace, tip first
+        // (the put doubles as an identity-based membership test)
+        List<GraphState> spine = new ArrayList<>();
+        GraphState state = tip;
+        while (allStateSet().put(state) == null) {
+            spine.add(state);
+            if (state instanceof GraphNextState next) {
+                state = next.source();
+            } else {
+                break;
+            }
+        }
+        // register the states and their spanning transitions root-first,
+        // so that listeners see a transition's source before the transition
+        for (var it = spine.listIterator(spine.size()); it.hasPrevious();) {
+            GraphState retained = it.previous();
+            registerRetained(retained);
+            if (retained instanceof GraphNextState next) {
+                // the closure-time copy of the cached stubs was skipped for
+                // unstored states, so store this single stub explicitly
+                ((AbstractGraphState) next.source()).addStoredTransitionStub(next.toStub());
+                fireAddEdge(next);
+            }
+        }
+    }
+
+    /**
+     * Updates the state counts and flagged state lists for a retained state
+     * and notifies the listeners. The state's status flags predate its
+     * entry into the GTS, so they are accounted for here
+     * ({@link #fireUpdateState} only handles subsequent changes).
+     */
+    private void registerRetained(GraphState state) {
+        fireAddNode(state);
+        if (state.isPublic()) {
+            for (Flag recorded : FLAG_ARRAY) {
+                if (state.hasFlag(recorded)) {
+                    this.stateCounts[recorded.ordinal()]++;
+                    var flaggedStates = this.statesMap.get(recorded);
+                    if (flaggedStates != null) {
+                        flaggedStates.add(state);
+                    }
+                }
+            }
+        }
+    }
+
     /** Returns the policy for type checking. */
     public CheckPolicy getTypePolicy() {
         return getGrammar().getProperties().getTypePolicy();

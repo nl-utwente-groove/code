@@ -17,6 +17,7 @@
 package nl.utwente.groove.explore;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import nl.utwente.groove.explore.result.Acceptor;
@@ -139,6 +140,18 @@ public class Exploration {
         this.lastResult = this.acceptor.getResult();
         this.lastState = this.strategy.getLastState();
         this.lastMessage = this.strategy.getMessage();
+        if (!this.gts.isStoring()) {
+            // the discovered states were not stored; retain the traces of
+            // the result states and of the last explored state, so that the
+            // GTS afterwards shows what the exploration produced
+            var tips = new LinkedHashSet<>(this.lastResult.getStates());
+            if (this.lastState != null) {
+                tips.add(this.lastState);
+            }
+            this.gts.retainTraces(tips);
+            this.lastMessage += " (discovered %d states, retained %d)"
+                .formatted(this.gts.getNextStateNr(), this.gts.nodeCount());
+        }
         return this;
     }
 
