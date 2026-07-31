@@ -231,7 +231,11 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         int oldStatus = this.status;
         boolean result = setStatus(Flag.CLOSED, true);
         if (result) {
-            setStoredTransitionStubs(getCachedTransitionStubs());
+            if (getGTS().isStoring()) {
+                setStoredTransitionStubs(getCachedTransitionStubs());
+            }
+            // without storing, the stubs die with the (softly referenced)
+            // cache, so that a closed state does not pin its successors
             fireStatus(oldStatus);
             getCache().registerClosure();
         }
