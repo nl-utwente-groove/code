@@ -27,7 +27,7 @@ public class ExplorationDialogAction extends SimulatorAction {
     @Override
     public void refresh() {
         GrammarModel grammar = getSimulatorModel().getGrammar();
-        setEnabled(grammar != null && grammar.hasRules());
+        setEnabled(grammar != null);
         if (grammar != null) {
             var error = false;
             var properties = grammar.getProperties();
