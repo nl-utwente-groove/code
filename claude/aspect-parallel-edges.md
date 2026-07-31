@@ -357,6 +357,47 @@ The concern had two halves, and both closed:
   need a universally quantified eraser in the normalisation; recorded as
   an option, not implemented.
 
+### Event-cached creator edge images vs repeated application — RESOLVED (2026-07-31)
+
+Found in review: at GTS level, `readerCreator`/`flagCreator` never grew a
+bundle beyond 2 copies. Direct `RuleApplication` chains (a fresh event per
+step, as in `RuleApplicationTest`) were unaffected, which is why the
+existing tests missed it.
+
+Cause: rule events are pooled per (rule, anchor) in the `SystemRecord`,
+and `BasicEvent` caches its *simple* creator edge images once per event
+(`simpleCreatedEdgeSet`, minted fresh at first computation). When the
+same event fires again later on the exploration path — e.g. the event
+anchored on copy #1 fires at the state its own first application created —
+the cached image is by then *contained* in the source graph, and
+`RuleEffect.getAddedEdges` filters contained edges out (correct
+idempotent-creation semantics for simple graphs), so the application
+added nothing at all and the target collapsed onto the source state.
+Complex creator edges (an endpoint is a created node) were never affected:
+they are minted per record via the non-simple factory, which always
+assigns a fresh number.
+
+Fix, mirroring the created-*node* freshness machinery
+(`BasicEvent.freshNodeList`/`createNode(record, i, type)`):
+`recordCreatedEdges` branches on source-graph simplicity. In the
+non-simple branch each simple creator edge image is passed through
+`createEdge(record, creatorIndex, image)` — the cached image is used if
+not contained in the source graph; otherwise previously minted fresh
+copies (`freshEdgeList`, a hard per-event field like its node
+counterpart, allocated only for non-simple factories) are tried in order;
+only if all are contained is a new copy minted and appended. This keeps
+factory growth bounded by the maximal bundle width instead of the
+transition count, and makes re-derivation deterministic for a given
+source graph (first-fresh selection), on top of the content-matched
+replay that already guards reconstruction. Freshness need only be checked
+against the source graph: all cached images and candidates are globally
+fresh mints from the shared factory, so identities can never collide
+across (sub-)events of one composite application.
+
+Pinned by `FreshCreatorEdgeTest`: three GTS-level chains
+(binary/flag/let creator, from the `mult.gps` fixtures) asserting that
+each application yields a fresh state with one more edge.
+
 ### Open items after this step
 
 - `DefaultRuleTransition.getMorphism()` (GUI-informational) re-derives
