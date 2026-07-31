@@ -57,6 +57,9 @@ import javax.swing.event.ChangeListener;
 
 import org.eclipse.jdt.annotation.NonNull;
 
+import nl.utwente.groove.explore.config.ConfiguredExploreType;
+import nl.utwente.groove.explore.config.ExploreKey;
+import nl.utwente.groove.explore.config.Shape;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
@@ -483,6 +486,13 @@ public class LTSDisplay extends Display implements SimulatorListener {
                 setEnabled(true);
                 getJGraph().scrollToActive();
                 setFilterResultItem(source.hasExploreResult());
+                if (changes.contains(GTS) && source.hasExploreResult()
+                    && source.getExploreType() instanceof ConfiguredExploreType configured
+                    && configured.getConfig().getKind(ExploreKey.SHAPE) == Shape.TRACE) {
+                    // a trace-shaped exploration presents its result as
+                    // traces: switch the filter to the result view
+                    getFilterChooser().setSelectedItem(Filter.RESULT);
+                }
                 updateStatus(gts);
             }
             if (gts != oldModel.getGTS()) {

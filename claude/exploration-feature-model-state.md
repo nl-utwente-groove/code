@@ -31,8 +31,21 @@ the `util.Randomness` entry below and `claude/randomness-seeding.md`. Slice 2
 cost-based ordering) was deferred by Arend at slice start** — he wants to
 design that dimension carefully rather than start from `nen` (see the open
 threads below). Slice 3 (2026-07-31): persistence=none — see the storing-seam
-entry and invariant below. Remaining 5b slices (overrides + trace) and
-phase 6 (demolition) are future work — do not start unprompted.
+entry and invariant below. Slice 4 (2026-07-31): shape=trace — wiring the
+key to the pre-existing trace machinery (`ExploreResult.toFragment`,
+`Filter.RESULT` in GUI and Generator; `check()` rejects trace+goal=none;
+`LTSDisplay` auto-selects the RESULT filter after a trace-shaped run;
+Generator `getFilter` defaults to RESULT for one). Includes the fix that
+`Transformer.setExploreType` passes the configured type through intact —
+the Generator `-x` route used to decompose it, silently dropping
+persistence and breaking engine-only keywords. Notable: recipe transitions
+are *reconstructed* from spanning rule-step stubs by the transition
+machinery, so the public-level trace of even an unstored run shows recipe
+transitions once caches are gone (TraceShapeTest guards this; a fallback in
+`GTSFragment.complete` was prototyped and found unnecessary). Remaining 5b
+slice (collapse/algebra overrides — needs Arend's Continue-semantics
+decision) and phase 6 (demolition) are future work — do not start
+unprompted.
 
 The second dialog-review round (2026-07-22, commits 6718ad5db + 571c958e3) settled:
 drop-down defaults are marked with a trailing `*` only ("(default)" stays in the
@@ -245,7 +258,7 @@ disappears in phase 6; the preview field (the config's own text form) stays.
 
 heuristic≠none (the whole dimension deferred by Arend pending a careful
 design, along with cost-based ordering), cost=rule, successor=all-random,
-single-successor on a multi-state frontier, shape=trace,
+single-successor on a multi-state frontier,
 collapse/algebra overrides (kinds `grammar` = inherit), goal=graph, goal=ltl/ctl
 (stay with the CheckLTL/CTL actions), iterative deepening (`+inc`), bound=size,
 `fires`+violate (legacy ruleapp has no polarity), condition bound + depth bound
@@ -274,9 +287,7 @@ Dialog/Simulator threads (2026-07-26, from Arend's review):
 - A **sub-dialog for the more involved content editors** (formulas etc.) is
   planned as a later refinement; content editors stay as they are until then.
 
-- Phase 5b+ (random/beam orders and persistence are done):
-  trace results (note: under persistence=none the ancestor chain of a
-  pinned result state survives by construction — the trace is nearly free);
+- Phase 5b+ (random/beam orders, persistence and trace shape are done):
   collapse/algebra overrides (baked into the GTS at construction — what
   Continue over an existing GTS means under a different override needs an
   Arend decision; the same question exists in miniature for a

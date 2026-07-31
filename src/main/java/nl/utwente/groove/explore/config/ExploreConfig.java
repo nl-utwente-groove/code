@@ -131,6 +131,11 @@ public class ExploreConfig {
                 .add("Goal '%s' yields no results, so result count must be '%s'",
                      Goal.NONE.getName(), Count.ALL.getName());
         }
+        if (goal == Goal.NONE && getKind(ExploreKey.SHAPE) == Shape.TRACE) {
+            result
+                .add("Goal '%s' yields no results, so there are no traces to collect",
+                     Goal.NONE.getName());
+        }
         if (getKind(ExploreKey.COUNT) == Count.COUNT
             && get(ExploreKey.COUNT).content() instanceof Integer count && count < 2) {
             result.add("Result count %s should be larger than 1", count);
