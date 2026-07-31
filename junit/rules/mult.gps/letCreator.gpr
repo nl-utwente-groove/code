@@ -1,16 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph edgemode="directed" edgeids="false" role="rule" id="letCreator">
+    <graph role="rule" edgeids="true" edgemode="directed" id="letCreator">
         <attr name="$version">
             <string>curly</string>
         </attr>
-        <node id="n0"/>
-        <edge to="n0" from="n0">
+        <node id="n0">
+            <attr name="layout">
+                <string>21 21 19 19</string>
+            </attr>
+        </node>
+        <edge from="n0" to="n0" id="e0">
             <attr name="label">
                 <string>flag:a</string>
             </attr>
         </edge>
-        <edge to="n0" from="n0">
+        <edge from="n0" to="n0" id="e1">
             <attr name="label">
                 <string>new:let:f=5</string>
             </attr>

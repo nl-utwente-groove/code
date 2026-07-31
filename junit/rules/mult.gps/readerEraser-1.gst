@@ -1,12 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph edgemode="directed" edgeids="false" role="graph" id="readerEraser-1">
+    <graph role="graph" edgeids="true" edgemode="directed" id="readerEraser-1">
         <attr name="$version">
             <string>curly</string>
         </attr>
-        <node id="n0"/>
-        <node id="n1"/>
-        <edge to="n1" from="n0">
+        <node id="n0">
+            <attr name="layout">
+                <string>6 6 19 19</string>
+            </attr>
+        </node>
+        <node id="n1">
+            <attr name="layout">
+                <string>68 68 19 19</string>
+            </attr>
+        </node>
+        <edge from="n0" to="n1" id="e0">
             <attr name="label">
                 <string>mult=2:a</string>
             </attr>
