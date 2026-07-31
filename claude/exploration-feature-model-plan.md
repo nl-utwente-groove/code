@@ -349,6 +349,38 @@ stay distinct), storing flips back on, and the status message reports
 "(discovered N states, retained M)". This is de facto the retention layer
 of shape=trace; that slice reduces to presentation.
 
+#### Phase 5b slice 4 (2026-07-31) — shape=trace
+
+As predicted, mostly presentation: the trace machinery already existed —
+`ExploreResult.toFragment` / `GTSFragment.complete(internal)` build the
+trace fragment, including the recipe characterisation from the feature
+model's open question (public level = recipe transitions; rule steps behind
+the internal flag), and both the GUI (LTS filter drop-down, `Filter.RESULT`)
+and the Generator (`-traces`) could already show/save it. The slice wires
+the config key to that machinery:
+
+- `check()`: shape=trace + goal=none is inconsistent (no results, no
+  traces).
+- Simulator: after an exploration whose type is trace-shaped, `LTSDisplay`
+  auto-selects the RESULT filter (guarded on an actual GTS change, so
+  manual filter choices are not overridden by unrelated refreshes).
+- Generator: without an explicit `-traces`/`-spanning`, a trace-shaped
+  exploration saves the result traces (`getFilter` consults the effective
+  exploration type of the run).
+
+Prerequisite fix (own commit): the Generator's `-x` route decomposed the
+configured type into its serialised components and let `Transformer`
+rebuild a plain type — silently dropping persistence and breaking the
+engine-only keywords. `Transformer.setExploreType` now passes the type
+through intact.
+
+Surprise finding: a planned fallback in `GTSFragment.complete` (add rule
+steps when the recipe transition is missing) proved unnecessary — the
+transition machinery *reconstructs* recipe transitions from the spanning
+rule-step stubs, so even the retained trace of an unstored exploration
+shows recipe-level transitions after its caches are gone
+(`TraceShapeTest.testRecipeTransitionWithoutPersistence` guards this).
+
 ### Phase 6 (later branch) — demolition
 
 Delete `explore.encode`, `explore.prettyparse`, `Serialized`, `ExploreType`,

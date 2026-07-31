@@ -57,7 +57,7 @@ public class ExploreCliTest {
     @Test
     public void testBadConfig() {
         assertThrows(Exception.class,
-                     () -> Generator.execute("-x", "shape=trace", GRAMMAR));
+                     () -> Generator.execute("-x", "heuristic=nen", GRAMMAR));
         assertThrows(Exception.class, () -> Generator.execute("-x", "bogus=1", GRAMMAR));
     }
 

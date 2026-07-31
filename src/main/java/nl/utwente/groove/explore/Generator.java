@@ -33,8 +33,11 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.Parameters;
 
+import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
+import nl.utwente.groove.explore.config.ExploreKey;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
+import nl.utwente.groove.explore.config.Shape;
 import nl.utwente.groove.explore.encode.Serialized;
 import nl.utwente.groove.explore.util.CompositeReporter;
 import nl.utwente.groove.explore.util.ExplorationReporter;
@@ -76,7 +79,7 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
      */
     @Override
     protected ExploreResult run() throws Exception {
-        Transformer transformer = computeTransformer();
+        Transformer transformer = this.transformer = computeTransformer();
         transformer.addListener(getReporter());
         if (!getVerbosity().isLow()) {
             transformer.addListener(new GenerateProgressListener());
@@ -395,18 +398,33 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
             + "The optional extension determines the output format (default is .gst)")
     private String statePattern;
 
-    /** Returns the filter mode to be used when saving the LTS. */
+    /** Returns the filter mode to be used when saving the LTS.
+     * In the absence of an explicit option, a trace-shaped exploration
+     * (configuration key {@code shape=trace}) saves the result traces.
+     */
     public Filter getFilter() {
-        return this.traces
-            ? Filter.RESULT
-            : this.spanning
-                ? Filter.SPANNING
-                : Filter.NONE;
+        Filter result;
+        if (this.traces) {
+            result = Filter.RESULT;
+        } else if (this.spanning) {
+            result = Filter.SPANNING;
+        } else if (this.transformer != null
+            && this.transformer.getExploreType() instanceof ConfiguredExploreType configured
+            && configured.getConfig().getKind(ExploreKey.SHAPE) == Shape.TRACE) {
+            result = Filter.RESULT;
+        } else {
+            result = Filter.NONE;
+        }
+        return result;
     }
 
     @Option(names = "-spanning",
         description = "If switched on, only the spanning tree of the LTS will be saved")
     private boolean spanning;
+
+    /** The transformer of the current run, used to determine the effective
+     * exploration type (in particular its result shape) for {@link #getFilter}. */
+    private Transformer transformer;
 
     @Option(names = "-traces",
         description = "If switched on, only the result traces of the LTS will be saved "
