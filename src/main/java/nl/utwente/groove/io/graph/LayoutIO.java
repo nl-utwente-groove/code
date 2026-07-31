@@ -28,12 +28,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.jgraph.graph.EdgeView;
-import org.jgraph.graph.GraphConstants;
 
 import nl.utwente.groove.graph.GraphInfo;
-import nl.utwente.groove.gui.layout.JEdgeLayout;
-import nl.utwente.groove.gui.layout.JVertexLayout;
-import nl.utwente.groove.gui.layout.LayoutMap;
+import nl.utwente.groove.graph.layout.EdgeLayout;
+import nl.utwente.groove.graph.layout.ElementLayout;
+import nl.utwente.groove.graph.layout.LayoutMap;
+import nl.utwente.groove.graph.layout.NodeLayout;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.line.LineStyle;
@@ -115,7 +115,7 @@ public class LayoutIO {
         if (bounds == null) {
             throw new FormatException("Bounds for " + parts[1] + " cannot be parsed");
         }
-        layoutMap.putNode(node, new JVertexLayout(bounds));
+        layoutMap.putNode(node, new NodeLayout(bounds));
     }
 
     /**
@@ -159,7 +159,7 @@ public class LayoutIO {
                 = calculateLabelPosition(toPoint(parts, 4), points, version, source == target);
             layoutMap
                 .putEdge(edge,
-                         new JEdgeLayout(points, labelPosition, LineStyle.getStyle(lineStyle)));
+                         new EdgeLayout(points, labelPosition, LineStyle.getStyle(lineStyle)));
         } catch (NumberFormatException exc) {
             throw new FormatException(
                 "Number format error " + HTMLConverter.toUppercase(exc.getMessage(), false));
@@ -171,13 +171,13 @@ public class LayoutIO {
      * and corrects the points if this is not the case.
      * Fix for SF Bug #3562111.
      */
-    public static void correctPoints(List<Point2D> points, JVertexLayout sourceLayout,
-                                     JVertexLayout targetLayout) {
+    public static void correctPoints(List<Point2D> points, NodeLayout sourceLayout,
+                                     NodeLayout targetLayout) {
         correctPoint(points, 0, sourceLayout);
         correctPoint(points, points.size() - 1, targetLayout);
     }
 
-    private static void correctPoint(List<Point2D> points, int i, JVertexLayout layout) {
+    private static void correctPoint(List<Point2D> points, int i, NodeLayout layout) {
         if (layout != null) {
             Rectangle2D bounds = layout.getBounds();
             if (!bounds.contains(points.get(i))) {
@@ -221,7 +221,7 @@ public class LayoutIO {
         // don't
         // have precisely the same information
         Rectangle2D tmp = version1PaintBounds(points);
-        int unit = GraphConstants.PERMILLE;
+        int unit = ElementLayout.PERMILLE;
         Point2D p0 = points.get(0);
         Point2D p1 = points.get(1);
         Point2D pe = points.get(points.size() - 1);
@@ -319,7 +319,7 @@ public class LayoutIO {
         // the distance from the label position to the edge vector
         double distance
             = (-pos.getX() * edge.getY() + pos.getY() * edge.getX()) / Math.sqrt(vector2);
-        return new Point2D.Double(ratio * GraphConstants.PERMILLE, distance);
+        return new Point2D.Double(ratio * ElementLayout.PERMILLE, distance);
     }
 
     /**

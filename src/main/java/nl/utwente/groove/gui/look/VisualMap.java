@@ -19,6 +19,8 @@ package nl.utwente.groove.gui.look;
 import java.awt.Color;
 import java.awt.geom.Dimension2D;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -28,6 +30,8 @@ import java.util.Set;
 
 import org.jgraph.graph.AttributeMap;
 
+import nl.utwente.groove.graph.layout.EdgeLayout;
+import nl.utwente.groove.graph.layout.NodeLayout;
 import nl.utwente.groove.gui.look.VisualKey.Nature;
 import nl.utwente.groove.util.DefaultFixable;
 import nl.utwente.groove.util.NodeShape;
@@ -583,6 +587,36 @@ public class VisualMap extends DefaultFixable {
      */
     public void setPoints(List<Point2D> newValue) {
         put(VisualKey.POINTS, newValue);
+    }
+
+    /** Converts the node position and size in this map to a node layout. */
+    public NodeLayout toNodeLayout() {
+        Dimension2D size = getNodeSize();
+        Point2D pos = getNodePos();
+        return new NodeLayout(new Rectangle2D.Double(pos.getX() - size.getWidth() / 2,
+            pos.getY() - size.getHeight() / 2, size.getWidth(), size.getHeight()));
+    }
+
+    /** Converts the points, label position and line style in this map to an edge layout. */
+    public EdgeLayout toEdgeLayout() {
+        return new EdgeLayout(getPoints(), getLabelPos(), getLineStyle());
+    }
+
+    /** Constructs a visual map reflecting the information in a given node layout. */
+    public static VisualMap newInstance(NodeLayout layout) {
+        VisualMap result = new VisualMap();
+        Rectangle2D bounds = layout.getBounds();
+        result.setNodePos(new Point2D.Double(bounds.getCenterX(), bounds.getCenterY()));
+        return result;
+    }
+
+    /** Constructs a visual map reflecting the information in a given edge layout. */
+    public static VisualMap newInstance(EdgeLayout layout) {
+        VisualMap result = new VisualMap();
+        result.setPoints(new ArrayList<>(layout.getPoints()));
+        result.setLineStyle(layout.getLineStyle());
+        result.setLabelPos(layout.getLabelPosition());
+        return result;
     }
 
     /**

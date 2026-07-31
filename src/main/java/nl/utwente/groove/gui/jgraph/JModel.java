@@ -44,11 +44,12 @@ import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.Node;
-import nl.utwente.groove.gui.layout.JCellLayout;
-import nl.utwente.groove.gui.layout.JEdgeLayout;
-import nl.utwente.groove.gui.layout.JVertexLayout;
-import nl.utwente.groove.gui.layout.LayoutMap;
+import nl.utwente.groove.graph.layout.EdgeLayout;
+import nl.utwente.groove.graph.layout.ElementLayout;
+import nl.utwente.groove.graph.layout.LayoutMap;
+import nl.utwente.groove.graph.layout.NodeLayout;
 import nl.utwente.groove.gui.look.VisualKey;
+import nl.utwente.groove.gui.look.VisualMap;
 import nl.utwente.groove.util.collect.NestedIterator;
 
 /**
@@ -273,10 +274,10 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
         assert layoutMap == GraphInfo.getLayoutMap(getGraph());
         if (jCell instanceof JEdge) {
             for (Edge edge : jCell.getEdges()) {
-                layoutMap.putEdge(edge, jCell.getVisuals());
+                layoutMap.putEdge(edge, jCell.getVisuals().toEdgeLayout());
             }
         } else if (jCell instanceof JVertex) {
-            layoutMap.putNode(((JVertex<G>) jCell).getNode(), jCell.getVisuals());
+            layoutMap.putNode(((JVertex<G>) jCell).getNode(), jCell.getVisuals().toNodeLayout());
         }
     }
 
@@ -455,9 +456,9 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
      */
     protected JEdge<G> computeJEdge(Edge edge) {
         JEdge<G> result = createJEdge(edge);
-        JEdgeLayout layout = getLayoutMap().getLayout(edge);
+        EdgeLayout layout = getLayoutMap().getLayout(edge);
         if (layout != null) {
-            result.putVisuals(layout.toVisuals());
+            result.putVisuals(VisualMap.newInstance(layout));
         }
         return result;
     }
@@ -471,9 +472,9 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
      */
     final protected JVertex<G> computeJVertex(Node node) {
         JVertex<G> result = createJVertex(node);
-        JVertexLayout layout = getLayoutMap().getLayout(node);
+        NodeLayout layout = getLayoutMap().getLayout(node);
         if (layout != null) {
-            result.putVisuals(layout.toVisuals());
+            result.putVisuals(VisualMap.newInstance(layout));
         } else {
             Point2D nodePos = new Point2D.Double(this.nodeX, this.nodeY);
             result.putVisual(VisualKey.NODE_POS, nodePos);
@@ -585,7 +586,7 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
     private @Nullable G graph;
     /**
      * The layout map for the underlying graph. It maps {@link Element}s to
-     * {@link JCellLayout}s. This is set to an empty map if the graph is not a
+     * {@link ElementLayout}s. This is set to an empty map if the graph is not a
      * layed out graph.
      */
     private LayoutMap layoutMap;

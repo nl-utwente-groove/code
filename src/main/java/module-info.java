@@ -27,6 +27,7 @@ module nl.utwente.groove {
     exports nl.utwente.groove.explore.encode;
     exports nl.utwente.groove.match.plan;
     exports nl.utwente.groove.graph;
+    exports nl.utwente.groove.graph.layout;
     exports nl.utwente.groove.explore.config;
     exports nl.utwente.groove.gui.export;
     exports nl.utwente.groove.explore.result;

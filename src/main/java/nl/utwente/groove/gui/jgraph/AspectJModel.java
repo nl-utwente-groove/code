@@ -55,9 +55,8 @@ import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.GraphProperties;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Node;
-import nl.utwente.groove.gui.layout.JEdgeLayout;
-import nl.utwente.groove.gui.layout.LayoutMap;
-import nl.utwente.groove.gui.look.VisualMap;
+import nl.utwente.groove.graph.layout.EdgeLayout;
+import nl.utwente.groove.graph.layout.LayoutMap;
 import nl.utwente.groove.util.ChangeCount;
 import nl.utwente.groove.util.ChangeCount.Derived;
 import nl.utwente.groove.util.Groove;
@@ -213,13 +212,13 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
         LayoutMap layoutMap = new LayoutMap();
         for (AspectJCell jCell : getRoots()) {
             if (jCell instanceof AspectJVertex jVertex) {
-                layoutMap.putNode(jVertex.getNode(), jVertex.getLayoutVisuals());
+                layoutMap.putNode(jVertex.getNode(), jVertex.getLayoutVisuals().toNodeLayout());
             } else {
                 AspectJEdge jEdge = (AspectJEdge) jCell;
-                VisualMap layoutVisuals = jEdge.getLayoutVisuals();
-                if (!JEdgeLayout.newInstance(layoutVisuals).isDefault()) {
+                EdgeLayout layout = jEdge.getLayoutVisuals().toEdgeLayout();
+                if (!layout.isDefault()) {
                     for (AspectEdge edge : jEdge.getEdges()) {
-                        layoutMap.putEdge(edge, layoutVisuals);
+                        layoutMap.putEdge(edge, layout);
                     }
                 }
             }

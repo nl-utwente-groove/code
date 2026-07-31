@@ -30,7 +30,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import nl.utwente.groove.gui.layout.JCellLayout;
+import nl.utwente.groove.graph.layout.ElementLayout;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.NodeShape;
@@ -57,14 +57,14 @@ public enum VisualKey {
     EDGE_SOURCE_SHAPE(EdgeEnd.class, EdgeEnd.NONE, REFRESHABLE),
     /** HTML-formatted optional edge source label. Defaults to {@code null}. */
     EDGE_SOURCE_LABEL(String.class, null, REFRESHABLE),
-    /** Position of the optional edge source label. Defaults to {@link JCellLayout#defaultLabelPosition}. */
-    EDGE_SOURCE_POS(Point2D.class, JCellLayout.defaultLabelPosition, CONTROLLED),
+    /** Position of the optional edge source label. Defaults to {@link ElementLayout#defaultLabelPosition}. */
+    EDGE_SOURCE_POS(Point2D.class, ElementLayout.defaultLabelPosition, CONTROLLED),
     /** Edge target decoration. Defaults to {@link EdgeEnd#ARROW}. */
     EDGE_TARGET_SHAPE(EdgeEnd.class, EdgeEnd.ARROW, REFRESHABLE),
     /** HTML-formatted optional edge target label. Defaults to {@code null}. */
     EDGE_TARGET_LABEL(String.class, null, REFRESHABLE),
-    /** Position of the optional edge target label. Defaults to {@link JCellLayout#defaultLabelPosition}. */
-    EDGE_TARGET_POS(Point2D.class, JCellLayout.defaultLabelPosition, CONTROLLED),
+    /** Position of the optional edge target label. Defaults to {@link ElementLayout#defaultLabelPosition}. */
+    EDGE_TARGET_POS(Point2D.class, ElementLayout.defaultLabelPosition, CONTROLLED),
     /** Node or edge error. Defaults to {@code false}. */
     ERROR(Boolean.class, false, REFRESHABLE),
     /** Node or edge emphasis. Defaults to {@code false}. */
@@ -94,8 +94,8 @@ public enum VisualKey {
      * A value of {@code null} on a node implies rendering it as a nodified edge.
      */
     LABEL(MultiLabel.class, new MultiLabel(), REFRESHABLE),
-    /** Position of the main edge label. Defaults to {@link JCellLayout#defaultLabelPosition}. */
-    LABEL_POS(Point2D.class, JCellLayout.defaultLabelPosition, CONTROLLED, true),
+    /** Position of the main edge label. Defaults to {@link ElementLayout#defaultLabelPosition}. */
+    LABEL_POS(Point2D.class, ElementLayout.defaultLabelPosition, CONTROLLED, true),
     /** Edge layout line style. Defaults to {@link LineStyle#ORTHOGONAL}. */
     LINE_STYLE(LineStyle.class, LineStyle.ORTHOGONAL, CONTROLLED, true),
     /** Line width. Defaults to {@code 1}. */

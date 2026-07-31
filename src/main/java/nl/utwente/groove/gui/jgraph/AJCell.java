@@ -30,8 +30,8 @@ import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.EdgeComparator;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Node;
-import nl.utwente.groove.gui.layout.JEdgeLayout;
-import nl.utwente.groove.gui.layout.JVertexLayout;
+import nl.utwente.groove.graph.layout.EdgeLayout;
+import nl.utwente.groove.graph.layout.NodeLayout;
 import nl.utwente.groove.gui.look.Look;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualKey.Nature;
@@ -82,7 +82,7 @@ public abstract class AJCell<G extends @NonNull Graph,JG extends JGraph<G>,JM ex
      * Returns the (possibly {@code null}) layout information stored for
      * a given graph node.
      */
-    final protected JVertexLayout getLayout(Node node) {
+    final protected NodeLayout getLayout(Node node) {
         return getJModel().getLayoutMap().getLayout(node);
     }
 
@@ -90,7 +90,7 @@ public abstract class AJCell<G extends @NonNull Graph,JG extends JGraph<G>,JM ex
      * Returns the (possibly {@code null}) layout information stored for
      * a given graph edge.
      */
-    final protected JEdgeLayout getLayout(Edge edge) {
+    final protected EdgeLayout getLayout(Edge edge) {
         return getJModel().getLayoutMap().getLayout(edge);
     }
 

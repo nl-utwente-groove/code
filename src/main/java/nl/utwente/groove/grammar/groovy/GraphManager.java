@@ -30,9 +30,9 @@ import nl.utwente.groove.grammar.aspect.AspectParser;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.GraphRole;
+import nl.utwente.groove.graph.layout.LayoutMap;
+import nl.utwente.groove.graph.layout.NodeLayout;
 import nl.utwente.groove.gui.SimulatorModel;
-import nl.utwente.groove.gui.layout.JVertexLayout;
-import nl.utwente.groove.gui.layout.LayoutMap;
 
 /** Auxiliary class for the GROOVY plugin. */
 public class GraphManager {
@@ -180,7 +180,7 @@ public class GraphManager {
 
         AspectNode newNode = createNode(graph, label);
 
-        JVertexLayout layout = new JVertexLayout(
+        NodeLayout layout = new NodeLayout(
             new java.awt.Rectangle((int) location.getX(), (int) location.getY(), 60, 20));
         LayoutMap layoutMap = this.layouts.get(graph);
         if (layoutMap == null) {

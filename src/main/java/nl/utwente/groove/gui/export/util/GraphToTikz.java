@@ -39,18 +39,18 @@ import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.Node;
+import nl.utwente.groove.graph.layout.EdgeLayout;
+import nl.utwente.groove.graph.layout.LayoutMap;
+import nl.utwente.groove.graph.layout.NodeLayout;
+import nl.utwente.groove.gui.export.util.TikzStylesExtractor.Style;
 import nl.utwente.groove.gui.jgraph.AspectJVertex;
 import nl.utwente.groove.gui.jgraph.JCell;
 import nl.utwente.groove.gui.jgraph.JEdge;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.jgraph.JModel;
 import nl.utwente.groove.gui.jgraph.JVertex;
-import nl.utwente.groove.gui.layout.JEdgeLayout;
-import nl.utwente.groove.gui.layout.JVertexLayout;
-import nl.utwente.groove.gui.layout.LayoutMap;
 import nl.utwente.groove.gui.look.Look;
 import nl.utwente.groove.gui.look.MultiLabel;
-import nl.utwente.groove.gui.export.util.TikzStylesExtractor.Style;
 import nl.utwente.groove.util.Exceptions;
 
 /**
@@ -327,7 +327,7 @@ public final class GraphToTikz<G extends @NonNull Graph> {
             JVertex<G> vertex = this.model.getJCellForNode(node);
             if (vertex != null) {
                 this.model.synchroniseLayout(vertex);
-                JVertexLayout layout = null;
+                NodeLayout layout = null;
                 if (this.layoutMap != null) {
                     layout = this.layoutMap.getLayout(node);
                 }
@@ -339,7 +339,7 @@ public final class GraphToTikz<G extends @NonNull Graph> {
 
         Set<JCell<G>> consumedEdges = new HashSet<>();
         for (Edge edge : this.graph.edgeSet()) {
-            JEdgeLayout layout = null;
+            EdgeLayout layout = null;
             if (this.layoutMap != null) {
                 layout = this.layoutMap.getLayout(edge);
             }
@@ -375,7 +375,7 @@ public final class GraphToTikz<G extends @NonNull Graph> {
      * @param node the node to be converted.
      * @param layout information regarding layout of the node.
     */
-    private void appendTikzNode(JVertex<G> node, JVertexLayout layout) {
+    private void appendTikzNode(JVertex<G> node, NodeLayout layout) {
         if (!node.getVisuals().isVisible()) {
             return;
         }
@@ -547,7 +547,7 @@ public final class GraphToTikz<G extends @NonNull Graph> {
     private int getSide(JVertex<G> vertex, Point2D point) {
         int side = 0;
         if (this.layoutMap != null) {
-            JVertexLayout layout = this.layoutMap.getLayout(vertex.getNode());
+            NodeLayout layout = this.layoutMap.getLayout(vertex.getNode());
             if (layout != null) {
                 Rectangle2D bounds = layout.getBounds();
                 side = getSide(bounds, point);
@@ -563,7 +563,7 @@ public final class GraphToTikz<G extends @NonNull Graph> {
      * @param cell the edge to be converted.
      * @param layout information regarding layout of the node.
      */
-    private void appendTikzEdge(JCell<G> cell, JEdgeLayout layout) {
+    private void appendTikzEdge(JCell<G> cell, EdgeLayout layout) {
         if (cell instanceof JEdge<G> edge) {
             appendTikzEdge(edge, layout);
         }
@@ -574,7 +574,7 @@ public final class GraphToTikz<G extends @NonNull Graph> {
      * @param edge the edge to be converted.
      * @param layout information regarding layout of the edge.
      */
-    private void appendTikzEdge(JEdge<G> edge, JEdgeLayout layout) {
+    private void appendTikzEdge(JEdge<G> edge, EdgeLayout layout) {
         if (!edge.getVisuals().isVisible()) {
             return;
         }
@@ -646,7 +646,7 @@ public final class GraphToTikz<G extends @NonNull Graph> {
      * @param layout information regarding layout of the edge.
      * @param connection the string with the type of Tikz connection to be used.
      */
-    private void appendOrthogonalLayout(JEdge<G> edge, JEdgeLayout layout, String connection) {
+    private void appendOrthogonalLayout(JEdge<G> edge, EdgeLayout layout, String connection) {
 
         JVertex<G> srcVertex = edge.getSourceVertex();
         JVertex<G> tgtVertex = edge.getTargetVertex();
@@ -691,7 +691,7 @@ public final class GraphToTikz<G extends @NonNull Graph> {
      * @param edge the edge to be converted.
      * @param layout information regarding layout of the edge.
      */
-    private void appendOrthogonalLayout(JEdge<G> edge, JEdgeLayout layout) {
+    private void appendOrthogonalLayout(JEdge<G> edge, EdgeLayout layout) {
         appendOrthogonalLayout(edge, layout, DOUBLE_DASH);
     }
 
@@ -704,7 +704,7 @@ public final class GraphToTikz<G extends @NonNull Graph> {
      * @param edge the edge to be converted.
      * @param layout information regarding layout of the edge.
      */
-    private void appendBezierLayout(JEdge<G> edge, JEdgeLayout layout) {
+    private void appendBezierLayout(JEdge<G> edge, EdgeLayout layout) {
         JVertex<G> srcVertex = edge.getSourceVertex();
         assert srcVertex != null; // model has been fully initialised by now
         JVertex<G> tgtVertex = edge.getTargetVertex();
@@ -807,7 +807,7 @@ public final class GraphToTikz<G extends @NonNull Graph> {
      * @param edge the edge to be converted.
      * @param layout information regarding layout of the edge.
      */
-    private void appendSplineLayout(JEdge<G> edge, JEdgeLayout layout) {
+    private void appendSplineLayout(JEdge<G> edge, EdgeLayout layout) {
         System.err
             .println("Sorry, the SPLINE line style is not yet "
                 + "supported, using BEZIER style...");
@@ -821,7 +821,7 @@ public final class GraphToTikz<G extends @NonNull Graph> {
      * @param edge the edge to be converted.
      * @param layout information regarding layout of the edge.
      */
-    private void appendManhattanLayout(JEdge<G> edge, JEdgeLayout layout) {
+    private void appendManhattanLayout(JEdge<G> edge, EdgeLayout layout) {
         appendOrthogonalLayout(edge, layout, ANGLE);
     }
 
@@ -833,7 +833,7 @@ public final class GraphToTikz<G extends @NonNull Graph> {
      */
     private void appendSourceNode(JVertex<G> srcNode, JVertex<G> tgtNode) {
         if (this.layoutMap != null) {
-            JVertexLayout tgtLayout = this.layoutMap.getLayout(tgtNode.getNode());
+            NodeLayout tgtLayout = this.layoutMap.getLayout(tgtNode.getNode());
             if (tgtLayout != null) {
                 Rectangle2D tgtBounds = tgtLayout.getBounds();
                 Point2D tgtCenter
@@ -853,8 +853,8 @@ public final class GraphToTikz<G extends @NonNull Graph> {
      */
     private void appendTargetNode(JVertex<G> srcNode, JVertex<G> tgtNode) {
         if (this.layoutMap != null) {
-            JVertexLayout srcLayout = this.layoutMap.getLayout(srcNode.getNode());
-            JVertexLayout tgtLayout = this.layoutMap.getLayout(tgtNode.getNode());
+            NodeLayout srcLayout = this.layoutMap.getLayout(srcNode.getNode());
+            NodeLayout tgtLayout = this.layoutMap.getLayout(tgtNode.getNode());
             if (srcLayout != null && tgtLayout != null) {
                 Rectangle2D tgtBounds = tgtLayout.getBounds();
                 Point2D tgtCenter
@@ -904,7 +904,7 @@ public final class GraphToTikz<G extends @NonNull Graph> {
      * Creates an extra path to place the edge label which has special
      * placement requirements.
      */
-    private void appendEdgeLabel(JEdge<G> edge, JEdgeLayout layout, List<Point2D> points) {
+    private void appendEdgeLabel(JEdge<G> edge, EdgeLayout layout, List<Point2D> points) {
         if (hasNonEmptyLabel(edge)) {
             Point2D labelPos
                 = convertRelativeLabelPositionToAbsolute(layout.getLabelPosition(), points);
@@ -927,7 +927,7 @@ public final class GraphToTikz<G extends @NonNull Graph> {
     private boolean isHorizontalOrVertical(List<Point2D> points, int index, JVertex<G> tgtVertex) {
         boolean result = false;
         if (this.layoutMap != null) {
-            JVertexLayout layout = this.layoutMap.getLayout(tgtVertex.getNode());
+            NodeLayout layout = this.layoutMap.getLayout(tgtVertex.getNode());
             if (layout != null) {
                 Rectangle2D tgtBounds = layout.getBounds();
                 if (Math.abs(points.get(index).getY() - points.get(index + 1).getY()) < 0.0001
