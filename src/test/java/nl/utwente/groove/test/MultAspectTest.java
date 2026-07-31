@@ -34,12 +34,11 @@ import nl.utwente.groove.util.parse.FormatException;
 
 /**
  * Tests the static checks on the parallel-edge multiplicity aspect
- * ({@code mult=k:}): the value must be a positive constant, the edge must be
- * binary, the combination with a NAC role ({@code not:} or {@code cnew:}) is
- * disallowed entirely (counting NACs are not supported), rule labels must
- * have edge images, and any multiplicity above 1 requires the parallelEdges
- * grammar property. Also tests that a host graph edge with a multiplicity
- * compiles into that many parallel host edges.
+ * ({@code mult=k:}): it is only allowed in host graphs (its use in rules is
+ * deferred until a real use case comes by), the value must be a positive
+ * constant, the edge must be binary, and any use requires the parallelEdges
+ * grammar property to be SPO or DPO. Also tests that a host graph edge with
+ * a multiplicity compiles into that many parallel host edges.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -55,9 +54,9 @@ public class MultAspectTest {
         }
     }
 
-    /** Returns the model of a named rule in a named test grammar. */
-    private ResourceModel<?> getRuleModel(String grammarName, String ruleName) {
-        return getGrammar(grammarName).getRuleModel(QualName.parse(ruleName));
+    /** Returns the model of a named host graph in a named test grammar. */
+    private ResourceModel<?> getHostModel(String grammarName, String hostName) {
+        return getGrammar(grammarName).getResource(ResourceKind.HOST, QualName.parse(hostName));
     }
 
     /** Asserts that a resource model has an error containing a given text. */
@@ -67,62 +66,36 @@ public class MultAspectTest {
                    model.getErrors().toString().contains(text));
     }
 
-    /** An embargo edge may not carry a multiplicity. */
+    /** A multiplicity is not allowed on rule edges: its use in rules is
+     * deferred until a real use case comes by. */
     @Test
-    public void testEmbargoMult() {
-        assertError(getRuleModel("multErrors", "embargoMult"), "counting NACs");
-    }
-
-    /** The NAC prohibition is total: even multiplicity 1 is not allowed. */
-    @Test
-    public void testEmbargoMultOne() {
-        assertError(getRuleModel("multErrors", "embargoMultOne"), "counting NACs");
-    }
-
-    /** An adder edge may not carry a multiplicity, since its implicit NAC
-     * would be a counting NAC. */
-    @Test
-    public void testAdderMult() {
-        assertError(getRuleModel("multErrors", "adderMult"), "counting NAC");
+    public void testRuleMult() {
+        assertError(getGrammar("multErrors").getRuleModel(QualName.parse("ruleMult")),
+                    "not allowed");
     }
 
     /** A multiplicity must be a single number, not a range. */
     @Test
-    public void testRangeMult() {
-        assertError(getRuleModel("multErrors", "rangeMult"), "single");
+    public void testHostRange() {
+        assertError(getHostModel("multErrors", "hostRange"), "single");
     }
 
     /** A multiplicity must be positive. */
     @Test
-    public void testZeroMult() {
-        assertError(getRuleModel("multErrors", "zeroMult"), "Multiplicity 0");
-    }
-
-    /** A multiplicity is only allowed on labels with edge images. */
-    @Test
-    public void testPathMult() {
-        assertError(getRuleModel("multErrors", "pathMult"), "regular expression label");
+    public void testHostZero() {
+        assertError(getHostModel("multErrors", "hostZero"), "Multiplicity 0");
     }
 
     /** A multiplicity is only allowed on binary edges. */
     @Test
-    public void testFlagMult() {
-        assertError(getRuleModel("multErrors", "flagMult"), "binary");
-    }
-
-    /** A rule multiplicity above 1 requires the parallelEdges property. */
-    @Test
-    public void testNoParallelRule() {
-        assertError(getRuleModel("multNoParallel", "creatorMult"),
-                    "parallelEdges grammar property");
+    public void testHostFlag() {
+        assertError(getHostModel("multErrors", "hostFlag"), "binary");
     }
 
     /** A host graph multiplicity above 1 requires the parallelEdges property. */
     @Test
     public void testNoParallelHost() {
-        var hostModel
-            = getGrammar("multNoParallel").getResource(ResourceKind.HOST, QualName.parse("hostMult"));
-        assertError(hostModel, "parallelEdges grammar property");
+        assertError(getHostModel("multNoParallel", "hostMult"), "parallelEdges grammar property");
     }
 
     /** A host graph edge with multiplicity 2 compiles into 2 parallel edges. */

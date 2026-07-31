@@ -1,14 +1,16 @@
 # Parallel edges at the aspect level: decided architecture
 
-Status: design decided (2026-07-19); **implemented** (2026-07-26). Step 1 —
-the `RuleGraph` parallel-edge representation (numbered `RuleEdge`s with
-explicit parallel indices, non-simple rule graphs, index-preserving
-morphisms and typing) and plan-engine matching of parallel bundles
-(including edge injectivity) — and step 2, the MULT aspect itself (syntax,
-checks, and expansion; see the implementation section below), are both on
-branch `parallel-edges`. RETE was retired from master instead of being
-adapted. Builds on the GXL serialisation work in
-[parallel-edge-serialisation.md](parallel-edge-serialisation.md).
+Status: design decided (2026-07-19); **implemented** (2026-07-26);
+**rule-side use of the MULT aspect DEFERRED** (user, 2026-07-31, see the
+deferral section below — the aspect remains available in host graphs).
+Step 1 — the `RuleGraph` parallel-edge representation (numbered
+`RuleEdge`s with explicit parallel indices, non-simple rule graphs,
+index-preserving morphisms and typing) and plan-engine matching of
+parallel bundles (including edge injectivity) — and step 2, the MULT
+aspect itself (syntax, checks, and expansion; see the implementation
+section below), are both on branch `parallel-edges`. RETE was retired
+from master instead of being adapted. Builds on the GXL serialisation
+work in [parallel-edge-serialisation.md](parallel-edge-serialisation.md).
 An earlier implementation that made `AspectGraph` itself a multigraph was
 rolled back — see the final section for what it was and why it was rejected.
 
@@ -281,6 +283,33 @@ Findings from the investigation, worth keeping:
   renumbers states anyway. Re-loading the grammar per exploration is no
   alternative: control-automaton and type objects then differ and their
   identity-based hashes change the signature (verified with ferryman).
+
+### Rule-side MULT deferred (user, 2026-07-31)
+
+The `mult=k:` aspect is no longer allowed on rule edges (removed from the
+RULE edge kinds; a rule use is now an aspect error). Rationale: the
+use-case list had shrunk to bulk-k operations under DPO — counting NACs
+were prohibited, ranges rejected, `cnew:` prohibited, SPO bundles mean
+"up to k", regexpr mult was vacuous — while the comprehension and
+decision-surface cost recurred with every semantics decision. Crucially,
+*increments by one need no aspect*: under the disjoint index allocation,
+distinct role-bearing aspect edges of the same content are distinct
+copies, so `use:a` + `del:a` matches two and deletes one, and `use:a` +
+`new:a` creates a fresh second copy (pinned by the reworked `mult.gps`
+fixtures readerEraser and readerCreator). What is genuinely deferred:
+atomic bulk-k deletion/creation, and with it any on-disk expression of
+same-role bundles of size ≥ 2 (those pins now live in the programmatic
+`ParallelEdgeMatchingTest` only; same-content copies can still arise
+cross-level, e.g. a forall reader plus a kernel reader, so the bundle
+matching machinery stays). **Host-side `mult=` stays**: it is the only
+way to author multigraph host graphs on disk (the `.gst` pipeline goes
+through the simple AspectGraph) and carries the value and binary-edge
+checks. Reintroduction is cheap: restore MULT to the RULE edge kinds, an
+expansion loop over the allocator, and the recorded checks (NAC
+prohibition with an understandable message, edge-image requirement) —
+all preserved in the history of this note and of `AspectEdge.checkMult`.
+The counting-NAC prohibition thereby reverts to a recorded decision
+without enforceable syntax.
 
 ### Open items after this step
 

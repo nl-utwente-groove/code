@@ -457,8 +457,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
 
     /**
      * Tests if a declared parallel-edge multiplicity is used correctly:
-     * as a positive constant, on a binary edge, and (in a rule) neither in
-     * combination with a NAC role nor on a label without edge images.
+     * as a positive constant, on a binary edge.
      * @param errors the error set to which any errors should be added
      */
     private void checkMult(FormatErrorSet errors) {
@@ -475,23 +474,6 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         }
         if (getRole() != EdgeRole.BINARY) {
             errors.add("Multiplicity only allowed on binary edges", this);
-        }
-        if (hasGraphRole(RULE)) {
-            if (has(EMBARGO)) {
-                errors
-                    .add("Multiplicity not allowed on %s-edge: counting NACs are not (yet) supported",
-                         EMBARGO.getName(), this);
-            } else if (has(ADDER)) {
-                errors
-                    .add("Multiplicity not allowed on %s-edge: the implicit NAC would be a "
-                        + "counting NAC, which is not (yet) supported", ADDER.getName(), this);
-            }
-            RuleLabel ruleLabel = getRuleLabel();
-            if (ruleLabel != null && !ruleLabel.hasEdgeImage()) {
-                errors
-                    .add("Multiplicity not allowed on regular expression label %s", ruleLabel,
-                         this);
-            }
         }
     }
 

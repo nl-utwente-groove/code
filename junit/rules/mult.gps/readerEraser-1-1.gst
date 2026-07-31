@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph edgemode="directed" edgeids="false" role="graph" id="eraserMult-1-1">
+    <graph edgemode="directed" edgeids="false" role="graph" id="readerEraser-1-1">
         <attr name="$version">
             <string>curly</string>
         </attr>
@@ -9,7 +9,7 @@
         <edge to="n1" from="n0">
             <attr name="label">
                 <string>a</string>
-        </attr>
+            </attr>
         </edge>
     </graph>
 </gxl>

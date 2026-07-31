@@ -234,8 +234,8 @@ class HostModelMorphism {
         if (mult > 1) {
             if (target.isSimple()) {
                 errors
-                    .add("Edge multiplicity requires the parallelEdges grammar property",
-                         modelEdge);
+                    .add("Edge multiplicity requires the parallelEdges grammar property "
+                        + "to be SPO or DPO", modelEdge);
             } else {
                 for (int i = 1; i < mult; i++) {
                     target.addEdge(hostSource, hostLabel, hostNode);

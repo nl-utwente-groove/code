@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph edgemode="directed" edgeids="false" role="graph" id="eraserMult-1-2">
+    <graph edgemode="directed" edgeids="false" role="graph" id="hostFlag">
         <attr name="$version">
             <string>curly</string>
         </attr>
         <node id="n0"/>
         <node id="n1"/>
+        <edge to="n1" from="n0">
+            <attr name="label">
+                <string>mult=2:flag:f</string>
+            </attr>
+        </edge>
     </graph>
 </gxl>

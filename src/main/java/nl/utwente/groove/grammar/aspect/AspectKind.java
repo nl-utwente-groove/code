@@ -109,7 +109,12 @@ public enum AspectKind {
     MULT_OUT(Category.MULT_OUT, "out", ContentKind.MULTIPLICITY),
     /** Indicates an outgoing multiplicity. */
     COMPOSITE(Category.ASSOC, "part", ContentKind.NONE),
-    /** Indicates a parallel-edge multiplicity in a host graph or rule. */
+    /** Indicates a parallel-edge multiplicity in a host graph.
+     * (Deliberately not allowed in rules: bulk creation or deletion of
+     * parallel copies is deferred until a real use case comes by;
+     * rules can still grow and shrink parallel bundles copy by copy,
+     * through distinct role-bearing edges of the same content.)
+     */
     MULT(Category.MULT, "mult", ContentKind.MULTIPLICITY),
 
     // label-related aspects
@@ -874,7 +879,7 @@ public enum AspectKind {
             s = "%s.EQUALS.count.COLON.label";
             h = "Parallel edge multiplicity";
             b.add("Declares the %2$s-edge to stand for %1$s parallel copies.");
-            b.add("Only allowed if the parallelEdges grammar property is set.");
+            b.add("Only allowed if the parallelEdges grammar property is SPO or DPO.");
             p.add("number of parallel copies; a positive constant");
             p.add(edgePar);
             break;
@@ -1154,7 +1159,7 @@ public enum AspectKind {
                 edgeKinds = EnumSet
                     .of(REMARK, READER, ERASER, CREATOR, ADDER, EMBARGO, CONNECT, BOOL, INT, REAL,
                         STRING, USER, ARGUMENT, ATOM, PATH, LITERAL, FORALL, FORALL_POS, EXISTS,
-                        EXISTS_OPT, NESTED, LET, TEST, MULT);
+                        EXISTS_OPT, NESTED, LET, TEST);
                 break;
             case TYPE:
                 nodeKinds
