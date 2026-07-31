@@ -16,16 +16,10 @@
  */
 package nl.utwente.groove.gui.layout;
 
-import java.awt.Point;
 import java.awt.geom.Point2D;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-
-import org.jgraph.graph.AttributeMap;
-import org.jgraph.graph.GraphConstants;
-import org.jgraph.graph.PortView;
 
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
@@ -40,33 +34,6 @@ import nl.utwente.groove.util.line.LineStyle;
  * <code>STYLE_QUADRATIC</code>.
  */
 public class JEdgeLayout implements JCellLayout {
-    /**
-     * Constructs an edge layout from a <tt>jgraph</tt> attribute map.
-     * @param attr the attribute map
-     */
-    static public JEdgeLayout newInstance(AttributeMap attr) {
-        List<Point2D> points = new ArrayList<>();
-        List<?> attrPoints = GraphConstants.getPoints(attr);
-        if (attrPoints == null) {
-            points.add(new Point());
-            points.add(new Point());
-        } else {
-            for (Object p : attrPoints) {
-                Point2D point = null;
-                if (p instanceof Point2D) {
-                    point = (Point2D) p;
-                } else if (p instanceof PortView) {
-                    point = ((PortView) p).getLocation();
-                }
-                if (point != null) {
-                    points.add(point);
-                }
-            }
-        }
-        return new JEdgeLayout(points, GraphConstants.getLabelPosition(attr),
-            LineStyle.getStyle(GraphConstants.getLineStyle(attr)));
-    }
-
     /**
      * Constructs an edge layout from a visual map.
      * @param visuals the visual map
@@ -129,24 +96,6 @@ public class JEdgeLayout implements JCellLayout {
      */
     public LineStyle getLineStyle() {
         return this.lineStyle;
-    }
-
-    /**
-     * Converts the layout information into an attribute map as required by
-     * <tt>jgraph</tt>. The attribute map contains points, label position and
-     * linestyle as specified by this edge layout.
-     * @return an attribute map with layout information
-     */
-    @Override
-    public AttributeMap toJAttr() {
-        AttributeMap result = new AttributeMap();
-        GraphConstants.setPoints(result, this.points);
-        GraphConstants.setLineStyle(result, this.lineStyle.getCode());
-        GraphConstants
-            .setLabelPosition(result, this.labelPosition == null
-                ? defaultLabelPosition
-                : this.labelPosition);
-        return result;
     }
 
     @Override

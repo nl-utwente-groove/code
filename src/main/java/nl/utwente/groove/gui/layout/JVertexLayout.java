@@ -16,15 +16,10 @@
  */
 package nl.utwente.groove.gui.layout;
 
-import java.awt.Rectangle;
 import java.awt.geom.Dimension2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
-import org.jgraph.graph.AttributeMap;
-import org.jgraph.graph.GraphConstants;
-
-import nl.utwente.groove.gui.jgraph.JAttr;
 import nl.utwente.groove.gui.look.VisualMap;
 
 /**
@@ -32,20 +27,6 @@ import nl.utwente.groove.gui.look.VisualMap;
  * of the node bounds.
  */
 public class JVertexLayout implements JCellLayout {
-    /**
-     * Factory method to construct a new nod layout out of an attribute map.
-     * Parameters not provided in the attribute map receive a default value.
-     * @param jAttr the attribute map
-     * @return a new node layout based on <code>jAttr</code>
-     */
-    static public JVertexLayout newInstance(AttributeMap jAttr) {
-        Rectangle2D bounds = GraphConstants.getBounds(jAttr);
-        if (bounds == null) {
-            bounds = new Rectangle(JAttr.DEFAULT_NODE_BOUNDS);
-        }
-        return new JVertexLayout(bounds);
-    }
-
     /**
      * Factory method to construct a new nod layout out of an attribute map.
      * Parameters not provided in the attribute map receive a default value.
@@ -92,20 +73,6 @@ public class JVertexLayout implements JCellLayout {
         VisualMap result = new VisualMap();
         if (this.bounds != null) {
             result.setNodePos(new Point2D.Double(this.bounds.getCenterX(), this.bounds.getCenterY()));
-        }
-        return result;
-    }
-
-    /**
-     * Converts the layout information into an attribute map as required by
-     * <tt>jgraph</tt>. The attribute map contains the stored bounds.
-     * @return an attribute map with layout information
-     */
-    @Override
-    public AttributeMap toJAttr() {
-        AttributeMap result = new AttributeMap();
-        if (this.bounds != null) {
-            GraphConstants.setBounds(result, this.bounds);
         }
         return result;
     }

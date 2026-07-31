@@ -19,7 +19,6 @@ package nl.utwente.groove.gui.layout;
 import java.awt.Point;
 import java.awt.geom.Point2D;
 
-import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.GraphConstants;
 
 import nl.utwente.groove.gui.look.VisualMap;
@@ -44,11 +43,6 @@ public interface JCellLayout {
 
     /** Converts the layout information into a visual map. */
     public VisualMap toVisuals();
-
-    /**
-     * Converts the layout information to a <tt>jgraph</tt> attribute map.
-     */
-    public AttributeMap toJAttr();
 
     /**
      * Indicates if this layout information contains just default information.
