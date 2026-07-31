@@ -28,54 +28,65 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JRadioButton;
 
-import nl.utwente.groove.io.external.format.ecore.EcoreOptions;
-import nl.utwente.groove.io.external.format.ecore.EcoreOptions.Ordering;
+import nl.utwente.groove.io.external.format.ecore.EcoreMapping.Ordering;
 
 /**
- * Dialog class that lets the user choose the encoding options of the Ecore
- * porter. This is the successor of the never-completed 2012 {@code ConfigDialog}:
+ * Dialog class that lets the user choose the global encoding options of the
+ * Ecore porter, as stored in the {@code ecore} settings resource. This is the
+ * successor of the never-completed 2012 {@code ConfigDialog}:
  * the options are few because the encoding has one canonical form.
  * @author Arend Rensink
  * @version $Revision$
  */
 public class EcoreOptionsDialog {
-    /** Constructs a dialog instance, initialised with given options. */
-    public EcoreOptionsDialog(EcoreOptions options) {
-        this.options = options;
+    /** Constructs a dialog instance, initialised with given option values. */
+    public EcoreOptionsDialog(Ordering ordering, boolean useIdentifiers) {
+        this.ordering = ordering;
+        this.useIdentifiers = useIdentifiers;
     }
 
     /**
      * Creates a dialog and makes it visible, so that the user can choose the
      * encoding options. If the return value is {@code true}, the chosen options
-     * can be retrieved through {@link #getOptions()}.
+     * can be retrieved through {@link #getOrdering()} and
+     * {@link #isUseIdentifiers()}.
      * @param frame the frame on which the dialog is shown
      * @param title the title for the dialog; if {@code null}, a default title is used
      * @return {@code true} if the user confirmed the dialog
      */
     public boolean showDialog(JFrame frame, String title) {
-        getNoneButton().setSelected(this.options.ordering() == Ordering.NONE);
-        getIndexButton().setSelected(this.options.ordering() == Ordering.INDEX);
-        getIdentifierBox().setSelected(this.options.useIdentifiers());
+        getNoneButton().setSelected(this.ordering == Ordering.NONE);
+        getIndexButton().setSelected(this.ordering == Ordering.INDEX);
+        getIdentifierBox().setSelected(this.useIdentifiers);
         JDialog dialog = getOptionPane().createDialog(frame, title == null
             ? DEFAULT_TITLE
             : title);
         dialog.setVisible(true);
         boolean result = getOptionPane().getValue() == getOkButton();
         if (result) {
-            this.options = new EcoreOptions(getIndexButton().isSelected()
+            this.ordering = getIndexButton().isSelected()
                 ? Ordering.INDEX
-                : Ordering.NONE, getIdentifierBox().isSelected());
+                : Ordering.NONE;
+            this.useIdentifiers = getIdentifierBox().isSelected();
         }
         return result;
     }
 
-    /** Returns the options as chosen in the course of the dialog. */
-    public EcoreOptions getOptions() {
-        return this.options;
+    /** Returns the ordering encoding as chosen in the course of the dialog. */
+    public Ordering getOrdering() {
+        return this.ordering;
     }
 
-    /** The options displayed by, and modified in, this dialog. */
-    private EcoreOptions options;
+    /** The ordering encoding displayed by, and modified in, this dialog. */
+    private Ordering ordering;
+
+    /** Returns the identifier option as chosen in the course of the dialog. */
+    public boolean isUseIdentifiers() {
+        return this.useIdentifiers;
+    }
+
+    /** The identifier option displayed by, and modified in, this dialog. */
+    private boolean useIdentifiers;
 
     /**
      * Lazily creates and returns the option pane that is to form the content of

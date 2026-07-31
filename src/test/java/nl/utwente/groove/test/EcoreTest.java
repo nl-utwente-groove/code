@@ -19,20 +19,22 @@ package nl.utwente.groove.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.StringReader;
 import java.nio.file.Files;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.junit.Test;
 
-import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectNode;
@@ -42,13 +44,18 @@ import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.iso.IsoChecker;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.Exportable;
+import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.io.external.Imported;
-import nl.utwente.groove.io.external.format.ecore.EcoreOptions.Ordering;
+import nl.utwente.groove.io.external.format.ecore.EcoreMapping;
+import nl.utwente.groove.io.external.format.ecore.EcoreMapping.LiteralStyle;
+import nl.utwente.groove.io.external.format.ecore.EcoreMapping.Ordering;
+import nl.utwente.groove.io.external.format.ecore.EcoreMappingSchema;
 import nl.utwente.groove.io.external.format.ecore.EcorePorter;
 import nl.utwente.groove.io.external.format.ecore.EcoreToGraphs;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
+import nl.utwente.groove.util.parse.FormatException;
 
 /**
  * Tests the import of Ecore meta-models and XMI instance models.
@@ -595,6 +602,92 @@ public class EcoreTest {
     }
 
     // ----------------------------------------------------------------------
+    // Mapping settings
+    // ----------------------------------------------------------------------
+
+    /** Tests that a grammar without an {@code ecore} settings resource, and a
+     * {@code null} grammar, both yield the default mapping. */
+    @Test
+    public void testMappingDefaults() throws Exception {
+        for (var mapping : List.of(EcoreMapping.of(newGrammar()), EcoreMapping.of(null))) {
+            assertEquals(Ordering.NONE, mapping.ordering());
+            assertTrue(mapping.useIdentifiers());
+            assertTrue(mapping.featureOrdering().isEmpty());
+        }
+    }
+
+    /** Tests that a broken or wrongly-schemed mapping resource makes the port fail. */
+    @Test
+    public void testBrokenMapping() throws Exception {
+        for (String text : List.of("$schema = " + EcoreMappingSchema.NAME + "\nordering = sideways\n",
+                                   "$schema = no-such-schema\n")) {
+            SystemStore store = newStore();
+            store.putTexts(ResourceKind.SETTINGS, Map.of(EcoreMapping.RESOURCE_QUAL_NAME, text));
+            GrammarModel grammar = new GrammarModel(store);
+            try {
+                EcorePorter.instance().doImport(new File(DIR + "shop.ecore"), FileType.ECORE, grammar);
+                fail("Import with broken mapping resource should not succeed");
+            } catch (PortException expected) {
+                assertTrue(expected.getMessage().contains(EcoreMapping.RESOURCE_NAME));
+            }
+        }
+    }
+
+    /** Tests the parsing of the per-element vocabulary. */
+    @Test
+    public void testMappingVocabulary() throws Exception {
+        EcoreMapping mapping = mapping("""
+            pkg.Order.items.ordering = index
+            Colour.typeName = Kleur
+            Colour.literalStyle = plain
+            Colour.RED.typeName = Rood
+            """);
+        assertEquals(Map.of("pkg.Order.items", Ordering.INDEX), mapping.featureOrdering());
+        assertEquals(Map.of("Colour", "Kleur", "Colour.RED", "Rood"), mapping.typeNames());
+        assertEquals(Map.of("Colour", LiteralStyle.PLAIN), mapping.literalStyles());
+        assertMappingError("items.ordering = index"); // feature key needs a class part
+        assertMappingError("Shop.useIdentifiers = true"); // global option with a prefix
+        assertMappingError("typeName = X"); // type name without an element path
+        assertMappingError("Colour.typeName = not an id"); // invalid GROOVE name
+        assertMappingError("Colour.literalStyle = fancy"); // unknown style
+        assertMappingError("Colour.colour = red"); // unknown choice key
+        assertMappingError("Colour..typeName = X"); // empty path segment
+    }
+
+    /** Tests that setting the globals preserves comments and per-element entries. */
+    @Test
+    public void testMappingSetGlobals() throws Exception {
+        // a fresh text parses back to the requested globals
+        EcoreMapping fresh = mapping(EcoreMapping.setGlobals(null, Ordering.INDEX, false));
+        assertEquals(Ordering.INDEX, fresh.ordering());
+        assertTrue(!fresh.useIdentifiers());
+        // a targeted edit leaves all other lines untouched
+        String old = "# comment\n$schema = " + EcoreMappingSchema.NAME
+            + "\nordering = none\nShop.orders.ordering = index\n";
+        String edited = EcoreMapping.setGlobals(old, Ordering.INDEX, false);
+        assertEquals("# comment\n$schema = " + EcoreMappingSchema.NAME
+            + "\nordering = index\nShop.orders.ordering = index\nuseIdentifiers = false\n",
+                     edited);
+    }
+
+    /** Parses a mapping from a given settings text. */
+    static private EcoreMapping mapping(String text) throws Exception {
+        Properties props = new Properties();
+        props.load(new StringReader(text));
+        return new EcoreMapping(props);
+    }
+
+    /** Asserts that a given settings text does not parse as a mapping. */
+    static private void assertMappingError(String text) throws Exception {
+        try {
+            mapping(text);
+            fail("Mapping entry '" + text + "' should be rejected");
+        } catch (FormatException expected) {
+            // this is the expected outcome
+        }
+    }
+
+    // ----------------------------------------------------------------------
     // Helper methods
     // ----------------------------------------------------------------------
 
@@ -841,12 +934,18 @@ public class EcoreTest {
 
     /** Creates an empty grammar model with given Ecore encoding options. */
     static private GrammarModel newGrammar(Ordering ordering, boolean useIds) throws Exception {
-        GrammarModel result = newGrammar();
-        GrammarProperties properties = new GrammarProperties();
-        properties.setEcoreOrdering(ordering);
-        properties.setEcoreUseIdentifiers(useIds);
-        result.setProperties(properties);
-        return result;
+        SystemStore store = newStore();
+        putMapping(store, ordering, useIds);
+        return new GrammarModel(store);
+    }
+
+    /** Stores an {@code ecore} settings resource with given global options. */
+    static private void putMapping(SystemStore store, Ordering ordering,
+                                   boolean useIds) throws Exception {
+        String text = "$schema = " + EcoreMappingSchema.NAME + "\n" + EcoreMapping.ORDERING_KEY
+            + " = " + ordering.text() + "\n" + EcoreMapping.USE_IDENTIFIERS_KEY + " = " + useIds
+            + "\n";
+        store.putTexts(ResourceKind.SETTINGS, Map.of(EcoreMapping.RESOURCE_QUAL_NAME, text));
     }
 
     /** Creates a grammar model containing a given type graph and start graph. */
@@ -863,11 +962,8 @@ public class EcoreTest {
         if (host != null) {
             store.putGraphs(ResourceKind.HOST, List.of(host), false);
         }
+        putMapping(store, ordering, useIds);
         GrammarModel result = new GrammarModel(store);
-        GrammarProperties properties = new GrammarProperties();
-        properties.setEcoreOrdering(ordering);
-        properties.setEcoreUseIdentifiers(useIds);
-        result.setProperties(properties);
         result.setLocalActiveNames(ResourceKind.TYPE, type.getQualName());
         result
             .setLocalActiveNames(ResourceKind.HOST, host == null

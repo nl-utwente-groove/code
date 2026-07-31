@@ -37,7 +37,6 @@ import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.RuleModel;
-import nl.utwente.groove.io.external.format.ecore.EcoreOptions;
 import nl.utwente.groove.transform.oracle.ValueOracleKind;
 import nl.utwente.groove.util.DocumentedEnum;
 import nl.utwente.groove.util.Factory;
@@ -252,19 +251,6 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
     /** Flag that determines if node numbers in loaded graphs are based on the stored (GXL) node ids. */
     USE_STORED_NODE_IDS("useStoredNodeIDs",
         "Flag controlling if node numbers in graphs are based on the stored (GXL) node ids",
-        ValueType.BOOLEAN),
-
-    /** Encoding of the order of many-valued features by the Ecore porter. */
-    ECORE_ORDERING("ecoreOrdering",
-        "<body>Encoding of ordered or non-unique many-valued features upon Ecore import or export."
-            + "<li>- <i>none</i> (default): such features are encoded as plain edges; the order is lost"
-            + "<li>- <i>index</i>: such features are encoded through intermediate nodes carrying an <i>index</i> attribute",
-        ValueType.STRING),
-
-    /** Flag that determines if the Ecore porter uses {@code xmi:id} values as node identifiers. */
-    ECORE_USE_IDENTIFIERS("ecoreUseIdentifiers",
-        "Flag controlling if Ecore instance models are ported with their <tt>xmi:id</tt> values "
-            + "as node identifiers",
         ValueType.BOOLEAN),;
 
     /**
@@ -333,8 +319,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
             case ALGEBRA -> new Parser.EnumParser<>(AlgebraFamily.class, AlgebraFamily.DEFAULT);
             case COMMON_LABELS, CONTROL_LABELS -> Parser.splitter;
             case CREATOR_EDGE, PARALLEL, DANGLING, RHS_AS_NAC, INJECTIVE, STORE_OUT_PARS, USE_STORED_NODE_IDS -> Parser.boolFalse;
-            case ISOMORPHISM, LOOPS_AS_LABELS, ECORE_USE_IDENTIFIERS -> Parser.boolTrue;
-            case ECORE_ORDERING -> EcoreOptions.orderingParser();
+            case ISOMORPHISM, LOOPS_AS_LABELS -> Parser.boolTrue;
             case USER_OPS, START_GRAPH_NAMES, CONTROL_NAMES, TYPE_NAMES, PROLOG_NAMES -> QualName
                 .listParser();
             case RULE_ENABLING -> DeltaMap.parser(QualName.parser());

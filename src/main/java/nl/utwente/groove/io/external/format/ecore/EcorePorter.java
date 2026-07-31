@@ -81,7 +81,7 @@ public class EcorePorter extends AbstractExporter implements Importer {
     @Override
     public Set<Imported> doImport(File file, FileType fileType,
                                   GrammarModel grammar) throws PortException {
-        Loader loader = new Loader(EcoreOptions.of(grammar));
+        Loader loader = new Loader(EcoreMapping.of(grammar));
         File parent = file.getAbsoluteFile().getParentFile();
         if (parent != null) {
             loader.registerMetamodels(parent, file.getAbsoluteFile());
@@ -94,7 +94,7 @@ public class EcorePorter extends AbstractExporter implements Importer {
     @Override
     public Set<Imported> doImport(QualName name, InputStream stream, FileType fileType,
                                   GrammarModel grammar) throws PortException {
-        Loader loader = new Loader(EcoreOptions.of(grammar));
+        Loader loader = new Loader(EcoreMapping.of(grammar));
         Resource resource = loader
             .load(URI.createURI(name + fileType.getExtension()), stream, fileType);
         return loader.convert(name, resource, fileType);
@@ -137,9 +137,7 @@ public class EcorePorter extends AbstractExporter implements Importer {
                 fileType.getExtension());
         }
         GrammarModel grammar = model.getGrammar();
-        GraphsToEcore converter = new GraphsToEcore(grammar == null
-            ? EcoreOptions.getDefault()
-            : EcoreOptions.of(grammar));
+        GraphsToEcore converter = new GraphsToEcore(EcoreMapping.of(grammar));
         List<? extends EObject> contents;
         if (kind == ResourceKind.TYPE) {
             contents = converter.addTypeGraph(GraphConverter.toAspect(exportable.graph()));
@@ -213,7 +211,7 @@ public class EcorePorter extends AbstractExporter implements Importer {
 
     /** Helper class collecting the EMF state of a single import action. */
     private static class Loader {
-        Loader(EcoreOptions options) {
+        Loader(EcoreMapping options) {
             this.options = options;
             this.resourceSet = new ResourceSetImpl();
             var factories = this.resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap();
@@ -221,7 +219,7 @@ public class EcorePorter extends AbstractExporter implements Importer {
             factories.put("*", new XMIResourceFactoryImpl());
         }
 
-        private final EcoreOptions options;
+        private final EcoreMapping options;
         private final ResourceSet resourceSet;
         /** Mapping from root packages to the name of the file they were loaded from. */
         private final Map<EPackage,@Nullable String> sources = new LinkedHashMap<>();

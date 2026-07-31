@@ -24,6 +24,7 @@ import java.util.Set;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.io.external.format.ecore.EcoreMappingSchema;
 import nl.utwente.groove.util.Exceptions;
 
 /**
@@ -66,4 +67,9 @@ public class SettingsSchemas {
 
     /** Mapping from schema names to schemas, in registration order. */
     static private final Map<String,@Nullable SettingsSchema> schemaMap = new LinkedHashMap<>();
+
+    static {
+        // registration of the built-in schemas
+        register(EcoreMappingSchema.INSTANCE);
+    }
 }

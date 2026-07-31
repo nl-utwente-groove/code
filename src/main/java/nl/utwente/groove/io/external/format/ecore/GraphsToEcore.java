@@ -78,11 +78,11 @@ import nl.utwente.groove.util.parse.IdValidator;
 @NonNullByDefault
 public class GraphsToEcore {
     /** Constructs a converter with given encoding options. */
-    public GraphsToEcore(EcoreOptions options) {
+    public GraphsToEcore(EcoreMapping options) {
         this.options = options;
     }
 
-    private final EcoreOptions options;
+    private final EcoreMapping options;
 
     /** Returns the errors collected during the conversion. */
     public FormatErrorSet getErrors() {

@@ -49,7 +49,7 @@ import nl.utwente.groove.graph.GraphProperties;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.plain.PlainGraph;
 import nl.utwente.groove.graph.plain.PlainNode;
-import nl.utwente.groove.io.external.format.ecore.EcoreOptions.Ordering;
+import nl.utwente.groove.io.external.format.ecore.EcoreMapping.Ordering;
 import nl.utwente.groove.util.parse.IdValidator;
 import nl.utwente.groove.util.parse.StringHandler;
 
@@ -78,7 +78,7 @@ public class EcoreToGraphs {
      * @param roots the root packages of the meta-model
      * @param options the encoding options to be used
      */
-    public EcoreToGraphs(Collection<EPackage> roots, EcoreOptions options) {
+    public EcoreToGraphs(Collection<EPackage> roots, EcoreMapping options) {
         this.names = new EcoreNames(roots);
         this.options = options;
         for (var classifier : this.names.classifiers()) {
@@ -96,7 +96,7 @@ public class EcoreToGraphs {
     }
 
     private final EcoreNames names;
-    private final EcoreOptions options;
+    private final EcoreMapping options;
     /** The classes covered by this converter. */
     private final Set<EClass> classes = new LinkedHashSet<>();
     /** The enums covered by this converter. */

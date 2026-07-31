@@ -15,7 +15,6 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
@@ -40,7 +39,8 @@ import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.gui.display.RuleDisplay;
 import nl.utwente.groove.gui.display.StateDisplay;
 import nl.utwente.groove.io.FileType;
-import nl.utwente.groove.io.external.format.ecore.EcoreOptions;
+import nl.utwente.groove.io.external.PortException;
+import nl.utwente.groove.io.external.format.ecore.EcoreMapping;
 import nl.utwente.groove.io.store.EditType;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.util.parse.FormatException;
@@ -268,31 +268,45 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
 
     /**
      * Asks the user for the Ecore encoding options, if a given file type calls
-     * for them, and stores the chosen options in the grammar properties.
-     * The properties are changed through the (undoable) store, so that the
-     * subsequent port sees them; this is why the dialog is shown before the
-     * port rather than as part of it.
+     * for them, and stores the chosen options in the grammar's
+     * {@link EcoreMapping#RESOURCE_NAME} settings resource, creating it on
+     * demand. Only the global option lines of the resource are touched, so
+     * hand-written per-element entries and comments survive.
+     * The resource is changed through the (undoable) store, so that the
+     * subsequent port sees the new values; this is why the dialog is shown
+     * before the port rather than as part of it.
      * @param fileType the file type chosen for the import or export
      * @return {@code false} if the user cancelled the dialog, in which case the
      * port should not go ahead
-     * @throws IOException if storing the changed properties failed
+     * @throws IOException if storing the changed settings failed
      */
     final protected boolean askEcoreOptions(FileType fileType) throws IOException {
         if (fileType != FileType.ECORE && fileType != FileType.XMI) {
             return true;
         }
-        GrammarProperties properties = getGrammarModel().getProperties();
-        EcoreOptions oldOptions = EcoreOptions.of(properties);
-        EcoreOptionsDialog dialog = new EcoreOptionsDialog(oldOptions);
+        EcoreMapping oldMapping;
+        try {
+            oldMapping = EcoreMapping.of(getGrammarModel());
+        } catch (PortException exc) {
+            // a broken settings resource seeds the dialog with the defaults;
+            // the port itself will report the actual problem
+            oldMapping = EcoreMapping.getDefault();
+        }
+        EcoreOptionsDialog dialog
+            = new EcoreOptionsDialog(oldMapping.ordering(), oldMapping.useIdentifiers());
         if (!dialog.showDialog(getFrame(), null)) {
             return false;
         }
-        EcoreOptions newOptions = dialog.getOptions();
-        if (!newOptions.equals(oldOptions)) {
-            GrammarProperties newProperties = properties.clone();
-            newProperties.setEcoreOrdering(newOptions.ordering());
-            newProperties.setEcoreUseIdentifiers(newOptions.useIdentifiers());
-            getSimulatorModel().doSetProperties(newProperties);
+        if (dialog.getOrdering() != oldMapping.ordering()
+            || dialog.isUseIdentifiers() != oldMapping.useIdentifiers()) {
+            String oldText = getGrammarModel()
+                .getStore()
+                .getTexts(ResourceKind.SETTINGS)
+                .get(EcoreMapping.RESOURCE_QUAL_NAME);
+            String newText = EcoreMapping
+                .setGlobals(oldText, dialog.getOrdering(), dialog.isUseIdentifiers());
+            getSimulatorModel()
+                .doAddText(ResourceKind.SETTINGS, EcoreMapping.RESOURCE_QUAL_NAME, newText);
         }
         return true;
     }
