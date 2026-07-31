@@ -79,6 +79,7 @@ public class EcoreNames {
         this.literalMap = new LinkedHashMap<>();
         this.featureMap = new LinkedHashMap<>();
         resolveOrdering(mapping);
+        resolveNames(mapping);
         computeLabels();
         computeFeatureLabels();
     }
@@ -190,6 +191,93 @@ public class EcoreNames {
         }
     }
 
+    /** Resolves the naming entries of a mapping. */
+    private void resolveNames(EcoreMapping mapping) {
+        for (var entry : mapping.typeNames().entrySet()) {
+            resolveTypeName(entry.getKey(), entry.getValue());
+        }
+        for (var entry : mapping.literalStyles().entrySet()) {
+            String key = entry.getKey() + "." + EcoreMapping.LITERAL_STYLE_KEY;
+            var classifier
+                = resolveClassifier(key, Arrays.asList(entry.getKey().split("\\.")));
+            if (classifier instanceof EEnum e) {
+                this.styleOverrides.put(e, entry.getValue());
+            } else if (classifier != null) {
+                this.errors
+                    .add("Mapping entry '%s' does not refer to an enum", key);
+            }
+        }
+    }
+
+    /** Mapping from classifiers to their overridden type names. */
+    private final Map<EClassifier,String> typeNameOverrides = new LinkedHashMap<>();
+    /** Mapping from enum literals to their overridden type names. */
+    private final Map<EEnumLiteral,@Nullable String> literalOverrides = new LinkedHashMap<>();
+    /** Mapping from enums to their overridden literal styles. */
+    private final Map<EEnum,EcoreMapping.LiteralStyle> styleOverrides = new LinkedHashMap<>();
+
+    /**
+     * Resolves a typeName entry to a classifier or an enum literal, by suffix
+     * match on the raw (unrepaired) qualified Ecore names, and records the
+     * override. No match is silently ignored; more than one match, of either
+     * kind, is an error.
+     */
+    private void resolveTypeName(String pathText, String value) {
+        String key = pathText + "." + EcoreMapping.TYPE_NAME_KEY;
+        List<String> path = Arrays.asList(pathText.split("\\."));
+        List<EClassifier> classifierMatches = new ArrayList<>();
+        List<EEnumLiteral> literalMatches = new ArrayList<>();
+        for (var classifier : this.classifiers) {
+            List<String> full = rawSegmentsOf(classifier.getEPackage());
+            full.add(classifier.getName());
+            if (isSuffix(path, full)) {
+                classifierMatches.add(classifier);
+            }
+            if (classifier instanceof EEnum e) {
+                for (var literal : e.getELiterals()) {
+                    List<String> litFull = new ArrayList<>(full);
+                    litFull.add(literal.getName());
+                    if (isSuffix(path, litFull)) {
+                        literalMatches.add(literal);
+                    }
+                }
+            }
+        }
+        if (classifierMatches.size() + literalMatches.size() > 1) {
+            this.errors.add("Ambiguous mapping entry '%s'", key);
+        } else if (classifierMatches.size() == 1) {
+            this.typeNameOverrides.put(classifierMatches.get(0), value);
+        } else if (literalMatches.size() == 1) {
+            this.literalOverrides.put(literalMatches.get(0), value);
+        }
+    }
+
+    /**
+     * Resolves a dotted element path to a classifier, by suffix match on the
+     * raw (unrepaired) qualified Ecore names.
+     * @param key the full mapping key, for error reporting
+     * @param path the element path to resolve
+     * @return the unique match; {@code null} if there is none (silently) or
+     * more than one (with an error)
+     */
+    private @Nullable EClassifier resolveClassifier(String key, List<String> path) {
+        List<EClassifier> matches = new ArrayList<>();
+        for (var classifier : this.classifiers) {
+            List<String> full = rawSegmentsOf(classifier.getEPackage());
+            full.add(classifier.getName());
+            if (isSuffix(path, full)) {
+                matches.add(classifier);
+            }
+        }
+        if (matches.size() > 1) {
+            this.errors.add("Ambiguous mapping entry '%s'", key);
+            return null;
+        }
+        return matches.isEmpty()
+            ? null
+            : matches.get(0);
+    }
+
     /**
      * Resolves a dotted element path to a structural feature, by suffix match
      * on the raw (unrepaired) qualified Ecore names, using the declaring class.
@@ -272,9 +360,23 @@ public class EcoreNames {
 
     /** Computes the values of {@link #labelMap} and {@link #literalMap}. */
     private void computeLabels() {
-        // number of package segments prefixed to each classifier's simple name
+        // overridden names are claimed first, so that the derived names
+        // disambiguate around them; only override-override collisions are errors
+        Set<String> used = new LinkedHashSet<>();
+        for (var entry : this.typeNameOverrides.entrySet()) {
+            String name = entry.getValue();
+            if (used.contains(name)) {
+                this.errors.add("Colliding %s mapping entries for '%s'",
+                                EcoreMapping.TYPE_NAME_KEY, name);
+            }
+            this.labelMap.put(entry.getKey(), disambiguate(name, used));
+        }
+        // number of package segments prefixed to each remaining classifier's simple name
         Map<EClassifier,Integer> depths = new LinkedHashMap<>();
-        this.classifiers.forEach(c -> depths.put(c, 0));
+        this.classifiers
+            .stream()
+            .filter(c -> !this.typeNameOverrides.containsKey(c))
+            .forEach(c -> depths.put(c, 0));
         boolean changed = true;
         while (changed) {
             changed = false;
@@ -291,26 +393,36 @@ public class EcoreNames {
             }
         }
         // classifiers that are still ambiguous get a numeric suffix
-        Set<String> used = new LinkedHashSet<>();
         for (var c : this.classifiers) {
-            this.labelMap.put(c, disambiguate(nameOf(c, depths.get(c)), used));
+            if (!this.typeNameOverrides.containsKey(c)) {
+                this.labelMap.put(c, disambiguate(nameOf(c, depths.get(c)), used));
+            }
         }
-        // enum literals are named after their enum
+        // enum literals are named after their enum, their style or their override
         for (var c : this.classifiers) {
             if (c instanceof EEnum e) {
+                var style = this.styleOverrides.getOrDefault(e, EcoreMapping.LiteralStyle.QUALIFIED);
                 for (var literal : e.getELiterals()) {
-                    String name = labelFor(e) + SEPARATOR
-                        + IdValidator.JAVA_ID.repair(literal.getName());
+                    String name = this.literalOverrides.get(literal);
+                    if (name == null) {
+                        name = style == EcoreMapping.LiteralStyle.PLAIN
+                            ? IdValidator.JAVA_ID_NON_RESERVED.repair(literal.getName())
+                            : labelFor(e) + SEPARATOR
+                                + IdValidator.JAVA_ID.repair(literal.getName());
+                    } else if (used.contains(name)) {
+                        this.errors.add("Colliding %s mapping entries for '%s'",
+                                        EcoreMapping.TYPE_NAME_KEY, name);
+                    }
                     this.literalMap.put(literal, disambiguate(name, used));
                 }
             }
         }
     }
 
-    /** Groups the classifiers by their candidate name at the given depths. */
+    /** Groups the depth-mapped classifiers by their candidate name at the given depths. */
     private Map<String,List<EClassifier>> groupByName(Map<EClassifier,Integer> depths) {
         Map<String,List<EClassifier>> result = new LinkedHashMap<>();
-        for (var c : this.classifiers) {
+        for (var c : depths.keySet()) {
             result.computeIfAbsent(nameOf(c, depths.get(c)), n -> new ArrayList<>()).add(c);
         }
         return result;

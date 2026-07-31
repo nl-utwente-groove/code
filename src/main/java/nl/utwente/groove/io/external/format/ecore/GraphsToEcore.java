@@ -215,10 +215,12 @@ public class GraphsToEcore {
     private void createClassifiers(GraphProperties properties) {
         var records = records(properties, EcoreToGraphs.TYPES_KEY, 4);
         if (records.isEmpty()) {
-            // there is no classifier metadata: every node type is a class
+            // there is no classifier metadata: every node type is a class,
+            // named by its label or the reverse of a typeName mapping override
             for (var entry : this.typeNodes.entrySet()) {
                 if (!this.intermediates.containsKey(entry.getKey())) {
-                    addClassifier(entry.getKey(), "", createClass(entry.getKey(), false));
+                    addClassifier(entry.getKey(), "",
+                                  createClass(ecoreNameFor(entry.getKey()), false));
                 }
             }
             return;
@@ -275,6 +277,33 @@ public class GraphsToEcore {
             eEnum.getELiterals().add(literal);
             this.literals.put(label, literal);
         }
+    }
+
+    /**
+     * Returns the Ecore class name for a type label of a metadata-free graph:
+     * the reverse of a typeName mapping override if there is exactly one whose
+     * value is the label, the label itself otherwise. More than one reverse
+     * match is an error.
+     */
+    private String ecoreNameFor(String label) {
+        List<String> matches = this.options
+            .typeNames()
+            .entrySet()
+            .stream()
+            .filter(e -> e.getValue().equals(label))
+            .map(Map.Entry::getKey)
+            .toList();
+        if (matches.size() > 1) {
+            this.errors
+                .add("Label '%s' matches multiple %s mapping entries: %s", label,
+                     EcoreMapping.TYPE_NAME_KEY, String.join(" and ", matches));
+            return label;
+        }
+        if (matches.isEmpty()) {
+            return label;
+        }
+        String key = matches.get(0);
+        return key.substring(key.lastIndexOf('.') + 1);
     }
 
     /** Creates a class with a given name, taking its abstractness from the type graph. */

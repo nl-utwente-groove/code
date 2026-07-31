@@ -17,6 +17,7 @@
 package nl.utwente.groove.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -46,7 +47,10 @@ import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.graph.GraphInfo;
+import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.iso.IsoChecker;
+import nl.utwente.groove.graph.plain.PlainGraph;
+import nl.utwente.groove.graph.plain.PlainNode;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.PortException;
@@ -58,6 +62,7 @@ import nl.utwente.groove.io.external.format.ecore.EcoreMappingSchema;
 import nl.utwente.groove.io.external.format.ecore.EcoreNames;
 import nl.utwente.groove.io.external.format.ecore.EcorePorter;
 import nl.utwente.groove.io.external.format.ecore.EcoreToGraphs;
+import nl.utwente.groove.io.external.format.ecore.GraphsToEcore;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
@@ -642,6 +647,59 @@ public class EcoreTest {
         // the elements containment is nodified, the labels attribute is not
         assertTrue(selfLabels(host).keySet().stream().anyMatch(k -> k.startsWith("List$elements")));
         assertTrue(selfLabels(host).keySet().stream().noneMatch(k -> k.startsWith("List$labels")));
+    }
+
+    /** Tests classifier and literal naming overrides. */
+    @Test
+    public void testNamingOverrides() throws Exception {
+        AspectGraph type = single(importFrom("shop.ecore",
+                                             mappingText(Ordering.NONE, true,
+                                                         "Category.typeName = Genre",
+                                                         "Category.literalStyle = plain",
+                                                         "Category.UNKNOWN.typeName = Misc")),
+                                  ResourceKind.TYPE);
+        var labels = selfLabels(type).keySet();
+        assertTrue(labels.toString(), labels.contains("Genre"));
+        assertTrue(labels.toString(), labels.contains("FICTION")); // plain literal style
+        assertTrue(labels.toString(), labels.contains("Misc")); // literal override wins
+        assertFalse(labels.toString(), labels.contains("Category"));
+        assertEquals(Collections.emptyList(), messages(type.getErrors()));
+    }
+
+    /** Tests the instance round trip under naming overrides. */
+    @Test
+    public void testNamingOverrideRoundTrip() throws Exception {
+        assertRoundTrip("shop.xmi",
+                        mappingText(Ordering.NONE, true, "Category.typeName = Genre",
+                                    "Category.literalStyle = plain",
+                                    "Category.UNKNOWN.typeName = Misc",
+                                    "Book.typeName = Boek"));
+    }
+
+    /** Tests that colliding naming overrides are an error. */
+    @Test
+    public void testNamingCollision() throws Exception {
+        AspectGraph type = single(importFrom("shop.ecore",
+                                             mappingText(Ordering.NONE, true,
+                                                         "Book.typeName = Ware",
+                                                         "Category.typeName = Ware")),
+                                  ResourceKind.TYPE);
+        List<String> errors = messages(type.getErrors());
+        assertEquals(errors.toString(), 1, errors.size());
+        assertTrue(errors.get(0), errors.get(0).contains("Colliding"));
+    }
+
+    /** Tests the reverse application of typeName overrides on a metadata-free export. */
+    @Test
+    public void testNamingReverseExport() throws Exception {
+        PlainGraph plain = new PlainGraph("mini", GraphRole.TYPE);
+        PlainNode node = plain.addNode();
+        plain.addEdge(node, "type:Genre", node);
+        GraphsToEcore converter = new GraphsToEcore(mapping("Category.typeName = Genre"));
+        List<EPackage> packages = converter.addTypeGraph(AspectGraph.newInstance(plain));
+        assertEquals(Collections.emptyList(), messages(converter.getErrors()));
+        assertEquals(1, packages.size());
+        assertEquals("Category", packages.get(0).getEClassifiers().get(0).getName());
     }
 
     /** Tests the leniency and the errors of mapping resolution. */

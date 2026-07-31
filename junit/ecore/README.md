@@ -20,6 +20,39 @@ host graph *and* the regenerated type graph, so an instance import exercises the
 meta-model encoding as well. `broken` is the exception: it is the error-path
 example and does not round-trip.
 
+## The mapping resource
+
+The porter is configured per grammar by a settings resource named
+`ecore.properties` (schema `ecore-mapping`); a grammar without one uses the
+defaults. Global entries set the defaults, per-element entries override them
+for a single Ecore element, written as its (optionally package-qualified)
+Ecore name — parsed from the right, the last key segment being the choice:
+
+```properties
+$schema = ecore-mapping
+ordering = none                        # global: none | index
+useIdentifiers = true                  # global: use xmi:id values
+List.elements.ordering = index         # per-feature override
+Category.typeName = Genre              # GROOVE type name of a classifier
+Category.literalStyle = plain          # literal types L instead of E$L
+Category.UNKNOWN.typeName = Misc       # per-literal name, wins over the style
+```
+
+An entry that resolves to nothing is silently ignored — it may concern a
+metamodel that is not currently imported, which is what keeps the choices
+stable across metamodel evolution — but an *ambiguous* entry (qualify with the
+package to fix it), a colliding name override, or an ordering override on a
+single-valued feature is an error on the imported graphs. An explicit
+per-feature `ordering` wins in both directions, including over the
+set-semantics exemption described under `ordered` below.
+
+**Covering tests.** `testMappingDefaults`, `testMappingVocabulary`,
+`testBrokenMapping`, `testMappingSetGlobals`, `testOrderingOverride`,
+`testOrderingOverrideRoundTrip`, `testOrderingResolution`,
+`testAmbiguousResolution`, `testNamingOverrides`,
+`testNamingOverrideRoundTrip`, `testNamingCollision`,
+`testNamingReverseExport`.
+
 ## Reading the labels
 
 The labels are written as GROOVE parses them, with the aspect prefixes intact.
