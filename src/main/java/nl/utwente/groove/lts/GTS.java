@@ -192,8 +192,12 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      *         then, <tt>state</tt> was added and the listeners notified).
      */
     public @Nullable GraphState addState(GraphState newState) {
-        // see if isomorphic graph is already in the LTS
-        GraphState result = allStateSet().put(newState);
+        // see if isomorphic graph is already in the LTS;
+        // without storing there is nothing to collapse against,
+        // so every state counts as fresh
+        GraphState result = isStoring()
+            ? allStateSet().put(newState)
+            : null;
         if (result == null) {
             // otherwise, add it to the GTS
             this.nextStateNr = Math.max(this.nextStateNr, newState.getNumber() + 1);
@@ -217,6 +221,48 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
 
     /** Number to be used for the next state added to this GTS. */
     private int nextStateNr;
+
+    /**
+     * Indicates if discovered states and transitions are stored in this GTS.
+     * This is the case by default; it is switched off by explorations whose
+     * configuration sets state persistence to <i>none</i>.
+     * @see #setStoring(boolean)
+     */
+    public boolean isStoring() {
+        return this.storing;
+    }
+
+    /**
+     * Sets whether discovered states and transitions are stored in this GTS.
+     * While storing is off, {@link #addState} treats every state as fresh
+     * (there is nothing to collapse against) and retains neither states nor
+     * transitions; listeners are still notified of every addition, so
+     * acceptors and statistics see the full exploration. Only the states
+     * added while storing was on (in particular the start state) remain in
+     * the GTS; the state and transition counts reflect that retained part.
+     * Discovered states remain reachable only while the exploration needs
+     * them (frontier, ancestor chains of frontier states, and collected
+     * results), and are garbage collected afterwards.
+     * <p>This method is intended to be called before an exploration starts,
+     * via {@link nl.utwente.groove.explore.ExploreType#prepareGTS}.
+     */
+    public void setStoring(boolean storing) {
+        this.storing = storing;
+    }
+
+    /** Flag indicating if discovered states and transitions are stored. */
+    private boolean storing = true;
+
+    /**
+     * Indicates if a given state is retained in this GTS, so that its
+     * status changes should be reflected in the state counts and flagged
+     * state lists. This is the case for all states while storing is on;
+     * without storing, only for the start state (which was added while
+     * storing was still on).
+     */
+    private boolean isRetained(GraphState state) {
+        return isStoring() || state == this.startState;
+    }
 
     /** Returns the policy for type checking. */
     public CheckPolicy getTypePolicy() {
@@ -426,8 +472,12 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      * @param trans the source state of the transition to be added
      */
     public void addTransition(GraphTransition trans) {
-        // add (possibly isomorphically modified) edge to LTS
-        if (trans.source().addTransition(trans)) {
+        if (!isStoring()) {
+            // the transition is not retained, but the listeners
+            // (in particular the acceptors) must still see it
+            fireAddEdge(trans);
+        } else if (trans.source().addTransition(trans)) {
+            // add (possibly isomorphically modified) edge to LTS
             fireAddEdge(trans);
         } else {
             spuriousTransitionCount++;
@@ -602,7 +652,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     protected void fireAddNode(GraphState state) {
         this.transients |= state.isTransient();
         this.absents |= state.isAbsent();
-        if (state.isPublic()) {
+        if (isRetained(state) && state.isPublic()) {
             this.publicStateCount++;
         }
         super.fireAddNode(state);
@@ -618,9 +668,11 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     @Override
     protected void fireAddEdge(GraphTransition edge) {
         this.inners |= edge.isInnerStep();
-        this.allTransitionCount++;
-        if (edge.isPublicStep()) {
-            this.publicTransitionCount++;
+        if (isStoring()) {
+            this.allTransitionCount++;
+            if (edge.isPublicStep()) {
+                this.publicTransitionCount++;
+            }
         }
         super.fireAddEdge(edge);
         for (GTSListener listener : getGTSListeners()) {
@@ -636,28 +688,30 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     protected void fireUpdateState(GraphState state, int oldStatus) {
         this.transients |= state.isTransient();
         this.absents |= state.isAbsent();
-        boolean wasPublic = Status.isPublic(oldStatus);
-        boolean isPublic = state.isPublic();
-        if (wasPublic != isPublic) {
-            this.publicStateCount += wasPublic
-                ? -1
-                : +1;
-        }
-        for (Flag recorded : FLAG_ARRAY) {
-            var flaggedStates = this.statesMap.get(recorded);
-            boolean had = wasPublic && recorded.test(oldStatus);
-            int index = recorded.ordinal();
-            if (isPublic && state.hasFlag(recorded)) {
-                if (!had) {
-                    this.stateCounts[index]++;
-                    if (flaggedStates != null) {
-                        flaggedStates.add(state);
+        if (isRetained(state)) {
+            boolean wasPublic = Status.isPublic(oldStatus);
+            boolean isPublic = state.isPublic();
+            if (wasPublic != isPublic) {
+                this.publicStateCount += wasPublic
+                    ? -1
+                    : +1;
+            }
+            for (Flag recorded : FLAG_ARRAY) {
+                var flaggedStates = this.statesMap.get(recorded);
+                boolean had = wasPublic && recorded.test(oldStatus);
+                int index = recorded.ordinal();
+                if (isPublic && state.hasFlag(recorded)) {
+                    if (!had) {
+                        this.stateCounts[index]++;
+                        if (flaggedStates != null) {
+                            flaggedStates.add(state);
+                        }
                     }
-                }
-            } else if (had) {
-                this.stateCounts[index]--;
-                if (flaggedStates != null) {
-                    flaggedStates.remove(state);
+                } else if (had) {
+                    this.stateCounts[index]--;
+                    if (flaggedStates != null) {
+                        flaggedStates.remove(state);
+                    }
                 }
             }
         }

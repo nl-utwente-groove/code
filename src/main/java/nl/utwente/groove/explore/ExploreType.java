@@ -185,6 +185,15 @@ public class ExploreType {
     });
 
     /**
+     * Callback method allowing the exploration type to configure the GTS
+     * before an exploration of this type starts; called from the
+     * {@link Exploration} constructor. This implementation does nothing.
+     */
+    public void prepareGTS(GTS gts) {
+        // does nothing by default
+    }
+
+    /**
      * Factory method for an exploration based on this type.
      * @param gts the GTS on which the exploration will be performed
      * @throws FormatException if the rule system of {@code gts} is not
