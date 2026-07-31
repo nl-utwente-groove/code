@@ -285,6 +285,57 @@ asserted in `FrontierStrategy`; `TransientNestingTest` (fibonacci under all
 engine orders, incl. beam:2) guards the invariant that no transient state is
 left unexplored, and fails against the pre-fix code.
 
+#### Phase 5b slice 3 (2026-07-31) — persistence=none
+
+*Design question posed by Arend: how to implement persistence=none without
+undercutting the essential GTS-generation machinery. Answer (proposed
+2026-07-31, approved with three decisions): read `none` as **never-enter**
+rather than the plan's original add-on-close/remove sketch — discovered
+states never enter the GTS accumulator, so nothing ever needs removing and
+no late duplicate detection (with its transition-redirection headaches) is
+needed. Arend's decisions: (1) none = no revisit detection; (2) collapse
+becomes inoperative under none (not a rejected combination); (3) the GUI
+shows only what is retained.*
+
+Implementation (three commits):
+
+1. **Numbering counter** (parity refactor): `MatchApplier` numbered fresh
+   states by `gts.nodeCount()`; replaced by an explicit `GTS.getNextStateNr`
+   counter maintained in `addState` — value-identical while storing, and the
+   discovery count under persistence=none.
+2. **The storing seam**: `GTS.setStoring(boolean)` — without storing,
+   `addState` skips the state-set put (every state fresh, no certificates
+   computed) and `setClosed` skips persisting the cached transition stubs
+   into the state (`setStoredTransitionStubs`); the state/transition counts
+   and flagged state lists reflect only the retained part. Applied per run
+   via the new `ExploreType.prepareGTS` callback (from the `Exploration`
+   constructor), overridden in `ConfiguredExploreType`.
+3. **Enablement**: converter no longer rejects `persistence=none`;
+   `toConfig` short-circuits for `ConfiguredExploreType` (the config is
+   authoritative — persistence leaves no trace in the legacy descriptors);
+   `PersistenceTest` covers retention, result pinning, determinism, and
+   composition with the orders and beam.
+
+Key findings while implementing (see the state note for the full retention
+anatomy):
+
+- `GTS.addTransition` → `StateCache.addTransition` is **not just storage**:
+  it removes the explored match from the state's match set and triggers
+  closure when the set is finished. Bypassing it left every state open. The
+  correct cut is one level deeper: keep all cache bookkeeping (the cache is
+  the open state's working set, already protected from collapse while
+  open), and skip only the persistence step — `setClosed` no longer copies
+  the cached stubs into the state's hard array when not storing, so a
+  closed state does not pin its successors and fruitless subtrees are
+  garbage collected.
+- **Recipes do not compose with persistence=none in practice**: the
+  transient sub-exploration is exhaustive by design (it bypasses any
+  frontier restriction, including beam), so a diamond-rich recipe body
+  explodes without collapse — fibonacci OOMs. Not a bug; inherent.
+- Termination under none requires a finite tree unfolding: cyclic grammars
+  need a depth bound, and the depth bound is currently expressible only for
+  bfs/dfs (not random/beam) — a candidate refinement if none gets real use.
+
 ### Phase 6 (later branch) — demolition
 
 Delete `explore.encode`, `explore.prettyparse`, `Serialized`, `ExploreType`,

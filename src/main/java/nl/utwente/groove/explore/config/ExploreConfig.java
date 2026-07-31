@@ -50,6 +50,13 @@ public class ExploreConfig {
         }
     }
 
+    /** Creates a copy of a given configuration.
+     * (The settings themselves are immutable, so a shallow copy suffices.)
+     */
+    public ExploreConfig(ExploreConfig original) {
+        this.map = new EnumMap<>(original.map);
+    }
+
     /** Returns the current setting for a given key. */
     public Setting get(ExploreKey key) {
         var result = this.map.get(key);

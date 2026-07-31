@@ -76,7 +76,11 @@ public class ExploreTypeConverterTest {
             "goal=condition:load count=first",
             "goal=fires:load",
             "goal=fires:load count=3",
-            "count=3",};
+            "count=3",
+            "persistence=none",
+            "persistence=none next=random",
+            "persistence=none frontier=beam:3",
+            "persistence=none cost=uniform bound=cost:5",};
         for (String text : configs) {
             ExploreConfig config = ExploreConfig.parse(text);
             ExploreType type = ExploreTypeConverter.toExploreType(config);
@@ -190,8 +194,13 @@ public class ExploreTypeConverterTest {
         ExploreType bare = ExploreTypeConverter
             .toExploreType(ExploreConfig.parse("goal=condition:load outcome=violate"));
         assertEquals("inv(polarity=Negative, rule=load)", bare.getAcceptor().toString());
+        // decoding the legacy descriptors normalises the violated outcome
+        // into the condition (a configuration-backed type would short-circuit
+        // to its own configuration, so rebuild a plain type)
         assertEquals(ExploreConfig.parse("goal=condition:!load"),
-                     ExploreTypeConverter.toConfig(bare));
+                     ExploreTypeConverter
+                         .toConfig(new ExploreType(bare.getStrategy(), bare.getAcceptor(),
+                             bare.getBound())));
         ExploreType doubleNeg = ExploreTypeConverter
             .toExploreType(ExploreConfig.parse("goal=condition:!load outcome=violate"));
         assertEquals("inv(polarity=Positive, rule=load)", doubleNeg.getAcceptor().toString());
@@ -243,7 +252,6 @@ public class ExploreTypeConverterTest {
             "heuristic=nen",
             "cost=rule",
             "shape=trace",
-            "persistence=none",
             "collapse=equality",
             "algebra=point",
             "goal=graph:someGraph",
