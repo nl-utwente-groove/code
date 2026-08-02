@@ -55,6 +55,7 @@ import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.FormatException;
+import nl.utwente.groove.util.parse.Parser;
 
 /**
  * Parser for the legacy exploration syntax: the strategy and acceptor
@@ -123,6 +124,32 @@ public class LegacySyntaxParser {
                                       int count) throws FormatException {
         return build(base, strategy, acceptor, count);
     }
+
+    /**
+     * Returns a parser for legacy exploration descriptions (see
+     * {@link #parse}), with the default exploration type as default value.
+     * The unparse direction yields the type's identifier, for display only —
+     * the legacy key is no longer written, merely read.
+     */
+    public static Parser<ExploreType> parser() {
+        return PARSER;
+    }
+
+    private static final Parser<ExploreType> PARSER
+        = new Parser.AParser<>(LegacySyntaxParser.SYNTAX_MESSAGE, ExploreType.DEFAULT) {
+            @Override
+            public ExploreType parse(String input) throws FormatException {
+                if (input.isEmpty()) {
+                    return getDefaultValue();
+                }
+                return LegacySyntaxParser.parse(input);
+            }
+
+            @Override
+            public <V extends ExploreType> String unparse(V value) {
+                return value.getIdentifier();
+            }
+        };
 
     /** Common implementation of {@link #parse} and {@link #overlay};
      * a {@code null} base stands for the default configuration. */

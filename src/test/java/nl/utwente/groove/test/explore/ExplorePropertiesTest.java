@@ -18,11 +18,15 @@ package nl.utwente.groove.test.explore;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.Test;
 
 import nl.utwente.groove.explore.ExploreType;
+import nl.utwente.groove.explore.LTLExploreType;
+import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.GrammarProperties;
@@ -81,12 +85,26 @@ public class ExplorePropertiesTest {
         return properties;
     }
 
+    /** Stores a raw legacy exploration description, as a pre-3.12 grammar
+     * file would contain it. */
+    private GrammarProperties withLegacy(GrammarProperties properties, String legacy) {
+        properties.setProperty(GrammarKey.EXPLORATION.getName(), legacy);
+        return properties;
+    }
+
+    /** Asserts that an exploration type is configuration-based with a given
+     * configuration text. */
+    private void assertConfigured(String expected, ExploreType type) throws FormatException {
+        assertInstanceOf(ConfiguredExploreType.class, type);
+        assertEquals(ExploreConfig.parse(expected), ((ConfiguredExploreType) type).getConfig());
+    }
+
     /** Tests the values of a fresh properties object. */
     @Test
     public void testDefaults() {
         var properties = new GrammarProperties();
         assertEquals(new ExploreConfig(), properties.getExploreConfig());
-        assertEquals(ExploreType.DEFAULT.unparse(), properties.getExploreType().unparse());
+        assertSame(ExploreType.DEFAULT, properties.getExploreType());
     }
 
     /** Tests that a stored configuration is retrievable in both forms. */
@@ -99,20 +117,23 @@ public class ExplorePropertiesTest {
                      properties.getProperty(GrammarKey.EXPLORE_CONFIG.getName()));
         assertFalse(properties.containsKey(GrammarKey.EXPLORATION));
         assertEquals(config, properties.getExploreConfig());
-        assertEquals("dfs final 1", properties.getExploreType().unparse());
+        assertConfigured("next=newest count=first", properties.getExploreType());
     }
 
-    /** Tests that a stored legacy exploration type is converted on retrieval. */
+    /** Tests that a stored legacy exploration description is translated on
+     * retrieval, in both the type and the configuration form. */
     @Test
     public void testLegacyFallback() throws FormatException {
-        var properties = new GrammarProperties();
-        properties.setExploreType(ExploreType.parse("dfs final 1"));
+        var properties = withLegacy(new GrammarProperties(), "dfs final 1");
         assertTrue(properties.containsKey(GrammarKey.EXPLORATION));
         assertFalse(properties.containsKey(GrammarKey.EXPLORE_CONFIG));
+        assertConfigured("next=newest count=first", properties.getExploreType());
         assertEquals(ExploreConfig.parse("next=newest count=first"),
                      properties.getExploreConfig());
-        // an inexpressible legacy value falls back to the default configuration
-        properties.setExploreType(ExploreType.parse("ltl:true cycle"));
+        // a non-configuration legacy value yields its dedicated type,
+        // and falls back to the default configuration
+        properties = withLegacy(new GrammarProperties(), "ltl:true cycle 0");
+        assertInstanceOf(LTLExploreType.class, properties.getExploreType());
         assertEquals(new ExploreConfig(), properties.getExploreConfig());
     }
 
@@ -122,25 +143,24 @@ public class ExplorePropertiesTest {
         var properties = new GrammarProperties();
         properties.setExploreConfig(ExploreConfig.parse("next=newest"));
         // re-adding the legacy key does not change the outcome
-        properties.setExploreType(ExploreType.parse("linear final 0"));
+        withLegacy(properties, "linear final 0");
         assertTrue(properties.containsKey(GrammarKey.EXPLORATION));
-        assertEquals("dfs final 0", properties.getExploreType().unparse());
+        assertConfigured("next=newest", properties.getExploreType());
         assertEquals(ExploreConfig.parse("next=newest"), properties.getExploreConfig());
     }
 
     /** Tests that storing the configuration removes the legacy key. */
     @Test
     public void testStoreRemovesLegacy() throws FormatException {
-        var properties = new GrammarProperties();
-        properties.setExploreType(ExploreType.parse("linear final 0"));
+        var properties = withLegacy(new GrammarProperties(), "linear final 0");
         properties.setExploreConfig(ExploreConfig.parse("next=newest"));
         assertFalse(properties.containsKey(GrammarKey.EXPLORATION));
         // storing the default configuration leaves no keys at all
-        properties.setExploreType(ExploreType.parse("linear final 0"));
+        withLegacy(properties, "linear final 0");
         properties.setExploreConfig(new ExploreConfig());
         assertFalse(properties.containsKey(GrammarKey.EXPLORATION));
         assertFalse(properties.containsKey(GrammarKey.EXPLORE_CONFIG));
-        assertEquals(ExploreType.DEFAULT.unparse(), properties.getExploreType().unparse());
+        assertSame(ExploreType.DEFAULT, properties.getExploreType());
     }
 
     /** Tests that a stored but unrealisable configuration yields the default type. */
@@ -150,7 +170,7 @@ public class ExplorePropertiesTest {
         var config = ExploreConfig.parse("heuristic=nen");
         properties.setExploreConfig(config);
         assertEquals(config, properties.getExploreConfig());
-        assertEquals(ExploreType.DEFAULT.unparse(), properties.getExploreType().unparse());
+        assertSame(ExploreType.DEFAULT, properties.getExploreType());
         // the key checker reports the problem
         assertFalse(GrammarKey.EXPLORE_CONFIG.check(null, config).isEmpty());
         assertTrue(GrammarKey.EXPLORE_CONFIG
