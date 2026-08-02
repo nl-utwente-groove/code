@@ -23,6 +23,8 @@ import static org.junit.Assert.fail;
 import org.junit.Test;
 
 import nl.utwente.groove.explore.ExploreType;
+import nl.utwente.groove.explore.config.ExploreConfig;
+import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.lts.AbstractGraphState;
 import nl.utwente.groove.lts.GTS;
@@ -52,8 +54,8 @@ public class DeterminismTest {
     /** Tests determinism of the default (plan-based) exploration. */
     @Test
     public void testPlanEngineDeterminism() {
-        test("ferryman", "bfs");
-        test("loose-nodes", "bfs");
+        test("ferryman", "");
+        test("loose-nodes", "");
     }
 
     /**
@@ -66,7 +68,7 @@ public class DeterminismTest {
     private void test(String grammarName, String strategy) {
         try {
             GrammarModel grammarModel = Groove.loadGrammar(INPUT_DIR + "/" + grammarName);
-            ExploreType exploreType = new ExploreType(strategy, "final", 0);
+            ExploreType exploreType = ExploreTypeConverter.toExploreType(ExploreConfig.parse(strategy));
             String first = explore(grammarModel, exploreType, NO_COLLAPSE);
             int closures = this.closureCount;
             perturbIdentityHashes();

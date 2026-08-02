@@ -24,7 +24,7 @@ import java.util.Set;
 
 import javax.swing.Action;
 
-import nl.utwente.groove.explore.StrategyValue;
+import nl.utwente.groove.explore.LTLExploreType;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.SimulatorListener;
@@ -295,12 +295,12 @@ public class ActionStore implements SimulatorListener {
      * Returns the 'default exploration' action that is associated with the
      * simulator.
      */
-    public CheckLTLAction getCheckLTLAction(StrategyValue strategy, String name) {
+    public CheckLTLAction getCheckLTLAction(LTLExploreType.Kind kind, String name) {
         // lazily create the action
-        CheckLTLAction result = this.checkLTLMap.get(strategy);
+        CheckLTLAction result = this.checkLTLMap.get(kind);
         if (result == null) {
             this.checkLTLMap
-                .put(strategy, result = new CheckLTLAction(this.simulator, strategy, name));
+                .put(kind, result = new CheckLTLAction(this.simulator, kind, name));
         }
 
         return result;
@@ -309,7 +309,8 @@ public class ActionStore implements SimulatorListener {
     /**
      * The 'default exploration' action (variable).
      */
-    private Map<StrategyValue,CheckLTLAction> checkLTLMap = new EnumMap<>(StrategyValue.class);
+    private Map<LTLExploreType.Kind,CheckLTLAction> checkLTLMap
+        = new EnumMap<>(LTLExploreType.Kind.class);
 
     /**
      * Returns the exploration dialog action permanently associated with this
