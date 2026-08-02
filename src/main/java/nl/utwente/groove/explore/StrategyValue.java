@@ -9,7 +9,6 @@ import java.util.Map;
 import nl.utwente.groove.explore.encode.EncodedBoundary;
 import nl.utwente.groove.explore.encode.EncodedEdgeMap;
 import nl.utwente.groove.explore.encode.EncodedEnabledRule;
-import nl.utwente.groove.explore.encode.EncodedHostName;
 import nl.utwente.groove.explore.encode.EncodedInt;
 import nl.utwente.groove.explore.encode.EncodedLtlProperty;
 import nl.utwente.groove.explore.encode.EncodedPolarity;
@@ -47,7 +46,6 @@ import nl.utwente.groove.explore.strategy.LTLStrategy;
 import nl.utwente.groove.explore.strategy.LinearStrategy;
 import nl.utwente.groove.explore.strategy.MinimaxStrategy;
 import nl.utwente.groove.explore.strategy.RandomLinearStrategy;
-import nl.utwente.groove.explore.strategy.RemoteStrategy;
 import nl.utwente.groove.explore.strategy.StopMode;
 import nl.utwente.groove.explore.strategy.Strategy;
 import nl.utwente.groove.grammar.Rule;
@@ -114,10 +112,7 @@ public enum StrategyValue implements ParsableValue {
             + "and optimised to avoid reexploring connected components ('pockets')"),
     /** Minimax strategy. */
     MINIMAX("minimax", "Minimax Strategy Generation",
-        "This strategy generates a strategy for a two-player game."),
-    /** Remote strategy. */
-    REMOTE("remote", "Remote Exploration",
-        "This strategy sends the result as an STS to a remote server.");
+        "This strategy generates a strategy for a two-player game.");
 
     private StrategyValue(String keyword, String name, String description) {
         this.keyword = keyword;
@@ -312,16 +307,6 @@ public enum StrategyValue implements ParsableValue {
                     result.setProperty(property);
                     result.setBoundary(bound);
                     return result;
-                }
-            };
-        case REMOTE:
-            return new MyTemplate1<>(new PAll("host"), "host", new EncodedHostName()) {
-
-                @Override
-                public Strategy create(String host) {
-                    RemoteStrategy strategy = new RemoteStrategy();
-                    strategy.setHost(host);
-                    return strategy;
                 }
             };
         case MINIMAX:

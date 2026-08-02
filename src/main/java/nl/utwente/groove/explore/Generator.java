@@ -552,8 +552,7 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
             + "  ltlbounded:idn,...;prop\n" //
             + "              - Bounded LTL Model Checking\n" //
             + "  ltlpocket:idn,...;prop\n" //
-            + "              - Pocket LTL Model Checking\n" //
-            + "  remote:host - Remote";
+            + "              - Pocket LTL Model Checking";
 
     /**
      * Attempts to load a graph grammar from a given location provided as a

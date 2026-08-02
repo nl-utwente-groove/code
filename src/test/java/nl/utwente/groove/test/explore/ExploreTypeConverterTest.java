@@ -262,7 +262,7 @@ public class ExploreTypeConverterTest {
     @Test
     public void testInexpressibleLegacy() {
         String[][] types = {{"state", "final"}, {"ltl", "cycle"},
-            {"minimax", "final"}, {"remote", "final"}, {"bfs", "cycle"},};
+            {"minimax", "final"}, {"bfs", "cycle"},};
         for (String[] pair : types) {
             ExploreType type = new ExploreType(pair[0], pair[1], 0);
             assertThrows(FormatException.class, () -> ExploreTypeConverter.toConfig(type),
