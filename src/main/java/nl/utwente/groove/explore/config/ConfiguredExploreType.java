@@ -83,6 +83,15 @@ public class ConfiguredExploreType extends ExploreType {
 
     private final ExploreConfig config;
 
+    /* Overridden to keep the configuration (with an adjusted count feature),
+     * rather than degrading to a plain descriptor-based type. */
+    @Override
+    public ExploreType withResultCount(int count) {
+        var newConfig = new ExploreConfig(getConfig());
+        newConfig.put(ExploreKey.COUNT, Count.toSetting(count));
+        return new ConfiguredExploreType(newConfig, getStrategy(), getAcceptor(), count);
+    }
+
     /**
      * Applies or verifies the per-GTS features of the configuration:
      * collapse mode, algebra family and persistence. These determine what

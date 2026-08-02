@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.explore;
 
+import nl.utwente.groove.explore.config.parse.BoundaryParser;
 import nl.utwente.groove.explore.encode.Serialized;
 import nl.utwente.groove.explore.result.Acceptor;
 import nl.utwente.groove.explore.result.CycleAcceptor;
@@ -25,6 +26,7 @@ import nl.utwente.groove.explore.strategy.BoundedPocketLTLStrategy;
 import nl.utwente.groove.explore.strategy.LTLStrategy;
 import nl.utwente.groove.explore.strategy.Strategy;
 import nl.utwente.groove.grammar.Grammar;
+import nl.utwente.groove.util.parse.FormatException;
 
 /**
  * Exploration type for LTL model checking: a nested depth-first search for a
@@ -71,33 +73,65 @@ public class LTLExploreType extends ExploreType {
     }
 
     /**
-     * Constructs an LTL exploration type of a given flavour.
+     * Constructs an LTL exploration type of a given flavour, stopping at the
+     * first counterexample.
      * @param kind the model-checking flavour
      * @param property the LTL property to be checked
      * @param boundary the exploration boundary; must be non-{@code null}
      * exactly for the bounded flavours
      */
     public LTLExploreType(Kind kind, String property, Boundary boundary) {
-        super(createStrategyDescriptor(kind, property), new Serialized("cycle"), 1);
-        assert (boundary == null) == (kind == Kind.PLAIN);
+        this(kind, property, boundary, null, 1);
+    }
+
+    /**
+     * Constructs an LTL exploration type of a given flavour from a textual
+     * boundary specification, which is resolved against the grammar when the
+     * strategy is instantiated.
+     * @param kind the model-checking flavour
+     * @param property the LTL property to be checked
+     * @param boundarySpec the boundary specification (see
+     * {@link BoundaryParser}); must be non-{@code null} exactly for the
+     * bounded flavours
+     * @param count number of results after which exploration halts;
+     * {@code 0} means unbounded
+     */
+    public LTLExploreType(Kind kind, String property, String boundarySpec, int count) {
+        this(kind, property, null, boundarySpec, count);
+    }
+
+    private LTLExploreType(Kind kind, String property, Boundary boundary, String boundarySpec,
+                           int count) {
+        super(createStrategyDescriptor(kind, property, boundarySpec), new Serialized("cycle"),
+              count);
+        assert kind == Kind.PLAIN
+            ? boundary == null && boundarySpec == null
+            : boundary != null ^ boundarySpec != null;
         this.kind = kind;
         this.property = property;
         this.boundary = boundary;
+        this.boundarySpec = boundarySpec;
     }
 
     private final Kind kind;
     private final String property;
     private final Boundary boundary;
+    private final String boundarySpec;
 
-    /** Computes the legacy display descriptor for a given flavour and property. */
-    private static Serialized createStrategyDescriptor(Kind kind, String property) {
+    /** Computes the legacy display descriptor for a given flavour, property
+     * and optional boundary specification. */
+    private static Serialized createStrategyDescriptor(Kind kind, String property,
+                                                       String boundarySpec) {
         Serialized result = new Serialized(kind.getKeyword());
         result.setArgument("prop", property);
+        if (boundarySpec != null) {
+            result.setArgument("bound", boundarySpec);
+        }
         return result;
     }
 
     @Override
-    public Strategy getParsedStrategy(Grammar grammar) {
+    public Strategy getParsedStrategy(Grammar grammar) throws FormatException {
         LTLStrategy result = switch (this.kind) {
         case PLAIN -> new LTLStrategy();
         case BOUNDED -> new BoundedLTLStrategy();
@@ -105,7 +139,10 @@ public class LTLExploreType extends ExploreType {
         };
         result.setProperty(this.property);
         if (result instanceof BoundedLTLStrategy bounded) {
-            bounded.setBoundary(this.boundary);
+            bounded
+                .setBoundary(this.boundary == null
+                    ? BoundaryParser.parse(grammar, this.boundarySpec)
+                    : this.boundary);
         }
         return result;
     }
