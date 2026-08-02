@@ -22,18 +22,14 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import org.junit.Assert;
-import nl.utwente.groove.explore.AcceptorValue;
 import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.explore.ExploreResult;
 import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.Generator;
-import nl.utwente.groove.explore.StrategyValue;
-import nl.utwente.groove.explore.encode.Serialized;
-import nl.utwente.groove.explore.encode.Template;
+import nl.utwente.groove.explore.LTLExploreType;
+import nl.utwente.groove.explore.strategy.Boundary;
 import nl.utwente.groove.explore.strategy.GraphNodeSizeBoundary;
-import nl.utwente.groove.explore.strategy.Strategy;
 import nl.utwente.groove.lts.GTS;
-import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -42,8 +38,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * @version $Revision$
  */
 public class LTLTest {
-    private StrategyValue strategyValue;
-    private Template<Strategy> strategyTemplate;
+    private LTLExploreType.Kind kind;
     /** Transition system used by this test. */
     private GTS gts;
 
@@ -59,28 +54,28 @@ public class LTLTest {
     /** Test on a specially designed transition system. */
     @Test
     public void testNormal() {
-        prepare(StrategyValue.LTL);
+        prepare(LTLExploreType.Kind.PLAIN);
         testMC();
     }
 
     /** Test on a specially designed transition system. */
     @Test
     public void testBounded() {
-        prepare(StrategyValue.LTL_BOUNDED);
+        prepare(LTLExploreType.Kind.BOUNDED);
         testMC();
     }
 
     /** Test on a specially designed transition system. */
     @Test
     public void testPocket() {
-        prepare(StrategyValue.LTL_POCKET);
+        prepare(LTLExploreType.Kind.POCKET);
         testMC();
     }
 
     /** Test the proper handling of attributes. */
     @Test
     public void testAttributes() {
-        prepare(StrategyValue.LTL);
+        prepare(LTLExploreType.Kind.PLAIN);
         prepare("attributes");
         testFormula("F set_finished", true);
         testFormula("F set_finished(true)", true);
@@ -100,7 +95,7 @@ public class LTLTest {
     /** Test the treatment of special transition labels (gh #855). */
     @Test
     public void testTransitionLabels() {
-        prepare(StrategyValue.LTL);
+        prepare(LTLExploreType.Kind.PLAIN);
         prepare("mc-label");
         // rule p has special transition label 'go'
         testFormula("go U r", false);
@@ -139,10 +134,9 @@ public class LTLTest {
         testFormula("X q", true);
     }
 
-    /** Sets the LTL strategy. */
-    private void prepare(StrategyValue ltlStrategy) {
-        this.strategyValue = ltlStrategy;
-        this.strategyTemplate = ltlStrategy.getTemplate();
+    /** Sets the LTL model-checking flavour. */
+    private void prepare(LTLExploreType.Kind kind) {
+        this.kind = kind;
     }
 
     /** Sets the GTS to a given grammar in the JUnit samples. */
@@ -161,19 +155,10 @@ public class LTLTest {
     /** Tests the number of counterexamples in the current;y
      * set GTS for a given formula. */
     private void testFormula(String formula, boolean succeed) {
-        Serialized strategy = null;
-        switch (this.strategyValue) {
-        case LTL:
-            strategy = this.strategyTemplate.toSerialized(formula);
-            break;
-        case LTL_BOUNDED:
-        case LTL_POCKET:
-            strategy = this.strategyTemplate.toSerialized(formula, new GraphNodeSizeBoundary(0, 1));
-            break;
-        default:
-            throw Exceptions.unreachable(); // there are no other LTL strategies
-        }
-        ExploreType exploreType = new ExploreType(strategy, AcceptorValue.CYCLE.toSerialized(), 1);
+        Boundary boundary = this.kind == LTLExploreType.Kind.PLAIN
+            ? null
+            : new GraphNodeSizeBoundary(0, 1);
+        ExploreType exploreType = new LTLExploreType(this.kind, formula, boundary);
         try {
             Exploration exploration = exploreType.newExploration(this.gts, this.gts.startState());
             exploration.play();

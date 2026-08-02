@@ -241,17 +241,16 @@ public class ExploreConfigDialog extends JDialog {
 
     /**
      * Computes the initial configuration: the simulator's current exploration
-     * type if it is expressible, otherwise the configuration saved with the
-     * grammar (with a notice).
+     * type if it is configuration-based, otherwise the configuration saved
+     * with the grammar (with a notice).
      */
     private ExploreConfig createInitialConfig() {
-        try {
-            return ExploreTypeConverter.toConfig(getSimulatorModel().getExploreType());
-        } catch (FormatException exc) {
-            this.legacyNotice = "The current exploration strategy cannot be expressed"
-                + " in the feature model; showing the saved configuration";
-            return getGrammar().getProperties().getExploreConfig();
+        if (getSimulatorModel().getExploreType() instanceof ConfiguredExploreType configured) {
+            return new ExploreConfig(configured.getConfig());
         }
+        this.legacyNotice = "The current exploration strategy cannot be expressed"
+            + " in the feature model; showing the saved configuration";
+        return getGrammar().getProperties().getExploreConfig();
     }
 
     /** Loads a configuration into the dialog widgets. */
@@ -422,9 +421,6 @@ public class ExploreConfigDialog extends JDialog {
             status
                 = "<html><font color='" + INFO_COLOR + "'>" + this.legacyNotice + "</font></html>";
             this.legacyNotice = null;
-        } else if (exploreType != null) {
-            status = "<html><font color='" + INFO_COLOR + "'>Runs as: "
-                + exploreType.getIdentifier() + "</font></html>";
         }
         this.statusLabel.setText(status);
         // mark the keys whose composed value deviates from the exploration

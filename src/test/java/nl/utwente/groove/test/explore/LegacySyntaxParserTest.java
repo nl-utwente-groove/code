@@ -20,17 +20,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.util.List;
-
 import org.junit.Test;
 
-import nl.utwente.groove.explore.AcceptorEnumerator;
 import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.LTLExploreType;
 import nl.utwente.groove.explore.MinimaxExploreType;
 import nl.utwente.groove.explore.RemoteExploreType;
 import nl.utwente.groove.explore.StateExploreType;
-import nl.utwente.groove.explore.StrategyEnumerator;
 import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreKey;
@@ -51,11 +47,10 @@ import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
- * Tests for the legacy exploration syntax parser: parity of the direct
- * legacy-to-configuration translation with the enumerator-based path (for
- * as long as the latter exists), the overlay semantics onto a base
- * configuration, and the dedicated exploration types for the non-config
- * strategies.
+ * Tests for the legacy exploration syntax parser: the translation of the
+ * legacy strategy and acceptor keywords into the feature model, the overlay
+ * semantics onto a base configuration, and the dedicated exploration types
+ * for the non-config strategies.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -64,45 +59,66 @@ public class LegacySyntaxParserTest {
     static private final String GRAMMAR = "junit/samples/ferryman";
 
     /**
-     * Asserts that the direct translation of a legacy description yields the
-     * same configuration as parsing it through the enumerators and
-     * converting the result.
+     * Asserts that a legacy description translates to a configuration-based
+     * type with a given configuration.
      */
-    private void assertParity(String strategy, String acceptor, int count) throws FormatException {
-        var legacy = new ExploreType(StrategyEnumerator.parseCommandLineStrategy(strategy),
-            AcceptorEnumerator.parseCommandLineAcceptor(acceptor), count);
-        var expected = ExploreTypeConverter.toConfig(legacy);
+    private void assertTranslation(String expected, String strategy, String acceptor,
+                                   int count) throws FormatException {
         var actual = LegacySyntaxParser.parse(strategy + " " + acceptor + " " + count);
-        assertInstanceOf(ConfiguredExploreType.class, actual);
-        assertEquals(expected, ((ConfiguredExploreType) actual).getConfig());
+        assertInstanceOf(ConfiguredExploreType.class, actual,
+                         "'%s %s %d' should translate to a configuration"
+                             .formatted(strategy, acceptor, count));
+        assertEquals(ExploreConfig.parse(expected),
+                     ((ConfiguredExploreType) actual).getConfig(),
+                     "Translation mismatch for '%s %s %d'"
+                         .formatted(strategy, acceptor, count));
     }
 
-    /** Tests the config-expressible strategies against the enumerator path. */
+    /** Tests the translation of the config-expressible strategies. */
     @Test
-    public void testStrategyParity() throws FormatException {
-        for (String strategy : List
-            .of("bfs", "bfs:5", "dfs", "dfs:3", "linear", "random", "crule:eat", "crule:!eat",
-                "cnbound:20", "cebound:append>6", "cebound:a>1,b>2", "uptorule:bfs->eat",
-                "uptorule:dfs=>!eat", "uptorule:dfs->eat")) {
-            assertParity(strategy, "final", 0);
+    public void testStrategyTranslation() throws FormatException {
+        String[][] cases = {
+            {"bfs", ""},
+            {"bfs:5", "cost=uniform bound=cost:5"},
+            {"dfs", "next=newest"},
+            {"dfs:3", "next=newest cost=uniform bound=cost:3"},
+            {"linear", "frontier=single successor=single"},
+            {"random", "frontier=single successor=single-random"},
+            {"crule:eat", "bound=upto:eat"},
+            {"crule:!eat", "bound=upto:!eat"},
+            {"cnbound:20", "bound=nodes:20"},
+            {"cebound:append>6", "bound=edges:append>6"},
+            {"cebound:a>1,b>2", "bound=edges:a>1,b>2"},
+            {"uptorule:bfs->eat", "bound=upto:eat"},
+            {"uptorule:dfs=>!eat", "next=newest bound=include:!eat"},
+            {"uptorule:dfs->eat", "next=newest bound=upto:eat"},};
+        for (String[] pair : cases) {
+            assertTranslation(pair[1], pair[0], "final", 0);
         }
     }
 
-    /** Tests the config-expressible acceptors against the enumerator path. */
+    /** Tests the translation of the config-expressible acceptors and the count. */
     @Test
-    public void testAcceptorParity() throws FormatException {
-        for (String acceptor : List
-            .of("final", "any", "none", "ruleapp:eat", "inv:eat", "inv:!eat",
-                "formula:eat|unload")) {
-            assertParity("bfs", acceptor, 0);
-            if (!"none".equals(acceptor)) {
+    public void testAcceptorTranslation() throws FormatException {
+        String[][] cases = {
+            {"final", ""},
+            {"any", "goal=any"},
+            {"none", "goal=none"},
+            {"ruleapp:eat", "goal=fires:eat"},
+            {"inv:eat", "goal=condition:eat"},
+            {"inv:!eat", "goal=condition:!eat"},
+            {"formula:eat|unload", "goal=condition:eat|unload"},};
+        for (String[] pair : cases) {
+            assertTranslation(pair[1], "bfs", pair[0], 0);
+            if (!"none".equals(pair[0])) {
                 // a result count is inconsistent with the no-result goal in
                 // the feature model (a deliberate tightening over the legacy
                 // machinery, which silently accepted the combination)
-                assertParity("dfs", acceptor, 2);
+                assertTranslation("next=newest count=2 "
+                    + pair[1], "dfs", pair[0], 2);
             }
         }
-        assertParity("bfs", "final", 1);
+        assertTranslation("count=first", "bfs", "final", 1);
         assertThrows(FormatException.class, () -> LegacySyntaxParser.parse("dfs none 2"));
     }
 
@@ -130,6 +146,10 @@ public class LegacySyntaxParserTest {
         var counted = (ConfiguredExploreType) LegacySyntaxParser.overlay(base, null, null, 2);
         assertEquals(ExploreConfig
             .parse("persistence=none next=newest goal=fires:eat count=2"), counted.getConfig());
+        // legacy components cannot be overlaid on a non-configuration type
+        var ltl = LegacySyntaxParser.parse("ltl:true cycle 0");
+        assertThrows(FormatException.class,
+                     () -> LegacySyntaxParser.overlay(ltl, null, "any", 0));
     }
 
     /** Tests the dedicated exploration types for the non-config strategies. */

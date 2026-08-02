@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Set;
 
 import nl.utwente.groove.algebra.AlgebraFamily;
+import nl.utwente.groove.explore.engine.FrontierStrategy;
+import nl.utwente.groove.explore.engine.QueuePool;
 import nl.utwente.groove.explore.result.Acceptor;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
@@ -82,7 +84,7 @@ public class SymbolicStrategy extends GTSStrategy {
         }
 
         if (this.strategy == null) {
-            this.strategy = new BFSStrategy();
+            this.strategy = new FrontierStrategy(new QueuePool(0));
         }
         this.strategy.prepare(gts, state, acceptor);
         this.sts = new STS();

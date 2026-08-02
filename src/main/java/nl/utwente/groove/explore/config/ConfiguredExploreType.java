@@ -23,7 +23,6 @@ import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.config.parse.EdgeMapParser;
 import nl.utwente.groove.explore.config.parse.EnabledRuleParser;
 import nl.utwente.groove.explore.config.parse.RuleFormulaParser;
-import nl.utwente.groove.explore.encode.Serialized;
 import nl.utwente.groove.explore.engine.BeamPool;
 import nl.utwente.groove.explore.engine.FrontierStrategy;
 import nl.utwente.groove.explore.engine.Pool;
@@ -54,25 +53,19 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Exploration type backed by an exploration configuration
  * ({@link ExploreConfig}). Instances are created by
- * {@link ExploreTypeConverter#toExploreType}, which also computes the
- * equivalent legacy strategy/acceptor descriptors (used for display and for
- * the deprecated keyword-based interfaces). In contrast to the base class,
- * the strategy and acceptor are instantiated <i>directly</i> — the
- * {@link FrontierStrategy} engine for the search orders, the acceptor
- * classes for the goals — rather than through the encode/enumerator
- * machinery, so a configuration-based exploration no longer depends on the
- * template parsing at run time.
+ * {@link ExploreTypeConverter#toExploreType}, which validates the
+ * configuration first. The strategy and acceptor are instantiated directly
+ * from the configuration — the {@link FrontierStrategy} engine for the
+ * search orders, the acceptor classes for the goals.
  * @author Arend Rensink
  * @version $Revision$
  */
 public class ConfiguredExploreType extends ExploreType {
     /**
-     * Constructs an exploration type for a given configuration, with the
-     * legacy descriptors realising it.
+     * Constructs an exploration type for a given (validated) configuration.
      */
-    ConfiguredExploreType(ExploreConfig config, Serialized strategy, Serialized acceptor,
-                          int bound) {
-        super(strategy, acceptor, bound);
+    ConfiguredExploreType(ExploreConfig config, int bound) {
+        super(bound);
         this.config = config;
     }
 
@@ -83,13 +76,19 @@ public class ConfiguredExploreType extends ExploreType {
 
     private final ExploreConfig config;
 
-    /* Overridden to keep the configuration (with an adjusted count feature),
-     * rather than degrading to a plain descriptor-based type. */
+    @Override
+    public String getIdentifier() {
+        String result = getConfig().unparse();
+        return result.isEmpty()
+            ? "default"
+            : result;
+    }
+
     @Override
     public ExploreType withResultCount(int count) {
         var newConfig = new ExploreConfig(getConfig());
         newConfig.put(ExploreKey.COUNT, Count.toSetting(count));
-        return new ConfiguredExploreType(newConfig, getStrategy(), getAcceptor(), count);
+        return new ConfiguredExploreType(newConfig, count);
     }
 
     /**

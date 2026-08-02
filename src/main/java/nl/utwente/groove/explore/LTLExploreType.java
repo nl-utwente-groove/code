@@ -17,7 +17,6 @@
 package nl.utwente.groove.explore;
 
 import nl.utwente.groove.explore.config.parse.BoundaryParser;
-import nl.utwente.groove.explore.encode.Serialized;
 import nl.utwente.groove.explore.result.Acceptor;
 import nl.utwente.groove.explore.result.CycleAcceptor;
 import nl.utwente.groove.explore.strategy.Boundary;
@@ -31,9 +30,8 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Exploration type for LTL model checking: a nested depth-first search for a
  * counterexample to a given LTL property, with the cycle acceptor. The
- * strategy and acceptor are instantiated directly, without the
- * encode/enumerator machinery; the legacy descriptors of the base class
- * serve display purposes only.
+ * strategy and acceptor are instantiated directly from the state of the
+ * type.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -102,8 +100,7 @@ public class LTLExploreType extends ExploreType {
 
     private LTLExploreType(Kind kind, String property, Boundary boundary, String boundarySpec,
                            int count) {
-        super(createStrategyDescriptor(kind, property, boundarySpec), new Serialized("cycle"),
-              count);
+        super(count);
         assert kind == Kind.PLAIN
             ? boundary == null && boundarySpec == null
             : boundary != null ^ boundarySpec != null;
@@ -118,16 +115,19 @@ public class LTLExploreType extends ExploreType {
     private final Boundary boundary;
     private final String boundarySpec;
 
-    /** Computes the legacy display descriptor for a given flavour, property
-     * and optional boundary specification. */
-    private static Serialized createStrategyDescriptor(Kind kind, String property,
-                                                       String boundarySpec) {
-        Serialized result = new Serialized(kind.getKeyword());
-        result.setArgument("prop", property);
-        if (boundarySpec != null) {
-            result.setArgument("bound", boundarySpec);
+    @Override
+    public String getIdentifier() {
+        StringBuilder result = new StringBuilder(this.kind.getKeyword());
+        result.append(':');
+        if (this.kind != Kind.PLAIN) {
+            result
+                .append(this.boundarySpec == null
+                    ? this.boundary.toString()
+                    : this.boundarySpec);
+            result.append(';');
         }
-        return result;
+        result.append(this.property);
+        return result.toString();
     }
 
     @Override
@@ -150,5 +150,11 @@ public class LTLExploreType extends ExploreType {
     @Override
     public Acceptor getParsedAcceptor(Grammar grammar) {
         return CycleAcceptor.PROTOTYPE;
+    }
+
+    @Override
+    public ExploreType withResultCount(int count) {
+        return new LTLExploreType(this.kind, this.property, this.boundary, this.boundarySpec,
+            count);
     }
 }

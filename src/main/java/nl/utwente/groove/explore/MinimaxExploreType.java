@@ -21,7 +21,6 @@ import java.util.List;
 
 import nl.utwente.groove.explore.config.parse.EnabledRuleParser;
 import nl.utwente.groove.explore.config.parse.LegacySyntaxParser;
-import nl.utwente.groove.explore.encode.Serialized;
 import nl.utwente.groove.explore.strategy.MinimaxStrategy;
 import nl.utwente.groove.explore.strategy.Strategy;
 import nl.utwente.groove.grammar.Grammar;
@@ -52,12 +51,11 @@ public class MinimaxExploreType extends DirectExploreType {
     public MinimaxExploreType(int heuristicParam, int maxDepth, List<String> ruleNames,
                               String startMax, String minmaxRule, int minmaxParam,
                               LegacySyntaxParser.AcceptorSpec acceptor, int count) {
-        super(createStrategyDescriptor(heuristicParam, maxDepth, ruleNames, startMax, minmaxRule,
-                                       minmaxParam),
-              acceptor, count);
+        super(acceptor, count);
         this.heuristicParam = heuristicParam;
         this.maxDepth = maxDepth;
         this.ruleNames = ruleNames;
+        this.startMax = startMax;
         this.minmaxRule = minmaxRule;
         this.minmaxParam = minmaxParam;
     }
@@ -65,21 +63,15 @@ public class MinimaxExploreType extends DirectExploreType {
     private final int heuristicParam;
     private final int maxDepth;
     private final List<String> ruleNames;
+    private final String startMax;
     private final String minmaxRule;
     private final int minmaxParam;
 
-    /** Computes the legacy display descriptor for the minimax arguments. */
-    private static Serialized createStrategyDescriptor(int heuristicParam, int maxDepth,
-                                                       List<String> ruleNames, String startMax,
-                                                       String minmaxRule, int minmaxParam) {
-        Serialized result = new Serialized("minimax");
-        result.setArgument("heuristic-parameter-index", Integer.toString(heuristicParam));
-        result.setArgument("maximum-search-depth", Integer.toString(maxDepth));
-        result.setArgument("enabled-rule-names", String.join(";", ruleNames));
-        result.setArgument("start-max", startMax);
-        result.setArgument("minmax-rule", minmaxRule);
-        result.setArgument("minmax-rule-parameter-index", Integer.toString(minmaxParam));
-        return result;
+    @Override
+    protected String getStrategyIdentifier() {
+        return "minimax:" + this.heuristicParam + "," + this.maxDepth + ","
+            + String.join(";", this.ruleNames) + "," + this.startMax + "," + this.minmaxRule + ","
+            + this.minmaxParam;
     }
 
     @Override
@@ -91,5 +83,11 @@ public class MinimaxExploreType extends DirectExploreType {
         Rule evalRule = EnabledRuleParser.parse(grammar, this.minmaxRule);
         return new MinimaxStrategy(this.heuristicParam, this.maxDepth, rules, evalRule,
             this.minmaxParam);
+    }
+
+    @Override
+    public ExploreType withResultCount(int count) {
+        return new MinimaxExploreType(this.heuristicParam, this.maxDepth, this.ruleNames,
+            this.startMax, this.minmaxRule, this.minmaxParam, getAcceptorSpec(), count);
     }
 }

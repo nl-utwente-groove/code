@@ -2,10 +2,10 @@ package nl.utwente.groove.gui.action;
 
 import javax.swing.Action;
 
-import nl.utwente.groove.explore.AcceptorValue;
 import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.explore.ExploreType;
-import nl.utwente.groove.explore.StrategyValue;
+import nl.utwente.groove.explore.StateExploreType;
+import nl.utwente.groove.explore.config.parse.LegacySyntaxParser;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
@@ -113,7 +113,9 @@ public class ApplyMatchAction extends SimulatorAction {
      */
     private ExploreType getStateExploration() {
         if (this.stateExploration == null) {
-            this.stateExploration = new ExploreType(StrategyValue.STATE, AcceptorValue.NONE, 0);
+            this.stateExploration = new StateExploreType(
+                new LegacySyntaxParser.AcceptorSpec(LegacySyntaxParser.AcceptorSpec.Kind.NONE, ""),
+                0);
         }
         return this.stateExploration;
     }
