@@ -23,8 +23,6 @@ import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.config.parse.EdgeMapParser;
 import nl.utwente.groove.explore.config.parse.EnabledRuleParser;
 import nl.utwente.groove.explore.config.parse.RuleFormulaParser;
-import nl.utwente.groove.explore.encode.EncodedPolarity;
-import nl.utwente.groove.explore.encode.EncodedStopMode;
 import nl.utwente.groove.explore.encode.Serialized;
 import nl.utwente.groove.explore.engine.BeamPool;
 import nl.utwente.groove.explore.engine.FrontierStrategy;
@@ -179,87 +177,101 @@ public class ConfiguredExploreType extends ExploreType {
     }
 
     /**
-     * Instantiates the strategy directly from the legacy descriptor computed
-     * by the converter: the descriptor's keyword and arguments are the single
-     * source of truth for what the configuration means, shared with the
-     * (deprecated) enumerator-based instantiation path.
+     * Instantiates the strategy directly from the configuration, which is
+     * the single source of truth for what the exploration means. The
+     * converter has validated the configuration, so unrealisable
+     * combinations do not reach this method; the legacy descriptors of the
+     * base class serve display purposes only.
      */
     @Override
     public Strategy getParsedStrategy(Grammar grammar) throws FormatException {
-        Serialized strategy = getStrategy();
-        return switch (strategy.getKeyword()) {
-        case "bfs" -> new FrontierStrategy(new QueuePool(getIntArgument(strategy, "bound")));
-        case "dfs" -> new FrontierStrategy(new StackPool(getIntArgument(strategy, "bound")));
-        case "linear" -> new LinearStrategy();
-        case "random" -> new RandomLinearStrategy();
-        case "random-frontier" -> new FrontierStrategy(new RandomPool());
-        case "beam" -> {
-            BeamPool.Order order = switch (strategy.getArgument("next")) {
-            case "oldest" -> BeamPool.Order.OLDEST;
-            case "newest" -> BeamPool.Order.NEWEST;
-            case "random" -> BeamPool.Order.RANDOM;
-            default -> throw Exceptions
-                .illegalState("Converter produced unknown next-state selection '%s'",
-                              strategy.getArgument("next"));
-            };
-            yield new FrontierStrategy(new BeamPool(order, getIntArgument(strategy, "size")));
+        var config = getConfig();
+        // a single-state frontier is a linear walk
+        if (config.getKind(ExploreKey.FRONTIER) == Frontier.SINGLE) {
+            return config.getKind(ExploreKey.SUCCESSOR) == Successor.SINGLE_RANDOM
+                ? new RandomLinearStrategy()
+                : new LinearStrategy();
         }
-        case "cnbound" -> new FrontierStrategy(StopMode.UP_TO,
-            new NodeBoundCondition(getIntArgument(strategy, "node-bound")), new QueuePool(0));
-        case "cebound" -> new FrontierStrategy(StopMode.UP_TO,
-            new EdgeBoundCondition(EdgeMapParser
-                .parse(grammar, strategy.getArgument("edge-bound"))),
+        // the bound feature determines the strategy variant
+        Object boundContent = config.get(ExploreKey.BOUND).content();
+        return switch ((Bound) config.getKind(ExploreKey.BOUND)) {
+        case NONE, COST -> new FrontierStrategy(getPool());
+        case NODES -> new FrontierStrategy(StopMode.UP_TO,
+            new NodeBoundCondition(((Bound.Limit) boundContent).max()), new QueuePool(0));
+        case EDGES -> new FrontierStrategy(StopMode.UP_TO,
+            new EdgeBoundCondition(EdgeMapParser.parse(grammar, (String) boundContent)),
             new QueuePool(0));
-        case "uptorule" -> {
-            Rule rule = EnabledRuleParser.parse(grammar, strategy.getArgument("rule"));
-            boolean polarity
-                = EncodedPolarity.POSITIVE.equals(strategy.getArgument("polarity"));
-            StopMode stopMode = EncodedStopMode.UP_TO_KEY.equals(strategy.getArgument("stop"))
+        case UPTO, INCLUDE -> {
+            String condition = (String) boundContent;
+            boolean polarity = !condition.startsWith("!");
+            Rule rule = EnabledRuleParser
+                .parse(grammar, polarity
+                    ? condition
+                    : condition.substring(1));
+            StopMode stopMode = config.getKind(ExploreKey.BOUND) == Bound.UPTO
                 ? StopMode.UP_TO
                 : StopMode.INCLUDE;
-            Pool pool = "bfs".equals(strategy.getArgument("search"))
-                ? new QueuePool(getIntArgument(strategy, "bound"))
-                : new StackPool(getIntArgument(strategy, "bound"));
             yield new FrontierStrategy(stopMode, new IsRuleApplicableCondition(rule, polarity),
-                pool);
+                getPool());
         }
-        default -> throw Exceptions
-            .illegalState("Converter produced unknown strategy keyword '%s'",
-                          strategy.getKeyword());
+        case SIZE -> throw Exceptions.illegalState("Unrealisable bound kind passed validation");
         };
     }
 
     /**
-     * Instantiates the acceptor directly from the legacy descriptor computed
-     * by the converter.
+     * Computes the pool realising the frontier and next-state features,
+     * with the depth bound (if any) folded in.
+     */
+    private Pool getPool() {
+        var config = getConfig();
+        var next = (NextState) config.getKind(ExploreKey.NEXT);
+        if (config.getKind(ExploreKey.FRONTIER) == Frontier.BEAM) {
+            BeamPool.Order order = switch (next) {
+            case OLDEST -> BeamPool.Order.OLDEST;
+            case NEWEST -> BeamPool.Order.NEWEST;
+            case RANDOM -> BeamPool.Order.RANDOM;
+            };
+            return new BeamPool(order, (Integer) config.get(ExploreKey.FRONTIER).content());
+        }
+        return switch (next) {
+        case OLDEST -> new QueuePool(getDepthBound());
+        case NEWEST -> new StackPool(getDepthBound());
+        case RANDOM -> new RandomPool();
+        };
+    }
+
+    /** Returns the depth bound of the configuration; {@code 0} means unbounded. */
+    private int getDepthBound() {
+        var config = getConfig();
+        return config.getKind(ExploreKey.BOUND) == Bound.COST
+            ? ((Bound.Limit) config.get(ExploreKey.BOUND).content()).max()
+            : 0;
+    }
+
+    /**
+     * Instantiates the acceptor directly from the configuration's goal and
+     * outcome features.
      */
     @Override
     public Acceptor getParsedAcceptor(Grammar grammar) throws FormatException {
-        Serialized acceptor = getAcceptor();
-        return switch (acceptor.getKeyword()) {
-        case "final" -> FinalStateAcceptor.PROTOTYPE;
-        case "none" -> NoStateAcceptor.INSTANCE;
-        case "any" -> AnyStateAcceptor.PROTOTYPE;
-        case "inv" -> {
-            Rule rule = EnabledRuleParser.parse(grammar, acceptor.getArgument("rule"));
-            Predicate<GraphState> predicate = new Predicate.RuleApplicable(rule);
-            if (EncodedPolarity.NEGATIVE.equals(acceptor.getArgument("polarity"))) {
+        var config = getConfig();
+        boolean satisfy = config.getKind(ExploreKey.OUTCOME) == Outcome.SATISFY;
+        return switch ((Goal) config.getKind(ExploreKey.GOAL)) {
+        case NONE -> NoStateAcceptor.INSTANCE;
+        case ANY -> AnyStateAcceptor.PROTOTYPE;
+        case FINAL -> FinalStateAcceptor.PROTOTYPE;
+        case FIRES -> new PredicateAcceptor(new Predicate.ActionApplied(EnabledRuleParser
+            .parse(grammar, (String) config.get(ExploreKey.GOAL).content())));
+        case CONDITION -> {
+            String condition = (String) config.get(ExploreKey.GOAL).content();
+            Predicate<GraphState> predicate = RuleFormulaParser.parse(grammar, condition);
+            if (!satisfy) {
                 predicate = new Predicate.Not<>(predicate);
             }
             yield new PredicateAcceptor(predicate);
         }
-        case "formula" -> new PredicateAcceptor(RuleFormulaParser
-            .parse(grammar, acceptor.getArgument("formula")));
-        case "ruleapp" -> new PredicateAcceptor(new Predicate.ActionApplied(EnabledRuleParser
-            .parse(grammar, acceptor.getArgument("rule"))));
-        default -> throw Exceptions
-            .illegalState("Converter produced unknown acceptor keyword '%s'",
-                          acceptor.getKeyword());
+        case GRAPH, LTL, CTL -> throw Exceptions
+            .illegalState("Unrealisable goal kind passed validation");
         };
-    }
-
-    /** Retrieves a numeric argument of a legacy descriptor. */
-    private static int getIntArgument(Serialized serialized, String name) {
-        return Integer.parseInt(serialized.getArgument(name));
     }
 }
