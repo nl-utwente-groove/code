@@ -20,6 +20,9 @@ package nl.utwente.groove.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.junit.Test;
 
 import nl.utwente.groove.explore.ExploreType;
@@ -44,7 +47,11 @@ import nl.utwente.groove.util.Groove;
  * merge-redirected edge images, which must be substituted by the content-equal
  * edges actually present in the target graph — via the recorded added-edge
  * identities for a state's own primary transition, and by content-matching
- * against the target graph for secondary transitions.
+ * against the target graph for secondary transitions. Moreover, the edge map
+ * must be injective (parallel copies stay distinct under merging), which in
+ * particular requires repairing the composed target isomorphism of symmetry
+ * transitions: the iso checker maps content-equal parallel copies
+ * non-injectively.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -100,6 +107,12 @@ public class TransitionMorphismTest {
                 assertEquals(morphism.getNode(entry.getKey().target()),
                              entry.getValue().target());
             }
+            // in multigraph mode, parallel copies stay distinct, so the
+            // morphism must be injective on edges
+            Set<HostEdge> edgeImages = new HashSet<>(morphism.edgeMap().values());
+            assertEquals(String
+                .format("Morphism of %s maps distinct edges onto the same image", rule),
+                         morphism.edgeMap().size(), edgeImages.size());
             // the merger rule erases nothing, so its morphism must be total
             // on the source edges (each parallel copy mapped to its own
             // redirected copy)

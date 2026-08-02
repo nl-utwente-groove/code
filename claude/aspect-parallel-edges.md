@@ -431,10 +431,40 @@ Fix in two halves, exploiting that parallel copies are interchangeable
   contained in the real target graph is replaced by an unconsumed
   content-equal edge of that graph.
 
+**Injectivity follow-up (2026-08-02).** In multigraph mode the edge
+morphism must be *injective* even under merging (parallel copies stay
+distinct); the simple-graph collapse of parallel-after-merge edges onto
+one pooled edge is legitimately non-injective and unaffected. Two holes
+were closed:
+
+- **Primary path, mixed warm/cold caches**: for a composite (quantified)
+  event, the record's merge map is assembled from per-sub-event maps with
+  independently GC-collectable caches. A still-cached ("warm") merge image
+  maps directly onto the target but previously never claimed its slot in
+  the replay array, so a content-equal ghost from a cold sub-event could
+  be substituted onto the same recorded identity.
+  `RuleApplication.computeMorphism` now works in two passes: directly
+  mapped merge images first claim their slots by identity
+  (`consumeAddedEdge`), and only then are ghosts substituted from the
+  remaining slots.
+- **Symmetry transitions**: `IsoChecker.getIsomorphism` returns edge maps
+  that are *non-injective on content-equal parallel copies* (it maps by
+  certificate, collapsing all copies onto one representative — it can even
+  map an edge that is itself present in the target onto a different copy).
+  The composed symmetry morphism inherited that. `adaptToTarget` now runs
+  after the symmetry composition as well, and repairs *duplicate* images
+  in addition to ghosts, redistributing unconsumed content-equal copies.
+  (Whether other `getIsomorphism` callers care about copy-level
+  injectivity is untracked; boolean isomorphism *checking* counts copies
+  correctly and is unaffected.)
+
 `TransitionMorphismTest` asserts, post-sweep, that every image is an
 element of the actual target graph, that the morphism is
-structure-preserving, and that the morphism of the (erasure-free) merger
-rule `fold` is total on the source edges.
+structure-preserving and injective on edges, and that the morphism of the
+(erasure-free) merger rule `fold` is total on the source edges. The
+injectivity assertion is what exposed the `IsoChecker` collapse; the
+mixed-cache scenario has no fixture (it would need a quantified merger
+plus a partial cache sweep) and is covered by reasoning only.
 
 ### Open items after this step
 

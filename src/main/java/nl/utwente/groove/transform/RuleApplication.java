@@ -353,19 +353,44 @@ public class RuleApplication implements DeltaApplier {
         boolean[] consumed = replay == null
             ? null
             : new boolean[replay.length];
+        List<HostEdge> ghostEdges = null;
         for (HostEdge edge : sourceEdges) {
             if (!record.isErasedEdge(edge)) {
                 HostEdge edgeImage = mergeMap == null
                     ? edge
                     : mergeMap.mapEdge(edge);
-                if (edgeImage != null) {
-                    if (replay != null && edgeImage != edge
-                        && !getTarget().containsEdge(edgeImage)) {
-                        edgeImage = findAddedEdge(replay, consumed, edgeImage);
+                if (edgeImage == null) {
+                    continue;
+                }
+                if (getTarget().containsEdge(edgeImage)) {
+                    result.putEdge(edge, edgeImage);
+                    if (replay != null && edgeImage != edge) {
+                        // a merge image still contained in the target is a
+                        // recorded identity kept alive by a warm event cache;
+                        // claim its slot so a substitution cannot reuse it
+                        consumeAddedEdge(replay, consumed, edgeImage);
                     }
-                    if (getTarget().containsEdge(edgeImage)) {
-                        result.putEdge(edge, edgeImage);
+                } else if (replay != null && edgeImage != edge) {
+                    if (ghostEdges == null) {
+                        ghostEdges = new ArrayList<>();
                     }
+                    ghostEdges.add(edge);
+                }
+            }
+        }
+        // substitute the ghost images only after all directly mapped merge
+        // images have claimed their recorded slots: with partially warm event
+        // caches (possible for composite events), a content-based match could
+        // otherwise hand out a slot whose identity is also mapped directly,
+        // breaking injectivity of the morphism
+        if (ghostEdges != null) {
+            assert mergeMap != null && replay != null;
+            for (HostEdge edge : ghostEdges) {
+                HostEdge ghost = mergeMap.mapEdge(edge);
+                assert ghost != null;
+                HostEdge edgeImage = findAddedEdge(replay, consumed, ghost);
+                if (getTarget().containsEdge(edgeImage)) {
+                    result.putEdge(edge, edgeImage);
                 }
             }
         }
@@ -538,6 +563,25 @@ public class RuleApplication implements DeltaApplier {
             .format("Re-derived added edge %s not among predefined %s", edge,
                     Arrays.toString(replay));
         return edge;
+    }
+
+    /**
+     * Marks the slot of a given recorded added edge as consumed. Called for
+     * merge images that are still contained in the target graph: these are
+     * the recorded identities themselves, kept alive by a warm event cache,
+     * and their slots must not be handed out again by
+     * {@link #findAddedEdge(HostEdge[], boolean[], HostEdge)}.
+     */
+    private void consumeAddedEdge(HostEdge[] replay, boolean[] consumed, HostEdge edge) {
+        for (int i = 0; i < replay.length; i++) {
+            if (replay[i] == edge) {
+                consumed[i] = true;
+                return;
+            }
+        }
+        assert false : String
+            .format("Merge image %s in target but not among predefined %s", edge,
+                    Arrays.toString(replay));
     }
 
     /**

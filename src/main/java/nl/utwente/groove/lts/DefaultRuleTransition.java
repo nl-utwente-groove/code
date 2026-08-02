@@ -188,7 +188,8 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
                     + ": \n" + AGraph.toString(derivedTarget) + " and \n"
                     + AGraph.toString(realTarget) + " \nnot isomorphic";
                 result = result.then(iso);
-            } else if (!sourceGraph.isSimple()) {
+            }
+            if (!sourceGraph.isSimple()) {
                 adaptToTarget(result);
             }
         } else {
@@ -205,18 +206,22 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
     }
 
     /**
-     * Substitutes, in a morphism re-derived over a non-simple source graph,
-     * the freshly minted merge-redirected edge images by content-equal edges
-     * of the actual target graph. This transition does not record the added
-     * edge identities of the original derivation (only the target state's
-     * own primary transition does), but parallel copies are interchangeable,
-     * so any consistent injective assignment yields a valid morphism.
+     * Repairs, in a morphism re-derived over a non-simple source graph, the
+     * edge images that do not injectively land on the actual target graph:
+     * freshly minted merge-redirected images (not contained in the target at
+     * all), and duplicate images produced by the composed target isomorphism
+     * of a symmetry transition, which maps content-equal parallel copies
+     * non-injectively. This transition does not record the added edge
+     * identities of the original derivation (only the target state's own
+     * primary transition does), but parallel copies are interchangeable, so
+     * any consistent injective assignment yields a valid morphism.
      */
     private void adaptToTarget(HostGraphMorphism morphism) {
         HostGraph target = target().getGraph();
+        Set<HostEdge> used = new HashSet<>();
         List<HostEdge> ghostKeys = null;
         for (var entry : morphism.edgeMap().entrySet()) {
-            if (!target.containsEdge(entry.getValue())) {
+            if (!target.containsEdge(entry.getValue()) || !used.add(entry.getValue())) {
                 if (ghostKeys == null) {
                     ghostKeys = new ArrayList<>();
                 }
@@ -226,7 +231,6 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
         if (ghostKeys == null) {
             return;
         }
-        Set<HostEdge> used = new HashSet<>(morphism.edgeMap().values());
         for (HostEdge key : ghostKeys) {
             HostEdge ghost = morphism.getEdge(key);
             assert ghost != null;
