@@ -398,11 +398,46 @@ Pinned by `FreshCreatorEdgeTest`: three GTS-level chains
 (binary/flag/let creator, from the `mult.gps` fixtures) asserting that
 each application yields a fresh state with one more edge.
 
+### Transition morphisms over multigraphs — RESOLVED (2026-08-02)
+
+The morphism of a rule transition (`getMorphism()`, GUI-informational:
+`StateDisplay` uses it to trace elements across a transition) is re-derived
+on demand. In a non-simple graph the re-derived merge-redirected edge
+images are freshly minted, so they are not identical to the edges in the
+actual target graph; `RuleApplication.computeMorphism`'s target-containment
+guard then silently *dropped* those entries (for a state's own primary
+transition, which passes the real target in) or left them as ghosts (for
+secondary transitions). Notably, the problem is masked while the event
+caches are warm: the `MergeMap` lives in the event cache, so a re-computed
+morphism aliases the very images the original derivation put into the
+target graph. It surfaces only after an event-cache collapse — which is
+why the regression test (`TransitionMorphismTest`) sweeps all state and
+event caches before asserting.
+
+Fix in two halves, exploiting that parallel copies are interchangeable
+(any consistent assignment yields a valid morphism):
+
+- **Primary transitions**: `DefaultGraphNextState.createRuleApplication`
+  now passes the recorded added-edge identities into the (new 5-arg)
+  `RuleApplication` constructor, and `computeMorphism` substitutes a
+  minted merge image that is not contained in the target by the
+  content-equal recorded identity, via the same `findAddedEdge` multiset
+  consumption as the delta replay (with its own consumption state).
+- **Secondary transitions** (`DefaultRuleTransition`) deliberately do not
+  record added edges, and their target may stem from an entirely different
+  derivation (iso collapse, confluent diamonds). The symmetry case was
+  already exact (composed isomorphism); the non-symmetry multigraph case
+  now post-processes the morphism (`adaptToTarget`): each edge image not
+  contained in the real target graph is replaced by an unconsumed
+  content-equal edge of that graph.
+
+`TransitionMorphismTest` asserts, post-sweep, that every image is an
+element of the actual target graph, that the morphism is
+structure-preserving, and that the morphism of the (erasure-free) merger
+rule `fold` is total on the source edges.
+
 ### Open items after this step
 
-- `DefaultRuleTransition.getMorphism()` (GUI-informational) re-derives
-  without the recorded edges, so in multigraph mode it maps onto
-  content-equal rather than identical edges.
 - Error contexts of host-graph mult errors reference the normalised graph's
   edges; transfer to the original graph is best-effort.
 

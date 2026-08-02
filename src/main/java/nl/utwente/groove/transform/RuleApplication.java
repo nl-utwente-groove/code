@@ -134,7 +134,23 @@ public class RuleApplication implements DeltaApplier {
      */
     public RuleApplication(RuleEvent event, HostGraph source, HostGraph target,
                            @NonNull HostNode[] addedNodes) {
-        this(event, source, addedNodes);
+        this(event, source, target, addedNodes, null);
+    }
+
+    /**
+     * Reconstructs a derivation on the basis of a given rule event, host
+     * graph and target graph, and created nodes and edges.
+     * @param event the production rule instance involved
+     * @param source the host graph to which the rule is to be applied
+     * @param addedNodes the non-<code>null</code> array of created nodes,
+     * in the order of the rule's coanchor.
+     * @param addedEdges the array of added edges recorded by a previous
+     * derivation of the same event and source graph; see
+     * {@link #RuleApplication(RuleEvent, HostGraph, HostNode[], HostEdge[])}
+     */
+    public RuleApplication(RuleEvent event, HostGraph source, HostGraph target,
+                           @NonNull HostNode[] addedNodes, HostEdge @Nullable [] addedEdges) {
+        this(event, source, addedNodes, addedEdges);
         this.target = target;
     }
 
@@ -330,13 +346,26 @@ public class RuleApplication implements DeltaApplier {
                 result.putNode(node, nodeImage);
             }
         }
+        // in a non-simple graph, merge-redirected images are minted fresh
+        // by the merge map, so they must be substituted by the content-equal
+        // identities recorded at the first derivation, if those are available
+        HostEdge[] replay = this.addedEdges;
+        boolean[] consumed = replay == null
+            ? null
+            : new boolean[replay.length];
         for (HostEdge edge : sourceEdges) {
             if (!record.isErasedEdge(edge)) {
                 HostEdge edgeImage = mergeMap == null
                     ? edge
                     : mergeMap.mapEdge(edge);
-                if (edgeImage != null && getTarget().containsEdge(edgeImage)) {
-                    result.putEdge(edge, edgeImage);
+                if (edgeImage != null) {
+                    if (replay != null && edgeImage != edge
+                        && !getTarget().containsEdge(edgeImage)) {
+                        edgeImage = findAddedEdge(replay, consumed, edgeImage);
+                    }
+                    if (getTarget().containsEdge(edgeImage)) {
+                        result.putEdge(edge, edgeImage);
+                    }
                 }
             }
         }

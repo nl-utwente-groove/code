@@ -123,7 +123,10 @@ public class DefaultGraphNextState extends AbstractGraphState
      */
     @Override
     public RuleApplication createRuleApplication() {
-        return new RuleApplication(getEvent(), source().getGraph(), getGraph(), getAddedNodes());
+        // getGraph() is evaluated before getAddedEdges(): the first
+        // derivation it triggers is what records the added edge identities
+        return new RuleApplication(getEvent(), source().getGraph(), getGraph(), getAddedNodes(),
+            getAddedEdges());
     }
 
     /**
