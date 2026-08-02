@@ -39,7 +39,6 @@ import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
-import nl.utwente.groove.util.parse.IdValidator;
 
 /**
  * Configuration of the Ecore porter: the global encoding options plus the
@@ -49,6 +48,7 @@ import nl.utwente.groove.util.parse.IdValidator;
  * Entry keys are parsed from the right: the last {@code .}-separated segment is
  * the choice key, the segments before it (if any) form an Ecore element path
  * (package-qualified Ecore names, unqualified allowed when unambiguous).
+ * The key forms are enumerated in {@link EcoreKey}.
  * The element paths are kept as strings here; they are resolved against the
  * metamodel in hand when the porter runs.
  * @author Arend Rensink
@@ -80,58 +80,34 @@ public class EcoreMapping {
                 errors.add("Malformed Ecore mapping key '%s'", key);
                 continue;
             }
-            switch (choice) {
-            case ORDERING_KEY:
-                if (!Ordering.hasText(value)) {
+            EcoreKey keyForm = EcoreKey.lookup(choice, path.size());
+            if (keyForm == null) {
+                List<EcoreKey> forms = EcoreKey.withText(choice);
+                if (forms.isEmpty()) {
+                    errors.add("Unknown Ecore mapping key '%s'", key);
+                } else if (forms.stream().allMatch(EcoreKey::isGlobal)) {
                     errors
-                        .add("Value '%s' of '%s' should be one of %s", value, key,
-                             Ordering.texts());
-                } else if (path.isEmpty()) {
-                    ordering = Ordering.valueOfText(value);
-                } else if (path.size() == 1) {
-                    errors
-                        .add("Per-feature key '%s' should have the form <class>.<feature>.%s", key,
-                             ORDERING_KEY);
+                        .add("'%s' is a global option; key '%s' should have no prefix", choice,
+                             key);
                 } else {
-                    this.featureOrdering.put(joinPath(path), Ordering.valueOfText(value));
-                }
-                break;
-            case USE_IDENTIFIERS_KEY:
-                if (!path.isEmpty()) {
-                    errors.add("'%s' is a global option; key '%s' should have no prefix",
-                               USE_IDENTIFIERS_KEY, key);
-                } else if (!value.equals("true") && !value.equals("false")) {
-                    errors.add("Value '%s' of '%s' should be true or false", value, key);
-                } else {
-                    useIdentifiers = Boolean.parseBoolean(value);
-                }
-                break;
-            case TYPE_NAME_KEY:
-                if (path.isEmpty()) {
                     errors
-                        .add("Key '%s' should have the form <classifier>.%s or <enum>.<literal>.%s",
-                             key, TYPE_NAME_KEY, TYPE_NAME_KEY);
-                } else if (!IdValidator.JAVA_ID_NON_RESERVED.isValid(value)) {
-                    errors
-                        .add("Value '%s' of '%s' is not a valid GROOVE type name", value, key);
-                } else {
-                    this.typeNames.put(joinPath(path), value);
+                        .add("Key '%s' should have the form %s", key, EcoreKey.patterns(forms));
                 }
-                break;
-            case LITERAL_STYLE_KEY:
-                if (path.isEmpty()) {
-                    errors
-                        .add("Key '%s' should have the form <enum>.%s", key, LITERAL_STYLE_KEY);
-                } else if (!LiteralStyle.hasText(value)) {
-                    errors
-                        .add("Value '%s' of '%s' should be one of %s", value, key,
-                             LiteralStyle.texts());
-                } else {
-                    this.literalStyles.put(joinPath(path), LiteralStyle.valueOfText(value));
-                }
-                break;
-            default:
-                errors.add("Unknown Ecore mapping key '%s'", key);
+                continue;
+            }
+            String valueError = keyForm.checkValue(value);
+            if (valueError != null) {
+                errors.add("Value '%s' of '%s' %s", value, key, valueError);
+                continue;
+            }
+            switch (keyForm) {
+            case ORDERING -> ordering = Ordering.valueOfText(value);
+            case USE_IDENTIFIERS -> useIdentifiers = Boolean.parseBoolean(value);
+            case FEATURE_ORDERING -> this.featureOrdering
+                .put(joinPath(path), Ordering.valueOfText(value));
+            case TYPE_NAME, LITERAL_TYPE_NAME -> this.typeNames.put(joinPath(path), value);
+            case LITERAL_STYLE -> this.literalStyles
+                .put(joinPath(path), LiteralStyle.valueOfText(value));
             }
         }
         errors.throwException();
@@ -293,14 +269,18 @@ public class EcoreMapping {
     public static final String RESOURCE_NAME = "ecore";
     /** Qualified name of the settings resource holding the Ecore mapping. */
     public static final QualName RESOURCE_QUAL_NAME = QualName.name(RESOURCE_NAME);
-    /** Choice key for the ordering encoding (global or per-feature). */
-    public static final String ORDERING_KEY = "ordering";
-    /** Choice key for the (global) use of {@code xmi:id} values. */
-    public static final String USE_IDENTIFIERS_KEY = "useIdentifiers";
-    /** Choice key for a classifier or enum literal type name override. */
-    public static final String TYPE_NAME_KEY = "typeName";
-    /** Choice key for a per-enum literal naming style. */
-    public static final String LITERAL_STYLE_KEY = "literalStyle";
+    /** Choice key for the ordering encoding (global or per-feature).
+     * @see EcoreKey#ORDERING */
+    public static final String ORDERING_KEY = EcoreKey.ORDERING.text();
+    /** Choice key for the (global) use of {@code xmi:id} values.
+     * @see EcoreKey#USE_IDENTIFIERS */
+    public static final String USE_IDENTIFIERS_KEY = EcoreKey.USE_IDENTIFIERS.text();
+    /** Choice key for a classifier or enum literal type name override.
+     * @see EcoreKey#TYPE_NAME */
+    public static final String TYPE_NAME_KEY = EcoreKey.TYPE_NAME.text();
+    /** Choice key for a per-enum literal naming style.
+     * @see EcoreKey#LITERAL_STYLE */
+    public static final String LITERAL_STYLE_KEY = EcoreKey.LITERAL_STYLE.text();
 
     /** Encoding of the order of ordered or non-unique many-valued features. */
     public static enum Ordering {
