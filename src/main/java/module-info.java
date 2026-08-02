@@ -24,7 +24,6 @@ module nl.utwente.groove {
     exports nl.utwente.groove.algebra.syntax;
     exports nl.utwente.groove.explore;
     exports nl.utwente.groove.util.line;
-    exports nl.utwente.groove.explore.encode;
     exports nl.utwente.groove.match.plan;
     exports nl.utwente.groove.graph;
     exports nl.utwente.groove.graph.layout;
@@ -71,7 +70,6 @@ module nl.utwente.groove {
     exports nl.utwente.groove.prolog.builtin.graph;
     exports nl.utwente.groove.explore.util;
     exports nl.utwente.groove.prolog.builtin.rule;
-    exports nl.utwente.groove.explore.prettyparse;
     exports nl.utwente.groove.lts;
     exports nl.utwente.groove.util.cache;
     exports nl.utwente.groove.util.collect;

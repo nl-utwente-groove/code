@@ -17,7 +17,6 @@
 package nl.utwente.groove.explore;
 
 import nl.utwente.groove.explore.config.parse.LegacySyntaxParser;
-import nl.utwente.groove.explore.encode.Serialized;
 import nl.utwente.groove.explore.result.Acceptor;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.util.parse.FormatException;
@@ -26,22 +25,19 @@ import nl.utwente.groove.util.parse.FormatException;
  * Base class for the exploration types of the legacy strategies that the
  * exploration feature model deliberately does not cover (single-state,
  * remote and minimax exploration). The strategy and acceptor are
- * instantiated directly, without the encode/enumerator machinery; the
- * legacy descriptors of the base class serve display purposes only.
+ * instantiated directly from the state of the type.
  * @author Arend Rensink
  * @version $Revision$
  */
 public abstract class DirectExploreType extends ExploreType {
     /**
      * Constructs a direct exploration type.
-     * @param strategy the legacy display descriptor of the strategy
      * @param acceptor the acceptor specification
      * @param count number of results after which exploration halts;
      * {@code 0} means unbounded
      */
-    protected DirectExploreType(Serialized strategy, LegacySyntaxParser.AcceptorSpec acceptor,
-                                int count) {
-        super(strategy, acceptor.toSerialized(), count);
+    protected DirectExploreType(LegacySyntaxParser.AcceptorSpec acceptor, int count) {
+        super(count);
         this.acceptor = acceptor;
     }
 
@@ -55,5 +51,17 @@ public abstract class DirectExploreType extends ExploreType {
     @Override
     public Acceptor getParsedAcceptor(Grammar grammar) throws FormatException {
         return getAcceptorSpec().instantiate(grammar);
+    }
+
+    /** Returns the legacy descriptor of the strategy of this type,
+     * used in the identifier. */
+    abstract protected String getStrategyIdentifier();
+
+    @Override
+    public String getIdentifier() {
+        return getStrategyIdentifier() + " / " + getAcceptorSpec().getIdentifier() + " / "
+            + (getBound() == 0
+                ? "infinite"
+                : getBound());
     }
 }

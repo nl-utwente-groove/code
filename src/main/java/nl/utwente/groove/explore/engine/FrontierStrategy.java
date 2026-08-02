@@ -28,9 +28,8 @@ import nl.utwente.groove.lts.GraphState;
  * it composes with the conditional-exploration features (stop mode and
  * exploration condition) inherited from {@link ClosingStrategy}.
  * This is the engine counterpart of the exploration configuration's
- * search-order features; it subsumes the legacy {@code BFSStrategy} and
- * {@code DFSStrategy} classes (which remain in place for the deprecated
- * keyword-based exploration descriptors).
+ * search-order features; it subsumes the retired legacy {@code BFSStrategy}
+ * and {@code DFSStrategy} classes.
  * @author Arend Rensink
  * @version $Revision$
  */

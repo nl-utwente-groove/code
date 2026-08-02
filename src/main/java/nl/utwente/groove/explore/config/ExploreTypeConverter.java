@@ -20,22 +20,15 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.explore.ExploreType;
-import nl.utwente.groove.explore.encode.EncodedPolarity;
-import nl.utwente.groove.explore.encode.EncodedSearchMode;
-import nl.utwente.groove.explore.encode.EncodedStopMode;
-import nl.utwente.groove.explore.encode.Serialized;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
- * Bridge between the exploration feature model ({@link ExploreConfig}) and the
- * legacy strategy/acceptor machinery ({@link ExploreType}), pending the
- * unification of the exploration engine. The bridge is deliberately partial in
- * both directions: an {@link ExploreConfig} using feature values the legacy
- * strategies cannot realise is rejected with an explanatory error, as is an
- * {@link ExploreType} whose strategy or acceptor has no feature-model
- * equivalent (the LTL strategies, the state and minimax strategies,
- * and the cycle acceptor).
+ * Realisability gate of the exploration feature model: converts an
+ * {@link ExploreConfig} to the {@link ConfiguredExploreType} realising it,
+ * rejecting configurations that are inconsistent (see
+ * {@link ExploreConfig#check()}) or use feature values the exploration
+ * engine does not (yet) realise, with an explanatory error.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -46,24 +39,23 @@ public class ExploreTypeConverter {
     }
 
     /**
-     * Converts an exploration configuration to the legacy exploration type
+     * Converts an exploration configuration to the exploration type
      * realising it.
      * @throws FormatException if the configuration is inconsistent (see
-     * {@link ExploreConfig#check()}) or uses feature values that the legacy
-     * strategies and acceptors cannot realise
+     * {@link ExploreConfig#check()}) or uses feature values that the
+     * exploration engine cannot realise
      */
     public static ExploreType toExploreType(ExploreConfig config) throws FormatException {
         config.check().throwException();
         var errors = new FormatErrorSet();
         checkInexpressible(config, errors);
-        Serialized strategy = computeStrategy(config, errors);
-        Serialized acceptor = computeAcceptor(config, errors);
+        checkStrategy(config, errors);
+        checkAcceptor(config, errors);
         errors.throwException();
-        assert strategy != null && acceptor != null;
-        return new ConfiguredExploreType(config, strategy, acceptor, getResultBound(config));
+        return new ConfiguredExploreType(config, getResultBound(config));
     }
 
-    /** Collects errors for the feature values no legacy strategy can realise. */
+    /** Collects errors for the feature values no strategy can realise. */
     private static void checkInexpressible(ExploreConfig config, FormatErrorSet errors) {
         if (config.getKind(ExploreKey.HEURISTIC) != Heuristic.NONE) {
             errors.add("Heuristic search is not yet supported");
@@ -77,88 +69,71 @@ public class ExploreTypeConverter {
     }
 
     /**
-     * Computes the serialised legacy strategy for a configuration: first the
-     * baseline traversal from the next-state, successor, frontier and matcher
-     * features, then the strategy variant demanded by the bound feature.
+     * Checks the realisability of the strategy side of a configuration:
+     * first the baseline traversal from the next-state, successor and
+     * frontier features, then the applicability of the bound feature to
+     * that traversal.
      */
-    private static @Nullable Serialized computeStrategy(ExploreConfig config,
-                                                        FormatErrorSet errors) {
+    private static void checkStrategy(ExploreConfig config, FormatErrorSet errors) {
         String keyword = computeTraversal(config, errors);
-        if (keyword == null) {
-            return null;
+        if (keyword != null) {
+            checkBound(config, keyword, errors);
         }
-        Serialized result = applyBound(config, keyword, errors);
-        if (result != null && "beam".equals(keyword)) {
-            var next = (NextState) config.getKind(ExploreKey.NEXT);
-            result.setArgument("next", next.getName());
-            result
-                .setArgument("size",
-                             config.get(ExploreKey.FRONTIER).content().toString());
-        }
-        return result;
     }
 
-    /** Computes the baseline traversal keyword for a configuration. */
+    /**
+     * Computes the baseline traversal keyword for a configuration, as a
+     * shorthand for the combinations the bound feature discriminates on;
+     * {@code null} if the traversal features are unrealisable.
+     */
     private static @Nullable String computeTraversal(ExploreConfig config,
                                                      FormatErrorSet errors) {
         var next = (NextState) config.getKind(ExploreKey.NEXT);
         var successor = (Successor) config.getKind(ExploreKey.SUCCESSOR);
-        String result = null;
         if (config.getKind(ExploreKey.FRONTIER) == Frontier.SINGLE) {
             // linear search; the next-state selection is irrelevant
-            switch (successor) {
-            case SINGLE -> result = "linear";
-            case SINGLE_RANDOM -> result = "random";
-            case ALL, ALL_RANDOM -> errors
-                .add("A single-state frontier requires single-successor generation");
+            return switch (successor) {
+            case SINGLE, SINGLE_RANDOM -> "linear";
+            case ALL, ALL_RANDOM -> {
+                errors.add("A single-state frontier requires single-successor generation");
+                yield null;
             }
-        } else {
-            switch (successor) {
-            case ALL -> {
-                if (config.getKind(ExploreKey.FRONTIER) == Frontier.BEAM) {
-                    // engine-only: realised directly by the parametric engine
-                    // (BeamPool, with the next-state selection as an argument);
-                    // there is no legacy strategy of this name
-                    result = "beam";
-                } else {
-                    switch (next) {
-                    case OLDEST -> result = "bfs";
-                    case NEWEST -> result = "dfs";
-                    // engine-only: realised directly by the parametric engine
-                    // (RandomPool); there is no legacy strategy of this name
-                    case RANDOM -> result = "random-frontier";
-                    }
-                }
-            }
-            case ALL_RANDOM -> errors
-                .add("Randomised successor generation is not yet supported");
-            case SINGLE, SINGLE_RANDOM -> errors
+            };
+        }
+        return switch (successor) {
+        case ALL -> config.getKind(ExploreKey.FRONTIER) == Frontier.BEAM
+            ? "beam"
+            : switch (next) {
+            case OLDEST -> "bfs";
+            case NEWEST -> "dfs";
+            case RANDOM -> "random-frontier";
+            };
+        case ALL_RANDOM -> {
+            errors.add("Randomised successor generation is not yet supported");
+            yield null;
+        }
+        case SINGLE, SINGLE_RANDOM -> {
+            errors
                 .add("Single-successor generation with a multi-state frontier"
                     + " is not yet supported");
-            }
+            yield null;
         }
-        return result;
+        };
     }
 
     /**
-     * Refines a baseline traversal keyword according to the bound feature: a
-     * bound on uniform path cost is exactly the legacy depth bound of
-     * {@code bfs} and {@code dfs}; node count, edge count and condition
-     * bounds select the corresponding conditional legacy strategies.
+     * Checks the bound feature against the baseline traversal: a bound on
+     * uniform path cost (the depth bound) and the condition bounds require
+     * breadth-first or depth-first exploration; node and edge count bounds
+     * require breadth-first exploration.
      */
-    private static @Nullable Serialized applyBound(ExploreConfig config, String keyword,
-                                                   FormatErrorSet errors) {
+    private static void checkBound(ExploreConfig config, String keyword,
+                                   FormatErrorSet errors) {
         boolean searching = "bfs".equals(keyword) || "dfs".equals(keyword);
         Object content = config.get(ExploreKey.BOUND).content();
-        Serialized result = null;
         switch ((Bound) config.getKind(ExploreKey.BOUND)) {
-        case NONE -> {
-            result = new Serialized(keyword);
-            if (searching) {
-                // a well-formed bfs/dfs Serialized always carries the (depth)
-                // bound argument; 0 means unbounded
-                result.setArgument("bound", "0");
-            }
+        default -> {
+            // no bound, no restrictions
         }
         case COST -> {
             // consistency of cost != NONE is guaranteed by check()
@@ -167,315 +142,66 @@ public class ExploreTypeConverter {
             } else if (!searching) {
                 errors
                     .add("A depth bound requires breadth-first or depth-first exploration");
-            } else if (getLimit(content, errors) instanceof Bound.Limit limit) {
-                result = new Serialized(keyword);
-                result.setArgument("bound", Integer.toString(limit.max()));
+            } else {
+                checkLimit(content, errors);
             }
         }
         case SIZE -> errors.add("A graph size bound is not yet supported");
         case NODES -> {
             if (!"bfs".equals(keyword)) {
                 errors.add("A node count bound requires breadth-first exploration");
-            } else if (getLimit(content, errors) instanceof Bound.Limit limit) {
-                result = new Serialized("cnbound");
-                result.setArgument("node-bound", Integer.toString(limit.max()));
+            } else {
+                checkLimit(content, errors);
             }
         }
         case EDGES -> {
             if (!"bfs".equals(keyword)) {
                 errors.add("An edge count bound requires breadth-first exploration");
-            } else {
-                result = new Serialized("cebound");
-                result.setArgument("edge-bound", (String) content);
             }
         }
         case UPTO, INCLUDE -> {
             if (!searching) {
                 errors
                     .add("A condition bound requires breadth-first or depth-first exploration");
-            } else {
-                boolean upto = config.getKind(ExploreKey.BOUND) == Bound.UPTO;
-                String condition = (String) content;
-                boolean positive = !condition.startsWith("!");
-                result = new Serialized("uptorule");
-                result.setArgument("search", keyword);
-                result.setArgument("stop", upto
-                    ? EncodedStopMode.UP_TO_KEY
-                    : EncodedStopMode.INCLUDE_KEY);
-                result.setArgument("polarity", positive
-                    ? EncodedPolarity.POSITIVE
-                    : EncodedPolarity.NEGATIVE);
-                result.setArgument("rule", positive
-                    ? condition
-                    : condition.substring(1));
-                // the numeric depth bound of uptorule cannot also be set,
-                // since the bound feature is singular
-                result.setArgument("bound", "0");
             }
         }
         }
-        return result;
     }
 
-    /** Extracts a limit content, reporting an unsupported increment as an error. */
-    private static Bound.@Nullable Limit getLimit(Object content, FormatErrorSet errors) {
-        var result = (Bound.Limit) content;
-        if (result.increment() != 0) {
+    /** Checks a limit content, reporting an unsupported increment as an error. */
+    private static void checkLimit(Object content, FormatErrorSet errors) {
+        if (((Bound.Limit) content).increment() != 0) {
             errors.add("Iterative deepening is not yet supported");
-            result = null;
         }
-        return result;
     }
 
-    /** Computes the serialised legacy acceptor for a configuration. */
-    private static @Nullable Serialized computeAcceptor(ExploreConfig config,
-                                                        FormatErrorSet errors) {
+    /** Checks the realisability of the goal and outcome features. */
+    private static void checkAcceptor(ExploreConfig config, FormatErrorSet errors) {
         var satisfy = config.getKind(ExploreKey.OUTCOME) == Outcome.SATISFY;
-        Serialized result = null;
         switch ((Goal) config.getKind(ExploreKey.GOAL)) {
-        // the outcome for NONE, ANY and FINAL is guaranteed by check() to be SATISFY
-        case NONE -> result = new Serialized("none");
-        case ANY -> result = new Serialized("any");
-        case FINAL -> result = new Serialized("final");
+        // the outcome for NONE, ANY and FINAL is guaranteed by check() to be SATISFY;
+        // these goals and CONDITION (the default cases) are realisable
+        default -> {
+            // realisable regardless of the outcome
+        }
         case FIRES -> {
-            if (satisfy) {
-                result = new Serialized("ruleapp");
-                result.setArgument("rule", (String) config.get(ExploreKey.GOAL).content());
-            } else {
+            if (!satisfy) {
                 errors.add("A violated fires goal is not yet supported");
             }
         }
-        case CONDITION -> result
-            = computeConditionAcceptor((String) config.get(ExploreKey.GOAL).content(), satisfy);
         case GRAPH -> errors.add("A graph goal is not yet supported");
         case LTL, CTL -> errors
             .add("Temporal goals are handled by the model checking actions,"
                 + " not by exploration");
         }
-        return result;
     }
 
-    /**
-     * Computes the legacy acceptor for a condition goal. A condition that is a
-     * bare (optionally {@code !}-negated) rule name becomes the {@code inv}
-     * acceptor, whose polarity absorbs both the negation and a violated
-     * outcome; any other condition becomes the {@code formula} acceptor, with
-     * a violated outcome expressed by negating the whole condition.
-     */
-    private static Serialized computeConditionAcceptor(String condition, boolean satisfy) {
-        String body = condition.startsWith("!")
-            ? condition.substring(1).trim()
-            : condition;
-        boolean positive = satisfy == !condition.startsWith("!");
-        Serialized result;
-        if (isBareRuleName(body)) {
-            result = new Serialized("inv");
-            result.setArgument("rule", body);
-            result.setArgument("polarity", positive
-                ? EncodedPolarity.POSITIVE
-                : EncodedPolarity.NEGATIVE);
-        } else {
-            result = new Serialized("formula");
-            result.setArgument("formula", satisfy
-                ? condition
-                : "!(" + condition + ")");
-        }
-        return result;
-    }
-
-    /**
-     * Tests whether a condition text is a bare rule name, i.e., contains none
-     * of the characters that the legacy rule formula parser treats as
-     * structure. (Note that rule names may contain hyphens, so {@code -} is
-     * deliberately not among them; an implication arrow is caught by its
-     * {@code >}.)
-     */
-    private static boolean isBareRuleName(String text) {
-        return !text.isEmpty() && text.chars().noneMatch(c -> FORMULA_CHARS.indexOf(c) >= 0);
-    }
-
-    /** The characters that make a condition text a compound formula. */
-    private static final String FORMULA_CHARS = "!&|>() ";
-
-    /** Computes the legacy result bound for a configuration. */
+    /** Computes the result bound for a configuration. */
     private static int getResultBound(ExploreConfig config) {
         return switch ((Count) config.getKind(ExploreKey.COUNT)) {
         case ALL -> 0;
         case FIRST -> 1;
         case COUNT -> (Integer) config.get(ExploreKey.COUNT).content();
         };
-    }
-
-    /**
-     * Converts a legacy exploration type to the equivalent exploration
-     * configuration.
-     * @throws FormatException if the strategy or acceptor of the exploration
-     * type has no feature-model equivalent
-     */
-    public static ExploreConfig toConfig(ExploreType type) throws FormatException {
-        if (type instanceof ConfiguredExploreType configured) {
-            // the type was created from a configuration, which is authoritative;
-            // reconstruction from the legacy descriptors would lose the features
-            // that leave no trace there (such as persistence)
-            return new ExploreConfig(configured.getConfig());
-        }
-        var result = new ExploreConfig();
-        var errors = new FormatErrorSet();
-        Serialized strategy = type.getStrategy();
-        switch (strategy.getKeyword()) {
-        case "bfs" -> setDepthBound(result, strategy, errors);
-        case "dfs" -> {
-            result.put(ExploreKey.NEXT, NextState.NEWEST.createSetting());
-            setDepthBound(result, strategy, errors);
-        }
-        case "linear" -> {
-            result.put(ExploreKey.FRONTIER, Frontier.SINGLE.createSetting());
-            result.put(ExploreKey.SUCCESSOR, Successor.SINGLE.createSetting());
-        }
-        case "random" -> {
-            result.put(ExploreKey.FRONTIER, Frontier.SINGLE.createSetting());
-            result.put(ExploreKey.SUCCESSOR, Successor.SINGLE_RANDOM.createSetting());
-        }
-        case "random-frontier" -> result
-            .put(ExploreKey.NEXT, NextState.RANDOM.createSetting());
-        case "beam" -> setBeam(result, strategy, errors);
-        case "cnbound" -> setCountBound(result, Bound.NODES, strategy, "node-bound", errors);
-        case "cebound" -> result
-            .put(ExploreKey.BOUND, Bound.EDGES.createSetting(strategy.getArgument("edge-bound")));
-        case "uptorule", "crule" -> setConditionBound(result, strategy, errors);
-        default -> errors
-            .add("Strategy '%s' has no feature-model equivalent", strategy.getKeyword());
-        }
-        Serialized acceptor = type.getAcceptor();
-        switch (acceptor.getKeyword()) {
-        case "final" -> {
-            // the default goal
-        }
-        case "none" -> result.put(ExploreKey.GOAL, Goal.NONE.createSetting());
-        case "any" -> result.put(ExploreKey.GOAL, Goal.ANY.createSetting());
-        case "ruleapp" -> result
-            .put(ExploreKey.GOAL, Goal.FIRES.createSetting(acceptor.getArgument("rule")));
-        case "inv" -> {
-            // a negative polarity is absorbed into the condition as a negation
-            String condition = acceptor.getArgument("rule");
-            if (EncodedPolarity.NEGATIVE.equals(acceptor.getArgument("polarity"))) {
-                condition = "!" + condition;
-            }
-            result.put(ExploreKey.GOAL, Goal.CONDITION.createSetting(condition));
-        }
-        case "formula" -> result
-            .put(ExploreKey.GOAL, Goal.CONDITION.createSetting(acceptor.getArgument("formula")));
-        default -> errors
-            .add("Acceptor '%s' has no feature-model equivalent", acceptor.getKeyword());
-        }
-        int bound = type.getBound();
-        if (bound == 1) {
-            result.put(ExploreKey.COUNT, Count.FIRST.createSetting());
-        } else if (bound > 1) {
-            result.put(ExploreKey.COUNT, Count.COUNT.createSetting(bound));
-        }
-        errors.throwException();
-        return result;
-    }
-
-    /**
-     * Translates the optional depth bound of a legacy {@code bfs} or
-     * {@code dfs} strategy into a uniform-cost bound.
-     */
-    private static void setDepthBound(ExploreConfig result, Serialized strategy,
-                                      FormatErrorSet errors) {
-        int bound = parseBound(strategy, "bound", errors);
-        if (bound > 0) {
-            result.put(ExploreKey.COST, Cost.UNIFORM.createSetting());
-            result.put(ExploreKey.BOUND, Bound.COST.createSetting(new Bound.Limit(bound, 0)));
-        }
-    }
-
-    /**
-     * Translates the count bound of a legacy conditional strategy
-     * ({@code cnbound}) into the corresponding bound feature.
-     */
-    private static void setCountBound(ExploreConfig result, Bound kind, Serialized strategy,
-                                      String argName, FormatErrorSet errors) {
-        int bound = parseBound(strategy, argName, errors);
-        result.put(ExploreKey.BOUND, kind.createSetting(new Bound.Limit(bound, 0)));
-    }
-
-    /**
-     * Translates an engine-only {@code beam} strategy into the corresponding
-     * frontier and next-state selection features.
-     */
-    private static void setBeam(ExploreConfig result, Serialized strategy,
-                                FormatErrorSet errors) {
-        String nextName = strategy.getArgument("next");
-        NextState next = null;
-        for (var kind : NextState.values()) {
-            if (kind.getName().equals(nextName)) {
-                next = kind;
-            }
-        }
-        if (next == null) {
-            errors.add("Unknown next-state selection '%s'", nextName);
-        } else if (next != NextState.OLDEST) {
-            result.put(ExploreKey.NEXT, next.createSetting());
-        }
-        int size = parseBound(strategy, "size", errors);
-        result.put(ExploreKey.FRONTIER, Frontier.BEAM.createSetting(size));
-    }
-
-    /**
-     * Translates a legacy {@code uptorule} or {@code crule} strategy into the
-     * corresponding next-state selection and condition bound features.
-     */
-    private static void setConditionBound(ExploreConfig result, Serialized strategy,
-                                          FormatErrorSet errors) {
-        boolean crule = "crule".equals(strategy.getKeyword());
-        String search = crule
-            ? EncodedSearchMode.BFS_KEY
-            : strategy.getArgument("search");
-        switch (search) {
-        case EncodedSearchMode.BFS_KEY -> {
-            // the default next-state selection
-        }
-        case EncodedSearchMode.DFS_KEY -> result
-            .put(ExploreKey.NEXT, NextState.NEWEST.createSetting());
-        default -> errors.add("Unknown search mode '%s'", search);
-        }
-        String stop = crule
-            ? EncodedStopMode.UP_TO_KEY
-            : strategy.getArgument("stop");
-        Bound kind = switch (stop) {
-        case EncodedStopMode.UP_TO_KEY -> Bound.UPTO;
-        case EncodedStopMode.INCLUDE_KEY -> Bound.INCLUDE;
-        default -> null;
-        };
-        if (kind == null) {
-            errors.add("Unknown stop mode '%s'", stop);
-            return;
-        }
-        String condition = strategy.getArgument("rule");
-        if (EncodedPolarity.NEGATIVE.equals(strategy.getArgument("polarity"))) {
-            condition = "!" + condition;
-        }
-        result.put(ExploreKey.BOUND, kind.createSetting(condition));
-        if (!crule && parseBound(strategy, "bound", errors) > 0) {
-            errors
-                .add("A condition bound cannot be combined with a depth bound"
-                    + " in the feature model");
-        }
-    }
-
-    /** Parses a numeric argument of a serialised strategy; absent means zero. */
-    private static int parseBound(Serialized strategy, String argName, FormatErrorSet errors) {
-        int result = 0;
-        String text = strategy.getArgument(argName);
-        if (!text.isEmpty()) {
-            try {
-                result = Integer.parseInt(text);
-            } catch (NumberFormatException exc) {
-                errors.add("Bound '%s' is not a number", text);
-            }
-        }
-        return result;
     }
 }

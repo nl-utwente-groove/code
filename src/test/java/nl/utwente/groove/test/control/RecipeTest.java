@@ -29,8 +29,7 @@ import org.junit.Test;
 import nl.utwente.groove.control.instance.Automaton;
 import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.explore.ExploreType;
-import nl.utwente.groove.explore.StrategyEnumerator;
-import nl.utwente.groove.explore.encode.Serialized;
+import nl.utwente.groove.explore.config.parse.LegacySyntaxParser;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
@@ -168,9 +167,7 @@ public class RecipeTest {
             if (strategyDescr == null) {
                 exploreType = ExploreType.DEFAULT;
             } else {
-                Serialized strategy = StrategyEnumerator.instance().parseCommandline(strategyDescr);
-                Serialized acceptor = new Serialized("final");
-                exploreType = new ExploreType(strategy, acceptor, 0);
+                exploreType = LegacySyntaxParser.parse(strategyDescr + " final 0");
             }
             Exploration exploration = exploreType.newExploration(gts).play();
             assertFalse(exploration.isInterrupted());

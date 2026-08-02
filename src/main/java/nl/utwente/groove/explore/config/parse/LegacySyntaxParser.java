@@ -41,8 +41,6 @@ import nl.utwente.groove.explore.config.Frontier;
 import nl.utwente.groove.explore.config.Goal;
 import nl.utwente.groove.explore.config.NextState;
 import nl.utwente.groove.explore.config.Successor;
-import nl.utwente.groove.explore.encode.EncodedPolarity;
-import nl.utwente.groove.explore.encode.Serialized;
 import nl.utwente.groove.explore.result.Acceptor;
 import nl.utwente.groove.explore.result.AnyStateAcceptor;
 import nl.utwente.groove.explore.result.CycleAcceptor;
@@ -185,12 +183,15 @@ public class LegacySyntaxParser {
     }
 
     /** Extracts the configuration underlying a base exploration type.
-     * @throws FormatException if the base type has no feature-model equivalent
+     * @throws FormatException if the base type is not configuration-based
      */
     private static ExploreConfig getBaseConfig(ExploreType base) throws FormatException {
-        return base instanceof ConfiguredExploreType configured
-            ? new ExploreConfig(configured.getConfig())
-            : ExploreTypeConverter.toConfig(base);
+        if (base instanceof ConfiguredExploreType configured) {
+            return new ExploreConfig(configured.getConfig());
+        }
+        throw new FormatException(
+            "Legacy components cannot be overlaid on exploration type '%s'",
+            base.getIdentifier());
     }
 
     /** Returns the keyword part (before the first colon) of a legacy descriptor. */
@@ -524,26 +525,11 @@ public class LegacySyntaxParser {
             };
         }
 
-        /** Computes the legacy display descriptor for this acceptor. */
-        public Serialized toSerialized() {
-            Serialized result = new Serialized(kind().getKeyword());
-            switch (kind()) {
-            case RULEAPP -> result.setArgument("rule", content());
-            case INVARIANT -> {
-                boolean positive = !content().startsWith("!");
-                result.setArgument("polarity", positive
-                    ? EncodedPolarity.POSITIVE
-                    : EncodedPolarity.NEGATIVE);
-                result.setArgument("rule", positive
-                    ? content()
-                    : content().substring(1));
-            }
-            case FORMULA -> result.setArgument("formula", content());
-            default -> {
-                // no content
-            }
-            }
-            return result;
+        /** Returns the legacy descriptor of this acceptor, for display purposes. */
+        public String getIdentifier() {
+            return content().isEmpty()
+                ? kind().getKeyword()
+                : kind().getKeyword() + ":" + content();
         }
     }
 

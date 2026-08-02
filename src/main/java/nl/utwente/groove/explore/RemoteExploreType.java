@@ -17,7 +17,6 @@
 package nl.utwente.groove.explore;
 
 import nl.utwente.groove.explore.config.parse.LegacySyntaxParser;
-import nl.utwente.groove.explore.encode.Serialized;
 import nl.utwente.groove.explore.strategy.RemoteStrategy;
 import nl.utwente.groove.explore.strategy.Strategy;
 import nl.utwente.groove.grammar.Grammar;
@@ -37,17 +36,15 @@ public class RemoteExploreType extends DirectExploreType {
      * {@code 0} means unbounded
      */
     public RemoteExploreType(String host, LegacySyntaxParser.AcceptorSpec acceptor, int count) {
-        super(createStrategyDescriptor(host), acceptor, count);
+        super(acceptor, count);
         this.host = host;
     }
 
     private final String host;
 
-    /** Computes the legacy display descriptor for a given host. */
-    private static Serialized createStrategyDescriptor(String host) {
-        Serialized result = new Serialized("remote");
-        result.setArgument("host", host);
-        return result;
+    @Override
+    protected String getStrategyIdentifier() {
+        return "remote:" + this.host;
     }
 
     @Override
@@ -55,5 +52,10 @@ public class RemoteExploreType extends DirectExploreType {
         RemoteStrategy result = new RemoteStrategy();
         result.setHost(this.host);
         return result;
+    }
+
+    @Override
+    public ExploreType withResultCount(int count) {
+        return new RemoteExploreType(this.host, getAcceptorSpec(), count);
     }
 }

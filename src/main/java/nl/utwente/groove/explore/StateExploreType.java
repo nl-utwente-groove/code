@@ -17,7 +17,6 @@
 package nl.utwente.groove.explore;
 
 import nl.utwente.groove.explore.config.parse.LegacySyntaxParser;
-import nl.utwente.groove.explore.encode.Serialized;
 import nl.utwente.groove.explore.strategy.ExploreStateStrategy;
 import nl.utwente.groove.explore.strategy.Strategy;
 import nl.utwente.groove.grammar.Grammar;
@@ -36,11 +35,21 @@ public class StateExploreType extends DirectExploreType {
      * {@code 0} means unbounded
      */
     public StateExploreType(LegacySyntaxParser.AcceptorSpec acceptor, int count) {
-        super(new Serialized("state"), acceptor, count);
+        super(acceptor, count);
+    }
+
+    @Override
+    protected String getStrategyIdentifier() {
+        return "state";
     }
 
     @Override
     public Strategy getParsedStrategy(Grammar grammar) {
         return new ExploreStateStrategy();
+    }
+
+    @Override
+    public ExploreType withResultCount(int count) {
+        return new StateExploreType(getAcceptorSpec(), count);
     }
 }
