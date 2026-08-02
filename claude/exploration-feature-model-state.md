@@ -333,12 +333,37 @@ Dialog/Simulator threads (2026-07-26, from Arend's review):
   remain rules, distinguished at most by role/display.
 - Phase 6: delete `explore.encode`, `explore.prettyparse`, `Serialized`,
   `ExploreType`, `StrategyValue`/`AcceptorValue`, legacy property key, `-s/-a/-r`.
-  Note: `EncodedTypeEditor` now hosts the colour constants of the deleted
+  **Prerequisites DONE (2026-08-02): 6.1 extracted the semantic parsers to
+  `explore.config.parse` (RuleFormulaParser — now reentrant and with
+  conventional operator precedence, deliberately changing the meaning of
+  unparenthesised mixed-operator formulas; EnabledRuleParser;
+  EdgeMapParser), 6.2 re-keyed `ConfiguredExploreType` instantiation on the
+  config (legacy Serializeds are display-only now).**
+  **Scope decisions by Arend (2026-08-02):**
+  - `-s/-a/-r` stay as deprecated aliases **until the next release has
+    shipped** — the enumerator/encode/prettyparse machinery therefore
+    survives this branch; the mass deletion is a later branch.
+  - minimax + remote strategies: **keep, reachable via a dedicated
+    Generator option** (to be added when `-s` retires; until then `-s`
+    still reaches them).
+  - Legacy `explorationStrategy` property: convert **via the
+    GRAMMAR_VERSION mechanism** (Arend's suggestion, verified to exist:
+    `Version.compareGrammarVersion` + per-version repair steps in
+    `LoadGrammarAction.load` + resave prompt via `VersionDialog`, cf. the
+    `repairIdentifiers` step for grammars < 3.1). Design note for that
+    slice: the repair currently lives in the GUI load action only —
+    headless loads (Generator) bypass it, so either the repair moves to
+    store/GrammarModel level or the read-time precedence fallback stays
+    until the key is finally dropped. Needs a version-constant bump, which
+    triggers the resave prompt for every older grammar (intended).
+  - Still to migrate before the mass deletion: `CheckLTLAction` (builds
+    its exploration via Serialized — switch to direct LTLStrategy
+    construction), `ExplorationTest` fixtures (legacy keyword strings →
+    config strings), `Transformer.setStrategy/setAcceptor` (only serve
+    `-s/-a`), EngineParityTest + legacy BFS/DFS strategies (parity job
+    done once the enumerators go).
+  Note: `EncodedTypeEditor` hosts the colour constants of the deleted
   `ExplorationDialog`; the `encode` editors are unreachable from the GUI already.
-  Note: `ConfiguredExploreType` still realises the converter's legacy `Serialized`
-  descriptors and reuses the `Encoded*` semantic parsers (`EncodedEnabledRule`,
-  `EncodedRuleFormula`, `EncodedEdgeMap`); demolition must first move those parsers
-  out of `encode` and re-key the direct instantiation on the config itself.
 - Randomness features (`next=random`, `successor=*-random`) must respect the pending
   deterministic-seeding design (see memory: randomness-seeding-design; design note
   committed as claude/randomness-seeding.md).
