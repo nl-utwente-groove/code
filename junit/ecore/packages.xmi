@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<packages:Item xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:packages="http://groove.utwente.nl/ecore/packages"
+    xmlns:core="http://groove.utwente.nl/ecore/packages/core"
+    xmi:id="catalogue" name="Catalogue">
+  <entries xmi:id="entry" code="1">
+    <details xmi:id="footnote" note="see page 3"/>
+  </entries>
+  <entries xsi:type="core:Line-Item" xmi:id="line" code="2" unit.price="9.5" unit-price="7.25"
+      self="own"/>
+</packages:Item>

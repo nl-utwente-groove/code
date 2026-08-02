@@ -7,6 +7,8 @@ import javax.swing.SwingUtilities;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.ResourceKind;
+import nl.utwente.groove.grammar.model.SettingsSchema;
+import nl.utwente.groove.grammar.model.SettingsSchemas;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.io.store.EditType;
@@ -21,7 +23,11 @@ public class NewAction extends SimulatorAction {
     @Override
     public void execute() {
         ResourceKind resource = getResourceKind();
-        final QualName newName = askNewName(Options.getNewResourceName(resource), true);
+        // for settings, the name must start with a schema; seed with the first one
+        String seedName = resource == ResourceKind.SETTINGS
+            ? SettingsSchemas.getNames().iterator().next()
+            : Options.getNewResourceName(resource);
+        final QualName newName = askNewName(seedName, true);
         if (newName != null) {
             try {
                 if (resource.isGraphBased()) {
@@ -30,7 +36,7 @@ public class NewAction extends SimulatorAction {
                                     getGrammarModel().getProperties().isHasParallelEdges());
                     getSimulatorModel().doAddGraph(resource, newGraph, false);
                 } else {
-                    getSimulatorModel().doAddText(getResourceKind(), newName, "");
+                    getSimulatorModel().doAddText(getResourceKind(), newName, initText(newName));
                 }
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
@@ -43,6 +49,17 @@ public class NewAction extends SimulatorAction {
                                 newName);
             }
         }
+    }
+
+    /** Returns the initial text of a new text resource with a given name. */
+    private String initText(QualName name) {
+        if (getResourceKind() != ResourceKind.SETTINGS) {
+            return "";
+        }
+        // the schema is known: askNewName validated the leading segment
+        SettingsSchema schema = SettingsSchemas.get(name.get(0));
+        assert schema != null;
+        return schema.getNewText();
     }
 
     @Override

@@ -656,6 +656,7 @@ public class GrammarModel implements PropertyChangeListener {
         SortedSet<QualName> newActiveNames = new TreeSet<>();
         switch (kind) {
         case GROOVY:
+        case SETTINGS:
             newActiveNames.addAll(names);
             break;
         case RULE:
@@ -665,8 +666,6 @@ public class GrammarModel implements PropertyChangeListener {
                 .forEach(newActiveNames::add);
             newActiveNames.removeAll(getProperties().getRuleEnabling().getKeys(Delta.REMOVE));
             newActiveNames.addAll(getProperties().getRuleEnabling().getKeys(Delta.ADD));
-            break;
-        case CONFIG:
             break;
         default:
             newActiveNames.addAll(getProperties().getActiveNames(kind));
@@ -704,8 +703,8 @@ public class GrammarModel implements PropertyChangeListener {
                 case GROOVY:
                     result = new GroovyModel(this, name, text);
                     break;
-                case CONFIG:
-                    result = new ConfigModel(this, name, text);
+                case SETTINGS:
+                    result = new SettingsModel(this, name, text);
                     break;
                 default:
                     assert false;

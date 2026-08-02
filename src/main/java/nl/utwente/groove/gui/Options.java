@@ -324,25 +324,6 @@ public class Options implements Cloneable {
     }
 
     /**
-     * Returns the action name for a resource edit.
-     * A further parameter determines if the name is a description <i>before</i>
-     * the action occurs, or after.
-     * @param edit the edit for which the name is required
-     * @param resource the kind of resource that is edited
-     * @param dots if {@code true}, a ... prefix is appended
-     * @return The appropriate action name
-     */
-    public static String getEditActionName(EditType edit, ResourceKind resource, boolean dots) {
-        StringBuilder result = new StringBuilder(edit.getName());
-        result.append(' ');
-        result.append(resource.getName());
-        if (dots) {
-            result.append(" ...");
-        }
-        return result.toString();
-    }
-
-    /**
      * Returns the action name for resource activation.
      * @param resource the kind of resource that is enabled/disabled
      * @param activate {@code true} if the resource is to be activated,
@@ -588,8 +569,6 @@ public class Options implements Cloneable {
     public static final String PROLOG_NEXT_ACTION_NAME = "Next Result";
     /** Name of the "Raise Priority" action. */
     public static final String RAISE_PRIORITY_ACTION_NAME = "Raise Priority";
-    /** Redo action name */
-    public static final String REDO_ACTION_NAME = "Redo";
     /** Refresh grammar action name */
     public static final String REFRESH_GRAMMAR_ACTION_NAME = "Refresh Grammar";
     /**
@@ -598,12 +577,8 @@ public class Options implements Cloneable {
     public static final String RELOAD_LTS_ACTION_NAME = "Reload LTS";
     /** Find/replace action name */
     public static final String FIND_REPLACE_ACTION_NAME = "Find/Replace Label...";
-    /** Replace action name */
-    public static final String REPLACE_ACTION_NAME = "Replace Label";
     /** Remove point action name */
     static public final String REMOVE_POINT_ACTION = "Remove Point";
-    /** Renumber action name */
-    public static final String RENUMBER_ACTION_NAME = "Renumber Nodes";
     /** Reset label position action name */
     static public final String RESET_LABEL_POSITION_ACTION = "Reset Label";
     /**
@@ -694,12 +669,6 @@ public class Options implements Cloneable {
     public static final String SNAP_TO_GRID_NAME = "Snap to grid";
     /** Search action name */
     public static final String SEARCH_ACTION_NAME = "Search ...";
-    /**
-     * Edit action name
-     */
-    public static final String SYSTEM_PROPERTIES_ACTION_NAME = "Grammar Properties ...";
-    /** Undo action name */
-    public static final String UNDO_ACTION_NAME = "Undo";
     /** Unfilter type-based labels action name */
     public static final String UNFILTER_TYPE_ACTION_NAME = "Reset type graph filter";
     /** Pan mode action name */
@@ -872,7 +841,8 @@ public class Options implements Cloneable {
 
     /** Set of resource kinds for which the display tab is optional. */
     private static final Set<ResourceKind> optionalTabs = EnumSet
-        .of(ResourceKind.CONTROL, ResourceKind.PROLOG, ResourceKind.TYPE, ResourceKind.GROOVY);
+        .of(ResourceKind.CONTROL, ResourceKind.PROLOG, ResourceKind.TYPE, ResourceKind.GROOVY,
+            ResourceKind.SETTINGS);
 
     // Host graph show options
     /** Show anchors option */

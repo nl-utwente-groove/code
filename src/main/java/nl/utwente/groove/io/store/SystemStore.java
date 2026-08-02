@@ -64,7 +64,6 @@ import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.type.TypeLabel;
-import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.io.ExtensionFilter;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.Util;
@@ -299,6 +298,10 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
      */
     TextBasedEdit doPutTexts(ResourceKind kind, Map<QualName,String> newTexts) throws IOException {
         testInit();
+        // test all names before saving any of them, to avoid a partial edit
+        for (QualName name : newTexts.keySet()) {
+            testNotReserved(kind, name);
+        }
         Map<QualName,String> oldTexts = new HashMap<>();
         List<QualName> newNames = new ArrayList<>();
         for (Map.Entry<QualName,String> entry : newTexts.entrySet()) {
@@ -390,6 +393,7 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
     TextBasedEdit doRenameText(ResourceKind kind, QualName oldName,
                                QualName newName) throws IOException {
         testInit();
+        testNotReserved(kind, newName);
         Map<QualName,String> oldTexts = new HashMap<>();
         Map<QualName,String> newTexts = new HashMap<>();
         String text = getTextMap(kind).remove(oldName);
@@ -502,7 +506,7 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
      * an undoable edit wrapping this functionality.
      */
     MyCompoundEdit doRelabel(TypeLabel oldLabel, TypeLabel newLabel) throws IOException {
-        MyCompoundEdit result = new MyCompoundEdit(Options.REPLACE_ACTION_NAME);
+        MyCompoundEdit result = new MyCompoundEdit(EditType.REPLACE_ACTION_NAME);
         for (ResourceKind kind : ResourceKind.values()) {
             if (kind.isGraphBased()) {
                 List<AspectGraph> newGraphs = new ArrayList<>(getGraphs(kind).size());
@@ -654,7 +658,7 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
      * an undoable edit wrapping this functionality.
      */
     private MyCompoundEdit doRenumber() throws IOException {
-        MyCompoundEdit result = new MyCompoundEdit(Options.RENUMBER_ACTION_NAME);
+        MyCompoundEdit result = new MyCompoundEdit(EditType.RENUMBER_ACTION_NAME);
         for (ResourceKind kind : ResourceKind.values()) {
             if (kind.isGraphBased()) {
                 List<AspectGraph> newGraphs = new ArrayList<>(getGraphs(kind).size());
@@ -785,12 +789,49 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
             QualName qualFileName = pathName.extend(fileName).testValid();
             if (file.isDirectory()) {
                 result.putAll(collectResources(kind, file, qualFileName));
-            } else {
+            } else if (!isReservedName(kind, qualFileName)) {
                 result.put(qualFileName, file);
             }
         }
         errors.throwException();
         return result;
+    }
+
+    /**
+     * Indicates if a resource name is reserved for another purpose than the
+     * given resource kind, and hence should neither be loaded nor stored as a
+     * resource of that kind.
+     * {@link ResourceKind#SETTINGS} shares its file type with
+     * {@link ResourceKind#PROPERTIES}. The schema of a settings resource is
+     * the leading segment of its name, and the {@code system} schema is built
+     * in: the top-level {@code system.properties} is the grammar properties
+     * singleton, and the folder {@code system/} is reserved for its future
+     * generalisation. The legacy {@code <grammar name>.properties} form is
+     * only reserved while the old-style file actually serves as the properties
+     * file (see {@link #loadGrammarProperties()}); once
+     * {@code system.properties} exists, a settings resource may carry the
+     * grammar name.
+     */
+    private boolean isReservedName(ResourceKind kind, QualName name) {
+        if (kind != ResourceKind.SETTINGS) {
+            return false;
+        }
+        if (name.get(0).equals(Groove.PROPERTY_NAME)) {
+            return true;
+        }
+        return this.legacyPropertiesFile && name.size() == 1
+            && name.last().equals(this.name);
+    }
+
+    /** Tests that a resource name is not reserved for another resource kind.
+     * @throws IOException if the name is reserved
+     * @see #isReservedName
+     */
+    private void testNotReserved(ResourceKind kind, QualName name) throws IOException {
+        if (isReservedName(kind, name)) {
+            throw new IOException(
+                String.format("Name '%s' is reserved for the grammar properties file", name));
+        }
     }
 
     /**
@@ -811,8 +852,10 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
         GrammarProperties result = new GrammarProperties();
         File propertiesFile = getDefaultPropertiesFile();
         // backwards compatibility: <grammar name>.properties
+        this.legacyPropertiesFile = false;
         if (!propertiesFile.exists()) {
             propertiesFile = getOldDefaultPropertiesFile();
+            this.legacyPropertiesFile = propertiesFile.exists();
         }
         if (propertiesFile.exists()) {
             var grammarProperties = new GrammarProperties();
@@ -866,6 +909,12 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
     /** Flag whether this store contains a 'system.properties' file. */
     private boolean hasSystemPropertiesFile = false;
 
+    /** Flag whether the old-style {@code <grammar name>.properties} file is
+     * currently serving as the properties file (see {@link #loadGrammarProperties()}).
+     * While it does, its name is reserved and may not be used by a settings
+     * resource; the next properties save migrates it to {@code system.properties}. */
+    private boolean legacyPropertiesFile = false;
+
     /** Saves the currently stored grammar properties. */
     private void saveProperties() throws IOException {
         var properties = this.properties;
@@ -880,10 +929,11 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
         try (Writer propertiesWriter = new FileWriter(propertiesFile)) {
             properties.store(propertiesWriter);
         }
-        // delete the old-style properties file, if any
-        File oldPropertiesFile = getOldDefaultPropertiesFile();
-        if (oldPropertiesFile.exists()) {
-            oldPropertiesFile.delete();
+        // delete the old-style properties file if it was the properties source;
+        // otherwise a file of that name is a settings resource and must survive
+        if (this.legacyPropertiesFile) {
+            getOldDefaultPropertiesFile().delete();
+            this.legacyPropertiesFile = false;
         }
     }
 
@@ -1073,7 +1123,7 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
 
         @Override
         public String getPresentationName() {
-            String result = Options.getEditActionName(getType(), getResourceKind(), false);
+            String result = EditType.getEditActionName(getType(), getResourceKind(), false);
             if (this.newTexts.size() > 1 || this.oldTexts.size() > 1) {
                 result += "s";
             }
@@ -1146,7 +1196,7 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
 
         @Override
         public String getPresentationName() {
-            String result = Options.getEditActionName(getType(), getResourceKind(), false);
+            String result = EditType.getEditActionName(getType(), getResourceKind(), false);
             if (this.newGraphs.size() > 1 || this.oldGraphs.size() > 1) {
                 result += "s";
             }
@@ -1233,7 +1283,7 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
 
         @Override
         public String getPresentationName() {
-            return Options.SYSTEM_PROPERTIES_ACTION_NAME;
+            return EditType.SYSTEM_PROPERTIES_ACTION_NAME;
         }
 
         @Override
@@ -1283,12 +1333,12 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
 
         @Override
         public String getRedoPresentationName() {
-            return Options.REDO_ACTION_NAME + " " + getPresentationName();
+            return EditType.REDO_ACTION_NAME + " " + getPresentationName();
         }
 
         @Override
         public String getUndoPresentationName() {
-            return Options.UNDO_ACTION_NAME + " " + getPresentationName();
+            return EditType.UNDO_ACTION_NAME + " " + getPresentationName();
         }
 
         @Override

@@ -186,9 +186,12 @@ abstract public class ResourceModel<R> {
     /** Adds a tracker for a given resource kind. */
     private void addTracker(ResourceKind kind) {
         var grammar = getGrammar();
+        // in the absence of a grammar, the model needs a private tracker
+        // (stale exactly once, so the resource is built on the first synchronise);
+        // a shared tracker would be consumed by the first grammar-less model in the JVM
         this.resourceTrackers
             .put(kind, grammar == null
-                ? ChangeCount.DUMMY_TRACKER
+                ? new ChangeCount().createTracker()
                 : grammar.createChangeTracker(kind));
     }
 

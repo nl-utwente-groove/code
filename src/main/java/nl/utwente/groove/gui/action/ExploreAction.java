@@ -35,11 +35,11 @@ import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.gui.dialog.ExploreWarningDialog;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.jgraph.LTSJModel;
-import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSChangeListener;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
+import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

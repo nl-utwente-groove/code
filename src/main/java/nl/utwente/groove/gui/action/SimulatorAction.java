@@ -18,15 +18,17 @@ import javax.swing.SwingUtilities;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
+import nl.utwente.groove.grammar.model.SettingsSchemas;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.gui.BehaviourOption;
 import nl.utwente.groove.gui.Icons;
-import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.SimulatorModel;
+import nl.utwente.groove.gui.dialog.EcoreOptionsDialog;
 import nl.utwente.groove.gui.dialog.ErrorDialog;
 import nl.utwente.groove.gui.dialog.FindReplaceDialog;
 import nl.utwente.groove.gui.dialog.FreshNameDialog;
+import nl.utwente.groove.gui.dialog.GrooveFileChooser;
 import nl.utwente.groove.gui.dialog.SaveDialog;
 import nl.utwente.groove.gui.display.ControlDisplay;
 import nl.utwente.groove.gui.display.DisplayKind;
@@ -38,7 +40,8 @@ import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.gui.display.RuleDisplay;
 import nl.utwente.groove.gui.display.StateDisplay;
 import nl.utwente.groove.io.FileType;
-import nl.utwente.groove.io.GrooveFileChooser;
+import nl.utwente.groove.io.external.PortException;
+import nl.utwente.groove.io.external.format.ecore.EcoreMapping;
 import nl.utwente.groove.io.store.EditType;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.util.parse.FormatException;
@@ -82,7 +85,7 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
      * The action adds itself to the refreshables of the simulator.
      */
     protected SimulatorAction(Simulator simulator, EditType edit, ResourceKind resource) {
-        this(simulator, Options.getEditActionName(edit, resource, false),
+        this(simulator, EditType.getEditActionName(edit, resource, false),
              Icons.getEditIcon(edit, resource), edit, resource);
     }
 
@@ -91,7 +94,7 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
         if (getEditType() == null) {
             return null;
         } else {
-            return Options.getEditActionName(getEditType(), getResourceKind(), false);
+            return EditType.getEditActionName(getEditType(), getResourceKind(), false);
         }
     }
 
@@ -151,6 +154,8 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
             return getTypeDisplay();
         case GROOVY:
             return getGroovyDisplay();
+        case SETTINGS:
+            return getSettingsDisplay();
         case PROPERTIES:
         default:
             assert false;
@@ -186,6 +191,11 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
     /** Returns the groovy panel that owns the action. */
     final protected GroovyDisplay getGroovyDisplay() {
         return (GroovyDisplay) getDisplaysPanel().getDisplay(DisplayKind.GROOVY);
+    }
+
+    /** Returns the settings panel that owns the action. */
+    final protected ResourceDisplay getSettingsDisplay() {
+        return (ResourceDisplay) getDisplaysPanel().getDisplay(DisplayKind.SETTINGS);
     }
 
     /** Returns the LTS panel that owns the action. */
@@ -250,11 +260,70 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
             = new FreshNameDialog<>(existingNames, name, mustBeFresh) {
                 @Override
                 protected QualName createName(String name) throws FormatException {
-                    return QualName.parse(name).testValid();
+                    QualName result = QualName.parse(name).testValid();
+                    // a settings name must lead with a known schema; catching
+                    // this here saves the user from a resource that can only
+                    // ever show the unknown-schema error
+                    if (kind == ResourceKind.SETTINGS
+                        && SettingsSchemas.get(result.get(0)) == null) {
+                        throw new FormatException("'%s' is not a settings schema (known: %s)",
+                            result.get(0), String.join(", ", SettingsSchemas.getNames()));
+                    }
+                    return result;
                 }
             };
         nameDialog.showDialog(getFrame(), title);
         return nameDialog.getName();
+    }
+
+    /**
+     * Asks the user for the Ecore encoding options, if a given file type calls
+     * for them, and stores the chosen options in the grammar's
+     * {@link EcoreMapping#RESOURCE_NAME} settings resource, creating it on
+     * demand. Only the global option lines of the resource are touched, so
+     * hand-written per-element entries and comments survive.
+     * The resource is changed through the (undoable) store, so that the
+     * subsequent port sees the new values; this is why the dialog is shown
+     * before the port rather than as part of it.
+     * @param fileType the file type chosen for the import or export
+     * @return {@code false} if the user cancelled the dialog, in which case the
+     * port should not go ahead
+     * @throws IOException if storing the changed settings failed
+     */
+    final protected boolean askEcoreOptions(FileType fileType) throws IOException {
+        if (fileType != FileType.ECORE && fileType != FileType.XMI) {
+            return true;
+        }
+        var candidates = EcoreMapping.candidates(getGrammarModel());
+        if (candidates.size() > 1) {
+            // the dialog cannot know which resource to edit;
+            // the port itself will report the ambiguity
+            return true;
+        }
+        QualName target = candidates.isEmpty()
+            ? EcoreMapping.RESOURCE_QUAL_NAME
+            : candidates.get(0);
+        EcoreMapping oldMapping;
+        try {
+            oldMapping = EcoreMapping.of(getGrammarModel());
+        } catch (PortException exc) {
+            // a broken settings resource seeds the dialog with the defaults;
+            // the port itself will report the actual problem
+            oldMapping = EcoreMapping.getDefault();
+        }
+        EcoreOptionsDialog dialog
+            = new EcoreOptionsDialog(oldMapping.ordering(), oldMapping.useIdentifiers());
+        if (!dialog.showDialog(getFrame(), null)) {
+            return false;
+        }
+        if (dialog.getOrdering() != oldMapping.ordering()
+            || dialog.isUseIdentifiers() != oldMapping.useIdentifiers()) {
+            String oldText = getGrammarModel().getStore().getTexts(ResourceKind.SETTINGS).get(target);
+            String newText = EcoreMapping
+                .setGlobals(oldText, dialog.getOrdering(), dialog.isUseIdentifiers());
+            getSimulatorModel().doAddText(ResourceKind.SETTINGS, target, newText);
+        }
+        return true;
     }
 
     /**

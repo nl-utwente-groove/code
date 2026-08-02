@@ -75,7 +75,6 @@ import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
 import nl.utwente.groove.gui.tree.StateTree;
 import nl.utwente.groove.gui.tree.TypeTree;
-import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphNextState;
 import nl.utwente.groove.lts.GraphState;
@@ -86,6 +85,7 @@ import nl.utwente.groove.lts.RuleTransition;
 import nl.utwente.groove.lts.StartGraphState;
 import nl.utwente.groove.transform.Proof;
 import nl.utwente.groove.transform.RuleApplication;
+import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.line.LineStyle;
 import nl.utwente.groove.util.parse.FormatError;
 

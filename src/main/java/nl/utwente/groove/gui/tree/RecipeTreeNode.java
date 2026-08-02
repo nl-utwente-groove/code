@@ -24,7 +24,7 @@ import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.Signature;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.display.ResourceDisplay;
-import nl.utwente.groove.io.HTMLConverter;
+import nl.utwente.groove.util.HTMLConverter;
 
 /**
  * Recipe nodes of the directory

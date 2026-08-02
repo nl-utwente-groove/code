@@ -26,6 +26,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Pair;
 
@@ -35,6 +38,7 @@ import nl.utwente.groove.util.Pair;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public class StringHandler {
 
     /**
@@ -295,7 +299,8 @@ public class StringHandler {
      * @throws FormatException if <tt>expr</tt> has unbalanced quotes or brackets, or the
      *         positioning of the operator is not as required
      */
-    public String[] split(String expr, String oper, OpPosition position) throws FormatException {
+    public String @Nullable [] split(String expr, String oper,
+                                     OpPosition position) throws FormatException {
         expr = expr.trim();
         switch (position) {
         case INFIX:
@@ -437,7 +442,7 @@ public class StringHandler {
      *         created; or <tt>null</tt> if <tt>parsedString</tt> is improperly
      *         formatted
      */
-    static public String toString(String main, List<String> args) {
+    static public @Nullable String toString(String main, List<String> args) {
         StringBuffer result = new StringBuffer();
         int placeHolderCount = 0;
         for (int c = 0; c < main.length(); c++) {
@@ -477,8 +482,8 @@ public class StringHandler {
      * <tt>new ExprParser().split(expr,split,position)</tt>.
      * @see #split(String,String,OpPosition)
      */
-    static public String[] splitExpr(String expr, String split,
-                                     OpPosition position) throws FormatException {
+    static public String @Nullable [] splitExpr(String expr, String split,
+                                                OpPosition position) throws FormatException {
         return prototype.split(expr, split, position);
     }
 
@@ -532,9 +537,12 @@ public class StringHandler {
      * @return the quoted string
      */
     static public String toQuoted(String string, char quote) {
+        Set<Character> specialChars = quote == ESCAPE_CHAR
+            ? Collections.singleton(quote)
+            : Set.of(quote, ESCAPE_CHAR);
         StringBuffer result = new StringBuffer();
         result.append(quote);
-        result.append(toEscaped(string, Collections.singleton(quote)));
+        result.append(toEscaped(string, specialChars));
         result.append(quote);
         return result.toString();
     }
@@ -559,13 +567,15 @@ public class StringHandler {
 
     /**
      * Transforms a string by removing quote characters around it, if there are
-     * any, and unescaping all quote characters within the string (using '\' as
-     * escape character). No other characters are unescaped, except "\\" occurring
-     * at the end of the string (just before the closing quote).
+     * any, and unescaping all quote and escape characters within the string
+     * (using '\' as escape character). This is the inverse of
+     * {@link #toQuoted(String, char)}. An escape character followed by any
+     * other character is left untouched, for leniency towards strings quoted
+     * before the escape character itself was escaped by {@code toQuoted}.
      * Hence
      * <li><code>'line'</code> is converted to <code>line</code></li>
      * <li><code>'\'lin\'e'</code> is converted to <code>'lin'e</code></li>
-     * <li><code>'\li\\ne\''</code> is converted to <code>\li\\ne'</code></li>
+     * <li><code>'\li\\ne\''</code> is converted to <code>\li\ne'</code></li>
      * <li><code>'li\'ne\\'</code> is converted to <code>li'ne\</code></li>
      * </ul>The original string does not need to be quoted; if the first character
      * is not a quote character, the string is treated the same as if the
@@ -586,25 +596,25 @@ public class StringHandler {
             ? 1
             : 0;
         int end = string.length();
-        // count of the number of consecutive escapes
+        // flag showing that the previous character was an unprocessed escape
         boolean escaped = false;
         // index of first unescaped quote
         int quoteIndex = -1;
         StringBuffer result = new StringBuffer();
         for (int i = start; quoteIndex < 0 && i < end; i++) {
             char c = string.charAt(i);
-            if (c == quote) {
-                if (escaped) {
-                    result.append(c);
-                } else {
-                    quoteIndex = i;
+            if (escaped) {
+                if (c != quote && c != ESCAPE_CHAR) {
+                    // not a recognised escape sequence; keep the escape character
+                    result.append(ESCAPE_CHAR);
                 }
-            } else if (escaped) {
-                // we didn't append the escape char yet, awaiting a possible quote
-                result.append(ESCAPE_CHAR);
-            }
-            escaped = c == ESCAPE_CHAR;
-            if (!escaped && c != quote) {
+                result.append(c);
+                escaped = false;
+            } else if (c == ESCAPE_CHAR) {
+                escaped = true;
+            } else if (c == quote) {
+                quoteIndex = i;
+            } else {
                 result.append(c);
             }
         }
@@ -707,18 +717,14 @@ public class StringHandler {
         try {
             System.out.println("Splitting: \"" + expr + "\" according to \"" + split + "\"");
             Object[] result = splitExpr(expr, split);
-            if (result == null) {
-                System.out.println("null");
-            } else {
-                System.out.print("[\"");
-                for (int i = 0; i < result.length; i++) {
-                    System.out.print(result[i]);
-                    if (i < result.length - 1) {
-                        System.out.print("\", \"");
-                    }
+            System.out.print("[\"");
+            for (int i = 0; i < result.length; i++) {
+                System.out.print(result[i]);
+                if (i < result.length - 1) {
+                    System.out.print("\", \"");
                 }
-                System.out.println("\"]");
             }
+            System.out.println("\"]");
         } catch (FormatException exc) {
             System.out.println("Error: " + exc.getMessage());
         }

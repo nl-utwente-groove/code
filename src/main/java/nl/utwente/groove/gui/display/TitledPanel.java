@@ -16,9 +16,9 @@
  */
 package nl.utwente.groove.gui.display;
 
-import static nl.utwente.groove.io.HTMLConverter.HTML_TAG;
-import static nl.utwente.groove.io.HTMLConverter.NBSP;
-import static nl.utwente.groove.io.HTMLConverter.STRONG_TAG;
+import static nl.utwente.groove.util.HTMLConverter.HTML_TAG;
+import static nl.utwente.groove.util.HTMLConverter.NBSP;
+import static nl.utwente.groove.util.HTMLConverter.STRONG_TAG;
 
 import java.awt.BorderLayout;
 import java.awt.Color;

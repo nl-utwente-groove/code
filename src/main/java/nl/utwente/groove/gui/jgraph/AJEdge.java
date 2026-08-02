@@ -16,8 +16,8 @@
  */
 package nl.utwente.groove.gui.jgraph;
 
-import static nl.utwente.groove.io.HTMLConverter.HTML_TAG;
-import static nl.utwente.groove.io.HTMLConverter.STRONG_TAG;
+import static nl.utwente.groove.util.HTMLConverter.HTML_TAG;
+import static nl.utwente.groove.util.HTMLConverter.STRONG_TAG;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,12 +36,12 @@ import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.Node;
-import nl.utwente.groove.gui.layout.JEdgeLayout;
+import nl.utwente.groove.graph.layout.EdgeLayout;
 import nl.utwente.groove.gui.look.Look;
 import nl.utwente.groove.gui.look.MultiLabel.Direct;
 import nl.utwente.groove.gui.look.Values;
-import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.parse.FormatError;
 
 /**
@@ -194,8 +194,8 @@ abstract public class AJEdge<@NonNull G extends Graph,JG extends JGraph<G>,JM ex
      * that of this JEdge, so that the edge can be added.
      */
     protected boolean isLayoutCompatible(Edge edge) {
-        JEdgeLayout edgeLayout = getLayout(edge);
-        JEdgeLayout myLayout = getLayout(getEdge());
+        EdgeLayout edgeLayout = getLayout(edge);
+        EdgeLayout myLayout = getLayout(getEdge());
         if (myLayout == null) {
             return edgeLayout == null;
         }

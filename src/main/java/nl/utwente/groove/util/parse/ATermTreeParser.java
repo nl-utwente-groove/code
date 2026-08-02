@@ -737,7 +737,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
         incChar();
         boolean escaped = false;
         while (!atEnd() && (escaped || curChar() != quote)) {
-            escaped = curChar() == StringHandler.ESCAPE_CHAR;
+            escaped = !escaped && curChar() == StringHandler.ESCAPE_CHAR;
             incChar();
         }
         if (atEnd()) {

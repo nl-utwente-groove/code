@@ -22,6 +22,8 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Node;
@@ -38,6 +40,7 @@ import nl.utwente.groove.io.external.PortException;
  *
  * @author Arend Rensink
  */
+@NonNullByDefault
 public final class FsmExporter extends AbstractExporter {
     private FsmExporter() {
         super(Exporter.ExportKind.GRAPH);
@@ -46,8 +49,14 @@ public final class FsmExporter extends AbstractExporter {
 
     @Override
     public void doExport(Exportable exportable, File file, FileType fileType) throws PortException {
+        Graph graph = exportable.graph();
+        if (graph == null) {
+            throw new PortException(String
+                .format("'%s' does not contain a graph and hence cannot be exported to %s",
+                        exportable.qualName(), fileType));
+        }
         try (PrintWriter writer = new PrintWriter(file)) {
-            this.save(exportable.graph(), writer);
+            this.save(graph, writer);
         } catch (FileNotFoundException e) {
             throw new PortException(e);
         }

@@ -86,6 +86,7 @@ import nl.utwente.groove.gui.display.GraphTab;
 import nl.utwente.groove.gui.display.JGraphPanel;
 import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.gui.display.TextTab;
+import nl.utwente.groove.gui.export.JGraphExporters;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.list.ListPanel.SelectableListEntry;
@@ -111,6 +112,9 @@ public class Simulator implements SimulatorListener {
      * Constructs a simulator with an empty graph grammar.
      */
     public Simulator() {
+        // the simulator can export by rendering, so it contributes
+        // the JGraph-based exporters to the exporter registry
+        JGraphExporters.register();
         this.model = new SimulatorModel(this);
         this.actions = new ActionStore(this);
         this.undoManager = new SimulatorUndoManager(this);
@@ -598,7 +602,7 @@ public class Simulator implements SimulatorListener {
         menu.addSeparator();
         JMenu newMenu = new JMenu(Options.NEW_MENU_NAME);
         for (ResourceKind resource : ResourceKind.values()) {
-            if (resource != ResourceKind.PROPERTIES && resource != ResourceKind.CONFIG) {
+            if (resource != ResourceKind.PROPERTIES) {
                 newMenu.add(this.actions.getNewAction(resource));
             }
         }

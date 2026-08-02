@@ -55,14 +55,14 @@ import nl.utwente.groove.graph.Morphism;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.NodeComparator;
 import nl.utwente.groove.graph.NodeSetEdgeSetGraph;
+import nl.utwente.groove.graph.layout.EdgeLayout;
+import nl.utwente.groove.graph.layout.LayoutMap;
+import nl.utwente.groove.graph.layout.NodeLayout;
 import nl.utwente.groove.graph.plain.PlainEdge;
 import nl.utwente.groove.graph.plain.PlainFactory;
 import nl.utwente.groove.graph.plain.PlainGraph;
 import nl.utwente.groove.graph.plain.PlainLabel;
 import nl.utwente.groove.graph.plain.PlainNode;
-import nl.utwente.groove.gui.layout.JEdgeLayout;
-import nl.utwente.groove.gui.layout.JVertexLayout;
-import nl.utwente.groove.gui.layout.LayoutMap;
 import nl.utwente.groove.gui.list.SearchResult;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Keywords;
@@ -454,7 +454,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
                 group.forEach(this::removeEdge);
                 addEdgeContext(merged);
                 if (layoutMap != null) {
-                    JEdgeLayout layout = layoutMap.getLayout(first);
+                    EdgeLayout layout = layoutMap.getLayout(first);
                     if (layout != null) {
                         layoutMap.putEdge(merged, layout);
                     }
@@ -772,7 +772,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             LayoutMap layoutMap = GraphInfo.getLayoutMap(graph);
             if (layoutMap != null) {
                 for (AspectNode node : graph.nodeSet()) {
-                    JVertexLayout layout = layoutMap.nodeMap().get(node);
+                    NodeLayout layout = layoutMap.getLayout(node);
                     if (layout != null) {
                         Rectangle2D b = layout.getBounds();
                         maxX = Math.max(maxX, b.getX() + b.getWidth());

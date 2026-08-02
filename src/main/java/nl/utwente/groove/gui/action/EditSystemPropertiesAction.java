@@ -5,16 +5,16 @@ import java.util.Map;
 
 import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.gui.Icons;
-import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.dialog.PropertiesDialog;
+import nl.utwente.groove.io.store.EditType;
 import nl.utwente.groove.util.Properties.CheckerMap;
 
 /** Action to show the system properties. */
 public class EditSystemPropertiesAction extends SimulatorAction {
     /** Constructs an instance of the action. */
     public EditSystemPropertiesAction(Simulator simulator) {
-        super(simulator, Options.SYSTEM_PROPERTIES_ACTION_NAME, Icons.EDIT_ICON);
+        super(simulator, EditType.SYSTEM_PROPERTIES_ACTION_NAME, Icons.EDIT_ICON);
     }
 
     /**

@@ -43,8 +43,6 @@ import gnu.prolog.term.CompoundTermTag;
 import gnu.prolog.vm.Environment;
 import gnu.prolog.vm.PrologCode;
 import gnu.prolog.vm.PrologException;
-import nl.utwente.groove.io.HTMLConverter;
-import nl.utwente.groove.io.HTMLConverter.HTMLTag;
 import nl.utwente.groove.prolog.builtin.AlgebraPredicates;
 import nl.utwente.groove.prolog.builtin.GraphPredicates;
 import nl.utwente.groove.prolog.builtin.GroovePredicates;
@@ -53,6 +51,8 @@ import nl.utwente.groove.prolog.builtin.RulePredicates;
 import nl.utwente.groove.prolog.builtin.TransPredicates;
 import nl.utwente.groove.prolog.builtin.TypePredicates;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.HTMLConverter;
+import nl.utwente.groove.util.HTMLConverter.HTMLTag;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 

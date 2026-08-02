@@ -28,7 +28,7 @@ import java.util.Optional;
 import nl.utwente.groove.grammar.Action.Role;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.graph.GraphProperties.Key;
-import nl.utwente.groove.gui.layout.LayoutMap;
+import nl.utwente.groove.graph.layout.LayoutMap;
 import nl.utwente.groove.util.DefaultFixable;
 import nl.utwente.groove.util.Properties.Entry;
 import nl.utwente.groove.util.parse.FormatErrorSet;

@@ -1484,10 +1484,6 @@ public class SimulatorModel implements Cloneable {
          */
         PROLOG(ResourceKind.PROLOG),
         /**
-         * The selected config file has changed.
-         */
-        CONFIG(ResourceKind.CONFIG),
-        /**
          * The selected Groovy script has changed.
          */
         GROOVY(ResourceKind.GROOVY),
@@ -1495,6 +1491,10 @@ public class SimulatorModel implements Cloneable {
          * The selected rule set has changed.
          */
         RULE(ResourceKind.RULE),
+        /**
+         * The selected settings resource has changed.
+         */
+        SETTINGS(ResourceKind.SETTINGS),
         /**
          * The selected and/or active state has changed.
          * @see SimulatorModel#getState()

@@ -49,11 +49,6 @@ import nl.utwente.groove.graph.plain.PlainGraph;
  */
 public class ColIO extends GraphIO<HostGraph> {
     @Override
-    public boolean canSave() {
-        return false;
-    }
-
-    @Override
     protected void doSaveGraph(Graph graph, File file) {
         throw new UnsupportedOperationException();
     }

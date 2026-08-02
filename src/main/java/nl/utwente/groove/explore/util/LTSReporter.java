@@ -23,7 +23,6 @@ import nl.utwente.groove.explore.ExploreResult;
 import nl.utwente.groove.graph.plain.PlainGraph;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.Exportable;
-import nl.utwente.groove.io.external.Exporter.ExportKind;
 import nl.utwente.groove.io.external.Exporters;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.lts.Filter;
@@ -97,28 +96,28 @@ public class LTSReporter extends AExplorationReporter {
         ltsName = ltsName.replace(PLACEHOLDER, lts.getGrammar().getId());
         File outFile = new File(dir, ltsName);
         var fileType = FileType.getType(outFile);
-        var exporter = Exporters.getExporter(ExportKind.GRAPH, fileType);
+        // the LTS is offered as a plain graph, or as a GTS fragment if no
+        // exporter for the file type can deal with a plain graph
+        var exportable = Exportable.graph(ltsGraph);
+        var exporter = Exporters.getExporter(fileType, exportable);
+        if (exporter == null) {
+            exportable = Exportable.graph(gtsFragment);
+            exporter = Exporters.getExporter(fileType, exportable);
+        }
         if (exporter == null) {
             if (!FileType.hasAnyExtension(outFile)) {
                 outFile = FileType.GXL.addExtension(outFile);
             }
             Groove.saveGraph(ltsGraph, outFile);
         } else {
-            var exportable = Exportable.graph(ltsGraph);
-            if (!exporter.exports(exportable)) {
-                exportable = Exportable.graph(gtsFragment);
+            // an exporter is only found for a non-null file type
+            assert fileType != null;
+            try {
+                ExplorationReporter.time("Do export");
+                exporter.doExport(exportable, outFile, fileType);
+            } catch (PortException e1) {
+                throw new IOException(e1);
             }
-            if (exporter.exports(exportable)) {
-                try {
-                    ExplorationReporter.time("Do export");
-                    exporter.doExport(exportable, outFile, fileType);
-                } catch (PortException e1) {
-                    throw new IOException(e1);
-                }
-            } else {
-                throw new IOException("Exporter for %s refuses to process LTS graph");
-            }
-
         }
         return outFile;
     }

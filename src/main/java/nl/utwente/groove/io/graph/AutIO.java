@@ -47,11 +47,6 @@ import nl.utwente.groove.io.FileType;
  */
 public class AutIO extends GraphIO<PlainGraph> {
     @Override
-    public boolean canSave() {
-        return true;
-    }
-
-    @Override
     protected void doSaveGraph(Graph graph, File file) throws IOException {
         // create a PrintWriter with autoflush
         try (PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(file)), true)) {

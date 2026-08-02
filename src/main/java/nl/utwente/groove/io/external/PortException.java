@@ -16,11 +16,14 @@
  */
 package nl.utwente.groove.io.external;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /**
  * Exception used within exporting system.
  * @author Harold
  * @version $Revision$
  */
+@NonNullByDefault
 public class PortException extends Exception {
     /** Creates an empty exception. */
     public PortException() {

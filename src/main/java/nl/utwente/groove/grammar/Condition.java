@@ -40,10 +40,10 @@ import nl.utwente.groove.grammar.rule.RuleLabel;
 import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.grammar.rule.VariableNode;
 import nl.utwente.groove.grammar.type.TypeGraph;
-import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.io.Util;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
+import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 

@@ -19,7 +19,7 @@ package nl.utwente.groove.explore.config;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.io.HTMLConverter;
+import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.IdValidator;

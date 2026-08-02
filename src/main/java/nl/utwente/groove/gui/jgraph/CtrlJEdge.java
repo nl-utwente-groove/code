@@ -9,8 +9,8 @@ import nl.utwente.groove.control.graph.ControlEdge;
 import nl.utwente.groove.control.graph.ControlGraph;
 import nl.utwente.groove.control.instance.Step;
 import nl.utwente.groove.gui.look.Look;
-import nl.utwente.groove.io.HTMLConverter;
 import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.HTMLConverter;
 
 /**
  * JEdge class that describes the underlying edge as a graph transition.

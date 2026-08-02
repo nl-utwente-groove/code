@@ -20,7 +20,7 @@ import nl.utwente.groove.gui.dialog.BugReportDialog;
 
 /**
  * Wrapper class for the imager utility.
- * @see nl.utwente.groove.io.Imager
+ * @see nl.utwente.groove.gui.Imager
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -38,6 +38,6 @@ public class Imager {
             }
         });
 
-        nl.utwente.groove.io.Imager.main(args);
+        nl.utwente.groove.gui.Imager.main(args);
     }
 }

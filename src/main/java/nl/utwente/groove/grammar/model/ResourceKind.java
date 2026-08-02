@@ -49,8 +49,8 @@ public enum ResourceKind {
     PROPERTIES("Properties", "grammar properties", FileType.PROPERTY, Groove.PROPERTY_NAME),
     /** Groovy script resources. */
     GROOVY("Groovy", "groovy script", FileType.GROOVY, null),
-    /** Configuration resource. */
-    CONFIG("Configuration", "configuration file", FileType.CONFIG, null);
+    /** Schema-typed settings resources. */
+    SETTINGS("Settings", "settings file", FileType.PROPERTY, null);
 
     /** Constructs a value with no corresponding graph role. */
     private ResourceKind(String name, String description, FileType fileType, String defaultName) {
@@ -128,12 +128,12 @@ public enum ResourceKind {
 
     /** Indicates if this resource can be changed to enabled. */
     public boolean isEnableable() {
-        return this != PROPERTIES && this != CONFIG && this != GROOVY;
+        return this != PROPERTIES && this != GROOVY && this != SETTINGS;
     }
 
     /** Indicates if this resource has a display in the simulator. */
     public boolean hasDisplay() {
-        return this != PROPERTIES && this != CONFIG;
+        return this != PROPERTIES;
     }
 
     /** The graph role associated with this resource kind, or {@link GraphRole#NONE}

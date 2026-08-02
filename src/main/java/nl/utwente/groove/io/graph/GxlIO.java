@@ -49,10 +49,10 @@ import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.GraphProperties;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Node;
+import nl.utwente.groove.graph.layout.EdgeLayout;
+import nl.utwente.groove.graph.layout.LayoutMap;
+import nl.utwente.groove.graph.layout.NodeLayout;
 import nl.utwente.groove.graph.plain.PlainGraph;
-import nl.utwente.groove.gui.layout.JEdgeLayout;
-import nl.utwente.groove.gui.layout.JVertexLayout;
-import nl.utwente.groove.gui.layout.LayoutMap;
 import nl.utwente.groove.gxl_1_0.AttrType;
 import nl.utwente.groove.gxl_1_0.EdgeType;
 import nl.utwente.groove.gxl_1_0.EdgemodeType;
@@ -96,11 +96,6 @@ public class GxlIO extends GraphIO<AttrGraph> {
      */
     private File toLayoutFile(File graphFile) {
         return new File(LAYOUT.addExtension(graphFile.toString()));
-    }
-
-    @Override
-    public boolean canSave() {
-        return true;
     }
 
     @Override
@@ -238,7 +233,7 @@ public class GxlIO extends GraphIO<AttrGraph> {
      * @param map the map providing the layout info; non-{@code null}
      */
     private void storeNodeLayout(LayoutMap map, Node node, NodeType gxl) {
-        JVertexLayout layout = map.nodeMap().get(node);
+        NodeLayout layout = map.getLayout(node);
         if (layout != null) {
             Rectangle bounds = Groove.toRectangle(layout.getBounds());
             String value = bounds.x + " " + bounds.y + " " + bounds.width + " " + bounds.height;
@@ -251,7 +246,7 @@ public class GxlIO extends GraphIO<AttrGraph> {
      * @param map the map providing the layout info; non-{@code null}
      */
     private void storeEdgeLayout(LayoutMap map, Edge edge, EdgeType gxl) {
-        JEdgeLayout layout = map.edgeMap().get(edge);
+        EdgeLayout layout = map.getLayout(edge);
         if (layout != null) {
             String value = toString(layout.getLabelPosition()) + " " + toString(layout.getPoints())
                 + " " + layout.getLineStyle().getCode();
@@ -529,7 +524,7 @@ public class GxlIO extends GraphIO<AttrGraph> {
         if (bounds == null) {
             throw new FormatException("Bounds for " + parts[1] + " cannot be parsed");
         }
-        layoutMap.putNode(node, new JVertexLayout(bounds));
+        layoutMap.putNode(node, new NodeLayout(bounds));
     }
 
     private void loadEdgeLayout(LayoutMap layoutMap, AttrEdge edge,
@@ -545,16 +540,16 @@ public class GxlIO extends GraphIO<AttrGraph> {
             if (!LineStyle.isStyle(lineStyle)) {
                 lineStyle = LineStyle.DEFAULT_VALUE.getCode();
             }
-            JVertexLayout sourceLayout = layoutMap.getLayout(edge.source());
-            JVertexLayout targetLayout = layoutMap.getLayout(edge.target());
+            NodeLayout sourceLayout = layoutMap.getLayout(edge.source());
+            NodeLayout targetLayout = layoutMap.getLayout(edge.target());
             if (sourceLayout != null && targetLayout != null) {
                 LayoutIO.correctPoints(points, sourceLayout, targetLayout);
             }
             Point2D labelPosition = LayoutIO
                 .calculateLabelPosition(LayoutIO.toPoint(parts, 0), points, LayoutIO.VERSION2,
                                         edge.isLoop());
-            JEdgeLayout result
-                = new JEdgeLayout(points, labelPosition, LineStyle.getStyle(lineStyle));
+            EdgeLayout result
+                = new EdgeLayout(points, labelPosition, LineStyle.getStyle(lineStyle));
             layoutMap.putEdge(edge, result);
         }
     }

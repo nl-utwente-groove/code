@@ -28,12 +28,6 @@ import java.util.Map;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.graph.GraphRole;
-import nl.utwente.groove.io.external.format.EcorePorter;
-import nl.utwente.groove.io.graph.AutIO;
-import nl.utwente.groove.io.graph.ColIO;
-import nl.utwente.groove.io.graph.ConceptualIO;
-import nl.utwente.groove.io.graph.GraphIO;
-import nl.utwente.groove.io.graph.GxlIO;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
 
@@ -72,8 +66,6 @@ public enum FileType {
     PROLOG1("Prolog files", ".pro"),
     /** Prolog files. */
     PROLOG2("Prolog files", ".pl"),
-    /** Configuration files. */
-    CONFIG("Configuration files", ".xml"),
     /** Groovy files. */
     GROOVY("Groovy files", ".groovy"),
 
@@ -86,18 +78,12 @@ public enum FileType {
     CSV("Comma-separated values", ".csv"),
     /**  DOT (GraphViz) files. */
     DOT("GraphViz .dot files", ".dot"),
-    /** ECore meta-models. */
-    ECORE_META("ECore meta-models", ".ecore"),
-    /** ECore instance models. */
-    ECORE_MODEL("ECore instance models", ".xmi"),
+    /** Ecore meta-model files. */
+    ECORE("Ecore meta-models", ".ecore"),
     /**  EPS (Embedded PostScript) files. */
     EPS("EPS image files", ".eps"),
     /**  FSM (Finite State Machine) files. */
     FSM("FSM layout files", ".fsm"),
-    /** GXL type graph files. */
-    GXL_META("GXL type graphs", ".gxltype"),
-    /** GXL instance graph files. */
-    GXL_MODEL("GXL instance graphs", ".gxlinstance"),
     /** JAR files. */
     JAR("JAR files", ".jar"),
     /** JPEG files. */
@@ -110,8 +96,8 @@ public enum FileType {
     PNG("PNG image files", ".png"),
     /** LaTeX TikZ files. */
     TIKZ("LaTeX TikZ files", ".tikz"),
-    /** KTH file format, used by Marieke et al. */
-    KTH("Simple KTH files", ".kth"),
+    /** XMI (XML Metadata Interchange) instance model files. */
+    XMI("XMI instance models", ".xmi"),
     /** ZIP files. */
     ZIP("ZIP files", ".zip"),
 
@@ -287,49 +273,6 @@ public enum FileType {
     public boolean hasExtension(Path path) {
         return hasExtension(path.toString());
     }
-
-    /** Indicates if this file format has an associated loader/saver for graphs.
-     * @see #getGraphIO()
-     */
-    public boolean hasGraphIO() {
-        return getGraphIO() != null;
-    }
-
-    /** Returns the default loader/saver for graphs to and from this file type, if any.
-     * Note that this only applies to structural graph formats, not image or vector formats.
-     */
-    public GraphIO<?> getGraphIO() {
-        if (this.io == null) {
-            this.io = computeGraphIO();
-        }
-        return this.io;
-    }
-
-    /**
-     * Computes the default loader/saver for graphs to and from this file type, if any.
-     * Note that this only applies to structural graph formats, not image or vector formats.
-     */
-    public GraphIO<?> computeGraphIO() {
-        switch (this) {
-        case AUT:
-            return new AutIO();
-        case COL:
-            return new ColIO();
-        case ECORE_META:
-            return new ConceptualIO(EcorePorter.instance(), GXL_META, GraphRole.TYPE);
-        case ECORE_MODEL:
-            return new ConceptualIO(EcorePorter.instance(), GXL_META, GraphRole.HOST);
-        case GXL:
-        case RULE:
-        case TYPE:
-        case STATE:
-            return GxlIO.instance();
-        default:
-            return null;
-        }
-    }
-
-    private GraphIO<?> io;
 
     /** Tests if this is a file type with multiple extensions. */
     public boolean isMultiple() {

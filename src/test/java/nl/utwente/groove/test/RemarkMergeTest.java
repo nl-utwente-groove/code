@@ -39,6 +39,7 @@ import nl.utwente.groove.io.store.SystemStore;
  * @version $Revision$
  */
 public class RemarkMergeTest {
+    @SuppressWarnings("javadoc")
     @Test
     public void testMerge() throws Exception {
         GrammarModel grammar = SystemStore.newGrammar(new File("junit/rules/creators.gps"));
@@ -55,7 +56,8 @@ public class RemarkMergeTest {
         for (AspectEdge loop : remarkLoops) {
             String text = loop.label().getInnerText();
             assertTrue(text.contains("\n"), "merged remark text should be multi-line: " + text);
-            assertTrue(text.startsWith("\n"), "empty first remark line should be preserved: " + text);
+            assertTrue(text.startsWith("\n"),
+                       "empty first remark line should be preserved: " + text);
         }
         // the three binary remark edges from n6 and one from n7 stay separate
         long remarkBinary = graph

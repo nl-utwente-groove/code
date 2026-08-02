@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hierarchy:Project xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:hierarchy="http://groove.utwente.nl/ecore/hierarchy"
+    xmi:id="project" name="Groove">
+  <tasks xmi:id="design" name="Design" rank="1" status="IN-PROGRESS"/>
+  <tasks xsi:type="hierarchy:Subtask" xmi:id="sketch" name="Sketch" rank="2"
+      status="DONE" depth="3"/>
+</hierarchy:Project>
