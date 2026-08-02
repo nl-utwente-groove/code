@@ -155,13 +155,44 @@ template and the help map all derive from it.
   comments survive). Per-element entries are edited in the Settings tab; a
   per-element table in the dialog is a later step.
 
+## The second client: the `explore` schema (2026-08-02, on `explore-parametric-engine`)
+
+An `explore` settings resource holds one exploration configuration in
+properties syntax: one entry per non-default `ExploreKey`, same value syntax
+as the single-line form, no quoting (every entry has its own line). The
+schema check runs the full validation stack of the exploration dialog:
+per-key value parsing, cross-key consistency, realisability, and — via two
+generic extensions of `SettingsSchema` made for this purpose — the
+*grammar-dependent* contents (rule names, condition formulas, edge labels):
+`check(GrammarModel, Properties)` (default delegates to the grammar-free
+check; the ecore schema keeps resolving at port time) and
+`getDependencies()` (resource kinds whose changes trigger a recheck — a
+resource referring to a renamed rule turns red without being touched).
+
+The *active* configuration is selected by the `exploration` grammar
+property, which is a **reference** (a qualified resource name, per Arend's
+no-residual decision: the property never held inline configurations outside
+the tests). Consequences: resolution lives at the `GrammarModel` level
+(`getDefaultExploreType/-Config`), not in `GrammarProperties` (a properties
+object cannot see sibling resources); the property checker validates the
+reference only (exists, `explore` schema, error-free) — content checks live
+on the resource; and the dialog's Set Default writes the referenced
+resource by targeted per-key line edits (creating the singleton `explore`
+resource and the reference on first use), so the resource is the sole
+source of truth and hand-written comments survive. The legacy
+`explorationStrategy` key stays a read-time fallback, interpreted
+indefinitely; its eager version-repair conversion was dropped (a
+properties-level repair cannot create a settings file).
+
+Deferred to a next dialog round (agreed): a resource selector dropdown in
+the exploration dialog with Save As / set-active, and the reconsideration
+of the transient per-run override.
+
 ## Deliberately deferred
 
 - Folding the round-trip metadata (`ecoreTypes` etc.) into the settings file
   (would fix the hand-added-type export trap; separate branch).
 - EAnnotations in the `.ecore` as import-time defaults.
-- Exploration-configuration schema (separate branch; named-multi and folders,
-  e.g. `explore/fast.properties`, come free).
 - A generic keyed table editor for settings resources (the schema interface's
   documentation hooks are its future feed).
 

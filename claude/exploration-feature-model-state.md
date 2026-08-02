@@ -195,10 +195,28 @@ disappears in phase 6; the preview field (the config's own text form) stays.
   Error display (third round): per-key marking + a dedicated error area below the
   Configuration panel; the status label is informational only; content-syntax
   tooltips live on the content editors only.
-- Persistence — `GrammarKey.EXPLORE_CONFIG` ("exploration",
-  `ValueType.EXPLORE_CONFIG`); precedence over legacy `EXPLORATION`
-  ("explorationStrategy") in `GrammarProperties.getExploreType/getExploreConfig`; lazy
-  conversion on read, legacy key deleted on `setExploreConfig`.
+- Persistence (since the settings-schema round, 2026-08-02) — an `explore`
+  settings resource holds one configuration in properties syntax (one line
+  per non-default `ExploreKey`; `ExploreConfig.fromProperties`), validated by
+  `ExploreConfigSchema` (structure + consistency + realisability +
+  grammar-dependent contents via `ExploreConfigChecker`; grammar-aware
+  schema check with declared dependencies on RULE/TYPE/PROPERTIES). The
+  `GrammarKey.EXPLORE_CONFIG` ("exploration") property is a *reference* to
+  such a resource (`ValueType.QUAL_NAME`, Optional-based); resolution lives
+  in `GrammarModel.getDefaultExploreType/-Config` (a plain properties object
+  cannot see sibling resources), the property checker validates only the
+  reference (exists, right schema, error-free). The dialog's Set Default
+  writes the referenced resource by targeted per-key line edits
+  (`ExploreConfigSchema.setConfigText`), creating the singleton `explore`
+  resource + reference on first use; the resource is the sole source of
+  truth, comments survive, a key reverting to default keeps its line with
+  the default spelled out. Legacy `EXPLORATION` ("explorationStrategy"):
+  read-time fallback only, interpreted indefinitely — the 3.12 repair arm
+  was dropped (a properties-level repair cannot create a settings file;
+  3.12 keeps only the string-escaping meaning it also has on master).
+  Tests: `ExploreSchemaTest` (schema, template, help map, line edits),
+  `ExplorePropertiesTest` (reference resolution, checker, legacy fallback,
+  precedence).
 - CLI — `Generator -x "<config>"`; `-s/-a/-r` legacy shorthand (kept
   indefinitely, translated by `LegacySyntaxParser`), mutually exclusive with
   `-x`, warning suggests the equivalent `-x`. `-D exploration=...` works through the
