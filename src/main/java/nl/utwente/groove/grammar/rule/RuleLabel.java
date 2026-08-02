@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.grammar.rule;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -35,6 +36,7 @@ import nl.utwente.groove.automaton.RegExpr.Seq;
 import nl.utwente.groove.automaton.RegExpr.Sharp;
 import nl.utwente.groove.automaton.RegExpr.Star;
 import nl.utwente.groove.automaton.RegExpr.Wildcard;
+import nl.utwente.groove.grammar.type.TypeEdge;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeGuard;
 import nl.utwente.groove.grammar.type.TypeLabel;
@@ -238,6 +240,122 @@ public class RuleLabel extends ALabel {
     /** Tests if this label wraps a {@link nl.utwente.groove.automaton.RegExpr.Choice}. */
     public boolean isChoice() {
         return getChoiceOperands() != null;
+    }
+
+    /**
+     * Tests if every match of this label is a single host edge, so that the
+     * label can be bound to an edge image (see {@link RuleEdge#hasEdgeImage()}).
+     * This holds for sharps, atoms and wildcards, and is preserved by choice
+     * and inversion: the edge-image expressions are the closure of atoms and
+     * unnamed wildcards under those two operators (see {@link #getImageAlts()}).
+     */
+    public boolean hasEdgeImage() {
+        return isSharp() || isWildcard() || getImageAlts() != null;
+    }
+
+    /**
+     * If this label wraps an expression in the closure of atoms and unnamed
+     * wildcards under choice and inversion, all with the same
+     * {@link EdgeRole#BINARY} or {@link EdgeRole#FLAG} role, returns the
+     * flattened list of alternatives, each carrying its own match direction.
+     * Returns <code>null</code> otherwise; in particular, named wildcards
+     * disqualify, as a variable cannot be bound conditionally on the choice.
+     */
+    public @Nullable List<ImageAlt> getImageAlts() {
+        var result = this.imageAlts;
+        if (!this.imageAltsSet) {
+            this.imageAlts = result = computeImageAlts();
+            this.imageAltsSet = true;
+        }
+        return result;
+    }
+
+    /** Computes the value of {@link #getImageAlts()}. */
+    private @Nullable List<ImageAlt> computeImageAlts() {
+        List<ImageAlt> result = new ArrayList<>();
+        if (!addImageAlts(getMatchExpr(), false, result)) {
+            return null;
+        }
+        // require a uniform binary or flag role over all alternatives
+        EdgeRole role = null;
+        for (ImageAlt alt : result) {
+            if (alt.getRole() == EdgeRole.NODE_TYPE) {
+                return null;
+            }
+            if (role == null) {
+                role = alt.getRole();
+            } else if (role != alt.getRole()) {
+                return null;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Recursively flattens an expression into edge-image alternatives.
+     * @return {@code true} if the expression qualifies; if {@code false},
+     * the partially filled result list is meaningless
+     */
+    private static boolean addImageAlts(RegExpr expr, boolean inverse, List<ImageAlt> result) {
+        if (expr instanceof Atom atom) {
+            result.add(new ImageAlt(atom.toTypeLabel(), null, inverse));
+            return true;
+        } else if (expr instanceof Wildcard) {
+            TypeGuard guard = expr.getWildcardGuard();
+            if (guard == null || guard.isNamed()) {
+                return false;
+            }
+            result.add(new ImageAlt(null, guard, inverse));
+            return true;
+        } else if (expr instanceof Inv inv) {
+            return addImageAlts(inv.getOperand(), !inverse, result);
+        } else if (expr instanceof Choice choice) {
+            for (RegExpr operand : choice.getOperands()) {
+                if (!addImageAlts(operand, inverse, result)) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /** The flattened image alternatives, if {@link #imageAltsSet}. */
+    private @Nullable List<ImageAlt> imageAlts;
+    /** Flag indicating that {@link #imageAlts} has been computed. */
+    private boolean imageAltsSet;
+
+    /**
+     * One alternative of an edge-image expression (see {@link #getImageAlts()}):
+     * either an atom (label non-{@code null}) or an unnamed wildcard (guard
+     * non-{@code null}), possibly matched in inverse direction, meaning that
+     * the host edge image runs from the target to the source end.
+     */
+    public static record ImageAlt(@Nullable TypeLabel label, @Nullable TypeGuard guard,
+        boolean inverse) {
+        /** Tests if a given type edge can be the image type of this alternative
+         * (regardless of end node types). */
+        public boolean test(TypeEdge edge) {
+            var label = label();
+            if (label != null) {
+                return edge.label().equals(label);
+            }
+            var guard = guard();
+            assert guard != null;
+            return guard.test(edge);
+        }
+
+        /** Returns the edge role of this alternative. */
+        public EdgeRole getRole() {
+            var label = label();
+            if (label != null) {
+                return label.getRole();
+            }
+            var guard = guard();
+            assert guard != null;
+            return guard.getKind();
+        }
     }
 
     /**

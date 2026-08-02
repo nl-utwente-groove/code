@@ -287,11 +287,54 @@ public class CriticalPair {
         LinkedHashSet<CriticalPair> critPairs = new LinkedHashSet<>();
         for (ParallelPair pair : parrPairs) {
             CriticalPair criticalPair = pair.getCriticalPair();
-            if (criticalPair != null) {
+            if (criticalPair != null && satisfiesIdentificationCondition(criticalPair)) {
                 critPairs.add(criticalPair);
             }
         }
         return critPairs;
+    }
+
+    /**
+     * Checks that neither match of a critical pair maps an eraser node or edge
+     * of its rule onto the image of another element of the same rule. Erasers
+     * are matched injectively with respect to all other elements (the DPO
+     * identification condition, needed for unique pushout complements), so an
+     * overlap identifying an eraser with another element does not correspond
+     * to two legal rule applications and is not a critical pair.
+     */
+    private static boolean satisfiesIdentificationCondition(CriticalPair pair) {
+        return satisfiesIdentificationCondition(pair.getRule1(), pair.getMatch1())
+            && satisfiesIdentificationCondition(pair.getRule2(), pair.getMatch2());
+    }
+
+    /**
+     * Checks that a match does not map an eraser node or edge of the given
+     * rule onto the image of another node or edge of the same rule.
+     * The condition applies only under DPO semantics; under SPO (simple
+     * graphs or multigraphs alike), such identifications are legal and
+     * resolved by letting deletion win.
+     */
+    private static boolean satisfiesIdentificationCondition(Rule rule, RuleToHostMap match) {
+        if (!rule.getGrammarProperties().getParallelMode().isDPO()) {
+            return true;
+        }
+        for (RuleNode eraser : rule.getEraserNodes()) {
+            HostNode eraserImage = match.getNode(eraser);
+            for (var nodeEntry : match.nodeMap().entrySet()) {
+                if (nodeEntry.getKey() != eraser && nodeEntry.getValue().equals(eraserImage)) {
+                    return false;
+                }
+            }
+        }
+        for (RuleEdge eraser : rule.getEraserEdges()) {
+            HostEdge eraserImage = match.getEdge(eraser);
+            for (var edgeEntry : match.edgeMap().entrySet()) {
+                if (edgeEntry.getKey() != eraser && edgeEntry.getValue().equals(eraserImage)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**

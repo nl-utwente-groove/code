@@ -284,19 +284,39 @@ public class GrammarProperties extends Properties {
     }
 
     /**
-     * Sets the parallel edge property to a given value.
-     * @param parallel if <code>true</code>, host graphs may have parallel edges.
+     * Sets the parallel edge mode to a given value.
+     * @param mode the new parallel edge mode
      */
-    public void setHasParallelEdges(boolean parallel) {
-        storeValue(GrammarKey.PARALLEL, parallel);
+    public void setParallelMode(ParallelMode mode) {
+        storeValue(GrammarKey.PARALLEL, mode);
     }
 
     /**
-     * Returns the value of the parallel edge property.
-     * @return if <code>true</code>, host graphs may have parallel edges.
+     * Returns the value of the parallel edge mode property, determining
+     * whether host and rule graphs are multigraphs (with parallel edges) and,
+     * if so, whether they are transformed under SPO or DPO semantics.
      */
-    public boolean isHasParallelEdges() {
-        return parsePropertyOrDefault(GrammarKey.PARALLEL).getBoolean();
+    public ParallelMode getParallelMode() {
+        return parsePropertyOrDefault(GrammarKey.PARALLEL).getParallelMode();
+    }
+
+    /**
+     * Sets the ignore-regular-expressions property to a given value.
+     * @param ignore if <code>true</code>, rules in which a composite regular
+     * expression may match a path through an erased edge are accepted.
+     */
+    public void setIgnoreRegExp(boolean ignore) {
+        storeValue(GrammarKey.IGNORE_REG_EXP, ignore);
+    }
+
+    /**
+     * Returns the value of the ignore-regular-expressions property.
+     * @return if <code>true</code>, rules in which a composite regular
+     * expression may match a path through an erased edge are accepted
+     * rather than reported as errors.
+     */
+    public boolean isIgnoreRegExp() {
+        return parsePropertyOrDefault(GrammarKey.IGNORE_REG_EXP).getBoolean();
     }
 
     /**
@@ -310,10 +330,14 @@ public class GrammarProperties extends Properties {
 
     /**
      * Returns the value of the dangling edge property.
+     * The dangling condition is part of the DPO gluing condition, so it is
+     * implied (regardless of the property value) if the parallel edge mode
+     * is {@link ParallelMode#DPO}.
      * @return if <code>true</code>, matches with dangling edges are disallowed.
      */
     public boolean isCheckDangling() {
-        return parsePropertyOrDefault(GrammarKey.DANGLING).getBoolean();
+        return parsePropertyOrDefault(GrammarKey.DANGLING).getBoolean()
+            || getParallelMode().isDPO();
     }
 
     /**

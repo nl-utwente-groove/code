@@ -43,7 +43,7 @@ class Edge2SearchItem extends AbstractSearchItem {
      */
     public Edge2SearchItem(RuleEdge edge, boolean simple) {
         // as this is subclassed by VarEdgeSearchItem,
-        // the label may actually be an arbitrary regular expression
+        // the label may also be a wildcard
         assert edge.label().isSharp() || edge.label().isAtom() || edge.label().isWildcard();
         assert edge.getType() != null || edge.label().isWildcard();
         this.edge = edge;
@@ -290,7 +290,9 @@ class Edge2SearchItem extends AbstractSearchItem {
             boolean result = isImageCorrect(image);
             if (result) {
                 this.image = image;
-                write();
+                // writing may fail, e.g. because the image coincides
+                // with that of a conflicting eraser edge
+                result = write();
             }
             return result;
         }

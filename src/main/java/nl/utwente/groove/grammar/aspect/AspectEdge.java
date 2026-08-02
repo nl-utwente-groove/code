@@ -203,6 +203,9 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                 case MULT_OUT:
                     setOutMult(((MultiplicityContent) content).get());
                     break;
+                case MULT:
+                    setMult(((MultiplicityContent) content).get());
+                    break;
                 case NESTING:
                     if (aspect.getKind().isQuantifier()) {
                         // backward compatibility to take care of edges such as
@@ -308,6 +311,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
     @Override
     public void checkAspects() throws FormatException {
         FormatErrorSet errors = new FormatErrorSet();
+        checkMult(errors);
         if (hasGraphRole(RULE)) {
             var source = source();
             var target = target();
@@ -448,6 +452,30 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
             if (message != null) {
                 errors.add(message, ruleLabel, this);
             }
+        }
+    }
+
+    /**
+     * Tests if a declared parallel-edge multiplicity is used correctly:
+     * as a positive constant, not on a node type edge (a node's typing is
+     * not a host graph edge; binary edges, flags and field initialisers all
+     * admit parallel copies).
+     * @param errors the error set to which any errors should be added
+     */
+    private void checkMult(FormatErrorSet errors) {
+        var mult = getMult();
+        if (mult == null) {
+            return;
+        }
+        if (mult.lower() != mult.upper()) {
+            errors
+                .add("Multiplicity %s should be a single (positive) number of parallel copies",
+                     mult, this);
+        } else if (mult.lower() == 0) {
+            errors.add("Multiplicity 0 not allowed", this);
+        }
+        if (getRole() == EdgeRole.NODE_TYPE) {
+            errors.add("Multiplicity not allowed on node type edges", this);
         }
     }
 
@@ -662,6 +690,10 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         }
         if (!context.has(roleAspect) && rolePrefix != null) {
             result = Line.atom(rolePrefix + SPACE).append(result);
+        }
+        var mult = getMult();
+        if (mult != null) {
+            result = result.append(Line.atom(SPACE + "(x" + mult.lower() + ")"));
         }
         if (color != null) {
             result = result.color(color);
@@ -1058,6 +1090,36 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
      * {@code null} if there is no outgoing multiplicity declared.
      */
     private Multiplicity outMult;
+
+    /** Sets the parallel-edge multiplicity for this edge. */
+    private void setMult(Multiplicity mult) {
+        this.mult = mult;
+    }
+
+    /** Indicates if this edge has a declared parallel-edge multiplicity. */
+    public boolean hasMult() {
+        return getMult() != null;
+    }
+
+    /** Returns the parallel-edge multiplicity of this (host or rule) edge, if any. */
+    public @Nullable Multiplicity getMult() {
+        return this.mult;
+    }
+
+    /** Returns the number of parallel copies this edge stands for:
+     * the value of the declared multiplicity, or 1 if there is none.
+     */
+    public int getMultCount() {
+        var mult = getMult();
+        return mult == null
+            ? 1
+            : mult.lower();
+    }
+
+    /** The parallel-edge multiplicity of this (host or rule) edge.
+     * {@code null} if there is no multiplicity declared.
+     */
+    private @Nullable Multiplicity mult;
 
     @Override
     protected int computeHashCode() {

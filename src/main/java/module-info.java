@@ -51,7 +51,6 @@ module nl.utwente.groove {
     exports nl.utwente.groove.grammar.type;
     exports nl.utwente.groove.annotation;
     exports nl.utwente.groove.graph.plain;
-    exports nl.utwente.groove.sts;
     exports nl.utwente.groove.verify;
     exports nl.utwente.groove.gui.jgraph;
     exports nl.utwente.groove.prolog.builtin;

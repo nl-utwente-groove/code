@@ -177,7 +177,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
      * @see #toPlainGraph()
      */
     private PlainGraph createPlainGraph() {
-        return new PlainGraph(getName(), getRole());
+        return new PlainGraph(getName(), getRole(), isSimple());
     }
 
     /**

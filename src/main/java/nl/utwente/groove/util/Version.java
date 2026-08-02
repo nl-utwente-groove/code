@@ -325,8 +325,8 @@ public class Version {
      */
     public static final String GRAMMAR_VERSION_3_11 = "3.11";
     /**
-     * This is the grammar version introduced with Groove version 7.5.3.
-     * Two changes share this version:
+     * This is the grammar version introduced with Groove version 8.0.0.
+     * Three changes share this version:
      * <ul>
      * <li> The exploration strategy is now stored in the {@code exploration}
      * property (a feature-model configuration); a stored legacy
@@ -341,6 +341,16 @@ public class Version {
      * back unchanged unless a string value contained two consecutive
      * backslashes (now read as one) or a backslash directly before a quote
      * (now a load error).
+     * <li> Host graphs can now be multigraphs, holding parallel edges
+     * (multiple edges with the same end nodes and label). This is controlled
+     * by the new grammar property {@code parallelEdges}, with values
+     * {@code none} (the default; the classical simple-graph semantics),
+     * {@code SPO} and {@code DPO}. Parallel host graph edges are written to
+     * disk using the new {@code mult=k:} aspect prefix, which stands for
+     * {@code k} parallel copies of the same (binary) edge, flag or let-edge.
+     * Grammars that do not set {@code parallelEdges} are unaffected; older
+     * Groove versions reject the {@code mult=} aspect and the
+     * {@code parallelEdges} property as unknown.
      * </ul>
      */
     public static final String GRAMMAR_VERSION_3_12 = "3.12";

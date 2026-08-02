@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.grammar.host;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.graph.Morphism;
 
 /**
@@ -29,6 +31,29 @@ public class HostGraphMorphism extends Morphism<HostNode,HostEdge> {
      */
     public HostGraphMorphism(HostFactory factory) {
         super(factory);
+    }
+
+    /*
+     * Overridden to preserve the identity of edges whose end nodes are mapped
+     * to themselves. This is essential for non-simple (multigraph) factories,
+     * where creating a new edge with the same content mints a fresh parallel
+     * copy rather than returning a pooled representative, so that clones and
+     * transformation deltas would silently lose edge identity.
+     */
+    @Override
+    protected @Nullable HostEdge createImage(HostEdge key) {
+        HostNode sourceImage = getNode(key.source());
+        if (sourceImage == null) {
+            return null;
+        }
+        HostNode targetImage = getNode(key.target());
+        if (targetImage == null) {
+            return null;
+        }
+        if (sourceImage == key.source() && targetImage == key.target()) {
+            return key;
+        }
+        return getFactory().createEdge(sourceImage, key.label(), targetImage);
     }
 
     @Override

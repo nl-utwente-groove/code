@@ -24,6 +24,7 @@ import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.grammar.Condition;
 import nl.utwente.groove.grammar.host.DefaultHostNode;
 import nl.utwente.groove.grammar.host.HostEdge;
+import nl.utwente.groove.grammar.host.HostEdgeSet;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.host.HostNodeSet;
@@ -61,6 +62,11 @@ public class PlanSearchStrategy implements SearchStrategy {
         this.engine = engine;
         this.plan = plan;
         this.injective = plan.isInjective();
+        var pattern = plan.getCondition().getPattern();
+        // for simple patterns, node injectivity implies edge injectivity,
+        // so the explicit check is only needed for non-simple patterns,
+        // where parallel (content-equal) edges must have distinct images
+        this.edgeInjective = this.injective && pattern != null && !pattern.isSimple();
     }
 
     @Override
@@ -82,6 +88,14 @@ public class PlanSearchStrategy implements SearchStrategy {
      */
     protected final boolean isInjective() {
         return this.injective;
+    }
+
+    /**
+     * Indicates if this matching is (to be) injective on edges as well.
+     * This is the case for injective matching of a non-simple pattern.
+     */
+    protected final boolean isEdgeInjective() {
+        return this.edgeInjective;
     }
 
     /**
@@ -252,6 +266,23 @@ public class PlanSearchStrategy implements SearchStrategy {
             for (Map.Entry<RuleEdge,Integer> edgeIxEntry : this.edgeIxMap.entrySet()) {
                 this.edgeKeys[edgeIxEntry.getValue()] = edgeIxEntry.getKey();
             }
+            // convert the eraser conflicts of the plan into arrays of edge indices
+            var eraserConflicts = this.plan.getEraserConflicts();
+            if (!eraserConflicts.isEmpty()) {
+                this.conflictIxs = new int[this.edgeKeys.length][];
+                for (var conflictEntry : eraserConflicts.entrySet()) {
+                    Integer edgeIx = this.edgeIxMap.get(conflictEntry.getKey());
+                    if (edgeIx != null) {
+                        this.conflictIxs[edgeIx] = conflictEntry
+                            .getValue()
+                            .stream()
+                            .map(this.edgeIxMap::get)
+                            .filter(ix -> ix != null)
+                            .mapToInt(Integer::intValue)
+                            .toArray();
+                    }
+                }
+            }
             this.varKeys = new LabelVar[this.varIxMap.size()];
             for (Map.Entry<LabelVar,Integer> varIxEntry : this.varIxMap.entrySet()) {
                 this.varKeys[varIxEntry.getValue()] = varIxEntry.getKey();
@@ -285,6 +316,9 @@ public class PlanSearchStrategy implements SearchStrategy {
     final SearchPlan plan;
     /** Flag indicating that the matching should be injective. */
     final boolean injective;
+    /** Flag indicating that the matching should also be injective on edges;
+     * set for injective matching of a non-simple pattern. */
+    final boolean edgeInjective;
     /**
      * Map from source graph nodes to (distinct) indices.
      */
@@ -309,6 +343,12 @@ public class PlanSearchStrategy implements SearchStrategy {
      * Array of source graph edges, which is the inverse of {@link #edgeIxMap} .
      */
     RuleEdge[] edgeKeys;
+    /**
+     * Per edge index, the indices of the edges with which that edge may not
+     * share an image, in order to keep eraser edges injectively matched;
+     * {@code null} if there are no such conflicts.
+     */
+    int[][] conflictIxs;
     /**
      * Array of source graph variables, which is the inverse of
      * {@link #varIxMap} .
@@ -351,6 +391,9 @@ public class PlanSearchStrategy implements SearchStrategy {
             if (isInjective()) {
                 getUsedNodes().clear();
             }
+            if (isEdgeInjective()) {
+                getUsedEdges().clear();
+            }
             if (seedMap != null) {
                 for (Map.Entry<RuleNode,? extends HostNode> nodeEntry : seedMap
                     .nodeMap()
@@ -368,6 +411,9 @@ public class PlanSearchStrategy implements SearchStrategy {
                     assert isEdgeFound(edgeEntry.getKey());
                     int i = getEdgeIx(edgeEntry.getKey());
                     this.edgeImages[i] = this.edgeSeeds[i] = edgeEntry.getValue();
+                    if (isEdgeInjective()) {
+                        getUsedEdges().add(edgeEntry.getValue());
+                    }
                 }
                 for (Map.Entry<LabelVar,TypeElement> varEntry : seedMap.getValuation().entrySet()) {
                     assert isVarFound(varEntry.getKey());
@@ -525,6 +571,32 @@ public class PlanSearchStrategy implements SearchStrategy {
                         .format("Edge %s does not occur in graph %s", image, this.host);
                 }
             }
+            // refuse images that coincide with that of a conflicting edge,
+            // to keep eraser edges injectively matched
+            int[][] conflictIxs = PlanSearchStrategy.this.conflictIxs;
+            if (conflictIxs != null && image != null) {
+                int[] conflicts = conflictIxs[index];
+                if (conflicts != null) {
+                    for (int conflictIx : conflicts) {
+                        if (image.equals(this.edgeImages[conflictIx])) {
+                            this.edgeImages[index] = null;
+                            return false;
+                        }
+                    }
+                }
+            }
+            if (isEdgeInjective()) {
+                HostEdge oldImage = this.edgeImages[index];
+                if (oldImage != null) {
+                    boolean removed = getUsedEdges().remove(oldImage);
+                    assert removed : String
+                        .format("Edge image %s not in used edges %s", oldImage, getUsedEdges());
+                }
+                if (image != null && !getUsedEdges().add(image)) {
+                    this.edgeImages[index] = null;
+                    return false;
+                }
+            }
             this.edgeImages[index] = image;
             return true;
         }
@@ -627,6 +699,17 @@ public class PlanSearchStrategy implements SearchStrategy {
             return this.usedNodes;
         }
 
+        /**
+         * Returns the set of edges already used as images. This is needed for
+         * the edge injectivity check, if any.
+         */
+        private HostEdgeSet getUsedEdges() {
+            if (this.usedEdges == null) {
+                this.usedEdges = new HostEdgeSet();
+            }
+            return this.usedEdges;
+        }
+
         /** Array of node images. */
         private final HostNode[] nodeImages;
         /** Array of edge images. */
@@ -661,6 +744,11 @@ public class PlanSearchStrategy implements SearchStrategy {
          * injectivity test.
          */
         private HostNodeSet usedNodes;
+        /**
+         * The set of edges already used as images, used for the
+         * edge injectivity test.
+         */
+        private HostEdgeSet usedEdges;
         /** Search stack. */
         private final SearchItem.Record[] records;
         /** Forward influences of the records. */

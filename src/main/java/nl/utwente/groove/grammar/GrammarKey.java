@@ -93,12 +93,25 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
             + "<p>If true, overrules the local rule injectivity property",
         ValueType.BOOLEAN),
     /**
-     * Flag determining whether multi-sorted graphs (with parallel edges) are used for transformation.
-     * Default if {@code false}.
+     * Mode determining whether host and rule graphs are multigraphs
+     * (with parallel edges), and if so, under which transformation semantics.
+     * Default is {@link ParallelMode#NONE}.
      */
     PARALLEL("parallelEdges",
-        "Flag controlling if the host graphs may have parallel edges; in other words, "
-            + "if they are multi-sorted graphs. If false (the default), simple graphs are used instead.",
+        "<body>Mode controlling if the host and rule graphs may have parallel edges "
+            + "(making them multigraphs), and if so, under which semantics they are transformed"
+            + DocumentedEnum.document(ParallelMode.class),
+        ValueType.PARALLEL_MODE),
+    /**
+     * Flag accepting rules in which a composite regular expression may match a
+     * path through an edge that the rule erases. Default is {@code false}.
+     */
+    IGNORE_REG_EXP("ignoreRegExp",
+        "Flag accepting rules in which a composite regular expression may match a path "
+            + "through an edge that the rule erases. The matched path is not tracked, so such "
+            + "an overlap escapes the identification condition that otherwise governs erasure "
+            + "under DPO semantics. If false (the default), such rules are errors; "
+            + "only relevant if parallelEdges is DPO.",
         ValueType.BOOLEAN),
     /**
      * Dangling edge check. If <code>true</code>, all
@@ -106,7 +119,8 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
      * <code>false</code>.
      */
     DANGLING("checkDangling",
-        "Flag controlling if dangling edges should be forbidden rather than deleted",
+        "Flag controlling if dangling edges should be forbidden rather than deleted. "
+            + "Implied (regardless of the value set here) if parallelEdges is DPO.",
         ValueType.BOOLEAN),
 
     /**
@@ -315,8 +329,10 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
         if (result == null) {
             var inner = switch (this) {
             case ALGEBRA -> new Parser.EnumParser<>(AlgebraFamily.class, AlgebraFamily.DEFAULT);
+            case PARALLEL -> new Parser.EnumParser<>(ParallelMode.class, ParallelMode.NONE, "none",
+                "SPO", "DPO");
             case COMMON_LABELS, CONTROL_LABELS -> Parser.splitter;
-            case CREATOR_EDGE, PARALLEL, DANGLING, RHS_AS_NAC, INJECTIVE, STORE_OUT_PARS, USE_STORED_NODE_IDS -> Parser.boolFalse;
+            case CREATOR_EDGE, IGNORE_REG_EXP, DANGLING, RHS_AS_NAC, INJECTIVE, STORE_OUT_PARS, USE_STORED_NODE_IDS -> Parser.boolFalse;
             case ISOMORPHISM, LOOPS_AS_LABELS -> Parser.boolTrue;
             case USER_OPS, START_GRAPH_NAMES, CONTROL_NAMES, TYPE_NAMES, PROLOG_NAMES -> QualName
                 .listParser();

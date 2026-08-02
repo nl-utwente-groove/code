@@ -152,8 +152,17 @@ public class StateCache implements Cache {
     private DeltaApplier createDelta() {
         DeltaApplier result = null;
         if (this.state instanceof DefaultGraphNextState state) {
-            return new RuleApplication(state.getEvent(), state.source().getGraph(),
-                state.getAddedNodes());
+            HostGraph source = state.source().getGraph();
+            var application = new RuleApplication(state.getEvent(), source,
+                state.getAddedNodes(), state.getAddedEdges());
+            if (state.getAddedEdges() == null && !source.isSimple()) {
+                // record the added edge identities upon the first derivation,
+                // so that later re-derivations (after this cache has
+                // collapsed) reproduce them; a non-simple factory mints a
+                // fresh edge identity on every creation
+                state.setAddedEdges(application.getAddedEdgeArray());
+            }
+            return application;
         }
         return result;
     }
