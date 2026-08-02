@@ -199,7 +199,8 @@ disappears in phase 6; the preview field (the config's own text form) stays.
   `ValueType.EXPLORE_CONFIG`); precedence over legacy `EXPLORATION`
   ("explorationStrategy") in `GrammarProperties.getExploreType/getExploreConfig`; lazy
   conversion on read, legacy key deleted on `setExploreConfig`.
-- CLI — `Generator -x "<config>"`; `-s/-a/-r` deprecated, mutually exclusive with
+- CLI — `Generator -x "<config>"`; `-s/-a/-r` legacy shorthand (kept
+  indefinitely, translated by `LegacySyntaxParser`), mutually exclusive with
   `-x`, warning suggests the equivalent `-x`. `-D exploration=...` works through the
   generic property mechanism. `EXPLORE_USAGE` in `Generator` is hand-written — **keep
   in sync with the kind enums** (picocli annotations need compile-time constants).
@@ -340,12 +341,41 @@ Dialog/Simulator threads (2026-07-26, from Arend's review):
   EdgeMapParser), 6.2 re-keyed `ConfiguredExploreType` instantiation on the
   config (legacy Serializeds are display-only now).**
   **Scope decisions by Arend (2026-08-02):**
-  - `-s/-a/-r` stay as deprecated aliases **until the next release has
-    shipped** — the enumerator/encode/prettyparse machinery therefore
-    survives this branch; the mass deletion is a later branch.
-  - minimax + remote strategies: **keep, reachable via a dedicated
-    Generator option** (to be added when `-s` retires; until then `-s`
-    still reaches them).
+  - `-s/-a/-r` are kept **indefinitely** as a legacy shorthand syntax
+    (superseding the earlier "deprecated until the next release" decision).
+    Implemented 2026-08-02: `explore.config.parse.LegacySyntaxParser`
+    translates the legacy keywords directly into the feature model, with no
+    enumerator/encode/prettyparse dependence — `overlay(base, -s, -a, -r)`
+    resets only the component-owned keys (strategy: next/successor/frontier/
+    heuristic/cost/bound; acceptor: goal/outcome; count) on the base config,
+    so non-component features (persistence, collapse, …) now survive a
+    legacy override (an improvement over the old rebuild-from-descriptors).
+    Non-config keywords get dedicated types: `LTLExploreType` (now also
+    takes a textual boundary + count for the CLI; `BoundaryParser` extracted
+    from `EncodedBoundary`) and new `DirectExploreType` subclasses
+    `StateExploreType`, `RemoteExploreType`, `MinimaxExploreType` (acceptor
+    via nested `LegacySyntaxParser.AcceptorSpec`). Two deliberate
+    tightenings: `cycle` only with LTL strategies (and vice versa), and
+    `none` acceptor + result count rejected by the config consistency
+    check. Generator's `-s/-a/-r` run through the overlay (after
+    properties are applied); the deprecation warning became an
+    informational note printing the equivalent `-x` invocation.
+    `Transformer.setStrategy/setAcceptor` are deleted (result-count
+    override now via `ExploreType.withResultCount`, which
+    `ConfiguredExploreType` overrides to keep its config).
+    `LegacySyntaxParserTest` pins parity against the enumerator path for
+    as long as that path exists.
+  - minimax + remote: reachable via `-s` forever — the earlier "dedicated
+    Generator option when -s retires" plan is obsolete.
+  - **Consequence: the mass deletion no longer needs to wait for a
+    release** — deleting encode/prettyparse/enumerators/Serialized removes
+    no user-facing behaviour any more. Remaining compat anchor: the legacy
+    `explorationStrategy` read-time fallback still runs through
+    `ExploreType.parse` (enumerators); rewire it to
+    `LegacySyntaxParser.parse` as part of the demolition (the method
+    already exists and handles the direct types too — note the historic
+    whitespace-split limitation for LTL properties with spaces, shared
+    with the legacy parser).
   - Legacy `explorationStrategy` property: **converted via the
     GRAMMAR_VERSION mechanism (DONE 2026-08-02)**. Grammar version bumped
     to 3.12; the conversion lives in `GrammarProperties.repairVersion`
@@ -361,12 +391,12 @@ Dialog/Simulator threads (2026-07-26, from Arend's review):
     as up to date (no `VersionDialog`, no forced save; the file keeps its
     old stamp until saved for another reason). Grammars below 3.11 get
     the prompt as before.
-  - Still to migrate before the mass deletion: `CheckLTLAction` (builds
-    its exploration via Serialized — switch to direct LTLStrategy
-    construction), `ExplorationTest` fixtures (legacy keyword strings →
-    config strings), `Transformer.setStrategy/setAcceptor` (only serve
-    `-s/-a`), EngineParityTest + legacy BFS/DFS strategies (parity job
-    done once the enumerators go).
+  - Migrations before the mass deletion — ALL DONE (2026-08-02):
+    `CheckLTLAction` (direct `LTLExploreType`), `ExplorationTest`/
+    `DeterminismTest` fixtures (config strings), `Transformer.setStrategy/
+    setAcceptor` (deleted; Generator uses `LegacySyntaxParser.overlay`).
+    EngineParityTest + legacy BFS/DFS strategies + LegacySyntaxParserTest's
+    enumerator-parity assertions retire together with the enumerators.
   Note: `EncodedTypeEditor` hosts the colour constants of the deleted
   `ExplorationDialog`; the `encode` editors are unreachable from the GUI already.
 - Randomness features (`next=random`, `successor=*-random`) must respect the pending

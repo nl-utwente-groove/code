@@ -22,6 +22,7 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
 
+import nl.utwente.groove.explore.config.parse.LegacySyntaxParser;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.transform.Transformer;
 
@@ -60,8 +61,9 @@ public class GrammarsTest {
     private void testGrammar(File grammarLocation) {
         try {
             Transformer transformer = new Transformer(grammarLocation);
-            transformer.setAcceptor("any");
-            transformer.setResultCount(5);
+            transformer
+                .setExploreType(LegacySyntaxParser
+                    .overlay(transformer.getExploreType(), null, "any", 5));
             transformer.explore();
         } catch (Exception e) {
             e.printStackTrace();
