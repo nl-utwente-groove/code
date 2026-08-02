@@ -37,6 +37,16 @@ public enum Count implements Setting.Kind {
     COUNT("value", "Exploration stops as soon as the given number of results has been found",
         Setting.ContentType.INTEGER),;
 
+    /** Computes the setting expressing a given numeric result count,
+     * with {@code 0} meaning all results. */
+    public static Setting toSetting(int count) {
+        return switch (count) {
+        case 0 -> ALL.createSetting();
+        case 1 -> FIRST.createSetting();
+        default -> COUNT.createSetting(count);
+        };
+    }
+
     private Count(String name, String explanation, Setting.ContentType contentType) {
         this.name = name;
         this.explanation = explanation;

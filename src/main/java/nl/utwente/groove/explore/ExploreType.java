@@ -145,6 +145,16 @@ public class ExploreType {
     }
 
     /**
+     * Returns a variant of this exploration type with a different result
+     * bound ({@code 0} meaning unbounded). This implementation rebuilds a
+     * plain type from the serialised descriptors; subclasses that carry more
+     * than the descriptors should override it to preserve their content.
+     */
+    public ExploreType withResultCount(int count) {
+        return new ExploreType(getStrategy(), getAcceptor(), count);
+    }
+
+    /**
      * Tests if this exploration is compatible with a given rule system.
      * If this method does not throw an exception, then neither will {@link #newExploration}.
      * @throws FormatException if the rule system is not compatible
