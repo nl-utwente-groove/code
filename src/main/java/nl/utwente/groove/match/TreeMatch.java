@@ -27,8 +27,12 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.grammar.Condition;
 import nl.utwente.groove.grammar.Condition.Op;
 import nl.utwente.groove.grammar.host.AnchorValue;
+import nl.utwente.groove.grammar.host.HostEdgeSet;
+import nl.utwente.groove.grammar.host.HostNodeSet;
 import nl.utwente.groove.grammar.rule.Anchor;
 import nl.utwente.groove.grammar.rule.AnchorKey;
+import nl.utwente.groove.grammar.rule.RuleEdge;
+import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.grammar.rule.RuleToHostMap;
 import nl.utwente.groove.transform.Proof;
 import nl.utwente.groove.util.Exceptions;
@@ -282,6 +286,12 @@ public class TreeMatch implements Fixable {
      * consisting of one sub-match from each row of a given matrix.
      */
     private void traverseMatrix(List<Proof>[] matrix, int[] rowSize, Visitor<Proof,?> visitor) {
+        var rule = getCondition().getRule();
+        // the identification condition on the amalgamated rule applies only
+        // under DPO semantics; under SPO (simple graphs or multigraphs
+        // alike), shared deletion between instances is fine
+        boolean checkErasers = rule != null && rule.isTop()
+            && rule.getGrammarProperties().getParallelMode().isDPO() && rule.hasEraserSubRules();
         int rowCount = rowSize.length;
         int index[] = new int[rowCount];
         do {
@@ -295,11 +305,56 @@ public class TreeMatch implements Fixable {
                     subMatches.add(subProof);
                 }
             }
+            // skip proofs in which distinct subrule applications erase the
+            // same host element; they are not legal amalgamated applications
+            if (checkErasers && !hasDisjointErasers(proof)) {
+                continue;
+            }
             // stop the traversal if the visitor asks for it
             if (!visitor.visit(proof)) {
                 break;
             }
         } while (incVector(index, rowSize));
+    }
+
+    /**
+     * Tests if the eraser images of all (sub)proofs of a given proof are
+     * pairwise distinct. Distinct subrule applications erasing the same host
+     * element would make the pushout complement of the amalgamated event
+     * non-unique (the DPO identification condition on the amalgamated rule),
+     * so a proof with coinciding eraser images does not correspond to a
+     * legal amalgamated application.
+     */
+    private static boolean hasDisjointErasers(Proof proof) {
+        return collectEraserImages(proof, new HostNodeSet(), new HostEdgeSet());
+    }
+
+    /**
+     * Recursively collects the eraser images of a proof and its subproofs
+     * into the given sets.
+     * @return {@code true} if all eraser images were distinct
+     */
+    private static boolean collectEraserImages(Proof proof, HostNodeSet nodes, HostEdgeSet edges) {
+        var rule = proof.getRule();
+        var patternMap = proof.getPatternMap();
+        if (rule != null && patternMap != null) {
+            for (RuleNode eraser : rule.getEraserNodes()) {
+                if (!nodes.add(patternMap.getNode(eraser))) {
+                    return false;
+                }
+            }
+            for (RuleEdge eraser : rule.getEraserEdges()) {
+                if (!edges.add(patternMap.getEdge(eraser))) {
+                    return false;
+                }
+            }
+        }
+        for (Proof sub : proof.getSubProofs()) {
+            if (!collectEraserImages(sub, nodes, edges)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

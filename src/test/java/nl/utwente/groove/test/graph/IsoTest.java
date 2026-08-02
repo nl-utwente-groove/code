@@ -21,6 +21,7 @@ import static nl.utwente.groove.io.FileType.STATE;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -30,8 +31,11 @@ import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.grammar.host.DefaultHostGraph;
+import nl.utwente.groove.grammar.host.HostEdge;
+import nl.utwente.groove.grammar.host.HostFactory;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.type.TypeFactory;
+import nl.utwente.groove.graph.Morphism;
 import nl.utwente.groove.graph.iso.IsoChecker;
 import nl.utwente.groove.graph.plain.PlainGraph;
 import nl.utwente.groove.util.Groove;
@@ -106,6 +110,42 @@ public class IsoTest {
             .assertFalse(checker
                 .areIsomorphic(createBoolGraph(typeFactory, true),
                                createBoolGraph(typeFactory, false)));
+    }
+
+    /** Tests that the isomorphism constructed between multigraphs is total
+     * and injective on parallel edges: each copy must be mapped to its own
+     * copy, rather than all copies onto one representative.
+     */
+    @Test
+    public void testParallelEdges() {
+        TypeFactory typeFactory = TypeFactory.newInstance();
+        DefaultHostGraph dom = createParallelGraph(typeFactory);
+        DefaultHostGraph cod = createParallelGraph(typeFactory);
+        Assert.assertTrue(checker.areIsomorphic(dom, cod));
+        Morphism<HostNode,HostEdge> iso = checker.getIsomorphism(dom, cod);
+        Assert.assertNotNull(iso);
+        Assert.assertEquals(dom.nodeCount(), iso.nodeMap().size());
+        Assert.assertEquals(dom.edgeCount(), iso.edgeMap().size());
+        Assert.assertEquals(dom.edgeCount(), new HashSet<>(iso.edgeMap().values()).size());
+    }
+
+    /** Creates a multigraph with three parallel a-loops and two parallel
+     * b-edges. The shared edge certificates of the parallel copies force the
+     * isomorphism to be constructed by the search plan rather than directly
+     * from the certificates. */
+    private DefaultHostGraph createParallelGraph(TypeFactory typeFactory) {
+        DefaultHostGraph result
+            = new DefaultHostGraph("parallel", HostFactory.newInstance(typeFactory, false));
+        HostNode source = result.addNode();
+        HostNode target = result.addNode();
+        for (int i = 0; i < 3; i++) {
+            result.addEdge(source, "a", source);
+        }
+        for (int i = 0; i < 2; i++) {
+            result.addEdge(source, "b", target);
+        }
+        Assert.assertEquals(5, result.edgeCount());
+        return result;
     }
 
     /** Creates a host graph with a single b-labelled edge to a boolean value node. */

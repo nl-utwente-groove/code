@@ -28,8 +28,8 @@ import nl.utwente.groove.util.Dispenser;
  * @version $Revision$
  */
 public class AttrFactory extends ElementFactory<AttrNode,AttrEdge> {
-    /** Private constructor for the singleton instance. */
-    private AttrFactory() {
+    /** Constructor for a fresh factory, with its own edge numbering. */
+    AttrFactory() {
         // empty
     }
 
@@ -54,11 +54,4 @@ public class AttrFactory extends ElementFactory<AttrNode,AttrEdge> {
     }
 
     private final Dispenser edgeNrDispenser = Dispenser.counter();
-
-    /** Returns the singleton instance of this class. */
-    public static AttrFactory instance() {
-        return instance;
-    }
-
-    private static AttrFactory instance = new AttrFactory();
 }

@@ -1239,6 +1239,21 @@ public class Rule implements Action, Fixable {
     private final Supplier<Boolean> hasNodeErasers = lazy(this::computeHasNodeErasers);
 
     /**
+     * Indicates if any subrule (at any depth) erases nodes or edges.
+     * If so, distinct subrule matches may erase the same host element,
+     * which invalidates the amalgamated event (the DPO identification
+     * condition on the amalgamated rule); this property triggers the
+     * corresponding proof filter.
+     */
+    public boolean hasEraserSubRules() {
+        return this.hasEraserSubRules.get();
+    }
+
+    /** Indicates if any subrule (at any depth) erases nodes or edges. */
+    private final Supplier<Boolean> hasEraserSubRules
+        = lazy(() -> getSubRules().stream().anyMatch(r -> r.hasNodeErasers() || r.hasEdgeErasers()));
+
+    /**
      * Returns the LHS nodes on this rule level that are not mapped to the RHS.
      */
     public final DefaultRuleNode[] getEraserNodes() {

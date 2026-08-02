@@ -183,7 +183,7 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
         Map<AspectNode,AspectJVertex> nodeJVertexMap = new HashMap<>();
         Map<AspectEdge,AspectJCell> edgeJCellMap = new HashMap<>();
         AspectGraph graph
-            = new AspectGraph(getName(), role, !getGrammar().getProperties().isHasParallelEdges());
+            = new AspectGraph(getName(), role, !getGrammar().getProperties().getParallelMode().isMulti());
         graph.setTypeSortMap(getGrammar().getTypeModel().getTypeSortMap());
         for (AspectJCell jCell : getRoots()) {
             if (jCell instanceof AspectJVertex jVertex) {

@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -298,6 +299,32 @@ public class Condition implements Fixable {
 
     /** The collection of sub-conditions of this condition. */
     private final Collection<Condition> subConditions = new ArrayList<>();
+
+    /**
+     * Adds ancestor-level eraser edges to this condition.
+     * These are eraser edges of an ancestor condition's rule that have been
+     * propagated into this condition's root because their image may coincide
+     * with that of a pattern edge of this condition; the search plan treats
+     * them as erasers of this condition when computing the conflict pairs
+     * that enforce the DPO identification condition across quantification
+     * levels.
+     */
+    public void addAncestorEraserEdges(Collection<RuleEdge> edges) {
+        testFixed(false);
+        this.ancestorEraserEdges.addAll(edges);
+    }
+
+    /**
+     * Returns the ancestor-level eraser edges propagated into this
+     * condition's root.
+     * @see #addAncestorEraserEdges(Collection)
+     */
+    public Set<RuleEdge> getAncestorEraserEdges() {
+        return this.ancestorEraserEdges;
+    }
+
+    /** The ancestor-level eraser edges propagated into this condition's root. */
+    private final Set<RuleEdge> ancestorEraserEdges = new LinkedHashSet<>();
 
     /** Indicates that all subconditions of this condition are evaluated. */
     private final boolean isConjunctive() {
