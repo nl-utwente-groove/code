@@ -16,12 +16,11 @@
  */
 package nl.utwente.groove.io.external.format.ecore;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Properties;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
+import nl.utwente.groove.annotation.HelpMap;
 import nl.utwente.groove.grammar.model.SettingsSchema;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
@@ -80,29 +79,8 @@ public class EcoreMappingSchema implements SettingsSchema {
     }
 
     @Override
-    public Map<String,String> getKeyDocMap() {
-        Map<String,String> result = new LinkedHashMap<>();
-        result
-            .put(EcoreMapping.ORDERING_KEY,
-                 "Global encoding of ordered or non-unique many-valued features: "
-                     + "'none' (plain edges, order lost) or 'index' (intermediate nodes "
-                     + "with an index attribute)");
-        result
-            .put(EcoreMapping.USE_IDENTIFIERS_KEY,
-                 "If 'true', xmi:id values are turned into id: aspects of host graph nodes");
-        result
-            .put("<class>.<feature>." + EcoreMapping.ORDERING_KEY,
-                 "Per-feature override of the ordering encoding");
-        result
-            .put("<classifier>." + EcoreMapping.TYPE_NAME_KEY,
-                 "GROOVE type name to use for the classifier");
-        result
-            .put("<enum>." + EcoreMapping.LITERAL_STYLE_KEY,
-                 "Naming of the enum's literal types: 'qualified' (E$L) or 'plain' (L)");
-        result
-            .put("<enum>.<literal>." + EcoreMapping.TYPE_NAME_KEY,
-                 "GROOVE type name to use for the enum literal");
-        return result;
+    public HelpMap getHelpMap() {
+        return EcoreKey.getDocMap();
     }
 
     /** The singleton instance of this schema. */

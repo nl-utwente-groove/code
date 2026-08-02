@@ -43,6 +43,7 @@ import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EcoreFactory;
 import org.junit.Test;
 
+import nl.utwente.groove.annotation.HelpMap;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectNode;
@@ -804,6 +805,18 @@ public class EcoreTest {
         EcoreMapping defaults = mapping(globals);
         assertEquals(Ordering.NONE, defaults.ordering());
         assertTrue(defaults.useIdentifiers());
+    }
+
+    /** Tests that the schema help map is harvested from the key annotations:
+     * one documented syntax line per key form, each with a tool tip. */
+    @Test
+    public void testMappingDocMap() throws Exception {
+        HelpMap docMap = EcoreMappingSchema.INSTANCE.getHelpMap();
+        assertEquals(EcoreKey.values().length, docMap.size());
+        docMap.forEach((item, tip) -> {
+            assertTrue(item, item.startsWith("<html>"));
+            assertNotNull(item, tip);
+        });
     }
 
     /** Tests that a broken or wrongly-schemed mapping resource makes the port fail. */

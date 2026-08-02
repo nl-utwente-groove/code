@@ -16,12 +16,11 @@
  */
 package nl.utwente.groove.grammar.model;
 
-import java.util.Collections;
-import java.util.Map;
 import java.util.Properties;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
+import nl.utwente.groove.annotation.HelpMap;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 
 /**
@@ -59,13 +58,14 @@ public interface SettingsSchema {
     }
 
     /**
-     * Returns a map from the keys of this schema to their documentation.
-     * Only intended for user guidance; a schema whose keys are not a fixed set
-     * may well document none of them.
-     * @return a (non-{@code null}, possibly empty) map from keys to descriptions
+     * Returns a syntax help map documenting the keys of this schema, from
+     * (HTML-formatted) key syntax lines to tool tips; shown in the settings
+     * display. A schema whose keys are not a fixed set may document the key
+     * forms rather than individual keys.
+     * @return a (non-{@code null}, possibly empty) help map
      */
-    default public Map<String,String> getKeyDocMap() {
-        return Collections.emptyMap();
+    default public HelpMap getHelpMap() {
+        return new HelpMap();
     }
 
     /**

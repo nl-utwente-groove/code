@@ -231,8 +231,10 @@ abstract public class Display extends JPanel {
             break;
         case HOST:
         case TYPE:
-        case SETTINGS:
             result = new ResourceDisplay(simulator, kind.getResource());
+            break;
+        case SETTINGS:
+            result = new SettingsDisplay(simulator);
             break;
         case PROPERTIES:
             result = new PropertiesDisplay(simulator);
