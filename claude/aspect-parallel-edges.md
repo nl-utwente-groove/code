@@ -447,22 +447,41 @@ were closed:
   mapped merge images first claim their slots by identity
   (`consumeAddedEdge`), and only then are ghosts substituted from the
   remaining slots.
-- **Symmetry transitions**: `IsoChecker.getIsomorphism` returns edge maps
-  that are *non-injective on content-equal parallel copies* (it maps by
-  certificate, collapsing all copies onto one representative — it can even
-  map an edge that is itself present in the target onto a different copy).
-  The composed symmetry morphism inherited that. `adaptToTarget` now runs
-  after the symmetry composition as well, and repairs *duplicate* images
-  in addition to ghosts, redistributing unconsumed content-equal copies.
-  (Whether other `getIsomorphism` callers care about copy-level
-  injectivity is untracked; boolean isomorphism *checking* counts copies
-  correctly and is unaffected.)
+- **Symmetry transitions**: `IsoChecker`'s isomorphism *construction*
+  (the search-plan path of `computeIsomorphism`) enforced injectivity on
+  node images only; edge images followed implicitly, which is sound for
+  simple graphs (an edge is determined by its endpoints and label) but
+  collapsed content-equal parallel copies onto one representative in
+  multigraphs. The composed symmetry morphism inherited that. Since any
+  caller of `getIsomorphism` has a right to an actual isomorphism, this
+  is fixed *at the source*: the search now keeps a used-edge-image set
+  (plus a per-plan-item image array for backtracking, both mirrored in
+  `IsoCheckerState` for the re-entrant search used by
+  `ConfluenceAnalyzer`), and skips candidate images already in use. The
+  bookkeeping is allocated only for non-simple domain graphs — simple
+  graphs take exactly the old control flow, paying one null check per
+  search step. Boolean isomorphism *checking* is unaffected in outcome:
+  edge certificates already count copies, and the backtracking search
+  remains complete under the extra constraint. The certificate-equal
+  fast path (`getCertEqualIsomorphism`) requires a one-to-one edge
+  partition and thus never sees parallel copies.
+
+With the isomorphism reliable, the repair layer is minimal again and
+gated to avoid cost where nothing can need repair: the symmetry case is
+exact (no `adaptToTarget`), and the non-symmetry secondary case runs
+`adaptToTarget` (ghost substitution only) solely for non-simple graphs
+under rules with mergers (`Rule.hasMergers()`, statically cached) — only
+merging rules mint irreproducible edge images. Likewise, the primary
+path's replay bookkeeping in `computeMorphism` is skipped entirely when
+the record has no merge map.
 
 `TransitionMorphismTest` asserts, post-sweep, that every image is an
 element of the actual target graph, that the morphism is
 structure-preserving and injective on edges, and that the morphism of the
-(erasure-free) merger rule `fold` is total on the source edges. The
-injectivity assertion is what exposed the `IsoChecker` collapse; the
+(erasure-free) merger rule `fold` is total on the source edges; with the
+symmetry path exact, its injectivity assertion now directly exercises the
+`IsoChecker` fix. `IsoTest.testParallelEdges` covers the checker in
+isolation (5-edge multigraphs, previously collapsing to 2 images). The
 mixed-cache scenario has no fixture (it would need a quantified merger
 plus a partial cache sweep) and is covered by reasoning only.
 

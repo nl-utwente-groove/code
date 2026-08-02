@@ -48,10 +48,9 @@ import nl.utwente.groove.util.Groove;
  * edges actually present in the target graph — via the recorded added-edge
  * identities for a state's own primary transition, and by content-matching
  * against the target graph for secondary transitions. Moreover, the edge map
- * must be injective (parallel copies stay distinct under merging), which in
- * particular requires repairing the composed target isomorphism of symmetry
- * transitions: the iso checker maps content-equal parallel copies
- * non-injectively.
+ * must be injective (parallel copies stay distinct under merging); for
+ * symmetry transitions this relies on the target isomorphism constructed by
+ * the iso checker being injective on content-equal parallel copies.
  * @author Arend Rensink
  * @version $Revision$
  */

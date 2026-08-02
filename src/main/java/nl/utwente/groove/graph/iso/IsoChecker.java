@@ -472,6 +472,10 @@ public class IsoChecker {
         }
         Morphism<Node,Edge> result;
         Set<Node> usedNodeImages;
+        // set of used edge images, for non-simple graphs only: there,
+        // edge injectivity is not implied by node injectivity, as parallel
+        // edges share their end nodes and label
+        Set<Edge> usedEdgeImages;
 
         // Compute a new plan or restore the one from the state.
         List<IsoSearchItem> plan;
@@ -483,12 +487,18 @@ public class IsoChecker {
                 return null;
             } else {
                 usedNodeImages = new HashSet<>(state.usedNodeImages);
+                usedEdgeImages = state.usedEdgeImages == null
+                    ? null
+                    : new HashSet<>(state.usedEdgeImages);
                 result = state.result.clone();
             }
         } else {
             // construct the search plan
             result = (Morphism<Node,Edge>) domCertifier.getGraph().getFactory().createMorphism();
             usedNodeImages = new HashSet<>();
+            usedEdgeImages = dom.isSimple()
+                ? null
+                : new HashSet<>();
             plan = computePlan(domCertifier, codCertifier, result, usedNodeImages);
         }
         if (plan == null) {
@@ -513,6 +523,14 @@ public class IsoChecker {
             targetImages = state.targetImages;
         } else {
             targetImages = new Node[plan.size()];
+        }
+        Edge[] edgeImages;
+        if (state != null && state.edgeImages != null) {
+            edgeImages = state.edgeImages;
+        } else {
+            edgeImages = usedEdgeImages == null
+                ? null
+                : new Edge[plan.size()];
         }
 
         if (ISO_PRINT) {
@@ -549,6 +567,13 @@ public class IsoChecker {
                                 targetImages[i], item.key.target(), usedNodeImages);
                     targetImages[i] = null;
                 }
+                if (edgeImages != null && edgeImages[i] != null) {
+                    boolean removed = usedEdgeImages.remove(edgeImages[i]);
+                    assert removed : String
+                        .format("Image %s for edge %s not present in used edge set %s",
+                                edgeImages[i], item.key, usedEdgeImages);
+                    edgeImages[i] = null;
+                }
             }
             if (!records[i].hasNext()) {
                 // we're moving backward
@@ -559,6 +584,11 @@ public class IsoChecker {
                 Node keyTarget = key.target();
                 Node keySource = key.source();
                 Edge image = records[i].next();
+                if (usedEdgeImages != null && usedEdgeImages.contains(image)) {
+                    // edge injectivity is destroyed (the image is a parallel
+                    // copy already used for another edge); take next edge image
+                    continue;
+                }
                 Node imageSource = image.source();
                 Node imageTarget = image.target();
                 if (item.sourcePreMatched) {
@@ -601,6 +631,10 @@ public class IsoChecker {
                     targetImages[i] = imageTarget;
                 }
                 result.putEdge(key, image);
+                if (edgeImages != null) {
+                    usedEdgeImages.add(image);
+                    edgeImages[i] = image;
+                }
                 i++;
             }
         }
@@ -620,8 +654,12 @@ public class IsoChecker {
                 state.plan = plan;
                 state.result = result.clone();
                 state.usedNodeImages = new HashSet<>(usedNodeImages);
+                state.usedEdgeImages = usedEdgeImages == null
+                    ? null
+                    : new HashSet<>(usedEdgeImages);
                 state.sourceImages = sourceImages;
                 state.targetImages = targetImages;
+                state.edgeImages = edgeImages;
                 state.records = records;
                 state.i = i - 1;
             }
@@ -831,6 +869,13 @@ public class IsoChecker {
                     }
                 }
             }
+            return false;
+        }
+        // in a non-simple graph, edge injectivity is not implied by node
+        // injectivity, so it must be checked separately
+        if (!dom.isSimple()
+            && map.edgeMap().size() != new HashSet<>(map.edgeMap().values()).size()) {
+            System.out.printf("Edge map is not injective on parallel edges%n");
             return false;
         }
         return true;
@@ -1215,12 +1260,19 @@ public class IsoChecker {
         List<IsoSearchItem> plan = null;
         /** Set of images used in the isomorphism so far. */
         Set<Node> usedNodeImages = null;
+        /** Set of edge images used in the isomorphism so far; {@code null}
+         * for simple graphs, where edge injectivity is implied by node
+         * injectivity. */
+        Set<Edge> usedEdgeImages = null;
         /** Records of the search for isomorphism. */
         Iterator<Edge>[] records = null;
         /** Array of source nodes in the order of the search plan. */
         Node[] sourceImages = null;
         /** Array of target nodes in the order of the search plan. */
         Node[] targetImages = null;
+        /** Array of edge images in the order of the search plan; {@code null}
+         * for simple graphs. */
+        Edge[] edgeImages = null;
         /** Result of the search. */
         Morphism<Node,Edge> result = null;
         /** Position in the search plan. */

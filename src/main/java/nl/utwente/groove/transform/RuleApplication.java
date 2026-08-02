@@ -348,8 +348,12 @@ public class RuleApplication implements DeltaApplier {
         }
         // in a non-simple graph, merge-redirected images are minted fresh
         // by the merge map, so they must be substituted by the content-equal
-        // identities recorded at the first derivation, if those are available
-        HostEdge[] replay = this.addedEdges;
+        // identities recorded at the first derivation, if those are available;
+        // without a merge map, all non-erased edges map to themselves and
+        // no replay bookkeeping is needed
+        HostEdge[] replay = mergeMap == null
+            ? null
+            : this.addedEdges;
         boolean[] consumed = replay == null
             ? null
             : new boolean[replay.length];
