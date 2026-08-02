@@ -18,8 +18,10 @@ import java.util.TreeSet;
 
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.explore.ExploreType;
+import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
+import nl.utwente.groove.explore.config.parse.LegacySyntaxParser;
 import nl.utwente.groove.grammar.CheckPolicy.PolicyMap;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
@@ -341,15 +343,6 @@ public class GrammarProperties extends Properties {
     }
 
     /**
-     * Sets the legacy exploration strategy to a certain value.
-     * Superseded by {@link #setExploreConfig}; retained for the legacy key.
-     * @param exploreType the new exploration strategy
-     */
-    public void setExploreType(ExploreType exploreType) {
-        storeValue(GrammarKey.EXPLORATION, exploreType);
-    }
-
-    /**
      * Returns the exploration strategy, or {@link ExploreType#DEFAULT} if there
      * is no strategy set. If the exploration configuration key is set, it
      * takes precedence over the legacy exploration strategy key; a stored
@@ -387,12 +380,10 @@ public class GrammarProperties extends Properties {
         if (containsKey(GrammarKey.EXPLORE_CONFIG)) {
             return parsePropertyOrDefault(GrammarKey.EXPLORE_CONFIG).getExploreConfig();
         }
-        try {
-            return ExploreTypeConverter
-                .toConfig(parsePropertyOrDefault(GrammarKey.EXPLORATION).getExploreType());
-        } catch (FormatException exc) {
-            return new ExploreConfig();
-        }
+        return parsePropertyOrDefault(GrammarKey.EXPLORATION)
+            .getExploreType() instanceof ConfiguredExploreType configured
+                ? new ExploreConfig(configured.getConfig())
+                : new ExploreConfig();
     }
 
     /**
@@ -788,15 +779,17 @@ public class GrammarProperties extends Properties {
                     result.remove(GrammarKey.EXPLORATION.getName());
                 } else {
                     try {
-                        result
-                            .setExploreConfig(ExploreTypeConverter
-                                .toConfig(ExploreType.parse(legacy)));
-                        // (setExploreConfig also removes the legacy key)
+                        if (LegacySyntaxParser
+                            .parse(legacy) instanceof ConfiguredExploreType configured) {
+                            result.setExploreConfig(configured.getConfig());
+                            // (setExploreConfig also removes the legacy key)
+                        }
+                        // otherwise the value has no feature-model equivalent
+                        // (e.g., an LTL strategy); leave it in place, to be
+                        // interpreted by the read-time fallback
                     } catch (FormatException exc) {
-                        // the legacy value is unparsable or has no feature-model
-                        // equivalent (e.g., an LTL strategy); leave it in place,
-                        // to be interpreted by the read-time fallback for as
-                        // long as that exists
+                        // the legacy value is unparsable; leave it in place,
+                        // to be reported by the read-time fallback
                     }
                 }
             }

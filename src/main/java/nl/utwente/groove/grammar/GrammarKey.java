@@ -30,10 +30,10 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.algebra.UserSignature;
-import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreConfigChecker;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
+import nl.utwente.groove.explore.config.parse.LegacySyntaxParser;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.RuleModel;
@@ -344,7 +344,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
             case ACTION_POLICY -> CheckPolicy.multiParser;
             case DEAD_POLICY -> new Parser.EnumParser<>(CheckPolicy.class, CheckPolicy.OFF,
                 convert("off", null, "error", null));
-            case EXPLORATION -> ExploreType.parser();
+            case EXPLORATION -> LegacySyntaxParser.parser();
             case EXPLORE_CONFIG -> ExploreConfig.parser();
             case TRANSITION_PARAMETERS -> new Parser.EnumParser<>(ThreeValued.class,
                 ThreeValued.SOME, true);
