@@ -33,11 +33,14 @@ import static nl.utwente.groove.grammar.model.ResourceKind.PROPERTIES;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +59,7 @@ import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.algebra.syntax.Variable;
+import nl.utwente.groove.automaton.RegAutCoverage;
 import nl.utwente.groove.automaton.RegExpr;
 import nl.utwente.groove.grammar.Action.Role;
 import nl.utwente.groove.grammar.CheckPolicy;
@@ -96,6 +100,7 @@ import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.graph.EdgeComparator;
+import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.GraphProperties;
@@ -395,6 +400,16 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         FormatErrorSet errors = createErrors();
         // store the derived subrules in order
         TreeMap<Index,Condition> conditionTree = new TreeMap<>();
+        // import cross-level eraser-conflict elements (root extension);
+        // this must happen top-down and before any condition is built.
+        // The identification condition applies only under DPO semantics;
+        // under SPO (simple graphs or multigraphs alike), identifications
+        // are resolved by letting deletion win
+        if (getGrammarProperties().getParallelMode().isDPO()) {
+            for (Level4 level : levelTree.getLevel4Map().values()) {
+                level.importEraserConflicts();
+            }
+        }
         // construct the rule tree and add parent rules
         try {
             for (Level4 level : levelTree.getLevel4Map().values()) {
@@ -434,6 +449,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         } catch (FormatException exc) {
             errors.addAll(exc.getErrors());
         }
+        checkRegExprErasure(levelTree, errors);
         // infer and set the role
         Role role = getRole();
         if (role.isProperty()) {
@@ -477,6 +493,83 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         errors.applyInverse(levelTree.getModelMap()).throwException();
         assert result != null;
         return result;
+    }
+
+    /**
+     * Checks, for grammars with parallel edges, that no composite regular
+     * expression edge can match a path through an edge that the rule erases.
+     * Composite regular expressions (those without a single host edge image)
+     * have untracked path witnesses, so the identification condition on
+     * erasers cannot be enforced for them at match time; rather than
+     * silently transforming away such witnesses, potential overlaps are
+     * reported as errors, unless the ignoreRegExp grammar property is set.
+     * The check spans the entire quantification tree in both directions,
+     * since amalgamation lets erasers at any level destroy witnesses matched
+     * at any other level. The traversable edge types of a regular expression
+     * are computed positionally, by {@link RegAutCoverage}. Eraser nodes
+     * contribute nothing: DPO semantics implies the dangling-edge condition,
+     * so node deletion can never erase unmatched edges. Negated expressions
+     * are exempt, as erasure cannot invalidate an established negative
+     * condition; the empty expression traverses nothing.
+     */
+    private void checkRegExprErasure(LevelTree levelTree, FormatErrorSet errors) {
+        var properties = getGrammarProperties();
+        if (!properties.getParallelMode().isDPO() || properties.isIgnoreRegExp()) {
+            return;
+        }
+        // collect the possibly erased edge types over all levels,
+        // with a witnessing eraser element for error reporting
+        Map<TypeEdge,RuleElement> erasedTypes = new LinkedHashMap<>();
+        var typeGraph = getTypeGraph();
+        for (Level4 level : levelTree.getLevel4Map().values()) {
+            if (!level.getIndex().getOperator().isQuantifier()) {
+                continue;
+            }
+            Set<RuleEdge> eraserEdges = new LinkedHashSet<>(level.lhs.edgeSet());
+            eraserEdges.removeAll(level.rhs.edgeSet());
+            for (RuleEdge eraser : eraserEdges) {
+                for (TypeEdge type : eraser.getMatchingTypes()) {
+                    erasedTypes.putIfAbsent(type, eraser);
+                }
+            }
+        }
+        if (erasedTypes.isEmpty()) {
+            return;
+        }
+        // check the composite regular expression edges of all levels
+        Set<RuleEdge> checked = new HashSet<>();
+        for (Level4 level : levelTree.getLevel4Map().values()) {
+            if (!level.getIndex().getOperator().isQuantifier()) {
+                continue;
+            }
+            for (RuleEdge edge : level.lhs.edgeSet()) {
+                RuleLabel label = edge.label();
+                if (edge.hasEdgeImage() || label.isEmpty() || label.isNeg()) {
+                    continue;
+                }
+                // a lone node type atom is not a path: its witness is the
+                // (tracked) node itself, not an edge traversal
+                if (label.getRole() == EdgeRole.NODE_TYPE) {
+                    continue;
+                }
+                if (!checked.add(edge)) {
+                    // root edges are shared between levels; check them once
+                    continue;
+                }
+                var coverage = new RegAutCoverage(label.getAutomaton(typeGraph),
+                    edge.source().getMatchingTypes(), edge.target().getMatchingTypes());
+                for (var erasedEntry : erasedTypes.entrySet()) {
+                    if (coverage.result().contains(erasedEntry.getKey())) {
+                        errors
+                            .add("Regular expression %s may match a path through a %s-edge "
+                                + "erased by this rule (set the ignoreRegExp grammar property "
+                                + "to accept this)", label, erasedEntry.getKey().label(), edge,
+                                 erasedEntry.getValue());
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     /** Returns the normalised aspect graph underlying this rule model. */
@@ -1003,13 +1096,14 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                                                      RuleModelMap modelMap) throws FormatException {
             SortedMap<Index,Level2> result = new TreeMap<>();
             FormatErrorSet errors = createErrors();
+            var allocator = new ParallelIndexAllocator();
             for (Level1 level1 : level1Map.values()) {
                 try {
                     Index index = level1.getIndex();
                     Level2 parent = index.isTopLevel()
                         ? null
                         : result.get(index.parent);
-                    Level2 level2 = new Level2(level1, parent, modelMap);
+                    Level2 level2 = new Level2(level1, parent, modelMap, allocator);
                     result.put(index, level2);
                 } catch (FormatException e) {
                     errors.addAll(e.getErrors());
@@ -1318,11 +1412,13 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
          * @param origin the level 1 object from which this level 2 object is created
          * @param parent the parent's level 2 object, if this is not a top level
          */
-        public Level2(Level1 origin, Level2 parent, RuleModelMap modelMap) throws FormatException {
+        public Level2(Level1 origin, Level2 parent, RuleModelMap modelMap,
+                      ParallelIndexAllocator allocator) throws FormatException {
             this.factory = modelMap.getFactory();
             Index index = this.index = origin.index;
             this.parent = parent;
             this.modelMap = modelMap;
+            this.allocator = allocator;
             this.isRule = index.isTopLevel();
             // initialise the rule data structures
             this.lhs = createGraph(getQualName() + "-" + index + "-lhs");
@@ -1924,15 +2020,31 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                     "Cannot compute image of '%s'-edge: target node does not have image",
                     edge.label(), edge.target());
             }
-            return this.factory.createEdge(sourceImage, edge.getRuleLabel(), targetImage);
+            RuleEdge result = this.factory.createEdge(sourceImage, edge.getRuleLabel(), targetImage);
+            // in multigraph mode, every aspect edge gets its own parallel
+            // index for its content, so that copies declared by distinct
+            // aspect edges never coalesce; in particular, created copies are
+            // always fresh with respect to matched copies. Embargo edges are
+            // exempt: they declare no copies of their own
+            if (getGrammarProperties().getParallelMode().isMulti()
+                && edge.has(ROLE, k -> k != AspectKind.EMBARGO)) {
+                int index = this.allocator.getIndex(edge, result);
+                if (index > 0) {
+                    result = this.factory
+                        .createEdge(sourceImage, edge.getRuleLabel(), targetImage, index);
+                }
+            }
+            return result;
         }
 
         /**
          * Callback method to create an untyped graph that can serve as LHS or RHS of a rule.
+         * The graph is non-simple if the grammar allows parallel edges.
          * @see #getSource()
          */
         private RuleGraph createGraph(String name) {
-            return new RuleGraph(name, isInjective(), this.factory);
+            return new RuleGraph(name, isInjective(),
+                !getGrammarProperties().getParallelMode().isMulti(), this.factory);
         }
 
         @Override
@@ -1948,6 +2060,8 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         private final RuleFactory factory;
         /** Mapping from aspect graph elements to rule elements. */
         private final RuleModelMap modelMap;
+        /** Parallel-index allocator, shared between the levels of this rule. */
+        private final ParallelIndexAllocator allocator;
         /** Index of this level. */
         private final Index index;
         /** Parent level. */
@@ -1976,6 +2090,38 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         private final List<RuleGraph> nacs = new ArrayList<>();
         /** Variables bound at the parent level. */
         private final Set<LabelVar> parentVars = new HashSet<>();
+    }
+
+    /**
+     * Allocator of parallel-edge indices for the aspect edges of a multigraph
+     * rule: every aspect edge gets its own parallel index for its content, so
+     * that the copies declared by distinct aspect edges never coalesce — in
+     * particular, created copies are always fresh with respect to matched
+     * copies. Shared between all levels of one rule, so that an aspect edge
+     * occurring at several quantification levels keeps the same copy.
+     */
+    static private class ParallelIndexAllocator {
+        /**
+         * Returns the parallel index allocated to a given aspect edge,
+         * allocating the next free index for its content on the first call.
+         * @param modelEdge the aspect edge for which the index is allocated
+         * @param edge0 the index-0 rule edge image of the aspect edge,
+         * serving as the content representative
+         */
+        int getIndex(AspectEdge modelEdge, RuleEdge edge0) {
+            Integer result = this.indexMap.get(modelEdge);
+            if (result == null) {
+                result = this.nextIndexMap.getOrDefault(edge0, 0);
+                this.indexMap.put(modelEdge, result);
+                this.nextIndexMap.put(edge0, result + 1);
+            }
+            return result;
+        }
+
+        /** Map from aspect edges to their allocated index. */
+        private final Map<AspectEdge,Integer> indexMap = new HashMap<>();
+        /** Map from index-0 content representatives to the next free index. */
+        private final Map<RuleEdge,Integer> nextIndexMap = new HashMap<>();
     }
 
     /**
@@ -2287,10 +2433,12 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
 
         /**
          * Callback method to create an untyped graph that can serve as LHS or RHS of a rule.
+         * The graph is non-simple if the grammar allows parallel edges.
          * @see #getSource()
          */
         private RuleGraph createGraph(String name) {
-            return new RuleGraph(name, isInjective(), this.factory);
+            return new RuleGraph(name, isInjective(),
+                !getGrammarProperties().getParallelMode().isMulti(), this.factory);
         }
 
         private final Level3 parent;
@@ -2344,6 +2492,108 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         }
 
         /**
+         * Imports ancestor-level elements whose image may coincide with that
+         * of an eraser at this or the ancestor level (root extension): such
+         * an element is added, as a reader, to the LHS and RHS of every level
+         * from just below its own down to this one, so that its image is
+         * seeded into the search of this level's condition, where the
+         * conflict machinery enforces the cross-level DPO identification
+         * condition. Imported ancestor erasers are additionally recorded, to
+         * take part in the conflict computation as erasers.
+         * Must be called top-down over the level tree, before any condition
+         * is built.
+         */
+        public void importEraserConflicts() {
+            // snapshots of this level's own elements, before any imports
+            List<RuleNode> myNodes = new ArrayList<>(this.lhs.nodeSet());
+            List<RuleEdge> myEdges = new ArrayList<>(this.lhs.edgeSet());
+            Set<RuleNode> myEraserNodes = new LinkedHashSet<>(myNodes);
+            myEraserNodes.removeAll(this.rhs.nodeSet());
+            Set<RuleEdge> myEraserEdges = new LinkedHashSet<>(myEdges);
+            myEraserEdges.removeAll(this.rhs.edgeSet());
+            // the levels from just below the currently inspected ancestor
+            // down to this level, into which conflicting elements are imported
+            List<Level4> path = new ArrayList<>();
+            path.add(this);
+            for (Level4 anc = this.parent; anc != null; anc = anc.parent) {
+                Set<RuleEdge> ancEraserEdges = new LinkedHashSet<>(anc.lhs.edgeSet());
+                ancEraserEdges.removeAll(anc.rhs.edgeSet());
+                for (RuleEdge ancEdge : anc.lhs.edgeSet()) {
+                    boolean ancIsEraser = ancEraserEdges.contains(ancEdge);
+                    // a non-eraser ancestor edge only conflicts with my erasers
+                    Collection<RuleEdge> mine = ancIsEraser
+                        ? myEdges
+                        : myEraserEdges;
+                    boolean conflict = false;
+                    for (RuleEdge myEdge : mine) {
+                        if (myEdge != ancEdge && myEdge.canShareImage(ancEdge)) {
+                            conflict = true;
+                            break;
+                        }
+                    }
+                    if (conflict) {
+                        importEdge(ancEdge, path);
+                        if (ancIsEraser) {
+                            this.ancestorEraserEdges.add(ancEdge);
+                        }
+                    }
+                }
+                Set<RuleNode> ancEraserNodes = new LinkedHashSet<>(anc.lhs.nodeSet());
+                ancEraserNodes.removeAll(anc.rhs.nodeSet());
+                for (RuleNode ancNode : anc.lhs.nodeSet()) {
+                    if (!(ancNode instanceof DefaultRuleNode)) {
+                        continue;
+                    }
+                    boolean ancIsEraser = ancEraserNodes.contains(ancNode);
+                    Collection<RuleNode> mine = ancIsEraser
+                        ? myNodes
+                        : myEraserNodes;
+                    boolean conflict = false;
+                    for (RuleNode myNode : mine) {
+                        if (myNode != ancNode && myNode instanceof DefaultRuleNode
+                            && !Collections
+                                .disjoint(myNode.getMatchingTypes(), ancNode.getMatchingTypes())) {
+                            conflict = true;
+                            break;
+                        }
+                    }
+                    if (conflict) {
+                        importNode(ancNode, path);
+                        if (ancIsEraser) {
+                            this.ancestorEraserNodes.add(ancNode);
+                        }
+                    }
+                }
+                path.add(anc);
+            }
+        }
+
+        /** Adds an ancestor edge, with its end nodes, as reader to the given levels. */
+        private void importEdge(RuleEdge edge, List<Level4> levels) {
+            for (Level4 level : levels) {
+                if (!level.lhs.containsEdge(edge)) {
+                    level.lhs.addEdgeContext(edge);
+                }
+                if (!level.rhs.containsEdge(edge)) {
+                    level.rhs.addEdgeContext(edge);
+                }
+            }
+        }
+
+        /** Adds an ancestor node as reader to the given levels. */
+        private void importNode(RuleNode node, List<Level4> levels) {
+            for (Level4 level : levels) {
+                level.lhs.addNode(node);
+                level.rhs.addNode(node);
+            }
+        }
+
+        /** Ancestor-level eraser edges imported into this level's pattern. */
+        private final Set<RuleEdge> ancestorEraserEdges = new LinkedHashSet<>();
+        /** Ancestor-level eraser nodes imported into this level's pattern. */
+        private final Set<RuleNode> ancestorEraserNodes = new LinkedHashSet<>();
+
+        /**
          * Callback method to compute the rule on this nesting level.
          * The resulting condition is not fixed (see {@link Condition#isFixed()}).
          */
@@ -2352,6 +2602,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             FormatErrorSet errors = createErrors();
             // the resulting rule
             result = createCondition(getRootGraph(), this.lhs);
+            result.addAncestorEraserEdges(this.ancestorEraserEdges);
             if (this.isRule) {
                 Rule rule = createRule(result, this.rhs, getCoRootGraph());
                 rule.addColorMap(this.colorMap);
@@ -2365,8 +2616,71 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                     errors.addAll(e.getErrors());
                 }
             }
+            addEraserNodeEmbargoes(result);
             errors.throwException();
             return result;
+        }
+
+        /**
+         * Adds merge embargoes to the level condition for every pair of a
+         * deleted node and another type-compatible LHS node, enforcing the
+         * DPO identification condition on nodes: if a deleted node is
+         * identified with any other matched node, the pushout complement is
+         * not unique. Deleted nodes are the eraser nodes of this level plus
+         * the imported ancestor-level eraser nodes; for the latter, pairs
+         * with other nodes shared with the parent level are skipped, as they
+         * are already checked at the ancestor level where both nodes first
+         * coexist. The identification condition applies only under DPO
+         * semantics; under SPO (simple graphs or multigraphs alike),
+         * identifications are resolved by letting deletion win. Also skipped
+         * under injective matching, which subsumes the condition; the
+         * generated embargoes compile to equality tests in the search plan.
+         */
+        private void addEraserNodeEmbargoes(Condition condition) throws FormatException {
+            if (!getGrammarProperties().getParallelMode().isDPO() || isInjective()) {
+                return;
+            }
+            Set<RuleNode> erasers = new LinkedHashSet<>(this.lhs.nodeSet());
+            erasers.removeAll(this.rhs.nodeSet());
+            if (erasers.isEmpty() && this.ancestorEraserNodes.isEmpty()) {
+                return;
+            }
+            RuleLabel equality = new RuleLabel(RegExpr.empty());
+            List<RuleNode> nodes = new ArrayList<>(this.lhs.nodeSet());
+            for (int i = 0; i < nodes.size(); i++) {
+                RuleNode one = nodes.get(i);
+                if (!(one instanceof DefaultRuleNode)) {
+                    continue;
+                }
+                for (int j = i + 1; j < nodes.size(); j++) {
+                    RuleNode two = nodes.get(j);
+                    if (!(two instanceof DefaultRuleNode)) {
+                        continue;
+                    }
+                    boolean needed = erasers.contains(one) || erasers.contains(two);
+                    if (!needed) {
+                        // pairs of nodes shared with the parent level are
+                        // checked at the ancestor level where both first coexist
+                        needed = this.ancestorEraserNodes.contains(one) && !inParentLhs(two)
+                            || this.ancestorEraserNodes.contains(two) && !inParentLhs(one);
+                    }
+                    if (!needed) {
+                        continue;
+                    }
+                    if (Collections.disjoint(one.getMatchingTypes(), two.getMatchingTypes())) {
+                        continue;
+                    }
+                    RuleEdge embargoEdge = this.lhs.getFactory().createEdge(one, equality, two);
+                    EdgeEmbargo embargo = createEdgeEmbargo(this.lhs, embargoEdge);
+                    embargo.setFixed();
+                    condition.addSubCondition(embargo);
+                }
+            }
+        }
+
+        /** Tests if a given node occurs in the parent level's LHS. */
+        private boolean inParentLhs(RuleNode node) {
+            return this.parent != null && this.parent.lhs.containsNode(node);
         }
 
         /**

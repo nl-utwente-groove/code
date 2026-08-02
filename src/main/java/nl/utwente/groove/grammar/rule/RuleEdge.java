@@ -28,18 +28,28 @@ import nl.utwente.groove.grammar.AnchorKind;
 import nl.utwente.groove.grammar.type.TypeEdge;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeGuard;
-import nl.utwente.groove.graph.AEdge;
+import nl.utwente.groove.graph.ANumberedEdge;
 
 /** Rule edge that is not attribute-related. */
 @NonNullByDefault
-public class RuleEdge extends AEdge<RuleNode,RuleLabel> implements RuleElement {
-    /** Constructs a rule edge from a given rule label and/or type edge. */
-    public RuleEdge(RuleNode source, RuleLabel label, @Nullable TypeEdge type, RuleNode target) {
-        super(source, label, target);
+public class RuleEdge extends ANumberedEdge<RuleNode,RuleLabel> implements RuleElement {
+    /** Constructs a rule edge from a given rule label and/or type edge.
+     * The edge number is a <i>parallel index</i>: it is 0 for all edges except
+     * deliberately created parallel copies of a content-equal edge, which carry
+     * indices 1, 2, ... to keep them distinct (the number enters the equality
+     * test, see {@link ANumberedEdge}). Indices are always assigned explicitly
+     * by the caller (see {@link RuleFactory#createEdge(RuleNode, nl.utwente.groove.graph.Label, RuleNode, int)}),
+     * never counted implicitly, so that repeatedly deriving the same conceptual
+     * edge yields equal results.
+     */
+    public RuleEdge(RuleNode source, RuleLabel label, @Nullable TypeEdge type, RuleNode target,
+                    int nr) {
+        super(source, label, target, nr);
         var tl = label.getTypeLabel();
         assert tl == null || type != null && tl.equals(type.label());
         this.type = type;
         TypeGuard guard = label.getWildcardGuard();
+        List<RuleLabel.ImageAlt> imageAlts = label.getImageAlts();
         if (guard != null) {
             this.typeGuards = guard.isNamed()
                 ? singletonList(guard)
@@ -53,11 +63,48 @@ public class RuleEdge extends AEdge<RuleNode,RuleLabel> implements RuleElement {
                 .filter(e -> target.isTypedBy(e.target()))
                 .filter(guard::test)
                 .forEach(this.matchingTypes::add);
+            this.forwardMatchingTypes = this.matchingTypes;
+            this.inverseMatchingTypes = emptySet();
+        } else if (type == null && imageAlts != null) {
+            // a composite edge-image expression (choices and inversions of
+            // atoms and unnamed wildcards) is matched to a single host edge
+            // image, whose type must fit one of the alternatives, in the
+            // direction of that alternative
+            TypeGraph typeGraph = source.getType().getGraph();
+            var forward = new HashSet<TypeEdge>();
+            var inverse = new HashSet<TypeEdge>();
+            for (var alt : imageAlts) {
+                RuleNode from = alt.inverse()
+                    ? target
+                    : source;
+                RuleNode to = alt.inverse()
+                    ? source
+                    : target;
+                Set<TypeEdge> set = alt.inverse()
+                    ? inverse
+                    : forward;
+                typeGraph
+                    .edgeSet()
+                    .stream()
+                    .filter(e -> from.isTypedBy(e.source()))
+                    .filter(e -> to.isTypedBy(e.target()))
+                    .filter(alt::test)
+                    .forEach(set::add);
+            }
+            this.forwardMatchingTypes = forward;
+            this.inverseMatchingTypes = inverse;
+            this.matchingTypes = new HashSet<>(forward);
+            this.matchingTypes.addAll(inverse);
+            this.typeGuards = emptyList();
         } else if (type == null) {
             this.matchingTypes = emptySet();
+            this.forwardMatchingTypes = emptySet();
+            this.inverseMatchingTypes = emptySet();
             this.typeGuards = emptyList();
         } else {
             this.matchingTypes = new HashSet<>(type.getSubtypes());
+            this.forwardMatchingTypes = this.matchingTypes;
+            this.inverseMatchingTypes = emptySet();
             this.typeGuards = emptyList();
         }
     }
@@ -84,6 +131,24 @@ public class RuleEdge extends AEdge<RuleNode,RuleLabel> implements RuleElement {
 
     /** Set of possible edge types, if the label is a wildcard. */
     private final Set<TypeEdge> matchingTypes;
+
+    /**
+     * Returns the possible edge types of the host edge image when this edge
+     * is matched in a given direction. An inverse match means the host edge
+     * image runs from the target to the source end; only composite
+     * edge-image expressions (see {@link RuleLabel#getImageAlts()}) have
+     * inversely matchable types.
+     */
+    public Set<TypeEdge> getMatchingTypes(boolean inverse) {
+        return inverse
+            ? this.inverseMatchingTypes
+            : this.forwardMatchingTypes;
+    }
+
+    /** Set of possible edge types of a forwards-matched image. */
+    private final Set<TypeEdge> forwardMatchingTypes;
+    /** Set of possible edge types of an inversely-matched image. */
+    private final Set<TypeEdge> inverseMatchingTypes;
 
     @Override
     public List<TypeGuard> getTypeGuards() {
@@ -119,6 +184,33 @@ public class RuleEdge extends AEdge<RuleNode,RuleLabel> implements RuleElement {
     @Override
     public AnchorKind getAnchorKind() {
         return AnchorKind.EDGE;
+    }
+
+    /**
+     * Conservatively determines if this and another, distinct rule edge may be
+     * matched to the same host edge. Only edges that are bound to a single
+     * host edge image are considered; composite regular expression and
+     * (in)equality edges have no edge image. The edges may share an image if
+     * their possible image types (in either match direction) overlap.
+     */
+    public boolean canShareImage(RuleEdge other) {
+        if (!hasEdgeImage() || !other.hasEdgeImage()) {
+            return false;
+        }
+        if (label().getRole() != other.label().getRole()) {
+            return false;
+        }
+        return !Collections.disjoint(getMatchingTypes(), other.getMatchingTypes());
+    }
+
+    /** Indicates if this edge is matched to a single host edge image.
+     * This is the case if the label is a sharp, a wildcard, or an
+     * edge-image expression (see {@link RuleLabel#hasEdgeImage()});
+     * other composite regular expression and (in)equality edges have no
+     * edge image.
+     */
+    public boolean hasEdgeImage() {
+        return label().hasEdgeImage();
     }
 
     /** Convenience method to assert non-nullness of singleton set. */

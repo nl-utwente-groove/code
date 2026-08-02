@@ -99,6 +99,34 @@ public class RuleApplicationTest extends TestCase {
         test("embargoes");
     }
 
+    /** Tests the rules in the parallelChoice grammar
+     * (regular-expression choices under parallel-edge semantics). */
+    @Test
+    public void testParallelChoice() {
+        test("parallelChoice");
+    }
+
+    /** Tests the rules in the mult grammar
+     * (parallel-edge multiplicities on rule and host edges). */
+    @Test
+    public void testMult() {
+        test("mult");
+    }
+
+    /** Tests the rules in the dpoErasers grammar
+     * (the DPO identification condition, active in parallel-edge grammars). */
+    @Test
+    public void testDpoErasers() {
+        test("dpoErasers");
+    }
+
+    /** Tests the rules in the spoErasers grammar
+     * (multigraph SPO: non-injective eraser matching with delete-wins). */
+    @Test
+    public void testSpoErasers() {
+        test("spoErasers");
+    }
+
     /** Tests the rules in the forallCount grammar. */
     @Test
     public void testForallCount() {

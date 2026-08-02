@@ -50,7 +50,11 @@ class HostModelMorphism {
      */
     private HostModelMorphism(@Nullable GrammarModel grammar, AspectGraph source) {
         this.source = source;
-        var target = new DefaultHostGraph(source.getName());
+        // the host graph is a multigraph if the grammar allows parallel edges;
+        // this determines the matching mode of the entire grammar, as the
+        // GTS host factory is taken from the start graph
+        var simple = grammar == null || !grammar.getProperties().getParallelMode().isMulti();
+        var target = new DefaultHostGraph(source.getName(), simple);
         var map = new HostModelMap(target.getFactory());
         var normalSource = source.normalise();
         var errors = new FormatErrorSet();
@@ -76,7 +80,7 @@ class HostModelMorphism {
         }
         // copy the edges from source to target
         for (AspectEdge modelEdge : normalSource.edgeSet()) {
-            processModelEdge(modelEdge, map, target);
+            processModelEdge(modelEdge, map, target, errors);
         }
         // remove isolated value nodes from the target graph
         for (HostNode modelNode : map.nodeMap().values()) {
@@ -206,9 +210,11 @@ class HostModelMorphism {
 
     /**
      * Processes the information in a model edge by updating the resource, element
-     * map and subtypes.
+     * map and subtypes. An edge with a parallel-edge multiplicity is expanded
+     * into that many parallel host edges.
      */
-    private void processModelEdge(AspectEdge modelEdge, HostModelMap map, HostGraph target) {
+    private void processModelEdge(AspectEdge modelEdge, HostModelMap map, HostGraph target,
+                                  FormatErrorSet errors) {
         if (!modelEdge.has(Category.LABEL)) {
             return;
         }
@@ -224,6 +230,18 @@ class HostModelMorphism {
         HostEdge hostEdge = target.addEdge(hostSource, hostLabel, hostNode);
         assert hostEdge != null;
         map.putEdge(modelEdge, hostEdge);
+        int mult = modelEdge.getMultCount();
+        if (mult > 1) {
+            if (target.isSimple()) {
+                errors
+                    .add("Edge multiplicity requires the parallelEdges grammar property "
+                        + "to be SPO or DPO", modelEdge);
+            } else {
+                for (int i = 1; i < mult; i++) {
+                    target.addEdge(hostSource, hostLabel, hostNode);
+                }
+            }
+        }
     }
 
     /** Convenience method to retrieve the associated type graph. */

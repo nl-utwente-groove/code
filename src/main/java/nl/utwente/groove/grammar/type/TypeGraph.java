@@ -598,9 +598,10 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
         }
         // process the wildcard edges
         for (RuleEdge varEdge : varEdges) {
+            // the parallel index is propagated so that parallel edges keep distinct images
             RuleEdge image = ruleFactory
                 .createEdge(result.getNode(varEdge.source()), varEdge.label(),
-                            result.getNode(varEdge.target()));
+                            result.getNode(varEdge.target()), varEdge.getNumber());
             Set<? extends TypeElement> matchingTypes = image.getMatchingTypes();
             for (TypeGuard guard : image.getTypeGuards()) {
                 matchingTypes.retainAll(result.addVarTypes(guard.getVar(), matchingTypes));
@@ -634,7 +635,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
                         .add(unknownEdgeTypeText(sourceType, edge, targetType), sourceImage, edge);
                 }
             } else {
-                result.putEdge(edge, ruleFactory.createEdge(sourceImage, edgeLabel, targetImage));
+                result
+                    .putEdge(edge, ruleFactory
+                        .createEdge(sourceImage, edgeLabel, targetImage, edge.getNumber()));
             }
         }
         RegExprTyper regExprTyper = new RegExprTyper(this, result.getVarTyping());
@@ -686,7 +689,10 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
                              sourceImage.getType(), targetImage.getType(), edge);
                 }
             }
-            result.putEdge(edge, ruleFactory.createEdge(sourceImage, edgeLabel, targetImage));
+            result
+                .putEdge(edge,
+                         ruleFactory.createEdge(sourceImage, edgeLabel, targetImage,
+                                                edge.getNumber()));
         }
         errors.throwException();
         return result;

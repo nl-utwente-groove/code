@@ -351,7 +351,14 @@ public class NormalAspectGraph extends AspectGraph {
         var newRoleKind = roleKind == READER
             ? CREATOR
             : roleKind;
-        String assignLabelText = (newRoleKind == null
+        // propagate a parallel-edge multiplicity of the original let-edge
+        // onto the normalised field edge, where the host model expansion
+        // picks it up
+        String multPrefix = holder instanceof AspectEdge holderEdge && holderEdge.getMult() != null
+            ? new AspectContent.MultiplicityContent(holderEdge.getMult())
+                .toParsableString(AspectKind.MULT)
+            : "";
+        String assignLabelText = multPrefix + (newRoleKind == null
             ? ""
             : newRoleKind.getPrefix()) + assign.getLhs();
         var source = holder instanceof AspectNode holderNode

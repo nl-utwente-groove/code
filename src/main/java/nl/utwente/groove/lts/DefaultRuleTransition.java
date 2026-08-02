@@ -16,7 +16,11 @@
  */
 package nl.utwente.groove.lts;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -184,6 +188,10 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
                     + ": \n" + AGraph.toString(derivedTarget) + " and \n"
                     + AGraph.toString(realTarget) + " \nnot isomorphic";
                 result = result.then(iso);
+            } else if (!sourceGraph.isSimple() && getAction().hasMergers()) {
+                // only merging rules mint fresh (hence irreproducible)
+                // edge images in a non-simple graph
+                adaptToTarget(result);
             }
         } else {
             // create an identity morphism
@@ -196,6 +204,49 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
             }
         }
         return result;
+    }
+
+    /**
+     * Substitutes, in a morphism re-derived over a non-simple source graph,
+     * the freshly minted merge-redirected edge images by content-equal edges
+     * of the actual target graph. This transition does not record the added
+     * edge identities of the original derivation (only the target state's
+     * own primary transition does), but parallel copies are interchangeable,
+     * so any consistent injective assignment yields a valid morphism.
+     */
+    private void adaptToTarget(HostGraphMorphism morphism) {
+        HostGraph target = target().getGraph();
+        List<HostEdge> ghostKeys = null;
+        for (var entry : morphism.edgeMap().entrySet()) {
+            if (!target.containsEdge(entry.getValue())) {
+                if (ghostKeys == null) {
+                    ghostKeys = new ArrayList<>();
+                }
+                ghostKeys.add(entry.getKey());
+            }
+        }
+        if (ghostKeys == null) {
+            return;
+        }
+        Set<HostEdge> used = new HashSet<>(morphism.edgeMap().values());
+        for (HostEdge key : ghostKeys) {
+            HostEdge ghost = morphism.getEdge(key);
+            assert ghost != null;
+            HostEdge replacement = null;
+            for (HostEdge candidate : target.outEdgeSet(ghost.source())) {
+                if (!used.contains(candidate) && candidate.label().equals(ghost.label())
+                    && candidate.target().equals(ghost.target())) {
+                    replacement = candidate;
+                    break;
+                }
+            }
+            assert replacement != null : String
+                .format("No content-equal target edge for re-derived image %s of %s", ghost, key);
+            if (replacement != null) {
+                morphism.putEdge(key, replacement);
+                used.add(replacement);
+            }
+        }
     }
 
     /** Callback method to construct a rule application from this

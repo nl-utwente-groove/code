@@ -37,6 +37,7 @@ import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.grammar.Action.Role;
 import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.grammar.CheckPolicy.PolicyMap;
+import nl.utwente.groove.grammar.ParallelMode;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.rule.MethodName;
 import nl.utwente.groove.gui.look.Values;
@@ -508,6 +509,8 @@ public abstract class Properties implements Fixable {
         POLICY_MAP(CheckPolicy.PolicyMap.class),
         /** Value for type {@link Algebra}. */
         ALGEBRA_FAMILY(AlgebraFamily.class),
+        /** Value for type {@link ParallelMode}. */
+        PARALLEL_MODE(ParallelMode.class),
         /** Value for type {@link Role}. */
         ROLE(Optional.class),
         /** Value for type {@link ExploreType}. */
@@ -574,6 +577,16 @@ public abstract class Properties implements Fixable {
         public AlgebraFamily getAlgebraFamily() {
             check(ValueType.ALGEBRA_FAMILY);
             return (AlgebraFamily) value();
+        }
+
+        /**
+         * Casts the wrapped value to a {@link ParallelMode}.
+         * This is only valid if this entry's key type is {@link ValueType#PARALLEL_MODE}
+         * @throws UnsupportedOperationException if this entry's key type is inappropriate
+         */
+        public ParallelMode getParallelMode() {
+            check(ValueType.PARALLEL_MODE);
+            return (ParallelMode) value();
         }
 
         /**

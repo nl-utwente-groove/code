@@ -129,7 +129,9 @@ public class GxlIO extends GraphIO<AttrGraph> {
      */
     private GraphType graphToGxl(Graph graph) {
         GraphType gxlGraph = this.factory.createGraphType();
-        gxlGraph.setEdgeids(false);
+        // non-simple graphs have edges with identities beyond source/label/target,
+        // which is exactly what the GXL edgeids flag declares
+        gxlGraph.setEdgeids(!graph.isSimple());
         gxlGraph.setEdgemode(EdgemodeType.DIRECTED);
         gxlGraph.setId(graph.getName());
         gxlGraph.setRole(graph.getRole().toString());
@@ -207,6 +209,17 @@ public class GxlIO extends GraphIO<AttrGraph> {
                 for (TypeNode subtype : subtypeEntry.getValue()) {
                     TypeNode supertype = subtypeEntry.getKey();
                     nodesEdges.add(createGxlEdge(nodeMap, subtype, SUBTYPE_PREFIX, supertype));
+                }
+            }
+        }
+        // if edges have identities, give each edge element an id,
+        // unique with respect to the "n"-prefixed node ids
+        if (!graph.isSimple()) {
+            int edgeNr = 0;
+            for (GraphElementType nodeEdge : nodesEdges) {
+                if (nodeEdge instanceof EdgeType gxlEdge) {
+                    gxlEdge.setId("e" + edgeNr);
+                    edgeNr++;
                 }
             }
         }
@@ -497,6 +510,11 @@ public class GxlIO extends GraphIO<AttrGraph> {
             .setRole(roleName == null
                 ? GraphRole.HOST
                 : GraphRole.roles.get(roleName));
+        // the graph is simple unless the edgeids flag declares edge identities;
+        // LTS graphs are non-simple regardless, for backward compatibility with
+        // LTS files saved by older versions, which may contain parallel edges
+        // without declaring edge identities
+        graph.setSimple(!gxlGraph.isEdgeids() && graph.getRole() != GraphRole.LTS);
         GraphInfo.setLayoutMap(graph, layoutMap);
         return graph;
     }

@@ -195,6 +195,12 @@ public class PlanSearchEngine extends SearchEngine {
             }
         }
 
+        /** Indicates if the condition is matched under DPO semantics. */
+        private boolean isDPO() {
+            var properties = this.condition.getGrammarProperties();
+            return properties != null && properties.getParallelMode().isDPO();
+        }
+
         private boolean getInjectivity() {
 
             return this.condition.isInjective();
@@ -453,6 +459,15 @@ public class PlanSearchEngine extends SearchEngine {
                 result = new EqualitySearchItem(edge, true);
             } else if (label.isSharp() || label.isAtom()) {
                 result = new Edge2SearchItem(edge, this.simple);
+            } else if (!this.simple && isDPO() && label.getImageAlts() != null) {
+                // under DPO semantics, composite edge-image expressions
+                // (choices and inversions of atoms and unnamed wildcards)
+                // bind a genuine host edge image, so that the injective
+                // matching of eraser edges (the identification condition)
+                // extends to them; under SPO (simple graphs and multigraphs
+                // alike) the images would enforce nothing, so all regular
+                // expressions uniformly keep the automaton-based semantics
+                result = new ChoiceEdgeSearchItem(edge);
             } else {
                 result = new RegExprEdgeSearchItem(edge, this.typeGraph);
             }
@@ -702,7 +717,7 @@ public class PlanSearchEngine extends SearchEngine {
          * <li> {@link NodeTypeSearchItem}s
          * <li> {@link ConditionSearchItem}s
          * <li> {@link RegExprEdgeSearchItem}s
-         * <li> {@link VarEdgeSearchItem}s
+         * <li> {@link VarEdgeSearchItem}s and {@link ChoiceEdgeSearchItem}s
          * <li> {@link Edge2SearchItem}s
          * <li> {@link EqualitySearchItem}s
          * <li> {@link NegatedSearchItem}s
@@ -739,7 +754,7 @@ public class PlanSearchEngine extends SearchEngine {
                 return result;
             }
             result++;
-            if (itemClass == VarEdgeSearchItem.class) {
+            if (itemClass == VarEdgeSearchItem.class || itemClass == ChoiceEdgeSearchItem.class) {
                 return result;
             }
             result++;
