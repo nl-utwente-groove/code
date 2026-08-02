@@ -326,7 +326,13 @@ public class Version {
     public static final String GRAMMAR_VERSION_3_11 = "3.11";
     /**
      * This is the grammar version introduced with Groove version 8.0.0.
-     * String constants are now saved with escaped backslashes, as the
+     * Three changes share this version:
+     * <ul>
+     * <li> The exploration strategy is now stored in the {@code exploration}
+     * property (a feature-model configuration); a stored legacy
+     * {@code explorationStrategy} property is converted on load where
+     * possible.
+     * <li> String constants are now saved with escaped backslashes, as the
      * documentation of {@code StringHandler#toQuoted} always promised;
      * previously only quote characters were escaped, so that string values
      * ending in a backslash produced unparsable labels. Reading is lenient:
@@ -335,8 +341,7 @@ public class Version {
      * back unchanged unless a string value contained two consecutive
      * backslashes (now read as one) or a backslash directly before a quote
      * (now a load error).
-     * <p>
-     * Moreover, host graphs can now be multigraphs, holding parallel edges
+     * <li> Host graphs can now be multigraphs, holding parallel edges
      * (multiple edges with the same end nodes and label). This is controlled
      * by the new grammar property {@code parallelEdges}, with values
      * {@code none} (the default; the classical simple-graph semantics),
@@ -346,6 +351,7 @@ public class Version {
      * Grammars that do not set {@code parallelEdges} are unaffected; older
      * Groove versions reject the {@code mult=} aspect and the
      * {@code parallelEdges} property as unknown.
+     * </ul>
      */
     public static final String GRAMMAR_VERSION_3_12 = "3.12";
 }
