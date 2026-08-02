@@ -42,8 +42,11 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import nl.utwente.groove.explore.ExploreType;
+import nl.utwente.groove.explore.config.ConfiguredExploreType;
+import nl.utwente.groove.explore.config.ExploreConfig;
+import nl.utwente.groove.explore.config.ExploreConfigSchema;
+import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.grammar.Grammar;
-import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.GrammarSource;
 import nl.utwente.groove.grammar.QualName;
@@ -743,11 +746,65 @@ public class GrammarModel implements PropertyChangeListener {
     }
 
     /**
-     * Returns the default exploration, based on the {@link GrammarKey#EXPLORATION}
-     * value in the system properties.
+     * Returns the default exploration type of this grammar. If the
+     * {@code exploration} property names a settings resource, the resource
+     * content is realised (an unresolvable reference or unrealisable content
+     * yields {@link ExploreType#DEFAULT}; the errors are reported through the
+     * property checker and on the resource itself). Otherwise the deprecated
+     * legacy exploration strategy key is consulted.
      */
     public ExploreType getDefaultExploreType() {
-        return getProperties().getExploreType();
+        var name = getProperties().getExplorationName();
+        if (name == null) {
+            return getProperties().getLegacyExploreType();
+        }
+        try {
+            return ExploreTypeConverter.toExploreType(resolveExploreConfig(name));
+        } catch (FormatException exc) {
+            return ExploreType.DEFAULT;
+        }
+    }
+
+    /**
+     * Returns the default exploration configuration of this grammar: the
+     * content of the settings resource named by the {@code exploration}
+     * property, the configuration equivalent of the legacy exploration
+     * strategy key if only that is set and expressible, or the default
+     * configuration otherwise (including when the reference does not
+     * resolve; those errors are reported through the property checker).
+     */
+    public ExploreConfig getDefaultExploreConfig() {
+        var name = getProperties().getExplorationName();
+        if (name == null) {
+            // fall back to the legacy key, if its value is expressible
+            return getProperties()
+                .getLegacyExploreType() instanceof ConfiguredExploreType configured
+                    ? new ExploreConfig(configured.getConfig())
+                    : new ExploreConfig();
+        }
+        try {
+            return resolveExploreConfig(name);
+        } catch (FormatException exc) {
+            // reported on the resource and by the property checker
+            return new ExploreConfig();
+        }
+    }
+
+    /**
+     * Resolves the exploration reference to the content of the named settings
+     * resource.
+     * @throws FormatException if the resource is missing, of another schema,
+     * or erroneous
+     */
+    private ExploreConfig resolveExploreConfig(QualName name) throws FormatException {
+        var model = getResource(ResourceKind.SETTINGS, name);
+        if (model instanceof SettingsModel settingsModel) {
+            Settings settings = settingsModel.toResource();
+            if (settings.getSchema() == ExploreConfigSchema.INSTANCE) {
+                return ExploreConfig.fromProperties(settings.getProperties());
+            }
+        }
+        throw new FormatException("'%s' is not an explore settings resource", name);
     }
 
     /** Mapping from resource kinds and names to resource models. */

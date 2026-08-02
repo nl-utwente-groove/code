@@ -21,16 +21,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.Test;
 
-import nl.utwente.groove.grammar.GrammarKey;
+import nl.utwente.groove.explore.config.ExploreConfig;
+import nl.utwente.groove.explore.config.ExploreConfigChecker;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.util.Groove;
 
 /**
  * Tests that the grammar-dependent contents of an exploration configuration
- * are validated by the property checker, so that a broken condition formula,
- * an unknown rule name or an unknown edge label stored in the
- * {@code exploration} grammar property surfaces as an error on the system
- * properties rather than only failing an attempted exploration.
+ * are validated by {@link ExploreConfigChecker}, so that a broken condition
+ * formula, an unknown rule name or an unknown edge label surfaces as an
+ * error on the {@code explore} settings resource (via its schema) rather
+ * than only failing an attempted exploration.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -68,8 +69,7 @@ public class ExploreConfigCheckerTest {
     public void testBrokenContent() throws Exception {
         GrammarModel grammar = Groove.loadGrammar(INPUT_DIR + "/ferryman");
         for (String value : BROKEN) {
-            var errors = GrammarKey.EXPLORE_CONFIG
-                .check(grammar, GrammarKey.EXPLORE_CONFIG.parse(value));
+            var errors = ExploreConfigChecker.check(grammar, ExploreConfig.parse(value));
             assertFalse(errors.isEmpty(), "Value '%s' should be reported as erroneous"
                 .formatted(value));
         }
@@ -80,8 +80,7 @@ public class ExploreConfigCheckerTest {
     public void testValidContent() throws Exception {
         GrammarModel grammar = Groove.loadGrammar(INPUT_DIR + "/ferryman");
         for (String value : VALID) {
-            var errors = GrammarKey.EXPLORE_CONFIG
-                .check(grammar, GrammarKey.EXPLORE_CONFIG.parse(value));
+            var errors = ExploreConfigChecker.check(grammar, ExploreConfig.parse(value));
             assertTrue(errors.isEmpty(), "Value '%s' should be accepted, but got %s"
                 .formatted(value, errors));
         }

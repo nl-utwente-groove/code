@@ -16,12 +16,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.explore.ExploreType;
-import nl.utwente.groove.explore.config.ConfiguredExploreType;
-import nl.utwente.groove.explore.config.ExploreConfig;
-import nl.utwente.groove.explore.config.ExploreTypeConverter;
-import nl.utwente.groove.explore.config.parse.LegacySyntaxParser;
 import nl.utwente.groove.grammar.CheckPolicy.PolicyMap;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
@@ -343,47 +341,42 @@ public class GrammarProperties extends Properties {
     }
 
     /**
-     * Returns the exploration strategy, or {@link ExploreType#DEFAULT} if there
-     * is no strategy set. If the exploration configuration key is set, it
-     * takes precedence over the legacy exploration strategy key; a stored
-     * configuration that cannot be realised gives rise to the default (the
-     * errors are reported through the key checker).
+     * Returns the name of the settings resource holding the default
+     * exploration configuration, or {@code null} if the property is unset
+     * or unparsable. Resolution of the name against the settings resources
+     * happens at the grammar model level (see
+     * {@code GrammarModel#getDefaultExploreType()}).
      */
-    public ExploreType getExploreType() {
-        if (containsKey(GrammarKey.EXPLORE_CONFIG)) {
-            try {
-                return ExploreTypeConverter
-                    .toExploreType(parseProperty(GrammarKey.EXPLORE_CONFIG).getExploreConfig());
-            } catch (FormatException exc) {
-                return ExploreType.DEFAULT;
-            }
+    public @Nullable QualName getExplorationName() {
+        if (!containsKey(GrammarKey.EXPLORE_CONFIG)) {
+            return null;
         }
-        return parsePropertyOrDefault(GrammarKey.EXPLORATION).getExploreType();
+        try {
+            return parseProperty(GrammarKey.EXPLORE_CONFIG).getQualName().orElse(null);
+        } catch (FormatException exc) {
+            // reported by the key checker
+            return null;
+        }
     }
 
     /**
-     * Sets the exploration configuration, removing any stored legacy
-     * exploration strategy it supersedes.
+     * Sets the name of the settings resource holding the default exploration
+     * configuration, removing any stored legacy exploration strategy it
+     * supersedes.
      */
-    public void setExploreConfig(ExploreConfig config) {
-        storeValue(GrammarKey.EXPLORE_CONFIG, config);
+    public void setExplorationName(QualName name) {
+        storeValue(GrammarKey.EXPLORE_CONFIG, Optional.of(name));
         remove(GrammarKey.EXPLORATION);
     }
 
     /**
-     * Returns the exploration configuration. If only the legacy exploration
-     * strategy key is set, its value is converted; if it is inexpressible in
-     * the feature model (or nothing is stored), the default configuration is
-     * returned.
+     * Returns the exploration type stored in the deprecated legacy
+     * exploration strategy key, or {@link ExploreType#DEFAULT} if that key is
+     * unset. Only consulted when the exploration reference (see
+     * {@link #getExplorationName()}) is absent.
      */
-    public ExploreConfig getExploreConfig() {
-        if (containsKey(GrammarKey.EXPLORE_CONFIG)) {
-            return parsePropertyOrDefault(GrammarKey.EXPLORE_CONFIG).getExploreConfig();
-        }
-        return parsePropertyOrDefault(GrammarKey.EXPLORATION)
-            .getExploreType() instanceof ConfiguredExploreType configured
-                ? new ExploreConfig(configured.getConfig())
-                : new ExploreConfig();
+    public ExploreType getLegacyExploreType() {
+        return parsePropertyOrDefault(GrammarKey.EXPLORATION).getExploreType();
     }
 
     /**
@@ -770,30 +763,11 @@ public class GrammarProperties extends Properties {
             result = result.clone();
             result.setUseStoredNodeIds(true);
         }
-        if (Version.compareGrammarVersions(version, Version.GRAMMAR_VERSION_3_12) == -1) {
-            String legacy = result.getProperty(GrammarKey.EXPLORATION.getName());
-            if (legacy != null && !legacy.isEmpty()) {
-                result = result.clone();
-                if (result.containsKey(GrammarKey.EXPLORE_CONFIG)) {
-                    // the new key takes precedence anyway; drop the shadowed one
-                    result.remove(GrammarKey.EXPLORATION.getName());
-                } else {
-                    try {
-                        if (LegacySyntaxParser
-                            .parse(legacy) instanceof ConfiguredExploreType configured) {
-                            result.setExploreConfig(configured.getConfig());
-                            // (setExploreConfig also removes the legacy key)
-                        }
-                        // otherwise the value has no feature-model equivalent
-                        // (e.g., an LTL strategy); leave it in place, to be
-                        // interpreted by the read-time fallback
-                    } catch (FormatException exc) {
-                        // the legacy value is unparsable; leave it in place,
-                        // to be reported by the read-time fallback
-                    }
-                }
-            }
-        }
+        // Note: the legacy exploration strategy key is NOT converted here.
+        // The 'exploration' key names a settings resource, and creating a
+        // resource is beyond a properties-level repair; the read-time
+        // fallback (see getLegacyExploreType) interprets the legacy key
+        // indefinitely, and the first dialog save migrates it.
         return result;
     }
 

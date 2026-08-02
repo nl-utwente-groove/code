@@ -30,9 +30,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.algebra.UserSignature;
-import nl.utwente.groove.explore.config.ExploreConfig;
-import nl.utwente.groove.explore.config.ExploreConfigChecker;
-import nl.utwente.groove.explore.config.ExploreTypeConverter;
+import nl.utwente.groove.explore.config.ExploreConfigSchema;
 import nl.utwente.groove.explore.config.parse.LegacySyntaxParser;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
@@ -212,14 +210,14 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
         ValueType.EXPLORE_TYPE),
 
     /**
-     * Default exploration configuration, in the feature model vocabulary.
+     * Name of the settings resource holding the default exploration
+     * configuration.
      */
     EXPLORE_CONFIG("exploration",
-        "<body>Default exploration configuration for this grammar, as a space-separated list"
-            + " of <i>key</i>=<i>value</i> settings (see the exploration dialog for the"
-            + " keys and values)."
+        "<body>Name of the settings resource (of the <i>explore</i> schema) holding the"
+            + " default exploration configuration for this grammar."
             + "<p>Supersedes the deprecated 'explorationStrategy'",
-        ValueType.EXPLORE_CONFIG),
+        ValueType.QUAL_NAME),
 
     /** Flag that determines if output parameters are added to group calls. */
     STORE_OUT_PARS("storeOutParameters",
@@ -345,7 +343,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
             case DEAD_POLICY -> new Parser.EnumParser<>(CheckPolicy.class, CheckPolicy.OFF,
                 convert("off", null, "error", null));
             case EXPLORATION -> LegacySyntaxParser.parser();
-            case EXPLORE_CONFIG -> ExploreConfig.parser();
+            case EXPLORE_CONFIG -> new Parser.OptionalParser<>(QualName.parser());
             case TRANSITION_PARAMETERS -> new Parser.EnumParser<>(ThreeValued.class,
                 ThreeValued.SOME, true);
             case LOCATION -> Parser.path;
@@ -603,17 +601,26 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
     };
 
     /**
-     * Checker that tests whether an exploration configuration is realisable
-     * and whether its grammar-dependent contents (condition formulas, rule
-     * names, edge labels) are valid in the grammar.
+     * Checker that tests whether the exploration reference names an existing,
+     * error-free settings resource of the {@code explore} schema. The content
+     * checks (value parsing, consistency, realisability, grammar-dependent
+     * contents) live on the resource itself, via its schema.
      */
     private static GrammarChecker exploreConfigChecker = (g, v) -> {
         FormatErrorSet result = new FormatErrorSet();
-        try {
-            ExploreTypeConverter.toExploreType(v.getExploreConfig());
-            result.addAll(ExploreConfigChecker.check(g, v.getExploreConfig()));
-        } catch (FormatException exc) {
-            result.addAll(exc.getErrors());
+        QualName name = v.getQualName().orElse(null);
+        if (name == null) {
+            return result;
+        }
+        var model = g.getResource(ResourceKind.SETTINGS, name);
+        if (model == null) {
+            result.add("Unknown settings resource '%s'", name);
+        } else if (!name.get(0).equals(ExploreConfigSchema.NAME)) {
+            result
+                .add("Settings resource '%s' is not of the '%s' schema", name,
+                     ExploreConfigSchema.NAME);
+        } else if (model.hasErrors()) {
+            result.add("Exploration settings resource '%s' has errors", name);
         }
         return result;
     };
