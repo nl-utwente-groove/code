@@ -649,6 +649,23 @@ public class EcoreTest {
         assertTrue(selfLabels(host).keySet().stream().noneMatch(k -> k.startsWith("List$labels")));
     }
 
+    /** Tests that more than one mapping resource makes the port fail. */
+    @Test
+    public void testMultipleMappings() throws Exception {
+        SystemStore store = newStore();
+        store
+            .putTexts(ResourceKind.SETTINGS,
+                      Map.of(EcoreMapping.RESOURCE_QUAL_NAME, mappingText(Ordering.NONE, true),
+                             QualName.parse("ecore.extra"), mappingText(Ordering.INDEX, true)));
+        GrammarModel grammar = new GrammarModel(store);
+        try {
+            EcorePorter.instance().doImport(new File(DIR + "shop.ecore"), FileType.ECORE, grammar);
+            fail("Import with multiple mapping resources should not succeed");
+        } catch (PortException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("Multiple"));
+        }
+    }
+
     /** Tests classifier and literal naming overrides. */
     @Test
     public void testNamingOverrides() throws Exception {

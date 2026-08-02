@@ -22,14 +22,18 @@ example and does not round-trip.
 
 ## The mapping resource
 
-The porter is configured per grammar by a settings resource named
-`ecore.properties` (schema `ecore-mapping`); a grammar without one uses the
-defaults. Global entries set the defaults, per-element entries override them
-for a single Ecore element, written as its (optionally package-qualified)
-Ecore name — parsed from the right, the last key segment being the choice:
+The porter is configured per grammar by its unique settings resource of the
+`ecore` schema — the schema of a settings resource being the leading segment
+of its name, so either a top-level `ecore.properties` (the usual, singleton
+form) or a lone file in an `ecore/` folder; several candidates are a port
+error, and a grammar without any uses the defaults. The `$schema` entry is
+optional and, when present, must agree with the name. Global entries set the
+defaults, per-element entries override them for a single Ecore element,
+written as its (optionally package-qualified) Ecore name — parsed from the
+right, the last key segment being the choice:
 
 ```properties
-$schema = ecore-mapping
+$schema = ecore
 ordering = none                        # global: none | index
 useIdentifiers = true                  # global: use xmi:id values
 List.elements.ordering = index         # per-feature override
@@ -47,7 +51,8 @@ per-feature `ordering` wins in both directions, including over the
 set-semantics exemption described under `ordered` below.
 
 **Covering tests.** `testMappingDefaults`, `testMappingVocabulary`,
-`testBrokenMapping`, `testMappingSetGlobals`, `testOrderingOverride`,
+`testBrokenMapping`, `testMultipleMappings`, `testMappingSetGlobals`,
+`testOrderingOverride`,
 `testOrderingOverrideRoundTrip`, `testOrderingResolution`,
 `testAmbiguousResolution`, `testNamingOverrides`,
 `testNamingOverrideRoundTrip`, `testNamingCollision`,

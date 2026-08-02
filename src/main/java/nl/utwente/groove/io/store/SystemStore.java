@@ -802,22 +802,25 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
      * given resource kind, and hence should neither be loaded nor stored as a
      * resource of that kind.
      * {@link ResourceKind#SETTINGS} shares its file type with
-     * {@link ResourceKind#PROPERTIES}: a top-level {@code system.properties}
-     * (or, for backwards compatibility, {@code <grammar name>.properties}) is
-     * the grammar properties singleton, so the kinds are told apart by name.
-     * The grammar name is only reserved while the old-style file actually
-     * serves as the properties file (see {@link #loadGrammarProperties()});
-     * once {@code system.properties} exists, a settings resource may carry the
-     * grammar name. Nested properties files are settings resources without
-     * exception.
+     * {@link ResourceKind#PROPERTIES}. The schema of a settings resource is
+     * the leading segment of its name, and the {@code system} schema is built
+     * in: the top-level {@code system.properties} is the grammar properties
+     * singleton, and the folder {@code system/} is reserved for its future
+     * generalisation. The legacy {@code <grammar name>.properties} form is
+     * only reserved while the old-style file actually serves as the properties
+     * file (see {@link #loadGrammarProperties()}); once
+     * {@code system.properties} exists, a settings resource may carry the
+     * grammar name.
      */
     private boolean isReservedName(ResourceKind kind, QualName name) {
-        if (kind != ResourceKind.SETTINGS || name.size() > 1) {
+        if (kind != ResourceKind.SETTINGS) {
             return false;
         }
-        String lastName = name.last();
-        return lastName.equals(Groove.PROPERTY_NAME)
-            || this.legacyPropertiesFile && lastName.equals(this.name);
+        if (name.get(0).equals(Groove.PROPERTY_NAME)) {
+            return true;
+        }
+        return this.legacyPropertiesFile && name.size() == 1
+            && name.last().equals(this.name);
     }
 
     /** Tests that a resource name is not reserved for another resource kind.

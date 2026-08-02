@@ -23,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -182,32 +183,53 @@ public class EcoreMapping {
 
     /**
      * Returns the mapping configured in a given grammar model, being the
-     * content of its {@link #RESOURCE_NAME} settings resource; the default
-     * mapping if the grammar is {@code null} or has no such resource.
-     * @throws PortException if the resource exists but has errors, or does not
-     * use the {@link EcoreMappingSchema#NAME} schema
+     * content of its unique settings resource of the
+     * {@link EcoreMappingSchema#NAME} schema; the default mapping if the
+     * grammar is {@code null} or has no such resource.
+     * @throws PortException if the resource has errors, or if there is more
+     * than one candidate
      */
     public static EcoreMapping of(@Nullable GrammarModel grammar) throws PortException {
         if (grammar == null) {
             return getDefault();
         }
-        var model = grammar.getTextResource(ResourceKind.SETTINGS, RESOURCE_QUAL_NAME);
-        if (model == null) {
+        List<QualName> candidates = candidates(grammar);
+        if (candidates.isEmpty()) {
             return getDefault();
         }
+        if (candidates.size() > 1) {
+            throw new PortException(String
+                .format("Multiple Ecore mapping resources: %s; keep exactly one",
+                        candidates
+                            .stream()
+                            .map(QualName::toString)
+                            .collect(Collectors.joining(", "))));
+        }
+        QualName name = candidates.get(0);
+        var model = grammar.getTextResource(ResourceKind.SETTINGS, name);
+        assert model != null;
         try {
             Settings settings = (Settings) model.toResource();
-            if (!EcoreMappingSchema.NAME.equals(settings.getSchema().getName())) {
-                throw new PortException(String
-                    .format("Settings resource '%s' uses schema '%s' rather than '%s'",
-                            RESOURCE_NAME, settings.getSchema().getName(),
-                            EcoreMappingSchema.NAME));
-            }
             return new EcoreMapping(settings.getProperties());
         } catch (FormatException exc) {
             throw new PortException(String
-                .format("Error in settings resource '%s': %s", RESOURCE_NAME, exc.getMessage()));
+                .format("Error in settings resource '%s': %s", name, exc.getMessage()));
         }
+    }
+
+    /**
+     * Returns the names of the settings resources of the
+     * {@link EcoreMappingSchema#NAME} schema in a given grammar, in
+     * alphabetical order: the schema is the leading name segment.
+     */
+    public static List<QualName> candidates(GrammarModel grammar) {
+        return grammar
+            .getResourceMap(ResourceKind.SETTINGS)
+            .keySet()
+            .stream()
+            .filter(name -> name.get(0).equals(EcoreMappingSchema.NAME))
+            .sorted()
+            .toList();
     }
 
     /** Returns the default mapping: no ordering encoding, identifiers in use,

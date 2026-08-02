@@ -28,9 +28,11 @@ import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
- * Model of a settings resource: a text in Java properties syntax, with a
- * reserved {@link #SCHEMA_KEY} entry naming the schema its entries are
- * checked against.
+ * Model of a settings resource: a text in Java properties syntax, whose schema
+ * is determined by the leading segment of the resource name — the top-level
+ * folder, or for a top-level file its own name (the singleton form of a
+ * schema). An optional {@link #SCHEMA_KEY} entry may re-declare the schema for
+ * the reader's benefit; if present it must agree with the name.
  * Settings do not contribute to grammar compilation; errors in a settings
  * resource are reported on the resource itself.
  * @author Arend Rensink
@@ -56,19 +58,24 @@ public class SettingsModel extends TextBasedModel<Settings> {
         } catch (IOException exc) {
             throw new FormatException("Can't parse settings file: %s", exc.getMessage());
         }
-        String schemaName = props.getProperty(SCHEMA_KEY);
-        if (schemaName == null) {
-            throw new FormatException("Settings file must declare a %s key", SCHEMA_KEY);
-        }
+        String schemaName = getQualName().get(0);
         var schema = SettingsSchemas.get(schemaName);
         if (schema == null) {
-            throw new FormatException("Unknown settings schema '%s' (known schemas: %s)", schemaName,
-                String.join(", ", SettingsSchemas.getNames()));
+            throw new FormatException(
+                "Unknown settings schema '%s' (the leading name segment; known schemas: %s)",
+                schemaName, String.join(", ", SettingsSchemas.getNames()));
+        }
+        String declared = props.getProperty(SCHEMA_KEY);
+        if (declared != null && !declared.trim().equals(schemaName)) {
+            throw new FormatException(
+                "Declared schema '%s' differs from schema '%s' implied by the resource name",
+                declared.trim(), schemaName);
         }
         schema.check(props).throwException();
         return new Settings(schema, props);
     }
 
-    /** Reserved settings key declaring the schema of a settings resource. */
+    /** Optional settings key re-declaring the schema of a settings resource;
+     * if present, it must agree with the leading segment of the resource name. */
     public static final String SCHEMA_KEY = "$schema";
 }

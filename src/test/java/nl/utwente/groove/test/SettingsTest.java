@@ -92,8 +92,8 @@ public class SettingsTest {
      */
     @Test
     public void testResourceNames() throws Exception {
-        assertEquals(names("good", "no-schema", "rejected", "sub.nested", "sub.system",
-                           "unknown-schema"),
+        assertEquals(names("test.good", "test.mismatch", "test.nokey", "test.rejected",
+                           "test.sub.nested", "test.system", "unknown"),
                      new TreeSet<>(newStore().getTexts(ResourceKind.SETTINGS).keySet()));
     }
 
@@ -110,40 +110,51 @@ public class SettingsTest {
     // Schema resolution and checking
     // ----------------------------------------------------------------------
 
-    /** Tests that a well-formed settings resource compiles to its entries. */
+    /** Tests that a well-formed settings resource compiles to its entries,
+     * with the schema taken from the leading name segment. */
     @Test
     public void testWellFormed() throws Exception {
-        Settings settings = getModel(newGrammar(), "good").toResource();
+        Settings settings = getModel(newGrammar(), "test.good").toResource();
         assertEquals("test", settings.getSchema().getName());
         assertEquals("red", settings.getProperty("colour"));
         assertEquals("test", settings.getProperty(SettingsModel.SCHEMA_KEY));
     }
 
-    /** Tests that a settings resource in a subfolder compiles just as well. */
+    /** Tests that resources deeper in a schema folder compile just as well. */
     @Test
     public void testNested() throws Exception {
         GrammarModel grammar = newGrammar();
-        assertEquals("yellow", getModel(grammar, "sub.nested").toResource().getProperty("colour"));
-        // a nested system.properties is a settings resource like any other
-        assertEquals("white", getModel(grammar, "sub.system").toResource().getProperty("colour"));
+        assertEquals("yellow",
+                     getModel(grammar, "test.sub.nested").toResource().getProperty("colour"));
+        // the name segment 'system' below top level is unproblematic
+        assertEquals("white", getModel(grammar, "test.system").toResource().getProperty("colour"));
     }
 
-    /** Tests the error for a settings resource without a schema declaration. */
+    /** Tests that the schema-declaring key is optional. */
     @Test
-    public void testMissingSchema() throws Exception {
-        assertError(newGrammar(), "no-schema", "must declare a $schema key");
+    public void testOptionalKey() throws Exception {
+        Settings settings = getModel(newGrammar(), "test.nokey").toResource();
+        assertEquals("test", settings.getSchema().getName());
+        assertEquals("blue", settings.getProperty("colour"));
     }
 
-    /** Tests the error for a settings resource with an unregistered schema. */
+    /** Tests the error for a resource whose leading name segment is no schema. */
     @Test
     public void testUnknownSchema() throws Exception {
-        assertError(newGrammar(), "unknown-schema", "Unknown settings schema 'nosuch'");
+        assertError(newGrammar(), "unknown", "Unknown settings schema 'unknown'");
+    }
+
+    /** Tests the error for a declared schema that contradicts the name. */
+    @Test
+    public void testSchemaMismatch() throws Exception {
+        assertError(newGrammar(), "test.mismatch",
+                    "Declared schema 'other' differs from schema 'test'");
     }
 
     /** Tests that the schema itself gets to reject entries. */
     @Test
     public void testRejectedBySchema() throws Exception {
-        assertError(newGrammar(), "rejected", "Unknown settings key 'bogus'");
+        assertError(newGrammar(), "test.rejected", "Unknown settings key 'bogus'");
     }
 
     // ----------------------------------------------------------------------
@@ -158,9 +169,9 @@ public class SettingsTest {
     @Test
     public void testGrammarUnaffected() throws Exception {
         GrammarModel grammar = newGrammar();
-        assertTrue(getModel(grammar, "no-schema").hasErrors());
-        assertTrue(getModel(grammar, "unknown-schema").hasErrors());
-        assertTrue(getModel(grammar, "rejected").hasErrors());
+        assertTrue(getModel(grammar, "unknown").hasErrors());
+        assertTrue(getModel(grammar, "test.mismatch").hasErrors());
+        assertTrue(getModel(grammar, "test.rejected").hasErrors());
         assertEquals(List.of(), messages(grammar.getErrors()));
         assertNotNull(grammar.toGrammar());
     }
@@ -182,27 +193,32 @@ public class SettingsTest {
     }
 
     /**
-     * Tests that the store refuses to create a settings resource under the name
-     * reserved for the grammar properties, at top level but not below it.
+     * Tests that the store refuses to create a settings resource under the
+     * {@code system} schema, which is built in: both the singleton name and
+     * the folder are reserved.
      */
     @Test
     public void testReservedName() throws Exception {
         SystemStore store = copyStore(newStore());
+        for (String name : new String[] {"system", "system.other"}) {
+            try {
+                store
+                    .putTexts(ResourceKind.SETTINGS,
+                              Map.of(QualName.parse(name), "colour=black\n"));
+                fail("Storing settings under reserved name '" + name + "' should fail");
+            } catch (IOException exc) {
+                assertTrue(exc.getMessage(), exc.getMessage().contains("reserved"));
+            }
+        }
+        // the same segment is unproblematic below the top level
+        QualName nested = QualName.parse("test.sub.other");
+        store.putTexts(ResourceKind.SETTINGS, Map.of(nested, "colour=white\n"));
+        assertTrue(store.getTexts(ResourceKind.SETTINGS).containsKey(nested));
+        // renaming onto a reserved name is refused as well
         try {
             store
-                .putTexts(ResourceKind.SETTINGS,
-                          Map.of(QualName.name("system"), "$schema=test\n"));
-            fail("Storing settings under reserved name 'system' should fail");
-        } catch (IOException exc) {
-            assertTrue(exc.getMessage(), exc.getMessage().contains("reserved"));
-        }
-        // the same name is unproblematic inside a module
-        QualName nested = QualName.parse("sub.other");
-        store.putTexts(ResourceKind.SETTINGS, Map.of(nested, "$schema=test\ncolour=white\n"));
-        assertTrue(store.getTexts(ResourceKind.SETTINGS).containsKey(nested));
-        // renaming onto the reserved name is refused as well
-        try {
-            store.rename(ResourceKind.SETTINGS, QualName.name("good"), QualName.name("system"));
+                .rename(ResourceKind.SETTINGS, QualName.parse("test.good"),
+                        QualName.name("system"));
             fail("Renaming settings to reserved name 'system' should fail");
         } catch (IOException exc) {
             assertTrue(exc.getMessage(), exc.getMessage().contains("reserved"));
@@ -210,7 +226,7 @@ public class SettingsTest {
         // the grammar name itself is only reserved in the legacy situation;
         // with a system.properties present it is a name like any other
         QualName grammarName = QualName.name(GRAMMAR);
-        store.putTexts(ResourceKind.SETTINGS, Map.of(grammarName, "$schema=test\n"));
+        store.putTexts(ResourceKind.SETTINGS, Map.of(grammarName, "colour=black\n"));
         assertTrue(store.getTexts(ResourceKind.SETTINGS).containsKey(grammarName));
     }
 

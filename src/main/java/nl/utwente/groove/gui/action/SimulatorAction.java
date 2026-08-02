@@ -284,6 +284,15 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
         if (fileType != FileType.ECORE && fileType != FileType.XMI) {
             return true;
         }
+        var candidates = EcoreMapping.candidates(getGrammarModel());
+        if (candidates.size() > 1) {
+            // the dialog cannot know which resource to edit;
+            // the port itself will report the ambiguity
+            return true;
+        }
+        QualName target = candidates.isEmpty()
+            ? EcoreMapping.RESOURCE_QUAL_NAME
+            : candidates.get(0);
         EcoreMapping oldMapping;
         try {
             oldMapping = EcoreMapping.of(getGrammarModel());
@@ -299,14 +308,10 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
         }
         if (dialog.getOrdering() != oldMapping.ordering()
             || dialog.isUseIdentifiers() != oldMapping.useIdentifiers()) {
-            String oldText = getGrammarModel()
-                .getStore()
-                .getTexts(ResourceKind.SETTINGS)
-                .get(EcoreMapping.RESOURCE_QUAL_NAME);
+            String oldText = getGrammarModel().getStore().getTexts(ResourceKind.SETTINGS).get(target);
             String newText = EcoreMapping
                 .setGlobals(oldText, dialog.getOrdering(), dialog.isUseIdentifiers());
-            getSimulatorModel()
-                .doAddText(ResourceKind.SETTINGS, EcoreMapping.RESOURCE_QUAL_NAME, newText);
+            getSimulatorModel().doAddText(ResourceKind.SETTINGS, target, newText);
         }
         return true;
     }
