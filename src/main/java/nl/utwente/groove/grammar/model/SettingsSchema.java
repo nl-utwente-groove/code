@@ -49,6 +49,16 @@ public interface SettingsSchema {
     public FormatErrorSet check(Properties props);
 
     /**
+     * Indicates if this schema is singular, meaning that it admits at most one
+     * settings resource per grammar. All resources of an over-populated
+     * singular schema are flagged with an error.
+     * The default implementation returns {@code false}.
+     */
+    default public boolean isSingular() {
+        return false;
+    }
+
+    /**
      * Returns a map from the keys of this schema to their documentation.
      * Only intended for user guidance; a schema whose keys are not a fixed set
      * may well document none of them.

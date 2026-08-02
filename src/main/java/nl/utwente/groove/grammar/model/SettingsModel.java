@@ -21,6 +21,7 @@ import static nl.utwente.groove.grammar.model.ResourceKind.SETTINGS;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
@@ -70,6 +71,22 @@ public class SettingsModel extends TextBasedModel<Settings> {
             throw new FormatException(
                 "Declared schema '%s' differs from schema '%s' implied by the resource name",
                 declared.trim(), schemaName);
+        }
+        var grammar = getGrammar();
+        if (schema.isSingular() && grammar != null) {
+            var candidates = grammar
+                .getResourceMap(SETTINGS)
+                .keySet()
+                .stream()
+                .filter(name -> name.get(0).equals(schemaName))
+                .sorted()
+                .toList();
+            if (candidates.size() > 1) {
+                throw new FormatException(
+                    "Schema '%s' admits only one settings resource per grammar; found %s",
+                    schemaName,
+                    candidates.stream().map(QualName::toString).collect(Collectors.joining(", ")));
+            }
         }
         schema.check(props).throwException();
         return new Settings(schema, props);

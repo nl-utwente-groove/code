@@ -46,6 +46,12 @@ public class EcoreMappingSchema implements SettingsSchema {
     }
 
     @Override
+    public boolean isSingular() {
+        // the porter requires a unique mapping resource; see EcoreMapping#of
+        return true;
+    }
+
+    @Override
     public FormatErrorSet check(Properties props) {
         try {
             new EcoreMapping(props);

@@ -77,8 +77,22 @@ public class SettingsTest {
         }
     }
 
+    /** Singular variant of the test schema, admitting one resource per grammar. */
+    static private class SoloSchema extends TestSchema {
+        @Override
+        public String getName() {
+            return "solo";
+        }
+
+        @Override
+        public boolean isSingular() {
+            return true;
+        }
+    }
+
     static {
         SettingsSchemas.register(new TestSchema());
+        SettingsSchemas.register(new SoloSchema());
     }
 
     // ----------------------------------------------------------------------
@@ -155,6 +169,32 @@ public class SettingsTest {
     @Test
     public void testRejectedBySchema() throws Exception {
         assertError(newGrammar(), "test.rejected", "Unknown settings key 'bogus'");
+    }
+
+    /**
+     * Tests that all resources of an over-populated singular schema are
+     * flagged, in both the singleton and the folder form, and that removing
+     * the surplus clears the error again.
+     */
+    @Test
+    public void testSingularSchema() throws Exception {
+        SystemStore store = copyStore(newStore());
+        QualName solo = QualName.name("solo");
+        QualName extra = QualName.parse("solo.extra");
+        store.putTexts(ResourceKind.SETTINGS, Map.of(solo, "colour=green\n"));
+        GrammarModel grammar = store.toGrammarModel();
+        // a lone resource of a singular schema is fine
+        assertEquals("green", getModel(grammar, "solo").toResource().getProperty("colour"));
+        // a second resource puts the error on both
+        store.putTexts(ResourceKind.SETTINGS, Map.of(extra, "colour=grey\n"));
+        String expected = "Schema 'solo' admits only one settings resource";
+        assertError(grammar, "solo", expected);
+        assertError(grammar, "solo.extra", expected);
+        // the non-singular test schema admits any number of resources
+        assertFalse(getModel(grammar, "test.good").hasErrors());
+        // removing the surplus clears the error
+        store.deleteTexts(ResourceKind.SETTINGS, List.of(extra));
+        assertEquals("green", getModel(grammar, "solo").toResource().getProperty("colour"));
     }
 
     // ----------------------------------------------------------------------
