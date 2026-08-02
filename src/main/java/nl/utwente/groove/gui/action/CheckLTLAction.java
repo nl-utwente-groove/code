@@ -22,11 +22,9 @@ import java.util.Collection;
 import javax.swing.Action;
 import javax.swing.JOptionPane;
 
-import nl.utwente.groove.explore.AcceptorValue;
 import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.explore.ExploreType;
-import nl.utwente.groove.explore.StrategyValue;
-import nl.utwente.groove.explore.encode.Serialized;
+import nl.utwente.groove.explore.LTLExploreType;
 import nl.utwente.groove.explore.strategy.Boundary;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.dialog.BoundedModelCheckingDialog;
@@ -45,19 +43,17 @@ public class CheckLTLAction extends ExploreAction {
     /**
      * Constructs a checking action for a given simulator and strategy.
      */
-    public CheckLTLAction(Simulator simulator, StrategyValue strategyType, String name) {
+    public CheckLTLAction(Simulator simulator, LTLExploreType.Kind kind, String name) {
         super(simulator, false);
-        assert StrategyValue.LTL_STRATEGIES.contains(strategyType);
         putValue(Action.NAME, name);
-        putValue(Action.SHORT_DESCRIPTION, strategyType.getDescription());
+        putValue(Action.SHORT_DESCRIPTION, kind.getDescription());
         putValue(Action.ACCELERATOR_KEY, null);
         putValue(Action.SMALL_ICON, null);
-        this.strategyType = strategyType;
+        this.kind = kind;
     }
 
     @Override
     public void execute() {
-        Serialized strategy;
         // prompt for a formula to model check
         var choice = getLtlFormulaDialog().showDialog(getFrame());
         if (choice == null) {
@@ -65,19 +61,17 @@ public class CheckLTLAction extends ExploreAction {
         }
         var property = choice.value();
         // prompt for a boundary, if the LTL strategy is bounded
-        if (this.strategyType == StrategyValue.LTL) {
-            strategy = this.strategyType.getTemplate().toSerialized(property);
-        } else {
+        Boundary boundary = null;
+        if (this.kind != LTLExploreType.Kind.PLAIN) {
             BoundedModelCheckingDialog dialog = new BoundedModelCheckingDialog();
             dialog.setGrammar(getSimulatorModel().getGTS().getGrammar());
             dialog.showDialog(getFrame());
-            Boundary boundary = dialog.getBoundary();
+            boundary = dialog.getBoundary();
             if (boundary == null) {
                 return;
             }
-            strategy = this.strategyType.getTemplate().toSerialized(property, boundary);
         }
-        ExploreType exploreType = new ExploreType(strategy, AcceptorValue.CYCLE.toSerialized(), 1);
+        ExploreType exploreType = new LTLExploreType(this.kind, property, boundary);
         try {
             getSimulatorModel().setExploreType(exploreType);
             Exploration exploration = getActions().getExploreAction().explore(exploreType);
@@ -119,6 +113,6 @@ public class CheckLTLAction extends ExploreAction {
      */
     private StringDialog ltlFormulaDialog;
 
-    /** The strategy for the exploration. */
-    private final StrategyValue strategyType;
+    /** The model-checking flavour of the exploration. */
+    private final LTLExploreType.Kind kind;
 }

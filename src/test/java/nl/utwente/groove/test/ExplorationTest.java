@@ -29,8 +29,8 @@ import org.junit.experimental.categories.Category;
 
 import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.explore.ExploreType;
-import nl.utwente.groove.explore.StrategyEnumerator;
-import nl.utwente.groove.explore.encode.Serialized;
+import nl.utwente.groove.explore.config.ExploreConfig;
+import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.explore.util.LTSLabels;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.QualName;
@@ -75,7 +75,7 @@ public class ExplorationTest {
         /** Name of the start state to be explored in this test case */
         public final String startGraphName;
 
-        /** Exploration strategy of this test case */
+        /** Exploration configuration of this test case */
         public final String strategy;
 
         /** Expected number of nodes resulting from exploration. */
@@ -91,11 +91,11 @@ public class ExplorationTest {
     /** Tests the append sample. */
     @Test
     public void testAppend() {
-        testExploration("append.gps", "append-2-list-5", "bfs", 145, 256);
-        testExploration("append.gps", "append-2-list-5", "dfs", 145, 256);
+        testExploration("append.gps", "append-2-list-5", "", 145, 256);
+        testExploration("append.gps", "append-2-list-5", "next=newest", 145, 256);
         testExploration("append.gps", "append-2-list-5", null, 145, 256);
-        testExploration("append.gps", "append-2-list-5", "cnbound:20", 62, 88, 13);
-        testExploration("append.gps", "append-2-list-5", "cebound:append>6", 79, 108, 12);
+        testExploration("append.gps", "append-2-list-5", "bound=nodes:20", 62, 88, 13);
+        testExploration("append.gps", "append-2-list-5", "bound=edges:append>6", 79, 108, 12);
     }
 
     /** Tests the Car Platooning example without the rule that uses
@@ -103,42 +103,42 @@ public class ExplorationTest {
      */
     @Test
     public void testCarPlatooning() {
-        testExploration("car-platooning-no-reg-exp.gps", "start-03", "bfs", 268, 561);
-        testExploration("car-platooning-no-reg-exp.gps", "start-03", "dfs", 268, 561);
+        testExploration("car-platooning-no-reg-exp.gps", "start-03", "", 268, 561);
+        testExploration("car-platooning-no-reg-exp.gps", "start-03", "next=newest", 268, 561);
     }
 
     /** Tests the complete Car Platooning example
      */
     @Test
     public void testCarPlatooningFull() {
-        testExploration("car-platooning.gps", "start-03", "bfs", 268, 561);
-        testExploration("car-platooning.gps", "start-03", "dfs", 268, 561);
+        testExploration("car-platooning.gps", "start-03", "", 268, 561);
+        testExploration("car-platooning.gps", "start-03", "next=newest", 268, 561);
     }
 
     /** Tests the ferryman sample. */
     @Test
     public void testFerryman() {
-        testExploration("ferryman.gps", "start", "bfs", 114, 198);
-        testExploration("ferryman.gps", "start", "crule:eat", 40, 51);
+        testExploration("ferryman.gps", "start", "", 114, 198);
+        testExploration("ferryman.gps", "start", "bound=upto:eat", 40, 51);
     }
 
     /** Tests the mergers sample. */
     @Test
     public void testMergers() {
-        testExploration("mergers.gps", "start", "bfs", 66, 143);
+        testExploration("mergers.gps", "start", "", 66, 143);
     }
 
     /** Tests the regexpr sample. */
     @Test
     public void testRegExpr() {
-        testExploration("regexpr.gps", "start", "bfs", 16, 48);
+        testExploration("regexpr.gps", "start", "", 16, 48);
     }
 
     /** Tests the As-and-Bs grammar meant to test path-match cache behavior  sample. */
     @Test
     public void testAsAndBs() {
         if (!DEBUG) {
-            testExploration("As-and-Bs-reg-exp-benchmark.gps", "start", "bfs", 8240, 44774);
+            testExploration("As-and-Bs-reg-exp-benchmark.gps", "start", "", 8240, 44774);
         }
     }
 
@@ -146,29 +146,29 @@ public class ExplorationTest {
     @Test
     public void testLooseNodes() {
         testExploration("loose-nodes.gps", 104, 468);
-        testExploration("loose-nodes.gps", "start", "linear", 10, 9);
+        testExploration("loose-nodes.gps", "start", "frontier=single successor=single", 10, 9);
     }
 
     /** Tests the priorities sample. */
     @Test
     public void testPriorities() {
-        testExploration("priorities.gps", "start", "bfs", 13, 34);
-        testExploration("priorities.gps", "start", "dfs", 13, 34);
-        testExploration("priorities.gps", "start", "linear", 8, 8);
-        //testExploration("recipe-priorities.gps", "start", "bfs", 13, 56);
-        testExploration("recipe-priorities.gps", "start", "linear", 5, 5, 3);
+        testExploration("priorities.gps", "start", "", 13, 34);
+        testExploration("priorities.gps", "start", "next=newest", 13, 34);
+        testExploration("priorities.gps", "start", "frontier=single successor=single", 8, 8);
+        //testExploration("recipe-priorities.gps", "start", "", 13, 56);
+        testExploration("recipe-priorities.gps", "start", "frontier=single successor=single", 5, 5, 3);
     }
 
     /** Tests the variables sample. */
     @Test
     public void testVariables() {
-        testExploration("variables.gps", "start-smaller", "bfs", 61, 176);
+        testExploration("variables.gps", "start-smaller", "", 61, 176);
     }
 
     /** Tests the counting sample. */
     @Test
     public void testCounting() {
-        testExploration("counting.gps", "start", "bfs", 10, 9);
+        testExploration("counting.gps", "start", "", 10, 9);
     }
 
     /** A very simple/pure tests for the quantifier counting. */
@@ -186,13 +186,13 @@ public class ExplorationTest {
     /** Tests the attributes sample. */
     @Test
     public void testAttributes() {
-        testExploration("attributed-graphs.gps", "start", "bfs", 6, 16);
+        testExploration("attributed-graphs.gps", "start", "", 6, 16);
     }
 
     /** Tests the Siespinsky sample. */
     @Test
     public void testSierpinsky() {
-        GTS lts = testExploration("sierpinsky.gps", "start7", "linear", 8, 7);
+        GTS lts = testExploration("sierpinsky.gps", "start7", "frontier=single successor=single", 8, 7);
         assertEquals(1, lts.getFinalStates().size());
         HostGraph finalGraph = lts.getFinalStates().iterator().next().getGraph();
         assertEquals(3290, finalGraph.nodeCount());
@@ -222,22 +222,22 @@ public class ExplorationTest {
     /** tests the subtyping functionality. */
     @Test
     public void testInheritance() {
-        testExploration("inheritance.gps", "start", "bfs", 756, 5374);
+        testExploration("inheritance.gps", "start", "", 756, 5374);
     }
 
     /** tests attributes, quantifiers and NACs */
     @Test
     public void testLeaderElection() {
-        testExploration("leader-election.gps", "start-2", "bfs", 21, 29);
+        testExploration("leader-election.gps", "start-2", "", 21, 29);
     }
 
     /** tests recipes */
     @Test
     public void testSubsets() {
-        testExploration("subsets.gps", "start-small", "bfs", 2, 1);
-        testExploration("subsets.gps", "start", "bfs", 34, 74);
-        testExploration("recipes_conditions.gps", "start", "bfs", 3, 15);
-        testExploration("recipes_conditions.gps", "start1", "bfs", 1, 2);
+        testExploration("subsets.gps", "start-small", "", 2, 1);
+        testExploration("subsets.gps", "start", "", 34, 74);
+        testExploration("recipes_conditions.gps", "start", "", 3, 15);
+        testExploration("recipes_conditions.gps", "start1", "", 1, 2);
     }
 
     /** Tests various parameters settable through the system properties. */
@@ -281,7 +281,7 @@ public class ExplorationTest {
     /**
      * Tests exploration of a given grammar, saving the GTS if required.
      * @param view the graph grammar to be tested
-     * @param strategyDescr description of the exploration strategy to be used
+     * @param strategyDescr exploration configuration to be used (in ExploreConfig text form)
      * @param nodeCount expected number of nodes; disregarded if < 0
      * @param edgeCount expected number of edges; disregarded if < 0
      * @param openCount expected number of open states; disregarded if < 0
@@ -293,14 +293,10 @@ public class ExplorationTest {
             Grammar gg = view.toGrammar();
             GTS gts = new GTS(gg);
 
-            ExploreType exploreType;
-            if (strategyDescr == null) {
-                exploreType = ExploreType.DEFAULT;
-            } else {
-                Serialized strategy = StrategyEnumerator.instance().parseCommandline(strategyDescr);
-                Serialized acceptor = new Serialized("final");
-                exploreType = new ExploreType(strategy, acceptor, 0);
-            }
+            ExploreType exploreType = ExploreTypeConverter
+                .toExploreType(ExploreConfig.parse(strategyDescr == null
+                    ? ""
+                    : strategyDescr));
             Exploration exploration = exploreType.newExploration(gts, null);
             exploration.play();
             assertFalse(exploration.isInterrupted());
@@ -334,7 +330,7 @@ public class ExplorationTest {
      * Tests exploration of a given grammar.
      *
      * @param view the graph grammar to be tested
-     * @param strategyDescr description of the exploration strategy to be used
+     * @param strategyDescr exploration configuration to be used (in ExploreConfig text form)
      * @param nodeCount expected number of nodes; disregarded if < 0
      * @param edgeCount expected number of edges; disregarded if < 0
      * @param openCount expected number of open states; disregarded if < 0
@@ -350,7 +346,7 @@ public class ExplorationTest {
      * and using a given exploration strategy.
      * @param grammarName name of the rule system to be tested
      * @param startGraphName name of the start graph
-     * @param strategyDescr description of the exploration strategy to be used
+     * @param strategyDescr exploration configuration to be used (in ExploreConfig text form)
      * @param nodeCount expected number of nodes; disregarded if < 0
      * @param edgeCount expected number of edges; disregarded if < 0
      * @param openCount expected number of open states; disregarded if < 0
@@ -367,7 +363,7 @@ public class ExplorationTest {
      * and using a given exploration strategy.
      * @param grammarName name of the rule system to be tested
      * @param startGraphName name of the start graph
-     * @param strategyDescr description of the exploration strategy to be used
+     * @param strategyDescr exploration configuration to be used (in ExploreConfig text form)
      * @param nodeCount expected number of nodes; disregarded if < 0
      * @param edgeCount expected number of edges; disregarded if < 0
      * @return the explored GTS
