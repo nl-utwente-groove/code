@@ -26,6 +26,7 @@ import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.GrammarProperties;
+import nl.utwente.groove.util.Version;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -36,6 +37,50 @@ import nl.utwente.groove.util.parse.FormatException;
  * @version $Revision$
  */
 public class ExplorePropertiesTest {
+    /**
+     * Tests the version-based repair: a pre-3.12 grammar with a stored
+     * legacy exploration gets it converted to the new key; an unparsable or
+     * inexpressible legacy value is left in place for the read-time
+     * fallback; if both keys are present, the shadowed legacy key is
+     * dropped; and a 3.12 grammar is not repaired.
+     */
+    @Test
+    public void testVersionRepair() {
+        // plain conversion
+        var properties = versioned(Version.GRAMMAR_VERSION_3_11);
+        properties.setProperty(GrammarKey.EXPLORATION.getName(), "dfs final 1");
+        var repaired = properties.repairVersion();
+        assertFalse(repaired.containsKey(GrammarKey.EXPLORATION));
+        assertEquals("next=newest count=first",
+                     repaired.getProperty(GrammarKey.EXPLORE_CONFIG.getName()));
+        // an inexpressible legacy value survives for the read-time fallback
+        properties = versioned(Version.GRAMMAR_VERSION_3_11);
+        properties.setProperty(GrammarKey.EXPLORATION.getName(), "ltl:true final 0");
+        repaired = properties.repairVersion();
+        assertEquals("ltl:true final 0",
+                     repaired.getProperty(GrammarKey.EXPLORATION.getName()));
+        assertFalse(repaired.containsKey(GrammarKey.EXPLORE_CONFIG));
+        // a shadowed legacy key is dropped without conversion
+        properties = versioned(Version.GRAMMAR_VERSION_3_11);
+        properties.setProperty(GrammarKey.EXPLORATION.getName(), "dfs final 1");
+        properties.setProperty(GrammarKey.EXPLORE_CONFIG.getName(), "next=random");
+        repaired = properties.repairVersion();
+        assertFalse(repaired.containsKey(GrammarKey.EXPLORATION));
+        assertEquals("next=random", repaired.getProperty(GrammarKey.EXPLORE_CONFIG.getName()));
+        // a current-version grammar is left alone
+        properties = versioned(Version.GRAMMAR_VERSION_3_12);
+        properties.setProperty(GrammarKey.EXPLORATION.getName(), "dfs final 1");
+        repaired = properties.repairVersion();
+        assertEquals("dfs final 1", repaired.getProperty(GrammarKey.EXPLORATION.getName()));
+    }
+
+    /** Creates a properties object stamped with a given grammar version. */
+    private GrammarProperties versioned(String version) {
+        var properties = new GrammarProperties();
+        properties.setProperty(GrammarKey.GRAMMAR_VERSION.getName(), version);
+        return properties;
+    }
+
     /** Tests the values of a fresh properties object. */
     @Test
     public void testDefaults() {

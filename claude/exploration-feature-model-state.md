@@ -346,16 +346,21 @@ Dialog/Simulator threads (2026-07-26, from Arend's review):
   - minimax + remote strategies: **keep, reachable via a dedicated
     Generator option** (to be added when `-s` retires; until then `-s`
     still reaches them).
-  - Legacy `explorationStrategy` property: convert **via the
-    GRAMMAR_VERSION mechanism** (Arend's suggestion, verified to exist:
-    `Version.compareGrammarVersion` + per-version repair steps in
-    `LoadGrammarAction.load` + resave prompt via `VersionDialog`, cf. the
-    `repairIdentifiers` step for grammars < 3.1). Design note for that
-    slice: the repair currently lives in the GUI load action only —
-    headless loads (Generator) bypass it, so either the repair moves to
-    store/GrammarModel level or the read-time precedence fallback stays
-    until the key is finally dropped. Needs a version-constant bump, which
-    triggers the resave prompt for every older grammar (intended).
+  - Legacy `explorationStrategy` property: **converted via the
+    GRAMMAR_VERSION mechanism (DONE 2026-08-02)**. Grammar version bumped
+    to 3.12; the conversion lives in `GrammarProperties.repairVersion`
+    (the pre-existing store-level repair hook, called from
+    `SystemStore.loadGrammarProperties` — so headless loads convert too,
+    per Arend's instruction to keep the repair out of GUI code). Rules:
+    parsable+expressible legacy value → `setExploreConfig` (which drops
+    the legacy key); both keys present → shadowed legacy key dropped;
+    unparsable/inexpressible (e.g. LTL) → left in place for the read-time
+    fallback, which therefore must survive until the key is finally
+    dropped. Per Arend: **no resave prompt when the legacy key is
+    empty** — `LoadGrammarAction` treats a 3.11 grammar without the key
+    as up to date (no `VersionDialog`, no forced save; the file keeps its
+    old stamp until saved for another reason). Grammars below 3.11 get
+    the prompt as before.
   - Still to migrate before the mass deletion: `CheckLTLAction` (builds
     its exploration via Serialized — switch to direct LTLStrategy
     construction), `ExplorationTest` fixtures (legacy keyword strings →

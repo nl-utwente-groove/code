@@ -751,6 +751,28 @@ public class GrammarProperties extends Properties {
             result = result.clone();
             result.setUseStoredNodeIds(true);
         }
+        if (Version.compareGrammarVersions(version, Version.GRAMMAR_VERSION_3_12) == -1) {
+            String legacy = result.getProperty(GrammarKey.EXPLORATION.getName());
+            if (legacy != null && !legacy.isEmpty()) {
+                result = result.clone();
+                if (result.containsKey(GrammarKey.EXPLORE_CONFIG)) {
+                    // the new key takes precedence anyway; drop the shadowed one
+                    result.remove(GrammarKey.EXPLORATION.getName());
+                } else {
+                    try {
+                        result
+                            .setExploreConfig(ExploreTypeConverter
+                                .toConfig(ExploreType.parse(legacy)));
+                        // (setExploreConfig also removes the legacy key)
+                    } catch (FormatException exc) {
+                        // the legacy value is unparsable or has no feature-model
+                        // equivalent (e.g., an LTL strategy); leave it in place,
+                        // to be interpreted by the read-time fallback for as
+                        // long as that exists
+                    }
+                }
+            }
+        }
         return result;
     }
 

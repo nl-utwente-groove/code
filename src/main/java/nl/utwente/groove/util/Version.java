@@ -131,7 +131,7 @@ public class Version {
      * @return the latest grammar version.
      */
     public static String getCurrentGrammarVersion() {
-        return GRAMMAR_VERSION_3_11;
+        return GRAMMAR_VERSION_3_12;
     }
 
     /**
@@ -320,4 +320,12 @@ public class Version {
      * The {@code halt} keyword was added to the control language.
      */
     public static final String GRAMMAR_VERSION_3_11 = "3.11";
+    /**
+     * This is the grammar version introduced with Groove version 7.5.2.
+     * The exploration strategy is now stored in the {@code exploration}
+     * property (a feature-model configuration); a stored legacy
+     * {@code explorationStrategy} property is converted on load where
+     * possible.
+     */
+    public static final String GRAMMAR_VERSION_3_12 = "3.12";
 }
