@@ -73,11 +73,31 @@ public class ExploreCliTest {
                      () -> Generator.execute("-x", "next=newest", "-r", "2", GRAMMAR));
     }
 
-    /** Tests that the deprecated options still work. */
+    /** Tests that the legacy options behave as their configuration equivalents. */
     @Test
-    public void testDeprecatedOptions() throws Exception {
+    public void testLegacyOptions() throws Exception {
         var legacy = Generator.execute("-s", "dfs", "-a", "final", GRAMMAR);
         var config = Generator.execute("-x", "next=newest", GRAMMAR);
         assertEquals(config.getGTS().nodeCount(), legacy.getGTS().nodeCount());
+        var legacyLinear = Generator.execute("-s", "linear", GRAMMAR);
+        var configLinear
+            = Generator.execute("-x", "frontier=single successor=single", GRAMMAR);
+        assertEquals(configLinear.getGTS().nodeCount(), legacyLinear.getGTS().nodeCount());
+        var legacyCounted = Generator.execute("-s", "dfs", "-a", "inv:eat", "-r", "2", GRAMMAR);
+        var configCounted
+            = Generator.execute("-x", "next=newest goal=condition:eat count=2", GRAMMAR);
+        assertEquals(configCounted.getGTS().nodeCount(), legacyCounted.getGTS().nodeCount());
+        // a bare result count also goes through the configuration
+        var legacyFirst = Generator.execute("-r", "1", GRAMMAR);
+        var configFirst = Generator.execute("-x", "count=first", GRAMMAR);
+        assertEquals(configFirst.getGTS().nodeCount(), legacyFirst.getGTS().nodeCount());
+    }
+
+    /** Tests that malformed legacy options are rejected. */
+    @Test
+    public void testBadLegacyOptions() {
+        assertThrows(Exception.class, () -> Generator.execute("-s", "bogus", GRAMMAR));
+        assertThrows(Exception.class, () -> Generator.execute("-a", "cycle", GRAMMAR));
+        assertThrows(Exception.class, () -> Generator.execute("-s", "crule", GRAMMAR));
     }
 }

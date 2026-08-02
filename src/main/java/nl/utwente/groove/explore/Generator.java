@@ -38,7 +38,7 @@ import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreKey;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.explore.config.Shape;
-import nl.utwente.groove.explore.encode.Serialized;
+import nl.utwente.groove.explore.config.parse.LegacySyntaxParser;
 import nl.utwente.groove.explore.util.CompositeReporter;
 import nl.utwente.groove.explore.util.ExplorationReporter;
 import nl.utwente.groove.explore.util.GenerateProgressListener;
@@ -106,7 +106,7 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
     private final static String SOFT_REF_POLICY_NAME = "-XX:SoftRefLRUPolicyMSPerMB";
 
     /* Additionally checks the dependency of the "-ef" option upon "-o",
-     * and the mutual exclusion of "-x" with the deprecated "-s", "-a" and "-r". */
+     * and the mutual exclusion of "-x" with the legacy "-s", "-a" and "-r". */
     @Override
     protected void parseArguments() throws CmdLineException {
         super.parseArguments();
@@ -138,16 +138,6 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
             result
                 .setExploreType(ExploreTypeConverter
                     .toExploreType(ExploreConfig.parse(getExploreConfig())));
-        }
-        if (hasStrategy() || hasAcceptor()) {
-            emitDeprecationWarning();
-        }
-        if (hasStrategy()) {
-            Serialized strategy = StrategyEnumerator.parseCommandLineStrategy(getStrategy());
-            result.setStrategy(strategy);
-        }
-        if (hasAcceptor()) {
-            result.setAcceptor(AcceptorEnumerator.parseCommandLineAcceptor(getAcceptor()));
         }
         String propertiesFileName = getPropertiesFile();
         if (propertiesFileName != null) {
@@ -185,32 +175,31 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
                 result.setProperty(e.getKey(), value);
             }
         }
-        if (!hasExploreConfig()) {
-            result.setResultCount(getResultCount());
+        if (hasStrategy() || hasAcceptor() || getResultCount() != 0) {
+            // translate the legacy components directly into the feature
+            // model, overlaid on the grammar's default exploration (which
+            // must be computed after the properties have been applied)
+            ExploreType type = LegacySyntaxParser
+                .overlay(result.getExploreType(), getStrategy(), getAcceptor(),
+                         getResultCount());
+            if (hasStrategy() || hasAcceptor()) {
+                emitLegacyNote(type);
+            }
+            result.setExploreType(type);
         }
         return result;
     }
 
     /**
-     * Emits a deprecation warning for the "-s" and "-a" options, including
-     * the equivalent "-x" invocation if the given values are expressible in
-     * the exploration feature model.
+     * Emits an informational note for the legacy "-s" and "-a" options,
+     * including the equivalent "-x" invocation if the resulting exploration
+     * is configuration-based.
      */
-    private void emitDeprecationWarning() {
-        emit("Warning: options %s and %s are deprecated; use %s instead%n", STRATEGY_NAME,
-             ACCEPTOR_NAME, EXPLORE_NAME);
-        try {
-            Serialized strategy = hasStrategy()
-                ? StrategyEnumerator.parseCommandLineStrategy(getStrategy())
-                : ExploreType.DEFAULT.getStrategy();
-            Serialized acceptor = hasAcceptor()
-                ? AcceptorEnumerator.parseCommandLineAcceptor(getAcceptor())
-                : ExploreType.DEFAULT.getAcceptor();
-            var config = ExploreTypeConverter
-                .toConfig(new ExploreType(strategy, acceptor, getResultCount()));
-            emit("The equivalent invocation is %s \"%s\"%n", EXPLORE_NAME, config.unparse());
-        } catch (FormatException exc) {
-            // the legacy exploration is not expressible; no equivalent to suggest
+    private void emitLegacyNote(ExploreType type) {
+        if (type instanceof ConfiguredExploreType configured) {
+            emit("Note: options %s and %s are legacy shorthand;"
+                + " the equivalent invocation is %s \"%s\"%n", STRATEGY_NAME, ACCEPTOR_NAME,
+                 EXPLORE_NAME, configured.getConfig().unparse());
         }
     }
 
@@ -528,7 +517,8 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
 
     /** Usage message for the acceptor option. */
     public final static String ACCEPTOR_USAGE = ""
-        + "(Deprecated; use " + EXPLORE_NAME + " instead.) Set the acceptor to <acc>. "
+        + "(Legacy shorthand; the fully general option is " + EXPLORE_NAME
+        + ".) Set the acceptor to <acc>. "
         + "The acceptor determines when a state is counted as a result of the exploration. "
         + "Legal values are:\n" //
         + "    final      - When final (default)\n" //
@@ -561,15 +551,15 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
     public final static String STRATEGY_VAR = "strgy";
     /** Usage message for the strategy option. */
     public final static String STRATEGY_USAGE
-        = "(Deprecated; use " + EXPLORE_NAME
-            + " instead.) Set the exploration strategy to <strgy>. Legal values are:\n"
+        = "(Legacy shorthand; the fully general option is " + EXPLORE_NAME
+            + ".) Set the exploration strategy to <strgy>. Legal values are:\n"
             + "  bfs[:n]     - Optionally bounded Breadth-First exploration: \n"
             + "                if n>0, exploration stops at depth n\n" //
             + "  dfs[:n]     - Optionally bounded Depth-First exploration: \n"
             + "                if n>0, exploration stops at depth n\n" //
             + "  linear      - Linear\n" //
             + "  random      - Random linear\n" //
-            + "  uptorule:[dfs|bds][->|=>][!]id\n" //
+            + "  uptorule:[bfs|dfs][n][->|=>][!]id\n" //
             + "              - BFS or DFS up to (for ->) or including (for =>) states \n"
             + "                where rule <id> is or is not (!) applicable\n" //
             + "  cnbound:n   - BFS up to (but not including) graphs with \n"

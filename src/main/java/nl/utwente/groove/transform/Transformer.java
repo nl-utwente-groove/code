@@ -23,13 +23,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import nl.utwente.groove.explore.AcceptorEnumerator;
 import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.explore.ExplorationListener;
 import nl.utwente.groove.explore.ExploreResult;
 import nl.utwente.groove.explore.ExploreType;
-import nl.utwente.groove.explore.StrategyEnumerator;
-import nl.utwente.groove.explore.encode.Serialized;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.GrammarProperties;
@@ -325,13 +322,11 @@ public class Transformer {
 
     /**
      * Sets the complete exploration type to be used in the next exploration.
-     * In contrast to setting the individual components through
-     * {@link #setStrategy}, {@link #setAcceptor} and {@link #setResultCount},
-     * this passes the type through intact, so that behaviour carried only by
+     * The type is passed through intact, so that behaviour carried only by
      * the type itself (such as the persistence and shape features of a
-     * configuration-based type) is preserved. Component setters invoked in
-     * addition override the corresponding components, rebuilding a plain
-     * type from the serialised descriptors.
+     * configuration-based type) is preserved. A result count set through
+     * {@link #setResultCount} overrides the type's result bound (see
+     * {@link ExploreType#withResultCount}).
      * @param exploreType the exploration type to be used; if {@code null},
      * the default exploration type of the grammar will be used
      */
@@ -348,85 +343,13 @@ public class Transformer {
         ExploreType result = this.fixedExploreType == null
             ? getGrammarModel().getDefaultExploreType()
             : this.fixedExploreType;
-        boolean rebuild = hasStrategy() || hasAcceptor() || hasResultCount();
-        if (rebuild) {
-            Serialized strategy = hasStrategy()
-                ? getStrategy()
-                : result.getStrategy();
-            Serialized acceptor = hasAcceptor()
-                ? getAcceptor()
-                : result.getAcceptor();
-            int resultCount = hasResultCount()
-                ? getResultCount()
-                : result.getBound();
-            result = new ExploreType(strategy, acceptor, resultCount);
+        if (hasResultCount() && getResultCount() != result.getBound()) {
+            result = result.withResultCount(getResultCount());
         }
         return result;
     }
 
     private ExploreType exploreType;
-
-    /**
-     * Sets the strategy to be used in the next exploration.
-     * @param strategy the strategy to be used; if {@code null}, the
-     * default strategy of the grammar will be used
-     */
-    public void setStrategy(Serialized strategy) {
-        this.strategy = strategy;
-        // reset the exploration, so that it will be regenerated
-        this.exploreType = null;
-    }
-
-    /**
-     * Sets the strategy to be used in the next exploration.
-     * @param strategy the strategy to be used; if {@code null}, the
-     * default strategy of the grammar will be used
-     * @throws FormatException if the strategy cannot be parsed
-     */
-    public void setStrategy(String strategy) throws FormatException {
-        setStrategy(StrategyEnumerator.parseCommandLineStrategy(strategy));
-    }
-
-    /** Returns the user-set strategy for the next exploration. */
-    private Serialized getStrategy() {
-        return this.strategy;
-    }
-
-    /** Indicates if there is a user-set strategy for the next exploration. */
-    private boolean hasStrategy() {
-        return getStrategy() != null;
-    }
-
-    /**
-     * Sets the acceptor to be used in the next exploration.
-     * @param acceptor the acceptor to be used; if {@code null}, the
-     * default acceptor of the grammar will be used
-     */
-    public void setAcceptor(Serialized acceptor) {
-        this.acceptor = acceptor;
-        // reset the exploration, so that it will be regenerated
-        this.exploreType = null;
-    }
-
-    /**
-     * Sets the acceptor to be used in the next exploration.
-     * @param acceptor the acceptor to be used; if {@code null}, the
-     * default acceptor of the grammar will be used
-     * @throws FormatException if the acceptor cannot be parsed
-     */
-    public void setAcceptor(String acceptor) throws FormatException {
-        setAcceptor(AcceptorEnumerator.parseCommandLineAcceptor(acceptor));
-    }
-
-    /** Returns the user-set acceptor for the next exploration. */
-    private Serialized getAcceptor() {
-        return this.acceptor;
-    }
-
-    /** Indicates if there is a user-set acceptor for the next exploration. */
-    private boolean hasAcceptor() {
-        return getAcceptor() != null;
-    }
 
     /**
      * Sets the result count to be used in the next exploration.
@@ -465,7 +388,5 @@ public class Transformer {
     }
 
     private final List<ExplorationListener> gtsListeners = new ArrayList<>();
-    private Serialized strategy;
-    private Serialized acceptor;
     private int resultCount;
 }
