@@ -414,11 +414,28 @@ Implementation (two commits):
    behavioural effects and the guard (including that an explicit override
    resolving to the recorded value is allowed).
 
-### Phase 6 (later branch) — demolition
+### Phase 6 — demolition *[COMPLETED 2026-08-02, commits 594693426..687ec19dc]*
 
 Delete `explore.encode`, `explore.prettyparse`, `Serialized`, `ExploreType`,
 `StrategyValue`/`AcceptorValue` templates and the enumerators; retire the deprecated
 CLI aliases and the legacy property key.
+
+*[As executed, with two deliberate deviations from the sentence above (both
+decided with Arend 2026-08-02). (1) `ExploreType` was not deleted but survives
+as a small abstract base class: keeping the LTL, single-state, remote and
+minimax explorations as first-class citizens requires a common supertype. It
+carries no trace of the old serialised-descriptor representation; the concrete
+types are `ConfiguredExploreType` plus the dedicated `LTLExploreType` and
+`DirectExploreType` subclasses. (2) The CLI aliases `-s/-a/-r` and the legacy
+`explorationStrategy` property key were not retired but made permanent,
+reimplemented on `explore.config.parse.LegacySyntaxParser`, which translates
+the legacy keyword syntax directly into the feature model — this decision also
+un-blocked the demolition from waiting for a release, since deleting the old
+machinery then removed no user-facing behaviour. Everything else went as
+planned: both packages, the templates and the enumerators are gone (60 files,
+−5730 lines), along with the legacy `BFSStrategy`/`DFSStrategy`,
+`EngineParityTest` (parity job done) and `Transformer.setStrategy/setAcceptor`.
+See the state note for the as-built details and the residual open points.]*
 
 ## Open points (to be settled during the phases, with Arend where marked)
 

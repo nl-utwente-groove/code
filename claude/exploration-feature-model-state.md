@@ -415,6 +415,23 @@ Dialog/Simulator threads (2026-07-26, from Arend's review):
     setAcceptor` (deleted; Generator uses `LegacySyntaxParser.overlay`),
     `LTLTest` (direct `LTLExploreType`), `RecipeTest`
     (`LegacySyntaxParser.parse`).
+- Post-demolition residuals (optional, decision-shaped — no pressure on
+  either):
+  - **Dropping the `explorationStrategy` key someday** is now Arend's call,
+    not a technical need. If ever wanted: remove `GrammarKey.EXPLORATION`,
+    the fallback branches in `GrammarProperties.getExploreType/-Config`, and
+    the leave-in-place case of `repairVersion` — plus a policy for the
+    unconvertible values (stored LTL explorations and unparsable strings),
+    which would then be silently ignored or need an error/prompt. The
+    version repair already converts every convertible value on load, so the
+    key's remaining constituency is hand-edited files and stored LTL values.
+  - **Conventional formula precedence is now in force on every path.** With
+    `EncodedRuleFormula` gone, `-a formula:`, the property fallback and the
+    config key all parse rule formulas via `RuleFormulaParser` (`!` > `&&` >
+    `||` > right-assoc `->`). Unparenthesised mixed-operator formulas in old
+    grammars that escaped conversion can silently mean something different
+    than under the legacy parser — remember this when a user reports odd
+    goal behaviour on an ancient grammar (deliberate 6.1 decision).
 - Randomness features (`next=random`, `successor=*-random`) must respect the pending
   deterministic-seeding design (see memory: randomness-seeding-design; design note
   committed as claude/randomness-seeding.md).
