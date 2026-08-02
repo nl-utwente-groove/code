@@ -49,6 +49,11 @@ public class SettingsModel extends TextBasedModel<Settings> {
      */
     public SettingsModel(GrammarModel grammar, QualName name, String program) {
         super(grammar, SETTINGS, name, program);
+        // recheck when a resource kind inspected by the schema changes
+        var schema = SettingsSchemas.get(name.get(0));
+        if (schema != null) {
+            addDependencies(schema.getDependencies().toArray(new ResourceKind[0]));
+        }
     }
 
     @Override
@@ -87,7 +92,7 @@ public class SettingsModel extends TextBasedModel<Settings> {
                     candidates.stream().map(QualName::toString).collect(Collectors.joining(", ")));
             }
         }
-        schema.check(props).throwException();
+        schema.check(getGrammar(), props).throwException();
         return new Settings(schema, props);
     }
 

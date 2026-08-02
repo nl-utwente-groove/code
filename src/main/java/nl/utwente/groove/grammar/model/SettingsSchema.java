@@ -16,9 +16,12 @@
  */
 package nl.utwente.groove.grammar.model;
 
+import java.util.Collections;
 import java.util.Properties;
+import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.annotation.HelpMap;
 import nl.utwente.groove.util.parse.FormatErrorSet;
@@ -46,6 +49,33 @@ public interface SettingsSchema {
      * @return a (non-{@code null}, possibly empty) set of errors in the entries
      */
     public FormatErrorSet check(Properties props);
+
+    /**
+     * Checks a set of settings entries against this schema, in the context of
+     * the grammar holding the settings resource. The default implementation
+     * ignores the grammar and delegates to {@link #check(Properties)}; a
+     * schema whose entries refer to other grammar resources (rules, labels,
+     * ...) should override this method, and declare the resource kinds it
+     * inspects in {@link #getDependencies()} so that its errors are recomputed
+     * when those resources change.
+     * @param grammar the grammar holding the resource; may be {@code null} if
+     * the resource is being considered outside the context of a grammar
+     * @param props the entries to be checked; non-{@code null}
+     * @return a (non-{@code null}, possibly empty) set of errors in the entries
+     */
+    default public FormatErrorSet check(@Nullable GrammarModel grammar, Properties props) {
+        return check(props);
+    }
+
+    /**
+     * Returns the resource kinds (other than the settings themselves) that
+     * {@link #check(GrammarModel, Properties)} inspects. A settings resource
+     * of this schema is rechecked whenever one of these kinds changes.
+     * The default implementation returns the empty set.
+     */
+    default public Set<ResourceKind> getDependencies() {
+        return Collections.emptySet();
+    }
 
     /**
      * Indicates if this schema is singular, meaning that it admits at most one

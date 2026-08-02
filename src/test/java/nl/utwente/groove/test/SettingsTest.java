@@ -35,12 +35,14 @@ import java.util.stream.Collectors;
 import org.junit.Test;
 
 import nl.utwente.groove.grammar.QualName;
+import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.Settings;
 import nl.utwente.groove.grammar.model.SettingsModel;
 import nl.utwente.groove.grammar.model.SettingsSchema;
 import nl.utwente.groove.grammar.model.SettingsSchemas;
+import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.util.parse.FormatError;
@@ -97,9 +99,35 @@ public class SettingsTest {
         }
     }
 
+    /** Grammar-aware variant of the test schema: the optional {@code rule}
+     * entry must name an existing rule of the surrounding grammar. */
+    static private class AwareSchema extends TestSchema {
+        @Override
+        public String getName() {
+            return "aware";
+        }
+
+        @Override
+        public FormatErrorSet check(GrammarModel grammar, Properties props) {
+            FormatErrorSet result = check(props);
+            String rule = props.getProperty("rule");
+            if (rule != null && grammar != null
+                && !grammar.getNames(ResourceKind.RULE).contains(QualName.name(rule))) {
+                result.add("Unknown rule '%s'", rule);
+            }
+            return result;
+        }
+
+        @Override
+        public Set<ResourceKind> getDependencies() {
+            return Set.of(ResourceKind.RULE);
+        }
+    }
+
     static {
         SettingsSchemas.register(new TestSchema());
         SettingsSchemas.register(new SoloSchema());
+        SettingsSchemas.register(new AwareSchema());
     }
 
     // ----------------------------------------------------------------------
@@ -202,6 +230,28 @@ public class SettingsTest {
         // removing the surplus clears the error
         store.deleteTexts(ResourceKind.SETTINGS, List.of(extra));
         assertEquals("green", getModel(grammar, "solo").toResource().getProperty("colour"));
+    }
+
+    /**
+     * Tests the grammar-aware schema check and its dependency tracking: a
+     * schema error referring to a missing rule appears on the resource, and is
+     * recomputed (without any change to the resource itself) when the rule is
+     * added or removed.
+     */
+    @Test
+    public void testGrammarAwareSchema() throws Exception {
+        SystemStore store = copyStore(newStore());
+        QualName name = QualName.parse("aware.check");
+        store.putTexts(ResourceKind.SETTINGS, Map.of(name, "rule=r\n"));
+        GrammarModel grammar = store.toGrammarModel();
+        assertError(grammar, "aware.check", "Unknown rule 'r'");
+        // adding the rule clears the error, though the resource is untouched
+        AspectGraph rule = AspectGraph.emptyGraph("r", GraphRole.RULE, false);
+        store.putGraphs(ResourceKind.RULE, List.of(rule), false);
+        assertFalse(getModel(grammar, "aware.check").hasErrors());
+        // removing the rule brings the error back
+        store.deleteGraphs(ResourceKind.RULE, List.of(QualName.name("r")));
+        assertError(grammar, "aware.check", "Unknown rule 'r'");
     }
 
     /**
