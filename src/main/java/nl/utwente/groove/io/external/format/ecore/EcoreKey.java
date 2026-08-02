@@ -169,12 +169,13 @@ public enum EcoreKey {
      * first in declaration order is returned.
      */
     public static @Nullable EcoreKey lookup(String choice, int pathLength) {
-        return Arrays
-            .stream(values())
-            .filter(key -> key.text.equals(choice))
-            .filter(key -> key.minPath <= pathLength && pathLength <= key.maxPath)
-            .findFirst()
-            .orElse(null);
+        for (EcoreKey key : values()) {
+            if (key.text.equals(choice) && key.minPath <= pathLength
+                && pathLength <= key.maxPath) {
+                return key;
+            }
+        }
+        return null;
     }
 
     /** Returns all key forms with a given choice key, in declaration order. */

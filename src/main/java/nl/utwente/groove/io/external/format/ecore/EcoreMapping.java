@@ -108,6 +108,7 @@ public class EcoreMapping {
             case TYPE_NAME, LITERAL_TYPE_NAME -> this.typeNames.put(joinPath(path), value);
             case LITERAL_STYLE -> this.literalStyles
                 .put(joinPath(path), LiteralStyle.valueOfText(value));
+            default -> throw Exceptions.unreachable();
             }
         }
         errors.throwException();

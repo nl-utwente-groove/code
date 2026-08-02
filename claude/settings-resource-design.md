@@ -67,6 +67,17 @@ schema class, not enum surgery.
   Closed-vocabulary schemas reject unknown keys; open-vocabulary schemas (the
   Ecore mapping, whose keys embed Ecore element paths) validate key *shape* and
   values, and leave element-path resolution to the client (see below).
+  Three GUI-driven extensions (added on the `settings-gui` branch):
+  `isSingular()` (a singular schema admits one resource per grammar; all
+  resources of an over-populated singular schema get a resource error, making
+  duplicates visible immediately rather than at port time — `ecore` is
+  singular), `getExplanation()`/`getNewText()` (the generated template of a
+  new resource: purpose as comment lines, the `$schema` entry, and commented
+  example lines per key form), and `getHelpMap()` (a `Help`/`HelpMap` syntax
+  help map shown in the settings display's info panel). The New/Rename/Copy
+  name dialog validates the leading name segment against the registry, since
+  a resource under an unknown schema can only ever show the unknown-schema
+  error.
 - **GUI**: `DisplayKind.SETTINGS` with a generic `ResourceDisplay` (list panel
   slot 1), `TextTab` editor with RSyntaxTextArea's
   `SYNTAX_STYLE_PROPERTIES_FILE` token maker, optional tab
@@ -99,6 +110,11 @@ Keys are parsed from the right: the last segment is the *choice key*, the
 preceding segments (if any) are an *Ecore element path* — package-qualified
 Ecore names, unqualified allowed when unambiguous. Choice keys never clash with
 element names because the last segment is always interpreted as a choice key.
+Since the `settings-gui` branch, the key forms are reified as the `EcoreKey`
+enum (choice key, admissible path lengths, value check, template line), whose
+constants carry `@Syntax`/`@ToolTip*` annotations feeding the settings
+display's documentation panel; the `EcoreMapping` parser, the generated
+template and the help map all derive from it.
 
 | Key | Value | Meaning |
 |---|---|---|

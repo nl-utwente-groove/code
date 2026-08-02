@@ -72,9 +72,8 @@ public class SettingsModel extends TextBasedModel<Settings> {
                 "Declared schema '%s' differs from schema '%s' implied by the resource name",
                 declared.trim(), schemaName);
         }
-        var grammar = getGrammar();
-        if (schema.isSingular() && grammar != null) {
-            var candidates = grammar
+        if (schema.isSingular()) {
+            var candidates = getGrammar()
                 .getResourceMap(SETTINGS)
                 .keySet()
                 .stream()
