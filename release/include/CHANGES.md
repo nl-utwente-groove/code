@@ -3,6 +3,12 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
+Upcoming release
+-------------------------------
+- Removed the remote exploration strategy (`remote:host`), which sent the explored
+  state space as a symbolic transition system (STS) to a remote server; command lines
+  or saved explorations using `remote` now fail with an unknown-strategy error
+
 Release 7.5.3, 3 March 2026
 -------------------------------
 - Bug fix release after ICGT 2026 presentation
