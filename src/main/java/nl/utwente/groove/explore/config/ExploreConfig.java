@@ -18,6 +18,7 @@ package nl.utwente.groove.explore.config;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -183,7 +184,7 @@ public class ExploreConfig {
     public static ExploreConfig parse(String text) throws FormatException {
         var result = new ExploreConfig();
         var errors = new FormatErrorSet();
-        var seen = new EnumMap<ExploreKey,Boolean>(ExploreKey.class);
+        var seen = EnumSet.noneOf(ExploreKey.class);
         for (String token : splitTokens(text)) {
             int pos = token.indexOf(ASSIGN);
             if (pos < 0) {
@@ -196,7 +197,7 @@ public class ExploreConfig {
                 errors.add("Unknown exploration key '%s'", name);
                 continue;
             }
-            if (seen.put(key, Boolean.TRUE) != null) {
+            if (!seen.add(key)) {
                 errors.add("Duplicate exploration key '%s'", name);
                 continue;
             }
@@ -334,7 +335,7 @@ public class ExploreConfig {
     private static final char QUOTE = '"';
 
     /** Mapping from key names to keys. */
-    private static final Map<String,ExploreKey> keyMap = new HashMap<>();
+    private static final Map<String,@Nullable ExploreKey> keyMap = new HashMap<>();
     static {
         for (var key : ExploreKey.values()) {
             keyMap.put(key.getName(), key);

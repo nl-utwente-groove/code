@@ -145,6 +145,34 @@ public class ExploreSchemaTest {
         }
     }
 
+    /**
+     * Tests the targeted line edits of the resource writer: comments,
+     * ordering and hand-written entries survive, a key reverting to its
+     * default keeps its line with the default spelled out, and missing
+     * non-default keys are appended.
+     */
+    @Test
+    public void testSetConfigText() throws Exception {
+        // a fresh text holds the schema key and the non-default entries
+        var config = ExploreConfig.parse("next=newest count=first");
+        assertEquals("$schema = explore\nnext = newest\ncount = first\n",
+                     ExploreConfigSchema.setConfigText(null, config));
+        // targeted edits leave comments and unaffected lines untouched
+        String old = "# my comment\n$schema = explore\nnext = random\ngoal = final\n";
+        String edited = ExploreConfigSchema.setConfigText(old, config);
+        assertEquals("# my comment\n$schema = explore\nnext = newest\ngoal = final\n"
+            + "count = first\n", edited);
+        // a line whose value already expresses the setting is left verbatim
+        assertEquals(edited, ExploreConfigSchema.setConfigText(edited, config));
+        // reverting to the default keeps the line, with the default spelled out
+        String reverted
+            = ExploreConfigSchema.setConfigText(edited, new ExploreConfig());
+        assertEquals("# my comment\n$schema = explore\nnext = oldest\ngoal = final\n"
+            + "count = all\n", reverted);
+        // the round trip through the parser is exact
+        assertEquals(config, config(edited));
+    }
+
     /** Tests that the help map documents every exploration key. */
     @Test
     public void testHelpMap() {

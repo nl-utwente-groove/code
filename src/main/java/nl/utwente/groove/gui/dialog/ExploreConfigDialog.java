@@ -225,7 +225,7 @@ public class ExploreConfigDialog extends JDialog {
         this.savedButton = new JButton(SAVED_COMMAND);
         this.savedButton.setToolTipText(SAVED_TOOLTIP);
         this.savedButton
-            .addActionListener(e -> resetTo(getGrammar().getProperties().getExploreConfig()));
+            .addActionListener(e -> resetTo(getGrammar().getDefaultExploreConfig()));
         result.add(this.savedButton);
         this.startButton = new JButton(START_COMMAND);
         this.startButton.addActionListener(e -> startExploration());
@@ -250,7 +250,7 @@ public class ExploreConfigDialog extends JDialog {
         }
         this.legacyNotice = "The current exploration strategy cannot be expressed"
             + " in the feature model; showing the saved configuration";
-        return getGrammar().getProperties().getExploreConfig();
+        return getGrammar().getDefaultExploreConfig();
     }
 
     /** Loads a configuration into the dialog widgets. */
@@ -442,7 +442,7 @@ public class ExploreConfigDialog extends JDialog {
             getRow(key).setDeviating(deviationHtml);
         }
         this.revertButton.setEnabled(deviating || !errors.isEmpty());
-        var savedConfig = getGrammar().getProperties().getExploreConfig();
+        var savedConfig = getGrammar().getDefaultExploreConfig();
         boolean savedDiffers = !config.unparse().equals(savedConfig.unparse());
         this.savedButton.setEnabled(!errors.isEmpty() || savedDiffers);
         // there is nothing to save if the composition equals the saved setting

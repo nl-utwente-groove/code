@@ -33,7 +33,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.algebra.Algebra;
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.explore.ExploreType;
-import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.grammar.Action.Role;
 import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.grammar.CheckPolicy.PolicyMap;
@@ -512,8 +511,8 @@ public abstract class Properties implements Fixable {
         ROLE(Optional.class),
         /** Value for type {@link ExploreType}. */
         EXPLORE_TYPE(ExploreType.class),
-        /** Value for type {@link ExploreConfig}. */
-        EXPLORE_CONFIG(ExploreConfig.class),
+        /** Value for an optional single {@link QualName}. */
+        QUAL_NAME(Optional.class),
         /** Value for type {@link ThreeValued}. */
         THREE_VALUED(ThreeValued.class),
         /** Value for type {@link Path}. */
@@ -607,13 +606,14 @@ public abstract class Properties implements Fixable {
         }
 
         /**
-         * Casts the wrapped value to an {@link ExploreConfig}.
-         * This is only valid if this entry's key type is {@link ValueType#EXPLORE_CONFIG}
+         * Casts the wrapped value to an optional {@link QualName}.
+         * This is only valid if this entry's key type is {@link ValueType#QUAL_NAME}
          * @throws UnsupportedOperationException if this entry's key type is inappropriate
          */
-        public ExploreConfig getExploreConfig() {
-            check(ValueType.EXPLORE_CONFIG);
-            return (ExploreConfig) value();
+        @SuppressWarnings("unchecked")
+        public Optional<QualName> getQualName() {
+            check(ValueType.QUAL_NAME);
+            return (Optional<QualName>) value();
         }
 
         /**

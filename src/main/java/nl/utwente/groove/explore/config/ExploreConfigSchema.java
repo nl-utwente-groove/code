@@ -16,7 +16,11 @@
  */
 package nl.utwente.groove.explore.config;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -28,6 +32,7 @@ import nl.utwente.groove.annotation.Help;
 import nl.utwente.groove.annotation.HelpMap;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
+import nl.utwente.groove.grammar.model.SettingsModel;
 import nl.utwente.groove.grammar.model.SettingsSchema;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
@@ -66,6 +71,14 @@ public class ExploreConfigSchema implements SettingsSchema {
             return exc.getErrors();
         }
         FormatErrorSet result = config.check();
+        if (result.isEmpty()) {
+            // a consistent configuration may still be unrealisable by the engine
+            try {
+                ExploreTypeConverter.toExploreType(config);
+            } catch (FormatException exc) {
+                result.addAll(exc.getErrors());
+            }
+        }
         if (grammar != null) {
             result.addAll(ExploreConfigChecker.check(grammar, config));
         }
@@ -104,9 +117,9 @@ public class ExploreConfigSchema implements SettingsSchema {
 
     @Override
     public HelpMap getHelpMap() {
-        var result = docMap;
+        var result = this.docMap;
         if (result == null) {
-            docMap = result = computeDocMap();
+            this.docMap = result = computeDocMap();
         }
         return result;
     }
@@ -128,6 +141,81 @@ public class ExploreConfigSchema implements SettingsSchema {
             result.add(help);
         }
         return result;
+    }
+
+    /**
+     * Returns the text of an {@code explore} settings resource updated to
+     * express a given configuration. If an original text is given, the update
+     * is by targeted line edits, so that comments, ordering and hand-written
+     * entries survive: the (first) line of each key whose setting differs is
+     * replaced — a key reverting to its default keeps its line, with the
+     * default spelled out — and missing non-default keys are appended;
+     * otherwise a fresh minimal resource text is generated.
+     */
+    public static String setConfigText(@Nullable String oldText, ExploreConfig config) {
+        if (oldText == null) {
+            StringBuilder result = new StringBuilder();
+            result.append(SettingsModel.SCHEMA_KEY).append(" = ").append(NAME).append('\n');
+            for (ExploreKey key : ExploreKey.values()) {
+                if (!config.isDefault(key)) {
+                    result
+                        .append(key.getName())
+                        .append(" = ")
+                        .append(key.parser().unparse(config.get(key)))
+                        .append('\n');
+                }
+            }
+            return result.toString();
+        }
+        List<String> lines = new ArrayList<>(Arrays.asList(oldText.split("\\R", -1)));
+        // non-default keys that (so far) have no line of their own
+        Set<ExploreKey> missing = EnumSet.noneOf(ExploreKey.class);
+        for (ExploreKey key : ExploreKey.values()) {
+            if (!config.isDefault(key)) {
+                missing.add(key);
+            }
+        }
+        Set<ExploreKey> seen = EnumSet.noneOf(ExploreKey.class);
+        for (int i = 0; i < lines.size(); i++) {
+            String trimmed = lines.get(i).trim();
+            for (ExploreKey key : ExploreKey.values()) {
+                if (seen.contains(key) || !trimmed.matches(key.getName() + "\\s*[=:].*")) {
+                    continue;
+                }
+                seen.add(key);
+                missing.remove(key);
+                String oldValue
+                    = trimmed.replaceFirst("^" + key.getName() + "\\s*[=:]\\s*", "");
+                Setting desired = config.get(key);
+                boolean same;
+                try {
+                    same = key.parser().parse(oldValue).equals(desired);
+                } catch (FormatException exc) {
+                    same = false;
+                }
+                if (!same) {
+                    // a key reverting to its default keeps its line, with the
+                    // default spelled out
+                    String newValue = config.isDefault(key)
+                        ? key.getDefaultKind().getName()
+                        : key.parser().unparse(desired);
+                    lines.set(i, key.getName() + " = " + newValue);
+                }
+                break;
+            }
+        }
+        // strip a single trailing empty line before appending, restore after
+        boolean endedWithNewline = !lines.isEmpty() && lines.get(lines.size() - 1).isEmpty();
+        if (endedWithNewline) {
+            lines.remove(lines.size() - 1);
+        }
+        for (ExploreKey key : ExploreKey.values()) {
+            if (missing.contains(key)) {
+                lines
+                    .add(key.getName() + " = " + key.parser().unparse(config.get(key)));
+            }
+        }
+        return String.join("\n", lines) + "\n";
     }
 
     /** The singleton instance of this schema. */

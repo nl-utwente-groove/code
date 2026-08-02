@@ -23,8 +23,10 @@ import nl.utwente.groove.explore.ExplorationListener;
 import nl.utwente.groove.explore.ExploreResult;
 import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
+import nl.utwente.groove.explore.config.ExploreConfigSchema;
 import nl.utwente.groove.explore.util.StatisticsReporter;
 import nl.utwente.groove.grammar.Grammar;
+import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
@@ -321,16 +323,35 @@ public class SimulatorModel implements Cloneable {
     }
 
     /**
-     * Changes the default exploration configuration in the system properties.
+     * Changes the default exploration configuration: the configuration is
+     * written into the settings resource named by the {@code exploration}
+     * property (by targeted line edits, so comments and hand-written entries
+     * survive), creating the singleton {@code explore} resource and the
+     * reference if the property is unset. May perform two undoable store
+     * edits (the resource text and the properties).
      * @param config the new default exploration configuration
      * @return {@code true} if the GTS was invalidated as a result of the action
      * @throws IOException if the action failed
      */
     public boolean doSetDefaultExploreConfig(ExploreConfig config) throws IOException {
         GrammarProperties properties = getGrammar().getProperties();
-        GrammarProperties newProperties = properties.clone();
-        newProperties.setExploreConfig(config);
-        return doSetProperties(newProperties);
+        QualName target = properties.getExplorationName();
+        if (target == null) {
+            target = QualName.name(ExploreConfigSchema.NAME);
+        }
+        String oldText = getStore().getTexts(ResourceKind.SETTINGS).get(target);
+        String newText = ExploreConfigSchema.setConfigText(oldText, config);
+        boolean result = false;
+        if (!newText.equals(oldText)) {
+            result = doAddText(ResourceKind.SETTINGS, target, newText);
+        }
+        if (properties.getExplorationName() == null
+            || properties.containsKey(GrammarKey.EXPLORATION)) {
+            GrammarProperties newProperties = properties.clone();
+            newProperties.setExplorationName(target);
+            result |= doSetProperties(newProperties);
+        }
+        return result;
     }
 
     /**
