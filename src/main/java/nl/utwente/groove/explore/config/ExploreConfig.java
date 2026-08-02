@@ -25,6 +25,7 @@ import java.util.Map;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.grammar.model.SettingsModel;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
@@ -249,6 +250,41 @@ public class ExploreConfig {
         if (current.length() > 0) {
             result.add(current.toString());
         }
+        return result;
+    }
+
+    /**
+     * Parses a configuration from java-properties entries, as stored in an
+     * {@code explore} settings resource: one entry per exploration key, with
+     * the same value syntax as in the single-line form (but no quoting, since
+     * every entry has its own line). Keys that do not occur get their default
+     * setting; the reserved {@code $schema} entry is ignored.
+     * @throws FormatException if the entries contain an unknown key or a
+     * value that is not parsable for its key
+     */
+    public static ExploreConfig fromProperties(java.util.Properties props) throws FormatException {
+        var result = new ExploreConfig();
+        var errors = new FormatErrorSet();
+        // process the entries in alphabetical order, for deterministic
+        // error order (Properties iterates hash-ordered)
+        List<String> names = new ArrayList<>(props.stringPropertyNames());
+        java.util.Collections.sort(names);
+        for (String name : names) {
+            if (name.equals(SettingsModel.SCHEMA_KEY)) {
+                continue;
+            }
+            ExploreKey key = keyMap.get(name);
+            if (key == null) {
+                errors.add("Unknown exploration key '%s'", name);
+                continue;
+            }
+            try {
+                result.put(key, key.parser().parse(props.getProperty(name).trim()));
+            } catch (FormatException exc) {
+                errors.addAll(exc.getErrors());
+            }
+        }
+        errors.throwException();
         return result;
     }
 
