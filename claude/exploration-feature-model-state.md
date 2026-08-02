@@ -332,8 +332,27 @@ Dialog/Simulator threads (2026-07-26, from Arend's review):
   Do not implement `nen` or priority pools unprompted.
   Arend does not (currently) want conditions as a separate resource kind; they
   remain rules, distinguished at most by role/display.
-- Phase 6: delete `explore.encode`, `explore.prettyparse`, `Serialized`,
-  `ExploreType`, `StrategyValue`/`AcceptorValue`, legacy property key, `-s/-a/-r`.
+- Phase 6: **COMPLETE (2026-08-02, commits 594693426..13d501557).**
+  The demolition (6.6, 13d501557) deleted `explore.encode`,
+  `explore.prettyparse` (60 files, −5730 lines), `StrategyValue`/
+  `AcceptorValue` + enumerators + `ParsableValue`, the legacy
+  `BFSStrategy`/`DFSStrategy` (SymbolicStrategy's default is now
+  `FrontierStrategy(QueuePool)`), and `EngineParityTest` (parity job
+  done). `ExploreType` is now a small abstract base (bound, prepareGTS,
+  newExploration, abstract getParsedStrategy/getParsedAcceptor/
+  withResultCount/getIdentifier); each subclass computes its identifier
+  from its own state; `ExploreType.DEFAULT` = realisation of the default
+  config. `ExploreTypeConverter` is validation-only (the realisability
+  gate); `toConfig` is gone — overlaying `-s/-a/-r` on a
+  non-configuration base is an explicit error. The dialog's "Runs as"
+  line is gone. The legacy `explorationStrategy` key and its read-time
+  fallback SURVIVE, on `LegacySyntaxParser.parser()` (6.5, 40d53e8a1):
+  LTL property values now surface as `LTLExploreType`; the version
+  repair converts exactly the values that translate to a configuration.
+  `GrammarProperties.setExploreType` deleted (the key is only ever
+  read). The stale note about `EncodedTypeEditor` colour constants was
+  obsolete — the GUI had no `encode` imports left.
+  History of the phase below:
   **Prerequisites DONE (2026-08-02): 6.1 extracted the semantic parsers to
   `explore.config.parse` (RuleFormulaParser — now reentrant and with
   conventional operator precedence, deliberately changing the meaning of
@@ -363,19 +382,18 @@ Dialog/Simulator threads (2026-07-26, from Arend's review):
     `Transformer.setStrategy/setAcceptor` are deleted (result-count
     override now via `ExploreType.withResultCount`, which
     `ConfiguredExploreType` overrides to keep its config).
-    `LegacySyntaxParserTest` pins parity against the enumerator path for
-    as long as that path exists.
+    `LegacySyntaxParserTest` pinned parity against the enumerator path
+    while it existed; since the demolition it pins the keyword
+    translation against literal expected configurations.
   - minimax + remote: reachable via `-s` forever — the earlier "dedicated
     Generator option when -s retires" plan is obsolete.
-  - **Consequence: the mass deletion no longer needs to wait for a
-    release** — deleting encode/prettyparse/enumerators/Serialized removes
-    no user-facing behaviour any more. Remaining compat anchor: the legacy
-    `explorationStrategy` read-time fallback still runs through
-    `ExploreType.parse` (enumerators); rewire it to
-    `LegacySyntaxParser.parse` as part of the demolition (the method
-    already exists and handles the direct types too — note the historic
-    whitespace-split limitation for LTL properties with spaces, shared
-    with the legacy parser).
+  - **Consequence: the mass deletion no longer needed to wait for a
+    release** — deleting encode/prettyparse/enumerators/Serialized removed
+    no user-facing behaviour. The legacy `explorationStrategy` read-time
+    fallback was rewired to `LegacySyntaxParser.parser()` first (6.5) —
+    note the historic whitespace-split limitation for LTL properties with
+    spaces, inherited from the legacy description format (the `-s` option
+    itself is unaffected, its value arrives whole).
   - Legacy `explorationStrategy` property: **converted via the
     GRAMMAR_VERSION mechanism (DONE 2026-08-02)**. Grammar version bumped
     to 3.12; the conversion lives in `GrammarProperties.repairVersion`
@@ -394,11 +412,9 @@ Dialog/Simulator threads (2026-07-26, from Arend's review):
   - Migrations before the mass deletion — ALL DONE (2026-08-02):
     `CheckLTLAction` (direct `LTLExploreType`), `ExplorationTest`/
     `DeterminismTest` fixtures (config strings), `Transformer.setStrategy/
-    setAcceptor` (deleted; Generator uses `LegacySyntaxParser.overlay`).
-    EngineParityTest + legacy BFS/DFS strategies + LegacySyntaxParserTest's
-    enumerator-parity assertions retire together with the enumerators.
-  Note: `EncodedTypeEditor` hosts the colour constants of the deleted
-  `ExplorationDialog`; the `encode` editors are unreachable from the GUI already.
+    setAcceptor` (deleted; Generator uses `LegacySyntaxParser.overlay`),
+    `LTLTest` (direct `LTLExploreType`), `RecipeTest`
+    (`LegacySyntaxParser.parse`).
 - Randomness features (`next=random`, `successor=*-random`) must respect the pending
   deterministic-seeding design (see memory: randomness-seeding-design; design note
   committed as claude/randomness-seeding.md).
@@ -409,5 +425,6 @@ Worktrees `.claude/worktrees/explore-feature-model` (phases 1–4) and
 `.claude/worktrees/explore-parametric-engine` (5a, branched off the former); detach
 HEAD when handing over for Eclipse review, re-attach on "continue". No pom or
 generated-code changes on these branches ⇒ Eclipse refresh suffices after merge
-(module-info gained the `explore.engine` export, which a refresh picks up).
+(module-info gained the `explore.engine` export and, with the demolition, lost
+the `explore.encode` and `explore.prettyparse` exports — a refresh picks both up).
 Commits: house style, no trailers.
