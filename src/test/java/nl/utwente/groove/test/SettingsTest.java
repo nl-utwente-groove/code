@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 
@@ -65,6 +66,12 @@ public class SettingsTest {
         @Override
         public String getName() {
             return "test";
+        }
+
+        @Override
+        public String getExplanation() {
+            return "Test settings without any semantics, used to exercise the generic "
+                + "settings mechanism; every key is accepted except the one that is not.";
         }
 
         @Override
@@ -195,6 +202,32 @@ public class SettingsTest {
         // removing the surplus clears the error
         store.deleteTexts(ResourceKind.SETTINGS, List.of(extra));
         assertEquals("green", getModel(grammar, "solo").toResource().getProperty("colour"));
+    }
+
+    /**
+     * Tests the generated initial text of a new settings resource: the schema
+     * explanation as wrapped comment lines, then the schema key entry; and the
+     * result is a valid settings resource.
+     */
+    @Test
+    public void testNewText() throws Exception {
+        SettingsSchema schema = SettingsSchemas.get("test");
+        assertNotNull(schema);
+        String text = schema.getNewText();
+        List<String> lines = List.of(text.split("\n"));
+        assertEquals(SettingsModel.SCHEMA_KEY + " = test", lines.get(lines.size() - 1));
+        List<String> comments = lines.subList(0, lines.size() - 1);
+        assertFalse(comments.isEmpty());
+        comments.forEach(l -> assertTrue(l, l.startsWith("# ") && l.length() <= 78));
+        assertEquals(schema.getExplanation(),
+                     comments
+                         .stream()
+                         .map(l -> l.substring(2))
+                         .collect(Collectors.joining(" ")));
+        SystemStore store = copyStore(newStore());
+        QualName name = QualName.parse("test.fresh");
+        store.putTexts(ResourceKind.SETTINGS, Map.of(name, text));
+        assertFalse(getModel(store.toGrammarModel(), "test.fresh").hasErrors());
     }
 
     // ----------------------------------------------------------------------

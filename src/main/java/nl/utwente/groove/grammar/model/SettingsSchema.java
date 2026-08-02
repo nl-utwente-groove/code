@@ -67,4 +67,45 @@ public interface SettingsSchema {
     default public Map<String,String> getKeyDocMap() {
         return Collections.emptyMap();
     }
+
+    /**
+     * Returns a plain-text explanation of the general purpose of settings
+     * resources of this schema, for user guidance; the empty string if there
+     * is none. Used (among others) as the generated comment header of a new
+     * settings resource.
+     */
+    default public String getExplanation() {
+        return "";
+    }
+
+    /**
+     * Returns the initial text for a new settings resource of this schema.
+     * The default implementation generates the explanation as comment lines,
+     * followed by a {@link SettingsModel#SCHEMA_KEY} entry; schemas with a
+     * documented vocabulary are advised to append their keys as commented-out
+     * example lines.
+     */
+    default public String getNewText() {
+        StringBuilder result = new StringBuilder();
+        // wrap the explanation into comment lines
+        StringBuilder line = new StringBuilder();
+        for (String word : getExplanation().split(" +")) {
+            if (word.isEmpty()) {
+                continue;
+            }
+            if (line.length() > 0 && line.length() + word.length() > 74) {
+                result.append("# ").append(line).append('\n');
+                line.setLength(0);
+            }
+            if (line.length() > 0) {
+                line.append(' ');
+            }
+            line.append(word);
+        }
+        if (line.length() > 0) {
+            result.append("# ").append(line).append('\n');
+        }
+        result.append(SettingsModel.SCHEMA_KEY).append(" = ").append(getName()).append('\n');
+        return result.toString();
+    }
 }

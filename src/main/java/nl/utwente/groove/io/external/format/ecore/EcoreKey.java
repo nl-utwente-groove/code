@@ -40,23 +40,27 @@ import nl.utwente.groove.util.parse.IdValidator;
 @NonNullByDefault
 public enum EcoreKey {
     /** Global ordering encoding. */
-    ORDERING("ordering", 0, 0, EcoreKey::checkOrdering),
+    ORDERING("ordering", 0, 0, "none", EcoreKey::checkOrdering),
     /** Global use of {@code xmi:id} values. */
-    USE_IDENTIFIERS("useIdentifiers", 0, 0, EcoreKey::checkBoolean),
+    USE_IDENTIFIERS("useIdentifiers", 0, 0, "true", EcoreKey::checkBoolean),
     /** Per-feature override of the ordering encoding. */
-    FEATURE_ORDERING("ordering", 2, EcoreKey.UNBOUNDED, EcoreKey::checkOrdering, "class", "feature"),
+    FEATURE_ORDERING("ordering", 2, EcoreKey.UNBOUNDED, "index", EcoreKey::checkOrdering, "class",
+        "feature"),
     /** Classifier type name override. */
-    TYPE_NAME("typeName", 1, EcoreKey.UNBOUNDED, EcoreKey::checkTypeName, "classifier"),
+    TYPE_NAME("typeName", 1, EcoreKey.UNBOUNDED, "<name>", EcoreKey::checkTypeName, "classifier"),
     /** Per-enum literal naming style. */
-    LITERAL_STYLE("literalStyle", 1, EcoreKey.UNBOUNDED, EcoreKey::checkLiteralStyle, "enum"),
+    LITERAL_STYLE("literalStyle", 1, EcoreKey.UNBOUNDED, "plain", EcoreKey::checkLiteralStyle,
+        "enum"),
     /** Enum literal type name override. */
-    LITERAL_TYPE_NAME("typeName", 2, EcoreKey.UNBOUNDED, EcoreKey::checkTypeName, "enum", "literal"),;
+    LITERAL_TYPE_NAME("typeName", 2, EcoreKey.UNBOUNDED, "<name>", EcoreKey::checkTypeName, "enum",
+        "literal"),;
 
-    private EcoreKey(String text, int minPath, int maxPath,
+    private EcoreKey(String text, int minPath, int maxPath, String templateValue,
                      Function<String,@Nullable String> valueCheck, String... pathParts) {
         this.text = text;
         this.minPath = minPath;
         this.maxPath = maxPath;
+        this.templateValue = templateValue;
         this.valueCheck = valueCheck;
         this.pathParts = pathParts;
     }
@@ -99,6 +103,17 @@ public enum EcoreKey {
     }
 
     private final String[] pathParts;
+
+    /**
+     * Returns the example line for this key form in a generated settings
+     * resource: the pattern with the default value for global keys, an
+     * example value for the per-element forms.
+     */
+    public String templateLine() {
+        return pattern() + " = " + this.templateValue;
+    }
+
+    private final String templateValue;
 
     /**
      * Returns the key form matching a given choice key and element path

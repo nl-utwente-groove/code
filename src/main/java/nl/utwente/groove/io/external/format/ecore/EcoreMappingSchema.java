@@ -62,6 +62,24 @@ public class EcoreMappingSchema implements SettingsSchema {
     }
 
     @Override
+    public String getExplanation() {
+        return "Configuration of the Ecore import and export: global encoding options "
+            + "plus per-element overrides, whose keys start with a (package-qualified) "
+            + "Ecore element path. Entries that do not resolve against the metamodel "
+            + "at hand are ignored, so one resource can serve several metamodels.";
+    }
+
+    @Override
+    public String getNewText() {
+        StringBuilder result = new StringBuilder(SettingsSchema.super.getNewText());
+        result.append("# Available keys (uncomment and adapt):\n");
+        for (EcoreKey key : EcoreKey.values()) {
+            result.append("# ").append(key.templateLine()).append('\n');
+        }
+        return result.toString();
+    }
+
+    @Override
     public Map<String,String> getKeyDocMap() {
         Map<String,String> result = new LinkedHashMap<>();
         result

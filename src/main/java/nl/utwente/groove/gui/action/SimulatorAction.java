@@ -18,6 +18,7 @@ import javax.swing.SwingUtilities;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
+import nl.utwente.groove.grammar.model.SettingsSchemas;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.gui.BehaviourOption;
 import nl.utwente.groove.gui.Icons;
@@ -259,7 +260,16 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
             = new FreshNameDialog<>(existingNames, name, mustBeFresh) {
                 @Override
                 protected QualName createName(String name) throws FormatException {
-                    return QualName.parse(name).testValid();
+                    QualName result = QualName.parse(name).testValid();
+                    // a settings name must lead with a known schema; catching
+                    // this here saves the user from a resource that can only
+                    // ever show the unknown-schema error
+                    if (kind == ResourceKind.SETTINGS
+                        && SettingsSchemas.get(result.get(0)) == null) {
+                        throw new FormatException("'%s' is not a settings schema (known: %s)",
+                            result.get(0), String.join(", ", SettingsSchemas.getNames()));
+                    }
+                    return result;
                 }
             };
         nameDialog.showDialog(getFrame(), title);

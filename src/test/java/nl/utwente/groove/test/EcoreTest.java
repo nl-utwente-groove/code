@@ -25,6 +25,7 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.nio.file.Files;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -34,6 +35,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EPackage;
@@ -55,6 +57,7 @@ import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.io.external.Imported;
+import nl.utwente.groove.io.external.format.ecore.EcoreKey;
 import nl.utwente.groove.io.external.format.ecore.EcoreMapping;
 import nl.utwente.groove.io.external.format.ecore.EcoreMapping.LiteralStyle;
 import nl.utwente.groove.io.external.format.ecore.EcoreMapping.Ordering;
@@ -774,6 +777,33 @@ public class EcoreTest {
             assertTrue(mapping.useIdentifiers());
             assertTrue(mapping.featureOrdering().isEmpty());
         }
+    }
+
+    /**
+     * Tests the generated initial text of a new {@code ecore} settings
+     * resource: valid, semantically empty (all key lines commented out), with
+     * every key form present as an example, and with the global examples
+     * showing exactly the default values.
+     */
+    @Test
+    public void testMappingTemplate() throws Exception {
+        String text = EcoreMappingSchema.INSTANCE.getNewText();
+        EcoreMapping fresh = mapping(text);
+        assertEquals(Ordering.NONE, fresh.ordering());
+        assertTrue(fresh.useIdentifiers());
+        assertTrue(fresh.featureOrdering().isEmpty());
+        assertTrue(fresh.typeNames().isEmpty());
+        for (EcoreKey key : EcoreKey.values()) {
+            assertTrue(key.name(), text.contains("# " + key.templateLine()));
+        }
+        String globals = Arrays
+            .stream(EcoreKey.values())
+            .filter(EcoreKey::isGlobal)
+            .map(EcoreKey::templateLine)
+            .collect(Collectors.joining("\n"));
+        EcoreMapping defaults = mapping(globals);
+        assertEquals(Ordering.NONE, defaults.ordering());
+        assertTrue(defaults.useIdentifiers());
     }
 
     /** Tests that a broken or wrongly-schemed mapping resource makes the port fail. */
