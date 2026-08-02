@@ -29,6 +29,7 @@ module nl.utwente.groove {
     exports nl.utwente.groove.graph;
     exports nl.utwente.groove.graph.layout;
     exports nl.utwente.groove.explore.config;
+    exports nl.utwente.groove.explore.config.parse;
     exports nl.utwente.groove.gui.export;
     exports nl.utwente.groove.explore.engine;
     exports nl.utwente.groove.explore.result;
@@ -114,4 +115,4 @@ module nl.utwente.groove {
     opens nl.utwente.groove.resource.font;
     opens nl.utwente.groove.resource.version;
     opens nl.utwente.groove.resource.antlr;
-}
+}

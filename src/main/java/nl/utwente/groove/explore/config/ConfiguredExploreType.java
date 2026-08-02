@@ -20,10 +20,10 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.explore.ExploreType;
-import nl.utwente.groove.explore.encode.EncodedEdgeMap;
-import nl.utwente.groove.explore.encode.EncodedEnabledRule;
+import nl.utwente.groove.explore.config.parse.EdgeMapParser;
+import nl.utwente.groove.explore.config.parse.EnabledRuleParser;
+import nl.utwente.groove.explore.config.parse.RuleFormulaParser;
 import nl.utwente.groove.explore.encode.EncodedPolarity;
-import nl.utwente.groove.explore.encode.EncodedRuleFormula;
 import nl.utwente.groove.explore.encode.EncodedStopMode;
 import nl.utwente.groove.explore.encode.Serialized;
 import nl.utwente.groove.explore.engine.BeamPool;
@@ -207,11 +207,11 @@ public class ConfiguredExploreType extends ExploreType {
         case "cnbound" -> new FrontierStrategy(StopMode.UP_TO,
             new NodeBoundCondition(getIntArgument(strategy, "node-bound")), new QueuePool(0));
         case "cebound" -> new FrontierStrategy(StopMode.UP_TO,
-            new EdgeBoundCondition(new EncodedEdgeMap()
+            new EdgeBoundCondition(EdgeMapParser
                 .parse(grammar, strategy.getArgument("edge-bound"))),
             new QueuePool(0));
         case "uptorule" -> {
-            Rule rule = new EncodedEnabledRule().parse(grammar, strategy.getArgument("rule"));
+            Rule rule = EnabledRuleParser.parse(grammar, strategy.getArgument("rule"));
             boolean polarity
                 = EncodedPolarity.POSITIVE.equals(strategy.getArgument("polarity"));
             StopMode stopMode = EncodedStopMode.UP_TO_KEY.equals(strategy.getArgument("stop"))
@@ -241,16 +241,16 @@ public class ConfiguredExploreType extends ExploreType {
         case "none" -> NoStateAcceptor.INSTANCE;
         case "any" -> AnyStateAcceptor.PROTOTYPE;
         case "inv" -> {
-            Rule rule = new EncodedEnabledRule().parse(grammar, acceptor.getArgument("rule"));
+            Rule rule = EnabledRuleParser.parse(grammar, acceptor.getArgument("rule"));
             Predicate<GraphState> predicate = new Predicate.RuleApplicable(rule);
             if (EncodedPolarity.NEGATIVE.equals(acceptor.getArgument("polarity"))) {
                 predicate = new Predicate.Not<>(predicate);
             }
             yield new PredicateAcceptor(predicate);
         }
-        case "formula" -> new PredicateAcceptor(new EncodedRuleFormula()
+        case "formula" -> new PredicateAcceptor(RuleFormulaParser
             .parse(grammar, acceptor.getArgument("formula")));
-        case "ruleapp" -> new PredicateAcceptor(new Predicate.ActionApplied(new EncodedEnabledRule()
+        case "ruleapp" -> new PredicateAcceptor(new Predicate.ActionApplied(EnabledRuleParser
             .parse(grammar, acceptor.getArgument("rule"))));
         default -> throw Exceptions
             .illegalState("Converter produced unknown acceptor keyword '%s'",
