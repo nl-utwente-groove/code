@@ -34,7 +34,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * both directions: an {@link ExploreConfig} using feature values the legacy
  * strategies cannot realise is rejected with an explanatory error, as is an
  * {@link ExploreType} whose strategy or acceptor has no feature-model
- * equivalent (the LTL strategies, the state, minimax and remote strategies,
+ * equivalent (the LTL strategies, the state and minimax strategies,
  * and the cycle acceptor).
  * @author Arend Rensink
  * @version $Revision$
