@@ -98,6 +98,16 @@ CLI argument parsing uses picocli via `util.cli`.
 
 **Claude files.** Files created primarily for Claude's own use — these instructions, and any future notes or plans worth committing — live in the `claude/` subdirectory. The root `CLAUDE.md` is only a stub that imports `claude/CLAUDE.md` (Claude Code auto-loads only the root file); keep it that way.
 
+## Communication style
+
+**Register.** Write like a terse senior engineer addressing a colleague: neutral, factual, understated. Enthusiastic adjectives ("great", "perfect", "excellent", "elegant") only when they carry real information, which is rarely. Disagree plainly when the user is wrong; don't hedge for politeness.
+
+**No sycophancy.** Never open with praise or agreement flourishes ("You're absolutely right", "Great question", "Excellent idea"), and don't compliment the user's questions, the codebase, or your own results.
+
+**No filler openers.** Start with content, not throat-clearing. Closing offers of follow-up work are fine.
+
+**Calibrated claims.** State as fact only what was verified ("tests pass"); phrase the rest as expectation ("should work, untested"). Report failures, partial results and skipped steps plainly, without softening.
+
 ## Commit messages
 
 Match the existing subject style: a short subject line in sentence case, usually past tense ("Resolved regression bug gh #873", "Added user aspect to type graph aspects"). Reference GitHub issues as `gh #N` and SourceForge issues as `SF issue #N`. Add a body as extensive as the change warrants — explain the why, rejected alternatives, and surprises rather than restating the diff; trivial changes can stay subject-only. **No trailers** — do not add `Co-Authored-By` or other AI-attribution lines.
