@@ -28,7 +28,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.LTLExploreType;
 import nl.utwente.groove.explore.MinimaxExploreType;
-import nl.utwente.groove.explore.RemoteExploreType;
 import nl.utwente.groove.explore.StateExploreType;
 import nl.utwente.groove.explore.config.Bound;
 import nl.utwente.groove.explore.config.ConfiguredExploreType;
@@ -61,7 +60,7 @@ import nl.utwente.groove.util.parse.Parser;
  * in the legacy {@code explorationStrategy} grammar property. The keywords
  * are translated directly into the exploration feature model: a
  * config-expressible strategy or acceptor becomes settings of an
- * {@link ExploreConfig}, while the model-checking, minimax, remote and
+ * {@link ExploreConfig}, while the model-checking, minimax and
  * single-state strategies (which the feature model deliberately does not
  * cover) become dedicated {@link ExploreType} subclasses. This makes the
  * legacy syntax a permanent thin front-end of the configuration, with no
@@ -110,8 +109,8 @@ public class LegacySyntaxParser {
      * successor generation, frontier, heuristic, cost and bound) before
      * setting its own; all other features of the base configuration (such as
      * persistence or collapse) are preserved. Likewise, an acceptor resets
-     * only the goal and outcome features. A model-checking, minimax, remote
-     * or single-state strategy is not config-based and replaces the base
+     * only the goal and outcome features. A model-checking, minimax or
+     * single-state strategy is not config-based and replaces the base
      * entirely.
      * @throws FormatException if a component cannot be parsed, or the
      * resulting combination is inconsistent, or the base type has no
@@ -402,8 +401,6 @@ public class LegacySyntaxParser {
             }
             yield new StateExploreType(effectiveAcceptor, count);
         }
-        case "remote" -> new RemoteExploreType(requireArgs(keyword, args), effectiveAcceptor,
-            count);
         case "minimax" -> createMinimaxType(requireArgs(keyword, args), effectiveAcceptor, count);
         default -> throw Exceptions.illegalState("Unknown direct strategy keyword '%s'", keyword);
         };
@@ -540,7 +537,7 @@ public class LegacySyntaxParser {
     /** The strategy keywords realised by dedicated exploration types
      * rather than the configuration. */
     private static final Set<String> DIRECT_KEYWORDS
-        = Set.of("ltl", "ltlbounded", "ltlpocket", "minimax", "remote", "state");
+        = Set.of("ltl", "ltlbounded", "ltlpocket", "minimax", "state");
     /** The model-checking strategy keywords. */
     private static final Set<String> LTL_KEYWORDS = Set.of("ltl", "ltlbounded", "ltlpocket");
     /** Pattern for the argument of the {@code uptorule} strategy. */

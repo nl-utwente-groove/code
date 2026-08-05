@@ -25,7 +25,6 @@ import org.junit.Test;
 import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.LTLExploreType;
 import nl.utwente.groove.explore.MinimaxExploreType;
-import nl.utwente.groove.explore.RemoteExploreType;
 import nl.utwente.groove.explore.StateExploreType;
 import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
@@ -41,7 +40,6 @@ import nl.utwente.groove.explore.strategy.BoundedLTLStrategy;
 import nl.utwente.groove.explore.strategy.BoundedPocketLTLStrategy;
 import nl.utwente.groove.explore.strategy.ExploreStateStrategy;
 import nl.utwente.groove.explore.strategy.LTLStrategy;
-import nl.utwente.groove.explore.strategy.RemoteStrategy;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatException;
@@ -176,9 +174,6 @@ public class LegacySyntaxParserTest {
         assertInstanceOf(StateExploreType.class, state);
         assertInstanceOf(ExploreStateStrategy.class, state.getParsedStrategy(grammar));
         assertInstanceOf(FinalStateAcceptor.class, state.getParsedAcceptor(grammar));
-        var remote = LegacySyntaxParser.parse("remote:http://localhost any 0");
-        assertInstanceOf(RemoteExploreType.class, remote);
-        assertInstanceOf(RemoteStrategy.class, remote.getParsedStrategy(grammar));
         // minimax construction (instantiation needs parametrised rules)
         var minimax = LegacySyntaxParser.parse("minimax:1,10,eat;load,max,eat,2 final 0");
         assertInstanceOf(MinimaxExploreType.class, minimax);
@@ -189,6 +184,9 @@ public class LegacySyntaxParserTest {
     public void testErrors() {
         assertThrows(FormatException.class, () -> LegacySyntaxParser.parse("bogus final 0"));
         assertThrows(FormatException.class, () -> LegacySyntaxParser.parse("bfs bogus 0"));
+        // remote exploration was removed altogether
+        assertThrows(FormatException.class,
+                     () -> LegacySyntaxParser.parse("remote:http://localhost any 0"));
         // the cycle acceptor requires an LTL strategy, and vice versa
         assertThrows(FormatException.class, () -> LegacySyntaxParser.parse("bfs cycle 0"));
         assertThrows(FormatException.class, () -> LegacySyntaxParser.parse("ltl:prop final 0"));
