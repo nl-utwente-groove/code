@@ -24,12 +24,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.antlr.runtime.ANTLRStringStream;
+import org.antlr.runtime.Token;
 import org.antlr.runtime.TokenRewriteStream;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.control.parse.CtrlLexer;
 import nl.utwente.groove.control.parse.CtrlTree;
@@ -51,6 +56,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Wrapper for the ANTLR control parser and builder.
  */
+@NonNullByDefault
 public class CtrlLoader {
     /**
      * Constructs a control loader for a given set of rules and grammar properties.
@@ -90,8 +96,7 @@ public class CtrlLoader {
         this.namespace.setControlInfo(controlName, artificial);
         CtrlTree tree = CtrlTree.parse(this.namespace, program);
         tree.setArtificial(artificial);
-        Object oldRecord = this.controlTreeMap.put(controlName, tree);
-        assert oldRecord == null;
+        this.controlTreeMap.put(controlName, tree);
         return tree;
     }
 
@@ -166,15 +171,18 @@ public class CtrlLoader {
         return result;
     }
 
-    /** Returns a version of the control program defining a recipe with a given name,
-     * where the declared priority of that recipe has been changed to a given value.
-     * TODO finish this (SF Feature Request #172)
+    /** Returns versions of the control programs declaring a given set of recipes,
+     * where the declared priorities of those recipes have been changed to given values.
+     * A priority of 0 is realised by omitting the priority clause.
      * @param prioMap mapping from the names of the recipes to be changed to
      * the new priority values
      * @return mapping of control program names and new control programs
      */
     public Map<QualName,String> changePriority(Map<QualName,Integer> prioMap) {
-        Map<QualName,String> result = new HashMap<>();
+        // share one rewriter per control program, so that multiple
+        // recipe changes within the same program accumulate
+        Map<QualName,TokenRewriteStream> rewriterMap = new HashMap<>();
+        Set<QualName> changed = new HashSet<>();
         for (Map.Entry<QualName,Integer> entry : prioMap.entrySet()) {
             QualName recipeName = entry.getKey();
             int newPriority = entry.getValue();
@@ -187,28 +195,53 @@ public class CtrlLoader {
             CtrlTree recipeTree = tree.getProcs(Kind.RECIPE).get(recipeName);
             assert recipeTree != null : String
                 .format("Recipe declaration of %s not found", recipeName);
-            TokenRewriteStream rewriter = getRewriter(tree);
-            boolean changed = false;
+            TokenRewriteStream rewriter = rewriterMap
+                .computeIfAbsent(controlName, n -> getRewriter(tree));
             if (recipeTree.getChildCount() == 3) {
-                // no explicit priority
+                // no explicit priority clause
                 if (newPriority != 0) {
-                    rewriter
-                        .insertAfter(recipeTree.getChild(1).getToken(), "priority " + newPriority);
-                    changed = true;
+                    // the body carries the opening curly brace token
+                    CtrlTree bodyTree = recipeTree.getChild(2);
+                    rewriter.insertBefore(bodyTree.getToken(), "priority " + newPriority + " ");
+                    changed.add(controlName);
                 }
             } else {
                 CtrlTree prioTree = recipeTree.getChild(2);
                 int oldPriority = Integer.parseInt(prioTree.getText());
                 if (oldPriority != newPriority) {
-                    rewriter.replace(prioTree.getToken(), Integer.toString(newPriority));
-                    changed = true;
+                    if (newPriority == 0) {
+                        deletePriorityClause(rewriter, prioTree);
+                    } else {
+                        rewriter.replace(prioTree.getToken(), Integer.toString(newPriority));
+                    }
+                    changed.add(controlName);
                 }
             }
-            if (changed) {
-                result.put(controlName, rewriter.toString());
-            }
+        }
+        Map<QualName,String> result = new HashMap<>();
+        for (QualName controlName : changed) {
+            result.put(controlName, rewriterMap.get(controlName).toString());
         }
         return result;
+    }
+
+    /** Deletes the priority clause ending in a given priority value token,
+     * together with the whitespace separating it from the parameter list.
+     */
+    private void deletePriorityClause(TokenRewriteStream rewriter, CtrlTree prioTree) {
+        int end = prioTree.getToken().getTokenIndex();
+        // scan back over hidden tokens to the PRIORITY keyword
+        int start = end - 1;
+        while (rewriter.get(start).getChannel() != Token.DEFAULT_CHANNEL) {
+            start--;
+        }
+        assert rewriter.get(start).getType() == CtrlLexer.PRIORITY;
+        // also absorb directly preceding whitespace (but not comments)
+        Token before = rewriter.get(start - 1);
+        if (before.getChannel() != Token.DEFAULT_CHANNEL && before.getText().isBlank()) {
+            start--;
+        }
+        rewriter.delete(start, end);
     }
 
     private TokenRewriteStream getRewriter(CtrlTree tree) {
