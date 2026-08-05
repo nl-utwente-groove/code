@@ -103,6 +103,17 @@ public class JEdgeView extends EdgeView {
         invalidate();
     }
 
+    /*
+     * Overridden to suppress JGraph's control-drag gesture that clones the
+     * edge label into a user-created extra label. GROOVE reserves extra labels
+     * for the in/out multiplicity pair controlled by the VisualMap, which
+     * assumes they always come as arrays of length 2 (see gh #843).
+     */
+    @Override
+    public void addExtraLabel(Point2D location, Object label) {
+        // deliberately empty
+    }
+
     /** Convenience method to retrieve the source vertex. */
     private JVertex<?> getSourceVertex() {
         return getCell().getSourceVertex();
