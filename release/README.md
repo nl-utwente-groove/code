@@ -9,6 +9,8 @@ The github release, as meant here, consists of two dedicated zip-files (as well 
 
 Both of these contain a top-level README.md that explains their structure and how to install the tool.
 
+In addition, the release workflow builds self-contained installers (with a bundled Java runtime, so users need no Java installation) for Windows (`.msi`), macOS (`.dmg`, both Intel and Apple silicon) and Linux (`.deb`); see the Installers section below.
+
 ## Preparation
 
 Below, the _release directory_ refers to the project subdirectory (of the `code` repository) called `release`.
@@ -75,6 +77,16 @@ in two different ways, it is up to the developer to ensure that they are identic
 If something goes wrong on github and you have to repeat the last step, you first have to delete the remote tag on the command line, like so:
 
 `git push --delete origin release-x_y_z`
+
+## Installers
+
+The `installers` job of the release workflow (`.github/workflows/release.yml`) runs `jpackage/build-installer.sh` on a matrix of platform runners — jpackage can only build for the platform it runs on — and attaches the resulting installers to the same github release. The script unpacks the `-bin` zip and turns it into a native package with a bundled, jlink-trimmed Java runtime: the Simulator becomes the main launcher (named GROOVE), the other tools (Generator, ModelChecker, Imager, Viewer) become additional launchers.
+
+To try this locally without any packaging tools, build the release as described above and then run
+
+    bash jpackage/build-installer.sh x.y.z app-image
+
+which produces the raw application directory (no installer) under `jpackage/target/dist`. Building the actual `.msi` locally additionally requires the WiX toolset.
 
 ## Postprocessing
 

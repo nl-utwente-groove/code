@@ -49,3 +49,56 @@ jobs:
         artifacts: "code/release/target/*.zip"
         draft: false
         prerelease: false
+
+  # Builds self-contained installers (with bundled Java runtime) via jpackage
+  # and attaches them to the release created by the job above. jpackage can
+  # only build for the platform it runs on, hence the matrix.
+  installers:
+    needs: release
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-latest   # Windows x64 (.msi)
+          - macos-latest     # macOS aarch64 (.dmg)
+          - macos-13         # macOS x64 (.dmg)
+          - ubuntu-latest    # Linux x64 (.deb)
+
+    runs-on: ${{ matrix.os }}
+
+    defaults:
+      run:
+        working-directory: code
+        shell: bash
+
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v4
+      with:
+        path: 'code'
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: maven
+    - name: Retrieve VERSION from file
+      # tr -d '\r' guards against a CRLF checkout on the windows runner
+      run: echo "VERSION=$(tr -d '\r' < src/main/resources/nl/utwente/groove/resource/version/GROOVE_VERSION)" >> $GITHUB_ENV
+    - name: Build GROOVE
+      run: mvn -B -Drevision=$VERSION -DskipTests -Dmaven.javadoc.skip=true clean install
+    - name: Build release zip
+      # bin+doc is excluded because it needs the javadoc skipped above
+      run: cd release; mvn -B -Drevision=$VERSION -pl '!assembly/bin+doc' clean package
+    - name: Build installer
+      run: bash release/jpackage/build-installer.sh $VERSION
+    - name: Attach installer to release
+      uses: ncipollo/release-action@v1.14.0
+      with:
+        artifacts: "code/release/jpackage/target/dist/*"
+        allowUpdates: true
+        omitBodyDuringUpdate: true
+        omitNameDuringUpdate: true
+        omitDraftDuringUpdate: true
+        omitPrereleaseDuringUpdate: true
