@@ -179,8 +179,7 @@ public class IsoChecker {
                     // must be copied first
                     Set<?> codNodeSet = new HashSet<Node>(cod.nodeSet());
                     Set<?> codEdgeSet = new HashSet<Edge>(cod.edgeSet());
-                    result = dom.nodeSet().equals(codNodeSet)
-                        && dom.edgeSet().equals(codEdgeSet);
+                    result = dom.nodeSet().equals(codNodeSet) && dom.edgeSet().equals(codEdgeSet);
                 } else {
                     // the certificate map keys comprise both the nodes and the edges
                     result = domCertifier
@@ -568,6 +567,7 @@ public class IsoChecker {
                     targetImages[i] = null;
                 }
                 if (edgeImages != null && edgeImages[i] != null) {
+                    assert usedEdgeImages != null;
                     boolean removed = usedEdgeImages.remove(edgeImages[i]);
                     assert removed : String
                         .format("Image %s for edge %s not present in used edge set %s",
@@ -632,6 +632,7 @@ public class IsoChecker {
                 }
                 result.putEdge(key, image);
                 if (edgeImages != null) {
+                    assert usedEdgeImages != null;
                     usedEdgeImages.add(image);
                     edgeImages[i] = image;
                 }

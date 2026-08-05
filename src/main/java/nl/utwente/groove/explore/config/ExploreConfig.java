@@ -69,8 +69,9 @@ public class ExploreConfig {
      */
     public Setting put(ExploreKey key, Setting setting) throws IllegalArgumentException {
         if (!key.getKindType().isInstance(setting.kind())) {
-            throw Exceptions.illegalArg("Setting kind '%s' does not belong to key '%s'",
-                                        setting.kind(), key.getName());
+            throw Exceptions
+                .illegalArg("Setting kind '%s' does not belong to key '%s'", setting.kind(),
+                            key.getName());
         }
         var result = this.map.put(key, setting);
         assert result != null;
@@ -129,8 +130,7 @@ public class ExploreConfig {
             result.add("Result count %s should be larger than 1", count);
         }
         if (getKind(ExploreKey.BOUND) == Bound.COST && getKind(ExploreKey.COST) == Cost.NONE) {
-            result
-                .add("Bound '%s' requires a transition cost", Bound.COST.getName());
+            result.add("Bound '%s' requires a transition cost", Bound.COST.getName());
         }
         return result;
     }
@@ -167,6 +167,7 @@ public class ExploreConfig {
      * @throws FormatException if the text contains an unknown or duplicate
      * key, or a value that is not parsable for its key
      */
+    @SuppressWarnings("null")
     public static ExploreConfig parse(String text) throws FormatException {
         var result = new ExploreConfig();
         var errors = new FormatErrorSet();
@@ -244,20 +245,20 @@ public class ExploreConfig {
         return PARSER;
     }
 
-    private static final Parser<ExploreConfig> PARSER
-        = new Parser.AParser<>("Space-separated list of <i>key</i>=<i>value</i> exploration"
+    private static final Parser<ExploreConfig> PARSER = new Parser.AParser<>(
+        "Space-separated list of <i>key</i>=<i>value</i> exploration"
             + " settings; see the exploration dialog for the keys and values",
-            new ExploreConfig()) {
-            @Override
-            public ExploreConfig parse(String input) throws FormatException {
-                return ExploreConfig.parse(input);
-            }
+        new ExploreConfig()) {
+        @Override
+        public ExploreConfig parse(String input) throws FormatException {
+            return ExploreConfig.parse(input);
+        }
 
-            @Override
-            public <V extends ExploreConfig> String unparse(V value) {
-                return value.unparse();
-            }
-        };
+        @Override
+        public <V extends ExploreConfig> String unparse(V value) {
+            return value.unparse();
+        }
+    };
 
     @Override
     public String toString() {

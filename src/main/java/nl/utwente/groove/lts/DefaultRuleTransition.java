@@ -242,10 +242,8 @@ public class DefaultRuleTransition extends AEdge<GraphState,RuleTransitionLabel>
             }
             assert replacement != null : String
                 .format("No content-equal target edge for re-derived image %s of %s", ghost, key);
-            if (replacement != null) {
-                morphism.putEdge(key, replacement);
-                used.add(replacement);
-            }
+            morphism.putEdge(key, replacement);
+            used.add(replacement);
         }
     }
 

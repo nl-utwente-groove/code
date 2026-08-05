@@ -976,7 +976,7 @@ abstract sealed public class RegExpr { // implements VarSetSupport {
         @Override
         public RegExpr parseOperator(String expr) throws FormatException {
             String[] operands = StringHandler.splitExpr(expr, getOperator(), OpPosition.INFIX);
-            if (operands.length < 2) {
+            if (operands == null || operands.length < 2) {
                 return null;
             }
             List<RegExpr> operandList = new LinkedList<>();
@@ -1684,16 +1684,13 @@ abstract sealed public class RegExpr { // implements VarSetSupport {
         private Pair<List<String>,Boolean> getConstraint(String parameter) throws FormatException {
             String constraintList
                 = StringHandler.toTrimmed(parameter, TypeGuard.OPEN, TypeGuard.CLOSE);
-            if (constraintList == null) {
-                throw new FormatException("Invalid constraint parameter '%s'", parameter);
-            }
             boolean negated = constraintList.indexOf(TypeGuard.NEGATOR) == 0;
             if (negated) {
                 constraintList = constraintList.substring(1);
             }
             String[] constraintParts = StringHandler
                 .splitExpr(constraintList, "" + TypeGuard.SEPARATOR, OpPosition.INFIX);
-            if (constraintParts.length == 0) {
+            if (constraintParts == null || constraintParts.length == 0) {
                 throw new FormatException("Invalid constraint parameter '%s'", parameter);
             }
             final List<String> constrainedLabels = new ArrayList<>();

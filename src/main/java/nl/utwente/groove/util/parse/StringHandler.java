@@ -489,9 +489,7 @@ public class StringHandler {
 
     /**
      * Removes a given outermost bracket pair from a given expression, if the
-     * bracket pair is in fact there. Returns <code>null</code> if the
-     * expression was not bracketed in the first place, or if brackets are
-     * improperly balanced. This is tested by calling {@link #parseExpr(String)}
+     * bracket pair is in fact there. This is tested by calling {@link #parse(String)}
      * on the expression.
      * @param expr the expression to be trimmed
      * @param open the opening bracket

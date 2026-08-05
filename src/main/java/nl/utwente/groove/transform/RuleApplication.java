@@ -369,6 +369,7 @@ public class RuleApplication implements DeltaApplier {
                 if (getTarget().containsEdge(edgeImage)) {
                     result.putEdge(edge, edgeImage);
                     if (replay != null && edgeImage != edge) {
+                        assert consumed != null;
                         // a merge image still contained in the target is a
                         // recorded identity kept alive by a warm event cache;
                         // claim its slot so a substitution cannot reuse it
@@ -388,7 +389,7 @@ public class RuleApplication implements DeltaApplier {
         // otherwise hand out a slot whose identity is also mapped directly,
         // breaking injectivity of the morphism
         if (ghostEdges != null) {
-            assert mergeMap != null && replay != null;
+            assert mergeMap != null && replay != null && consumed != null;
             for (HostEdge edge : ghostEdges) {
                 HostEdge ghost = mergeMap.mapEdge(edge);
                 assert ghost != null;
@@ -531,6 +532,7 @@ public class RuleApplication implements DeltaApplier {
                 : new boolean[replay.length];
             for (HostEdge edge : record.getAddedEdges()) {
                 if (replay != null) {
+                    assert consumed != null;
                     edge = findAddedEdge(replay, consumed, edge);
                 }
                 HostNode targetNode = edge.target();
@@ -557,8 +559,7 @@ public class RuleApplication implements DeltaApplier {
         for (int i = 0; i < replay.length; i++) {
             HostEdge stored = replay[i];
             if (!consumed[i] && stored.label().equals(edge.label())
-                && stored.source().equals(edge.source())
-                && stored.target().equals(edge.target())) {
+                && stored.source().equals(edge.source()) && stored.target().equals(edge.target())) {
                 consumed[i] = true;
                 return stored;
             }

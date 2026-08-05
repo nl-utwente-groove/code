@@ -447,7 +447,6 @@ public class ExploreAction extends SimulatorAction {
                     ExploreThread.this.interrupt();
                 }
             });
-            result.setAlwaysOnTop(true);
             return result;
         }
 
