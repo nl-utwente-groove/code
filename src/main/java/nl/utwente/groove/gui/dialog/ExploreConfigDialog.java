@@ -26,12 +26,12 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
@@ -232,7 +232,7 @@ public class ExploreConfigDialog extends JDialog {
                 .showConfirmDialog(this, ASK_DISCARD_TEXT, ASK_DISCARD_TITLE,
                                    JOptionPane.OK_CANCEL_OPTION);
             if (answer != JOptionPane.OK_OPTION) {
-                refreshNameSelection(getGrammar().getProperties().getExplorationName());
+                refreshNameSelection(getExploreName());
                 return;
             }
         }
@@ -483,7 +483,7 @@ public class ExploreConfigDialog extends JDialog {
                 ? null
                 : "<html><body style='width:" + getErrorWrapWidth()
                     + "px'><font color='red'>" + problemsHtml + "</font></body></html>");
-        QualName exploreName = grammar.getProperties().getExplorationName();
+        QualName exploreName = getExploreName();
         refreshNameBox(exploreName);
         // the status label only carries informational messages
         String status = " ";
@@ -586,11 +586,13 @@ public class ExploreConfigDialog extends JDialog {
 
     /**
      * Refreshes the settings selector: the {@link #NONE_ITEM} sentinel followed
-     * by the names of the grammar's exploration settings resources, with the
-     * currently referenced name selected. A reference to a non-existent
-     * resource is appended as a (marked) item of its own, so that it can be
-     * shown as the selection.
-     * @param exploreName the currently referenced settings name, or {@code null}
+     * by the grammar's exploration settings resources, with the currently
+     * referenced one selected. A reference to a non-existent resource is
+     * appended as a (marked) item of its own, so that it can be shown as the
+     * selection. The items show the <i>local</i> names — the folder is implied
+     * by the schema — whereas {@link #nameBoxNames} holds the resource names.
+     * @param exploreName the currently referenced settings resource name, or
+     * {@code null}
      */
     private void refreshNameBox(QualName exploreName) {
         var names = SettingsSchemas.getResourceNames(getGrammar(), ExploreConfigSchema.INSTANCE);
@@ -601,11 +603,11 @@ public class ExploreConfigDialog extends JDialog {
         var items = new ArrayList<String>();
         items.add(NONE_ITEM);
         for (var name : names) {
-            items.add(name.toString());
+            items.add(localText(name));
         }
         if (exploreName != null && !names.contains(exploreName)) {
             this.nameBoxNames.add(exploreName);
-            items.add(exploreName + MISSING_SUFFIX);
+            items.add(localText(exploreName) + MISSING_SUFFIX);
         }
         // only rebuild the item list on an actual change: this method runs on
         // every keystroke in the dialog, and a rebuild closes an open popup
@@ -696,12 +698,17 @@ public class ExploreConfigDialog extends JDialog {
         if (config == null || !errors.isEmpty()) {
             return;
         }
-        QualName target = getGrammar().getProperties().getExplorationName();
+        QualName target = getExploreName();
         if (target == null || askName) {
-            target = askConfigName(target);
-            if (target == null) {
+            // the prompt works with local names; the resource name is composed
+            // back from the schema
+            QualName local = askConfigName(target == null || target.size() < 2
+                ? null
+                : ExploreConfigSchema.INSTANCE.getLocalName(target));
+            if (local == null) {
                 return;
             }
+            target = ExploreConfigSchema.INSTANCE.getResourceName(local);
         }
         try {
             getSimulatorModel().doSaveExploreConfig(target, config);
@@ -713,28 +720,60 @@ public class ExploreConfigDialog extends JDialog {
     }
 
     /**
-     * Asks the user for the name to save the exploration settings under.
-     * @param current the currently referenced settings name, if any; used as
-     * suggestion
-     * @return the chosen name, or {@code null} if the dialog was cancelled
+     * Asks the user for the local name to save the exploration settings under:
+     * the name within the {@code explore} folder, which is fixed by the schema
+     * and therefore neither shown nor asked for.
+     * @param current the local name of the currently referenced settings, if
+     * any; used as suggestion
+     * @return the chosen local name, or {@code null} if the dialog was
+     * cancelled
      */
     private QualName askConfigName(QualName current) {
-        var existingNames = getGrammar().getNames(ResourceKind.SETTINGS);
+        // only the residents of the explore folder can clash
+        Set<QualName> existingNames = new TreeSet<>();
+        for (var name : SettingsSchemas
+            .getResourceNames(getGrammar(), ExploreConfigSchema.INSTANCE)) {
+            if (name.size() > 1) {
+                existingNames.add(ExploreConfigSchema.INSTANCE.getLocalName(name));
+            }
+        }
         // the name is not required to be fresh: the suggestion may well be the
         // current name, and saving in place must stay possible
-        FreshNameDialog<QualName> nameDialog = new FreshNameDialog<>(existingNames == null
-            ? Collections.emptySet()
-            : existingNames, current == null
+        FreshNameDialog<QualName> nameDialog
+            = new FreshNameDialog<>(existingNames, current == null
                 ? DEFAULT_CONFIG_NAME
                 : current.toString(), false) {
-            @Override
-            protected QualName createName(String name) throws FormatException {
-                return QualName.parse(name).testValid();
-            }
-        };
+                @Override
+                protected QualName createName(String name) throws FormatException {
+                    return QualName.parse(name).testValid();
+                }
+            };
         return nameDialog.showDialog(this.simulator.getFrame(), ASK_NAME_TITLE)
             ? nameDialog.getName()
             : null;
+    }
+
+    /**
+     * Returns the name of the settings resource the grammar's exploration
+     * reference points to, or {@code null} if there is no reference. The
+     * property itself holds the local name within the {@code explore} folder.
+     */
+    private QualName getExploreName() {
+        var local = getGrammar().getProperties().getExplorationName();
+        return local == null
+            ? null
+            : ExploreConfigSchema.INSTANCE.getResourceName(local);
+    }
+
+    /**
+     * Returns the text under which an exploration settings resource is shown
+     * in the selector: its local name. A resource in the (for this schema
+     * erroneous) singleton form has no local name, and is shown in full.
+     */
+    private static String localText(QualName name) {
+        return name.size() > 1
+            ? ExploreConfigSchema.INSTANCE.getLocalName(name).toString()
+            : name.toString();
     }
 
     /** Disposes the dialog and resets the tooltip dismiss delay. */
@@ -819,9 +858,9 @@ public class ExploreConfigDialog extends JDialog {
             + " and make that the grammar's exploration";
     /** Title of the dialog asking for the name to save the exploration settings under. */
     private static final String ASK_NAME_TITLE = "Select exploration settings name";
-    /** Name suggested for a first exploration settings resource; settings
-     * names are free, so this is a suggestion and nothing more. */
-    private static final String DEFAULT_CONFIG_NAME = "exploration";
+    /** Local name suggested for a first exploration settings resource; within
+     * the schema folder names are free, so this is a suggestion and no more. */
+    private static final String DEFAULT_CONFIG_NAME = "default";
     private static final String REVERT_TOOLTIP
         = "Discard the unsaved changes and reload the saved exploration settings";
     private static final String START_FRESH_COMMAND = "Start";

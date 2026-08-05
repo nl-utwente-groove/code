@@ -767,12 +767,12 @@ public class GrammarModel implements PropertyChangeListener {
      * legacy exploration strategy key is consulted.
      */
     public ExploreType getDefaultExploreType() {
-        var name = getProperties().getExplorationName();
-        if (name == null) {
+        var local = getProperties().getExplorationName();
+        if (local == null) {
             return getProperties().getLegacyExploreType();
         }
         try {
-            return ExploreTypeConverter.toExploreType(resolveExploreConfig(name));
+            return ExploreTypeConverter.toExploreType(resolveExploreConfig(local));
         } catch (FormatException exc) {
             return ExploreType.DEFAULT;
         }
@@ -787,8 +787,8 @@ public class GrammarModel implements PropertyChangeListener {
      * resolve; those errors are reported through the property checker).
      */
     public ExploreConfig getDefaultExploreConfig() {
-        var name = getProperties().getExplorationName();
-        if (name == null) {
+        var local = getProperties().getExplorationName();
+        if (local == null) {
             // fall back to the legacy key, if its value is expressible
             return getProperties()
                 .getLegacyExploreType() instanceof ConfiguredExploreType configured
@@ -796,7 +796,7 @@ public class GrammarModel implements PropertyChangeListener {
                     : new ExploreConfig();
         }
         try {
-            return resolveExploreConfig(name);
+            return resolveExploreConfig(local);
         } catch (FormatException exc) {
             // reported on the resource and by the property checker
             return new ExploreConfig();
@@ -804,12 +804,16 @@ public class GrammarModel implements PropertyChangeListener {
     }
 
     /**
-     * Resolves the exploration reference to the content of the named settings
-     * resource.
+     * Resolves the exploration reference to the content of the referenced
+     * settings resource. The reference is the <i>local</i> name of that
+     * resource within the {@code explore} folder, so the schema name is
+     * prefixed before the lookup.
+     * @param localName the local name held by the {@code exploration} property
      * @throws FormatException if the resource is missing, of another schema,
      * or erroneous
      */
-    private ExploreConfig resolveExploreConfig(QualName name) throws FormatException {
+    private ExploreConfig resolveExploreConfig(QualName localName) throws FormatException {
+        QualName name = ExploreConfigSchema.INSTANCE.getResourceName(localName);
         var model = getResource(ResourceKind.SETTINGS, name);
         if (model instanceof SettingsModel settingsModel) {
             Settings settings = settingsModel.toResource();

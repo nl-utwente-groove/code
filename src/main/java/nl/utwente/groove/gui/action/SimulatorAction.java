@@ -7,6 +7,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
@@ -242,6 +243,12 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
     /**
      * Enters a dialog that results in a name that is not in a set of
      * current names, or <code>null</code> if the dialog was cancelled.
+     * For a settings resource in folder form, the leading segment of the
+     * proposed name is the schema folder, which is fixed: the dialog then
+     * shows and edits only the local name within that folder (and clashes only
+     * with that folder's residents), and the folder is put back in front of the
+     * outcome. Creating, renaming or copying can thus not move a settings
+     * resource out of its schema.
      * @param name an initially proposed name
      * @param mustBeFresh if <code>true</code>, the returned name is guaranteed
      *        to be distinct from the existing names
@@ -255,11 +262,30 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
                 ? "new "
                 : "", kind.getDescription());
         Set<QualName> existingNames = getSimulatorModel().getGrammar().getNames(kind);
+        String suggestion = name;
+        String fixedFolder = null;
+        QualName proposal = QualName.parse(name);
+        if (kind == ResourceKind.SETTINGS && proposal.size() > 1) {
+            fixedFolder = proposal.get(0);
+            QualName folderName = QualName.name(fixedFolder);
+            suggestion = proposal.removeParent(folderName).toString();
+            Set<QualName> locals = new TreeSet<>();
+            for (QualName existing : existingNames) {
+                if (existing.size() > 1 && existing.get(0).equals(fixedFolder)) {
+                    locals.add(existing.removeParent(folderName));
+                }
+            }
+            existingNames = locals;
+        }
+        final String folder = fixedFolder;
         FreshNameDialog<QualName> nameDialog
-            = new FreshNameDialog<>(existingNames, name, mustBeFresh) {
+            = new FreshNameDialog<>(existingNames, suggestion, mustBeFresh) {
                 @Override
                 protected QualName createName(String name) throws FormatException {
-                    return QualName.parse(name).testValid();
+                    QualName result = QualName.parse(name).testValid();
+                    return folder == null
+                        ? result
+                        : result.nest(folder);
                 }
             };
         nameDialog.showDialog(getFrame(), title);

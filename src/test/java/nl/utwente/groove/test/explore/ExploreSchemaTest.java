@@ -142,9 +142,10 @@ public class ExploreSchemaTest {
         // broken one is inactive and its error does not reach the grammar
         assertFalse(badModel.isActive());
         assertFalse(grammar.hasErrors(), grammar.getErrors().toString());
-        // activating the broken resource propagates its error to the grammar
+        // activating the broken resource propagates its error to the grammar;
+        // the property holds the local name within the explore folder
         var props = grammar.getProperties().clone();
-        props.setExplorationName(bad);
+        props.setExplorationName(QualName.name("broken"));
         store.putProperties(props);
         assertTrue(grammar.hasErrors());
         assertTrue(grammar
@@ -156,8 +157,9 @@ public class ExploreSchemaTest {
 
     /**
      * Tests schema-driven activation: setting a resource active establishes
-     * the exploration reference in the grammar properties, the resource's
-     * active status follows the reference, and deactivation removes it again.
+     * the exploration reference in the grammar properties (as the local name
+     * within the {@code explore} folder), the resource's active status follows
+     * the reference, and deactivation removes it again.
      */
     @Test
     public void testActivation() throws Exception {
@@ -181,7 +183,7 @@ public class ExploreSchemaTest {
         var props = grammar.getProperties().clone();
         schema.setActive(props, name, true);
         store.putProperties(props);
-        assertEquals(name, grammar.getProperties().getExplorationName());
+        assertEquals(QualName.name("fast"), grammar.getProperties().getExplorationName());
         model = (SettingsModel) grammar.getResource(ResourceKind.SETTINGS, name);
         assertTrue(model.isActive());
         assertEquals(ExploreConfig.parse("next=newest"), grammar.getDefaultExploreConfig());
@@ -195,44 +197,32 @@ public class ExploreSchemaTest {
     }
 
     /**
-     * Tests that settings resource names are free: a resource whose name has
-     * nothing to do with the schema, but whose text declares it, is a fully
-     * fledged exploration configuration that can be activated.
+     * Tests that exploration settings have to live inside the {@code explore}
+     * folder: a top-level resource declaring the schema is not recognised as
+     * one, since its own name is taken for the schema name.
      */
     @Test
-    public void testFreeName() throws Exception {
+    public void testOutsideFolder() throws Exception {
         SystemStore store = newTempStore("explore-free-name-test");
         GrammarModel grammar = store.toGrammarModel();
-        // as in testResourceInStore: the saved copy needs an explicit start graph
-        grammar.setLocalActiveNames(ResourceKind.HOST, QualName.name("start"));
         QualName name = QualName.name("fast");
         store
             .putTexts(ResourceKind.SETTINGS,
                       Map.of(name, "$schema = explore\nnext = newest\n"));
         var model = (SettingsModel) grammar.getResource(ResourceKind.SETTINGS, name);
         assertNotNull(model);
-        assertEquals(ExploreConfigSchema.NAME, model.getSchemaName());
-        assertEquals(ExploreConfigSchema.INSTANCE, model.getSchema());
-        assertFalse(model.hasErrors());
-        // the free-named resource can be made the grammar's exploration
-        var props = grammar.getProperties().clone();
-        props.setExplorationName(name);
-        store.putProperties(props);
-        model = (SettingsModel) grammar.getResource(ResourceKind.SETTINGS, name);
-        assertNotNull(model);
-        assertTrue(model.isActive());
-        assertEquals(ExploreConfig.parse("next=newest"), grammar.getDefaultExploreConfig());
-        assertFalse(grammar.hasErrors(), grammar.getErrors().toString());
+        assertEquals("fast", model.getSchemaName());
+        assertNull(model.getSchema());
+        assertTrue(model.hasErrors());
     }
 
     /**
-     * Tests that the declaration wins over the leading name segment: a
-     * resource named after another schema, but declaring this one, is an
-     * exploration configuration without any complaint about its name.
+     * Tests that a declaration contradicting the folder is an error: the
+     * location decides, and the declaration only gets to agree with it.
      */
     @Test
-    public void testDeclarationOverridesName() throws Exception {
-        SystemStore store = newTempStore("explore-override-test");
+    public void testDeclarationMismatch() throws Exception {
+        SystemStore store = newTempStore("explore-mismatch-test");
         GrammarModel grammar = store.toGrammarModel();
         QualName name = QualName.parse("ecore.something");
         store
@@ -240,8 +230,35 @@ public class ExploreSchemaTest {
                       Map.of(name, "$schema = explore\ncount = first\n"));
         var model = (SettingsModel) grammar.getResource(ResourceKind.SETTINGS, name);
         assertNotNull(model);
-        assertEquals(ExploreConfigSchema.INSTANCE, model.getSchema());
-        assertFalse(model.hasErrors());
+        assertTrue(model.hasErrors());
+        assertTrue(model
+            .getErrors()
+            .stream()
+            .anyMatch(e -> e.toString().contains("Declared schema 'explore'")),
+                   model.getErrors().toString());
+    }
+
+    /**
+     * Tests that activation is stated in resource names while the property
+     * holds the local name: the schema converts in both directions.
+     */
+    @Test
+    public void testLocalNameRoundTrip() throws Exception {
+        SystemStore store = newTempStore("explore-local-name-test");
+        GrammarModel grammar = store.toGrammarModel();
+        QualName name = QualName.parse("explore.nightly.run");
+        store.putTexts(ResourceKind.SETTINGS, Map.of(name, "next = newest\n"));
+        var schema = ExploreConfigSchema.INSTANCE;
+        QualName local = schema.getLocalName(name);
+        assertEquals(QualName.parse("nightly.run"), local);
+        var props = grammar.getProperties().clone();
+        schema.setActive(props, name, true);
+        // the property stores the local name, without the folder segment
+        assertEquals(local, props.getExplorationName());
+        store.putProperties(props);
+        assertTrue(schema.isActive(grammar, name));
+        assertEquals(name, schema.getResourceName(local));
+        assertEquals(ExploreConfig.parse("next=newest"), grammar.getDefaultExploreConfig());
     }
 
     /** Tests that the generated template is valid and semantically empty. */

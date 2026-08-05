@@ -432,18 +432,21 @@ public class SimulatorModel implements Cloneable {
      * the state space stays valid and exploration can continue under the
      * newly referenced settings. (Any other property change resets the GTS;
      * see {@link #doSetProperties(GrammarProperties)}.)
-     * @param name the newly referenced settings name; {@code null} to remove
-     * the reference
+     * @param resourceName the name of the newly referenced settings resource;
+     * {@code null} to remove the reference. The property itself stores the
+     * local name within the {@code explore} folder, so the name is converted
+     * before it is stored.
      * @return {@code true} if the properties were changed
      * @throws IOException if the store write failed
      */
-    public boolean doSetExplorationName(@Nullable QualName name) throws IOException {
+    public boolean doSetExplorationName(@Nullable QualName resourceName) throws IOException {
         GrammarProperties oldProperties = getGrammar().getProperties();
         GrammarProperties newProperties = oldProperties.clone();
-        if (name == null) {
+        if (resourceName == null) {
             newProperties.removeExplorationName();
         } else {
-            newProperties.setExplorationName(name);
+            newProperties
+                .setExplorationName(ExploreConfigSchema.INSTANCE.getLocalName(resourceName));
         }
         if (oldProperties.getChanges(newProperties).isEmpty()) {
             return false;

@@ -34,7 +34,6 @@ import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.LTLExploreType;
 import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
-import nl.utwente.groove.explore.config.ExploreConfigSchema;
 import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.QualName;
@@ -70,32 +69,30 @@ public class ExplorePropertiesTest {
         assertEquals(new ExploreConfig(), grammar.getDefaultExploreConfig());
     }
 
-    /** Tests that a referenced resource is resolved to its configuration. */
+    /** Tests that a referenced resource is resolved to its configuration; the
+     * reference is the local name within the {@code explore} folder. */
     @Test
     public void testReference() throws Exception {
         GrammarModel grammar = newGrammar(Map
-            .of(QualName.parse("explore.fast"), "next = newest\ncount = first\n"),
-                                          "explore.fast");
-        assertEquals(QualName.parse("explore.fast"),
-                     grammar.getProperties().getExplorationName());
+            .of(QualName.parse("explore.fast"), "next = newest\ncount = first\n"), "fast");
+        assertEquals(QualName.name("fast"), grammar.getProperties().getExplorationName());
         assertConfigured("next=newest count=first", grammar.getDefaultExploreType());
         assertEquals(ExploreConfig.parse("next=newest count=first"),
                      grammar.getDefaultExploreConfig());
     }
 
-    /** Tests that the singleton resource form works as reference target. */
+    /** Tests that a nested resource name works as reference target, the
+     * reference being the (nested) local name. */
     @Test
-    public void testSingletonReference() throws Exception {
+    public void testNestedReference() throws Exception {
         GrammarModel grammar = newGrammar(Map
-            .of(QualName.name(ExploreConfigSchema.NAME), "next = random\n"),
-                                          ExploreConfigSchema.NAME);
+            .of(QualName.parse("explore.nightly.run"), "next = random\n"), "nightly.run");
         assertConfigured("next=random", grammar.getDefaultExploreType());
     }
 
     /**
-     * Tests the property checker for the reference: an unknown resource, a
-     * resource of another schema, and an erroneous resource are all flagged;
-     * a valid reference passes.
+     * Tests the property checker for the reference: an unresolvable local name
+     * and an erroneous resource are flagged; a valid reference passes.
      */
     @Test
     public void testReferenceChecker() throws Exception {
@@ -104,11 +101,11 @@ public class ExplorePropertiesTest {
                 QualName.parse("explore.broken"), "next = sideways\n"),
                                           null);
         var key = GrammarKey.EXPLORE_CONFIG;
-        assertTrue(key.check(grammar, Optional.of(QualName.parse("explore.good"))).isEmpty());
-        assertFalse(key.check(grammar, Optional.of(QualName.parse("explore.missing"))).isEmpty());
-        assertFalse(key.check(grammar, Optional.of(QualName.parse("explore.broken"))).isEmpty());
+        assertTrue(key.check(grammar, Optional.of(QualName.name("good"))).isEmpty());
+        assertFalse(key.check(grammar, Optional.of(QualName.name("missing"))).isEmpty());
+        assertFalse(key.check(grammar, Optional.of(QualName.name("broken"))).isEmpty());
         // resolution of a broken reference falls back to the default
-        setExplorationName(grammar, "explore.broken");
+        setExplorationName(grammar, "broken");
         assertSame(ExploreType.DEFAULT, grammar.getDefaultExploreType());
     }
 
@@ -119,7 +116,7 @@ public class ExplorePropertiesTest {
     @Test
     public void testUnrealisable() throws Exception {
         GrammarModel grammar = newGrammar(Map
-            .of(QualName.parse("explore.nen"), "heuristic = nen\n"), "explore.nen");
+            .of(QualName.parse("explore.nen"), "heuristic = nen\n"), "nen");
         var model = grammar.getResource(ResourceKind.SETTINGS, QualName.parse("explore.nen"));
         assertTrue(model.hasErrors());
         assertSame(ExploreType.DEFAULT, grammar.getDefaultExploreType());
@@ -145,7 +142,7 @@ public class ExplorePropertiesTest {
     @Test
     public void testPrecedence() throws Exception {
         GrammarModel grammar = newGrammar(Map
-            .of(QualName.parse("explore.fast"), "next = newest\n"), "explore.fast");
+            .of(QualName.parse("explore.fast"), "next = newest\n"), "fast");
         setLegacy(grammar, "linear final 0");
         assertConfigured("next=newest", grammar.getDefaultExploreType());
     }
@@ -155,9 +152,9 @@ public class ExplorePropertiesTest {
     public void testSetReferenceRemovesLegacy() throws Exception {
         var properties = new GrammarProperties();
         properties.setProperty(GrammarKey.EXPLORATION.getName(), "linear final 0");
-        properties.setExplorationName(QualName.name(ExploreConfigSchema.NAME));
+        properties.setExplorationName(QualName.name("fast"));
         assertFalse(properties.containsKey(GrammarKey.EXPLORATION));
-        assertEquals(QualName.name(ExploreConfigSchema.NAME), properties.getExplorationName());
+        assertEquals(QualName.name("fast"), properties.getExplorationName());
     }
 
     /** Tests that the version repair leaves the legacy key in place: it is
@@ -192,6 +189,8 @@ public class ExplorePropertiesTest {
     /**
      * Creates a modifiable ferryman grammar model with given explore settings
      * resources, and optionally the exploration property set to one of them.
+     * @param reference the <i>local</i> name of the referenced resource, i.e.,
+     * without the {@code explore} folder segment
      */
     static private GrammarModel newGrammar(Map<QualName,String> resources,
                                            String reference) throws Exception {

@@ -35,7 +35,6 @@ import nl.utwente.groove.explore.config.parse.LegacySyntaxParser;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.RuleModel;
-import nl.utwente.groove.grammar.model.SettingsModel;
 import nl.utwente.groove.transform.oracle.ValueOracleKind;
 import nl.utwente.groove.util.DocumentedEnum;
 import nl.utwente.groove.util.Factory;
@@ -601,25 +600,25 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
     };
 
     /**
-     * Checker that tests whether the exploration reference names an existing,
-     * error-free settings resource of the {@code explore} schema. The content
-     * checks (value parsing, consistency, realisability, grammar-dependent
-     * contents) live on the resource itself, via its schema.
+     * Checker that tests whether the exploration reference — the local name of
+     * a resource within the {@code explore} folder — resolves to an existing,
+     * error-free settings resource. The content checks (value parsing,
+     * consistency, realisability, grammar-dependent contents) live on the
+     * resource itself, via its schema.
      */
     private static GrammarChecker exploreConfigChecker = (g, v) -> {
         FormatErrorSet result = new FormatErrorSet();
-        QualName name = v.getQualName().orElse(null);
-        if (name == null) {
+        QualName local = v.getQualName().orElse(null);
+        if (local == null) {
             return result;
         }
+        QualName name = ExploreConfigSchema.INSTANCE.getResourceName(local);
         var model = g.getResource(ResourceKind.SETTINGS, name);
+        // there is no wrong-schema case: a resource inside the 'explore' folder
+        // is of the explore schema by construction, and a contradicting
+        // $schema declaration is an error of the resource itself
         if (model == null) {
-            result.add("Unknown settings resource '%s'", name);
-        } else if (!(model instanceof SettingsModel settings)
-            || settings.getSchema() != ExploreConfigSchema.INSTANCE) {
-            result
-                .add("Settings resource '%s' is not of the '%s' schema", name,
-                     ExploreConfigSchema.NAME);
+            result.add("Unknown exploration settings '%s' (there is no resource '%s')", local, name);
         } else if (model.hasErrors()) {
             result.add("Exploration settings resource '%s' has errors", name);
         }

@@ -32,8 +32,9 @@ import nl.utwente.groove.util.parse.FormatErrorSet;
 /**
  * Vocabulary of a settings resource: the set of keys it may declare, and the
  * admissible values of those keys.
- * A schema is identified by its name, which is the value of the reserved
- * {@link SettingsModel#SCHEMA_KEY} key of the settings resources using it.
+ * A schema is identified by its name, which is the top-level folder its
+ * settings resources live in (and the value they may re-declare through the
+ * reserved {@link SettingsModel#SCHEMA_KEY} key).
  * Schemas are made known to the settings mechanism by registering them with
  * {@link SettingsSchemas}.
  * @author Arend Rensink
@@ -43,6 +44,39 @@ import nl.utwente.groove.util.parse.FormatErrorSet;
 public interface SettingsSchema {
     /** Returns the name of this schema, under which it is registered. */
     public String getName();
+
+    /**
+     * Returns the resource name of the settings resource of this schema with a
+     * given <i>local</i> name: the local name nested inside the schema's
+     * top-level folder. Schema-specific contexts — references stored in the
+     * grammar properties, selectors and name prompts of schema-specific
+     * dialogs — use local names, since in such a context the folder is implied
+     * by the schema; this method converts back to the resource name that
+     * identifies the resource within the grammar.
+     * @param localName the name of the resource within the schema folder
+     */
+    default public QualName getResourceName(QualName localName) {
+        return localName.nest(getName());
+    }
+
+    /**
+     * Returns the local name of a settings resource of this schema: the
+     * resource name with its leading schema segment stripped off. Inverse of
+     * {@link #getResourceName(QualName)}.
+     * @param resourceName the name of a resource in the schema's folder; the
+     * singleton form (the bare schema name) has no local name and is not
+     * allowed here
+     * @throws IllegalArgumentException if {@code resourceName} does not name a
+     * resource inside this schema's folder
+     */
+    default public QualName getLocalName(QualName resourceName) {
+        if (resourceName.size() < 2 || !resourceName.get(0).equals(getName())) {
+            throw Exceptions
+                .illegalArg("'%s' does not name a resource inside the '%s' folder", resourceName,
+                            getName());
+        }
+        return resourceName.removeParent(QualName.name(getName()));
+    }
 
     /**
      * Checks a set of settings entries against this schema.

@@ -24,20 +24,34 @@ public class NewAction extends SimulatorAction {
     @Override
     public void execute() {
         ResourceKind resource = getResourceKind();
-        // a settings resource declares its schema in its text, so the schema
-        // has to be asked for before the (free) name
+        // the schema of a settings resource is implied by its location, so the
+        // schema has to be asked for before the name: it fixes the folder
         SettingsSchema schema = null;
-        String seedName;
+        final QualName newName;
         if (resource == ResourceKind.SETTINGS) {
             schema = askSchema();
             if (schema == null) {
                 return;
             }
-            seedName = schema.getName();
+            if (schema.isSingular()) {
+                // a singular schema has just one resource, in the singleton
+                // form: the bare schema name, so there is nothing to ask
+                QualName singleton = QualName.name(schema.getName());
+                if (getGrammarModel().getNames(resource).contains(singleton)) {
+                    showErrorDialog(null, "Settings resource '%s' already exists;"
+                        + " schema '%s' admits only one resource", singleton, schema.getName());
+                    return;
+                }
+                newName = singleton;
+            } else {
+                // the schema name is the folder, which askNewName keeps fixed
+                newName = askNewName(QualName
+                    .name(schema.getName(), DEFAULT_LOCAL_NAME)
+                    .toString(), true);
+            }
         } else {
-            seedName = Options.getNewResourceName(resource);
+            newName = askNewName(Options.getNewResourceName(resource), true);
         }
-        final QualName newName = askNewName(seedName, true);
         if (newName != null) {
             try {
                 if (resource.isGraphBased()) {
@@ -90,4 +104,7 @@ public class NewAction extends SimulatorAction {
     public void refresh() {
         setEnabled(getGrammarStore() != null);
     }
+
+    /** Local name proposed for a new settings resource inside its schema folder. */
+    private static final String DEFAULT_LOCAL_NAME = "default";
 }

@@ -62,8 +62,8 @@ final public class SettingsDisplay extends ResourceDisplay {
     @Override
     protected void buildInfoPanel() {
         QualName selected = getSimulatorModel().getSelected(ResourceKind.SETTINGS);
-        // the schema is declared in the resource text, so it is the model that
-        // knows it; the name is no more than a fallback
+        // the schema is implied by the location of the resource; ask the model
+        // rather than dissecting the name here
         var model = selected == null
             ? null
             : getResource(selected);

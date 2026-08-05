@@ -341,11 +341,12 @@ public class GrammarProperties extends Properties {
     }
 
     /**
-     * Returns the name of the settings resource holding the default
-     * exploration configuration, or {@code null} if the property is unset
-     * or unparsable. Resolution of the name against the settings resources
-     * happens at the grammar model level (see
-     * {@code GrammarModel#getDefaultExploreType()}).
+     * Returns the <i>local</i> name of the settings resource holding the
+     * default exploration configuration — the name within the {@code explore}
+     * folder, so {@code fast} for the resource {@code explore.fast} — or
+     * {@code null} if the property is unset or unparsable. Resolution of the
+     * name against the settings resources happens at the grammar model level
+     * (see {@code GrammarModel#getDefaultExploreType()}).
      */
     public @Nullable QualName getExplorationName() {
         if (!containsKey(GrammarKey.EXPLORE_CONFIG)) {
@@ -360,9 +361,10 @@ public class GrammarProperties extends Properties {
     }
 
     /**
-     * Sets the name of the settings resource holding the default exploration
-     * configuration, removing any stored legacy exploration strategy it
-     * supersedes.
+     * Sets the local name of the settings resource holding the default
+     * exploration configuration (see {@link #getExplorationName()}), removing
+     * any stored legacy exploration strategy it supersedes.
+     * @param name the name of the resource within the {@code explore} folder
      */
     public void setExplorationName(QualName name) {
         storeValue(GrammarKey.EXPLORE_CONFIG, Optional.of(name));

@@ -70,10 +70,10 @@ public class SettingsSchemas {
 
     /**
      * Returns the names of the settings resources of a given schema in a given
-     * grammar, in alphabetical order. The schema of a resource is the one it
-     * declares, or (failing a declaration) the one implied by its name; see
-     * {@link SettingsModel#getSchemaName()}. This is the way to locate the
-     * resource of a singular schema, since resource names are free.
+     * grammar, in alphabetical order: the residents of the schema's top-level
+     * folder, plus the singleton-form resource named after the schema itself;
+     * see {@link SettingsModel#getSchemaName()}. This is the way to locate the
+     * resource of a singular schema.
      */
     static public List<QualName> getResourceNames(GrammarModel grammar, SettingsSchema schema) {
         return grammar

@@ -101,13 +101,15 @@ public class ExploreConfigSchema implements SettingsSchema {
 
     @Override
     public boolean isActive(GrammarModel grammar, QualName name) {
-        return name.equals(grammar.getProperties().getExplorationName());
+        // the exploration property holds the local name within the folder
+        var local = grammar.getProperties().getExplorationName();
+        return local != null && name.equals(getResourceName(local));
     }
 
     @Override
     public void setActive(GrammarProperties properties, QualName name, boolean active) {
         if (active) {
-            properties.setExplorationName(name);
+            properties.setExplorationName(getLocalName(name));
         } else {
             properties.removeExplorationName();
         }
@@ -248,7 +250,7 @@ public class ExploreConfigSchema implements SettingsSchema {
 
     /** The singleton instance of this schema. */
     public static final ExploreConfigSchema INSTANCE = new ExploreConfigSchema();
-    /** The name of this schema, as declared by the {@code $schema} entry of
-     * its settings resources. */
+    /** The name of this schema, doubling as the top-level folder its settings
+     * resources live in. */
     public static final String NAME = "explore";
 }

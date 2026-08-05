@@ -199,8 +199,9 @@ public class EcoreMapping {
     /**
      * Returns the names of the settings resources of the
      * {@link EcoreMappingSchema#NAME} schema in a given grammar, in
-     * alphabetical order. Resource names are free, so the resources are found
-     * by their (declared or implied) schema, not by their name.
+     * alphabetical order: the singleton {@link #RESOURCE_NAME} resource as
+     * well as any residents of an {@code ecore} folder, since the resources
+     * are found by their schema rather than by a fixed name.
      */
     public static List<QualName> candidates(GrammarModel grammar) {
         return SettingsSchemas.getResourceNames(grammar, EcoreMappingSchema.INSTANCE);
