@@ -65,8 +65,10 @@ schema class, not enum surgery.
   routes the toggle through `schema.setActive` and saves the properties
   (undoable). Deleting an active resource deactivates it the same way
   (`SimulatorModel.doDelete`), so no dangling reference is left in the
-  properties; renaming an active resource does *not* yet follow the
-  reference.
+  properties; renaming an active resource follows the reference
+  (`SimulatorModel.doRename`): the reference is retargeted to the new name if
+  the resource stays in its schema, and deactivated if the resource is renamed
+  out of the schema.
 - **Model**: `SettingsModel extends TextBasedModel<Settings>`. `compute()`
   parses the source text as `java.util.Properties`, derives the schema from
   the leading name segment, resolves it in the registry, checks an optional
