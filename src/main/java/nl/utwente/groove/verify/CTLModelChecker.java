@@ -29,14 +29,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import picocli.CommandLine.IParameterConsumer;
-import picocli.CommandLine.ITypeConverter;
-import picocli.CommandLine.Model.ArgSpec;
-import picocli.CommandLine.Model.CommandSpec;
-import picocli.CommandLine.Option;
-import picocli.CommandLine.Parameters;
-import picocli.CommandLine.TypeConversionException;
-
 import groovyjarjarantlr4.v4.runtime.misc.Nullable;
 import nl.utwente.groove.explore.ExploreResult;
 import nl.utwente.groove.explore.Generator;
@@ -56,6 +48,13 @@ import nl.utwente.groove.util.cli.GrooveCmdLineParser;
 import nl.utwente.groove.util.cli.GrooveCmdLineTool;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
+import picocli.CommandLine.IParameterConsumer;
+import picocli.CommandLine.ITypeConverter;
+import picocli.CommandLine.Model.ArgSpec;
+import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
+import picocli.CommandLine.TypeConversionException;
 
 /**
  * Command-line tool directing the model checking process.
@@ -177,14 +176,14 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         }
     }
 
-    @Option(names = "-ef", paramLabel = "flags",
-        description = "" + "Special GTS labels. Legal values are:\n" //
-            + "  s - start state label (default: 'start')\n" //
-            + "  f - final states label (default: 'final')\n" //
-            + "  o - open states label (default: 'open')\n" //
-            + "  r - result state label (default: 'result')\n" //
-            + "Specify the label to be used by appending flag with 'label' (single-quoted)\n"
-            + "Example: -ef s'begin'f'end' specifies that the start state is labelled 'begin' and final states are labelled 'end'",
+    @Option(names = "-ef", paramLabel = "flags", description = ""
+        + "Special GTS labels. Legal values are:\n" //
+        + "  s - start state label (default: 'start')\n" //
+        + "  f - final states label (default: 'final')\n" //
+        + "  o - open states label (default: 'open')\n" //
+        + "  r - result state label (default: 'result')\n" //
+        + "Specify the label to be used by appending flag with 'label' (single-quoted)\n"
+        + "Example: -ef s'begin'f'end' specifies that the start state is labelled 'begin' and final states are labelled 'end'",
         converter = LTSLabelsHandler.class)
     private LTSLabels ltsLabels;
 
@@ -230,8 +229,8 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
             try {
                 return Formula.parse(Logic.CTL, value).toCtlFormula();
             } catch (FormatException e) {
-                throw new TypeConversionException("Error while parsing '%s': %s"
-                    .formatted(value, e.getMessage()));
+                throw new TypeConversionException(
+                    "Error while parsing '%s': %s".formatted(value, e.getMessage()));
             }
         }
     }
@@ -487,13 +486,13 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
             return this.graph.nodeSet();
         }
 
-        @SuppressWarnings({"unchecked", "rawtypes"})
         @Override
-        public Iterable outEdges(Node node) {
+        public Iterable<Edge> outEdges(Node node) {
             return () -> this.graph
                 .outEdgeSet(node)
                 .stream()
                 .filter(e -> !isStateProperty(e.label()))
+                .map(Edge.class::cast) // safe upcast from ? extends Edge
                 .iterator();
         }
 
