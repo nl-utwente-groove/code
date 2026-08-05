@@ -19,6 +19,7 @@ package nl.utwente.groove.test.explore;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -132,6 +133,46 @@ public class ExploreSchemaTest {
         var badModel = (SettingsModel) grammar.getResource(ResourceKind.SETTINGS, bad);
         assertNotNull(badModel);
         assertTrue(badModel.hasErrors());
+    }
+
+    /**
+     * Tests schema-driven activation: setting a resource active establishes
+     * the exploration reference in the grammar properties, the resource's
+     * active status follows the reference, and deactivation removes it again.
+     */
+    @Test
+    public void testActivation() throws Exception {
+        // copy the fixture to a temporary directory, so that it can be modified
+        SystemStore original = SystemStore
+            .newStore(new File(INPUT_DIR + "/ferryman.gps"), false, true);
+        File dir = Files.createTempDirectory("explore-activation-test").toFile();
+        dir.deleteOnExit();
+        SystemStore store = original.save(new File(dir, "ferryman.gps"), true);
+        GrammarModel grammar = store.toGrammarModel();
+        QualName name = QualName.parse("explore.fast");
+        store.putTexts(ResourceKind.SETTINGS, Map.of(name, "next = newest\n"));
+        var model = (SettingsModel) grammar.getResource(ResourceKind.SETTINGS, name);
+        assertNotNull(model);
+        var schema = model.getSchema();
+        assertEquals(ExploreConfigSchema.INSTANCE, schema);
+        assertTrue(schema.isActivatable());
+        // initially the resource is not the grammar's exploration
+        assertFalse(model.isActive());
+        // activation sets the exploration reference
+        var props = grammar.getProperties().clone();
+        schema.setActive(props, name, true);
+        store.putProperties(props);
+        assertEquals(name, grammar.getProperties().getExplorationName());
+        model = (SettingsModel) grammar.getResource(ResourceKind.SETTINGS, name);
+        assertTrue(model.isActive());
+        assertEquals(ExploreConfig.parse("next=newest"), grammar.getDefaultExploreConfig());
+        // deactivation removes the reference again
+        props = grammar.getProperties().clone();
+        schema.setActive(props, name, false);
+        store.putProperties(props);
+        assertNull(grammar.getProperties().getExplorationName());
+        model = (SettingsModel) grammar.getResource(ResourceKind.SETTINGS, name);
+        assertFalse(model.isActive());
     }
 
     /** Tests that the generated template is valid and semantically empty. */

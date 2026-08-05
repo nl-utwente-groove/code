@@ -370,6 +370,14 @@ public class GrammarProperties extends Properties {
     }
 
     /**
+     * Removes the exploration reference (see {@link #getExplorationName()}),
+     * reverting the grammar to the legacy or default exploration.
+     */
+    public void removeExplorationName() {
+        remove(GrammarKey.EXPLORE_CONFIG);
+    }
+
+    /**
      * Returns the exploration type stored in the deprecated legacy
      * exploration strategy key, or {@link ExploreType#DEFAULT} if that key is
      * unset. Only consulted when the exploration reference (see

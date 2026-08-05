@@ -146,13 +146,28 @@ public class SettingsTest {
                      new TreeSet<>(newStore().getTexts(ResourceKind.SETTINGS).keySet()));
     }
 
-    /** Tests that settings resources are all active, and cannot be enabled or disabled. */
+    /** Tests that settings resources are not generically enableable, and that
+     * for a non-activatable schema they all count as active. */
     @Test
     public void testActiveNames() throws Exception {
         GrammarModel grammar = newGrammar();
         assertEquals(grammar.getNames(ResourceKind.SETTINGS),
                      grammar.getActiveNames(ResourceKind.SETTINGS));
         assertFalse(ResourceKind.SETTINGS.isEnableable());
+        // a resource of a non-activatable schema counts as active ...
+        SettingsSchema schema = SettingsSchemas.get("test");
+        assertNotNull(schema);
+        assertFalse(schema.isActivatable());
+        assertTrue(getModel(grammar, "test.good").isActive());
+        // ... and the schema refuses activation
+        try {
+            schema.setActive(grammar.getProperties().clone(), QualName.parse("test.good"), true);
+            fail("Non-activatable schema should refuse activation");
+        } catch (UnsupportedOperationException expected) {
+            // this is the expected outcome
+        }
+        // a resource of an unknown schema counts as inactive
+        assertFalse(getModel(grammar, "unknown").isActive());
     }
 
     // ----------------------------------------------------------------------

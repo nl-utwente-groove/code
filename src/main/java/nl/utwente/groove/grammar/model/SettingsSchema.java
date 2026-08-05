@@ -24,6 +24,9 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.annotation.HelpMap;
+import nl.utwente.groove.grammar.GrammarProperties;
+import nl.utwente.groove.grammar.QualName;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 
 /**
@@ -85,6 +88,60 @@ public interface SettingsSchema {
      */
     default public boolean isSingular() {
         return false;
+    }
+
+    /**
+     * Indicates if resources of this schema can be <i>activated</i>: singled
+     * out as the one resource of the schema that the grammar currently uses,
+     * through an explicit reference in the grammar properties.
+     * An activatable schema must also override
+     * {@link #isActive(GrammarModel, QualName)} and
+     * {@link #setActive(GrammarProperties, QualName, boolean)}.
+     * The default implementation returns {@code false}.
+     */
+    default public boolean isActivatable() {
+        return false;
+    }
+
+    /**
+     * Tests if a given settings resource of this schema is currently active
+     * in a given grammar. For a non-activatable schema (see
+     * {@link #isActivatable()}) every resource counts as active, meaning it
+     * is consulted by its client whenever applicable; this is what the
+     * default implementation returns.
+     * @param grammar the grammar holding the resource
+     * @param name the name of the resource
+     */
+    default public boolean isActive(GrammarModel grammar, QualName name) {
+        return true;
+    }
+
+    /**
+     * Activates or deactivates a given settings resource of this schema, by
+     * modifying the grammar properties accordingly. Only supported if this
+     * schema is activatable (see {@link #isActivatable()}).
+     * @param properties the (modifiable) grammar properties
+     * @param name the name of the resource to be (de)activated
+     * @param active if {@code true}, the resource becomes the schema's active
+     * one; otherwise, the schema reverts to having no active resource
+     */
+    default public void setActive(GrammarProperties properties, QualName name, boolean active) {
+        throw Exceptions.unsupportedOp("Schema '%s' does not support activation", getName());
+    }
+
+    /**
+     * Returns a description of the (de)activation action for resources of
+     * this schema, used (among others) as the tool tip of the enable button
+     * in the settings display. Only meaningful if this schema is activatable
+     * (see {@link #isActivatable()}).
+     * @param activate if {@code true}, the description is for activation,
+     * otherwise for deactivation
+     */
+    default public String getActivationText(boolean activate) {
+        return String
+            .format("%s this %s settings resource", activate
+                ? "Activate"
+                : "Deactivate", getName());
     }
 
     /**

@@ -209,7 +209,7 @@ public abstract class AbstractResourceTree extends JTree implements SimulatorLis
             res.add(getActions().getCopyAction(getResourceKind()));
             res.add(getActions().getDeleteAction(getResourceKind()));
             res.add(getActions().getRenameAction(getResourceKind()));
-            if (getResourceKind().isEnableable()) {
+            if (getParentDisplay().hasEnableButton()) {
                 res.addSeparator();
                 res.add(getActions().getEnableAction(getResourceKind()));
             }

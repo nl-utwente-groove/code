@@ -34,6 +34,7 @@ import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.GraphBasedModel;
 import nl.utwente.groove.grammar.model.NamedResourceModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
+import nl.utwente.groove.grammar.model.SettingsModel;
 import nl.utwente.groove.grammar.model.TextBasedModel;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.GraphInfo;
@@ -181,6 +182,20 @@ public class SimulatorModel implements Cloneable {
             newProperties.setActiveNames(kind, actives);
             getStore().putProperties(newProperties);
             break;
+        case SETTINGS: {
+            // activation of a settings resource is schema-specific
+            GrammarProperties settingsProperties = getGrammar().getProperties().clone();
+            for (QualName name : names) {
+                if (getGrammar().getResource(kind, name) instanceof SettingsModel settings) {
+                    var schema = settings.getSchema();
+                    if (schema != null && schema.isActivatable()) {
+                        schema.setActive(settingsProperties, name, !settings.isActive());
+                    }
+                }
+            }
+            getStore().putProperties(settingsProperties);
+            break;
+        }
         default:
             throw Exceptions.unreachable();
         }

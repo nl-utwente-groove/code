@@ -43,6 +43,14 @@ final public class SettingsDisplay extends ResourceDisplay {
         super(simulator, ResourceKind.SETTINGS);
     }
 
+    /* Settings resources of an activatable schema can be enabled, meaning
+     * they become the resource of that schema the grammar actually uses;
+     * the button is disabled for resources of other schemas. */
+    @Override
+    public boolean hasEnableButton() {
+        return true;
+    }
+
     @Override
     protected JComponent createInfoPanel() {
         return this.infoPanel = new TitledPanel(DOC_TITLE, getDocList(), null, true);

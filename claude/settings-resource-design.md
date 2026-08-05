@@ -46,12 +46,24 @@ schema class, not enum surgery.
   as the properties file* (i.e. in a store without `system.properties`); the
   next properties save migrates it and frees the name — so a grammar named
   `ecore.gps` can hold the `ecore` mapping resource.
-- **Enabledness**: opted out, GROOVY-style, in all three places
-  (`ResourceKind.isEnableable()`, `GrammarProperties.getActiveNames`,
-  `GrammarModel.syncResource` all-active arm). Settings are read by their
-  clients, not "enabled"; if a future schema (exploration configs) needs an
-  *active* selection, that is that schema's business (e.g. a designated key or
-  a grammar property), not the generic mechanism's.
+- **Enabledness**: opted out of the *generic* mechanism, GROOVY-style, in all
+  three places (`ResourceKind.isEnableable()`,
+  `GrammarProperties.getActiveNames`, `GrammarModel.syncResource` all-active
+  arm). Settings are read by their clients, not "enabled"; a schema that does
+  need an *active* selection (the exploration configs) declares it itself,
+  through the schema activation hooks (added 2026-08-05): `isActivatable()`
+  (default false), `isActive(GrammarModel, QualName)` (default true:
+  resources of a non-activatable schema are consulted by their client
+  whenever applicable), `setActive(GrammarProperties, QualName, boolean)`
+  (modifies the properties; default unsupported) and
+  `getActivationText(boolean)` (the button/menu-item description).
+  `SettingsModel.isActive()` delegates to the schema (unknown schema =
+  inactive), which drives the list rendering (active = bold, inactive =
+  parenthesised), the enable toggle button on the settings display's tool bar
+  and popup menu (`ResourceDisplay.hasEnableButton`, overridden for
+  SETTINGS), and the SETTINGS arm of `SimulatorModel.setEnabled`, which
+  routes the toggle through `schema.setActive` and saves the properties
+  (undoable).
 - **Model**: `SettingsModel extends TextBasedModel<Settings>`. `compute()`
   parses the source text as `java.util.Properties`, derives the schema from
   the leading name segment, resolves it in the registry, checks an optional
@@ -183,6 +195,13 @@ source of truth and hand-written comments survive. The legacy
 `explorationStrategy` key stays a read-time fallback, interpreted
 indefinitely; its eager version-repair conversion was dropped (a
 properties-level repair cannot create a settings file).
+
+The `explore` schema is the first *activatable* schema (see the enabledness
+bullet above): the enable button in the settings display sets or clears the
+`exploration` reference for the selected resource. Activating one resource
+supersedes the previously active one (the reference is single-valued);
+deactivating the active resource reverts the grammar to the legacy or
+default exploration.
 
 Deferred to a next dialog round (agreed): a resource selector dropdown in
 the exploration dialog with Save As / set-active, and the reconsideration

@@ -30,6 +30,8 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.annotation.Help;
 import nl.utwente.groove.annotation.HelpMap;
+import nl.utwente.groove.grammar.GrammarProperties;
+import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.SettingsModel;
@@ -90,6 +92,32 @@ public class ExploreConfigSchema implements SettingsSchema {
         // rule names and enabledness (which involves the properties) and
         // edge labels are validated against the grammar
         return Set.of(ResourceKind.RULE, ResourceKind.TYPE, ResourceKind.PROPERTIES);
+    }
+
+    @Override
+    public boolean isActivatable() {
+        return true;
+    }
+
+    @Override
+    public boolean isActive(GrammarModel grammar, QualName name) {
+        return name.equals(grammar.getProperties().getExplorationName());
+    }
+
+    @Override
+    public void setActive(GrammarProperties properties, QualName name, boolean active) {
+        if (active) {
+            properties.setExplorationName(name);
+        } else {
+            properties.removeExplorationName();
+        }
+    }
+
+    @Override
+    public String getActivationText(boolean activate) {
+        return activate
+            ? "Set as the grammar's default exploration"
+            : "Unset as the grammar's default exploration";
     }
 
     @Override

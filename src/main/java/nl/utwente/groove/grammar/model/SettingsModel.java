@@ -24,6 +24,7 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.util.parse.FormatException;
@@ -54,6 +55,26 @@ public class SettingsModel extends TextBasedModel<Settings> {
         if (schema != null) {
             addDependencies(schema.getDependencies().toArray(new ResourceKind[0]));
         }
+    }
+
+    /**
+     * Returns the schema of this settings resource, as determined by the
+     * leading segment of the resource name; {@code null} if that segment does
+     * not name a registered schema.
+     */
+    public @Nullable SettingsSchema getSchema() {
+        return SettingsSchemas.get(getQualName().get(0));
+    }
+
+    /**
+     * Indicates if this settings resource is currently active, as determined
+     * by its schema (see {@link SettingsSchema#isActive}). A resource of an
+     * unknown schema counts as inactive.
+     */
+    @Override
+    public boolean isActive() {
+        var schema = getSchema();
+        return schema != null && schema.isActive(getGrammar(), getQualName());
     }
 
     @Override

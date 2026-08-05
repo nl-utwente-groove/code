@@ -148,7 +148,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
             result.addSeparator();
         }
         ResourceKind kind = getResourceKind();
-        if (kind.isEnableable()) {
+        if (hasEnableButton()) {
             result.add(getEnableButton());
             if (kind == ResourceKind.HOST || kind == ResourceKind.TYPE
                 || kind == ResourceKind.PROLOG || kind == ResourceKind.CONTROL) {
@@ -307,6 +307,15 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     /** Returns the enable unique action associated with this resource. */
     protected final EnableUniqueAction getEnableUniqueAction() {
         return getActions().getEnableUniqueAction(getResourceKind());
+    }
+
+    /**
+     * Indicates if the resource list of this display offers an enable button
+     * (on the tool bar and in the popup menu). The default implementation
+     * returns {@code true} if and only if the resource kind is enableable.
+     */
+    public boolean hasEnableButton() {
+        return getResourceKind().isEnableable();
     }
 
     /** Creates a toggle button wrapping the enable action of this display. */
