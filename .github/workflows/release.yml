@@ -5,19 +5,11 @@ on:
   push:
     tags:
       - "release-*_*_*"
-  # Temporary, to prove the installer build without making a release: allows
-  # running this workflow manually from the Actions tab. A manual run skips
-  # the release job and uploads the installers as workflow artifacts instead
-  # of release assets. Remove once a real release has exercised the
-  # installers job.
-  workflow_dispatch:
 
 permissions: write-all
 
 jobs:
   release:
-    if: github.event_name == 'push'
-
     defaults:
       run:
         working-directory: code
@@ -63,8 +55,6 @@ jobs:
   # only build for the platform it runs on, hence the matrix.
   installers:
     needs: release
-    # run also when the release job is skipped (manual workflow_dispatch run)
-    if: ${{ !cancelled() && (needs.release.result == 'success' || github.event_name == 'workflow_dispatch') }}
 
     strategy:
       fail-fast: false
@@ -106,7 +96,6 @@ jobs:
     - name: Build installer
       run: bash release/jpackage/build-installer.sh $VERSION
     - name: Attach installer to release
-      if: github.event_name == 'push'
       uses: ncipollo/release-action@v1.21.0
       with:
         artifacts: "code/release/jpackage/target/dist/*"
@@ -115,9 +104,3 @@ jobs:
         omitNameDuringUpdate: true
         omitDraftDuringUpdate: true
         omitPrereleaseDuringUpdate: true
-    - name: Upload installer as workflow artifact (manual run)
-      if: github.event_name == 'workflow_dispatch'
-      uses: actions/upload-artifact@v7
-      with:
-        name: installer-${{ matrix.os }}
-        path: code/release/jpackage/target/dist/*
