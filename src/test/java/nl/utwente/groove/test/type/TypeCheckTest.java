@@ -115,6 +115,26 @@ public class TypeCheckTest {
         test("implicit");
     }
 
+    /** Tests error checking on the composite type graph (regression test for gh #492):
+     * the constituent type graphs are individually correct, but their combination
+     * introduces an edge type ambiguity. */
+    @Test
+    public void testComposite() {
+        try {
+            GrammarModel grammarView = Groove.loadGrammar(INPUT_DIR + "/composite");
+            for (NamedResourceModel<?> model : grammarView
+                .getResourceMap(ResourceKind.TYPE)
+                .values()) {
+                testCorrect(model);
+            }
+            Assert
+                .assertFalse("Composite type graph has no errors",
+                             grammarView.getTypeModel().getErrors().isEmpty());
+        } catch (IOException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
     /** Tests all rules in a named grammar (to be loaded from {@link #INPUT_DIR}). */
     private void test(String grammarName) {
         try {
