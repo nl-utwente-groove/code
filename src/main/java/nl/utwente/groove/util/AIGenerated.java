@@ -36,7 +36,7 @@ import java.lang.annotation.Target;
  * <li>Whoever substantially rewrites an annotated element removes or retains
  * the annotation as part of that change, so that it does not go stale.
  * </ul>
- * @author Claude (Anthropic)
+ * @author Arend Rensink
  * @version $Revision$
  */
 @AIGenerated("Claude, 2026-08")
