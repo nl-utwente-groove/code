@@ -144,12 +144,12 @@ case $OS in
         args+=(--icon "$(native_path "$INPUT/groove-G.ico")")
         ;;
     macos)
-        # TODO no .icns icon yet; jpackage falls back to the default Java icon
-        args+=(--mac-package-identifier nl.utwente.groove
+        args+=(--icon "$(native_path "$SCRIPT_DIR/icons/groove-G.icns")"
+            --mac-package-identifier nl.utwente.groove
             --mac-package-name GROOVE)
         ;;
     linux)
-        # TODO no .png icon yet; jpackage falls back to the default Java icon
+        args+=(--icon "$(native_path "$SCRIPT_DIR/icons/groove-G.png")")
         ;;
 esac
 if [[ $TYPE != app-image ]]; then
