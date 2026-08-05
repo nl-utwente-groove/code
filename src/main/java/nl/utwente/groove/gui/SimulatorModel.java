@@ -376,32 +376,29 @@ public class SimulatorModel implements Cloneable {
     }
 
     /**
-     * Changes the default exploration configuration: the configuration is
-     * written into the settings resource named by the {@code exploration}
-     * property (by targeted line edits, so comments and hand-written entries
-     * survive), creating the singleton {@code explore} resource and the
-     * reference if the property is unset. May perform two undoable store
-     * edits (the resource text and the properties).
-     * @param config the new default exploration configuration
+     * Saves an exploration configuration in a named settings resource, and
+     * makes that resource the grammar's exploration: the configuration is
+     * written into the settings resource (by targeted line edits, so comments
+     * and hand-written entries survive), and the {@code exploration} property
+     * is set to point to it. May perform two undoable store edits (the
+     * resource text and the properties).
+     * @param name name of the settings resource to save the configuration in
+     * @param config the exploration configuration to be saved
      * @return {@code true} if the GTS was invalidated as a result of the action
      * @throws IOException if the action failed
      */
-    public boolean doSetDefaultExploreConfig(ExploreConfig config) throws IOException {
+    public boolean doSaveExploreConfig(QualName name, ExploreConfig config) throws IOException {
         GrammarProperties properties = getGrammar().getProperties();
-        QualName target = properties.getExplorationName();
-        if (target == null) {
-            target = QualName.name(ExploreConfigSchema.NAME);
-        }
-        String oldText = getStore().getTexts(ResourceKind.SETTINGS).get(target);
+        String oldText = getStore().getTexts(ResourceKind.SETTINGS).get(name);
         String newText = ExploreConfigSchema.setConfigText(oldText, config);
         boolean result = false;
         if (!newText.equals(oldText)) {
-            result = doAddText(ResourceKind.SETTINGS, target, newText);
+            result = doAddText(ResourceKind.SETTINGS, name, newText);
         }
-        if (properties.getExplorationName() == null
+        if (!name.equals(properties.getExplorationName())
             || properties.containsKey(GrammarKey.EXPLORATION)) {
             GrammarProperties newProperties = properties.clone();
-            newProperties.setExplorationName(target);
+            newProperties.setExplorationName(name);
             result |= doSetProperties(newProperties);
         }
         return result;

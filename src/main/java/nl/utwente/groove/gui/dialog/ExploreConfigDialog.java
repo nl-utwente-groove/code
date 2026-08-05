@@ -26,6 +26,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
@@ -57,12 +58,14 @@ import nl.utwente.groove.explore.config.Bound;
 import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreConfigChecker;
+import nl.utwente.groove.explore.config.ExploreConfigSchema;
 import nl.utwente.groove.explore.config.ExploreKey;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.explore.config.Frontier;
 import nl.utwente.groove.explore.config.Goal;
 import nl.utwente.groove.explore.config.Setting;
 import nl.utwente.groove.grammar.GrammarKey;
+import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.Options;
@@ -137,7 +140,7 @@ public class ExploreConfigDialog extends JDialog {
         content
             .add(createSection("Engine", ExploreKey.COLLAPSE, ExploreKey.ALGEBRA,
                                ExploreKey.PERSISTENCE));
-        content.add(createPreviewPanel());
+        content.add(createResourcePanel());
         content.add(createErrorPanel());
         content.add(createButtonPanel());
 
@@ -168,16 +171,19 @@ public class ExploreConfigDialog extends JDialog {
         return result;
     }
 
-    /** Creates the panel showing the textual form and status of the configuration. */
-    private JPanel createPreviewPanel() {
+    /**
+     * Creates the (borderless) panel showing the settings resource the
+     * configuration is based on, as well as the status of the configuration.
+     */
+    private JPanel createResourcePanel() {
         JPanel result = new JPanel(new BorderLayout());
-        result.setBorder(BorderFactory.createTitledBorder("Configuration"));
-        this.previewField = new JTextField();
-        this.previewField.setEditable(false);
+        this.resourceLabel = new JLabel(" ");
+        this.resourceLabel.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
         this.statusLabel = new JLabel(" ");
+        this.statusLabel.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
         // anchor both to the top, so surplus vertical space stays below them
         JPanel inner = new JPanel(new BorderLayout(0, 2));
-        inner.add(this.previewField, BorderLayout.NORTH);
+        inner.add(this.resourceLabel, BorderLayout.NORTH);
         inner.add(this.statusLabel, BorderLayout.SOUTH);
         result.add(inner, BorderLayout.NORTH);
         return result;
@@ -215,9 +221,12 @@ public class ExploreConfigDialog extends JDialog {
     /** Creates the button panel. */
     private JPanel createButtonPanel() {
         JPanel result = new JPanel();
-        this.defaultButton = new JButton(DEFAULT_COMMAND);
-        this.defaultButton.addActionListener(e -> setDefaultExploreType());
-        result.add(this.defaultButton);
+        this.saveButton = new JButton(SAVE_COMMAND);
+        this.saveButton.addActionListener(e -> saveConfig(false));
+        result.add(this.saveButton);
+        this.saveAsButton = new JButton(SAVE_AS_COMMAND);
+        this.saveAsButton.addActionListener(e -> saveConfig(true));
+        result.add(this.saveAsButton);
         this.revertButton = new JButton(REVERT_COMMAND);
         this.revertButton.setToolTipText(REVERT_TOOLTIP);
         this.revertButton.addActionListener(e -> resetTo(this.revertConfig));
@@ -268,7 +277,7 @@ public class ExploreConfigDialog extends JDialog {
     /**
      * Recomputes the configuration from the widgets, applies the dependency
      * rules of the feature model to the widget states, and refreshes the
-     * preview, status text and buttons.
+     * resource line, status text and buttons.
      */
     private void refresh() {
         if (this.refreshing) {
@@ -316,10 +325,6 @@ public class ExploreConfigDialog extends JDialog {
                     errors.add("Error in value for '%s': %s", key.getKeyPhrase(), error.toString());
                 }
             }
-            this.previewField
-                .setText(config.unparse().isEmpty()
-                    ? "(default configuration)"
-                    : config.unparse());
             ExploreType exploreType = null;
             if (errors.isEmpty()) {
                 try {
@@ -415,6 +420,22 @@ public class ExploreConfigDialog extends JDialog {
                 ? null
                 : "<html><body style='width:" + getErrorWrapWidth()
                     + "px'><font color='red'>" + problemsHtml + "</font></body></html>");
+        // report the settings resource that the composition is based on
+        QualName exploreName = grammar.getProperties().getExplorationName();
+        String resourceText;
+        if (exploreName == null) {
+            resourceText = "<html><i>Not based on a settings resource;"
+                + " saving will ask for a name</i></html>";
+        } else {
+            String nameHtml
+                = HTMLConverter.toHtml(new StringBuilder(exploreName.toString())).toString();
+            resourceText = "<html>Based on the settings resource '<b>" + nameHtml + "</b>'"
+                + (grammar.getResource(ResourceKind.SETTINGS, exploreName) == null
+                    ? " (which does not yet exist)"
+                    : "")
+                + "</html>";
+        }
+        this.resourceLabel.setText(resourceText);
         // the status label only carries informational messages
         String status = " ";
         if (this.legacyNotice != null) {
@@ -445,9 +466,12 @@ public class ExploreConfigDialog extends JDialog {
         var savedConfig = getGrammar().getDefaultExploreConfig();
         boolean savedDiffers = !config.unparse().equals(savedConfig.unparse());
         this.savedButton.setEnabled(!errors.isEmpty() || savedDiffers);
-        // there is nothing to save if the composition equals the saved setting
-        this.defaultButton.setEnabled(runnable && savedDiffers);
-        this.defaultButton.setToolTipText(DEFAULT_TOOLTIP);
+        // there is nothing to save if the composition equals the saved setting,
+        // unless there is no resource yet to save it in
+        this.saveButton.setEnabled(runnable && (savedDiffers || exploreName == null));
+        this.saveButton.setToolTipText(SAVE_TOOLTIP);
+        this.saveAsButton.setEnabled(runnable);
+        this.saveAsButton.setToolTipText(SAVE_AS_TOOLTIP);
         // on a fresh state space there is no difference between restarting
         // and continuing: the start button reads "Start" and Continue is off
         boolean fresh = isFreshGTS();
@@ -578,20 +602,65 @@ public class ExploreConfigDialog extends JDialog {
         }
     }
 
-    /** Saves the composed configuration with the grammar. */
-    private void setDefaultExploreType() {
+    /**
+     * Saves the composed configuration in a settings resource, and makes that
+     * resource the grammar's exploration.
+     * @param askName if {@code true}, the target resource name is asked from
+     * the user; otherwise it is asked only if the grammar has no exploration
+     * reference yet
+     */
+    private void saveConfig(boolean askName) {
         var errors = new FormatErrorSet();
         ExploreConfig config = storeConfig(errors);
         if (config == null || !errors.isEmpty()) {
             return;
         }
+        QualName target = getGrammar().getProperties().getExplorationName();
+        if (target == null || askName) {
+            target = askConfigName(target);
+            if (target == null) {
+                return;
+            }
+        }
         try {
-            getSimulatorModel().doSetDefaultExploreConfig(config);
+            getSimulatorModel().doSaveExploreConfig(target, config);
         } catch (IOException exc) {
             // do nothing
         }
         // the grammar has changed, so the status may have as well
         refresh();
+    }
+
+    /**
+     * Asks the user for the name of the settings resource to save the
+     * configuration in.
+     * @param current the currently referenced resource name, if any; used as
+     * suggestion
+     * @return the chosen name, or {@code null} if the dialog was cancelled
+     */
+    private QualName askConfigName(QualName current) {
+        var existingNames = getGrammar().getNames(ResourceKind.SETTINGS);
+        // the name is not required to be fresh: auto-freshening would generate
+        // names like 'explore1', whose leading segment is not a schema name
+        FreshNameDialog<QualName> nameDialog = new FreshNameDialog<>(existingNames == null
+            ? Collections.emptySet()
+            : existingNames, current == null
+                ? ExploreConfigSchema.NAME
+                : current.toString(), false) {
+            @Override
+            protected QualName createName(String name) throws FormatException {
+                QualName result = QualName.parse(name).testValid();
+                if (!result.get(0).equals(ExploreConfigSchema.NAME)) {
+                    throw new FormatException(
+                        "An exploration settings name must start with segment '%s'",
+                        ExploreConfigSchema.NAME);
+                }
+                return result;
+            }
+        };
+        return nameDialog.showDialog(this.simulator.getFrame(), ASK_NAME_TITLE)
+            ? nameDialog.getName()
+            : null;
     }
 
     /** Disposes the dialog and resets the tooltip dismiss delay. */
@@ -631,10 +700,11 @@ public class ExploreConfigDialog extends JDialog {
     private final Map<ExploreKey,KeyRow> rows;
     private final List<String> ruleNames;
     private final List<String> hostNames;
-    private JTextField previewField;
+    private JLabel resourceLabel;
     private JLabel statusLabel;
     private JLabel errorLabel;
-    private JButton defaultButton;
+    private JButton saveButton;
+    private JButton saveAsButton;
     private JButton startButton;
     private JButton exploreButton;
     private JButton revertButton;
@@ -645,14 +715,21 @@ public class ExploreConfigDialog extends JDialog {
     private String legacyNotice;
     private final int oldDismissDelay;
 
-    private static final String DEFAULT_COMMAND = "Save";
+    private static final String SAVE_COMMAND = "Save";
+    private static final String SAVE_AS_COMMAND = "Save As...";
     private static final String START_COMMAND = "Restart";
     private static final String EXPLORE_COMMAND = "Continue";
     private static final String CANCEL_COMMAND = "Cancel";
     private static final String REVERT_COMMAND = "Revert";
     private static final String SAVED_COMMAND = "Reset to Saved";
-    private static final String DEFAULT_TOOLTIP
-        = "Save the composed exploration with the grammar (as the 'exploration' system property)";
+    private static final String SAVE_TOOLTIP
+        = "Save the composed exploration in the settings resource named by the 'exploration'"
+            + " system property, asking for a name if that property is unset";
+    private static final String SAVE_AS_TOOLTIP
+        = "Save the composed exploration in a settings resource of your choice"
+            + " and make that the grammar's exploration";
+    /** Title of the dialog asking for the target settings resource name. */
+    private static final String ASK_NAME_TITLE = "Select exploration settings name";
     private static final String REVERT_TOOLTIP
         = "Discard the changes and return to the exploration in force when the dialog was opened";
     private static final String SAVED_TOOLTIP

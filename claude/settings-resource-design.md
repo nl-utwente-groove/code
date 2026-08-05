@@ -199,10 +199,9 @@ the tests). Consequences: resolution lives at the `GrammarModel` level
 (`getDefaultExploreType/-Config`), not in `GrammarProperties` (a properties
 object cannot see sibling resources); the property checker validates the
 reference only (exists, `explore` schema, error-free) — content checks live
-on the resource; and the dialog's Set Default writes the referenced
-resource by targeted per-key line edits (creating the singleton `explore`
-resource and the reference on first use), so the resource is the sole
-source of truth and hand-written comments survive. The legacy
+on the resource; and the dialog writes the target resource by targeted
+per-key line edits, so the resource is the sole source of truth and
+hand-written comments survive. The legacy
 `explorationStrategy` key stays a read-time fallback, interpreted
 indefinitely; its eager version-repair conversion was dropped (a
 properties-level repair cannot create a settings file).
@@ -214,9 +213,24 @@ supersedes the previously active one (the reference is single-valued);
 deactivating the active resource reverts the grammar to the legacy or
 default exploration.
 
+**Dialog save behaviour** (2026-08-05): the `Configuration` preview panel
+is gone — an unparsed one-line rendering of what the widgets already show
+told the user nothing about *where* the configuration lives. In its place a
+borderless resource line states which settings resource the composition is
+based on (and whether that resource exists yet), or that there is none.
+Saving is correspondingly named: `Save` writes to the referenced resource,
+asking for a name through a `FreshNameDialog` when the reference is unset
+(no more silent creation of a singleton `explore` resource); `Save As...`
+always asks. Chosen names must lead with the `explore` schema segment, and
+are *not* auto-freshened — freshening would produce `explore1`, whose
+leading segment is not a schema. Both buttons make the target resource the
+grammar's exploration, so saving under a new name doubles as activation.
+`Save` stays enabled when the composition equals the saved configuration
+but no resource is referenced: there is then still something to do.
+
 Deferred to a next dialog round (agreed): a resource selector dropdown in
-the exploration dialog with Save As / set-active, and the reconsideration
-of the transient per-run override.
+the exploration dialog, and the reconsideration of the transient per-run
+override.
 
 ## Deliberately deferred
 
