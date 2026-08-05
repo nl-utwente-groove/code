@@ -39,12 +39,12 @@ import java.lang.annotation.Target;
  * @author Arend Rensink
  * @version $Revision$
  */
-@AIGenerated("Claude, 2026-08")
+@AIGenerated("Claude Fable 5, 2026-08")
 @Documented
 @Retention(RetentionPolicy.CLASS)
 @Target({ElementType.TYPE, ElementType.METHOD, ElementType.CONSTRUCTOR, ElementType.FIELD})
 public @interface AIGenerated {
-    /** Free-form provenance note, typically the model and date of writing,
-     * e.g. {@code "Claude, 2026-08"}. */
+    /** Free-form provenance note, naming the model that actually generated
+     * the code and the date of writing, e.g. {@code "Claude Fable 5, 2026-08"}. */
     String value() default "";
 }
