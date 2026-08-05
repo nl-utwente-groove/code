@@ -19,6 +19,7 @@ package nl.utwente.groove.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -39,6 +40,7 @@ import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.Settings;
+import nl.utwente.groove.grammar.model.SettingsContent;
 import nl.utwente.groove.grammar.model.SettingsModel;
 import nl.utwente.groove.grammar.model.SettingsSchema;
 import nl.utwente.groove.grammar.model.SettingsSchemas;
@@ -101,7 +103,8 @@ public class SettingsTest {
     }
 
     /** Grammar-aware variant of the test schema: the optional {@code rule}
-     * entry must name an existing rule of the surrounding grammar. */
+     * entry must name an existing rule of the surrounding grammar. The check
+     * is position-aware, so its error points at the {@code rule} line. */
     static private class AwareSchema extends TestSchema {
         @Override
         public String getName() {
@@ -109,12 +112,12 @@ public class SettingsTest {
         }
 
         @Override
-        public FormatErrorSet check(GrammarModel grammar, Properties props) {
-            FormatErrorSet result = check(props);
-            String rule = props.getProperty("rule");
+        public FormatErrorSet check(GrammarModel grammar, SettingsContent content) {
+            FormatErrorSet result = check(content.properties());
+            String rule = content.properties().getProperty("rule");
             if (rule != null && grammar != null
                 && !grammar.getNames(ResourceKind.RULE).contains(QualName.name(rule))) {
-                result.add("Unknown rule '%s'", rule);
+                result.add("Unknown rule '%s'", rule, content.numbers("rule"));
             }
             return result;
         }
@@ -340,6 +343,66 @@ public class SettingsTest {
     }
 
     // ----------------------------------------------------------------------
+    // Error positions
+    // ----------------------------------------------------------------------
+
+    /**
+     * Tests the key position scanner: comment and blank lines are skipped,
+     * a continuation line belongs to the key that starts it, and a repeated
+     * key is located at the declaration that survives.
+     */
+    @Test
+    public void testContentPositions() throws Exception {
+        SettingsContent content = new SettingsContent("""
+            # comment
+            colour = red
+
+              size = 3
+            long\\
+            key = value
+            colour = blue
+            """);
+        assertEquals(new SettingsContent.Position(4, 3), content.position("size"));
+        assertEquals(new SettingsContent.Position(5, 1), content.position("longkey"));
+        assertEquals("value", content.properties().getProperty("longkey"));
+        // a repeated key is located at the declaration that Properties keeps
+        assertEquals(new SettingsContent.Position(7, 1), content.position("colour"));
+        assertEquals("blue", content.properties().getProperty("colour"));
+        assertNull(content.position("absent"));
+        assertEquals(List.of(4, 3), content.numbers("size"));
+        assertEquals(List.of(), content.numbers("absent"));
+    }
+
+    /**
+     * Tests that the error of a {@code $schema} entry contradicting the
+     * location carries the position of that entry.
+     */
+    @Test
+    public void testSchemaMismatchPosition() throws Exception {
+        assertEquals(List.of(1, 1), getError(newGrammar(), "test.mismatch").getNumbers());
+    }
+
+    /**
+     * Tests that an error created by a position-aware schema check carries
+     * the position of the key it is about, also in a text with comment and
+     * blank lines and an indented key; and that a schema which does not
+     * override the position-aware check keeps producing position-less errors.
+     */
+    @Test
+    public void testCheckErrorPosition() throws Exception {
+        SystemStore store = copyStore(newStore());
+        QualName name = QualName.parse("aware.check");
+        store
+            .putTexts(ResourceKind.SETTINGS,
+                      Map.of(name, "# a comment\n! another comment\n\n  rule = r\n"));
+        FormatError error = getError(store.toGrammarModel(), "aware.check");
+        assertTrue(error.toString(), error.toString().contains("Unknown rule 'r'"));
+        assertEquals(List.of(4, 3), error.getNumbers());
+        // the plain test schema does not attach positions
+        assertEquals(List.of(), getError(newGrammar(), "test.rejected").getNumbers());
+    }
+
+    // ----------------------------------------------------------------------
     // Propagation to the grammar
     // ----------------------------------------------------------------------
 
@@ -370,6 +433,31 @@ public class SettingsTest {
         assertTrue(getModel(fixed, "unknown").hasErrors());
         assertEquals(List.of(), messages(fixed.getErrors()));
         assertNotNull(fixed.toGrammar());
+    }
+
+    /**
+     * Tests that a propagated settings error carries the settings resource as
+     * its context — kind, name, and the numbers copied from the nested error
+     * — so that selecting it in the grammar error list navigates to the
+     * offending line of the settings display.
+     */
+    @Test
+    public void testPropagatedErrorContext() throws Exception {
+        GrammarModel grammar = newGrammar();
+        QualName name = QualName.parse("test.mismatch");
+        List<FormatError> propagated = grammar
+            .getErrors()
+            .stream()
+            .filter(e -> e.toString().contains(name.toString()))
+            .toList();
+        assertEquals(propagated.toString(), 1, propagated.size());
+        FormatError error = propagated.get(0);
+        assertEquals(ResourceKind.SETTINGS, error.getResourceKind());
+        assertTrue(error.getResourceNames().toString(),
+                   error.getResourceNames().contains(name));
+        // the numbers of the nested error are inherited
+        assertEquals(getError(grammar, "test.mismatch").getNumbers(), error.getNumbers());
+        assertFalse(error.getNumbers().isEmpty());
     }
 
     // ----------------------------------------------------------------------
@@ -468,6 +556,13 @@ public class SettingsTest {
         List<String> errors = messages(getModel(grammar, name).getErrors());
         assertEquals(errors.toString(), 1, errors.size());
         assertTrue(errors.get(0), errors.get(0).contains(expected));
+    }
+
+    /** Returns the single error of a named settings resource. */
+    static private FormatError getError(GrammarModel grammar, String name) {
+        List<FormatError> errors = getModel(grammar, name).getErrors().stream().toList();
+        assertEquals(errors.toString(), 1, errors.size());
+        return errors.get(0);
     }
 
     /** Returns the settings model of a given name in a given grammar. */

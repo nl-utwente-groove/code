@@ -26,6 +26,7 @@ import java.util.Map;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.grammar.model.SettingsContent;
 import nl.utwente.groove.grammar.model.SettingsModel;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.FormatErrorSet;
@@ -264,6 +265,28 @@ public class ExploreConfig {
      * value that is not parsable for its key
      */
     public static ExploreConfig fromProperties(java.util.Properties props) throws FormatException {
+        return fromProperties(props, null);
+    }
+
+    /**
+     * Parses a configuration from the parsed content of an {@code explore}
+     * settings resource. Behaves as {@link #fromProperties(java.util.Properties)},
+     * except that every error carries the position of the entry it is about.
+     * @throws FormatException if the entries contain an unknown key or a
+     * value that is not parsable for its key
+     */
+    public static ExploreConfig fromProperties(SettingsContent content) throws FormatException {
+        return fromProperties(content.properties(), content);
+    }
+
+    /**
+     * Parses a configuration from java-properties entries, optionally
+     * accompanied by the content they were parsed from; if the content is
+     * given, the errors carry the position of the entry they are about.
+     */
+    private static ExploreConfig fromProperties(java.util.Properties props,
+                                                @Nullable SettingsContent content)
+        throws FormatException {
         var result = new ExploreConfig();
         var errors = new FormatErrorSet();
         // process the entries in alphabetical order, for deterministic
@@ -274,15 +297,16 @@ public class ExploreConfig {
             if (name.equals(SettingsModel.SCHEMA_KEY)) {
                 continue;
             }
+            var numbers = SettingsContent.numbers(content, name);
             ExploreKey key = keyMap.get(name);
             if (key == null) {
-                errors.add("Unknown exploration key '%s'", name);
+                errors.add("Unknown exploration key '%s'", name, numbers);
                 continue;
             }
             try {
                 result.put(key, key.parser().parse(props.getProperty(name).trim()));
             } catch (FormatException exc) {
-                errors.addAll(exc.getErrors());
+                errors.addAll(exc.getErrors().extend(numbers));
             }
         }
         errors.throwException();

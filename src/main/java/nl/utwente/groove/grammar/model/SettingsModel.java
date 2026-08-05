@@ -19,14 +19,13 @@ package nl.utwente.groove.grammar.model;
 import static nl.utwente.groove.grammar.model.ResourceKind.SETTINGS;
 
 import java.io.IOException;
-import java.io.StringReader;
-import java.util.Properties;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.QualName;
+import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -89,9 +88,9 @@ public class SettingsModel extends TextBasedModel<Settings> {
 
     @Override
     Settings compute() throws FormatException {
-        Properties props = new Properties();
+        SettingsContent content;
         try {
-            props.load(new StringReader(getProgram()));
+            content = new SettingsContent(getProgram());
         } catch (IOException exc) {
             throw new FormatException("Can't parse settings file: %s", exc.getMessage());
         }
@@ -102,11 +101,12 @@ public class SettingsModel extends TextBasedModel<Settings> {
                 "Unknown settings schema '%s' (the leading name segment; known schemas: %s)",
                 schemaName, String.join(", ", SettingsSchemas.getNames()));
         }
-        String declared = props.getProperty(SCHEMA_KEY);
+        String declared = content.properties().getProperty(SCHEMA_KEY);
         if (declared != null && !declared.trim().equals(schemaName)) {
-            throw new FormatException(
+            // the mismatch is an error of the $schema line itself
+            throw new FormatException(new FormatError(
                 "Declared schema '%s' differs from the schema '%s' implied by the resource location",
-                declared.trim(), schemaName);
+                declared.trim(), schemaName, content.numbers(SCHEMA_KEY)));
         }
         if (getQualName().size() == 1 && !schema.isSingular()) {
             // the singleton form is reserved for singular schemas: any other
@@ -124,8 +124,8 @@ public class SettingsModel extends TextBasedModel<Settings> {
                     candidates.stream().map(QualName::toString).collect(Collectors.joining(", ")));
             }
         }
-        schema.check(getGrammar(), props).throwException();
-        return new Settings(schema, props);
+        schema.check(getGrammar(), content).throwException();
+        return new Settings(schema, content.properties());
     }
 
     /** Optional settings key re-declaring the schema of a settings resource;

@@ -105,6 +105,24 @@ public interface SettingsSchema {
     }
 
     /**
+     * Checks the parsed content of a settings resource against this schema.
+     * The default implementation ignores the key positions recorded in the
+     * content and delegates to {@link #check(GrammarModel, Properties)}; a
+     * schema that wants its errors to carry the line and column of the key
+     * they are about — so that selecting the error in the settings display
+     * jumps to the offending line — should override this method, and pass
+     * {@link SettingsContent#numbers(String)} as an additional argument to the
+     * errors it creates.
+     * @param grammar the grammar holding the resource; may be {@code null} if
+     * the resource is being considered outside the context of a grammar
+     * @param content the parsed content to be checked; non-{@code null}
+     * @return a (non-{@code null}, possibly empty) set of errors in the entries
+     */
+    default public FormatErrorSet check(@Nullable GrammarModel grammar, SettingsContent content) {
+        return check(grammar, content.properties());
+    }
+
+    /**
      * Returns the resource kinds (other than the settings themselves) that
      * {@link #check(GrammarModel, Properties)} inspects. A settings resource
      * of this schema is rechecked whenever one of these kinds changes.

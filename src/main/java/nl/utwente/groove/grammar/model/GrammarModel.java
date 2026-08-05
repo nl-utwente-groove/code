@@ -501,9 +501,13 @@ public class GrammarModel implements PropertyChangeListener {
                 continue;
             }
             for (FormatError error : settingsModel.getErrors()) {
+                // the resource record comes after the nested error, whose
+                // (null) resource kind would otherwise overwrite it; it is
+                // what makes the error navigate to the settings display, and
+                // the numbers copied from the nested error to the right line
                 this.errors
                     .add("Error in settings resource '%s': %s", settingsModel.getQualName(), error,
-                         settingsModel);
+                         FormatError.resource(SETTINGS, settingsModel.getQualName()));
             }
         }
         // check if all resource names are valid identifiers

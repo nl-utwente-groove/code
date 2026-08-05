@@ -32,6 +32,7 @@ import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.Settings;
+import nl.utwente.groove.grammar.model.SettingsContent;
 import nl.utwente.groove.grammar.model.SettingsModel;
 import nl.utwente.groove.grammar.model.SettingsSchemas;
 import nl.utwente.groove.io.external.PortException;
@@ -63,6 +64,27 @@ public class EcoreMapping {
      * @throws FormatException if any entry does not fit the vocabulary
      */
     public EcoreMapping(Properties props) throws FormatException {
+        this(props, null);
+    }
+
+    /**
+     * Constructs a mapping from the parsed content of a settings resource.
+     * Behaves as {@link #EcoreMapping(Properties)}, except that every error
+     * carries the position of the entry it is about.
+     * @param content the parsed settings content; the {@code $schema} entry is ignored
+     * @throws FormatException if any entry does not fit the vocabulary
+     */
+    public EcoreMapping(SettingsContent content) throws FormatException {
+        this(content.properties(), content);
+    }
+
+    /**
+     * Constructs a mapping from a set of settings entries, optionally
+     * accompanied by the content they were parsed from; if the content is
+     * given, the errors carry the position of the entry they are about.
+     */
+    private EcoreMapping(Properties props, @Nullable SettingsContent content)
+        throws FormatException {
         FormatErrorSet errors = new FormatErrorSet();
         Ordering ordering = Ordering.NONE;
         boolean useIdentifiers = true;
@@ -75,31 +97,33 @@ public class EcoreMapping {
                 continue;
             }
             String value = props.getProperty(key).trim();
+            var numbers = SettingsContent.numbers(content, key);
             List<String> segments = Arrays.asList(key.split("\\.", -1));
             String choice = segments.get(segments.size() - 1);
             List<String> path = segments.subList(0, segments.size() - 1);
             if (path.stream().anyMatch(String::isEmpty) || choice.isEmpty()) {
-                errors.add("Malformed Ecore mapping key '%s'", key);
+                errors.add("Malformed Ecore mapping key '%s'", key, numbers);
                 continue;
             }
             EcoreKey keyForm = EcoreKey.lookup(choice, path.size());
             if (keyForm == null) {
                 List<EcoreKey> forms = EcoreKey.withText(choice);
                 if (forms.isEmpty()) {
-                    errors.add("Unknown Ecore mapping key '%s'", key);
+                    errors.add("Unknown Ecore mapping key '%s'", key, numbers);
                 } else if (forms.stream().allMatch(EcoreKey::isGlobal)) {
                     errors
-                        .add("'%s' is a global option; key '%s' should have no prefix", choice,
-                             key);
+                        .add("'%s' is a global option; key '%s' should have no prefix", choice, key,
+                             numbers);
                 } else {
                     errors
-                        .add("Key '%s' should have the form %s", key, EcoreKey.patterns(forms));
+                        .add("Key '%s' should have the form %s", key, EcoreKey.patterns(forms),
+                             numbers);
                 }
                 continue;
             }
             String valueError = keyForm.checkValue(value);
             if (valueError != null) {
-                errors.add("Value '%s' of '%s' %s", value, key, valueError);
+                errors.add("Value '%s' of '%s' %s", value, key, valueError, numbers);
                 continue;
             }
             switch (keyForm) {

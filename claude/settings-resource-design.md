@@ -129,6 +129,37 @@ exists), for any other schema it seeds the prompt with `<schema>.default`.
   resource's errors block: an erroneous `ecore.properties` makes the grammar
   uncompilable. The compiled artifact `Settings` = (schema, properties) with
   typed accessors.
+- **Error positions** (2026-08-05): settings errors carry the line and column
+  of the entry they are about. `compute()` no longer parses a bare
+  `java.util.Properties` but a `SettingsContent`, which wraps the raw text, the
+  properties and a per-key position map computed by a line scanner (comment and
+  blank lines skipped, backslash continuations joined, key escapes converted;
+  a repeated key is located at the declaration `Properties` keeps — the
+  approximations are documented on the class). Positions travel to the errors
+  as ordinary `FormatError` context arguments: `SettingsContent.numbers(key)`
+  yields the (line, column) list that `FormatError` collects into
+  `getNumbers()`. Schemas opt in through a new
+  `SettingsSchema.check(GrammarModel, SettingsContent)`, which by default
+  delegates to the properties-based check, so a schema that does not care keeps
+  producing position-less errors; `SettingsModel` calls the content variant.
+  Both built-in schemas override it. `explore` positions the per-entry errors —
+  unknown key, unparsable value (`ExploreConfig.fromProperties`) and the
+  grammar-dependent content errors, which are collected per key by inlining the
+  `ExploreConfigChecker` loop; the cross-key consistency and
+  engine-realisability errors deliberately get no position, since they are
+  about a *combination* of entries and their messages name setting kinds rather
+  than keys, so picking a line would be guesswork. `ecore` positions all of its
+  errors, which are per-entry by construction. Nothing else is needed on the
+  display side: the settings main tab is a `TextTab`, whose error listener
+  already jumps to `select(line, column)` when an error has two numbers.
+  The errors propagated into the grammar (see above) are extended with
+  `FormatError.resource(SETTINGS, name)`, following the control-loop precedent
+  in `CompositeControlModel`; the resource record must come *after* the nested
+  error in the argument list, because `FormatError.addContext` copies the
+  nested error's (here: null) resource kind unconditionally. With kind, name
+  and the inherited numbers in place, `Simulator.selectDisplayPart` switches to
+  the settings display and jumps to the line when the error is selected in the
+  main grammar error list.
 - **Schema interface** (`grammar/model/SettingsSchema`, registry
   `SettingsSchemas`): `name()` (the folder name), `check(Properties)` →
   `FormatErrorSet`, the local-name conversions

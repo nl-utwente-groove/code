@@ -19,8 +19,11 @@ package nl.utwente.groove.io.external.format.ecore;
 import java.util.Properties;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.annotation.HelpMap;
+import nl.utwente.groove.grammar.model.GrammarModel;
+import nl.utwente.groove.grammar.model.SettingsContent;
 import nl.utwente.groove.grammar.model.SettingsSchema;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
@@ -54,6 +57,18 @@ public class EcoreMappingSchema implements SettingsSchema {
     public FormatErrorSet check(Properties props) {
         try {
             new EcoreMapping(props);
+            return new FormatErrorSet();
+        } catch (FormatException exc) {
+            return exc.getErrors();
+        }
+    }
+
+    @Override
+    public FormatErrorSet check(@Nullable GrammarModel grammar, SettingsContent content) {
+        // all mapping errors are about a single entry, so they can all carry
+        // the position of the key they are about
+        try {
+            new EcoreMapping(content);
             return new FormatErrorSet();
         } catch (FormatException exc) {
             return exc.getErrors();

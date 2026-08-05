@@ -26,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.File;
 import java.io.StringReader;
 import java.nio.file.Files;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -153,6 +154,29 @@ public class ExploreSchemaTest {
             .stream()
             .anyMatch(e -> e.toString().contains("explore.broken")),
                    grammar.getErrors().toString());
+    }
+
+    /**
+     * Tests that the schema errors carry the position of the entry they are
+     * about: both a structural error (an unknown key) and a grammar-dependent
+     * one (a goal naming a missing rule) point at their own line, so that
+     * selecting the error jumps to it.
+     */
+    @Test
+    public void testErrorPositions() throws Exception {
+        SystemStore store = newTempStore("explore-position-test");
+        GrammarModel grammar = store.toGrammarModel();
+        QualName name = QualName.parse("explore.broken");
+        store
+            .putTexts(ResourceKind.SETTINGS,
+                      Map.of(name, "# a comment\n$schema = explore\ndepth = 3\n"));
+        assertEquals(List.of(3, 1), getError(grammar, name, "Unknown exploration key 'depth'"));
+        // a grammar-dependent error points at its own key as well
+        store
+            .putTexts(ResourceKind.SETTINGS,
+                      Map.of(name, "$schema = explore\nnext = newest\n"
+                          + "goal = condition:no-such-rule\n"));
+        assertEquals(List.of(3, 1), getError(grammar, name, "no-such-rule"));
     }
 
     /**
@@ -314,6 +338,20 @@ public class ExploreSchemaTest {
     // ----------------------------------------------------------------------
     // Helper methods
     // ----------------------------------------------------------------------
+
+    /**
+     * Returns the line and column numbers of the single error of a settings
+     * resource, after checking that its message contains a given text.
+     */
+    static private List<Integer> getError(GrammarModel grammar, QualName name, String expected) {
+        var model = (SettingsModel) grammar.getResource(ResourceKind.SETTINGS, name);
+        assertNotNull(model);
+        var errors = model.getErrors().stream().toList();
+        assertEquals(1, errors.size(), errors.toString());
+        var error = errors.get(0);
+        assertTrue(error.toString().contains(expected), error.toString());
+        return error.getNumbers();
+    }
 
     /** Copies the ferryman fixture to a fresh temporary directory, so that the
      * resulting store can be modified. */

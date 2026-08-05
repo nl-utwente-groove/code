@@ -34,6 +34,7 @@ import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
+import nl.utwente.groove.grammar.model.SettingsContent;
 import nl.utwente.groove.grammar.model.SettingsModel;
 import nl.utwente.groove.grammar.model.SettingsSchema;
 import nl.utwente.groove.util.parse.FormatErrorSet;
@@ -66,9 +67,29 @@ public class ExploreConfigSchema implements SettingsSchema {
 
     @Override
     public FormatErrorSet check(@Nullable GrammarModel grammar, Properties props) {
+        return check(grammar, props, null);
+    }
+
+    @Override
+    public FormatErrorSet check(@Nullable GrammarModel grammar, SettingsContent content) {
+        return check(grammar, content.properties(), content);
+    }
+
+    /**
+     * Checks a set of entries, optionally accompanied by the content they were
+     * parsed from. If the content is given, every error that is about a single
+     * entry — an unknown key, an unparsable value, or a grammar-dependent
+     * content error — carries the position of that entry. The cross-key
+     * consistency and engine-realisability errors are about a combination of
+     * entries and get no position.
+     */
+    private FormatErrorSet check(@Nullable GrammarModel grammar, Properties props,
+                                 @Nullable SettingsContent content) {
         ExploreConfig config;
         try {
-            config = ExploreConfig.fromProperties(props);
+            config = content == null
+                ? ExploreConfig.fromProperties(props)
+                : ExploreConfig.fromProperties(content);
         } catch (FormatException exc) {
             return exc.getErrors();
         }
@@ -82,7 +103,10 @@ public class ExploreConfigSchema implements SettingsSchema {
             }
         }
         if (grammar != null) {
-            result.addAll(ExploreConfigChecker.check(grammar, config));
+            for (ExploreKey key : ExploreKey.values()) {
+                var errors = ExploreConfigChecker.check(grammar, key, config.get(key));
+                result.addAll(errors.extend(SettingsContent.numbers(content, key.getName())));
+            }
         }
         return result;
     }
