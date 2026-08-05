@@ -1,10 +1,12 @@
 package nl.utwente.groove.gui.action;
 
 import java.io.IOException;
+import java.util.prefs.Preferences;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import nl.utwente.groove.explore.config.ExploreConfigSchema;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.ResourceKind;
@@ -12,6 +14,7 @@ import nl.utwente.groove.grammar.model.SettingsSchema;
 import nl.utwente.groove.grammar.model.SettingsSchemas;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
+import nl.utwente.groove.gui.UserSettings;
 import nl.utwente.groove.io.store.EditType;
 
 /** Action to create and start editing a new control program. */
@@ -83,10 +86,12 @@ public class NewAction extends SimulatorAction {
         String[] names = SettingsSchemas.getNames().toArray(new String[0]);
         Object choice = JOptionPane
             .showInputDialog(getFrame(), "Schema of the new settings resource", "Select schema",
-                             JOptionPane.QUESTION_MESSAGE, null, names, names[0]);
-        return choice == null
-            ? null
-            : SettingsSchemas.get((String) choice);
+                             JOptionPane.QUESTION_MESSAGE, null, names, SCHEMA_PREF.get());
+        if (choice == null) {
+            return null;
+        }
+        SCHEMA_PREF.set((String) choice);
+        return SettingsSchemas.get((String) choice);
     }
 
     /**
@@ -107,4 +112,63 @@ public class NewAction extends SimulatorAction {
 
     /** Local name proposed for a new settings resource inside its schema folder. */
     private static final String DEFAULT_LOCAL_NAME = "default";
+
+    /**
+     * Preference holding the settings schema chosen last, so that the schema
+     * prompt opens on it again in a later run.
+     * There is one {@link NewAction} per resource kind, so this is static:
+     * the preference is a property of the user, not of an action instance,
+     * and the registration with {@link UserSettings} must happen only once.
+     */
+    private static final SchemaPref SCHEMA_PREF = new SchemaPref();
+
+    static {
+        UserSettings.register(SCHEMA_PREF);
+    }
+
+    /** Persistable last-chosen settings schema. */
+    private static class SchemaPref implements UserSettings.Persistable {
+        /**
+         * Returns the schema name to propose: the one chosen last, or the
+         * first registered schema if that one is not (or no longer) known.
+         */
+        String get() {
+            var names = SettingsSchemas.getNames();
+            String result = this.lastName;
+            if (result == null) {
+                result = getPref(SCHEMA_ENTRY);
+            }
+            return names.contains(result)
+                ? result
+                : names.iterator().next();
+        }
+
+        /** Records a chosen schema name. */
+        void set(String name) {
+            this.lastName = name;
+            putPref(SCHEMA_ENTRY, name);
+        }
+
+        @Override
+        public void sync() {
+            if (this.lastName != null) {
+                putPref(SCHEMA_ENTRY, this.lastName);
+            }
+        }
+
+        @Override
+        public Preferences getPrefs() {
+            return userPrefs;
+        }
+
+        /** The schema chosen in this run, if any. */
+        private String lastName;
+
+        /** User preferences object for this class. */
+        static private final Preferences userPrefs
+            = Preferences.userNodeForPackage(NewAction.class);
+        /** User preferences entry for the last chosen settings schema. */
+        static private final Entry SCHEMA_ENTRY
+            = new Entry("last-settings-schema", ExploreConfigSchema.INSTANCE.getName());
+    }
 }

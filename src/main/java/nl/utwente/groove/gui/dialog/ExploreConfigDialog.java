@@ -138,6 +138,7 @@ public class ExploreConfigDialog extends JDialog {
         JPanel content = new JPanel();
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
         content.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        content.add(createResourcePanel());
         content
             .add(createSection("Search order", ExploreKey.NEXT, ExploreKey.SUCCESSOR,
                                ExploreKey.FRONTIER, ExploreKey.HEURISTIC, ExploreKey.COST,
@@ -148,7 +149,6 @@ public class ExploreConfigDialog extends JDialog {
         content
             .add(createSection("Engine", ExploreKey.COLLAPSE, ExploreKey.ALGEBRA,
                                ExploreKey.PERSISTENCE));
-        content.add(createResourcePanel());
         content.add(createErrorPanel());
         content.add(createButtonPanel());
 
@@ -195,6 +195,9 @@ public class ExploreConfigDialog extends JDialog {
     private JPanel createResourcePanel() {
         JPanel result = new JPanel(new BorderLayout());
         JLabel nameLabel = new JLabel(NAME_LABEL_TEXT);
+        // the selector heads the dialog: its label is emphasised, as the
+        // resource everything below is an editor of
+        nameLabel.setFont(nameLabel.getFont().deriveFont(Font.BOLD));
         nameLabel.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
         this.nameBox = new JComboBox<>();
         this.nameBox.setToolTipText(NAME_TOOLTIP);
@@ -293,8 +296,8 @@ public class ExploreConfigDialog extends JDialog {
 
     /**
      * Creates the button panel: two rows, the first for managing the saved
-     * settings and the second for running the exploration and closing the
-     * dialog. A single row would make the dialog too wide.
+     * settings (including leaving the dialog) and the second for running the
+     * exploration. A single row would make the dialog too wide.
      */
     private JPanel createButtonPanel() {
         JPanel result = new JPanel();
@@ -310,6 +313,9 @@ public class ExploreConfigDialog extends JDialog {
         this.revertButton.setToolTipText(REVERT_TOOLTIP);
         this.revertButton.addActionListener(e -> resetTo(getGrammar().getDefaultExploreConfig()));
         settingsRow.add(this.revertButton);
+        JButton cancelButton = new JButton(CANCEL_COMMAND);
+        cancelButton.addActionListener(e -> closeDialog());
+        settingsRow.add(cancelButton);
         result.add(settingsRow);
         JPanel runRow = new JPanel();
         this.startButton = new JButton(START_COMMAND);
@@ -318,9 +324,6 @@ public class ExploreConfigDialog extends JDialog {
         this.exploreButton = new JButton(EXPLORE_COMMAND);
         this.exploreButton.addActionListener(e -> doExploration());
         runRow.add(this.exploreButton);
-        JButton cancelButton = new JButton(CANCEL_COMMAND);
-        cancelButton.addActionListener(e -> closeDialog());
-        runRow.add(cancelButton);
         result.add(runRow);
         return result;
     }
@@ -840,8 +843,9 @@ public class ExploreConfigDialog extends JDialog {
     private static final String REVERT_COMMAND = "Revert";
     /** Text of the label in front of the settings selector. */
     private static final String NAME_LABEL_TEXT = "Exploration settings:";
-    /** Selector item standing for the absence of an exploration reference. */
-    private static final String NONE_ITEM = "(none)";
+    /** Selector item standing for the absence of an exploration reference:
+     * the composition is new, as yet unsaved settings. */
+    private static final String NONE_ITEM = "(new)";
     /** Suffix marking a reference to a non-existent settings resource. */
     private static final String MISSING_SUFFIX = " (missing)";
     private static final String NAME_TOOLTIP

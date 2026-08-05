@@ -295,11 +295,14 @@ abstract public class ResourceTab extends JPanel {
     public boolean confirmCancel() {
         boolean result = true;
         if (isDirty()) {
+            QualName name = getQualName();
             int answer = JOptionPane
                 .showConfirmDialog(getDisplay(),
                                    String
                                        .format("%s '%s' has been modified. Save changes?",
-                                               getResourceKind().getName(), getName()),
+                                               getResourceKind().getName(), name == null
+                                                   ? getName()
+                                                   : getDisplay().getDisplayName(name)),
                                    null, JOptionPane.YES_NO_CANCEL_OPTION);
             if (answer == JOptionPane.YES_OPTION) {
                 saveResource();
@@ -322,7 +325,10 @@ abstract public class ResourceTab extends JPanel {
      * in case it is used in a {@link JTabbedPane}.
      */
     private TabLabel createTabLabel() {
-        return new TabLabel(this, getIcon(), getName());
+        QualName name = getQualName();
+        return new TabLabel(this, getIcon(), name == null
+            ? null
+            : getDisplay().getDisplayName(name));
     }
 
     /**

@@ -631,6 +631,9 @@ public class ResourceDisplay extends Display implements SimulatorListener {
                 getTabPane().setTabComponentAt(index, tabLabel);
             }
             tabLabel.setEnabled(true);
+            // the icon may depend on the displayed resource, so it is
+            // refreshed here rather than fixed at tab label creation
+            tabLabel.getLabel().setIcon(getMainTab().getIcon());
             tabLabel.setTitle(getLabelText(name, true));
             tabLabel.setError(hasError(name));
             getTabPane().setSelectedIndex(index);
@@ -641,7 +644,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
      * Callback method to construct the label for a given (named) graph
      * that should be used in the label list.
      */
-    final public Icon getListIcon(QualName name) {
+    public Icon getListIcon(QualName name) {
         Icon result;
         if (this.editorMap.containsKey(name)) {
             result = Icons.getListEditIcon(getResourceKind());
@@ -649,6 +652,18 @@ public class ResourceDisplay extends Display implements SimulatorListener {
             result = Icons.getListIcon(getResourceKind());
         }
         return result;
+    }
+
+    /**
+     * Callback method to construct the icon of the main tab showing a given
+     * (named) resource. This implementation is name-independent; a display
+     * whose resources come in visually distinguishable flavours may vary it
+     * (see {@link SettingsDisplay}).
+     * @param name the name of the displayed resource; may be {@code null} if
+     * the main tab is empty
+     */
+    public Icon getMainTabIcon(QualName name) {
+        return Icons.getMainTabIcon(getResourceKind());
     }
 
     /**
@@ -663,6 +678,17 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     }
 
     /**
+     * Returns the undecorated text under which a resource of this display's
+     * kind is shown wherever its <i>full</i> name is called for: tab titles
+     * and dialogs. This implementation returns the qualified name; a display
+     * whose names have a segment that the context already implies may shorten
+     * it (see {@link SettingsDisplay}).
+     */
+    public String getDisplayName(QualName name) {
+        return name.toString();
+    }
+
+    /**
      * Adds HTML formatting to the label text for the main display.
      * Callback method from {@link #getLabelText(QualName, boolean)}.
      * @param name the name of the displayed object. This determines the
@@ -674,7 +700,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     public String getLabelText(QualName name, String suffix, boolean enabled, boolean full) {
         NamedResourceModel<?> model = getResource(name);
         StringBuilder result = new StringBuilder(full
-            ? model.getName()
+            ? getDisplayName(model.getQualName())
             : model.getLastName());
         if (model instanceof RuleModel && ((RuleModel) model).isProperty()) {
             HTMLConverter.ITALIC_TAG.on(result);

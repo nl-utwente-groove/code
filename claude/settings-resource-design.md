@@ -346,6 +346,31 @@ with its result (`setExploreResult(result, exploreType)`, read back through
 whose result is a set of witness states rather than an exploration outcome,
 passes `null`.
 
+**GUI polish after review** (2026-08-05): the settings selector moved to the
+*top* of the exploration dialog, with a bold label — it names the resource
+that everything below it edits, so it reads as the dialog's subject rather
+than as a footnote; its sentinel item is now `(new)` rather than `(none)`,
+since an absent reference is not "no settings" but a composition that has
+not been saved yet. `Cancel` moved up to the settings row, next to `Revert`:
+the second row is then purely the run row, and leaving the dialog sits with
+the other "do not explore" actions.
+
+Elsewhere in the GUI the schema folder of a settings resource is treated as
+context rather than as part of the name: the main and editor **tab titles**
+(and the editor's save-changes confirmation) show the *local* name `fast`
+for `explore/fast.properties`, matching the resource tree, which showed
+short names already. This is a `SettingsDisplay` override of a new
+`ResourceDisplay.getDisplayName` hook that all three paths route through;
+other resource kinds keep their qualified names. Resources of different
+schemas are further told apart by a **per-schema icon** (the compass for
+`explore`), in the tree and on the main tab; editor tabs keep the edit icon.
+The mapping from schema name to icon lives on the GUI side, since
+`SettingsSchema` is a headless interface that must not acquire a Swing
+dependency. Finally, the schema chosen in the *New settings* prompt is
+remembered across runs as a `UserSettings` preference (validated against the
+registered schemas), because a user who works with one schema will keep
+picking it.
+
 ## Deliberately deferred
 
 - Folding the round-trip metadata (`ecoreTypes` etc.) into the settings file
