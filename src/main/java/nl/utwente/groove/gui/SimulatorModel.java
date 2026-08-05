@@ -91,12 +91,31 @@ public class SimulatorModel implements Cloneable {
         try {
             boolean change = invalidateGTSUponChangeOf(kind)
                 || names.stream().anyMatch(n -> isEnabled(kind, n));
+            // deactivate any deleted active settings resource, so that no
+            // dangling reference is left in the grammar properties
+            GrammarProperties deactivated = null;
+            if (kind == ResourceKind.SETTINGS) {
+                for (QualName name : names) {
+                    if (getGrammar().getResource(kind, name) instanceof SettingsModel settings) {
+                        var schema = settings.getSchema();
+                        if (schema != null && schema.isActivatable() && settings.isActive()) {
+                            if (deactivated == null) {
+                                deactivated = getGrammar().getProperties().clone();
+                            }
+                            schema.setActive(deactivated, name, false);
+                        }
+                    }
+                }
+            }
             if (kind.isTextBased()) {
                 getStore().deleteTexts(kind, names);
             } else if (kind.isGraphBased()) {
                 getStore().deleteGraphs(kind, names);
             } else {
                 throw Exceptions.unreachable();
+            }
+            if (deactivated != null) {
+                getStore().putProperties(deactivated);
             }
             changeGrammar(change);
         } finally {

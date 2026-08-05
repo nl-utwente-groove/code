@@ -63,7 +63,10 @@ schema class, not enum surgery.
   and popup menu (`ResourceDisplay.hasEnableButton`, overridden for
   SETTINGS), and the SETTINGS arm of `SimulatorModel.setEnabled`, which
   routes the toggle through `schema.setActive` and saves the properties
-  (undoable).
+  (undoable). Deleting an active resource deactivates it the same way
+  (`SimulatorModel.doDelete`), so no dangling reference is left in the
+  properties; renaming an active resource does *not* yet follow the
+  reference.
 - **Model**: `SettingsModel extends TextBasedModel<Settings>`. `compute()`
   parses the source text as `java.util.Properties`, derives the schema from
   the leading name segment, resolves it in the registry, checks an optional
