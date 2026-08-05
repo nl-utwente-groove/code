@@ -172,7 +172,7 @@ public class ExploreConfigDialog extends JDialog {
     }
 
     /**
-     * Creates the (borderless) panel showing the settings resource the
+     * Creates the (borderless) panel showing the exploration settings the
      * configuration is based on, as well as the status of the configuration.
      */
     private JPanel createResourcePanel() {
@@ -218,33 +218,42 @@ public class ExploreConfigDialog extends JDialog {
         return result;
     }
 
-    /** Creates the button panel. */
+    /**
+     * Creates the button panel: two rows, the first for managing the saved
+     * settings and the second for running the exploration and closing the
+     * dialog. A single row would make the dialog too wide.
+     */
     private JPanel createButtonPanel() {
         JPanel result = new JPanel();
+        result.setLayout(new BoxLayout(result, BoxLayout.Y_AXIS));
+        JPanel settingsRow = new JPanel();
         this.saveButton = new JButton(SAVE_COMMAND);
         this.saveButton.addActionListener(e -> saveConfig(false));
-        result.add(this.saveButton);
+        settingsRow.add(this.saveButton);
         this.saveAsButton = new JButton(SAVE_AS_COMMAND);
         this.saveAsButton.addActionListener(e -> saveConfig(true));
-        result.add(this.saveAsButton);
+        settingsRow.add(this.saveAsButton);
         this.revertButton = new JButton(REVERT_COMMAND);
         this.revertButton.setToolTipText(REVERT_TOOLTIP);
         this.revertButton.addActionListener(e -> resetTo(this.revertConfig));
-        result.add(this.revertButton);
+        settingsRow.add(this.revertButton);
         this.savedButton = new JButton(SAVED_COMMAND);
         this.savedButton.setToolTipText(SAVED_TOOLTIP);
         this.savedButton
             .addActionListener(e -> resetTo(getGrammar().getDefaultExploreConfig()));
-        result.add(this.savedButton);
+        settingsRow.add(this.savedButton);
+        result.add(settingsRow);
+        JPanel runRow = new JPanel();
         this.startButton = new JButton(START_COMMAND);
         this.startButton.addActionListener(e -> startExploration());
-        result.add(this.startButton);
+        runRow.add(this.startButton);
         this.exploreButton = new JButton(EXPLORE_COMMAND);
         this.exploreButton.addActionListener(e -> doExploration());
-        result.add(this.exploreButton);
+        runRow.add(this.exploreButton);
         JButton cancelButton = new JButton(CANCEL_COMMAND);
         cancelButton.addActionListener(e -> closeDialog());
-        result.add(cancelButton);
+        runRow.add(cancelButton);
+        result.add(runRow);
         return result;
     }
 
@@ -420,18 +429,18 @@ public class ExploreConfigDialog extends JDialog {
                 ? null
                 : "<html><body style='width:" + getErrorWrapWidth()
                     + "px'><font color='red'>" + problemsHtml + "</font></body></html>");
-        // report the settings resource that the composition is based on
+        // report the exploration settings that the composition is based on
         QualName exploreName = grammar.getProperties().getExplorationName();
         String resourceText;
         if (exploreName == null) {
-            resourceText = "<html><i>Not based on a settings resource;"
+            resourceText = "<html><i>Not based on saved exploration settings;"
                 + " saving will ask for a name</i></html>";
         } else {
             String nameHtml
                 = HTMLConverter.toHtml(new StringBuilder(exploreName.toString())).toString();
-            resourceText = "<html>Based on the settings resource '<b>" + nameHtml + "</b>'"
+            resourceText = "<html>Based on the exploration settings '<b>" + nameHtml + "</b>'"
                 + (grammar.getResource(ResourceKind.SETTINGS, exploreName) == null
-                    ? " (which does not yet exist)"
+                    ? " (which do not yet exist)"
                     : "")
                 + "</html>";
         }
@@ -603,11 +612,12 @@ public class ExploreConfigDialog extends JDialog {
     }
 
     /**
-     * Saves the composed configuration in a settings resource, and makes that
-     * resource the grammar's exploration.
-     * @param askName if {@code true}, the target resource name is asked from
-     * the user; otherwise it is asked only if the grammar has no exploration
-     * reference yet
+     * Saves the composed configuration as named exploration settings (stored
+     * in a SETTINGS resource), and makes those settings the grammar's
+     * exploration.
+     * @param askName if {@code true}, the target name is asked from the user;
+     * otherwise it is asked only if the grammar has no exploration reference
+     * yet
      */
     private void saveConfig(boolean askName) {
         var errors = new FormatErrorSet();
@@ -632,9 +642,8 @@ public class ExploreConfigDialog extends JDialog {
     }
 
     /**
-     * Asks the user for the name of the settings resource to save the
-     * configuration in.
-     * @param current the currently referenced resource name, if any; used as
+     * Asks the user for the name to save the exploration settings under.
+     * @param current the currently referenced settings name, if any; used as
      * suggestion
      * @return the chosen name, or {@code null} if the dialog was cancelled
      */
@@ -723,12 +732,12 @@ public class ExploreConfigDialog extends JDialog {
     private static final String REVERT_COMMAND = "Revert";
     private static final String SAVED_COMMAND = "Reset to Saved";
     private static final String SAVE_TOOLTIP
-        = "Save the composed exploration in the settings resource named by the 'exploration'"
+        = "Save the composed exploration settings under the name given by the 'exploration'"
             + " system property, asking for a name if that property is unset";
     private static final String SAVE_AS_TOOLTIP
-        = "Save the composed exploration in a settings resource of your choice"
+        = "Save the composed exploration settings under a name of your choice"
             + " and make that the grammar's exploration";
-    /** Title of the dialog asking for the target settings resource name. */
+    /** Title of the dialog asking for the name to save the exploration settings under. */
     private static final String ASK_NAME_TITLE = "Select exploration settings name";
     private static final String REVERT_TOOLTIP
         = "Discard the changes and return to the exploration in force when the dialog was opened";

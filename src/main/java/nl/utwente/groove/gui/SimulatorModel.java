@@ -376,13 +376,13 @@ public class SimulatorModel implements Cloneable {
     }
 
     /**
-     * Saves an exploration configuration in a named settings resource, and
-     * makes that resource the grammar's exploration: the configuration is
-     * written into the settings resource (by targeted line edits, so comments
-     * and hand-written entries survive), and the {@code exploration} property
-     * is set to point to it. May perform two undoable store edits (the
-     * resource text and the properties).
-     * @param name name of the settings resource to save the configuration in
+     * Saves an exploration configuration as named exploration settings (stored
+     * in a SETTINGS resource), and makes those settings the grammar's
+     * exploration: the configuration is written into the settings text (by
+     * targeted line edits, so comments and hand-written entries survive), and
+     * the {@code exploration} property is set to point to it. May perform two
+     * undoable store edits (the resource text and the properties).
+     * @param name name to save the exploration settings under
      * @param config the exploration configuration to be saved
      * @return {@code true} if the GTS was invalidated as a result of the action
      * @throws IOException if the action failed
@@ -393,7 +393,17 @@ public class SimulatorModel implements Cloneable {
         String newText = ExploreConfigSchema.setConfigText(oldText, config);
         boolean result = false;
         if (!newText.equals(oldText)) {
-            result = doAddText(ResourceKind.SETTINGS, name, newText);
+            start();
+            try {
+                // unlike doAddText, do not select the resource or switch the
+                // simulator display to the settings tab: saving from the
+                // exploration dialog must leave the display where it is
+                result = getGrammar().getActiveNames(ResourceKind.SETTINGS).contains(name);
+                getStore().putTexts(ResourceKind.SETTINGS, Collections.singletonMap(name, newText));
+                changeGrammar(result);
+            } finally {
+                finish();
+            }
         }
         if (!name.equals(properties.getExplorationName())
             || properties.containsKey(GrammarKey.EXPLORATION)) {
