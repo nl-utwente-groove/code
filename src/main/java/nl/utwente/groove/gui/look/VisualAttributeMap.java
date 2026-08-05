@@ -22,7 +22,6 @@ import java.awt.geom.Dimension2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -183,34 +182,34 @@ public class VisualAttributeMap extends AttributeMap {
             // convert those values for which this is necessary
             switch (vKey) {
             case EDGE_SOURCE_LABEL:
-                assert value instanceof Object[] : String.format("Incorrect value %s", value);
-                vValues = ((Object[]) value);
-                assert vValues.length == 2 : String.format("Incorrect value array %s",
-                    Arrays.toString(vValues));
+                vValues = asPair(value);
+                if (vValues == null) {
+                    return super.get(key);
+                }
                 vValue = vValues[0];
                 this.visuals.put(VisualKey.EDGE_TARGET_LABEL, vValues[1], false);
                 break;
             case EDGE_SOURCE_POS:
-                assert value instanceof Object[] : String.format("Incorrect value %s", value);
-                vValues = ((Object[]) value);
-                assert vValues.length == 2 : String.format("Incorrect value array %s",
-                    Arrays.toString(vValues));
+                vValues = asPair(value);
+                if (vValues == null) {
+                    return super.get(key);
+                }
                 vValue = vValues[0];
                 this.visuals.put(VisualKey.EDGE_TARGET_POS, vValues[1], false);
                 break;
             case EDGE_TARGET_LABEL:
-                assert value instanceof Object[] : String.format("Incorrect value %s", value);
-                vValues = ((Object[]) value);
-                assert vValues.length == 2 : String.format("Incorrect value array %s",
-                    Arrays.toString(vValues));
+                vValues = asPair(value);
+                if (vValues == null) {
+                    return super.get(key);
+                }
                 vValue = vValues[1];
                 this.visuals.put(VisualKey.EDGE_SOURCE_LABEL, vValues[0], false);
                 break;
             case EDGE_TARGET_POS:
-                assert value instanceof Object[] : String.format("Incorrect value %s", value);
-                vValues = ((Object[]) value);
-                assert vValues.length == 2 : String.format("Incorrect value array %s",
-                    Arrays.toString(vValues));
+                vValues = asPair(value);
+                if (vValues == null) {
+                    return super.get(key);
+                }
                 vValue = vValues[1];
                 this.visuals.put(VisualKey.EDGE_SOURCE_POS, vValues[0], false);
                 break;
@@ -230,6 +229,19 @@ public class VisualAttributeMap extends AttributeMap {
             result = super.get(key);
         }
         return result;
+    }
+
+    /**
+     * Converts an attribute value to the 2-element array expected for the
+     * extra-label attributes, which GROOVE reserves for the pair of edge
+     * source/target (multiplicity) labels; returns {@code null} if the value
+     * is not an array of length 2. JGraph can deliver arrays of other lengths,
+     * e.g. for user-created extra labels (see gh #843).
+     */
+    static private Object[] asPair(Object value) {
+        return value instanceof Object[] result && result.length == 2
+            ? result
+            : null;
     }
 
     /* Overridden to make sure the backing map is kept in sync. */
