@@ -93,6 +93,12 @@
 	                <parameters>true</parameters>
                     <compilerArgs>
 			            <arg>-Xlint:unchecked</arg>
+			            <!-- module-info deliberately has requires transitive
+			                 directives on automatic modules (their types occur
+			                 in the exported API); the warning flags the risk
+			                 that those module names change if the libraries
+			                 ever adopt real module descriptors -->
+			            <arg>-Xlint:-requires-transitive-automatic</arg>
 		            </compilerArgs>
 					<showWarnings>true</showWarnings>
 					<showDeprecation>true</showDeprecation>
