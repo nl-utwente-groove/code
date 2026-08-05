@@ -26,21 +26,21 @@ jobs:
 
     steps:
     - name: Check out code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         path: 'code'
     - name: Check out grammars
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         repository: 'nl-utwente-groove/grammars'
         path: 'grammars'
     - name: Check out samples
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         repository: 'nl-utwente-groove/samples'
         path: 'samples'
     - name: Set up JDK 21
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       with:
         java-version: '21'
         distribution: 'temurin'
@@ -52,7 +52,7 @@ jobs:
     - name: Build release
       run: cd release; mvn -B -Drevision=$VERSION clean package
     - name: Deploy release
-      uses: ncipollo/release-action@v1.14.0
+      uses: ncipollo/release-action@v1.21.0
       with:
         artifacts: "code/release/target/*.zip"
         draft: false
@@ -72,7 +72,9 @@ jobs:
         os:
           - windows-latest   # Windows x64 (.msi)
           - macos-latest     # macOS aarch64 (.dmg)
-          - macos-13         # macOS x64 (.dmg)
+          # Intel image; guaranteed to exist only until August 2027, after
+          # which github drops x64 macOS runners altogether
+          - macos-15-intel   # macOS x64 (.dmg)
           - ubuntu-latest    # Linux x64 (.deb)
 
     runs-on: ${{ matrix.os }}
@@ -84,11 +86,11 @@ jobs:
 
     steps:
     - name: Check out code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         path: 'code'
     - name: Set up JDK 21
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       with:
         java-version: '21'
         distribution: 'temurin'
@@ -105,7 +107,7 @@ jobs:
       run: bash release/jpackage/build-installer.sh $VERSION
     - name: Attach installer to release
       if: github.event_name == 'push'
-      uses: ncipollo/release-action@v1.14.0
+      uses: ncipollo/release-action@v1.21.0
       with:
         artifacts: "code/release/jpackage/target/dist/*"
         allowUpdates: true
@@ -115,7 +117,7 @@ jobs:
         omitPrereleaseDuringUpdate: true
     - name: Upload installer as workflow artifact (manual run)
       if: github.event_name == 'workflow_dispatch'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: installer-${{ matrix.os }}
         path: code/release/jpackage/target/dist/*
