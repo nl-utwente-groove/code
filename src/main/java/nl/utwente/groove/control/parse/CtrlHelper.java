@@ -665,9 +665,10 @@ public class CtrlHelper {
                 : null;
             if (unit == null) {
                 emitErrorMessage(callTree, "Unknown unit '%s'", unitName);
-                //            } else if (action != null && action.getPriority() > 0) {
-                //                String message = "Explicit call of prioritised %s '%s' not allowed";
-                //                emitErrorMessage(callTree, message, unit.getKind().getName(false), unitName);
+            } else if (action != null && action.getPriority() > 0
+                && this.namespace.hasEffectivePriorities()) {
+                String message = "Explicit call of prioritised %s '%s' not allowed";
+                emitErrorMessage(callTree, message, unit.getKind().getName(false), unitName);
             } else if (action != null && action.getRole().isConstraint()) {
                 String message = "Explicit call of %s property '%s' not allowed";
                 emitErrorMessage(callTree, message, action.getRole().toString(), unitName);
