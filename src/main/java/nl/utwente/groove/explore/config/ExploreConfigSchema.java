@@ -248,7 +248,7 @@ public class ExploreConfigSchema implements SettingsSchema {
 
     /** The singleton instance of this schema. */
     public static final ExploreConfigSchema INSTANCE = new ExploreConfigSchema();
-    /** The name of this schema, doubling as the leading name segment of its
-     * settings resources. */
+    /** The name of this schema, as declared by the {@code $schema} entry of
+     * its settings resources. */
     public static final String NAME = "explore";
 }

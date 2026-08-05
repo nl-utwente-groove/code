@@ -194,6 +194,56 @@ public class ExploreSchemaTest {
         assertFalse(model.isActive());
     }
 
+    /**
+     * Tests that settings resource names are free: a resource whose name has
+     * nothing to do with the schema, but whose text declares it, is a fully
+     * fledged exploration configuration that can be activated.
+     */
+    @Test
+    public void testFreeName() throws Exception {
+        SystemStore store = newTempStore("explore-free-name-test");
+        GrammarModel grammar = store.toGrammarModel();
+        // as in testResourceInStore: the saved copy needs an explicit start graph
+        grammar.setLocalActiveNames(ResourceKind.HOST, QualName.name("start"));
+        QualName name = QualName.name("fast");
+        store
+            .putTexts(ResourceKind.SETTINGS,
+                      Map.of(name, "$schema = explore\nnext = newest\n"));
+        var model = (SettingsModel) grammar.getResource(ResourceKind.SETTINGS, name);
+        assertNotNull(model);
+        assertEquals(ExploreConfigSchema.NAME, model.getSchemaName());
+        assertEquals(ExploreConfigSchema.INSTANCE, model.getSchema());
+        assertFalse(model.hasErrors());
+        // the free-named resource can be made the grammar's exploration
+        var props = grammar.getProperties().clone();
+        props.setExplorationName(name);
+        store.putProperties(props);
+        model = (SettingsModel) grammar.getResource(ResourceKind.SETTINGS, name);
+        assertNotNull(model);
+        assertTrue(model.isActive());
+        assertEquals(ExploreConfig.parse("next=newest"), grammar.getDefaultExploreConfig());
+        assertFalse(grammar.hasErrors(), grammar.getErrors().toString());
+    }
+
+    /**
+     * Tests that the declaration wins over the leading name segment: a
+     * resource named after another schema, but declaring this one, is an
+     * exploration configuration without any complaint about its name.
+     */
+    @Test
+    public void testDeclarationOverridesName() throws Exception {
+        SystemStore store = newTempStore("explore-override-test");
+        GrammarModel grammar = store.toGrammarModel();
+        QualName name = QualName.parse("ecore.something");
+        store
+            .putTexts(ResourceKind.SETTINGS,
+                      Map.of(name, "$schema = explore\ncount = first\n"));
+        var model = (SettingsModel) grammar.getResource(ResourceKind.SETTINGS, name);
+        assertNotNull(model);
+        assertEquals(ExploreConfigSchema.INSTANCE, model.getSchema());
+        assertFalse(model.hasErrors());
+    }
+
     /** Tests that the generated template is valid and semantically empty. */
     @Test
     public void testTemplate() throws Exception {
@@ -247,6 +297,16 @@ public class ExploreSchemaTest {
     // ----------------------------------------------------------------------
     // Helper methods
     // ----------------------------------------------------------------------
+
+    /** Copies the ferryman fixture to a fresh temporary directory, so that the
+     * resulting store can be modified. */
+    static private SystemStore newTempStore(String prefix) throws Exception {
+        SystemStore original = SystemStore
+            .newStore(new File(INPUT_DIR + "/ferryman.gps"), false, true);
+        File dir = Files.createTempDirectory(prefix).toFile();
+        dir.deleteOnExit();
+        return original.save(new File(dir, "ferryman.gps"), true);
+    }
 
     /** Parses a properties text into a properties object. */
     static private Properties properties(String text) throws Exception {

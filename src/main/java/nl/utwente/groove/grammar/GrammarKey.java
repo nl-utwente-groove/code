@@ -35,6 +35,7 @@ import nl.utwente.groove.explore.config.parse.LegacySyntaxParser;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.RuleModel;
+import nl.utwente.groove.grammar.model.SettingsModel;
 import nl.utwente.groove.transform.oracle.ValueOracleKind;
 import nl.utwente.groove.util.DocumentedEnum;
 import nl.utwente.groove.util.Factory;
@@ -614,7 +615,8 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
         var model = g.getResource(ResourceKind.SETTINGS, name);
         if (model == null) {
             result.add("Unknown settings resource '%s'", name);
-        } else if (!name.get(0).equals(ExploreConfigSchema.NAME)) {
+        } else if (!(model instanceof SettingsModel settings)
+            || settings.getSchema() != ExploreConfigSchema.INSTANCE) {
             result
                 .add("Settings resource '%s' is not of the '%s' schema", name,
                      ExploreConfigSchema.NAME);

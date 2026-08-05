@@ -31,10 +31,10 @@ import nl.utwente.groove.util.parse.FormatException;
 
 /**
  * Model of a settings resource: a text in Java properties syntax, whose schema
- * is determined by the leading segment of the resource name — the top-level
- * folder, or for a top-level file its own name (the singleton form of a
- * schema). An optional {@link #SCHEMA_KEY} entry may re-declare the schema for
- * the reader's benefit; if present it must agree with the name.
+ * is declared by its {@link #SCHEMA_KEY} entry. Resource names are free; only
+ * for a text without a {@link #SCHEMA_KEY} entry does the leading segment of
+ * the resource name — the top-level folder, or for a top-level file its own
+ * name — serve as a fallback schema name.
  * Settings do not contribute to grammar compilation; errors in a settings
  * resource are reported on the resource itself.
  * @author Arend Rensink
@@ -50,20 +50,49 @@ public class SettingsModel extends TextBasedModel<Settings> {
      */
     public SettingsModel(GrammarModel grammar, QualName name, String program) {
         super(grammar, SETTINGS, name, program);
+        // the program of a model is immutable, so the schema name is fixed
+        String declared = null;
+        try {
+            Properties props = new Properties();
+            props.load(new StringReader(program));
+            declared = props.getProperty(SCHEMA_KEY);
+        } catch (IOException exc) {
+            // an unparseable text declares nothing; compute() reports the error
+        }
+        this.schemaDeclared = declared != null;
+        this.schemaName = declared == null
+            ? name.get(0)
+            : declared.trim();
         // recheck when a resource kind inspected by the schema changes
-        var schema = SettingsSchemas.get(name.get(0));
+        var schema = getSchema();
         if (schema != null) {
             addDependencies(schema.getDependencies().toArray(new ResourceKind[0]));
         }
     }
 
     /**
-     * Returns the schema of this settings resource, as determined by the
-     * leading segment of the resource name; {@code null} if that segment does
-     * not name a registered schema.
+     * Returns the schema name of this settings resource: the value of the
+     * {@link #SCHEMA_KEY} entry of its text if there is one, and otherwise the
+     * leading segment of the resource name. The name is not guaranteed to be
+     * that of a registered schema; see {@link #getSchema()}.
+     */
+    public String getSchemaName() {
+        return this.schemaName;
+    }
+
+    /** The resolved schema name; see {@link #getSchemaName()}. */
+    private final String schemaName;
+
+    /** Flag indicating that {@link #schemaName} was declared by the
+     * {@link #SCHEMA_KEY} entry rather than implied by the resource name. */
+    private final boolean schemaDeclared;
+
+    /**
+     * Returns the schema of this settings resource, being the one registered
+     * under {@link #getSchemaName()}; {@code null} if there is no such schema.
      */
     public @Nullable SettingsSchema getSchema() {
-        return SettingsSchemas.get(getQualName().get(0));
+        return SettingsSchemas.get(getSchemaName());
     }
 
     /**
@@ -85,27 +114,17 @@ public class SettingsModel extends TextBasedModel<Settings> {
         } catch (IOException exc) {
             throw new FormatException("Can't parse settings file: %s", exc.getMessage());
         }
-        String schemaName = getQualName().get(0);
+        String schemaName = getSchemaName();
         var schema = SettingsSchemas.get(schemaName);
         if (schema == null) {
-            throw new FormatException(
-                "Unknown settings schema '%s' (the leading name segment; known schemas: %s)",
-                schemaName, String.join(", ", SettingsSchemas.getNames()));
-        }
-        String declared = props.getProperty(SCHEMA_KEY);
-        if (declared != null && !declared.trim().equals(schemaName)) {
-            throw new FormatException(
-                "Declared schema '%s' differs from schema '%s' implied by the resource name",
-                declared.trim(), schemaName);
+            throw new FormatException("Unknown settings schema '%s' (%s; known schemas: %s)",
+                schemaName, this.schemaDeclared
+                    ? "declared by the '" + SCHEMA_KEY + "' entry"
+                    : "the leading name segment",
+                String.join(", ", SettingsSchemas.getNames()));
         }
         if (schema.isSingular()) {
-            var candidates = getGrammar()
-                .getResourceMap(SETTINGS)
-                .keySet()
-                .stream()
-                .filter(name -> name.get(0).equals(schemaName))
-                .sorted()
-                .toList();
+            var candidates = SettingsSchemas.getResourceNames(getGrammar(), schema);
             if (candidates.size() > 1) {
                 throw new FormatException(
                     "Schema '%s' admits only one settings resource per grammar; found %s",
@@ -117,7 +136,7 @@ public class SettingsModel extends TextBasedModel<Settings> {
         return new Settings(schema, props);
     }
 
-    /** Optional settings key re-declaring the schema of a settings resource;
-     * if present, it must agree with the leading segment of the resource name. */
+    /** Settings key declaring the schema of a settings resource; if absent,
+     * the leading segment of the resource name is used instead. */
     public static final String SCHEMA_KEY = "$schema";
 }

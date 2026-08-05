@@ -138,18 +138,15 @@ public class SimulatorModel implements Cloneable {
         try {
             result = invalidateGTSUponChangeOf(kind) || isEnabled(kind, oldName);
             // follow the reference to a renamed active settings resource:
-            // retarget it if the resource stays in its schema, deactivate it otherwise
+            // the schema lives in the resource text, so a rename cannot change
+            // it and the reference is simply retargeted to the new name
             GrammarProperties renamed = null;
             if (kind == ResourceKind.SETTINGS) {
                 if (getGrammar().getResource(kind, oldName) instanceof SettingsModel settings) {
                     var schema = settings.getSchema();
                     if (schema != null && schema.isActivatable() && settings.isActive()) {
                         renamed = getGrammar().getProperties().clone();
-                        if (newName.get(0).equals(oldName.get(0))) {
-                            schema.setActive(renamed, newName, true);
-                        } else {
-                            schema.setActive(renamed, oldName, false);
-                        }
+                        schema.setActive(renamed, newName, true);
                     }
                 }
             }

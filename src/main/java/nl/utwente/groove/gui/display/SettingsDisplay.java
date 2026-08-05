@@ -26,8 +26,8 @@ import javax.swing.ToolTipManager;
 import nl.utwente.groove.annotation.HelpMap;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.ResourceKind;
+import nl.utwente.groove.grammar.model.SettingsModel;
 import nl.utwente.groove.grammar.model.SettingsSchema;
-import nl.utwente.groove.grammar.model.SettingsSchemas;
 import nl.utwente.groove.gui.Simulator;
 
 /**
@@ -62,9 +62,14 @@ final public class SettingsDisplay extends ResourceDisplay {
     @Override
     protected void buildInfoPanel() {
         QualName selected = getSimulatorModel().getSelected(ResourceKind.SETTINGS);
-        SettingsSchema schema = selected == null
+        // the schema is declared in the resource text, so it is the model that
+        // knows it; the name is no more than a fallback
+        var model = selected == null
             ? null
-            : SettingsSchemas.get(selected.get(0));
+            : getResource(selected);
+        SettingsSchema schema = model instanceof SettingsModel settings
+            ? settings.getSchema()
+            : null;
         if (schema != this.displayedSchema) {
             this.displayedSchema = schema;
             this.docMap = schema == null

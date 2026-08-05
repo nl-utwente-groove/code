@@ -50,8 +50,9 @@ import nl.utwente.groove.util.parse.FormatErrorSet;
 
 /**
  * Tests the SETTINGS resource kind: the name-based distinction from the
- * grammar properties singleton, the schema mechanism, and the propagation
- * of the errors of active settings resources to the grammar.
+ * grammar properties singleton, the schema mechanism (declared by the
+ * {@code $schema} entry, with the leading name segment as fallback), and the
+ * propagation of the errors of active settings resources to the grammar.
  * @author Arend Rensink
  */
 @SuppressWarnings("javadoc")
@@ -141,7 +142,7 @@ public class SettingsTest {
      */
     @Test
     public void testResourceNames() throws Exception {
-        assertEquals(names("test.good", "test.mismatch", "test.nokey", "test.rejected",
+        assertEquals(names("test.good", "test.nokey", "test.override", "test.rejected",
                            "test.sub.nested", "test.system", "unknown"),
                      new TreeSet<>(newStore().getTexts(ResourceKind.SETTINGS).keySet()));
     }
@@ -175,10 +176,12 @@ public class SettingsTest {
     // ----------------------------------------------------------------------
 
     /** Tests that a well-formed settings resource compiles to its entries,
-     * with the schema taken from the leading name segment. */
+     * with the schema taken from the declaring entry. */
     @Test
     public void testWellFormed() throws Exception {
-        Settings settings = getModel(newGrammar(), "test.good").toResource();
+        SettingsModel model = getModel(newGrammar(), "test.good");
+        assertEquals("test", model.getSchemaName());
+        Settings settings = model.toResource();
         assertEquals("test", settings.getSchema().getName());
         assertEquals("red", settings.getProperty("colour"));
         assertEquals("test", settings.getProperty(SettingsModel.SCHEMA_KEY));
@@ -194,25 +197,54 @@ public class SettingsTest {
         assertEquals("white", getModel(grammar, "test.system").toResource().getProperty("colour"));
     }
 
-    /** Tests that the schema-declaring key is optional. */
+    /** Tests that the schema-declaring key is optional: without it, the
+     * leading name segment stands in for the declaration. */
     @Test
     public void testOptionalKey() throws Exception {
-        Settings settings = getModel(newGrammar(), "test.nokey").toResource();
+        SettingsModel model = getModel(newGrammar(), "test.nokey");
+        assertEquals("test", model.getSchemaName());
+        Settings settings = model.toResource();
         assertEquals("test", settings.getSchema().getName());
         assertEquals("blue", settings.getProperty("colour"));
     }
 
-    /** Tests the error for a resource whose leading name segment is no schema. */
+    /** Tests that the declared schema wins over the leading name segment. */
+    @Test
+    public void testDeclaredSchema() throws Exception {
+        SettingsModel model = getModel(newGrammar(), "test.override");
+        assertEquals("aware", model.getSchemaName());
+        assertEquals(SettingsSchemas.get("aware"), model.getSchema());
+        assertFalse(model.hasErrors());
+        assertEquals("green", model.toResource().getProperty("colour"));
+    }
+
+    /** Tests that resource names are free: a name unrelated to any schema is
+     * fine as long as the text declares its schema. */
+    @Test
+    public void testFreeName() throws Exception {
+        SystemStore store = copyStore(newStore());
+        QualName name = QualName.parse("nightly.run");
+        store.putTexts(ResourceKind.SETTINGS, Map.of(name, "$schema=test\ncolour=cyan\n"));
+        SettingsModel model = getModel(store.toGrammarModel(), "nightly.run");
+        assertEquals("test", model.getSchemaName());
+        assertFalse(model.hasErrors());
+        assertEquals("cyan", model.toResource().getProperty("colour"));
+    }
+
+    /** Tests the error for a resource whose leading name segment is no schema,
+     * in the absence of a declaration. */
     @Test
     public void testUnknownSchema() throws Exception {
         assertError(newGrammar(), "unknown", "Unknown settings schema 'unknown'");
     }
 
-    /** Tests the error for a declared schema that contradicts the name. */
+    /** Tests the error for a declared schema that is not registered. */
     @Test
-    public void testSchemaMismatch() throws Exception {
-        assertError(newGrammar(), "test.mismatch",
-                    "Declared schema 'other' differs from schema 'test'");
+    public void testUnknownDeclaredSchema() throws Exception {
+        SystemStore store = copyStore(newStore());
+        QualName name = QualName.parse("test.bogus");
+        store.putTexts(ResourceKind.SETTINGS, Map.of(name, "$schema=bogus\ncolour=black\n"));
+        assertError(store.toGrammarModel(), "test.bogus", "Unknown settings schema 'bogus'");
     }
 
     /** Tests that the schema itself gets to reject entries. */
@@ -223,23 +255,25 @@ public class SettingsTest {
 
     /**
      * Tests that all resources of an over-populated singular schema are
-     * flagged, in both the singleton and the folder form, and that removing
-     * the surplus clears the error again.
+     * flagged — the population being determined by the declared schemas, not
+     * by the resource names — and that removing the surplus clears the error
+     * again.
      */
     @Test
     public void testSingularSchema() throws Exception {
         SystemStore store = copyStore(newStore());
         QualName solo = QualName.name("solo");
-        QualName extra = QualName.parse("solo.extra");
+        QualName extra = QualName.parse("second.opinion");
         store.putTexts(ResourceKind.SETTINGS, Map.of(solo, "colour=green\n"));
         GrammarModel grammar = store.toGrammarModel();
         // a lone resource of a singular schema is fine
         assertEquals("green", getModel(grammar, "solo").toResource().getProperty("colour"));
-        // a second resource puts the error on both
-        store.putTexts(ResourceKind.SETTINGS, Map.of(extra, "colour=grey\n"));
+        // a second one — free-named, but declaring the same schema — puts the
+        // error on both
+        store.putTexts(ResourceKind.SETTINGS, Map.of(extra, "$schema=solo\ncolour=grey\n"));
         String expected = "Schema 'solo' admits only one settings resource";
         assertError(grammar, "solo", expected);
-        assertError(grammar, "solo.extra", expected);
+        assertError(grammar, "second.opinion", expected);
         // the non-singular test schema admits any number of resources
         assertFalse(getModel(grammar, "test.good").hasErrors());
         // removing the surplus clears the error
@@ -308,20 +342,16 @@ public class SettingsTest {
     public void testGrammarErrorPropagation() throws Exception {
         GrammarModel grammar = newGrammar();
         assertTrue(getModel(grammar, "unknown").hasErrors());
-        assertTrue(getModel(grammar, "test.mismatch").hasErrors());
         assertTrue(getModel(grammar, "test.rejected").hasErrors());
-        // the active broken resources block the grammar ...
+        // the active broken resource blocks the grammar ...
         List<String> errors = messages(grammar.getErrors());
-        assertTrue(errors.toString(), errors.stream().anyMatch(e -> e.contains("test.mismatch")));
         assertTrue(errors.toString(), errors.stream().anyMatch(e -> e.contains("test.rejected")));
         // ... whereas the inactive one (of an unknown schema) does not
         assertFalse(errors.toString(), errors.stream().anyMatch(e -> e.contains("unknown")));
-        // with the active broken resources gone, the grammar compiles again,
+        // with the active broken resource gone, the grammar compiles again,
         // even though the inactive broken resource is still there
         SystemStore store = copyStore(newStore());
-        store
-            .deleteTexts(ResourceKind.SETTINGS,
-                         List.of(QualName.parse("test.mismatch"), QualName.parse("test.rejected")));
+        store.deleteTexts(ResourceKind.SETTINGS, List.of(QualName.parse("test.rejected")));
         GrammarModel fixed = store.toGrammarModel();
         assertTrue(getModel(fixed, "unknown").hasErrors());
         assertEquals(List.of(), messages(fixed.getErrors()));

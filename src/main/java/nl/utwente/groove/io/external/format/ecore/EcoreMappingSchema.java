@@ -85,7 +85,7 @@ public class EcoreMappingSchema implements SettingsSchema {
 
     /** The singleton instance of this schema. */
     public static final EcoreMappingSchema INSTANCE = new EcoreMappingSchema();
-    /** The name of this schema, doubling as the leading name segment of its
-     * settings resources. */
+    /** The name of this schema, as declared by the {@code $schema} entry of
+     * its settings resources. */
     public static final String NAME = "ecore";
 }

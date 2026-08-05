@@ -2,6 +2,7 @@ package nl.utwente.groove.gui.action;
 
 import java.io.IOException;
 
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import nl.utwente.groove.grammar.QualName;
@@ -23,10 +24,19 @@ public class NewAction extends SimulatorAction {
     @Override
     public void execute() {
         ResourceKind resource = getResourceKind();
-        // for settings, the name must start with a schema; seed with the first one
-        String seedName = resource == ResourceKind.SETTINGS
-            ? SettingsSchemas.getNames().iterator().next()
-            : Options.getNewResourceName(resource);
+        // a settings resource declares its schema in its text, so the schema
+        // has to be asked for before the (free) name
+        SettingsSchema schema = null;
+        String seedName;
+        if (resource == ResourceKind.SETTINGS) {
+            schema = askSchema();
+            if (schema == null) {
+                return;
+            }
+            seedName = schema.getName();
+        } else {
+            seedName = Options.getNewResourceName(resource);
+        }
         final QualName newName = askNewName(seedName, true);
         if (newName != null) {
             try {
@@ -36,7 +46,7 @@ public class NewAction extends SimulatorAction {
                                     !getGrammarModel().getProperties().getParallelMode().isMulti());
                     getSimulatorModel().doAddGraph(resource, newGraph, false);
                 } else {
-                    getSimulatorModel().doAddText(getResourceKind(), newName, initText(newName));
+                    getSimulatorModel().doAddText(getResourceKind(), newName, initText(schema));
                 }
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
@@ -51,15 +61,29 @@ public class NewAction extends SimulatorAction {
         }
     }
 
-    /** Returns the initial text of a new text resource with a given name. */
-    private String initText(QualName name) {
-        if (getResourceKind() != ResourceKind.SETTINGS) {
-            return "";
-        }
-        // the schema is known: askNewName validated the leading segment
-        SettingsSchema schema = SettingsSchemas.get(name.get(0));
-        assert schema != null;
-        return schema.getNewText();
+    /**
+     * Asks the user for the schema of a new settings resource.
+     * @return the chosen schema, or {@code null} if the dialog was cancelled
+     */
+    private SettingsSchema askSchema() {
+        String[] names = SettingsSchemas.getNames().toArray(new String[0]);
+        Object choice = JOptionPane
+            .showInputDialog(getFrame(), "Schema of the new settings resource", "Select schema",
+                             JOptionPane.QUESTION_MESSAGE, null, names, names[0]);
+        return choice == null
+            ? null
+            : SettingsSchemas.get((String) choice);
+    }
+
+    /**
+     * Returns the initial text of a new text resource.
+     * @param schema the schema of the new resource, for a settings resource;
+     * {@code null} for any other text resource
+     */
+    private String initText(SettingsSchema schema) {
+        return schema == null
+            ? ""
+            : schema.getNewText();
     }
 
     @Override

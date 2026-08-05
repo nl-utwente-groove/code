@@ -819,21 +819,32 @@ public class EcoreTest {
         });
     }
 
-    /** Tests that a broken or wrongly-schemed mapping resource makes the port fail. */
+    /** Tests that a broken mapping resource makes the port fail, whereas a
+     * resource of another schema is simply not a mapping resource: the mapping
+     * is located by its schema, so the name it happens to carry is irrelevant. */
     @Test
     public void testBrokenMapping() throws Exception {
-        for (String text : List.of("$schema = " + EcoreMappingSchema.NAME + "\nordering = sideways\n",
-                                   "$schema = no-such-schema\n")) {
-            SystemStore store = newStore();
-            store.putTexts(ResourceKind.SETTINGS, Map.of(EcoreMapping.RESOURCE_QUAL_NAME, text));
-            GrammarModel grammar = new GrammarModel(store);
-            try {
-                EcorePorter.instance().doImport(new File(DIR + "shop.ecore"), FileType.ECORE, grammar);
-                fail("Import with broken mapping resource should not succeed");
-            } catch (PortException expected) {
-                assertTrue(expected.getMessage().contains(EcoreMapping.RESOURCE_NAME));
-            }
+        SystemStore store = newStore();
+        store
+            .putTexts(ResourceKind.SETTINGS,
+                      Map.of(EcoreMapping.RESOURCE_QUAL_NAME,
+                             "$schema = " + EcoreMappingSchema.NAME + "\nordering = sideways\n"));
+        GrammarModel grammar = new GrammarModel(store);
+        try {
+            EcorePorter.instance().doImport(new File(DIR + "shop.ecore"), FileType.ECORE, grammar);
+            fail("Import with broken mapping resource should not succeed");
+        } catch (PortException expected) {
+            assertTrue(expected.getMessage().contains(EcoreMapping.RESOURCE_NAME));
         }
+        // a resource declaring another schema is no mapping resource at all,
+        // even under the conventional name: the defaults apply
+        store = newStore();
+        store
+            .putTexts(ResourceKind.SETTINGS,
+                      Map.of(EcoreMapping.RESOURCE_QUAL_NAME, "$schema = no-such-schema\n"));
+        EcoreMapping mapping = EcoreMapping.of(new GrammarModel(store));
+        assertEquals(Ordering.NONE, mapping.ordering());
+        assertTrue(mapping.useIdentifiers());
     }
 
     /** Tests the parsing of the per-element vocabulary. */

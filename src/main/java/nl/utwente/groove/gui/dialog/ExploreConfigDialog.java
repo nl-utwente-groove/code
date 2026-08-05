@@ -58,7 +58,6 @@ import nl.utwente.groove.explore.config.Bound;
 import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreConfigChecker;
-import nl.utwente.groove.explore.config.ExploreConfigSchema;
 import nl.utwente.groove.explore.config.ExploreKey;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.explore.config.Frontier;
@@ -649,22 +648,16 @@ public class ExploreConfigDialog extends JDialog {
      */
     private QualName askConfigName(QualName current) {
         var existingNames = getGrammar().getNames(ResourceKind.SETTINGS);
-        // the name is not required to be fresh: auto-freshening would generate
-        // names like 'explore1', whose leading segment is not a schema name
+        // the name is not required to be fresh: the suggestion may well be the
+        // current name, and saving in place must stay possible
         FreshNameDialog<QualName> nameDialog = new FreshNameDialog<>(existingNames == null
             ? Collections.emptySet()
             : existingNames, current == null
-                ? ExploreConfigSchema.NAME
+                ? DEFAULT_CONFIG_NAME
                 : current.toString(), false) {
             @Override
             protected QualName createName(String name) throws FormatException {
-                QualName result = QualName.parse(name).testValid();
-                if (!result.get(0).equals(ExploreConfigSchema.NAME)) {
-                    throw new FormatException(
-                        "An exploration settings name must start with segment '%s'",
-                        ExploreConfigSchema.NAME);
-                }
-                return result;
+                return QualName.parse(name).testValid();
             }
         };
         return nameDialog.showDialog(this.simulator.getFrame(), ASK_NAME_TITLE)
@@ -739,6 +732,9 @@ public class ExploreConfigDialog extends JDialog {
             + " and make that the grammar's exploration";
     /** Title of the dialog asking for the name to save the exploration settings under. */
     private static final String ASK_NAME_TITLE = "Select exploration settings name";
+    /** Name suggested for a first exploration settings resource; settings
+     * names are free, so this is a suggestion and nothing more. */
+    private static final String DEFAULT_CONFIG_NAME = "exploration";
     private static final String REVERT_TOOLTIP
         = "Discard the changes and return to the exploration in force when the dialog was opened";
     private static final String SAVED_TOOLTIP
