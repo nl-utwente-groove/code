@@ -205,8 +205,9 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
      * Superseded by {@link #EXPLORE_CONFIG}; still recognised for backward
      * compatibility, but ignored if {@link #EXPLORE_CONFIG} is also set.
      */
-    EXPLORATION("explorationStrategy", "Default exploration strategy for this grammar"
-        + " (deprecated; superseded by 'exploration')",
+    EXPLORATION("explorationStrategy",
+        "Default exploration strategy for this grammar"
+            + " (deprecated; superseded by 'exploration')",
         ValueType.EXPLORE_TYPE),
 
     /**
@@ -214,8 +215,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
      * configuration.
      */
     EXPLORE_CONFIG("exploration",
-        "<body>Name of the settings resource (of the <i>explore</i> schema) holding the"
-            + " default exploration configuration for this grammar."
+        "<body>Name of the exploration configuration enabled for this grammar."
             + "<p>Supersedes the deprecated 'explorationStrategy'",
         ValueType.QUAL_NAME),
 
