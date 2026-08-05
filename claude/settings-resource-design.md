@@ -247,9 +247,27 @@ grammar's exploration, so saving under a new name doubles as activation.
 `Save` stays enabled when the composition equals the saved configuration
 but no resource is referenced: there is then still something to do.
 
+**No transient exploration, and activation preserves the GTS** (2026-08-05):
+the Simulator no longer stores an exploration type of its own. `SimulatorModel.getExploreType()`
+resolves the grammar's saved exploration live (`GrammarModel.getDefaultExploreType()`),
+so the simulator's exploration *is* the `exploration` property — there is no
+longer a hidden state in which the toolbar explores something other than what
+the grammar says. Runs that are deliberately one-off — model checking, and the
+dialog's `Explore` button — pass their `ExploreType` to
+`ExploreAction.explore(...)` directly instead of installing it first; a
+composed configuration becomes the grammar's exploration only by being saved.
+Second, a property change confined to the exploration keys (`exploration`,
+`explorationStrategy`) no longer resets the GTS: the reference does not feed
+grammar compilation, so activating or re-targeting exploration settings keeps
+the explored state space and lets exploration continue under the new settings —
+which is what makes "save a variant, then carry on" worth doing.
+`SimulatorModel.doSetExplorationName` is the reference-only write path;
+the settings enable button reaches the same conclusion by diffing the
+properties (`GrammarProperties.getChanges`) rather than by special-casing the
+schema, since activation is a generic hook.
+
 Deferred to a next dialog round (agreed): a resource selector dropdown in
-the exploration dialog, and the reconsideration of the transient per-run
-override.
+the exploration dialog.
 
 ## Deliberately deferred
 

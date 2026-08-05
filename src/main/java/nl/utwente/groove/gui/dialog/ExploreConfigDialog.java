@@ -257,16 +257,19 @@ public class ExploreConfigDialog extends JDialog {
     }
 
     /**
-     * Computes the initial configuration: the simulator's current exploration
-     * type if it is configuration-based, otherwise the configuration saved
-     * with the grammar (with a notice).
+     * Computes the initial configuration: the configuration saved with the
+     * grammar. If the grammar has no exploration reference but does have a
+     * legacy exploration strategy that cannot be expressed as a configuration,
+     * the default configuration is shown instead, with a notice.
      */
     private ExploreConfig createInitialConfig() {
-        if (getSimulatorModel().getExploreType() instanceof ConfiguredExploreType configured) {
-            return new ExploreConfig(configured.getConfig());
+        var properties = getGrammar().getProperties();
+        if (properties.getExplorationName() == null
+            && properties.containsKey(GrammarKey.EXPLORATION)
+            && !(properties.getLegacyExploreType() instanceof ConfiguredExploreType)) {
+            this.legacyNotice = "The legacy exploration strategy cannot be expressed"
+                + " in the feature model; showing the default configuration";
         }
-        this.legacyNotice = "The current exploration strategy cannot be expressed"
-            + " in the feature model; showing the saved configuration";
         return getGrammar().getDefaultExploreConfig();
     }
 
@@ -600,14 +603,10 @@ public class ExploreConfigDialog extends JDialog {
         if (exploreType == null) {
             return;
         }
-        try {
-            getSimulatorModel().setExploreType(exploreType);
-            closeDialog();
-            this.simulator.getActions().getExploreAction().execute();
-        } catch (FormatException exc) {
-            new ErrorDialog(this.simulator.getFrame(),
-                "<HTML><B>Invalid exploration.</B><BR> " + exc.getMessage(), exc).setVisible(true);
-        }
+        // the composed exploration is run as given; it only becomes the
+        // grammar's (and hence the simulator's) exploration if it is saved
+        closeDialog();
+        this.simulator.getActions().getExploreAction().explore(exploreType);
     }
 
     /**

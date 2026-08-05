@@ -182,7 +182,7 @@ public class SimulatorModel implements Cloneable {
         start();
         boolean result = true;
         try {
-            setEnabled(resource, names);
+            result = setEnabled(resource, names);
             changeDisplay(DisplayKind.toDisplay(resource));
             changeGrammar(result);
         } finally {
@@ -191,8 +191,10 @@ public class SimulatorModel implements Cloneable {
         return result;
     }
 
-    /** Enables a collection of named resources of a given kind. */
-    private void setEnabled(ResourceKind kind, Set<QualName> names) throws IOException {
+    /** Enables a collection of named resources of a given kind.
+     * @return {@code true} if the change invalidates the GTS
+     */
+    private boolean setEnabled(ResourceKind kind, Set<QualName> names) throws IOException {
         switch (kind) {
         case RULE:
             Collection<AspectGraph> newRules = new ArrayList<>(names.size());
@@ -204,7 +206,7 @@ public class SimulatorModel implements Cloneable {
                 newRules.add(newRule);
             }
             getStore().putGraphs(ResourceKind.RULE, newRules, false);
-            break;
+            return true;
         case HOST, TYPE, PROLOG, CONTROL:
             GrammarProperties newProperties = getGrammar().getProperties().clone();
             List<QualName> actives = new ArrayList<>(newProperties.getActiveNames(kind));
@@ -216,10 +218,11 @@ public class SimulatorModel implements Cloneable {
             }
             newProperties.setActiveNames(kind, actives);
             getStore().putProperties(newProperties);
-            break;
+            return true;
         case SETTINGS: {
             // activation of a settings resource is schema-specific
-            GrammarProperties settingsProperties = getGrammar().getProperties().clone();
+            GrammarProperties oldProperties = getGrammar().getProperties();
+            GrammarProperties settingsProperties = oldProperties.clone();
             for (QualName name : names) {
                 if (getGrammar().getResource(kind, name) instanceof SettingsModel settings) {
                     var schema = settings.getSchema();
@@ -229,12 +232,28 @@ public class SimulatorModel implements Cloneable {
                 }
             }
             getStore().putProperties(settingsProperties);
-            break;
+            // an activation that only changes the exploration reference does
+            // not feed grammar compilation, so the GTS remains valid
+            return !isExploreOnlyChange(oldProperties, settingsProperties);
         }
         default:
             throw Exceptions.unreachable();
         }
     }
+
+    /**
+     * Indicates if the difference between two grammar properties is confined
+     * to the exploration-related keys. Those do not feed grammar compilation,
+     * so such a change leaves the GTS valid.
+     */
+    private static boolean isExploreOnlyChange(GrammarProperties oldProperties,
+                                               GrammarProperties newProperties) {
+        return EXPLORE_KEYS.containsAll(oldProperties.getChanges(newProperties));
+    }
+
+    /** The grammar keys that determine the exploration but not the compiled grammar. */
+    private static final Set<GrammarKey> EXPLORE_KEYS
+        = EnumSet.of(GrammarKey.EXPLORATION, GrammarKey.EXPLORE_CONFIG);
 
     /**
      * Enables a resource of a given kind, and disables all others.
@@ -378,14 +397,15 @@ public class SimulatorModel implements Cloneable {
      * exploration: the configuration is written into the settings text (by
      * targeted line edits, so comments and hand-written entries survive), and
      * the {@code exploration} property is set to point to it. May perform two
-     * undoable store edits (the resource text and the properties).
+     * undoable store edits (the resource text and the properties); only the
+     * text edit can invalidate the GTS, as the reference itself does not feed
+     * grammar compilation (see {@link #doSetExplorationName(QualName)}).
      * @param name name to save the exploration settings under
      * @param config the exploration configuration to be saved
      * @return {@code true} if the GTS was invalidated as a result of the action
      * @throws IOException if the action failed
      */
     public boolean doSaveExploreConfig(QualName name, ExploreConfig config) throws IOException {
-        GrammarProperties properties = getGrammar().getProperties();
         String oldText = getStore().getTexts(ResourceKind.SETTINGS).get(name);
         String newText = ExploreConfigSchema.setConfigText(oldText, config);
         boolean result = false;
@@ -402,13 +422,34 @@ public class SimulatorModel implements Cloneable {
                 finish();
             }
         }
-        if (!name.equals(properties.getExplorationName())
-            || properties.containsKey(GrammarKey.EXPLORATION)) {
-            GrammarProperties newProperties = properties.clone();
-            newProperties.setExplorationName(name);
-            result |= doSetProperties(newProperties);
-        }
+        doSetExplorationName(name);
         return result;
+    }
+
+    /**
+     * Changes the exploration reference in the grammar properties, without
+     * resetting the GTS: the reference does not feed grammar compilation, so
+     * the state space stays valid and exploration can continue under the
+     * newly referenced settings. (Any other property change resets the GTS;
+     * see {@link #doSetProperties(GrammarProperties)}.)
+     * @param name the newly referenced settings name; {@code null} to remove
+     * the reference
+     * @return {@code true} if the properties were changed
+     * @throws IOException if the store write failed
+     */
+    public boolean doSetExplorationName(@Nullable QualName name) throws IOException {
+        GrammarProperties oldProperties = getGrammar().getProperties();
+        GrammarProperties newProperties = oldProperties.clone();
+        if (name == null) {
+            newProperties.removeExplorationName();
+        } else {
+            newProperties.setExplorationName(name);
+        }
+        if (oldProperties.getChanges(newProperties).isEmpty()) {
+            return false;
+        }
+        doSetProperties(newProperties, false);
+        return true;
     }
 
     /**
@@ -418,11 +459,23 @@ public class SimulatorModel implements Cloneable {
      * @throws IOException if the action failed
      */
     public boolean doSetProperties(GrammarProperties newProperties) throws IOException {
+        doSetProperties(newProperties, true);
+        return true;
+    }
+
+    /**
+     * Changes the system properties, optionally leaving the GTS in place.
+     * @param newProperties the properties to be saved
+     * @param reset if {@code true}, the GTS and the selected state and match
+     * are reset; this may only be {@code false} if the property change cannot
+     * affect grammar compilation
+     * @throws IOException if the action failed
+     */
+    private void doSetProperties(GrammarProperties newProperties, boolean reset) throws IOException {
         start();
         try {
             getStore().putProperties(newProperties);
-            changeGrammar(true);
-            return true;
+            changeGrammar(reset);
         } finally {
             finish();
         }
@@ -1034,15 +1087,9 @@ public class SimulatorModel implements Cloneable {
                 changeState(null);
                 changeMatch(null);
                 changeTransition(null);
-                resetExploreType();
                 clearExplorationStats();
                 for (ResourceKind resource : ResourceKind.all(false)) {
                     changeSelected(resource, null);
-                }
-                try {
-                    setExploreType(getExploreType());
-                } catch (FormatException e) {
-                    // do nothing
                 }
             }
         } finally {
@@ -1065,7 +1112,6 @@ public class SimulatorModel implements Cloneable {
             changeState(null);
             changeMatch(null);
             changeTransition(null);
-            resetExploreType();
         }
         // restrict the selected resources to those that are (still)
         // in the grammar
@@ -1270,67 +1316,19 @@ public class SimulatorModel implements Cloneable {
     }
 
     /**
-     * Returns the internally stored default exploration.
+     * Returns the simulator's exploration, which is always the exploration
+     * saved with the grammar: the settings resource referenced by the
+     * {@code exploration} property, or the legacy/default exploration if there
+     * is no such reference (see {@link GrammarModel#getDefaultExploreType()}).
+     * There is no transient exploration: custom explorations (such as those of
+     * a model-checking run) are passed to
+     * {@code ExploreAction#explore(ExploreType)} directly and are not stored.
      */
     public ExploreType getExploreType() {
-        return this.exploreType;
+        return hasGrammar()
+            ? getGrammar().getDefaultExploreType()
+            : ExploreType.DEFAULT;
     }
-
-    /**
-     * Sets the internally stored exploration to a given value.
-     * If the given exploration is incompatible with the grammar,
-     * the grammar's default exploration is used instead.
-     * @param exploreType non-{@code null} exploration
-     * @throws FormatException if the new exploration is not
-     * compatible with the existing grammar
-     */
-    public void setExploreType(ExploreType exploreType) throws FormatException {
-        assert exploreType != null;
-        if (hasGrammar() && !getGrammar().hasErrors()) {
-            try {
-                exploreType.test(getGrammar().toGrammar());
-            } catch (FormatException exc) {
-                resetExploreType();
-                throw exc;
-            }
-        }
-        changeExploreType(exploreType);
-    }
-
-    /**
-     * Sets the internally stored exploration type to the default for the
-     * grammar.
-     * If there is currently no grammar or it has no default exploration,
-     * sets to {@link ExploreType#DEFAULT}
-     */
-    private void resetExploreType() {
-        ExploreType exploreType = null;
-        if (hasGrammar()) {
-            exploreType = getGrammar().getDefaultExploreType();
-        } else {
-            exploreType = ExploreType.DEFAULT;
-        }
-        changeExploreType(exploreType);
-    }
-
-    /**
-     * Changes the exploration field, and adds the ltsListener.
-     * @param exploreType the new (non-{@code null}) exploration type
-     */
-    private void changeExploreType(ExploreType exploreType) {
-        assert exploreType != null;
-        if (exploreType != this.exploreType) {
-            this.exploreType = exploreType;
-        }
-    }
-
-    /**
-     * The default exploration to be performed. This value is either the
-     * previous exploration, or the default constructor of the Exploration class
-     * (=breadth first). This value may never be null (and must be initialized
-     * explicitly).
-     */
-    private ExploreType exploreType = ExploreType.DEFAULT;
 
     /** Returns the display currently showing in the simulator panel. */
     public final DisplayKind getDisplay() {

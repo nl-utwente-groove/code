@@ -71,25 +71,23 @@ public class CheckLTLAction extends ExploreAction {
                 return;
             }
         }
+        // the model-checking exploration is a one-off: it is passed to the
+        // explore action directly and does not become the simulator's (i.e.,
+        // the grammar's) exploration
         ExploreType exploreType = new LTLExploreType(this.kind, property, boundary);
-        try {
-            getSimulatorModel().setExploreType(exploreType);
-            Exploration exploration = getActions().getExploreAction().explore(exploreType);
-            if (exploration != null) {
-                if (exploration.getResult().isEmpty()) {
-                    JOptionPane
-                        .showMessageDialog(getFrame(), String
-                            .format("The property '%s' holds for this system", property));
-                } else {
-                    Collection<GraphState> states = exploration.getResult().getStates();
-                    getLtsDisplay().emphasiseStates(new ArrayList<>(states), true);
-                    JOptionPane
-                        .showMessageDialog(getFrame(), String
-                            .format("A counter-example to '%s' is highlighted", property));
-                }
+        Exploration exploration = getActions().getExploreAction().explore(exploreType);
+        if (exploration != null) {
+            if (exploration.getResult().isEmpty()) {
+                JOptionPane
+                    .showMessageDialog(getFrame(), String
+                        .format("The property '%s' holds for this system", property));
+            } else {
+                Collection<GraphState> states = exploration.getResult().getStates();
+                getLtsDisplay().emphasiseStates(new ArrayList<>(states), true);
+                JOptionPane
+                    .showMessageDialog(getFrame(), String
+                        .format("A counter-example to '%s' is highlighted", property));
             }
-        } catch (FormatException exc) {
-            showErrorDialog(exc, "Model checking failed");
         }
     }
 
