@@ -50,8 +50,8 @@ import nl.utwente.groove.util.parse.FormatErrorSet;
 
 /**
  * Tests the SETTINGS resource kind: the name-based distinction from the
- * grammar properties singleton, the schema mechanism, and the isolation of
- * settings errors from grammar compilation.
+ * grammar properties singleton, the schema mechanism, and the propagation
+ * of the errors of active settings resources to the grammar.
  * @author Arend Rensink
  */
 @SuppressWarnings("javadoc")
@@ -296,22 +296,36 @@ public class SettingsTest {
     }
 
     // ----------------------------------------------------------------------
-    // Isolation from the grammar
+    // Propagation to the grammar
     // ----------------------------------------------------------------------
 
     /**
-     * Tests that settings errors stay on the resource: settings do not
-     * contribute to grammar compilation, so the surrounding grammar (which
-     * holds three erroneous settings resources) compiles regardless.
+     * Tests that the errors of <i>active</i> settings resources propagate into
+     * the grammar's error set, whereas those of inactive resources (here: a
+     * resource of an unknown schema) stay on the resource itself.
      */
     @Test
-    public void testGrammarUnaffected() throws Exception {
+    public void testGrammarErrorPropagation() throws Exception {
         GrammarModel grammar = newGrammar();
         assertTrue(getModel(grammar, "unknown").hasErrors());
         assertTrue(getModel(grammar, "test.mismatch").hasErrors());
         assertTrue(getModel(grammar, "test.rejected").hasErrors());
-        assertEquals(List.of(), messages(grammar.getErrors()));
-        assertNotNull(grammar.toGrammar());
+        // the active broken resources block the grammar ...
+        List<String> errors = messages(grammar.getErrors());
+        assertTrue(errors.toString(), errors.stream().anyMatch(e -> e.contains("test.mismatch")));
+        assertTrue(errors.toString(), errors.stream().anyMatch(e -> e.contains("test.rejected")));
+        // ... whereas the inactive one (of an unknown schema) does not
+        assertFalse(errors.toString(), errors.stream().anyMatch(e -> e.contains("unknown")));
+        // with the active broken resources gone, the grammar compiles again,
+        // even though the inactive broken resource is still there
+        SystemStore store = copyStore(newStore());
+        store
+            .deleteTexts(ResourceKind.SETTINGS,
+                         List.of(QualName.parse("test.mismatch"), QualName.parse("test.rejected")));
+        GrammarModel fixed = store.toGrammarModel();
+        assertTrue(getModel(fixed, "unknown").hasErrors());
+        assertEquals(List.of(), messages(fixed.getErrors()));
+        assertNotNull(fixed.toGrammar());
     }
 
     // ----------------------------------------------------------------------

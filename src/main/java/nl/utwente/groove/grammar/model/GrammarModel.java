@@ -20,6 +20,7 @@ import static nl.utwente.groove.grammar.model.ResourceKind.CONTROL;
 import static nl.utwente.groove.grammar.model.ResourceKind.HOST;
 import static nl.utwente.groove.grammar.model.ResourceKind.PROLOG;
 import static nl.utwente.groove.grammar.model.ResourceKind.RULE;
+import static nl.utwente.groove.grammar.model.ResourceKind.SETTINGS;
 import static nl.utwente.groove.grammar.model.ResourceKind.TYPE;
 
 import java.beans.PropertyChangeEvent;
@@ -491,6 +492,18 @@ public class GrammarModel implements PropertyChangeListener {
                 this.errors
                     .add("Error in prolog program '%s': %s", prologModel.getQualName(), error,
                          prologModel);
+            }
+        }
+        // errors of active settings resources block the grammar;
+        // those of inactive resources stay on the resource itself
+        for (NamedResourceModel<?> settingsModel : getResourceSet(SETTINGS)) {
+            if (!settingsModel.isActive()) {
+                continue;
+            }
+            for (FormatError error : settingsModel.getErrors()) {
+                this.errors
+                    .add("Error in settings resource '%s': %s", settingsModel.getQualName(), error,
+                         settingsModel);
             }
         }
         // check if all resource names are valid identifiers

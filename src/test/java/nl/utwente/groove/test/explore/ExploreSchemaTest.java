@@ -110,7 +110,8 @@ public class ExploreSchemaTest {
     /**
      * Tests an {@code explore} resource in a live store: a well-formed
      * resource compiles, a grammar-dependently broken one shows its error on
-     * the resource without affecting the grammar.
+     * the resource; as long as the broken resource is inactive that error does
+     * not affect the grammar, but activating it makes the grammar erroneous.
      */
     @Test
     public void testResourceInStore() throws Exception {
@@ -121,6 +122,10 @@ public class ExploreSchemaTest {
         dir.deleteOnExit();
         SystemStore store = original.save(new File(dir, "ferryman.gps"), true);
         GrammarModel grammar = store.toGrammarModel();
+        // the saved copy carries current-version properties, so the legacy
+        // default start graph no longer applies: name it explicitly, or the
+        // grammar has an unrelated 'No active start graph' error
+        grammar.setLocalActiveNames(ResourceKind.HOST, QualName.name("start"));
         QualName good = QualName.parse("explore.fast");
         QualName bad = QualName.parse("explore.broken");
         store
@@ -133,6 +138,20 @@ public class ExploreSchemaTest {
         var badModel = (SettingsModel) grammar.getResource(ResourceKind.SETTINGS, bad);
         assertNotNull(badModel);
         assertTrue(badModel.hasErrors());
+        // neither resource is referenced by the exploration property, so the
+        // broken one is inactive and its error does not reach the grammar
+        assertFalse(badModel.isActive());
+        assertFalse(grammar.hasErrors(), grammar.getErrors().toString());
+        // activating the broken resource propagates its error to the grammar
+        var props = grammar.getProperties().clone();
+        props.setExplorationName(bad);
+        store.putProperties(props);
+        assertTrue(grammar.hasErrors());
+        assertTrue(grammar
+            .getErrors()
+            .stream()
+            .anyMatch(e -> e.toString().contains("explore.broken")),
+                   grammar.getErrors().toString());
     }
 
     /**

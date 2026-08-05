@@ -75,9 +75,15 @@ schema class, not enum surgery.
   `$schema` entry for agreement, and validates the entries against the schema.
   Errors (unparseable text, unknown schema segment, `$schema` mismatch,
   keys/values rejected by the schema) surface in the resource tab's error
-  panel; settings do not contribute to `Grammar` compilation, so their errors
-  do not block the grammar. The compiled artifact `Settings` = (schema,
-  properties) with typed accessors.
+  panel. Since 2026-08-05, the errors of *active* settings resources moreover
+  propagate into the grammar's error set (`GrammarModel.initGrammar`) and hence
+  block the grammar, mirroring the treatment of prolog resources; the errors of
+  inactive resources — including those of resources whose leading name segment
+  names no registered schema — surface only on the resource itself. For a
+  non-activatable schema every resource counts as active, so there each
+  resource's errors block: an erroneous `ecore.properties` makes the grammar
+  uncompilable. The compiled artifact `Settings` = (schema, properties) with
+  typed accessors.
 - **Schema interface** (`grammar/model/SettingsSchema`, registry
   `SettingsSchemas`): `name()` (the `$schema` value), `check(Properties)` →
   `FormatErrorSet`, and per-key documentation hooks for a future table editor.
