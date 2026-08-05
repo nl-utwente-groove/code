@@ -121,7 +121,13 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         var result = this.startState;
         if (result == null) {
             this.startState = result = createStartState();
+            // the start state is entered in the state set even if the GTS
+            // does not store its states (see the invariant on the startState
+            // field, on which isRetained and retainTraces rely)
+            boolean storing = isStoring();
+            setStoring(true);
             addState(result);
+            setStoring(storing);
         }
         return result;
     }

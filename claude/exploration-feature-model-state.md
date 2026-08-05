@@ -149,6 +149,15 @@ disappears in phase 6; the preview field (the config's own text form) stays.
   `ConfiguredExploreType` (returns a copy of the authoritative config;
   persistence leaves no trace in the legacy descriptors — the copy uses the
   new `ExploreConfig` copy constructor). `PersistenceTest` covers it.
+  **Start-state invariant (fix 2026-08-05)**: `nodeSet().contains(startState)`
+  must hold even in an unstored GTS — `isRetained` and `retainTraces` rely on
+  it, and the state tree display crashed without it. The Generator path kept
+  it by accident (start state materialises before the `Exploration`
+  constructor prepares the GTS), but `SimulatorModel.resetGTS` prepares the
+  *fresh* GTS first (required for collapse/algebra), so the start state was
+  created with storing already off. `GTS.startState()` now enters the start
+  state in the state set regardless of the storing switch
+  (`testStartStateAlwaysStored`).
   **Trace retention (follow-up, 2026-07-31, at Arend's request — an empty
   Simulator panel after a none-run "is not what a user would expect"):** at
   the end of an unstored run, `Exploration.play` calls `GTS.retainTraces`

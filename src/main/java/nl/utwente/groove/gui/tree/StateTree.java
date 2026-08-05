@@ -601,7 +601,8 @@ public class StateTree extends JTree implements SimulatorListener {
      * top level of range nodes.
      */
     private boolean hasRangeNodes() {
-        return getTopNode().getFirstChild() instanceof RangeTreeNode;
+        var topNode = getTopNode();
+        return topNode.getChildCount() > 0 && topNode.getFirstChild() instanceof RangeTreeNode;
     }
 
     /** Returns the simulator to which the state list belongs. */

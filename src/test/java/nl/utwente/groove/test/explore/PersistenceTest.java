@@ -216,6 +216,35 @@ public class PersistenceTest {
     }
 
     /**
+     * Tests that the start state is entered in the state set even when the
+     * GTS is prepared (applying the persistence feature, which disables
+     * storing) before the start state materialises, as the Simulator's GTS
+     * reset does. Regression test: a fresh unstored GTS otherwise had a
+     * non-null start state that was missing from the node set — violating
+     * the invariant on {@code GTS.startState} — which crashed the state
+     * list display.
+     */
+    @Test
+    public void testStartStateAlwaysStored() throws Exception {
+        Grammar grammar = loadGrammar("ferryman");
+        Randomness.setMasterSeed(42);
+        GTS gts = new GTS(grammar);
+        var none = ExploreTypeConverter
+            .toExploreType(ExploreConfig.parse("persistence=none " + BOUND));
+        // the Simulator prepares the fresh GTS before the start state is built
+        none.prepareGTS(gts);
+        assertFalse(gts.isStoring());
+        GraphState start = gts.startState();
+        assertTrue(gts.nodeSet().contains(start),
+                   "The start state should be stored even in an unstored GTS");
+        assertEquals(1, gts.nodeCount());
+        assertFalse(gts.isStoring(), "Storing the start state should not re-engage storing");
+        // a subsequent exploration of the prepared GTS works as before
+        none.newExploration(gts, start).play();
+        assertTraceTree(gts, "prepared-first run");
+    }
+
+    /**
      * Tests that an explicit {@code persistence=all} behaves identically to
      * the default configuration.
      */
