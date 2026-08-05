@@ -33,6 +33,7 @@ import nl.utwente.groove.grammar.model.SettingsModel;
 import nl.utwente.groove.grammar.model.SettingsSchema;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Simulator;
+import nl.utwente.groove.io.external.format.ecore.EcoreMappingSchema;
 
 /**
  * The Simulator panel that shows the settings resources, with an info panel
@@ -184,5 +185,7 @@ final public class SettingsDisplay extends ResourceDisplay {
      * on Swing.
      */
     static private final Map<String,Icon> SCHEMA_ICON_MAP
-        = Map.of(ExploreConfigSchema.NAME, Icons.COMPASS_ICON);
+        = Map
+            .of(ExploreConfigSchema.NAME, Icons.COMPASS_ICON, EcoreMappingSchema.NAME,
+                Icons.ECORE_ICON);
 }
