@@ -44,6 +44,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
@@ -58,6 +59,7 @@ import nl.utwente.groove.explore.config.Bound;
 import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreConfigChecker;
+import nl.utwente.groove.explore.config.ExploreConfigSchema;
 import nl.utwente.groove.explore.config.ExploreKey;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.explore.config.Frontier;
@@ -67,6 +69,7 @@ import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
+import nl.utwente.groove.grammar.model.SettingsSchemas;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.SimulatorModel;
@@ -76,8 +79,14 @@ import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
- * Dialog that allows the user to compose an exploration by choosing a value
- * for every key of the exploration feature model (see {@link ExploreKey}).
+ * Dialog that allows the user to edit the grammar's saved exploration settings
+ * by choosing a value for every key of the exploration feature model (see
+ * {@link ExploreKey}). The dialog always edits <i>saved</i> settings: a
+ * dropdown selects which of the grammar's exploration settings resources is
+ * the grammar's exploration, the widgets are loaded from those settings, and
+ * the run buttons always run the saved exploration. Keys whose composed value
+ * deviates from the saved settings are marked bold: those are unsaved edits,
+ * which have to be saved (or reverted) before an exploration can be run.
  * The composed {@link ExploreConfig} is realised through
  * {@link ExploreTypeConverter}; feature combinations that are inconsistent or
  * not (yet) realisable disable the exploration buttons, with the errors shown
@@ -151,7 +160,16 @@ public class ExploreConfigDialog extends JDialog {
             .registerKeyboardAction(e -> doDefaultExploration(), enter,
                                     JComponent.WHEN_IN_FOCUSED_WINDOW);
 
-        loadConfig(this.revertConfig = createInitialConfig());
+        // a legacy exploration strategy that cannot be expressed in the
+        // feature model cannot be loaded into the widgets; announce that
+        var properties = getGrammar().getProperties();
+        if (properties.getExplorationName() == null
+            && properties.containsKey(GrammarKey.EXPLORATION)
+            && !(properties.getLegacyExploreType() instanceof ConfiguredExploreType)) {
+            this.legacyNotice = "The legacy exploration strategy cannot be expressed"
+                + " in the feature model; showing the default configuration";
+        }
+        loadConfig(getGrammar().getDefaultExploreConfig());
         refresh();
 
         add(content);
@@ -171,21 +189,77 @@ public class ExploreConfigDialog extends JDialog {
     }
 
     /**
-     * Creates the (borderless) panel showing the exploration settings the
-     * configuration is based on, as well as the status of the configuration.
+     * Creates the (borderless) panel with the selector for the exploration
+     * settings the grammar uses, as well as the status of the configuration.
      */
     private JPanel createResourcePanel() {
         JPanel result = new JPanel(new BorderLayout());
-        this.resourceLabel = new JLabel(" ");
-        this.resourceLabel.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
+        JLabel nameLabel = new JLabel(NAME_LABEL_TEXT);
+        nameLabel.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
+        this.nameBox = new JComboBox<>();
+        this.nameBox.setToolTipText(NAME_TOOLTIP);
+        this.nameBox.addActionListener(e -> selectName());
+        JPanel namePanel = new JPanel(new BorderLayout(5, 0));
+        namePanel.add(nameLabel, BorderLayout.WEST);
+        namePanel.add(this.nameBox, BorderLayout.CENTER);
         this.statusLabel = new JLabel(" ");
         this.statusLabel.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
         // anchor both to the top, so surplus vertical space stays below them
         JPanel inner = new JPanel(new BorderLayout(0, 2));
-        inner.add(this.resourceLabel, BorderLayout.NORTH);
+        inner.add(namePanel, BorderLayout.NORTH);
         inner.add(this.statusLabel, BorderLayout.SOUTH);
         result.add(inner, BorderLayout.NORTH);
         return result;
+    }
+
+    /**
+     * Reacts to a user selection in the settings selector: makes the selected
+     * settings (if any) the grammar's exploration, and loads them into the
+     * widgets. Unsaved edits are discarded, after confirmation. Since changing
+     * the exploration reference does not reset the GTS, switching to other
+     * settings preserves the explored state space, so that exploration can be
+     * continued under the newly selected settings.
+     */
+    private void selectName() {
+        if (this.refreshing) {
+            return;
+        }
+        var errors = new FormatErrorSet();
+        ExploreConfig config = storeConfig(errors);
+        var savedConfig = getGrammar().getDefaultExploreConfig();
+        if (!errors.isEmpty() || !config.unparse().equals(savedConfig.unparse())) {
+            int answer = JOptionPane
+                .showConfirmDialog(this, ASK_DISCARD_TEXT, ASK_DISCARD_TITLE,
+                                   JOptionPane.OK_CANCEL_OPTION);
+            if (answer != JOptionPane.OK_OPTION) {
+                refreshNameSelection(getGrammar().getProperties().getExplorationName());
+                return;
+            }
+        }
+        int index = this.nameBox.getSelectedIndex();
+        QualName name = index < 0
+            ? null
+            : this.nameBoxNames.get(index);
+        try {
+            getSimulatorModel().doSetExplorationName(name);
+        } catch (IOException exc) {
+            // do nothing
+        }
+        resetTo(getGrammar().getDefaultExploreConfig());
+    }
+
+    /** Sets the selector to the item for a given settings name, without triggering a selection. */
+    private void refreshNameSelection(QualName name) {
+        boolean wasRefreshing = this.refreshing;
+        this.refreshing = true;
+        try {
+            int index = name == null
+                ? 0
+                : this.nameBoxNames.indexOf(name);
+            this.nameBox.setSelectedIndex(Math.max(0, index));
+        } finally {
+            this.refreshing = wasRefreshing;
+        }
     }
 
     /** Loads a given configuration into the widgets, replacing the composed one. */
@@ -234,13 +308,8 @@ public class ExploreConfigDialog extends JDialog {
         settingsRow.add(this.saveAsButton);
         this.revertButton = new JButton(REVERT_COMMAND);
         this.revertButton.setToolTipText(REVERT_TOOLTIP);
-        this.revertButton.addActionListener(e -> resetTo(this.revertConfig));
+        this.revertButton.addActionListener(e -> resetTo(getGrammar().getDefaultExploreConfig()));
         settingsRow.add(this.revertButton);
-        this.savedButton = new JButton(SAVED_COMMAND);
-        this.savedButton.setToolTipText(SAVED_TOOLTIP);
-        this.savedButton
-            .addActionListener(e -> resetTo(getGrammar().getDefaultExploreConfig()));
-        settingsRow.add(this.savedButton);
         result.add(settingsRow);
         JPanel runRow = new JPanel();
         this.startButton = new JButton(START_COMMAND);
@@ -254,23 +323,6 @@ public class ExploreConfigDialog extends JDialog {
         runRow.add(cancelButton);
         result.add(runRow);
         return result;
-    }
-
-    /**
-     * Computes the initial configuration: the configuration saved with the
-     * grammar. If the grammar has no exploration reference but does have a
-     * legacy exploration strategy that cannot be expressed as a configuration,
-     * the default configuration is shown instead, with a notice.
-     */
-    private ExploreConfig createInitialConfig() {
-        var properties = getGrammar().getProperties();
-        if (properties.getExplorationName() == null
-            && properties.containsKey(GrammarKey.EXPLORATION)
-            && !(properties.getLegacyExploreType() instanceof ConfiguredExploreType)) {
-            this.legacyNotice = "The legacy exploration strategy cannot be expressed"
-                + " in the feature model; showing the default configuration";
-        }
-        return getGrammar().getDefaultExploreConfig();
     }
 
     /** Loads a configuration into the dialog widgets. */
@@ -431,22 +483,8 @@ public class ExploreConfigDialog extends JDialog {
                 ? null
                 : "<html><body style='width:" + getErrorWrapWidth()
                     + "px'><font color='red'>" + problemsHtml + "</font></body></html>");
-        // report the exploration settings that the composition is based on
         QualName exploreName = grammar.getProperties().getExplorationName();
-        String resourceText;
-        if (exploreName == null) {
-            resourceText = "<html><i>Not based on saved exploration settings;"
-                + " saving will ask for a name</i></html>";
-        } else {
-            String nameHtml
-                = HTMLConverter.toHtml(new StringBuilder(exploreName.toString())).toString();
-            resourceText = "<html>Based on the exploration settings '<b>" + nameHtml + "</b>'"
-                + (grammar.getResource(ResourceKind.SETTINGS, exploreName) == null
-                    ? " (which do not yet exist)"
-                    : "")
-                + "</html>";
-        }
-        this.resourceLabel.setText(resourceText);
+        refreshNameBox(exploreName);
         // the status label only carries informational messages
         String status = " ";
         if (this.legacyNotice != null) {
@@ -455,28 +493,25 @@ public class ExploreConfigDialog extends JDialog {
             this.legacyNotice = null;
         }
         this.statusLabel.setText(status);
-        // mark the keys whose composed value deviates from the exploration
-        // in force when the dialog was opened, and enable the reset buttons
-        boolean deviating = false;
+        // mark the keys whose composed value deviates from the saved settings:
+        // those are the unsaved edits, which have to be saved before a run
+        var savedConfig = grammar.getDefaultExploreConfig();
+        boolean savedDiffers = !config.unparse().equals(savedConfig.unparse());
         for (var key : ExploreKey.values()) {
-            var revertSetting = this.revertConfig.get(key);
-            boolean rowDeviates = !config.get(key).equals(revertSetting);
-            deviating |= rowDeviates;
+            var savedSetting = savedConfig.get(key);
             String deviationHtml = null;
-            if (rowDeviates) {
-                String text = key.parser().unparse(revertSetting);
+            if (!config.get(key).equals(savedSetting)) {
+                String text = key.parser().unparse(savedSetting);
                 if (text.isEmpty()) {
-                    text = revertSetting.kind().getName();
+                    text = savedSetting.kind().getName();
                 }
-                deviationHtml = "Current exploration uses: <b>"
-                    + HTMLConverter.toHtml(new StringBuilder(text)) + "</b>";
+                deviationHtml
+                    = "Saved settings use: <b>" + HTMLConverter.toHtml(new StringBuilder(text))
+                        + "</b>";
             }
             getRow(key).setDeviating(deviationHtml);
         }
-        this.revertButton.setEnabled(deviating || !errors.isEmpty());
-        var savedConfig = getGrammar().getDefaultExploreConfig();
-        boolean savedDiffers = !config.unparse().equals(savedConfig.unparse());
-        this.savedButton.setEnabled(!errors.isEmpty() || savedDiffers);
+        this.revertButton.setEnabled(savedDiffers || !errors.isEmpty());
         // there is nothing to save if the composition equals the saved setting,
         // unless there is no resource yet to save it in
         this.saveButton.setEnabled(runnable && (savedDiffers || exploreName == null));
@@ -489,7 +524,9 @@ public class ExploreConfigDialog extends JDialog {
         this.startButton.setText(fresh
             ? START_FRESH_COMMAND
             : START_COMMAND);
-        this.startButton.setEnabled(explorable);
+        // only the saved exploration settings can be run: unsaved edits block
+        // the run buttons, rather than being run without leaving a trace
+        this.startButton.setEnabled(explorable && !savedDiffers);
         // continuing cannot change the per-GTS features (collapse, algebra,
         // persistence) recorded in the explored state space
         String continueProblem = null;
@@ -500,7 +537,8 @@ public class ExploreConfigDialog extends JDialog {
                 continueProblem = gtsErrors.iterator().next().toString();
             }
         }
-        this.exploreButton.setEnabled(explorable && !fresh && continueProblem == null);
+        this.exploreButton
+            .setEnabled(explorable && !fresh && continueProblem == null && !savedDiffers);
         String tipHtml = problemsHtml;
         if (disabledReason != null) {
             tipHtml = (tipHtml == null
@@ -523,6 +561,16 @@ public class ExploreConfigDialog extends JDialog {
         String startTip = tipHtml == null
             ? startTipBase
             : "<html>" + startTipBase + "<br><font color='red'>" + tipHtml + "</font></html>";
+        // if the only thing standing in the way of a run is that the
+        // composition is not saved, the tooltip leads with that reason
+        if (savedDiffers && tipHtml == null) {
+            startTip = "<html><font color='red'>" + UNSAVED_REASON + "</font><br>" + startTipBase
+                + "</html>";
+        }
+        if (savedDiffers && tipHtml == null && continueProblem == null && !fresh) {
+            exploreTip = "<html><font color='red'>" + UNSAVED_REASON + "</font><br>"
+                + EXPLORE_TOOLTIP + "</html>";
+        }
         this.startButton.setToolTipText(startTip);
         this.exploreButton.setToolTipText(exploreTip);
         // grow the dialog height if the error area no longer fits; only the
@@ -534,6 +582,44 @@ public class ExploreConfigDialog extends JDialog {
                 setSize(getWidth(), prefHeight);
             }
         }
+    }
+
+    /**
+     * Refreshes the settings selector: the {@link #NONE_ITEM} sentinel followed
+     * by the names of the grammar's exploration settings resources, with the
+     * currently referenced name selected. A reference to a non-existent
+     * resource is appended as a (marked) item of its own, so that it can be
+     * shown as the selection.
+     * @param exploreName the currently referenced settings name, or {@code null}
+     */
+    private void refreshNameBox(QualName exploreName) {
+        var names = SettingsSchemas.getResourceNames(getGrammar(), ExploreConfigSchema.INSTANCE);
+        this.nameBoxNames.clear();
+        // the sentinel stands for the absence of a reference
+        this.nameBoxNames.add(null);
+        this.nameBoxNames.addAll(names);
+        var items = new ArrayList<String>();
+        items.add(NONE_ITEM);
+        for (var name : names) {
+            items.add(name.toString());
+        }
+        if (exploreName != null && !names.contains(exploreName)) {
+            this.nameBoxNames.add(exploreName);
+            items.add(exploreName + MISSING_SUFFIX);
+        }
+        // only rebuild the item list on an actual change: this method runs on
+        // every keystroke in the dialog, and a rebuild closes an open popup
+        boolean sameItems = items.size() == this.nameBox.getItemCount();
+        for (int i = 0; sameItems && i < items.size(); i++) {
+            sameItems = items.get(i).equals(this.nameBox.getItemAt(i));
+        }
+        if (!sameItems) {
+            this.nameBox.removeAllItems();
+            for (var item : items) {
+                this.nameBox.addItem(item);
+            }
+        }
+        refreshNameSelection(exploreName);
     }
 
     /**
@@ -555,20 +641,6 @@ public class ExploreConfigDialog extends JDialog {
         return Math.max(100, result - 30);
     }
 
-    /** Returns the currently composed exploration type, or {@code null} if invalid. */
-    private ExploreType createExploreType() {
-        var errors = new FormatErrorSet();
-        ExploreConfig config = storeConfig(errors);
-        if (config == null || !errors.isEmpty()) {
-            return null;
-        }
-        try {
-            return ExploreTypeConverter.toExploreType(config);
-        } catch (FormatException exc) {
-            return null;
-        }
-    }
-
     /**
      * Indicates if the current LTS consists of just the unexplored start
      * state (or there is none at all).
@@ -584,29 +656,30 @@ public class ExploreConfigDialog extends JDialog {
      * Bound to the Enter key.
      */
     private void doDefaultExploration() {
+        // the key is bound on the dialog as a whole, so it also arrives when
+        // the corresponding button is disabled; then it should do nothing
         if (isFreshGTS()) {
-            startExploration();
-        } else {
+            if (this.startButton.isEnabled()) {
+                startExploration();
+            }
+        } else if (this.exploreButton.isEnabled()) {
             doExploration();
         }
     }
 
-    /** Restarts the GTS and runs the composed exploration. */
+    /** Restarts the GTS and runs the saved exploration. */
     private void startExploration() {
         getSimulatorModel().resetGTS();
         doExploration();
     }
 
-    /** Runs the composed exploration on the current state space. */
+    /** Runs the grammar's saved exploration on the current state space. */
     private void doExploration() {
-        ExploreType exploreType = createExploreType();
-        if (exploreType == null) {
-            return;
-        }
-        // the composed exploration is run as given; it only becomes the
-        // grammar's (and hence the simulator's) exploration if it is saved
+        // the run buttons are only enabled if the composition equals the saved
+        // exploration, so the standard explore action runs what is composed;
+        // going through that action gets the result emphasis for free
         closeDialog();
-        this.simulator.getActions().getExploreAction().explore(exploreType);
+        this.simulator.getActions().getExploreAction().execute();
     }
 
     /**
@@ -701,7 +774,14 @@ public class ExploreConfigDialog extends JDialog {
     private final Map<ExploreKey,KeyRow> rows;
     private final List<String> ruleNames;
     private final List<String> hostNames;
-    private JLabel resourceLabel;
+    /** Selector for the grammar's exploration settings. */
+    private JComboBox<String> nameBox;
+    /**
+     * Settings names corresponding to the items of {@link #nameBox}, so that a
+     * selection can be resolved by index rather than by parsing the item text.
+     * The first entry is {@code null}, for the {@link #NONE_ITEM} sentinel.
+     */
+    private final List<QualName> nameBoxNames = new ArrayList<>();
     private JLabel statusLabel;
     private JLabel errorLabel;
     private JButton saveButton;
@@ -709,9 +789,6 @@ public class ExploreConfigDialog extends JDialog {
     private JButton startButton;
     private JButton exploreButton;
     private JButton revertButton;
-    private JButton savedButton;
-    /** The exploration in force when the dialog was opened; target of {@link #revertButton}. */
-    private ExploreConfig revertConfig;
     private boolean refreshing;
     private String legacyNotice;
     private final int oldDismissDelay;
@@ -722,7 +799,18 @@ public class ExploreConfigDialog extends JDialog {
     private static final String EXPLORE_COMMAND = "Continue";
     private static final String CANCEL_COMMAND = "Cancel";
     private static final String REVERT_COMMAND = "Revert";
-    private static final String SAVED_COMMAND = "Reset to Saved";
+    /** Text of the label in front of the settings selector. */
+    private static final String NAME_LABEL_TEXT = "Exploration settings:";
+    /** Selector item standing for the absence of an exploration reference. */
+    private static final String NONE_ITEM = "(none)";
+    /** Suffix marking a reference to a non-existent settings resource. */
+    private static final String MISSING_SUFFIX = " (missing)";
+    private static final String NAME_TOOLTIP
+        = "The exploration settings the grammar uses; selecting other settings"
+            + " preserves the explored state space";
+    /** Title of the dialog asking to confirm discarding unsaved changes. */
+    private static final String ASK_DISCARD_TITLE = "Unsaved changes";
+    private static final String ASK_DISCARD_TEXT = "Discard the unsaved changes?";
     private static final String SAVE_TOOLTIP
         = "Save the composed exploration settings under the name given by the 'exploration'"
             + " system property, asking for a name if that property is unset";
@@ -735,16 +823,17 @@ public class ExploreConfigDialog extends JDialog {
      * names are free, so this is a suggestion and nothing more. */
     private static final String DEFAULT_CONFIG_NAME = "exploration";
     private static final String REVERT_TOOLTIP
-        = "Discard the changes and return to the exploration in force when the dialog was opened";
-    private static final String SAVED_TOOLTIP
-        = "Load the exploration saved with the grammar";
+        = "Discard the unsaved changes and reload the saved exploration settings";
     private static final String START_FRESH_COMMAND = "Start";
     private static final String START_TOOLTIP
-        = "Discard the current state space and explore afresh with the composed exploration";
+        = "Discard the current state space and explore afresh with the saved exploration settings";
     private static final String START_FRESH_TOOLTIP
-        = "Explore the state space with the composed exploration";
+        = "Explore the state space with the saved exploration settings";
     private static final String EXPLORE_TOOLTIP
-        = "Continue exploring the current state space with the composed exploration";
+        = "Continue exploring the current state space with the saved exploration settings";
+    /** Reason shown when the run buttons are blocked by unsaved changes only. */
+    private static final String UNSAVED_REASON
+        = "The composed settings differ from the saved exploration settings; save them first";
     /** Colour of informational status text. */
     private static final String INFO_COLOR = "#005050";
 

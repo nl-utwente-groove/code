@@ -127,7 +127,7 @@ public class ExploreAction extends SimulatorAction {
             exploreStats.report();
             // emphasise the result states, if required
             ltsJModel.setExploring(false);
-            simModel.setExploreResult(result.getResult());
+            simModel.setExploreResult(result.getResult(), exploreType);
         } catch (FormatException exc) {
             // this should not occur, as the exploration and the
             // grammar in the simulator model should always be compatible

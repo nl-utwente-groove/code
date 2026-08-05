@@ -252,10 +252,10 @@ the Simulator no longer stores an exploration type of its own. `SimulatorModel.g
 resolves the grammar's saved exploration live (`GrammarModel.getDefaultExploreType()`),
 so the simulator's exploration *is* the `exploration` property — there is no
 longer a hidden state in which the toolbar explores something other than what
-the grammar says. Runs that are deliberately one-off — model checking, and the
-dialog's `Explore` button — pass their `ExploreType` to
-`ExploreAction.explore(...)` directly instead of installing it first; a
-composed configuration becomes the grammar's exploration only by being saved.
+the grammar says. Runs that are deliberately one-off — model checking — pass
+their `ExploreType` to `ExploreAction.explore(...)` directly instead of
+installing it first; a composed configuration becomes the grammar's
+exploration only by being saved.
 Second, a property change confined to the exploration keys (`exploration`,
 `explorationStrategy`) no longer resets the GTS: the reference does not feed
 grammar compilation, so activating or re-targeting exploration settings keeps
@@ -266,8 +266,44 @@ the settings enable button reaches the same conclusion by diffing the
 properties (`GrammarProperties.getChanges`) rather than by special-casing the
 schema, since activation is a generic hook.
 
-Deferred to a next dialog round (agreed): a resource selector dropdown in
-the exploration dialog.
+**The dialog only ever runs saved settings** (2026-08-05): the deferred
+resource selector arrived, and with it the resolution of what the dialog is
+*for*. It is an editor of the grammar's exploration settings, not a launcher
+of ad-hoc explorations. Concretely: the "Based on ..." text line is replaced
+by a non-editable dropdown listing the settings resources of the `explore`
+schema (`SettingsSchemas.getResourceNames`) plus a `(none)` sentinel for an
+absent reference and, if the reference dangles, the referenced name marked
+`(missing)`. Selecting an entry writes the reference through
+`SimulatorModel.doSetExplorationName` and reloads the widgets from it —
+which, since that write does not reset the GTS, preserves the explored state
+space: switching settings and continuing is a single click. Unsaved edits are
+discarded only after confirmation.
+
+The dialog's baseline is therefore the *saved* configuration rather than the
+one in force at opening: the bold deviation marks now mean "unsaved edit"
+(tooltip: "Saved settings use: ..."), and they all disappear after a save.
+That collapses `Revert` and `Reset to Saved` into a single `Revert`, and it
+lets the run buttons demand `!savedDiffers`: an unsaved composition cannot be
+run, with the reason leading the button tooltip. The alternative — running the
+composition unsaved, as before — was rejected because it re-creates exactly
+the hidden state that removing the transient exploration got rid of: the state
+space would then have been produced by an exploration that exists nowhere. As
+a consequence the dialog no longer needs to build an `ExploreType` of its own;
+it simply calls `ExploreAction.execute()`, which reads the grammar's saved
+exploration, and result emphasis (previously lost by calling `explore(type)`)
+comes back for free. Note the empty-reference case still runs: with no
+reference the saved configuration is the empty (or legacy-derived) one, so a
+user who composes nothing is not forced to create a file.
+
+One consequence had to be repaired elsewhere: `LTSDisplay` auto-switches the
+LTS filter to `RESULT` after a trace-shaped exploration, and since
+`getExploreType()` became the *saved* exploration, that test was reading the
+wrong thing (an LTL run passed in by the model checker would be judged by
+whatever the grammar has saved). `SimulatorModel` now records the run's type
+with its result (`setExploreResult(result, exploreType)`, read back through
+`getLastExploreType()`), and the filter decision keys on that. The CTL check,
+whose result is a set of witness states rather than an exploration outcome,
+passes `null`.
 
 ## Deliberately deferred
 

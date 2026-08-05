@@ -741,7 +741,7 @@ public class SimulatorModel implements Cloneable {
                 changeTransition(null);
                 changeExploreResult(gts == null
                     ? null
-                    : new ExploreResult(gts));
+                    : new ExploreResult(gts), null);
             }
             if (gts != null && getState() == null) {
                 changeState(gts.startState());
@@ -758,11 +758,14 @@ public class SimulatorModel implements Cloneable {
     /**
      * Sets the internally stored exploration result and notifies all listeners.
      * The new result should have the currently set GTS.
+     * @param result the new exploration result
+     * @param exploreType the exploration type of the run that produced the
+     * result, or {@code null} if it was not produced by an exploration
      */
-    public void setExploreResult(ExploreResult result) {
+    public void setExploreResult(ExploreResult result, @Nullable ExploreType exploreType) {
         start();
         try {
-            changeExploreResult(result);
+            changeExploreResult(result, exploreType);
         } finally {
             finish();
         }
@@ -772,16 +775,32 @@ public class SimulatorModel implements Cloneable {
      * Changes the internally stored exploration result, as well as the trace.
      * The new result should have the currently set GTS.
      */
-    private void changeExploreResult(ExploreResult result) {
+    private void changeExploreResult(ExploreResult result, @Nullable ExploreType exploreType) {
         assert result == null
             ? this.gts == null
             : result.getGTS() == this.gts;
         this.exploreResult = result;
+        this.lastExploreType = exploreType;
         changeTrace(result == null
             ? null
             : result.getTransitions());
         changeGTS();
     }
+
+    /**
+     * Returns the exploration type of the run that produced the current
+     * exploration result, if any. This is metadata of the <i>last</i> run,
+     * <i>not</i> the exploration that will run <i>next</i>: the latter is
+     * always the grammar's saved exploration (see {@link #getExploreType()}).
+     * @return the exploration type of the last run, or {@code null} if there
+     * was none, or the result was not produced by an exploration
+     */
+    public @Nullable ExploreType getLastExploreType() {
+        return this.lastExploreType;
+    }
+
+    /** The exploration type of the run that produced {@link #exploreResult}. */
+    private @Nullable ExploreType lastExploreType;
 
     /**
      * Tests if the current exploration has a non-{@code null}, non-empty result.

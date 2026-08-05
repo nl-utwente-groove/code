@@ -106,7 +106,9 @@ public class CheckCTLAction extends SimulatorAction {
         result = new ExploreResult(name, property, result.getGTS());
         witnesses.forEach(result::addState);
         result.push();
-        getSimulatorModel().setExploreResult(result);
+        // the witnesses are the outcome of a CTL check, not of an exploration,
+        // so there is no exploration type to record with them
+        getSimulatorModel().setExploreResult(result, null);
         getLtsDisplay().emphasiseStates(witnesses, false);
         getSimulatorModel().setDisplay(DisplayKind.LTS);
         JOptionPane.showMessageDialog(getFrame(), message);

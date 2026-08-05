@@ -487,10 +487,12 @@ public class LTSDisplay extends Display implements SimulatorListener {
                 getJGraph().scrollToActive();
                 setFilterResultItem(source.hasExploreResult());
                 if (changes.contains(GTS) && source.hasExploreResult()
-                    && source.getExploreType() instanceof ConfiguredExploreType configured
+                    && source.getLastExploreType() instanceof ConfiguredExploreType configured
                     && configured.getConfig().getKind(ExploreKey.SHAPE) == Shape.TRACE) {
                     // a trace-shaped exploration presents its result as
-                    // traces: switch the filter to the result view
+                    // traces: switch the filter to the result view. The
+                    // decision is about the run that produced the result, so
+                    // it keys on that run's type, not on the saved exploration
                     getFilterChooser().setSelectedItem(Filter.RESULT);
                 }
                 updateStatus(gts);
