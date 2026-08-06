@@ -29,6 +29,7 @@ import org.junit.Test;
 import nl.utwente.groove.control.CtrlLoader;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Recipe;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -37,6 +38,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * @author Arend Rensink
  * @version $Revision$
  */
+@AIGenerated("Claude Fable 5, 2026-08")
 @SuppressWarnings("javadoc")
 public class ChangePriorityTest extends CtrlTester {
     {
