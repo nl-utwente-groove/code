@@ -77,9 +77,9 @@ public class QueuePool implements Pool {
     }
 
     /** Queue of current-depth states to be explored. */
-    private LinkedList<GraphState> stateQueue = new LinkedList<>();
+    private LinkedList<@Nullable GraphState> stateQueue = new LinkedList<>();
     /** Queue of next-depth states to be explored. */
-    private LinkedList<GraphState> nextDepthStateQueue = new LinkedList<>();
+    private LinkedList<@Nullable GraphState> nextDepthStateQueue = new LinkedList<>();
     /** Exploration depth of the current state queue. */
     private int depth;
 }

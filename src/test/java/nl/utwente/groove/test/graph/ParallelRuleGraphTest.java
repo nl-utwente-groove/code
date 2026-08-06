@@ -43,7 +43,6 @@ import nl.utwente.groove.util.parse.FormatException;
  * @author Arend Rensink
  * @version $Revision$
  */
-@SuppressWarnings("javadoc")
 public class ParallelRuleGraphTest {
     private final RuleFactory factory = RuleFactory.newInstance();
     private final RuleNode n0 = this.factory.createNode();
@@ -129,7 +128,8 @@ public class ParallelRuleGraphTest {
         typeGraph.addLabel("a");
         typeGraph.setFixed();
         RuleFactory typedFactory = RuleFactory.newInstance(typeGraph.getFactory());
-        RuleGraphMorphism typing = typeGraph.analyzeRule(graph, new RuleGraphMorphism(typedFactory));
+        RuleGraphMorphism typing
+            = typeGraph.analyzeRule(graph, new RuleGraphMorphism(typedFactory));
         RuleEdge t0 = typing.getEdge(e0);
         RuleEdge t1 = typing.getEdge(e1);
         assertNotNull(t0);

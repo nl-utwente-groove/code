@@ -52,7 +52,6 @@ import nl.utwente.groove.util.parse.FormatException;
  * @author Arend Rensink
  * @version $Revision$
  */
-@SuppressWarnings("javadoc")
 public class ExplorePropertiesTest {
     /** Directory of the sample grammars. */
     static private final String INPUT_DIR = "junit/samples";
@@ -73,8 +72,9 @@ public class ExplorePropertiesTest {
      * reference is the local name within the {@code explore} folder. */
     @Test
     public void testReference() throws Exception {
-        GrammarModel grammar = newGrammar(Map
-            .of(QualName.parse("explore.fast"), "next = newest\ncount = first\n"), "fast");
+        GrammarModel grammar
+            = newGrammar(Map.of(QualName.parse("explore.fast"), "next = newest\ncount = first\n"),
+                         "fast");
         assertEquals(QualName.name("fast"), grammar.getProperties().getExplorationName());
         assertConfigured("next=newest count=first", grammar.getDefaultExploreType());
         assertEquals(ExploreConfig.parse("next=newest count=first"),
@@ -85,8 +85,9 @@ public class ExplorePropertiesTest {
      * reference being the (nested) local name. */
     @Test
     public void testNestedReference() throws Exception {
-        GrammarModel grammar = newGrammar(Map
-            .of(QualName.parse("explore.nightly.run"), "next = random\n"), "nightly.run");
+        GrammarModel grammar
+            = newGrammar(Map.of(QualName.parse("explore.nightly.run"), "next = random\n"),
+                         "nightly.run");
         assertConfigured("next=random", grammar.getDefaultExploreType());
     }
 
@@ -97,9 +98,8 @@ public class ExplorePropertiesTest {
     @Test
     public void testReferenceChecker() throws Exception {
         GrammarModel grammar = newGrammar(Map
-            .of(QualName.parse("explore.good"), "next = newest\n",
-                QualName.parse("explore.broken"), "next = sideways\n"),
-                                          null);
+            .of(QualName.parse("explore.good"), "next = newest\n", QualName.parse("explore.broken"),
+                "next = sideways\n"), null);
         var key = GrammarKey.EXPLORE_CONFIG;
         assertTrue(key.check(grammar, Optional.of(QualName.name("good"))).isEmpty());
         assertFalse(key.check(grammar, Optional.of(QualName.name("missing"))).isEmpty());
@@ -115,8 +115,8 @@ public class ExplorePropertiesTest {
      */
     @Test
     public void testUnrealisable() throws Exception {
-        GrammarModel grammar = newGrammar(Map
-            .of(QualName.parse("explore.nen"), "heuristic = nen\n"), "nen");
+        GrammarModel grammar
+            = newGrammar(Map.of(QualName.parse("explore.nen"), "heuristic = nen\n"), "nen");
         var model = grammar.getResource(ResourceKind.SETTINGS, QualName.parse("explore.nen"));
         assertTrue(model.hasErrors());
         assertSame(ExploreType.DEFAULT, grammar.getDefaultExploreType());
@@ -141,8 +141,8 @@ public class ExplorePropertiesTest {
     /** Tests that the reference takes precedence over the legacy key. */
     @Test
     public void testPrecedence() throws Exception {
-        GrammarModel grammar = newGrammar(Map
-            .of(QualName.parse("explore.fast"), "next = newest\n"), "fast");
+        GrammarModel grammar
+            = newGrammar(Map.of(QualName.parse("explore.fast"), "next = newest\n"), "fast");
         setLegacy(grammar, "linear final 0");
         assertConfigured("next=newest", grammar.getDefaultExploreType());
     }
@@ -162,8 +162,7 @@ public class ExplorePropertiesTest {
     @Test
     public void testNoRepair() {
         var properties = new GrammarProperties();
-        properties
-            .setProperty(GrammarKey.GRAMMAR_VERSION.getName(), Version.GRAMMAR_VERSION_3_11);
+        properties.setProperty(GrammarKey.GRAMMAR_VERSION.getName(), Version.GRAMMAR_VERSION_3_11);
         properties.setProperty(GrammarKey.EXPLORATION.getName(), "dfs final 1");
         var repaired = properties.repairVersion();
         assertEquals("dfs final 1", repaired.getProperty(GrammarKey.EXPLORATION.getName()));
@@ -194,8 +193,8 @@ public class ExplorePropertiesTest {
      */
     static private GrammarModel newGrammar(Map<QualName,String> resources,
                                            String reference) throws Exception {
-        SystemStore original = SystemStore
-            .newStore(new File(INPUT_DIR + "/ferryman.gps"), false, true);
+        SystemStore original
+            = SystemStore.newStore(new File(INPUT_DIR + "/ferryman.gps"), false, true);
         File dir = Files.createTempDirectory("explore-properties-test").toFile();
         dir.deleteOnExit();
         SystemStore store = original.save(new File(dir, "ferryman.gps"), true);

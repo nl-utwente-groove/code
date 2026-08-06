@@ -87,5 +87,5 @@ public class StackPool implements Pool {
         this.levelCount.push(0);
     }
     /** Stack of states to be explored. */
-    private final Deque<GraphState> stack = new LinkedList<>();
+    private final Deque<@Nullable GraphState> stack = new LinkedList<>();
 }

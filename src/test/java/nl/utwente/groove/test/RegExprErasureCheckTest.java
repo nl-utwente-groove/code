@@ -38,7 +38,6 @@ import nl.utwente.groove.util.Groove;
  * @author Arend Rensink
  * @version $Revision$
  */
-@SuppressWarnings("javadoc")
 public class RegExprErasureCheckTest {
     /** Returns the model of a named rule in a named test grammar. */
     private ResourceModel<?> getRuleModel(String grammarName, String ruleName) {

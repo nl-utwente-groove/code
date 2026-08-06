@@ -50,7 +50,6 @@ import nl.utwente.groove.util.parse.FormatException;
  * grammar-dependent contents) and the generated template.
  * @author Arend Rensink
  */
-@SuppressWarnings("javadoc")
 public class ExploreSchemaTest {
     /** Directory of the sample grammars. */
     static private final String INPUT_DIR = "junit/samples";
@@ -117,8 +116,8 @@ public class ExploreSchemaTest {
     @Test
     public void testResourceInStore() throws Exception {
         // copy the fixture to a temporary directory, so that it can be modified
-        SystemStore original = SystemStore
-            .newStore(new File(INPUT_DIR + "/ferryman.gps"), false, true);
+        SystemStore original
+            = SystemStore.newStore(new File(INPUT_DIR + "/ferryman.gps"), false, true);
         File dir = Files.createTempDirectory("explore-schema-test").toFile();
         dir.deleteOnExit();
         SystemStore store = original.save(new File(dir, "ferryman.gps"), true);
@@ -131,8 +130,9 @@ public class ExploreSchemaTest {
         QualName bad = QualName.parse("explore.broken");
         store
             .putTexts(ResourceKind.SETTINGS,
-                      Map.of(good, "next = newest\ngoal = condition:load\n", bad,
-                             "goal = condition:no-such-rule\n"));
+                      Map
+                          .of(good, "next = newest\ngoal = condition:load\n", bad,
+                              "goal = condition:no-such-rule\n"));
         var goodModel = (SettingsModel) grammar.getResource(ResourceKind.SETTINGS, good);
         assertNotNull(goodModel);
         assertFalse(goodModel.hasErrors());
@@ -173,9 +173,9 @@ public class ExploreSchemaTest {
         assertEquals(List.of(3, 1), getError(grammar, name, "Unknown exploration key 'depth'"));
         // a grammar-dependent error points at its own key as well
         store
-            .putTexts(ResourceKind.SETTINGS,
-                      Map.of(name, "$schema = explore\nnext = newest\n"
-                          + "goal = condition:no-such-rule\n"));
+            .putTexts(ResourceKind.SETTINGS, Map
+                .of(name,
+                    "$schema = explore\nnext = newest\n" + "goal = condition:no-such-rule\n"));
         assertEquals(List.of(3, 1), getError(grammar, name, "no-such-rule"));
     }
 
@@ -188,8 +188,8 @@ public class ExploreSchemaTest {
     @Test
     public void testActivation() throws Exception {
         // copy the fixture to a temporary directory, so that it can be modified
-        SystemStore original = SystemStore
-            .newStore(new File(INPUT_DIR + "/ferryman.gps"), false, true);
+        SystemStore original
+            = SystemStore.newStore(new File(INPUT_DIR + "/ferryman.gps"), false, true);
         File dir = Files.createTempDirectory("explore-activation-test").toFile();
         dir.deleteOnExit();
         SystemStore store = original.save(new File(dir, "ferryman.gps"), true);
@@ -199,6 +199,7 @@ public class ExploreSchemaTest {
         var model = (SettingsModel) grammar.getResource(ResourceKind.SETTINGS, name);
         assertNotNull(model);
         var schema = model.getSchema();
+        assert schema != null;
         assertEquals(ExploreConfigSchema.INSTANCE, schema);
         assertTrue(schema.isActivatable());
         // initially the resource is not the grammar's exploration
@@ -230,9 +231,7 @@ public class ExploreSchemaTest {
         SystemStore store = newTempStore("explore-free-name-test");
         GrammarModel grammar = store.toGrammarModel();
         QualName name = QualName.name("fast");
-        store
-            .putTexts(ResourceKind.SETTINGS,
-                      Map.of(name, "$schema = explore\nnext = newest\n"));
+        store.putTexts(ResourceKind.SETTINGS, Map.of(name, "$schema = explore\nnext = newest\n"));
         var model = (SettingsModel) grammar.getResource(ResourceKind.SETTINGS, name);
         assertNotNull(model);
         assertEquals("fast", model.getSchemaName());
@@ -249,9 +248,7 @@ public class ExploreSchemaTest {
         SystemStore store = newTempStore("explore-mismatch-test");
         GrammarModel grammar = store.toGrammarModel();
         QualName name = QualName.parse("ecore.something");
-        store
-            .putTexts(ResourceKind.SETTINGS,
-                      Map.of(name, "$schema = explore\ncount = first\n"));
+        store.putTexts(ResourceKind.SETTINGS, Map.of(name, "$schema = explore\ncount = first\n"));
         var model = (SettingsModel) grammar.getResource(ResourceKind.SETTINGS, name);
         assertNotNull(model);
         assertTrue(model.hasErrors());
@@ -316,8 +313,7 @@ public class ExploreSchemaTest {
         // a line whose value already expresses the setting is left verbatim
         assertEquals(edited, ExploreConfigSchema.setConfigText(edited, config));
         // reverting to the default keeps the line, with the default spelled out
-        String reverted
-            = ExploreConfigSchema.setConfigText(edited, new ExploreConfig());
+        String reverted = ExploreConfigSchema.setConfigText(edited, new ExploreConfig());
         assertEquals("# my comment\n$schema = explore\nnext = oldest\ngoal = final\n"
             + "count = all\n", reverted);
         // the round trip through the parser is exact
@@ -356,8 +352,8 @@ public class ExploreSchemaTest {
     /** Copies the ferryman fixture to a fresh temporary directory, so that the
      * resulting store can be modified. */
     static private SystemStore newTempStore(String prefix) throws Exception {
-        SystemStore original = SystemStore
-            .newStore(new File(INPUT_DIR + "/ferryman.gps"), false, true);
+        SystemStore original
+            = SystemStore.newStore(new File(INPUT_DIR + "/ferryman.gps"), false, true);
         File dir = Files.createTempDirectory(prefix).toFile();
         dir.deleteOnExit();
         return original.save(new File(dir, "ferryman.gps"), true);

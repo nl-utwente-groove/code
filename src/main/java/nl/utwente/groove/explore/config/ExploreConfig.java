@@ -182,7 +182,6 @@ public class ExploreConfig {
      * @throws FormatException if the text contains an unknown or duplicate
      * key, or a value that is not parsable for its key
      */
-    @SuppressWarnings("null")
     public static ExploreConfig parse(String text) throws FormatException {
         var result = new ExploreConfig();
         var errors = new FormatErrorSet();
@@ -285,8 +284,7 @@ public class ExploreConfig {
      * given, the errors carry the position of the entry they are about.
      */
     private static ExploreConfig fromProperties(java.util.Properties props,
-                                                @Nullable SettingsContent content)
-        throws FormatException {
+                                                @Nullable SettingsContent content) throws FormatException {
         var result = new ExploreConfig();
         var errors = new FormatErrorSet();
         // process the entries in alphabetical order, for deterministic

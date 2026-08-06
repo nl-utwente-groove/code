@@ -24,9 +24,9 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.StringReader;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.nio.file.Files;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -56,8 +56,8 @@ import nl.utwente.groove.graph.plain.PlainGraph;
 import nl.utwente.groove.graph.plain.PlainNode;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.Exportable;
-import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.io.external.Imported;
+import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.io.external.format.ecore.EcoreKey;
 import nl.utwente.groove.io.external.format.ecore.EcoreMapping;
 import nl.utwente.groove.io.external.format.ecore.EcoreMapping.LiteralStyle;
@@ -76,7 +76,6 @@ import nl.utwente.groove.util.parse.FormatException;
  * Tests the import of Ecore meta-models and XMI instance models.
  * @author Arend Rensink
  */
-@SuppressWarnings("javadoc")
 public class EcoreTest {
     /** Directory of the Ecore test fixtures. */
     static private final String DIR = "junit/ecore/";
@@ -232,8 +231,7 @@ public class EcoreTest {
      */
     @Test
     public void testUnrepresentableValue() throws Exception {
-        AspectGraph host
-            = single(importFrom("broken.xmi", Ordering.NONE, true), ResourceKind.HOST);
+        AspectGraph host = single(importFrom("broken.xmi", Ordering.NONE, true), ResourceKind.HOST);
         List<String> errors = messages(host.getErrors());
         assertEquals(1, errors.size());
         assertTrue(errors.get(0),
@@ -286,16 +284,14 @@ public class EcoreTest {
         expectedTypes.put("List", labels("type:List"));
         expectedTypes.put("Element", labels("type:Element", "string:name"));
         expectedTypes
-            .put("List$elements",
-                 labels("type:List$elements", "edge:\"elements\"", "int:index"));
+            .put("List$elements", labels("type:List$elements", "edge:\"elements\"", "int:index"));
         expectedTypes
             .put("List$labels",
                  labels("type:List$labels", "edge:\"labels\"", "int:index", "string:val"));
         assertEquals(expectedTypes, selfLabels(type));
-        assertEquals(Set.of("List -in=1:elements-> List$elements",
-                            "List$elements -out=1:part:val-> Element",
-                            "List -in=1:labels-> List$labels"),
-                     binaryEdges(type));
+        assertEquals(Set
+            .of("List -in=1:elements-> List$elements", "List$elements -out=1:part:val-> Element",
+                "List -in=1:labels-> List$labels"), binaryEdges(type));
         assertEquals(Collections.emptyList(), messages(type.getErrors()));
         AspectGraph host = single(imported, ResourceKind.HOST);
         Map<String,Set<String>> expectedHost = new LinkedHashMap<>();
@@ -304,27 +300,23 @@ public class EcoreTest {
         expectedHost.put("second", labels("type:Element", "id:second", "let:name=\"b\""));
         expectedHost.put("third", labels("type:Element", "id:third", "let:name=\"c\""));
         for (int i = 1; i <= 3; i++) {
-            expectedHost
-                .put("List$elements#" + i, labels("type:List$elements", "let:index=" + i));
+            expectedHost.put("List$elements#" + i, labels("type:List$elements", "let:index=" + i));
             expectedHost.put("List$labels#" + i, labels("type:List$labels", "let:index=" + i));
         }
         expectedHost.put("string:\"x\"", labels("string:\"x\""));
         expectedHost.put("string:\"y\"", labels("string:\"y\""));
         assertEquals(expectedHost, selfLabels(host));
-        assertEquals(Set.of("theList -elements-> List$elements#1",
-                            "theList -elements-> List$elements#2",
-                            "theList -elements-> List$elements#3",
-                            "List$elements#1 -val-> first", "List$elements#2 -val-> second",
-                            "List$elements#3 -val-> third", "theList -labels-> List$labels#1",
-                            "theList -labels-> List$labels#2", "theList -labels-> List$labels#3",
-                            // the duplicate value survives: the intermediates differ
-                            "List$labels#1 -val-> string:\"x\"",
-                            "List$labels#2 -val-> string:\"y\"",
-                            "List$labels#3 -val-> string:\"x\""),
-                     binaryEdges(host));
+        assertEquals(Set
+            .of("theList -elements-> List$elements#1", "theList -elements-> List$elements#2",
+                "theList -elements-> List$elements#3", "List$elements#1 -val-> first",
+                "List$elements#2 -val-> second", "List$elements#3 -val-> third",
+                "theList -labels-> List$labels#1", "theList -labels-> List$labels#2",
+                "theList -labels-> List$labels#3",
+                // the duplicate value survives: the intermediates differ
+                "List$labels#1 -val-> string:\"x\"", "List$labels#2 -val-> string:\"y\"",
+                "List$labels#3 -val-> string:\"x\""), binaryEdges(host));
         // the indexed encoding is a valid type graph as well
-        GrammarModel grammar
-            = newGrammar(type, host.rename(QualName.name("start")));
+        GrammarModel grammar = newGrammar(type, host.rename(QualName.name("start")));
         assertEquals(Collections.emptyList(), messages(grammar.getTypeModel().getErrors()));
         assertEquals(Collections.emptyList(), messages(grammar.getErrors()));
     }
@@ -360,15 +352,13 @@ public class EcoreTest {
         // spelled out, since isomorphism alone reads as a weak statement about
         // order — and the duplicate value of the non-unique 'labels' attribute
         // must not be swallowed on the way out either
-        assertEquals(Set.of("theList -elements-> List$elements#1",
-                            "theList -elements-> List$elements#2",
-                            "theList -elements-> List$elements#3",
-                            "List$elements#1 -val-> first", "List$elements#2 -val-> second",
-                            "List$elements#3 -val-> third", "theList -labels-> List$labels#1",
-                            "theList -labels-> List$labels#2", "theList -labels-> List$labels#3",
-                            "List$labels#1 -val-> string:\"x\"",
-                            "List$labels#2 -val-> string:\"y\"",
-                            "List$labels#3 -val-> string:\"x\""),
+        assertEquals(Set
+            .of("theList -elements-> List$elements#1", "theList -elements-> List$elements#2",
+                "theList -elements-> List$elements#3", "List$elements#1 -val-> first",
+                "List$elements#2 -val-> second", "List$elements#3 -val-> third",
+                "theList -labels-> List$labels#1", "theList -labels-> List$labels#2",
+                "theList -labels-> List$labels#3", "List$labels#1 -val-> string:\"x\"",
+                "List$labels#2 -val-> string:\"y\"", "List$labels#3 -val-> string:\"x\""),
                      binaryEdges(resultHost));
     }
 
@@ -439,8 +429,7 @@ public class EcoreTest {
                             "let:customValue=\"#ff8800\""),
                      values);
         // the many-valued attribute goes to shared constant nodes instead
-        assertEquals(Set.of("string:\"plain\"", "string:\"quo\\\"ted\""),
-                     targets(host, "aliases"));
+        assertEquals(Set.of("string:\"plain\"", "string:\"quo\\\"ted\""), targets(host, "aliases"));
         assertRoundTrip("datatypes.xmi", Ordering.NONE);
     }
 
@@ -454,11 +443,10 @@ public class EcoreTest {
                      selfLabels(type).get("Values$aliases"));
         assertEquals(Set.of("Values -in=1:aliases-> Values$aliases"), binaryEdges(type));
         AspectGraph host = single(imported, ResourceKind.HOST);
-        assertEquals(Set.of("values -aliases-> Values$aliases#1",
-                            "values -aliases-> Values$aliases#2",
-                            "Values$aliases#1 -val-> string:\"plain\"",
-                            "Values$aliases#2 -val-> string:\"quo\\\"ted\""),
-                     binaryEdges(host));
+        assertEquals(Set
+            .of("values -aliases-> Values$aliases#1", "values -aliases-> Values$aliases#2",
+                "Values$aliases#1 -val-> string:\"plain\"",
+                "Values$aliases#2 -val-> string:\"quo\\\"ted\""), binaryEdges(host));
     }
 
     /** Tests the encoding of abstract classes, interfaces, multiple inheritance
@@ -481,14 +469,14 @@ public class EcoreTest {
         expected.put("Status$IN_HYPH_PROGRESS", labels("type:Status$IN_HYPH_PROGRESS"));
         expected.put("Status$DONE", labels("type:Status$DONE"));
         assertEquals(expected, selfLabels(type));
-        assertEquals(Set.of("Element -sub:-> Named",
-                            // the two super-types of the multiply inheriting class
-                            "Task -sub:-> Element", "Task -sub:-> Trackable",
-                            "Subtask -sub:-> Task", "Project -sub:-> Named",
-                            "Project -part:tasks-> Task",
-                            // an enum-typed attribute is an edge, not a self-loop
-                            "Trackable -out=0..1:status-> Status", "Status$NEW -sub:-> Status",
-                            "Status$IN_HYPH_PROGRESS -sub:-> Status", "Status$DONE -sub:-> Status"),
+        assertEquals(Set
+            .of("Element -sub:-> Named",
+                // the two super-types of the multiply inheriting class
+                "Task -sub:-> Element", "Task -sub:-> Trackable", "Subtask -sub:-> Task",
+                "Project -sub:-> Named", "Project -part:tasks-> Task",
+                // an enum-typed attribute is an edge, not a self-loop
+                "Trackable -out=0..1:status-> Status", "Status$NEW -sub:-> Status",
+                "Status$IN_HYPH_PROGRESS -sub:-> Status", "Status$DONE -sub:-> Status"),
                      binaryEdges(type));
         AspectGraph host = single(imported, ResourceKind.HOST);
         // only the literals used in the instance get a node
@@ -539,8 +527,9 @@ public class EcoreTest {
     public void testNetworkIndexed() throws Exception {
         AspectGraph host
             = single(assertRoundTrip("network.xmi", Ordering.INDEX), ResourceKind.HOST);
-        assertEquals(Set.of("north -route-> Station$route#1", "north -route-> Station$route#2",
-                            "Station$route#1 -val-> south", "Station$route#2 -val-> middle"),
+        assertEquals(Set
+            .of("north -route-> Station$route#1", "north -route-> Station$route#2",
+                "Station$route#1 -val-> south", "Station$route#2 -val-> middle"),
                      edgesAt(host, "Station$route"));
     }
 
@@ -557,15 +546,13 @@ public class EcoreTest {
         // the class name is repaired as a type label, which may contain a
         // hyphen; the feature names as attribute field names, which may not
         expected
-            .put("Line_HYPH_Item",
-                 labels("type:Line_HYPH_Item", "real:unit_UNKN_price", "real:unit_price",
-                        "string:_self_"));
+            .put("Line_HYPH_Item", labels("type:Line_HYPH_Item", "real:unit_UNKN_price",
+                                          "real:unit_price", "string:_self_"));
         expected.put("detail$Item", labels("type:detail$Item", "string:note"));
         assertEquals(expected, selfLabels(type));
-        assertEquals(Set.of("packages$Item -part:entries-> core$Item",
-                            "core$Item -part:details-> detail$Item",
-                            "Line_HYPH_Item -sub:-> core$Item"),
-                     binaryEdges(type));
+        assertEquals(Set
+            .of("packages$Item -part:entries-> core$Item", "core$Item -part:details-> detail$Item",
+                "Line_HYPH_Item -sub:-> core$Item"), binaryEdges(type));
         var properties = GraphInfo.getProperties(type);
         assertEquals("packages|http://groove.utwente.nl/ecore/packages|packages;"
             + "packages.core|http://groove.utwente.nl/ecore/packages/core|core;"
@@ -590,12 +577,12 @@ public class EcoreTest {
     public void testPackagesNames() throws Exception {
         AspectGraph type
             = single(importFrom("packages.xmi", Ordering.NONE, true), ResourceKind.TYPE);
-        String expected = "packages$Item|entries||false|true|0|-1|;"
-            + "core$Item|details||true|true|0|-1|;"
+        String expected
+            = "packages$Item|entries||false|true|0|-1|;" + "core$Item|details||true|true|0|-1|;"
             // the repaired names, each with the Ecore name it came from
-            + "Line_HYPH_Item|_self_||true|true|0|1|self;"
-            + "Line_HYPH_Item|unit_UNKN_price||true|true|0|1|unit.price;"
-            + "Line_HYPH_Item|unit_price||true|true|0|1|unit-price";
+                + "Line_HYPH_Item|_self_||true|true|0|1|self;"
+                + "Line_HYPH_Item|unit_UNKN_price||true|true|0|1|unit.price;"
+                + "Line_HYPH_Item|unit_price||true|true|0|1|unit-price";
         assertEquals(expected,
                      GraphInfo.getProperties(type).getProperty(EcoreToGraphs.FEATURES_KEY));
         // the re-import can only record 'unit-price' again if the export wrote
@@ -624,7 +611,8 @@ public class EcoreTest {
     @Test
     public void testOrderingOverride() throws Exception {
         // an index override for the elements feature only, under global none
-        AspectGraph type = single(importFrom("ordered.ecore",
+        AspectGraph type = single(
+                                  importFrom("ordered.ecore",
                                              mappingText(Ordering.NONE, true,
                                                          "List.elements.ordering = index")),
                                   ResourceKind.TYPE);
@@ -659,8 +647,9 @@ public class EcoreTest {
         SystemStore store = newStore();
         store
             .putTexts(ResourceKind.SETTINGS,
-                      Map.of(EcoreMapping.RESOURCE_QUAL_NAME, mappingText(Ordering.NONE, true),
-                             QualName.parse("ecore.extra"), mappingText(Ordering.INDEX, true)));
+                      Map
+                          .of(EcoreMapping.RESOURCE_QUAL_NAME, mappingText(Ordering.NONE, true),
+                              QualName.parse("ecore.extra"), mappingText(Ordering.INDEX, true)));
         GrammarModel grammar = new GrammarModel(store);
         try {
             EcorePorter.instance().doImport(new File(DIR + "shop.ecore"), FileType.ECORE, grammar);
@@ -673,12 +662,12 @@ public class EcoreTest {
     /** Tests classifier and literal naming overrides. */
     @Test
     public void testNamingOverrides() throws Exception {
-        AspectGraph type = single(importFrom("shop.ecore",
-                                             mappingText(Ordering.NONE, true,
-                                                         "Category.typeName = Genre",
-                                                         "Category.literalStyle = plain",
-                                                         "Category.UNKNOWN.typeName = Misc")),
-                                  ResourceKind.TYPE);
+        AspectGraph type
+            = single(importFrom("shop.ecore",
+                                mappingText(Ordering.NONE, true, "Category.typeName = Genre",
+                                            "Category.literalStyle = plain",
+                                            "Category.UNKNOWN.typeName = Misc")),
+                     ResourceKind.TYPE);
         var labels = selfLabels(type).keySet();
         assertTrue(labels.toString(), labels.contains("Genre"));
         assertTrue(labels.toString(), labels.contains("FICTION")); // plain literal style
@@ -693,14 +682,14 @@ public class EcoreTest {
         assertRoundTrip("shop.xmi",
                         mappingText(Ordering.NONE, true, "Category.typeName = Genre",
                                     "Category.literalStyle = plain",
-                                    "Category.UNKNOWN.typeName = Misc",
-                                    "Book.typeName = Boek"));
+                                    "Category.UNKNOWN.typeName = Misc", "Book.typeName = Boek"));
     }
 
     /** Tests that colliding naming overrides are an error. */
     @Test
     public void testNamingCollision() throws Exception {
-        AspectGraph type = single(importFrom("shop.ecore",
+        AspectGraph type = single(
+                                  importFrom("shop.ecore",
                                              mappingText(Ordering.NONE, true,
                                                          "Book.typeName = Ware",
                                                          "Category.typeName = Ware")),
@@ -727,15 +716,15 @@ public class EcoreTest {
     @Test
     public void testOrderingResolution() throws Exception {
         // an entry about another metamodel is silently ignored
-        AspectGraph type = single(importFrom("ordered.ecore",
+        AspectGraph type = single(
+                                  importFrom("ordered.ecore",
                                              mappingText(Ordering.NONE, true,
                                                          "Shop.orders.ordering = index")),
                                   ResourceKind.TYPE);
         assertEquals(Collections.emptyList(), messages(type.getErrors()));
         // an entry resolving to a single-valued feature is an error
         type = single(importFrom("ordered.ecore",
-                                 mappingText(Ordering.NONE, true,
-                                             "Element.name.ordering = index")),
+                                 mappingText(Ordering.NONE, true, "Element.name.ordering = index")),
                       ResourceKind.TYPE);
         List<String> errors = messages(type.getErrors());
         assertEquals(errors.toString(), 1, errors.size());
@@ -873,8 +862,7 @@ public class EcoreTest {
             + "\nordering = none\nShop.orders.ordering = index\n";
         String edited = EcoreMapping.setGlobals(old, Ordering.INDEX, false);
         assertEquals("# comment\n$schema = " + EcoreMappingSchema.NAME
-            + "\nordering = index\nShop.orders.ordering = index\nuseIdentifiers = false\n",
-                     edited);
+            + "\nordering = index\nShop.orders.ordering = index\nuseIdentifiers = false\n", edited);
     }
 
     /** Parses a mapping from a given settings text. */
@@ -993,8 +981,9 @@ public class EcoreTest {
     static private Map<String,String> metadata(AspectGraph graph) {
         var properties = GraphInfo.getProperties(graph);
         Map<String,String> result = new LinkedHashMap<>();
-        for (var key : List.of(EcoreToGraphs.PACKAGES_KEY, EcoreToGraphs.TYPES_KEY,
-                               EcoreToGraphs.FEATURES_KEY, EcoreToGraphs.OPPOSITES_KEY)) {
+        for (var key : List
+            .of(EcoreToGraphs.PACKAGES_KEY, EcoreToGraphs.TYPES_KEY, EcoreToGraphs.FEATURES_KEY,
+                EcoreToGraphs.OPPOSITES_KEY)) {
             result.put(key, properties.getProperty(key));
         }
         return result;
@@ -1150,11 +1139,6 @@ public class EcoreTest {
         return new TreeSet<>(List.of(labels));
     }
 
-    /** Creates an empty grammar model with given Ecore encoding options. */
-    static private GrammarModel newGrammar(Ordering ordering, boolean useIds) throws Exception {
-        return newGrammar(mappingText(ordering, useIds));
-    }
-
     /** Creates an empty grammar model with a given mapping resource text. */
     static private GrammarModel newGrammar(String mappingText) throws Exception {
         SystemStore store = newStore();
@@ -1164,9 +1148,7 @@ public class EcoreTest {
 
     /** Stores an {@code ecore} settings resource with a given text. */
     static private void putMapping(SystemStore store, String mappingText) throws Exception {
-        store
-            .putTexts(ResourceKind.SETTINGS,
-                      Map.of(EcoreMapping.RESOURCE_QUAL_NAME, mappingText));
+        store.putTexts(ResourceKind.SETTINGS, Map.of(EcoreMapping.RESOURCE_QUAL_NAME, mappingText));
     }
 
     /** Builds the text of an {@code ecore} settings resource from global

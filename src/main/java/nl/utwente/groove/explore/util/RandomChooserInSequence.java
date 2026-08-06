@@ -32,7 +32,7 @@ public class RandomChooserInSequence<E> {
             throw new NullPointerException();
         }
         this.nbSeen++;
-        if (rgen.nextInt(this.nbSeen) == 0) {
+        if (this.rgen.nextInt(this.nbSeen) == 0) {
             this.current = e;
         }
     }

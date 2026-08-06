@@ -57,7 +57,6 @@ import nl.utwente.groove.util.parse.FormatErrorSet;
  * the propagation of the errors of active settings resources to the grammar.
  * @author Arend Rensink
  */
-@SuppressWarnings("javadoc")
 public class SettingsTest {
     /** Directory of the settings test fixtures. */
     static private final String DIR = "junit/settings/";
@@ -332,10 +331,7 @@ public class SettingsTest {
         assertFalse(comments.isEmpty());
         comments.forEach(l -> assertTrue(l, l.startsWith("# ") && l.length() <= 78));
         assertEquals(schema.getExplanation(),
-                     comments
-                         .stream()
-                         .map(l -> l.substring(2))
-                         .collect(Collectors.joining(" ")));
+                     comments.stream().map(l -> l.substring(2)).collect(Collectors.joining(" ")));
         SystemStore store = copyStore(newStore());
         QualName name = QualName.parse("test.fresh");
         store.putTexts(ResourceKind.SETTINGS, Map.of(name, text));
@@ -453,8 +449,7 @@ public class SettingsTest {
         assertEquals(propagated.toString(), 1, propagated.size());
         FormatError error = propagated.get(0);
         assertEquals(ResourceKind.SETTINGS, error.getResourceKind());
-        assertTrue(error.getResourceNames().toString(),
-                   error.getResourceNames().contains(name));
+        assertTrue(error.getResourceNames().toString(), error.getResourceNames().contains(name));
         // the numbers of the nested error are inherited
         assertEquals(getError(grammar, "test.mismatch").getNumbers(), error.getNumbers());
         assertFalse(error.getNumbers().isEmpty());
