@@ -48,6 +48,7 @@ import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.Rule;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
@@ -228,6 +229,7 @@ public class CtrlLoader {
     /** Deletes the priority clause ending in a given priority value token,
      * together with the whitespace separating it from the parameter list.
      */
+    @AIGenerated("Claude Fable 5, 2026-08")
     private void deletePriorityClause(TokenRewriteStream rewriter, CtrlTree prioTree) {
         int end = prioTree.getToken().getTokenIndex();
         // scan back over hidden tokens to the PRIORITY keyword
