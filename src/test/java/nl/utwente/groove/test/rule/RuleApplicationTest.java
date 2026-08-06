@@ -186,6 +186,13 @@ public class RuleApplicationTest extends TestCase {
         test("userOps");
     }
 
+    /** Tests attribute expressions referring to parameter nodes
+     * co-labelled with an identifier aspect (the workaround for gh #684). */
+    @Test
+    public void testParamExpr() {
+        test("paramExpr");
+    }
+
     /** Tests all rules in a named grammar (to be loaded from {@link #INPUT_DIR}). */
     private void test(String grammarName) {
         try {
