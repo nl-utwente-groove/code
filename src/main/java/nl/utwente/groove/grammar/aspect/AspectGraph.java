@@ -575,8 +575,12 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
     /** Flag indicating whether the graph is normal. */
     private boolean normal;
 
-    /** Returns the node with a given ID, if any. */
-    AspectNode getNodeForId(String id) {
+    /** Returns the node with a given ID, if any.
+     * If multiple nodes share the ID (which is only legal in host graphs),
+     * this returns the representative, i.e., the first node with that ID
+     * in insertion order.
+     */
+    public AspectNode getNodeForId(String id) {
         return getNodeIdMap().get(id);
     }
 
@@ -597,14 +601,18 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
     /** Mapping from node identifiers to nodes. */
     private final Factory<Map<String,AspectNode>> nodeIdMap = lazy(this::createNodeIdMap);
 
-    /** Computes the value for {@link #getNodeIdMap()}
+    /** Computes the value for {@link #getNodeIdMap()}.
+     * The first node with a given ID (in insertion order) acts as the
+     * representative for that ID. In host graphs, multiple nodes may share
+     * an ID; they are merged when the graph is turned into a host graph
+     * (see gh #780). In all other roles, duplicate IDs are errors.
      */
     private Map<String,AspectNode> createNodeIdMap() {
         this.sortMap.reset();
         Map<String,AspectNode> result = new HashMap<>();
         nodeSet().stream().filter(AspectNode::hasId).forEach(n -> {
-            var old = result.put(n.getId(), n);
-            if (old != null) {
+            var old = result.putIfAbsent(n.getId(), n);
+            if (old != null && getRole() != GraphRole.HOST) {
                 addError("Duplicate node ID '%s'", n.getId(), n, old);
             }
         });
