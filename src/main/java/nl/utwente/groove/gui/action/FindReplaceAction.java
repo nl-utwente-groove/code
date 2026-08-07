@@ -69,7 +69,7 @@ public class FindReplaceAction extends SimulatorAction
     @Override
     public void refresh() {
         setEnabled(getGrammarStore() != null
-            && !getGrammarModel().getTypeGraph().getLabels().isEmpty());
+            && !getOccurringLabels(getGrammarModel()).isEmpty());
     }
 
     @Override
