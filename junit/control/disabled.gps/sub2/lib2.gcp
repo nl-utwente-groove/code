@@ -1,0 +1,6 @@
+package sub2;
+import enabledRule;
+
+function g() {
+  enabledRule;
+}

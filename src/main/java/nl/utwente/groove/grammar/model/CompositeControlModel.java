@@ -34,6 +34,7 @@ import org.eclipse.jdt.annotation.NonNull;
 import nl.utwente.groove.control.CtrlLoader;
 import nl.utwente.groove.control.instance.Automaton;
 import nl.utwente.groove.control.parse.CtrlTree;
+import nl.utwente.groove.control.parse.Namespace;
 import nl.utwente.groove.control.template.Program;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Recipe;
@@ -111,6 +112,20 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
             }
         }
         getAllPartErrors().throwException();
+        // register the disabled control programs and the unavailable rules as invisible,
+        // to allow more informative error messages for calls and imports; see gh #560
+        for (QualName controlName : getGrammar().getNames(CONTROL)) {
+            if (!controlNames.contains(controlName)) {
+                ControlModel controlModel = getGrammar().getControlModel(controlName);
+                if (controlModel != null) {
+                    getLoader()
+                        .addInvisibleControl(controlName, controlModel.getProgram(),
+                                             Namespace.InvisibleDecl.Reason.DISABLED);
+                }
+            }
+        }
+        getLoader()
+            .addInvisibleRules(getGrammar().getNames(RULE), getGrammar().getActiveNames(RULE));
         try {
             this.program = getLoader().buildProgram(controlNames);
         } catch (FormatException exc) {
