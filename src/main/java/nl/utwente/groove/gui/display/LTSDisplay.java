@@ -57,6 +57,7 @@ import javax.swing.event.ChangeListener;
 
 import org.eclipse.jdt.annotation.NonNull;
 
+import nl.utwente.groove.explore.ExploreResult;
 import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.explore.config.ExploreKey;
 import nl.utwente.groove.explore.config.Shape;
@@ -81,6 +82,7 @@ import nl.utwente.groove.lts.GTSListener;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.lts.Status.Flag;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 
@@ -331,6 +333,34 @@ public class LTSDisplay extends Display implements SimulatorListener {
                 }
             }
             current = next;
+        }
+        getJGraph().setSelectionCells(jCells.toArray());
+    }
+
+    /**
+     * Shows a given exploration result by emphasising its states and
+     * transitions in the LTS panel.
+     * In contrast to {@link #emphasiseStates}, the transitions of the result
+     * are emphasised precisely as recorded, rather than being re-derived from
+     * consecutive states.
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    public void emphasiseResult(ExploreResult result) {
+        if (getJModel() == null) {
+            return;
+        }
+        Set<JCell<@NonNull GTS>> jCells = new HashSet<>();
+        for (GraphState state : result.getStates()) {
+            var jCell = getJModel().getJCellForNode(state);
+            if (jCell != null) {
+                jCells.add(jCell);
+            }
+        }
+        for (GraphTransition trans : result.getTransitions()) {
+            var jCell = getJModel().getJCellForEdge(trans);
+            if (jCell != null) {
+                jCells.add(jCell);
+            }
         }
         getJGraph().setSelectionCells(jCells.toArray());
     }

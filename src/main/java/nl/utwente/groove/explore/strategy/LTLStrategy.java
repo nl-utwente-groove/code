@@ -17,7 +17,10 @@
  */
 package nl.utwente.groove.explore.strategy;
 
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
@@ -35,6 +38,8 @@ import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.match.MatcherFactory;
+import nl.utwente.groove.util.AIGenerated;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.verify.BuchiGraph;
 import nl.utwente.groove.verify.BuchiLocation;
@@ -180,7 +185,7 @@ public class LTLStrategy extends Strategy {
                         finalState = false;
                         ProductTransition prodTrans
                             = addTransition(prodState, trans, buchiTrans.target());
-                        result = findCounterExample(prodState, prodTrans.target());
+                        result = findCounterExample(prodState, prodTrans);
                         if (result) {
                             break trans;
                         }
@@ -246,40 +251,93 @@ public class LTLStrategy extends Strategy {
         state.setColour(getRecord().blue());
     }
 
-    /** Tests if a counterexample can be constructed between given
-     * source and target states; if so, adds the counterexample to the result.
-     * @param source source state of the potential counterexample
-     * @param target target state of the potential counterexample
+    /** Tests if a counterexample can be constructed from the search stack
+     * and a given potential closing transition; if so, adds the counterexample
+     * to the result.
+     * @param source source state of the potential closing transition; expected
+     * to be the current top of the search stack
+     * @param closing potential closing transition of the counterexample cycle
      * @return {@code true} if a counterexample was found
      */
-    protected final boolean findCounterExample(ProductState source, ProductState target) {
+    protected final boolean findCounterExample(ProductState source, ProductTransition closing) {
+        ProductState target = closing.target();
         boolean result = (target.colour() == getRecord().cyan())
             && (source.getBuchiLocation().isAccepting() || target.getBuchiLocation().isAccepting());
         if (result) {
-            // notify counter-example
-            var exploreResult = this.result;
-            GraphState previous = null;
-            for (ProductState stackState : getStateStack()) {
-                var next = stackState.getGraphState();
-                exploreResult.addState(next);
-                if (previous != null) {
-                    var inTrans = findTransitionTo(previous, next);
-                    exploreResult.addTransition(inTrans.get());
-                }
-                previous = next;
-            }
-            if (previous != null) {
-                var inTrans = findTransitionTo(previous, target.getGraphState());
-                exploreResult.addTransition(inTrans.get());
-            }
+            addCounterExample(source, Collections.singletonList(closing));
         }
         return result;
     }
 
-    /** Returns a transition from a given source state to a given target state, if any. */
-    private Optional<? extends GraphTransition> findTransitionTo(GraphState source,
-                                                                 GraphState target) {
-        return source.getTransitions().stream().filter(t -> t.target().equals(target)).findAny();
+    /**
+     * Adds a counterexample lasso to the exploration result (see
+     * {@link nl.utwente.groove.explore.ExploreResult.Lasso}).
+     * The lasso consists of the path along the current search stack, extended
+     * by a given pivot state (if that is not already the top of the stack) and
+     * a chain of product transitions leading from the pivot state back to a
+     * state on the path, at which the cycle closes.
+     * @param pivot final product state of the path proper; either the top of
+     * the search stack, or a state whose direct predecessor is the top
+     * @param trail non-empty chain of product transitions leading from the
+     * pivot state to the state at which the cycle closes
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    public final void addCounterExample(ProductState pivot, List<ProductTransition> trail) {
+        // reconstruct the product-level path along the search stack,
+        // extended by the pivot state and the trail
+        List<ProductState> pathStates = new ArrayList<>(getStateStack());
+        List<ProductTransition> path = new ArrayList<>();
+        for (int i = 1; i < pathStates.size(); i++) {
+            path.add(getLink(pathStates.get(i - 1), pathStates.get(i)));
+        }
+        if (pathStates.isEmpty()) {
+            pathStates.add(pivot);
+        } else if (pathStates.get(pathStates.size() - 1) != pivot) {
+            path.add(getLink(pathStates.get(pathStates.size() - 1), pivot));
+            pathStates.add(pivot);
+        }
+        for (var trans : trail) {
+            path.add(trans);
+            pathStates.add(trans.target());
+        }
+        // the final path state closes the cycle; find its earlier occurrence
+        ProductState closure = pathStates.get(pathStates.size() - 1);
+        int start = pathStates.indexOf(closure);
+        assert start < path.size() : "Cycle closure %s does not occur on the path %s"
+            .formatted(closure, path);
+        // store the counterexample in the result;
+        // the final path state duplicates the cycle start and is skipped
+        var result = this.result;
+        pathStates.subList(0, pathStates.size() - 1).forEach(s -> result.addState(s.getGraphState()));
+        var prefix = toGraphTransitions(path.subList(0, start));
+        var cycle = toGraphTransitions(path.subList(start, path.size()));
+        prefix.forEach(result::addTransition);
+        cycle.forEach(result::addTransition);
+        result.setLasso(new ExploreResult.Lasso(prefix, cycle));
+    }
+
+    /** Returns the first product transition between two given product states.
+     * Such a transition is guaranteed to exist if the states are consecutive
+     * on the search stack.
+     */
+    private ProductTransition getLink(ProductState source, ProductState target) {
+        for (var trans : source.outTransitions()) {
+            if (trans.target().equals(target)) {
+                return trans;
+            }
+        }
+        throw Exceptions.illegalState("No product transition from %s to %s", source, target);
+    }
+
+    /** Extracts the graph transitions from a chain of product transitions,
+     * skipping the {@code null} graph transitions of the artificial self-loops
+     * added for final states. */
+    static private List<GraphTransition> toGraphTransitions(List<ProductTransition> path) {
+        return path
+            .stream()
+            .map(ProductTransition::graphTransition)
+            .filter(Objects::nonNull)
+            .toList();
     }
 
     /**

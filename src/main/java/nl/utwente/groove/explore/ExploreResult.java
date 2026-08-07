@@ -19,6 +19,7 @@ package nl.utwente.groove.explore;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -31,6 +32,7 @@ import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.lts.StateProperty;
 import nl.utwente.groove.lts.UserStateProperty;
+import nl.utwente.groove.util.AIGenerated;
 
 /**
  * A set of graph states that constitute the result of the execution of some
@@ -125,6 +127,67 @@ public class ExploreResult {
      */
     public void addTransition(GraphTransition t) {
         this.transitions.add(t);
+    }
+
+    /** Returns the counterexample lasso stored in this result,
+     * or {@code null} if there is none.
+     * @see #setLasso(Lasso)
+     */
+    public @Nullable Lasso getLasso() {
+        return this.lasso;
+    }
+
+    /** Sets the counterexample lasso of this result.
+     * The states and transitions of the lasso are expected to have been
+     * added to this result as well.
+     */
+    public void setLasso(Lasso lasso) {
+        this.lasso = lasso;
+    }
+
+    /** Counterexample lasso, optionally set by LTL model checking. */
+    private @Nullable Lasso lasso;
+
+    /**
+     * Ordered counterexample to an LTL property, as produced by LTL model
+     * checking: a finite path (the prefix) leading from the start state to a
+     * cycle, together representing an infinite run that violates the property.
+     * The concatenation of {@code prefix} and {@code cycle} forms a connected
+     * transition sequence; the final transition of {@code cycle} leads back to
+     * the state in which the cycle started. The prefix is empty if the cycle
+     * starts in the start state; the cycle is empty if the violating run ends
+     * in a final state (in which it then remains forever).
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    public record Lasso(List<GraphTransition> prefix, List<GraphTransition> cycle) {
+        @Override
+        public String toString() {
+            var result = new StringBuilder();
+            if (!prefix().isEmpty()) {
+                result.append(pathString(prefix()));
+                result.append(prefix().get(prefix().size() - 1).target());
+            }
+            if (cycle().isEmpty()) {
+                result.append(result.isEmpty()
+                    ? "the start state"
+                    : ", a final state");
+            } else {
+                result.append(result.isEmpty()
+                    ? "the cycle "
+                    : ", followed by the cycle ");
+                result.append(pathString(cycle()));
+                result.append(cycle().get(0).source());
+            }
+            return result.toString();
+        }
+
+        /** Returns a string listing the states and transition labels
+         * along a given transition sequence, ending with a trailing arrow. */
+        static private String pathString(List<GraphTransition> path) {
+            var result = new StringBuilder();
+            path.forEach(t -> result.append("%s --%s--> ".formatted(t.source(), t.label().text())));
+            return result.toString();
+        }
     }
 
     /** Returns the number of states and transitions currently stored in this result. */

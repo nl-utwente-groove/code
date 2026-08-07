@@ -53,7 +53,7 @@ public class BoundedLTLStrategy extends LTLStrategy {
         if (prodState.isExplored()) {
             // if the state is already explored...
             for (ProductTransition prodTrans : prodState.outTransitions()) {
-                result = findCounterExample(prodState, prodTrans.target());
+                result = findCounterExample(prodState, prodTrans);
                 if (result) {
                     break;
                 }

@@ -16,9 +16,6 @@
  */
 package nl.utwente.groove.gui.action;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
 import javax.swing.Action;
 import javax.swing.JOptionPane;
 
@@ -29,7 +26,6 @@ import nl.utwente.groove.explore.strategy.Boundary;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.dialog.BoundedModelCheckingDialog;
 import nl.utwente.groove.gui.dialog.StringDialog;
-import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.verify.Formula;
 import nl.utwente.groove.verify.FormulaParser;
@@ -82,11 +78,14 @@ public class CheckLTLAction extends ExploreAction {
                     .showMessageDialog(getFrame(), String
                         .format("The property '%s' holds for this system", property));
             } else {
-                Collection<GraphState> states = exploration.getResult().getStates();
-                getLtsDisplay().emphasiseStates(new ArrayList<>(states), true);
-                JOptionPane
-                    .showMessageDialog(getFrame(), String
-                        .format("A counter-example to '%s' is highlighted", property));
+                var result = exploration.getResult();
+                getLtsDisplay().emphasiseResult(result);
+                var lasso = result.getLasso();
+                String message = lasso == null
+                    ? String.format("A counter-example to '%s' is highlighted", property)
+                    : String
+                        .format("A counter-example to '%s' is highlighted:%n%s", property, lasso);
+                JOptionPane.showMessageDialog(getFrame(), message);
             }
         }
     }

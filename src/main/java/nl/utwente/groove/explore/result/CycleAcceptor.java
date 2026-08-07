@@ -17,13 +17,11 @@
 
 package nl.utwente.groove.explore.result;
 
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
 
 import nl.utwente.groove.explore.ExploreResult;
 import nl.utwente.groove.explore.strategy.LTLStrategy;
-import nl.utwente.groove.lts.GraphState;
-import nl.utwente.groove.lts.GraphTransition;
-import nl.utwente.groove.verify.ModelChecking.Outcome;
 import nl.utwente.groove.verify.ModelChecking.Record;
 import nl.utwente.groove.verify.ProductListener;
 import nl.utwente.groove.verify.ProductState;
@@ -68,36 +66,26 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
     @Override
     public void closeUpdate(ProductStateSet gts, ProductState state) {
         if (state.getBuchiLocation().isAccepting()) {
-            Outcome event = redDFS(state);
-            if (event != Outcome.OK) {
-                var result = getResult();
-                GraphState previous = null;
-                // put the counter-example in the result
-                for (ProductState stackState : this.strategy.getStateStack()) {
-                    var next = stackState.getGraphState();
-                    result.addState(next);
-                    if (previous != null) {
-                        var inTrans = findTransitionTo(previous, next);
-                        result.addTransition(inTrans.get());
-                    }
-                    previous = next;
-                }
-                result.addState(state.getGraphState());
-                if (previous != null) {
-                    var inTrans = findTransitionTo(previous, state.getGraphState());
-                    result.addTransition(inTrans.get());
-                }
+            var trail = new ArrayList<ProductTransition>();
+            if (redDFS(state, trail)) {
+                // the current search stack, extended by the trail from state,
+                // constitutes the counter-example
+                this.strategy.addCounterExample(state, trail);
             }
         }
     }
 
-    /** Returns a transition from a given source state to a given target state, if any. */
-    private Optional<? extends GraphTransition> findTransitionTo(GraphState source,
-                                                                 GraphState target) {
-        return source.getTransitions().stream().filter(t -> t.target().equals(target)).findAny();
-    }
-
-    private Outcome redDFS(ProductState state) {
+    /**
+     * Depth-first search for an accepting cycle, over the previously explored
+     * (blue) states. If a state on the current search stack (cyan) is reached,
+     * such a cycle exists; the chain of transitions leading to it is collected
+     * in {@code trail}.
+     * @param state the state to search from
+     * @param trail chain of product transitions from the original accepting
+     * state to {@code state}; extended by this call
+     * @return {@code true} if an accepting cycle was found
+     */
+    private boolean redDFS(ProductState state, List<ProductTransition> trail) {
         for (ProductTransition nextTransition : state.outTransitions()) {
             // although the outgoing transition in the gts might cross the
             // boundary
@@ -112,16 +100,18 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
             // results for such states
             ProductState target = nextTransition.target();
             if (target.colour() == this.record.cyan()) {
-                return Outcome.ERROR;
+                trail.add(nextTransition);
+                return true;
             } else if (target.colour() == this.record.blue()) {
                 target.setColour(this.record.red());
-                Outcome event = redDFS(target);
-                if (event != Outcome.OK) {
-                    return event;
+                trail.add(nextTransition);
+                if (redDFS(target, trail)) {
+                    return true;
                 }
+                trail.remove(trail.size() - 1);
             }
         }
-        return Outcome.OK;
+        return false;
     }
 
     @Override
@@ -131,7 +121,10 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
         if (getResult().isEmpty()) {
             result = "No counterexample found for " + property;
         } else {
-            result = property + " is violated; counterexample: " + getResult().getStates();
+            var lasso = getResult().getLasso();
+            result = property + " is violated by " + (lasso == null
+                ? getResult().getStates().toString()
+                : lasso.toString());
         }
         return result;
     }
