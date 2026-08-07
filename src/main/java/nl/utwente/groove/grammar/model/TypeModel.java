@@ -24,7 +24,7 @@ import static nl.utwente.groove.grammar.aspect.AspectKind.REMARK;
 import static nl.utwente.groove.grammar.aspect.AspectKind.SUBTYPE;
 import static nl.utwente.groove.graph.EdgeRole.NODE_TYPE;
 
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
@@ -92,14 +92,24 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
 
     /**
      * Returns the set of labels used in this graph.
-     * @return the set of labels, or {@code null} if the model could not be computed
+     * If the model could not be computed, the labels are collected
+     * from the source aspect graph instead, in line with the best-effort
+     * contract of this method.
      */
     @Override
     public Set<TypeLabel> getTypeLabels() {
         TypeGraph typeGraph = getResource();
-        return typeGraph == null
-            ? Collections.<TypeLabel>emptySet()
-            : typeGraph.getLabels();
+        if (typeGraph == null) {
+            Set<TypeLabel> result = new HashSet<>();
+            for (AspectEdge edge : getSource().edgeSet()) {
+                TypeLabel label = edge.getTypeLabel();
+                if (label != null) {
+                    result.add(label);
+                }
+            }
+            return result;
+        }
+        return typeGraph.getLabels();
     }
 
     /** Lazily creates and returns the aspect-to-type-graph converter for this model. */

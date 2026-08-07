@@ -63,13 +63,16 @@ public class FindReplaceDialog {
     public static final int REPLACE = 2;
 
     /**
-     * Constructs a dialog instance, given a set of existing names (that should
-     * not be used) as well as a suggested value for the new rule name.
-     * @param typeGraph the type graph containing all labels and sublabels
+     * Constructs a dialog instance, given the set of labels to offer for
+     * renaming as well as a suggested value for the label to be renamed.
+     * @param typeGraph the type graph, used to check the validity of a renaming
+     * @param labels the labels offered for renaming; this includes labels
+     * that occur in the grammar but have errors (see gh #701)
      * @param oldLabel the label to rename; may be <code>null</code>
      */
-    public FindReplaceDialog(TypeGraph typeGraph, TypeLabel oldLabel) {
+    public FindReplaceDialog(TypeGraph typeGraph, Set<TypeLabel> labels, TypeLabel oldLabel) {
         this.typeGraph = typeGraph;
+        this.labels = labels;
         this.suggestedLabel = oldLabel;
     }
 
@@ -148,9 +151,11 @@ public class FindReplaceDialog {
             if (result.equals(oldLabel)) {
                 throw new FormatException("Old and new labels coincide");
             } else if (this.typeGraph.isNodeType(oldLabel) && this.typeGraph.isNodeType(result)) {
+                // the old label is not necessarily a declared node type,
+                // as it may be an erroneous label (see gh #701)
                 TypeNode oldType = this.typeGraph.getNode(oldLabel);
                 TypeNode newType = this.typeGraph.getNode(result);
-                if (newType != null) {
+                if (oldType != null && newType != null) {
                     if (this.typeGraph.isSubtype(oldType, newType)) {
                         throw new FormatException("New label '%s' is an existing supertype of '%s'",
                             result, oldLabel);
@@ -260,7 +265,7 @@ public class FindReplaceDialog {
     /** Returns the text field in which the user is to enter his input. */
     private JComboBox<TypeLabel> getOldField() {
         if (this.oldField == null) {
-            final JComboBox<TypeLabel> result = this.oldField = getLabelComboBox(this.typeGraph);
+            final JComboBox<TypeLabel> result = this.oldField = getLabelComboBox(this.labels);
             result.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -326,8 +331,8 @@ public class FindReplaceDialog {
     /** Combobox showing the new label's type. */
     private JLabel oldTypeLabel;
 
-    /** Returns the combo box for the label in the given type graph. */
-    private JComboBox<TypeLabel> getLabelComboBox(TypeGraph typeGraph) {
+    /** Returns the combo box for a given set of labels. */
+    private JComboBox<TypeLabel> getLabelComboBox(Set<TypeLabel> labels) {
         final JComboBox<TypeLabel> result = new JComboBox<>();
         result.setFocusable(false);
         result.setRenderer(new DefaultListCellRenderer() {
@@ -343,7 +348,7 @@ public class FindReplaceDialog {
                                                           cellHasFocus);
             }
         });
-        for (TypeLabel label : sortLabels(typeGraph.getLabels())) {
+        for (TypeLabel label : sortLabels(labels)) {
             if (!label.isSort() && label != TypeLabel.NODE) {
                 result.addItem(label);
             }
@@ -411,8 +416,11 @@ public class FindReplaceDialog {
     /** Combobox showing the old label's type. */
     private JComboBox<String> newTypeChoice;
 
-    /** Set of existing rule names. */
+    /** The type graph, used to check the validity of a renaming. */
     private final TypeGraph typeGraph;
+
+    /** The labels offered for renaming. */
+    private final Set<TypeLabel> labels;
 
     /** The old label value suggested at construction time; may be {@code null}. */
     private final TypeLabel suggestedLabel;
