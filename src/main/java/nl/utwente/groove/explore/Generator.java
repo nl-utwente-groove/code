@@ -566,7 +566,8 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
             + "                more than <n> nodes\n" //
             + "  cebound:id_1>n_1,...,id_k>n_k\n" //
             + "              - BFS up to (but not including) graphs with \n"
-            + "                more than <n_i> <id_i>-edges, for all i in 1..k\n"
+            + "                more than <n_i> <id_i>-edges, for all i in 1..k;\n"
+            + "                <id_i> may carry a type: or flag: prefix\n"
             + "  ltl:prop    - LTL Model Checking\n" //
             + "  ltlbounded:idn,...;prop\n" //
             + "              - Bounded LTL Model Checking\n" //
