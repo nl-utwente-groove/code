@@ -151,9 +151,11 @@ public class FindReplaceDialog {
             if (result.equals(oldLabel)) {
                 throw new FormatException("Old and new labels coincide");
             } else if (this.typeGraph.isNodeType(oldLabel) && this.typeGraph.isNodeType(result)) {
+                // the old label is not necessarily a declared node type,
+                // as it may be an erroneous label (see gh #701)
                 TypeNode oldType = this.typeGraph.getNode(oldLabel);
                 TypeNode newType = this.typeGraph.getNode(result);
-                if (newType != null) {
+                if (oldType != null && newType != null) {
                     if (this.typeGraph.isSubtype(oldType, newType)) {
                         throw new FormatException("New label '%s' is an existing supertype of '%s'",
                             result, oldLabel);
