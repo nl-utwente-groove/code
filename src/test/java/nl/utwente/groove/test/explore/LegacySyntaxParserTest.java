@@ -87,6 +87,7 @@ public class LegacySyntaxParserTest {
             {"cnbound:20", "bound=nodes:20"},
             {"cebound:append>6", "bound=edges:append>6"},
             {"cebound:a>1,b>2", "bound=edges:a>1,b>2"},
+            {"cebound:type:A>3,flag:f>1", "bound=edges:type:A>3,flag:f>1"},
             {"uptorule:bfs->eat", "bound=upto:eat"},
             {"uptorule:dfs=>!eat", "next=newest bound=include:!eat"},
             {"uptorule:dfs->eat", "next=newest bound=upto:eat"},};

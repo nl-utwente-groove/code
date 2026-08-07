@@ -43,10 +43,12 @@ public enum Bound implements Setting.Kind {
         Setting.ContentType.LIMIT),
     /**
      * Bound on the number of edges of given types, as a comma-separated list
-     * of <i>label</i>{@code >}<i>bound</i> pairs.
+     * of <i>label</i>{@code >}<i>bound</i> pairs; labels may carry a
+     * {@code type:} or {@code flag:} prefix.
      */
     EDGES("edges", "States are bounded by their number of edges of given types"
-        + " (a comma-separated list of label>bound pairs)",
+        + " (a comma-separated list of label>bound pairs;"
+        + " labels may carry a type: or flag: prefix)",
         Setting.ContentType.STRING),
     /**
      * Condition bound: states satisfying the named rule condition (negated if

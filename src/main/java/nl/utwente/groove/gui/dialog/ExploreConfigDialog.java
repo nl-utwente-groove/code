@@ -1028,7 +1028,8 @@ public class ExploreConfigDialog extends JDialog {
             }
             if (kind == Bound.EDGES) {
                 return "a comma-separated list of <i>label</i>&gt;<i>bound</i> pairs,"
-                    + " e.g. a&gt;2,b&gt;3";
+                    + " e.g. a&gt;2,type:B&gt;3;"
+                    + " node type and flag labels carry their type:/flag: prefix";
             }
             if (kind == Bound.UPTO || kind == Bound.INCLUDE) {
                 return "a rule name, optionally negated by a '!' prefix";

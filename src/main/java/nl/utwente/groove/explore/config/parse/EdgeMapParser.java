@@ -21,15 +21,20 @@ import java.util.TreeMap;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeLabel;
+import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
  * Parser for a mapping of edge labels to upper bounds, in the syntax
- * <code>label&gt;num[,label&gt;num]*</code>. Successor of the parsing in
- * the legacy {@code EncodedEdgeMap}.
+ * <code>label&gt;num[,label&gt;num]*</code>. Labels may carry an explicit
+ * {@code type:} or {@code flag:} prefix; a bare name denotes a binary edge
+ * if the type graph has one, and is otherwise accepted if it resolves
+ * unambiguously. Successor of the parsing in the legacy {@code EncodedEdgeMap}.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -67,15 +72,54 @@ public class EdgeMapParser {
         return result;
     }
 
-    /** Resolves an edge label in a type graph. */
+    /** Resolves an edge label in a type graph.
+     * The label text may carry an explicit {@code type:} or {@code flag:}
+     * prefix, which selects exactly that label role; a bare name denotes a
+     * binary edge if the type graph has one, and otherwise resolves to a
+     * node type or flag of that name provided this is unambiguous.
+     */
     private static TypeLabel parseLabel(TypeGraph typeGraph,
                                         String text) throws FormatException {
+        var prefixedText = EdgeRole.parseLabel(text);
+        EdgeRole role = prefixedText.one();
+        String name = prefixedText.two();
+        @Nullable
+        TypeLabel binary = null, nodeType = null, flag = null;
         for (TypeLabel label : typeGraph.getLabels()) {
-            if (label.text().equals(text)) {
-                return label;
+            if (!label.text().equals(name)) {
+                continue;
+            }
+            EdgeRole labelRole = label.getRole();
+            if (labelRole == EdgeRole.BINARY) {
+                binary = label;
+            } else if (labelRole == EdgeRole.NODE_TYPE) {
+                nodeType = label;
+            } else {
+                flag = label;
             }
         }
-        throw new FormatException("'%s' is not a valid edge name in the current grammar", text);
+        @Nullable
+        TypeLabel result;
+        if (role == EdgeRole.NODE_TYPE) {
+            result = nodeType;
+        } else if (role == EdgeRole.FLAG) {
+            result = flag;
+        } else if (binary != null) {
+            // a bare name primarily denotes a binary edge
+            result = binary;
+        } else if (nodeType != null && flag != null) {
+            throw new FormatException(
+                "Edge name '%s' is ambiguous in the current grammar; use a '%s' or '%s' prefix",
+                text, EdgeRole.NODE_TYPE.getPrefix(), EdgeRole.FLAG.getPrefix());
+        } else {
+            result = nodeType != null
+                ? nodeType
+                : flag;
+        }
+        if (result == null) {
+            throw new FormatException("'%s' is not a valid edge name in the current grammar", text);
+        }
+        return result;
     }
 
     /** Parses an edge bound (a non-negative number). */
