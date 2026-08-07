@@ -187,10 +187,6 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         converter = LTSLabelsHandler.class)
     private LTSLabels ltsLabels;
 
-    @Option(names = "-ltl", paramLabel = "prop",
-        description = "Check the LTL property <prop> (multiple allowed)",
-        converter = LTLFormulaHandler.class)
-    private List<gov.nasa.ltl.trans.Formula<String>> ltlProps;
     @Option(names = "-ctl", paramLabel = "prop",
         description = "Check the CTL property <prop> (multiple allowed)",
         converter = CLTFormulaHandler.class)
@@ -232,15 +228,6 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
                 throw new TypeConversionException(
                     "Error while parsing '%s': %s".formatted(value, e.getMessage()));
             }
-        }
-    }
-
-    /** Option handler for LTL formulas. */
-    public static class LTLFormulaHandler
-        implements ITypeConverter<gov.nasa.ltl.trans.Formula<Proposition>> {
-        @Override
-        public gov.nasa.ltl.trans.Formula<Proposition> convert(String value) throws FormatException {
-            return Formula.parse(Logic.LTL, value).toLtlFormula();
         }
     }
 
