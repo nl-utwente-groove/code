@@ -1,0 +1,104 @@
+# Plan: module split (gui first, cli second)
+
+*Findings and plan as of 2026-08-10 (rev 3, Claude sessions, reviewed by Arend).
+Tracked in gh #887. This document is the spec for redoing the split fresh off
+current master; do not resurrect the old working branches.*
+
+## Goal
+
+Split GROOVE into Maven modules: a **gui** module first (everything Swing/JGraph),
+a **cli** module second. The core module must compile and run headless without any
+GUI classes on the classpath.
+
+## History
+
+- `module-split-phase1` (Arend's original attempt) is superseded — master
+  independently redid 3 of its 8 commits. The local branch still exists;
+  whether to delete it is Arend's call.
+- `module-split-phase2` (five mechanical-move commits, tip `91c07cbd4`) was
+  abandoned and deleted on 2026-08-10 because master had moved too far under
+  it. Its moves are small and trivially redone (listed below); do not attempt
+  to rebase or cherry-pick the old commits.
+- The exploration rework (merge `251fa2f08`, 2026-08-02) deleted
+  `explore.encode`/`prettyparse`. That removed what was previously the biggest
+  structural blocker: `explore.**` is now clean of gui/Swing dependencies.
+
+## Blocker inventory
+
+Full re-scan done 2026-08-02 on the merged exploration tree. File/line details
+will have drifted; **re-verify each item before acting on it**.
+
+### (a) Trivial deletions
+
+- `GraphPreviewDialog` debug blocks in `grammar.model.HostModelMorphism` and
+  `verify.BuchiGraph` (behind compile-time-false flags).
+- `util.Groove` `ActionMap`/`InputMap` `toString` overloads (zero callers).
+- `util.FontCheck`, `util.ShowFonts` (zero callers).
+- `Version.main`: replace `JOptionPane` output with stdout.
+- Javadoc-only imports: `prolog.GrooveEnvironment` (org.fife),
+  `io.graph.LayoutIO` (org.jgraph).
+- DEBUG-only `gui.Viewer` usage in `AutomatonBuildTest`/`RecipeTest`.
+
+### (b) Mechanical moves
+
+The five former phase-2 moves:
+
+1. `SelectableListEntry` out of `gui.list.ListPanel` → `util.parse`
+   (de-guis `FormatError`).
+2. Ctrl/Prolog RSyntaxTextArea token makers (+ `.flex` sources +
+   `prolog-syntax.xml`) → `gui.display`.
+3. `DialogOracle` → `gui.dialog`. **Beware:** this move alone re-creates a
+   grammar→gui edge in `OracleParser` — it must be paired with the oracle
+   registry inversion (c1) below.
+4. Visual constants: role colours → `util.Colors` with `Values` redirecting to
+   them; keystrokes and JGraph line-style codes out of `util.line.LineStyle`;
+   add `Options.getLineStyleKey`.
+5. `SearchResult` → `util.parse` (de-guis `AspectGraph`).
+
+Further moves:
+
+- Font loading out of `gui.Options` into core `util` (de-guis `HTMLConverter`
+  and `HTMLLineFormat`, and thereby the `explore.config.SettingParser` taint).
+- `io.ExtensionFilter` → plain `java.io.FileFilter`, with a Swing adapter
+  beside `GrooveFileChooser`.
+- `grammar.groovy` package → gui module (it holds a `SimulatorModel` field).
+- Root shims `Simulator`/`Viewer`/`Imager` → gui module
+  (`Generator`/`ModelChecker`/`PrologChecker` shims are clean and stay in core).
+- Prolog builtin `Predicate_show_graph` → registered by the GUI.
+- `ImagerTest` → gui test set.
+
+### (c) SPI/registry inversions — the three real design points
+
+1. **Oracle registry**: `OracleParser` resolves `ValueOracleKind.DIALOG` via a
+   registry or `ServiceLoader`; the GUI registers `DialogOracle` at startup
+   (precedent: `JGraphExporters.register()` in the `Simulator` constructor).
+   Note this sits on the hot path of every grammar load.
+2. **Label render options**: `lts.RuleTransitionLabel` reads
+   `gui.Options.SHOW_CALL_NESTING_OPTION` live → introduce a core
+   label-render-options interface; the GUI registers the live implementation.
+3. **Shutdown hook**: `util.cli.GrooveCmdLineTool.waitForWindows()` polls
+   `java.awt.Window` → a pluggable shutdown hook installed only by GUI tools.
+
+### (d) Redesign — largest single item
+
+`io.store.SystemStore` extends `javax.swing.undo.UndoableEditSupport`; the whole
+store edit protocol is Swing's undo model (~20 sites). Replace with a core edit
+model plus a gui-side `UndoManager` adapter.
+
+## Endgame: the Maven/module-info split
+
+Once (a)–(d) are done, split the build: the gui module takes `jgraph`,
+`jgoodies.looks`, `osxadapter`, RSyntaxTextArea, `batik`, `fop`. Core keeps a
+non-transitive `requires java.desktop` for the ~20 files using awt
+`Color`/`Point`/geom classes as plain data — accepted trade-off; defining our
+own geometry types was judged not worth it.
+
+## Phasing
+
+Each phase is a separate branch/PR, in dependency order:
+
+1. Deletions (a) — no design content, mergeable immediately.
+2. Mechanical moves (b), with move 3 bundled with inversion (c1).
+3. Remaining inversions (c2), (c3).
+4. `SystemStore` redesign (d).
+5. Maven/module-info split.

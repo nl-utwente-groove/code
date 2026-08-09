@@ -135,7 +135,7 @@ public class LTLTest {
         testFormula("!FG p", false);
         testFormula("q M (p|r)", true);
         testFormula("p R r", false);
-        //        testFormula("r R (p|q)", true);
+        testFormula("r R (p|q)", true);
         testFormula("G p", false);
         testFormula("G(p|q)", true);
         testFormula("G(p|X(q|X q))", true);

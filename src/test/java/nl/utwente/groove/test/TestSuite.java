@@ -1,6 +1,7 @@
 package nl.utwente.groove.test;
 
 import org.junit.jupiter.api.Tag;
+import org.junit.platform.suite.api.ExcludeEngines;
 import org.junit.platform.suite.api.SelectPackages;
 import org.junit.platform.suite.api.Suite;
 
@@ -29,6 +30,7 @@ import org.junit.platform.suite.api.Suite;
 @Tag("all")
 @Suite
 @SelectPackages("nl.utwente.groove.test")
+@ExcludeEngines("junit-platform-suite")
 public class TestSuite {
     // empty by design
 }

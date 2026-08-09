@@ -44,6 +44,7 @@ import nl.utwente.groove.algebra.syntax.FieldExpr;
 import nl.utwente.groove.algebra.syntax.Variable;
 import nl.utwente.groove.grammar.aspect.AspectContent.NestedValue;
 import nl.utwente.groove.grammar.aspect.AspectKind.Category;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Keywords;
@@ -242,7 +243,7 @@ public class NormalAspectGraph extends AspectGraph {
             try {
                 AspectNode source = edge.source();
                 assert !source.has(Category.NESTING);
-                AspectNode level = source.getLevelNode();
+                AspectNode level = resolveLevel(edge, source.getLevelNode());
                 AspectEdge normalisedEdge
                     = addAssignment(level, edge, edge.getAssign(), edge.getKind(Category.ROLE));
                 replaceNormalisedEdge(edge, normalisedEdge);
@@ -262,9 +263,9 @@ public class NormalAspectGraph extends AspectGraph {
                     && (sourceIsNesting || !source.has(Category.ROLE, AspectKind::inNAC));
                 Expression predicate = edge.getTest();
                 assert predicate != null;
-                AspectNode level = sourceIsNesting
+                AspectNode level = resolveLevel(edge, sourceIsNesting
                     ? source.getParentNode()
-                    : source.getLevelNode();
+                    : source.getLevelNode());
                 AspectNode outcome = addExpression(level, edge, predicate);
                 // specify whether the outcome should be true or false
                 outcome.set(Aspect.newAspect(Constant.instance(!nac), getRole()));
@@ -358,9 +359,14 @@ public class NormalAspectGraph extends AspectGraph {
             ? new AspectContent.MultiplicityContent(holderEdge.getMult())
                 .toParsableString(AspectKind.MULT)
             : "";
+        // propagate an explicit quantifier level name of the original let-edge
+        // onto the normalised field edges, where the rule model picks it up
+        String levelInfix = holder instanceof AspectEdge holderEdge && holderEdge.hasLevelName()
+            ? "" + AspectParser.ASSIGN + holderEdge.getLevelName()
+            : "";
         String assignLabelText = multPrefix + (newRoleKind == null
             ? ""
-            : newRoleKind.getPrefix()) + assign.getLhs();
+            : newRoleKind.getName() + levelInfix + AspectParser.SEPARATOR) + assign.getLhs();
         var source = holder instanceof AspectNode holderNode
             ? holderNode
             : ((AspectEdge) holder).source();
@@ -381,7 +387,9 @@ public class NormalAspectGraph extends AspectGraph {
                 oldTarget = oldEdge.target();
                 removeEdge(oldEdge);
             }
-            assignLabel = parser.parse(ERASER.getPrefix() + assign.getLhs(), getRole());
+            assignLabel = parser
+                .parse(ERASER.getName() + levelInfix + AspectParser.SEPARATOR + assign.getLhs(),
+                       getRole());
             addNormalisedEdge(holder, source, assignLabel, oldTarget).setParsed();
         }
         result.setParsed();
@@ -645,7 +653,39 @@ public class NormalAspectGraph extends AspectGraph {
         AspectNode next = child;
         while (!result && next != null) {
             next = next.getParentNode();
-            result = child.equals(parent);
+            result = parent.equals(next);
+        }
+        return result;
+    }
+
+    /** Resolves the explicit quantifier level name of a given (let- or test-)edge, if any,
+     * against the default level derived from the edge's source node.
+     * Mirrors the level resolution for ordinary rule edges in {@code RuleModel}:
+     * the deeper of the two levels wins.
+     * @param edge the edge whose level is to be resolved
+     * @param defaultLevel the (possibly {@code null}) level derived from the edge's source node
+     * @return {@code defaultLevel} if the edge has no level name, otherwise the deeper
+     * of the named and the default level
+     * @throws FormatException if the level name does not correspond to a quantifier node,
+     * or the named and default levels are incomparable
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    private @Nullable AspectNode resolveLevel(AspectEdge edge,
+                                              @Nullable AspectNode defaultLevel) throws FormatException {
+        var result = defaultLevel;
+        var name = edge.getLevelName();
+        if (name != null) {
+            var levelNode = getNodeForId(name);
+            if (levelNode == null || !levelNode.has(Category.NESTING)) {
+                throw new FormatException("Undefined nesting level '%s' in edge %s", name, edge);
+            }
+            if (defaultLevel == null || isChild(levelNode, defaultLevel)) {
+                result = levelNode;
+            } else if (!isChild(defaultLevel, levelNode)) {
+                throw new FormatException(
+                    "Nesting level '%s' in edge %s is incompatible with the source node level",
+                    name, edge);
+            }
         }
         return result;
     }

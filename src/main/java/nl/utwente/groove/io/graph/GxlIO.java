@@ -578,7 +578,11 @@ public class GxlIO extends GraphIO<AttrGraph> {
             JAXBElement<GxlType> doc
                 = (JAXBElement<GxlType>) this.unmarshaller.unmarshal(inputStream);
             inputStream.close();
-            return doc.getValue().getGraph().get(0);
+            var graphs = doc.getValue().getGraph();
+            if (graphs.isEmpty()) {
+                throw new IOException("GXL document contains no graph");
+            }
+            return graphs.get(0);
         } catch (JAXBException e) {
             throw new IOException(String.format("Error in %s: %s", inputStream, e.getMessage()));
         }

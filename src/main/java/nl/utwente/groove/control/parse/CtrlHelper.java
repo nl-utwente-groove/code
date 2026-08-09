@@ -421,7 +421,12 @@ public class CtrlHelper {
     void checkImport(CtrlTree importTree) {
         QualName name = importTree.getQualName();
         if (!this.namespace.hasCallable(name)) {
-            emitErrorMessage(importTree, "Imported name '%s' does not exist", name);
+            var invisible = this.namespace.getInvisible(name);
+            if (invisible == null) {
+                emitErrorMessage(importTree, "Imported name '%s' does not exist", name);
+            } else {
+                emitErrorMessage(importTree, "Imported %s", invisible.toMessage(name, false));
+            }
         }
     }
 
@@ -664,7 +669,12 @@ public class CtrlHelper {
                 ? u
                 : null;
             if (unit == null) {
-                emitErrorMessage(callTree, "Unknown unit '%s'", unitName);
+                var invisible = this.namespace.getInvisible(unitName);
+                if (invisible == null) {
+                    emitErrorMessage(callTree, "Unknown unit '%s'", unitName);
+                } else {
+                    emitErrorMessage(callTree, "%s", invisible.toMessage(unitName, true));
+                }
                 //            } else if (action != null && action.getPriority() > 0) {
                 //                String message = "Explicit call of prioritised %s '%s' not allowed";
                 //                emitErrorMessage(callTree, message, unit.getKind().getName(false), unitName);

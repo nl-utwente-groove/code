@@ -559,7 +559,11 @@ public class StateDisplay extends Display implements SimulatorListener {
                 continue;
             }
             AspectJVertex graphVertex = startJModel.getJCellForNode(node);
-            stateVertex.putVisuals(graphVertex.getVisuals());
+            // copy only the layout attributes: the start graph map may be
+            // non-injective (shared node IDs, see gh #780), in which case the
+            // state cell combines several start graph cells and must keep
+            // computing its own (refreshable) visuals, in particular its label
+            stateVertex.putVisuals(new Attributes(graphVertex).toVisuals());
             stateVertex.setGrayedOut(graphVertex.isGrayedOut());
             result.synchroniseLayout(stateVertex);
             stateVertex.setLayoutable(false);
@@ -572,9 +576,9 @@ public class StateDisplay extends Display implements SimulatorListener {
                 continue;
             }
             AspectJCell graphEdge = startJModel.getJCellForEdge(edge);
-            if (!(stateEdge instanceof AspectJVertex)) {
-                stateEdge.putVisuals(graphEdge.getVisuals());
-                stateEdge.setGrayedOut(graphEdge.isGrayedOut());
+            if (stateEdge instanceof AspectJEdge && graphEdge instanceof AspectJEdge graphJEdge) {
+                stateEdge.putVisuals(new Attributes(graphJEdge).toVisuals());
+                stateEdge.setGrayedOut(graphJEdge.isGrayedOut());
             }
             result.synchroniseLayout(stateEdge);
         }

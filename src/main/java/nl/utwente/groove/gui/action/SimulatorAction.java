@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -18,6 +19,7 @@ import javax.swing.SwingUtilities;
 
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
+import nl.utwente.groove.grammar.model.GraphBasedModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.gui.BehaviourOption;
@@ -44,6 +46,7 @@ import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.io.external.format.ecore.EcoreMapping;
 import nl.utwente.groove.io.store.EditType;
 import nl.utwente.groove.io.store.SystemStore;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -368,8 +371,9 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
      *         <code>null</code> if the dialog was cancelled.
      */
     final protected Relabelling askFindSearch(TypeLabel oldLabel) {
+        GrammarModel grammar = getSimulatorModel().getGrammar();
         FindReplaceDialog dialog
-            = new FindReplaceDialog(getSimulatorModel().getGrammar().getTypeGraph(), oldLabel);
+            = new FindReplaceDialog(grammar.getTypeGraph(), getOccurringLabels(grammar), oldLabel);
         int dialogResult = dialog.showDialog(getFrame(), null);
         return switch (dialogResult) {
         case FindReplaceDialog.FIND -> new Relabelling(dialog.getOldLabel(), null);
@@ -377,6 +381,26 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
             dialog.getNewLabel());
         default -> null;
         };
+    }
+
+    /**
+     * Collects the labels occurring in any graph-based resource of a given
+     * grammar, or declared in its type graphs. In contrast to the labels of
+     * the grammar's (explicit) type graph, this includes labels with typing
+     * errors, so that they can be found and replaced as well; see gh #701.
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    final protected static Set<TypeLabel> getOccurringLabels(GrammarModel grammar) {
+        Set<TypeLabel> result = new HashSet<>();
+        for (ResourceKind kind : ResourceKind.values()) {
+            if (kind.isGraphBased()) {
+                for (var model : grammar.getResourceSet(kind)) {
+                    result.addAll(((GraphBasedModel<?>) model).getTypeLabels());
+                }
+            }
+        }
+        result.addAll(grammar.getStartGraphModel().getTypeLabels());
+        return result;
     }
 
     /**

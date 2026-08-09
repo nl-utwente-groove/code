@@ -24,9 +24,12 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import nl.utwente.groove.grammar.QualName;
+import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
+import nl.utwente.groove.grammar.model.HostModel;
 import nl.utwente.groove.grammar.model.NamedResourceModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -65,6 +68,28 @@ public class TypeCheckTest {
     @Test
     public void testNodeIds() {
         test("nodeids");
+    }
+
+    /** Tests merging of nodes with shared identifiers in host graphs (gh #780):
+     * identically-typed nodes with the same ID are merged into a single host
+     * node carrying the union of the incident edges; nodes with distinct types
+     * yield a typing error. */
+    @Test
+    @AIGenerated("Claude Fable 5, 2026-08")
+    public void testHostIds() {
+        test("hostids");
+        // additionally check that the shared-ID nodes were actually merged
+        try {
+            GrammarModel grammarView = Groove.loadGrammar(INPUT_DIR + "/hostids");
+            var hostModel = (HostModel) grammarView
+                .getResourceMap(ResourceKind.HOST)
+                .get(QualName.name("OK-merge"));
+            HostGraph host = hostModel.toResource();
+            Assert.assertEquals(2, host.nodeSet().size());
+            Assert.assertEquals(2, host.edgeSet().size());
+        } catch (IOException | FormatException e) {
+            Assert.fail(e.getMessage());
+        }
     }
 
     /** Tests node identity constraints. */

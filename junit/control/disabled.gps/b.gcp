@@ -1,0 +1,3 @@
+import sub2.g;
+
+g();

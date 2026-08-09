@@ -91,6 +91,7 @@ import nl.utwente.groove.gui.jgraph.JGraphMode;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.tree.TypeTree;
 import nl.utwente.groove.io.store.EditType;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.parse.FormatError;
 
 /**
@@ -123,6 +124,7 @@ final public class GraphEditorTab extends ResourceTab
             oldModel.removeUndoableEditListener(getUndoManager());
             oldModel.removeGraphModelListener(this);
         }
+        this.editModel = null;
         setQualName(graph.getQualName());
         AspectJModel newModel = getJGraph().newModel();
         newModel.setBeingEdited(true);
@@ -137,6 +139,9 @@ final public class GraphEditorTab extends ResourceTab
         getUndoManager().discardAllEdits();
         updateHistoryButtons();
         updateStatus();
+        if (getJGraph().getMode() == PREVIEW_MODE) {
+            enterPreview();
+        }
     }
 
     /** Returns the graph being edited. */
@@ -362,10 +367,15 @@ final public class GraphEditorTab extends ResourceTab
 
     /**
      * @return the j-model currently being edited, or <tt>null</tt> if no editor
-     *         model is set.
+     *         model is set. In preview mode, this is the stashed edit model,
+     *         not the preview clone being displayed.
      */
     public @Nullable AspectJModel getJModel() {
-        return getJGraph().getModel();
+        AspectJModel result = this.editModel;
+        if (result == null) {
+            result = getJGraph().getModel();
+        }
+        return result;
     }
 
     /**
@@ -373,7 +383,7 @@ final public class GraphEditorTab extends ResourceTab
      *         model is set.
      */
     private @NonNull AspectJModel getNonNullJModel() {
-        var result = getJGraph().getModel();
+        var result = getJModel();
         assert result != null;
         return result;
     }
@@ -401,13 +411,59 @@ final public class GraphEditorTab extends ResourceTab
         JGraphMode mode = getJGraph().getMode();
         if (mode == PREVIEW_MODE || evt.getOldValue() == PREVIEW_MODE) {
             this.refreshing = true;
-            getNonNullJModel().syncGraph();
+            if (mode == PREVIEW_MODE) {
+                enterPreview();
+            } else {
+                exitPreview();
+            }
             getJGraph().setEditable(mode != PREVIEW_MODE);
             getJGraph().refreshAllCells(true);
             getJGraph().refresh();
             this.refreshing = false;
+            updateHistoryButtons();
         }
     }
+
+    /**
+     * Replaces the displayed model by a preview clone of the edit model, after
+     * syncing the latter's graph. In the clone, opposite equal-label host graph
+     * edges are merged into bidirectional edges, which the edit model itself
+     * must suppress (see gh #336). The edit model, with its listeners and its
+     * undo history intact, is stashed in {@link #editModel} and restored by
+     * {@link #exitPreview()}.
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    private void enterPreview() {
+        AspectJModel jModel = getNonNullJModel();
+        jModel.syncGraph();
+        var graph = jModel.getGraph();
+        assert graph != null;
+        AspectJModel previewModel = getJGraph().newModel();
+        previewModel.loadGraph(graph);
+        this.editModel = jModel;
+        getJGraph().setModel(previewModel);
+    }
+
+    /**
+     * Restores the model stashed by {@link #enterPreview()}, discarding the
+     * displayed preview clone.
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    private void exitPreview() {
+        AspectJModel jModel = this.editModel;
+        if (jModel != null) {
+            this.editModel = null;
+            getJGraph().setModel(jModel);
+        }
+    }
+
+    /**
+     * The model being edited, while the JGraph displays a preview clone;
+     * {@code null} when not in preview mode. While this is set,
+     * {@link #getJModel()} returns it rather than the displayed clone, so that
+     * all edits and queries keep addressing the edit model.
+     */
+    private @Nullable AspectJModel editModel;
 
     @Override
     public void dispose() {
@@ -676,8 +732,11 @@ final public class GraphEditorTab extends ResourceTab
      * {@link #isDirty()} if no more undos are available.
      */
     private void updateHistoryButtons() {
-        getUndoAction().setEnabled(getUndoManager().canUndo());
-        getRedoAction().setEnabled(getUndoManager().canRedo());
+        // undo/redo would change the stashed edit model while the preview
+        // clone is on display, so they are disabled during preview
+        boolean previewing = getJGraph().getMode() == PREVIEW_MODE;
+        getUndoAction().setEnabled(!previewing && getUndoManager().canUndo());
+        getRedoAction().setEnabled(!previewing && getUndoManager().canRedo());
         updateDirty();
     }
 

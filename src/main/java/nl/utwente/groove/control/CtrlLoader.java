@@ -106,6 +106,52 @@ public class CtrlLoader {
         return addControl(new QualName(DEFAULT_MAIN_NAME), getDefaultMain(), true);
     }
 
+    /**
+     * Parses a control program that is not part of the program being built,
+     * and registers its declared procedures as invisible in the name space,
+     * to allow more informative error messages for calls and imports of those
+     * procedures (see gh #560). Errors in the program itself are ignored here;
+     * they are reported when the program is checked in its own right.
+     * @param controlName the qualified name of the invisible control program
+     * @param program the program text
+     * @param reason the reason for the invisibility
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    public void addInvisibleControl(QualName controlName, String program,
+                                    Namespace.InvisibleDecl.Reason reason) {
+        Namespace scratch = new Namespace(this.namespace.getGrammarProperties());
+        scratch.setControlInfo(controlName, false);
+        try {
+            CtrlTree.parse(scratch, program);
+        } catch (FormatException exc) {
+            // the declarations collected up to the error are still registered
+        }
+        for (Callable unit : scratch.getCallables()) {
+            this.namespace.addInvisible(unit.getQualName(), unit.getKind(), controlName, reason);
+        }
+    }
+
+    /**
+     * Registers all rule names absent from the name space as invisible,
+     * to allow more informative error messages for calls and imports of those
+     * rules (see gh #560). An absent rule name is classified as erroneous if it
+     * is active, and as disabled otherwise.
+     * @param allRuleNames the names of all rules in the grammar
+     * @param activeRuleNames the names of the active rules in the grammar
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    public void addInvisibleRules(Collection<QualName> allRuleNames,
+                                  Collection<QualName> activeRuleNames) {
+        for (QualName ruleName : allRuleNames) {
+            if (!this.namespace.hasCallable(ruleName)) {
+                var reason = activeRuleNames.contains(ruleName)
+                    ? Namespace.InvisibleDecl.Reason.ERRONEOUS
+                    : Namespace.InvisibleDecl.Reason.DISABLED;
+                this.namespace.addInvisible(ruleName, Kind.RULE, null, reason);
+            }
+        }
+    }
+
     /** Returns a control program constructed from the collection of previously parsed program names. */
     public Program buildProgram() throws FormatException {
         return buildProgram(this.controlTreeMap.keySet());

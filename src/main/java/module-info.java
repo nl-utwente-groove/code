@@ -82,7 +82,7 @@ module nl.utwente.groove {
     requires transitive java.desktop;
     requires transitive java.prefs;
     requires java.xml;
-    requires jgoodies.looks;
+    requires com.formdev.flatlaf;
     requires transitive jgraph;
     requires ltl2buchi;
     requires org.eclipse.emf.common;

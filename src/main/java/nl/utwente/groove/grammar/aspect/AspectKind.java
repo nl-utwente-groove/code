@@ -813,11 +813,13 @@ public enum AspectKind {
                     .and("<ul><li>For regular graph nodes, to qualify field names within expressions;")
                     .and("<li>For variable nodes, to refer to the variable in expressions;")
                     .and("<li>For quantifier nodes, to associate edges with the quantifier level.</ul>");
+                p.add("the declared name for this node; must be unique within the graph");
             } else {
                 b
-                    .add("When multiple start graphs are enabled, nodes with the same identifier will be merged.");
+                    .add("Nodes with the same identifier will be merged, both within a single graph"
+                        + " and across multiple enabled start graphs; their types must coincide.");
+                p.add("the declared name for this node");
             }
-            p.add("the declared name for this node; must be unique within the graph");
             break;
 
         case IMPORT:

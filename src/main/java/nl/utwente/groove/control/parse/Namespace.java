@@ -35,6 +35,7 @@ import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.ModuleName;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Rule;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.antlr.ParseInfo;
 import nl.utwente.groove.util.parse.Fallible;
 import nl.utwente.groove.util.parse.FormatError;
@@ -98,6 +99,72 @@ public class Namespace implements ParseInfo, Fallible {
     /** Checks if a callable unit with a given name has been declared. */
     public boolean hasCallable(QualName name) {
         return this.callableMap.containsKey(name);
+    }
+
+    /**
+     * Registers a callable unit that is declared in the grammar but invisible
+     * in this name space, either because its declaring resource is not enabled
+     * or erroneous, or because it is declared in another control program while
+     * this name space is restricted to a single (disabled) program.
+     * Used to give more informative error messages for calls and imports of
+     * such units; see gh #560.
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    public void addInvisible(QualName name, Callable.Kind kind, @Nullable QualName controlName,
+                             InvisibleDecl.Reason reason) {
+        this.invisibleMap.put(name, new InvisibleDecl(kind, controlName, reason));
+    }
+
+    /** Returns the invisible declaration registered for a given name, if any.
+     * @see #addInvisible(QualName, Callable.Kind, QualName, Namespace.InvisibleDecl.Reason)
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    public @Nullable InvisibleDecl getInvisible(QualName name) {
+        return this.invisibleMap.get(name);
+    }
+
+    /** Mapping from names of invisible callable units to their declarations. */
+    private final Map<QualName,InvisibleDecl> invisibleMap = new HashMap<>();
+
+    /**
+     * Declaration of a callable unit that exists in the grammar but is invisible
+     * in a given name space.
+     * @param kind the kind of callable unit
+     * @param controlName the declaring control program, if the unit is a procedure;
+     * {@code null} for rules
+     * @param reason the reason for the invisibility
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    public record InvisibleDecl(Callable.Kind kind, @Nullable QualName controlName, Reason reason) {
+        /** Reason for the invisibility of a declared callable unit. */
+        public enum Reason {
+            /** The declaring resource is not enabled in the grammar. */
+            DISABLED,
+            /** The unit (a rule) is enabled but has errors. */
+            ERRONEOUS,
+            /** The unit is declared in another (enabled) control program, which is
+             * not visible because the program under scrutiny is checked in isolation. */
+            ISOLATED;
+        }
+
+        /** Returns an error message phrase explaining why the unit is not available.
+         * @param name the name by which the unit was called or imported
+         * @param upper if {@code true}, the phrase starts with a capital letter
+         */
+        public String toMessage(QualName name, boolean upper) {
+            String kindName = kind().getName(upper);
+            return switch (reason()) {
+            case DISABLED -> controlName() == null
+                ? String.format("%s '%s' exists but is not enabled", kindName, name)
+                : String
+                    .format("%s '%s' is declared in control program '%s', which is not enabled",
+                            kindName, name, controlName());
+            case ERRONEOUS -> String.format("%s '%s' exists but has errors", kindName, name);
+            case ISOLATED -> String
+                .format("%s '%s' is declared in control program '%s', which is not visible while this program is disabled",
+                        kindName, name, controlName());
+            };
+        }
     }
 
     /** Returns the callable unit with a given name. */

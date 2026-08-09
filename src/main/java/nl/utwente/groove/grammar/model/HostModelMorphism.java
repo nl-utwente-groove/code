@@ -69,7 +69,22 @@ class HostModelMorphism {
 
         for (AspectNode modelNode : normalSource.nodeSet()) {
             if (!modelNode.has(Category.SORT)) {
-                processModelNode(family, modelNode, map, target);
+                // a node that shares its ID with a previous node (which is
+                // only legal in host graphs) is merged with the representative
+                // of that ID rather than getting an image of its own (gh #780)
+                var id = modelNode.getId();
+                AspectNode repr = id == null
+                    ? modelNode
+                    : normalSource.getNodeForId(id);
+                @Nullable
+                HostNode reprImage = repr == modelNode
+                    ? null
+                    : map.getNode(repr);
+                if (reprImage == null) {
+                    processModelNode(family, modelNode, map, target);
+                } else {
+                    map.putNode(modelNode, reprImage);
+                }
             }
         }
         // then the value nodes because their numbers are generated
