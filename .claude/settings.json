@@ -1,4 +1,29 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(mvn test *)",
+      "Bash(mvn -q test *)",
+      "Bash(mvn compile)",
+      "Bash(mvn compile *)",
+      "Bash(mvn -q compile)",
+      "Bash(mvn -q compile *)",
+      "Bash(mvn dependency:build-classpath *)",
+      "Bash(mvn -q dependency:build-classpath *)",
+      "PowerShell(mvn test *)",
+      "PowerShell(mvn -q test *)",
+      "PowerShell(mvn compile)",
+      "PowerShell(mvn -q compile)",
+      "PowerShell(git log *)",
+      "PowerShell(git status)",
+      "PowerShell(git status *)",
+      "PowerShell(git diff *)",
+      "PowerShell(git show *)",
+      "PowerShell(git branch *)",
+      "PowerShell(gh issue view *)",
+      "PowerShell(gh issue list *)",
+      "mcp__ccd_session_mgmt__search_session_transcripts"
+    ]
+  },
   "hooks": {
     "PreToolUse": [
       {
