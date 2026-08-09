@@ -24,14 +24,12 @@ import java.io.Serializable;
 import javax.swing.ButtonModel;
 import javax.swing.Icon;
 import javax.swing.JCheckBox;
+import javax.swing.UIManager;
 import javax.swing.plaf.UIResource;
-import javax.swing.plaf.metal.MetalLookAndFeel;
-
-import com.jgoodies.looks.plastic.PlasticLookAndFeel;
 
 /**
  * Checkbox icon that can show an active or passive state.
- * Adapted from {@link com.jgoodies.looks.plastic.PlasticIconFactory#CheckButton}
+ * Adapted from JGoodies' {@code com.jgoodies.looks.plastic.PlasticIconFactory#CheckButton}
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -58,20 +56,20 @@ public class CheckBoxPassiveIcon implements Icon, UIResource, Serializable {
         boolean passive = cb instanceof JCheckBoxPassive cbt && cbt.isPassive();
 
         if (model.isEnabled()) {
-            Color checkColor = MetalLookAndFeel.getControlInfo();
+            Color checkColor = uiColor("controlText", Color.BLACK);
             if (passive) {
                 g.setColor(PASSIVE_BACKGROUND);
                 g.fillRect(x, y, SIZE - 1, SIZE - 1);
                 drawPressed3DBorder(g, x, y, SIZE, SIZE);
                 checkColor = PASSIVE_FOREGROUND;
             } else if (cb.isBorderPaintedFlat()) {
-                g.setColor(PlasticLookAndFeel.getControlDarkShadow());
+                g.setColor(uiColor("controlDkShadow", Color.DARK_GRAY));
                 g.drawRect(x, y, SIZE - 2, SIZE - 2);
                 // inside box
-                g.setColor(PlasticLookAndFeel.getControlHighlight());
+                g.setColor(uiColor("controlHighlight", Color.WHITE));
                 g.fillRect(x + 1, y + 1, SIZE - 3, SIZE - 3);
             } else if (model.isPressed() && model.isArmed()) {
-                g.setColor(MetalLookAndFeel.getControlShadow());
+                g.setColor(uiColor("controlShadow", Color.GRAY));
                 g.fillRect(x, y, SIZE - 1, SIZE - 1);
                 drawPressed3DBorder(g, x, y, SIZE, SIZE);
             } else {
@@ -79,7 +77,7 @@ public class CheckBoxPassiveIcon implements Icon, UIResource, Serializable {
             }
             g.setColor(checkColor);
         } else {
-            g.setColor(MetalLookAndFeel.getControlShadow());
+            g.setColor(uiColor("controlShadow", Color.GRAY));
             g.drawRect(x, y, SIZE - 2, SIZE - 2);
         }
 
@@ -94,7 +92,7 @@ public class CheckBoxPassiveIcon implements Icon, UIResource, Serializable {
     static void drawPressed3DBorder(Graphics g, int x, int y, int w, int h) {
         g.translate(x, y);
         drawFlush3DBorder(g, 0, 0, w, h);
-        g.setColor(MetalLookAndFeel.getControlShadow());
+        g.setColor(uiColor("controlShadow", Color.GRAY));
         g.drawLine(1, 1, 1, h - 3);
         g.drawLine(1, 1, w - 3, 1);
         g.translate(-x, -y);
@@ -105,11 +103,11 @@ public class CheckBoxPassiveIcon implements Icon, UIResource, Serializable {
      */
     static void drawFlush3DBorder(Graphics g, int x, int y, int w, int h) {
         g.translate(x, y);
-        g.setColor(PlasticLookAndFeel.getControlHighlight());
+        g.setColor(uiColor("controlHighlight", Color.WHITE));
         drawRect(g, 1, 1, w - 2, h - 2);
         g.drawLine(0, h - 1, 0, h - 1);
         g.drawLine(w - 1, 0, w - 1, 0);
-        g.setColor(PlasticLookAndFeel.getControlDarkShadow());
+        g.setColor(uiColor("controlDkShadow", Color.DARK_GRAY));
         drawRect(g, 0, 0, w - 2, h - 2);
         g.translate(-x, -y);
     }
@@ -135,10 +133,19 @@ public class CheckBoxPassiveIcon implements Icon, UIResource, Serializable {
         g.translate(-x, -y);
     }
 
+    /** Looks up a colour in the current look-and-feel, with a fallback if it is not defined. */
+    private static Color uiColor(String key, Color fallback) {
+        Color result = UIManager.getColor(key);
+        return result == null
+            ? fallback
+            : result;
+    }
+
     /** Horizontal and vertical dimension of the checkbox. */
     private static final int SIZE = 13;
 
-    private static final Color PASSIVE_BACKGROUND = PlasticLookAndFeel.getPrimaryControl();
+    private static final Color PASSIVE_BACKGROUND
+        = uiColor("List.selectionInactiveBackground", Color.LIGHT_GRAY);
     private static final Color PASSIVE_FOREGROUND = PASSIVE_BACKGROUND.darker();
 
     /** Returns the singleton instance of this class. */

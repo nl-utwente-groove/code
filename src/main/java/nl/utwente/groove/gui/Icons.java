@@ -24,6 +24,7 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.awt.image.BufferedImage;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -245,8 +246,12 @@ public final class Icons {
     public static final ImageIcon DISABLE_ICON = createIcon("disable.gif");
     /** Special icon denoting choice e/a. */
     public static final ImageIcon E_A_CHOICE_ICON = createIcon("e-a-choice.gif");
-    /** Empty icon. */
-    public static final ImageIcon EMPTY_ICON = new ImageIcon();
+    /** Empty icon.
+     * Backed by a (transparent) image, because some look-and-feels (notably FlatLaf)
+     * cannot derive a disabled icon from an {@link ImageIcon} without an image.
+     */
+    public static final ImageIcon EMPTY_ICON
+        = new ImageIcon(new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB));
     /** Collapse all icon. */
     public static final ImageIcon COLLAPSE_ALL_ICON = createIcon("collapse-all.gif");
     /** Small icon for condition rules, as shown in the rule tree. */
