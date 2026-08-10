@@ -81,15 +81,11 @@ public class DeterminismTest {
         test("ferryman", "next=random");
         test("ferryman", "frontier=beam:2");
         test("ferryman", "next=random frontier=beam:2");
-        // counting's rules create nodes, whose anchor hashes are not
-        // replay-stable (see the hashesReplayStable parameter of test)
-        test("counting", "persistence=none", false);
+        // counting's rules create nodes: this case pins down that the
+        // numbers of created nodes, and with them the event anchor hashes,
+        // are replay-stable (gh #888)
+        test("counting", "persistence=none");
         test("ferryman", "persistence=none cost=uniform bound=cost:4");
-    }
-
-    /** Same as {@link #test(String, String, boolean)}, with replay-stable hashes. */
-    private void test(String grammarName, String config) {
-        test(grammarName, config, true);
     }
 
     /**
@@ -98,25 +94,19 @@ public class DeterminismTest {
      * and simulating a garbage-collection sweep of the state caches at
      * various points during the later explorations — and asserts that all
      * explorations enumerate identical states and transitions in identical
-     * order.
-     * @param hashesReplayStable if {@code true}, the signature includes the
-     * transition hash codes, which cover the (content-based) event and
-     * state-number hashes. This does not hold for grammars whose rule
-     * applications create nodes: fresh node numbers are drawn from the host
-     * factory on the grammar's start graph, which is shared across GTSs, so
-     * a re-exploration numbers its created nodes differently and the anchor
-     * hashes of later events shift with them. That leaves the exploration
-     * behaviour unaffected (the event-stream part of the signature must
-     * still be identical), but such grammars must skip the hash check.
+     * order, with identical transition hash codes. The transition hashes
+     * cover the (content-based) event and state-number hashes, including
+     * the numbers of the host nodes created by rule application, which are
+     * drawn from the GTS's own copy of the grammar's host factory (gh #888).
      */
-    private void test(String grammarName, String config, boolean hashesReplayStable) {
+    private void test(String grammarName, String config) {
         try {
             GrammarModel grammarModel = Groove.loadGrammar(INPUT_DIR + "/" + grammarName);
             ExploreType exploreType = ExploreTypeConverter.toExploreType(ExploreConfig.parse(config));
-            String first = explore(grammarModel, exploreType, NO_COLLAPSE, hashesReplayStable);
+            String first = explore(grammarModel, exploreType, NO_COLLAPSE);
             int closures = this.closureCount;
             perturbIdentityHashes();
-            String second = explore(grammarModel, exploreType, NO_COLLAPSE, hashesReplayStable);
+            String second = explore(grammarModel, exploreType, NO_COLLAPSE);
             assertEquals(String
                 .format("Non-deterministic '%s' exploration of grammar %s", config, grammarName),
                          first, second);
@@ -126,7 +116,7 @@ public class DeterminismTest {
                     continue;
                 }
                 perturbIdentityHashes();
-                String third = explore(grammarModel, exploreType, collapseAt, hashesReplayStable);
+                String third = explore(grammarModel, exploreType, collapseAt);
                 assertEquals(String
                     .format("Non-deterministic '%s' exploration of grammar %s"
                         + " under cache collapse at %s", config, grammarName,
@@ -157,8 +147,8 @@ public class DeterminismTest {
      * that differ from the original construction — the enumeration must be
      * insensitive to such reconstructions, wherever they occur.
      */
-    private String explore(GrammarModel grammarModel, ExploreType exploreType, int collapseAt,
-                           boolean withHashes) throws FormatException {
+    private String explore(GrammarModel grammarModel, ExploreType exploreType,
+                           int collapseAt) throws FormatException {
         // reset the master seed so that every exploration draws identical
         // random streams; the randomised configurations are then expected to
         // enumerate identically across runs (the plan-based default draws no
@@ -215,11 +205,9 @@ public class DeterminismTest {
                 .append(e.label())
                 .append("->")
                 .append(e.target());
-            if (withHashes) {
-                // the transition hash covers the (content-based) event and
-                // state-number hashes, which must also be reproducible
-                result.append(" #").append(e.hashCode());
-            }
+            // the transition hash covers the (content-based) event and
+            // state-number hashes, which must also be reproducible
+            result.append(" #").append(e.hashCode());
             result.append('\n');
         });
         return result.toString();

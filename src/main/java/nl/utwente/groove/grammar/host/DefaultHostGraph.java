@@ -32,6 +32,7 @@ import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.NodeSetEdgeSetGraph;
+import nl.utwente.groove.util.AIGenerated;
 
 /**
  * Class providing a default implementation of {@link HostGraph}s.
@@ -84,7 +85,22 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge> imp
      * data values from
      */
     public DefaultHostGraph(HostGraph graph, @Nullable AlgebraFamily family) {
-        this(graph.getName(), graph.getFactory());
+        this(graph, family, graph.getFactory());
+    }
+
+    /**
+     * Creates a new host graph from an existing one, in a given host
+     * factory, while optionally changing the algebra being used.
+     * The factory must already contain the elements of the copied graph;
+     * typically it is a {@link HostFactory#copy()} of the graph's own factory.
+     * @param graph the non-{@code null} graph to be copied
+     * @param family possibly {@code null} set of algebras to draw
+     * data values from
+     * @param factory the factory for the new graph
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    public DefaultHostGraph(HostGraph graph, @Nullable AlgebraFamily family, HostFactory factory) {
+        this(graph.getName(), factory);
         HostGraphMorphism morphism = getFactory().createMorphism();
         for (HostNode sn : graph.nodeSet()) {
             HostNode tn;

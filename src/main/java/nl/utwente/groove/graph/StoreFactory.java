@@ -19,6 +19,7 @@ package nl.utwente.groove.graph;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Dispenser;
 import nl.utwente.groove.util.collect.TreeHashSet;
 
@@ -39,6 +40,29 @@ abstract public class StoreFactory<N extends Node,E extends NumberedEdge,L exten
         this.nodes = (N[]) new Node[INIT_CAPACITY];
         this.edges = (E[]) new NumberedEdge[INIT_CAPACITY];
         this.edgeStore = createEdgeStore();
+    }
+
+    /**
+     * Constructor for a copy of a given factory. The copy shares the
+     * canonical node and edge instances created so far, but numbers
+     * subsequently created elements independently of the original: both
+     * resume from the state of the original at the time of copying.
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    protected StoreFactory(StoreFactory<N,E,L> original) {
+        super(original);
+        this.simple = original.simple;
+        this.nodes = original.nodes.clone();
+        this.nodeCount = original.nodeCount;
+        this.edges = original.edges.clone();
+        this.edgeCount = original.edgeCount;
+        this.nextEdgeNr = original.nextEdgeNr;
+        this.edgeStore = createEdgeStore();
+        for (E edge : this.edges) {
+            if (edge != null) {
+                this.edgeStore.put(edge);
+            }
+        }
     }
 
     /** Indicates if the edges created by this factory are simple,

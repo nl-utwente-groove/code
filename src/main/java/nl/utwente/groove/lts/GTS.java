@@ -136,10 +136,10 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
 
     /**
      * Factory method to create a start graph for this GTS, by
-     * cloning a given host graph.
+     * cloning the grammar's start graph into this GTS's own host factory.
      */
     protected HostGraph createStartGraph() {
-        return getGrammar().getStartGraph().clone(getAlgebraFamily());
+        return getGrammar().getStartGraph().clone(getAlgebraFamily(), getHostFactory());
     }
 
     /**
@@ -170,12 +170,16 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
 
     /**
      * Returns the host element factory associated with this GTS.
-     * This is taken from the start state graph.
+     * This is a copy of the factory of the grammar's start graph: sharing
+     * that factory across GTSs would make the numbers of the nodes created
+     * during exploration — and with them the anchor hashes of the events
+     * built on those nodes — depend on how many explorations preceded the
+     * current one (gh #888).
      */
     public HostFactory getHostFactory() {
         var result = this.hostFactory;
         if (result == null) {
-            this.hostFactory = result = this.grammar.getStartGraph().getFactory();
+            this.hostFactory = result = this.grammar.getStartGraph().getFactory().copy();
         }
         return result;
     }
