@@ -16,9 +16,11 @@
  */
 package nl.utwente.groove.explore.engine;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.SequencedCollection;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -39,7 +41,7 @@ import nl.utwente.groove.util.Randomness.Purpose;
  * incoming state included). The randomness is drawn from the
  * {@link Randomness} registry ({@link Purpose#EXPLORATION}), so a fixed
  * master seed makes the exploration reproducible. The pool imposes no depth
- * bound.
+ * bound. All pool operations are amortised constant-time.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -64,9 +66,16 @@ public class BeamPool implements Pool {
         assert capacity > 0;
         this.order = order;
         this.capacity = capacity;
-        this.random = order == Order.RANDOM
-            ? Randomness.newRandom(Purpose.EXPLORATION)
-            : null;
+        if (order == Order.RANDOM) {
+            this.random = Randomness.newRandom(Purpose.EXPLORATION);
+            var states = new ArrayList<GraphState>();
+            this.states = states;
+            this.randomStates = states;
+        } else {
+            this.random = null;
+            this.states = new ArrayDeque<>();
+            this.randomStates = null;
+        }
     }
 
     private final Order order;
@@ -78,15 +87,12 @@ public class BeamPool implements Pool {
     @Override
     public @Nullable GraphState take() {
         var states = this.states;
-        int size = states.size();
-        if (size == 0) {
+        if (states.isEmpty()) {
             return null;
         }
-        int index = switch (this.order) {
-        case OLDEST, NEWEST -> 0;
-        case RANDOM -> nextInt(size);
-        };
-        return remove(index);
+        return this.order == Order.RANDOM
+            ? removeRandom(states.size())
+            : states.removeFirst();
     }
 
     @Override
@@ -95,11 +101,11 @@ public class BeamPool implements Pool {
         // the incoming state is the newest, so it goes to the tail of the
         // take-order under OLDEST and to the head under NEWEST; the
         // position is irrelevant under RANDOM
-        int index = switch (this.order) {
-        case OLDEST, RANDOM -> states.size();
-        case NEWEST -> 0;
-        };
-        states.add(index, state);
+        if (this.order == Order.NEWEST) {
+            states.addFirst(state);
+        } else {
+            states.addLast(state);
+        }
         trim();
     }
 
@@ -113,22 +119,19 @@ public class BeamPool implements Pool {
         // resolved between its discovery and its exploration reaches this
         // method without a preceding take, so trim for robustness
         var states = this.states;
-        int index = switch (this.order) {
-        case OLDEST, NEWEST -> 0;
-        case RANDOM -> states.size();
-        };
-        states.add(index, state);
         // the re-added state itself is exempt from the drop: it is
         // partially explored, and the contract of readd is that the state
         // reaches exploration again. Under OLDEST and NEWEST it sits at the
         // head while trim drops the tail; under RANDOM it sits at the tail,
         // so the random victim is drawn from the other states only
         if (this.order == Order.RANDOM) {
+            states.addLast(state);
             int size = states.size();
             if (size > this.capacity) {
-                remove(nextInt(size - 1));
+                removeRandom(size - 1);
             }
         } else {
+            states.addFirst(state);
             trim();
         }
     }
@@ -139,31 +142,31 @@ public class BeamPool implements Pool {
     }
 
     /** Drops the take-order-last state if the capacity is exceeded: the tail
-     * of the list under {@link Order#OLDEST} and {@link Order#NEWEST}, a
+     * of the deque under {@link Order#OLDEST} and {@link Order#NEWEST}, a
      * uniformly random state under {@link Order#RANDOM}. */
     private void trim() {
         var states = this.states;
         int size = states.size();
         if (size > this.capacity) {
-            remove(this.order == Order.RANDOM
-                ? nextInt(size)
-                : size - 1);
+            if (this.order == Order.RANDOM) {
+                removeRandom(size);
+            } else {
+                states.removeLast();
+            }
         }
     }
 
-    /** Removes and returns the state at a given index; under the random
-     * order this is done by swapping with the last element, so removal is
-     * O(1) and the list order is irrelevant anyway. */
-    private GraphState remove(int index) {
-        var states = this.states;
+    /** Removes and returns a state drawn uniformly at random from the first
+     * {@code bound} positions of the list (only available under the random
+     * order). The removal swaps with the last element, so it is
+     * constant-time; the list order is irrelevant anyway. */
+    private GraphState removeRandom(int bound) {
+        var states = randomStates();
+        int index = nextInt(bound);
         GraphState result = states.get(index);
-        if (this.order == Order.RANDOM) {
-            int last = states.size() - 1;
-            states.set(index, states.get(last));
-            states.remove(last);
-        } else {
-            states.remove(index);
-        }
+        int last = states.size() - 1;
+        states.set(index, states.get(last));
+        states.remove(last);
         return result;
     }
 
@@ -175,9 +178,23 @@ public class BeamPool implements Pool {
         return random.nextInt(bound);
     }
 
+    /** Returns the list view of the pool contents (only available under
+     * {@link Order#RANDOM}). */
+    private List<GraphState> randomStates() {
+        var result = this.randomStates;
+        assert result != null;
+        return result;
+    }
+
     /** The pool contents, in take-order under {@link Order#OLDEST} and
-     * {@link Order#NEWEST} (index 0 is taken next); unordered under
-     * {@link Order#RANDOM}. At most {@link #capacity} elements outside a
-     * call of {@link #add} or {@link #readd}. */
-    private final List<GraphState> states = new ArrayList<>();
+     * {@link Order#NEWEST} (the first element is taken next), backed by a
+     * deque so that both ends are constant-time; unordered under
+     * {@link Order#RANDOM}, backed by a list to support the constant-time
+     * random removal of {@link #removeRandom}. At most {@link #capacity}
+     * elements outside a call of {@link #add} or {@link #readd}. */
+    private final SequencedCollection<GraphState> states;
+    /** Alias of {@link #states} under {@link Order#RANDOM}, typed to give
+     * the index access that {@link #removeRandom} needs; {@code null} under
+     * the other orders. */
+    private final @Nullable List<GraphState> randomStates;
 }
