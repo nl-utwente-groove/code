@@ -20,6 +20,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.explore.ExploreType;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -157,6 +158,10 @@ public class ExploreTypeConverter {
                     .add("A condition bound requires breadth-first or depth-first exploration");
             }
         }
+        // the case list is exhaustive; the default guards against a future
+        // bound kind being silently treated as realisable
+        default -> throw Exceptions
+            .illegalState("Unhandled bound kind %s", config.getKind(ExploreKey.BOUND));
         }
     }
 
@@ -185,6 +190,10 @@ public class ExploreTypeConverter {
         case LTL, CTL -> errors
             .add("Temporal goals are handled by the model checking actions,"
                 + " not by exploration");
+        // the case list is exhaustive; the default guards against a future
+        // goal kind being silently treated as realisable
+        default -> throw Exceptions
+            .illegalState("Unhandled goal kind %s", config.getKind(ExploreKey.GOAL));
         }
     }
 
