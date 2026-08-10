@@ -21,6 +21,8 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -247,12 +249,9 @@ public class LegacySyntaxParser {
                                                     0)));
         case "cebound" -> {
             String bounds = requireArgs(keyword, args);
-            if (!EDGE_BOUND_PATTERN.matcher(bounds).matches()) {
-                throw new FormatException(
-                    "Cannot parse edge bound '%s'; required format is"
-                        + " <label>><num>, comma-separated",
-                    bounds);
-            }
+            // syntax check only; the labels resolve against the grammar
+            // when the strategy is instantiated
+            EdgeMapParser.parseRaw(bounds);
             config.put(ExploreKey.BOUND, Bound.EDGES.createSetting(bounds));
         }
         case "uptorule" -> applyUptoRule(config, requireArgs(keyword, args));
@@ -453,18 +452,20 @@ public class LegacySyntaxParser {
     private static final List<ExploreKey> STRATEGY_KEYS
         = List.of(ExploreKey.NEXT, ExploreKey.SUCCESSOR, ExploreKey.FRONTIER,
                   ExploreKey.HEURISTIC, ExploreKey.COST, ExploreKey.BOUND);
+    /** The model-checking strategy keywords, derived from the LTL
+     * exploration kinds so the two cannot drift apart. */
+    private static final Set<String> LTL_KEYWORDS = Arrays
+        .stream(LTLExploreType.Kind.values())
+        .map(LTLExploreType.Kind::getKeyword)
+        .collect(Collectors.toUnmodifiableSet());
     /** The strategy keywords realised by dedicated exploration types
      * rather than the configuration. */
-    private static final Set<String> DIRECT_KEYWORDS
-        = Set.of("ltl", "ltlbounded", "ltlpocket", "minimax", "state");
-    /** The model-checking strategy keywords. */
-    private static final Set<String> LTL_KEYWORDS = Set.of("ltl", "ltlbounded", "ltlpocket");
+    private static final Set<String> DIRECT_KEYWORDS = Stream
+        .concat(LTL_KEYWORDS.stream(), Stream.of("minimax", "state"))
+        .collect(Collectors.toUnmodifiableSet());
     /** Pattern for the argument of the {@code uptorule} strategy. */
     private static final Pattern UPTO_RULE_PATTERN
         = Pattern.compile("(bfs|dfs)(\\d*)(->|=>)(!?)(.+)");
-    /** Pattern for the argument of the {@code cebound} strategy. */
-    private static final Pattern EDGE_BOUND_PATTERN
-        = Pattern.compile("[^,>\\s]+>\\d+(,[^,>\\s]+>\\d+)*");
     /** Message describing the syntax of a parsable legacy exploration. */
     public static final String SYNTAX_MESSAGE
         = "Required format: \"<strategy> <acceptor> [<resultcount>]\"";

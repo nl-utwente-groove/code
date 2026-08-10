@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.explore.config.parse;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -58,16 +59,30 @@ public class EdgeMapParser {
     /** Parses an edge-bound map, with labels resolved in a given type graph. */
     public static Map<TypeLabel,Integer> parse(TypeGraph typeGraph,
                                                String text) throws FormatException {
+        Map<TypeLabel,Integer> result = new TreeMap<>();
+        for (var entry : parseRaw(text).entrySet()) {
+            result.put(parseLabel(typeGraph, entry.getKey()), entry.getValue());
+        }
+        return result;
+    }
+
+    /**
+     * Parses an edge-bound map syntactically, without resolving the labels;
+     * the keys of the resulting map are the (possibly prefixed) label texts.
+     * This is the check to use when no grammar is available yet.
+     * @throws FormatException if the text does not parse
+     */
+    public static Map<String,Integer> parseRaw(String text) throws FormatException {
         if (text.isEmpty()) {
             throw new FormatException("The empty string is not a valid condition edge>num");
         }
-        Map<TypeLabel,Integer> result = new TreeMap<>();
+        Map<String,Integer> result = new LinkedHashMap<>();
         for (String unit : text.split(",")) {
             String[] assignment = unit.split(">");
             if (assignment.length != 2) {
                 throw new FormatException("'%s' is not a valid condition edge>num", unit);
             }
-            result.put(parseLabel(typeGraph, assignment[0]), parseBound(assignment[1]));
+            result.put(assignment[0], parseBound(assignment[1]));
         }
         return result;
     }
