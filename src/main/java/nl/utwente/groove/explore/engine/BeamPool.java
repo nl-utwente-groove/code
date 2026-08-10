@@ -118,7 +118,19 @@ public class BeamPool implements Pool {
         case RANDOM -> states.size();
         };
         states.add(index, state);
-        trim();
+        // the re-added state itself is exempt from the drop: it is
+        // partially explored, and the contract of readd is that the state
+        // reaches exploration again. Under OLDEST and NEWEST it sits at the
+        // head while trim drops the tail; under RANDOM it sits at the tail,
+        // so the random victim is drawn from the other states only
+        if (this.order == Order.RANDOM) {
+            int size = states.size();
+            if (size > this.capacity) {
+                remove(nextInt(size - 1));
+            }
+        } else {
+            trim();
+        }
     }
 
     @Override
