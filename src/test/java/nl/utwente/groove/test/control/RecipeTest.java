@@ -165,7 +165,7 @@ public class RecipeTest {
 
             ExploreType exploreType;
             if (strategyDescr == null) {
-                exploreType = ExploreType.DEFAULT;
+                exploreType = ExploreType.getDefault();
             } else {
                 exploreType = LegacySyntaxParser.parse(strategyDescr + " final 0");
             }

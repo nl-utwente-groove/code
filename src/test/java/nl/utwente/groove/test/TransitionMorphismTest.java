@@ -64,7 +64,7 @@ public class TransitionMorphismTest {
     public void testParallelPump() throws Exception {
         GrammarModel grammarModel = Groove.loadGrammar(INPUT_DIR + "/parallel-pump");
         GTS gts = new GTS(grammarModel.toGrammar());
-        ExploreType.DEFAULT.newExploration(gts, null).play();
+        ExploreType.getDefault().newExploration(gts, null).play();
         // sweep all state and event caches first: with warm caches, the
         // event-cached merge map aliases the very images the original
         // derivation put into the target graph, masking the re-derivation

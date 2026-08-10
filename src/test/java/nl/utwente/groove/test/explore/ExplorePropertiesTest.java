@@ -61,10 +61,10 @@ public class ExplorePropertiesTest {
     public void testDefaults() throws Exception {
         var properties = new GrammarProperties();
         assertNull(properties.getExplorationName());
-        assertSame(ExploreType.DEFAULT, properties.getLegacyExploreType());
+        assertSame(ExploreType.getDefault(), properties.getLegacyExploreType());
         // a grammar without any exploration setting yields the defaults
         GrammarModel grammar = newGrammar();
-        assertSame(ExploreType.DEFAULT, grammar.getDefaultExploreType());
+        assertSame(ExploreType.getDefault(), grammar.getDefaultExploreType());
         assertEquals(new ExploreConfig(), grammar.getDefaultExploreConfig());
     }
 
@@ -106,7 +106,7 @@ public class ExplorePropertiesTest {
         assertFalse(key.check(grammar, Optional.of(QualName.name("broken"))).isEmpty());
         // resolution of a broken reference falls back to the default
         setExplorationName(grammar, "broken");
-        assertSame(ExploreType.DEFAULT, grammar.getDefaultExploreType());
+        assertSame(ExploreType.getDefault(), grammar.getDefaultExploreType());
     }
 
     /**
@@ -119,7 +119,7 @@ public class ExplorePropertiesTest {
             = newGrammar(Map.of(QualName.parse("explore.nen"), "heuristic = nen\n"), "nen");
         var model = grammar.getResource(ResourceKind.SETTINGS, QualName.parse("explore.nen"));
         assertTrue(model.hasErrors());
-        assertSame(ExploreType.DEFAULT, grammar.getDefaultExploreType());
+        assertSame(ExploreType.getDefault(), grammar.getDefaultExploreType());
     }
 
     /** Tests that a stored legacy exploration description is translated on

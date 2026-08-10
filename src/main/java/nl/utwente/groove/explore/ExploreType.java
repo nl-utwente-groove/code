@@ -205,17 +205,21 @@ public abstract class ExploreType {
         return getIdentifier();
     }
 
-    /** Default exploration (breadth-first, final states, unbounded):
-     * the realisation of the default exploration configuration. */
-    static public final ExploreType DEFAULT = computeDefault();
+    /** Returns the default exploration (breadth-first, final states,
+     * unbounded): the realisation of the default exploration configuration. */
+    static public ExploreType getDefault() {
+        return DEFAULT.get();
+    }
 
-    /** Computes the realisation of the default configuration. */
-    private static ExploreType computeDefault() {
+    /** The lazily computed realisation of the default configuration; lazy so
+     * that a realisation failure surfaces at the point of use rather than as
+     * an {@link ExceptionInInitializerError} of this class. */
+    static private final Factory<ExploreType> DEFAULT = Factory.lazy(() -> {
         try {
             return ExploreTypeConverter.toExploreType(new ExploreConfig());
         } catch (FormatException exc) {
             throw Exceptions.illegalState("Default exploration configuration is unrealisable: %s",
                                           exc.getMessage());
         }
-    }
+    });
 }

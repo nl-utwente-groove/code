@@ -144,7 +144,7 @@ public class ExploreTypeConverterTest {
         Grammar grammar = grammarModel.toGrammar();
         // explore with the default configuration
         GTS gts = new GTS(grammar);
-        ExploreType.DEFAULT.newExploration(gts, null).play();
+        ExploreType.getDefault().newExploration(gts, null).play();
         int fullCount = gts.nodeCount();
         // a violated outcome behaves exactly as the negated condition
         var satisfied = explore(grammar, "goal=condition:!eat outcome=violate count=first");

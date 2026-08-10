@@ -157,22 +157,22 @@ public class LegacySyntaxParserTest {
         Grammar grammar = Groove.loadGrammar(GRAMMAR).toGrammar();
         // properties may contain spaces, so the LTL flavours are exercised
         // through the overlay entry point, which takes the -s value whole
-        var ltl = LegacySyntaxParser.overlay(ExploreType.DEFAULT, "ltl:F eat", "cycle", 0);
+        var ltl = LegacySyntaxParser.overlay(ExploreType.getDefault(), "ltl:F eat", "cycle", 0);
         assertInstanceOf(LTLExploreType.class, ltl);
         assertInstanceOf(LTLStrategy.class, ltl.getParsedStrategy(grammar));
         assertInstanceOf(CycleAcceptor.class, ltl.getParsedAcceptor(grammar));
         // the boundary of the bounded flavours resolves against the grammar
-        var bounded = LegacySyntaxParser.overlay(ExploreType.DEFAULT,
+        var bounded = LegacySyntaxParser.overlay(ExploreType.getDefault(),
                                                  "ltlbounded:5,3;F eat", null, 0);
         var boundedStrategy = bounded.getParsedStrategy(grammar);
         assertInstanceOf(BoundedLTLStrategy.class, boundedStrategy);
         assertEquals(BoundedLTLStrategy.class, boundedStrategy.getClass());
-        var pocket = LegacySyntaxParser.overlay(ExploreType.DEFAULT,
+        var pocket = LegacySyntaxParser.overlay(ExploreType.getDefault(),
                                                 "ltlpocket:eat,unload;F eat", null, 0);
         assertInstanceOf(BoundedPocketLTLStrategy.class, pocket.getParsedStrategy(grammar));
         // a boundary with a leading comma is a format error, not a crash
         // (regression: BoundaryParser indexed into the empty first element)
-        var commaBounded = LegacySyntaxParser.overlay(ExploreType.DEFAULT,
+        var commaBounded = LegacySyntaxParser.overlay(ExploreType.getDefault(),
                                                       "ltlbounded:,eat;F eat", null, 0);
         assertThrows(FormatException.class, () -> commaBounded.getParsedStrategy(grammar));
         // single-state and remote exploration

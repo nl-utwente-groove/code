@@ -126,7 +126,7 @@ public class LegacySyntaxParser {
     }
 
     private static final Parser<ExploreType> PARSER
-        = new Parser.AParser<>(LegacySyntaxParser.SYNTAX_MESSAGE, ExploreType.DEFAULT) {
+        = new Parser.AParser<>(LegacySyntaxParser.SYNTAX_MESSAGE, ExploreType.getDefault()) {
             @Override
             public ExploreType parse(String input) throws FormatException {
                 if (input.isEmpty()) {

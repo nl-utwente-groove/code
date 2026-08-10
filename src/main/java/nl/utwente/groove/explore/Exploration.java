@@ -177,7 +177,7 @@ public class Exploration {
      * compatible with the default exploration type
      */
     static public final Exploration explore(GTS gts) throws FormatException {
-        return ExploreType.DEFAULT.newExploration(gts, null)
+        return ExploreType.getDefault().newExploration(gts, null)
             .play();
     }
 

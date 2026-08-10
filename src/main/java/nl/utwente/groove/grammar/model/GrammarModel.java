@@ -778,7 +778,7 @@ public class GrammarModel implements PropertyChangeListener {
         try {
             return ExploreTypeConverter.toExploreType(resolveExploreConfig(local));
         } catch (FormatException exc) {
-            return ExploreType.DEFAULT;
+            return ExploreType.getDefault();
         }
     }
 

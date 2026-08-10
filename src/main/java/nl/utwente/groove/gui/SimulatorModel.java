@@ -1353,7 +1353,7 @@ public class SimulatorModel implements Cloneable {
     public ExploreType getExploreType() {
         return hasGrammar()
             ? getGrammar().getDefaultExploreType()
-            : ExploreType.DEFAULT;
+            : ExploreType.getDefault();
     }
 
     /** Returns the display currently showing in the simulator panel. */
