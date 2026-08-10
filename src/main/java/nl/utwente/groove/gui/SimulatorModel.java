@@ -400,6 +400,10 @@ public class SimulatorModel implements Cloneable {
      * undoable store edits (the resource text and the properties); only the
      * text edit can invalidate the GTS, as the reference itself does not feed
      * grammar compilation (see {@link #doSetExplorationName(QualName)}).
+     * The two edits are deliberately not atomic: the text is written first,
+     * so a failure in between leaves the settings saved but unreferenced
+     * (and Undo reverts the two edits separately). Callers should report
+     * the exception so the user can retry.
      * @param name name to save the exploration settings under
      * @param config the exploration configuration to be saved
      * @return {@code true} if the GTS was invalidated as a result of the action

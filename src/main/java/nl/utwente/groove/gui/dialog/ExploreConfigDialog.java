@@ -246,7 +246,8 @@ public class ExploreConfigDialog extends JDialog {
         try {
             getSimulatorModel().doSetExplorationName(name);
         } catch (IOException exc) {
-            // do nothing
+            new ErrorDialog(this, "Error while setting the exploration reference", exc)
+                .setVisible(true);
         }
         resetTo(getGrammar().getDefaultExploreConfig());
     }
@@ -716,7 +717,11 @@ public class ExploreConfigDialog extends JDialog {
         try {
             getSimulatorModel().doSaveExploreConfig(target, config);
         } catch (IOException exc) {
-            // do nothing
+            // the settings text and the exploration reference are two
+            // separate store edits; a failure may leave the settings
+            // resource saved but unreferenced, which the user can retry
+            new ErrorDialog(this, "Error while saving the exploration settings '%s'"
+                .formatted(target), exc).setVisible(true);
         }
         // the grammar has changed, so the status may have as well
         refresh();
