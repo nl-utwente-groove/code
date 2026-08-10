@@ -16,6 +16,9 @@
  */
 package nl.utwente.groove.explore.strategy;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.explore.result.NoStateAcceptor;
 import nl.utwente.groove.lts.GraphState;
 
@@ -24,6 +27,7 @@ import nl.utwente.groove.lts.GraphState;
  * @author Iovka Boneva
  *
  */
+@NonNullByDefault
 public class ExploreStateStrategy extends ClosingStrategy {
     /**
      * Creates a strategy with empty graph transition system and empty start
@@ -35,7 +39,7 @@ public class ExploreStateStrategy extends ClosingStrategy {
     }
 
     @Override
-    protected GraphState getFromPool() {
+    protected @Nullable GraphState getFromPool() {
         GraphState result = this.state;
         this.state = null;
         return result;
@@ -60,5 +64,5 @@ public class ExploreStateStrategy extends ClosingStrategy {
         this.state = null;
     }
 
-    private GraphState state;
+    private @Nullable GraphState state;
 }

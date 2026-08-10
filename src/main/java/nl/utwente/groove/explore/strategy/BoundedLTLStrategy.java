@@ -17,6 +17,9 @@
  */
 package nl.utwente.groove.explore.strategy;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.explore.util.RandomChooserInSequence;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.lts.RuleTransition;
@@ -30,6 +33,7 @@ import nl.utwente.groove.verify.ProductTransition;
  * @author Harmen Kastenberg
  * @version $Revision$
  */
+@NonNullByDefault
 public class BoundedLTLStrategy extends LTLStrategy {
     /**
      * Sets the boundary specification used in the strategy.
@@ -41,10 +45,13 @@ public class BoundedLTLStrategy extends LTLStrategy {
 
     /**
      * Returns the boundary specification used in the strategy.
-     * @return the boundary specification
+     * @return the boundary specification; non-{@code null} after a call
+     * to {@link #setBoundary}
      */
     public Boundary getBoundary() {
-        return this.boundary;
+        var result = this.boundary;
+        assert result != null : "Boundary not set";
+        return result;
     }
 
     @Override
@@ -69,7 +76,7 @@ public class BoundedLTLStrategy extends LTLStrategy {
     }
 
     @Override
-    protected ProductState computeNextState() {
+    protected @Nullable ProductState computeNextState() {
         ProductState result = super.computeNextState();
         if (result == null && getStateSet().hasOpenStates()) {
             // from the initial state again
@@ -85,9 +92,11 @@ public class BoundedLTLStrategy extends LTLStrategy {
     }
 
     @Override
-    protected ProductState getFreshState() {
+    protected @Nullable ProductState getFreshState() {
         ProductState result = null;
-        for (ProductTransition outTransition : getNextState().outTransitions()) {
+        var nextState = getNextState();
+        assert nextState != null : "doNext called without hasNext";
+        for (ProductTransition outTransition : nextState.outTransitions()) {
             ProductState target = outTransition.target();
             // we only continue with freshly created states
             if (isUnexplored(target) && target.getGraphState() instanceof RuleTransition) {
@@ -110,7 +119,7 @@ public class BoundedLTLStrategy extends LTLStrategy {
      * Process boundary-crossing transitions properly.
      * @param transition the boundary-crossing transition
      */
-    private ProductState processBoundaryCrossingTransition(ProductTransition transition) {
+    private @Nullable ProductState processBoundaryCrossingTransition(ProductTransition transition) {
         // if the number of boundary-crossing transition on the current path
         if (getBoundary().currentDepth() < getRecord().getIteration() - 1) {
             return transition.target();
@@ -123,7 +132,7 @@ public class BoundedLTLStrategy extends LTLStrategy {
     }
 
     @Override
-    protected ProductState rollbackState() {
+    protected @Nullable ProductState rollbackState() {
         ProductState previous = getStateStack().peek();
         GraphTransition origin = previous.getOrigin();
         if (origin != null) {
@@ -159,7 +168,7 @@ public class BoundedLTLStrategy extends LTLStrategy {
     }
 
     @Override
-    protected ProductTransition getNextSuccessor(ProductState state) {
+    protected @Nullable ProductTransition getNextSuccessor(ProductState state) {
         ProductTransition result = null;
         // pick a transition to an unexplored state
         RandomChooserInSequence<ProductTransition> chooser
@@ -186,7 +195,7 @@ public class BoundedLTLStrategy extends LTLStrategy {
     }
 
     /**
-     * The boundary to be used.
+     * The boundary to be used; set by {@link #setBoundary}.
      */
-    private Boundary boundary;
+    private @Nullable Boundary boundary;
 }

@@ -16,7 +16,10 @@
  */
 package nl.utwente.groove.explore.strategy;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 /** Value determining when exploration stops with respect to a state condition. */
+@NonNullByDefault
 public enum StopMode {
     /** Unconditonal: never stop. */
     NONE,

@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.lts;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.lts.Status.Flag;
 
 /**
@@ -23,6 +25,7 @@ import nl.utwente.groove.lts.Status.Flag;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public interface GTSListener {
     /**
      * Signals that a state has been added to a given GTS.
