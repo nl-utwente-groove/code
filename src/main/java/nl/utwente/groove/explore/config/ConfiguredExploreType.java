@@ -62,11 +62,13 @@ import nl.utwente.groove.util.parse.FormatException;
  */
 public class ConfiguredExploreType extends ExploreType {
     /**
-     * Constructs an exploration type for a given (validated) configuration.
+     * Constructs an exploration type for a given (validated) configuration
+     * and the baseline traversal derived from it by the converter.
      */
-    ConfiguredExploreType(ExploreConfig config, int bound) {
+    ConfiguredExploreType(ExploreConfig config, int bound, Traversal traversal) {
         super(bound);
         this.config = config;
+        this.traversal = traversal;
     }
 
     /** Returns the exploration configuration underlying this type. */
@@ -75,6 +77,10 @@ public class ConfiguredExploreType extends ExploreType {
     }
 
     private final ExploreConfig config;
+
+    /** The baseline traversal realising the next-state, successor and
+     * frontier features, derived by {@link ExploreTypeConverter}. */
+    private final Traversal traversal;
 
     @Override
     public String getIdentifier() {
@@ -88,7 +94,8 @@ public class ConfiguredExploreType extends ExploreType {
     public ExploreType withResultCount(int count) {
         var newConfig = new ExploreConfig(getConfig());
         newConfig.put(ExploreKey.COUNT, Count.toSetting(count));
-        return new ConfiguredExploreType(newConfig, count);
+        // the count feature does not influence the traversal
+        return new ConfiguredExploreType(newConfig, count, this.traversal);
     }
 
     /**
@@ -190,17 +197,16 @@ public class ConfiguredExploreType extends ExploreType {
     }
 
     /**
-     * Instantiates the strategy directly from the configuration, which is
-     * the single source of truth for what the exploration means. The
-     * converter has validated the configuration, so unrealisable
-     * combinations do not reach this method; the legacy descriptors of the
-     * base class serve display purposes only.
+     * Instantiates the strategy from the configuration and the baseline
+     * traversal that the converter derived from it while validating, so that
+     * validation and instantiation cannot diverge. Unrealisable combinations
+     * do not reach this method.
      */
     @Override
     public Strategy getParsedStrategy(Grammar grammar) throws FormatException {
         var config = getConfig();
         // a single-state frontier is a linear walk
-        if (config.getKind(ExploreKey.FRONTIER) == Frontier.SINGLE) {
+        if (this.traversal == Traversal.LINEAR) {
             return config.getKind(ExploreKey.SUCCESSOR) == Successor.SINGLE_RANDOM
                 ? new RandomLinearStrategy()
                 : new LinearStrategy();
@@ -210,10 +216,10 @@ public class ConfiguredExploreType extends ExploreType {
         return switch ((Bound) config.getKind(ExploreKey.BOUND)) {
         case NONE, COST -> new FrontierStrategy(getPool());
         case NODES -> new FrontierStrategy(StopMode.UP_TO,
-            new NodeBoundCondition(((Bound.Limit) boundContent).max()), new QueuePool(0));
+            new NodeBoundCondition(((Bound.Limit) boundContent).max()), getPool());
         case EDGES -> new FrontierStrategy(StopMode.UP_TO,
             new EdgeBoundCondition(EdgeMapParser.parse(grammar, (String) boundContent)),
-            new QueuePool(0));
+            getPool());
         case UPTO, INCLUDE -> {
             String condition = (String) boundContent;
             boolean polarity = !condition.startsWith("!");
@@ -232,24 +238,25 @@ public class ConfiguredExploreType extends ExploreType {
     }
 
     /**
-     * Computes the pool realising the frontier and next-state features,
-     * with the depth bound (if any) folded in.
+     * Computes the pool realising the baseline traversal, with the depth
+     * bound (if any) folded in. The converter guarantees that a depth bound
+     * only occurs with the breadth- and depth-first traversals.
      */
     private Pool getPool() {
         var config = getConfig();
-        var next = (NextState) config.getKind(ExploreKey.NEXT);
-        if (config.getKind(ExploreKey.FRONTIER) == Frontier.BEAM) {
-            BeamPool.Order order = switch (next) {
+        return switch (this.traversal) {
+        case LINEAR -> throw Exceptions.illegalState("A linear traversal has no frontier pool");
+        case BFS -> new QueuePool(getDepthBound());
+        case DFS -> new StackPool(getDepthBound());
+        case RANDOM -> new RandomPool();
+        case BEAM -> {
+            BeamPool.Order order = switch ((NextState) config.getKind(ExploreKey.NEXT)) {
             case OLDEST -> BeamPool.Order.OLDEST;
             case NEWEST -> BeamPool.Order.NEWEST;
             case RANDOM -> BeamPool.Order.RANDOM;
             };
-            return new BeamPool(order, (Integer) config.get(ExploreKey.FRONTIER).content());
+            yield new BeamPool(order, (Integer) config.get(ExploreKey.FRONTIER).content());
         }
-        return switch (next) {
-        case OLDEST -> new QueuePool(getDepthBound());
-        case NEWEST -> new StackPool(getDepthBound());
-        case RANDOM -> new RandomPool();
         };
     }
 

@@ -49,10 +49,14 @@ public class ExploreTypeConverter {
         config.check().throwException();
         var errors = new FormatErrorSet();
         checkInexpressible(config, errors);
-        checkStrategy(config, errors);
+        Traversal traversal = computeTraversal(config, errors);
+        if (traversal != null) {
+            checkBound(config, traversal, errors);
+        }
         checkAcceptor(config, errors);
         errors.throwException();
-        return new ConfiguredExploreType(config, getResultBound(config));
+        assert traversal != null; // computeTraversal reported an error otherwise
+        return new ConfiguredExploreType(config, getResultBound(config), traversal);
     }
 
     /** Collects errors for the feature values no strategy can realise. */
@@ -69,31 +73,20 @@ public class ExploreTypeConverter {
     }
 
     /**
-     * Checks the realisability of the strategy side of a configuration:
-     * first the baseline traversal from the next-state, successor and
-     * frontier features, then the applicability of the bound feature to
-     * that traversal.
+     * Computes the baseline traversal realising the next-state, successor
+     * and frontier features of a configuration; {@code null} (plus an error)
+     * if the combination is unrealisable. This is the single derivation of
+     * the traversal: the value is checked against the bound feature here and
+     * handed to the {@link ConfiguredExploreType} for instantiation.
      */
-    private static void checkStrategy(ExploreConfig config, FormatErrorSet errors) {
-        String keyword = computeTraversal(config, errors);
-        if (keyword != null) {
-            checkBound(config, keyword, errors);
-        }
-    }
-
-    /**
-     * Computes the baseline traversal keyword for a configuration, as a
-     * shorthand for the combinations the bound feature discriminates on;
-     * {@code null} if the traversal features are unrealisable.
-     */
-    private static @Nullable String computeTraversal(ExploreConfig config,
-                                                     FormatErrorSet errors) {
+    private static @Nullable Traversal computeTraversal(ExploreConfig config,
+                                                        FormatErrorSet errors) {
         var next = (NextState) config.getKind(ExploreKey.NEXT);
         var successor = (Successor) config.getKind(ExploreKey.SUCCESSOR);
         if (config.getKind(ExploreKey.FRONTIER) == Frontier.SINGLE) {
             // linear search; the next-state selection is irrelevant
             return switch (successor) {
-            case SINGLE, SINGLE_RANDOM -> "linear";
+            case SINGLE, SINGLE_RANDOM -> Traversal.LINEAR;
             case ALL, ALL_RANDOM -> {
                 errors.add("A single-state frontier requires single-successor generation");
                 yield null;
@@ -102,11 +95,11 @@ public class ExploreTypeConverter {
         }
         return switch (successor) {
         case ALL -> config.getKind(ExploreKey.FRONTIER) == Frontier.BEAM
-            ? "beam"
+            ? Traversal.BEAM
             : switch (next) {
-            case OLDEST -> "bfs";
-            case NEWEST -> "dfs";
-            case RANDOM -> "random-frontier";
+            case OLDEST -> Traversal.BFS;
+            case NEWEST -> Traversal.DFS;
+            case RANDOM -> Traversal.RANDOM;
             };
         case ALL_RANDOM -> {
             errors.add("Randomised successor generation is not yet supported");
@@ -127,19 +120,18 @@ public class ExploreTypeConverter {
      * breadth-first or depth-first exploration; node and edge count bounds
      * require breadth-first exploration.
      */
-    private static void checkBound(ExploreConfig config, String keyword,
+    private static void checkBound(ExploreConfig config, Traversal traversal,
                                    FormatErrorSet errors) {
-        boolean searching = "bfs".equals(keyword) || "dfs".equals(keyword);
         Object content = config.get(ExploreKey.BOUND).content();
         switch ((Bound) config.getKind(ExploreKey.BOUND)) {
-        default -> {
+        case NONE -> {
             // no bound, no restrictions
         }
         case COST -> {
             // consistency of cost != NONE is guaranteed by check()
             if (config.getKind(ExploreKey.COST) != Cost.UNIFORM) {
                 errors.add("Only a uniform-cost (depth) bound is currently supported");
-            } else if (!searching) {
+            } else if (!traversal.isSearch()) {
                 errors
                     .add("A depth bound requires breadth-first or depth-first exploration");
             } else {
@@ -148,19 +140,19 @@ public class ExploreTypeConverter {
         }
         case SIZE -> errors.add("A graph size bound is not yet supported");
         case NODES -> {
-            if (!"bfs".equals(keyword)) {
+            if (traversal != Traversal.BFS) {
                 errors.add("A node count bound requires breadth-first exploration");
             } else {
                 checkLimit(content, errors);
             }
         }
         case EDGES -> {
-            if (!"bfs".equals(keyword)) {
+            if (traversal != Traversal.BFS) {
                 errors.add("An edge count bound requires breadth-first exploration");
             }
         }
         case UPTO, INCLUDE -> {
-            if (!searching) {
+            if (!traversal.isSearch()) {
                 errors
                     .add("A condition bound requires breadth-first or depth-first exploration");
             }
@@ -180,9 +172,9 @@ public class ExploreTypeConverter {
         var satisfy = config.getKind(ExploreKey.OUTCOME) == Outcome.SATISFY;
         switch ((Goal) config.getKind(ExploreKey.GOAL)) {
         // the outcome for NONE, ANY and FINAL is guaranteed by check() to be SATISFY;
-        // these goals and CONDITION (the default cases) are realisable
-        default -> {
-            // realisable regardless of the outcome
+        // these goals and CONDITION are realisable regardless of the outcome
+        case NONE, ANY, FINAL, CONDITION -> {
+            // realisable
         }
         case FIRES -> {
             if (!satisfy) {
