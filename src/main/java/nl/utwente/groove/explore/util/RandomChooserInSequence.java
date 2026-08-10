@@ -4,9 +4,6 @@ import java.util.Random;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.util.Randomness;
-import nl.utwente.groove.util.Randomness.Purpose;
-
 /**
  * Allows to choose a random element from a sequence without storing all the
  * elements of the sequence. On can "show" objects from the sequence to the
@@ -22,6 +19,16 @@ import nl.utwente.groove.util.Randomness.Purpose;
  *
  */
 public class RandomChooserInSequence<E> {
+
+    /**
+     * Creates a chooser drawing its choices from a given random generator.
+     * The generator is typically owned by the caller and shared over
+     * successive choosers, so that every chooser draws fresh values.
+     * @param rgen source of the random choices
+     */
+    public RandomChooserInSequence(Random rgen) {
+        this.rgen = rgen;
+    }
 
     /**
      * Shows an element to the random chooser.
@@ -66,10 +73,12 @@ public class RandomChooserInSequence<E> {
     /** The current randomly chosen element, among those already seen. */
     private @Nullable E current;
     /**
-     * A random generator, seeded from the {@link Randomness} registry at
-     * construction (hence per consumer), so that a fixed master seed makes
-     * the choices reproducible.
+     * The random generator supplied at construction. Deliberately not
+     * created here: a chooser is typically constructed per choice, so a
+     * generator seeded at construction would replay the same drawings
+     * in every chooser, making the choice a fixed function of the number
+     * of elements shown.
      */
-    private final Random rgen = Randomness.newRandom(Purpose.EXPLORATION);
+    private final Random rgen;
 
 }

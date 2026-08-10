@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
@@ -40,6 +41,8 @@ import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.match.MatcherFactory;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.Randomness;
+import nl.utwente.groove.util.Randomness.Purpose;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.verify.BuchiGraph;
 import nl.utwente.groove.verify.BuchiLocation;
@@ -354,7 +357,8 @@ public class LTLStrategy extends Strategy {
      * otherwise.
      */
     protected ProductTransition getNextSuccessor(ProductState state) {
-        RandomChooserInSequence<ProductTransition> chooser = new RandomChooserInSequence<>();
+        RandomChooserInSequence<ProductTransition> chooser
+            = new RandomChooserInSequence<>(getRandomGen());
         for (ProductTransition trans : state.outTransitions()) {
             if (!trans.graphTransition().getAction().isProperty()) {
                 if (!trans.target().isClosed()) {
@@ -487,8 +491,20 @@ public class LTLStrategy extends Strategy {
     private ProductState startState;
     /** Acceptor to be added to the product GTS. */
     private CycleAcceptor acceptor;
+    /** Returns the random generator for the successor and new-state choices. */
+    protected final Random getRandomGen() {
+        return this.rgen;
+    }
+
+    /**
+     * Source of the random successor and new-state choices, seeded once per
+     * strategy instance from the {@link Randomness} registry, so that a
+     * fixed master seed makes the choices reproducible while successive
+     * choices still draw fresh values (see {@link RandomChooserInSequence}).
+     */
+    private final Random rgen = Randomness.newRandom(Purpose.EXPLORATION);
     /** State collector which randomly provides unexplored states. */
-    private RandomNewStateChooser collector = new RandomNewStateChooser();
+    private RandomNewStateChooser collector = new RandomNewStateChooser(this.rgen);
     /** Initial location of the Buchi graph encoding the property to be verified. */
     private BuchiLocation startLocation;
     private Stack<ProductState> stateStack;

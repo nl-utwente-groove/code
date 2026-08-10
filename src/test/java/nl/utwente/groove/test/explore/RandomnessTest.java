@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -32,6 +33,7 @@ import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.explore.engine.FrontierStrategy;
+import nl.utwente.groove.explore.util.RandomChooserInSequence;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.util.Groove;
@@ -123,6 +125,28 @@ public class RandomnessTest {
                      "Random frontier order should explore the full state space");
         assertEquals(bfsOutcome.transitions(), randomOutcome.transitions(),
                      "Random frontier order should find all transitions");
+    }
+
+    /**
+     * Tests that successive choosers sharing one generator make varying
+     * choices. Regression test: the chooser used to seed a generator of its
+     * own at construction, so every chooser — and the LTL strategies
+     * construct one per successor choice — replayed the same drawings,
+     * making the choice a fixed function of the number of candidates.
+     */
+    @Test
+    public void testChooserDrawsFreshValues() {
+        Randomness.setMasterSeed(42);
+        Random rgen = Randomness.newRandom(Purpose.EXPLORATION);
+        Set<Integer> picks = new HashSet<>();
+        for (int i = 0; i < 20; i++) {
+            var chooser = new RandomChooserInSequence<Integer>(rgen);
+            chooser.show(0);
+            chooser.show(1);
+            picks.add(chooser.pickRandom());
+        }
+        assertEquals(Set.of(0, 1), picks,
+                     "Twenty two-candidate choices from one generator should not all coincide");
     }
 
     /** Explores a fresh GTS with a given exploration type and summarises it. */

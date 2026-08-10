@@ -1,5 +1,7 @@
 package nl.utwente.groove.explore.util;
 
+import java.util.Random;
+
 import nl.utwente.groove.verify.ProductListener;
 import nl.utwente.groove.verify.ProductState;
 import nl.utwente.groove.verify.ProductStateSet;
@@ -9,6 +11,13 @@ import nl.utwente.groove.verify.ProductStateSet;
  * the GTS. Should listen to a single GTS.
  */
 public class RandomNewStateChooser implements ProductListener {
+    /**
+     * Creates a chooser drawing its choices from a given random generator.
+     * @param rgen source of the random choices
+     */
+    public RandomNewStateChooser(Random rgen) {
+        this.rc = new RandomChooserInSequence<>(rgen);
+    }
 
     /**
      * Returns a randomly chosen state among those newly added to the GTS it
@@ -39,5 +48,5 @@ public class RandomNewStateChooser implements ProductListener {
         this.rc.show(state);
     }
 
-    private final RandomChooserInSequence<ProductState> rc = new RandomChooserInSequence<>();
+    private final RandomChooserInSequence<ProductState> rc;
 }
