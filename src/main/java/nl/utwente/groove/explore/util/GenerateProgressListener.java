@@ -35,6 +35,8 @@ public class GenerateProgressListener extends GenerateProgressMonitor
     @Override
     public void start(Exploration exploration, GTS gts) {
         restart();
+        this.stateCount = 0;
+        this.transitionCount = 0;
         gts.addLTSListener(this);
     }
 
@@ -50,11 +52,21 @@ public class GenerateProgressListener extends GenerateProgressMonitor
 
     @Override
     public void addUpdate(GTS gts, GraphState state) {
-        addState(gts.nodeCount(), gts.edgeCount(), gts.getOpenStateCount());
+        this.stateCount++;
+        addState(this.stateCount, this.transitionCount, gts.getOpenStateCount());
     }
 
     @Override
     public void addUpdate(GTS gts, GraphTransition transition) {
-        addTransition(gts.nodeCount(), gts.edgeCount(), gts.getOpenStateCount());
+        this.transitionCount++;
+        addTransition(this.stateCount, this.transitionCount, gts.getOpenStateCount());
     }
+
+    /** Number of states added since {@link #start}. In contrast to
+     * {@link GTS#nodeCount()}, this also counts discovered states that the
+     * GTS did not retain (see {@link GTS#isStoring()}); the open state
+     * count, which has no discovery-side equivalent, stays GTS-based. */
+    private int stateCount;
+    /** Number of transitions added since {@link #start}. */
+    private int transitionCount;
 }

@@ -283,7 +283,10 @@ public class ExploreAction extends SimulatorAction {
      * should continue exploring (and by how much).
      */
     final void checkContinue(final GTS gts) {
-        if (gts.nodeCount() >= this.bound && !isInterrupted()) {
+        // use the discovery count rather than the node count: the latter
+        // reflects only the retained states, which under persistence=none
+        // would never reach the bound (under storing the two are identical)
+        if (gts.getNextStateNr() >= this.bound && !isInterrupted()) {
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
                     @Override
