@@ -19,15 +19,16 @@ From the root of the checkout or worktree being verified:
    powershell -NoProfile -ExecutionPolicy Bypass -File .claude/skills/null-check/run-ecj.ps1 src/main/java/nl/utwente/groove/foo/Bar.java ...
    ```
 
-   The script runs `mvn -q compile` first, fetches ecj 3.37.0 via Maven if not yet in the local
-   repository, caches the dependency classpath in `target/ecj-classpath.txt`, and runs ecj with
-   the project's own `.settings/org.eclipse.jdt.core.prefs` at `--release 21`.
+   The script runs `mvn -q test-compile` first, fetches ecj 3.37.0 via Maven if not yet in the
+   local repository, caches the dependency classpath in `target/ecj-classpath.txt`, and runs ecj
+   with the project's own `.settings/org.eclipse.jdt.core.prefs` at `--release 21`.
 
 2. Fix every error and any warning introduced by the change, then rerun until clean.
 
-Compiling only the touched files against `target/classes` works because the annotations have
-class-file retention. Whole-project ecj runs currently fail on unrelated code — only pass the
-touched files.
+Compiling only the touched files against `target/classes` and `target/test-classes` works
+because the annotations have class-file retention; test files referencing other test classes
+(e.g. `SlowTest`) resolve against the latter. Whole-project ecj runs currently fail on
+unrelated code — only pass the touched files.
 
 ## Notes
 
