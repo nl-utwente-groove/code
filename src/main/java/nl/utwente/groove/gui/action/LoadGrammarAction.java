@@ -98,11 +98,17 @@ public class LoadGrammarAction extends SimulatorAction {
         int compare = Version.compareGrammarVersion(fileGrammarVersion);
         // an older grammar whose only version gap is the exploration-property
         // conversion (3.11 -> 3.12) and that has no stored legacy property
-        // needs no repair, so it is loaded silently, without a resave prompt
+        // needs no repair, so it is loaded silently, without a resave prompt;
+        // the shortcut self-disables as soon as the current grammar version
+        // moves past 3.12, since it does not cover later conversions
         String legacyExploration = props.getProperty(GrammarKey.EXPLORATION.getName());
         if (compare > 0
             && Version
                 .compareGrammarVersions(fileGrammarVersion, Version.GRAMMAR_VERSION_3_11) >= 0
+            && Version
+                .compareGrammarVersions(Version.getCurrentGrammarVersion(),
+                                        Version.GRAMMAR_VERSION_3_12)
+                <= 0
             && (legacyExploration == null || legacyExploration.isEmpty())) {
             compare = 0;
         }
@@ -128,15 +134,6 @@ public class LoadGrammarAction extends SimulatorAction {
                 }
                 break;
             default: // cancel
-                return false;
-            }
-        } else if (compare > 0) {
-            // Trying to load an older grammar from a URL.
-            if (!VersionDialog.showOldURL(this.getFrame(), props)) {
-                return false;
-            }
-            newGrammarFile = selectSaveAs(null);
-            if (newGrammarFile == null) {
                 return false;
             }
         } else {
