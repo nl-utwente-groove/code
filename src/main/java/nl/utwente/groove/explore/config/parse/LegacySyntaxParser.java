@@ -263,11 +263,14 @@ public class LegacySyntaxParser {
      * into a uniform-cost bound. */
     private static void applyDepthBound(ExploreConfig config, String keyword,
                                         @Nullable String args) throws FormatException {
-        if (args != null && parseNatural(keyword, args) > 0) {
+        if (args == null) {
+            return;
+        }
+        int depth = parseNatural(keyword, args);
+        if (depth > 0) {
             config.put(ExploreKey.COST, Cost.UNIFORM.createSetting());
             config
-                .put(ExploreKey.BOUND,
-                     Bound.COST.createSetting(new Bound.Limit(parseNatural(keyword, args), 0)));
+                .put(ExploreKey.BOUND, Bound.COST.createSetting(new Bound.Limit(depth, 0)));
         }
     }
 
@@ -405,7 +408,7 @@ public class LegacySyntaxParser {
             .findFirst()
             .orElseThrow(() -> Exceptions.illegalState("Unknown LTL keyword '%s'", keyword));
         if (kind == LTLExploreType.Kind.PLAIN) {
-            return new LTLExploreType(kind, args, (String) null, count);
+            return new LTLExploreType(kind, args, null, count);
         }
         int semi = args.indexOf(';');
         if (semi < 0) {

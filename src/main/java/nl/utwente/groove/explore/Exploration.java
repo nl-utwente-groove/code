@@ -42,7 +42,6 @@ public class Exploration {
     public Exploration(ExploreType type, GraphState start) throws FormatException {
         this.type = type;
         this.gts = start.getGTS();
-        this.start = start;
         this.type.prepareRun(this.gts);
         Grammar grammar = this.gts.getGrammar();
         // parse the strategy
@@ -52,13 +51,12 @@ public class Exploration {
             .newAcceptor(this.type.getBound());
         // initialize acceptor and GTS
         this.strategy.setGTS(this.gts);
-        this.strategy.setState(this.start);
+        this.strategy.setState(start);
         this.strategy.setAcceptor(this.acceptor);
     }
 
     private final Strategy strategy;
     private final Acceptor acceptor;
-    private final GraphState start;
 
     /** Returns the type of this exploration. */
     public ExploreType getType() {

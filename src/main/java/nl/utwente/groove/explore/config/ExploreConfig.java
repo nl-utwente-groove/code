@@ -17,11 +17,13 @@
 package nl.utwente.groove.explore.config;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -206,11 +208,7 @@ public class ExploreConfig {
             if (!value.isEmpty() && value.charAt(0) == QUOTE) {
                 value = StringHandler.toUnquoted(value, QUOTE);
             }
-            try {
-                result.put(key, key.parser().parse(value));
-            } catch (FormatException exc) {
-                errors.addAll(exc.getErrors());
-            }
+            putParsed(result, errors, key, value);
         }
         errors.throwException();
         return result;
@@ -263,13 +261,13 @@ public class ExploreConfig {
      * @throws FormatException if the entries contain an unknown key or a
      * value that is not parsable for its key
      */
-    public static ExploreConfig fromProperties(java.util.Properties props) throws FormatException {
+    public static ExploreConfig fromProperties(Properties props) throws FormatException {
         return fromProperties(props, null);
     }
 
     /**
      * Parses a configuration from the parsed content of an {@code explore}
-     * settings resource. Behaves as {@link #fromProperties(java.util.Properties)},
+     * settings resource. Behaves as {@link #fromProperties(Properties)},
      * except that every error carries the position of the entry it is about.
      * @throws FormatException if the entries contain an unknown key or a
      * value that is not parsable for its key
@@ -283,14 +281,14 @@ public class ExploreConfig {
      * accompanied by the content they were parsed from; if the content is
      * given, the errors carry the position of the entry they are about.
      */
-    private static ExploreConfig fromProperties(java.util.Properties props,
+    private static ExploreConfig fromProperties(Properties props,
                                                 @Nullable SettingsContent content) throws FormatException {
         var result = new ExploreConfig();
         var errors = new FormatErrorSet();
         // process the entries in alphabetical order, for deterministic
         // error order (Properties iterates hash-ordered)
         List<String> names = new ArrayList<>(props.stringPropertyNames());
-        java.util.Collections.sort(names);
+        Collections.sort(names);
         for (String name : names) {
             if (name.equals(SettingsModel.SCHEMA_KEY)) {
                 continue;
@@ -301,14 +299,24 @@ public class ExploreConfig {
                 errors.add("Unknown exploration key '%s'", name, numbers);
                 continue;
             }
-            try {
-                result.put(key, key.parser().parse(props.getProperty(name).trim()));
-            } catch (FormatException exc) {
-                errors.addAll(exc.getErrors().extend(numbers));
-            }
+            putParsed(result, errors, key, props.getProperty(name).trim(), numbers);
         }
         errors.throwException();
         return result;
+    }
+
+    /**
+     * Parses the value for a given key and enters the resulting setting into
+     * a configuration, adding any parse errors — extended with the given
+     * context arguments — to the error set.
+     */
+    private static void putParsed(ExploreConfig result, FormatErrorSet errors, ExploreKey key,
+                                  String value, Object... context) {
+        try {
+            result.put(key, key.parser().parse(value));
+        } catch (FormatException exc) {
+            errors.addAll(exc.getErrors().extend(context));
+        }
     }
 
     /** Returns a parser for configurations, with the default configuration as default value. */

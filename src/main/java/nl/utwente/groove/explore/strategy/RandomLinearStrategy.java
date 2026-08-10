@@ -57,6 +57,6 @@ public class RandomLinearStrategy extends LinearStrategy {
         }
     }
 
-    /** Source of the random choices; refreshed at every exploration. */
-    private Random random = Randomness.newRandom(Purpose.EXPLORATION);
+    /** Source of the random choices; obtained in {@link #prepare}. */
+    private Random random;
 }

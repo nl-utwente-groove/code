@@ -43,12 +43,12 @@ public class LTLExploreType extends ExploreType {
         /** Search with incremental bounds on graph size or rule applications. */
         BOUNDED("ltlbounded",
             "Nested Depth-First Search for a given LTL formula,"
-                + "using incremental bounds based on graph size or rule applications"),
+                + " using incremental bounds based on graph size or rule applications"),
         /** Bounded search avoiding the re-exploration of connected components. */
         POCKET("ltlpocket",
             "Nested Depth-First Search for a given LTL formula,"
-                + "using incremental bounds based on graph size or rule applications"
-                + "and optimised to avoid reexploring connected components ('pockets')"),;
+                + " using incremental bounds based on graph size or rule applications"
+                + " and optimised to avoid reexploring connected components ('pockets')"),;
 
         private Kind(String keyword, String description) {
             this.keyword = keyword;

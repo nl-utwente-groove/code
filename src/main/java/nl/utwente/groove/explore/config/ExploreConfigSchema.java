@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -233,13 +234,13 @@ public class ExploreConfigSchema implements SettingsSchema {
         for (int i = 0; i < lines.size(); i++) {
             String trimmed = lines.get(i).trim();
             for (ExploreKey key : ExploreKey.values()) {
-                if (seen.contains(key) || !trimmed.matches(key.getName() + "\\s*[=:].*")) {
+                String quotedName = Pattern.quote(key.getName());
+                if (seen.contains(key) || !trimmed.matches(quotedName + "\\s*[=:].*")) {
                     continue;
                 }
                 seen.add(key);
                 missing.remove(key);
-                String oldValue
-                    = trimmed.replaceFirst("^" + key.getName() + "\\s*[=:]\\s*", "");
+                String oldValue = trimmed.replaceFirst("^" + quotedName + "\\s*[=:]\\s*", "");
                 Setting desired = config.get(key);
                 boolean same;
                 try {
