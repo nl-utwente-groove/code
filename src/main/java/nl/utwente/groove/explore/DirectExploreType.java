@@ -16,7 +16,6 @@
  */
 package nl.utwente.groove.explore;
 
-import nl.utwente.groove.explore.config.parse.LegacySyntaxParser;
 import nl.utwente.groove.explore.result.Acceptor;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.util.parse.FormatException;
@@ -36,17 +35,17 @@ public abstract class DirectExploreType extends ExploreType {
      * @param count number of results after which exploration halts;
      * {@code 0} means unbounded
      */
-    protected DirectExploreType(LegacySyntaxParser.AcceptorSpec acceptor, int count) {
+    protected DirectExploreType(AcceptorSpec acceptor, int count) {
         super(count);
         this.acceptor = acceptor;
     }
 
     /** Returns the acceptor specification of this exploration type. */
-    protected LegacySyntaxParser.AcceptorSpec getAcceptorSpec() {
+    protected AcceptorSpec getAcceptorSpec() {
         return this.acceptor;
     }
 
-    private final LegacySyntaxParser.AcceptorSpec acceptor;
+    private final AcceptorSpec acceptor;
 
     @Override
     public Acceptor getParsedAcceptor(Grammar grammar) throws FormatException {

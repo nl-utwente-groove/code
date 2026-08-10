@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.explore.AcceptorSpec;
 import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.LTLExploreType;
 import nl.utwente.groove.explore.MinimaxExploreType;
@@ -40,16 +41,6 @@ import nl.utwente.groove.explore.config.Frontier;
 import nl.utwente.groove.explore.config.Goal;
 import nl.utwente.groove.explore.config.NextState;
 import nl.utwente.groove.explore.config.Successor;
-import nl.utwente.groove.explore.result.Acceptor;
-import nl.utwente.groove.explore.result.AnyStateAcceptor;
-import nl.utwente.groove.explore.result.CycleAcceptor;
-import nl.utwente.groove.explore.result.FinalStateAcceptor;
-import nl.utwente.groove.explore.result.NoStateAcceptor;
-import nl.utwente.groove.explore.result.Predicate;
-import nl.utwente.groove.explore.result.PredicateAcceptor;
-import nl.utwente.groove.grammar.Grammar;
-import nl.utwente.groove.grammar.Rule;
-import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.Parser;
@@ -392,7 +383,7 @@ public class LegacySyntaxParser {
             return createLTLType(keyword, requireArgs(keyword, args), count);
         }
         AcceptorSpec effectiveAcceptor = acceptor == null
-            ? new AcceptorSpec(AcceptorSpec.Kind.FINAL, "")
+            ? AcceptorSpec.FINAL
             : acceptor;
         return switch (keyword) {
         case "state" -> {
@@ -456,78 +447,6 @@ public class LegacySyntaxParser {
         int minmaxParam = parseNatural("minimax", parts[5]);
         return new MinimaxExploreType(heuristicParam, maxDepth, ruleNames, parts[3], minmaxRule,
             minmaxParam, acceptor, count);
-    }
-
-    /**
-     * Parsed form of a legacy acceptor: a kind plus content — a rule name
-     * (for {@link Kind#RULEAPP}), an optionally {@code !}-prefixed rule name
-     * (for {@link Kind#INVARIANT}), or a rule formula (for
-     * {@link Kind#FORMULA}); empty for the content-less kinds. The content is
-     * resolved against the grammar on {@link #instantiate}.
-     */
-    public record AcceptorSpec(Kind kind, String content) {
-        /** The legacy acceptor kinds. */
-        public enum Kind {
-            /** Final states, i.e., states without outgoing transitions. */
-            FINAL("final"),
-            /** Every state. */
-            ANY("any"),
-            /** No state. */
-            NONE("none"),
-            /** Accepting cycles of an LTL product exploration. */
-            CYCLE("cycle"),
-            /** States in which a given rule fires. */
-            RULEAPP("ruleapp"),
-            /** States in which a given rule is (or is not) applicable. */
-            INVARIANT("inv"),
-            /** States satisfying a rule formula. */
-            FORMULA("formula"),;
-
-            private Kind(String keyword) {
-                this.keyword = keyword;
-            }
-
-            /** Returns the identifying keyword of this acceptor kind. */
-            public String getKeyword() {
-                return this.keyword;
-            }
-
-            private final String keyword;
-        }
-
-        /** Instantiates this acceptor specification for a given grammar.
-         * @throws FormatException if the content does not resolve against the grammar
-         */
-        public Acceptor instantiate(Grammar grammar) throws FormatException {
-            return switch (kind()) {
-            case FINAL -> FinalStateAcceptor.PROTOTYPE;
-            case ANY -> AnyStateAcceptor.PROTOTYPE;
-            case NONE -> NoStateAcceptor.INSTANCE;
-            case CYCLE -> CycleAcceptor.PROTOTYPE;
-            case RULEAPP -> new PredicateAcceptor(new Predicate.ActionApplied(EnabledRuleParser
-                .parse(grammar, content())));
-            case INVARIANT -> {
-                boolean positive = !content().startsWith("!");
-                Rule rule = EnabledRuleParser
-                    .parse(grammar, positive
-                        ? content()
-                        : content().substring(1));
-                Predicate<GraphState> predicate = new Predicate.RuleApplicable(rule);
-                if (!positive) {
-                    predicate = new Predicate.Not<>(predicate);
-                }
-                yield new PredicateAcceptor(predicate);
-            }
-            case FORMULA -> new PredicateAcceptor(RuleFormulaParser.parse(grammar, content()));
-            };
-        }
-
-        /** Returns the legacy descriptor of this acceptor, for display purposes. */
-        public String getIdentifier() {
-            return content().isEmpty()
-                ? kind().getKeyword()
-                : kind().getKeyword() + ":" + content();
-        }
     }
 
     /** The features owned by the strategy part of the legacy syntax. */

@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import nl.utwente.groove.explore.config.parse.EnabledRuleParser;
-import nl.utwente.groove.explore.config.parse.LegacySyntaxParser;
 import nl.utwente.groove.explore.strategy.MinimaxStrategy;
 import nl.utwente.groove.explore.strategy.Strategy;
 import nl.utwente.groove.grammar.Grammar;
@@ -50,7 +49,7 @@ public class MinimaxExploreType extends DirectExploreType {
      */
     public MinimaxExploreType(int heuristicParam, int maxDepth, List<String> ruleNames,
                               String startMax, String minmaxRule, int minmaxParam,
-                              LegacySyntaxParser.AcceptorSpec acceptor, int count) {
+                              AcceptorSpec acceptor, int count) {
         super(acceptor, count);
         this.heuristicParam = heuristicParam;
         this.maxDepth = maxDepth;

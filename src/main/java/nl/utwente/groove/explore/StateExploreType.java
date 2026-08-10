@@ -16,7 +16,6 @@
  */
 package nl.utwente.groove.explore;
 
-import nl.utwente.groove.explore.config.parse.LegacySyntaxParser;
 import nl.utwente.groove.explore.strategy.ExploreStateStrategy;
 import nl.utwente.groove.explore.strategy.Strategy;
 import nl.utwente.groove.grammar.Grammar;
@@ -34,7 +33,7 @@ public class StateExploreType extends DirectExploreType {
      * @param count number of results after which exploration halts;
      * {@code 0} means unbounded
      */
-    public StateExploreType(LegacySyntaxParser.AcceptorSpec acceptor, int count) {
+    public StateExploreType(AcceptorSpec acceptor, int count) {
         super(acceptor, count);
     }
 
