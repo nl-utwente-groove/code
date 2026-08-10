@@ -768,7 +768,9 @@ public class GrammarModel implements PropertyChangeListener {
      * content is realised (an unresolvable reference or unrealisable content
      * yields {@link ExploreType#getDefault()}; the errors are reported through the
      * property checker and on the resource itself). Otherwise the deprecated
-     * legacy exploration strategy key is consulted.
+     * legacy exploration strategy key is consulted, which (unlike
+     * {@link #getDefaultExploreConfig()}) may yield one of the dedicated,
+     * configuration-inexpressible exploration types.
      */
     public ExploreType getDefaultExploreType() {
         var local = getProperties().getExplorationName();
@@ -789,6 +791,9 @@ public class GrammarModel implements PropertyChangeListener {
      * strategy key if only that is set and expressible, or the default
      * configuration otherwise (including when the reference does not
      * resolve; those errors are reported through the property checker).
+     * This is the configuration-expressible projection of
+     * {@link #getDefaultExploreType()}: a legacy key holding one of the
+     * dedicated exploration types projects to the default configuration.
      */
     public ExploreConfig getDefaultExploreConfig() {
         var local = getProperties().getExplorationName();
@@ -808,24 +813,37 @@ public class GrammarModel implements PropertyChangeListener {
     }
 
     /**
-     * Resolves the exploration reference to the content of the referenced
-     * settings resource. The reference is the <i>local</i> name of that
-     * resource within the {@code explore} folder, so the schema name is
-     * prefixed before the lookup.
+     * Looks up the settings model for an exploration reference. This is the
+     * single decision point for the validity of the reference: the property
+     * checker (see {@code GrammarKey}) and the default-exploration getters
+     * both resolve through this method. The reference is the <i>local</i>
+     * name of the resource within the {@code explore} folder, so the schema
+     * name is prefixed before the lookup.
      * @param localName the local name held by the {@code exploration} property
-     * @throws FormatException if the resource is missing, of another schema,
-     * or erroneous
+     * @throws FormatException if there is no resource with the referenced name
      */
-    private ExploreConfig resolveExploreConfig(QualName localName) throws FormatException {
+    public SettingsModel getExploreSettings(QualName localName) throws FormatException {
         QualName name = ExploreConfigSchema.INSTANCE.getResourceName(localName);
         var model = getResource(ResourceKind.SETTINGS, name);
-        if (model instanceof SettingsModel settingsModel) {
-            Settings settings = settingsModel.toResource();
-            if (settings.getSchema() == ExploreConfigSchema.INSTANCE) {
-                return ExploreConfig.fromProperties(settings.getProperties());
-            }
+        if (model == null) {
+            throw new FormatException("Unknown exploration settings '%s' (there is no resource '%s')",
+                localName, name);
         }
-        throw new FormatException("'%s' is not an explore settings resource", name);
+        return (SettingsModel) model;
+    }
+
+    /**
+     * Resolves the exploration reference to the content of the referenced
+     * settings resource.
+     * @param localName the local name held by the {@code exploration} property
+     * @throws FormatException if the resource is missing or erroneous
+     */
+    private ExploreConfig resolveExploreConfig(QualName localName) throws FormatException {
+        Settings settings = getExploreSettings(localName).toResource();
+        // a resource inside the 'explore' folder is of the explore schema by
+        // construction; a contradicting declaration fails toResource() above
+        assert settings.getSchema() == ExploreConfigSchema.INSTANCE;
+        return ExploreConfig.fromProperties(settings.getProperties());
     }
 
     /** Mapping from resource kinds and names to resource models. */

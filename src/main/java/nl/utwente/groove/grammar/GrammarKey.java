@@ -30,7 +30,6 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.algebra.UserSignature;
-import nl.utwente.groove.explore.config.ExploreConfigSchema;
 import nl.utwente.groove.explore.config.parse.LegacySyntaxParser;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
@@ -602,25 +601,28 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
     /**
      * Checker that tests whether the exploration reference — the local name of
      * a resource within the {@code explore} folder — resolves to an existing,
-     * error-free settings resource. The content checks (value parsing,
-     * consistency, realisability, grammar-dependent contents) live on the
-     * resource itself, via its schema.
+     * error-free settings resource. Resolution is delegated to
+     * {@link GrammarModel#getExploreSettings}, so that this checker and the
+     * default-exploration getters decide the validity of the reference
+     * identically. The content checks (value parsing, consistency,
+     * realisability, grammar-dependent contents) live on the resource itself,
+     * via its schema.
      */
     private static GrammarChecker exploreConfigChecker = (g, v) -> {
         FormatErrorSet result = new FormatErrorSet();
         QualName local = v.getQualName().orElse(null);
-        if (local == null) {
-            return result;
-        }
-        QualName name = ExploreConfigSchema.INSTANCE.getResourceName(local);
-        var model = g.getResource(ResourceKind.SETTINGS, name);
-        // there is no wrong-schema case: a resource inside the 'explore' folder
-        // is of the explore schema by construction, and a contradicting
-        // $schema declaration is an error of the resource itself
-        if (model == null) {
-            result.add("Unknown exploration settings '%s' (there is no resource '%s')", local, name);
-        } else if (model.hasErrors()) {
-            result.add("Exploration settings resource '%s' has errors", name);
+        if (local != null) {
+            try {
+                var model = g.getExploreSettings(local);
+                if (model.hasErrors()) {
+                    // summarise: the details are reported on the resource itself
+                    result
+                        .add("Exploration settings resource '%s' has errors",
+                             model.getQualName());
+                }
+            } catch (FormatException exc) {
+                result.addAll(exc.getErrors());
+            }
         }
         return result;
     };
