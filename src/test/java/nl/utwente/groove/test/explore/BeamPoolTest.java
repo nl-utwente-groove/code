@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import nl.utwente.groove.explore.config.ExploreConfig;
@@ -32,6 +33,7 @@ import nl.utwente.groove.explore.engine.BeamPool;
 import nl.utwente.groove.explore.engine.BeamPool.Order;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
+import nl.utwente.groove.test.MasterSeedGuard;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Randomness;
@@ -48,6 +50,10 @@ import nl.utwente.groove.util.Randomness;
  */
 @AIGenerated("Claude Fable 5, 2026-08")
 public class BeamPoolTest {
+    /** Restores the master-seed state that the tests in this class modify. */
+    @ClassRule
+    public static final MasterSeedGuard SEED_GUARD = new MasterSeedGuard();
+
     /** States serving as opaque tokens for the pool, harvested lazily. */
     static private List<GraphState> tokens;
 

@@ -25,6 +25,7 @@ import java.io.File;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import nl.utwente.groove.explore.Exploration;
@@ -37,6 +38,7 @@ import nl.utwente.groove.lts.GTSListener;
 import nl.utwente.groove.lts.GraphNextState;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
+import nl.utwente.groove.test.MasterSeedGuard;
 import nl.utwente.groove.transform.Transformer;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Randomness;
@@ -61,6 +63,10 @@ import nl.utwente.groove.util.parse.FormatException;
  * @version $Revision$
  */
 public class PersistenceTest {
+    /** Restores the master-seed state that the tests in this class modify. */
+    @ClassRule
+    public static final MasterSeedGuard SEED_GUARD = new MasterSeedGuard();
+
     /** Location of the sample grammars. */
     static private final String INPUT_DIR = "junit/samples";
 

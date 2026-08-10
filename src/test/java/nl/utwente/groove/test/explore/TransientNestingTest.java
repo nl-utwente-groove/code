@@ -19,6 +19,7 @@ package nl.utwente.groove.test.explore;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import nl.utwente.groove.explore.ExploreType;
@@ -27,6 +28,7 @@ import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
+import nl.utwente.groove.test.MasterSeedGuard;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Randomness;
 
@@ -44,6 +46,10 @@ import nl.utwente.groove.util.Randomness;
  * @version $Revision$
  */
 public class TransientNestingTest {
+    /** Restores the master-seed state that the tests in this class modify. */
+    @ClassRule
+    public static final MasterSeedGuard SEED_GUARD = new MasterSeedGuard();
+
     /** Location of the sample grammars. */
     static private final String INPUT_DIR = "junit/samples";
 

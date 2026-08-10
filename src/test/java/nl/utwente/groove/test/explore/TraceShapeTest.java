@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Set;
 
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import nl.utwente.groove.explore.Exploration;
@@ -33,6 +34,7 @@ import nl.utwente.groove.lts.GTSFragment;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.lts.RecipeTransition;
+import nl.utwente.groove.test.MasterSeedGuard;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Randomness;
 
@@ -49,6 +51,10 @@ import nl.utwente.groove.util.Randomness;
  * @version $Revision$
  */
 public class TraceShapeTest {
+    /** Restores the master-seed state that the tests in this class modify. */
+    @ClassRule
+    public static final MasterSeedGuard SEED_GUARD = new MasterSeedGuard();
+
     /** Location of the sample grammars. */
     static private final String INPUT_DIR = "junit/samples";
 

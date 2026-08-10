@@ -20,6 +20,7 @@ package nl.utwente.groove.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import nl.utwente.groove.explore.ExploreType;
@@ -51,6 +52,10 @@ import nl.utwente.groove.util.parse.FormatException;
  * @version $Revision$
  */
 public class DeterminismTest {
+    /** Restores the master-seed state that the tests in this class modify. */
+    @ClassRule
+    public static final MasterSeedGuard SEED_GUARD = new MasterSeedGuard();
+
     /** Location of the samples. */
     static private final String INPUT_DIR = "junit/samples";
 

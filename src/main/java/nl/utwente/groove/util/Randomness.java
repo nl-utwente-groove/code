@@ -120,6 +120,27 @@ public final class Randomness {
         masterSeed = seed;
     }
 
+    /**
+     * Returns the current master-seed state without resolving it:
+     * {@code null} means the seed has not been set or generated yet.
+     * Intended for tests, which snapshot the state before setting their own
+     * seed and restore it afterwards (see {@link #restoreMasterSeed}).
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    public static synchronized @Nullable Long peekMasterSeed() {
+        return masterSeed;
+    }
+
+    /**
+     * Restores a master-seed state previously obtained from
+     * {@link #peekMasterSeed}; {@code null} returns the seed to its
+     * unresolved state. Intended for tests.
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    public static synchronized void restoreMasterSeed(@Nullable Long seed) {
+        masterSeed = seed;
+    }
+
     /** The lazily resolved master seed; {@code null} until first needed. */
     private static @Nullable Long masterSeed;
 

@@ -18,12 +18,14 @@ package nl.utwente.groove.test.explore;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import nl.utwente.groove.explore.ExploreType;
@@ -33,6 +35,7 @@ import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.explore.engine.FrontierStrategy;
 import nl.utwente.groove.explore.util.RandomChooserInSequence;
 import nl.utwente.groove.grammar.Grammar;
+import nl.utwente.groove.test.MasterSeedGuard;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Randomness;
 import nl.utwente.groove.util.Randomness.Purpose;
@@ -45,6 +48,10 @@ import nl.utwente.groove.util.Randomness.Purpose;
  * @version $Revision$
  */
 public class RandomnessTest {
+    /** Restores the master-seed state that the tests in this class modify. */
+    @ClassRule
+    public static final MasterSeedGuard SEED_GUARD = new MasterSeedGuard();
+
     /** Location of the sample grammars. */
     static private final String INPUT_DIR = "junit/samples";
 
@@ -82,6 +89,21 @@ public class RandomnessTest {
             differ |= other.nextLong() != original.nextLong();
         }
         assertTrue(differ, "Different master seeds should give different streams");
+    }
+
+    /**
+     * Tests the snapshot-restore cycle underlying {@link MasterSeedGuard}:
+     * the peeked state comes back exactly, including the unresolved state.
+     */
+    @Test
+    public void testPeekRestore() {
+        var saved = Randomness.peekMasterSeed();
+        Randomness.setMasterSeed(4711);
+        assertEquals(Long.valueOf(4711), Randomness.peekMasterSeed());
+        Randomness.restoreMasterSeed(null);
+        assertNull(Randomness.peekMasterSeed());
+        Randomness.restoreMasterSeed(saved);
+        assertEquals(saved, Randomness.peekMasterSeed());
     }
 
     /**
