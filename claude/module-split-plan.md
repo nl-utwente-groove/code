@@ -1,8 +1,8 @@
 # Plan: module split (gui first, cli second)
 
 *Findings and plan as of 2026-08-10 (rev 3, Claude sessions, reviewed by Arend).
-This document is the spec for redoing the split fresh off current master; do not
-resurrect the old working branches.*
+Tracked in gh #887. This document is the spec for redoing the split fresh off
+current master; do not resurrect the old working branches.*
 
 ## Goal
 
