@@ -26,7 +26,7 @@ import nl.utwente.groove.lts.GraphState;
  * Parametric frontier-based exploration strategy: the exploration order is
  * determined by an injected {@link Pool} rather than by subclassing, so that
  * it composes with the conditional-exploration features (stop mode and
- * exploration condition) inherited from {@link ClosingStrategy}.
+ * stop condition) inherited from {@link ClosingStrategy}.
  * This is the engine counterpart of the exploration configuration's
  * search-order features; it subsumes the retired legacy {@code BFSStrategy}
  * and {@code DFSStrategy} classes.
@@ -44,14 +44,15 @@ public class FrontierStrategy extends ClosingStrategy {
     }
 
     /**
-     * Creates a conditional frontier-based strategy, with a given continuation
+     * Creates a conditional frontier-based strategy, with a given stop
      * condition and a moment at which to apply it.
      * @param stopMode moment at which to apply the condition
-     * @param exploreCondition exploration continues for every state satisfying it
+     * @param stopCondition exploration stops at every state satisfying it; the
+     * stop mode determines whether such a state is itself still explored
      * @param pool determines the exploration order (and possibly a depth bound)
      */
-    public FrontierStrategy(StopMode stopMode, Predicate<GraphState> exploreCondition, Pool pool) {
-        super(stopMode, exploreCondition);
+    public FrontierStrategy(StopMode stopMode, Predicate<GraphState> stopCondition, Pool pool) {
+        super(stopMode, stopCondition);
         this.pool = pool;
     }
 

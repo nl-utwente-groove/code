@@ -39,14 +39,15 @@ import nl.utwente.groove.lts.Status.Flag;
  * e.g., breadth-first or depth-first.
  */
 abstract public class ClosingStrategy extends GTSStrategy {
-    /** Instantiates a conditional closing strategy, with a given continuation condition
+    /** Instantiates a conditional closing strategy, with a given stop condition
      * and a moment at which to apply it.
      * @param stopMode Moment at which to apply the condition
-     * @param exploreCondition exploration continues for every state satisfying it
+     * @param stopCondition exploration stops at every state satisfying it; the
+     * stop mode determines whether such a state is itself still explored
      */
-    protected ClosingStrategy(StopMode stopMode, Predicate<GraphState> exploreCondition) {
+    protected ClosingStrategy(StopMode stopMode, Predicate<GraphState> stopCondition) {
         this.stopMode = stopMode;
-        this.exploreCondition = exploreCondition;
+        this.stopCondition = stopCondition;
     }
 
     /** Instantiates an unconditional closing strategy. */
@@ -128,16 +129,17 @@ abstract public class ClosingStrategy extends GTSStrategy {
         return result;
     }
 
-    /** Indicates if the successors of a given state should be explored.
+    /** Indicates if exploration should stop at a given state, under a given
+     * stop mode: {@code true} means the state's successors are not explored.
      * This is a hook for conditional exploration.
      */
     protected boolean isStop(StopMode stopMode, GraphState state) {
-        return this.stopMode == stopMode && !state.isInner() && this.exploreCondition.test(state);
+        return this.stopMode == stopMode && !state.isInner() && this.stopCondition.test(state);
     }
 
     private final StopMode stopMode;
 
-    private final Predicate<GraphState> exploreCondition;
+    private final Predicate<GraphState> stopCondition;
 
     /** Adds a given state to the set of explorable states. */
     protected void addExplorable(GraphState state) {
