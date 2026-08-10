@@ -35,6 +35,8 @@ import nl.utwente.groove.util.cli.CmdLineException;
 public class ExploreCliTest {
     /** Location of the sample grammar used for the tests. */
     static private final String GRAMMAR = "junit/samples/ferryman.gps";
+    /** Location of the tree-shaped sample grammar used for the depth-bound test. */
+    static private final String COUNTING = "junit/samples/counting.gps";
 
     /** Tests exploration through the configuration option. */
     @Test
@@ -51,6 +53,35 @@ public class ExploreCliTest {
         // stopping at the first result visits at most as many states as exploring all
         var first = Generator.execute("-x", "count=first", GRAMMAR);
         assertTrue(first.getGTS().nodeCount() <= fullCount);
+    }
+
+    /**
+     * Tests that the depth bound means the same across the frontier orders:
+     * on a tree-shaped grammar, where the discovery depth of a state equals
+     * the depth of its unique path, a depth-bounded breadth-first and
+     * depth-first exploration cover exactly the same states. Regression
+     * test: the pools used to inherit an off-by-one divergence from the
+     * legacy strategies (BFS explored one level less than DFS for the same
+     * bound value).
+     */
+    @Test
+    public void testDepthBoundUniform() throws Exception {
+        var full = Generator.execute("-x", "", COUNTING).getGTS().nodeCount();
+        for (int bound : new int[] {1, 2}) {
+            var bfs = Generator
+                .execute("-x", "cost=uniform bound=cost:" + bound, COUNTING)
+                .getGTS()
+                .nodeCount();
+            var dfs = Generator
+                .execute("-x", "next=newest cost=uniform bound=cost:" + bound, COUNTING)
+                .getGTS()
+                .nodeCount();
+            assertEquals(bfs, dfs,
+                         "Depth bound %d should mean the same under both orders"
+                             .formatted(bound));
+            assertTrue(bfs < full, "Depth bound %d should restrict the exploration"
+                .formatted(bound));
+        }
     }
 
     /** Tests that the configuration option rejects unrealisable values. */

@@ -27,7 +27,8 @@ import nl.utwente.groove.lts.GraphState;
  * Breadth-first pool: states are explored in the order in which they were
  * discovered, resulting in exploration by increasing depth. Guarantees a
  * breadth-first exploration, but consumes lots of memory.
- * The ordering replicates that of the legacy {@code BFSStrategy}.
+ * The ordering replicates that of the legacy {@code BFSStrategy}; the depth
+ * bound deliberately does not (see {@link #QueuePool(int)}).
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -35,7 +36,10 @@ import nl.utwente.groove.lts.GraphState;
 public class QueuePool implements Pool {
     /**
      * Creates a breadth-first pool with an optional depth bound.
-     * @param bound depth up to which states are added; 0 means unbounded
+     * @param bound maximum depth of states added to the pool, like in
+     * {@link StackPool}; 0 means unbounded. (The legacy {@code BFSStrategy}
+     * added states only up to depth {@code bound - 1}, diverging from the
+     * legacy DFS reading of the same bound; the pools use one reading.)
      */
     public QueuePool(int bound) {
         this.bound = bound;
@@ -58,7 +62,9 @@ public class QueuePool implements Pool {
 
     @Override
     public void add(GraphState state) {
-        if (this.bound == 0 || this.depth < this.bound - 1) {
+        // the added state is one level deeper than the current queue depth,
+        // so it is within the bound iff depth < bound
+        if (this.bound == 0 || this.depth < this.bound) {
             this.nextDepthStateQueue.offer(state);
         }
     }

@@ -35,7 +35,7 @@ import nl.utwente.groove.lts.GraphState;
 public class StackPool implements Pool {
     /**
      * Creates a depth-first pool with an optional depth bound.
-     * @param bound depth up to which states are added; 0 means unbounded
+     * @param bound maximum depth of states added to the pool; 0 means unbounded
      */
     public StackPool(int bound) {
         this.bound = bound;
