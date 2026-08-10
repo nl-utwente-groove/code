@@ -23,12 +23,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.Test;
 
 import nl.utwente.groove.explore.Generator;
+import nl.utwente.groove.lts.Filter;
 import nl.utwente.groove.util.cli.CmdLineException;
 
 /**
  * Tests for the Generator's exploration configuration option: exploring with
- * a configuration, and the mutual exclusion with the deprecated strategy and
- * acceptor options.
+ * a configuration, the mutual exclusion with the deprecated strategy and
+ * acceptor options, and the effect of the result shape on the save filter.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -82,6 +83,25 @@ public class ExploreCliTest {
             assertTrue(bfs < full, "Depth bound %d should restrict the exploration"
                 .formatted(bound));
         }
+    }
+
+    /**
+     * Tests that a trace-shaped exploration ({@code shape=trace}) switches
+     * the save filter to the result traces, unless an explicit filter option
+     * overrides it.
+     */
+    @Test
+    public void testTraceShapeFilter() throws Exception {
+        var traced = new Generator("-x", "shape=trace goal=condition:eat count=first", GRAMMAR);
+        traced.start();
+        assertEquals(Filter.RESULT, traced.getFilter());
+        var plain = new Generator("-x", "goal=condition:eat count=first", GRAMMAR);
+        plain.start();
+        assertEquals(Filter.NONE, plain.getFilter());
+        var spanning = new Generator("-spanning", "-x",
+            "shape=trace goal=condition:eat count=first", GRAMMAR);
+        spanning.start();
+        assertEquals(Filter.SPANNING, spanning.getFilter());
     }
 
     /** Tests that the configuration option rejects unrealisable values. */
