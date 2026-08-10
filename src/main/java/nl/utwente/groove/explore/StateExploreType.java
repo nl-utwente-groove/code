@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.explore;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.explore.strategy.ExploreStateStrategy;
 import nl.utwente.groove.explore.strategy.Strategy;
 import nl.utwente.groove.grammar.Grammar;
@@ -26,6 +28,7 @@ import nl.utwente.groove.grammar.Grammar;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public class StateExploreType extends DirectExploreType {
     /**
      * Constructs a single-state exploration type.

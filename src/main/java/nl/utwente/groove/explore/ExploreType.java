@@ -16,6 +16,9 @@
  */
 package nl.utwente.groove.explore;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.explore.result.Acceptor;
@@ -39,6 +42,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * it should be fed into an {@link Exploration}.
  * @author Arend Rensink
  */
+@NonNullByDefault
 public abstract class ExploreType {
     /**
      * Initialises the exploration type.
@@ -119,7 +123,7 @@ public abstract class ExploreType {
         return result;
     }
 
-    private Grammar testGrammar;
+    private @Nullable Grammar testGrammar;
 
     private Factory<FormatErrorSet> grammarErrors = Factory.lazy(() -> {
         FormatErrorSet errors = new FormatErrorSet();
@@ -190,7 +194,8 @@ public abstract class ExploreType {
      * compatible with this exploration
      * @see #test(Grammar)
      */
-    final public Exploration newExploration(GTS gts, GraphState start) throws FormatException {
+    final public Exploration newExploration(GTS gts,
+                                            @Nullable GraphState start) throws FormatException {
         if (start == null) {
             if (gts.isFresh()) {
                 // apply the per-GTS features before materialising the start

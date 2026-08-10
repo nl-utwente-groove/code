@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.explore.config;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.AlgebraFamily;
@@ -60,6 +61,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public class ConfiguredExploreType extends ExploreType {
     /**
      * Constructs an exploration type for a given (validated) configuration

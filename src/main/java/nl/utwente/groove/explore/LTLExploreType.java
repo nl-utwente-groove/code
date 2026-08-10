@@ -16,6 +16,9 @@
  */
 package nl.utwente.groove.explore;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.explore.config.parse.BoundaryParser;
 import nl.utwente.groove.explore.result.Acceptor;
 import nl.utwente.groove.explore.result.CycleAcceptor;
@@ -35,6 +38,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public class LTLExploreType extends ExploreType {
     /** The flavours of LTL model-checking exploration. */
     public enum Kind {
@@ -78,7 +82,7 @@ public class LTLExploreType extends ExploreType {
      * @param boundary the exploration boundary; must be non-{@code null}
      * exactly for the bounded flavours
      */
-    public LTLExploreType(Kind kind, String property, Boundary boundary) {
+    public LTLExploreType(Kind kind, String property, @Nullable Boundary boundary) {
         this(kind, property, boundary, null, 1);
     }
 
@@ -94,12 +98,12 @@ public class LTLExploreType extends ExploreType {
      * @param count number of results after which exploration halts;
      * {@code 0} means unbounded
      */
-    public LTLExploreType(Kind kind, String property, String boundarySpec, int count) {
+    public LTLExploreType(Kind kind, String property, @Nullable String boundarySpec, int count) {
         this(kind, property, null, boundarySpec, count);
     }
 
-    private LTLExploreType(Kind kind, String property, Boundary boundary, String boundarySpec,
-                           int count) {
+    private LTLExploreType(Kind kind, String property, @Nullable Boundary boundary,
+                           @Nullable String boundarySpec, int count) {
         super(count);
         assert kind == Kind.PLAIN
             ? boundary == null && boundarySpec == null
@@ -112,18 +116,23 @@ public class LTLExploreType extends ExploreType {
 
     private final Kind kind;
     private final String property;
-    private final Boundary boundary;
-    private final String boundarySpec;
+    /** The resolved boundary; by the constructor invariant, the bounded
+     * flavours have exactly one of {@link #boundary} and
+     * {@link #boundarySpec}, the plain flavour neither. */
+    private final @Nullable Boundary boundary;
+    /** The unresolved boundary specification; see {@link #boundary}. */
+    private final @Nullable String boundarySpec;
 
     @Override
     public String getIdentifier() {
         StringBuilder result = new StringBuilder(this.kind.getKeyword());
         result.append(':');
         if (this.kind != Kind.PLAIN) {
+            var spec = this.boundarySpec;
             result
-                .append(this.boundarySpec == null
-                    ? this.boundary.toString()
-                    : this.boundarySpec);
+                .append(spec == null
+                    ? String.valueOf(this.boundary)
+                    : spec);
             result.append(';');
         }
         result.append(this.property);
@@ -139,10 +148,13 @@ public class LTLExploreType extends ExploreType {
         };
         result.setProperty(this.property);
         if (result instanceof BoundedLTLStrategy bounded) {
-            bounded
-                .setBoundary(this.boundary == null
-                    ? BoundaryParser.parse(grammar, this.boundarySpec)
-                    : this.boundary);
+            var boundary = this.boundary;
+            if (boundary == null) {
+                var spec = this.boundarySpec;
+                assert spec != null; // constructor invariant for the bounded flavours
+                boundary = BoundaryParser.parse(grammar, spec);
+            }
+            bounded.setBoundary(boundary);
         }
         return result;
     }

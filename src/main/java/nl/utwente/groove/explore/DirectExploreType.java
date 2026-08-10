@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.explore;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.explore.result.Acceptor;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.util.parse.FormatException;
@@ -28,6 +30,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public abstract class DirectExploreType extends ExploreType {
     /**
      * Constructs a direct exploration type.
