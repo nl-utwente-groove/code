@@ -86,8 +86,13 @@ public class ExploreSchemaTest {
     @Test
     public void testConsistencyCheck() throws Exception {
         // structurally fine but inconsistent: next=random needs successor=all
-        var props = properties("next = random\nsuccessor = depth\n");
-        assertFalse(ExploreConfigSchema.INSTANCE.check(props).isEmpty());
+        var props = properties("next = random\nsuccessor = single\n");
+        var errors = ExploreConfigSchema.INSTANCE.check(props);
+        // pin the message, so that a structural error cannot satisfy this test
+        assertTrue(errors
+            .stream()
+            .anyMatch(e -> e.toString().contains("requires successor selection")),
+                   errors.toString());
         assertTrue(ExploreConfigSchema.INSTANCE.check(properties("next = random\n")).isEmpty());
     }
 
