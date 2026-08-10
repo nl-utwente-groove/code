@@ -766,7 +766,7 @@ public class GrammarModel implements PropertyChangeListener {
      * Returns the default exploration type of this grammar. If the
      * {@code exploration} property names a settings resource, the resource
      * content is realised (an unresolvable reference or unrealisable content
-     * yields {@link ExploreType#DEFAULT}; the errors are reported through the
+     * yields {@link ExploreType#getDefault()}; the errors are reported through the
      * property checker and on the resource itself). Otherwise the deprecated
      * legacy exploration strategy key is consulted.
      */

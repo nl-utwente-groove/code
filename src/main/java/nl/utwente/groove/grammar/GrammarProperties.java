@@ -381,7 +381,7 @@ public class GrammarProperties extends Properties {
 
     /**
      * Returns the exploration type stored in the deprecated legacy
-     * exploration strategy key, or {@link ExploreType#DEFAULT} if that key is
+     * exploration strategy key, or {@link ExploreType#getDefault()} if that key is
      * unset. Only consulted when the exploration reference (see
      * {@link #getExplorationName()}) is absent.
      */
