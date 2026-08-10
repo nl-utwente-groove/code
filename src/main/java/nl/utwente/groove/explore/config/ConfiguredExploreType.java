@@ -94,8 +94,15 @@ public class ConfiguredExploreType extends ExploreType {
     public ExploreType withResultCount(int count) {
         var newConfig = new ExploreConfig(getConfig());
         newConfig.put(ExploreKey.COUNT, Count.toSetting(count));
-        // the count feature does not influence the traversal
-        return new ConfiguredExploreType(newConfig, count, this.traversal);
+        try {
+            // revalidate through the converter: the count feature interacts
+            // with the goal (goal 'none' only admits counting all results)
+            return ExploreTypeConverter.toExploreType(newConfig);
+        } catch (FormatException exc) {
+            throw Exceptions
+                .illegalArg("Result count %s is inconsistent with exploration '%s': %s", count,
+                            getIdentifier(), exc.getMessage());
+        }
     }
 
     @Override

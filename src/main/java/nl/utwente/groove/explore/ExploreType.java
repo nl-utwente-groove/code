@@ -80,6 +80,8 @@ public abstract class ExploreType {
     /**
      * Returns a variant of this exploration type with a different result
      * bound ({@code 0} meaning unbounded).
+     * @throws IllegalArgumentException if the count is inconsistent with
+     * this exploration type
      */
     abstract public ExploreType withResultCount(int count);
 
