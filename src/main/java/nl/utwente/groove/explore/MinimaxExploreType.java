@@ -34,7 +34,12 @@ import nl.utwente.groove.util.parse.FormatException;
  * when the strategy is instantiated.
  * @author Arend Rensink
  * @version $Revision$
+ * @deprecated scheduled for removal in release 8.0 (see gh #890):
+ * reachable only through the legacy exploration syntax, never exercised
+ * by the test suite, and the underlying {@link MinimaxStrategy} has known
+ * defects that would surface on any real game.
  */
+@Deprecated(forRemoval = true)
 @NonNullByDefault
 public class MinimaxExploreType extends DirectExploreType {
     /**
