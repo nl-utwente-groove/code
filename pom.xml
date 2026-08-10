@@ -143,6 +143,13 @@
 				<version>3.2.5</version>
 				<configuration>
 					<excludedGroups>${excluded.test.groups}</excludedGroups>
+					<excludes>
+						<!-- TestSuite aggregates the whole package tree for the
+						     Eclipse JUnit launcher; Surefire discovers the test
+						     classes directly, so running the suite as well would
+						     execute every test twice. -->
+						<exclude>**/TestSuite.java</exclude>
+					</excludes>
 				</configuration>
 			</plugin>
 
@@ -440,9 +447,13 @@
 			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
+		<!-- Supplies the suite API and engine for TestSuite. Do not replace this
+		     with the deprecated junit-platform-runner: its presence makes
+		     Surefire auto-detect the JUnit 4 provider, which silently skips
+		     all JUnit 5 (Jupiter) test classes. -->
 		<dependency>
 			<groupId>org.junit.platform</groupId>
-			<artifactId>junit-platform-runner</artifactId>
+			<artifactId>junit-platform-suite</artifactId>
 			<version>1.14.4</version>
 			<scope>test</scope>
 		</dependency>
