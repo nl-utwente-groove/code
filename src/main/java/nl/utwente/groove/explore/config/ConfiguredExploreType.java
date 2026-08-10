@@ -92,32 +92,37 @@ public class ConfiguredExploreType extends ExploreType {
     }
 
     /**
-     * Applies or verifies the per-GTS features of the configuration:
-     * collapse mode, algebra family and persistence. These determine what
-     * the state space <i>is</i>, so they must be constant for the lifetime
-     * of the GTS. On a fresh GTS they are applied; on an explored GTS
-     * (i.e., when continuing) they are verified against the recorded
-     * values, and any deviation is an error — a fresh state space (Restart)
-     * is needed to change them. On a successful verification the
+     * Applies the per-GTS features of the configuration: collapse mode,
+     * algebra family and persistence. These determine what the state space
+     * <i>is</i>, so they must be constant for the lifetime of the GTS;
+     * they can only be applied to a fresh GTS (asserted by the super
+     * implementation).
+     */
+    @Override
+    public void prepareGTS(GTS gts) {
+        super.prepareGTS(gts);
+        var collapse = getCollapseMode();
+        if (collapse != null) {
+            gts.setCollapseMode(collapse);
+        }
+        var algebra = getAlgebraFamily();
+        if (algebra != null) {
+            gts.setAlgebraFamily(algebra);
+        }
+        gts.setPersistent(isPersistent());
+    }
+
+    /**
+     * Verifies the per-GTS features of the configuration against the values
+     * recorded in the GTS: any deviation is an error — a fresh state space
+     * (Restart) is needed to change them. On a successful verification the
      * operational persistence switch is re-engaged, since trace retention
      * flips it back on at the end of an unstored run.
      */
     @Override
-    public void prepareGTS(GTS gts) throws FormatException {
-        if (gts.isFresh()) {
-            var collapse = getCollapseMode();
-            if (collapse != null) {
-                gts.setCollapseMode(collapse);
-            }
-            var algebra = getAlgebraFamily();
-            if (algebra != null) {
-                gts.setAlgebraFamily(algebra);
-            }
-            gts.setPersistent(isPersistent());
-        } else {
-            checkGTS(gts).throwException();
-            gts.setStoring(gts.isPersistent());
-        }
+    public void prepareRun(GTS gts) throws FormatException {
+        checkGTS(gts).throwException();
+        gts.setStoring(gts.isPersistent());
     }
 
     /**

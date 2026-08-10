@@ -123,16 +123,37 @@ public abstract class ExploreType {
     });
 
     /**
-     * Callback method allowing the exploration type to configure the GTS
-     * before an exploration of this type starts; called from the
-     * {@link Exploration} constructor, and from {@link #newExploration}
-     * before the start state is materialised (so that per-GTS features can
-     * still be applied on a fresh GTS). This implementation does nothing.
+     * Callback method allowing the exploration type to apply its per-GTS
+     * features (collapse mode, algebra family, persistence) to a given GTS.
+     * May only be called on a fresh GTS: the features are baked into the
+     * rule application record and the start state, so they cannot change
+     * once the start state has materialised (asserted here). Called from
+     * {@link #newExploration} and from the Simulator's GTS reset.
+     * This implementation does nothing.
+     */
+    public void prepareGTS(GTS gts) {
+        assert gts.isFresh() : "Per-GTS features can only be applied to a fresh GTS";
+        // no per-GTS features by default
+    }
+
+    /**
+     * Callback method preparing a GTS for a single exploration run of this
+     * type; called once per run, from the {@link Exploration} constructor.
+     * Verifies that the GTS is compatible with the per-GTS features of this
+     * type and (re-)engages the operational switches for the run. This
+     * implementation refuses a GTS that does not persist its states: an
+     * exploration type without a persistence feature of its own would
+     * store every discovered state into a state set that no longer
+     * collapses (see {@link GTS#retainTraces}).
      * @throws FormatException if the GTS was explored under per-GTS
      * features that are inconsistent with this exploration type
      */
-    public void prepareGTS(GTS gts) throws FormatException {
-        // does nothing by default
+    public void prepareRun(GTS gts) throws FormatException {
+        if (!gts.isPersistent()) {
+            throw new FormatException(
+                "This exploration cannot continue a state space explored without persistence;"
+                    + " use Restart");
+        }
     }
 
     /**
@@ -157,9 +178,11 @@ public abstract class ExploreType {
      */
     final public Exploration newExploration(GTS gts, GraphState start) throws FormatException {
         if (start == null) {
-            // prepare before materialising the start state, so that on a
-            // fresh GTS the per-GTS features can still be applied
-            prepareGTS(gts);
+            if (gts.isFresh()) {
+                // apply the per-GTS features before materialising the start
+                // state below
+                prepareGTS(gts);
+            }
             start = gts.startState();
         }
         return new Exploration(this, start);
