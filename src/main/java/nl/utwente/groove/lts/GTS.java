@@ -199,7 +199,9 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      * start graph and the derivation record).
      */
     public void setAlgebraFamily(AlgebraFamily family) {
-        assert isFresh() && this.record == null : "Algebra family must be set on a fresh GTS";
+        if (!isFresh() || this.record != null) {
+            throw Exceptions.illegalState("Algebra family must be set on a fresh GTS");
+        }
         this.algebraFamily = family;
     }
 
@@ -310,8 +312,9 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      * re-disables the storing switch that trace retention flipped back on.
      */
     public void setPersistent(boolean persistent) {
-        assert isFresh() || persistent == this.persistent
-            : "Persistence must be constant for the lifetime of the GTS";
+        if (!isFresh() && persistent != this.persistent) {
+            throw Exceptions.illegalState("Persistence must be constant for the lifetime of the GTS");
+        }
         this.persistent = persistent;
         setStoring(persistent);
     }
@@ -491,8 +494,9 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      * state set and the derivation record).
      */
     public void setCollapseMode(CollapseMode collapse) {
-        assert isFresh() && this.allStateSet == null && this.record == null
-            : "Collapse mode must be set on a fresh GTS";
+        if (!isFresh() || this.allStateSet != null || this.record != null) {
+            throw Exceptions.illegalState("Collapse mode must be set on a fresh GTS");
+        }
         this.collapseMode = collapse;
     }
 

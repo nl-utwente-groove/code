@@ -150,7 +150,9 @@ public abstract class ExploreType {
      * This implementation does nothing.
      */
     public void prepareGTS(GTS gts) {
-        assert gts.isFresh() : "Per-GTS features can only be applied to a fresh GTS";
+        if (!gts.isFresh()) {
+            throw Exceptions.illegalState("Per-GTS features can only be applied to a fresh GTS");
+        }
         // no per-GTS features by default
     }
 
