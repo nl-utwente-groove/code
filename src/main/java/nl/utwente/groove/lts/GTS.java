@@ -41,6 +41,7 @@ import nl.utwente.groove.control.CallStack;
 import nl.utwente.groove.control.instance.Frame;
 import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.grammar.Grammar;
+import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.host.HostEdgeSet;
 import nl.utwente.groove.grammar.host.HostFactory;
 import nl.utwente.groove.grammar.host.HostGraph;
@@ -55,6 +56,7 @@ import nl.utwente.groove.lts.Status.Flag;
 import nl.utwente.groove.transform.Record;
 import nl.utwente.groove.transform.oracle.NoValueOracle;
 import nl.utwente.groove.transform.oracle.ValueOracle;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.collect.NestedIterator;
 import nl.utwente.groove.util.collect.SetView;
@@ -461,13 +463,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     protected CollapseMode getCollapse() {
         CollapseMode result = this.collapseMode;
         if (result == null) {
-            if (!getRecord().isCollapse()) {
-                result = COLLAPSE_NONE;
-            } else if (!getRecord().isCheckIso()) {
-                result = COLLAPSE_EQUAL;
-            } else {
-                result = COLLAPSE_ISO_STRONG;
-            }
+            result = CollapseMode.of(getRecord().isCollapse(), getRecord().isCheckIso());
         }
         return result;
     }
@@ -483,9 +479,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     public CollapseMode getCollapseMode() {
         CollapseMode result = this.collapseMode;
         if (result == null) {
-            result = getGrammar().getProperties().isCheckIsomorphism()
-                ? COLLAPSE_ISO_STRONG
-                : COLLAPSE_EQUAL;
+            result = CollapseMode.ofProperties(getGrammar().getProperties());
         }
         return result;
     }
@@ -799,10 +793,8 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
             var collapse = this.collapseMode;
             if (collapse != null) {
                 // keep the record's collapse flags consistent with the override
-                result.setCollapse(collapse != CollapseMode.COLLAPSE_NONE);
-                result
-                    .setCheckIso(collapse == COLLAPSE_ISO_STRONG
-                        || collapse == CollapseMode.COLLAPSE_ISO_WEAK);
+                result.setCollapse(collapse.isCollapse());
+                result.setCheckIso(collapse.isCheckIso());
             }
         }
         return result;
@@ -1162,6 +1154,44 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
          * @see IsoChecker#isStrong()
          */
         COLLAPSE_ISO_STRONG;
+
+        /** Indicates if this mode collapses states at all.
+         * This is the mode's projection onto {@link Record#setCollapse}. */
+        @AIGenerated("Claude Fable 5, 2026-08")
+        public boolean isCollapse() {
+            return this != COLLAPSE_NONE;
+        }
+
+        /** Indicates if this mode collapses states modulo isomorphism.
+         * This is the mode's projection onto {@link Record#setCheckIso}. */
+        @AIGenerated("Claude Fable 5, 2026-08")
+        public boolean isCheckIso() {
+            return this == COLLAPSE_ISO_WEAK || this == COLLAPSE_ISO_STRONG;
+        }
+
+        /** Returns the mode encoded by the collapse and iso-check flags of a
+         * derivation record (see {@link Record#isCollapse} and
+         * {@link Record#isCheckIso}). The flags cannot express
+         * {@link #COLLAPSE_ISO_WEAK}: isomorphism collapse maps to the
+         * strong mode. */
+        @AIGenerated("Claude Fable 5, 2026-08")
+        public static CollapseMode of(boolean collapse, boolean checkIso) {
+            return collapse
+                ? checkIso
+                    ? COLLAPSE_ISO_STRONG
+                    : COLLAPSE_EQUAL
+                : COLLAPSE_NONE;
+        }
+
+        /** Returns the grammar-determined default mode for given grammar
+         * properties: strong isomorphism collapse if the isomorphism check
+         * is on, equality collapse otherwise. */
+        @AIGenerated("Claude Fable 5, 2026-08")
+        public static CollapseMode ofProperties(GrammarProperties properties) {
+            return properties.isCheckIsomorphism()
+                ? COLLAPSE_ISO_STRONG
+                : COLLAPSE_EQUAL;
+        }
     }
 
     /** Set of states that only tests for state number as equality. */

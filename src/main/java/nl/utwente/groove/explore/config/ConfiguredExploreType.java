@@ -148,9 +148,7 @@ public class ConfiguredExploreType extends ExploreType {
         var collapse = getCollapseMode();
         if (collapse == null) {
             // inherit the grammar-determined mode, as a fresh GTS would
-            collapse = gts.getGrammar().getProperties().isCheckIsomorphism()
-                ? GTS.CollapseMode.COLLAPSE_ISO_STRONG
-                : GTS.CollapseMode.COLLAPSE_EQUAL;
+            collapse = GTS.CollapseMode.ofProperties(gts.getGrammar().getProperties());
         }
         if (collapse != gts.getCollapseMode()) {
             errors
