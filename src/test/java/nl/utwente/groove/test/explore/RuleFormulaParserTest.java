@@ -75,6 +75,20 @@ public class RuleFormulaParserTest {
     }
 
     /**
+     * Tests that {@code ->} can be written without surrounding spaces, while
+     * rule names keep their internal hyphens.
+     */
+    @Test
+    public void testSpacelessImplication() throws FormatException {
+        var atoms = Map.of("a", true, "b", false, "a-b", false);
+        assertEquals(false, eval("a->b", atoms));
+        assertEquals(true, eval("b->a", atoms));
+        // a hyphen not followed by '>' belongs to the rule name
+        assertEquals(false, eval("a-b", atoms));
+        assertEquals(true, eval("a-b->b", atoms));
+    }
+
+    /**
      * Tests the conventional precedence: {@code !} binds strongest, then
      * {@code &&}, then {@code ||}, then {@code ->}. The chosen valuations
      * distinguish this from the legacy single-level parsing.

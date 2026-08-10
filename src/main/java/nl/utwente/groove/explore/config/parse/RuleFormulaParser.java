@@ -184,7 +184,7 @@ public class RuleFormulaParser {
         /** Parses a rule name atom. */
         Predicate<GraphState> parseRule() throws FormatException {
             int start = this.i;
-            while (!atEnd() && RULE_NAME_STOPPERS.indexOf(this.text.charAt(this.i)) < 0) {
+            while (!atEnd() && !stopsRuleName()) {
                 this.i++;
             }
             if (this.i == start) {
@@ -194,7 +194,20 @@ public class RuleFormulaParser {
             return this.resolver.resolve(ruleName);
         }
 
-        /** The characters that terminate a rule name. */
+        /**
+         * Tests whether the character at the current index terminates a rule
+         * name. A hyphen only does so as the start of the {@code ->} operator,
+         * since rule names may contain internal hyphens.
+         */
+        private boolean stopsRuleName() {
+            char c = this.text.charAt(this.i);
+            if (c == '-') {
+                return this.text.startsWith("->", this.i);
+            }
+            return RULE_NAME_STOPPERS.indexOf(c) >= 0;
+        }
+
+        /** The characters that unconditionally terminate a rule name. */
         static private final String RULE_NAME_STOPPERS = "()>|& !";
     }
 }
