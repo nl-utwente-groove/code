@@ -14,8 +14,8 @@ if (-not (Test-Path $ecj)) {
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
-Write-Host 'Compiling project (mvn -q compile)...'
-mvn -q compile
+Write-Host 'Compiling project (mvn -q test-compile)...'
+mvn -q test-compile
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 $cpFile = 'target\ecj-classpath.txt'
@@ -28,5 +28,5 @@ $cp = (Get-Content $cpFile -Raw).Trim()
 
 $scratch = 'target\ecj-out'
 java -jar $ecj -properties .settings/org.eclipse.jdt.core.prefs --release 21 -proc:none `
-    -d $scratch -cp "target/classes;$cp" @Files
+    -d $scratch -cp "target/classes;target/test-classes;$cp" @Files
 exit $LASTEXITCODE

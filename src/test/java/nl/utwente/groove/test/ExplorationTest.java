@@ -155,7 +155,7 @@ public class ExplorationTest {
         testExploration("priorities.gps", "start", "bfs", 13, 34);
         testExploration("priorities.gps", "start", "dfs", 13, 34);
         testExploration("priorities.gps", "start", "linear", 8, 8);
-        //testExploration("recipe-priorities.gps", "start", "bfs", 13, 56);
+        testExploration("recipe-priorities.gps", "start", "bfs", 6, 24);
         testExploration("recipe-priorities.gps", "start", "linear", 5, 5, 3);
     }
 
