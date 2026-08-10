@@ -19,6 +19,9 @@ package nl.utwente.groove.explore.strategy;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.Action;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.lts.GraphTransition;
@@ -32,6 +35,7 @@ import nl.utwente.groove.verify.ProductTransition;
  * @author Harmen Kastenberg
  * @version $Revision$
  */
+@NonNullByDefault
 public class RuleSetBoundary extends Boundary {
     /**
      * Constructs a prototype boundary object.
@@ -46,7 +50,7 @@ public class RuleSetBoundary extends Boundary {
      * {@link RuleSetBoundary} constructor.
      * @param rules the set of rules that constitute the boundary
      */
-    private RuleSetBoundary(Set<Rule> rules, Record record) {
+    private RuleSetBoundary(Set<Rule> rules, @Nullable Record record) {
         super(record);
         this.rules = new HashSet<>(rules);
     }

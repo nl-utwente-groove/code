@@ -20,6 +20,9 @@ import static nl.utwente.groove.transform.RuleEvent.Reuse.NONE;
 
 import java.util.Stack;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.explore.result.Acceptor;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSListener;
@@ -33,9 +36,10 @@ import nl.utwente.groove.transform.Record;
  * @author Iovka Boneva
  *
  */
+@NonNullByDefault
 public class LinearStrategy extends GTSStrategy {
     @Override
-    protected void prepare(GTS gts, GraphState state, Acceptor acceptor) {
+    protected void prepare(GTS gts, @Nullable GraphState state, Acceptor acceptor) {
         // We have to set the non-collapsing property before the first (start)
         // state is generated, otherwise it is too late.
         Record record = gts.getRecord();
@@ -49,10 +53,11 @@ public class LinearStrategy extends GTSStrategy {
     @Override
     public GraphState doNext() throws InterruptedException {
         GraphState state = getNextState();
+        assert state != null : "doNext called without hasNext";
         MatchResult match = getMatch();
         // put the state back in the pool for backtracking of recipes
         if (!state.isClosed()) {
-            putBackInPool();
+            putBackInPool(state);
         }
         if (match != null) {
             state.applyMatch(match);
@@ -62,12 +67,14 @@ public class LinearStrategy extends GTSStrategy {
     }
 
     /** Callback method to return the single next match. */
-    protected MatchResult getMatch() {
-        return getNextState().getMatch();
+    protected @Nullable MatchResult getMatch() {
+        var state = getNextState();
+        assert state != null : "doNext called without hasNext";
+        return state.getMatch();
     }
 
     @Override
-    protected GraphState computeNextState() {
+    protected @Nullable GraphState computeNextState() {
         if (this.pool.isEmpty()) {
             return null;
         } else {
@@ -84,8 +91,8 @@ public class LinearStrategy extends GTSStrategy {
      * Pushes the currently explored state back onto the stack,
      * for backtracking recipes.
      */
-    private void putBackInPool() {
-        this.pool.push(getNextState());
+    private void putBackInPool(GraphState state) {
+        this.pool.push(state);
     }
 
     private void putFreshInPool(GraphState state) {

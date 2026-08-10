@@ -18,6 +18,9 @@ package nl.utwente.groove.explore.engine;
 
 import java.util.function.Predicate;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.explore.strategy.ClosingStrategy;
 import nl.utwente.groove.explore.strategy.StopMode;
 import nl.utwente.groove.lts.GraphState;
@@ -33,6 +36,7 @@ import nl.utwente.groove.lts.GraphState;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public class FrontierStrategy extends ClosingStrategy {
     /**
      * Creates an unconditional frontier-based strategy with a given
@@ -59,7 +63,7 @@ public class FrontierStrategy extends ClosingStrategy {
     private final Pool pool;
 
     @Override
-    protected GraphState getFromPool() {
+    protected @Nullable GraphState getFromPool() {
         return this.pool.take();
     }
 

@@ -16,23 +16,27 @@
  */
 package nl.utwente.groove.explore.strategy;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.verify.ProductTransition;
 import nl.utwente.groove.verify.ModelChecking.Record;
 
 /**
  * Abstract implementation for boundaries.
- * 
+ *
  * @author Harmen Kastenberg
  * @version $Revision$
  */
+@NonNullByDefault
 public abstract class Boundary {
-    /** 
+    /**
      * Constructs a boundary with a given (possibly {@code null}) model checking run.
      * @param record record of the model checking run; if {@code null}, this is a
      * prototype boundary
      */
-    protected Boundary(Record record) {
+    protected Boundary(@Nullable Record record) {
         this.record = record;
     }
 
@@ -105,12 +109,16 @@ public abstract class Boundary {
         // by default, do nothing
     }
 
-    /** Returns the model checking record associated with the boundary. */
+    /** Returns the model checking record associated with the boundary.
+     * Must only be called on an instantiated (non-prototype) boundary.
+     */
     final protected Record getRecord() {
-        return this.record;
+        var result = this.record;
+        assert result != null : "Boundary not instantiated";
+        return result;
     }
 
-    private Record record;
+    private @Nullable Record record;
     /**
      * container for the number of boundary-crossing transitions in the current
      * path

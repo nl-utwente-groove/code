@@ -24,6 +24,9 @@ import java.util.List;
 import java.util.Stack;
 import java.util.function.Predicate;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.explore.result.Acceptor;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSListener;
@@ -38,6 +41,7 @@ import nl.utwente.groove.lts.Status.Flag;
  * transitions of its parent. Subclasses must decide on the order of the pool;
  * e.g., breadth-first or depth-first.
  */
+@NonNullByDefault
 abstract public class ClosingStrategy extends GTSStrategy {
     /** Instantiates a conditional closing strategy, with a given stop condition
      * and a moment at which to apply it.
@@ -58,6 +62,7 @@ abstract public class ClosingStrategy extends GTSStrategy {
     @Override
     public GraphState doNext() throws InterruptedException {
         GraphState state = getNextState();
+        assert state != null : "doNext called without hasNext";
         List<MatchResult> matches = state.getMatches();
         if (state.getActualFrame().isTrial()) {
             // there are potential rule matches now blocked until
@@ -99,7 +104,7 @@ abstract public class ClosingStrategy extends GTSStrategy {
     }
 
     @Override
-    protected void prepare(GTS gts, GraphState state, Acceptor acceptor) {
+    protected void prepare(GTS gts, @Nullable GraphState state, Acceptor acceptor) {
         super.prepare(gts, state, acceptor);
         // for the closing strategy, there is no problem in aliasing
         // the graph data structures. On the whole, this seems wise, to
@@ -116,7 +121,7 @@ abstract public class ClosingStrategy extends GTSStrategy {
     }
 
     @Override
-    protected GraphState computeNextState() {
+    protected @Nullable GraphState computeNextState() {
         GraphState result;
         if (this.transientStack.isEmpty()) {
             result = getFromPool();
@@ -153,7 +158,7 @@ abstract public class ClosingStrategy extends GTSStrategy {
     /** Callback method to retrieve the next element from the pool.
      * @return the next element, or {@code null} when the exploration is done.
      */
-    abstract protected GraphState getFromPool();
+    abstract protected @Nullable GraphState getFromPool();
 
     /** Callback method to add a graph state to the pool. */
     abstract protected void putInPool(GraphState state);

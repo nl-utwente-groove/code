@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.explore.strategy;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.verify.ModelChecking;
 import nl.utwente.groove.verify.ProductState;
 import nl.utwente.groove.verify.ProductTransition;
@@ -28,6 +30,7 @@ import nl.utwente.groove.verify.ProductTransition;
  * @author Harmen Kastenberg
  * @version $Revision$
  */
+@NonNullByDefault
 public class BoundedPocketLTLStrategy extends BoundedLTLStrategy {
     @Override
     protected void colourState(ProductState state) {
