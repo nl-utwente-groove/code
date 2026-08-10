@@ -170,6 +170,11 @@ public class LegacySyntaxParserTest {
         var pocket = LegacySyntaxParser.overlay(ExploreType.DEFAULT,
                                                 "ltlpocket:eat,unload;F eat", null, 0);
         assertInstanceOf(BoundedPocketLTLStrategy.class, pocket.getParsedStrategy(grammar));
+        // a boundary with a leading comma is a format error, not a crash
+        // (regression: BoundaryParser indexed into the empty first element)
+        var commaBounded = LegacySyntaxParser.overlay(ExploreType.DEFAULT,
+                                                      "ltlbounded:,eat;F eat", null, 0);
+        assertThrows(FormatException.class, () -> commaBounded.getParsedStrategy(grammar));
         // single-state and remote exploration
         var state = LegacySyntaxParser.parse("state final 0");
         assertInstanceOf(StateExploreType.class, state);

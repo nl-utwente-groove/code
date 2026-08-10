@@ -52,6 +52,11 @@ public class BoundaryParser {
         if (text.isEmpty() || units.length == 0) {
             throw new FormatException("Empty boundary specification");
         }
+        if (units[0].isEmpty()) {
+            // guard the discriminating charAt below against a leading comma
+            throw new FormatException("Malformed boundary specification '%s': empty first element",
+                text);
+        }
         if (Character.isLetter(units[0].charAt(0))) {
             // this is a list of names making up a rule set boundary
             Set<Rule> ruleSet = new LinkedHashSet<>();
