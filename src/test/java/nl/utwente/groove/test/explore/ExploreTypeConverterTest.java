@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.test.explore;
 
+import static nl.utwente.groove.test.explore.ExploreTestSupport.explore;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -23,7 +24,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.Test;
 
-import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
@@ -176,12 +176,4 @@ public class ExploreTypeConverterTest {
             .test(grammar);
     }
 
-    /** Explores the ferryman grammar with a given configuration. */
-    private Exploration explore(Grammar grammar, String config) throws Exception {
-        GTS gts = new GTS(grammar);
-        return ExploreTypeConverter
-            .toExploreType(ExploreConfig.parse(config))
-            .newExploration(gts, null)
-            .play();
-    }
 }

@@ -35,7 +35,6 @@ import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.test.MasterSeedGuard;
 import nl.utwente.groove.util.AIGenerated;
-import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Randomness;
 
 /**
@@ -61,7 +60,7 @@ public class BeamPoolTest {
     static private List<GraphState> tokens() throws Exception {
         var result = tokens;
         if (result == null) {
-            GTS gts = new GTS(Groove.loadGrammar("junit/samples/ferryman").toGrammar());
+            GTS gts = new GTS(ExploreTestSupport.loadGrammar("ferryman"));
             ExploreTypeConverter
                 .toExploreType(ExploreConfig.parse(""))
                 .newExploration(gts, null)

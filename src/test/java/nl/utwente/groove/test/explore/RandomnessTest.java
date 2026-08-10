@@ -36,7 +36,6 @@ import nl.utwente.groove.explore.engine.FrontierStrategy;
 import nl.utwente.groove.explore.util.RandomChooserInSequence;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.test.MasterSeedGuard;
-import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Randomness;
 import nl.utwente.groove.util.Randomness.Purpose;
 
@@ -52,8 +51,6 @@ public class RandomnessTest {
     @ClassRule
     public static final MasterSeedGuard SEED_GUARD = new MasterSeedGuard();
 
-    /** Location of the sample grammars. */
-    static private final String INPUT_DIR = "junit/samples";
 
     /** The randomised configurations whose determinism is tested. */
     static private final String[] RANDOM_CONFIGS
@@ -172,6 +169,6 @@ public class RandomnessTest {
 
     /** Loads the ferryman grammar. */
     private Grammar loadGrammar() throws Exception {
-        return Groove.loadGrammar(INPUT_DIR + "/ferryman").toGrammar();
+        return ExploreTestSupport.loadGrammar("ferryman");
     }
 }

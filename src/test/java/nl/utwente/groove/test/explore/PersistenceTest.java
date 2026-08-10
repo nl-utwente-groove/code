@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.test.explore;
 
+import static nl.utwente.groove.test.explore.ExploreTestSupport.explore;
+import static nl.utwente.groove.test.explore.ExploreTestSupport.loadGrammar;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -40,7 +42,6 @@ import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.test.MasterSeedGuard;
 import nl.utwente.groove.transform.Transformer;
-import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Randomness;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -370,19 +371,4 @@ public class PersistenceTest {
                    "Config '%s': open state count should not go negative".formatted(config));
     }
 
-    /** Explores a fresh GTS with a given configuration, under a fixed
-     * master seed (relevant for the random orders). */
-    private Exploration explore(Grammar grammar, String config) throws Exception {
-        Randomness.setMasterSeed(42);
-        GTS gts = new GTS(grammar);
-        return ExploreTypeConverter
-            .toExploreType(ExploreConfig.parse(config))
-            .newExploration(gts, null)
-            .play();
-    }
-
-    /** Loads a sample grammar by name. */
-    private Grammar loadGrammar(String name) throws Exception {
-        return Groove.loadGrammar(INPUT_DIR + "/" + name).toGrammar();
-    }
 }

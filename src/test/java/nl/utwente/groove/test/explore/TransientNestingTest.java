@@ -22,15 +22,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import nl.utwente.groove.explore.ExploreType;
-import nl.utwente.groove.explore.config.ExploreConfig;
-import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.test.MasterSeedGuard;
-import nl.utwente.groove.util.Groove;
-import nl.utwente.groove.util.Randomness;
 
 /**
  * Tests that transient states bypass the exploration pool: they belong to a
@@ -50,8 +45,6 @@ public class TransientNestingTest {
     @ClassRule
     public static final MasterSeedGuard SEED_GUARD = new MasterSeedGuard();
 
-    /** Location of the sample grammars. */
-    static private final String INPUT_DIR = "junit/samples";
 
     /** State and transition count of the fully explored fibonacci grammar
      * (with its default recursive-recipe control program), as also asserted
@@ -108,16 +101,12 @@ public class TransientNestingTest {
     /** Explores a fresh GTS with a given configuration, under a fixed
      * master seed (relevant for the random orders). */
     private GTS explore(Grammar grammar, String config) throws Exception {
-        Randomness.setMasterSeed(42);
-        ExploreType type = ExploreTypeConverter.toExploreType(ExploreConfig.parse(config));
-        GTS gts = new GTS(grammar);
-        type.newExploration(gts, null).play();
-        return gts;
+        return ExploreTestSupport.explore(grammar, config).getGTS();
     }
 
     /** Loads the fibonacci grammar, whose default control program is the
      * recursive recipe. */
     private Grammar loadGrammar() throws Exception {
-        return Groove.loadGrammar(INPUT_DIR + "/fibonacci").toGrammar();
+        return ExploreTestSupport.loadGrammar("fibonacci");
     }
 }

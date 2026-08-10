@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.test.explore;
 
+import static nl.utwente.groove.test.explore.ExploreTestSupport.loadGrammar;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -30,8 +31,6 @@ import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTS.CollapseMode;
 import nl.utwente.groove.test.MasterSeedGuard;
-import nl.utwente.groove.util.Groove;
-import nl.utwente.groove.util.Randomness;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -47,8 +46,6 @@ public class OverridesTest {
     @ClassRule
     public static final MasterSeedGuard SEED_GUARD = new MasterSeedGuard();
 
-    /** Location of the sample grammars. */
-    static private final String INPUT_DIR = "junit/samples";
 
     /**
      * Tests the collapse override: the overridden mode is recorded on the
@@ -113,17 +110,6 @@ public class OverridesTest {
     /** Explores a fresh GTS with a given configuration, under a fixed
      * master seed, and returns the GTS. */
     private GTS explore(Grammar grammar, String config) throws Exception {
-        Randomness.setMasterSeed(42);
-        GTS gts = new GTS(grammar);
-        ExploreTypeConverter
-            .toExploreType(ExploreConfig.parse(config))
-            .newExploration(gts, null)
-            .play();
-        return gts;
-    }
-
-    /** Loads a sample grammar by name. */
-    private Grammar loadGrammar(String name) throws Exception {
-        return Groove.loadGrammar(INPUT_DIR + "/" + name).toGrammar();
+        return ExploreTestSupport.explore(grammar, config).getGTS();
     }
 }

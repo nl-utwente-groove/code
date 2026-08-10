@@ -30,7 +30,6 @@ import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.explore.engine.FrontierStrategy;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.test.MasterSeedGuard;
-import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Randomness;
 
 /**
@@ -46,8 +45,6 @@ public class BeamSearchTest {
     @ClassRule
     public static final MasterSeedGuard SEED_GUARD = new MasterSeedGuard();
 
-    /** Location of the sample grammars. */
-    static private final String INPUT_DIR = "junit/samples";
 
     /** A beam capacity that the ferryman frontier never reaches. */
     static private final int HUGE = 100000;
@@ -125,6 +122,6 @@ public class BeamSearchTest {
 
     /** Loads the ferryman grammar. */
     private Grammar loadGrammar() throws Exception {
-        return Groove.loadGrammar(INPUT_DIR + "/ferryman").toGrammar();
+        return ExploreTestSupport.loadGrammar("ferryman");
     }
 }

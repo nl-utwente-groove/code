@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.test.explore;
 
+import static nl.utwente.groove.test.explore.ExploreTestSupport.explore;
+import static nl.utwente.groove.test.explore.ExploreTestSupport.loadGrammar;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -25,18 +27,13 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import nl.utwente.groove.explore.Exploration;
-import nl.utwente.groove.explore.config.ExploreConfig;
-import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.lts.AbstractGraphState;
-import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSFragment;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.lts.RecipeTransition;
 import nl.utwente.groove.test.MasterSeedGuard;
-import nl.utwente.groove.util.Groove;
-import nl.utwente.groove.util.Randomness;
 
 /**
  * Tests the trace result shape: under {@code shape=trace}, the result of an
@@ -55,8 +52,6 @@ public class TraceShapeTest {
     @ClassRule
     public static final MasterSeedGuard SEED_GUARD = new MasterSeedGuard();
 
-    /** Location of the sample grammars. */
-    static private final String INPUT_DIR = "junit/samples";
 
     /**
      * Tests that the trace fragment of a goal exploration is connected and
@@ -152,19 +147,4 @@ public class TraceShapeTest {
         }
     }
 
-    /** Explores a fresh GTS with a given configuration, under a fixed
-     * master seed. */
-    private Exploration explore(Grammar grammar, String config) throws Exception {
-        Randomness.setMasterSeed(42);
-        GTS gts = new GTS(grammar);
-        return ExploreTypeConverter
-            .toExploreType(ExploreConfig.parse(config))
-            .newExploration(gts, null)
-            .play();
-    }
-
-    /** Loads a sample grammar by name. */
-    private Grammar loadGrammar(String name) throws Exception {
-        return Groove.loadGrammar(INPUT_DIR + "/" + name).toGrammar();
-    }
 }
