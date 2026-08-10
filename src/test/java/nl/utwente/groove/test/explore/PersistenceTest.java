@@ -364,11 +364,16 @@ public class PersistenceTest {
         assertEquals(gts.nodeCount() - 1, gts.edgeCount(),
                      "Config '%s': a trace tree has one transition per non-root state"
                          .formatted(config));
-        // exercise the count-vs-list consistency assertions
-        assertTrue(gts.getFinalStates().size() >= 0);
-        assertTrue(gts.getErrorStates().size() >= 0);
-        assertTrue(gts.getOpenStateCount() >= 0,
-                   "Config '%s': open state count should not go negative".formatted(config));
+        // the flagged-state queries carry internal count-vs-list consistency
+        // assertions (enabled under surefire); additionally check that they
+        // agree with the retained states
+        assertTrue(gts.nodeSet().containsAll(gts.getFinalStates()),
+                   "Config '%s': final states should be retained states".formatted(config));
+        assertTrue(gts.nodeSet().containsAll(gts.getErrorStates()),
+                   "Config '%s': error states should be retained states".formatted(config));
+        assertTrue(gts.getOpenStateCount() <= gts.nodeCount(),
+                   "Config '%s': open state count should not exceed the state count"
+                       .formatted(config));
     }
 
 }

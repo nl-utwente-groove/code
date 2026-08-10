@@ -209,6 +209,8 @@ public class ExplorationTest {
     @Test
     public void testFibonacci() {
         GTS gts = testExploration("fibonacci.gps", 2, 1);
+        // the same counts are pinned by TransientNestingTest (fast suite);
+        // keep the two in sync when the grammar changes
         assertEquals(63, gts.nodeCount());
         assertEquals(63, gts.edgeCount());
     }

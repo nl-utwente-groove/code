@@ -20,6 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.Set;
+
 import org.junit.Test;
 
 import nl.utwente.groove.explore.ExploreType;
@@ -167,9 +169,16 @@ public class LegacySyntaxParserTest {
         var boundedStrategy = bounded.getParsedStrategy(grammar);
         assertInstanceOf(BoundedLTLStrategy.class, boundedStrategy);
         assertEquals(BoundedLTLStrategy.class, boundedStrategy.getClass());
+        assertEquals("5,3", ((BoundedLTLStrategy) boundedStrategy).getBoundary().toString(),
+                     "The graph-size boundary should carry the parsed size and step");
         var pocket = LegacySyntaxParser.overlay(ExploreType.getDefault(),
                                                 "ltlpocket:eat,unload;F eat", null, 0);
-        assertInstanceOf(BoundedPocketLTLStrategy.class, pocket.getParsedStrategy(grammar));
+        var pocketStrategy = pocket.getParsedStrategy(grammar);
+        assertInstanceOf(BoundedPocketLTLStrategy.class, pocketStrategy);
+        // the rule set iterates in set order, so compare order-insensitively
+        var pocketRules = ((BoundedLTLStrategy) pocketStrategy).getBoundary().toString();
+        assertEquals(Set.of("eat", "unload"), Set.of(pocketRules.split(",")),
+                     "The rule-set boundary should carry the parsed rules");
         // a boundary with a leading comma is a format error, not a crash
         // (regression: BoundaryParser indexed into the empty first element)
         var commaBounded = LegacySyntaxParser.overlay(ExploreType.getDefault(),
