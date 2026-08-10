@@ -115,6 +115,11 @@ public final class Randomness {
     /**
      * Explicitly sets the master seed, overriding the system property.
      * Intended for the CLI {@code -seed} option and for tests.
+     * Only generators derived (via {@link #newRandom}) <i>after</i> this
+     * call are affected: a generator already handed out keeps drawing from
+     * its original stream. Since the exploration strategies and oracles
+     * obtain their generators when the exploration is prepared, the seed
+     * must be set before that point to govern a run.
      */
     public static synchronized void setMasterSeed(long seed) {
         masterSeed = seed;

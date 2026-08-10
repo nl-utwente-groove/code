@@ -77,6 +77,12 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
      */
     @Override
     protected ExploreResult run() throws Exception {
+        // apply the seed here rather than from the option itself, so that
+        // parsing the arguments (including a parse that fails on a later
+        // option, or a help invocation) does not mutate global state
+        if (this.seed != null) {
+            Randomness.setMasterSeed(this.seed);
+        }
         Transformer transformer = this.transformer = computeTransformer();
         transformer.addListener(getReporter());
         if (!getVerbosity().isLow()) {
@@ -291,9 +297,7 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
         description = "Set the master random seed, making runs with random choices "
             + "reproducible.\nEquivalent to setting the system property "
             + Randomness.SEED_PROPERTY + ".")
-    private void setSeed(long seed) {
-        Randomness.setMasterSeed(seed);
-    }
+    private Long seed;
 
     /** Returns the name of the properties file, if any. */
     public String getPropertiesFile() {
