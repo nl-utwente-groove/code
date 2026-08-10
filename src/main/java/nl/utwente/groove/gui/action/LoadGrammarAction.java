@@ -101,7 +101,7 @@ public class LoadGrammarAction extends SimulatorAction {
         // needs no repair, so it is loaded silently, without a resave prompt;
         // the shortcut self-disables as soon as the current grammar version
         // moves past 3.12, since it does not cover later conversions
-        String legacyExploration = props.getProperty(GrammarKey.EXPLORATION.getName());
+        String legacyExploration = props.getProperty(GrammarKey.EXPLORATION);
         if (compare > 0
             && Version
                 .compareGrammarVersions(fileGrammarVersion, Version.GRAMMAR_VERSION_3_11) >= 0
