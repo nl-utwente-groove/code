@@ -25,6 +25,7 @@ import org.junit.Test;
 import nl.utwente.groove.explore.Generator;
 import nl.utwente.groove.lts.Filter;
 import nl.utwente.groove.util.cli.CmdLineException;
+import nl.utwente.groove.util.parse.FormatException;
 
 /**
  * Tests for the Generator's exploration configuration option: exploring with
@@ -39,21 +40,26 @@ public class ExploreCliTest {
     /** Location of the tree-shaped sample grammar used for the depth-bound test. */
     static private final String COUNTING = "junit/samples/counting.gps";
 
+    /** The full state count of the ferryman grammar. */
+    static private final int FERRYMAN_STATES = 114;
+
     /** Tests exploration through the configuration option. */
     @Test
     public void testExploreOption() throws Exception {
         var full = Generator.execute("-x", "", GRAMMAR);
-        var fullCount = full.getGTS().nodeCount();
-        assertTrue(fullCount > 1);
+        assertEquals(FERRYMAN_STATES, full.getGTS().nodeCount());
         // the default configuration explores the same state space as the default type
         var dfs = Generator.execute("-x", "next=newest", GRAMMAR);
-        assertEquals(fullCount, dfs.getGTS().nodeCount());
-        // a linear exploration visits at most as many states
+        assertEquals(FERRYMAN_STATES, dfs.getGTS().nodeCount());
+        // a linear exploration visits a single trace; its length is pinned
+        // by the deterministic exploration order
         var linear = Generator.execute("-x", "frontier=single successor=single", GRAMMAR);
-        assertTrue(linear.getGTS().nodeCount() <= fullCount);
-        // stopping at the first result visits at most as many states as exploring all
-        var first = Generator.execute("-x", "count=first", GRAMMAR);
-        assertTrue(first.getGTS().nodeCount() <= fullCount);
+        assertEquals(7, linear.getGTS().nodeCount());
+        // stopping at the first result cuts the exploration short; the state
+        // count is pinned by the deterministic exploration order (a goal-less
+        // count=first would not bite, as ferryman has no final states)
+        var first = Generator.execute("-x", "goal=condition:eat count=first", GRAMMAR);
+        assertEquals(5, first.getGTS().nodeCount());
     }
 
     /**
@@ -107,9 +113,9 @@ public class ExploreCliTest {
     /** Tests that the configuration option rejects unrealisable values. */
     @Test
     public void testBadConfig() {
-        assertThrows(Exception.class,
+        assertThrows(FormatException.class,
                      () -> Generator.execute("-x", "heuristic=nen", GRAMMAR));
-        assertThrows(Exception.class, () -> Generator.execute("-x", "bogus=1", GRAMMAR));
+        assertThrows(FormatException.class, () -> Generator.execute("-x", "bogus=1", GRAMMAR));
     }
 
     /** Tests the mutual exclusion of the configuration and legacy options.
@@ -147,8 +153,8 @@ public class ExploreCliTest {
     /** Tests that malformed legacy options are rejected. */
     @Test
     public void testBadLegacyOptions() {
-        assertThrows(Exception.class, () -> Generator.execute("-s", "bogus", GRAMMAR));
-        assertThrows(Exception.class, () -> Generator.execute("-a", "cycle", GRAMMAR));
-        assertThrows(Exception.class, () -> Generator.execute("-s", "crule", GRAMMAR));
+        assertThrows(FormatException.class, () -> Generator.execute("-s", "bogus", GRAMMAR));
+        assertThrows(FormatException.class, () -> Generator.execute("-a", "cycle", GRAMMAR));
+        assertThrows(FormatException.class, () -> Generator.execute("-s", "crule", GRAMMAR));
     }
 }
