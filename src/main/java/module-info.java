@@ -113,4 +113,4 @@ module nl.utwente.groove {
     opens nl.utwente.groove.resource.font;
     opens nl.utwente.groove.resource.version;
     opens nl.utwente.groove.resource.antlr;
-}
+}
