@@ -160,8 +160,7 @@ public class ExploreTypeConverter {
         }
         // the case list is exhaustive; the default guards against a future
         // bound kind being silently treated as realisable
-        default -> throw Exceptions
-            .illegalState("Unhandled bound kind %s", config.getKind(ExploreKey.BOUND));
+        default -> throw Exceptions.unreachable();
         }
     }
 
@@ -192,8 +191,7 @@ public class ExploreTypeConverter {
                 + " not by exploration");
         // the case list is exhaustive; the default guards against a future
         // goal kind being silently treated as realisable
-        default -> throw Exceptions
-            .illegalState("Unhandled goal kind %s", config.getKind(ExploreKey.GOAL));
+        default -> throw Exceptions.unreachable();
         }
     }
 
