@@ -509,18 +509,28 @@ public class LTSDisplay extends Display implements SimulatorListener {
                 GraphState state = source.getState();
                 GraphTransition transition = source.getTransition();
                 getJGraph().setActive(state, transition);
-                getJGraph().doLayout(isNew);
-                setEnabled(true);
-                getJGraph().scrollToActive();
                 setFilterResultItem(source.hasExploreResult());
                 var lastExploreType = source.getLastExploreType();
                 if (changes.contains(GTS) && source.hasExploreResult()
                     && lastExploreType != null && lastExploreType.presentsResultAsTraces()) {
                     // switch the filter to the result view. The decision is
                     // about the run that produced the result, so it keys on
-                    // that run's type, not on the saved exploration
+                    // that run's type, not on the saved exploration.
+                    // The chooser listener is suppressed and the filter applied
+                    // by hand, so that the layout below runs only once, on the
+                    // already-filtered graph
+                    this.filterListening = false;
                     getFilterChooser().setSelectedItem(Filter.RESULT);
+                    this.filterListening = true;
+                    if (getJGraph().setFilter(getFilter())) {
+                        getJGraph().refreshFiltering();
+                        getJGraph().refreshActive();
+                        getJGraph().refreshAllCells(false);
+                    }
                 }
+                getJGraph().doLayout(isNew);
+                setEnabled(true);
+                getJGraph().scrollToActive();
                 updateStatus(gts);
             }
             if (gts != oldModel.getGTS()) {
