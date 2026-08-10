@@ -369,11 +369,16 @@ public class StateCache implements Cache {
     }
 
     /**
-     * Clears the cached set, so it does not occupy memory. This is typically
-     * done at the moment the state is closed.
+     * Clears the cached outgoing-transition structures (the stub set and
+     * the transition map derived from it), so that they are recomputed
+     * from the stored transition stubs on next use. Used after an unstored
+     * exploration (see {@link GTS#retainTraces}), when the stored stubs of
+     * a retained state have been reduced to the spanning stubs while the
+     * live cache still holds all discovered transitions.
      */
-    void clearStubSet() {
+    void clearTransitionCache() {
         this.stubSet = null;
+        this.transitionMap = null;
     }
 
     /**

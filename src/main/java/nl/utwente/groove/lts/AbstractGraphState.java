@@ -144,6 +144,21 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     }
 
     /**
+     * Clears the cached outgoing-transition structures, so that they are
+     * recomputed from the stored transition stubs on next use. Only
+     * meaningful for a closed state (an open state's transitions live in
+     * the cache only); does nothing if the cache is currently collapsed,
+     * since a reconstructed cache recomputes from the stored stubs anyway.
+     * Used after an unstored exploration (see {@link GTS#retainTraces}).
+     */
+    void clearCachedTransitionStubs() {
+        assert isClosed();
+        if (hasCache()) {
+            getCache().clearTransitionCache();
+        }
+    }
+
+    /**
      * Adds a single stub to the stored transition stubs. Used to retain a
      * spanning transition after an unstored exploration (see
      * {@link GTS#retainTraces}), where the closure-time copy of the cached

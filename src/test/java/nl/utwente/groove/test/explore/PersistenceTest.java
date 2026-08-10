@@ -22,16 +22,21 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 
 import org.junit.Test;
 
 import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
+import nl.utwente.groove.explore.config.parse.LegacySyntaxParser;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.lts.GTS;
+import nl.utwente.groove.lts.GTSListener;
 import nl.utwente.groove.lts.GraphNextState;
 import nl.utwente.groove.lts.GraphState;
+import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.transform.Transformer;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Randomness;
@@ -242,6 +247,78 @@ public class PersistenceTest {
         // a subsequent exploration of the prepared GTS works as before
         none.newExploration(gts, start).play();
         assertTraceTree(gts, "prepared-first run");
+    }
+
+    /**
+     * Tests that after trace retention, the visible edge set is consistent
+     * with the transition count and contains no dangling transitions.
+     * Regression test: the live caches of the retained (closed) states used
+     * to keep the stubs of all discovered transitions, so the edge set
+     * showed transitions to states outside the GTS — and its content
+     * depended on whether the soft caches had been collapsed.
+     */
+    @Test
+    public void testRetainedEdgeSetConsistent() throws Exception {
+        Grammar grammar = loadGrammar("ferryman");
+        GTS gts = explore(grammar, "persistence=none " + BOUND).getGTS();
+        var edges = gts.edgeSet();
+        assertEquals(gts.edgeCount(), edges.size(),
+                     "The edge set should agree with the transition count");
+        for (var edge : edges) {
+            assertTrue(gts.nodeSet().contains(edge.source()),
+                       "Source of retained transition %s should be retained".formatted(edge));
+            assertTrue(gts.nodeSet().contains(edge.target()),
+                       "Target of retained transition %s should be retained".formatted(edge));
+        }
+    }
+
+    /**
+     * Tests that the GTS listeners are notified exactly once of every
+     * discovered state and transition: trace retention must not re-announce
+     * the retained states, which were already announced at discovery.
+     */
+    @Test
+    public void testNoDuplicateNotifications() throws Exception {
+        Grammar grammar = loadGrammar("ferryman");
+        Randomness.setMasterSeed(42);
+        GTS gts = new GTS(grammar);
+        var seenStates = Collections.newSetFromMap(new IdentityHashMap<GraphState,Boolean>());
+        var seenTransitions
+            = Collections.newSetFromMap(new IdentityHashMap<GraphTransition,Boolean>());
+        gts.addLTSListener(new GTSListener() {
+            @Override
+            public void addUpdate(GTS source, GraphState state) {
+                assertTrue(seenStates.add(state),
+                           "State %s announced more than once".formatted(state));
+            }
+
+            @Override
+            public void addUpdate(GTS source, GraphTransition transition) {
+                assertTrue(seenTransitions.add(transition),
+                           "Transition %s announced more than once".formatted(transition));
+            }
+        });
+        ExploreTypeConverter
+            .toExploreType(ExploreConfig.parse("persistence=none " + BOUND))
+            .newExploration(gts, null)
+            .play();
+        assertEquals(gts.getNextStateNr(), seenStates.size(),
+                     "Every discovered state should have been announced exactly once");
+    }
+
+    /**
+     * Tests that an exploration type without a persistence feature of its
+     * own (i.e., any non-configuration-based type) refuses to run on an
+     * unstored GTS: it would store every discovered state into the
+     * non-collapsing state set that trace retention leaves behind.
+     */
+    @Test
+    public void testDefaultTypeRefusesUnstoredGTS() throws Exception {
+        Grammar grammar = loadGrammar("ferryman");
+        GTS gts = explore(grammar, "persistence=none " + BOUND).getGTS();
+        var stateType = LegacySyntaxParser.parse("state final 0");
+        assertThrows(FormatException.class,
+                     () -> stateType.newExploration(gts, gts.startState()));
     }
 
     /**

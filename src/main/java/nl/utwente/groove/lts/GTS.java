@@ -276,8 +276,10 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      * Discovered states remain reachable only while the exploration needs
      * them (frontier, ancestor chains of frontier states, and collected
      * results), and are garbage collected afterwards.
-     * <p>This method is intended to be called before an exploration starts,
-     * via {@link nl.utwente.groove.explore.ExploreType#prepareGTS}.
+     * <p>This method is intended to be called before an exploration starts:
+     * initially via {@link #setPersistent}
+     * (from {@link nl.utwente.groove.explore.ExploreType#prepareGTS}), and
+     * per run via {@link nl.utwente.groove.explore.ExploreType#prepareRun}.
      */
     public void setStoring(boolean storing) {
         this.storing = storing;
@@ -348,6 +350,18 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         this.allStateSet = traceSet;
         setStoring(true);
         tips.forEach(this::retainTrace);
+        // the live caches of the retained closed states still hold the
+        // stubs of all their discovered outgoing transitions, while only
+        // the spanning stubs (entered above) were stored and counted; drop
+        // the cached transition structures so that the visible transitions
+        // are recomputed from the stored stubs, making the edge set
+        // consistent with the transition count and independent of cache
+        // liveness
+        for (GraphState state : allStateSet()) {
+            if (state.isClosed() && state instanceof AbstractGraphState s) {
+                s.clearCachedTransitionStubs();
+            }
+        }
     }
 
     /**
@@ -378,19 +392,22 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
                 // the closure-time copy of the cached stubs was skipped for
                 // unstored states, so store this single stub explicitly
                 ((AbstractGraphState) next.source()).addStoredTransitionStub(next.toStub());
-                fireAddEdge(next);
+                // count only: the listeners were already notified of this
+                // transition when it was discovered
+                countAddedTransition(next);
             }
         }
     }
 
     /**
-     * Updates the state counts and flagged state lists for a retained state
-     * and notifies the listeners. The state's status flags predate its
-     * entry into the GTS, so they are accounted for here
+     * Updates the state counts and flagged state lists for a retained state.
+     * The listeners are deliberately not notified again: they were already
+     * notified of the state when it was discovered. The state's status
+     * flags predate its entry into the GTS, so they are accounted for here
      * ({@link #fireUpdateState} only handles subsequent changes).
      */
     private void registerRetained(GraphState state) {
-        fireAddNode(state);
+        countAddedState(state);
         if (state.isPublic()) {
             for (Flag recorded : FLAG_ARRAY) {
                 if (state.hasFlag(recorded)) {
@@ -832,14 +849,19 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      */
     @Override
     protected void fireAddNode(GraphState state) {
+        countAddedState(state);
+        super.fireAddNode(state);
+        for (GTSListener listener : getGTSListeners()) {
+            listener.addUpdate(this, state);
+        }
+    }
+
+    /** Updates the state counts for an added state, without notification. */
+    private void countAddedState(GraphState state) {
         this.transients |= state.isTransient();
         this.absents |= state.isAbsent();
         if (isRetained(state) && state.isPublic()) {
             this.publicStateCount++;
-        }
-        super.fireAddNode(state);
-        for (GTSListener listener : getGTSListeners()) {
-            listener.addUpdate(this, state);
         }
     }
 
@@ -849,16 +871,22 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      */
     @Override
     protected void fireAddEdge(GraphTransition edge) {
+        countAddedTransition(edge);
+        super.fireAddEdge(edge);
+        for (GTSListener listener : getGTSListeners()) {
+            listener.addUpdate(this, edge);
+        }
+    }
+
+    /** Updates the transition counts for an added transition, without
+     * notification. */
+    private void countAddedTransition(GraphTransition edge) {
         this.inners |= edge.isInnerStep();
         if (isStoring()) {
             this.allTransitionCount++;
             if (edge.isPublicStep()) {
                 this.publicTransitionCount++;
             }
-        }
-        super.fireAddEdge(edge);
-        for (GTSListener listener : getGTSListeners()) {
-            listener.addUpdate(this, edge);
         }
     }
 
