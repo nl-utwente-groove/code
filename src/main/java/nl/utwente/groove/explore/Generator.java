@@ -35,9 +35,7 @@ import picocli.CommandLine.Parameters;
 
 import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
-import nl.utwente.groove.explore.config.ExploreKey;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
-import nl.utwente.groove.explore.config.Shape;
 import nl.utwente.groove.explore.config.parse.LegacySyntaxParser;
 import nl.utwente.groove.explore.util.CompositeReporter;
 import nl.utwente.groove.explore.util.ExplorationReporter;
@@ -398,8 +396,7 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
         } else if (this.spanning) {
             result = Filter.SPANNING;
         } else if (this.transformer != null
-            && this.transformer.getExploreType() instanceof ConfiguredExploreType configured
-            && configured.getConfig().getKind(ExploreKey.SHAPE) == Shape.TRACE) {
+            && this.transformer.getExploreType().presentsResultAsTraces()) {
             result = Filter.RESULT;
         } else {
             result = Filter.NONE;

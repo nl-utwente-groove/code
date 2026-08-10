@@ -98,6 +98,11 @@ public class ConfiguredExploreType extends ExploreType {
         return new ConfiguredExploreType(newConfig, count, this.traversal);
     }
 
+    @Override
+    public boolean presentsResultAsTraces() {
+        return getConfig().getKind(ExploreKey.SHAPE) == Shape.TRACE;
+    }
+
     /**
      * Applies the per-GTS features of the configuration: collapse mode,
      * algebra family and persistence. These determine what the state space

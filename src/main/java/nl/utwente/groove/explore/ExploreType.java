@@ -23,6 +23,7 @@ import nl.utwente.groove.explore.strategy.Strategy;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.parse.FormatErrorSet;
@@ -81,6 +82,17 @@ public abstract class ExploreType {
      * bound ({@code 0} meaning unbounded).
      */
     abstract public ExploreType withResultCount(int count);
+
+    /**
+     * Indicates if an exploration of this type presents its result as traces
+     * from the start state to the result states, rather than as the result
+     * states themselves. Consumers may use this to switch to a trace view of
+     * the explored LTS. This implementation returns {@code false}.
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    public boolean presentsResultAsTraces() {
+        return false;
+    }
 
     /**
      * Tests if this exploration is compatible with a given rule system.
