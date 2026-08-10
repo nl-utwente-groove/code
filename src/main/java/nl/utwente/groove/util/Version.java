@@ -329,9 +329,10 @@ public class Version {
      * Three changes share this version:
      * <ul>
      * <li> The exploration strategy is now stored in the {@code exploration}
-     * property (a feature-model configuration); a stored legacy
-     * {@code explorationStrategy} property is converted on load where
-     * possible.
+     * property, which names a settings resource holding a feature-model
+     * configuration. A stored legacy {@code explorationStrategy} property
+     * remains recognised, but is deprecated and ignored if the new property
+     * is also set.
      * <li> String constants are now saved with escaped backslashes, as the
      * documentation of {@code StringHandler#toQuoted} always promised;
      * previously only quote characters were escaped, so that string values

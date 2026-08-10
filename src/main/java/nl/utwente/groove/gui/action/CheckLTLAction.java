@@ -37,7 +37,8 @@ import nl.utwente.groove.verify.Logic;
  */
 public class CheckLTLAction extends ExploreAction {
     /**
-     * Constructs a checking action for a given simulator and strategy.
+     * Constructs a checking action for a given simulator and model-checking
+     * flavour, under a given display name.
      */
     public CheckLTLAction(Simulator simulator, LTLExploreType.Kind kind, String name) {
         super(simulator, false);
