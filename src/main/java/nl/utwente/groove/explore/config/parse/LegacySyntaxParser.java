@@ -30,7 +30,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.explore.AcceptorSpec;
 import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.LTLExploreType;
-import nl.utwente.groove.explore.MinimaxExploreType;
 import nl.utwente.groove.explore.StateExploreType;
 import nl.utwente.groove.explore.config.Bound;
 import nl.utwente.groove.explore.config.ConfiguredExploreType;
@@ -427,6 +426,9 @@ public class LegacySyntaxParser {
     }
 
     /** Creates the minimax exploration type from its comma-separated arguments. */
+    // the legacy syntax deliberately keeps supporting the deprecated
+    // minimax exploration until its removal in release 8.0 (gh #890)
+    @SuppressWarnings("removal")
     private static ExploreType createMinimaxType(String args, AcceptorSpec acceptor,
                                                  int count) throws FormatException {
         String[] parts = args.split(",", -1);
@@ -447,8 +449,9 @@ public class LegacySyntaxParser {
             throw new FormatException("Empty minimax rule name in 'minimax:%s'", args);
         }
         int minmaxParam = parseNatural("minimax", parts[5]);
-        return new MinimaxExploreType(heuristicParam, maxDepth, ruleNames, parts[3], minmaxRule,
-            minmaxParam, acceptor, count);
+        // qualified reference, so that no import of the deprecated type is needed
+        return new nl.utwente.groove.explore.MinimaxExploreType(heuristicParam, maxDepth,
+            ruleNames, parts[3], minmaxRule, minmaxParam, acceptor, count);
     }
 
     /** The features owned by the strategy part of the legacy syntax. */

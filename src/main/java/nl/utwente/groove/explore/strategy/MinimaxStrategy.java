@@ -41,7 +41,15 @@ import nl.utwente.groove.transform.RuleEvent;
 
 /**
  * An exploration strategy which calculates the Minimax value of the starting state and all states reachable from it.
+ * @deprecated scheduled for removal in release 8.0 (see gh #890):
+ * reachable only through the legacy exploration syntax, never exercised
+ * by the test suite, and with known defects — the cycle guard of the
+ * internal score tree is inert while the LTS does contain cycles, so
+ * scoring a real game risks unbounded recursion; scoring is exponential
+ * on shared subtrees; the score store is a linked list used as a
+ * random-access array.
  */
+@Deprecated(forRemoval = true)
 public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
     /** Constant used to disable bounded exploration */
     public static final int DEPTH_INFINITE = 0;

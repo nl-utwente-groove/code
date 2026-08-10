@@ -26,7 +26,6 @@ import org.junit.Test;
 
 import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.LTLExploreType;
-import nl.utwente.groove.explore.MinimaxExploreType;
 import nl.utwente.groove.explore.StateExploreType;
 import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
@@ -154,6 +153,9 @@ public class LegacySyntaxParserTest {
     }
 
     /** Tests the dedicated exploration types for the non-config strategies. */
+    // covers the deprecated minimax exploration until its removal in
+    // release 8.0 (gh #890)
+    @SuppressWarnings("removal")
     @Test
     public void testDirectTypes() throws Exception {
         Grammar grammar = Groove.loadGrammar(GRAMMAR).toGrammar();
@@ -189,9 +191,10 @@ public class LegacySyntaxParserTest {
         assertInstanceOf(StateExploreType.class, state);
         assertInstanceOf(ExploreStateStrategy.class, state.getParsedStrategy(grammar));
         assertInstanceOf(FinalStateAcceptor.class, state.getParsedAcceptor(grammar));
-        // minimax construction (instantiation needs parametrised rules)
+        // minimax construction (instantiation needs parametrised rules);
+        // qualified reference, so that no import of the deprecated type is needed
         var minimax = LegacySyntaxParser.parse("minimax:1,10,eat;load,max,eat,2 final 0");
-        assertInstanceOf(MinimaxExploreType.class, minimax);
+        assertInstanceOf(nl.utwente.groove.explore.MinimaxExploreType.class, minimax);
     }
 
     /** Tests the rejection of malformed or inconsistent legacy descriptions. */
