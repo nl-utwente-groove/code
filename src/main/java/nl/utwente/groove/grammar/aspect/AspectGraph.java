@@ -716,7 +716,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         }
         // look for node aspect indicators
         // and put all correct aspect vales in a map
-        Map<Edge,AspectLabel> edgeDataMap = new HashMap<>();
+        // insertion-ordered so that the remark merge in setFixed sees the
+        // edges in source graph order
+        Map<Edge,AspectLabel> edgeDataMap = new LinkedHashMap<>();
         for (Edge edge : graph.edgeSet()) {
             AspectLabel label = parser.parse(edge.label().text(), role);
             if (label.isNodeOnly()) {
