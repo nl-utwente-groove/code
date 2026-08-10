@@ -20,19 +20,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import org.junit.Test;
 
-import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.explore.engine.FrontierStrategy;
 import nl.utwente.groove.grammar.Grammar;
-import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Randomness;
 
@@ -65,9 +60,12 @@ public class BeamSearchTest {
             {"next=random", "next=random frontier=beam:" + HUGE},};
         for (String[] pair : pairs) {
             Randomness.setMasterSeed(42);
-            Outcome plain = explore(grammar, pair[0]);
+            ExploreOutcome plain = explore(grammar, pair[0]);
             Randomness.setMasterSeed(42);
-            Outcome beam = explore(grammar, pair[1]);
+            ExploreOutcome beam = explore(grammar, pair[1]);
+            // outcome equality covers the exploration trace, so this asserts
+            // that both runs added the same transitions and closed the same
+            // states in the same order, not just that the final GTSs agree
             assertEquals(plain, beam,
                          "Unrestricted beam '%s' should coincide with '%s'"
                              .formatted(pair[1], pair[0]));
@@ -87,14 +85,15 @@ public class BeamSearchTest {
             = {"frontier=beam:2", "next=newest frontier=beam:2", "next=random frontier=beam:2",};
         for (String text : configs) {
             Randomness.setMasterSeed(42);
-            Outcome first = explore(grammar, text);
+            ExploreOutcome first = explore(grammar, text);
             assertTrue(first.states() > 1, "Beam search '%s' should explore beyond the start state"
                 .formatted(text));
             assertTrue(first.states() < full,
                        "Beam search '%s' should cut off part of the state space (explored %s of %s)"
                            .formatted(text, first.states(), full));
             Randomness.setMasterSeed(42);
-            Outcome second = explore(grammar, text);
+            ExploreOutcome second = explore(grammar, text);
+            // trace-bearing equality: the runs must explore identically
             assertEquals(first, second,
                          "Beam search '%s' should be reproducible".formatted(text));
         }
@@ -113,22 +112,9 @@ public class BeamSearchTest {
     }
 
     /** Explores a fresh GTS with a given configuration and summarises it. */
-    private Outcome explore(Grammar grammar, String config) throws Exception {
+    private ExploreOutcome explore(Grammar grammar, String config) throws Exception {
         ExploreType type = ExploreTypeConverter.toExploreType(ExploreConfig.parse(config));
-        GTS gts = new GTS(grammar);
-        Exploration exploration = type.newExploration(gts, null).play();
-        Set<Integer> resultStates = exploration
-            .getResult()
-            .getStates()
-            .stream()
-            .map(s -> s.getNumber())
-            .collect(Collectors.toSet());
-        return new Outcome(gts.nodeCount(), gts.edgeCount(), resultStates);
-    }
-
-    /** Summary of an exploration, for comparison across runs. */
-    private record Outcome(int states, int transitions, Set<Integer> resultStates) {
-        // record body intentionally empty
+        return ExploreOutcome.explore(grammar, type);
     }
 
     /** Loads the ferryman grammar. */

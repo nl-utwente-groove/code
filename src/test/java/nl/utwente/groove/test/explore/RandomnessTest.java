@@ -23,11 +23,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
@@ -35,7 +33,6 @@ import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.explore.engine.FrontierStrategy;
 import nl.utwente.groove.explore.util.RandomChooserInSequence;
 import nl.utwente.groove.grammar.Grammar;
-import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Randomness;
 import nl.utwente.groove.util.Randomness.Purpose;
@@ -89,8 +86,9 @@ public class RandomnessTest {
 
     /**
      * Tests that random configurations instantiate the engine path, and that
-     * a fixed master seed makes their exploration reproducible, including
-     * the (order-dependent) state numbering of the result states.
+     * a fixed master seed makes their exploration reproducible: the runs
+     * must add the same transitions and close the same states in the same
+     * order (compared through the exploration trace of the outcome).
      */
     @Test
     public void testSeededDeterminism() throws Exception {
@@ -100,9 +98,9 @@ public class RandomnessTest {
             assertInstanceOf(ConfiguredExploreType.class, type,
                              "Config '%s' should instantiate the engine path".formatted(text));
             Randomness.setMasterSeed(42);
-            Outcome first = explore(grammar, type);
+            ExploreOutcome first = ExploreOutcome.explore(grammar, type);
             Randomness.setMasterSeed(42);
-            Outcome second = explore(grammar, type);
+            ExploreOutcome second = ExploreOutcome.explore(grammar, type);
             assertEquals(first, second,
                          "Same master seed should reproduce config '%s' exactly".formatted(text));
         }
@@ -118,9 +116,10 @@ public class RandomnessTest {
         Grammar grammar = loadGrammar();
         ExploreType random = ExploreTypeConverter.toExploreType(ExploreConfig.parse("next=random"));
         assertInstanceOf(FrontierStrategy.class, random.getParsedStrategy(grammar));
-        Outcome randomOutcome = explore(grammar, random);
+        ExploreOutcome randomOutcome = ExploreOutcome.explore(grammar, random);
         ExploreType bfs = ExploreTypeConverter.toExploreType(ExploreConfig.parse(""));
-        Outcome bfsOutcome = explore(grammar, bfs);
+        ExploreOutcome bfsOutcome = ExploreOutcome.explore(grammar, bfs);
+        // deliberately order-blind: only the covered state space must agree
         assertEquals(bfsOutcome.states(), randomOutcome.states(),
                      "Random frontier order should explore the full state space");
         assertEquals(bfsOutcome.transitions(), randomOutcome.transitions(),
@@ -147,24 +146,6 @@ public class RandomnessTest {
         }
         assertEquals(Set.of(0, 1), picks,
                      "Twenty two-candidate choices from one generator should not all coincide");
-    }
-
-    /** Explores a fresh GTS with a given exploration type and summarises it. */
-    private Outcome explore(Grammar grammar, ExploreType type) throws Exception {
-        GTS gts = new GTS(grammar);
-        Exploration exploration = type.newExploration(gts, null).play();
-        Set<Integer> resultStates = exploration
-            .getResult()
-            .getStates()
-            .stream()
-            .map(s -> s.getNumber())
-            .collect(Collectors.toSet());
-        return new Outcome(gts.nodeCount(), gts.edgeCount(), resultStates);
-    }
-
-    /** Summary of an exploration, for comparison across runs. */
-    private record Outcome(int states, int transitions, Set<Integer> resultStates) {
-        // record body intentionally empty
     }
 
     /** Loads the ferryman grammar. */
