@@ -100,12 +100,12 @@ public class RuleFormulaParserTest {
         assertEquals(false, eval("!a && b", atoms));
         // a && b || c reads (a && b) || c, not the legacy a && (b || c)
         assertEquals(true, eval("a && b || c", Map.of("a", false, "b", true, "c", true)));
-        // || binds stronger than ->
-        assertEquals(false, eval("a -> b || b", atoms));
-        assertEquals(true, eval("b -> b || b", atoms));
-        // -> is right-associative: a -> b -> c reads a -> (b -> c)
-        assertEquals(true, eval("a -> b -> b", atoms));
-        assertEquals(false, eval("a -> a -> b", atoms));
+        // || binds stronger than ->: a || b -> c reads (a || b) -> c, which is
+        // false here, while a || (b -> c) would be true
+        assertEquals(false, eval("a || b -> c", Map.of("a", true, "b", false, "c", false)));
+        // -> is right-associative: a -> b -> c reads a -> (b -> c), true by the
+        // false antecedent, while the left-associative reading would be false
+        assertEquals(true, eval("a -> b -> c", Map.of("a", false, "b", true, "c", false)));
     }
 
     /** Tests that malformed formulas are rejected. */
