@@ -17,6 +17,7 @@
 package nl.utwente.groove.util;
 
 import java.util.Collection;
+import java.util.function.Predicate;
 
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -138,14 +139,14 @@ abstract public class Visitor<T,R> {
 
     /** Constructs a finder for a given property. */
     @SuppressWarnings("unchecked")
-    static public <T> Finder<T> newFinder(Property<T> property) {
+    static public <T> Finder<T> newFinder(Predicate<T> property) {
         return prototypeFinder.newInstance(property);
     }
 
     /** Constructs a collector for a given property and collection. */
     @SuppressWarnings("unchecked")
     static public <T,C extends Collection<T>> Collector<T,C> newCollector(C collection,
-                                                                          Property<T> property) {
+                                                                          Predicate<T> property) {
         if (property == null) {
             return prototypeCollector.newInstance(collection, property);
         } else {
@@ -180,7 +181,7 @@ abstract public class Visitor<T,R> {
          * @param property the property of the returned object; may be {@code null},
          * in which case the first object is returned.
          */
-        public Finder(Property<T> property) {
+        public Finder(Predicate<T> property) {
             this.property = property;
         }
 
@@ -201,7 +202,7 @@ abstract public class Visitor<T,R> {
          * Returns a new finder for a given property.
          * Reuses this object if it has been disposed.
          */
-        public Finder<T> newInstance(Property<T> property) {
+        public Finder<T> newInstance(Predicate<T> property) {
             if (isDisposed()) {
                 this.property = property;
                 resurrect();
@@ -217,7 +218,7 @@ abstract public class Visitor<T,R> {
         }
 
         /** The property of the object to be found. */
-        private Property<T> property;
+        private Predicate<T> property;
     }
 
     /**
@@ -228,7 +229,7 @@ abstract public class Visitor<T,R> {
         /**
          * Constructs a collector for a given collection and property.
          */
-        public Collector(C collection, Property<T> property) {
+        public Collector(C collection, Predicate<T> property) {
             super(collection);
             if (collection == null) {
                 dispose();
@@ -272,7 +273,7 @@ abstract public class Visitor<T,R> {
          * Returns a collector for the given collection and property.
          * Reuses this object if it has been disposed.
          */
-        public Collector<T,C> newInstance(C collection, Property<T> property) {
+        public Collector<T,C> newInstance(C collection, Predicate<T> property) {
             if (isDisposed()) {
                 setResult(collection);
                 this.property = property;
@@ -287,11 +288,11 @@ abstract public class Visitor<T,R> {
          * Callback factory method for creating a new collector,
          * in case this is not yet disposed.
          */
-        protected Collector<T,C> createInstance(C collection, Property<T> property) {
+        protected Collector<T,C> createInstance(C collection, Predicate<T> property) {
             return new Collector<>(collection, property);
         }
 
         /** Filtering property. */
-        private Property<T> property;
+        private Predicate<T> property;
     }
 }
