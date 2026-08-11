@@ -40,7 +40,8 @@ import nl.utwente.groove.verify.ProductTransition;
 public class CycleAcceptor extends Acceptor implements ProductListener {
     /** Creates an acceptor that is done at the first counterexample. */
     public CycleAcceptor() {
-        // the result count plays no role: done() tests for a counterexample
+        // the goal and result count play no role: the counterexample is
+        // added by the strategy, and done() tests for it
     }
 
     @Override

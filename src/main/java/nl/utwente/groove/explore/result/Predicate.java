@@ -29,47 +29,22 @@ import nl.utwente.groove.lts.GraphTransition;
 /**
  * A <code>Predicate</code> over <code>A></code> is a boolean condition that
  * can be evaluated over objects of type <code>A</code>.
- * Special fields are maintained inside to record if the predicate can be
- * evaluated over graph states or graph transitions. This information is used
- * in the <code>PredicateAcceptor</code>.
+ * Predicates over graph states or graph transitions realise the bound
+ * feature of an exploration (as stop conditions of the engine) and its goal
+ * feature (through {@link Goal}).
  *
- * @see PredicateAcceptor
+ * @see Goal
  * @author Maarten de Mol
  */
 public abstract class Predicate<X> implements java.util.function.Predicate<X> {
-    /**
-     * Constructor for a state or transition predicate.
-     *
-     * @param forStates if {@code true}, this is a state predicate;
-     * otherwise, it is a transition predicate.
-     */
-    protected Predicate(boolean forStates) {
-        this.forStates = forStates;
-    }
-
-    /** Indicates that this predicate tests graph states.
-     * If {@code false}, it tests rule transitions.
-     */
-    public boolean forStates() {
-        return this.forStates;
-    }
-
-    private final boolean forStates;
-
     /** Predicate class for graph states. */
     abstract public static class StatePredicate extends Predicate<GraphState> {
-        /** Constructor for subclassing. */
-        protected StatePredicate() {
-            super(true);
-        }
+        // no specialisation: the class only fixes the type parameter
     }
 
     /** Predicate class for rule transitions. */
     abstract public static class TransitionPredicate extends Predicate<GraphTransition> {
-        /** Constructor for subclassing. */
-        protected TransitionPredicate() {
-            super(false);
-        }
+        // no specialisation: the class only fixes the type parameter
     }
 
     /**
@@ -80,7 +55,6 @@ public abstract class Predicate<X> implements java.util.function.Predicate<X> {
 
         /** Default constructor. */
         public Not(Predicate<X> P) {
-            super(P.forStates());
             this.P = P;
         }
 
@@ -99,8 +73,6 @@ public abstract class Predicate<X> implements java.util.function.Predicate<X> {
 
         /** Default constructor. */
         public And(Predicate<X> P, Predicate<X> Q) {
-            super(P.forStates());
-            assert P.forStates() == Q.forStates();
             this.P = P;
             this.Q = Q;
         }
@@ -120,8 +92,6 @@ public abstract class Predicate<X> implements java.util.function.Predicate<X> {
 
         /** Default constructor. */
         public Or(Predicate<X> P, Predicate<X> Q) {
-            super(P.forStates());
-            assert P.forStates() == Q.forStates();
             this.P = P;
             this.Q = Q;
         }
@@ -141,8 +111,6 @@ public abstract class Predicate<X> implements java.util.function.Predicate<X> {
 
         /** Default constructor. */
         public Implies(Predicate<X> P, Predicate<X> Q) {
-            super(P.forStates());
-            assert P.forStates() == Q.forStates();
             this.P = P;
             this.Q = Q;
         }

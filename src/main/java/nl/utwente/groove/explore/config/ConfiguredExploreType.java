@@ -16,6 +16,11 @@
  */
 package nl.utwente.groove.explore.config;
 
+import static nl.utwente.groove.explore.result.Goal.anyState;
+import static nl.utwente.groove.explore.result.Goal.finalState;
+import static nl.utwente.groove.explore.result.Goal.state;
+import static nl.utwente.groove.explore.result.Goal.transition;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -36,11 +41,7 @@ import nl.utwente.groove.explore.engine.StackPool;
 import nl.utwente.groove.explore.engine.StopMode;
 import nl.utwente.groove.explore.engine.Strategy;
 import nl.utwente.groove.explore.result.Acceptor;
-import nl.utwente.groove.explore.result.AnyStateAcceptor;
-import nl.utwente.groove.explore.result.FinalStateAcceptor;
-import nl.utwente.groove.explore.result.NoStateAcceptor;
 import nl.utwente.groove.explore.result.Predicate;
-import nl.utwente.groove.explore.result.PredicateAcceptor;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.lts.GTS;
@@ -350,18 +351,18 @@ public class ConfiguredExploreType extends ExploreType {
         var config = getConfig();
         boolean satisfy = config.getKind(ExploreKey.OUTCOME) == Outcome.SATISFY;
         return switch ((Goal) config.getKind(ExploreKey.GOAL)) {
-        case NONE -> new NoStateAcceptor();
-        case ANY -> new AnyStateAcceptor(getResultCount());
-        case FINAL -> new FinalStateAcceptor(getResultCount());
-        case FIRES -> new PredicateAcceptor(new Predicate.ActionApplied(EnabledRuleParser
-            .parse(grammar, (String) config.get(ExploreKey.GOAL).content())), getResultCount());
+        case NONE -> new Acceptor();
+        case ANY -> new Acceptor(anyState(), getResultCount());
+        case FINAL -> new Acceptor(finalState(), getResultCount());
+        case FIRES -> new Acceptor(transition(new Predicate.ActionApplied(EnabledRuleParser
+            .parse(grammar, (String) config.get(ExploreKey.GOAL).content()))), getResultCount());
         case CONDITION -> {
             String condition = (String) config.get(ExploreKey.GOAL).content();
             Predicate<GraphState> predicate = RuleFormulaParser.parse(grammar, condition);
             if (!satisfy) {
                 predicate = new Predicate.Not<>(predicate);
             }
-            yield new PredicateAcceptor(predicate, getResultCount());
+            yield new Acceptor(state(predicate), getResultCount());
         }
         case GRAPH, LTL, CTL -> throw Exceptions
             .illegalState("Unrealisable goal kind passed validation");

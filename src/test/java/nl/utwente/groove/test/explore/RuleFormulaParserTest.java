@@ -39,7 +39,6 @@ public class RuleFormulaParserTest {
     /** Constant predicate, standing in for rule applicability. */
     private static class Constant extends Predicate<GraphState> {
         Constant(boolean value) {
-            super(true);
             this.value = value;
         }
 

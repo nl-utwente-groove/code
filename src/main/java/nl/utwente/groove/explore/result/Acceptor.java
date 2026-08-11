@@ -19,26 +19,31 @@ package nl.utwente.groove.explore.result;
 import nl.utwente.groove.explore.ExploreResult;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSListener;
+import nl.utwente.groove.lts.GraphState;
+import nl.utwente.groove.lts.GraphTransition;
 
 /**
  * Run-time realisation of the goal, outcome and count features of an
- * exploration: listens to the GTS being explored, collects accepted states
- * into the result, and signals (through {@link #done()}) when the result
- * count has been reached. Instances are stateful and are used for a single
- * exploration run; they are created afresh by
- * {@link nl.utwente.groove.explore.ExploreType#getParsedAcceptor}.
+ * exploration: listens to the GTS being explored, collects the states
+ * realising its {@link Goal} into the result, and signals (through
+ * {@link #done()}) when the result count has been reached. Instances are
+ * stateful and are used for a single exploration run; they are created
+ * afresh by {@link nl.utwente.groove.explore.ExploreType#getParsedAcceptor}.
  */
-public abstract class Acceptor implements GTSListener {
-    /** Creates an acceptor without result count. */
-    protected Acceptor() {
-        this(0);
+public class Acceptor implements GTSListener {
+    /** Creates an acceptor with the empty goal and no result count. */
+    public Acceptor() {
+        this(Goal.none(), 0);
     }
 
-    /** Creates an acceptor with a given result count. */
-    protected Acceptor(int count) {
+    /** Creates an acceptor with a given goal and result count. */
+    public Acceptor(Goal goal, int count) {
         assert count >= 0;
+        this.goal = goal;
         this.count = count;
     }
+
+    private final Goal goal;
 
     /** Indicates if this acceptor has a (non-zero) result count. */
     public boolean hasResultCount() {
@@ -56,6 +61,27 @@ public abstract class Acceptor implements GTSListener {
     }
 
     private final int count;
+
+    @Override
+    public void addUpdate(GTS gts, GraphState state) {
+        if (this.goal.testAdded(state)) {
+            getResult().addState(state);
+        }
+    }
+
+    @Override
+    public void addUpdate(GTS gts, GraphTransition transition) {
+        if (this.goal.testAdded(transition)) {
+            getResult().addState(transition.source());
+        }
+    }
+
+    @Override
+    public void statusUpdate(GTS gts, GraphState state, int change) {
+        if (this.goal.testStatus(state, change)) {
+            getResult().addState(state);
+        }
+    }
 
     /** Prepares the acceptor for a new exploration.
      * In particular, sets a fresh {@link ExploreResult}.
