@@ -58,14 +58,21 @@ The five former phase-2 moves:
 Further moves:
 
 - Font loading out of `gui.Options` into core `util` (de-guis `HTMLConverter`
-  and `HTMLLineFormat`, and thereby the `explore.config.SettingParser` taint).
+  and `HTMLLineFormat`; the `explore.config.SettingParser` taint turned out to
+  be already gone).
 - `io.ExtensionFilter` → plain `java.io.FileFilter`, with a Swing adapter
   beside `GrooveFileChooser`.
-- `grammar.groovy` package → gui module (it holds a `SimulatorModel` field).
+- `grammar.groovy`: only `GraphManager` moves to the gui (its one consumer is
+  `GroovyDisplay`). **Correction (2026-08-11):** the groovy *library* stays a
+  core dependency — `grammar.rule.GroovyMatchChecker` compiles groovy match
+  filters that run headless on the exploration path (`lts.MatchCollector`).
+  The `Util.isGroovyPresent` probe was dead (groovy is a hard dependency) and
+  has been deleted in phase 1.
 - Root shims `Simulator`/`Viewer`/`Imager` → gui module
-  (`Generator`/`ModelChecker`/`PrologChecker` shims are clean and stay in core).
+  (`Generator`/`ModelChecker`/`PrologChecker` shims are clean and stay in
+  core). *Deferred to phase 5 — nothing to do while there is one module.*
 - Prolog builtin `Predicate_show_graph` → registered by the GUI.
-- `ImagerTest` → gui test set.
+- `ImagerTest` → gui test set. *Deferred to phase 5 likewise.*
 
 ### (c) SPI/registry inversions — the three real design points
 
@@ -113,3 +120,19 @@ Each phase is a separate branch/PR, in dependency order:
 3. Remaining inversions (c2), (c3).
 4. `SystemStore` redesign (d).
 5. Maven/module-info split, including the release-reactor version handoff.
+
+## Status (2026-08-11)
+
+- Phase 1 done on branch `module-split-deletions` (also deletes the dead
+  `Util.isGroovyPresent` probe).
+- Phase 2 done on branch `module-split-moves`, including inversion (c1)
+  (oracle registry in `OracleParser`, GUI registers `DialogOracle`), a
+  `GrooveEnvironment.addPredicates` extension point for `show_graph`, and a
+  `util.Fonts` initializer hook by which the GUI keeps LAF-before-fonts
+  ordering. Behavioural changes, all deliberate: headless runs no longer
+  initialise a Swing LAF via HTML formatting, `show_graph` and the dialog
+  value oracle are Simulator-only.
+- Both branches are independent of each other (based on the same master);
+  merge in any order.
+- Remaining: phase 3 (c2 label-render options, c3 shutdown hook), phase 4
+  (`SystemStore`), phase 5 (build split + deferred shim/test moves).
