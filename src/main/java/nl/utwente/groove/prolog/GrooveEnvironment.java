@@ -30,8 +30,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
-
 import gnu.prolog.database.PredicateListener;
 import gnu.prolog.database.PredicateUpdatedEvent;
 import gnu.prolog.database.PrologTextLoader;
@@ -93,7 +91,7 @@ public class GrooveEnvironment extends Environment {
     /**
      * Prints a list of functor names on stdout, surrounded by
      * an XML "function" tag.
-     * This can be pasted in the input of the {@link RSyntaxTextArea}
+     * This can be pasted in the input of the {@code RSyntaxTextArea}
      * TokenMakerMaker, to allow syntax highlighting of predefined tags.
      */
     private void printFunctors(Collection<CompoundTermTag> tags) {
@@ -306,13 +304,13 @@ public class GrooveEnvironment extends Environment {
     /**
      * Flag that causes all Prolog functor names to be printed on stdout.
      * The result can be included in the TokenMakerMaker input for the
-     * {@link RSyntaxTextArea} syntax highlighting.
+     * {@code RSyntaxTextArea} syntax highlighting.
      */
     private static final boolean PRINT_PROLOG_FUNCTORS = false;
     /**
      * Flag that causes all Groove functor names to be printed on stdout.
      * The result can be included in the TokenMakerMaker input for the
-     * {@link RSyntaxTextArea} syntax highlighting.
+     * {@code RSyntaxTextArea} syntax highlighting.
      */
     private static final boolean PRINT_GROOVE_FUNCTORS = false;
 

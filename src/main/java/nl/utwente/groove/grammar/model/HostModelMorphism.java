@@ -39,7 +39,6 @@ import nl.utwente.groove.grammar.host.ValueNode;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.GraphInfo;
-import nl.utwente.groove.gui.dialog.GraphPreviewDialog;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -58,9 +57,6 @@ class HostModelMorphism {
         var map = new HostModelMap(target.getFactory());
         var normalSource = source.normalise();
         var errors = new FormatErrorSet();
-        if (debug) {
-            GraphPreviewDialog.showGraph(normalSource);
-        }
         // copy the nodes from source to target
         // first the non-value nodes because their numbers are fixed
         var family = grammar == null
@@ -263,13 +259,6 @@ class HostModelMorphism {
     TypeGraph getTypeGraph() {
         return target().getTypeGraph();
     }
-
-    /** Sets the debug mode, causing the normalised graphs to be shown in a dialog. */
-    public static void setDebug(boolean debug) {
-        HostModelMorphism.debug = debug;
-    }
-
-    static private boolean debug;
 
     /**
      * Constructor method to compute a mapped model from a given aspect graph.

@@ -51,7 +51,6 @@ import nl.utwente.groove.grammar.Callable;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Rule;
-import nl.utwente.groove.gui.Viewer;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -77,9 +76,6 @@ public class AutomatonBuildTest {
         add("main", "f|a; ");
         Automaton p = build();
         p.explore();
-        if (DEBUG) {
-            Viewer.showGraph(p.toGraph(FULL_GRAPH), true);
-        }
         Frame f = p.getStart();
         assertEquals(Position.Type.TRIAL, f.getType());
         StepAttempt s = f.getAttempt();
@@ -134,9 +130,6 @@ public class AutomatonBuildTest {
         add("main", "node n; oNode(out n); f(n, out n);");
         Automaton p = build();
         p.explore();
-        if (DEBUG) {
-            Viewer.showGraph(p.toGraph(FULL_GRAPH), true);
-        }
         Frame f0 = p.getStart();
         assertEquals(1, f0.getAttempt().size());
         Step s0 = f0.getAttempt().get(0);
@@ -231,9 +224,6 @@ public class AutomatonBuildTest {
         //
         p = build("nested", "function f() { a; alap a; } recipe r() { f; alap f; } r;");
         p.explore();
-        if (DEBUG) {
-            Viewer.showGraph(p.toGraph(FULL_GRAPH), true);
-        }
         NestedSwitch swt = new NestedSwitch();
         swt.push(this.prog.getTemplate().getStart().getAttempt().get(0).getOuter());
         Switch r0Switch = proc("r").getTemplate().getStart().getAttempt().get(0).getOuter();
@@ -306,9 +296,6 @@ public class AutomatonBuildTest {
         assertEquals(1, s2.getCall().depth());
         assertEquals(rule("c"), s2.getCall().getOuter().getUnit());
         p.explore();
-        if (DEBUG) {
-            Viewer.showGraph(p.toGraph(FULL_GRAPH), true);
-        }
     }
 
     /** Loads the grammar to be used for testing. */
@@ -436,6 +423,4 @@ public class AutomatonBuildTest {
         assertFalse(String.format("%s and %s expected to be distinct", o1, o2), o1.equals(o2));
     }
 
-    private final static boolean DEBUG = false;
-    private final static boolean FULL_GRAPH = true;
 }

@@ -27,8 +27,6 @@ import java.io.InputStreamReader;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.jgraph.graph.EdgeView;
-
 import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.layout.EdgeLayout;
 import nl.utwente.groove.graph.layout.ElementLayout;
@@ -273,7 +271,7 @@ public class LayoutIO {
      *
      * @param points the list of points; should not be empty
      * @param isLoop flag indicating that the underlying edge is a loop
-     * @see EdgeView#getLabelVector()
+     * @see "org.jgraph.graph.EdgeView#getLabelVector()"
      */
     private static Point2D version2LabelVector(List<Point2D> points, boolean isLoop) {
         Point2D result = null;

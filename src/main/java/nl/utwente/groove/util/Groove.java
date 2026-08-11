@@ -33,15 +33,10 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.StringTokenizer;
-
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
-import javax.swing.KeyStroke;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -467,40 +462,6 @@ public class Groove {
                 out.printf("  %s%n", stackTrace[myCode]);
             }
         }
-    }
-
-    /** Converts an action map to a string representation. */
-    static public String toString(ActionMap am) {
-        StringBuilder result = new StringBuilder();
-        LinkedHashMap<Object,Object> map = new LinkedHashMap<>();
-        for (Object key : am.allKeys()) {
-            map.put(key, am.get(key));
-        }
-        result.append(map);
-        result.append('\n');
-        ActionMap parent = am.getParent();
-        if (parent != null) {
-            result.append("Parent: ");
-            result.append(toString(parent));
-        }
-        return result.toString();
-    }
-
-    /** Converts an action map to a string representation. */
-    static public String toString(InputMap im) {
-        StringBuilder result = new StringBuilder();
-        LinkedHashMap<Object,Object> map = new LinkedHashMap<>();
-        for (KeyStroke key : im.allKeys()) {
-            map.put(key, im.get(key));
-        }
-        result.append(map);
-        result.append('\n');
-        InputMap parent = im.getParent();
-        if (parent != null) {
-            result.append("Parent: ");
-            result.append(toString(parent));
-        }
-        return result.toString();
     }
 
     /** Mimics the behaviour of {@link Optional#ofNullable(Object)},

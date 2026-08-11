@@ -32,7 +32,6 @@ import gov.nasa.ltl.graph.Node;
 import gov.nasa.ltl.trans.LTL2Buchi;
 import nl.utwente.groove.graph.AGraph;
 import nl.utwente.groove.graph.GraphRole;
-import nl.utwente.groove.gui.dialog.GraphPreviewDialog;
 import nl.utwente.groove.util.collect.NestedIterator;
 
 /**
@@ -109,9 +108,6 @@ public class BuchiGraph extends AGraph<BuchiLocation,BuchiTransition> implements
         final BuchiGraph result = new BuchiGraph(formula.toString());
         Graph<Proposition> graph = LTL2Buchi.translate(formula);
         newBuchiGraph(graph, result);
-        if (DEBUG) {
-            result.display();
-        }
         return result;
     }
 
@@ -152,13 +148,6 @@ public class BuchiGraph extends AGraph<BuchiLocation,BuchiTransition> implements
         }
     }
 
-    /**
-     * Shows a dialog displaying this Buchi graph.
-     */
-    public void display() {
-        GraphPreviewDialog.showGraph(this);
-    }
-
     private BuchiLocation getLocation(Map<Node<Proposition>,@Nullable BuchiLocation> node2location,
                                       Node<Proposition> node) {
         BuchiLocation result = node2location.get(node);
@@ -195,8 +184,6 @@ public class BuchiGraph extends AGraph<BuchiLocation,BuchiTransition> implements
     static public BuchiGraph getPrototype() {
         return new BuchiGraph("");
     }
-
-    static final private boolean DEBUG = false;
 
     /**
      * Offers a modifiable view on the transitions stored in the locations

@@ -34,7 +34,6 @@ import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
-import nl.utwente.groove.gui.Viewer;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSCounter;
@@ -141,9 +140,6 @@ public class RecipeTest {
             Grammar gg = ggModel.toGrammar();
             Automaton a = gg.getControl();
             a.explore();
-            if (DEBUG) {
-                Viewer.showGraph(a.toGraph(FULL_GRAPH), true);
-            }
             runExploration(gg, strategyDescr);
             assertEquals(this.outerStateCount,
                          counter.getStateCount() - counter.getInnerStateCount());
@@ -188,6 +184,4 @@ public class RecipeTest {
         }
     }
 
-    private final static boolean DEBUG = false;
-    private final static boolean FULL_GRAPH = true;
 }

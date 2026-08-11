@@ -9,8 +9,6 @@ import static nl.utwente.groove.util.Groove.getResourceStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 
-import javax.swing.JOptionPane;
-
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -30,8 +28,6 @@ public class Version {
      */
     public static void main(String[] args) {
         System.out.println(getAbout());
-        JOptionPane
-            .showMessageDialog(null, getAboutHTML(), "About", JOptionPane.INFORMATION_MESSAGE);
         System.exit(0);
     }
 
