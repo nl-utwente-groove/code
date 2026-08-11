@@ -32,11 +32,8 @@ import nl.utwente.groove.explore.engine.RandomPool;
 import nl.utwente.groove.explore.engine.StackPool;
 import nl.utwente.groove.explore.result.Acceptor;
 import nl.utwente.groove.explore.result.AnyStateAcceptor;
-import nl.utwente.groove.explore.result.EdgeBoundCondition;
 import nl.utwente.groove.explore.result.FinalStateAcceptor;
-import nl.utwente.groove.explore.result.IsRuleApplicableCondition;
 import nl.utwente.groove.explore.result.NoStateAcceptor;
-import nl.utwente.groove.explore.result.NodeBoundCondition;
 import nl.utwente.groove.explore.result.Predicate;
 import nl.utwente.groove.explore.result.PredicateAcceptor;
 import nl.utwente.groove.explore.strategy.ExploreStateStrategy;
@@ -287,9 +284,9 @@ public class ConfiguredExploreType extends ExploreType {
         return switch ((Bound) config.getKind(ExploreKey.BOUND)) {
         case NONE, COST -> new FrontierStrategy(getPool());
         case NODES -> new FrontierStrategy(StopMode.UP_TO,
-            new NodeBoundCondition(((Bound.Limit) boundContent).max()), getPool());
+            new Predicate.NodeBoundExceeded(((Bound.Limit) boundContent).max()), getPool());
         case EDGES -> new FrontierStrategy(StopMode.UP_TO,
-            new EdgeBoundCondition(EdgeMapParser.parse(grammar, (String) boundContent)),
+            new Predicate.EdgeBoundExceeded(EdgeMapParser.parse(grammar, (String) boundContent)),
             getPool());
         case UPTO, INCLUDE -> {
             String condition = (String) boundContent;
@@ -301,8 +298,11 @@ public class ConfiguredExploreType extends ExploreType {
             StopMode stopMode = config.getKind(ExploreKey.BOUND) == Bound.UPTO
                 ? StopMode.UP_TO
                 : StopMode.INCLUDE;
-            yield new FrontierStrategy(stopMode, new IsRuleApplicableCondition(rule, polarity),
-                getPool());
+            Predicate<GraphState> stopCondition = new Predicate.RuleApplicable(rule);
+            if (!polarity) {
+                stopCondition = new Predicate.Not<>(stopCondition);
+            }
+            yield new FrontierStrategy(stopMode, stopCondition, getPool());
         }
         case SIZE -> throw Exceptions.illegalState("Unrealisable bound kind passed validation");
         case INITIAL -> throw Exceptions

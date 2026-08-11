@@ -16,9 +16,13 @@
  */
 package nl.utwente.groove.explore.result;
 
+import java.util.Map;
+
 import nl.utwente.groove.grammar.Action;
 import nl.utwente.groove.grammar.Prover;
 import nl.utwente.groove.grammar.Rule;
+import nl.utwente.groove.grammar.host.HostGraph;
+import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 
@@ -168,6 +172,47 @@ public abstract class Predicate<X> implements java.util.function.Predicate<X> {
         @Override
         public boolean test(GraphState value) {
             return this.prover.hasProof(value.getGraph());
+        }
+    }
+
+    /**
+     * Convenience class for defining the predicate on graph states that
+     * checks whether the number of nodes of the state graph exceeds a given bound.
+     */
+    public static class NodeBoundExceeded extends StatePredicate {
+        /** Default constructor. */
+        public NodeBoundExceeded(int bound) {
+            this.bound = bound;
+        }
+
+        private final int bound;
+
+        @Override
+        public boolean test(GraphState value) {
+            return value.getGraph().nodeCount() > this.bound;
+        }
+    }
+
+    /**
+     * Convenience class for defining the predicate on graph states that
+     * checks whether, for every label in a given map, the number of
+     * corresponding edges of the state graph exceeds the associated bound.
+     */
+    public static class EdgeBoundExceeded extends StatePredicate {
+        /** Default constructor. */
+        public EdgeBoundExceeded(Map<TypeLabel,Integer> bounds) {
+            this.bounds = bounds;
+        }
+
+        private final Map<TypeLabel,Integer> bounds;
+
+        @Override
+        public boolean test(GraphState value) {
+            HostGraph graph = value.getGraph();
+            return this.bounds
+                .entrySet()
+                .stream()
+                .allMatch(e -> graph.edgeSet(e.getKey()).size() > e.getValue());
         }
     }
 
