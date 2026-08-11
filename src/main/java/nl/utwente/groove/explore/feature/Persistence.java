@@ -14,25 +14,24 @@
  *
  * $Id$
  */
-package nl.utwente.groove.explore.config;
+package nl.utwente.groove.explore.feature;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * Feature values for {@link ExploreKey#OUTCOME}: the desired outcome of the
- * goal condition ({@link ExploreKey#GOAL}). The goal kinds {@link Goal#NONE}
- * and {@link Goal#FINAL} require {@link #SATISFY}.
+ * Feature values for {@link ExploreKey#PERSISTENCE}: the degree to which
+ * previously discovered states are stored in the GTS.
  * @author Arend Rensink
  * @version $Revision$
  */
 @NonNullByDefault
-public enum Outcome implements Setting.Kind {
-    /** A result is a state (or trace) satisfying the goal condition. */
-    SATISFY("satisfy", "A result satisfies the goal condition"),
-    /** A result is a state (or trace) violating the goal condition. */
-    VIOLATE("violate", "A result violates the goal condition"),;
+public enum Persistence implements Setting.Kind {
+    /** All discovered states are stored in the GTS. */
+    ALL("all", "All discovered states are stored in the GTS"),
+    /** No states are stored in the GTS; fresh states only live in the frontier. */
+    NONE("none", "No states are stored in the GTS"),;
 
-    private Outcome(String name, String explanation) {
+    private Persistence(String name, String explanation) {
         this.name = name;
         this.explanation = explanation;
     }

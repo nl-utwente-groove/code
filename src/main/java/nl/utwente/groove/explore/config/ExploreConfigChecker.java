@@ -19,6 +19,10 @@ package nl.utwente.groove.explore.config;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.explore.feature.Bound;
+import nl.utwente.groove.explore.feature.ExploreKey;
+import nl.utwente.groove.explore.feature.Goal;
+import nl.utwente.groove.explore.feature.Setting;
 import nl.utwente.groove.explore.result.Predicate;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;

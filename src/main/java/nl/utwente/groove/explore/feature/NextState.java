@@ -14,31 +14,32 @@
  *
  * $Id$
  */
-package nl.utwente.groove.explore.config;
+package nl.utwente.groove.explore.feature;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
- * Feature values for {@link ExploreKey#HEURISTIC}: a function expressing the
- * quality of a state, typically the estimated distance (length or cost of a
- * path) to the goal. The smaller the value, the better the state. There is a
- * strong connection between the heuristic and the goal type.
+ * Feature values for {@link ExploreKey#NEXT}: the choice of the next state
+ * to explore from the frontier. If a heuristic is used, the choice is only
+ * made between candidates of the same quality.
  * @author Arend Rensink
  * @version $Revision$
  */
 @NonNullByDefault
-public enum Heuristic implements Setting.Kind {
-    /** No heuristic; all states have the same quality. */
-    NONE("none", "No heuristic is used; all states have the same quality"),
-    /**
-     * Node/edge/node tuple count. Only usable if the goal is given as a
-     * complete graph or an unnested, NAC-free rule.
-     */
-    NEN("nen", "Count of node/edge/node tuples missing with respect to the goal "
-        + "(requires the goal to be a complete graph or unnested, NAC-free rule)"),;
+public enum NextState implements Setting.Kind {
+    /** Explore the oldest state in the frontier first. */
+    OLDEST("oldest", "bfs",
+        "The oldest state in the frontier is explored next (breadth-first search)"),
+    /** Explore the most recently added state first. */
+    NEWEST("newest", "dfs",
+        "The newest state in the frontier is explored next (depth-first search)"),
+    /** Explore a random state from the frontier. */
+    RANDOM("random", null, "A random state in the frontier is explored next"),;
 
-    private Heuristic(String name, String explanation) {
+    private NextState(String name, @Nullable String hint, String explanation) {
         this.name = name;
+        this.hint = hint;
         this.explanation = explanation;
     }
 
@@ -48,6 +49,13 @@ public enum Heuristic implements Setting.Kind {
     }
 
     private final String name;
+
+    @Override
+    public @Nullable String getHint() {
+        return this.hint;
+    }
+
+    private final @Nullable String hint;
 
     @Override
     public String getExplanation() {

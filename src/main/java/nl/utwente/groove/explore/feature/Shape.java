@@ -14,32 +14,25 @@
  *
  * $Id$
  */
-package nl.utwente.groove.explore.config;
+package nl.utwente.groove.explore.feature;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 
 /**
- * Feature values for {@link ExploreKey#NEXT}: the choice of the next state
- * to explore from the frontier. If a heuristic is used, the choice is only
- * made between candidates of the same quality.
+ * Feature values for {@link ExploreKey#SHAPE}: the shape of the results the
+ * exploration is supposed to yield.
  * @author Arend Rensink
  * @version $Revision$
  */
 @NonNullByDefault
-public enum NextState implements Setting.Kind {
-    /** Explore the oldest state in the frontier first. */
-    OLDEST("oldest", "bfs",
-        "The oldest state in the frontier is explored next (breadth-first search)"),
-    /** Explore the most recently added state first. */
-    NEWEST("newest", "dfs",
-        "The newest state in the frontier is explored next (depth-first search)"),
-    /** Explore a random state from the frontier. */
-    RANDOM("random", null, "A random state in the frontier is explored next"),;
+public enum Shape implements Setting.Kind {
+    /** Results are states. */
+    STATE("state", "A result is a state"),
+    /** Results are traces from the start state to a goal state. */
+    TRACE("trace", "A result is a trace from the start state to a goal state"),;
 
-    private NextState(String name, @Nullable String hint, String explanation) {
+    private Shape(String name, String explanation) {
         this.name = name;
-        this.hint = hint;
         this.explanation = explanation;
     }
 
@@ -49,13 +42,6 @@ public enum NextState implements Setting.Kind {
     }
 
     private final String name;
-
-    @Override
-    public @Nullable String getHint() {
-        return this.hint;
-    }
-
-    private final @Nullable String hint;
 
     @Override
     public String getExplanation() {

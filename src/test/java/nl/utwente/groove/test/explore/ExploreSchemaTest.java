@@ -34,7 +34,7 @@ import org.junit.Test;
 
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreConfigSchema;
-import nl.utwente.groove.explore.config.ExploreKey;
+import nl.utwente.groove.explore.feature.ExploreKey;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;

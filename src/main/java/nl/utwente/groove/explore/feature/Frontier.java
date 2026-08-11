@@ -14,26 +14,33 @@
  *
  * $Id$
  */
-package nl.utwente.groove.explore.config;
+package nl.utwente.groove.explore.feature;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * Feature values for {@link ExploreKey#PERSISTENCE}: the degree to which
- * previously discovered states are stored in the GTS.
+ * Feature values for {@link ExploreKey#FRONTIER}: the number of unexplored
+ * states kept in the frontier. A restricted frontier deliberately gives up on
+ * full exploration of the state space.
  * @author Arend Rensink
  * @version $Revision$
  */
 @NonNullByDefault
-public enum Persistence implements Setting.Kind {
-    /** All discovered states are stored in the GTS. */
-    ALL("all", "All discovered states are stored in the GTS"),
-    /** No states are stored in the GTS; fresh states only live in the frontier. */
-    NONE("none", "No states are stored in the GTS"),;
+public enum Frontier implements Setting.Kind {
+    /** Unrestricted frontier. */
+    COMPLETE("complete", "No states are dropped from the frontier",
+        Setting.ContentType.NULL),
+    /** Single-state frontier, giving rise to a linear search. */
+    SINGLE("single", "The frontier holds a single state, giving rise to a linear search",
+        Setting.ContentType.NULL),
+    /** Frontier restricted to a given size, giving rise to a beam search. */
+    BEAM("beam", "The frontier is restricted to a given maximum size (beam search)",
+        Setting.ContentType.INTEGER),;
 
-    private Persistence(String name, String explanation) {
+    private Frontier(String name, String explanation, Setting.ContentType contentType) {
         this.name = name;
         this.explanation = explanation;
+        this.contentType = contentType;
     }
 
     @Override
@@ -52,6 +59,8 @@ public enum Persistence implements Setting.Kind {
 
     @Override
     public Setting.ContentType contentType() {
-        return Setting.ContentType.NULL;
+        return this.contentType;
     }
+
+    private final Setting.ContentType contentType;
 }

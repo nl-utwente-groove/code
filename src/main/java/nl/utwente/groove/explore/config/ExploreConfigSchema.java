@@ -31,6 +31,8 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.annotation.Help;
 import nl.utwente.groove.annotation.HelpMap;
+import nl.utwente.groove.explore.feature.ExploreKey;
+import nl.utwente.groove.explore.feature.Setting;
 import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;

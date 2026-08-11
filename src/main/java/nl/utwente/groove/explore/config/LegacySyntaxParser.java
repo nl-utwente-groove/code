@@ -28,6 +28,14 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.LTLExploreType;
+import nl.utwente.groove.explore.feature.Bound;
+import nl.utwente.groove.explore.feature.Cost;
+import nl.utwente.groove.explore.feature.Count;
+import nl.utwente.groove.explore.feature.ExploreKey;
+import nl.utwente.groove.explore.feature.Frontier;
+import nl.utwente.groove.explore.feature.Goal;
+import nl.utwente.groove.explore.feature.NextState;
+import nl.utwente.groove.explore.feature.Successor;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.Parser;

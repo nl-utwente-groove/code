@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.explore.config;
+package nl.utwente.groove.explore.feature;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
@@ -23,8 +23,8 @@ import nl.utwente.groove.util.AIGenerated;
 /**
  * Baseline traversal realising the combination of the next-state, successor
  * and frontier features of an exploration configuration. The traversal is
- * derived once, by {@link ExploreTypeConverter} (which rejects unrealisable
- * combinations), and handed to the resulting {@link ConfiguredExploreType},
+ * derived once, by {@link nl.utwente.groove.explore.config.ExploreTypeConverter ExploreTypeConverter} (which rejects unrealisable
+ * combinations), and handed to the resulting {@link nl.utwente.groove.explore.config.ConfiguredExploreType ConfiguredExploreType},
  * so that the realisability checks and the strategy instantiation dispatch
  * on the same value and cannot diverge.
  * @author Arend Rensink

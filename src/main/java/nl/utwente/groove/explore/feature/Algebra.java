@@ -14,35 +14,30 @@
  *
  * $Id$
  */
-package nl.utwente.groove.explore.config;
+package nl.utwente.groove.explore.feature;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * Feature values for {@link ExploreKey#COLLAPSE}: the condition under which a
- * fresh state is considered equivalent to a previously explored one. Other
- * state properties, such as the control frame, must coincide in all cases;
- * the variation lies in the comparison of the underlying graphs.
+ * Feature values for {@link ExploreKey#ALGEBRA}: the interpretation of data
+ * values during exploration.
  * @author Arend Rensink
  * @version $Revision$
  */
 @NonNullByDefault
-public enum Collapse implements Setting.Kind {
+public enum Algebra implements Setting.Kind {
     /** Inherit the setting from the grammar properties. */
-    GRAMMAR("grammar", "As determined by the grammar property 'checkIsomorphism'"),
-    /** Graphs are compared for equality; the strongest possible condition. */
-    EQUALITY("equality", "Graphs are compared for equality (the strongest condition)"),
-    /** Graphs are compared up to isomorphism. */
-    ISOMORPHISM("isomorphism", "Graphs are compared up to isomorphism"),
-    /**
-     * Graphs are considered equivalent if their isomorphism hash codes
-     * coincide. This may collapse non-isomorphic states, but saves the time of
-     * constructing the actual isomorphism.
-     */
-    HASH("hash", "Graphs are considered equivalent if their isomorphism hash codes coincide "
-        + "(may collapse non-isomorphic states)"),;
+    GRAMMAR("grammar", "As determined by the grammar property 'algebraFamily'"),
+    /** Concrete Java-based values. */
+    DEFAULT("default", "Java-based representation of data values"),
+    /** Arbitrary-precision values. */
+    BIG("big", "Arbitrary-precision representation of data values"),
+    /** Collapsed single-point interpretation, for abstraction. */
+    POINT("point", "All data values are collapsed to a single point"),
+    /** Symbolic term representation. */
+    TERM("term", "Data values are represented symbolically, as terms"),;
 
-    private Collapse(String name, String explanation) {
+    private Algebra(String name, String explanation) {
         this.name = name;
         this.explanation = explanation;
     }

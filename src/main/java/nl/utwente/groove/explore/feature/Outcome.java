@@ -14,33 +14,27 @@
  *
  * $Id$
  */
-package nl.utwente.groove.explore.config;
+package nl.utwente.groove.explore.feature;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * Feature values for {@link ExploreKey#FRONTIER}: the number of unexplored
- * states kept in the frontier. A restricted frontier deliberately gives up on
- * full exploration of the state space.
+ * Feature values for {@link ExploreKey#OUTCOME}: the desired outcome of the
+ * goal condition ({@link ExploreKey#GOAL}). The goal kinds {@link Goal#NONE}
+ * and {@link Goal#FINAL} require {@link #SATISFY}.
  * @author Arend Rensink
  * @version $Revision$
  */
 @NonNullByDefault
-public enum Frontier implements Setting.Kind {
-    /** Unrestricted frontier. */
-    COMPLETE("complete", "No states are dropped from the frontier",
-        Setting.ContentType.NULL),
-    /** Single-state frontier, giving rise to a linear search. */
-    SINGLE("single", "The frontier holds a single state, giving rise to a linear search",
-        Setting.ContentType.NULL),
-    /** Frontier restricted to a given size, giving rise to a beam search. */
-    BEAM("beam", "The frontier is restricted to a given maximum size (beam search)",
-        Setting.ContentType.INTEGER),;
+public enum Outcome implements Setting.Kind {
+    /** A result is a state (or trace) satisfying the goal condition. */
+    SATISFY("satisfy", "A result satisfies the goal condition"),
+    /** A result is a state (or trace) violating the goal condition. */
+    VIOLATE("violate", "A result violates the goal condition"),;
 
-    private Frontier(String name, String explanation, Setting.ContentType contentType) {
+    private Outcome(String name, String explanation) {
         this.name = name;
         this.explanation = explanation;
-        this.contentType = contentType;
     }
 
     @Override
@@ -59,8 +53,6 @@ public enum Frontier implements Setting.Kind {
 
     @Override
     public Setting.ContentType contentType() {
-        return this.contentType;
+        return Setting.ContentType.NULL;
     }
-
-    private final Setting.ContentType contentType;
 }

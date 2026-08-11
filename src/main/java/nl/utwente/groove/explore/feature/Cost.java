@@ -14,24 +14,30 @@
  *
  * $Id$
  */
-package nl.utwente.groove.explore.config;
+package nl.utwente.groove.explore.feature;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * Feature values for {@link ExploreKey#SHAPE}: the shape of the results the
- * exploration is supposed to yield.
+ * Feature values for {@link ExploreKey#COST}: the cost of a single transition.
+ * If transitions have a cost, the total cost of a path plays a role in
+ * exploration: the task is to find the least costly solution.
  * @author Arend Rensink
  * @version $Revision$
  */
 @NonNullByDefault
-public enum Shape implements Setting.Kind {
-    /** Results are states. */
-    STATE("state", "A result is a state"),
-    /** Results are traces from the start state to a goal state. */
-    TRACE("trace", "A result is a trace from the start state to a goal state"),;
+public enum Cost implements Setting.Kind {
+    /** Transitions have no cost; the cost of a path is ignored. */
+    NONE("none", "Transitions have no cost; the cost of a path is ignored"),
+    /** Every transition has the same cost; path cost equals path length. */
+    UNIFORM("uniform", "Every transition has cost 1, so the cost of a path equals its length"),
+    /**
+     * Rule-dependent cost: fixed for the rule or exposed as a rule parameter,
+     * determined per rule.
+     */
+    RULE("rule", "Each rule application has a cost, fixed per rule or exposed as a rule parameter"),;
 
-    private Shape(String name, String explanation) {
+    private Cost(String name, String explanation) {
         this.name = name;
         this.explanation = explanation;
     }

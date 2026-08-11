@@ -23,18 +23,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.Test;
 
-import nl.utwente.groove.explore.config.Bound;
-import nl.utwente.groove.explore.config.Collapse;
-import nl.utwente.groove.explore.config.Cost;
-import nl.utwente.groove.explore.config.Count;
 import nl.utwente.groove.explore.config.ExploreConfig;
-import nl.utwente.groove.explore.config.ExploreKey;
-import nl.utwente.groove.explore.config.Frontier;
-import nl.utwente.groove.explore.config.Goal;
-import nl.utwente.groove.explore.config.NextState;
-import nl.utwente.groove.explore.config.Outcome;
-import nl.utwente.groove.explore.config.Setting;
-import nl.utwente.groove.explore.config.Successor;
+import nl.utwente.groove.explore.feature.Bound;
+import nl.utwente.groove.explore.feature.Collapse;
+import nl.utwente.groove.explore.feature.Cost;
+import nl.utwente.groove.explore.feature.Count;
+import nl.utwente.groove.explore.feature.ExploreKey;
+import nl.utwente.groove.explore.feature.Frontier;
+import nl.utwente.groove.explore.feature.Goal;
+import nl.utwente.groove.explore.feature.NextState;
+import nl.utwente.groove.explore.feature.Outcome;
+import nl.utwente.groove.explore.feature.Setting;
+import nl.utwente.groove.explore.feature.Successor;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

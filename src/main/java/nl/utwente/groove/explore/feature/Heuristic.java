@@ -14,30 +14,30 @@
  *
  * $Id$
  */
-package nl.utwente.groove.explore.config;
+package nl.utwente.groove.explore.feature;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
- * Feature values for {@link ExploreKey#COST}: the cost of a single transition.
- * If transitions have a cost, the total cost of a path plays a role in
- * exploration: the task is to find the least costly solution.
+ * Feature values for {@link ExploreKey#HEURISTIC}: a function expressing the
+ * quality of a state, typically the estimated distance (length or cost of a
+ * path) to the goal. The smaller the value, the better the state. There is a
+ * strong connection between the heuristic and the goal type.
  * @author Arend Rensink
  * @version $Revision$
  */
 @NonNullByDefault
-public enum Cost implements Setting.Kind {
-    /** Transitions have no cost; the cost of a path is ignored. */
-    NONE("none", "Transitions have no cost; the cost of a path is ignored"),
-    /** Every transition has the same cost; path cost equals path length. */
-    UNIFORM("uniform", "Every transition has cost 1, so the cost of a path equals its length"),
+public enum Heuristic implements Setting.Kind {
+    /** No heuristic; all states have the same quality. */
+    NONE("none", "No heuristic is used; all states have the same quality"),
     /**
-     * Rule-dependent cost: fixed for the rule or exposed as a rule parameter,
-     * determined per rule.
+     * Node/edge/node tuple count. Only usable if the goal is given as a
+     * complete graph or an unnested, NAC-free rule.
      */
-    RULE("rule", "Each rule application has a cost, fixed per rule or exposed as a rule parameter"),;
+    NEN("nen", "Count of node/edge/node tuples missing with respect to the goal "
+        + "(requires the goal to be a complete graph or unnested, NAC-free rule)"),;
 
-    private Cost(String name, String explanation) {
+    private Heuristic(String name, String explanation) {
         this.name = name;
         this.explanation = explanation;
     }

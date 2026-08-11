@@ -28,6 +28,17 @@ import java.util.Properties;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.explore.feature.Bound;
+import nl.utwente.groove.explore.feature.Cost;
+import nl.utwente.groove.explore.feature.Count;
+import nl.utwente.groove.explore.feature.ExploreKey;
+import nl.utwente.groove.explore.feature.Frontier;
+import nl.utwente.groove.explore.feature.Goal;
+import nl.utwente.groove.explore.feature.NextState;
+import nl.utwente.groove.explore.feature.Outcome;
+import nl.utwente.groove.explore.feature.Setting;
+import nl.utwente.groove.explore.feature.Shape;
+import nl.utwente.groove.explore.feature.Successor;
 import nl.utwente.groove.grammar.model.SettingsContent;
 import nl.utwente.groove.grammar.model.SettingsModel;
 import nl.utwente.groove.util.Exceptions;
