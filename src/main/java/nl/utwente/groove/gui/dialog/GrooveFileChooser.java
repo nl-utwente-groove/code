@@ -37,7 +37,6 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.gui.Options;
-import nl.utwente.groove.io.ExtensionFilter;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.util.Groove;
 
@@ -59,9 +58,9 @@ public class GrooveFileChooser extends JFileChooser {
         setAcceptAllFileFilterUsed(false);
         ToolTipManager.sharedInstance().registerComponent(this);
         var prefFilter = getPref(FILTER);
-        ExtensionFilter selectedFilter = null;
+        SwingExtensionFilter selectedFilter = null;
         for (FileType fileType : fileTypes) {
-            ExtensionFilter filter = fileType.getFilter();
+            SwingExtensionFilter filter = SwingExtensionFilter.getFilter(fileType);
             addChoosableFileFilter(filter);
             if (selectedFilter == null || fileType.toString().equals(prefFilter)) {
                 selectedFilter = filter;
@@ -124,8 +123,8 @@ public class GrooveFileChooser extends JFileChooser {
     }
 
     /**
-     * This implementation adds a file extension, if the file filter used is an
-     * {@link ExtensionFilter}.
+     * This implementation adds a file extension, if the file filter used is a
+     * {@link SwingExtensionFilter}.
      */
     @Override
     public @Nullable File getSelectedFile() {
@@ -144,17 +143,17 @@ public class GrooveFileChooser extends JFileChooser {
 
     /** Indicates if the currently selected file filter has an associated {@link FileType}. */
     public boolean hasFileType() {
-        return getFileFilter() instanceof ExtensionFilter;
+        return getFileFilter() instanceof SwingExtensionFilter;
     }
 
     /**
      * Returns the file type of the currently selected file filter,
-     * if that file filter is an {@link ExtensionFilter}.
+     * if that file filter is a {@link SwingExtensionFilter}.
      */
     public FileType getFileType() {
         FileType result = null;
         FileFilter current = getFileFilter();
-        if (current instanceof ExtensionFilter ef) {
+        if (current instanceof SwingExtensionFilter ef) {
             result = ef.getFileType();
         }
         return result;

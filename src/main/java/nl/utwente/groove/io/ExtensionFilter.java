@@ -24,8 +24,7 @@ import java.util.List;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-03-11 15:46:59 $
  */
-public class ExtensionFilter extends javax.swing.filechooser.FileFilter
-    implements java.io.FileFilter {
+public class ExtensionFilter implements java.io.FileFilter {
     /**
      * Constructs a new extension file filter, to be
      * associated with a given file type.
@@ -44,7 +43,6 @@ public class ExtensionFilter extends javax.swing.filechooser.FileFilter
     /**
      * Returns this filter's description.
      */
-    @Override
     public String getDescription() {
         if (this.description == null) {
             this.description = createDescription();
