@@ -14,11 +14,11 @@
  *
  * $Id$
  */
-package nl.utwente.groove.explore.strategy;
+package nl.utwente.groove.explore.engine;
 
-import static nl.utwente.groove.explore.strategy.StopMode.INCLUDE;
-import static nl.utwente.groove.explore.strategy.StopMode.NONE;
-import static nl.utwente.groove.explore.strategy.StopMode.UP_TO;
+import static nl.utwente.groove.explore.engine.StopMode.INCLUDE;
+import static nl.utwente.groove.explore.engine.StopMode.NONE;
+import static nl.utwente.groove.explore.engine.StopMode.UP_TO;
 
 import java.util.List;
 import java.util.Stack;

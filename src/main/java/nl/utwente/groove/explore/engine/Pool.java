@@ -19,7 +19,6 @@ package nl.utwente.groove.explore.engine;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.explore.strategy.ClosingStrategy;
 import nl.utwente.groove.lts.GraphState;
 
 /**

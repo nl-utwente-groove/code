@@ -21,8 +21,8 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
+import nl.utwente.groove.explore.engine.Strategy;
 import nl.utwente.groove.explore.result.Acceptor;
-import nl.utwente.groove.explore.strategy.Strategy;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;

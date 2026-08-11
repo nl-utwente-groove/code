@@ -21,8 +21,6 @@ import java.util.function.Predicate;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.explore.strategy.ClosingStrategy;
-import nl.utwente.groove.explore.strategy.StopMode;
 import nl.utwente.groove.lts.GraphState;
 
 /**

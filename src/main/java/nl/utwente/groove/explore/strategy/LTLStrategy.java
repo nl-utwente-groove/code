@@ -31,6 +31,8 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import gov.nasa.ltl.trans.Formula;
 import nl.utwente.groove.explore.ExploreResult;
+import nl.utwente.groove.explore.engine.ExploreStateStrategy;
+import nl.utwente.groove.explore.engine.Strategy;
 import nl.utwente.groove.explore.result.Acceptor;
 import nl.utwente.groove.explore.result.CycleAcceptor;
 import nl.utwente.groove.explore.util.RandomChooserInSequence;
