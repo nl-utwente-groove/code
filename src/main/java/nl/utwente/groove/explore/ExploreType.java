@@ -36,9 +36,9 @@ import nl.utwente.groove.util.parse.FormatException;
  * An ExploreType determines what an exploration does: it instantiates the
  * strategy and acceptor for a given grammar, and bounds the number of
  * results. Most explorations are configuration-based (see
- * {@code ConfiguredExploreType}); the model-checking and minimax
- * explorations, which the exploration feature model deliberately does not
- * cover, have dedicated subclasses. To use an {@link ExploreType}, it
+ * {@code ConfiguredExploreType}); the model-checking explorations, which
+ * the exploration feature model deliberately does not cover, have a
+ * dedicated subclass. To use an {@link ExploreType}, it
  * should be fed into an {@link Exploration}.
  * @author Arend Rensink
  */

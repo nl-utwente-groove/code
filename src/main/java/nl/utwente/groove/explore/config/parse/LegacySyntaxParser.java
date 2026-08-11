@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -51,9 +50,9 @@ import nl.utwente.groove.util.parse.Parser;
  * in the legacy {@code explorationStrategy} grammar property. The keywords
  * are translated directly into the exploration feature model: a
  * config-expressible strategy or acceptor becomes settings of an
- * {@link ExploreConfig}, while the model-checking and minimax strategies
- * (which the feature model deliberately does not cover) become dedicated
- * {@link ExploreType} subclasses. This makes the legacy syntax a permanent
+ * {@link ExploreConfig}, while the model-checking strategies (which the
+ * feature model deliberately does not cover) become a dedicated
+ * {@link ExploreType} subclass. This makes the legacy syntax a permanent
  * thin front-end of the configuration, with no dependence on the
  * encode/enumerator machinery.
  * @author Arend Rensink
@@ -100,8 +99,8 @@ public class LegacySyntaxParser {
      * successor generation, frontier, heuristic, cost and bound) before
      * setting its own; all other features of the base configuration (such as
      * persistence or collapse) are preserved. Likewise, an acceptor resets
-     * only the goal and outcome features. A model-checking or minimax
-     * strategy is not config-based and replaces the base entirely.
+     * only the goal and outcome features. A model-checking strategy is not
+     * config-based and replaces the base entirely.
      * @throws FormatException if a component cannot be parsed, or the
      * resulting combination is inconsistent, or the base type has no
      * feature-model equivalent to overlay onto
@@ -148,8 +147,13 @@ public class LegacySyntaxParser {
             : parseAcceptor(acceptor);
         if (strategy != null) {
             String keyword = keywordOf(strategy);
-            if (DIRECT_KEYWORDS.contains(keyword)) {
-                return createDirectType(keyword, argsOf(strategy), acceptorSpec, count);
+            if ("minimax".equals(keyword)) {
+                throw new FormatException(
+                    "The minimax strategy has been removed in release 8.0;"
+                        + " see https://github.com/nl-utwente-groove/code/issues/890");
+            }
+            if (LTL_KEYWORDS.contains(keyword)) {
+                return createLTLType(keyword, argsOf(strategy), acceptorSpec, count);
             }
         }
         if (acceptorSpec != null && acceptorSpec.kind() == AcceptorSpec.Kind.CYCLE) {
@@ -381,32 +385,15 @@ public class LegacySyntaxParser {
         }
     }
 
-    /** Creates the dedicated exploration type for a non-config strategy keyword. */
-    private static ExploreType createDirectType(String keyword, @Nullable String args,
-                                                @Nullable AcceptorSpec acceptor,
-                                                int count) throws FormatException {
-        if (LTL_KEYWORDS.contains(keyword)) {
-            if (acceptor != null && acceptor.kind() != AcceptorSpec.Kind.CYCLE) {
-                throw new FormatException(
-                    "Strategy '%s' can only be combined with the 'cycle' acceptor", keyword);
-            }
-            return createLTLType(keyword, requireArgs(keyword, args), count);
-        }
-        if (acceptor != null && acceptor.kind() == AcceptorSpec.Kind.CYCLE) {
-            throw cycleAcceptorError();
-        }
-        AcceptorSpec effectiveAcceptor = acceptor == null
-            ? AcceptorSpec.FINAL
-            : acceptor;
-        return switch (keyword) {
-        case "minimax" -> createMinimaxType(requireArgs(keyword, args), effectiveAcceptor, count);
-        default -> throw Exceptions.illegalState("Unknown direct strategy keyword '%s'", keyword);
-        };
-    }
-
     /** Creates the LTL exploration type for a model-checking keyword. */
-    private static ExploreType createLTLType(String keyword, String args,
+    private static ExploreType createLTLType(String keyword, @Nullable String rawArgs,
+                                             @Nullable AcceptorSpec acceptor,
                                              int count) throws FormatException {
+        if (acceptor != null && acceptor.kind() != AcceptorSpec.Kind.CYCLE) {
+            throw new FormatException(
+                "Strategy '%s' can only be combined with the 'cycle' acceptor", keyword);
+        }
+        String args = requireArgs(keyword, rawArgs);
         LTLExploreType.Kind kind = Arrays
             .stream(LTLExploreType.Kind.values())
             .filter(k -> k.getKeyword().equals(keyword))
@@ -431,35 +418,6 @@ public class LegacySyntaxParser {
         return new LTLExploreType(kind, property, bound, count);
     }
 
-    /** Creates the minimax exploration type from its comma-separated arguments. */
-    // the legacy syntax deliberately keeps supporting the deprecated
-    // minimax exploration until its removal in release 8.0 (gh #890)
-    @SuppressWarnings("removal")
-    private static ExploreType createMinimaxType(String args, AcceptorSpec acceptor,
-                                                 int count) throws FormatException {
-        String[] parts = args.split(",", -1);
-        if (parts.length != 6) {
-            throw new FormatException(
-                "Cannot parse 'minimax:%s'; required format is minimax:<heuristic-param>,"
-                    + "<max-depth>,<rule>[;<rule>]*,<start-max>,<minmax-rule>,<minmax-param>",
-                args);
-        }
-        int heuristicParam = parseNatural("minimax", parts[0]);
-        int maxDepth = parseNatural("minimax", parts[1]);
-        List<String> ruleNames = Arrays.asList(parts[2].split(";"));
-        if (ruleNames.isEmpty() || ruleNames.stream().anyMatch(String::isEmpty)) {
-            throw new FormatException("Empty rule list in 'minimax:%s'", args);
-        }
-        String minmaxRule = parts[4];
-        if (minmaxRule.isEmpty()) {
-            throw new FormatException("Empty minimax rule name in 'minimax:%s'", args);
-        }
-        int minmaxParam = parseNatural("minimax", parts[5]);
-        // qualified reference, so that no import of the deprecated type is needed
-        return new nl.utwente.groove.explore.MinimaxExploreType(heuristicParam, maxDepth,
-            ruleNames, parts[3], minmaxRule, minmaxParam, acceptor, count);
-    }
-
     /** The features owned by the strategy part of the legacy syntax. */
     private static final List<ExploreKey> STRATEGY_KEYS
         = List.of(ExploreKey.NEXT, ExploreKey.SUCCESSOR, ExploreKey.FRONTIER,
@@ -469,11 +427,6 @@ public class LegacySyntaxParser {
     private static final Set<String> LTL_KEYWORDS = Arrays
         .stream(LTLExploreType.Kind.values())
         .map(LTLExploreType.Kind::getKeyword)
-        .collect(Collectors.toUnmodifiableSet());
-    /** The strategy keywords realised by dedicated exploration types
-     * rather than the configuration. */
-    private static final Set<String> DIRECT_KEYWORDS = Stream
-        .concat(LTL_KEYWORDS.stream(), Stream.of("minimax"))
         .collect(Collectors.toUnmodifiableSet());
     /** Pattern for the argument of the {@code uptorule} strategy. */
     private static final Pattern UPTO_RULE_PATTERN

@@ -8,6 +8,10 @@ Upcoming release
 - Removed the remote exploration strategy (`remote:host`), which sent the explored
   state space as a symbolic transition system (STS) to a remote server; command lines
   or saved explorations using `remote` now fail with an unknown-strategy error
+- Removed the minimax exploration strategy (`minimax:...`), which generated a game
+  strategy for a two-player game encoded as a grammar with parametrised rules;
+  command lines or saved explorations using `minimax` now fail with an error
+  pointing to gh issue #890
 - API change: the programmatic exploration interface `transform.Transformer` lost its
   `setStrategy` and `setAcceptor` methods (without deprecation); use `setExploreType`
   instead

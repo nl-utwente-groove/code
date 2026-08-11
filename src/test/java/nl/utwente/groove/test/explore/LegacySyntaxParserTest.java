@@ -19,6 +19,7 @@ package nl.utwente.groove.test.explore;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Set;
 
@@ -151,9 +152,6 @@ public class LegacySyntaxParserTest {
     }
 
     /** Tests the dedicated exploration types for the non-config strategies. */
-    // covers the deprecated minimax exploration until its removal in
-    // release 8.0 (gh #890)
-    @SuppressWarnings("removal")
     @Test
     public void testDirectTypes() throws Exception {
         Grammar grammar = Groove.loadGrammar(GRAMMAR).toGrammar();
@@ -184,10 +182,6 @@ public class LegacySyntaxParserTest {
         var commaBounded = LegacySyntaxParser.overlay(ExploreType.getDefault(),
                                                       "ltlbounded:,eat;F eat", null, 0);
         assertThrows(FormatException.class, () -> commaBounded.getParsedStrategy(grammar));
-        // minimax construction (instantiation needs parametrised rules);
-        // qualified reference, so that no import of the deprecated type is needed
-        var minimax = LegacySyntaxParser.parse("minimax:1,10,eat;load,max,eat,2 final 0");
-        assertInstanceOf(nl.utwente.groove.explore.MinimaxExploreType.class, minimax);
     }
 
     /** Tests the rejection of malformed or inconsistent legacy descriptions. */
@@ -198,12 +192,16 @@ public class LegacySyntaxParserTest {
         // remote exploration was removed altogether
         assertThrows(FormatException.class,
                      () -> LegacySyntaxParser.parse("remote:http://localhost any 0"));
-        // the cycle acceptor requires an LTL strategy, and vice versa;
-        // this holds for the config-based and the direct strategies alike
+        // the minimax strategy was removed in release 8.0, with a
+        // dedicated error pointing to gh #890
+        var minimaxError = assertThrows(FormatException.class,
+                                        () -> LegacySyntaxParser
+                                            .parse("minimax:1,10,eat;load,max,eat,2 final 0"));
+        assertTrue(minimaxError.getMessage().contains("890"),
+                   "The minimax error should point to the removal issue");
+        // the cycle acceptor requires an LTL strategy, and vice versa
         assertThrows(FormatException.class, () -> LegacySyntaxParser.parse("bfs cycle 0"));
         assertThrows(FormatException.class, () -> LegacySyntaxParser.parse("state cycle 0"));
-        assertThrows(FormatException.class,
-                     () -> LegacySyntaxParser.parse("minimax:1,10,eat;load,max,eat,2 cycle 0"));
         assertThrows(FormatException.class, () -> LegacySyntaxParser.parse("ltl:prop final 0"));
         // a condition bound cannot be combined with a depth bound
         assertThrows(FormatException.class,
@@ -216,8 +214,6 @@ public class LegacySyntaxParserTest {
                      () -> LegacySyntaxParser.parse("cebound:append final 0"));
         assertThrows(FormatException.class,
                      () -> LegacySyntaxParser.parse("ltlbounded:prop cycle 0"));
-        assertThrows(FormatException.class,
-                     () -> LegacySyntaxParser.parse("minimax:1,10 final 0"));
         assertThrows(FormatException.class, () -> LegacySyntaxParser.parse("bfs final -1"));
         assertThrows(FormatException.class, () -> LegacySyntaxParser.parse("bfs"));
     }
