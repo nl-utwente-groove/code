@@ -69,11 +69,13 @@ import javax.swing.WindowConstants;
 
 import apple.dts.samplecode.osxadapter.OSXAdapter;
 import nl.utwente.groove.grammar.GrammarKey;
+import nl.utwente.groove.grammar.OracleParser;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.SimulatorModel.Change;
 import nl.utwente.groove.gui.action.AboutAction;
 import nl.utwente.groove.gui.action.ActionStore;
+import nl.utwente.groove.gui.dialog.DialogOracle;
 import nl.utwente.groove.gui.dialog.ErrorDialog;
 import nl.utwente.groove.gui.dialog.GraphPreviewDialog;
 import nl.utwente.groove.gui.dialog.PropertiesTable;
@@ -95,7 +97,7 @@ import nl.utwente.groove.gui.menu.MyJMenu;
 import nl.utwente.groove.gui.prolog.GuiPredicates;
 import nl.utwente.groove.lts.GraphNextState;
 import nl.utwente.groove.lts.GraphState;
-import nl.utwente.groove.transform.oracle.DialogOracle;
+import nl.utwente.groove.transform.oracle.ValueOracleKind;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatError;
@@ -118,6 +120,8 @@ public class Simulator implements SimulatorListener {
         JGraphExporters.register();
         // contribute the GUI-bound prolog predicates (show_graph)
         GuiPredicates.register();
+        // contribute the (UI-bound) dialog value oracle
+        OracleParser.register(ValueOracleKind.DIALOG, DialogOracle.instance());
         this.model = new SimulatorModel(this);
         this.actions = new ActionStore(this);
         this.undoManager = new SimulatorUndoManager(this);

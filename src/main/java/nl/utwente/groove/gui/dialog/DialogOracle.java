@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.transform.oracle;
+package nl.utwente.groove.gui.dialog;
 
 import java.awt.Component;
 
@@ -29,6 +29,9 @@ import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.UnitPar.RulePar;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.transform.RuleEvent;
+import nl.utwente.groove.transform.oracle.ValueOracle;
+import nl.utwente.groove.transform.oracle.ValueOracleFactory;
+import nl.utwente.groove.transform.oracle.ValueOracleKind;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
