@@ -25,7 +25,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.SortedSet;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JLabel;
@@ -35,16 +34,10 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
-
-import nl.utwente.groove.grammar.QualName;
-import nl.utwente.groove.grammar.model.ResourceKind;
-import nl.utwente.groove.graph.Element;
-import nl.utwente.groove.graph.GraphProperties.Key;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.look.Values.Mode;
 import nl.utwente.groove.util.HTMLConverter;
+import nl.utwente.groove.util.parse.SelectableListEntry;
 
 /**
  * Panel showing a list of messages. The panel hides itself when the
@@ -203,23 +196,6 @@ public abstract class ListPanel extends JPanel {
             result.setBackground(getColors().getBackground(mode));
             result.setForeground(getColors().getForeground(mode));
             return result;
-        }
-    }
-
-    /** Interface for entries of the list. */
-    public interface SelectableListEntry {
-        /** Returns the resource kind for which this entry occurs. */
-        public @Nullable ResourceKind getResourceKind();
-
-        /** Returns the resource name for which this entry occurs. */
-        public @NonNull SortedSet<QualName> getResourceNames();
-
-        /** Returns the list of elements in which the entry occurs. May be empty. */
-        public @NonNull Collection<Element> getElements();
-
-        /** Returns the property key in which the entry occurs. May be {@code null}. */
-        default public @Nullable Key getPropertyKey() {
-            return null;
         }
     }
 

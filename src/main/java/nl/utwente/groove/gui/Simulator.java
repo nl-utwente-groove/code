@@ -89,7 +89,6 @@ import nl.utwente.groove.gui.display.TextTab;
 import nl.utwente.groove.gui.export.JGraphExporters;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.JGraph;
-import nl.utwente.groove.gui.list.ListPanel.SelectableListEntry;
 import nl.utwente.groove.gui.list.ListTabbedPane;
 import nl.utwente.groove.gui.list.SearchResult;
 import nl.utwente.groove.gui.menu.ModelCheckingMenu;
@@ -101,6 +100,7 @@ import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
+import nl.utwente.groove.util.parse.SelectableListEntry;
 
 /**
  * Program that applies a production system to an initial graph.

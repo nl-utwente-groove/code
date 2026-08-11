@@ -26,7 +26,7 @@ import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.graph.Element;
-import nl.utwente.groove.gui.list.ListPanel.SelectableListEntry;
+import nl.utwente.groove.util.parse.SelectableListEntry;
 
 /**
  * Class encoding a single message reporting a search result in a graph view.

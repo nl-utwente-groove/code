@@ -45,7 +45,6 @@ import nl.utwente.groove.graph.GraphMap;
 import nl.utwente.groove.graph.GraphProperties.Key;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.NodeComparator;
-import nl.utwente.groove.gui.list.ListPanel.SelectableListEntry;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;

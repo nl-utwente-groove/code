@@ -22,8 +22,8 @@ import javax.swing.JTabbedPane;
 
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.display.TabLabel;
-import nl.utwente.groove.gui.list.ListPanel.SelectableListEntry;
 import nl.utwente.groove.util.HTMLConverter;
+import nl.utwente.groove.util.parse.SelectableListEntry;
 
 /**
  * Tabbed pane for lists.
