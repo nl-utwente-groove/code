@@ -17,9 +17,11 @@
 package nl.utwente.groove.grammar.type;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -29,7 +31,6 @@ import nl.utwente.groove.grammar.rule.LabelVar;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.util.NoNonNull;
-import nl.utwente.groove.util.Property;
 
 /**
  * Encodes a constraint on type labels, which can be used to filter
@@ -38,7 +39,7 @@ import nl.utwente.groove.util.Property;
  * @version $Revision$
  */
 @NonNullByDefault
-public class TypeGuard extends Property<TypeElement> {
+public class TypeGuard implements Predicate<TypeElement> {
     /**
      * Constructs a new constraint.
      * @param var the label variable associated with the constraint; non-{@code null}
@@ -141,6 +142,16 @@ public class TypeGuard extends Property<TypeElement> {
             }
         }
         return this.negated != valueFound;
+    }
+
+    /**
+     * Removes from a given collection all type elements that do not satisfy this guard.
+     * @param collection the collection to be filtered; will be modified as a result of this call
+     * @return the parameter {@code collection}
+     */
+    public <C extends Collection<? extends TypeElement>> C filter(C collection) {
+        collection.removeIf(e -> !test(e));
+        return collection;
     }
 
     @Override

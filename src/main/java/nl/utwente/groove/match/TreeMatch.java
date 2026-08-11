@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -37,7 +38,6 @@ import nl.utwente.groove.grammar.rule.RuleToHostMap;
 import nl.utwente.groove.transform.Proof;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
-import nl.utwente.groove.util.Property;
 import nl.utwente.groove.util.Visitor;
 
 /**
@@ -570,7 +570,7 @@ public class TreeMatch implements Fixable {
 
         @Override
         protected Collector<Proof,List<Proof>> createInstance(List<Proof> collection,
-                                                              Property<Proof> property) {
+                                                              Predicate<Proof> property) {
             return new ProofWrapperCollector(collection);
         }
     }

@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -44,7 +45,6 @@ import nl.utwente.groove.match.TreeMatch;
 import nl.utwente.groove.transform.oracle.ValueOracle;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
-import nl.utwente.groove.util.Property;
 import nl.utwente.groove.util.Visitor;
 import nl.utwente.groove.util.Visitor.Finder;
 
@@ -158,19 +158,10 @@ public class RuleApplication implements DeltaApplier {
      * Tests if a given event has a match at a given source graph.
      */
     private boolean testEvent(final RuleEvent event, HostGraph source) {
-        final Property<Proof> proofContainsEvent = new Property<>() {
-            @Override
-            public boolean test(Proof proof) {
-                return event.createEvent(proof).equals(event);
-            }
-        };
+        final Predicate<Proof> proofContainsEvent = proof -> event.createEvent(proof).equals(event);
         final Finder<Proof> eventFinder = Visitor.newFinder(proofContainsEvent);
-        final Property<TreeMatch> matchContainsProof = new Property<>() {
-            @Override
-            public boolean test(TreeMatch value) {
-                return value.traverseProofs(eventFinder) != null;
-            }
-        };
+        final Predicate<TreeMatch> matchContainsProof
+            = value -> value.traverseProofs(eventFinder) != null;
         Finder<TreeMatch> matchFinder = Visitor.newFinder(matchContainsProof);
         boolean result = getRule()
             .getEventMatcher(source.isSimple())
