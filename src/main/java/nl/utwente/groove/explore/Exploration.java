@@ -21,7 +21,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 import nl.utwente.groove.explore.engine.Strategy;
-import nl.utwente.groove.explore.result.Acceptor;
+import nl.utwente.groove.explore.result.ResultCollector;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
@@ -31,8 +31,8 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * A single exploration run: the application of an {@link ExploreType} to a
  * GTS from a given start state. Constructing the exploration instantiates
- * the type's strategy and acceptor for the grammar and prepares the GTS for
- * the run; {@link #play()} executes it. The result of the execution is
+ * the type's strategy and result collector for the grammar and prepares the
+ * GTS for the run; {@link #play()} executes it. The result of the execution is
  * remembered in the exploration ({@link #getResult()}).
  * @author Maarten de Mol
  */
@@ -49,15 +49,15 @@ public class Exploration {
         // realise the exploration type for the grammar
         var realisation = this.type.realise(grammar);
         this.strategy = realisation.strategy();
-        this.acceptor = realisation.acceptor();
-        // initialise the strategy: it halts when the acceptor is satisfied
+        this.collector = realisation.collector();
+        // initialise the strategy: it halts when the collector is satisfied
         this.strategy.setGTS(this.gts);
         this.strategy.setState(start);
-        this.strategy.setHalt(this.acceptor::done);
+        this.strategy.setHalt(this.collector::done);
     }
 
     private final Strategy strategy;
-    private final Acceptor acceptor;
+    private final ResultCollector collector;
     /** The state in which the exploration starts. */
     private final GraphState start;
 
@@ -125,13 +125,13 @@ public class Exploration {
         for (ExplorationListener listener : this.listeners) {
             listener.start(this, this.gts);
         }
-        // engage the acceptor for this run: it collects its results
+        // engage the collector for this run: it collects its results
         // by listening to the GTS, starting with the start state
-        this.acceptor.prepare(this.gts);
-        this.gts.addLTSListener(this.acceptor);
-        this.acceptor.addUpdate(this.gts, this.start);
+        this.collector.prepare(this.gts);
+        this.gts.addLTSListener(this.collector);
+        this.collector.addUpdate(this.gts, this.start);
         this.strategy.play();
-        this.gts.removeLTSListener(this.acceptor);
+        this.gts.removeLTSListener(this.collector);
         this.interrupted = this.strategy.isInterrupted();
         for (ExplorationListener listener : this.listeners) {
             if (this.interrupted) {
@@ -144,11 +144,11 @@ public class Exploration {
         playReporter.stop();
 
         // store result
-        this.lastResult = this.acceptor.getResult();
+        this.lastResult = this.collector.getResult();
         this.lastState = this.strategy.getLastState();
         this.lastMessage = (this.interrupted
             ? "Exploration interrupted. "
-            : "") + this.acceptor.getMessage();
+            : "") + this.collector.getMessage();
         if (!this.gts.isStoring()) {
             // the discovered states were not stored; retain the traces of
             // the result states and of the last explored state, so that the

@@ -27,12 +27,12 @@ import nl.utwente.groove.util.AIGenerated;
 
 /**
  * Run-time realisation of the goal feature of an exploration: decides which
- * states an {@link Acceptor} collects into the result. A goal is offered the
+ * states a {@link ResultCollector} collects into the result. A goal is offered the
  * events of the exploration — states as they are added, states as their
  * status changes, transitions as they are added — and tests whether the
  * event realises the goal. All tests are {@code false} by default; a
  * concrete goal overrides the tests through which it can be realised.
- * @see Acceptor
+ * @see ResultCollector
  * @author Arend Rensink
  * @version $Revision$
  */

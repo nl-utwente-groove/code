@@ -278,7 +278,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      * While storing is off, {@link #addState} treats every state as fresh
      * (there is nothing to collapse against) and retains neither states nor
      * transitions; listeners are still notified of every addition, so
-     * acceptors and statistics see the full exploration. Only the states
+     * result collectors and statistics see the full exploration. Only the states
      * added while storing was on (in particular the start state) remain in
      * the GTS; the state and transition counts reflect that retained part.
      * Discovered states remain reachable only while the exploration needs

@@ -161,7 +161,7 @@ public class LegacySyntaxParserTest {
         assertInstanceOf(LTLExploreType.class, ltl);
         var ltlRealisation = ltl.realise(grammar);
         assertInstanceOf(LTLStrategy.class, ltlRealisation.strategy());
-        assertInstanceOf(CycleAcceptor.class, ltlRealisation.acceptor());
+        assertInstanceOf(CycleAcceptor.class, ltlRealisation.collector());
         // the boundary of the bounded flavours resolves against the grammar
         var bounded = LegacySyntaxParser.overlay(ExploreType.getDefault(),
                                                  "ltlbounded:5,3;F eat", null, 0);

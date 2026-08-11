@@ -40,8 +40,8 @@ import nl.utwente.groove.explore.engine.RandomPool;
 import nl.utwente.groove.explore.engine.StackPool;
 import nl.utwente.groove.explore.engine.StopMode;
 import nl.utwente.groove.explore.engine.Strategy;
-import nl.utwente.groove.explore.result.Acceptor;
 import nl.utwente.groove.explore.result.Predicate;
+import nl.utwente.groove.explore.result.ResultCollector;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.lts.GTS;
@@ -55,9 +55,10 @@ import nl.utwente.groove.util.parse.FormatException;
  * Exploration type backed by an exploration configuration
  * ({@link ExploreConfig}). Instances are created by
  * {@link ExploreTypeConverter#toExploreType}, which validates the
- * configuration first. The strategy and acceptor are instantiated directly
- * from the configuration — the {@link FrontierStrategy} engine for the
- * search orders, the acceptor classes for the goals.
+ * configuration first. The strategy and result collector are instantiated
+ * directly from the configuration — the {@link FrontierStrategy} engine for
+ * the search orders, a goal-parametrised {@link ResultCollector} for the
+ * goals.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -260,7 +261,7 @@ public class ConfiguredExploreType extends ExploreType {
 
     /**
      * Realises the configuration, collecting the errors of both the
-     * strategy and the acceptor half before failing, so that all problems
+     * strategy and the collector half before failing, so that all problems
      * are reported at once.
      */
     @Override
@@ -272,15 +273,15 @@ public class ConfiguredExploreType extends ExploreType {
         } catch (FormatException exc) {
             errors.addAll(exc.getErrors());
         }
-        Acceptor acceptor = null;
+        ResultCollector collector = null;
         try {
-            acceptor = createAcceptor(grammar);
+            collector = createCollector(grammar);
         } catch (FormatException exc) {
             errors.addAll(exc.getErrors());
         }
         errors.throwException();
-        assert strategy != null && acceptor != null;
-        return new Realisation(strategy, acceptor);
+        assert strategy != null && collector != null;
+        return new Realisation(strategy, collector);
     }
 
     /**
@@ -367,17 +368,17 @@ public class ConfiguredExploreType extends ExploreType {
     }
 
     /**
-     * Instantiates a fresh acceptor directly from the configuration's goal,
-     * outcome and count features.
+     * Instantiates a fresh result collector directly from the
+     * configuration's goal, outcome and count features.
      */
-    private Acceptor createAcceptor(Grammar grammar) throws FormatException {
+    private ResultCollector createCollector(Grammar grammar) throws FormatException {
         var config = getConfig();
         boolean satisfy = config.getKind(ExploreKey.OUTCOME) == Outcome.SATISFY;
         return switch ((Goal) config.getKind(ExploreKey.GOAL)) {
-        case NONE -> new Acceptor();
-        case ANY -> new Acceptor(anyState(), getResultCount());
-        case FINAL -> new Acceptor(finalState(), getResultCount());
-        case FIRES -> new Acceptor(transition(new Predicate.ActionApplied(EnabledRuleParser
+        case NONE -> new ResultCollector();
+        case ANY -> new ResultCollector(anyState(), getResultCount());
+        case FINAL -> new ResultCollector(finalState(), getResultCount());
+        case FIRES -> new ResultCollector(transition(new Predicate.ActionApplied(EnabledRuleParser
             .parse(grammar, (String) config.get(ExploreKey.GOAL).content()))), getResultCount());
         case CONDITION -> {
             String condition = (String) config.get(ExploreKey.GOAL).content();
@@ -385,7 +386,7 @@ public class ConfiguredExploreType extends ExploreType {
             if (!satisfy) {
                 predicate = new Predicate.Not<>(predicate);
             }
-            yield new Acceptor(state(predicate), getResultCount());
+            yield new ResultCollector(state(predicate), getResultCount());
         }
         case GRAPH, LTL, CTL -> throw Exceptions
             .illegalState("Unrealisable goal kind passed validation");

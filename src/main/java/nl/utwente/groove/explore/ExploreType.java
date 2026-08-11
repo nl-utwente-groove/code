@@ -22,7 +22,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.explore.engine.Strategy;
-import nl.utwente.groove.explore.result.Acceptor;
+import nl.utwente.groove.explore.result.ResultCollector;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
@@ -34,8 +34,8 @@ import nl.utwente.groove.util.parse.FormatException;
 
 /**
  * An ExploreType determines what an exploration does: it instantiates the
- * strategy and acceptor for a given grammar, and determines the number of
- * results after which exploration halts. Most explorations are configuration-based (see
+ * strategy and result collector for a given grammar, and determines the
+ * number of results after which exploration halts. Most explorations are configuration-based (see
  * {@code ConfiguredExploreType}); the model-checking explorations, which
  * the exploration feature model deliberately does not cover, have a
  * dedicated subclass. To use an {@link ExploreType}, it
@@ -73,18 +73,18 @@ public abstract class ExploreType {
 
     /**
      * The run-time realisation of an exploration type for a given grammar:
-     * a strategy and acceptor pair, mutually wired where the exploration
-     * type requires it.
+     * a strategy and result collector pair, mutually wired where the
+     * exploration type requires it.
      */
-    public record Realisation(Strategy strategy, Acceptor acceptor) {
+    public record Realisation(Strategy strategy, ResultCollector collector) {
         // no additional functionality
     }
 
     /**
      * Realises this exploration type for a given graph grammar, by
-     * instantiating its strategy and acceptor, with the result count of
-     * this exploration type applied. Both objects are stateful and good for
-     * a single exploration run; every call returns fresh instances.
+     * instantiating its strategy and result collector, with the result
+     * count of this exploration type applied. Both objects are stateful and
+     * good for a single exploration run; every call returns fresh instances.
      * @throws FormatException if the grammar is incompatible with this
      * exploration type
      */

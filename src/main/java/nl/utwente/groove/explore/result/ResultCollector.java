@@ -30,14 +30,14 @@ import nl.utwente.groove.lts.GraphTransition;
  * stateful and are used for a single exploration run; they are created
  * afresh by {@link nl.utwente.groove.explore.ExploreType#realise}.
  */
-public class Acceptor implements GTSListener {
-    /** Creates an acceptor with the empty goal and no result count. */
-    public Acceptor() {
+public class ResultCollector implements GTSListener {
+    /** Creates a collector with the empty goal and no result count. */
+    public ResultCollector() {
         this(Goal.none(), 0);
     }
 
-    /** Creates an acceptor with a given goal and result count. */
-    public Acceptor(Goal goal, int count) {
+    /** Creates a collector with a given goal and result count. */
+    public ResultCollector(Goal goal, int count) {
         assert count >= 0;
         this.goal = goal;
         this.count = count;
@@ -45,13 +45,13 @@ public class Acceptor implements GTSListener {
 
     private final Goal goal;
 
-    /** Indicates if this acceptor has a (non-zero) result count. */
+    /** Indicates if this collector has a (non-zero) result count. */
     public boolean hasResultCount() {
         return getResultCount() > 0;
     }
 
-    /** Returns the result count of this acceptor.
-     * The count is the number of states in the result after which the acceptor
+    /** Returns the result count of this collector.
+     * The count is the number of states in the result after which the collector
      * signals that the exploration should be halted (using {@link #done()}).
      * A count of 0 means that exploration is never halted.
      * @see #done()
@@ -83,7 +83,7 @@ public class Acceptor implements GTSListener {
         }
     }
 
-    /** Prepares the acceptor for a new exploration.
+    /** Prepares the collector for a new exploration.
      * In particular, sets a fresh {@link ExploreResult}.
      * @param gts the GTS of the new exploration
      */
@@ -99,7 +99,7 @@ public class Acceptor implements GTSListener {
     }
 
     /** Tests if the exploration is done,
-     * according to the demands of this acceptor.
+     * according to the demands of this collector.
      */
     public boolean done() {
         return hasResultCount() && getResult().size() >= getResultCount();
@@ -115,7 +115,7 @@ public class Acceptor implements GTSListener {
 
     private ExploreResult result;
 
-    /** Returns a message describing the accepted result. */
+    /** Returns a message describing the collected result. */
     public String getMessage() {
         return this.result.getStatistics();
     }

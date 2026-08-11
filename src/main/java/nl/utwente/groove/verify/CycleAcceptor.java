@@ -20,7 +20,7 @@ package nl.utwente.groove.verify;
 import java.util.ArrayList;
 import java.util.List;
 
-import nl.utwente.groove.explore.result.Acceptor;
+import nl.utwente.groove.explore.result.ResultCollector;
 import nl.utwente.groove.explore.strategy.LTLStrategy;
 import nl.utwente.groove.verify.ModelChecking.Record;
 
@@ -34,7 +34,7 @@ import nl.utwente.groove.verify.ModelChecking.Record;
  * @author Harmen Kastenberg
  * @version $Revision$
  */
-public class CycleAcceptor extends Acceptor implements ProductListener {
+public class CycleAcceptor extends ResultCollector implements ProductListener {
     /** Creates an acceptor that is done at the first counterexample. */
     public CycleAcceptor() {
         // the goal and result count play no role: the counterexample is
