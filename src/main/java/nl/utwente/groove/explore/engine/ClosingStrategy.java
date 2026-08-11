@@ -27,7 +27,6 @@ import java.util.function.Predicate;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.explore.result.Acceptor;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSListener;
 import nl.utwente.groove.lts.GraphState;
@@ -104,8 +103,8 @@ abstract public class ClosingStrategy extends GTSStrategy {
     }
 
     @Override
-    protected void prepare(GTS gts, @Nullable GraphState state, Acceptor acceptor) {
-        super.prepare(gts, state, acceptor);
+    protected void prepare(GTS gts, @Nullable GraphState state) {
+        super.prepare(gts, state);
         // for the closing strategy, there is no problem in aliasing
         // the graph data structures. On the whole, this seems wise, to
         // avoid excessive garbage collection.
@@ -116,7 +115,6 @@ abstract public class ClosingStrategy extends GTSStrategy {
 
     @Override
     public void finish() {
-        super.finish();
         getGTS().removeLTSListener(this.exploreListener);
     }
 

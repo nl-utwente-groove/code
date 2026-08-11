@@ -23,7 +23,6 @@ import java.util.Random;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.explore.result.Acceptor;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.MatchResult;
@@ -40,8 +39,8 @@ import nl.utwente.groove.util.Randomness.Purpose;
 @NonNullByDefault
 public class RandomLinearStrategy extends LinearStrategy {
     @Override
-    protected void prepare(GTS gts, @Nullable GraphState state, Acceptor acceptor) {
-        super.prepare(gts, state, acceptor);
+    protected void prepare(GTS gts, @Nullable GraphState state) {
+        super.prepare(gts, state);
         // obtain the generator per exploration, so that a fixed master seed
         // makes every exploration draw the identical sequence
         this.random = Randomness.newRandom(Purpose.EXPLORATION);

@@ -33,7 +33,6 @@ import gov.nasa.ltl.trans.Formula;
 import nl.utwente.groove.explore.ExploreResult;
 import nl.utwente.groove.explore.engine.ExploreStateStrategy;
 import nl.utwente.groove.explore.engine.Strategy;
-import nl.utwente.groove.explore.result.Acceptor;
 import nl.utwente.groove.explore.util.RandomChooserInSequence;
 import nl.utwente.groove.explore.util.RandomNewStateChooser;
 import nl.utwente.groove.graph.EdgeRole;
@@ -66,18 +65,15 @@ import nl.utwente.groove.verify.Proposition;
 @NonNullByDefault
 public class LTLStrategy extends Strategy {
     @Override
-    protected void prepare(GTS gts, @Nullable GraphState state, Acceptor acceptor) {
-        assert acceptor instanceof CycleAcceptor;
-        super.prepare(gts, state, acceptor);
+    protected void prepare(GTS gts, @Nullable GraphState state) {
+        super.prepare(gts, state);
         MatcherFactory.instance(gts.hasSimpleGraphs()).setDefaultEngine();
         var stateSet = new ProductStateSet();
         this.stateSet = stateSet;
         stateSet.addListener(this.collector);
-        var cycleAcceptor = (CycleAcceptor) acceptor;
-        this.acceptor = cycleAcceptor;
-        cycleAcceptor.setStrategy(this);
+        var acceptor = getAcceptor();
         this.result = acceptor.getResult();
-        stateSet.addListener(cycleAcceptor);
+        stateSet.addListener(acceptor);
         this.stateStack = new Stack<>();
         var startLocation = this.startLocation;
         assert startLocation != null : "The property automaton should have an initial state";
@@ -90,10 +86,24 @@ public class LTLStrategy extends Strategy {
 
     @Override
     public void finish() {
-        var acceptor = this.acceptor;
-        assert acceptor != null : "Strategy not prepared";
         getStateSet().removeListener(this.collector);
-        getStateSet().removeListener(acceptor);
+        getStateSet().removeListener(getAcceptor());
+    }
+
+    /** Sets the cycle acceptor that runs the nested (red) search of this
+     * strategy, and wires it back to this strategy; called by the
+     * exploration type upon creating the pair.
+     */
+    public void setAcceptor(CycleAcceptor acceptor) {
+        this.acceptor = acceptor;
+        acceptor.setStrategy(this);
+    }
+
+    /** Returns the cycle acceptor of this strategy. */
+    private CycleAcceptor getAcceptor() {
+        var result = this.acceptor;
+        assert result != null : "Acceptor not set";
+        return result;
     }
 
     @Override
@@ -510,7 +520,7 @@ public class LTLStrategy extends Strategy {
     private @Nullable ProductState nextState;
     /** The Buchi start graph-state of the system; set in {@link #prepare}. */
     private @Nullable ProductState startState;
-    /** Acceptor to be added to the product GTS; set in {@link #prepare}. */
+    /** Acceptor running the nested search; set by {@link #setAcceptor}. */
     private @Nullable CycleAcceptor acceptor;
     /** Returns the random generator for the successor and new-state choices. */
     protected final Random getRandomGen() {

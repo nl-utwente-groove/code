@@ -19,25 +19,16 @@ package nl.utwente.groove.explore.engine;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.explore.result.Acceptor;
 import nl.utwente.groove.lts.GraphState;
 
 /**
  * Explores all outgoing transitions of a given state.
+ * The GTS and the state should be set before using it.
  * @author Iovka Boneva
  *
  */
 @NonNullByDefault
 public class ExploreStateStrategy extends ClosingStrategy {
-    /**
-     * Creates a strategy with empty graph transition system and empty start
-     * state. The GTS and the state should be set before using it.
-     * The acceptor is initialised to an empty-goal {@link Acceptor}.
-     */
-    public ExploreStateStrategy() {
-        setAcceptor(new Acceptor());
-    }
-
     @Override
     protected @Nullable GraphState getFromPool() {
         GraphState result = this.state;

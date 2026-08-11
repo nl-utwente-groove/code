@@ -19,7 +19,6 @@ package nl.utwente.groove.explore.engine;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.explore.result.Acceptor;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.match.MatcherFactory;
@@ -32,16 +31,13 @@ import nl.utwente.groove.match.MatcherFactory;
 @NonNullByDefault
 public abstract class GTSStrategy extends Strategy {
     @Override
-    protected void prepare(GTS gts, @Nullable GraphState state, Acceptor acceptor) {
-        super.prepare(gts, state, acceptor);
+    protected void prepare(GTS gts, @Nullable GraphState state) {
+        super.prepare(gts, state);
         this.gts = gts;
         var startState = state == null
             ? gts.startState()
             : state;
         this.nextState = this.startState = startState;
-        this.acceptor = acceptor;
-        gts.addLTSListener(acceptor);
-        acceptor.addUpdate(gts, startState);
         MatcherFactory.instance(gts.hasSimpleGraphs())
             .setDefaultEngine();
     }
@@ -49,14 +45,6 @@ public abstract class GTSStrategy extends Strategy {
     @Override
     public boolean hasNext() {
         return getNextState() != null;
-    }
-
-    @Override
-    public void finish() {
-        var acceptor = this.acceptor;
-        if (acceptor != null) {
-            getGTS().removeLTSListener(acceptor);
-        }
     }
 
     /**
@@ -111,9 +99,6 @@ public abstract class GTSStrategy extends Strategy {
      * Start state for exploration, set in {@link #prepare}.
      */
     private @Nullable GraphState startState;
-    /** The acceptor to be used at the next exploration;
-     * set in {@link #prepare}. */
-    private @Nullable Acceptor acceptor;
     /** The state that will be explored by the next call of {@link #doNext()}. */
     private @Nullable GraphState nextState;
 }

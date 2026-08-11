@@ -23,7 +23,6 @@ import java.util.Stack;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.explore.result.Acceptor;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSListener;
 import nl.utwente.groove.lts.GraphState;
@@ -39,14 +38,14 @@ import nl.utwente.groove.transform.Record;
 @NonNullByDefault
 public class LinearStrategy extends GTSStrategy {
     @Override
-    protected void prepare(GTS gts, @Nullable GraphState state, Acceptor acceptor) {
+    protected void prepare(GTS gts, @Nullable GraphState state) {
         // We have to set the non-collapsing property before the first (start)
         // state is generated, otherwise it is too late.
         Record record = gts.getRecord();
         record.setCollapse(false);
         record.setCopyGraphs(false);
         record.setReuseEvents(NONE);
-        super.prepare(gts, state, acceptor);
+        super.prepare(gts, state);
         gts.addLTSListener(this.exploreListener);
     }
 

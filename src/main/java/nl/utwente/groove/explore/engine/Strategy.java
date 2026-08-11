@@ -16,10 +16,11 @@
  */
 package nl.utwente.groove.explore.engine;
 
+import java.util.function.BooleanSupplier;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.explore.result.Acceptor;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.Status.Flag;
@@ -29,8 +30,8 @@ import nl.utwente.groove.lts.Status.Flag;
  * are to be explored. It can also determine which states are to be explored
  * because of the nature of the strategy (see for instance
  * {@link LinearStrategy}).
- * To use, call {@link #setGTS} and {@link #setAcceptor} and optionally {@link #setState}
- * then call {@link #play()}.
+ * To use, call {@link #setGTS} and optionally {@link #setState} and
+ * {@link #setHalt}, then call {@link #play()}.
  */
 @NonNullByDefault
 public abstract class Strategy {
@@ -56,26 +57,26 @@ public abstract class Strategy {
     }
 
     /**
-     * Adds an acceptor to the strategy.
+     * Sets the halt condition, consulted before every exploration step:
+     * when it holds, exploration stops. The default is to never halt, so
+     * that exploration continues until the strategy is exhausted.
      */
-    final public void setAcceptor(Acceptor acceptor) {
-        this.acceptor = acceptor;
+    final public void setHalt(BooleanSupplier halt) {
+        this.halt = halt;
     }
 
     /**
-     * Plays out this strategy, until a halting condition kicks in,
-     * the thread is interrupted or the acceptor signals that exploration is done.
+     * Plays out this strategy, until the halt condition kicks in,
+     * the thread is interrupted or the strategy is exhausted.
      */
     final public void play() {
         var gts = this.gts;
         assert gts != null : "GTS not initialised";
-        var acceptor = this.acceptor;
-        assert acceptor != null : "Acceptor not initialised";
-        prepare(gts, this.startState, acceptor);
+        prepare(gts, this.startState);
         collectKnownStates(gts);
         this.interrupted = false;
         try {
-            while (!acceptor.done() && hasNext() && !testInterrupted()) {
+            while (!this.halt.getAsBoolean() && hasNext() && !testInterrupted()) {
                 this.lastState = doNext();
             }
         } catch (InterruptedException exc) {
@@ -90,10 +91,9 @@ public abstract class Strategy {
      * @param gts the GTS to be explored; non-{@code null}
      * @param state the state at which exploration should
      * start; may be {@code null}, in which case the GTS' start state is to be used
-     * @param acceptor acceptor object to be used during exploration; non-{@code null}
      */
-    protected void prepare(GTS gts, @Nullable GraphState state, Acceptor acceptor) {
-        acceptor.prepare(gts);
+    protected void prepare(GTS gts, @Nullable GraphState state) {
+        // no preparation by default
     }
 
     /**
@@ -110,9 +110,11 @@ public abstract class Strategy {
     /**
      * Callback method invoked after exploration has finished.
      * After this method, the only next operation allowed is
-     * {@link #prepare}.
+     * {@link #prepare}. This implementation does nothing.
      */
-    abstract public void finish();
+    public void finish() {
+        // no clean-up by default
+    }
 
     /**
      * Sets all states already in the state space to Flag.KNOWN.
@@ -148,21 +150,6 @@ public abstract class Strategy {
         return this.lastState;
     }
 
-    /**
-     * Returns a message recorded after exploration.
-     * The message is non-{@code null} after {@link #play()} has returned.
-     */
-    final public String getMessage() {
-        StringBuilder result = new StringBuilder();
-        if (isInterrupted()) {
-            result.append("Exploration interrupted. ");
-        }
-        var acceptor = this.acceptor;
-        assert acceptor != null : "Acceptor not initialised";
-        result.append(acceptor.getMessage());
-        return result.toString();
-    }
-
     /** Flag indicating that the last invocation of {@link #play} was interrupted. */
     private boolean interrupted;
     /** The graph transition system explored by the strategy;
@@ -173,9 +160,9 @@ public abstract class Strategy {
      * If {@code null}, the GTS start state is selected at exploration time.
      */
     private @Nullable GraphState startState;
-    /** The acceptor to be used at the next exploration;
-     * set by {@link #setAcceptor}. */
-    private @Nullable Acceptor acceptor;
+    /** The halt condition consulted before every exploration step;
+     * set by {@link #setHalt}. */
+    private BooleanSupplier halt = () -> false;
     /** The state returned by the last call of {@link #doNext()}. */
     private @Nullable GraphState lastState;
 }

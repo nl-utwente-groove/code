@@ -154,7 +154,9 @@ public class LTLExploreType extends ExploreType {
             }
             bounded.setBoundary(boundary);
         }
-        return new Realisation(strategy, new CycleAcceptor());
+        var acceptor = new CycleAcceptor();
+        strategy.setAcceptor(acceptor);
+        return new Realisation(strategy, acceptor);
     }
 
     @Override

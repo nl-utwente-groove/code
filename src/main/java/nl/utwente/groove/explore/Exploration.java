@@ -43,20 +43,23 @@ public class Exploration {
     public Exploration(ExploreType type, GraphState start) throws FormatException {
         this.type = type;
         this.gts = start.getGTS();
+        this.start = start;
         this.type.prepareRun(this.gts);
         Grammar grammar = this.gts.getGrammar();
         // realise the exploration type for the grammar
         var realisation = this.type.realise(grammar);
         this.strategy = realisation.strategy();
         this.acceptor = realisation.acceptor();
-        // initialize acceptor and GTS
+        // initialise the strategy: it halts when the acceptor is satisfied
         this.strategy.setGTS(this.gts);
         this.strategy.setState(start);
-        this.strategy.setAcceptor(this.acceptor);
+        this.strategy.setHalt(this.acceptor::done);
     }
 
     private final Strategy strategy;
     private final Acceptor acceptor;
+    /** The state in which the exploration starts. */
+    private final GraphState start;
 
     /** Returns the type of this exploration. */
     public ExploreType getType() {
@@ -122,7 +125,13 @@ public class Exploration {
         for (ExplorationListener listener : this.listeners) {
             listener.start(this, this.gts);
         }
+        // engage the acceptor for this run: it collects its results
+        // by listening to the GTS, starting with the start state
+        this.acceptor.prepare(this.gts);
+        this.gts.addLTSListener(this.acceptor);
+        this.acceptor.addUpdate(this.gts, this.start);
         this.strategy.play();
+        this.gts.removeLTSListener(this.acceptor);
         this.interrupted = this.strategy.isInterrupted();
         for (ExplorationListener listener : this.listeners) {
             if (this.interrupted) {
@@ -137,7 +146,9 @@ public class Exploration {
         // store result
         this.lastResult = this.acceptor.getResult();
         this.lastState = this.strategy.getLastState();
-        this.lastMessage = this.strategy.getMessage();
+        this.lastMessage = (this.interrupted
+            ? "Exploration interrupted. "
+            : "") + this.acceptor.getMessage();
         if (!this.gts.isStoring()) {
             // the discovered states were not stored; retain the traces of
             // the result states and of the last explored state, so that the
