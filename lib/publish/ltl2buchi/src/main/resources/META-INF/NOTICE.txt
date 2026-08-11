@@ -5,8 +5,9 @@ Administrator of the National Aeronautics and Space Administration
 (NASA). All Rights Reserved.
 
 This software is distributed under the NASA Open Source Agreement
-(NOSA), version 1.3; see META-INF/NOSA-1.3.txt. The NOSA has been
-approved by the Open Source Initiative.
+(NOSA), version 1.3, as instantiated for Java Pathfinder (NASA
+designation ARC-15388-1); see META-INF/NOSA-1.3-JPF.txt. The NOSA has
+been approved by the Open Source Initiative.
 
 LTL2Buchi was implemented at NASA Ames Research Center by Dimitra
 Giannakopoulou and Flavio Lerda as part of the Java PathFinder

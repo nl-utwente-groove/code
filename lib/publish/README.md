@@ -37,24 +37,26 @@ these three modules.
 
 Central publication is public and irrevocable. Verify before deploying:
 
-1. **ltl2buchi (NOSA 1.3) — the gating item.** The source headers say
-   the code is under the NASA Open Source Agreement 1.3 and refer to a
-   file `NOSA-1.3-JPF` "at the top of the distribution directory tree"
-   that is *not* present in our `-sources` jar. The bundled
-   `META-INF/NOSA-1.3.txt` is the generic NOSA 1.3 template (from SPDX),
-   which has blanks (government agency, copyright notice, registration
-   URL) that the JPF instance filled in. Locate the actual
-   `NOSA-1.3-JPF` file (early history of the Java PathFinder
-   repositories, e.g. github.com/javapathfinder, or an original
-   JPF/LTL2Buchi download) and replace `NOSA-1.3.txt` with it. Also
-   check whether upstream later relicensed LTL2Buchi under Apache-2.0
-   (jpf-core itself did); if a relicensed release matches our snapshot,
-   prefer that license. NOSA obligations already handled here:
-   clause 3.A.1 (license text accompanies each copy — bundled in the
-   jar), 3.A.2 (source code freely available — the `-sources` jar),
-   3.B (copyright notice — in `NOTICE.txt`), 3.C (modification record —
-   in `NOTICE.txt`). Clause 3.F *requests* (not requires) registration
-   with NASA — consider sending the point of contact a note.
+1. **ltl2buchi (NOSA 1.3).** The source headers say the code is under
+   the NASA Open Source Agreement 1.3 and refer to a file `NOSA-1.3-JPF`
+   "at the top of the distribution directory tree" that is not present
+   in our `-sources` jar. That file — the NOSA instance for Java
+   Pathfinder, NASA designation ARC-15388-1 — was already archived in
+   this repository at `src/meta/NOSA-1.3-JPF.txt` and is bundled in the
+   jar as `META-INF/NOSA-1.3-JPF.txt`. Note: JPF distributions circulate
+   two revisions of this file, differing only in the point of contact
+   (John Penix vs. Thomas Pressburger) and the copyright years (2005 vs.
+   2005,2006); our archived copy is the earlier one, and is what we
+   bundle. NOSA obligations handled here: clause 3.A.1 (license text
+   accompanies each copy — bundled in the jar), 3.A.2 (source code
+   freely available — the `-sources` jar), 3.B (copyright notice — in
+   `NOTICE.txt`), 3.C (modification record — in `NOTICE.txt`).
+   Clause 3.F *requests* (not requires) registration at
+   opensource.arc.nasa.gov — consider a courtesy note if that contact
+   point still exists. Optional simplification to investigate: whether
+   upstream later relicensed LTL2Buchi under Apache-2.0 (jpf-core
+   itself did); if a relicensed release matches our snapshot, prefer
+   that license.
 2. **gnuprologjava (LGPL 3)**: no action expected; the jar now carries
    `COPYING.txt`/`COPYING.LESSER.txt` from the upstream distribution,
    and the embedded `gnu.getopt` keeps its own `COPYING.LIB`.

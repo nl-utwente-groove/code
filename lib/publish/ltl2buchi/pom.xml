@@ -22,8 +22,9 @@
 		<license>
 			<name>NASA Open Source Agreement, Version 1.3</name>
 			<url>https://opensource.org/licenses/NASA-1.3</url>
-			<comments>See META-INF/NOSA-1.3.txt and META-INF/NOTICE.txt inside
-			the jar.</comments>
+			<comments>As instantiated for Java Pathfinder (NASA designation
+			ARC-15388-1); see META-INF/NOSA-1.3-JPF.txt and
+			META-INF/NOTICE.txt inside the jar.</comments>
 		</license>
 	</licenses>
 
