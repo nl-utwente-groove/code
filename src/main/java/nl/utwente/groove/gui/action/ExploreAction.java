@@ -24,8 +24,7 @@ import javax.swing.plaf.basic.BasicSliderUI;
 
 import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.explore.ExploreType;
-import nl.utwente.groove.explore.StateExploreType;
-import nl.utwente.groove.explore.AcceptorSpec;
+import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.explore.util.StatisticsReporter;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.gui.Icons;
@@ -72,7 +71,7 @@ public class ExploreAction extends SimulatorAction {
     /** Fully explores the currently selected state of the GTS. */
     public void doExploreState() {
         GraphState state = getSimulatorModel().getState();
-        Exploration e = explore(state, getStateExploration());
+        Exploration e = explore(state, ConfiguredExploreType.stateExploration(state.getGTS()));
         if (e != null) {
             getLtsDisplay().emphasiseStates(e.getResult().getStates(), true);
         }
@@ -310,18 +309,6 @@ public class ExploreAction extends SimulatorAction {
             }
         }
     }
-
-    /**
-     * Returns the explore-strategy for exploring a single state
-     */
-    private ExploreType getStateExploration() {
-        if (this.stateExploration == null) {
-            this.stateExploration = new StateExploreType(AcceptorSpec.NONE, 0);
-        }
-        return this.stateExploration;
-    }
-
-    private ExploreType stateExploration;
 
     /** Number of states after which exploration should halt. */
     private int bound;

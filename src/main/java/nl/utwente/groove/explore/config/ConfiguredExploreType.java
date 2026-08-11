@@ -48,6 +48,7 @@ import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
@@ -72,6 +73,56 @@ public class ConfiguredExploreType extends ExploreType {
         super(bound);
         this.config = config;
         this.traversal = traversal;
+    }
+
+    /**
+     * Returns the single-state exploration type for a given GTS: only the
+     * initial (i.e., currently selected) state is fully explored, and no
+     * results are collected. The per-GTS features (persistence, collapse,
+     * algebra) are tuned to the given GTS, so that the returned type can run
+     * on it whatever features it was originally explored under. This is the
+     * exploration behind the simulator's explore-state action; the tuning is
+     * the reverse of the feature resolution in {@link #prepareGTS} and
+     * {@link #checkGTS}, and must stay in step with it.
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    public static ExploreType stateExploration(GTS gts) {
+        var config = new ExploreConfig();
+        config.put(ExploreKey.BOUND, Bound.INITIAL.createSetting());
+        config.put(ExploreKey.GOAL, Goal.NONE.createSetting());
+        var properties = gts.getGrammar().getProperties();
+        if (!gts.isPersistent()) {
+            config.put(ExploreKey.PERSISTENCE, Persistence.NONE.createSetting());
+        }
+        var mode = gts.getCollapseMode();
+        if (mode != GTS.CollapseMode.ofProperties(properties)) {
+            var collapse = switch (mode) {
+            case COLLAPSE_EQUAL -> Collapse.EQUALITY;
+            case COLLAPSE_ISO_STRONG -> Collapse.ISOMORPHISM;
+            // a mode deviating from the grammar-determined one can only have
+            // been set by a configuration, which admits no other modes
+            case COLLAPSE_NONE, COLLAPSE_ISO_WEAK -> throw Exceptions
+                .illegalState("Unexpected GTS collapse mode %s", mode);
+            };
+            config.put(ExploreKey.COLLAPSE, collapse.createSetting());
+        }
+        var family = gts.getAlgebraFamily();
+        if (family != properties.getAlgebraFamily()) {
+            var algebra = switch (family) {
+            case DEFAULT -> Algebra.DEFAULT;
+            case BIG -> Algebra.BIG;
+            case POINT -> Algebra.POINT;
+            case TERM -> Algebra.TERM;
+            };
+            config.put(ExploreKey.ALGEBRA, algebra.createSetting());
+        }
+        try {
+            return ExploreTypeConverter.toExploreType(config);
+        } catch (FormatException exc) {
+            throw Exceptions
+                .illegalState("Single-state exploration configuration is unrealisable: %s",
+                              exc.getMessage());
+        }
     }
 
     /** Returns the exploration configuration underlying this type. */
