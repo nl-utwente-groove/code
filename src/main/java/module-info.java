@@ -28,11 +28,12 @@ module nl.utwente.groove {
     exports nl.utwente.groove.graph;
     exports nl.utwente.groove.graph.layout;
     exports nl.utwente.groove.explore.config;
+    exports nl.utwente.groove.explore.feature;
     exports nl.utwente.groove.gui.export;
     exports nl.utwente.groove.explore.engine;
     exports nl.utwente.groove.explore.result;
     exports nl.utwente.groove.io.external;
-    exports nl.utwente.groove.explore.strategy;
+    exports nl.utwente.groove.explore.verify;
     exports nl.utwente.groove.grammar.rule;
     exports nl.utwente.groove.transform.oracle;
     exports nl.utwente.groove.io.graph;

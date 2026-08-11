@@ -15,7 +15,7 @@
  * $Id: DefaultModelCheckingStrategy.java,v 1.5 2008/03/05 08:41:17 kastenberg
  * Exp $
  */
-package nl.utwente.groove.explore.strategy;
+package nl.utwente.groove.explore.verify;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,8 +33,6 @@ import gov.nasa.ltl.trans.Formula;
 import nl.utwente.groove.explore.ExploreResult;
 import nl.utwente.groove.explore.engine.ExploreStateStrategy;
 import nl.utwente.groove.explore.engine.Strategy;
-import nl.utwente.groove.explore.util.RandomChooserInSequence;
-import nl.utwente.groove.explore.util.RandomNewStateChooser;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
@@ -42,8 +40,9 @@ import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.match.MatcherFactory;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
-import nl.utwente.groove.util.Randomness;
+import nl.utwente.groove.util.RandomChooserInSequence;
 import nl.utwente.groove.util.Randomness.Purpose;
+import nl.utwente.groove.util.Randomness;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.verify.BuchiGraph;
 import nl.utwente.groove.verify.BuchiLocation;

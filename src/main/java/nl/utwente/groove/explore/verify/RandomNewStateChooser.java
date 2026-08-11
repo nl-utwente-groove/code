@@ -1,7 +1,8 @@
-package nl.utwente.groove.explore.util;
+package nl.utwente.groove.explore.verify;
 
 import java.util.Random;
 
+import nl.utwente.groove.util.RandomChooserInSequence;
 import nl.utwente.groove.verify.ProductListener;
 import nl.utwente.groove.verify.ProductState;
 import nl.utwente.groove.verify.ProductStateSet;

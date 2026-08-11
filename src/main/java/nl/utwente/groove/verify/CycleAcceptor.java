@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import nl.utwente.groove.explore.result.ResultCollector;
-import nl.utwente.groove.explore.strategy.LTLStrategy;
+import nl.utwente.groove.explore.verify.LTLStrategy;
 import nl.utwente.groove.verify.ModelChecking.Record;
 
 /**

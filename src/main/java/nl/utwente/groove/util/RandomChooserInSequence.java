@@ -1,4 +1,4 @@
-package nl.utwente.groove.explore.util;
+package nl.utwente.groove.util;
 
 import java.util.Random;
 

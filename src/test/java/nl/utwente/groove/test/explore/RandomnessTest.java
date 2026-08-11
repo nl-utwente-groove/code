@@ -33,11 +33,11 @@ import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.explore.engine.FrontierStrategy;
-import nl.utwente.groove.explore.util.RandomChooserInSequence;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.test.MasterSeedGuard;
-import nl.utwente.groove.util.Randomness;
+import nl.utwente.groove.util.RandomChooserInSequence;
 import nl.utwente.groove.util.Randomness.Purpose;
+import nl.utwente.groove.util.Randomness;
 
 /**
  * Tests for seedable randomness: the derivation of per-purpose streams from

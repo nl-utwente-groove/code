@@ -15,14 +15,14 @@
  * $Id: DefaultBoundedModelCheckingStrategy.java,v 1.1 2008/03/04 14:44:25
  * kastenberg Exp $
  */
-package nl.utwente.groove.explore.strategy;
+package nl.utwente.groove.explore.verify;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.explore.util.RandomChooserInSequence;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.lts.RuleTransition;
+import nl.utwente.groove.util.RandomChooserInSequence;
 import nl.utwente.groove.verify.Boundary;
 import nl.utwente.groove.verify.ProductState;
 import nl.utwente.groove.verify.ProductTransition;
