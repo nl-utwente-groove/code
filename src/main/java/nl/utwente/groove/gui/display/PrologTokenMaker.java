@@ -3,7 +3,7 @@
 /*
  * Generated on 6/3/11 12:59 AM
  */
-package nl.utwente.groove.prolog.util;
+package nl.utwente.groove.gui.display;
 
 import java.io.IOException;
 
