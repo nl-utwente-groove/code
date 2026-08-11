@@ -45,8 +45,8 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
     }
 
     @Override
-    public CycleAcceptor newAcceptor(int bound) {
-        // the bound is disregarded
+    public CycleAcceptor newAcceptor(int count) {
+        // the result count is disregarded
         return new CycleAcceptor(false);
     }
 

@@ -33,7 +33,7 @@ public class NoStateAcceptor extends Acceptor {
     }
 
     @Override
-    public NoStateAcceptor newAcceptor(int bound) {
+    public NoStateAcceptor newAcceptor(int count) {
         return new NoStateAcceptor(false);
     }
 

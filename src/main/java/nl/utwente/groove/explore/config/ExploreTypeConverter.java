@@ -57,7 +57,7 @@ public class ExploreTypeConverter {
         checkAcceptor(config, errors);
         errors.throwException();
         assert traversal != null; // computeTraversal reported an error otherwise
-        return new ConfiguredExploreType(config, getResultBound(config), traversal);
+        return new ConfiguredExploreType(config, getResultCount(config), traversal);
     }
 
     /** Collects errors for the feature values no strategy can realise. */
@@ -206,8 +206,8 @@ public class ExploreTypeConverter {
         }
     }
 
-    /** Computes the result bound for a configuration. */
-    private static int getResultBound(ExploreConfig config) {
+    /** Computes the result count for a configuration. */
+    private static int getResultCount(ExploreConfig config) {
         return switch ((Count) config.getKind(ExploreKey.COUNT)) {
         case ALL -> 0;
         case FIRST -> 1;

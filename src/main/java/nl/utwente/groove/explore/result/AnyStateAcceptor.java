@@ -38,15 +38,15 @@ public class AnyStateAcceptor extends Acceptor {
     }
 
     /**
-     * Private constructor for an acceptor with a given exploration bound.
+     * Private constructor for an acceptor with a given result count.
      */
-    private AnyStateAcceptor(int bound) {
-        super(bound);
+    private AnyStateAcceptor(int count) {
+        super(count);
     }
 
     @Override
-    public AnyStateAcceptor newAcceptor(int bound) {
-        return new AnyStateAcceptor(bound);
+    public AnyStateAcceptor newAcceptor(int count) {
+        return new AnyStateAcceptor(count);
     }
 
     @Override

@@ -34,8 +34,8 @@ import nl.utwente.groove.util.parse.FormatException;
 
 /**
  * An ExploreType determines what an exploration does: it instantiates the
- * strategy and acceptor for a given grammar, and bounds the number of
- * results. Most explorations are configuration-based (see
+ * strategy and acceptor for a given grammar, and determines the number of
+ * results after which exploration halts. Most explorations are configuration-based (see
  * {@code ConfiguredExploreType}); the model-checking explorations, which
  * the exploration feature model deliberately does not cover, have a
  * dedicated subclass. To use an {@link ExploreType}, it
@@ -46,19 +46,23 @@ import nl.utwente.groove.util.parse.FormatException;
 public abstract class ExploreType {
     /**
      * Initialises the exploration type.
-     * @param bound number of results: {@code 0} means unbounded
+     * @param count number of results after which exploration halts:
+     * {@code 0} means exploration continues until the strategy is exhausted
      */
-    protected ExploreType(int bound) {
-        this.bound = bound;
+    protected ExploreType(int count) {
+        this.count = count;
     }
 
-    private final int bound;
+    private final int count;
 
     /**
-     * Returns the exploration bound.
+     * Returns the result count: the number of results after which exploration
+     * halts, with {@code 0} meaning exploration continues until the strategy
+     * is exhausted.
+     * @see #withResultCount(int)
      */
-    public int getBound() {
-        return this.bound;
+    public int getResultCount() {
+        return this.count;
     }
 
     /**
@@ -83,7 +87,7 @@ public abstract class ExploreType {
 
     /**
      * Returns a variant of this exploration type with a different result
-     * bound ({@code 0} meaning unbounded).
+     * count ({@code 0} meaning unbounded).
      * @throws IllegalArgumentException if the count is inconsistent with
      * this exploration type
      */

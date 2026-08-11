@@ -32,15 +32,15 @@ public class FinalStateAcceptor extends Acceptor {
     }
 
     /**
-     * Creates an instance with a given exploration bound.
+     * Creates an instance with a given result count.
      */
-    private FinalStateAcceptor(int bound) {
-        super(bound);
+    private FinalStateAcceptor(int count) {
+        super(count);
     }
 
     @Override
-    public FinalStateAcceptor newAcceptor(int bound) {
-        return new FinalStateAcceptor(bound);
+    public FinalStateAcceptor newAcceptor(int count) {
+        return new FinalStateAcceptor(count);
     }
 
     @Override

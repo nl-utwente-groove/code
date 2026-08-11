@@ -25,45 +25,45 @@ import nl.utwente.groove.lts.GTSListener;
  * Also indicates if the exploration is done.
  */
 public abstract class Acceptor implements GTSListener {
-    /** Creates an acceptor without exploration bound. */
+    /** Creates an acceptor without result count. */
     protected Acceptor(boolean prototype) {
         this(prototype, 0);
     }
 
-    /** Creates an acceptor with a given exploration bound. */
-    protected Acceptor(int bound) {
-        this(false, bound);
+    /** Creates an acceptor with a given result count. */
+    protected Acceptor(int count) {
+        this(false, count);
     }
 
-    /** Auxiliary constructor that sets both the prototype and the bound field. */
-    private Acceptor(boolean prototype, int bound) {
-        assert bound >= 0;
+    /** Auxiliary constructor that sets both the prototype and the count field. */
+    private Acceptor(boolean prototype, int count) {
+        assert count >= 0;
         this.prototype = prototype;
-        this.bound = bound;
+        this.count = count;
     }
 
     /**
      * Prototype method to create a new instance of this acceptor,
-     * with a given exploration bound.
+     * with a given result count.
      */
-    public abstract Acceptor newAcceptor(int bound);
+    public abstract Acceptor newAcceptor(int count);
 
-    /** Indicates if this acceptor has a (non-zero) explroation bound. */
-    public boolean hasBound() {
-        return getBound() > 0;
+    /** Indicates if this acceptor has a (non-zero) result count. */
+    public boolean hasResultCount() {
+        return getResultCount() > 0;
     }
 
-    /** Returns the exploration bound of this acceptor.
-     * The bound is the number of states in the result after which the acceptor
-     * signals that the exploration should be halted (using {@link #done()}.
-     * A bound of 0 means that the bound is infinite, i.e., exploration is never halted.
+    /** Returns the result count of this acceptor.
+     * The count is the number of states in the result after which the acceptor
+     * signals that the exploration should be halted (using {@link #done()}).
+     * A count of 0 means that exploration is never halted.
      * @see #done()
      */
-    public int getBound() {
-        return this.bound;
+    public int getResultCount() {
+        return this.count;
     }
 
-    private final int bound;
+    private final int count;
 
     /**
      * Indicates whether this acceptor is a prototype object.
@@ -99,7 +99,7 @@ public abstract class Acceptor implements GTSListener {
      * according to the demands of this acceptor.
      */
     public boolean done() {
-        return hasBound() && getResult().size() >= getBound();
+        return hasResultCount() && getResult().size() >= getResultCount();
     }
 
     /**

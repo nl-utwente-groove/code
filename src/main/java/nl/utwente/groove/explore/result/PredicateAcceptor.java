@@ -48,15 +48,15 @@ public class PredicateAcceptor extends Acceptor {
     }
 
     /** Instantiates an acceptor with given state and transition predicates. */
-    private PredicateAcceptor(Predicate<GraphState> p, Predicate<GraphTransition> q, int bound) {
-        super(bound);
+    private PredicateAcceptor(Predicate<GraphState> p, Predicate<GraphTransition> q, int count) {
+        super(count);
         this.P = p;
         this.Q = q;
     }
 
     @Override
-    public Acceptor newAcceptor(int bound) {
-        return new PredicateAcceptor(this.P, this.Q, bound);
+    public Acceptor newAcceptor(int count) {
+        return new PredicateAcceptor(this.P, this.Q, count);
     }
 
     /**

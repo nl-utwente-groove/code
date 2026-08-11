@@ -66,8 +66,8 @@ public class ConfiguredExploreType extends ExploreType {
      * Constructs an exploration type for a given (validated) configuration
      * and the baseline traversal derived from it by the converter.
      */
-    ConfiguredExploreType(ExploreConfig config, int bound, Traversal traversal) {
-        super(bound);
+    ConfiguredExploreType(ExploreConfig config, int count, Traversal traversal) {
+        super(count);
         this.config = config;
         this.traversal = traversal;
     }
