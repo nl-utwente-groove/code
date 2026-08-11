@@ -38,9 +38,9 @@ import nl.utwente.groove.gui.display.JGraphPanel;
 import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.gui.jgraph.JCell;
 import nl.utwente.groove.gui.jgraph.JGraph;
-import nl.utwente.groove.gui.list.SearchResult;
 import nl.utwente.groove.gui.tree.LabelTree;
 import nl.utwente.groove.gui.tree.TypeTree.TypeTreeNode;
+import nl.utwente.groove.util.parse.SearchResult;
 
 /**
  * Action for changing one label into another throughout the grammar.

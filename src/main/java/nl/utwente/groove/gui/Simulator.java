@@ -90,7 +90,6 @@ import nl.utwente.groove.gui.export.JGraphExporters;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.list.ListTabbedPane;
-import nl.utwente.groove.gui.list.SearchResult;
 import nl.utwente.groove.gui.menu.ModelCheckingMenu;
 import nl.utwente.groove.gui.menu.MyJMenu;
 import nl.utwente.groove.lts.GraphNextState;
@@ -100,6 +99,7 @@ import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
+import nl.utwente.groove.util.parse.SearchResult;
 import nl.utwente.groove.util.parse.SelectableListEntry;
 
 /**

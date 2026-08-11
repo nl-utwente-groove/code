@@ -63,12 +63,12 @@ import nl.utwente.groove.graph.plain.PlainFactory;
 import nl.utwente.groove.graph.plain.PlainGraph;
 import nl.utwente.groove.graph.plain.PlainLabel;
 import nl.utwente.groove.graph.plain.PlainNode;
-import nl.utwente.groove.gui.list.SearchResult;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Keywords;
 import nl.utwente.groove.util.Pair;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
+import nl.utwente.groove.util.parse.SearchResult;
 
 /**
  * Graph implementation to convert from a label prefix representation of an

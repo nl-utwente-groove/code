@@ -39,7 +39,6 @@ import nl.utwente.groove.grammar.model.TextBasedModel;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.gui.display.DisplayKind;
-import nl.utwente.groove.gui.list.SearchResult;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSChangeListener;
@@ -54,6 +53,7 @@ import nl.utwente.groove.lts.RecipeEvent;
 import nl.utwente.groove.lts.RuleTransition;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.FormatException;
+import nl.utwente.groove.util.parse.SearchResult;
 
 /**
  * Collection of values that make up the state of
