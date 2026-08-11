@@ -25,18 +25,5 @@ package nl.utwente.groove.explore.result;
  * @author Eduardo Zambon
  */
 public class NoStateAcceptor extends Acceptor {
-    /**
-     * Constructor. Only calls super method.
-     */
-    private NoStateAcceptor(boolean prototype) {
-        super(prototype);
-    }
-
-    @Override
-    public NoStateAcceptor newAcceptor(int count) {
-        return new NoStateAcceptor(false);
-    }
-
-    /** Returns the singleton instance of this class. */
-    public static final NoStateAcceptor INSTANCE = new NoStateAcceptor(true);
+    // no specialisation: the class only fixes the default (empty) acceptance
 }

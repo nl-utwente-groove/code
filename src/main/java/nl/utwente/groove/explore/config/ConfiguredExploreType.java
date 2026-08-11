@@ -342,26 +342,26 @@ public class ConfiguredExploreType extends ExploreType {
     }
 
     /**
-     * Instantiates the acceptor directly from the configuration's goal and
-     * outcome features.
+     * Instantiates a fresh acceptor directly from the configuration's goal,
+     * outcome and count features.
      */
     @Override
     public Acceptor getParsedAcceptor(Grammar grammar) throws FormatException {
         var config = getConfig();
         boolean satisfy = config.getKind(ExploreKey.OUTCOME) == Outcome.SATISFY;
         return switch ((Goal) config.getKind(ExploreKey.GOAL)) {
-        case NONE -> NoStateAcceptor.INSTANCE;
-        case ANY -> AnyStateAcceptor.PROTOTYPE;
-        case FINAL -> FinalStateAcceptor.PROTOTYPE;
+        case NONE -> new NoStateAcceptor();
+        case ANY -> new AnyStateAcceptor(getResultCount());
+        case FINAL -> new FinalStateAcceptor(getResultCount());
         case FIRES -> new PredicateAcceptor(new Predicate.ActionApplied(EnabledRuleParser
-            .parse(grammar, (String) config.get(ExploreKey.GOAL).content())));
+            .parse(grammar, (String) config.get(ExploreKey.GOAL).content())), getResultCount());
         case CONDITION -> {
             String condition = (String) config.get(ExploreKey.GOAL).content();
             Predicate<GraphState> predicate = RuleFormulaParser.parse(grammar, condition);
             if (!satisfy) {
                 predicate = new Predicate.Not<>(predicate);
             }
-            yield new PredicateAcceptor(predicate);
+            yield new PredicateAcceptor(predicate, getResultCount());
         }
         case GRAPH, LTL, CTL -> throw Exceptions
             .illegalState("Unrealisable goal kind passed validation");

@@ -31,22 +31,10 @@ import nl.utwente.groove.lts.Status.Flag;
  */
 public class AnyStateAcceptor extends Acceptor {
     /**
-     * Constructor. Only calls super method.
+     * Creates an acceptor with a given result count.
      */
-    private AnyStateAcceptor() {
-        super(true);
-    }
-
-    /**
-     * Private constructor for an acceptor with a given result count.
-     */
-    private AnyStateAcceptor(int count) {
+    public AnyStateAcceptor(int count) {
         super(count);
-    }
-
-    @Override
-    public AnyStateAcceptor newAcceptor(int count) {
-        return new AnyStateAcceptor(count);
     }
 
     @Override
@@ -62,7 +50,4 @@ public class AnyStateAcceptor extends Acceptor {
             getResult().addState(explored);
         }
     }
-
-    /** Prototype acceptor. */
-    public final static AnyStateAcceptor PROTOTYPE = new AnyStateAcceptor();
 }

@@ -21,32 +21,24 @@ import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSListener;
 
 /**
- * Listens to a GTS and adds accepted elements to a result.
- * Also indicates if the exploration is done.
+ * Run-time realisation of the goal, outcome and count features of an
+ * exploration: listens to the GTS being explored, collects accepted states
+ * into the result, and signals (through {@link #done()}) when the result
+ * count has been reached. Instances are stateful and are used for a single
+ * exploration run; they are created afresh by
+ * {@link nl.utwente.groove.explore.ExploreType#getParsedAcceptor}.
  */
 public abstract class Acceptor implements GTSListener {
     /** Creates an acceptor without result count. */
-    protected Acceptor(boolean prototype) {
-        this(prototype, 0);
+    protected Acceptor() {
+        this(0);
     }
 
     /** Creates an acceptor with a given result count. */
     protected Acceptor(int count) {
-        this(false, count);
-    }
-
-    /** Auxiliary constructor that sets both the prototype and the count field. */
-    private Acceptor(boolean prototype, int count) {
         assert count >= 0;
-        this.prototype = prototype;
         this.count = count;
     }
-
-    /**
-     * Prototype method to create a new instance of this acceptor,
-     * with a given result count.
-     */
-    public abstract Acceptor newAcceptor(int count);
 
     /** Indicates if this acceptor has a (non-zero) result count. */
     public boolean hasResultCount() {
@@ -65,26 +57,11 @@ public abstract class Acceptor implements GTSListener {
 
     private final int count;
 
-    /**
-     * Indicates whether this acceptor is a prototype object.
-     * If so, it should only be used to invoke {@link #newAcceptor(int)}.
-     */
-    public boolean isPrototype() {
-        return this.prototype;
-    }
-
-    /**
-     * Flag indicating that this is a prototype acceptor.
-     * For a prototype acceptor, {@link #prepare(GTS)} should not be invoked.
-     */
-    private final boolean prototype;
-
     /** Prepares the acceptor for a new exploration.
      * In particular, sets a fresh {@link ExploreResult}.
      * @param gts the GTS of the new exploration
      */
     public void prepare(GTS gts) {
-        assert !this.prototype : "Using a prototype acceptor";
         this.result = createResult(gts);
     }
 

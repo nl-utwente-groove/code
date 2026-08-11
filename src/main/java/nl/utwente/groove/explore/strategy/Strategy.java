@@ -59,7 +59,6 @@ public abstract class Strategy {
      * Adds an acceptor to the strategy.
      */
     final public void setAcceptor(Acceptor acceptor) {
-        assert !acceptor.isPrototype();
         this.acceptor = acceptor;
     }
 

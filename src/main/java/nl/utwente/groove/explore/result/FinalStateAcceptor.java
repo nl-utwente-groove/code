@@ -25,22 +25,10 @@ import nl.utwente.groove.lts.Status.Flag;
  */
 public class FinalStateAcceptor extends Acceptor {
     /**
-     * Creates a default instance.
+     * Creates an acceptor with a given result count.
      */
-    private FinalStateAcceptor() {
-        super(true);
-    }
-
-    /**
-     * Creates an instance with a given result count.
-     */
-    private FinalStateAcceptor(int count) {
+    public FinalStateAcceptor(int count) {
         super(count);
-    }
-
-    @Override
-    public FinalStateAcceptor newAcceptor(int count) {
-        return new FinalStateAcceptor(count);
     }
 
     @Override
@@ -56,7 +44,4 @@ public class FinalStateAcceptor extends Acceptor {
             getResult().addState(state);
         }
     }
-
-    /** Prototype acceptor. */
-    public static final FinalStateAcceptor PROTOTYPE = new FinalStateAcceptor();
 }

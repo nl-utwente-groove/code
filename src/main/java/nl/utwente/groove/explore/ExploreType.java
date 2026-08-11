@@ -79,7 +79,9 @@ public abstract class ExploreType {
     abstract public Strategy getParsedStrategy(Grammar grammar) throws FormatException;
 
     /**
-     * Returns a prototype acceptor, instantiated for a given graph grammar.
+     * Returns a fresh acceptor, instantiated for a given graph grammar,
+     * with the result count of this exploration type applied. Acceptors are
+     * stateful, so every call returns a new instance.
      * @throws FormatException if the grammar is incompatible with the
      * acceptor.
      */

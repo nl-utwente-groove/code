@@ -20,7 +20,6 @@ package nl.utwente.groove.explore.result;
 import java.util.ArrayList;
 import java.util.List;
 
-import nl.utwente.groove.explore.ExploreResult;
 import nl.utwente.groove.explore.strategy.LTLStrategy;
 import nl.utwente.groove.verify.ModelChecking.Record;
 import nl.utwente.groove.verify.ProductListener;
@@ -39,15 +38,9 @@ import nl.utwente.groove.verify.ProductTransition;
  * @version $Revision$
  */
 public class CycleAcceptor extends Acceptor implements ProductListener {
-    /** Creates a new acceptor with a 1-bounded {@link ExploreResult}. */
-    private CycleAcceptor(boolean prototype) {
-        super(prototype);
-    }
-
-    @Override
-    public CycleAcceptor newAcceptor(int count) {
-        // the result count is disregarded
-        return new CycleAcceptor(false);
+    /** Creates an acceptor that is done at the first counterexample. */
+    public CycleAcceptor() {
+        // the result count plays no role: done() tests for a counterexample
     }
 
     @Override
@@ -131,7 +124,4 @@ public class CycleAcceptor extends Acceptor implements ProductListener {
 
     private LTLStrategy strategy;
     private Record record;
-
-    /** Prototype acceptor. */
-    public static final CycleAcceptor PROTOTYPE = new CycleAcceptor(true);
 }

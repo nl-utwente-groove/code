@@ -33,11 +33,11 @@ public class PredicateAcceptor extends Acceptor {
     private final Predicate<GraphTransition> Q;
 
     /**
-     * Default constructor. Initialises predicate and sets a default result object.
+     * Creates an acceptor for a given predicate and result count.
      */
     @SuppressWarnings("unchecked")
-    public PredicateAcceptor(Predicate<?> predicate) {
-        super(true);
+    public PredicateAcceptor(Predicate<?> predicate, int count) {
+        super(count);
         if (predicate.forStates()) {
             this.P = (Predicate<GraphState>) predicate;
             this.Q = null;
@@ -45,18 +45,6 @@ public class PredicateAcceptor extends Acceptor {
             this.P = null;
             this.Q = (Predicate<GraphTransition>) predicate;
         }
-    }
-
-    /** Instantiates an acceptor with given state and transition predicates. */
-    private PredicateAcceptor(Predicate<GraphState> p, Predicate<GraphTransition> q, int count) {
-        super(count);
-        this.P = p;
-        this.Q = q;
-    }
-
-    @Override
-    public Acceptor newAcceptor(int count) {
-        return new PredicateAcceptor(this.P, this.Q, count);
     }
 
     /**

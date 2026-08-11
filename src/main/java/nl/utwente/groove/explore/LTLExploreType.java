@@ -161,7 +161,7 @@ public class LTLExploreType extends ExploreType {
 
     @Override
     public Acceptor getParsedAcceptor(Grammar grammar) {
-        return CycleAcceptor.PROTOTYPE;
+        return new CycleAcceptor();
     }
 
     @Override

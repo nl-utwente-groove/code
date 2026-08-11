@@ -48,8 +48,7 @@ public class Exploration {
         // parse the strategy
         this.strategy = this.type.getParsedStrategy(grammar);
         // parse the acceptor
-        this.acceptor = this.type.getParsedAcceptor(grammar)
-            .newAcceptor(this.type.getResultCount());
+        this.acceptor = this.type.getParsedAcceptor(grammar);
         // initialize acceptor and GTS
         this.strategy.setGTS(this.gts);
         this.strategy.setState(start);
