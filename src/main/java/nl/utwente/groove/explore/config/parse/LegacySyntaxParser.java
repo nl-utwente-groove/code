@@ -155,8 +155,7 @@ public class LegacySyntaxParser {
             }
         }
         if (acceptorSpec != null && acceptorSpec.kind() == AcceptorSpec.Kind.CYCLE) {
-            throw new FormatException(
-                "Acceptor 'cycle' requires an LTL model checking strategy");
+            throw cycleAcceptorError();
         }
         ExploreConfig config = base == null
             ? new ExploreConfig()
@@ -325,6 +324,12 @@ public class LegacySyntaxParser {
             keyword);
     }
 
+    /** Returns the error for a 'cycle' acceptor combined with anything
+     * other than an LTL model checking strategy. */
+    private static FormatException cycleAcceptorError() {
+        return new FormatException("Acceptor 'cycle' requires an LTL model checking strategy");
+    }
+
     /** Parses a legacy acceptor descriptor into an acceptor specification. */
     private static AcceptorSpec parseAcceptor(String text) throws FormatException {
         String keyword = keywordOf(text);
@@ -382,6 +387,9 @@ public class LegacySyntaxParser {
                     "Strategy '%s' can only be combined with the 'cycle' acceptor", keyword);
             }
             return createLTLType(keyword, requireArgs(keyword, args), count);
+        }
+        if (acceptor != null && acceptor.kind() == AcceptorSpec.Kind.CYCLE) {
+            throw cycleAcceptorError();
         }
         AcceptorSpec effectiveAcceptor = acceptor == null
             ? AcceptorSpec.FINAL

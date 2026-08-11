@@ -205,8 +205,12 @@ public class LegacySyntaxParserTest {
         // remote exploration was removed altogether
         assertThrows(FormatException.class,
                      () -> LegacySyntaxParser.parse("remote:http://localhost any 0"));
-        // the cycle acceptor requires an LTL strategy, and vice versa
+        // the cycle acceptor requires an LTL strategy, and vice versa;
+        // this holds for the config-based and the direct strategies alike
         assertThrows(FormatException.class, () -> LegacySyntaxParser.parse("bfs cycle 0"));
+        assertThrows(FormatException.class, () -> LegacySyntaxParser.parse("state cycle 0"));
+        assertThrows(FormatException.class,
+                     () -> LegacySyntaxParser.parse("minimax:1,10,eat;load,max,eat,2 cycle 0"));
         assertThrows(FormatException.class, () -> LegacySyntaxParser.parse("ltl:prop final 0"));
         // a condition bound cannot be combined with a depth bound
         assertThrows(FormatException.class,
