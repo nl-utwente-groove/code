@@ -15,21 +15,18 @@
  * $Id$
  */
 
-package nl.utwente.groove.explore.result;
+package nl.utwente.groove.verify;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import nl.utwente.groove.explore.result.Acceptor;
 import nl.utwente.groove.explore.strategy.LTLStrategy;
 import nl.utwente.groove.verify.ModelChecking.Record;
-import nl.utwente.groove.verify.ProductListener;
-import nl.utwente.groove.verify.ProductState;
-import nl.utwente.groove.verify.ProductStateSet;
-import nl.utwente.groove.verify.ProductTransition;
 
 /**
  * Acceptor that is notified on closing a Buchi graph-state in a
- * {@link nl.utwente.groove.verify.ProductStateSet}. If the Buchi graph-state is accepting, a a
+ * {@link ProductStateSet}. If the Buchi graph-state is accepting, a a
  * cycle detection depth-first search is started. If a counter-example is found,
  * the graph-states currently on the search-stack constitute the path
  * representing the counter-example.

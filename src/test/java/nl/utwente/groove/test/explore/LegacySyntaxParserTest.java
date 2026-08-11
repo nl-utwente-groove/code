@@ -35,13 +35,13 @@ import nl.utwente.groove.explore.config.Goal;
 import nl.utwente.groove.explore.config.NextState;
 import nl.utwente.groove.explore.config.Persistence;
 import nl.utwente.groove.explore.config.parse.LegacySyntaxParser;
-import nl.utwente.groove.explore.result.CycleAcceptor;
 import nl.utwente.groove.explore.strategy.BoundedLTLStrategy;
 import nl.utwente.groove.explore.strategy.BoundedPocketLTLStrategy;
 import nl.utwente.groove.explore.strategy.LTLStrategy;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatException;
+import nl.utwente.groove.verify.CycleAcceptor;
 
 /**
  * Tests for the legacy exploration syntax parser: the translation of the
