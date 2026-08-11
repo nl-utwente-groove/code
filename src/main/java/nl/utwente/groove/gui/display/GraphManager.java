@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.grammar.groovy;
+package nl.utwente.groove.gui.display;
 
 import java.awt.geom.Point2D;
 import java.io.IOException;

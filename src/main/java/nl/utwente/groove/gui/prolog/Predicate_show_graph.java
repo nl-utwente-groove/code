@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package nl.utwente.groove.prolog.builtin.graph;
+package nl.utwente.groove.gui.prolog;
 
 import gnu.prolog.term.JavaObjectTerm;
 import gnu.prolog.term.Term;
@@ -24,6 +24,7 @@ import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.gui.dialog.GraphPreviewDialog;
+import nl.utwente.groove.prolog.builtin.graph.GraphPrologCode;
 
 /**
  * Predicate show_graph(+Graph)

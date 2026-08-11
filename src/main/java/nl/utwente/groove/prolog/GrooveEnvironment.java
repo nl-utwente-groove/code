@@ -22,10 +22,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -76,6 +78,9 @@ public class GrooveEnvironment extends Environment {
         // also loads the built-in predicates
         this.prologTags.addAll(getModule().getPredicateTags());
         for (Class<GroovePredicates> predicates : GROOVE_PREDS) {
+            this.toolTipMap.putAll(ensureLoaded(predicates));
+        }
+        for (Class<? extends GroovePredicates> predicates : extraPreds) {
             this.toolTipMap.putAll(ensureLoaded(predicates));
         }
         this.grooveTags.addAll(getModule().getPredicateTags());
@@ -300,6 +305,21 @@ public class GrooveEnvironment extends Environment {
     public static final Class<GroovePredicates>[] GROOVE_PREDS =
         new Class[] {AlgebraPredicates.class, GraphPredicates.class, LtsPredicates.class,
             RulePredicates.class, TransPredicates.class, TypePredicates.class};
+
+    /**
+     * Registers an additional predicates class, to be loaded into every
+     * environment constructed afterwards. Used by the GUI to contribute
+     * UI-bound predicates such as {@code show_graph}. Registration is
+     * idempotent.
+     */
+    public static void addPredicates(Class<? extends GroovePredicates> predicates) {
+        if (!extraPreds.contains(predicates)) {
+            extraPreds.add(predicates);
+        }
+    }
+
+    /** Additional predicate classes contributed through {@link #addPredicates}. */
+    private static final List<Class<? extends GroovePredicates>> extraPreds = new ArrayList<>();
 
     /**
      * Flag that causes all Prolog functor names to be printed on stdout.

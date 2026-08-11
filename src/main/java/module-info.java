@@ -7,7 +7,7 @@ module nl.utwente.groove {
     exports nl.utwente.groove.gui.display;
     exports nl.utwente.groove.algebra;
     exports nl.utwente.groove.prolog;
-    exports nl.utwente.groove.grammar.groovy;
+    exports nl.utwente.groove.gui.prolog;
     exports nl.utwente.groove.prolog.util;
     exports nl.utwente.groove.io.external.format;
     exports nl.utwente.groove.io.external.format.ecore;

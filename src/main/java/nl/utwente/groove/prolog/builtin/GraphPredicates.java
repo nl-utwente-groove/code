@@ -44,7 +44,6 @@ import nl.utwente.groove.prolog.builtin.graph.Predicate_node_out_edge_set;
 import nl.utwente.groove.prolog.builtin.graph.Predicate_node_self_edges;
 import nl.utwente.groove.prolog.builtin.graph.Predicate_node_self_edges_excl;
 import nl.utwente.groove.prolog.builtin.graph.Predicate_save_graph;
-import nl.utwente.groove.prolog.builtin.graph.Predicate_show_graph;
 import nl.utwente.groove.prolog.builtin.graph.Predicate_start_graph;
 import nl.utwente.groove.prolog.builtin.graph.Predicate_start_graph_name;
 
@@ -307,12 +306,6 @@ public class GraphPredicates extends GroovePredicates {
     @Signature({"Graph", "Node", "Number", "+??"})
     public void node_number_3() {
         s("node_number(Graph,Node,Number):-graph_node(Graph,Node),node_number(Node,Number).");
-    }
-
-    @Signature({"Graph", "+"})
-    @ToolTipBody("Displays the given graph in a new preview dialog.")
-    public void show_graph_1() {
-        s(Predicate_show_graph.class, 1);
     }
 
     @Signature({"Graph", "String", "+?"})

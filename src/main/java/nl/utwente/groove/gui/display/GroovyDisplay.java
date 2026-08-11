@@ -34,7 +34,6 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyRuntimeException;
 import groovy.lang.GroovyShell;
 import nl.utwente.groove.grammar.QualName;
-import nl.utwente.groove.grammar.groovy.GraphManager;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.io.FileType;
