@@ -1,0 +1,28 @@
+<project xmlns="https://maven.apache.org/POM/4.0.0" xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>nl.utwente.groove</groupId>
+	<artifactId>groove-lib-publish</artifactId>
+	<version>1</version>
+	<packaging>pom</packaging>
+
+	<name>GROOVE third-party library publishing</name>
+	<description>
+	Aggregator for building the four libraries that GROOVE historically bundled
+	from lib/repo, in a form fit for publication to Maven Central. This pom is
+	build-only and must never be deployed; the modules are deployed individually
+	(see README.md). The modules are deliberately parent-less so that each
+	published pom is self-contained.
+	</description>
+
+	<properties>
+		<!-- this aggregator itself is never deployed -->
+		<maven.deploy.skip>true</maven.deploy.skip>
+	</properties>
+
+	<modules>
+		<module>gnuprologjava</module>
+		<module>ltl2buchi</module>
+		<module>osxadapter</module>
+		<module>groove-gxl</module>
+	</modules>
+</project>
