@@ -19,8 +19,6 @@ package nl.utwente.groove.explore.config;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.explore.config.parse.EdgeMapParser;
-import nl.utwente.groove.explore.config.parse.RuleFormulaParser;
 import nl.utwente.groove.explore.result.Predicate;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;

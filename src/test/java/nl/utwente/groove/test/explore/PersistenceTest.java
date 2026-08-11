@@ -33,7 +33,7 @@ import org.junit.Test;
 import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
-import nl.utwente.groove.explore.config.parse.LegacySyntaxParser;
+import nl.utwente.groove.explore.config.LegacySyntaxParser;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSListener;

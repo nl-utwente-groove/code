@@ -34,7 +34,7 @@ import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.explore.config.Goal;
 import nl.utwente.groove.explore.config.NextState;
 import nl.utwente.groove.explore.config.Persistence;
-import nl.utwente.groove.explore.config.parse.LegacySyntaxParser;
+import nl.utwente.groove.explore.config.LegacySyntaxParser;
 import nl.utwente.groove.explore.strategy.BoundedLTLStrategy;
 import nl.utwente.groove.explore.strategy.BoundedPocketLTLStrategy;
 import nl.utwente.groove.explore.strategy.LTLStrategy;

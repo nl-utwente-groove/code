@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.explore.config.parse;
+package nl.utwente.groove.explore.config;
 
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -28,17 +28,6 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.LTLExploreType;
-import nl.utwente.groove.explore.config.Bound;
-import nl.utwente.groove.explore.config.ConfiguredExploreType;
-import nl.utwente.groove.explore.config.Cost;
-import nl.utwente.groove.explore.config.Count;
-import nl.utwente.groove.explore.config.ExploreConfig;
-import nl.utwente.groove.explore.config.ExploreKey;
-import nl.utwente.groove.explore.config.ExploreTypeConverter;
-import nl.utwente.groove.explore.config.Frontier;
-import nl.utwente.groove.explore.config.Goal;
-import nl.utwente.groove.explore.config.NextState;
-import nl.utwente.groove.explore.config.Successor;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.Parser;

@@ -30,7 +30,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.algebra.UserSignature;
-import nl.utwente.groove.explore.config.parse.LegacySyntaxParser;
+import nl.utwente.groove.explore.config.LegacySyntaxParser;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.RuleModel;

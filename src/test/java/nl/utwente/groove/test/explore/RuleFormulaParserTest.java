@@ -23,7 +23,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import nl.utwente.groove.explore.config.parse.RuleFormulaParser;
+import nl.utwente.groove.explore.config.RuleFormulaParser;
 import nl.utwente.groove.explore.result.Predicate;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.util.parse.FormatException;

@@ -22,7 +22,7 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
 
-import nl.utwente.groove.explore.config.parse.LegacySyntaxParser;
+import nl.utwente.groove.explore.config.LegacySyntaxParser;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.transform.Transformer;
 

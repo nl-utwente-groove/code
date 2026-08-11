@@ -26,9 +26,6 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.explore.ExploreType;
-import nl.utwente.groove.explore.config.parse.EdgeMapParser;
-import nl.utwente.groove.explore.config.parse.EnabledRuleParser;
-import nl.utwente.groove.explore.config.parse.RuleFormulaParser;
 import nl.utwente.groove.explore.engine.BeamPool;
 import nl.utwente.groove.explore.engine.ExploreStateStrategy;
 import nl.utwente.groove.explore.engine.FrontierStrategy;

@@ -29,7 +29,7 @@ import org.junit.Test;
 import nl.utwente.groove.control.instance.Automaton;
 import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.explore.ExploreType;
-import nl.utwente.groove.explore.config.parse.LegacySyntaxParser;
+import nl.utwente.groove.explore.config.LegacySyntaxParser;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;

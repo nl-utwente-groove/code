@@ -36,7 +36,7 @@ import picocli.CommandLine.Parameters;
 import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
-import nl.utwente.groove.explore.config.parse.LegacySyntaxParser;
+import nl.utwente.groove.explore.config.LegacySyntaxParser;
 import nl.utwente.groove.explore.util.CompositeReporter;
 import nl.utwente.groove.explore.util.ExplorationReporter;
 import nl.utwente.groove.explore.util.GenerateProgressListener;

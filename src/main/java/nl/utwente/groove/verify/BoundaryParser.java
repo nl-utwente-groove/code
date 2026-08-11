@@ -21,7 +21,7 @@ import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
-import nl.utwente.groove.explore.config.parse.EnabledRuleParser;
+import nl.utwente.groove.explore.config.EnabledRuleParser;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.util.parse.FormatException;

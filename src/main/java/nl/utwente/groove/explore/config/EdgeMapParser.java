@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.explore.config.parse;
+package nl.utwente.groove.explore.config;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
