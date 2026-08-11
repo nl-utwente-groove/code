@@ -79,7 +79,7 @@ public class CacheReconstructionTest {
         try {
             GrammarModel grammarModel = Groove.loadGrammar(INPUT_DIR + "/" + grammarName);
             GTS gts = new GTS(grammarModel.toGrammar());
-            new ExploreType("bfs", "final", 0).newExploration(gts, null).play();
+            ExploreType.getDefault().newExploration(gts, null).play();
             // record the elements of all state graphs
             Map<GraphState,Set<HostNode>> nodes = new LinkedHashMap<>();
             Map<GraphState,Set<HostEdge>> edges = new LinkedHashMap<>();

@@ -17,14 +17,19 @@
 package nl.utwente.groove.explore.config;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.grammar.model.SettingsContent;
+import nl.utwente.groove.grammar.model.SettingsModel;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
@@ -48,6 +53,13 @@ public class ExploreConfig {
         for (var key : ExploreKey.values()) {
             this.map.put(key, key.getDefaultSetting());
         }
+    }
+
+    /** Creates a copy of a given configuration.
+     * (The settings themselves are immutable, so a shallow copy suffices.)
+     */
+    public ExploreConfig(ExploreConfig original) {
+        this.map = new EnumMap<>(original.map);
     }
 
     /** Returns the current setting for a given key. */
@@ -125,6 +137,11 @@ public class ExploreConfig {
                 .add("Goal '%s' yields no results, so result count must be '%s'",
                      Goal.NONE.getName(), Count.ALL.getName());
         }
+        if (goal == Goal.NONE && getKind(ExploreKey.SHAPE) == Shape.TRACE) {
+            result
+                .add("Goal '%s' yields no results, so there are no traces to collect",
+                     Goal.NONE.getName());
+        }
         if (getKind(ExploreKey.COUNT) == Count.COUNT
             && get(ExploreKey.COUNT).content() instanceof Integer count && count < 2) {
             result.add("Result count %s should be larger than 1", count);
@@ -167,11 +184,10 @@ public class ExploreConfig {
      * @throws FormatException if the text contains an unknown or duplicate
      * key, or a value that is not parsable for its key
      */
-    @SuppressWarnings("null")
     public static ExploreConfig parse(String text) throws FormatException {
         var result = new ExploreConfig();
         var errors = new FormatErrorSet();
-        var seen = new EnumMap<ExploreKey,Boolean>(ExploreKey.class);
+        var seen = EnumSet.noneOf(ExploreKey.class);
         for (String token : splitTokens(text)) {
             int pos = token.indexOf(ASSIGN);
             if (pos < 0) {
@@ -184,7 +200,7 @@ public class ExploreConfig {
                 errors.add("Unknown exploration key '%s'", name);
                 continue;
             }
-            if (seen.put(key, Boolean.TRUE) != null) {
+            if (!seen.add(key)) {
                 errors.add("Duplicate exploration key '%s'", name);
                 continue;
             }
@@ -192,11 +208,7 @@ public class ExploreConfig {
             if (!value.isEmpty() && value.charAt(0) == QUOTE) {
                 value = StringHandler.toUnquoted(value, QUOTE);
             }
-            try {
-                result.put(key, key.parser().parse(value));
-            } catch (FormatException exc) {
-                errors.addAll(exc.getErrors());
-            }
+            putParsed(result, errors, key, value);
         }
         errors.throwException();
         return result;
@@ -238,6 +250,73 @@ public class ExploreConfig {
             result.add(current.toString());
         }
         return result;
+    }
+
+    /**
+     * Parses a configuration from java-properties entries, as stored in an
+     * {@code explore} settings resource: one entry per exploration key, with
+     * the same value syntax as in the single-line form (but no quoting, since
+     * every entry has its own line). Keys that do not occur get their default
+     * setting; the reserved {@code $schema} entry is ignored.
+     * @throws FormatException if the entries contain an unknown key or a
+     * value that is not parsable for its key
+     */
+    public static ExploreConfig fromProperties(Properties props) throws FormatException {
+        return fromProperties(props, null);
+    }
+
+    /**
+     * Parses a configuration from the parsed content of an {@code explore}
+     * settings resource. Behaves as {@link #fromProperties(Properties)},
+     * except that every error carries the position of the entry it is about.
+     * @throws FormatException if the entries contain an unknown key or a
+     * value that is not parsable for its key
+     */
+    public static ExploreConfig fromProperties(SettingsContent content) throws FormatException {
+        return fromProperties(content.properties(), content);
+    }
+
+    /**
+     * Parses a configuration from java-properties entries, optionally
+     * accompanied by the content they were parsed from; if the content is
+     * given, the errors carry the position of the entry they are about.
+     */
+    private static ExploreConfig fromProperties(Properties props,
+                                                @Nullable SettingsContent content) throws FormatException {
+        var result = new ExploreConfig();
+        var errors = new FormatErrorSet();
+        // process the entries in alphabetical order, for deterministic
+        // error order (Properties iterates hash-ordered)
+        List<String> names = new ArrayList<>(props.stringPropertyNames());
+        Collections.sort(names);
+        for (String name : names) {
+            if (name.equals(SettingsModel.SCHEMA_KEY)) {
+                continue;
+            }
+            var numbers = SettingsContent.numbers(content, name);
+            ExploreKey key = keyMap.get(name);
+            if (key == null) {
+                errors.add("Unknown exploration key '%s'", name, numbers);
+                continue;
+            }
+            putParsed(result, errors, key, props.getProperty(name).trim(), numbers);
+        }
+        errors.throwException();
+        return result;
+    }
+
+    /**
+     * Parses the value for a given key and enters the resulting setting into
+     * a configuration, adding any parse errors — extended with the given
+     * context arguments — to the error set.
+     */
+    private static void putParsed(ExploreConfig result, FormatErrorSet errors, ExploreKey key,
+                                  String value, Object... context) {
+        try {
+            result.put(key, key.parser().parse(value));
+        } catch (FormatException exc) {
+            errors.addAll(exc.getErrors().extend(context));
+        }
     }
 
     /** Returns a parser for configurations, with the default configuration as default value. */
@@ -287,7 +366,7 @@ public class ExploreConfig {
     private static final char QUOTE = '"';
 
     /** Mapping from key names to keys. */
-    private static final Map<String,ExploreKey> keyMap = new HashMap<>();
+    private static final Map<String,@Nullable ExploreKey> keyMap = new HashMap<>();
     static {
         for (var key : ExploreKey.values()) {
             keyMap.put(key.getName(), key);

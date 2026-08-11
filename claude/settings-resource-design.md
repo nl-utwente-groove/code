@@ -1,6 +1,6 @@
 # Design: the SETTINGS resource kind and the Ecore mapping schema
 
-*2026-07-31, revised 2026-08-02. Follow-up to the Ecore porter
+*2026-07-31, revised 2026-08-02 and 2026-08-05. Follow-up to the Ecore porter
 (`ecore-porter-design.md`): makes the porter's representational choices
 per-element and persistent. Agreed direction: one generic settings mechanism
 (properties format) with the Ecore mapping as pilot client; exploration
@@ -8,22 +8,65 @@ configurations and (eventually) the system properties are foreseen follow-up
 clients. The 08-02 revision (agreed with Arend) makes the schema externally
 visible: it is the leading segment of the resource name, the in-file key is a
 consistency check only, and the fixed-name porter lookup became
-unique-of-schema.*
+unique-of-schema. The 08-05 revision briefly inverted the first of these (the
+in-file key authoritative, names free) and was then settled the other way, in
+the folder scheme described below.*
 
 ## The mechanism: `ResourceKind.SETTINGS`
 
 A new text-based, named-multi resource kind. A *settings resource* is a file in
-Java properties syntax inside the `.gps`. Its **schema is the leading segment
-of its qualified name** — the top-level folder, or for a top-level file its own
-name (the *singleton form* of a schema): `explore/fast.properties` has schema
-`explore`, a top-level `ecore.properties` has schema `ecore`. This makes files
-of different families distinguishable by location alone. The optional reserved
-key `$schema` may re-declare the schema for the reader's benefit; when present
-it must agree with the name (a mismatch is a resource error). It is optional
-rather than required because the mechanism must extend to the system
-properties, whose existing files carry no such key. Schemas are *not* an enum:
-a `SettingsSchema` interface plus a registry, so a new settings family is a
+Java properties syntax inside the `.gps`. Its **schema is the top-level folder
+it lives in** (final form, 2026-08-05 — the "weak reading" of the folder
+scheme): `explore/fast.properties` is the resource `explore.fast`, of schema
+`explore` and *local* name `fast`. Two consequences settle everything else:
+
+- **The full path stays the resource identity.** Store maps, `getResource`,
+  undo and the display all keep working with the qualified name; the folder is
+  not stripped anywhere in the machinery. What is folder-relative is only what
+  a schema-specific *context* shows or stores (below).
+- **The `$schema` entry is an optional consistency check.** If present it must
+  equal the schema implied by the location, else the resource is erroneous
+  ("Declared schema '%s' differs from the schema '%s' implied by the resource
+  location"). This is the 08-02 rule restored: the intermediate 08-05 state, in
+  which the entry was authoritative and names were free, was reverted by Arend
+  in favour of the location. The argument that decided it: a settings file
+  should be findable by *where it is*, and a folder makes the grouping visible
+  in the tree and in the file system, where a free-named file with an in-file
+  key does not. Templates keep emitting the `$schema` line, now purely as
+  documentation.
+
+The **singleton form** — a top-level `<schema>.properties`, with the file's own
+name as leading segment — is reserved for *singular* schemas
+(`SettingsSchema.isSingular()`, currently only `ecore`): a schema that admits
+one resource per grammar has nothing to group, so `ecore.properties` needs no
+folder. For any other schema a single-segment resource is an error ("Settings
+of schema '%s' must live inside the '%s' folder"), which is what keeps
+exploration settings from drifting out of `explore/`. Placement is therefore
+enforced, not merely conventional. Schemas are *not* an enum: a
+`SettingsSchema` interface plus a registry, so a new settings family is a
 schema class, not enum surgery.
+
+**Local names in schema-specific contexts.** Wherever the schema is already
+known — a reference stored in the grammar properties, a selector or a name
+prompt in a schema-specific dialog — repeating the folder is noise, so those
+contexts use the local name (the resource name minus the leading segment).
+`SettingsSchema` carries the two conversions,
+`getResourceName(QualName local)` (via `ModuleName.nest`) and
+`getLocalName(QualName resource)` (via `removeParent`, rejecting the
+singleton form, which has no local name). The `exploration` grammar property
+consequently stores `fast`, not `explore.fast`; `GrammarModel` and the
+property checker prefix the schema name before looking the resource up, and
+the exploration dialog's dropdown, resource line and name prompt all speak
+local names while `SimulatorModel.doSetExplorationName` keeps taking the
+resource name and converting. The generic New/Rename/Copy prompt
+(`SimulatorAction.askNewName`) does the same for SETTINGS in folder form: the
+leading segment of the proposed name is a *fixed folder*, so the dialog edits
+only the local part, clashes only against that folder's residents, and puts
+the folder back in front of the outcome — a rename or copy of `explore/fast`
+therefore stays inside `explore/`. `NewAction` asks for the schema first (it
+fixes the folder as well as the template): for a singular schema it skips the
+name prompt and uses the singleton form (erroring out if that resource already
+exists), for any other schema it seeds the prompt with `<schema>.default`.
 
 - **Kind declaration**: `SETTINGS("Settings", "settings file",
   FileType.PROPERTY, null)` — no default name, no graph role. It reuses
@@ -37,7 +80,7 @@ schema class, not enum surgery.
   (read side: skip the reserved top-level names when collecting SETTINGS) and
   the save path (write side: `putTexts`/`rename` reject the reserved top-level
   names for SETTINGS with an error, so `system.properties` can never be
-  clobbered). Under the leading-segment rule, `system.properties` is no
+  clobbered). Under the fallback rule, `system.properties` is no
   carve-out but the singleton form of the built-in `system` schema, handled by
   the PROPERTIES kind; the whole leading segment `system` (file *and* folder)
   is reserved, keeping open the future in which the PROPERTIES kind retires
@@ -46,24 +89,82 @@ schema class, not enum surgery.
   as the properties file* (i.e. in a store without `system.properties`); the
   next properties save migrates it and frees the name — so a grammar named
   `ecore.gps` can hold the `ecore` mapping resource.
-- **Enabledness**: opted out, GROOVY-style, in all three places
-  (`ResourceKind.isEnableable()`, `GrammarProperties.getActiveNames`,
-  `GrammarModel.syncResource` all-active arm). Settings are read by their
-  clients, not "enabled"; if a future schema (exploration configs) needs an
-  *active* selection, that is that schema's business (e.g. a designated key or
-  a grammar property), not the generic mechanism's.
-- **Model**: `SettingsModel extends TextBasedModel<Settings>`. `compute()`
-  parses the source text as `java.util.Properties`, derives the schema from
-  the leading name segment, resolves it in the registry, checks an optional
-  `$schema` entry for agreement, and validates the entries against the schema.
-  Errors (unparseable text, unknown schema segment, `$schema` mismatch,
+- **Enabledness**: opted out of the *generic* mechanism, GROOVY-style, in all
+  three places (`ResourceKind.isEnableable()`,
+  `GrammarProperties.getActiveNames`, `GrammarModel.syncResource` all-active
+  arm). Settings are read by their clients, not "enabled"; a schema that does
+  need an *active* selection (the exploration configs) declares it itself,
+  through the schema activation hooks (added 2026-08-05): `isActivatable()`
+  (default false), `isActive(GrammarModel, QualName)` (default true:
+  resources of a non-activatable schema are consulted by their client
+  whenever applicable), `setActive(GrammarProperties, QualName, boolean)`
+  (modifies the properties; default unsupported) and
+  `getActivationText(boolean)` (the button/menu-item description).
+  `SettingsModel.isActive()` delegates to the schema (unknown schema =
+  inactive), which drives the list rendering (active = bold, inactive =
+  parenthesised), the enable toggle button on the settings display's tool bar
+  and popup menu (`ResourceDisplay.hasEnableButton`, overridden for
+  SETTINGS), and the SETTINGS arm of `SimulatorModel.setEnabled`, which
+  routes the toggle through `schema.setActive` and saves the properties
+  (undoable). Deleting an active resource deactivates it the same way
+  (`SimulatorModel.doDelete`), so no dangling reference is left in the
+  properties; renaming an active resource follows the reference
+  (`SimulatorModel.doRename`), which since 2026-08-05 is an unconditional
+  retargeting to the new name: the name prompt keeps the schema folder fixed,
+  so a rename can no longer move a resource out of its schema, and the
+  cross-schema deactivation branch is gone.
+- **Model**: `SettingsModel extends TextBasedModel<Settings>`. The schema name
+  (`getSchemaName()`) is the leading segment of the resource name; `compute()`
+  parses the source text as `java.util.Properties`, resolves that name in the
+  registry and validates the entries against the schema.
+  Errors (unparseable text, unknown schema name, a `$schema` entry
+  contradicting the location, a single-segment name of a non-singular schema,
   keys/values rejected by the schema) surface in the resource tab's error
-  panel; settings do not contribute to `Grammar` compilation, so their errors
-  do not block the grammar. The compiled artifact `Settings` = (schema,
-  properties) with typed accessors.
+  panel. Since 2026-08-05, the errors of *active* settings resources moreover
+  propagate into the grammar's error set (`GrammarModel.initGrammar`) and hence
+  block the grammar, mirroring the treatment of prolog resources; the errors of
+  inactive resources — including those of resources whose schema name is not
+  registered — surface only on the resource itself. For a
+  non-activatable schema every resource counts as active, so there each
+  resource's errors block: an erroneous `ecore.properties` makes the grammar
+  uncompilable. The compiled artifact `Settings` = (schema, properties) with
+  typed accessors.
+- **Error positions** (2026-08-05): settings errors carry the line and column
+  of the entry they are about. `compute()` no longer parses a bare
+  `java.util.Properties` but a `SettingsContent`, which wraps the raw text, the
+  properties and a per-key position map computed by a line scanner (comment and
+  blank lines skipped, backslash continuations joined, key escapes converted;
+  a repeated key is located at the declaration `Properties` keeps — the
+  approximations are documented on the class). Positions travel to the errors
+  as ordinary `FormatError` context arguments: `SettingsContent.numbers(key)`
+  yields the (line, column) list that `FormatError` collects into
+  `getNumbers()`. Schemas opt in through a new
+  `SettingsSchema.check(GrammarModel, SettingsContent)`, which by default
+  delegates to the properties-based check, so a schema that does not care keeps
+  producing position-less errors; `SettingsModel` calls the content variant.
+  Both built-in schemas override it. `explore` positions the per-entry errors —
+  unknown key, unparsable value (`ExploreConfig.fromProperties`) and the
+  grammar-dependent content errors, which are collected per key by inlining the
+  `ExploreConfigChecker` loop; the cross-key consistency and
+  engine-realisability errors deliberately get no position, since they are
+  about a *combination* of entries and their messages name setting kinds rather
+  than keys, so picking a line would be guesswork. `ecore` positions all of its
+  errors, which are per-entry by construction. Nothing else is needed on the
+  display side: the settings main tab is a `TextTab`, whose error listener
+  already jumps to `select(line, column)` when an error has two numbers.
+  The errors propagated into the grammar (see above) are extended with
+  `FormatError.resource(SETTINGS, name)`, following the control-loop precedent
+  in `CompositeControlModel`; the resource record must come *after* the nested
+  error in the argument list, because `FormatError.addContext` copies the
+  nested error's (here: null) resource kind unconditionally. With kind, name
+  and the inherited numbers in place, `Simulator.selectDisplayPart` switches to
+  the settings display and jumps to the line when the error is selected in the
+  main grammar error list.
 - **Schema interface** (`grammar/model/SettingsSchema`, registry
-  `SettingsSchemas`): `name()` (the `$schema` value), `check(Properties)` →
-  `FormatErrorSet`, and per-key documentation hooks for a future table editor.
+  `SettingsSchemas`): `name()` (the folder name), `check(Properties)` →
+  `FormatErrorSet`, the local-name conversions
+  `getResourceName`/`getLocalName`, and per-key documentation hooks for a
+  future table editor.
   Closed-vocabulary schemas reject unknown keys; open-vocabulary schemas (the
   Ecore mapping, whose keys embed Ecore element paths) validate key *shape* and
   values, and leave element-path resolution to the client (see below).
@@ -71,13 +172,15 @@ schema class, not enum surgery.
   `isSingular()` (a singular schema admits one resource per grammar; all
   resources of an over-populated singular schema get a resource error, making
   duplicates visible immediately rather than at port time — `ecore` is
-  singular), `getExplanation()`/`getNewText()` (the generated template of a
+  singular, and singularity is moreover what licenses the singleton form; the
+  population of a schema is collected by `SettingsSchemas.getResourceNames`,
+  which is also how clients locate the resource of a singular schema),
+  `getExplanation()`/`getNewText()` (the generated template of a
   new resource: purpose as comment lines, the `$schema` entry, and commented
   example lines per key form), and `getHelpMap()` (a `Help`/`HelpMap` syntax
   help map shown in the settings display's info panel). The New/Rename/Copy
-  name dialog validates the leading name segment against the registry, since
-  a resource under an unknown schema can only ever show the unknown-schema
-  error.
+  name dialog constrains the name to its schema folder rather than validating
+  a free name after the fact (see the local-names paragraph above).
 - **GUI**: `DisplayKind.SETTINGS` with a generic `ResourceDisplay` (list panel
   slot 1), `TextTab` editor with RSyntaxTextArea's
   `SYNTAX_STYLE_PROPERTIES_FILE` token maker, optional tab
@@ -90,10 +193,12 @@ schema class, not enum surgery.
 
 ## The pilot schema: `ecore`
 
-The Ecore porter reads the **unique** settings resource of schema `ecore` —
-the singleton `ecore.properties` at top level (which the options dialog
-creates on demand) or a lone member of an `ecore/` folder; several candidates
-are a port error naming them. Absence means all defaults. There is
+The Ecore porter reads the **unique** settings resource of schema `ecore`:
+`EcoreMapping.candidates` delegates to `SettingsSchemas.getResourceNames`, so
+it finds the resource wherever the schema admits it — the singleton
+`ecore.properties` that `EcoreMapping.RESOURCE_NAME` names and that the options
+dialog creates on demand, or a resident of an `ecore/` folder. Several
+candidates are a port error naming them. Absence means all defaults. There is
 deliberately *no* grammar property naming the mapping: the mapping is
 port-scoped, and one resource serves several metamodels, since per-element
 entries only take effect on the metamodel they resolve against (entries for
@@ -155,15 +260,166 @@ template and the help map all derive from it.
   comments survive). Per-element entries are edited in the Settings tab; a
   per-element table in the dialog is a later step.
 
+## The second client: the `explore` schema (2026-08-02, on `explore-parametric-engine`)
+
+An `explore` settings resource holds one exploration configuration in
+properties syntax: one entry per non-default `ExploreKey`, same value syntax
+as the single-line form, no quoting (every entry has its own line). The
+schema check runs the full validation stack of the exploration dialog:
+per-key value parsing, cross-key consistency, realisability, and — via two
+generic extensions of `SettingsSchema` made for this purpose — the
+*grammar-dependent* contents (rule names, condition formulas, edge labels):
+`check(GrammarModel, Properties)` (default delegates to the grammar-free
+check; the ecore schema keeps resolving at port time) and
+`getDependencies()` (resource kinds whose changes trigger a recheck — a
+resource referring to a renamed rule turns red without being touched).
+
+The *active* configuration is selected by the `exploration` grammar
+property, which is a **reference** (per Arend's no-residual decision: the
+property never held inline configurations outside the tests) and which since
+2026-08-05 holds the *local* name — `fast` for `explore/fast.properties` —
+since in this property the schema is understood. Consequences: resolution
+lives at the `GrammarModel` level (`getDefaultExploreType/-Config`), not in
+`GrammarProperties` (a properties object cannot see sibling resources), and
+prefixes the schema name before the lookup; the property checker does the
+same and validates the reference only (resolves, error-free) — the
+wrong-schema case it used to have is impossible by construction, since a
+resource under `explore/` *is* of the explore schema and a contradicting
+`$schema` line is an error of the resource itself. Content checks live
+on the resource; and the dialog writes the target resource by targeted
+per-key line edits, so the resource is the sole source of truth and
+hand-written comments survive. The legacy
+`explorationStrategy` key stays a read-time fallback, interpreted
+indefinitely; its eager version-repair conversion was dropped (a
+properties-level repair cannot create a settings file).
+
+The `explore` schema is the first *activatable* schema (see the enabledness
+bullet above): the enable button in the settings display sets or clears the
+`exploration` reference for the selected resource. Activating one resource
+supersedes the previously active one (the reference is single-valued);
+deactivating the active resource reverts the grammar to the legacy or
+default exploration.
+
+**Dialog save behaviour** (2026-08-05): the `Configuration` preview panel
+is gone — an unparsed one-line rendering of what the widgets already show
+told the user nothing about *where* the configuration lives. In its place a
+borderless resource line states which settings resource the composition is
+based on (and whether that resource exists yet), or that there is none.
+Saving is correspondingly named: `Save` writes to the referenced resource,
+asking for a name through a `FreshNameDialog` when the reference is unset
+(no more silent creation of a singleton `explore` resource); `Save As...`
+always asks. The prompt asks for the *local* name inside the `explore` folder
+— the folder is fixed by the schema and neither shown nor editable — with
+`default` as the suggestion for a first configuration; names are still not
+auto-freshened, so that saving in place over the current name stays possible.
+Both buttons make the target resource the
+grammar's exploration, so saving under a new name doubles as activation.
+`Save` stays enabled when the composition equals the saved configuration
+but no resource is referenced: there is then still something to do.
+
+**No transient exploration, and activation preserves the GTS** (2026-08-05):
+the Simulator no longer stores an exploration type of its own. `SimulatorModel.getExploreType()`
+resolves the grammar's saved exploration live (`GrammarModel.getDefaultExploreType()`),
+so the simulator's exploration *is* the `exploration` property — there is no
+longer a hidden state in which the toolbar explores something other than what
+the grammar says. Runs that are deliberately one-off — model checking — pass
+their `ExploreType` to `ExploreAction.explore(...)` directly instead of
+installing it first; a composed configuration becomes the grammar's
+exploration only by being saved.
+Second, a property change confined to the exploration keys (`exploration`,
+`explorationStrategy`) no longer resets the GTS: the reference does not feed
+grammar compilation, so activating or re-targeting exploration settings keeps
+the explored state space and lets exploration continue under the new settings —
+which is what makes "save a variant, then carry on" worth doing.
+`SimulatorModel.doSetExplorationName` is the reference-only write path;
+the settings enable button reaches the same conclusion by diffing the
+properties (`GrammarProperties.getChanges`) rather than by special-casing the
+schema, since activation is a generic hook.
+
+**The dialog only ever runs saved settings** (2026-08-05): the deferred
+resource selector arrived, and with it the resolution of what the dialog is
+*for*. It is an editor of the grammar's exploration settings, not a launcher
+of ad-hoc explorations. Concretely: the "Based on ..." text line is replaced
+by a non-editable dropdown listing the settings resources of the `explore`
+schema (`SettingsSchemas.getResourceNames`) under their *local* names, plus a
+`(none)` sentinel for an absent reference and, if the reference dangles, the
+referenced local name marked `(missing)`; the dropdown keeps the full resource
+names alongside, so a selection resolves without parsing item text. Selecting
+an entry writes the reference through
+`SimulatorModel.doSetExplorationName` and reloads the widgets from it —
+which, since that write does not reset the GTS, preserves the explored state
+space: switching settings and continuing is a single click. Unsaved edits are
+discarded only after confirmation.
+
+The dialog's baseline is therefore the *saved* configuration rather than the
+one in force at opening: the bold deviation marks now mean "unsaved edit"
+(tooltip: "Saved settings use: ..."), and they all disappear after a save.
+That collapses `Revert` and `Reset to Saved` into a single `Revert`, and it
+lets the run buttons demand `!savedDiffers`: an unsaved composition cannot be
+run, with the reason leading the button tooltip. The alternative — running the
+composition unsaved, as before — was rejected because it re-creates exactly
+the hidden state that removing the transient exploration got rid of: the state
+space would then have been produced by an exploration that exists nowhere. As
+a consequence the dialog no longer needs to build an `ExploreType` of its own;
+it simply calls `ExploreAction.execute()`, which reads the grammar's saved
+exploration, and result emphasis (previously lost by calling `explore(type)`)
+comes back for free. Note the empty-reference case still runs: with no
+reference the saved configuration is the empty (or legacy-derived) one, so a
+user who composes nothing is not forced to create a file.
+
+One consequence had to be repaired elsewhere: `LTSDisplay` auto-switches the
+LTS filter to `RESULT` after a trace-shaped exploration, and since
+`getExploreType()` became the *saved* exploration, that test was reading the
+wrong thing (an LTL run passed in by the model checker would be judged by
+whatever the grammar has saved). `SimulatorModel` now records the run's type
+with its result (`setExploreResult(result, exploreType)`, read back through
+`getLastExploreType()`), and the filter decision keys on that. The CTL check,
+whose result is a set of witness states rather than an exploration outcome,
+passes `null`.
+
+**GUI polish after review** (2026-08-05): the settings selector moved to the
+*top* of the exploration dialog, with a bold label — it names the resource
+that everything below it edits, so it reads as the dialog's subject rather
+than as a footnote; its sentinel item is now `(new)` rather than `(none)`,
+since an absent reference is not "no settings" but a composition that has
+not been saved yet. `Cancel` moved up to the settings row, next to `Revert`:
+the second row is then purely the run row, and leaving the dialog sits with
+the other "do not explore" actions.
+
+Elsewhere in the GUI the schema folder of a settings resource is treated as
+context rather than as part of the name: the main and editor **tab titles**
+(and the editor's save-changes confirmation) show the *local* name `fast`
+for `explore/fast.properties`, matching the resource tree, which showed
+short names already. This is a `SettingsDisplay` override of a new
+`ResourceDisplay.getDisplayName` hook that all three paths route through;
+other resource kinds keep their qualified names. Resources of different
+schemas are further told apart by a **per-schema icon** (the compass for
+`explore`), in the tree and on the main tab; editor tabs keep the edit icon.
+The mapping from schema name to icon lives on the GUI side, since
+`SettingsSchema` is a headless interface that must not acquire a Swing
+dependency. Finally, the schema chosen in the *New settings* prompt is
+remembered across runs as a `UserSettings` preference (validated against the
+registered schemas), because a user who works with one schema will keep
+picking it.
+
 ## Deliberately deferred
 
 - Folding the round-trip metadata (`ecoreTypes` etc.) into the settings file
   (would fix the hand-added-type export trap; separate branch).
 - EAnnotations in the `.ecore` as import-time defaults.
-- Exploration-configuration schema (separate branch; named-multi and folders,
-  e.g. `explore/fast.properties`, come free).
 - A generic keyed table editor for settings resources (the schema interface's
   documentation hooks are its future feed).
+- **Unifying `system.properties` into this setup** (Arend, 2026-08-05; not to
+  be implemented now). The grammar properties would become the `system`
+  schema, with alternative property sets living as settings resources in a
+  `system/` folder. The twist that makes it different from the other schemas:
+  `system.properties` itself must always remain the *live* copy — everything
+  reading the grammar properties reads that file — so activation cannot work
+  by reference the way the `exploration` property does. Activating an
+  alternative would mean **copying** the chosen `system/<name>.properties`
+  over `system.properties`, i.e. a "load these properties" action rather than
+  a pointer. This is also why the whole leading segment `system` (file *and*
+  folder) is already reserved.
 
 ## Commit plan
 

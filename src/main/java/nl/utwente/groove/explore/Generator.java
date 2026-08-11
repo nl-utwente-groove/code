@@ -33,9 +33,10 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.Parameters;
 
+import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
-import nl.utwente.groove.explore.encode.Serialized;
+import nl.utwente.groove.explore.config.parse.LegacySyntaxParser;
 import nl.utwente.groove.explore.util.CompositeReporter;
 import nl.utwente.groove.explore.util.ExplorationReporter;
 import nl.utwente.groove.explore.util.GenerateProgressListener;
@@ -49,6 +50,7 @@ import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.lts.Filter;
 import nl.utwente.groove.transform.Transformer;
 import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.Randomness;
 import nl.utwente.groove.util.cli.CmdLineException;
 import nl.utwente.groove.util.cli.DirectoryHandler;
 import nl.utwente.groove.util.cli.GrammarHandler;
@@ -75,7 +77,13 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
      */
     @Override
     protected ExploreResult run() throws Exception {
-        Transformer transformer = computeTransformer();
+        // apply the seed here rather than from the option itself, so that
+        // parsing the arguments (including a parse that fails on a later
+        // option, or a help invocation) does not mutate global state
+        if (this.seed != null) {
+            Randomness.setMasterSeed(this.seed);
+        }
+        Transformer transformer = this.transformer = computeTransformer();
         transformer.addListener(getReporter());
         if (!getVerbosity().isLow()) {
             transformer.addListener(new GenerateProgressListener());
@@ -102,7 +110,7 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
     private final static String SOFT_REF_POLICY_NAME = "-XX:SoftRefLRUPolicyMSPerMB";
 
     /* Additionally checks the dependency of the "-ef" option upon "-o",
-     * and the mutual exclusion of "-x" with the deprecated "-s", "-a" and "-r". */
+     * and the mutual exclusion of "-x" with the legacy "-s", "-a" and "-r". */
     @Override
     protected void parseArguments() throws CmdLineException {
         super.parseArguments();
@@ -127,21 +135,13 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
     private Transformer computeTransformer() throws IOException, FormatException {
         Transformer result = new Transformer(getGrammar());
         if (hasExploreConfig()) {
-            ExploreType exploreType
-                = ExploreTypeConverter.toExploreType(ExploreConfig.parse(getExploreConfig()));
-            result.setStrategy(exploreType.getStrategy());
-            result.setAcceptor(exploreType.getAcceptor());
-            result.setResultCount(exploreType.getBound());
-        }
-        if (hasStrategy() || hasAcceptor()) {
-            emitDeprecationWarning();
-        }
-        if (hasStrategy()) {
-            Serialized strategy = StrategyEnumerator.parseCommandLineStrategy(getStrategy());
-            result.setStrategy(strategy);
-        }
-        if (hasAcceptor()) {
-            result.setAcceptor(AcceptorEnumerator.parseCommandLineAcceptor(getAcceptor()));
+            // pass the configured type through intact: decomposing it into
+            // its serialised components would silently drop the features
+            // that only the type itself carries (persistence, shape) and
+            // break the engine-only strategy keywords
+            result
+                .setExploreType(ExploreTypeConverter
+                    .toExploreType(ExploreConfig.parse(getExploreConfig())));
         }
         String propertiesFileName = getPropertiesFile();
         if (propertiesFileName != null) {
@@ -179,32 +179,34 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
                 result.setProperty(e.getKey(), value);
             }
         }
-        if (!hasExploreConfig()) {
+        if (hasStrategy() || hasAcceptor()) {
+            // translate the legacy components directly into the feature
+            // model, overlaid on the grammar's default exploration (which
+            // must be computed after the properties have been applied)
+            ExploreType type = LegacySyntaxParser
+                .overlay(result.getExploreType(), getStrategy(), getAcceptor(),
+                         getResultCount());
+            emitLegacyNote(type);
+            result.setExploreType(type);
+        } else if (getResultCount() != 0) {
+            // a bare result count needs no overlay: it works on any
+            // exploration type, including the non-config types that
+            // cannot serve as an overlay base
             result.setResultCount(getResultCount());
         }
         return result;
     }
 
     /**
-     * Emits a deprecation warning for the "-s" and "-a" options, including
-     * the equivalent "-x" invocation if the given values are expressible in
-     * the exploration feature model.
+     * Emits an informational note for the legacy "-s" and "-a" options,
+     * including the equivalent "-x" invocation if the resulting exploration
+     * is configuration-based.
      */
-    private void emitDeprecationWarning() {
-        emit("Warning: options %s and %s are deprecated; use %s instead%n", STRATEGY_NAME,
-             ACCEPTOR_NAME, EXPLORE_NAME);
-        try {
-            Serialized strategy = hasStrategy()
-                ? StrategyEnumerator.parseCommandLineStrategy(getStrategy())
-                : ExploreType.DEFAULT.getStrategy();
-            Serialized acceptor = hasAcceptor()
-                ? AcceptorEnumerator.parseCommandLineAcceptor(getAcceptor())
-                : ExploreType.DEFAULT.getAcceptor();
-            var config = ExploreTypeConverter
-                .toConfig(new ExploreType(strategy, acceptor, getResultCount()));
-            emit("The equivalent invocation is %s \"%s\"%n", EXPLORE_NAME, config.unparse());
-        } catch (FormatException exc) {
-            // the legacy exploration is not expressible; no equivalent to suggest
+    private void emitLegacyNote(ExploreType type) {
+        if (type instanceof ConfiguredExploreType configured) {
+            emit("Note: options %s and %s are legacy shorthand;"
+                + " the equivalent invocation is %s \"%s\"%n", STRATEGY_NAME, ACCEPTOR_NAME,
+                 EXPLORE_NAME, configured.getConfig().unparse());
         }
     }
 
@@ -293,6 +295,12 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
 
     @Option(names = RESULT_NAME, paramLabel = RESULT_VAR, description = RESULT_USAGE)
     private int resultCount;
+
+    @Option(names = "-seed", paramLabel = "num",
+        description = "Set the master random seed, making runs with random choices "
+            + "reproducible.\nEquivalent to setting the system property "
+            + Randomness.SEED_PROPERTY + ".")
+    private Long seed;
 
     /** Returns the name of the properties file, if any. */
     public String getPropertiesFile() {
@@ -384,18 +392,32 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
             + "The optional extension determines the output format (default is .gst)")
     private String statePattern;
 
-    /** Returns the filter mode to be used when saving the LTS. */
+    /** Returns the filter mode to be used when saving the LTS.
+     * In the absence of an explicit option, a trace-shaped exploration
+     * (configuration key {@code shape=trace}) saves the result traces.
+     */
     public Filter getFilter() {
-        return this.traces
-            ? Filter.RESULT
-            : this.spanning
-                ? Filter.SPANNING
-                : Filter.NONE;
+        Filter result;
+        if (this.traces) {
+            result = Filter.RESULT;
+        } else if (this.spanning) {
+            result = Filter.SPANNING;
+        } else if (this.transformer != null
+            && this.transformer.getExploreType().presentsResultAsTraces()) {
+            result = Filter.RESULT;
+        } else {
+            result = Filter.NONE;
+        }
+        return result;
     }
 
     @Option(names = "-spanning",
         description = "If switched on, only the spanning tree of the LTS will be saved")
     private boolean spanning;
+
+    /** The transformer of the current run, used to determine the effective
+     * exploration type (in particular its result shape) for {@link #getFilter}. */
+    private Transformer transformer;
 
     @Option(names = "-traces",
         description = "If switched on, only the result traces of the LTS will be saved "
@@ -499,7 +521,8 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
 
     /** Usage message for the acceptor option. */
     public final static String ACCEPTOR_USAGE = ""
-        + "(Deprecated; use " + EXPLORE_NAME + " instead.) Set the acceptor to <acc>. "
+        + "(Legacy shorthand; the fully general option is " + EXPLORE_NAME
+        + ".) Set the acceptor to <acc>. "
         + "The acceptor determines when a state is counted as a result of the exploration. "
         + "Legal values are:\n" //
         + "    final      - When final (default)\n" //
@@ -532,22 +555,23 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
     public final static String STRATEGY_VAR = "strgy";
     /** Usage message for the strategy option. */
     public final static String STRATEGY_USAGE
-        = "(Deprecated; use " + EXPLORE_NAME
-            + " instead.) Set the exploration strategy to <strgy>. Legal values are:\n"
+        = "(Legacy shorthand; the fully general option is " + EXPLORE_NAME
+            + ".) Set the exploration strategy to <strgy>. Legal values are:\n"
             + "  bfs[:n]     - Optionally bounded Breadth-First exploration: \n"
             + "                if n>0, exploration stops at depth n\n" //
             + "  dfs[:n]     - Optionally bounded Depth-First exploration: \n"
             + "                if n>0, exploration stops at depth n\n" //
             + "  linear      - Linear\n" //
             + "  random      - Random linear\n" //
-            + "  uptorule:[dfs|bds][->|=>][!]id\n" //
+            + "  uptorule:[bfs|dfs][n][->|=>][!]id\n" //
             + "              - BFS or DFS up to (for ->) or including (for =>) states \n"
             + "                where rule <id> is or is not (!) applicable\n" //
             + "  cnbound:n   - BFS up to (but not including) graphs with \n"
             + "                more than <n> nodes\n" //
             + "  cebound:id_1>n_1,...,id_k>n_k\n" //
             + "              - BFS up to (but not including) graphs with \n"
-            + "                more than <n_i> <id_i>-edges, for all i in 1..k\n"
+            + "                more than <n_i> <id_i>-edges, for all i in 1..k;\n"
+            + "                <id_i> may carry a type: or flag: prefix\n"
             + "  ltl:prop    - LTL Model Checking\n" //
             + "  ltlbounded:idn,...;prop\n" //
             + "              - Bounded LTL Model Checking\n" //

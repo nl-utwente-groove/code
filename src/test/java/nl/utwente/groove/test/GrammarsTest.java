@@ -22,12 +22,16 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
 
+import nl.utwente.groove.explore.config.parse.LegacySyntaxParser;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.transform.Transformer;
 
 /**
  * Loads and partially explores all grammars provided with the GROOVE release.
- * To run, set {@link #SAMPLE_DIR} and {@link #GRAMMAR_DIR} to the right locations in your project
+ * The sample and grammar checkouts are located as sibling directories of the
+ * working directory by default; when the tests run elsewhere (e.g. from a git
+ * worktree), pass the locations via the system properties
+ * {@code groove.samples.dir} and {@code groove.grammars.dir}.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -60,8 +64,9 @@ public class GrammarsTest {
     private void testGrammar(File grammarLocation) {
         try {
             Transformer transformer = new Transformer(grammarLocation);
-            transformer.setAcceptor("any");
-            transformer.setResultCount(5);
+            transformer
+                .setExploreType(LegacySyntaxParser
+                    .overlay(transformer.getExploreType(), null, "any", 5));
             transformer.explore();
         } catch (Exception e) {
             e.printStackTrace();
@@ -73,7 +78,9 @@ public class GrammarsTest {
     }
 
     /** Location of the (downloaded) samples module of SourceForge. */
-    private static final String SAMPLE_DIR = "../samples";
+    private static final String SAMPLE_DIR
+        = System.getProperty("groove.samples.dir", "../samples");
     /** Location of the (downloaded) grammars module of SourceForge. */
-    private static final String GRAMMAR_DIR = "../grammars";
+    private static final String GRAMMAR_DIR
+        = System.getProperty("groove.grammars.dir", "../grammars");
 }

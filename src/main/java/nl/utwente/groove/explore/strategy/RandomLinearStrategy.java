@@ -18,8 +18,17 @@ package nl.utwente.groove.explore.strategy;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
+import nl.utwente.groove.explore.result.Acceptor;
+import nl.utwente.groove.lts.GTS;
+import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.MatchResult;
+import nl.utwente.groove.util.Randomness;
+import nl.utwente.groove.util.Randomness.Purpose;
 
 /**
  * Explores a single path until reaching a final state or a loop. In case of
@@ -28,20 +37,34 @@ import nl.utwente.groove.lts.MatchResult;
  * @author Iovka Boneva
  *
  */
+@NonNullByDefault
 public class RandomLinearStrategy extends LinearStrategy {
+    @Override
+    protected void prepare(GTS gts, @Nullable GraphState state, Acceptor acceptor) {
+        super.prepare(gts, state, acceptor);
+        // obtain the generator per exploration, so that a fixed master seed
+        // makes every exploration draw the identical sequence
+        this.random = Randomness.newRandom(Purpose.EXPLORATION);
+    }
+
     /** This implementation returns a random element from the set of all matches. */
     @Override
-    protected MatchResult getMatch() {
+    protected @Nullable MatchResult getMatch() {
+        var state = getNextState();
+        assert state != null : "doNext called without hasNext";
         // collect all matches
-        List<MatchResult> matches = new ArrayList<>(getNextState().getMatches());
+        List<MatchResult> matches = new ArrayList<>(state.getMatches());
         // select a random match
         int matchCount = matches.size();
         if (matchCount == 0) {
             return null;
         } else {
-            int randomIndex = (int) (Math.random() * matchCount);
-            // add the random match
-            return matches.get(randomIndex);
+            var random = this.random;
+            assert random != null : "Strategy not prepared";
+            return matches.get(random.nextInt(matchCount));
         }
     }
+
+    /** Source of the random choices; obtained in {@link #prepare}. */
+    private @Nullable Random random;
 }

@@ -18,6 +18,8 @@ package nl.utwente.groove.explore.config;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
+import nl.utwente.groove.util.Exceptions;
+
 /**
  * Feature values for {@link ExploreKey#COUNT}: the number of results after
  * which exploration stops. Exploration always stops when the frontier is
@@ -36,6 +38,21 @@ public enum Count implements Setting.Kind {
     /** Stop as soon as the given number of results (larger than 1) has been found. */
     COUNT("value", "Exploration stops as soon as the given number of results has been found",
         Setting.ContentType.INTEGER),;
+
+    /** Computes the setting expressing a given numeric result count,
+     * with {@code 0} meaning all results.
+     * @throws IllegalArgumentException if the count is negative
+     */
+    public static Setting toSetting(int count) {
+        if (count < 0) {
+            throw Exceptions.illegalArg("Result count %s must be non-negative", count);
+        }
+        return switch (count) {
+        case 0 -> ALL.createSetting();
+        case 1 -> FIRST.createSetting();
+        default -> COUNT.createSetting(count);
+        };
+    }
 
     private Count(String name, String explanation, Setting.ContentType contentType) {
         this.name = name;

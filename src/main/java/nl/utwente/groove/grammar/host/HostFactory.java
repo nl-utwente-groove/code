@@ -33,12 +33,17 @@ import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.NodeFactory;
 import nl.utwente.groove.graph.StoreFactory;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Dispenser;
 
 /**
  * Factory class for host graph elements.
  * It is important that all states in a GTS share their host factory,
  * as otherwise node numbers may conflict or overlap.
+ * Distinct GTSs, on the other hand, must <i>not</i> share a factory:
+ * each takes its own {@link #copy()} of the grammar's factory, so that
+ * the numbers of the nodes created during exploration are replay-stable
+ * (see {@code GTS#getHostFactory}).
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -51,6 +56,36 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
     protected HostFactory(TypeFactory typeFactory, boolean simple) {
         super(simple);
         this.typeFactory = typeFactory;
+    }
+
+    /** Constructor for a copy of a given factory (see {@link #copy()}). */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    protected HostFactory(HostFactory original) {
+        super(original);
+        this.typeFactory = original.typeFactory;
+        // copy the value node pools, so that the values known to the
+        // original resolve to the same (already registered) nodes
+        original.valueFactoryMaps.forEach((algebra, valueMap) -> {
+            Map<Object,ValueNodeFactory> valueMapCopy = new HashMap<>();
+            valueMap
+                .forEach((value, factory) -> valueMapCopy.put(value, new ValueNodeFactory(factory)));
+            this.valueFactoryMaps.put(algebra, valueMapCopy);
+        });
+    }
+
+    /**
+     * Returns a copy of this factory. The copy shares the canonical node and
+     * edge instances created so far (including the value node pool), but
+     * numbers subsequently created elements independently: both this factory
+     * and the copy resume from the current state. Every GTS explores with
+     * such a copy of the grammar's factory, so that the numbers drawn for
+     * the nodes created by rule application — and with them the anchor
+     * hashes of the events built on those nodes — do not depend on how many
+     * explorations preceded the current one.
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    public @NonNull HostFactory copy() {
+        return new HostFactory(this);
     }
 
     /*
@@ -293,6 +328,16 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
             this.algebra = algebra;
             this.value = value;
             this.type = type;
+        }
+
+        /** Constructor for a copy in another host factory instance; shares
+         * the created node (if any), which the enclosing factory copy has
+         * already taken over in its node store.
+         */
+        @AIGenerated("Claude Fable 5, 2026-08")
+        ValueNodeFactory(ValueNodeFactory original) {
+            this(original.algebra, original.value, original.type);
+            this.node = original.node;
         }
 
         /* Overridden as value nodes should always be reused when possible. */

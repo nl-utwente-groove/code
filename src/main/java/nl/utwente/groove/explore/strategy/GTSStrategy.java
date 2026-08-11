@@ -16,6 +16,9 @@
  */
 package nl.utwente.groove.explore.strategy;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.explore.result.Acceptor;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
@@ -26,17 +29,19 @@ import nl.utwente.groove.match.MatcherFactory;
  * @author Arend Rensink
  *
  */
+@NonNullByDefault
 public abstract class GTSStrategy extends Strategy {
     @Override
-    protected void prepare(GTS gts, GraphState state, Acceptor acceptor) {
+    protected void prepare(GTS gts, @Nullable GraphState state, Acceptor acceptor) {
         super.prepare(gts, state, acceptor);
         this.gts = gts;
-        this.nextState = this.startState = state == null ? gts.startState() : state;
+        var startState = state == null
+            ? gts.startState()
+            : state;
+        this.nextState = this.startState = startState;
         this.acceptor = acceptor;
-        if (acceptor != null) {
-            gts.addLTSListener(acceptor);
-            acceptor.addUpdate(gts, this.startState);
-        }
+        gts.addLTSListener(acceptor);
+        acceptor.addUpdate(gts, startState);
         MatcherFactory.instance(gts.hasSimpleGraphs())
             .setDefaultEngine();
     }
@@ -48,32 +53,39 @@ public abstract class GTSStrategy extends Strategy {
 
     @Override
     public void finish() {
-        if (this.acceptor != null) {
-            getGTS().removeLTSListener(this.acceptor);
+        var acceptor = this.acceptor;
+        if (acceptor != null) {
+            getGTS().removeLTSListener(acceptor);
         }
     }
 
     /**
      * The graph transition system explored by the strategy.
-     * @return The graph transition system explored by the strategy.
+     * @return The graph transition system explored by the strategy;
+     * non-{@code null} after a call to {@link #prepare}.
      */
     protected final GTS getGTS() {
-        return this.gts;
+        var result = this.gts;
+        assert result != null : "Strategy not prepared";
+        return result;
     }
 
     /**
-     * The start state set at construction time.
-     * @return the start state for exploration; may be {@code null}.
+     * The state at which the exploration starts.
+     * @return the start state for exploration;
+     * non-{@code null} after a call to {@link #prepare}.
      */
     protected final GraphState getStartState() {
-        return this.startState;
+        var result = this.startState;
+        assert result != null : "Strategy not prepared";
+        return result;
     }
 
     /**
      * Returns the state that will be explored next. If <code>null</code>,
      * there is nothing left to explore.
      */
-    protected GraphState getNextState() {
+    protected @Nullable GraphState getNextState() {
         return this.nextState;
     }
 
@@ -90,17 +102,18 @@ public abstract class GTSStrategy extends Strategy {
      * satisfaction of the condition is to be tested.
      * @return The next state to be explored, or {@code null} if exploration is done.
      */
-    protected abstract GraphState computeNextState();
+    protected abstract @Nullable GraphState computeNextState();
 
-    /** The graph transition system explored by the strategy. */
-    private GTS gts;
+    /** The graph transition system explored by the strategy;
+     * set in {@link #prepare}. */
+    private @Nullable GTS gts;
     /**
-     * Start state for exploration, set in the constructor.
-     * If {@code null}, the GTS start state is selected at exploration time.
+     * Start state for exploration, set in {@link #prepare}.
      */
-    private GraphState startState;
-    /** The acceptor to be used at the next exploration. */
-    private Acceptor acceptor;
+    private @Nullable GraphState startState;
+    /** The acceptor to be used at the next exploration;
+     * set in {@link #prepare}. */
+    private @Nullable Acceptor acceptor;
     /** The state that will be explored by the next call of {@link #doNext()}. */
-    private GraphState nextState;
+    private @Nullable GraphState nextState;
 }

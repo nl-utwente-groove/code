@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.graph;
 
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Dispenser;
 
 /**
@@ -28,6 +29,17 @@ public abstract class ElementFactory<N extends Node,E extends Edge> extends Node
     protected ElementFactory() {
         this.nodeNrs = createNodeNrDispenser();
         this.maxNodeNr = -1;
+    }
+
+    /**
+     * Constructor for a copy of a given factory (see {@link StoreFactory#StoreFactory(StoreFactory)}).
+     * The copy gets a fresh node number dispenser, which resumes numbering
+     * independently of the original.
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    protected ElementFactory(ElementFactory<N,E> original) {
+        this.nodeNrs = createNodeNrDispenser();
+        this.maxNodeNr = original.maxNodeNr;
     }
 
     /** Returns the fresh node number dispenser of this factory. */

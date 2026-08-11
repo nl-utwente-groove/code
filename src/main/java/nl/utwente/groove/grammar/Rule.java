@@ -64,6 +64,7 @@ import nl.utwente.groove.match.SearchStrategy;
 import nl.utwente.groove.match.TreeMatch;
 import nl.utwente.groove.match.plan.PlanSearchStrategy;
 import nl.utwente.groove.transform.Proof;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
 import nl.utwente.groove.util.Groove;
@@ -800,6 +801,17 @@ public class Rule implements Action, Fixable {
     public int compareTo(@Nullable Action other) {
         assert other != null;
         return getQualName().compareTo(other.getQualName());
+    }
+
+    /**
+     * Returns a name-based hash code, replay-stable across grammar
+     * recompiles (gh #888); equality remains identity-based, as rules are
+     * singletons within a compiled grammar.
+     */
+    @Override
+    @AIGenerated("Claude Fable 5, 2026-08")
+    public int hashCode() {
+        return getQualName().hashCode();
     }
 
     // ------------------- commands --------------------------

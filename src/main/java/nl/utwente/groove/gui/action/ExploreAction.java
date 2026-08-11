@@ -22,10 +22,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicSliderUI;
 
-import nl.utwente.groove.explore.AcceptorValue;
 import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.explore.ExploreType;
-import nl.utwente.groove.explore.StrategyValue;
+import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.explore.util.StatisticsReporter;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.gui.Icons;
@@ -72,7 +71,7 @@ public class ExploreAction extends SimulatorAction {
     /** Fully explores the currently selected state of the GTS. */
     public void doExploreState() {
         GraphState state = getSimulatorModel().getState();
-        Exploration e = explore(state, getStateExploration());
+        Exploration e = explore(state, ConfiguredExploreType.stateExploration(state.getGTS()));
         if (e != null) {
             getLtsDisplay().emphasiseStates(e.getResult().getStates(), true);
         }
@@ -127,7 +126,7 @@ public class ExploreAction extends SimulatorAction {
             exploreStats.report();
             // emphasise the result states, if required
             ltsJModel.setExploring(false);
-            simModel.setExploreResult(result.getResult());
+            simModel.setExploreResult(result.getResult(), exploreType);
         } catch (FormatException exc) {
             // this should not occur, as the exploration and the
             // grammar in the simulator model should always be compatible
@@ -283,7 +282,10 @@ public class ExploreAction extends SimulatorAction {
      * should continue exploring (and by how much).
      */
     final void checkContinue(final GTS gts) {
-        if (gts.nodeCount() >= this.bound && !isInterrupted()) {
+        // use the discovery count rather than the node count: the latter
+        // reflects only the retained states, which under persistence=none
+        // would never reach the bound (under storing the two are identical)
+        if (gts.getNextStateNr() >= this.bound && !isInterrupted()) {
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
                     @Override
@@ -307,18 +309,6 @@ public class ExploreAction extends SimulatorAction {
             }
         }
     }
-
-    /**
-     * Returns the explore-strategy for exploring a single state
-     */
-    private ExploreType getStateExploration() {
-        if (this.stateExploration == null) {
-            this.stateExploration = new ExploreType(StrategyValue.STATE, AcceptorValue.NONE, 0);
-        }
-        return this.stateExploration;
-    }
-
-    private ExploreType stateExploration;
 
     /** Number of states after which exploration should halt. */
     private int bound;

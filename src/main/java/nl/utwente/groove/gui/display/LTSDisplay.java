@@ -57,6 +57,7 @@ import javax.swing.event.ChangeListener;
 
 import org.eclipse.jdt.annotation.NonNull;
 
+import nl.utwente.groove.explore.ExploreResult;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
@@ -78,6 +79,7 @@ import nl.utwente.groove.lts.GTSListener;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.lts.Status.Flag;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 
@@ -332,6 +334,34 @@ public class LTSDisplay extends Display implements SimulatorListener {
         getJGraph().setSelectionCells(jCells.toArray());
     }
 
+    /**
+     * Shows a given exploration result by emphasising its states and
+     * transitions in the LTS panel.
+     * In contrast to {@link #emphasiseStates}, the transitions of the result
+     * are emphasised precisely as recorded, rather than being re-derived from
+     * consecutive states.
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    public void emphasiseResult(ExploreResult result) {
+        if (getJModel() == null) {
+            return;
+        }
+        Set<JCell<@NonNull GTS>> jCells = new HashSet<>();
+        for (GraphState state : result.getStates()) {
+            var jCell = getJModel().getJCellForNode(state);
+            if (jCell != null) {
+                jCells.add(jCell);
+            }
+        }
+        for (GraphTransition trans : result.getTransitions()) {
+            var jCell = getJModel().getJCellForEdge(trans);
+            if (jCell != null) {
+                jCells.add(jCell);
+            }
+        }
+        getJGraph().setSelectionCells(jCells.toArray());
+    }
+
     /** Creates a panel consisting of the error panel and the status bar. */
     private JSplitPane getMainPanel() {
         if (this.mainPanel == null) {
@@ -479,10 +509,28 @@ public class LTSDisplay extends Display implements SimulatorListener {
                 GraphState state = source.getState();
                 GraphTransition transition = source.getTransition();
                 getJGraph().setActive(state, transition);
+                setFilterResultItem(source.hasExploreResult());
+                var lastExploreType = source.getLastExploreType();
+                if (changes.contains(GTS) && source.hasExploreResult()
+                    && lastExploreType != null && lastExploreType.presentsResultAsTraces()) {
+                    // switch the filter to the result view. The decision is
+                    // about the run that produced the result, so it keys on
+                    // that run's type, not on the saved exploration.
+                    // The chooser listener is suppressed and the filter applied
+                    // by hand, so that the layout below runs only once, on the
+                    // already-filtered graph
+                    this.filterListening = false;
+                    getFilterChooser().setSelectedItem(Filter.RESULT);
+                    this.filterListening = true;
+                    if (getJGraph().setFilter(getFilter())) {
+                        getJGraph().refreshFiltering();
+                        getJGraph().refreshActive();
+                        getJGraph().refreshAllCells(false);
+                    }
+                }
                 getJGraph().doLayout(isNew);
                 setEnabled(true);
                 getJGraph().scrollToActive();
-                setFilterResultItem(source.hasExploreResult());
                 updateStatus(gts);
             }
             if (gts != oldModel.getGTS()) {

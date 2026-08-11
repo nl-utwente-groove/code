@@ -27,6 +27,9 @@ import java.util.LinkedList;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.explore.result.Acceptor;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Rule;
@@ -41,7 +44,16 @@ import nl.utwente.groove.transform.RuleEvent;
 
 /**
  * An exploration strategy which calculates the Minimax value of the starting state and all states reachable from it.
+ * @deprecated scheduled for removal in release 8.0 (see gh #890):
+ * reachable only through the legacy exploration syntax, never exercised
+ * by the test suite, and with known defects — the cycle guard of the
+ * internal score tree is inert while the LTS does contain cycles, so
+ * scoring a real game risks unbounded recursion; scoring is exponential
+ * on shared subtrees; the score store is a linked list used as a
+ * random-access array.
  */
+@Deprecated(forRemoval = true)
+@NonNullByDefault
 public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
     /** Constant used to disable bounded exploration */
     public static final int DEPTH_INFINITE = 0;
@@ -51,7 +63,7 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
     private long timer;
 
     //internal storage
-    private final LinkedList<MinimaxTree> nodes = new LinkedList<>(); //contains the heuristic values for Minimax
+    private final LinkedList<@Nullable MinimaxTree> nodes = new LinkedList<>(); //contains the heuristic values for Minimax
 
     //exploration stack (DFS)
     private final ArrayDeque<GraphState> explorationStack = new ArrayDeque<>(); //unsynchronized stack
@@ -60,7 +72,7 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
     private final int heuristicparam; //index of the heuristic parameter used
     private final int minmaxparam; //index of the turn parameter used
     private final ArrayList<QualName> enabledrules; //names of evaluation rules
-    private final QualName minmaxRule; //name of the turn rule
+    private final @Nullable QualName minmaxRule; //name of the turn rule
     private final int maxdepth; //maximum depth of the exploration
 
     /**
@@ -69,8 +81,9 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
      * @param maxdepth the maximum depth of the exploration, below 1 is infinite
      * @param enabledrules a collection of enabled rules, duplicates will be removed
      */
-    public MinimaxStrategy(int heuristicparam, int maxdepth, Collection<Rule> enabledrules,
-                           Rule evalrule, int minmaxparam) {
+    public MinimaxStrategy(int heuristicparam, int maxdepth,
+                           @Nullable Collection<Rule> enabledrules, @Nullable Rule evalrule,
+                           int minmaxparam) {
         //parameters
         this.heuristicparam = heuristicparam;
         this.minmaxparam = minmaxparam;
@@ -108,14 +121,14 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
     }
 
     @Override
-    protected void prepare(GTS gts, GraphState state, Acceptor acceptor) {
+    protected void prepare(GTS gts, @Nullable GraphState state, Acceptor acceptor) {
         super.prepare(gts, state, acceptor);
         getGTS().addLTSListener(this);
         this.timer = System.currentTimeMillis();
     }
 
     @Override
-    protected GraphState getFromPool() {
+    protected @Nullable GraphState getFromPool() {
         if (this.explorationStack.isEmpty()) {
             return null;
         } else {
@@ -214,6 +227,7 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
      */
     public void printMinimaxDebugTree(File out) {
         MinimaxTree mt = getNodeValue(this.getStartState().getNumber());
+        assert mt != null : "No minimax tree for the start state";
         try { //write to a file, as tree representations can get quite large (10MB for tic-tac-toe)
             File f = out;
             if (f.exists()) {
@@ -240,7 +254,7 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
      * @param node the position of the assigned tree node
      * @param value the assigned tree node
      */
-    private void setNodeValue(int node, MinimaxTree value) {
+    private void setNodeValue(int node, @Nullable MinimaxTree value) {
         while (this.nodes.size() - 1 < node) { //grow the array
             this.nodes.add(null);
         }
@@ -252,7 +266,7 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
      * @param node the position
      * @return the tree node stored at the given position, or null if no tree node has been stored at that position.
      */
-    private MinimaxTree getNodeValue(int node) {
+    private @Nullable MinimaxTree getNodeValue(int node) {
         if (node > this.nodes.size() - 1) {
             return null;
         } else {
@@ -266,12 +280,13 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
      * @return true when the label of r is in the list of enabled rules, or when all labels are allowed
      */
     private boolean isRuleEnabled(QualName r) {
-        return this.enabledrules == null || this.enabledrules.size() == 0
-            || this.enabledrules.contains(r);
+        return this.enabledrules.size() == 0 || this.enabledrules.contains(r);
     }
 
     private boolean isMinMaxrule(QualName r) {
-        return this.minmaxRule.equals(r);
+        var minmaxRule = this.minmaxRule;
+        assert minmaxRule != null : "No turn rule set";
+        return minmaxRule.equals(r);
     }
 
     @Override
@@ -333,8 +348,8 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
     private class MinimaxTree {
         private int nodeno;
         private boolean max;
-        private Integer score = null;
-        private Set<MinimaxTree> children = null;
+        private @Nullable Integer score = null;
+        private @Nullable Set<MinimaxTree> children = null;
 
         /**
          * Constructs an entity in a minimax tree
@@ -381,8 +396,12 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
          * @return a set with the children of this node
          */
         public Set<MinimaxTree> getChildren() {
-            ensureChildren();
-            return this.children;
+            var result = this.children;
+            if (result == null) {
+                result = this.children = new HashSet<>();
+                this.score = null;
+            }
+            return result;
         }
 
         /**
@@ -390,7 +409,6 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
          * @param mt the node to be added as a child of this node
          */
         public void addChild(MinimaxTree mt) {
-            ensureChildren();
             if (mt != this && !mt.isDescendant(this)) {
                 getChildren().add(mt);
             } else {
@@ -420,9 +438,10 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
 
         /**
          * Obtain the minimax score of this node
-         * @return the minimax score of this node
+         * @return the minimax score of this node, or {@code null} if
+         * no score is known
          */
-        public Integer getScore() {
+        public @Nullable Integer getScore() {
             Integer result = null;
             if (isLeafNode()) {
                 result = this.score;
@@ -477,16 +496,6 @@ public class MinimaxStrategy extends ClosingStrategy implements GTSListener {
                 ? "min()"
                 : "max()") + ":" + getText() + "]";
             return result;
-        }
-
-        /**
-         * Converts this node to a tree node if it is not already a tree node.
-         */
-        private void ensureChildren() {
-            if (this.children == null) {
-                this.children = new HashSet<>();
-                this.score = null;
-            }
         }
     }
 }

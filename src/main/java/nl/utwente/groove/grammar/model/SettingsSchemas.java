@@ -18,12 +18,15 @@ package nl.utwente.groove.grammar.model;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.explore.config.ExploreConfigSchema;
+import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.io.external.format.ecore.EcoreMappingSchema;
 import nl.utwente.groove.util.Exceptions;
 
@@ -65,11 +68,32 @@ public class SettingsSchemas {
         return Collections.unmodifiableSet(schemaMap.keySet());
     }
 
+    /**
+     * Returns the names of the settings resources of a given schema in a given
+     * grammar, in alphabetical order: the residents of the schema's top-level
+     * folder, plus the singleton-form resource named after the schema itself;
+     * see {@link SettingsModel#getSchemaName()}. This is the way to locate the
+     * resource of a singular schema.
+     */
+    static public List<QualName> getResourceNames(GrammarModel grammar, SettingsSchema schema) {
+        return grammar
+            .getResourceMap(ResourceKind.SETTINGS)
+            .values()
+            .stream()
+            .filter(SettingsModel.class::isInstance)
+            .map(SettingsModel.class::cast)
+            .filter(m -> m.getSchemaName().equals(schema.getName()))
+            .map(SettingsModel::getQualName)
+            .sorted()
+            .toList();
+    }
+
     /** Mapping from schema names to schemas, in registration order. */
     static private final Map<String,@Nullable SettingsSchema> schemaMap = new LinkedHashMap<>();
 
     static {
         // registration of the built-in schemas
         register(EcoreMappingSchema.INSTANCE);
+        register(ExploreConfigSchema.INSTANCE);
     }
 }

@@ -258,6 +258,8 @@ public final class Icons {
     public static final ImageIcon CONDITION_TREE_ICON = createIcon("rule-condition.gif");
     /** Small icon for injective condition rules, as shown in the rule tree. */
     public static final ImageIcon CONDITION_I_TREE_ICON = createIcon("rule-condition-I.gif");
+    /** Ecore metamodel icon: a small class hierarchy. */
+    public static final ImageIcon ECORE_ICON = createIcon("ecore.gif");
     /** Edge action icon. */
     public static final ImageIcon EDGE_ICON = createIcon("edge.gif");
     /** Edit action icon. */

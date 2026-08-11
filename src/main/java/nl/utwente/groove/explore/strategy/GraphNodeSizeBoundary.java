@@ -16,6 +16,9 @@
  */
 package nl.utwente.groove.explore.strategy;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.verify.ProductTransition;
 import nl.utwente.groove.verify.ModelChecking.Record;
@@ -27,6 +30,7 @@ import nl.utwente.groove.verify.ModelChecking.Record;
  * @author Harmen Kastenberg
  * @version $Revision$ $Date: 2008-02-20 08:37:54 $
  */
+@NonNullByDefault
 public class GraphNodeSizeBoundary extends Boundary {
     /**
      * Constructs a prototype boundary object.
@@ -44,7 +48,7 @@ public class GraphNodeSizeBoundary extends Boundary {
      * @param step the increase at each step
      * @param record record of the model checking run
      */
-    private GraphNodeSizeBoundary(int size, int step, Record record) {
+    private GraphNodeSizeBoundary(int size, int step, @Nullable Record record) {
         super(record);
         assert step > 0;
         this.size = size;

@@ -19,6 +19,7 @@ package nl.utwente.groove.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -35,12 +36,15 @@ import java.util.stream.Collectors;
 import org.junit.Test;
 
 import nl.utwente.groove.grammar.QualName;
+import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.Settings;
+import nl.utwente.groove.grammar.model.SettingsContent;
 import nl.utwente.groove.grammar.model.SettingsModel;
 import nl.utwente.groove.grammar.model.SettingsSchema;
 import nl.utwente.groove.grammar.model.SettingsSchemas;
+import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.util.parse.FormatError;
@@ -48,11 +52,11 @@ import nl.utwente.groove.util.parse.FormatErrorSet;
 
 /**
  * Tests the SETTINGS resource kind: the name-based distinction from the
- * grammar properties singleton, the schema mechanism, and the isolation of
- * settings errors from grammar compilation.
+ * grammar properties singleton, the schema mechanism (implied by the location
+ * of the resource, with the {@code $schema} entry as consistency check), and
+ * the propagation of the errors of active settings resources to the grammar.
  * @author Arend Rensink
  */
-@SuppressWarnings("javadoc")
 public class SettingsTest {
     /** Directory of the settings test fixtures. */
     static private final String DIR = "junit/settings/";
@@ -97,9 +101,36 @@ public class SettingsTest {
         }
     }
 
+    /** Grammar-aware variant of the test schema: the optional {@code rule}
+     * entry must name an existing rule of the surrounding grammar. The check
+     * is position-aware, so its error points at the {@code rule} line. */
+    static private class AwareSchema extends TestSchema {
+        @Override
+        public String getName() {
+            return "aware";
+        }
+
+        @Override
+        public FormatErrorSet check(GrammarModel grammar, SettingsContent content) {
+            FormatErrorSet result = check(content.properties());
+            String rule = content.properties().getProperty("rule");
+            if (rule != null && grammar != null
+                && !grammar.getNames(ResourceKind.RULE).contains(QualName.name(rule))) {
+                result.add("Unknown rule '%s'", rule, content.numbers("rule"));
+            }
+            return result;
+        }
+
+        @Override
+        public Set<ResourceKind> getDependencies() {
+            return Set.of(ResourceKind.RULE);
+        }
+    }
+
     static {
         SettingsSchemas.register(new TestSchema());
         SettingsSchemas.register(new SoloSchema());
+        SettingsSchemas.register(new AwareSchema());
     }
 
     // ----------------------------------------------------------------------
@@ -118,13 +149,28 @@ public class SettingsTest {
                      new TreeSet<>(newStore().getTexts(ResourceKind.SETTINGS).keySet()));
     }
 
-    /** Tests that settings resources are all active, and cannot be enabled or disabled. */
+    /** Tests that settings resources are not generically enableable, and that
+     * for a non-activatable schema they all count as active. */
     @Test
     public void testActiveNames() throws Exception {
         GrammarModel grammar = newGrammar();
         assertEquals(grammar.getNames(ResourceKind.SETTINGS),
                      grammar.getActiveNames(ResourceKind.SETTINGS));
         assertFalse(ResourceKind.SETTINGS.isEnableable());
+        // a resource of a non-activatable schema counts as active ...
+        SettingsSchema schema = SettingsSchemas.get("test");
+        assertNotNull(schema);
+        assertFalse(schema.isActivatable());
+        assertTrue(getModel(grammar, "test.good").isActive());
+        // ... and the schema refuses activation
+        try {
+            schema.setActive(grammar.getProperties().clone(), QualName.parse("test.good"), true);
+            fail("Non-activatable schema should refuse activation");
+        } catch (UnsupportedOperationException expected) {
+            // this is the expected outcome
+        }
+        // a resource of an unknown schema counts as inactive
+        assertFalse(getModel(grammar, "unknown").isActive());
     }
 
     // ----------------------------------------------------------------------
@@ -132,10 +178,12 @@ public class SettingsTest {
     // ----------------------------------------------------------------------
 
     /** Tests that a well-formed settings resource compiles to its entries,
-     * with the schema taken from the leading name segment. */
+     * with the schema taken from the folder it lives in. */
     @Test
     public void testWellFormed() throws Exception {
-        Settings settings = getModel(newGrammar(), "test.good").toResource();
+        SettingsModel model = getModel(newGrammar(), "test.good");
+        assertEquals("test", model.getSchemaName());
+        Settings settings = model.toResource();
         assertEquals("test", settings.getSchema().getName());
         assertEquals("red", settings.getProperty("colour"));
         assertEquals("test", settings.getProperty(SettingsModel.SCHEMA_KEY));
@@ -151,12 +199,42 @@ public class SettingsTest {
         assertEquals("white", getModel(grammar, "test.system").toResource().getProperty("colour"));
     }
 
-    /** Tests that the schema-declaring key is optional. */
+    /** Tests that the schema-declaring key is optional: the location says it
+     * all, and the key merely repeats it. */
     @Test
     public void testOptionalKey() throws Exception {
-        Settings settings = getModel(newGrammar(), "test.nokey").toResource();
+        SettingsModel model = getModel(newGrammar(), "test.nokey");
+        assertEquals("test", model.getSchemaName());
+        Settings settings = model.toResource();
         assertEquals("test", settings.getSchema().getName());
         assertEquals("blue", settings.getProperty("colour"));
+    }
+
+    /** Tests that a declaration contradicting the location is an error, even
+     * when the declared schema is a registered one. */
+    @Test
+    public void testSchemaMismatch() throws Exception {
+        GrammarModel grammar = newGrammar();
+        assertEquals("test", getModel(grammar, "test.mismatch").getSchemaName());
+        assertError(grammar, "test.mismatch",
+                    "Declared schema 'aware' differs from the schema 'test'");
+    }
+
+    /** Tests that names within a schema folder are free, in any depth: it is
+     * only the leading segment that carries meaning. */
+    @Test
+    public void testFreeLocalName() throws Exception {
+        SystemStore store = copyStore(newStore());
+        QualName name = QualName.parse("test.nightly.run");
+        store.putTexts(ResourceKind.SETTINGS, Map.of(name, "colour=cyan\n"));
+        SettingsModel model = getModel(store.toGrammarModel(), "test.nightly.run");
+        assertEquals("test", model.getSchemaName());
+        assertFalse(model.hasErrors());
+        assertEquals("cyan", model.toResource().getProperty("colour"));
+        // outside a schema folder the same name is homeless, declaration or not
+        QualName loose = QualName.parse("nightly.run");
+        store.putTexts(ResourceKind.SETTINGS, Map.of(loose, "$schema=test\ncolour=cyan\n"));
+        assertError(store.toGrammarModel(), "nightly.run", "Unknown settings schema 'nightly'");
     }
 
     /** Tests the error for a resource whose leading name segment is no schema. */
@@ -165,11 +243,22 @@ public class SettingsTest {
         assertError(newGrammar(), "unknown", "Unknown settings schema 'unknown'");
     }
 
-    /** Tests the error for a declared schema that contradicts the name. */
+    /**
+     * Tests that the singleton form — a top-level file named after the schema
+     * — is reserved for singular schemas: for any other schema, the settings
+     * have to live inside the schema folder.
+     */
     @Test
-    public void testSchemaMismatch() throws Exception {
-        assertError(newGrammar(), "test.mismatch",
-                    "Declared schema 'other' differs from schema 'test'");
+    public void testSingletonForm() throws Exception {
+        SystemStore store = copyStore(newStore());
+        store
+            .putTexts(ResourceKind.SETTINGS,
+                      Map.of(QualName.name("test"), "$schema=test\ncolour=black\n"));
+        assertError(store.toGrammarModel(), "test",
+                    "Settings of schema 'test' must live inside the 'test' folder");
+        // for the singular schema the singleton form is the natural one
+        store.putTexts(ResourceKind.SETTINGS, Map.of(QualName.name("solo"), "colour=black\n"));
+        assertFalse(getModel(store.toGrammarModel(), "solo").hasErrors());
     }
 
     /** Tests that the schema itself gets to reject entries. */
@@ -192,7 +281,7 @@ public class SettingsTest {
         GrammarModel grammar = store.toGrammarModel();
         // a lone resource of a singular schema is fine
         assertEquals("green", getModel(grammar, "solo").toResource().getProperty("colour"));
-        // a second resource puts the error on both
+        // a second resource of the schema puts the error on both
         store.putTexts(ResourceKind.SETTINGS, Map.of(extra, "colour=grey\n"));
         String expected = "Schema 'solo' admits only one settings resource";
         assertError(grammar, "solo", expected);
@@ -202,6 +291,28 @@ public class SettingsTest {
         // removing the surplus clears the error
         store.deleteTexts(ResourceKind.SETTINGS, List.of(extra));
         assertEquals("green", getModel(grammar, "solo").toResource().getProperty("colour"));
+    }
+
+    /**
+     * Tests the grammar-aware schema check and its dependency tracking: a
+     * schema error referring to a missing rule appears on the resource, and is
+     * recomputed (without any change to the resource itself) when the rule is
+     * added or removed.
+     */
+    @Test
+    public void testGrammarAwareSchema() throws Exception {
+        SystemStore store = copyStore(newStore());
+        QualName name = QualName.parse("aware.check");
+        store.putTexts(ResourceKind.SETTINGS, Map.of(name, "rule=r\n"));
+        GrammarModel grammar = store.toGrammarModel();
+        assertError(grammar, "aware.check", "Unknown rule 'r'");
+        // adding the rule clears the error, though the resource is untouched
+        AspectGraph rule = AspectGraph.emptyGraph("r", GraphRole.RULE, false);
+        store.putGraphs(ResourceKind.RULE, List.of(rule), false);
+        assertFalse(getModel(grammar, "aware.check").hasErrors());
+        // removing the rule brings the error back
+        store.deleteGraphs(ResourceKind.RULE, List.of(QualName.name("r")));
+        assertError(grammar, "aware.check", "Unknown rule 'r'");
     }
 
     /**
@@ -220,10 +331,7 @@ public class SettingsTest {
         assertFalse(comments.isEmpty());
         comments.forEach(l -> assertTrue(l, l.startsWith("# ") && l.length() <= 78));
         assertEquals(schema.getExplanation(),
-                     comments
-                         .stream()
-                         .map(l -> l.substring(2))
-                         .collect(Collectors.joining(" ")));
+                     comments.stream().map(l -> l.substring(2)).collect(Collectors.joining(" ")));
         SystemStore store = copyStore(newStore());
         QualName name = QualName.parse("test.fresh");
         store.putTexts(ResourceKind.SETTINGS, Map.of(name, text));
@@ -231,22 +339,120 @@ public class SettingsTest {
     }
 
     // ----------------------------------------------------------------------
-    // Isolation from the grammar
+    // Error positions
     // ----------------------------------------------------------------------
 
     /**
-     * Tests that settings errors stay on the resource: settings do not
-     * contribute to grammar compilation, so the surrounding grammar (which
-     * holds three erroneous settings resources) compiles regardless.
+     * Tests the key position scanner: comment and blank lines are skipped,
+     * a continuation line belongs to the key that starts it, and a repeated
+     * key is located at the declaration that survives.
      */
     @Test
-    public void testGrammarUnaffected() throws Exception {
+    public void testContentPositions() throws Exception {
+        SettingsContent content = new SettingsContent("""
+            # comment
+            colour = red
+
+              size = 3
+            long\\
+            key = value
+            colour = blue
+            """);
+        assertEquals(new SettingsContent.Position(4, 3), content.position("size"));
+        assertEquals(new SettingsContent.Position(5, 1), content.position("longkey"));
+        assertEquals("value", content.properties().getProperty("longkey"));
+        // a repeated key is located at the declaration that Properties keeps
+        assertEquals(new SettingsContent.Position(7, 1), content.position("colour"));
+        assertEquals("blue", content.properties().getProperty("colour"));
+        assertNull(content.position("absent"));
+        assertEquals(List.of(4, 3), content.numbers("size"));
+        assertEquals(List.of(), content.numbers("absent"));
+    }
+
+    /**
+     * Tests that the error of a {@code $schema} entry contradicting the
+     * location carries the position of that entry.
+     */
+    @Test
+    public void testSchemaMismatchPosition() throws Exception {
+        assertEquals(List.of(1, 1), getError(newGrammar(), "test.mismatch").getNumbers());
+    }
+
+    /**
+     * Tests that an error created by a position-aware schema check carries
+     * the position of the key it is about, also in a text with comment and
+     * blank lines and an indented key; and that a schema which does not
+     * override the position-aware check keeps producing position-less errors.
+     */
+    @Test
+    public void testCheckErrorPosition() throws Exception {
+        SystemStore store = copyStore(newStore());
+        QualName name = QualName.parse("aware.check");
+        store
+            .putTexts(ResourceKind.SETTINGS,
+                      Map.of(name, "# a comment\n! another comment\n\n  rule = r\n"));
+        FormatError error = getError(store.toGrammarModel(), "aware.check");
+        assertTrue(error.toString(), error.toString().contains("Unknown rule 'r'"));
+        assertEquals(List.of(4, 3), error.getNumbers());
+        // the plain test schema does not attach positions
+        assertEquals(List.of(), getError(newGrammar(), "test.rejected").getNumbers());
+    }
+
+    // ----------------------------------------------------------------------
+    // Propagation to the grammar
+    // ----------------------------------------------------------------------
+
+    /**
+     * Tests that the errors of <i>active</i> settings resources propagate into
+     * the grammar's error set, whereas those of inactive resources (here: a
+     * resource of an unknown schema) stay on the resource itself.
+     */
+    @Test
+    public void testGrammarErrorPropagation() throws Exception {
         GrammarModel grammar = newGrammar();
         assertTrue(getModel(grammar, "unknown").hasErrors());
         assertTrue(getModel(grammar, "test.mismatch").hasErrors());
         assertTrue(getModel(grammar, "test.rejected").hasErrors());
-        assertEquals(List.of(), messages(grammar.getErrors()));
-        assertNotNull(grammar.toGrammar());
+        // the active broken resources block the grammar ...
+        List<String> errors = messages(grammar.getErrors());
+        assertTrue(errors.toString(), errors.stream().anyMatch(e -> e.contains("test.mismatch")));
+        assertTrue(errors.toString(), errors.stream().anyMatch(e -> e.contains("test.rejected")));
+        // ... whereas the inactive one (of an unknown schema) does not
+        assertFalse(errors.toString(), errors.stream().anyMatch(e -> e.contains("unknown")));
+        // with the active broken resources gone, the grammar compiles again,
+        // even though the inactive broken resource is still there
+        SystemStore store = copyStore(newStore());
+        store
+            .deleteTexts(ResourceKind.SETTINGS,
+                         List.of(QualName.parse("test.mismatch"), QualName.parse("test.rejected")));
+        GrammarModel fixed = store.toGrammarModel();
+        assertTrue(getModel(fixed, "unknown").hasErrors());
+        assertEquals(List.of(), messages(fixed.getErrors()));
+        assertNotNull(fixed.toGrammar());
+    }
+
+    /**
+     * Tests that a propagated settings error carries the settings resource as
+     * its context — kind, name, and the numbers copied from the nested error
+     * — so that selecting it in the grammar error list navigates to the
+     * offending line of the settings display.
+     */
+    @Test
+    public void testPropagatedErrorContext() throws Exception {
+        GrammarModel grammar = newGrammar();
+        QualName name = QualName.parse("test.mismatch");
+        List<FormatError> propagated = grammar
+            .getErrors()
+            .stream()
+            .filter(e -> e.toString().contains(name.toString()))
+            .toList();
+        assertEquals(propagated.toString(), 1, propagated.size());
+        FormatError error = propagated.get(0);
+        assertEquals(ResourceKind.SETTINGS, error.getResourceKind());
+        assertTrue(error.getResourceNames().toString(), error.getResourceNames().contains(name));
+        // the numbers of the nested error are inherited
+        assertEquals(getError(grammar, "test.mismatch").getNumbers(), error.getNumbers());
+        assertFalse(error.getNumbers().isEmpty());
     }
 
     // ----------------------------------------------------------------------
@@ -345,6 +551,13 @@ public class SettingsTest {
         List<String> errors = messages(getModel(grammar, name).getErrors());
         assertEquals(errors.toString(), 1, errors.size());
         assertTrue(errors.get(0), errors.get(0).contains(expected));
+    }
+
+    /** Returns the single error of a named settings resource. */
+    static private FormatError getError(GrammarModel grammar, String name) {
+        List<FormatError> errors = getModel(grammar, name).getErrors().stream().toList();
+        assertEquals(errors.toString(), 1, errors.size());
+        return errors.get(0);
     }
 
     /** Returns the settings model of a given name in a given grammar. */

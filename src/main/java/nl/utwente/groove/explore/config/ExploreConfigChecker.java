@@ -19,8 +19,8 @@ package nl.utwente.groove.explore.config;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.explore.encode.EncodedEdgeMap;
-import nl.utwente.groove.explore.encode.EncodedRuleFormula;
+import nl.utwente.groove.explore.config.parse.EdgeMapParser;
+import nl.utwente.groove.explore.config.parse.RuleFormulaParser;
 import nl.utwente.groove.explore.result.Predicate;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
@@ -104,7 +104,7 @@ public class ExploreConfigChecker {
     private static void checkCondition(GrammarModel grammar, String condition,
                                        FormatErrorSet errors) {
         try {
-            new EncodedRuleFormula().parse(name -> {
+            RuleFormulaParser.parse(name -> {
                 checkRuleName(grammar, name);
                 return TRUE;
             }, condition);
@@ -134,7 +134,7 @@ public class ExploreConfigChecker {
     private static void checkEdgeBounds(GrammarModel grammar, String bounds,
                                         FormatErrorSet errors) {
         try {
-            new EncodedEdgeMap().parse(grammar.getTypeGraph(), bounds);
+            EdgeMapParser.parse(grammar.getTypeGraph(), bounds);
         } catch (FormatException exc) {
             errors.addAll(exc.getErrors());
         }

@@ -113,7 +113,7 @@ final public class TextTab extends ResourceTab {
     public Icon getIcon() {
         return isEditor()
             ? super.getIcon()
-            : Icons.getMainTabIcon(getDisplay().getResourceKind());
+            : getDisplay().getMainTabIcon(getQualName());
     }
 
     @Override

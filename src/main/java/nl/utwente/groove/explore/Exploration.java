@@ -17,6 +17,7 @@
 package nl.utwente.groove.explore;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import nl.utwente.groove.explore.result.Acceptor;
@@ -28,10 +29,11 @@ import nl.utwente.groove.util.Reporter;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
- * An Exploration is a combination of a serialized strategy, a serialized
- * acceptor and a number of results. By parsing its fields (relative to the
- * Simulator), the exploration can be executed. The result of the execution
- * (which is a Result set) is remembered in the Exploration.
+ * A single exploration run: the application of an {@link ExploreType} to a
+ * GTS from a given start state. Constructing the exploration instantiates
+ * the type's strategy and acceptor for the grammar and prepares the GTS for
+ * the run; {@link #play()} executes it. The result of the execution is
+ * remembered in the exploration ({@link #getResult()}).
  * @author Maarten de Mol
  */
 public class Exploration {
@@ -41,7 +43,7 @@ public class Exploration {
     public Exploration(ExploreType type, GraphState start) throws FormatException {
         this.type = type;
         this.gts = start.getGTS();
-        this.start = start;
+        this.type.prepareRun(this.gts);
         Grammar grammar = this.gts.getGrammar();
         // parse the strategy
         this.strategy = this.type.getParsedStrategy(grammar);
@@ -50,13 +52,12 @@ public class Exploration {
             .newAcceptor(this.type.getBound());
         // initialize acceptor and GTS
         this.strategy.setGTS(this.gts);
-        this.strategy.setState(this.start);
+        this.strategy.setState(start);
         this.strategy.setAcceptor(this.acceptor);
     }
 
     private final Strategy strategy;
     private final Acceptor acceptor;
-    private final GraphState start;
 
     /** Returns the type of this exploration. */
     public ExploreType getType() {
@@ -138,6 +139,18 @@ public class Exploration {
         this.lastResult = this.acceptor.getResult();
         this.lastState = this.strategy.getLastState();
         this.lastMessage = this.strategy.getMessage();
+        if (!this.gts.isStoring()) {
+            // the discovered states were not stored; retain the traces of
+            // the result states and of the last explored state, so that the
+            // GTS afterwards shows what the exploration produced
+            var tips = new LinkedHashSet<>(this.lastResult.getStates());
+            if (this.lastState != null) {
+                tips.add(this.lastState);
+            }
+            this.gts.retainTraces(tips);
+            this.lastMessage += " (discovered %d states, retained %d)"
+                .formatted(this.gts.getNextStateNr(), this.gts.nodeCount());
+        }
         return this;
     }
 
@@ -158,14 +171,14 @@ public class Exploration {
     /** List of currently active exploration listeners. */
     private List<ExplorationListener> listeners = new ArrayList<>();
 
-    /** Returns the result of a default-type exploration (see {@link ExploreType#DEFAULT}) of a given GTS.
+    /** Returns the result of a default-type exploration (see {@link ExploreType#getDefault()}) of a given GTS.
      * @param gts the GTS on which the exploration is to be performed
      * @return the resulting exploration object
      * @throws FormatException if the grammar of {@code gts} is not
      * compatible with the default exploration type
      */
     static public final Exploration explore(GTS gts) throws FormatException {
-        return ExploreType.DEFAULT.newExploration(gts, null)
+        return ExploreType.getDefault().newExploration(gts, null)
             .play();
     }
 

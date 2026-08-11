@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
@@ -20,7 +21,6 @@ import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.GraphBasedModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
-import nl.utwente.groove.grammar.model.SettingsSchemas;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.gui.BehaviourOption;
 import nl.utwente.groove.gui.Icons;
@@ -246,6 +246,12 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
     /**
      * Enters a dialog that results in a name that is not in a set of
      * current names, or <code>null</code> if the dialog was cancelled.
+     * For a settings resource in folder form, the leading segment of the
+     * proposed name is the schema folder, which is fixed: the dialog then
+     * shows and edits only the local name within that folder (and clashes only
+     * with that folder's residents), and the folder is put back in front of the
+     * outcome. Creating, renaming or copying can thus not move a settings
+     * resource out of its schema.
      * @param name an initially proposed name
      * @param mustBeFresh if <code>true</code>, the returned name is guaranteed
      *        to be distinct from the existing names
@@ -259,20 +265,30 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
                 ? "new "
                 : "", kind.getDescription());
         Set<QualName> existingNames = getSimulatorModel().getGrammar().getNames(kind);
+        String suggestion = name;
+        String fixedFolder = null;
+        QualName proposal = QualName.parse(name);
+        if (kind == ResourceKind.SETTINGS && proposal.size() > 1) {
+            fixedFolder = proposal.get(0);
+            QualName folderName = QualName.name(fixedFolder);
+            suggestion = proposal.removeParent(folderName).toString();
+            Set<QualName> locals = new TreeSet<>();
+            for (QualName existing : existingNames) {
+                if (existing.size() > 1 && existing.get(0).equals(fixedFolder)) {
+                    locals.add(existing.removeParent(folderName));
+                }
+            }
+            existingNames = locals;
+        }
+        final String folder = fixedFolder;
         FreshNameDialog<QualName> nameDialog
-            = new FreshNameDialog<>(existingNames, name, mustBeFresh) {
+            = new FreshNameDialog<>(existingNames, suggestion, mustBeFresh) {
                 @Override
                 protected QualName createName(String name) throws FormatException {
                     QualName result = QualName.parse(name).testValid();
-                    // a settings name must lead with a known schema; catching
-                    // this here saves the user from a resource that can only
-                    // ever show the unknown-schema error
-                    if (kind == ResourceKind.SETTINGS
-                        && SettingsSchemas.get(result.get(0)) == null) {
-                        throw new FormatException("'%s' is not a settings schema (known: %s)",
-                            result.get(0), String.join(", ", SettingsSchemas.getNames()));
-                    }
-                    return result;
+                    return folder == null
+                        ? result
+                        : result.nest(folder);
                 }
             };
         nameDialog.showDialog(getFrame(), title);
@@ -281,9 +297,10 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
 
     /**
      * Asks the user for the Ecore encoding options, if a given file type calls
-     * for them, and stores the chosen options in the grammar's
-     * {@link EcoreMapping#RESOURCE_NAME} settings resource, creating it on
-     * demand. Only the global option lines of the resource are touched, so
+     * for them, and stores the chosen options in the grammar's Ecore mapping
+     * settings resource, creating it under the default name
+     * {@link EcoreMapping#RESOURCE_NAME} on demand.
+     * Only the global option lines of the resource are touched, so
      * hand-written per-element entries and comments survive.
      * The resource is changed through the (undoable) store, so that the
      * subsequent port sees the new values; this is why the dialog is shown

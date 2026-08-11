@@ -16,85 +16,43 @@
  */
 package nl.utwente.groove.explore;
 
-import nl.utwente.groove.explore.encode.Serialized;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
+import nl.utwente.groove.explore.config.ExploreConfig;
+import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.explore.result.Acceptor;
-import nl.utwente.groove.explore.result.CycleAcceptor;
-import nl.utwente.groove.explore.strategy.LTLStrategy;
 import nl.utwente.groove.explore.strategy.Strategy;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
+import nl.utwente.groove.util.AIGenerated;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
-import nl.utwente.groove.util.parse.Parser;
 
 /**
- * An ExploreType is a combination of a serialized strategy, a serialized
- * acceptor and a bound to the number of results.
- * To use the {@link ExploreType}, it should be fed into an {@link Exploration}.
+ * An ExploreType determines what an exploration does: it instantiates the
+ * strategy and acceptor for a given grammar, and bounds the number of
+ * results. Most explorations are configuration-based (see
+ * {@code ConfiguredExploreType}); the model-checking and minimax
+ * explorations, which the exploration feature model deliberately does not
+ * cover, have dedicated subclasses. To use an {@link ExploreType}, it
+ * should be fed into an {@link Exploration}.
  * @author Arend Rensink
  */
-public class ExploreType {
-    private final Serialized strategy;
-    private final Serialized acceptor;
-    private final int bound;
-
+@NonNullByDefault
+public abstract class ExploreType {
     /**
-     * Initialise to a given exploration.
-     * @param strategy strategy component of the exploration; non-{@code null}
-     * @param acceptor acceptor component of the exploration; non-{@code null}
+     * Initialises the exploration type.
      * @param bound number of results: {@code 0} means unbounded
      */
-    public ExploreType(Serialized strategy, Serialized acceptor, int bound) {
-        assert strategy != null;
-        this.strategy = strategy;
-        assert acceptor != null;
-        this.acceptor = acceptor;
+    protected ExploreType(int bound) {
         this.bound = bound;
     }
 
-    /**
-     * Initialise to a given exploration, by named strategy and acceptor
-     * @param strategy name of the strategy component
-     * @param acceptor name of the acceptor component
-     * @param nrResults number of results: {@code 0} means unbounded
-     */
-    public ExploreType(String strategy, String acceptor, int nrResults) {
-        this(new Serialized(strategy), new Serialized(acceptor), nrResults);
-    }
-
-    /**
-     * Initialise to a given exploration, by named strategy and acceptor
-     * @param strategy strategy component value
-     * @param acceptor acceptor component value
-     * @param nrResults number of results: {@code 0} means unbounded
-     */
-    public ExploreType(StrategyValue strategy, AcceptorValue acceptor, int nrResults) {
-        this(strategy.toSerialized(), acceptor.toSerialized(), nrResults);
-    }
-
-    /**
-     * Initialises to the default exploration, which is formed by the BFS
-     * strategy, the final acceptor and 0 (=infinite) results.
-     */
-    private ExploreType() {
-        this("bfs", "final", 0);
-    }
-
-    /**
-     * Getter for the serialised strategy.
-     */
-    public Serialized getStrategy() {
-        return this.strategy;
-    }
-
-    /**
-     * Getter for the serialised acceptor.
-     */
-    public Serialized getAcceptor() {
-        return this.acceptor;
-    }
+    private final int bound;
 
     /**
      * Returns the exploration bound.
@@ -104,44 +62,42 @@ public class ExploreType {
     }
 
     /**
-     * Returns a string that identifies the exploration.
+     * Returns a string that identifies the exploration, for display purposes.
      * @return the identifying string
      */
-    public String getIdentifier() {
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("");
-        buffer.append(this.strategy.toString());
-        buffer.append(" / ");
-        buffer.append(this.acceptor.toString());
-        buffer.append(" / ");
-        if (this.bound == 0) {
-            buffer.append("infinite");
-        } else {
-            buffer.append(this.bound);
-        }
-        return buffer.toString();
-    }
+    abstract public String getIdentifier();
 
     /**
      * Returns the strategy, instantiated for a given graph grammar.
-     * @throws FormatException if the grammar is incompatible with the (serialised)
+     * @throws FormatException if the grammar is incompatible with the
      * strategy.
      */
-    public Strategy getParsedStrategy(Grammar grammar) throws FormatException {
-        return StrategyEnumerator.parseStrategy(grammar, this.strategy);
-    }
+    abstract public Strategy getParsedStrategy(Grammar grammar) throws FormatException;
 
     /**
      * Returns a prototype acceptor, instantiated for a given graph grammar.
-     * @throws FormatException if the grammar is incompatible with the (serialised)
+     * @throws FormatException if the grammar is incompatible with the
      * acceptor.
      */
-    public Acceptor getParsedAcceptor(Grammar grammar) throws FormatException {
-        if (getParsedStrategy(grammar) instanceof LTLStrategy) {
-            return CycleAcceptor.PROTOTYPE;
-        } else {
-            return AcceptorEnumerator.parseAcceptor(grammar, this.acceptor);
-        }
+    abstract public Acceptor getParsedAcceptor(Grammar grammar) throws FormatException;
+
+    /**
+     * Returns a variant of this exploration type with a different result
+     * bound ({@code 0} meaning unbounded).
+     * @throws IllegalArgumentException if the count is inconsistent with
+     * this exploration type
+     */
+    abstract public ExploreType withResultCount(int count);
+
+    /**
+     * Indicates if an exploration of this type presents its result as traces
+     * from the start state to the result states, rather than as the result
+     * states themselves. Consumers may use this to switch to a trace view of
+     * the explored LTS. This implementation returns {@code false}.
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    public boolean presentsResultAsTraces() {
+        return false;
     }
 
     /**
@@ -167,7 +123,7 @@ public class ExploreType {
         return result;
     }
 
-    private Grammar testGrammar;
+    private @Nullable Grammar testGrammar;
 
     private Factory<FormatErrorSet> grammarErrors = Factory.lazy(() -> {
         FormatErrorSet errors = new FormatErrorSet();
@@ -185,6 +141,42 @@ public class ExploreType {
     });
 
     /**
+     * Callback method allowing the exploration type to apply its per-GTS
+     * features (collapse mode, algebra family, persistence) to a given GTS.
+     * May only be called on a fresh GTS: the features are baked into the
+     * rule application record and the start state, so they cannot change
+     * once the start state has materialised (asserted here). Called from
+     * {@link #newExploration} and from the Simulator's GTS reset.
+     * This implementation does nothing.
+     */
+    public void prepareGTS(GTS gts) {
+        if (!gts.isFresh()) {
+            throw Exceptions.illegalState("Per-GTS features can only be applied to a fresh GTS");
+        }
+        // no per-GTS features by default
+    }
+
+    /**
+     * Callback method preparing a GTS for a single exploration run of this
+     * type; called once per run, from the {@link Exploration} constructor.
+     * Verifies that the GTS is compatible with the per-GTS features of this
+     * type and (re-)engages the operational switches for the run. This
+     * implementation refuses a GTS that does not persist its states: an
+     * exploration type without a persistence feature of its own would
+     * store every discovered state into a state set that no longer
+     * collapses (see {@link GTS#retainTraces}).
+     * @throws FormatException if the GTS was explored under per-GTS
+     * features that are inconsistent with this exploration type
+     */
+    public void prepareRun(GTS gts) throws FormatException {
+        if (!gts.isPersistent()) {
+            throw new FormatException(
+                "This exploration cannot continue a state space explored without persistence;"
+                    + " use Restart");
+        }
+    }
+
+    /**
      * Factory method for an exploration based on this type.
      * @param gts the GTS on which the exploration will be performed
      * @throws FormatException if the rule system of {@code gts} is not
@@ -192,7 +184,7 @@ public class ExploreType {
      * @see #test(Grammar)
      */
     final public Exploration newExploration(GTS gts) throws FormatException {
-        return new Exploration(this, gts.startState());
+        return newExploration(gts, null);
     }
 
     /**
@@ -204,89 +196,39 @@ public class ExploreType {
      * compatible with this exploration
      * @see #test(Grammar)
      */
-    final public Exploration newExploration(GTS gts, GraphState start) throws FormatException {
-        return new Exploration(this, start == null
-            ? gts.startState()
-            : start);
-    }
-
-    /**
-     * Returns a string that, when used as input for {@link #parse(String)},
-     * will return an exploration equal to this one.
-     */
-    public String unparse() {
-        String result = StrategyEnumerator.toParsableStrategy(this.strategy) + " "
-            + AcceptorEnumerator.toParsableAcceptor(this.acceptor) + " " + this.bound;
-        return result;
+    final public Exploration newExploration(GTS gts,
+                                            @Nullable GraphState start) throws FormatException {
+        if (start == null) {
+            if (gts.isFresh()) {
+                // apply the per-GTS features before materialising the start
+                // state below
+                prepareGTS(gts);
+            }
+            start = gts.startState();
+        }
+        return new Exploration(this, start);
     }
 
     @Override
     public String toString() {
-        return unparse();
+        return getIdentifier();
     }
 
-    /** Parser for serialised explorations. */
-    static public Parser<ExploreType> parser() {
-        return new Parser.AParser<>(SYNTAX_MESSAGE, ExploreType.DEFAULT) {
-            @Override
-            public ExploreType parse(String input) throws FormatException {
-                if (input.length() == 0) {
-                    return getDefaultValue();
-                }
-                return ExploreType.parse(input);
-            }
-
-            @Override
-            public <V extends ExploreType> String unparse(V value) {
-                return value.unparse();
-            }
-        };
+    /** Returns the default exploration (breadth-first, final states,
+     * unbounded): the realisation of the default exploration configuration. */
+    static public ExploreType getDefault() {
+        return DEFAULT.get();
     }
 
-    /**
-     * Parses an exploration description into an exploration instance.
-     * The description must be a list of two or three space-separated substrings:
-     * <li> The first value is the name of the strategy
-     * <li> The second value is the name of the acceptor
-     * <li> the (optional) third value is the number of expected results;
-     * if omitted, the number is infinite
-     * @param description the exploration description to be parsed
-     * @return the parsed exploration (non-{@code null})
-     * @throws FormatException if the description could not be parsed
-     */
-    static public ExploreType parse(String description) throws FormatException {
-        String[] parts = description.split("\\s");
-        if (parts.length < 2 || parts.length > 3) {
-            throw new FormatException("Can't parse exploration descriptor '%s'. " + SYNTAX_MESSAGE,
-                description);
+    /** The lazily computed realisation of the default configuration; lazy so
+     * that a realisation failure surfaces at the point of use rather than as
+     * an {@link ExceptionInInitializerError} of this class. */
+    static private final Factory<ExploreType> DEFAULT = Factory.lazy(() -> {
+        try {
+            return ExploreTypeConverter.toExploreType(new ExploreConfig());
+        } catch (FormatException exc) {
+            throw Exceptions.illegalState("Default exploration configuration is unrealisable: %s",
+                                          exc.getMessage());
         }
-        Serialized strategy = StrategyEnumerator.instance().parseCommandline(parts[0]);
-        if (strategy == null) {
-            throw new FormatException("Can't parse strategy '%s'", parts[0]);
-        }
-        Serialized acceptor = AcceptorEnumerator.instance().parseCommandline(parts[1]);
-        if (acceptor == null) {
-            throw new FormatException("Can't parse acceptor '%s'", parts[1]);
-        }
-        int resultCount = 0;
-        if (parts.length == 3) {
-            String countMessage
-                = String.format("Result count '%s' must be a non-negative number", parts[2]);
-            try {
-                resultCount = Integer.parseInt(parts[2]);
-            } catch (NumberFormatException e) {
-                throw new FormatException(countMessage);
-            }
-            if (resultCount < 0) {
-                throw new FormatException(countMessage);
-            }
-        }
-        return new ExploreType(strategy, acceptor, resultCount);
-    }
-
-    /** Message describing the syntax of a parsable exploration strategy. */
-    static public final String SYNTAX_MESSAGE
-        = "Required format: \"<strategy> <acceptor> [<resultcount>]\"";
-    /** Default exploration (DFS, final states, infinite). */
-    static public final ExploreType DEFAULT = new ExploreType();
+    });
 }

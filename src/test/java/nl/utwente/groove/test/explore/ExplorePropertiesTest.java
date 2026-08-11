@@ -18,98 +18,207 @@ package nl.utwente.groove.test.explore;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.File;
+import java.nio.file.Files;
+import java.util.Map;
+import java.util.Optional;
 
 import org.junit.Test;
 
 import nl.utwente.groove.explore.ExploreType;
+import nl.utwente.groove.explore.LTLExploreType;
+import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.GrammarProperties;
+import nl.utwente.groove.grammar.QualName;
+import nl.utwente.groove.grammar.model.GrammarModel;
+import nl.utwente.groove.grammar.model.ResourceKind;
+import nl.utwente.groove.io.store.SystemStore;
+import nl.utwente.groove.util.Version;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
- * Tests for the storage of exploration configurations in the grammar
- * properties: the new 'exploration' key, its precedence over the legacy
- * 'explorationStrategy' key, and the conversion between them.
+ * Tests the storage of the default exploration configuration: the
+ * {@code exploration} property as a reference to an {@code explore} settings
+ * resource, its resolution at the grammar model level, the property checker
+ * for the reference, and the read-time fallback for the legacy
+ * {@code explorationStrategy} key.
  * @author Arend Rensink
  * @version $Revision$
  */
 public class ExplorePropertiesTest {
+    /** Directory of the sample grammars. */
+    static private final String INPUT_DIR = "junit/samples";
+
     /** Tests the values of a fresh properties object. */
     @Test
-    public void testDefaults() {
+    public void testDefaults() throws Exception {
         var properties = new GrammarProperties();
-        assertEquals(new ExploreConfig(), properties.getExploreConfig());
-        assertEquals(ExploreType.DEFAULT.unparse(), properties.getExploreType().unparse());
+        assertNull(properties.getExplorationName());
+        assertSame(ExploreType.getDefault(), properties.getLegacyExploreType());
+        // a grammar without any exploration setting yields the defaults
+        GrammarModel grammar = newGrammar();
+        assertSame(ExploreType.getDefault(), grammar.getDefaultExploreType());
+        assertEquals(new ExploreConfig(), grammar.getDefaultExploreConfig());
     }
 
-    /** Tests that a stored configuration is retrievable in both forms. */
+    /** Tests that a referenced resource is resolved to its configuration; the
+     * reference is the local name within the {@code explore} folder. */
     @Test
-    public void testStoreConfig() throws FormatException {
-        var properties = new GrammarProperties();
-        var config = ExploreConfig.parse("next=newest count=first");
-        properties.setExploreConfig(config);
-        assertEquals("next=newest count=first",
-                     properties.getProperty(GrammarKey.EXPLORE_CONFIG.getName()));
-        assertFalse(properties.containsKey(GrammarKey.EXPLORATION));
-        assertEquals(config, properties.getExploreConfig());
-        assertEquals("dfs final 1", properties.getExploreType().unparse());
-    }
-
-    /** Tests that a stored legacy exploration type is converted on retrieval. */
-    @Test
-    public void testLegacyFallback() throws FormatException {
-        var properties = new GrammarProperties();
-        properties.setExploreType(ExploreType.parse("dfs final 1"));
-        assertTrue(properties.containsKey(GrammarKey.EXPLORATION));
-        assertFalse(properties.containsKey(GrammarKey.EXPLORE_CONFIG));
+    public void testReference() throws Exception {
+        GrammarModel grammar
+            = newGrammar(Map.of(QualName.parse("explore.fast"), "next = newest\ncount = first\n"),
+                         "fast");
+        assertEquals(QualName.name("fast"), grammar.getProperties().getExplorationName());
+        assertConfigured("next=newest count=first", grammar.getDefaultExploreType());
         assertEquals(ExploreConfig.parse("next=newest count=first"),
-                     properties.getExploreConfig());
-        // an inexpressible legacy value falls back to the default configuration
-        properties.setExploreType(ExploreType.parse("ltl:true cycle"));
-        assertEquals(new ExploreConfig(), properties.getExploreConfig());
+                     grammar.getDefaultExploreConfig());
     }
 
-    /** Tests that the configuration key takes precedence over the legacy key. */
+    /** Tests that a nested resource name works as reference target, the
+     * reference being the (nested) local name. */
     @Test
-    public void testPrecedence() throws FormatException {
-        var properties = new GrammarProperties();
-        properties.setExploreConfig(ExploreConfig.parse("next=newest"));
-        // re-adding the legacy key does not change the outcome
-        properties.setExploreType(ExploreType.parse("linear final 0"));
-        assertTrue(properties.containsKey(GrammarKey.EXPLORATION));
-        assertEquals("dfs final 0", properties.getExploreType().unparse());
-        assertEquals(ExploreConfig.parse("next=newest"), properties.getExploreConfig());
+    public void testNestedReference() throws Exception {
+        GrammarModel grammar
+            = newGrammar(Map.of(QualName.parse("explore.nightly.run"), "next = random\n"),
+                         "nightly.run");
+        assertConfigured("next=random", grammar.getDefaultExploreType());
     }
 
-    /** Tests that storing the configuration removes the legacy key. */
+    /**
+     * Tests the property checker for the reference: an unresolvable local name
+     * and an erroneous resource are flagged; a valid reference passes.
+     */
     @Test
-    public void testStoreRemovesLegacy() throws FormatException {
+    public void testReferenceChecker() throws Exception {
+        GrammarModel grammar = newGrammar(Map
+            .of(QualName.parse("explore.good"), "next = newest\n", QualName.parse("explore.broken"),
+                "next = sideways\n"), null);
+        var key = GrammarKey.EXPLORE_CONFIG;
+        assertTrue(key.check(grammar, Optional.of(QualName.name("good"))).isEmpty());
+        assertFalse(key.check(grammar, Optional.of(QualName.name("missing"))).isEmpty());
+        assertFalse(key.check(grammar, Optional.of(QualName.name("broken"))).isEmpty());
+        // resolution of a broken reference falls back to the default
+        setExplorationName(grammar, "broken");
+        assertSame(ExploreType.getDefault(), grammar.getDefaultExploreType());
+    }
+
+    /**
+     * Tests that an unrealisable configuration is flagged on the resource
+     * itself (by the schema check), and resolves to the default type.
+     */
+    @Test
+    public void testUnrealisable() throws Exception {
+        GrammarModel grammar
+            = newGrammar(Map.of(QualName.parse("explore.nen"), "heuristic = nen\n"), "nen");
+        var model = grammar.getResource(ResourceKind.SETTINGS, QualName.parse("explore.nen"));
+        assertTrue(model.hasErrors());
+        assertSame(ExploreType.getDefault(), grammar.getDefaultExploreType());
+    }
+
+    /** Tests that a stored legacy exploration description is translated on
+     * retrieval, in both the type and the configuration form. */
+    @Test
+    public void testLegacyFallback() throws Exception {
+        GrammarModel grammar = newGrammar();
+        setLegacy(grammar, "dfs final 1");
+        assertConfigured("next=newest count=first", grammar.getDefaultExploreType());
+        assertEquals(ExploreConfig.parse("next=newest count=first"),
+                     grammar.getDefaultExploreConfig());
+        // a non-configuration legacy value yields its dedicated type,
+        // and falls back to the default configuration
+        setLegacy(grammar, "ltl:true cycle 0");
+        assertInstanceOf(LTLExploreType.class, grammar.getDefaultExploreType());
+        assertEquals(new ExploreConfig(), grammar.getDefaultExploreConfig());
+    }
+
+    /** Tests that the reference takes precedence over the legacy key. */
+    @Test
+    public void testPrecedence() throws Exception {
+        GrammarModel grammar
+            = newGrammar(Map.of(QualName.parse("explore.fast"), "next = newest\n"), "fast");
+        setLegacy(grammar, "linear final 0");
+        assertConfigured("next=newest", grammar.getDefaultExploreType());
+    }
+
+    /** Tests that setting the reference removes the legacy key. */
+    @Test
+    public void testSetReferenceRemovesLegacy() throws Exception {
         var properties = new GrammarProperties();
-        properties.setExploreType(ExploreType.parse("linear final 0"));
-        properties.setExploreConfig(ExploreConfig.parse("next=newest"));
+        properties.setProperty(GrammarKey.EXPLORATION.getName(), "linear final 0");
+        properties.setExplorationName(QualName.name("fast"));
         assertFalse(properties.containsKey(GrammarKey.EXPLORATION));
-        // storing the default configuration leaves no keys at all
-        properties.setExploreType(ExploreType.parse("linear final 0"));
-        properties.setExploreConfig(new ExploreConfig());
-        assertFalse(properties.containsKey(GrammarKey.EXPLORATION));
-        assertFalse(properties.containsKey(GrammarKey.EXPLORE_CONFIG));
-        assertEquals(ExploreType.DEFAULT.unparse(), properties.getExploreType().unparse());
+        assertEquals(QualName.name("fast"), properties.getExplorationName());
     }
 
-    /** Tests that a stored but unrealisable configuration yields the default type. */
+    /** Tests that the version repair leaves the legacy key in place: it is
+     * interpreted by the read-time fallback instead of being converted. */
     @Test
-    public void testUnrealisableConfig() throws FormatException {
+    public void testNoRepair() {
         var properties = new GrammarProperties();
-        var config = ExploreConfig.parse("shape=trace");
-        properties.setExploreConfig(config);
-        assertEquals(config, properties.getExploreConfig());
-        assertEquals(ExploreType.DEFAULT.unparse(), properties.getExploreType().unparse());
-        // the key checker reports the problem
-        assertFalse(GrammarKey.EXPLORE_CONFIG.check(null, config).isEmpty());
-        assertTrue(GrammarKey.EXPLORE_CONFIG
-            .check(null, ExploreConfig.parse("next=newest"))
-            .isEmpty());
+        properties.setProperty(GrammarKey.GRAMMAR_VERSION.getName(), Version.GRAMMAR_VERSION_3_11);
+        properties.setProperty(GrammarKey.EXPLORATION.getName(), "dfs final 1");
+        var repaired = properties.repairVersion();
+        assertEquals("dfs final 1", repaired.getProperty(GrammarKey.EXPLORATION.getName()));
+        assertFalse(repaired.containsKey(GrammarKey.EXPLORE_CONFIG));
+    }
+
+    // ----------------------------------------------------------------------
+    // Helper methods
+    // ----------------------------------------------------------------------
+
+    /** Asserts that an exploration type is configuration-based with a given
+     * configuration text. */
+    private void assertConfigured(String expected, ExploreType type) throws FormatException {
+        assertInstanceOf(ConfiguredExploreType.class, type);
+        assertEquals(ExploreConfig.parse(expected), ((ConfiguredExploreType) type).getConfig());
+    }
+
+    /** Creates a modifiable ferryman grammar model without exploration settings. */
+    static private GrammarModel newGrammar() throws Exception {
+        return newGrammar(Map.of(), null);
+    }
+
+    /**
+     * Creates a modifiable ferryman grammar model with given explore settings
+     * resources, and optionally the exploration property set to one of them.
+     * @param reference the <i>local</i> name of the referenced resource, i.e.,
+     * without the {@code explore} folder segment
+     */
+    static private GrammarModel newGrammar(Map<QualName,String> resources,
+                                           String reference) throws Exception {
+        SystemStore original
+            = SystemStore.newStore(new File(INPUT_DIR + "/ferryman.gps"), false, true);
+        File dir = Files.createTempDirectory("explore-properties-test").toFile();
+        dir.deleteOnExit();
+        SystemStore store = original.save(new File(dir, "ferryman.gps"), true);
+        if (!resources.isEmpty()) {
+            store.putTexts(ResourceKind.SETTINGS, resources);
+        }
+        GrammarModel result = store.toGrammarModel();
+        if (reference != null) {
+            setExplorationName(result, reference);
+        }
+        return result;
+    }
+
+    /** Sets the exploration reference in a grammar's stored properties. */
+    static private void setExplorationName(GrammarModel grammar, String name) throws Exception {
+        var properties = grammar.getProperties().clone();
+        properties.setExplorationName(QualName.parse(name));
+        ((SystemStore) grammar.getStore()).putProperties(properties);
+    }
+
+    /** Sets the legacy exploration strategy key in a grammar's stored properties. */
+    static private void setLegacy(GrammarModel grammar, String value) throws Exception {
+        var properties = grammar.getProperties().clone();
+        properties.setProperty(GrammarKey.EXPLORATION.getName(), value);
+        ((SystemStore) grammar.getStore()).putProperties(properties);
     }
 }

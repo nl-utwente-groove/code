@@ -12,6 +12,7 @@ import java.util.Set;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
+import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
@@ -95,6 +96,22 @@ public class LoadGrammarAction extends SimulatorAction {
         }
         String fileGrammarVersion = props.getGrammarVersion();
         int compare = Version.compareGrammarVersion(fileGrammarVersion);
+        // an older grammar whose only version gap is the exploration-property
+        // conversion (3.11 -> 3.12) and that has no stored legacy property
+        // needs no repair, so it is loaded silently, without a resave prompt;
+        // the shortcut self-disables as soon as the current grammar version
+        // moves past 3.12, since it does not cover later conversions
+        String legacyExploration = props.getProperty(GrammarKey.EXPLORATION);
+        if (compare > 0
+            && Version
+                .compareGrammarVersions(fileGrammarVersion, Version.GRAMMAR_VERSION_3_11) >= 0
+            && Version
+                .compareGrammarVersions(Version.getCurrentGrammarVersion(),
+                                        Version.GRAMMAR_VERSION_3_12)
+                <= 0
+            && (legacyExploration == null || legacyExploration.isEmpty())) {
+            compare = 0;
+        }
         final boolean saveAfterLoading = (compare != 0);
         final File newGrammarFile;
         if (compare < 0) {
@@ -117,15 +134,6 @@ public class LoadGrammarAction extends SimulatorAction {
                 }
                 break;
             default: // cancel
-                return false;
-            }
-        } else if (compare > 0) {
-            // Trying to load an older grammar from a URL.
-            if (!VersionDialog.showOldURL(this.getFrame(), props)) {
-                return false;
-            }
-            newGrammarFile = selectSaveAs(null);
-            if (newGrammarFile == null) {
                 return false;
             }
         } else {

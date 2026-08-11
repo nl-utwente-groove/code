@@ -32,7 +32,9 @@ import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.Settings;
+import nl.utwente.groove.grammar.model.SettingsContent;
 import nl.utwente.groove.grammar.model.SettingsModel;
+import nl.utwente.groove.grammar.model.SettingsSchemas;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
@@ -42,8 +44,9 @@ import nl.utwente.groove.util.parse.FormatException;
 
 /**
  * Configuration of the Ecore porter: the global encoding options plus the
- * per-element overrides, as read from the grammar's {@link #RESOURCE_NAME}
- * settings resource (schema {@link EcoreMappingSchema#NAME}).
+ * per-element overrides, as read from the grammar's unique settings resource
+ * of schema {@link EcoreMappingSchema#NAME} (created, by default, under the
+ * name {@link #RESOURCE_NAME}).
  * <p>
  * Entry keys are parsed from the right: the last {@code .}-separated segment is
  * the choice key, the segments before it (if any) form an Ecore element path
@@ -61,6 +64,27 @@ public class EcoreMapping {
      * @throws FormatException if any entry does not fit the vocabulary
      */
     public EcoreMapping(Properties props) throws FormatException {
+        this(props, null);
+    }
+
+    /**
+     * Constructs a mapping from the parsed content of a settings resource.
+     * Behaves as {@link #EcoreMapping(Properties)}, except that every error
+     * carries the position of the entry it is about.
+     * @param content the parsed settings content; the {@code $schema} entry is ignored
+     * @throws FormatException if any entry does not fit the vocabulary
+     */
+    public EcoreMapping(SettingsContent content) throws FormatException {
+        this(content.properties(), content);
+    }
+
+    /**
+     * Constructs a mapping from a set of settings entries, optionally
+     * accompanied by the content they were parsed from; if the content is
+     * given, the errors carry the position of the entry they are about.
+     */
+    private EcoreMapping(Properties props, @Nullable SettingsContent content)
+        throws FormatException {
         FormatErrorSet errors = new FormatErrorSet();
         Ordering ordering = Ordering.NONE;
         boolean useIdentifiers = true;
@@ -73,31 +97,33 @@ public class EcoreMapping {
                 continue;
             }
             String value = props.getProperty(key).trim();
+            var numbers = SettingsContent.numbers(content, key);
             List<String> segments = Arrays.asList(key.split("\\.", -1));
             String choice = segments.get(segments.size() - 1);
             List<String> path = segments.subList(0, segments.size() - 1);
             if (path.stream().anyMatch(String::isEmpty) || choice.isEmpty()) {
-                errors.add("Malformed Ecore mapping key '%s'", key);
+                errors.add("Malformed Ecore mapping key '%s'", key, numbers);
                 continue;
             }
             EcoreKey keyForm = EcoreKey.lookup(choice, path.size());
             if (keyForm == null) {
                 List<EcoreKey> forms = EcoreKey.withText(choice);
                 if (forms.isEmpty()) {
-                    errors.add("Unknown Ecore mapping key '%s'", key);
+                    errors.add("Unknown Ecore mapping key '%s'", key, numbers);
                 } else if (forms.stream().allMatch(EcoreKey::isGlobal)) {
                     errors
-                        .add("'%s' is a global option; key '%s' should have no prefix", choice,
-                             key);
+                        .add("'%s' is a global option; key '%s' should have no prefix", choice, key,
+                             numbers);
                 } else {
                     errors
-                        .add("Key '%s' should have the form %s", key, EcoreKey.patterns(forms));
+                        .add("Key '%s' should have the form %s", key, EcoreKey.patterns(forms),
+                             numbers);
                 }
                 continue;
             }
             String valueError = keyForm.checkValue(value);
             if (valueError != null) {
-                errors.add("Value '%s' of '%s' %s", value, key, valueError);
+                errors.add("Value '%s' of '%s' %s", value, key, valueError, numbers);
                 continue;
             }
             switch (keyForm) {
@@ -197,16 +223,12 @@ public class EcoreMapping {
     /**
      * Returns the names of the settings resources of the
      * {@link EcoreMappingSchema#NAME} schema in a given grammar, in
-     * alphabetical order: the schema is the leading name segment.
+     * alphabetical order: the singleton {@link #RESOURCE_NAME} resource as
+     * well as any residents of an {@code ecore} folder, since the resources
+     * are found by their schema rather than by a fixed name.
      */
     public static List<QualName> candidates(GrammarModel grammar) {
-        return grammar
-            .getResourceMap(ResourceKind.SETTINGS)
-            .keySet()
-            .stream()
-            .filter(name -> name.get(0).equals(EcoreMappingSchema.NAME))
-            .sorted()
-            .toList();
+        return SettingsSchemas.getResourceNames(grammar, EcoreMappingSchema.INSTANCE);
     }
 
     /** Returns the default mapping: no ordering encoding, identifiers in use,
@@ -266,9 +288,10 @@ public class EcoreMapping {
         return String.join("\n", lines) + "\n";
     }
 
-    /** Name of the settings resource holding the Ecore mapping. */
+    /** Default name of a newly created settings resource holding the Ecore
+     * mapping; an existing resource is located by its schema, not by its name. */
     public static final String RESOURCE_NAME = "ecore";
-    /** Qualified name of the settings resource holding the Ecore mapping. */
+    /** Qualified form of {@link #RESOURCE_NAME}. */
     public static final QualName RESOURCE_QUAL_NAME = QualName.name(RESOURCE_NAME);
     /** Choice key for the ordering encoding (global or per-feature).
      * @see EcoreKey#ORDERING */

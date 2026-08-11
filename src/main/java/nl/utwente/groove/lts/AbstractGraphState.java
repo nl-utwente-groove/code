@@ -144,6 +144,33 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     }
 
     /**
+     * Clears the cached outgoing-transition structures, so that they are
+     * recomputed from the stored transition stubs on next use. Only
+     * meaningful for a closed state (an open state's transitions live in
+     * the cache only); does nothing if the cache is currently collapsed,
+     * since a reconstructed cache recomputes from the stored stubs anyway.
+     * Used after an unstored exploration (see {@link GTS#retainTraces}).
+     */
+    void clearCachedTransitionStubs() {
+        assert isClosed();
+        if (hasCache()) {
+            getCache().clearTransitionCache();
+        }
+    }
+
+    /**
+     * Adds a single stub to the stored transition stubs. Used to retain a
+     * spanning transition after an unstored exploration (see
+     * {@link GTS#retainTraces}), where the closure-time copy of the cached
+     * stubs was deliberately skipped.
+     */
+    void addStoredTransitionStub(GraphTransitionStub stub) {
+        var stubs = Arrays.copyOf(this.transitionStubs, this.transitionStubs.length + 1);
+        stubs[stubs.length - 1] = stub;
+        this.transitionStubs = stubs;
+    }
+
+    /**
      * Stores a set of outgoing transition stubs in a memory efficient way.
      */
     private void setStoredTransitionStubs(Collection<GraphTransitionStub> outTransitionSet) {
@@ -231,7 +258,11 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         int oldStatus = this.status;
         boolean result = setStatus(Flag.CLOSED, true);
         if (result) {
-            setStoredTransitionStubs(getCachedTransitionStubs());
+            if (getGTS().isStoring()) {
+                setStoredTransitionStubs(getCachedTransitionStubs());
+            }
+            // without storing, the stubs die with the (softly referenced)
+            // cache, so that a closed state does not pin its successors
             fireStatus(oldStatus);
             getCache().registerClosure();
         }

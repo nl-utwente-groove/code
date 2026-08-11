@@ -17,11 +17,16 @@
  */
 package nl.utwente.groove.explore.strategy;
 
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Random;
 import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import gov.nasa.ltl.trans.Formula;
@@ -35,6 +40,10 @@ import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.match.MatcherFactory;
+import nl.utwente.groove.util.AIGenerated;
+import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.Randomness;
+import nl.utwente.groove.util.Randomness.Purpose;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.verify.BuchiGraph;
 import nl.utwente.groove.verify.BuchiLocation;
@@ -52,31 +61,37 @@ import nl.utwente.groove.verify.Proposition;
  * @author Harmen Kastenberg
  * @version $Revision$
  */
+@NonNullByDefault
 public class LTLStrategy extends Strategy {
     @Override
-    protected void prepare(GTS gts, GraphState state, Acceptor acceptor) {
+    protected void prepare(GTS gts, @Nullable GraphState state, Acceptor acceptor) {
         assert acceptor instanceof CycleAcceptor;
         super.prepare(gts, state, acceptor);
         MatcherFactory.instance(gts.hasSimpleGraphs()).setDefaultEngine();
-        this.stateSet = new ProductStateSet();
-        this.stateSet.addListener(this.collector);
-        this.acceptor = (CycleAcceptor) acceptor;
-        this.acceptor.setStrategy(this);
+        var stateSet = new ProductStateSet();
+        this.stateSet = stateSet;
+        stateSet.addListener(this.collector);
+        var cycleAcceptor = (CycleAcceptor) acceptor;
+        this.acceptor = cycleAcceptor;
+        cycleAcceptor.setStrategy(this);
         this.result = acceptor.getResult();
-        this.stateSet.addListener(this.acceptor);
+        stateSet.addListener(cycleAcceptor);
         this.stateStack = new Stack<>();
-        assert (this.startLocation != null) : "The property automaton should have an initial state";
-        ProductState startState = createState(gts.startState(), null, this.startLocation);
+        var startLocation = this.startLocation;
+        assert startLocation != null : "The property automaton should have an initial state";
+        ProductState startState = createState(gts.startState(), null, startLocation);
         this.startState = startState;
         this.nextState = startState;
-        this.stateSet.addState(startState);
+        stateSet.addState(startState);
         this.stateStrategy.setGTS(gts);
     }
 
     @Override
     public void finish() {
+        var acceptor = this.acceptor;
+        assert acceptor != null : "Strategy not prepared";
         getStateSet().removeListener(this.collector);
-        getStateSet().removeListener(this.acceptor);
+        getStateSet().removeListener(acceptor);
     }
 
     @Override
@@ -108,7 +123,6 @@ public class LTLStrategy extends Strategy {
      * that this property can be parsed correctly
      */
     public void setProperty(String property) {
-        assert property != null;
         this.property = property;
         try {
             Formula<Proposition> formula
@@ -122,7 +136,9 @@ public class LTLStrategy extends Strategy {
 
     /** Returns the property being checked (in string form as set by {@link #setProperty(String)}). */
     public String getProperty() {
-        return this.property;
+        var result = this.property;
+        assert result != null : "Property not set";
+        return result;
     }
 
     /**
@@ -137,7 +153,7 @@ public class LTLStrategy extends Strategy {
      * Callback method to return the next state to be explored.
      * Also pushes this state on the explored stack.
      */
-    protected final ProductState getNextState() {
+    protected final @Nullable ProductState getNextState() {
         return this.nextState;
     }
 
@@ -152,7 +168,7 @@ public class LTLStrategy extends Strategy {
      * @return the new top of the search stack, or {@code null} if
      * the stack is empty.
      */
-    protected ProductState rollbackState() {
+    protected @Nullable ProductState rollbackState() {
         ProductState previous = getStateStack().pop();
         // close the current state
         getStateSet().setClosed(previous);
@@ -180,7 +196,9 @@ public class LTLStrategy extends Strategy {
                         finalState = false;
                         ProductTransition prodTrans
                             = addTransition(prodState, trans, buchiTrans.target());
-                        result = findCounterExample(prodState, prodTrans.target());
+                        assert prodTrans != null : "%s is being explored, so cannot be closed"
+                            .formatted(prodState);
+                        result = findCounterExample(prodState, prodTrans);
                         if (result) {
                             break trans;
                         }
@@ -235,7 +253,7 @@ public class LTLStrategy extends Strategy {
     }
 
     /** Selects a state from the set of unexplored states. */
-    protected ProductState getFreshState() {
+    protected @Nullable ProductState getFreshState() {
         return this.collector.pickRandomNewState();
     }
 
@@ -246,40 +264,94 @@ public class LTLStrategy extends Strategy {
         state.setColour(getRecord().blue());
     }
 
-    /** Tests if a counterexample can be constructed between given
-     * source and target states; if so, adds the counterexample to the result.
-     * @param source source state of the potential counterexample
-     * @param target target state of the potential counterexample
+    /** Tests if a counterexample can be constructed from the search stack
+     * and a given potential closing transition; if so, adds the counterexample
+     * to the result.
+     * @param source source state of the potential closing transition; expected
+     * to be the current top of the search stack
+     * @param closing potential closing transition of the counterexample cycle
      * @return {@code true} if a counterexample was found
      */
-    protected final boolean findCounterExample(ProductState source, ProductState target) {
+    protected final boolean findCounterExample(ProductState source, ProductTransition closing) {
+        ProductState target = closing.target();
         boolean result = (target.colour() == getRecord().cyan())
             && (source.getBuchiLocation().isAccepting() || target.getBuchiLocation().isAccepting());
         if (result) {
-            // notify counter-example
-            var exploreResult = this.result;
-            GraphState previous = null;
-            for (ProductState stackState : getStateStack()) {
-                var next = stackState.getGraphState();
-                exploreResult.addState(next);
-                if (previous != null) {
-                    var inTrans = findTransitionTo(previous, next);
-                    exploreResult.addTransition(inTrans.get());
-                }
-                previous = next;
-            }
-            if (previous != null) {
-                var inTrans = findTransitionTo(previous, target.getGraphState());
-                exploreResult.addTransition(inTrans.get());
-            }
+            addCounterExample(source, Collections.singletonList(closing));
         }
         return result;
     }
 
-    /** Returns a transition from a given source state to a given target state, if any. */
-    private Optional<? extends GraphTransition> findTransitionTo(GraphState source,
-                                                                 GraphState target) {
-        return source.getTransitions().stream().filter(t -> t.target().equals(target)).findAny();
+    /**
+     * Adds a counterexample lasso to the exploration result (see
+     * {@link nl.utwente.groove.explore.ExploreResult.Lasso}).
+     * The lasso consists of the path along the current search stack, extended
+     * by a given pivot state (if that is not already the top of the stack) and
+     * a chain of product transitions leading from the pivot state back to a
+     * state on the path, at which the cycle closes.
+     * @param pivot final product state of the path proper; either the top of
+     * the search stack, or a state whose direct predecessor is the top
+     * @param trail non-empty chain of product transitions leading from the
+     * pivot state to the state at which the cycle closes
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    public final void addCounterExample(ProductState pivot, List<ProductTransition> trail) {
+        // reconstruct the product-level path along the search stack,
+        // extended by the pivot state and the trail
+        List<ProductState> pathStates = new ArrayList<>(getStateStack());
+        List<ProductTransition> path = new ArrayList<>();
+        for (int i = 1; i < pathStates.size(); i++) {
+            path.add(getLink(pathStates.get(i - 1), pathStates.get(i)));
+        }
+        if (pathStates.isEmpty()) {
+            pathStates.add(pivot);
+        } else if (pathStates.get(pathStates.size() - 1) != pivot) {
+            path.add(getLink(pathStates.get(pathStates.size() - 1), pivot));
+            pathStates.add(pivot);
+        }
+        for (var trans : trail) {
+            path.add(trans);
+            pathStates.add(trans.target());
+        }
+        // the final path state closes the cycle; find its earlier occurrence
+        ProductState closure = pathStates.get(pathStates.size() - 1);
+        int start = pathStates.indexOf(closure);
+        assert start < path.size() : "Cycle closure %s does not occur on the path %s"
+            .formatted(closure, path);
+        // store the counterexample in the result;
+        // the final path state duplicates the cycle start and is skipped
+        var result = this.result;
+        assert result != null : "Strategy not prepared";
+        pathStates.subList(0, pathStates.size() - 1).forEach(s -> result.addState(s.getGraphState()));
+        var prefix = toGraphTransitions(path.subList(0, start));
+        var cycle = toGraphTransitions(path.subList(start, path.size()));
+        prefix.forEach(result::addTransition);
+        cycle.forEach(result::addTransition);
+        result.setLasso(new ExploreResult.Lasso(prefix, cycle));
+    }
+
+    /** Returns the first product transition between two given product states.
+     * Such a transition is guaranteed to exist if the states are consecutive
+     * on the search stack.
+     */
+    private ProductTransition getLink(ProductState source, ProductState target) {
+        for (var trans : source.outTransitions()) {
+            if (trans.target().equals(target)) {
+                return trans;
+            }
+        }
+        throw Exceptions.illegalState("No product transition from %s to %s", source, target);
+    }
+
+    /** Extracts the graph transitions from a chain of product transitions,
+     * skipping the {@code null} graph transitions of the artificial self-loops
+     * added for final states. */
+    static private List<GraphTransition> toGraphTransitions(List<ProductTransition> path) {
+        return path
+            .stream()
+            .map(ProductTransition::graphTransition)
+            .filter(Objects::nonNull)
+            .toList();
     }
 
     /**
@@ -288,15 +360,18 @@ public class LTLStrategy extends Strategy {
      * a call to {@link #prepare}.
      */
     protected final ProductState getStartState() {
-        return this.startState;
+        var result = this.startState;
+        assert result != null : "Strategy not prepared";
+        return result;
     }
 
     /**
      * Returns a random open successor of a state, if any. Returns null
      * otherwise.
      */
-    protected ProductTransition getNextSuccessor(ProductState state) {
-        RandomChooserInSequence<ProductTransition> chooser = new RandomChooserInSequence<>();
+    protected @Nullable ProductTransition getNextSuccessor(ProductState state) {
+        RandomChooserInSequence<ProductTransition> chooser
+            = new RandomChooserInSequence<>(getRandomGen());
         for (ProductTransition trans : state.outTransitions()) {
             if (!trans.graphTransition().getAction().isProperty()) {
                 if (!trans.target().isClosed()) {
@@ -344,8 +419,9 @@ public class LTLStrategy extends Strategy {
      * @param targetLocation the location of the target Buchi graph-state
      * @see ProductState#addTransition(ProductTransition)
      */
-    private ProductTransition addTransition(ProductState source, GraphTransition transition,
-                                            BuchiLocation targetLocation) {
+    private @Nullable ProductTransition addTransition(ProductState source,
+                                                      @Nullable GraphTransition transition,
+                                                      BuchiLocation targetLocation) {
         ProductTransition result = null;
         if (!source.isClosed()) {
             // we assume that we only add transitions for modifying graph
@@ -379,7 +455,7 @@ public class LTLStrategy extends Strategy {
     /** Creates a product state from a graph state or transition, and
      * a Buchi location.
      */
-    private ProductState createState(GraphState state, GraphTransition transition,
+    private ProductState createState(GraphState state, @Nullable GraphTransition transition,
                                      BuchiLocation targetLocation) {
         if (transition == null) {
             // the system-state is a final one for which we add an artificial
@@ -391,7 +467,7 @@ public class LTLStrategy extends Strategy {
     }
 
     private ProductTransition createProductTransition(ProductState source,
-                                                      GraphTransition transition,
+                                                      @Nullable GraphTransition transition,
                                                       ProductState target) {
         return new ProductTransition(source, transition, target);
     }
@@ -402,14 +478,18 @@ public class LTLStrategy extends Strategy {
      * call to {@link #prepare}
      */
     protected final ProductStateSet getStateSet() {
-        return this.stateSet;
+        var result = this.stateSet;
+        assert result != null : "Strategy not prepared";
+        return result;
     }
 
     /**
      * Returns the current search-stack.
      */
     public final Stack<ProductState> getStateStack() {
-        return this.stateStack;
+        var result = this.stateStack;
+        assert result != null : "Strategy not prepared";
+        return result;
     }
 
     /** Returns the record for this model checking run. */
@@ -417,22 +497,38 @@ public class LTLStrategy extends Strategy {
         return this.record;
     }
 
-    /** Property to be chacked. */
-    private String property;
+    /** Property to be checked; set by {@link #setProperty}. */
+    private @Nullable String property;
     /** Record of this model checking run. */
     private Record record = new Record();
-    /** The synchronised product of the system and the property. */
-    private ProductStateSet stateSet;
+    /** The synchronised product of the system and the property;
+     * set in {@link #prepare}. */
+    private @Nullable ProductStateSet stateSet;
     /** The current Buchi graph-state the system is at. */
-    private ProductState nextState;
-    /** The Buchi start graph-state of the system. */
-    private ProductState startState;
-    /** Acceptor to be added to the product GTS. */
-    private CycleAcceptor acceptor;
+    private @Nullable ProductState nextState;
+    /** The Buchi start graph-state of the system; set in {@link #prepare}. */
+    private @Nullable ProductState startState;
+    /** Acceptor to be added to the product GTS; set in {@link #prepare}. */
+    private @Nullable CycleAcceptor acceptor;
+    /** Returns the random generator for the successor and new-state choices. */
+    protected final Random getRandomGen() {
+        return this.rgen;
+    }
+
+    /**
+     * Source of the random successor and new-state choices, seeded once per
+     * strategy instance from the {@link Randomness} registry, so that a
+     * fixed master seed makes the choices reproducible while successive
+     * choices still draw fresh values (see {@link RandomChooserInSequence}).
+     */
+    private final Random rgen = Randomness.newRandom(Purpose.EXPLORATION);
     /** State collector which randomly provides unexplored states. */
-    private RandomNewStateChooser collector = new RandomNewStateChooser();
-    /** Initial location of the Buchi graph encoding the property to be verified. */
-    private BuchiLocation startLocation;
-    private Stack<ProductState> stateStack;
-    private ExploreResult result;
+    private RandomNewStateChooser collector = new RandomNewStateChooser(this.rgen);
+    /** Initial location of the Buchi graph encoding the property to be verified;
+     * set by {@link #setProperty}. */
+    private @Nullable BuchiLocation startLocation;
+    /** The search stack; set in {@link #prepare}. */
+    private @Nullable Stack<ProductState> stateStack;
+    /** The exploration result; set in {@link #prepare}. */
+    private @Nullable ExploreResult result;
 }

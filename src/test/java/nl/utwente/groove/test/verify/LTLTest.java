@@ -19,20 +19,24 @@ package nl.utwente.groove.test.verify;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.HashSet;
+import java.util.stream.Collectors;
+
 import org.junit.Test;
 
 import org.junit.Assert;
-import nl.utwente.groove.explore.AcceptorValue;
 import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.explore.ExploreResult;
+import nl.utwente.groove.explore.ExploreResult.Lasso;
 import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.Generator;
-import nl.utwente.groove.explore.StrategyValue;
-import nl.utwente.groove.explore.encode.Serialized;
-import nl.utwente.groove.explore.encode.Template;
+import nl.utwente.groove.explore.LTLExploreType;
+import nl.utwente.groove.explore.strategy.Boundary;
 import nl.utwente.groove.explore.strategy.GraphNodeSizeBoundary;
-import nl.utwente.groove.explore.strategy.Strategy;
 import nl.utwente.groove.lts.GTS;
+import nl.utwente.groove.lts.GraphState;
+import nl.utwente.groove.lts.GraphTransition;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -42,8 +46,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * @version $Revision$
  */
 public class LTLTest {
-    private StrategyValue strategyValue;
-    private Template<Strategy> strategyTemplate;
+    private LTLExploreType.Kind kind;
     /** Transition system used by this test. */
     private GTS gts;
 
@@ -59,28 +62,28 @@ public class LTLTest {
     /** Test on a specially designed transition system. */
     @Test
     public void testNormal() {
-        prepare(StrategyValue.LTL);
+        prepare(LTLExploreType.Kind.PLAIN);
         testMC();
     }
 
     /** Test on a specially designed transition system. */
     @Test
     public void testBounded() {
-        prepare(StrategyValue.LTL_BOUNDED);
+        prepare(LTLExploreType.Kind.BOUNDED);
         testMC();
     }
 
     /** Test on a specially designed transition system. */
     @Test
     public void testPocket() {
-        prepare(StrategyValue.LTL_POCKET);
+        prepare(LTLExploreType.Kind.POCKET);
         testMC();
     }
 
     /** Test the proper handling of attributes. */
     @Test
     public void testAttributes() {
-        prepare(StrategyValue.LTL);
+        prepare(LTLExploreType.Kind.PLAIN);
         prepare("attributes");
         testFormula("F set_finished", true);
         testFormula("F set_finished(true)", true);
@@ -100,7 +103,7 @@ public class LTLTest {
     /** Test the treatment of special transition labels (gh #855). */
     @Test
     public void testTransitionLabels() {
-        prepare(StrategyValue.LTL);
+        prepare(LTLExploreType.Kind.PLAIN);
         prepare("mc-label");
         // rule p has special transition label 'go'
         testFormula("go U r", false);
@@ -139,10 +142,9 @@ public class LTLTest {
         testFormula("X q", true);
     }
 
-    /** Sets the LTL strategy. */
-    private void prepare(StrategyValue ltlStrategy) {
-        this.strategyValue = ltlStrategy;
-        this.strategyTemplate = ltlStrategy.getTemplate();
+    /** Sets the LTL model-checking flavour. */
+    private void prepare(LTLExploreType.Kind kind) {
+        this.kind = kind;
     }
 
     /** Sets the GTS to a given grammar in the JUnit samples. */
@@ -159,28 +161,71 @@ public class LTLTest {
     }
 
     /** Tests the number of counterexamples in the current;y
-     * set GTS for a given formula. */
-    private void testFormula(String formula, boolean succeed) {
-        Serialized strategy = null;
-        switch (this.strategyValue) {
-        case LTL:
-            strategy = this.strategyTemplate.toSerialized(formula);
-            break;
-        case LTL_BOUNDED:
-        case LTL_POCKET:
-            strategy = this.strategyTemplate.toSerialized(formula, new GraphNodeSizeBoundary(0, 1));
-            break;
-        default:
-            throw Exceptions.unreachable(); // there are no other LTL strategies
-        }
-        ExploreType exploreType = new ExploreType(strategy, AcceptorValue.CYCLE.toSerialized(), 1);
+     * set GTS for a given formula.
+     * @return the exploration result, for further inspection
+     */
+    private ExploreResult testFormula(String formula, boolean succeed) {
+        Boundary boundary = this.kind == LTLExploreType.Kind.PLAIN
+            ? null
+            : new GraphNodeSizeBoundary(0, 1);
+        ExploreType exploreType = new LTLExploreType(this.kind, formula, boundary);
         try {
             Exploration exploration = exploreType.newExploration(this.gts, this.gts.startState());
             exploration.play();
             assertEquals(succeed, exploration.getResult()
                 .isEmpty());
+            return exploration.getResult();
         } catch (FormatException e) {
-            Assert.fail();
+            throw Exceptions.illegalState("%s", e);
         }
+    }
+
+    /** Tests the shape of the counterexample produced by LTL model
+     * checking (see gh #484): it must be a connected lasso starting in the
+     * start state, whose recorded states and transitions coincide with the
+     * result content, and which passes through a state violating the inner
+     * until-property.
+     */
+    @Test
+    @AIGenerated("Claude Fable 5, 2026-08")
+    public void testCounterExample() {
+        prepare(LTLExploreType.Kind.PLAIN);
+        prepare("circular-buffer");
+        ExploreResult result = testFormula("G(!get U put)", false);
+        Lasso lasso = result.getLasso();
+        Assert.assertNotNull(lasso);
+        // the prefix runs from the start state to the start of the cycle
+        GraphState current = this.gts.startState();
+        for (GraphTransition trans : lasso.prefix()) {
+            assertEquals(current, trans.source());
+            current = trans.target();
+        }
+        // the cycle is non-empty, connected, and returns to its first state
+        Assert.assertFalse(lasso.cycle().isEmpty());
+        GraphState cycleStart = current;
+        for (GraphTransition trans : lasso.cycle()) {
+            assertEquals(current, trans.source());
+            current = trans.target();
+        }
+        assertEquals(cycleStart, current);
+        // the result contains exactly the transitions of the lasso,
+        // and exactly the lasso transitions' source states
+        var lassoTransitions = new HashSet<>(lasso.prefix());
+        lassoTransitions.addAll(lasso.cycle());
+        assertEquals(lassoTransitions, new HashSet<>(result.getTransitions()));
+        var lassoStates = lassoTransitions
+            .stream()
+            .map(GraphTransition::source)
+            .collect(Collectors.toSet());
+        assertEquals(lassoStates, new HashSet<>(result.getStates()));
+        // the lasso passes through a state violating (!get U put), i.e.,
+        // one where put is not enabled (the full buffer)
+        Assert
+            .assertTrue(lassoStates
+                .stream()
+                .anyMatch(s -> s
+                    .getTransitions()
+                    .stream()
+                    .noneMatch(t -> t.label().text().equals("put"))));
     }
 }

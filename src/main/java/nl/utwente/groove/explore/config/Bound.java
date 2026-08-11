@@ -32,6 +32,9 @@ public enum Bound implements Setting.Kind {
     /** No bound; the state space is explored up to arbitrary depth. */
     NONE("none", "There is no bound; the state space is explored up to arbitrary depth",
         Setting.ContentType.NULL),
+    /** Initial-state bound: only the initial state is explored. */
+    INITIAL("initial", "Only the initial state is explored, and no further states are",
+        Setting.ContentType.NULL),
     /** Bound on the cost of the path to a state (requires a transition cost). */
     COST("cost", "States are bounded by the cost of the path leading to them",
         Setting.ContentType.LIMIT),
@@ -43,10 +46,12 @@ public enum Bound implements Setting.Kind {
         Setting.ContentType.LIMIT),
     /**
      * Bound on the number of edges of given types, as a comma-separated list
-     * of <i>label</i>{@code >}<i>bound</i> pairs.
+     * of <i>label</i>{@code >}<i>bound</i> pairs; labels may carry a
+     * {@code type:} or {@code flag:} prefix.
      */
     EDGES("edges", "States are bounded by their number of edges of given types"
-        + " (a comma-separated list of label>bound pairs)",
+        + " (a comma-separated list of label>bound pairs;"
+        + " labels may carry a type: or flag: prefix)",
         Setting.ContentType.STRING),
     /**
      * Condition bound: states satisfying the named rule condition (negated if

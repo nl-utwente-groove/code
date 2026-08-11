@@ -179,7 +179,7 @@ programme (possibly as successive PRs off the same line).
   back to converting a legacy `explorationStrategy` value; saving from the dialog
   writes the new key and drops the old one.
 
-### Phase 5 (later branch) — engine unification
+### Phase 5 (later branches) — engine unification
 
 One parametric frontier-based search algorithm (frontier + next-state policy +
 successor policy + goal + bound + persistence hooks) replacing the `ClosingStrategy`
@@ -188,11 +188,254 @@ heuristic, cost, beam, hash-collapse, persistence None, trace results, iterative
 deepening become implementable as ordinary feature values. LTL/CTL as goal types are
 revisited here.
 
-### Phase 6 (later branch) — demolition
+#### Phase 5a (branch `explore-parametric-engine`, 2026-07-22) — engine skeleton
+
+*Decisions (with Arend): strategy-subclass strangler; legacy strategy classes stay
+for the deprecated keyword path; parity bar = same GTS (state/transition/result
+counts), free order; RETE divergence reconciled on `explore-feature-model` first.*
+
+Reconnaissance showed `ClosingStrategy` is already pool-parametric — the BFS/DFS
+subclasses contain nothing but pool orderings. 5a therefore extracts the pool as a
+first-class injected policy instead of re-porting the exploration protocol:
+
+- `explore.engine`: `Pool` (take/add/readd/clear, may impose a depth bound) with
+  `QueuePool` (breadth-first) and `StackPool` (depth-first) replicating the legacy
+  orderings verbatim; `FrontierStrategy extends ClosingStrategy` delegating its pool
+  hooks to an injected `Pool`, inheriting the battle-tested `doNext()` protocol
+  (transient stack, KNOWN re-traversal, stop modes, oracle interruption) unchanged.
+- `explore.config.ConfiguredExploreType extends ExploreType`, produced by
+  `ExploreTypeConverter.toExploreType`: holds the config and *directly* instantiates
+  strategy (engine classes; `LinearStrategy`/`RandomLinearStrategy` for the
+  single-path family) and acceptors from the converter-computed legacy descriptors,
+  reusing the `Encoded*` semantic parsers (`EncodedEnabledRule`, `EncodedRuleFormula`,
+  `EncodedEdgeMap`) but bypassing Template/enumerator machinery. Since every config
+  consumer (grammar property, `-x`, dialog) funnels through `toExploreType`, routing
+  needed zero call-site changes; the deprecated `-s/-a` keyword path still uses the
+  enumerators and legacy classes.
+- `EngineParityTest`: ~20 configs × ferryman, A/B against the enumerator path,
+  asserting equal state/transition counts and result-state numbers (order proved
+  bit-identical, stronger than the agreed bar) plus engine-re-run determinism.
+
+The full protocol rewrite (needed for persistence None) is deferred until a feature
+demands it; heuristic/beam/random orders become `Pool` implementations in 5b+.
+
+#### Phase 5b slice 1 (2026-07-26) — seeded randomness
+
+*Decisions (with Arend): randomness first among the 5b slices; the two open
+seeding decisions resolved — streams re-derived per exploration with no run
+counter (fixed seed ⇒ identical explorations), seed settable via the
+`groove.randomSeed` system property and a `-seed` Generator option.*
+
+- `util.Randomness`: the master-seed registry from `claude/randomness-seeding.md`
+  (per-purpose streams EXPLORATION/ORACLE, splitmix64 derivation, lazy resolution
+  explicit → property → generated-and-logged).
+- `next=random` realised by `explore.engine.RandomPool`, converter keyword
+  `random-frontier` (engine-only; combines only with `bound=none`).
+- Existing random sites seeded: `RandomLinearStrategy` (was `Math.random`),
+  `RandomChooserInSequence` (was a static unseeded `Random`), `RandomOracle`
+  (unseeded default now draws from the ORACLE stream).
+- `RandomnessTest`: stream derivation, seeded-run reproducibility (incl.
+  order-dependent state numbering), random-frontier coverage.
+- Still unsupported: `successor=all-random` (needs a hook in the inherited
+  match-application order, not a pool); GTS-info seed storage (logged only).
+
+#### Phase 5b slice 2 (2026-07-27) — beam search
+
+*Decisions (with Arend): the **heuristic dimension is deferred entirely** — no
+`nen`, no priority ordering yet ("heuristics open the door to a wealth of
+possibilities, nen just scratches the surface; I want to design this
+carefully"). Cost-based ordering was decided to engage only in combination
+with a heuristic, so it is deferred along with it; `cost=uniform` keeps its
+current role as bound enabler. What remains of the ordered-pools slice is
+beam search, with the drop rule: a full beam drops the state that would be
+explored <i>last</i> (the take-order dual of take()).*
+
+- `frontier=beam:n` realised by `explore.engine.BeamPool` (converter keyword
+  `beam`, engine-only, with `next` and `size` arguments): a size-capped pool
+  whose exploration order within the beam is the next-state selection —
+  under `oldest` a full beam drops the incoming (newest) state, under
+  `newest` the oldest, under `random` a uniformly random one (incoming
+  included, seeded via `util.Randomness`).
+- Combines with all three `next` values and the goal/outcome/count features;
+  bounds still require plain bfs/dfs, single-successor generation still
+  requires a single-state frontier (error message generalised from
+  "unrestricted" to "multi-state" frontier).
+- `BeamSearchTest`: an unrestricted beam (capacity never reached) is
+  bit-identical to the corresponding plain pool for all three orders
+  (including the seeded random draws — `BeamPool.readd` appends under the
+  random order, replicating `RandomPool`); a restrictive beam explores
+  strictly less than the full state space, reproducibly.
+
+#### Phase 5b transient-nesting fix (2026-07-27)
+
+*Prompted by Arend's question whether transient states bypass the entire
+exploration machinery (they are part of a sub-exploration that ends in a
+single atomic transition). Investigation showed the bypass held at discovery
+time but leaked through the trial re-add of `ClosingStrategy.doNext` —
+triggered by recursive recipes (`fibonacci.gps`), where a try/else verdict
+around a nested recipe call cannot be decided at match time. Arend asked for
+the cleanup before further slices; livelock is not a concern because verdict
+resolution is push-driven and only a non-terminating transient descent (a
+rule-system error) stays pending, diverging under any scheme.*
+
+Fix: transient trial states are pushed back on the strategy's transient
+stack instead of the pool, symmetrically to `addExplorable`; the
+pools-never-see-transient-states contract is documented on `Pool` and
+asserted in `FrontierStrategy`; `TransientNestingTest` (fibonacci under all
+engine orders, incl. beam:2) guards the invariant that no transient state is
+left unexplored, and fails against the pre-fix code.
+
+#### Phase 5b slice 3 (2026-07-31) — persistence=none
+
+*Design question posed by Arend: how to implement persistence=none without
+undercutting the essential GTS-generation machinery. Answer (proposed
+2026-07-31, approved with three decisions): read `none` as **never-enter**
+rather than the plan's original add-on-close/remove sketch — discovered
+states never enter the GTS accumulator, so nothing ever needs removing and
+no late duplicate detection (with its transition-redirection headaches) is
+needed. Arend's decisions: (1) none = no revisit detection; (2) collapse
+becomes inoperative under none (not a rejected combination); (3) the GUI
+shows only what is retained.*
+
+Implementation (three commits):
+
+1. **Numbering counter** (parity refactor): `MatchApplier` numbered fresh
+   states by `gts.nodeCount()`; replaced by an explicit `GTS.getNextStateNr`
+   counter maintained in `addState` — value-identical while storing, and the
+   discovery count under persistence=none.
+2. **The storing seam**: `GTS.setStoring(boolean)` — without storing,
+   `addState` skips the state-set put (every state fresh, no certificates
+   computed) and `setClosed` skips persisting the cached transition stubs
+   into the state (`setStoredTransitionStubs`); the state/transition counts
+   and flagged state lists reflect only the retained part. Applied per run
+   via the new `ExploreType.prepareGTS` callback (from the `Exploration`
+   constructor), overridden in `ConfiguredExploreType`.
+3. **Enablement**: converter no longer rejects `persistence=none`;
+   `toConfig` short-circuits for `ConfiguredExploreType` (the config is
+   authoritative — persistence leaves no trace in the legacy descriptors);
+   `PersistenceTest` covers retention, result pinning, determinism, and
+   composition with the orders and beam.
+
+Key findings while implementing (see the state note for the full retention
+anatomy):
+
+- `GTS.addTransition` → `StateCache.addTransition` is **not just storage**:
+  it removes the explored match from the state's match set and triggers
+  closure when the set is finished. Bypassing it left every state open. The
+  correct cut is one level deeper: keep all cache bookkeeping (the cache is
+  the open state's working set, already protected from collapse while
+  open), and skip only the persistence step — `setClosed` no longer copies
+  the cached stubs into the state's hard array when not storing, so a
+  closed state does not pin its successors and fruitless subtrees are
+  garbage collected.
+- **Recipes do not compose with persistence=none in practice**: the
+  transient sub-exploration is exhaustive by design (it bypasses any
+  frontier restriction, including beam), so a diamond-rich recipe body
+  explodes without collapse — fibonacci OOMs. Not a bug; inherent.
+- Termination under none requires a finite tree unfolding: cyclic grammars
+  need a depth bound, and the depth bound is currently expressible only for
+  bfs/dfs (not random/beam) — a candidate refinement if none gets real use.
+
+Follow-up (same day, at Arend's request): an unstored run left the
+Simulator's LTS panel effectively empty, which "is not what a user would
+expect". Chosen alternative (from the options: flat result states, bounded
+recency window, Generator-only): **retain the result traces** — at the end
+of the run, `GTS.retainTraces` enters the result states, the last explored
+state, and their ancestor spines (alive anyway: pinned results keep their
+delta chains) into the GTS, together with the spanning transitions, so the
+GTS ends as the trace tree of what the run produced. The state set becomes
+non-collapsing (`COLLAPSE_NONE`: identity equality — isomorphic trace nodes
+stay distinct), storing flips back on, and the status message reports
+"(discovered N states, retained M)". This is de facto the retention layer
+of shape=trace; that slice reduces to presentation.
+
+#### Phase 5b slice 4 (2026-07-31) — shape=trace
+
+As predicted, mostly presentation: the trace machinery already existed —
+`ExploreResult.toFragment` / `GTSFragment.complete(internal)` build the
+trace fragment, including the recipe characterisation from the feature
+model's open question (public level = recipe transitions; rule steps behind
+the internal flag), and both the GUI (LTS filter drop-down, `Filter.RESULT`)
+and the Generator (`-traces`) could already show/save it. The slice wires
+the config key to that machinery:
+
+- `check()`: shape=trace + goal=none is inconsistent (no results, no
+  traces).
+- Simulator: after an exploration whose type is trace-shaped, `LTSDisplay`
+  auto-selects the RESULT filter (guarded on an actual GTS change, so
+  manual filter choices are not overridden by unrelated refreshes).
+- Generator: without an explicit `-traces`/`-spanning`, a trace-shaped
+  exploration saves the result traces (`getFilter` consults the effective
+  exploration type of the run).
+
+Prerequisite fix (own commit): the Generator's `-x` route decomposed the
+configured type into its serialised components and let `Transformer`
+rebuild a plain type — silently dropping persistence and breaking the
+engine-only keywords. `Transformer.setExploreType` now passes the type
+through intact.
+
+Surprise finding: a planned fallback in `GTSFragment.complete` (add rule
+steps when the recipe transition is missing) proved unnecessary — the
+transition machinery *reconstructs* recipe transitions from the spanning
+rule-step stubs, so even the retained trace of an unstored exploration
+shows recipe-level transitions after its caches are gone
+(`TraceShapeTest.testRecipeTransitionWithoutPersistence` guards this).
+
+#### Phase 5b slice 5 (2026-07-31) — per-GTS guard + collapse/algebra overrides
+
+*Arend's decision: "continue can never change basic assumptions about
+algebra or collapse: those must be consistent for the entire GTS, otherwise
+there is no sensible semantic interpretation." Analysis (approved): the
+per-GTS features are exactly {collapse, algebra, persistence} — those
+determine what the state space *is*; all other keys only select which part
+of a semantically fixed space is explored and reported, and stay freely
+changeable between runs (which also justifies keeping the transient per-run
+override). Litmus test: could runs with different values contribute to one
+GTS that is still a partial view of a single semantics?*
+
+Implementation (two commits):
+
+1. **The guard**: GTS records the three per-GTS features — overridable
+   collapse mode and algebra family (settable only on a fresh GTS; the
+   algebra is threaded into the `Record` via a new constructor, a collapse
+   override also sets the record flags) and the persistence flag (stable,
+   unlike the operational storing switch). `ConfiguredExploreType.prepareGTS`
+   is now apply-or-verify: apply on a fresh GTS (before the start state
+   materialises — `newExploration` prepares first, `SimulatorModel.resetGTS`
+   applies the current type at creation), verify on an explored one
+   (`checkGTS`, also used by the dialog to disable Continue with the reason
+   in its tooltip). Verification compares against the *recorded* values,
+   not the live record — the linear strategies switch the record's collapse
+   flag off mid-run. Closes the persistence mixed-mode corner.
+2. **The overrides**: converter accepts collapse=equality/isomorphism
+   (hash has no CollapseMode equivalent and stays rejected) and
+   algebra=default/big/point/term; kinds resolve in
+   `ConfiguredExploreType`. `OverridesTest` covers recorded values,
+   behavioural effects and the guard (including that an explicit override
+   resolving to the recorded value is allowed).
+
+### Phase 6 — demolition *[COMPLETED 2026-08-02, commits 594693426..687ec19dc]*
 
 Delete `explore.encode`, `explore.prettyparse`, `Serialized`, `ExploreType`,
 `StrategyValue`/`AcceptorValue` templates and the enumerators; retire the deprecated
 CLI aliases and the legacy property key.
+
+*[As executed, with two deliberate deviations from the sentence above (both
+decided with Arend 2026-08-02). (1) `ExploreType` was not deleted but survives
+as a small abstract base class: keeping the LTL, single-state, remote and
+minimax explorations as first-class citizens requires a common supertype. It
+carries no trace of the old serialised-descriptor representation; the concrete
+types are `ConfiguredExploreType` plus the dedicated `LTLExploreType` and
+`DirectExploreType` subclasses. (2) The CLI aliases `-s/-a/-r` and the legacy
+`explorationStrategy` property key were not retired but made permanent,
+reimplemented on `explore.config.parse.LegacySyntaxParser`, which translates
+the legacy keyword syntax directly into the feature model — this decision also
+un-blocked the demolition from waiting for a release, since deleting the old
+machinery then removed no user-facing behaviour. Everything else went as
+planned: both packages, the templates and the enumerators are gone (60 files,
+−5730 lines), along with the legacy `BFSStrategy`/`DFSStrategy`,
+`EngineParityTest` (parity job done) and `Transformer.setStrategy/setAcceptor`.
+See the state note for the as-built details and the residual open points.]*
 
 ## Open points (to be settled during the phases, with Arend where marked)
 

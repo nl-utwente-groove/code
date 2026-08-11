@@ -21,6 +21,16 @@ import org.eclipse.jdt.annotation.Nullable;
 public class RandomChooserInSequence<E> {
 
     /**
+     * Creates a chooser drawing its choices from a given random generator.
+     * The generator is typically owned by the caller and shared over
+     * successive choosers, so that every chooser draws fresh values.
+     * @param rgen source of the random choices
+     */
+    public RandomChooserInSequence(Random rgen) {
+        this.rgen = rgen;
+    }
+
+    /**
      * Shows an element to the random chooser.
      * @throws NullPointerException if <code>e</code> is null
      */
@@ -29,7 +39,7 @@ public class RandomChooserInSequence<E> {
             throw new NullPointerException();
         }
         this.nbSeen++;
-        if (rgen.nextInt(this.nbSeen) == 0) {
+        if (this.rgen.nextInt(this.nbSeen) == 0) {
             this.current = e;
         }
     }
@@ -63,9 +73,12 @@ public class RandomChooserInSequence<E> {
     /** The current randomly chosen element, among those already seen. */
     private @Nullable E current;
     /**
-     * A random generator. Give it a seed (e.g. 0) if for debugging purposes or
-     * other reasons you want all explorations of a strategy to be the same.
+     * The random generator supplied at construction. Deliberately not
+     * created here: a chooser is typically constructed per choice, so a
+     * generator seeded at construction would replay the same drawings
+     * in every chooser, making the choice a fixed function of the number
+     * of elements shown.
      */
-    private static final Random rgen = new Random();
+    private final Random rgen;
 
 }

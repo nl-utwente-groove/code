@@ -41,6 +41,7 @@ import nl.utwente.groove.control.CallStack;
 import nl.utwente.groove.control.instance.Frame;
 import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.grammar.Grammar;
+import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.host.HostEdgeSet;
 import nl.utwente.groove.grammar.host.HostFactory;
 import nl.utwente.groove.grammar.host.HostGraph;
@@ -55,6 +56,7 @@ import nl.utwente.groove.lts.Status.Flag;
 import nl.utwente.groove.transform.Record;
 import nl.utwente.groove.transform.oracle.NoValueOracle;
 import nl.utwente.groove.transform.oracle.ValueOracle;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.collect.NestedIterator;
 import nl.utwente.groove.util.collect.SetView;
@@ -121,17 +123,23 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         var result = this.startState;
         if (result == null) {
             this.startState = result = createStartState();
+            // the start state is entered in the state set even if the GTS
+            // does not store its states (see the invariant on the startState
+            // field, on which isRetained and retainTraces rely)
+            boolean storing = isStoring();
+            setStoring(true);
             addState(result);
+            setStoring(storing);
         }
         return result;
     }
 
     /**
      * Factory method to create a start graph for this GTS, by
-     * cloning a given host graph.
+     * cloning the grammar's start graph into this GTS's own host factory.
      */
     protected HostGraph createStartGraph() {
-        return getGrammar().getStartGraph().clone(getAlgebraFamily());
+        return getGrammar().getStartGraph().clone(getAlgebraFamily(), getHostFactory());
     }
 
     /**
@@ -162,12 +170,16 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
 
     /**
      * Returns the host element factory associated with this GTS.
-     * This is taken from the start state graph.
+     * This is a copy of the factory of the grammar's start graph: sharing
+     * that factory across GTSs would make the numbers of the nodes created
+     * during exploration — and with them the anchor hashes of the events
+     * built on those nodes — depend on how many explorations preceded the
+     * current one (gh #888).
      */
     public HostFactory getHostFactory() {
         var result = this.hostFactory;
         if (result == null) {
-            this.hostFactory = result = this.grammar.getStartGraph().getFactory();
+            this.hostFactory = result = this.grammar.getStartGraph().getFactory().copy();
         }
         return result;
     }
@@ -175,9 +187,38 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     /** Unique factory for host elements, associated with this GTS. */
     private @Nullable HostFactory hostFactory;
 
-    /** Returns the algebra family of the GTS. */
+    /** Returns the algebra family of the GTS: the per-GTS override if set,
+     * otherwise the grammar's algebra family. */
     public AlgebraFamily getAlgebraFamily() {
-        return getGrammar().getProperties().getAlgebraFamily();
+        var result = this.algebraFamily;
+        return result == null
+            ? getGrammar().getProperties().getAlgebraFamily()
+            : result;
+    }
+
+    /**
+     * Overrides the algebra family for this GTS. Only allowed on a fresh
+     * GTS: the family determines the data values in every state graph, so
+     * it must be constant for the lifetime of the GTS (it is baked into the
+     * start graph and the derivation record).
+     */
+    public void setAlgebraFamily(AlgebraFamily family) {
+        if (!isFresh() || this.record != null) {
+            throw Exceptions.illegalState("Algebra family must be set on a fresh GTS");
+        }
+        this.algebraFamily = family;
+    }
+
+    /** Per-GTS override of the grammar's algebra family, if any. */
+    private @Nullable AlgebraFamily algebraFamily;
+
+    /**
+     * Indicates that nothing has been built on this GTS yet: no start state
+     * has been materialised, so the per-GTS features (algebra family,
+     * collapse mode, persistence) can still be set.
+     */
+    public boolean isFresh() {
+        return this.startState == null;
     }
 
     // ----------------------- OBJECT OVERRIDES ------------------------
@@ -192,16 +233,201 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      *         then, <tt>state</tt> was added and the listeners notified).
      */
     public @Nullable GraphState addState(GraphState newState) {
-        // see if isomorphic graph is already in the LTS
-        GraphState result = allStateSet().put(newState);
+        // see if isomorphic graph is already in the LTS;
+        // without storing there is nothing to collapse against,
+        // so every state counts as fresh
+        GraphState result = isStoring()
+            ? allStateSet().put(newState)
+            : null;
         if (result == null) {
             // otherwise, add it to the GTS
+            this.nextStateNr = Math.max(this.nextStateNr, newState.getNumber() + 1);
             fireAddNode(newState);
             if (newState instanceof AbstractGraphState s) {
                 s.checkInitConstraints();
             }
         }
         return result;
+    }
+
+    /**
+     * Returns the number to be used for the next state added to this GTS.
+     * This exceeds the highest state number added so far; as long as states
+     * are numbered consecutively (as they are during exploration), it equals
+     * the number of states discovered.
+     */
+    public int getNextStateNr() {
+        return this.nextStateNr;
+    }
+
+    /** Number to be used for the next state added to this GTS. */
+    private int nextStateNr;
+
+    /**
+     * Indicates if discovered states and transitions are stored in this GTS.
+     * This is the case by default; it is switched off by explorations whose
+     * configuration sets state persistence to <i>none</i>.
+     * @see #setStoring(boolean)
+     */
+    public boolean isStoring() {
+        return this.storing;
+    }
+
+    /**
+     * Sets whether discovered states and transitions are stored in this GTS.
+     * While storing is off, {@link #addState} treats every state as fresh
+     * (there is nothing to collapse against) and retains neither states nor
+     * transitions; listeners are still notified of every addition, so
+     * acceptors and statistics see the full exploration. Only the states
+     * added while storing was on (in particular the start state) remain in
+     * the GTS; the state and transition counts reflect that retained part.
+     * Discovered states remain reachable only while the exploration needs
+     * them (frontier, ancestor chains of frontier states, and collected
+     * results), and are garbage collected afterwards.
+     * <p>This method is intended to be called before an exploration starts:
+     * initially via {@link #setPersistent}
+     * (from {@link nl.utwente.groove.explore.ExploreType#prepareGTS}), and
+     * per run via {@link nl.utwente.groove.explore.ExploreType#prepareRun}.
+     */
+    public void setStoring(boolean storing) {
+        this.storing = storing;
+    }
+
+    /** Flag indicating if discovered states and transitions are stored. */
+    private boolean storing = true;
+
+    /**
+     * Indicates if this GTS persists its discovered states. In contrast to
+     * {@link #isStoring()} — the operational switch, which is temporarily
+     * re-engaged at the end of an unstored exploration to retain the result
+     * traces — this records the persistence feature the GTS was explored
+     * under, and never changes after {@link #setPersistent}. It is the
+     * stable value to verify a continued exploration against.
+     */
+    public boolean isPersistent() {
+        return this.persistent;
+    }
+
+    /**
+     * Records the persistence feature for this GTS and engages the
+     * corresponding storing switch. Like the other per-GTS features, the
+     * recorded value must be constant for the lifetime of the GTS; it is
+     * (re-)applied per exploration run, which for an unstored GTS also
+     * re-disables the storing switch that trace retention flipped back on.
+     */
+    public void setPersistent(boolean persistent) {
+        if (!isFresh() && persistent != this.persistent) {
+            throw Exceptions.illegalState("Persistence must be constant for the lifetime of the GTS");
+        }
+        this.persistent = persistent;
+        setStoring(persistent);
+    }
+
+    /** Flag recording the persistence feature of this GTS. */
+    private boolean persistent = true;
+
+    /**
+     * Indicates if a given state is retained in this GTS, so that its
+     * status changes should be reflected in the state counts and flagged
+     * state lists. This is the case for all states while storing is on;
+     * without storing, only for the start state (which was added while
+     * storing was still on).
+     */
+    private boolean isRetained(GraphState state) {
+        return isStoring() || state == this.startState;
+    }
+
+    /**
+     * Retains the traces leading up to a given collection of states, at the
+     * end of an exploration that did not store its discovered states. Every
+     * given state and its ancestors (up to the first state already in the
+     * GTS) are entered into the GTS, together with the spanning transitions
+     * between them, so that the GTS afterwards contains the tree of traces
+     * to the given states. The state set is replaced by a non-collapsing
+     * one, because a trace may revisit a configuration: isomorphic trace
+     * states remain distinct nodes. Storing is switched back on, leaving
+     * the GTS in an ordinary consistent (though partial) shape; note that
+     * the state set stays non-collapsing, so a subsequent stored
+     * exploration of this GTS will not collapse fresh states either.
+     */
+    public void retainTraces(Collection<GraphState> tips) {
+        assert !isStoring();
+        StateSet traceSet = new StateSet(COLLAPSE_NONE, null);
+        for (GraphState state : allStateSet()) {
+            traceSet.put(state);
+        }
+        this.allStateSet = traceSet;
+        setStoring(true);
+        tips.forEach(this::retainTrace);
+        // the live caches of the retained closed states still hold the
+        // stubs of all their discovered outgoing transitions, while only
+        // the spanning stubs (entered above) were stored and counted; drop
+        // the cached transition structures so that the visible transitions
+        // are recomputed from the stored stubs, making the edge set
+        // consistent with the transition count and independent of cache
+        // liveness
+        for (GraphState state : allStateSet()) {
+            if (state.isClosed() && state instanceof AbstractGraphState s) {
+                s.clearCachedTransitionStubs();
+            }
+        }
+    }
+
+    /**
+     * Retains the trace of a single state: enters the state and its
+     * ancestors into the (non-collapsing) state set until reaching a state
+     * that is already present, together with the spanning transition of
+     * every state entered.
+     */
+    private void retainTrace(GraphState tip) {
+        // collect the not-yet-retained part of the trace, tip first
+        // (the put doubles as an identity-based membership test)
+        List<GraphState> spine = new ArrayList<>();
+        GraphState state = tip;
+        while (allStateSet().put(state) == null) {
+            spine.add(state);
+            if (state instanceof GraphNextState next) {
+                state = next.source();
+            } else {
+                break;
+            }
+        }
+        // register the states and their spanning transitions root-first,
+        // so that listeners see a transition's source before the transition
+        for (var it = spine.listIterator(spine.size()); it.hasPrevious();) {
+            GraphState retained = it.previous();
+            registerRetained(retained);
+            if (retained instanceof GraphNextState next) {
+                // the closure-time copy of the cached stubs was skipped for
+                // unstored states, so store this single stub explicitly
+                ((AbstractGraphState) next.source()).addStoredTransitionStub(next.toStub());
+                // count only: the listeners were already notified of this
+                // transition when it was discovered
+                countAddedTransition(next);
+            }
+        }
+    }
+
+    /**
+     * Updates the state counts and flagged state lists for a retained state.
+     * The listeners are deliberately not notified again: they were already
+     * notified of the state when it was discovered. The state's status
+     * flags predate its entry into the GTS, so they are accounted for here
+     * ({@link #fireUpdateState} only handles subsequent changes).
+     */
+    private void registerRetained(GraphState state) {
+        countAddedState(state);
+        if (state.isPublic()) {
+            for (Flag recorded : FLAG_ARRAY) {
+                if (state.hasFlag(recorded)) {
+                    this.stateCounts[recorded.ordinal()]++;
+                    var flaggedStates = this.statesMap.get(recorded);
+                    if (flaggedStates != null) {
+                        flaggedStates.add(state);
+                    }
+                }
+            }
+        }
     }
 
     /** Returns the policy for type checking. */
@@ -237,21 +463,49 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     }
 
     /**
-     * Method to determine the collapse strategy of the state set. This is
-     * determined by {@link Record#isCollapse()} and
-     * {@link Record#isCheckIso()}.
+     * Method to determine the collapse strategy of the state set: the
+     * per-GTS override if set, otherwise as determined by
+     * {@link Record#isCollapse()} and {@link Record#isCheckIso()}.
      */
     protected CollapseMode getCollapse() {
-        CollapseMode result;
-        if (!getRecord().isCollapse()) {
-            result = COLLAPSE_NONE;
-        } else if (!getRecord().isCheckIso()) {
-            result = COLLAPSE_EQUAL;
-        } else {
-            result = COLLAPSE_ISO_STRONG;
+        CollapseMode result = this.collapseMode;
+        if (result == null) {
+            result = CollapseMode.of(getRecord().isCollapse(), getRecord().isCheckIso());
         }
         return result;
     }
+
+    /**
+     * Returns the collapse mode recorded for this GTS: the per-GTS override
+     * if set, otherwise the mode determined by the grammar properties. In
+     * contrast to {@link #getCollapse()}, this is independent of later
+     * changes to the derivation record (such as the collapse switch-off by
+     * the linear strategies), so it is the stable value to verify a
+     * continued exploration against.
+     */
+    public CollapseMode getCollapseMode() {
+        CollapseMode result = this.collapseMode;
+        if (result == null) {
+            result = CollapseMode.ofProperties(getGrammar().getProperties());
+        }
+        return result;
+    }
+
+    /**
+     * Overrides the collapse mode for this GTS. Only allowed on a fresh
+     * GTS: the mode determines when two states are the same state, so it
+     * must be constant for the lifetime of the GTS (it is baked into the
+     * state set and the derivation record).
+     */
+    public void setCollapseMode(CollapseMode collapse) {
+        if (!isFresh() || this.allStateSet != null || this.record != null) {
+            throw Exceptions.illegalState("Collapse mode must be set on a fresh GTS");
+        }
+        this.collapseMode = collapse;
+    }
+
+    /** Per-GTS override of the grammar-determined collapse mode, if any. */
+    private @Nullable CollapseMode collapseMode;
 
     /**
      * Returns a view on the set of <i>public</i> states in the GTS.
@@ -412,7 +666,10 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      * @param trans the source state of the transition to be added
      */
     public void addTransition(GraphTransition trans) {
-        // add (possibly isomorphically modified) edge to LTS
+        // add (possibly isomorphically modified) edge to LTS;
+        // note that this also does the match and closure bookkeeping in the
+        // source state's cache, so it is needed even without storing - the
+        // transition is then retained only as long as the cache lives
         if (trans.source().addTransition(trans)) {
             fireAddEdge(trans);
         } else {
@@ -540,7 +797,13 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     public final Record getRecord() {
         var result = this.record;
         if (result == null) {
-            this.record = result = new Record(this.grammar, getHostFactory());
+            this.record = result = new Record(this.grammar, getHostFactory(), getAlgebraFamily());
+            var collapse = this.collapseMode;
+            if (collapse != null) {
+                // keep the record's collapse flags consistent with the override
+                result.setCollapse(collapse.isCollapse());
+                result.setCheckIso(collapse.isCheckIso());
+            }
         }
         return result;
     }
@@ -586,14 +849,19 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      */
     @Override
     protected void fireAddNode(GraphState state) {
-        this.transients |= state.isTransient();
-        this.absents |= state.isAbsent();
-        if (state.isPublic()) {
-            this.publicStateCount++;
-        }
+        countAddedState(state);
         super.fireAddNode(state);
         for (GTSListener listener : getGTSListeners()) {
             listener.addUpdate(this, state);
+        }
+    }
+
+    /** Updates the state counts for an added state, without notification. */
+    private void countAddedState(GraphState state) {
+        this.transients |= state.isTransient();
+        this.absents |= state.isAbsent();
+        if (isRetained(state) && state.isPublic()) {
+            this.publicStateCount++;
         }
     }
 
@@ -603,14 +871,22 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      */
     @Override
     protected void fireAddEdge(GraphTransition edge) {
-        this.inners |= edge.isInnerStep();
-        this.allTransitionCount++;
-        if (edge.isPublicStep()) {
-            this.publicTransitionCount++;
-        }
+        countAddedTransition(edge);
         super.fireAddEdge(edge);
         for (GTSListener listener : getGTSListeners()) {
             listener.addUpdate(this, edge);
+        }
+    }
+
+    /** Updates the transition counts for an added transition, without
+     * notification. */
+    private void countAddedTransition(GraphTransition edge) {
+        this.inners |= edge.isInnerStep();
+        if (isStoring()) {
+            this.allTransitionCount++;
+            if (edge.isPublicStep()) {
+                this.publicTransitionCount++;
+            }
         }
     }
 
@@ -622,28 +898,30 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     protected void fireUpdateState(GraphState state, int oldStatus) {
         this.transients |= state.isTransient();
         this.absents |= state.isAbsent();
-        boolean wasPublic = Status.isPublic(oldStatus);
-        boolean isPublic = state.isPublic();
-        if (wasPublic != isPublic) {
-            this.publicStateCount += wasPublic
-                ? -1
-                : +1;
-        }
-        for (Flag recorded : FLAG_ARRAY) {
-            var flaggedStates = this.statesMap.get(recorded);
-            boolean had = wasPublic && recorded.test(oldStatus);
-            int index = recorded.ordinal();
-            if (isPublic && state.hasFlag(recorded)) {
-                if (!had) {
-                    this.stateCounts[index]++;
-                    if (flaggedStates != null) {
-                        flaggedStates.add(state);
+        if (isRetained(state)) {
+            boolean wasPublic = Status.isPublic(oldStatus);
+            boolean isPublic = state.isPublic();
+            if (wasPublic != isPublic) {
+                this.publicStateCount += wasPublic
+                    ? -1
+                    : +1;
+            }
+            for (Flag recorded : FLAG_ARRAY) {
+                var flaggedStates = this.statesMap.get(recorded);
+                boolean had = wasPublic && recorded.test(oldStatus);
+                int index = recorded.ordinal();
+                if (isPublic && state.hasFlag(recorded)) {
+                    if (!had) {
+                        this.stateCounts[index]++;
+                        if (flaggedStates != null) {
+                            flaggedStates.add(state);
+                        }
                     }
-                }
-            } else if (had) {
-                this.stateCounts[index]--;
-                if (flaggedStates != null) {
-                    flaggedStates.remove(state);
+                } else if (had) {
+                    this.stateCounts[index]--;
+                    if (flaggedStates != null) {
+                        flaggedStates.remove(state);
+                    }
                 }
             }
         }
@@ -884,6 +1162,44 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
          * @see IsoChecker#isStrong()
          */
         COLLAPSE_ISO_STRONG;
+
+        /** Indicates if this mode collapses states at all.
+         * This is the mode's projection onto {@link Record#setCollapse}. */
+        @AIGenerated("Claude Fable 5, 2026-08")
+        public boolean isCollapse() {
+            return this != COLLAPSE_NONE;
+        }
+
+        /** Indicates if this mode collapses states modulo isomorphism.
+         * This is the mode's projection onto {@link Record#setCheckIso}. */
+        @AIGenerated("Claude Fable 5, 2026-08")
+        public boolean isCheckIso() {
+            return this == COLLAPSE_ISO_WEAK || this == COLLAPSE_ISO_STRONG;
+        }
+
+        /** Returns the mode encoded by the collapse and iso-check flags of a
+         * derivation record (see {@link Record#isCollapse} and
+         * {@link Record#isCheckIso}). The flags cannot express
+         * {@link #COLLAPSE_ISO_WEAK}: isomorphism collapse maps to the
+         * strong mode. */
+        @AIGenerated("Claude Fable 5, 2026-08")
+        public static CollapseMode of(boolean collapse, boolean checkIso) {
+            return collapse
+                ? checkIso
+                    ? COLLAPSE_ISO_STRONG
+                    : COLLAPSE_EQUAL
+                : COLLAPSE_NONE;
+        }
+
+        /** Returns the grammar-determined default mode for given grammar
+         * properties: strong isomorphism collapse if the isomorphism check
+         * is on, equality collapse otherwise. */
+        @AIGenerated("Claude Fable 5, 2026-08")
+        public static CollapseMode ofProperties(GrammarProperties properties) {
+            return properties.isCheckIsomorphism()
+                ? COLLAPSE_ISO_STRONG
+                : COLLAPSE_EQUAL;
+        }
     }
 
     /** Set of states that only tests for state number as equality. */

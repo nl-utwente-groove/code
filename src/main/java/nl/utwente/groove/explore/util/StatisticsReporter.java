@@ -300,9 +300,14 @@ public class StatisticsReporter extends AExplorationReporter {
         emit(HIGH, "%nGraph element count%n");
         emit(HIGH, intFormat, "Factory nodes:", factory.getNodeCount());
         emit(HIGH, intFormat, "Factory edges:", factory.getEdgeCount());
-        double nodeAvg = (double) this.graphCounter.getNodeCount() / getGTS().nodeCount();
+        // divide by the counter's own state count: the GTS counts reflect
+        // only the retained states, which under persistence=none is a
+        // fraction of what was discovered and counted
+        double nodeAvg = (double) this.graphCounter.getNodeCount()
+            / this.graphCounter.getStateCount();
         emit(HIGH, floatFormat, "Nodes/state (avg):", nodeAvg);
-        double edgeAvg = (double) this.graphCounter.getEdgeCount() / getGTS().edgeCount();
+        double edgeAvg = (double) this.graphCounter.getEdgeCount()
+            / this.graphCounter.getStateCount();
         emit(HIGH, floatFormat, "Edges/state (avg):", edgeAvg);
     }
 
@@ -481,8 +486,16 @@ public class StatisticsReporter extends AExplorationReporter {
 
         @Override
         public void addUpdate(GTS gts, GraphState state) {
+            this.stateCount++;
             this.nodeCount += state.getGraph().nodeCount();
             this.edgeCount += state.getGraph().edgeCount();
+        }
+
+        /** Returns the number of added states. In contrast to
+         * {@link GTS#nodeCount()}, this also counts discovered states that
+         * the GTS did not retain (see {@link GTS#isStoring()}). */
+        public int getStateCount() {
+            return this.stateCount;
         }
 
         /** Returns the number of nodes in the added states. */
@@ -495,6 +508,7 @@ public class StatisticsReporter extends AExplorationReporter {
             return this.edgeCount;
         }
 
+        private int stateCount;
         private int nodeCount;
         private int edgeCount;
         // ------------------------------------------------------------------------

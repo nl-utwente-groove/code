@@ -24,6 +24,9 @@ import java.util.List;
 import java.util.Stack;
 import java.util.function.Predicate;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.explore.result.Acceptor;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSListener;
@@ -38,15 +41,17 @@ import nl.utwente.groove.lts.Status.Flag;
  * transitions of its parent. Subclasses must decide on the order of the pool;
  * e.g., breadth-first or depth-first.
  */
+@NonNullByDefault
 abstract public class ClosingStrategy extends GTSStrategy {
-    /** Instantiates a conditional closing strategy, with a given continuation condition
+    /** Instantiates a conditional closing strategy, with a given stop condition
      * and a moment at which to apply it.
      * @param stopMode Moment at which to apply the condition
-     * @param exploreCondition exploration continues for every state satisfying it
+     * @param stopCondition exploration stops at every state satisfying it; the
+     * stop mode determines whether such a state is itself still explored
      */
-    protected ClosingStrategy(StopMode stopMode, Predicate<GraphState> exploreCondition) {
+    protected ClosingStrategy(StopMode stopMode, Predicate<GraphState> stopCondition) {
         this.stopMode = stopMode;
-        this.exploreCondition = exploreCondition;
+        this.stopCondition = stopCondition;
     }
 
     /** Instantiates an unconditional closing strategy. */
@@ -57,12 +62,23 @@ abstract public class ClosingStrategy extends GTSStrategy {
     @Override
     public GraphState doNext() throws InterruptedException {
         GraphState state = getNextState();
+        assert state != null : "doNext called without hasNext";
         List<MatchResult> matches = state.getMatches();
         if (state.getActualFrame().isTrial()) {
-            //assert !state.isTransient();
             // there are potential rule matches now blocked until
             // the previous ones have been explored
-            putBackInPool(state);
+            if (state.isTransient()) {
+                // a transient state is part of a nested sub-exploration that
+                // must complete before the surrounding exploration goes on,
+                // so it bypasses the pool, like in addExplorable: it is
+                // re-explored once its successors (pushed on top of it
+                // during the match application below) have been fully
+                // explored, by which time the pending verdicts of its
+                // control-frame attempt have propagated in
+                this.transientStack.push(state);
+            } else {
+                putBackInPool(state);
+            }
         }
         // explore known outgoing transitions of known states
         if (state.setFlag(Flag.KNOWN, false)) {
@@ -88,7 +104,7 @@ abstract public class ClosingStrategy extends GTSStrategy {
     }
 
     @Override
-    protected void prepare(GTS gts, GraphState state, Acceptor acceptor) {
+    protected void prepare(GTS gts, @Nullable GraphState state, Acceptor acceptor) {
         super.prepare(gts, state, acceptor);
         // for the closing strategy, there is no problem in aliasing
         // the graph data structures. On the whole, this seems wise, to
@@ -105,7 +121,7 @@ abstract public class ClosingStrategy extends GTSStrategy {
     }
 
     @Override
-    protected GraphState computeNextState() {
+    protected @Nullable GraphState computeNextState() {
         GraphState result;
         if (this.transientStack.isEmpty()) {
             result = getFromPool();
@@ -118,16 +134,17 @@ abstract public class ClosingStrategy extends GTSStrategy {
         return result;
     }
 
-    /** Indicates if the successors of a given state should be explored.
+    /** Indicates if exploration should stop at a given state, under a given
+     * stop mode: {@code true} means the state's successors are not explored.
      * This is a hook for conditional exploration.
      */
     protected boolean isStop(StopMode stopMode, GraphState state) {
-        return this.stopMode == stopMode && !state.isInner() && this.exploreCondition.test(state);
+        return this.stopMode == stopMode && !state.isInner() && this.stopCondition.test(state);
     }
 
     private final StopMode stopMode;
 
-    private final Predicate<GraphState> exploreCondition;
+    private final Predicate<GraphState> stopCondition;
 
     /** Adds a given state to the set of explorable states. */
     protected void addExplorable(GraphState state) {
@@ -141,7 +158,7 @@ abstract public class ClosingStrategy extends GTSStrategy {
     /** Callback method to retrieve the next element from the pool.
      * @return the next element, or {@code null} when the exploration is done.
      */
-    abstract protected GraphState getFromPool();
+    abstract protected @Nullable GraphState getFromPool();
 
     /** Callback method to add a graph state to the pool. */
     abstract protected void putInPool(GraphState state);

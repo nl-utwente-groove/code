@@ -19,8 +19,11 @@ package nl.utwente.groove.io.external.format.ecore;
 import java.util.Properties;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.annotation.HelpMap;
+import nl.utwente.groove.grammar.model.GrammarModel;
+import nl.utwente.groove.grammar.model.SettingsContent;
 import nl.utwente.groove.grammar.model.SettingsSchema;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
@@ -61,6 +64,18 @@ public class EcoreMappingSchema implements SettingsSchema {
     }
 
     @Override
+    public FormatErrorSet check(@Nullable GrammarModel grammar, SettingsContent content) {
+        // all mapping errors are about a single entry, so they can all carry
+        // the position of the key they are about
+        try {
+            new EcoreMapping(content);
+            return new FormatErrorSet();
+        } catch (FormatException exc) {
+            return exc.getErrors();
+        }
+    }
+
+    @Override
     public String getExplanation() {
         return "Configuration of the Ecore import and export: global encoding options "
             + "plus per-element overrides, whose keys start with a (package-qualified) "
@@ -85,7 +100,7 @@ public class EcoreMappingSchema implements SettingsSchema {
 
     /** The singleton instance of this schema. */
     public static final EcoreMappingSchema INSTANCE = new EcoreMappingSchema();
-    /** The name of this schema, doubling as the leading name segment of its
-     * settings resources. */
+    /** The name of this schema, as declared by the {@code $schema} entry of
+     * its settings resources. */
     public static final String NAME = "ecore";
 }

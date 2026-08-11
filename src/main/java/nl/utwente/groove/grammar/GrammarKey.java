@@ -30,10 +30,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.algebra.UserSignature;
-import nl.utwente.groove.explore.ExploreType;
-import nl.utwente.groove.explore.config.ExploreConfig;
-import nl.utwente.groove.explore.config.ExploreConfigChecker;
-import nl.utwente.groove.explore.config.ExploreTypeConverter;
+import nl.utwente.groove.explore.config.parse.LegacySyntaxParser;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.RuleModel;
@@ -208,18 +205,17 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
      * compatibility, but ignored if {@link #EXPLORE_CONFIG} is also set.
      */
     EXPLORATION("explorationStrategy", "Default exploration strategy for this grammar"
-        + " (deprecated; superseded by 'exploration')",
+        + "<p><b>(Deprecated; superseded by 'exploration')</b>",
         ValueType.EXPLORE_TYPE),
 
     /**
-     * Default exploration configuration, in the feature model vocabulary.
+     * Name of the default exploration configuration.
      */
     EXPLORE_CONFIG("exploration",
-        "<body>Default exploration configuration for this grammar, as a space-separated list"
-            + " of <i>key</i>=<i>value</i> settings (see the exploration dialog for the"
-            + " keys and values)."
+        "<body>Name of the settings resource (of the <i>explore</i> schema) holding the"
+            + " default exploration configuration for this grammar."
             + "<p>Supersedes the deprecated 'explorationStrategy'",
-        ValueType.EXPLORE_CONFIG),
+        ValueType.QUAL_NAME),
 
     /** Flag that determines if output parameters are added to group calls. */
     STORE_OUT_PARS("storeOutParameters",
@@ -344,8 +340,8 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
             case ACTION_POLICY -> CheckPolicy.multiParser;
             case DEAD_POLICY -> new Parser.EnumParser<>(CheckPolicy.class, CheckPolicy.OFF,
                 convert("off", null, "error", null));
-            case EXPLORATION -> ExploreType.parser();
-            case EXPLORE_CONFIG -> ExploreConfig.parser();
+            case EXPLORATION -> LegacySyntaxParser.parser();
+            case EXPLORE_CONFIG -> new Parser.OptionalParser<>(QualName.parser());
             case TRANSITION_PARAMETERS -> new Parser.EnumParser<>(ThreeValued.class,
                 ThreeValued.SOME, true);
             case LOCATION -> Parser.path;
@@ -603,17 +599,30 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
     };
 
     /**
-     * Checker that tests whether an exploration configuration is realisable
-     * and whether its grammar-dependent contents (condition formulas, rule
-     * names, edge labels) are valid in the grammar.
+     * Checker that tests whether the exploration reference — the local name of
+     * a resource within the {@code explore} folder — resolves to an existing,
+     * error-free settings resource. Resolution is delegated to
+     * {@link GrammarModel#getExploreSettings}, so that this checker and the
+     * default-exploration getters decide the validity of the reference
+     * identically. The content checks (value parsing, consistency,
+     * realisability, grammar-dependent contents) live on the resource itself,
+     * via its schema.
      */
     private static GrammarChecker exploreConfigChecker = (g, v) -> {
         FormatErrorSet result = new FormatErrorSet();
-        try {
-            ExploreTypeConverter.toExploreType(v.getExploreConfig());
-            result.addAll(ExploreConfigChecker.check(g, v.getExploreConfig()));
-        } catch (FormatException exc) {
-            result.addAll(exc.getErrors());
+        QualName local = v.getQualName().orElse(null);
+        if (local != null) {
+            try {
+                var model = g.getExploreSettings(local);
+                if (model.hasErrors()) {
+                    // summarise: the details are reported on the resource itself
+                    result
+                        .add("Exploration settings resource '%s' has errors",
+                             model.getQualName());
+                }
+            } catch (FormatException exc) {
+                result.addAll(exc.getErrors());
+            }
         }
         return result;
     };

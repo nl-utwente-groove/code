@@ -2,10 +2,8 @@ package nl.utwente.groove.gui.action;
 
 import javax.swing.Action;
 
-import nl.utwente.groove.explore.AcceptorValue;
 import nl.utwente.groove.explore.Exploration;
-import nl.utwente.groove.explore.ExploreType;
-import nl.utwente.groove.explore.StrategyValue;
+import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
@@ -67,7 +65,9 @@ public class ApplyMatchAction extends SimulatorAction {
         if (target.isPublic() || getLtsDisplay().getJGraph().isShowRecipeSteps()) {
             getSimulatorModel().doSetStateAndMatch(target, trans);
         } else if (target.isInner()) {
-            Exploration e = getActions().getExploreAction().explore(target, getStateExploration());
+            Exploration e = getActions()
+                .getExploreAction()
+                .explore(target, ConfiguredExploreType.stateExploration(target.getGTS()));
             if (e.isInterrupted()) {
                 getSimulatorModel().doSetStateAndMatch(state, null);
             } else {
@@ -107,16 +107,4 @@ public class ApplyMatchAction extends SimulatorAction {
             ? Options.APPLY_MATCH_ACTION_NAME
             : Options.EXPLORE_STATE_ACTION_NAME);
     }
-
-    /**
-     * Returns the explore-strategy for exploring a single state
-     */
-    private ExploreType getStateExploration() {
-        if (this.stateExploration == null) {
-            this.stateExploration = new ExploreType(StrategyValue.STATE, AcceptorValue.NONE, 0);
-        }
-        return this.stateExploration;
-    }
-
-    private ExploreType stateExploration;
 }

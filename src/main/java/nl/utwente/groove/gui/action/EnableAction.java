@@ -7,6 +7,8 @@ import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.NamedResourceModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.RuleModel;
+import nl.utwente.groove.grammar.model.SettingsModel;
+import nl.utwente.groove.grammar.model.SettingsSchema;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.io.store.EditType;
@@ -48,13 +50,26 @@ public class EnableAction extends SimulatorAction {
         ResourceKind resourceKind = getResourceKind();
         QualName name = getSimulatorModel().getSelected(resourceKind);
         NamedResourceModel<?> resource = getSimulatorModel().getResource(resourceKind);
-        boolean isActive = resource == null || !resource.isActive();
-        boolean enabled = resourceKind.isEnableable() && name != null;
-        if (enabled && getResourceKind() == ResourceKind.RULE) {
-            assert resource != null; // implied by name != null, which is implied by enabled
-            enabled = !((RuleModel) resource).hasRecipes();
+        boolean activate = resource == null || !resource.isActive();
+        boolean enabled;
+        String description;
+        if (resourceKind == ResourceKind.SETTINGS) {
+            // activation of a settings resource is schema-specific
+            SettingsSchema schema = resource instanceof SettingsModel settings
+                ? settings.getSchema()
+                : null;
+            enabled = schema != null && schema.isActivatable();
+            description = schema == null
+                ? Options.getActivationName(resourceKind, activate)
+                : schema.getActivationText(activate);
+        } else {
+            enabled = resourceKind.isEnableable() && name != null;
+            if (enabled && resourceKind == ResourceKind.RULE) {
+                assert resource != null; // implied by name != null, which is implied by enabled
+                enabled = !((RuleModel) resource).hasRecipes();
+            }
+            description = Options.getActivationName(resourceKind, activate);
         }
-        String description = Options.getActivationName(resourceKind, isActive);
         putValue(NAME, description);
         putValue(SHORT_DESCRIPTION, description);
         setEnabled(enabled);

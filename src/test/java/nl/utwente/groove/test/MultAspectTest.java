@@ -49,7 +49,6 @@ import nl.utwente.groove.util.parse.FormatException;
  * @author Arend Rensink
  * @version $Revision$
  */
-@SuppressWarnings("javadoc")
 public class MultAspectTest {
     /** Returns a named test grammar. */
     private GrammarModel getGrammar(String grammarName) {

@@ -24,7 +24,7 @@ import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
-import nl.utwente.groove.explore.StrategyValue;
+import nl.utwente.groove.explore.LTLExploreType;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.SimulatorListener;
@@ -58,22 +58,22 @@ public class ModelCheckingMenu extends JMenu implements SimulatorListener {
      * exploration scenarios.
      */
     protected void createAddMenuItems() {
-        addScenarioHandler(StrategyValue.LTL, Options.CHECK_LTL_ACTION_NAME);
-        addScenarioHandler(StrategyValue.LTL_BOUNDED, Options.CHECK_LTL_BOUNDED_ACTION_NAME);
-        addScenarioHandler(StrategyValue.LTL_POCKET, Options.CHECK_LTL_POCKET_ACTION_NAME);
+        addScenarioHandler(LTLExploreType.Kind.PLAIN, Options.CHECK_LTL_ACTION_NAME);
+        addScenarioHandler(LTLExploreType.Kind.BOUNDED, Options.CHECK_LTL_BOUNDED_ACTION_NAME);
+        addScenarioHandler(LTLExploreType.Kind.POCKET, Options.CHECK_LTL_POCKET_ACTION_NAME);
     }
 
     /**
      * Adds an explication strategy action to the end of this menu.
-     * @param strategyType the new exploration strategy
+     * @param kind the model-checking flavour
      */
-    public void addScenarioHandler(StrategyValue strategyType, String name) {
-        SimulatorAction generateAction =
-            this.simulator.getActions().getCheckLTLAction(strategyType, name);
+    public void addScenarioHandler(LTLExploreType.Kind kind, String name) {
+        SimulatorAction generateAction
+            = this.simulator.getActions().getCheckLTLAction(kind, name);
         generateAction.setEnabled(false);
-        this.scenarioActionMap.put(strategyType, generateAction);
+        this.scenarioActionMap.put(kind, generateAction);
         JMenuItem menuItem = add(generateAction);
-        menuItem.setToolTipText(strategyType.getDescription());
+        menuItem.setToolTipText(kind.getDescription());
     }
 
     @Override
@@ -97,6 +97,6 @@ public class ModelCheckingMenu extends JMenu implements SimulatorListener {
      * Mapping from exploration strategies to {@link Action}s resulting in that
      * strategy.
      */
-    private final Map<StrategyValue,SimulatorAction> scenarioActionMap =
+    private final Map<LTLExploreType.Kind,SimulatorAction> scenarioActionMap =
             new HashMap<>();
 }

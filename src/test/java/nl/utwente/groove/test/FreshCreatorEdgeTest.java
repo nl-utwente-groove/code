@@ -38,7 +38,6 @@ import nl.utwente.groove.util.Groove;
  * @author Arend Rensink
  * @version $Revision$
  */
-@SuppressWarnings("javadoc")
 public class FreshCreatorEdgeTest {
     /** A binary-edge creator keeps growing the parallel-edge count. */
     @Test

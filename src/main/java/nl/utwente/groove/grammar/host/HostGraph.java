@@ -23,6 +23,7 @@ import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.graph.GGraph;
 import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.transform.DeltaTarget;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 
 /**
@@ -42,6 +43,18 @@ public interface HostGraph extends GGraph<HostNode,HostEdge>, DeltaTarget {
     /** Clones this host graph, while optionally changing the algebras. */
     default HostGraph clone(AlgebraFamily family) {
         var result = new DefaultHostGraph(this, family);
+        GraphInfo.transferProperties(this, result, null);
+        return result;
+    }
+
+    /** Clones this host graph into a given host factory, while optionally
+     * changing the algebras. The factory must already contain the elements
+     * of this graph; typically it is a {@link HostFactory#copy()} of this
+     * graph's own factory.
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    default HostGraph clone(AlgebraFamily family, HostFactory factory) {
+        var result = new DefaultHostGraph(this, family, factory);
         GraphInfo.transferProperties(this, result, null);
         return result;
     }

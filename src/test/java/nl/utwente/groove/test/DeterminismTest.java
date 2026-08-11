@@ -20,16 +20,22 @@ package nl.utwente.groove.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import nl.utwente.groove.explore.ExploreType;
+import nl.utwente.groove.explore.config.ExploreConfig;
+import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.lts.AbstractGraphState;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSListener;
 import nl.utwente.groove.lts.GraphState;
+import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.lts.Status;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.Randomness;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -46,33 +52,63 @@ import nl.utwente.groove.util.parse.FormatException;
  * @version $Revision$
  */
 public class DeterminismTest {
+    /** Restores the master-seed state that the tests in this class modify. */
+    @ClassRule
+    public static final MasterSeedGuard SEED_GUARD = new MasterSeedGuard();
+
     /** Location of the samples. */
     static private final String INPUT_DIR = "junit/samples";
 
     /** Tests determinism of the default (plan-based) exploration. */
     @Test
     public void testPlanEngineDeterminism() {
-        test("ferryman", "bfs");
-        test("loose-nodes", "bfs");
+        test("ferryman", "");
+        test("loose-nodes", "");
     }
 
     /**
-     * Explores a named grammar repeatedly with a given strategy — perturbing
-     * the identity hash code sequence in between, and simulating a
-     * garbage-collection sweep of the state caches at various points during
-     * the later explorations — and asserts that all explorations enumerate
-     * identical states and transitions in identical order.
+     * Tests determinism of the non-default engine configurations under the
+     * same harness: the frontier orders, a restrictive beam (whose drop
+     * decisions must also be reproducible), and unstored exploration. The
+     * unstored configurations must terminate by grammar shape or depth
+     * bound: without storing there is no state collapse, so an unbounded
+     * unstored exploration of a cyclic state space diverges.
      */
-    private void test(String grammarName, String strategy) {
+    @Test
+    @AIGenerated("Claude Fable 5, 2026-08")
+    public void testEngineConfigDeterminism() {
+        test("ferryman", "next=newest");
+        test("ferryman", "next=random");
+        test("ferryman", "frontier=beam:2");
+        test("ferryman", "next=random frontier=beam:2");
+        // counting's rules create nodes: this case pins down that the
+        // numbers of created nodes, and with them the event anchor hashes,
+        // are replay-stable (gh #888)
+        test("counting", "persistence=none");
+        test("ferryman", "persistence=none cost=uniform bound=cost:4");
+    }
+
+    /**
+     * Explores a named grammar repeatedly with a given exploration
+     * configuration — perturbing the identity hash code sequence in between,
+     * and simulating a garbage-collection sweep of the state caches at
+     * various points during the later explorations — and asserts that all
+     * explorations enumerate identical states and transitions in identical
+     * order, with identical transition hash codes. The transition hashes
+     * cover the (content-based) event and state-number hashes, including
+     * the numbers of the host nodes created by rule application, which are
+     * drawn from the GTS's own copy of the grammar's host factory (gh #888).
+     */
+    private void test(String grammarName, String config) {
         try {
             GrammarModel grammarModel = Groove.loadGrammar(INPUT_DIR + "/" + grammarName);
-            ExploreType exploreType = new ExploreType(strategy, "final", 0);
+            ExploreType exploreType = ExploreTypeConverter.toExploreType(ExploreConfig.parse(config));
             String first = explore(grammarModel, exploreType, NO_COLLAPSE);
             int closures = this.closureCount;
             perturbIdentityHashes();
             String second = explore(grammarModel, exploreType, NO_COLLAPSE);
             assertEquals(String
-                .format("Non-deterministic %s exploration of grammar %s", strategy, grammarName),
+                .format("Non-deterministic '%s' exploration of grammar %s", config, grammarName),
                          first, second);
             for (int collapseAt : new int[] {COLLAPSE_ALWAYS, 1, closures / 4, closures / 2,
                 3 * closures / 4}) {
@@ -82,8 +118,8 @@ public class DeterminismTest {
                 perturbIdentityHashes();
                 String third = explore(grammarModel, exploreType, collapseAt);
                 assertEquals(String
-                    .format("Non-deterministic %s exploration of grammar %s"
-                        + " under cache collapse at %s", strategy, grammarName,
+                    .format("Non-deterministic '%s' exploration of grammar %s"
+                        + " under cache collapse at %s", config, grammarName,
                             collapseAt == COLLAPSE_ALWAYS
                                 ? "every closure"
                                 : "closure " + collapseAt),
@@ -100,7 +136,8 @@ public class DeterminismTest {
     private static final int COLLAPSE_ALWAYS = -2;
 
     /**
-     * Explores a grammar and returns the enumeration signature of the resulting GTS.
+     * Explores a grammar and returns the exploration signature: the event
+     * stream of the run followed by an enumeration of the resulting GTS.
      * @param collapseAt if {@code collapseAt > 0}, then at the moment the
      * so-manieth state closure happens, the caches of all closed states are
      * cleared at once; if {@link #COLLAPSE_ALWAYS}, this happens at every
@@ -112,12 +149,40 @@ public class DeterminismTest {
      */
     private String explore(GrammarModel grammarModel, ExploreType exploreType,
                            int collapseAt) throws FormatException {
+        // reset the master seed so that every exploration draws identical
+        // random streams; the randomised configurations are then expected to
+        // enumerate identically across runs (the plan-based default draws no
+        // randomness and is unaffected)
+        Randomness.setMasterSeed(42);
         GTS gts = new GTS(grammarModel.toGrammar());
         this.closureCount = 0;
+        StringBuilder result = new StringBuilder();
+        // the signature records the exploration event stream as it occurs,
+        // followed by an enumeration of the final GTS. The event stream also
+        // covers unstored explorations (persistence=none), whose states and
+        // transitions are announced but not entered into the state set, so
+        // that their final enumeration is nearly empty
         gts.addLTSListener(new GTSListener() {
+            @Override
+            public void addUpdate(GTS observed, GraphState state) {
+                result.append("add ").append(state).append('\n');
+            }
+
+            @Override
+            public void addUpdate(GTS observed, GraphTransition transition) {
+                result
+                    .append(transition.source())
+                    .append("--")
+                    .append(transition.label())
+                    .append("->")
+                    .append(transition.target())
+                    .append('\n');
+            }
+
             @Override
             public void statusUpdate(GTS observed, GraphState state, int change) {
                 if (Status.Flag.CLOSED.test(change) && state.isClosed()) {
+                    result.append("close ").append(state).append('\n');
                     DeterminismTest.this.closureCount++;
                     if (collapseAt == COLLAPSE_ALWAYS
                         || DeterminismTest.this.closureCount == collapseAt) {
@@ -131,21 +196,20 @@ public class DeterminismTest {
             }
         });
         exploreType.newExploration(gts, null).play();
-        StringBuilder result = new StringBuilder();
+        result.append("-- final GTS --\n");
         gts.nodeSet().forEach(n -> result.append(n).append('\n'));
-        gts
-            .edgeSet()
-            .forEach(e -> result
+        gts.edgeSet().forEach(e -> {
+            result
                 .append(e.source())
                 .append("--")
                 .append(e.label())
                 .append("->")
-                .append(e.target())
-                // the transition hash covers the (content-based) event and
-                // state-number hashes, which must also be reproducible
-                .append(" #")
-                .append(e.hashCode())
-                .append('\n'));
+                .append(e.target());
+            // the transition hash covers the (content-based) event and
+            // state-number hashes, which must also be reproducible
+            result.append(" #").append(e.hashCode());
+            result.append('\n');
+        });
         return result.toString();
     }
 
