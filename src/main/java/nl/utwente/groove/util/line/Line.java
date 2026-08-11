@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.eclipse.jdt.annotation.NonNull;
 
-import nl.utwente.groove.gui.look.Values;
+import nl.utwente.groove.util.Colors;
 import nl.utwente.groove.util.line.LineFormat.Builder;
 
 /**
@@ -497,13 +497,13 @@ public abstract class Line {
     /** Logical text colours. */
     public static enum ColorType {
         /** Colour for eraser nodes and edges. */
-        ERASER(Values.ERASER_FOREGROUND),
+        ERASER(Colors.ERASER_FOREGROUND),
         /** Colour for creator nodes and edges. */
-        CREATOR(Values.CREATOR_FOREGROUND),
+        CREATOR(Colors.CREATOR_FOREGROUND),
         /** Colour for embargo nodes and edges. */
-        EMBARGO(Values.EMBARGO_FOREGROUND),
+        EMBARGO(Colors.EMBARGO_FOREGROUND),
         /** Colour for remark nodes and edges. */
-        REMARK(Values.REMARK_FOREGROUND),
+        REMARK(Colors.REMARK_FOREGROUND),
         /** User-specified RGB colour. */
         RGB(null);
 

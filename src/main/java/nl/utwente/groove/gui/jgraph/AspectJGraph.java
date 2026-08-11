@@ -798,7 +798,7 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
         /** Constructs an instance of the action, for a given line style. */
         SetLineStyleAction(LineStyle lineStyle) {
             super(lineStyle.getName(), false);
-            putValue(ACCELERATOR_KEY, lineStyle.getKey());
+            putValue(ACCELERATOR_KEY, Options.getLineStyleKey(lineStyle));
             this.lineStyle = lineStyle;
         }
 

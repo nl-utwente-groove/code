@@ -24,9 +24,12 @@ import java.awt.Color;
 import java.util.EnumMap;
 import java.util.Map;
 
+import org.jgraph.graph.GraphConstants;
+
 import nl.utwente.groove.gui.jgraph.JAttr;
 import nl.utwente.groove.util.Colors;
 import nl.utwente.groove.util.DefaultFixable;
+import nl.utwente.groove.util.line.LineStyle;
 
 /** Attribute values for the nodes and edges.
  *
@@ -45,7 +48,7 @@ public class Values {
     /** No dash pattern. */
     public static final float[] NO_DASH = {10.f, 0.f};
     /** Foreground colour of creator nodes and edges. */
-    public static final Color CREATOR_FOREGROUND = Color.green.darker();
+    public static final Color CREATOR_FOREGROUND = Colors.CREATOR_FOREGROUND;
     /** Background colour of creator nodes and edges. */
     public static final Color CREATOR_BACKGROUND = null;
     /**
@@ -59,21 +62,21 @@ public class Values {
     /** Dash pattern of embargo nodes and edges. */
     public static final float[] EMBARGO_DASH = {2f, 2f};
     /** Foreground colour of embargo nodes and edges. */
-    public static final Color EMBARGO_FOREGROUND = Color.RED;
+    public static final Color EMBARGO_FOREGROUND = Colors.EMBARGO_FOREGROUND;
     /** Background colour of embargo nodes and edges. */
     public static final Color EMBARGO_BACKGROUND = null;
     /** Dash pattern of eraser nodes and edges. */
     public static final float[] ERASER_DASH = {4f, 4f};
     /** Foreground colour of eraser nodes and edges. */
-    public static final Color ERASER_FOREGROUND = Color.BLUE;
+    public static final Color ERASER_FOREGROUND = Colors.ERASER_FOREGROUND;
     /** Background colour of eraser nodes and edges. */
     public static final Color ERASER_BACKGROUND = Colors.findColor("200 240 255");
     /** Dash pattern of nesting nodes and edges. */
     public static final float[] NESTED_DASH = {2.0f, 3.0f};
     /** Colour used for nesting nodes and states. */
-    static public final Color NESTED_COLOR = Colors.findColor("165 42 42");
+    static public final Color NESTED_COLOR = Colors.NESTED_COLOR;
     /** Foreground colour of remark nodes and edges. */
-    public static final Color REMARK_FOREGROUND = Colors.findColor("255 140 0");
+    public static final Color REMARK_FOREGROUND = Colors.REMARK_FOREGROUND;
     /** Background colour of remark nodes and edges. */
     public static final Color REMARK_BACKGROUND = Colors.findColor("255 255 180");
 
@@ -125,7 +128,7 @@ public class Values {
     }
 
     /** Transparent colour used for indicating errors in graphs. */
-    static public final Color ERROR_COLOR = new Color(255, 50, 0, 40);
+    static public final Color ERROR_COLOR = Colors.ERROR_COLOR;
     /** Opaque colour used for indicating errors in graphs.
      * Chosen so it resembles {@link #ERROR_COLOR} on a white background
      */
@@ -163,7 +166,7 @@ public class Values {
     /** Background colour used for non-selected, non-focused info items in lists. */
     static public final Color INFO_NORMAL_BACKGROUND = new Color(180, 210, 255, 40);
     /** Text colour used for non-selected, non-focused info items in lists. */
-    static public final Color INFO_NORMAL_FOREGROUND = Color.BLUE;
+    static public final Color INFO_NORMAL_FOREGROUND = Colors.INFO_COLOR;
     /** Text display colours to be used in info mode. */
     static public final Values.ColorSet INFO_COLORS = new Values.ColorSet();
     static {
@@ -181,14 +184,23 @@ public class Values {
     }
 
     /** Colour of forbidden property labels. */
-    static public final Color FORBIDDEN_COLOR = ERROR_COLOR;
+    static public final Color FORBIDDEN_COLOR = Colors.FORBIDDEN_COLOR;
     /** Colour of invariant property labels. */
-    static public final Color INVARIANT_COLOR = CREATOR_FOREGROUND;
+    static public final Color INVARIANT_COLOR = Colors.INVARIANT_COLOR;
     /** Grayed-out foreground color. */
     static public final Color GRAYED_OUT_COLOR = Colors.findColor("200 200 200 100");
 
     /** Line style that always makes right edges. */
     public static final int STYLE_MANHATTAN = 14;
+
+    static {
+        // the LineStyle codes are persisted in graph layouts and interpreted
+        // by JGraph; both sides must stay aligned with the core enum
+        assert LineStyle.ORTHOGONAL.getCode() == GraphConstants.STYLE_ORTHOGONAL;
+        assert LineStyle.SPLINE.getCode() == GraphConstants.STYLE_SPLINE;
+        assert LineStyle.BEZIER.getCode() == GraphConstants.STYLE_BEZIER;
+        assert LineStyle.MANHATTAN.getCode() == STYLE_MANHATTAN;
+    }
 
     /** Cell selection modes in trees or lists. */
     public static enum Mode {

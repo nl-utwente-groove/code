@@ -39,7 +39,6 @@ import nl.utwente.groove.grammar.CheckPolicy.PolicyMap;
 import nl.utwente.groove.grammar.ParallelMode;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.rule.MethodName;
-import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.transform.oracle.ValueOracleFactory;
 import nl.utwente.groove.util.HTMLConverter.HTMLTag;
 import nl.utwente.groove.util.collect.DeltaMap;
@@ -364,13 +363,13 @@ public abstract class Properties implements Fixable {
     /** Object to delegate the fixable functionality. */
     private final DefaultFixable fixable = new DefaultFixable();
 
-    /** HTML-formatted colour specification for the {@link Values#INFO_NORMAL_FOREGROUND} colour. */
+    /** HTML-formatted colour specification for the {@link Colors#INFO_COLOR} colour. */
     static public final String HTML_INFO_COLOR
-        = HTMLConverter.toHtmlColor(Values.INFO_NORMAL_FOREGROUND);
-    /** HTMLfont tag for the {@link Values#INFO_NORMAL_FOREGROUND} colour. */
+        = HTMLConverter.toHtmlColor(Colors.INFO_COLOR);
+    /** HTMLfont tag for the {@link Colors#INFO_COLOR} colour. */
     static public final HTMLTag INFO_COLOR_TAG
-        = HTMLConverter.createColorTag(Values.INFO_NORMAL_FOREGROUND);
-    /** HTMLfont tag for the {@link Values#INFO_NORMAL_FOREGROUND} colour. */
+        = HTMLConverter.createColorTag(Colors.INFO_COLOR);
+    /** HTMLfont tag for the {@link Colors#INFO_COLOR} colour. */
     static public final HTMLTag INFO_FONT_TAG
         = HTMLConverter.createHtmlTag("font", "color", HTML_INFO_COLOR);
     static private final HTMLTag TABLE_RULE_TAG

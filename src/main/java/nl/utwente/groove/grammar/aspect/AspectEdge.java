@@ -69,8 +69,8 @@ import nl.utwente.groove.graph.AEdge;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.plain.PlainLabel;
-import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.io.Util;
+import nl.utwente.groove.util.Colors;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Fixable;
@@ -743,7 +743,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
             result = Line
                 .atom(LEVEL_NAME_SEPARATOR)
                 .append(Line.atom(name).style(Style.ITALIC))
-                .color(Values.NESTED_COLOR);
+                .color(Colors.NESTED_COLOR);
         }
         return result;
     }

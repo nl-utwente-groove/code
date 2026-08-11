@@ -162,4 +162,27 @@ public class Colors {
             }
         }
     }
+
+    // Colours of the rule and aspect roles, and of derived concepts.
+    // These are used in (HTML-formatted) text throughout the tool, not just
+    // in the graph displays; gui.look.Values redirects to them for the latter.
+
+    /** Foreground colour of creator nodes and edges. */
+    public static final Color CREATOR_FOREGROUND = Color.green.darker();
+    /** Foreground colour of embargo nodes and edges. */
+    public static final Color EMBARGO_FOREGROUND = Color.RED;
+    /** Foreground colour of eraser nodes and edges. */
+    public static final Color ERASER_FOREGROUND = Color.BLUE;
+    /** Colour used for nesting nodes and states. */
+    static public final Color NESTED_COLOR = findColor("165 42 42");
+    /** Foreground colour of remark nodes and edges. */
+    public static final Color REMARK_FOREGROUND = findColor("255 140 0");
+    /** Colour used to indicate errors in graphs. */
+    static public final Color ERROR_COLOR = new Color(255, 50, 0, 40);
+    /** Colour of forbidden property labels. */
+    static public final Color FORBIDDEN_COLOR = ERROR_COLOR;
+    /** Colour of invariant property labels. */
+    static public final Color INVARIANT_COLOR = CREATOR_FOREGROUND;
+    /** Foreground colour for informational text. */
+    static public final Color INFO_COLOR = Color.BLUE;
 }

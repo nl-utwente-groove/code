@@ -70,6 +70,7 @@ import nl.utwente.groove.gui.display.DismissDelayer;
 import nl.utwente.groove.io.Util;
 import nl.utwente.groove.io.store.EditType;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.line.LineStyle;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.StringHandler;
 
@@ -799,6 +800,16 @@ public class Options implements Cloneable {
     public static final KeyStroke BEZIER_LINE_STYLE_KEY = KeyStroke.getKeyStroke("alt 3");
     /** Manhattan line style keystroke */
     public static final KeyStroke MANHATTAN_LINE_STYLE_KEY = KeyStroke.getKeyStroke("alt 4");
+
+    /** Returns the keystroke associated with a given line style. */
+    public static KeyStroke getLineStyleKey(LineStyle lineStyle) {
+        return switch (lineStyle) {
+        case ORTHOGONAL -> ORTHOGONAL_LINE_STYLE_KEY;
+        case SPLINE -> SPLINE_LINE_STYLE_KEY;
+        case BEZIER -> BEZIER_LINE_STYLE_KEY;
+        case MANHATTAN -> MANHATTAN_LINE_STYLE_KEY;
+        };
+    }
 
     /** Mnemonic key for the New action. */
     public static final int NEW_MNEMONIC = KeyEvent.VK_N;

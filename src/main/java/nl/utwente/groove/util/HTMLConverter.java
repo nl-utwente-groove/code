@@ -24,7 +24,6 @@ import java.util.Map;
 import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.gui.Options;
-import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.io.Util;
 
 /**
@@ -305,13 +304,13 @@ public class HTMLConverter {
     private static final int MAX_ALPHA = 255;
 
     /** Blue colour tag. */
-    public static final HTMLTag ERASER_TAG = createColorTag(Values.ERASER_FOREGROUND);
+    public static final HTMLTag ERASER_TAG = createColorTag(Colors.ERASER_FOREGROUND);
     /** Green colour tag. */
-    public static final HTMLTag CREATOR_TAG = createColorTag(Values.CREATOR_FOREGROUND);
+    public static final HTMLTag CREATOR_TAG = createColorTag(Colors.CREATOR_FOREGROUND);
     /** Red colour tag. */
-    public static final HTMLTag EMBARGO_TAG = createColorTag(Values.EMBARGO_FOREGROUND);
+    public static final HTMLTag EMBARGO_TAG = createColorTag(Colors.EMBARGO_FOREGROUND);
     /** Remark colour tag. */
-    public static final HTMLTag REMARK_TAG = createColorTag(Values.REMARK_FOREGROUND);
+    public static final HTMLTag REMARK_TAG = createColorTag(Colors.REMARK_FOREGROUND);
 
     /**
      * Class that allows some handling of HTML text.

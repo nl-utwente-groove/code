@@ -27,7 +27,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.host.ValueNode;
-import nl.utwente.groove.gui.look.Values;
+import nl.utwente.groove.util.Colors;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.HTMLConverter.HTMLTag;
 import nl.utwente.groove.util.Strings;
@@ -218,9 +218,9 @@ public interface Action extends Callable, Comparable<Action> {
         /** Action that modifies a graph. */
         TRANSFORMER("transformer", null),
         /** Action that captures a forbidden graph property. */
-        FORBIDDEN("forbidden", Values.FORBIDDEN_COLOR),
+        FORBIDDEN("forbidden", Colors.FORBIDDEN_COLOR),
         /** Action that captures an invariant graph property. */
-        INVARIANT("invariant", Values.INVARIANT_COLOR),
+        INVARIANT("invariant", Colors.INVARIANT_COLOR),
         /** Action that captures a general graph condition. */
         CONDITION("condition", null),;
 

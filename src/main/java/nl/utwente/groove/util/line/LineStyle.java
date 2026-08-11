@@ -19,33 +19,30 @@ package nl.utwente.groove.util.line;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.swing.KeyStroke;
-
-import org.jgraph.graph.GraphConstants;
-
-import nl.utwente.groove.gui.Options;
-import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.util.Exceptions;
 
 /**
  * Edge layout line styles.
+ * The numeric codes are persisted in the layout information of saved graphs,
+ * and (except for {@link #MANHATTAN}) coincide with the corresponding
+ * {@code org.jgraph.graph.GraphConstants.STYLE_} constants by which the GUI
+ * renders them; they must not be changed.
  * @author Arend Rensink
  * @version $Revision$
  */
 public enum LineStyle {
     /** Orthogonal line style. */
-    ORTHOGONAL(GraphConstants.STYLE_ORTHOGONAL, "Orthogonal", Options.ORTHOGONAL_LINE_STYLE_KEY),
+    ORTHOGONAL(11, "Orthogonal"),
     /** Splined line style. */
-    SPLINE(GraphConstants.STYLE_SPLINE, "Spline", Options.SPLINE_LINE_STYLE_KEY),
+    SPLINE(13, "Spline"),
     /** Bezier curved line style. */
-    BEZIER(GraphConstants.STYLE_BEZIER, "Bezier", Options.BEZIER_LINE_STYLE_KEY),
+    BEZIER(12, "Bezier"),
     /** Manhattan skyline style (only horizontal and vertical). */
-    MANHATTAN(Values.STYLE_MANHATTAN, "Manhattan", Options.MANHATTAN_LINE_STYLE_KEY);
+    MANHATTAN(14, "Manhattan");
 
-    private LineStyle(int code, String name, KeyStroke stroke) {
+    private LineStyle(int code, String name) {
         this.code = code;
         this.name = name;
-        this.stroke = stroke;
     }
 
     /** Returns a number coding for the line style. */
@@ -58,11 +55,6 @@ public enum LineStyle {
         return this.name;
     }
 
-    /** Returns the name of this line style. */
-    public KeyStroke getKey() {
-        return this.stroke;
-    }
-
     /** Indicates if this is the default line style. */
     public boolean isDefault() {
         return this == DEFAULT_VALUE;
@@ -70,7 +62,6 @@ public enum LineStyle {
 
     private final int code;
     private final String name;
-    private final KeyStroke stroke;
 
     /** Indicates if a given code stands for a valid line style. */
     public static boolean isStyle(int code) {
