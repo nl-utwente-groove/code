@@ -34,8 +34,8 @@ import java.util.Set;
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.Edge.Routing;
 
-import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.look.VisualKey.Nature;
+import nl.utwente.groove.util.Fonts;
 import nl.utwente.groove.util.line.LineStyle;
 
 import org.jgraph.graph.GraphConstants;
@@ -344,7 +344,7 @@ public class VisualAttributeMap extends AttributeMap {
             super.put(GraphConstants.ENDFILL, targetShape.isFilled());
             break;
         case FONT:
-            value = Options.getLabelFont()
+            value = Fonts.getLabelFont()
                 .deriveFont((Integer) value);
             break;
         case COLOR:

@@ -51,8 +51,8 @@ import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.EdgeRole;
-import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.Fonts;
 
 /**
  * Multiline jcell editor, essentially taken from
@@ -112,7 +112,7 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
             }
             JTextArea result = getEditorComponent();
             // scale with the jGraph
-            Font font = Options.getLabelFont().deriveFont(jCell.getVisuals().getFont());
+            Font font = Fonts.getLabelFont().deriveFont(jCell.getVisuals().getFont());
             font = (font != null)
                 ? font
                 : graph.getFont();

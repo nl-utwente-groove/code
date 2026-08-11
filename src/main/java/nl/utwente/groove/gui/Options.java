@@ -16,12 +16,8 @@
  */
 package nl.utwente.groove.gui;
 
-import static nl.utwente.groove.util.Groove.RESOURCE_PACKAGE;
-import static nl.utwente.groove.util.Groove.getResource;
 
 import java.awt.Component;
-import java.awt.Font;
-import java.awt.FontFormatException;
 import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -29,9 +25,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -60,16 +53,14 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.jgraph.graph.GraphConstants;
 
 import com.formdev.flatlaf.FlatLightLaf;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.display.DismissDelayer;
-import nl.utwente.groove.io.Util;
 import nl.utwente.groove.io.store.EditType;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.Fonts;
 import nl.utwente.groove.util.line.LineStyle;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.StringHandler;
@@ -262,7 +253,7 @@ public class Options implements Cloneable {
      * the Unicode characters used for arrows-on-labels.
      */
     static public boolean isSupportsLabelArrows() {
-        return SYMBOL_FONT != null;
+        return Fonts.getSymbolFont() != null;
     }
 
     /**
@@ -915,11 +906,6 @@ public class Options implements Cloneable {
         intOptionDefaults.put(DELETE_RESOURCE_OPTION, BehaviourOption.ASK);
     }
 
-    /** Name of the font sub-package of the GROOVE resource package. */
-    static public String FONT_PACKAGE_TOKEN = "font";
-    /** Absolute qualified name of the font resource package. */
-    static public QualName FONT_PACKAGE = RESOURCE_PACKAGE.extend(FONT_PACKAGE_TOKEN);
-
     /** Returns the user preferences for a given key, as a list of Strings. */
     public static String[] getUserPrefs(String key) {
         String[] result = {};
@@ -1027,69 +1013,12 @@ public class Options implements Cloneable {
         }
     }
 
-    /** Returns the default font set in the look-and-feel. */
-    public static Font getDefaultFont() {
-        if (DEFAULT_FONT == null) {
-            initLookAndFeel();
-            DEFAULT_FONT = UIManager.getFont("Label.font");
-        }
-        return DEFAULT_FONT;
-    }
-
-    /** The default font set in the look-and-feel. */
-    private static Font DEFAULT_FONT;
-
-    /** Returns the default font used for node and edge labels. */
-    public static Font getLabelFont() {
-        if (LABEL_FONT == null) {
-            initLookAndFeel();
-            LABEL_FONT = GraphConstants.DEFAULTFONT;
-            if (LABEL_FONT == null) {
-                LABEL_FONT = UIManager.getDefaults().getFont("SansSerif");
-            }
-            // previously used: MetalLookAndFeel.getCurrentTheme().getUserTextFont();
-        }
-        return LABEL_FONT;
-    }
-
-    /** The default font used for node and edge labels. */
-    private static Font LABEL_FONT;
-
-    /** Returns the font for special (arrow-like) characters. */
-    public static Font getSymbolFont() {
-        if (SYMBOL_FONT == null) {
-            initLookAndFeel();
-            Font result = getLabelFont();
-            if (!result.canDisplay(Util.DT)) {
-                result = UIManager.getDefaults().getFont("SansSerif");
-            }
-            if (result == null || !result.canDisplay(Util.DT)) {
-                result = loadFont("stixgeneralregular.ttf").deriveFont(getLabelFont().getSize2D());
-            }
-            SYMBOL_FONT = result;
-        }
-        return SYMBOL_FONT;
-    }
-
-    /** The font for special (arrow-like) characters. */
-    private static Font SYMBOL_FONT;
-
-    /** Loads in a TrueType font of a given name. */
-    private static Font loadFont(String name) {
-        Font result = null;
-        try (InputStream stream = getResource(FONT_PACKAGE.extend(name)).openStream()) {
-            result = Font.createFont(Font.TRUETYPE_FONT, stream);
-            result = result.deriveFont(getLabelFont().getSize2D());
-        } catch (FileNotFoundException e) {
-            // do nothing
-        } catch (FontFormatException e) {
-            // do nothing
-        } catch (IOException e) {
-            // do nothing
-        }
-        return result;
-    }
-
     /** Flag indicating if {@link #initLookAndFeel()} has already been invoked. */
     private static boolean lookAndFeelInit;
+
+    static {
+        // make sure the look-and-feel is set before the (core) fonts are
+        // computed, as they derive from it
+        Fonts.setInitializer(Options::initLookAndFeel);
+    }
 }

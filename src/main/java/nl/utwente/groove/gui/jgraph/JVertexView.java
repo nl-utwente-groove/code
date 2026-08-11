@@ -51,12 +51,12 @@ import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.PortView;
 import org.jgraph.graph.VertexView;
 
-import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.look.Look;
 import nl.utwente.groove.gui.look.MultiLabel;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
+import nl.utwente.groove.util.Fonts;
 import nl.utwente.groove.util.NodeShape;
 import nl.utwente.groove.util.line.HTMLLineFormat;
 import nl.utwente.groove.util.line.LineStyle;
@@ -416,7 +416,7 @@ public class JVertexView extends VertexView {
                 : !background.equals(getBackground())) {
                 setBackground(background);
             }
-            Font font = Options.getLabelFont().deriveFont(visuals.getFont());
+            Font font = Fonts.getLabelFont().deriveFont(visuals.getFont());
             setFont((font != null)
                 ? font
                 : graph.getFont());

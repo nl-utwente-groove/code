@@ -23,7 +23,6 @@ import java.util.Map;
 
 import org.eclipse.jdt.annotation.NonNull;
 
-import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.io.Util;
 
 /**
@@ -94,8 +93,8 @@ public class HTMLConverter {
 
     static {
         HTMLTag symbolTag = null;
-        if (Options.getSymbolFont() != null && Options.getSymbolFont() != Options.getLabelFont()) {
-            Font font = Options.getSymbolFont();
+        if (Fonts.getSymbolFont() != null && Fonts.getSymbolFont() != Fonts.getLabelFont()) {
+            Font font = Fonts.getSymbolFont();
             String face = font.getFamily();
             int size = font.getSize();
             // actually a slightly smaller font is more in line with

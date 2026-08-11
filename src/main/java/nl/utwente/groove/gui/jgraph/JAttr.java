@@ -35,6 +35,7 @@ import java.util.Map;
 import javax.swing.JComponent;
 
 import nl.utwente.groove.gui.Options;
+import nl.utwente.groove.util.Fonts;
 
 /**
  * Class of constant definitions.
@@ -107,7 +108,7 @@ public class JAttr {
     static final public Dimension NODE_EDGE_DIMENSION = new Dimension(6, 6);
 
     /** The font used for adornment text. */
-    public static final Font ADORNMENT_FONT = Options.getLabelFont();
+    public static final Font ADORNMENT_FONT = Fonts.getLabelFont();
     /** Foreground (= border) colour of the rubber band selector. */
     static public final Color RUBBER_FOREGROUND = new Color(150, 150, 150);
     /** Foreground (= border) colour of the rubber band selector. */

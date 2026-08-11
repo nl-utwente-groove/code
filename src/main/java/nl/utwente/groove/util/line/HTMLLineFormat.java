@@ -23,7 +23,7 @@ import static nl.utwente.groove.util.HTMLConverter.createSpanTag;
 import java.awt.Color;
 import java.awt.Font;
 
-import nl.utwente.groove.gui.Options;
+import nl.utwente.groove.util.Fonts;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.HTMLConverter.HTMLTag;
@@ -114,7 +114,7 @@ public class HTMLLineFormat extends LineFormat<HTMLLineFormat.HTMLBuilder> {
 
     private static HTMLTag getFontTag() {
         if (fontTag == null) {
-            Font font = Options.getLabelFont();
+            Font font = Fonts.getLabelFont();
             String face = font.getFamily();
             int size = font.getSize() - 2;
             // actually a slightly smaller font is more in line with

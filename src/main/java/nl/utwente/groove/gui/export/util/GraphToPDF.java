@@ -25,9 +25,9 @@ import java.io.IOException;
 import org.apache.fop.svg.PDFDocumentGraphics2D;
 import org.apache.xmlgraphics.java2d.GraphicContext;
 
-import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.io.external.PortException;
+import nl.utwente.groove.util.Fonts;
 
 /** Class offering the functionality to save a JGraph to PDF format. */
 public class GraphToPDF extends GraphToVector {
@@ -43,7 +43,7 @@ public class GraphToPDF extends GraphToVector {
             PDFDocumentGraphics2D graphics2D = new PDFDocumentGraphics2D(true, fos,
                 (int) bounds.getWidth(), (int) bounds.getHeight());
             graphics2D.setGraphicContext(new GraphicContext());
-            graphics2D.setFont(Options.getLabelFont());
+            graphics2D.setFont(Fonts.getLabelFont());
             toGraphics(graph, (Graphics2D) graphics2D.create());
             graphics2D.finish();
         } catch (IOException e) {
