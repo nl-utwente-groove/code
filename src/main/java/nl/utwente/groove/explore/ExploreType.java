@@ -36,10 +36,11 @@ import nl.utwente.groove.util.parse.FormatException;
  * An ExploreType determines what an exploration does: it instantiates the
  * strategy and acceptor for a given grammar, and bounds the number of
  * results. Most explorations are configuration-based (see
- * {@code ConfiguredExploreType}); the model-checking, single-state, remote
- * and minimax explorations, which the exploration feature model deliberately
- * does not cover, have dedicated subclasses. To use an {@link ExploreType},
- * it should be fed into an {@link Exploration}.
+ * {@code ConfiguredExploreType}); the model-checking and minimax
+ * explorations, which the exploration feature model deliberately does not
+ * cover, and the simulator-internal single-state exploration (see
+ * {@link StateExploreType}) have dedicated subclasses. To use an
+ * {@link ExploreType}, it should be fed into an {@link Exploration}.
  * @author Arend Rensink
  */
 @NonNullByDefault

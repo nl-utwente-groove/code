@@ -30,7 +30,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.explore.AcceptorSpec;
 import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.LTLExploreType;
-import nl.utwente.groove.explore.StateExploreType;
 import nl.utwente.groove.explore.config.Bound;
 import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.explore.config.Cost;
@@ -52,11 +51,11 @@ import nl.utwente.groove.util.parse.Parser;
  * in the legacy {@code explorationStrategy} grammar property. The keywords
  * are translated directly into the exploration feature model: a
  * config-expressible strategy or acceptor becomes settings of an
- * {@link ExploreConfig}, while the model-checking, minimax and
- * single-state strategies (which the feature model deliberately does not
- * cover) become dedicated {@link ExploreType} subclasses. This makes the
- * legacy syntax a permanent thin front-end of the configuration, with no
- * dependence on the encode/enumerator machinery.
+ * {@link ExploreConfig}, while the model-checking and minimax strategies
+ * (which the feature model deliberately does not cover) become dedicated
+ * {@link ExploreType} subclasses. This makes the legacy syntax a permanent
+ * thin front-end of the configuration, with no dependence on the
+ * encode/enumerator machinery.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -101,9 +100,8 @@ public class LegacySyntaxParser {
      * successor generation, frontier, heuristic, cost and bound) before
      * setting its own; all other features of the base configuration (such as
      * persistence or collapse) are preserved. Likewise, an acceptor resets
-     * only the goal and outcome features. A model-checking, minimax or
-     * single-state strategy is not config-based and replaces the base
-     * entirely.
+     * only the goal and outcome features. A model-checking or minimax
+     * strategy is not config-based and replaces the base entirely.
      * @throws FormatException if a component cannot be parsed, or the
      * resulting combination is inconsistent, or the base type has no
      * feature-model equivalent to overlay onto
@@ -235,6 +233,12 @@ public class LegacySyntaxParser {
         case "random" -> {
             config.put(ExploreKey.FRONTIER, Frontier.SINGLE.createSetting());
             config.put(ExploreKey.SUCCESSOR, Successor.SINGLE_RANDOM.createSetting());
+        }
+        case "state" -> {
+            if (args != null) {
+                throw new FormatException("Strategy 'state' does not take an argument");
+            }
+            config.put(ExploreKey.BOUND, Bound.INITIAL.createSetting());
         }
         case "crule" -> config
             .put(ExploreKey.BOUND,
@@ -395,12 +399,6 @@ public class LegacySyntaxParser {
             ? AcceptorSpec.FINAL
             : acceptor;
         return switch (keyword) {
-        case "state" -> {
-            if (args != null) {
-                throw new FormatException("Strategy 'state' does not take an argument");
-            }
-            yield new StateExploreType(effectiveAcceptor, count);
-        }
         case "minimax" -> createMinimaxType(requireArgs(keyword, args), effectiveAcceptor, count);
         default -> throw Exceptions.illegalState("Unknown direct strategy keyword '%s'", keyword);
         };
@@ -475,7 +473,7 @@ public class LegacySyntaxParser {
     /** The strategy keywords realised by dedicated exploration types
      * rather than the configuration. */
     private static final Set<String> DIRECT_KEYWORDS = Stream
-        .concat(LTL_KEYWORDS.stream(), Stream.of("minimax", "state"))
+        .concat(LTL_KEYWORDS.stream(), Stream.of("minimax"))
         .collect(Collectors.toUnmodifiableSet());
     /** Pattern for the argument of the {@code uptorule} strategy. */
     private static final Pattern UPTO_RULE_PATTERN

@@ -23,10 +23,10 @@ import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
- * Base class for the exploration types of the legacy strategies that the
- * exploration feature model deliberately does not cover (single-state,
- * remote and minimax exploration). The strategy and acceptor are
- * instantiated directly from the state of the type.
+ * Base class for the exploration types that are not configuration-based and
+ * carry their own acceptor specification (single-state and minimax
+ * exploration). The strategy and acceptor are instantiated directly from
+ * the state of the type.
  * @author Arend Rensink
  * @version $Revision$
  */

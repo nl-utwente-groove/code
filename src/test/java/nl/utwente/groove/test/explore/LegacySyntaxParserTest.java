@@ -26,7 +26,6 @@ import org.junit.Test;
 
 import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.LTLExploreType;
-import nl.utwente.groove.explore.StateExploreType;
 import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreKey;
@@ -36,10 +35,8 @@ import nl.utwente.groove.explore.config.NextState;
 import nl.utwente.groove.explore.config.Persistence;
 import nl.utwente.groove.explore.config.parse.LegacySyntaxParser;
 import nl.utwente.groove.explore.result.CycleAcceptor;
-import nl.utwente.groove.explore.result.FinalStateAcceptor;
 import nl.utwente.groove.explore.strategy.BoundedLTLStrategy;
 import nl.utwente.groove.explore.strategy.BoundedPocketLTLStrategy;
-import nl.utwente.groove.explore.strategy.ExploreStateStrategy;
 import nl.utwente.groove.explore.strategy.LTLStrategy;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.util.Groove;
@@ -83,6 +80,7 @@ public class LegacySyntaxParserTest {
             {"dfs:3", "next=newest cost=uniform bound=cost:3"},
             {"linear", "frontier=single successor=single"},
             {"random", "frontier=single successor=single-random"},
+            {"state", "bound=initial"},
             {"crule:eat", "bound=upto:eat"},
             {"crule:!eat", "bound=upto:!eat"},
             {"cnbound:20", "bound=nodes:20"},
@@ -186,11 +184,6 @@ public class LegacySyntaxParserTest {
         var commaBounded = LegacySyntaxParser.overlay(ExploreType.getDefault(),
                                                       "ltlbounded:,eat;F eat", null, 0);
         assertThrows(FormatException.class, () -> commaBounded.getParsedStrategy(grammar));
-        // single-state and remote exploration
-        var state = LegacySyntaxParser.parse("state final 0");
-        assertInstanceOf(StateExploreType.class, state);
-        assertInstanceOf(ExploreStateStrategy.class, state.getParsedStrategy(grammar));
-        assertInstanceOf(FinalStateAcceptor.class, state.getParsedAcceptor(grammar));
         // minimax construction (instantiation needs parametrised rules);
         // qualified reference, so that no import of the deprecated type is needed
         var minimax = LegacySyntaxParser.parse("minimax:1,10,eat;load,max,eat,2 final 0");
@@ -216,6 +209,7 @@ public class LegacySyntaxParserTest {
         assertThrows(FormatException.class,
                      () -> LegacySyntaxParser.parse("uptorule:bfs2->eat final 0"));
         // missing or malformed arguments
+        assertThrows(FormatException.class, () -> LegacySyntaxParser.parse("state:5 final 0"));
         assertThrows(FormatException.class, () -> LegacySyntaxParser.parse("crule final 0"));
         assertThrows(FormatException.class, () -> LegacySyntaxParser.parse("cnbound:xx final 0"));
         assertThrows(FormatException.class,

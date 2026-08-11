@@ -24,7 +24,14 @@ import nl.utwente.groove.grammar.Grammar;
 
 /**
  * Exploration type for single-state exploration: the start state is fully
- * explored, and no further states are.
+ * explored, and no further states are. This is the simulator's internal type
+ * for its explore-state action; the legacy {@code state} strategy keyword
+ * instead translates to the equivalent configuration (bound {@code initial}).
+ * The type deliberately stays outside the feature model: the simulator
+ * applies it to whatever GTS is currently loaded, so it must not declare
+ * per-GTS features (collapse, algebra, persistence) of its own — a
+ * configuration-based type would refuse a GTS explored under overriding
+ * per-GTS features (see {@code ConfiguredExploreType#prepareRun}).
  * @author Arend Rensink
  * @version $Revision$
  */
