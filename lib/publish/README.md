@@ -53,10 +53,12 @@ Central publication is public and irrevocable. Verify before deploying:
    `NOTICE.txt`), 3.C (modification record — in `NOTICE.txt`).
    Clause 3.F *requests* (not requires) registration at
    opensource.arc.nasa.gov — consider a courtesy note if that contact
-   point still exists. Optional simplification to investigate: whether
-   upstream later relicensed LTL2Buchi under Apache-2.0 (jpf-core
-   itself did); if a relicensed release matches our snapshot, prefer
-   that license.
+   point still exists. A possible Apache-2.0 relicensing was
+   investigated (2026-08) and ruled out: jpf-core's relicensing to
+   Apache-2.0 does not cover LTL2Buchi (no gov.nasa.ltl code anywhere
+   in the javapathfinder or nasa GitHub organizations), the known
+   mirrors of LTL2Buchi all carry NOSA headers, and no relicensing
+   statement exists online. NOSA 1.3 stands.
 2. **gnuprologjava (LGPL 3)**: no action expected; the jar now carries
    `COPYING.txt`/`COPYING.LESSER.txt` from the upstream distribution,
    and the embedded `gnu.getopt` keeps its own `COPYING.LIB`.
