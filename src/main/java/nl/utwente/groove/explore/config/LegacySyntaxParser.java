@@ -326,6 +326,46 @@ public class LegacySyntaxParser {
         return new FormatException("Acceptor 'cycle' requires an LTL model checking strategy");
     }
 
+    /**
+     * Specification of a legacy acceptor: a kind plus content — a rule name
+     * (for {@link Kind#RULEAPP}), an optionally {@code !}-prefixed rule name
+     * (for {@link Kind#INVARIANT}), or a rule formula (for
+     * {@link Kind#FORMULA}); empty for the content-less kinds. Intermediate
+     * representation of the legacy acceptor syntax, whose content is resolved
+     * against the grammar only once it has been translated onwards into the
+     * goal feature of a configuration.
+     */
+    private record AcceptorSpec(Kind kind, String content) {
+        /** The legacy acceptor kinds. */
+        enum Kind {
+            /** Final states, i.e., states without outgoing transitions. */
+            FINAL("final"),
+            /** Every state. */
+            ANY("any"),
+            /** No state. */
+            NONE("none"),
+            /** Accepting cycles of an LTL product exploration. */
+            CYCLE("cycle"),
+            /** States in which a given rule fires. */
+            RULEAPP("ruleapp"),
+            /** States in which a given rule is (or is not) applicable. */
+            INVARIANT("inv"),
+            /** States satisfying a rule formula. */
+            FORMULA("formula"),;
+
+            private Kind(String keyword) {
+                this.keyword = keyword;
+            }
+
+            /** Returns the identifying keyword of this acceptor kind. */
+            public String getKeyword() {
+                return this.keyword;
+            }
+
+            private final String keyword;
+        }
+    }
+
     /** Parses a legacy acceptor descriptor into an acceptor specification. */
     private static AcceptorSpec parseAcceptor(String text) throws FormatException {
         String keyword = keywordOf(text);
