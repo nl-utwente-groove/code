@@ -39,6 +39,7 @@ import nl.utwente.groove.explore.result.NoStateAcceptor;
 import nl.utwente.groove.explore.result.NodeBoundCondition;
 import nl.utwente.groove.explore.result.Predicate;
 import nl.utwente.groove.explore.result.PredicateAcceptor;
+import nl.utwente.groove.explore.strategy.ExploreStateStrategy;
 import nl.utwente.groove.explore.strategy.LinearStrategy;
 import nl.utwente.groove.explore.strategy.RandomLinearStrategy;
 import nl.utwente.groove.explore.strategy.StopMode;
@@ -217,6 +218,13 @@ public class ConfiguredExploreType extends ExploreType {
     @Override
     public Strategy getParsedStrategy(Grammar grammar) throws FormatException {
         var config = getConfig();
+        // an initial-state bound is realised by the dedicated single-state
+        // strategy, which handles transient (in-recipe) successors correctly;
+        // the traversal is irrelevant, as no state beyond the initial one is
+        // ever scheduled
+        if (config.getKind(ExploreKey.BOUND) == Bound.INITIAL) {
+            return new ExploreStateStrategy();
+        }
         // a single-state frontier is a linear walk
         if (this.traversal == Traversal.LINEAR) {
             return config.getKind(ExploreKey.SUCCESSOR) == Successor.SINGLE_RANDOM
@@ -246,6 +254,8 @@ public class ConfiguredExploreType extends ExploreType {
                 getPool());
         }
         case SIZE -> throw Exceptions.illegalState("Unrealisable bound kind passed validation");
+        case INITIAL -> throw Exceptions
+            .illegalState("Initial-state bound is realised before the traversal dispatch");
         };
     }
 

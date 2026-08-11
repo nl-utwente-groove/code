@@ -128,6 +128,10 @@ public class ExploreTypeConverter {
         case NONE -> {
             // no bound, no restrictions
         }
+        case INITIAL -> {
+            // realised by the dedicated single-state strategy, which makes
+            // the traversal irrelevant; no combination to check
+        }
         case COST -> {
             // consistency of cost != NONE is guaranteed by check()
             if (config.getKind(ExploreKey.COST) != Cost.UNIFORM) {
@@ -137,6 +141,13 @@ public class ExploreTypeConverter {
                     .add("A depth bound requires breadth-first or depth-first exploration");
             } else {
                 checkLimit(content, errors);
+                if (((Bound.Limit) content).max() == 0) {
+                    // the engine reserves 0 as the no-bound sentinel; a depth
+                    // bound of 0 would silently explore without restriction
+                    errors
+                        .add("A depth bound must be positive; use bound '%s'"
+                            + " to explore only the initial state", Bound.INITIAL.getName());
+                }
             }
         }
         case SIZE -> errors.add("A graph size bound is not yet supported");

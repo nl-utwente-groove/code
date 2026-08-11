@@ -61,6 +61,14 @@ public class ExploreCliTest {
         // count=first would not bite, as ferryman has no final states)
         var first = Generator.execute("-x", "goal=condition:eat count=first", GRAMMAR);
         assertEquals(5, first.getGTS().nodeCount());
+        // an initial-state bound fully explores the start state and nothing
+        // else: all transitions leave the start state, none leave a successor
+        var initialGTS = Generator.execute("-x", "bound=initial", GRAMMAR).getGTS();
+        assertTrue(initialGTS.nodeCount() > 1);
+        assertTrue(initialGTS
+            .edgeSet()
+            .stream()
+            .allMatch(t -> t.source() == initialGTS.startState()));
     }
 
     /**
@@ -117,6 +125,10 @@ public class ExploreCliTest {
         assertThrows(FormatException.class,
                      () -> Generator.execute("-x", "heuristic=nen", GRAMMAR));
         assertThrows(FormatException.class, () -> Generator.execute("-x", "bogus=1", GRAMMAR));
+        // a depth bound of 0 is rejected: the engine reserves 0 as the
+        // no-bound sentinel, so it would silently explore without restriction
+        assertThrows(FormatException.class,
+                     () -> Generator.execute("-x", "cost=uniform bound=cost:0", GRAMMAR));
     }
 
     /** Tests the mutual exclusion of the configuration and legacy options.
