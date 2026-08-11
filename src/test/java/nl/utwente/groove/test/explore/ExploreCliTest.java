@@ -17,6 +17,7 @@
 package nl.utwente.groove.test.explore;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -144,10 +145,17 @@ public class ExploreCliTest {
         var configCounted
             = Generator.execute("-x", "next=newest goal=condition:eat count=2", GRAMMAR);
         assertEquals(configCounted.getGTS().nodeCount(), legacyCounted.getGTS().nodeCount());
-        // a bare result count also goes through the configuration
+        // a bare result count behaves as its configuration equivalent
         var legacyFirst = Generator.execute("-r", "1", GRAMMAR);
         var configFirst = Generator.execute("-x", "count=first", GRAMMAR);
         assertEquals(configFirst.getGTS().nodeCount(), legacyFirst.getGTS().nodeCount());
+        // a bare result count must also work when the grammar's default
+        // exploration is one of the dedicated non-config types, which cannot
+        // serve as a base for the legacy overlay (regression: the count used
+        // to be routed through the overlay, which then failed)
+        var ltlDefault = Generator
+            .execute("-D", "explorationStrategy=ltl:false cycle 0", "-r", "1", GRAMMAR);
+        assertFalse(ltlDefault.isEmpty());
     }
 
     /** Tests that malformed legacy options are rejected. */

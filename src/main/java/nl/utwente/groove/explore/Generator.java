@@ -179,17 +179,20 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
                 result.setProperty(e.getKey(), value);
             }
         }
-        if (hasStrategy() || hasAcceptor() || getResultCount() != 0) {
+        if (hasStrategy() || hasAcceptor()) {
             // translate the legacy components directly into the feature
             // model, overlaid on the grammar's default exploration (which
             // must be computed after the properties have been applied)
             ExploreType type = LegacySyntaxParser
                 .overlay(result.getExploreType(), getStrategy(), getAcceptor(),
                          getResultCount());
-            if (hasStrategy() || hasAcceptor()) {
-                emitLegacyNote(type);
-            }
+            emitLegacyNote(type);
             result.setExploreType(type);
+        } else if (getResultCount() != 0) {
+            // a bare result count needs no overlay: it works on any
+            // exploration type, including the non-config types that
+            // cannot serve as an overlay base
+            result.setResultCount(getResultCount());
         }
         return result;
     }
