@@ -31,6 +31,7 @@ import nl.utwente.groove.control.Procedure;
 import nl.utwente.groove.control.term.Term;
 import nl.utwente.groove.grammar.Action;
 import nl.utwente.groove.grammar.Callable;
+import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.ModuleName;
 import nl.utwente.groove.grammar.QualName;
@@ -316,6 +317,26 @@ public class Namespace implements ParseInfo, Fallible {
 
     /** Set of top-level rule and recipe names. */
     private @Nullable Set<Action> actions;
+
+    /**
+     * Indicates if the actions in this name space have effective priorities,
+     * meaning that there is more than one distinct priority value among them.
+     * If all actions have the same priority, the priorities cannot influence
+     * the order of scheduling and hence are harmless.
+     * Property actions and actions whose check policy is {@link CheckPolicy#OFF}
+     * are never scheduled, so their priorities do not count.
+     */
+    public boolean hasEffectivePriorities() {
+        return this.callableMap
+            .values()
+            .stream()
+            .filter(Action.class::isInstance)
+            .map(Action.class::cast)
+            .filter(a -> !a.isProperty() && a.getPolicy() != CheckPolicy.OFF)
+            .mapToInt(Action::getPriority)
+            .distinct()
+            .count() > 1;
+    }
 
     /**
      * Returns the set of all property actions in the grammar.
