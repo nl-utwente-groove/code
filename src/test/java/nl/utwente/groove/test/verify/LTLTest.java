@@ -31,14 +31,14 @@ import nl.utwente.groove.explore.ExploreResult.Lasso;
 import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.Generator;
 import nl.utwente.groove.explore.LTLExploreType;
-import nl.utwente.groove.explore.strategy.Boundary;
-import nl.utwente.groove.explore.strategy.GraphNodeSizeBoundary;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.FormatException;
+import nl.utwente.groove.verify.Boundary;
+import nl.utwente.groove.verify.GraphNodeSizeBoundary;
 
 /**
  * Tests the CTLStarFormula class.

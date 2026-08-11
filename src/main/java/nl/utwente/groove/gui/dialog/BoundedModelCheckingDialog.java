@@ -41,13 +41,13 @@ import javax.swing.SpringLayout;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import nl.utwente.groove.explore.strategy.Boundary;
-import nl.utwente.groove.explore.strategy.GraphNodeSizeBoundary;
-import nl.utwente.groove.explore.strategy.RuleSetBoundary;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.gui.layout.SpringUtilities;
+import nl.utwente.groove.verify.Boundary;
+import nl.utwente.groove.verify.GraphNodeSizeBoundary;
+import nl.utwente.groove.verify.RuleSetBoundary;
 
 /**
  * @author Harmen Kastenberg

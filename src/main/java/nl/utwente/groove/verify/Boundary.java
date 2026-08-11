@@ -14,13 +14,12 @@
  * 
  * $Id$
  */
-package nl.utwente.groove.explore.strategy;
+package nl.utwente.groove.verify;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.lts.GraphTransition;
-import nl.utwente.groove.verify.ProductTransition;
 import nl.utwente.groove.verify.ModelChecking.Record;
 
 /**

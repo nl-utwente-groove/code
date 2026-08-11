@@ -14,16 +14,14 @@
  *
  * $Id$
  */
-package nl.utwente.groove.explore.config.parse;
+package nl.utwente.groove.verify;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
-import nl.utwente.groove.explore.strategy.Boundary;
-import nl.utwente.groove.explore.strategy.GraphNodeSizeBoundary;
-import nl.utwente.groove.explore.strategy.RuleSetBoundary;
+import nl.utwente.groove.explore.config.parse.EnabledRuleParser;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.util.parse.FormatException;

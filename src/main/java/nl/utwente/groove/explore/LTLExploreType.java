@@ -19,16 +19,16 @@ package nl.utwente.groove.explore;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.explore.config.parse.BoundaryParser;
 import nl.utwente.groove.explore.result.Acceptor;
 import nl.utwente.groove.explore.result.CycleAcceptor;
-import nl.utwente.groove.explore.strategy.Boundary;
 import nl.utwente.groove.explore.strategy.BoundedLTLStrategy;
 import nl.utwente.groove.explore.strategy.BoundedPocketLTLStrategy;
 import nl.utwente.groove.explore.strategy.LTLStrategy;
 import nl.utwente.groove.explore.strategy.Strategy;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.util.parse.FormatException;
+import nl.utwente.groove.verify.Boundary;
+import nl.utwente.groove.verify.BoundaryParser;
 
 /**
  * Exploration type for LTL model checking: a nested depth-first search for a

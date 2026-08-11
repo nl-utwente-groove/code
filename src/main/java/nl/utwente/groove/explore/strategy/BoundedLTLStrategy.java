@@ -23,6 +23,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.explore.util.RandomChooserInSequence;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.lts.RuleTransition;
+import nl.utwente.groove.verify.Boundary;
 import nl.utwente.groove.verify.ProductState;
 import nl.utwente.groove.verify.ProductTransition;
 

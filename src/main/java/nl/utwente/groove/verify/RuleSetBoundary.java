@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.explore.strategy;
+package nl.utwente.groove.verify;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -26,7 +26,6 @@ import nl.utwente.groove.grammar.Action;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.verify.ModelChecking.Record;
-import nl.utwente.groove.verify.ProductTransition;
 
 /**
  * Implementation of interface {@link Boundary} that bases the boundary on a set
