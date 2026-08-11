@@ -19,7 +19,6 @@ package nl.utwente.groove.grammar.model;
 import static nl.utwente.groove.grammar.model.ResourceKind.GROOVY;
 
 import nl.utwente.groove.grammar.QualName;
-import nl.utwente.groove.grammar.groovy.Util;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -43,9 +42,13 @@ public class GroovyModel extends TextBasedModel<String> {
         super(grammar, GROOVY, name, program);
     }
 
+    /** Groovy resources are always active: there is no grammar property
+     * selecting active groovy scripts (the inherited implementation would
+     * always return {@code false} as a consequence).
+     */
     @Override
     public boolean isActive() {
-        return Util.isGroovyPresent();
+        return true;
     }
 
     @Override
