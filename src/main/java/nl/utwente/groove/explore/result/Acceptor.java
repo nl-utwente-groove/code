@@ -28,7 +28,7 @@ import nl.utwente.groove.lts.GraphTransition;
  * realising its {@link Goal} into the result, and signals (through
  * {@link #done()}) when the result count has been reached. Instances are
  * stateful and are used for a single exploration run; they are created
- * afresh by {@link nl.utwente.groove.explore.ExploreType#getParsedAcceptor}.
+ * afresh by {@link nl.utwente.groove.explore.ExploreType#realise}.
  */
 public class Acceptor implements GTSListener {
     /** Creates an acceptor with the empty goal and no result count. */

@@ -111,7 +111,7 @@ public class BeamSearchTest {
         ExploreType type = ExploreTypeConverter
             .toExploreType(ExploreConfig.parse("next=newest frontier=beam:3"));
         assertInstanceOf(ConfiguredExploreType.class, type);
-        assertInstanceOf(FrontierStrategy.class, type.getParsedStrategy(grammar));
+        assertInstanceOf(FrontierStrategy.class, type.realise(grammar).strategy());
     }
 
     /** Explores a fresh GTS with a given configuration and summarises it. */

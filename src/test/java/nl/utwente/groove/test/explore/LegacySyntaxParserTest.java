@@ -159,19 +159,20 @@ public class LegacySyntaxParserTest {
         // through the overlay entry point, which takes the -s value whole
         var ltl = LegacySyntaxParser.overlay(ExploreType.getDefault(), "ltl:F eat", "cycle", 0);
         assertInstanceOf(LTLExploreType.class, ltl);
-        assertInstanceOf(LTLStrategy.class, ltl.getParsedStrategy(grammar));
-        assertInstanceOf(CycleAcceptor.class, ltl.getParsedAcceptor(grammar));
+        var ltlRealisation = ltl.realise(grammar);
+        assertInstanceOf(LTLStrategy.class, ltlRealisation.strategy());
+        assertInstanceOf(CycleAcceptor.class, ltlRealisation.acceptor());
         // the boundary of the bounded flavours resolves against the grammar
         var bounded = LegacySyntaxParser.overlay(ExploreType.getDefault(),
                                                  "ltlbounded:5,3;F eat", null, 0);
-        var boundedStrategy = bounded.getParsedStrategy(grammar);
+        var boundedStrategy = bounded.realise(grammar).strategy();
         assertInstanceOf(BoundedLTLStrategy.class, boundedStrategy);
         assertEquals(BoundedLTLStrategy.class, boundedStrategy.getClass());
         assertEquals("5,3", ((BoundedLTLStrategy) boundedStrategy).getBoundary().toString(),
                      "The graph-size boundary should carry the parsed size and step");
         var pocket = LegacySyntaxParser.overlay(ExploreType.getDefault(),
                                                 "ltlpocket:eat,unload;F eat", null, 0);
-        var pocketStrategy = pocket.getParsedStrategy(grammar);
+        var pocketStrategy = pocket.realise(grammar).strategy();
         assertInstanceOf(BoundedPocketLTLStrategy.class, pocketStrategy);
         // the rule set iterates in set order, so compare order-insensitively
         var pocketRules = ((BoundedLTLStrategy) pocketStrategy).getBoundary().toString();
@@ -181,7 +182,7 @@ public class LegacySyntaxParserTest {
         // (regression: BoundaryParser indexed into the empty first element)
         var commaBounded = LegacySyntaxParser.overlay(ExploreType.getDefault(),
                                                       "ltlbounded:,eat;F eat", null, 0);
-        assertThrows(FormatException.class, () -> commaBounded.getParsedStrategy(grammar));
+        assertThrows(FormatException.class, () -> commaBounded.realise(grammar));
     }
 
     /** Tests the rejection of malformed or inconsistent legacy descriptions. */

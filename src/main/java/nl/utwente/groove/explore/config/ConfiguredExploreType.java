@@ -259,13 +259,37 @@ public class ConfiguredExploreType extends ExploreType {
     }
 
     /**
+     * Realises the configuration, collecting the errors of both the
+     * strategy and the acceptor half before failing, so that all problems
+     * are reported at once.
+     */
+    @Override
+    public Realisation realise(Grammar grammar) throws FormatException {
+        var errors = new FormatErrorSet();
+        Strategy strategy = null;
+        try {
+            strategy = createStrategy(grammar);
+        } catch (FormatException exc) {
+            errors.addAll(exc.getErrors());
+        }
+        Acceptor acceptor = null;
+        try {
+            acceptor = createAcceptor(grammar);
+        } catch (FormatException exc) {
+            errors.addAll(exc.getErrors());
+        }
+        errors.throwException();
+        assert strategy != null && acceptor != null;
+        return new Realisation(strategy, acceptor);
+    }
+
+    /**
      * Instantiates the strategy from the configuration and the baseline
      * traversal that the converter derived from it while validating, so that
      * validation and instantiation cannot diverge. Unrealisable combinations
      * do not reach this method.
      */
-    @Override
-    public Strategy getParsedStrategy(Grammar grammar) throws FormatException {
+    private Strategy createStrategy(Grammar grammar) throws FormatException {
         var config = getConfig();
         // an initial-state bound is realised by the dedicated single-state
         // strategy, which handles transient (in-recipe) successors correctly;
@@ -346,8 +370,7 @@ public class ConfiguredExploreType extends ExploreType {
      * Instantiates a fresh acceptor directly from the configuration's goal,
      * outcome and count features.
      */
-    @Override
-    public Acceptor getParsedAcceptor(Grammar grammar) throws FormatException {
+    private Acceptor createAcceptor(Grammar grammar) throws FormatException {
         var config = getConfig();
         boolean satisfy = config.getKind(ExploreKey.OUTCOME) == Outcome.SATISFY;
         return switch ((Goal) config.getKind(ExploreKey.GOAL)) {

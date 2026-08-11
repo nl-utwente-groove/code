@@ -19,8 +19,6 @@ package nl.utwente.groove.explore;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.explore.engine.Strategy;
-import nl.utwente.groove.explore.result.Acceptor;
 import nl.utwente.groove.explore.strategy.BoundedLTLStrategy;
 import nl.utwente.groove.explore.strategy.BoundedPocketLTLStrategy;
 import nl.utwente.groove.explore.strategy.LTLStrategy;
@@ -140,14 +138,14 @@ public class LTLExploreType extends ExploreType {
     }
 
     @Override
-    public Strategy getParsedStrategy(Grammar grammar) throws FormatException {
-        LTLStrategy result = switch (this.kind) {
+    public Realisation realise(Grammar grammar) throws FormatException {
+        LTLStrategy strategy = switch (this.kind) {
         case PLAIN -> new LTLStrategy();
         case BOUNDED -> new BoundedLTLStrategy();
         case POCKET -> new BoundedPocketLTLStrategy();
         };
-        result.setProperty(this.property);
-        if (result instanceof BoundedLTLStrategy bounded) {
+        strategy.setProperty(this.property);
+        if (strategy instanceof BoundedLTLStrategy bounded) {
             var boundary = this.boundary;
             if (boundary == null) {
                 var spec = this.boundarySpec;
@@ -156,12 +154,7 @@ public class LTLExploreType extends ExploreType {
             }
             bounded.setBoundary(boundary);
         }
-        return result;
-    }
-
-    @Override
-    public Acceptor getParsedAcceptor(Grammar grammar) {
-        return new CycleAcceptor();
+        return new Realisation(strategy, new CycleAcceptor());
     }
 
     @Override

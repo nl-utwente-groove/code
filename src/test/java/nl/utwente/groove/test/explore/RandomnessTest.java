@@ -134,7 +134,7 @@ public class RandomnessTest {
         Randomness.setMasterSeed(42);
         Grammar grammar = loadGrammar();
         ExploreType random = ExploreTypeConverter.toExploreType(ExploreConfig.parse("next=random"));
-        assertInstanceOf(FrontierStrategy.class, random.getParsedStrategy(grammar));
+        assertInstanceOf(FrontierStrategy.class, random.realise(grammar).strategy());
         ExploreOutcome randomOutcome = ExploreOutcome.explore(grammar, random);
         ExploreType bfs = ExploreTypeConverter.toExploreType(ExploreConfig.parse(""));
         ExploreOutcome bfsOutcome = ExploreOutcome.explore(grammar, bfs);

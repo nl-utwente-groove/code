@@ -72,20 +72,23 @@ public abstract class ExploreType {
     abstract public String getIdentifier();
 
     /**
-     * Returns the strategy, instantiated for a given graph grammar.
-     * @throws FormatException if the grammar is incompatible with the
-     * strategy.
+     * The run-time realisation of an exploration type for a given grammar:
+     * a strategy and acceptor pair, mutually wired where the exploration
+     * type requires it.
      */
-    abstract public Strategy getParsedStrategy(Grammar grammar) throws FormatException;
+    public record Realisation(Strategy strategy, Acceptor acceptor) {
+        // no additional functionality
+    }
 
     /**
-     * Returns a fresh acceptor, instantiated for a given graph grammar,
-     * with the result count of this exploration type applied. Acceptors are
-     * stateful, so every call returns a new instance.
-     * @throws FormatException if the grammar is incompatible with the
-     * acceptor.
+     * Realises this exploration type for a given graph grammar, by
+     * instantiating its strategy and acceptor, with the result count of
+     * this exploration type applied. Both objects are stateful and good for
+     * a single exploration run; every call returns fresh instances.
+     * @throws FormatException if the grammar is incompatible with this
+     * exploration type
      */
-    abstract public Acceptor getParsedAcceptor(Grammar grammar) throws FormatException;
+    abstract public Realisation realise(Grammar grammar) throws FormatException;
 
     /**
      * Returns a variant of this exploration type with a different result
@@ -134,12 +137,7 @@ public abstract class ExploreType {
     private Factory<FormatErrorSet> grammarErrors = Factory.lazy(() -> {
         FormatErrorSet errors = new FormatErrorSet();
         try {
-            getParsedStrategy(getTestGrammar());
-        } catch (FormatException exc) {
-            errors.addAll(exc.getErrors());
-        }
-        try {
-            getParsedAcceptor(getTestGrammar());
+            realise(getTestGrammar());
         } catch (FormatException exc) {
             errors.addAll(exc.getErrors());
         }
