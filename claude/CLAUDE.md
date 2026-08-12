@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project overview
 
-GROOVE is a tool for graph transformation and verification (state-space exploration and model checking), developed at the University of Twente. It is a single Maven project (Java 21, module `nl.utwente.groove`) producing both a Swing GUI and command-line tools. Website: <https://nl-utwente-groove.github.io>. The authoritative version number lives in `src/main/resources/nl/utwente/groove/resource/version/GROOVE_VERSION` (the pom `revision` property may lag behind it).
+GROOVE is a tool for graph transformation and verification (state-space exploration and model checking), developed at the University of Twente. It is a single Maven project (Java 21, module `nl.utwente.groove`) producing both a Swing GUI and command-line tools. Website: <https://nl-utwente-groove.github.io>. The authoritative version number is the pom's `revision` property; the `GROOVE_VERSION` resource read by `util.Version` contains `${revision}` and is generated from the pom by resource filtering (in Eclipse, a changed `revision` reaches the filtered copy only after a Maven &gt; Update Project or full build).
 
 ## Building and testing
 
