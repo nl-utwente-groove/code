@@ -4,9 +4,6 @@
         <attr name="$version">
             <string>curly</string>
         </attr>
-        <attr name="enabled">
-            <string>false</string>
-        </attr>
         <node id="n0">
             <attr name="layout">
                 <string>255 193 19 19</string>
