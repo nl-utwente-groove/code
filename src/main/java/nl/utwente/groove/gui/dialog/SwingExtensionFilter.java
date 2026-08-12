@@ -21,6 +21,7 @@ import java.util.EnumMap;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.io.ExtensionFilter;
 import nl.utwente.groove.io.FileType;
@@ -48,8 +49,8 @@ public class SwingExtensionFilter extends javax.swing.filechooser.FileFilter {
     }
 
     @Override
-    public boolean accept(File file) {
-        return this.inner.accept(file);
+    public boolean accept(@Nullable File file) {
+        return file != null && this.inner.accept(file);
     }
 
     @Override

@@ -93,8 +93,8 @@ public class HTMLConverter {
 
     static {
         HTMLTag symbolTag = null;
-        if (Fonts.getSymbolFont() != null && Fonts.getSymbolFont() != Fonts.getLabelFont()) {
-            Font font = Fonts.getSymbolFont();
+        Font font = Fonts.getSymbolFont();
+        if (font != null && font != Fonts.getLabelFont()) {
             String face = font.getFamily();
             int size = font.getSize();
             // actually a slightly smaller font is more in line with
