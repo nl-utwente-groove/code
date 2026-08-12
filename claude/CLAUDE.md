@@ -4,18 +4,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project overview
 
-GROOVE is a tool for graph transformation and verification (state-space exploration and model checking), developed at the University of Twente. It is a single Maven project (Java 21, module `nl.utwente.groove`) producing both a Swing GUI and command-line tools. Website: <https://nl-utwente-groove.github.io>. The authoritative version number lives in `src/main/resources/nl/utwente/groove/resource/version/GROOVE_VERSION` (the pom `revision` property may lag behind it).
+GROOVE is a tool for graph transformation and verification (state-space exploration and model checking), developed at the University of Twente. It is a single Maven project (Java 21, module `nl.utwente.groove`) producing both a Swing GUI and command-line tools. Website: <https://nl-utwente-groove.github.io>. The authoritative version number is the pom's `revision` property; the `GROOVE_VERSION` resource read by `util.Version` contains `${revision}` and is generated from the pom by resource filtering (in Eclipse, a changed `revision` reaches the filtered copy only after a Maven &gt; Update Project or full build).
 
 ## Building and testing
 
 ### Dependencies
 
-All dependencies resolve automatically; a fresh clone builds without setup. Four libraries not available on Maven Central (`gnuprologjava`, `ltl2buchi`, `osxadapter`, `groove-gxl`) are served from the project-local Maven repository checked in at `lib/repo` (declared as a `<repository>` in the pom). To add or upgrade such a library, place jar + pom (+ optional sources jar) in the standard Maven layout under `lib/repo` and commit.
+All dependencies resolve from Maven Central; a fresh clone builds without setup. Four third-party libraries never published by their upstreams (`gnuprologjava`, `ltl2buchi`, `osxadapter`, `groove-gxl`) are republished to Central under the `nl.utwente.groove` group id, with a fourth version digit marking the repackaging. The repackaging modules, the upstream jars they are built from, and the publication procedure live in `lib/publish` (see its README); upgrading such a library means a new upstream jar in `lib/publish/upstream`, a new published version, and a redeploy by a maintainer.
 
 ### Commands
 
 ```
-mvn clean package                              # build (shade plugin bundles the local libs into the jar)
+mvn clean package                              # build
 mvn compile                                    # compile only
 mvn test                                       # fast test suite (slow tests excluded)
 mvn test -Dexcluded.test.groups=               # full suite including slow tests

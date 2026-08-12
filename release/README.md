@@ -15,13 +15,13 @@ In addition, the release workflow builds self-contained installers (with a bundl
 
 Below, the _release directory_ refers to the project subdirectory (of the `code` repository) called `release`.
 
-1. Update the version and date in the GROOVE source, by changing the files in
-   `src/main/resources/nl/utwente/groove/resource/version`:
+1. Update the version and date in the GROOVE source:
 
-    - `GROOVE_BUILD`: the build date, in format `YYYYMMDD`. Update to the build date.
-    - `GROOVE_VERSION`: a semantic version `x.y.z` with the optional suffix `-SNAPSHOT`. The number might already be correct (it is updated in postprocessing, see below) but the changes in this revision may necessitate the `x` or `y` values. In any case remove the `-SNAPSHOT` suffix.
-    - [Optional] `GXL_VERSION`: the name of the version of GXL currently used for the encoding of graphs. (This will rarely change.)
-    - [Optional] `JAVA_VERSION`: the version of Java to be used for the build.  
+    - The version number is the `revision` property in the main `pom.xml`: a semantic version `x.y.z` with the optional suffix `-SNAPSHOT`. The number might already be correct (it is updated in postprocessing, see below) but the changes in this revision may necessitate the `x` or `y` values. In any case remove the `-SNAPSHOT` suffix. (The `GROOVE_VERSION` resource file is generated from this property by resource filtering; do not edit it.)
+    - The remaining files in `src/main/resources/nl/utwente/groove/resource/version`:
+        - `GROOVE_BUILD`: the build date, in format `YYYYMMDD`. Update to the build date.
+        - [Optional] `GXL_VERSION`: the name of the version of GXL currently used for the encoding of graphs. (This will rarely change.)
+        - [Optional] `JAVA_VERSION`: the version of Java to be used for the build.  
 
 2. Update the `include/CHANGES.md` file in the release directory
    to reflect all changes with respect to the previous release.
@@ -48,16 +48,18 @@ Below, the _release directory_ refers to the project subdirectory (of the `code`
 2. Compile GROOVE by running Maven on the GROOVE source project
    (ensuring that all dependencies are Maven-based), using
    
-    `mvn clean install -Drevision=x.y.z`
+    `mvn clean install`
 
-    where `x.y.z` is the same version number as in `GROOVE_VERSION` (see above),
+    (the version comes from the `revision` property in the pom),
     or by running the Eclipse `GROOVE core - do all` launch configuration.
 
 3. Package GROOVE by running Maven in the release directory, using
 
     `mvn clean package -Drevision=x.y.z`
 
-    where `x.y.z` is the same version number as in `GROOVE_VERSION` (see above),
+    where `x.y.z` is the same version number as the `revision` property in the
+    main pom (the release poms are a separate Maven reactor, so the version
+    must be passed in explicitly here),
     or by invoking the "GROOVE release - zip em up" launch configuration.
 
 The steps under Testing and Building can be combined by invoking the `GROOVE release - do all`
@@ -90,8 +92,10 @@ which produces the raw application directory (no installer) under `jpackage/targ
 
 ## Postprocessing
 
-1. In `src/main/resources/nl/utwente/groove/resource/version`, update `GROOVE_VERSION`
-   (containing the release version `x.y.z`) by increasing `z` and adding the prefix `-SNAPSHOT`.
+1. In the main `pom.xml`, update the `revision` property (containing the release
+   version `x.y.z`) by increasing `z` and adding the suffix `-SNAPSHOT`. (A
+   pleasant side effect of the suffix: the Central portal rejects `-SNAPSHOT`
+   versions, so an accidental `deploy` between releases cannot publish.)
 
 # How to build a Maven artefact
 
@@ -101,13 +105,11 @@ The process is quite complicated; although largely automated, many things can go
 
 Invoke the Maven target using
 
-`mvn clean deploy -Drevision=x.y.z`
+`mvn clean deploy`
 
-where `x.y.z` is the version number also used for the github release; see above. 
+with the `revision` property in the pom set to the version number also used for the github release; see above.
 
-This can alternatively be invoked in Ecliplse using the `GROOVE - maven deploy to Central Repository` launch configuration.
-
-<b>Note:</b> In a recent move from Nexus to Central Maven service, it seems as though the `-Drevision` keyword setting is no longer observed; instead, the revision should be hardcoded in `pom.xml`.
+This can alternatively be invoked in Eclipse using the `GROOVE - maven deploy to Central Repository` launch configuration.
 
 The relevant plugins are `central-publishing-maven-plugin` for staging, which relies on `maven-gpg-plugin` for signing. Staging consists of signing, uploading and checking the Maven Central constraints. The subsections below should not be necessary once everything is up and running, but are included for completeness and understanding, and may be useful in case part of the configuration is lost.
 

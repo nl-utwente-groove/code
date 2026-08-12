@@ -5,7 +5,10 @@
 	<version>${revision}</version>
 	
 	<properties>
-		<revision>7.5.2</revision>
+		<!-- the single source of truth for the GROOVE version number: the
+		     GROOVE_VERSION resource read by util.Version is generated from
+		     this property by resource filtering (see the resources section) -->
+		<revision>7.5.3</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<junit.version>5.14.4</junit.version>
 		<!-- Test categories excluded from the default test run;
@@ -39,21 +42,6 @@
 	    <developerConnection>scm:git:https://github.com/nl-utwente-groove/code.git</developerConnection>
 	    <url>https://github.com/nl-utwente-groove/code.git</url>
 	</scm>
-
-	<repositories>
-		<!-- Project-local repository holding the libraries that are not available
-		     on Maven Central (see lib/repo); no manual installation needed -->
-		<repository>
-			<id>groove-project-local</id>
-			<url>file:${project.basedir}/lib/repo</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
 
 	<build>
 		<plugins>
@@ -153,29 +141,6 @@
 				</configuration>
 			</plugin>
 
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<version>3.5.1</version>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
-						<configuration>
-							<artifactSet>
-								<includes>
-									<include>nl.utwente.groove:gnuprologjava</include>
-									<include>nl.utwente.groove:ltl2buchi</include>
-									<include>nl.utwente.groove:osxadapter</include>
-									<include>nl.utwente.groove:groove-gxl</include>
-								</includes>
-							</artifactSet>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
 		</plugins>
 
 		<resources>
@@ -189,6 +154,21 @@
 			</resource>
 			<resource>
 				<directory>src/main/resources</directory>
+				<excludes>
+					<exclude>nl/utwente/groove/resource/version/GROOVE_VERSION</exclude>
+				</excludes>
+			</resource>
+			<resource>
+				<!-- GROOVE_VERSION contains ${revision}, so that the pom is
+				     the single source of truth for the version number; only
+				     this one file is filtered, since filtering would corrupt
+				     binary resources and substitute stray ${...} tokens
+				     elsewhere -->
+				<directory>src/main/resources</directory>
+				<includes>
+					<include>nl/utwente/groove/resource/version/GROOVE_VERSION</include>
+				</includes>
+				<filtering>true</filtering>
 			</resource>
 		</resources>
 	</build>
@@ -406,26 +386,27 @@
 			</exclusions>
 		</dependency>
 
-		<!-- Local libraries -->
+		<!-- Third-party libraries republished to Maven Central under the
+		     GROOVE namespace; built and maintained in lib/publish -->
 		<dependency>
 			<groupId>nl.utwente.groove</groupId>
 			<artifactId>gnuprologjava</artifactId>
-			<version>0.2.6</version>
+			<version>0.2.6.1</version>
 		</dependency>
 		<dependency>
 			<groupId>nl.utwente.groove</groupId>
 			<artifactId>ltl2buchi</artifactId>
-			<version>2010.12</version>
+			<version>2010.12.1</version>
 		</dependency>
 		<dependency>
 			<groupId>nl.utwente.groove</groupId>
 			<artifactId>osxadapter</artifactId>
-			<version>2.0</version>
+			<version>2.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>nl.utwente.groove</groupId>
 			<artifactId>groove-gxl</artifactId>
-			<version>3.0</version>
+			<version>3.0.1</version>
 		</dependency>
 
 		<!-- Test libraries -->

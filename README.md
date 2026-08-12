@@ -13,24 +13,11 @@ All Maven dependencies are obtained automatically; a fresh clone builds without 
 mvn clean package
 ```
 
-Most libraries come from Maven Central. The few that are not available there
-(`gnuprologjava`, `ltl2buchi`, `osxadapter`, `groove-gxl`) are served from a *project-local
-Maven repository* checked into this code base at `lib/repo`, which is declared as a
-`<repository>` in the pom. No manual installation is needed.
-
-### Adding or updating a library in the project-local repository
-
-The repository at `lib/repo` follows the standard Maven layout:
-
-```
-lib/repo/<groupId as directories>/<artifactId>/<version>/
-    <artifactId>-<version>.jar
-    <artifactId>-<version>.pom
-    <artifactId>-<version>-sources.jar   (optional)
-```
-
-To add or upgrade a library, place the jar, a minimal pom (see the existing ones for
-examples) and optionally a sources jar in the corresponding directory, and commit them.
+All libraries come from Maven Central. Four third-party libraries that were never
+published there by their upstreams (`gnuprologjava`, `ltl2buchi`, `osxadapter`,
+`groove-gxl`) have been republished to Maven Central by the GROOVE project itself,
+under the `nl.utwente.groove` group id; the repackaging modules and the publication
+procedure live in [`lib/publish`](lib/publish/README.md).
 
 ## Releasing
 
