@@ -1,25 +1,28 @@
 # Publishing the bundled libraries to Maven Central
 
-This directory prepares the four libraries historically served from
-`lib/repo` (and shaded into the GROOVE jar) for publication to Maven
-Central under the `nl.utwente.groove` namespace. Once they are on
-Central, the shade step in the main pom can be dropped, which fixes the
-loss of `module-info.class` in the published GROOVE jar: the shade
-plugin removes the module descriptor because the merged jar contains
-packages from four foreign modules.
+This directory builds the four third-party libraries that GROOVE
+republishes to Maven Central under the `nl.utwente.groove` namespace
+(published 2026-08). They were historically served from a project-local
+Maven repository (`lib/repo`, deleted since) and shaded into the GROOVE
+jar; the shade step removed `module-info.class` from the published
+GROOVE jar because the merged jar contained packages from four foreign
+modules. With the libraries on Central, the main pom depends on them
+like on any other library, and the module descriptor survives.
 
-Each module unpacks the upstream binary jar from `lib/repo` unchanged,
+Each module unpacks the upstream binary jar from `upstream/` unchanged,
 regenerates the manifest, adds license texts, attaches the existing
 `-sources` jar and a stub `-javadoc` jar (Central requires one to
 exist), and is deployed with the same Central + GPG setup as the main
-GROOVE artifact.
+GROOVE artifact. The `upstream/` directory holds the original jar,
+sources jar and pom of each library as the permanent provenance record
+and rebuild input.
 
 The published versions get a fourth version component
 (house style, cf. `jgraph:5.13.0.0`), because the jar bytes differ from
-the `lib/repo` originals — same coordinates with different bytes would
+the upstream originals — same coordinates with different bytes would
 poison local repository caches:
 
-| artifact | lib/repo version | published version | change |
+| artifact | upstream version | published version | change |
 |---|---|---|---|
 | `gnuprologjava` | 0.2.6 | 0.2.6.1 | manifest: `Automatic-Module-Name: gnuprologjava`; adds LGPL/GPL texts |
 | `ltl2buchi` | 2010.12 | 2010.12.1 | manifest: `Automatic-Module-Name: ltl2buchi`; adds NOSA text + NOTICE |
@@ -76,7 +79,7 @@ From this directory:
 
 Check each `<module>/target/` for the main jar (with the new manifest
 and license files) and the `-javadoc` stub. The `-sources` jar is not
-copied into `target/`: the existing file in `lib/repo` is attached
+copied into `target/`: the existing file in `upstream/` is attached
 as-is and deployed under the new version.
 
 ## Deploying
@@ -97,25 +100,26 @@ portal (https://central.sonatype.com/publishing) in state *validated*,
 where it can be inspected and must be released manually. Mistakes
 caught at that stage cost nothing; after release they are permanent.
 
-## After publication (follow-up change to the main build)
+## After publication (done 2026-08)
 
-In the main pom:
+Once the four libraries were released on Central, the main build was
+flipped accordingly:
 
-1. Bump the four `nl.utwente.groove` dependency versions to the
+1. The four `nl.utwente.groove` dependency versions were bumped to the
    published ones (table above).
-2. Delete the `maven-shade-plugin` configuration; `groove-<version>.jar`
-   then retains its `module-info.class`. (The `original-*` jar and
-   `dependency-reduced-pom.xml` artifacts disappear too.)
-3. Delete the `groove-project-local` `<repository>` declaration and the
-   `lib/repo` directory.
-4. Reconsider `-Xlint:-requires-transitive-automatic`: still needed for
-   the other automatic modules (jgraph, batik, etc.), so probably keep.
+2. The `maven-shade-plugin` configuration was deleted;
+   `groove-<version>.jar` retains its `module-info.class` again. (The
+   `original-*` jar and `dependency-reduced-pom.xml` artifacts
+   disappeared too.)
+3. The `groove-project-local` `<repository>` declaration was deleted,
+   and `lib/repo` with it; the upstream artifacts moved to `upstream/`
+   in this directory.
+4. `-Xlint:-requires-transitive-automatic` stays: it is still needed
+   for the other automatic modules (jgraph, batik, etc.).
 
-Also update `claude/CLAUDE.md` (the *Dependencies* section describes the
-`lib/repo` mechanism) and check that the release/distribution build does
-not assume the GROOVE jar contains the Prolog/LTL classes (it never
-contained the other twenty-odd dependencies, so any runnable
-distribution already ships dependency jars).
-
-This `lib/publish` directory stays in the repository afterwards as the
-provenance record and rebuild recipe for the published artifacts.
+This `lib/publish` directory stays in the repository as the provenance
+record and rebuild recipe for the published artifacts. Upgrading one of
+these libraries means: put the new upstream jar (+ sources jar) in
+`upstream/`, adjust `upstream.version` and the published version in the
+module pom, redo the license check above, deploy, and bump the
+dependency version in the main pom.

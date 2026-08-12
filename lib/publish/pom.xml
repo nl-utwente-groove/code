@@ -7,11 +7,11 @@
 
 	<name>GROOVE third-party library publishing</name>
 	<description>
-	Aggregator for building the four libraries that GROOVE historically bundled
-	from lib/repo, in a form fit for publication to Maven Central. This pom is
-	build-only and must never be deployed; the modules are deployed individually
-	(see README.md). The modules are deliberately parent-less so that each
-	published pom is self-contained.
+	Aggregator for building the four third-party libraries that GROOVE
+	republishes to Maven Central (from the upstream jars in the upstream
+	subdirectory). This pom is build-only and must never be deployed; the
+	modules are deployed individually (see README.md). The modules are
+	deliberately parent-less so that each published pom is self-contained.
 	</description>
 
 	<properties>

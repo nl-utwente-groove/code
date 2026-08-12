@@ -41,7 +41,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<upstream.version>3.0</upstream.version>
-		<upstream.dir>${project.basedir}/../../repo/nl/utwente/groove/${project.artifactId}/${upstream.version}</upstream.dir>
+		<upstream.dir>${project.basedir}/../upstream</upstream.dir>
 	</properties>
 
 	<dependencies>
