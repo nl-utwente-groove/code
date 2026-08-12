@@ -8,7 +8,7 @@
 		<!-- the single source of truth for the GROOVE version number: the
 		     GROOVE_VERSION resource read by util.Version is generated from
 		     this property by resource filtering (see the resources section) -->
-		<revision>7.5.3</revision>
+		<revision>7.5.4-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<junit.version>5.14.4</junit.version>
 		<!-- Test categories excluded from the default test run;
