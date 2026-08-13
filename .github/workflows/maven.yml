@@ -43,9 +43,7 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
         cache: maven
-    - name: Retrieve VERSION from file
-      run: echo "VERSION=$(<src/main/resources/nl/utwente/groove/resource/version/GROOVE_VERSION)" >> $GITHUB_ENV
     - name: Build with Maven
-      run: mvn -B -Drevision=$VERSION clean package -DskipTests --file pom.xml
+      run: mvn -B clean package -DskipTests --file pom.xml
     - name: Run full test suite (including slow tests)
-      run: mvn -B -Drevision=$VERSION test -Dexcluded.test.groups= --file pom.xml
+      run: mvn -B test -Dexcluded.test.groups= --file pom.xml

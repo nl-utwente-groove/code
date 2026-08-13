@@ -1,4 +1,6 @@
 /target/
+/lib/publish/*/target/
+/lib/publish/*/repo/
 /dependency-reduced-pom.xml
 *.aux
 *.log

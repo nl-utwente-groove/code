@@ -37,10 +37,12 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
         cache: maven
-    - name: Retrieve VERSION from file
-      run: echo "VERSION=$(<src/main/resources/nl/utwente/groove/resource/version/GROOVE_VERSION)" >> $GITHUB_ENV
+    - name: Retrieve VERSION from the pom
+      # the release poms are a separate reactor that receives the version
+      # via -Drevision; the main pom's revision property is the source
+      run: echo "VERSION=$(mvn -B -q help:evaluate -Dexpression=revision -DforceStdout)" >> $GITHUB_ENV
     - name: Build GROOVE
-      run: mvn -B -Drevision=$VERSION clean install
+      run: mvn -B clean install
     - name: Build release
       run: cd release; mvn -B -Drevision=$VERSION clean package
     - name: Deploy release
@@ -85,11 +87,11 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
         cache: maven
-    - name: Retrieve VERSION from file
-      # tr -d '\r' guards against a CRLF checkout on the windows runner
-      run: echo "VERSION=$(tr -d '\r' < src/main/resources/nl/utwente/groove/resource/version/GROOVE_VERSION)" >> $GITHUB_ENV
+    - name: Retrieve VERSION from the pom
+      # tr -d '\r' guards against CRLF maven output on the windows runner
+      run: echo "VERSION=$(mvn -B -q help:evaluate -Dexpression=revision -DforceStdout | tr -d '\r')" >> $GITHUB_ENV
     - name: Build GROOVE
-      run: mvn -B -Drevision=$VERSION -DskipTests -Dmaven.javadoc.skip=true clean install
+      run: mvn -B -DskipTests -Dmaven.javadoc.skip=true clean install
     - name: Build release zip
       # bin+doc is excluded because it needs the javadoc skipped above
       run: cd release; mvn -B -Drevision=$VERSION -pl '!assembly/bin+doc' clean package

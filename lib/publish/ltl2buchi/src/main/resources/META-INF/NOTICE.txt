@@ -1,0 +1,31 @@
+LTL2Buchi
+
+Copyright (C) 2006 United States Government as represented by the
+Administrator of the National Aeronautics and Space Administration
+(NASA). All Rights Reserved.
+
+This software is distributed under the NASA Open Source Agreement
+(NOSA), version 1.3, as instantiated for Java Pathfinder (NASA
+designation ARC-15388-1); see META-INF/NOSA-1.3-JPF.txt. The NOSA has
+been approved by the Open Source Initiative.
+
+LTL2Buchi was implemented at NASA Ames Research Center by Dimitra
+Giannakopoulou and Flavio Lerda as part of the Java PathFinder
+ecosystem.
+
+Modification record (per NOSA clause 3.C):
+
+2026-08, Arend Rensink, University of Twente, The Netherlands:
+repackaged the unmodified class files of the December 2010 LTL2Buchi
+distribution as a Maven artifact for use by the GROOVE graph
+transformation tool (https://nl-utwente-groove.github.io). The only
+alterations are to the jar packaging, not to the code: a regenerated
+jar manifest carrying an Automatic-Module-Name entry, plus the addition
+of this notice file and the license text. These packaging alterations
+are derived, directly or indirectly, from Original Software provided by
+NASA, and their characterization as a Modification under the NOSA is
+hereby consented to.
+
+The corresponding source code is distributed alongside this artifact as
+its -sources jar (Maven coordinates: same groupId/artifactId/version,
+classifier "sources").

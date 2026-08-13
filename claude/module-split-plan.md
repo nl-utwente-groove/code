@@ -93,6 +93,17 @@ non-transitive `requires java.desktop` for the ~20 files using awt
 `Color`/`Point`/geom classes as plain data — accepted trade-off; defining our
 own geometry types was judged not worth it.
 
+Fold in the **release-reactor version handoff** at this point. The `release/`
+poms form a separate reactor that receives the version via `-Drevision`; every
+consumer (the `GROOVE - zip up local release` launch prompt, `release/do-all.sh`,
+`.github/workflows/release.yml`) has to re-derive or re-enter the main pom's
+`revision` property, and a mismatch makes the release reactor fail to resolve
+the `nl.utwente.groove:groove` dependency. This bit in practice on 2026-08-12:
+the launch prompt answered `7.5.4` against a pom saying `7.5.4-SNAPSHOT`. When
+the split introduces a root aggregator pom, make it own `revision` and pull the
+release modules into that reactor, eliminating the `-Drevision` handoff, the
+launch prompt, and the derivation steps in the script and workflow.
+
 ## Phasing
 
 Each phase is a separate branch/PR, in dependency order:
@@ -101,4 +112,4 @@ Each phase is a separate branch/PR, in dependency order:
 2. Mechanical moves (b), with move 3 bundled with inversion (c1).
 3. Remaining inversions (c2), (c3).
 4. `SystemStore` redesign (d).
-5. Maven/module-info split.
+5. Maven/module-info split, including the release-reactor version handoff.
