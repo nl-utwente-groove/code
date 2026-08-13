@@ -46,7 +46,6 @@ import nl.utwente.groove.util.Groove;
  * @version $Revision$
  */
 @AIGenerated("Claude Fable 5, 2026-08")
-@SuppressWarnings("javadoc")
 public class QuantLevelTest {
     /** Returns a named test grammar. */
     private GrammarModel getGrammar(String grammarName) {
@@ -72,8 +71,7 @@ public class QuantLevelTest {
      */
     private int applyAndCount(String ruleName, int hostNr, String label) throws Exception {
         var grammarModel = getGrammar("quantLevel");
-        grammarModel
-            .setLocalActiveNames(ResourceKind.HOST, QualName.name(ruleName + "-" + hostNr));
+        grammarModel.setLocalActiveNames(ResourceKind.HOST, QualName.name(ruleName + "-" + hostNr));
         var grammar = grammarModel.toGrammar();
         GTS gts = new GTS(grammar);
         GraphState state = gts.startState();

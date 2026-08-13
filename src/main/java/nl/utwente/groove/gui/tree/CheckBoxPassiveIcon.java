@@ -33,7 +33,6 @@ import javax.swing.plaf.UIResource;
  * @author Arend Rensink
  * @version $Revision$
  */
-@SuppressWarnings("javadoc")
 public class CheckBoxPassiveIcon implements Icon, UIResource, Serializable {
     private CheckBoxPassiveIcon() {
         // empty
