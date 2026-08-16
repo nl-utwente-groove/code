@@ -18,6 +18,7 @@ package nl.utwente.groove.util.cli;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Locale;
 
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -42,6 +43,13 @@ import nl.utwente.groove.explore.Verbosity;
  * @version $Revision$
  */
 public abstract class GrooveCmdLineTool<T> {
+    static {
+        // fix the locale so that tool output is formatted identically everywhere
+        // (formerly done by the static initialiser of the old util.Groove,
+        // which happened to be loaded on every code path)
+        Locale.setDefault(Locale.ENGLISH);
+    }
+
     /**
      * Constructs an instance of a tool,
      * with a given application name and list of arguments.
