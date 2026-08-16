@@ -34,6 +34,7 @@ import org.junit.Test;
 
 import junit.framework.TestCase;
 import nl.utwente.groove.algebra.AlgebraFamily;
+import nl.utwente.groove.algebra.UserOpsExample;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.aspect.GraphConverter;
@@ -183,6 +184,10 @@ public class RuleApplicationTest extends TestCase {
     /** Tests the integration of user-defined operations. */
     @Test
     public void testUserOps() {
+        // the expected results of the random and allRandom rules encode draw
+        // positions of the (JVM-global) generator behind randomInt; reset it
+        // so the test is repeatable even if it runs more than once per JVM
+        UserOpsExample.resetRandomness();
         test("userOps");
     }
 

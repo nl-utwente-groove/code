@@ -18,18 +18,35 @@ package nl.utwente.groove.algebra;
 
 import java.util.Random;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.annotation.Syntax;
 import nl.utwente.groove.annotation.ToolTipBody;
 import nl.utwente.groove.annotation.ToolTipHeader;
 import nl.utwente.groove.annotation.UserOperation;
+import nl.utwente.groove.util.AIGenerated;
 
 /**
  * Excample class with user operations.
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public class UserOpsExample {
-    static private Random generator = new Random(10000000);
+    /** Seed of the random generator behind {@link #randomInt(int)}. */
+    static private final long SEED = 10000000;
+
+    static private Random generator = new Random(SEED);
+
+    /** Resets the random generator behind {@link #randomInt(int)} to its initial
+     * seed, so that subsequent draws are independent of any earlier use of this
+     * class in the same JVM. The generator is JVM-global static state; tests that
+     * assert on drawn values must call this first to be repeatable.
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    static public void resetRandomness() {
+        generator = new Random(SEED);
+    }
 
     /** Returns a random integer number between 0 (inclusive) and a given bound. */
     @Syntax("[USER:]Q%s.LPAR.bound.RPAR")
