@@ -24,7 +24,7 @@ public class UndoSimulatorAction extends SimulatorAction {
 
     @Override
     public void execute() {
-        SystemStore.Edit edit = this.undoManager.editToBeUndone();
+        SystemStore.Edit edit = this.undoManager.getEditToBeUndone();
         this.undoManager.undo();
         getSimulatorModel().synchronize(edit.getType() != EditType.LAYOUT);
     }

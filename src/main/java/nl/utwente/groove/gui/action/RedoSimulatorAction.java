@@ -24,7 +24,7 @@ public class RedoSimulatorAction extends SimulatorAction {
 
     @Override
     public void execute() {
-        SystemStore.Edit edit = this.undoManager.editToBeRedone();
+        SystemStore.Edit edit = this.undoManager.getEditToBeRedone();
         this.undoManager.redo();
         getSimulatorModel().synchronize(edit.getType() != EditType.LAYOUT);
     }

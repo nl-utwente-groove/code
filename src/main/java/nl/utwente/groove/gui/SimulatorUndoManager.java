@@ -1,11 +1,12 @@
 package nl.utwente.groove.gui;
 
 import java.util.Set;
+import java.util.function.Consumer;
 
-import javax.swing.event.UndoableEditEvent;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
+import javax.swing.undo.UndoableEdit;
 
 import nl.utwente.groove.gui.SimulatorModel.Change;
 import nl.utwente.groove.gui.action.ActionStore;
@@ -21,10 +22,12 @@ final public class SimulatorUndoManager extends UndoManager implements
         simulator.getModel().addListener(this);
     }
 
-    @Override
-    public void undoableEditHappened(UndoableEditEvent e) {
-        super.undoableEditHappened(e);
-        refreshActions();
+    /** Adds a posted store edit to the undo history. */
+    private void editPosted(SystemStore.Edit edit) {
+        if (edit instanceof UndoableEdit undoable) {
+            addEdit(undoable);
+            refreshActions();
+        }
     }
 
     @Override
@@ -45,14 +48,14 @@ final public class SimulatorUndoManager extends UndoManager implements
         refreshActions();
     }
 
-    @Override
-    public SystemStore.Edit editToBeUndone() {
-        return (SystemStore.Edit) super.editToBeUndone();
+    /** Returns the store edit that {@link #undo()} would undo, if any. */
+    public SystemStore.Edit getEditToBeUndone() {
+        return (SystemStore.Edit) editToBeUndone();
     }
 
-    @Override
-    public SystemStore.Edit editToBeRedone() {
-        return (SystemStore.Edit) super.editToBeRedone();
+    /** Returns the store edit that {@link #redo()} would redo, if any. */
+    public SystemStore.Edit getEditToBeRedone() {
+        return (SystemStore.Edit) editToBeRedone();
     }
 
     @Override
@@ -62,10 +65,10 @@ final public class SimulatorUndoManager extends UndoManager implements
             && source.getGrammar() != oldModel.getGrammar()) {
             discardAllEdits();
             if (oldModel.getGrammar() != null) {
-                oldModel.getStore().removeUndoableEditListener(this);
+                oldModel.getStore().removeEditListener(this.editListener);
             }
             if (source.getGrammar() != null) {
-                source.getStore().addUndoableEditListener(this);
+                source.getStore().addEditListener(this.editListener);
             }
         }
     }
@@ -82,6 +85,10 @@ final public class SimulatorUndoManager extends UndoManager implements
     private SimulatorAction getUndoAction() {
         return this.actions.getUndoAction();
     }
+
+    /** The listener registered on the store; kept in a field so that
+     * registration and deregistration use the identical object. */
+    private final Consumer<SystemStore.Edit> editListener = this::editPosted;
 
     private final ActionStore actions;
 }
