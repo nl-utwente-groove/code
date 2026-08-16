@@ -34,7 +34,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 import java.util.StringTokenizer;
 
@@ -480,53 +479,11 @@ public class Groove {
         return value.orElse(alt);
     }
 
-    /** convenience method for {@code value.orElse(null)}
-     * but circumvents the spurious {@code null} check of the argument
-     */
-    static public <T> @Nullable T orElseNull(Optional<T> value) {
-        return value.orElse(null);
-    }
-
     /** Returns a given value if it is {@code null}, or an alternative (non-{@code null}) value otherwise. */
     static public <T> @NonNull T orElse(@Nullable T value, @NonNull T alt) {
         return value == null
             ? alt
             : value;
-    }
-
-    /** Returns a given value if it is {@code null}, or throws a given exception otherwise. */
-    static public <T,E extends Exception> @NonNull T orElseThrow(@Nullable T value,
-                                                                 @NonNull E exc) throws E {
-        if (value == null) {
-            throw exc;
-        }
-        return value;
-    }
-
-    /** Utility method to get a @Nullable value from any map. */
-    static public <T,U> @Nullable U get(Map<? extends T,? extends U> map, T key) {
-        return map.get(key);
-    }
-
-    /** Utility method to insert a value into any map and get the return value as a @Nullable. */
-    static public <T,U> @Nullable U put(Map<T,U> map, T key, U value) {
-        return map.put(key, value);
-    }
-
-    /** Utility method to remove a value from any map and get the return value as a @Nullable. */
-    static public <T,U> @Nullable U remove(Map<T,U> map, T key) {
-        return map.remove(key);
-    }
-
-    /** Returns the parameter value as a @Nullable. */
-    static public <T> @Nullable T nu(T value) {
-        return value;
-    }
-
-    /** Returns the parameter value as a @NonNull. */
-    static public <T> @NonNull T nn(T value) {
-        assert value != null;
-        return value;
     }
 
     /** Hashcode for collections that don't do content-based hashing. */
