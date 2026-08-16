@@ -18,6 +18,7 @@ package nl.utwente.groove.lts;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 
 import org.eclipse.jdt.annotation.NonNull;
 
@@ -30,7 +31,6 @@ import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.graph.ALabel;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
-import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.transform.Record;
 import nl.utwente.groove.transform.RuleEvent;
 import nl.utwente.groove.util.Exceptions;
@@ -132,7 +132,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
         for (var swt : getStep().getStack()) {
             if (swt.getKind() == Kind.RULE) {
                 result.append(getAction().toLabelString(getArguments(), true));
-            } else if (Options.instance().isSelected(Options.SHOW_CALL_NESTING_OPTION)) {
+            } else if (showCallNesting.getAsBoolean()) {
                 result.append(swt.getQualName());
                 result.append('/');
             }
@@ -232,6 +232,18 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
         }
         return result;
     }
+
+    /**
+     * Sets the policy determining whether label texts include the nesting of
+     * recipe and function calls leading up to the rule call. Used by the GUI
+     * to plug in the live "show call nesting" option.
+     */
+    public static void setShowCallNesting(BooleanSupplier policy) {
+        showCallNesting = policy;
+    }
+
+    /** Policy for showing call nesting in label texts; constant false unless the GUI plugs in its option. */
+    private static BooleanSupplier showCallNesting = () -> false;
 
     /** Flag controlling whether transition labels are normalised. */
     public static boolean REUSE_LABELS = true;

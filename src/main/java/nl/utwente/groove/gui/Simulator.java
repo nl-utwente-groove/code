@@ -97,6 +97,7 @@ import nl.utwente.groove.gui.menu.MyJMenu;
 import nl.utwente.groove.gui.prolog.GuiPredicates;
 import nl.utwente.groove.lts.GraphNextState;
 import nl.utwente.groove.lts.GraphState;
+import nl.utwente.groove.lts.RuleTransitionLabel;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatError;
@@ -121,6 +122,9 @@ public class Simulator implements SimulatorListener {
         GuiPredicates.register();
         // contribute the (UI-bound) dialog value oracle
         OracleParser.setDialogOracle(DialogOracle.instance());
+        // contribute the live "show call nesting" option to transition label texts
+        RuleTransitionLabel
+            .setShowCallNesting(() -> Options.instance().isSelected(SHOW_CALL_NESTING_OPTION));
         this.model = new SimulatorModel(this);
         this.actions = new ActionStore(this);
         this.undoManager = new SimulatorUndoManager(this);
