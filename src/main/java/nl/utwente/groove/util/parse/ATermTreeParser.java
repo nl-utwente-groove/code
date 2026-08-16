@@ -587,18 +587,20 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
         } else if (getIdValidator().isIdentifierStart(curChar())) {
             result = scanName();
         } else {
-            result = switch (curChar()) {
-            case SINGLE_QUOTE, DOUBLE_QUOTE -> scanString();
+            switch (curChar()) {
+            case SINGLE_QUOTE, DOUBLE_QUOTE -> result = scanString();
             case PERIOD -> {
                 incChar();
                 boolean isNumber = !atEnd() && Character.isDigit(curChar());
                 decChar();
-                yield isNumber
-                    ? scanNumber()
-                    : null;
+                if (isNumber) {
+                    result = scanNumber();
+                }
             }
-            default -> null;
-            };
+            default -> {
+                // result stays null so that scanStatic() is tried below
+            }
+            }
         }
         if (result == null) {
             result = scanStatic();
