@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.gui.jgraph;
 
-import static nl.utwente.groove.gui.look.Values.ERROR_COLOR;
+import static nl.utwente.groove.util.Colors.ERROR_COLOR;
 
 import java.awt.BasicStroke;
 import java.awt.Color;

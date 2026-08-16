@@ -53,9 +53,9 @@ import org.jgraph.graph.VertexView;
 
 import nl.utwente.groove.gui.look.Look;
 import nl.utwente.groove.gui.look.MultiLabel;
-import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
+import nl.utwente.groove.util.Colors;
 import nl.utwente.groove.util.Fonts;
 import nl.utwente.groove.util.NodeShape;
 import nl.utwente.groove.util.line.HTMLLineFormat;
@@ -458,7 +458,7 @@ public class JVertexView extends VertexView {
         private void paintErrorOverlay(Graphics2D g2) {
             if (this.error) {
                 Shape shape = getShape(EXTRA_BORDER_SPACE);
-                g2.setColor(Values.ERROR_COLOR);
+                g2.setColor(Colors.ERROR_COLOR);
                 g2.fill(shape);
             }
         }

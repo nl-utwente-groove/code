@@ -28,6 +28,7 @@ import java.util.Set;
 import nl.utwente.groove.grammar.aspect.Aspect;
 import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.gui.look.VisualKey.Nature;
+import nl.utwente.groove.util.Colors;
 import nl.utwente.groove.util.NodeShape;
 
 /**
@@ -112,7 +113,7 @@ public enum Look {
     REMARK(true, BASIC) {
         @Override
         void init() {
-            add(VisualKey.FOREGROUND, Values.REMARK_FOREGROUND);
+            add(VisualKey.FOREGROUND, Colors.REMARK_FOREGROUND);
             add(VisualKey.BACKGROUND, Values.REMARK_BACKGROUND);
         }
     },
@@ -120,7 +121,7 @@ public enum Look {
     TYPE_REMARK(true, BASIC) {
         @Override
         void init() {
-            add(VisualKey.FOREGROUND, Values.REMARK_FOREGROUND);
+            add(VisualKey.FOREGROUND, Colors.REMARK_FOREGROUND);
             add(VisualKey.BACKGROUND, Values.REMARK_BACKGROUND);
             add(VisualKey.NODE_SHAPE, NodeShape.RECTANGLE);
         }
@@ -129,7 +130,7 @@ public enum Look {
     EMBARGO(true, BASIC) {
         @Override
         void init() {
-            add(VisualKey.FOREGROUND, Values.EMBARGO_FOREGROUND);
+            add(VisualKey.FOREGROUND, Colors.EMBARGO_FOREGROUND);
             add(VisualKey.BACKGROUND, Values.EMBARGO_BACKGROUND);
             add(VisualKey.LINE_WIDTH, 5f);
             add(VisualKey.DASH, Values.EMBARGO_DASH);
@@ -150,7 +151,7 @@ public enum Look {
     ERASER(true, BASIC) {
         @Override
         void init() {
-            add(VisualKey.FOREGROUND, Values.ERASER_FOREGROUND);
+            add(VisualKey.FOREGROUND, Colors.ERASER_FOREGROUND);
             add(VisualKey.BACKGROUND, Values.ERASER_BACKGROUND);
             add(VisualKey.DASH, Values.ERASER_DASH);
         }
@@ -160,7 +161,7 @@ public enum Look {
     CREATOR(true, BASIC) {
         @Override
         void init() {
-            add(VisualKey.FOREGROUND, Values.CREATOR_FOREGROUND);
+            add(VisualKey.FOREGROUND, Colors.CREATOR_FOREGROUND);
             add(VisualKey.BACKGROUND, Values.CREATOR_BACKGROUND);
             add(VisualKey.LINE_WIDTH, 3f);
         }
@@ -170,7 +171,7 @@ public enum Look {
         @Override
         void init() {
             add(VisualKey.LINE_WIDTH, 6f);
-            add(VisualKey.INNER_LINE, Values.CREATOR_FOREGROUND);
+            add(VisualKey.INNER_LINE, Colors.CREATOR_FOREGROUND);
         }
     },
     /** Quantifier nesting node and edge look. */
@@ -179,7 +180,7 @@ public enum Look {
         void init() {
             add(VisualKey.DASH, Values.NESTED_DASH);
             add(VisualKey.EDGE_TARGET_SHAPE, EdgeEnd.SIMPLE);
-            add(VisualKey.FOREGROUND, Values.NESTED_COLOR);
+            add(VisualKey.FOREGROUND, Colors.NESTED_COLOR);
         }
 
     },

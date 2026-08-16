@@ -195,7 +195,7 @@ public class Colors {
 
     // Colours of the rule and aspect roles, and of derived concepts.
     // These are used in (HTML-formatted) text throughout the tool, not just
-    // in the graph displays; gui.look.Values redirects to them for the latter.
+    // in the graph displays; the GUI refers to them directly.
 
     /** Foreground colour of creator nodes and edges. */
     public static final Color CREATOR_FOREGROUND = Color.green.darker();

@@ -43,7 +43,7 @@ import javax.swing.plaf.basic.BasicButtonUI;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.list.ListTabbedPane;
-import nl.utwente.groove.gui.look.Values;
+import nl.utwente.groove.util.Colors;
 import nl.utwente.groove.util.HTMLConverter;
 
 /**
@@ -95,7 +95,7 @@ public class TabLabel extends JPanel {
         this.kind = tabKind;
         this.hasButton = button;
         this.iconLabel = new JLabel(title, icon, SwingConstants.LEFT);
-        this.iconLabel.setBackground(Values.ERROR_COLOR);
+        this.iconLabel.setBackground(Colors.ERROR_COLOR);
         this.iconLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, tabKind.getHGap()));
         if (tabKind != Kind.RESOURCE) {
             this.iconLabel.setFont(this.iconLabel.getFont()

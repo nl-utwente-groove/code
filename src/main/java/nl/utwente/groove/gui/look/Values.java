@@ -47,8 +47,6 @@ public class Values {
     public static final float[] VERDICT_DASH = {4.0f, 3.0f};
     /** No dash pattern. */
     public static final float[] NO_DASH = {10.f, 0.f};
-    /** Foreground colour of creator nodes and edges. */
-    public static final Color CREATOR_FOREGROUND = Colors.CREATOR_FOREGROUND;
     /** Background colour of creator nodes and edges. */
     public static final Color CREATOR_BACKGROUND = null;
     /**
@@ -61,22 +59,14 @@ public class Values {
     public static final Color DEFAULT_BACKGROUND = Colors.findColor("243 243 243");
     /** Dash pattern of embargo nodes and edges. */
     public static final float[] EMBARGO_DASH = {2f, 2f};
-    /** Foreground colour of embargo nodes and edges. */
-    public static final Color EMBARGO_FOREGROUND = Colors.EMBARGO_FOREGROUND;
     /** Background colour of embargo nodes and edges. */
     public static final Color EMBARGO_BACKGROUND = null;
     /** Dash pattern of eraser nodes and edges. */
     public static final float[] ERASER_DASH = {4f, 4f};
-    /** Foreground colour of eraser nodes and edges. */
-    public static final Color ERASER_FOREGROUND = Colors.ERASER_FOREGROUND;
     /** Background colour of eraser nodes and edges. */
     public static final Color ERASER_BACKGROUND = Colors.findColor("200 240 255");
     /** Dash pattern of nesting nodes and edges. */
     public static final float[] NESTED_DASH = {2.0f, 3.0f};
-    /** Colour used for nesting nodes and states. */
-    static public final Color NESTED_COLOR = Colors.NESTED_COLOR;
-    /** Foreground colour of remark nodes and edges. */
-    public static final Color REMARK_FOREGROUND = Colors.REMARK_FOREGROUND;
     /** Background colour of remark nodes and edges. */
     public static final Color REMARK_BACKGROUND = Colors.findColor("255 255 180");
 
@@ -127,10 +117,8 @@ public class Values {
         NORMAL_COLORS.putColors(NONE, NORMAL_FOREGROUND, NORMAL_BACKGROUND);
     }
 
-    /** Transparent colour used for indicating errors in graphs. */
-    static public final Color ERROR_COLOR = Colors.ERROR_COLOR;
     /** Opaque colour used for indicating errors in graphs.
-     * Chosen so it resembles {@link #ERROR_COLOR} on a white background
+     * Chosen so it resembles {@link Colors#ERROR_COLOR} on a white background
      */
     static public final Color ERROR_COLOR_OPAQUE = new Color(245, 215, 205);
     /** Background colour used for focused error items in lists. */
@@ -138,7 +126,7 @@ public class Values {
     /** Text colour used for focused error items in lists. */
     static public final Color ERROR_FOCUS_FOREGROUND = Color.WHITE;
     /** Background colour used for selected, non-focused error items in lists. */
-    static public final Color ERROR_SELECT_BACKGROUND = ERROR_COLOR;
+    static public final Color ERROR_SELECT_BACKGROUND = Colors.ERROR_COLOR;
     /** Text colour used for selected, non-focused error items in lists. */
     static public final Color ERROR_SELECT_FOREGROUND = Color.RED;
     /** Background colour used for non-selected, non-focused error items in lists. */
@@ -183,10 +171,6 @@ public class Values {
         RECIPE_COLORS.putColors(NONE, RECIPE_COLOR, NORMAL_BACKGROUND);
     }
 
-    /** Colour of forbidden property labels. */
-    static public final Color FORBIDDEN_COLOR = Colors.FORBIDDEN_COLOR;
-    /** Colour of invariant property labels. */
-    static public final Color INVARIANT_COLOR = Colors.INVARIANT_COLOR;
     /** Grayed-out foreground color. */
     static public final Color GRAYED_OUT_COLOR = Colors.findColor("200 200 200 100");
 

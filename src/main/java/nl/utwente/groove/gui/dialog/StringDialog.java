@@ -52,8 +52,8 @@ import javax.swing.event.DocumentListener;
 
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.display.DismissDelayer;
-import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.lts.StateProperty;
+import nl.utwente.groove.util.Colors;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.HTMLConverter.HTMLTag;
@@ -270,7 +270,7 @@ abstract public class StringDialog {
     private HTMLTag errorColorTag() {
         var result = this.errorColorTag;
         if (result == null) {
-            this.errorColorTag = result = HTMLConverter.createColorTag(Values.ERROR_COLOR);
+            this.errorColorTag = result = HTMLConverter.createColorTag(Colors.ERROR_COLOR);
         }
         return result;
     }
