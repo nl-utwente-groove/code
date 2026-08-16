@@ -21,9 +21,9 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
-import nl.utwente.groove.io.Util;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Pair;
+import nl.utwente.groove.util.Unicode;
 import nl.utwente.groove.util.line.Line.ColorType;
 import nl.utwente.groove.util.line.Line.Style;
 import nl.utwente.groove.util.line.LineFormat;
@@ -184,15 +184,15 @@ public class TeXLineFormat extends LineFormat<TeXLineFormat.TeXBuilder> {
     private static Map<Character,Pair<String,Mode>> charMap = new HashMap<>();
 
     static {
-        addChar(Util.EXISTS, "\\exists", Mode.MATH);
-        addChar(Util.FORALL, "\\forall", Mode.MATH);
-        addChar(Util.LC_PI, "\\pi", Mode.MATH);
-        addChar(Util.THIN_SPACE, "\\;", Mode.MATH);
-        addChar(Util.HAIR_SPACE, "\\,", Mode.MATH);
-        addChar(Util.DT, "{\\blacktriangledown}", Mode.MATH);
-        addChar(Util.UT, "{\\blacktriangle}", Mode.MATH);
-        addChar(Util.LT, "{\\blacktriangleleft}", Mode.MATH);
-        addChar(Util.RT, "{\\blacktriangleright}", Mode.MATH);
+        addChar(Unicode.EXISTS, "\\exists", Mode.MATH);
+        addChar(Unicode.FORALL, "\\forall", Mode.MATH);
+        addChar(Unicode.LC_PI, "\\pi", Mode.MATH);
+        addChar(Unicode.THIN_SPACE, "\\;", Mode.MATH);
+        addChar(Unicode.HAIR_SPACE, "\\,", Mode.MATH);
+        addChar(Unicode.DT, "{\\blacktriangledown}", Mode.MATH);
+        addChar(Unicode.UT, "{\\blacktriangle}", Mode.MATH);
+        addChar(Unicode.LT, "{\\blacktriangleleft}", Mode.MATH);
+        addChar(Unicode.RT, "{\\blacktriangleright}", Mode.MATH);
         addChar('<', "<", Mode.MATH);
         addChar('>', ">", Mode.MATH);
         addChar('{', "\\{", Mode.BOTH);

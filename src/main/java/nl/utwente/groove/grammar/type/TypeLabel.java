@@ -29,8 +29,8 @@ import nl.utwente.groove.grammar.rule.RuleLabel;
 import nl.utwente.groove.graph.ALabel;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
-import nl.utwente.groove.io.Util;
 import nl.utwente.groove.util.HTMLConverter;
+import nl.utwente.groove.util.Unicode;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.line.Line.Style;
 import nl.utwente.groove.util.parse.FormatException;
@@ -225,7 +225,7 @@ public final class TypeLabel extends ALabel {
     }
 
     /** Text of the node type label in an untyped setting. */
-    static public final String NODE_LABEL_TEXT = "" + Util.UC_OMEGA;
+    static public final String NODE_LABEL_TEXT = "" + Unicode.UC_OMEGA;
 
     /** Type label for nodes in an untyped setting. */
     static public final TypeLabel NODE = new TypeLabel(NODE_LABEL_TEXT, EdgeRole.NODE_TYPE);

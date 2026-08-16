@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import nl.utwente.groove.io.Util;
+import nl.utwente.groove.util.Unicode;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.line.LineFormat;
 import nl.utwente.groove.util.line.LineFormat.Builder;
@@ -149,7 +149,7 @@ public class MultiLabel {
                         result.appendLineBreak();
                     }
                     if (this.showCount && count > 1) {
-                        String mult = SP + "[" + count + Util.TIMES + "]";
+                        String mult = SP + "[" + count + Unicode.TIMES + "]";
                         line = line.append(mult);
                     }
                     if (start != null) {
@@ -438,11 +438,11 @@ public class MultiLabel {
         public final static DirectBag ZERO = norm(new DirectBag());
     }
 
-    static private final String SP = "" + Util.THIN_SPACE;
-    static private final Line LA = Line.atom("" + Util.LT + SP);
-    static private final Line RA = Line.atom(SP + Util.RT);
-    static private final Line UAL = Line.atom("" + Util.UT + SP);
-    static private final Line DAL = Line.atom("" + Util.DT + SP);
-    static private final Line UAR = Line.atom(SP + Util.UT);
-    static private final Line DAR = Line.atom(SP + Util.DT);
+    static private final String SP = "" + Unicode.THIN_SPACE;
+    static private final Line LA = Line.atom("" + Unicode.LT + SP);
+    static private final Line RA = Line.atom(SP + Unicode.RT);
+    static private final Line UAL = Line.atom("" + Unicode.UT + SP);
+    static private final Line DAL = Line.atom("" + Unicode.DT + SP);
+    static private final Line UAR = Line.atom(SP + Unicode.UT);
+    static private final Line DAR = Line.atom(SP + Unicode.DT);
 }

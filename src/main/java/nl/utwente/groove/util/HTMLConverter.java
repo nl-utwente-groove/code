@@ -23,8 +23,6 @@ import java.util.Map;
 
 import org.eclipse.jdt.annotation.NonNull;
 
-import nl.utwente.groove.io.Util;
-
 /**
  * Performs conversions to and from HTML code.
  * @author Arend Rensink
@@ -61,16 +59,16 @@ public class HTMLConverter {
             case '\n':
                 html = HTML_LINEBREAK;
                 break;
-            case Util.DT:
+            case Unicode.DT:
                 html = HTML_DT;
                 break;
-            case Util.UT:
+            case Unicode.UT:
                 html = HTML_UT;
                 break;
-            case Util.LT:
+            case Unicode.LT:
                 html = HTML_LT;
                 break;
-            case Util.RT:
+            case Unicode.RT:
                 html = HTML_RT;
                 break;
             default:
@@ -103,10 +101,10 @@ public class HTMLConverter {
             String argument = String.format("font-family:%s; font-size:%dpx", face, size);
             symbolTag = createSpanTag(argument);
         }
-        HTML_UT = tagOn(symbolTag, Util.UT);
-        HTML_DT = tagOn(symbolTag, Util.DT);
-        HTML_LT = tagOn(symbolTag, Util.LT);
-        HTML_RT = tagOn(symbolTag, Util.RT);
+        HTML_UT = tagOn(symbolTag, Unicode.UT);
+        HTML_DT = tagOn(symbolTag, Unicode.DT);
+        HTML_LT = tagOn(symbolTag, Unicode.LT);
+        HTML_RT = tagOn(symbolTag, Unicode.RT);
     }
 
     private static final String tagOn(HTMLTag tag, char c) {

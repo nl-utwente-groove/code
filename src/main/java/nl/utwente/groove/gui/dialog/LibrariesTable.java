@@ -42,7 +42,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
-import nl.utwente.groove.io.Util;
+import nl.utwente.groove.io.FileUtils;
 import nl.utwente.groove.util.HTMLConverter;
 
 /**
@@ -55,7 +55,7 @@ public class LibrariesTable extends JTable {
         this.urlRenderer = new URLRenderer();
         addMouseListener(this.urlRenderer);
         addMouseMotionListener(this.urlRenderer);
-        setModel(new TableModel(Util.readCSV("libraries", ';')));
+        setModel(new TableModel(FileUtils.readCSV("libraries", ';')));
         for (int i = 0; i < getColumnCount(); ++i) {
             getColumnModel().getColumn(i).setPreferredWidth(0);
         }

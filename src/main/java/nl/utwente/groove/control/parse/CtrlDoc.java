@@ -90,18 +90,18 @@ public class CtrlDoc {
                 JarURLConnection conn = ((JarURLConnection) url.openConnection());
                 try (ZipFile zipFile = conn.getJarFile();
                      InputStream in = zipFile.getInputStream(conn.getJarEntry());) {
-                    grammarText = nl.utwente.groove.io.Util.readInputStreamToString(in);
+                    grammarText = nl.utwente.groove.io.FileUtils.readInputStreamToString(in);
                 }
             } else {
                 // We can read the file directly.
                 File file = new File(url.getFile());
                 try {
-                    grammarText = nl.utwente.groove.io.Util.readFileToString(file);
+                    grammarText = nl.utwente.groove.io.FileUtils.readFileToString(file);
                 } catch (FileNotFoundException e) {
                     // we have some weird url, e.g. because Groove is used as an OSGi bundle.
                     //let's try to use the url's stream...
                     try (InputStream stream = url.openStream()) {
-                        grammarText = nl.utwente.groove.io.Util.readInputStreamToString(stream);
+                        grammarText = nl.utwente.groove.io.FileUtils.readInputStreamToString(stream);
                     }
                 }
             }

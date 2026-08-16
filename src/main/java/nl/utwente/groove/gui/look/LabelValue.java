@@ -66,7 +66,6 @@ import nl.utwente.groove.gui.jgraph.LTSJGraph;
 import nl.utwente.groove.gui.jgraph.LTSJVertex;
 import nl.utwente.groove.gui.look.MultiLabel.Direct;
 import nl.utwente.groove.gui.tree.LabelTree;
-import nl.utwente.groove.io.Util;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.lts.StartGraphState;
@@ -74,6 +73,7 @@ import nl.utwente.groove.lts.StateProperty;
 import nl.utwente.groove.lts.Status.Flag;
 import nl.utwente.groove.util.Colors;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.Unicode;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.line.Line.Style;
 import nl.utwente.groove.util.parse.FormatException;
@@ -808,16 +808,16 @@ public class LabelValue implements VisualValue<MultiLabel> {
     }
 
     static private final String IMPORT_TEXT
-        = String.format("%simport%s", Util.FRENCH_QUOTES_OPEN, Util.FRENCH_QUOTES_CLOSED);
+        = String.format("%simport%s", Unicode.FRENCH_QUOTES_OPEN, Unicode.FRENCH_QUOTES_CLOSED);
     static private final Line IMPORT_LINE = Line.atom(IMPORT_TEXT).style(Style.ITALIC);
-    static private final Line EXISTS_LINE = Line.atom("" + Util.EXISTS);
+    static private final Line EXISTS_LINE = Line.atom("" + Unicode.EXISTS);
     static private final Line EXISTS_OPT_LINE
         = EXISTS_LINE.append(Line.atom("?").style(Style.SUPER));
-    static private final Line FORALL_LINE = Line.atom("" + Util.FORALL);
+    static private final Line FORALL_LINE = Line.atom("" + Unicode.FORALL);
     static private final Line FORALL_POS_LINE
         = FORALL_LINE.append(Line.atom(">0").style(Style.SUPER));
     /** Final line in a state vertex indicating residual invisible outgoing transitions. */
-    static private final Line RESIDUAL_LINE = Line.atom("" + Util.DLA + Util.DA + Util.DRA);
+    static private final Line RESIDUAL_LINE = Line.atom("" + Unicode.DLA + Unicode.DA + Unicode.DRA);
     /** Line in a control vertex indicating a start state. */
     static private final Line START_LINE = Line.atom("start");
     /** Line in a control vertex indicating a deadlocked state. */
@@ -825,11 +825,11 @@ public class LabelValue implements VisualValue<MultiLabel> {
     /** Line in a control vertex indicating a final state. */
     static private final Line FINAL_LINE = Line.atom("final");
     /** Suffix indicating a self-loop on a node label. */
-    static private final String LOOP_SUFFIX = " " + Util.CA;
+    static private final String LOOP_SUFFIX = " " + Unicode.CA;
     /** Points-to operator between field name and value. */
-    static private final String POINTS_TO = " " + Util.RA + " ";
+    static private final String POINTS_TO = " " + Unicode.RA + " ";
     /** Points-to operator between field name and value. */
-    static private final String TYPED_AS = Util.HAIR_SPACE + ":" + Util.HAIR_SPACE;
+    static private final String TYPED_AS = Unicode.HAIR_SPACE + ":" + Unicode.HAIR_SPACE;
     /** Points-to operator between field name and value. */
-    static private final String EQUALS_TO = Util.HAIR_SPACE + "=" + Util.THIN_SPACE;
+    static private final String EQUALS_TO = Unicode.HAIR_SPACE + "=" + Unicode.THIN_SPACE;
 }

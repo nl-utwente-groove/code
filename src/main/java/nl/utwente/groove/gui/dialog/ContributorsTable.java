@@ -37,7 +37,7 @@ import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 
-import nl.utwente.groove.io.Util;
+import nl.utwente.groove.io.FileUtils;
 import nl.utwente.groove.util.HTMLConverter;
 
 /**
@@ -50,7 +50,7 @@ public class ContributorsTable extends JTable {
         this.urlRenderer = new URLRenderer();
         addMouseListener(this.urlRenderer);
         addMouseMotionListener(this.urlRenderer);
-        setModel(new TableModel(Util.readCSV("contributors", ';')));
+        setModel(new TableModel(FileUtils.readCSV("contributors", ';')));
         for (int i = 0; i < getColumnCount(); ++i) {
             int width = 0;
             for (int j = 0; j < getRowCount(); j++) {

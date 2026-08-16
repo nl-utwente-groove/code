@@ -38,11 +38,11 @@ import nl.utwente.groove.graph.GraphProperties;
 import nl.utwente.groove.graph.GraphProperties.Key;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.display.ResourceDisplay;
-import nl.utwente.groove.io.Util;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.HTMLConverter.HTMLTag;
+import nl.utwente.groove.util.Unicode;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -293,5 +293,5 @@ class RuleTreeNode extends ActionTreeNode {
     static private final HTMLTag INFO_FONT_TAG
         = new HTMLTag("span", "style", "font-family: 'Display'; font-size:15");
     static private final String INFO_SYMBOL
-        = INFO_COLOR_TAG.on(STRONG_TAG.on(INFO_FONT_TAG.on(Util.INFO_SYMBOL)));
+        = INFO_COLOR_TAG.on(STRONG_TAG.on(INFO_FONT_TAG.on(Unicode.INFO_SYMBOL)));
 }

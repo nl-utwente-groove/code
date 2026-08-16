@@ -153,7 +153,7 @@ public class AbstractResourcePorter extends AbstractExporter implements Importer
                 xmlGraph.setName(name.toString());
                 result = new Imported(kind, xmlGraph.toAspectGraph());
             } else {
-                String program = nl.utwente.groove.io.Util.readFileToString(file);
+                String program = nl.utwente.groove.io.FileUtils.readFileToString(file);
                 result = new Imported(kind, name, program);
             }
         } catch (IOException e) {
@@ -176,7 +176,7 @@ public class AbstractResourcePorter extends AbstractExporter implements Importer
 
         Imported result;
         try {
-            String resource = nl.utwente.groove.io.Util.readInputStreamToString(stream);
+            String resource = nl.utwente.groove.io.FileUtils.readInputStreamToString(stream);
             result = new Imported(kind, name, resource);
         } catch (IOException e) {
             throw new PortException(e);

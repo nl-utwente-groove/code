@@ -31,7 +31,6 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.QualName;
-import nl.utwente.groove.io.Util;
 
 /**
  * Provider of the fonts used for text formatting throughout the tool,
@@ -93,10 +92,10 @@ public class Fonts {
         if (result == null) {
             init();
             result = getLabelFont();
-            if (!result.canDisplay(Util.DT)) {
+            if (!result.canDisplay(Unicode.DT)) {
                 result = UIManager.getDefaults().getFont("SansSerif");
             }
-            if (result == null || !result.canDisplay(Util.DT)) {
+            if (result == null || !result.canDisplay(Unicode.DT)) {
                 result = loadFont("stixgeneralregular.ttf");
             }
             symbolFont = result;

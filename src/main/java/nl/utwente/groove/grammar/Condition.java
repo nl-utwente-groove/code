@@ -41,10 +41,10 @@ import nl.utwente.groove.grammar.rule.RuleLabel;
 import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.grammar.rule.VariableNode;
 import nl.utwente.groove.grammar.type.TypeGraph;
-import nl.utwente.groove.io.Util;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
 import nl.utwente.groove.util.HTMLConverter;
+import nl.utwente.groove.util.Unicode;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -799,15 +799,15 @@ public class Condition implements Fixable {
      */
     public static enum Op {
         /** Universally quantified pattern. */
-        FORALL("Universal", Util.FORALL),
+        FORALL("Universal", Unicode.FORALL),
         /** Existentially quantified pattern. */
-        EXISTS("Existential", Util.EXISTS),
+        EXISTS("Existential", Unicode.EXISTS),
         /** Negated condition. */
-        NOT("Negated", Util.NEG),
+        NOT("Negated", Unicode.NEG),
         /** Conjunction of subconditions. */
-        AND("Conjunctive", Util.WEDGE),
+        AND("Conjunctive", Unicode.WEDGE),
         /** Disjunction of subconditions. */
-        OR("Disjunctive", Util.VEE),
+        OR("Disjunctive", Unicode.VEE),
         /** Truth. */
         TRUE("True", HTMLConverter.STRONG_TAG.on(Boolean.TRUE)),
         /** Falsehood. */

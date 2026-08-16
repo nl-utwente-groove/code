@@ -18,7 +18,7 @@ package nl.utwente.groove.algebra.syntax;
 
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.EdgeRole;
-import nl.utwente.groove.io.Util;
+import nl.utwente.groove.util.Unicode;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -72,12 +72,12 @@ public class Assignment {
      */
     public Line toLine(String assignSymbol) {
         StringBuilder result = new StringBuilder(getLhs());
-        result.append(Util.THIN_SPACE);
+        result.append(Unicode.THIN_SPACE);
         result
             .append(assignSymbol == null
                 ? "="
                 : assignSymbol);
-        result.append(Util.THIN_SPACE);
+        result.append(Unicode.THIN_SPACE);
         return Line.atom(result.toString()).append(getRhs().toLine());
     }
 

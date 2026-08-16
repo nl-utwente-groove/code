@@ -58,9 +58,9 @@ import nl.utwente.groove.gui.jgraph.JCell;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.jgraph.JModel;
 import nl.utwente.groove.gui.menu.ShowHideMenu;
-import nl.utwente.groove.io.Util;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.Strings;
+import nl.utwente.groove.util.Unicode;
 
 /**
  * Scroll pane showing the list of labels currently appearing in the graph
@@ -427,7 +427,7 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
             var entryText = getText(entry);
             if (COUNT_ON_LABEL) {
                 var countText
-                    = NBSP + NBSP + NBSP + "[" + getFilter().getCount(entry) + Util.TIMES + "]";
+                    = NBSP + NBSP + NBSP + "[" + getFilter().getCount(entry) + Unicode.TIMES + "]";
                 entryText.append(COUNT_COLOUR_TAG.on(countText));
             }
             return HTML_TAG.on(entryText).toString();

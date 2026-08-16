@@ -37,7 +37,7 @@ import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.gui.SimulatorModel.Change;
 import nl.utwente.groove.gui.dialog.PropertiesTable;
 import nl.utwente.groove.gui.look.Values;
-import nl.utwente.groove.io.Util;
+import nl.utwente.groove.util.Unicode;
 
 /**
  * Display class for system properties.
@@ -119,11 +119,11 @@ public class PropertiesDisplay extends Display implements SimulatorListener {
     static public final JLabel ERROR_TAB_COMPONENT
         = new JLabel(null, Icons.PROPERTIES_ERROR_FRAME_ICON, SwingConstants.LEFT);
     /** The tab component to be used for a notable property set. */
-    static public final JLabel NOTABLE_TAB_COMPONENT = new JLabel("" + Util.INFO_SYMBOL,
+    static public final JLabel NOTABLE_TAB_COMPONENT = new JLabel("" + Unicode.INFO_SYMBOL,
         Icons.PROPERTIES_NOTABLE_FRAME_ICON, SwingConstants.LEFT);
     /** The error tab component to be used for a notable property set. */
     static public final JLabel NOTABLE_ERROR_TAB_COMPONENT
-        = new JLabel("" + Util.INFO_SYMBOL, Icons.PROPERTIES_ERROR_FRAME_ICON, SwingConstants.LEFT);
+        = new JLabel("" + Unicode.INFO_SYMBOL, Icons.PROPERTIES_ERROR_FRAME_ICON, SwingConstants.LEFT);
 
     {
         NOTABLE_TAB_COMPONENT.setFont(new Font("Dialog", Font.BOLD, 16));

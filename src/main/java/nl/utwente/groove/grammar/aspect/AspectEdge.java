@@ -69,11 +69,11 @@ import nl.utwente.groove.graph.AEdge;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.plain.PlainLabel;
-import nl.utwente.groove.io.Util;
 import nl.utwente.groove.util.Colors;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Fixable;
+import nl.utwente.groove.util.Unicode;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.line.Line.ColorType;
 import nl.utwente.groove.util.line.Line.Style;
@@ -574,7 +574,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
             assert attrKind != null;
             switch (attrKind) {
             case ARGUMENT:
-                text = "" + Util.LC_PI + getArgument();
+                text = "" + Unicode.LC_PI + getArgument();
                 break;
             case TEST:
                 result = getTestLine();
@@ -632,7 +632,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                 case HOST:
                 case RULE:
                     // this is an attribute edge displayed as a node label
-                    result = result.append(Util.THIN_SPACE + POINTS_TO_SYMBOL + Util.THIN_SPACE);
+                    result = result.append(Unicode.THIN_SPACE + POINTS_TO_SYMBOL + Unicode.THIN_SPACE);
                     var targetValue = hasGraphRole(HOST)
                         ? target().getValue()
                         : target().getExpression();
@@ -656,7 +656,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
                 var separator = hasGraphRole(RULE)
                     ? POINTS_TO_SYMBOL
                     : TYPED_AS_SYMBOL;
-                result = result.append(Util.HAIR_SPACE + separator + Util.HAIR_SPACE);
+                result = result.append(Unicode.HAIR_SPACE + separator + Unicode.HAIR_SPACE);
                 result = result.append(Line.atom(type.getName()).style(Style.BOLD));
             }
         }
@@ -1140,9 +1140,9 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
     /** Space symbol in label line. */
     static private final String SPACE = " ";
     /** Points-to symbol between attribute name and value or expression. */
-    static private final String POINTS_TO_SYMBOL = "" + Util.RA;
+    static private final String POINTS_TO_SYMBOL = "" + Unicode.RA;
     /** Change-to symbol between attribute name and value or expression (unused right now). */
-    // static private final String CHANGE_TO_SYMBOL = "" + Util.RA_STROKE;
+    // static private final String CHANGE_TO_SYMBOL = "" + Unicode.RA_STROKE;
     /** Typed-as symbol between attribute name and type. */
     static private final String TYPED_AS_SYMBOL = ":";
     /** Prefix for newly created flags or attributes. */
@@ -1152,7 +1152,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
     /** Prefix for negated flags or attributes. */
     static private final String NOT_PREFIX = "!";
     /** Prefix for changed attributes. */
-    static private final String CHANGE_PREFIX = "" + Util.PLUSMINUS;
+    static private final String CHANGE_PREFIX = "" + Unicode.PLUSMINUS;
     /** Prefix for conditionally added (= negated + created) flags or attributes. */
     static private final String ADD_PREFIX = NOT_PREFIX + NEW_PREFIX;
     /** Prefix for remark lines. */

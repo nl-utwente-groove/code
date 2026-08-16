@@ -66,7 +66,7 @@ import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.io.ExtensionFilter;
 import nl.utwente.groove.io.FileType;
-import nl.utwente.groove.io.Util;
+import nl.utwente.groove.io.FileUtils;
 import nl.utwente.groove.io.graph.AttrGraph;
 import nl.utwente.groove.io.graph.GxlIO;
 import nl.utwente.groove.io.graph.NodeNrDispenser;
@@ -753,7 +753,7 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
         }
         for (Entry<QualName,File> fileEntry : files.entrySet()) {
             // read the file in as a single string
-            String program = nl.utwente.groove.io.Util.readFileToString(fileEntry.getValue());
+            String program = FileUtils.readFileToString(fileEntry.getValue());
             // insert the string into the resource map
             getTextMap(kind).put(fileEntry.getKey(), program);
         }
@@ -1388,7 +1388,7 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
                         String.format("Can't save grammar to existing file '%s'", file));
                 }
             } else {
-                Util.copyDirectory(file, newFile, true);
+                FileUtils.copyDirectory(file, newFile, true);
             }
         }
         try {
