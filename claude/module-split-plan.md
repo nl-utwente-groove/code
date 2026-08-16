@@ -92,6 +92,22 @@ Further moves:
 store edit protocol is Swing's undo model (~20 sites). Replace with a core edit
 model plus a gui-side `UndoManager` adapter.
 
+**Downgraded after a 2026-08-16 fact sweep.** The coupling proved shallow: the
+inherited `UndoableEditSupport` machinery was used only for its listener list
+(single registrant: `gui.SimulatorUndoManager`; `beginUpdate`/`endUpdate` never
+called), no public mutator signature mentioned a Swing type, and non-gui code
+never mutates a store outside four test classes. Since core keeps
+`requires java.desktop` for awt data types anyway (which also covers
+`javax.swing.undo`), the full redesign was unnecessary. Implemented instead as
+a c1–c3-style inversion: `SystemStore` no longer extends
+`UndoableEditSupport`; a core-owned `addEditListener(Consumer<Edit>)` replaces
+the Swing listener list; `Edit` is Swing-free (the concrete edit classes still
+extend `AbstractUndoableEdit`/`CompoundEdit` as an implementation detail);
+`SimulatorUndoManager` bridges posted edits into its Swing undo history. The
+`reload()`-bypasses-the-undo-channel and `undoSuspended` semantics are
+preserved. The `EditType` action-name constants stay in core: they are the
+presentation names of the edits, produced by `SystemStore` itself.
+
 ## Endgame: the Maven/module-info split
 
 Once (a)–(d) are done, split the build: the gui module takes `jgraph`,
@@ -138,5 +154,15 @@ Each phase is a separate branch/PR, in dependency order:
   pluggable no-op shutdown hook, with `gui.GuiShutdownHook` contributing the
   former wait-for-windows loop, registered by the `Viewer` and batch-`Imager`
   mains.
-- Remaining: phase 4 (`SystemStore`), phase 5 (build split + deferred
-  shim/test moves).
+- Phase 4 done on branch `store-edit-inversion`: the `SystemStore` undo
+  coupling turned out shallow (see the note under (d)) and was resolved by
+  inverting the notification rather than redesigning the edit model. Note:
+  the undo/Edit API has no test coverage; the change was gated by the fast
+  suite (which mutates stores headless); a manual Simulator undo/redo smoke
+  test is part of the review.
+- A utility-class rearrangement (2026-08-16, merged) preceded this phase:
+  `util.Groove` dissolved into `io.Groove`/`util.Resources`/`Strings`/
+  `FileUtils`, `io.Util` split into `util.Unicode` + `io.FileUtils`,
+  `gui.look.Values` colour re-exports removed.
+- Remaining: phase 5 (build split + deferred shim/test moves + release-reactor
+  version handoff).
