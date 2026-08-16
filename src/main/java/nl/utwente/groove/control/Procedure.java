@@ -28,7 +28,7 @@ import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.Signature;
 import nl.utwente.groove.grammar.UnitPar;
 import nl.utwente.groove.util.Fixable;
-import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.Strings;
 
 /**
  * Control-defined callable unit.
@@ -195,7 +195,7 @@ public abstract class Procedure implements Callable, Fixable {
     @Override
     public String toString() {
         return getKind().getName(true) + " " + getQualName()
-            + Groove.toString(getSignature().getPars().toArray(), "(", ")", ", ");
+            + Strings.toString(getSignature().getPars().toArray(), "(", ")", ", ");
     }
 
     @Override

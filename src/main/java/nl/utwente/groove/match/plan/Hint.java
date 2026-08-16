@@ -23,7 +23,7 @@ import java.util.List;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.Parser.AParser;
 import nl.utwente.groove.util.parse.StringHandler;
@@ -90,8 +90,8 @@ public record Hint(@NonNull List<String> common, @NonNull List<String> rare) {
             if (!value.hasRare() && !value.hasCommon()) {
                 return "";
             } else {
-                String rareString = Groove.toString(value.rare().toArray(), "\"", "\"", " ");
-                String commonString = Groove.toString(value.common().toArray(), "\"", "\"", " ");
+                String rareString = Strings.toString(value.rare().toArray(), "\"", "\"", " ");
+                String commonString = Strings.toString(value.common().toArray(), "\"", "\"", " ");
                 return rareString + "," + commonString;
             }
         }

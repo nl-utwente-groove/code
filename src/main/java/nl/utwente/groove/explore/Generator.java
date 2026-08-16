@@ -49,8 +49,8 @@ import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.lts.Filter;
 import nl.utwente.groove.transform.Transformer;
-import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Randomness;
+import nl.utwente.groove.util.Resources;
 import nl.utwente.groove.util.cli.CmdLineException;
 import nl.utwente.groove.util.cli.DirectoryHandler;
 import nl.utwente.groove.util.cli.GrammarHandler;
@@ -321,7 +321,7 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
         + "Set grammar property <key> to <val> (for =), or appends <val> to the current value (for +=). Examples:\n"
         + "  - checkIsomorphism=boolean - switch isomorphism checking on or off\n"
         + "  - typeGraph+=names - extends the type graphs to be used\n" + "See "
-        + Groove.GROOVE_BASE + ".grammar.GrammarProperties " + "for other allowed key/value pairs",
+        + Resources.GROOVE_BASE + ".grammar.GrammarProperties " + "for other allowed key/value pairs",
         parameterConsumer = PropertiesHandler.class)
     private Map<GrammarKey,PropertySetting> grammarProperties;
 

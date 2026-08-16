@@ -77,7 +77,6 @@ import nl.utwente.groove.io.external.Exporters;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.util.Exceptions;
-import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.cli.CmdLineException;
 import nl.utwente.groove.util.cli.ExistingFileHandler;
 import nl.utwente.groove.util.cli.GrooveCmdLineTool;
@@ -688,10 +687,13 @@ public class Imager extends GrooveCmdLineTool<Object> {
             };
         }
 
+        /** The working directory of the application. */
+        private static final String WORKING_DIR = System.getProperty("user.dir");
+
         /** Initialises the GUI components. */
         protected void initComponents() {
-            setInFile(Groove.WORKING_DIR);
-            setOutFile(Groove.WORKING_DIR);
+            setInFile(WORKING_DIR);
+            setOutFile(WORKING_DIR);
             this.inFileField.setPreferredSize(new Dimension(300, 0));
             this.outFileField.setEditable(false);
             this.logArea.setEditable(false);

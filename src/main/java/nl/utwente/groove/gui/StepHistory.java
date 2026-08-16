@@ -23,10 +23,10 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 
 import nl.utwente.groove.gui.SimulatorModel.Change;
+import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.lts.RuleTransition;
-import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.History;
 
 /**

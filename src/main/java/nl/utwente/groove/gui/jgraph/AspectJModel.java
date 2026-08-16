@@ -18,6 +18,7 @@ package nl.utwente.groove.gui.jgraph;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -59,7 +60,6 @@ import nl.utwente.groove.graph.layout.EdgeLayout;
 import nl.utwente.groove.graph.layout.LayoutMap;
 import nl.utwente.groove.util.ChangeCount;
 import nl.utwente.groove.util.ChangeCount.Derived;
-import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatError;
 
 /**
@@ -233,7 +233,7 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
         setGraph(graph);
         if (GUI_DEBUG) {
             System.out.printf("Graph resynchronised with model %s%n", getName());
-            Groove.printStackTrace(System.out, false);
+            printStackTrace(System.out, false);
         }
     }
 
@@ -453,7 +453,7 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
         }
         if (GUI_DEBUG) {
             System.out.printf("Firing graph change in %s%n", getName());
-            Groove.printStackTrace(System.out, false);
+            printStackTrace(System.out, false);
         }
         super.fireGraphChanged(source, edit);
     }
@@ -548,6 +548,21 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
     static final Map<AspectKind,String> ROLE_DESCRIPTIONS = new EnumMap<>(AspectKind.class);
 
     static private final boolean GUI_DEBUG = false;
+
+    /** Prints the own-code part of the stack trace to the given output.
+     * @param allLines if {@code true}, print all lines, otherwise just
+     * those that are in own code
+     */
+    static private void printStackTrace(PrintStream out, boolean allLines) {
+        StackTraceElement[] stackTrace = new Exception().getStackTrace();
+        String method = stackTrace[1].getMethodName();
+        out.printf("%s called from: %n", method);
+        for (int myCode = 2; myCode < stackTrace.length; myCode++) {
+            if (allLines || stackTrace[myCode].getLineNumber() >= 0) {
+                out.printf("  %s%n", stackTrace[myCode]);
+            }
+        }
+    }
 
     static {
         ROLE_NAMES.put(AspectKind.EMBARGO, "Embargo");

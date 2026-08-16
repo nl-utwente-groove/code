@@ -50,8 +50,8 @@ import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.util.Exceptions;
-import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Pair;
+import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.line.Line.Style;
 import nl.utwente.groove.util.parse.FormatException;
@@ -1578,7 +1578,7 @@ abstract sealed public class RegExpr { // implements VarSetSupport {
                         .append(this.guard.isNegated()
                             ? " not in "
                             : " from ");
-                    result.append(Groove.toString(labels.toArray()));
+                    result.append(Strings.toString(labels.toArray()));
                 }
             }
             return result.toString();

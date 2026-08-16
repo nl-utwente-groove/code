@@ -21,11 +21,11 @@ import java.io.IOException;
 
 import nl.utwente.groove.grammar.aspect.GraphConverter;
 import nl.utwente.groove.io.FileType;
+import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Exporters;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.lts.GraphState;
-import nl.utwente.groove.util.Groove;
 
 /**
  * Exploration reporter that saves the result states.

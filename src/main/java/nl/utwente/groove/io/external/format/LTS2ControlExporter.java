@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.io.external.format;
 
+import java.lang.reflect.Array;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -31,7 +32,6 @@ import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSFragment;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
-import nl.utwente.groove.util.Groove;
 
 /**
  * Class that exports an LTS to a control program that enforces precisely the transitions in that LTS.
@@ -137,7 +137,7 @@ public class LTS2ControlExporter extends AbstractExporter.Writer {
     /** Emits a transition label with out-parameters adjusted to don't-care. */
     private void emitTransition(GraphTransition trans) {
         // out-parameters must be don't care
-        var args = Groove.clone(trans.getArguments());
+        var args = clone(trans.getArguments());
         var sig = trans.getAction().getSignature();
         for (int i = 0; i < sig.size(); i++) {
             if (sig.getPar(i).isOutOnly()) {
@@ -145,6 +145,15 @@ public class LTS2ControlExporter extends AbstractExporter.Writer {
             }
         }
         emit(trans.getAction().toLabelString(args, false) + ";");
+    }
+
+    /** Clones and returns a given array. */
+    static private <T> T[] clone(T[] array) {
+        var type = array.getClass().getComponentType();
+        @SuppressWarnings("unchecked")
+        var result = (T[]) Array.newInstance(type, array.length);
+        System.arraycopy(array, 0, result, 0, array.length);
+        return result;
     }
 
     /** The set of currently covered states. */

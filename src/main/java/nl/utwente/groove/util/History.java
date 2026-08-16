@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import nl.utwente.groove.io.Groove;
+
 /**
  * A history log that allows browsing back and forth, and adding a new element
  * at the current position. Resembles <tt>ListIterator</tt> in the

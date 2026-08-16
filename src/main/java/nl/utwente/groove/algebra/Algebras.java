@@ -34,7 +34,6 @@ import nl.utwente.groove.annotation.ToolTipBody;
 import nl.utwente.groove.annotation.ToolTipHeader;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
-import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.parse.OpKind.Placement;
@@ -93,7 +92,7 @@ public class Algebras {
                     ? "; may be optionally prefixed by its intended sort to resolve type ambiguity."
                     : ".";
                 help
-                    .addBody(Groove
+                    .addBody(Strings
                         .toString(forSorts.toArray(),
                                   "<p style=\"margin-top:5;\"/>Available for %1$s value" + plural,
                                   ending, ",", " and "));
@@ -184,7 +183,7 @@ public class Algebras {
             help.setBody(createBody(methods));
             help
                 .addPar("expression of sort "
-                    + Groove.toString(getSorts(methods).toArray(), ",", " or "));
+                    + Strings.toString(getSorts(methods).toArray(), ",", " or "));
             if (op.kind().getPlace() == Placement.INFIX) {
                 help.addPar("expression of the same sort as %1$s");
             }
@@ -235,7 +234,7 @@ public class Algebras {
             .map(ToolTipHeader::value)
             .map(Strings::toLower)
             .forEach(headers::add);
-        var header = Groove.toString(headers.toArray(), ", ", " or ");
+        var header = Strings.toString(headers.toArray(), ", ", " or ");
         return Strings.toUpper(header);
     }
 
@@ -254,7 +253,7 @@ public class Algebras {
         for (var m : methods) {
             if (methods.size() > 1) {
                 var sorts = getSorts(m);
-                result += Groove.toString(sorts.toArray(), "<li> For ", ": ", ", ", " or ");
+                result += Strings.toString(sorts.toArray(), "<li> For ", ": ", ", ", " or ");
             }
             for (var line : m.getAnnotation(ToolTipBody.class).value()) {
                 result += line;

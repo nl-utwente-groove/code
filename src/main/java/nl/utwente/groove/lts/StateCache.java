@@ -42,7 +42,7 @@ import nl.utwente.groove.transform.DeltaApplier;
 import nl.utwente.groove.transform.Record;
 import nl.utwente.groove.transform.RuleApplication;
 import nl.utwente.groove.util.Exceptions;
-import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.cache.Cache;
 import nl.utwente.groove.util.collect.KeySet;
 import nl.utwente.groove.util.collect.SetView;
@@ -270,7 +270,7 @@ public class StateCache implements Cache {
                           actions.size() == 1
                               ? ""
                               : "s",
-                          Groove.toString(actions.toArray(), "'", "'", "', '", "' and '"));
+                          Strings.toString(actions.toArray(), "'", "'", "', '", "' and '"));
         }
     }
 

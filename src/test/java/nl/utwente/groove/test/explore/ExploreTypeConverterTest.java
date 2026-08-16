@@ -30,8 +30,8 @@ import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.model.GrammarModel;
+import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.lts.GTS;
-import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

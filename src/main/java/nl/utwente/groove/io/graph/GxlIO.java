@@ -22,6 +22,7 @@ import static nl.utwente.groove.io.FileType.LAYOUT;
 
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -65,7 +66,6 @@ import nl.utwente.groove.gxl_1_0.RelType;
 import nl.utwente.groove.gxl_1_0.RelendType;
 import nl.utwente.groove.gxl_1_0.TypedElementType;
 import nl.utwente.groove.io.FileType;
-import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.Version;
 import nl.utwente.groove.util.line.LineStyle;
@@ -248,10 +248,18 @@ public class GxlIO extends GraphIO<AttrGraph> {
     private void storeNodeLayout(LayoutMap map, Node node, NodeType gxl) {
         NodeLayout layout = map.getLayout(node);
         if (layout != null) {
-            Rectangle bounds = Groove.toRectangle(layout.getBounds());
+            Rectangle bounds = toRectangle(layout.getBounds());
             String value = bounds.x + " " + bounds.y + " " + bounds.width + " " + bounds.height;
             storeAttribute(gxl, LAYOUT_ATTR_NAME, value);
         }
+    }
+
+    /**
+     * Converts a {@link Rectangle2D} to a {@link Rectangle}.
+     */
+    static private Rectangle toRectangle(Rectangle2D r) {
+        return new Rectangle((int) r.getX(), (int) r.getY(), (int) r.getWidth(),
+            (int) r.getHeight());
     }
 
     /**

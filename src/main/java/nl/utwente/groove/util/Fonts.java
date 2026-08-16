@@ -16,8 +16,8 @@
  */
 package nl.utwente.groove.util;
 
-import static nl.utwente.groove.util.Groove.RESOURCE_PACKAGE;
-import static nl.utwente.groove.util.Groove.getResource;
+import static nl.utwente.groove.util.Resources.RESOURCE_PACKAGE;
+import static nl.utwente.groove.util.Resources.getResource;
 
 import java.awt.Font;
 import java.awt.FontFormatException;

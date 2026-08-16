@@ -24,7 +24,7 @@ import org.junit.Test;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreConfigChecker;
 import nl.utwente.groove.grammar.model.GrammarModel;
-import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.io.Groove;
 
 /**
  * Tests that the grammar-dependent contents of an exploration configuration

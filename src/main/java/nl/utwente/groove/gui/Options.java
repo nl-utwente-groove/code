@@ -33,6 +33,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.prefs.BackingStoreException;
@@ -70,6 +71,11 @@ import nl.utwente.groove.util.parse.StringHandler;
  * @version $Revision$
  */
 public class Options implements Cloneable {
+    static {
+        /** Make sure default action names are all in English. */
+        Locale.setDefault(Locale.ENGLISH);
+    }
+
     /** Creates an initialised options object. */
     private Options() {
         for (ResourceKind resource : getOptionalTabs()) {

@@ -16,7 +16,11 @@
  */
 package nl.utwente.groove.util;
 
+import java.util.Optional;
+
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Collection of convenience methods to avoid {@link NoNonNull}-related warnings
@@ -33,5 +37,28 @@ public class NoNonNull {
         String result = s.toString();
         assert result != null;
         return result;
+    }
+
+    /** Mimics the behaviour of {@link Optional#ofNullable(Object)},
+     * but circumvents the spurious {@code null} check of the argument
+     */
+    static public <T> Optional<T> ofNullable(@Nullable T value) {
+        return value == null
+            ? Optional.empty()
+            : Optional.of(value);
+    }
+
+    /** Mimics the behaviour of {@link Optional#orElse(Object)},
+     * but circumvents the spurious {@code null} check of the argument
+     */
+    static public <T> @Nullable T orElse(Optional<T> value, @Nullable T alt) {
+        return value.orElse(alt);
+    }
+
+    /** Returns a given value if it is {@code null}, or an alternative (non-{@code null}) value otherwise. */
+    static public <T> @NonNull T orElse(@Nullable T value, @NonNull T alt) {
+        return value == null
+            ? alt
+            : value;
     }
 }

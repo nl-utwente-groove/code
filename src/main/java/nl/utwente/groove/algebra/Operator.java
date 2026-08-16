@@ -27,7 +27,7 @@ import nl.utwente.groove.annotation.ToolTipHeader;
 import nl.utwente.groove.annotation.UserOperation;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
-import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.parse.OpKind;
 
 /**
@@ -307,7 +307,7 @@ public class Operator implements Comparable<Operator> {
 
     @Override
     public String toString() {
-        return getFullName() + Groove.toString(this.parameterSorts.toArray(), "(", ")", ",");
+        return getFullName() + Strings.toString(this.parameterSorts.toArray(), "(", ")", ",");
     }
 
     @Override

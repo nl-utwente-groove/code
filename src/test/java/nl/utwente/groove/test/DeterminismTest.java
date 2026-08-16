@@ -27,6 +27,7 @@ import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.grammar.model.GrammarModel;
+import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.lts.AbstractGraphState;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSListener;
@@ -34,7 +35,6 @@ import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.lts.Status;
 import nl.utwente.groove.util.AIGenerated;
-import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Randomness;
 import nl.utwente.groove.util.parse.FormatException;
 

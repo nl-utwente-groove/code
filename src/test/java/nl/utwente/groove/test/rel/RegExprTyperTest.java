@@ -46,8 +46,8 @@ import nl.utwente.groove.grammar.type.TypeFactory;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.graph.EdgeRole;
+import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.util.Exceptions;
-import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Pair;
 import nl.utwente.groove.util.parse.FormatException;
 

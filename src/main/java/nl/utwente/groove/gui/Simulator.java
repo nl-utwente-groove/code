@@ -99,7 +99,6 @@ import nl.utwente.groove.lts.GraphNextState;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.RuleTransitionLabel;
 import nl.utwente.groove.util.Factory;
-import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.SearchResult;
@@ -275,7 +274,7 @@ public class Simulator implements SimulatorListener {
             result.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
             // register doQuit() for the Command-Q shortcut on MacOS
-            if (Groove.IS_PLATFORM_MAC) {
+            if (IS_PLATFORM_MAC) {
                 try {
                     OSXAdapter.setQuitHandler(this, this.getClass().getDeclaredMethod("tryQuit"));
                 } catch (NoSuchMethodException e1) {
@@ -1135,4 +1134,8 @@ public class Simulator implements SimulatorListener {
 
     /** Name of this application. */
     private static final String APPLICATION_NAME = "Production Simulator";
+
+    /** Detect if we are on Mac.  */
+    private static final boolean IS_PLATFORM_MAC
+        = System.getProperty("os.name").toLowerCase().indexOf("mac os x") > -1;
 }

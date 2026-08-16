@@ -39,7 +39,7 @@ import nl.utwente.groove.explore.verify.BoundedLTLStrategy;
 import nl.utwente.groove.explore.verify.BoundedPocketLTLStrategy;
 import nl.utwente.groove.explore.verify.LTLStrategy;
 import nl.utwente.groove.grammar.Grammar;
-import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.verify.CycleAcceptor;
 

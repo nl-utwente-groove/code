@@ -32,8 +32,8 @@ import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.EdgeRole;
-import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Keywords;
+import nl.utwente.groove.util.NoNonNull;
 import nl.utwente.groove.util.parse.AExprTree;
 import nl.utwente.groove.util.parse.DefaultOp;
 import nl.utwente.groove.util.parse.FormatException;
@@ -319,7 +319,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
         if (!result.isPresent() && getId().size() == 1) {
             result = sortMap.getSort(getId().nest(Keywords.SELF));
         }
-        return Groove.orElse(result, null);
+        return NoNonNull.orElse(result, null);
     }
 
     /**

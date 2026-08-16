@@ -18,7 +18,7 @@ package nl.utwente.groove.util.parse;
 
 import org.antlr.runtime.RecognitionException;
 
-import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.Strings;
 
 /**
  * General exception class signalling a format error found during a conversion
@@ -77,7 +77,7 @@ public class FormatException extends Exception {
     /** Combines the list of error messages collected in this exception. */
     @Override
     public String getMessage() {
-        return Groove.toString(getErrors().toArray(), "", "", "\n");
+        return Strings.toString(getErrors().toArray(), "", "", "\n");
     }
 
     /** List of error messages carried around by this exception. */

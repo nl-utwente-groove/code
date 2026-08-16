@@ -12,7 +12,7 @@ import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
-import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.io.Groove;
 
 /**
  * Action for loading a new rule system.

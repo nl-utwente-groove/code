@@ -22,7 +22,7 @@ import java.net.URL;
 import nl.utwente.groove.grammar.Action;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.io.FileType;
-import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.io.FileUtils;
 
 /**
  * Encoding of a rule name plus priority as a string
@@ -81,7 +81,7 @@ public class PriorityFileName {
      * Convenience method to create a PriorityFileName for a URL.
      */
     public PriorityFileName(URL url) {
-        this(Groove.toFile(url));
+        this(FileUtils.toFile(url));
     }
 
     /**

@@ -33,7 +33,7 @@ import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.explore.Verbosity;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.lts.GTS;
-import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.parse.StringHandler;
 
 /**
@@ -160,7 +160,7 @@ public class LogReporter extends AExplorationReporter {
                 args[i] = StringHandler.toQuoted(args[i], '"');
             }
         }
-        emit("Command line:\t%s%n", Groove.toString(args, "", "", " "));
+        emit("Command line:\t%s%n", Strings.toString(args, "", "", " "));
     }
 
     /** Outputs a diagnostic message if allowed by the verbosity, and optionally logs it. */

@@ -25,7 +25,7 @@ import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectLabel;
 import nl.utwente.groove.gui.look.MultiLabel;
 import nl.utwente.groove.gui.look.MultiLabel.Direct;
-import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.line.Line;
 
 /**
@@ -40,7 +40,7 @@ public class AspectJObject extends ArrayList<String> {
      * labels are separated by newlines
      */
     public String toEditString() {
-        return Groove.toString(toArray(), "", "", NEWLINE);
+        return Strings.toString(toArray(), "", "", NEWLINE);
     }
 
     /**

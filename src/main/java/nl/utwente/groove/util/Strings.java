@@ -512,4 +512,88 @@ public final class Strings {
             return result.toString();
         }
     }
+
+    /**
+     * Start symbol for the string representation of an array.
+     * @see #toString(Object[], String, String, String)
+     */
+    static public final String ARRAY_START = "[";
+    /**
+     * End symbol for the string representation of an array.
+     * @see #toString(Object[], String, String, String)
+     */
+    static public final String ARRAY_END = "]";
+    /**
+     * Separator symbol for the string representation of an array.
+     * @see #toString(Object[], String, String, String)
+     */
+    static public final String ARRAY_SEPARATOR = ",";
+
+    /**
+     * Returns a string representation of a given array, starting with
+     * {@value #ARRAY_START}, ending with {@value #ARRAY_END} and with elements
+     * separated by {@value #ARRAY_SEPARATOR}.
+     */
+    static public <T> String toString(T[] array) {
+        return toString(array, ARRAY_START, ARRAY_END, ARRAY_SEPARATOR);
+    }
+
+    /**
+     * Returns a string representation of a given array. The representation is
+     * parameterised by start, end, and separator symbols.
+     * @param array the array to be converted
+     * @param start the start symbol of the resulting text representation
+     * @param end the end symbol of the resulting text representation
+     * @param separator the symbol separating the elements in the resulting text
+     *        representation
+     */
+    static public <T> String toString(T[] array, String start, String end, String separator) {
+        return toString(array, start, end, separator, separator);
+    }
+
+    /**
+     * Returns a string representation of a given array. The representation is
+     * parameterised by start, end, and separator symbols, one for the standard
+     * separation, and one separating the penultimate and ultimate elements.
+     * @param array the array to be converted
+     * @param start the start symbol of the resulting text representation
+     * @param end the end symbol of the resulting text representation
+     * @param separator the symbol separating the elements in the resulting text
+     *        representation, except for the last two
+     * @param finalSeparator the symbol separating the last two elements in the
+     *        resulting text representation
+     */
+    static public <T> String toString(T[] array, String start, String end, String separator,
+                                      String finalSeparator) {
+        StringBuffer result = new StringBuffer(start);
+        if (array == null) {
+            result.append("null");
+        } else {
+            for (int i = 0; i < array.length; i++) {
+                result.append(array[i]);
+                if (i < array.length - 2) {
+                    result.append(separator);
+                } else if (i == array.length - 2) {
+                    result.append(finalSeparator);
+                }
+            }
+        }
+        result.append(end);
+        return result.toString();
+    }
+
+    /**
+     * Returns a string representation of a given array. The representation is
+     * parameterised two separator symbols, one for the standard
+     * separation, and one separating the penultimate and ultimate elements.
+     * There are no enclosing brackets.
+     * @param array the array to be converted
+     * @param separator the symbol separating the elements in the resulting text
+     *        representation, except for the last two
+     * @param finalSeparator the symbol separating the last two elements in the
+     *        resulting text representation
+     */
+    static public <T> String toString(T[] array, String separator, String finalSeparator) {
+        return toString(array, "", "", separator, finalSeparator);
+    }
 }

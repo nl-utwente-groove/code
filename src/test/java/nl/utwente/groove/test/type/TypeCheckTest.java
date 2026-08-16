@@ -29,8 +29,8 @@ import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.HostModel;
 import nl.utwente.groove.grammar.model.NamedResourceModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
+import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.util.AIGenerated;
-import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatException;
 
 /** Set of tests for graph typing. */

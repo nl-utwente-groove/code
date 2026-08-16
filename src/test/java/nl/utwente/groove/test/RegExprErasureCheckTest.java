@@ -27,7 +27,7 @@ import org.junit.Test;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceModel;
-import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.io.Groove;
 
 /**
  * Tests the static check on composite regular expressions versus erasers

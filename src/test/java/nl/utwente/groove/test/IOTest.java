@@ -33,9 +33,10 @@ import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
+import nl.utwente.groove.io.FileUtils;
+import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.lts.GTS;
-import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -67,7 +68,7 @@ public class IOTest {
                         edgecount);
 
             File file = new File(DIRECTORY);
-            URL url = Groove.toURL(file);
+            URL url = FileUtils.toURL(file);
 
             testControl(SystemStore.newGrammar(file), DEF_START, DEF_CONTROL, nodecount, edgecount);
             testControl(SystemStore.newGrammar(file), DEF_START, DEF_CONTROL, nodecount, edgecount);
@@ -98,7 +99,7 @@ public class IOTest {
         int nodecount = 13;
         int edgecount = 16;
         try {
-            URL dir = Groove.toURL(new File(DIRECTORY));
+            URL dir = FileUtils.toURL(new File(DIRECTORY));
             GrammarModel grammarView = SystemStore.newGrammar(dir);
             testControl(grammarView, ALT_START, ALT_CONTROL, nodecount, edgecount);
         } catch (IOException e) {

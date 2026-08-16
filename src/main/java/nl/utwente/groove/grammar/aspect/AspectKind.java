@@ -35,9 +35,9 @@ import nl.utwente.groove.grammar.aspect.AspectContent.NestedValue;
 import nl.utwente.groove.grammar.aspect.AspectParser.Status;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.util.Factory;
-import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Keywords;
 import nl.utwente.groove.util.Pair;
+import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -1086,7 +1086,7 @@ public enum AspectKind {
     static private <E extends Enum<E>> String toHelpString(Collection<E> values, String start,
                                                            String end) {
         var caps = values.stream().map(E::name);
-        return Groove.toString(caps.toArray(), start, end, ", ", " or ");
+        return Strings.toString(caps.toArray(), start, end, ", ", " or ");
     }
 
     /** For every relevant graph role the node syntax help entries. */

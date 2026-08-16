@@ -25,7 +25,8 @@ import java.util.Set;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.io.FileType;
-import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.io.Groove;
+import nl.utwente.groove.util.NoNonNull;
 
 /**
  * Abstract type of the resources that make up a grammar.
@@ -64,7 +65,7 @@ public enum ResourceKind {
         this.description = description;
         this.name = name;
         this.fileType = fileType;
-        this.defaultName = Groove
+        this.defaultName = NoNonNull
             .ofNullable(defaultName == null
                 ? null
                 : QualName.name(defaultName));

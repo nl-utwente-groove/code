@@ -21,6 +21,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 /**
@@ -91,9 +92,9 @@ public class Colors {
             // proceed
         }
         // try decompose the color as a sequence of red green blue [alpha]
-        int[] val = Groove.toIntArray(name);
+        int[] val = toIntArray(name, null);
         if (val == null) {
-            val = Groove.toIntArray(name, ",");
+            val = toIntArray(name, ",");
         }
         if (val != null) {
             if (val.length == 3) {
@@ -129,6 +130,35 @@ public class Colors {
      */
     private static final Map<String,Color> colorMap =
         new TreeMap<>();
+
+    /**
+     * Converts a delimiter-separated string value to an <tt>int</tt> array. Returns
+     * <tt>null</tt> if the string is <tt>null</tt>, does not decompose into
+     * space-separated sub-strings, or does not convert to <tt>int</tt> values.
+     * @param text the text to be decomposed
+     * @param delims string consisting of characters that will be considered delimiters.
+     * If {@code null}, all whitespace characters are considered delimiters
+     */
+    static private int[] toIntArray(String text, String delims) {
+        if (text == null) {
+            return null;
+        }
+        try {
+            StringTokenizer tokenizer = delims == null
+                ? new StringTokenizer(text)
+                : new StringTokenizer(text, delims);
+            int[] result = new int[tokenizer.countTokens()];
+            int count = 0;
+            while (tokenizer.hasMoreTokens()) {
+                String nextToken = tokenizer.nextToken();
+                result[count] = Integer.parseInt(nextToken);
+                count++;
+            }
+            return result;
+        } catch (NumberFormatException exc) {
+            return null;
+        }
+    }
 
     /** Returns a normalised value, within the range 0..{@link #MAX}. */
     private static int norm(int val) {

@@ -30,7 +30,6 @@ import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.rule.MethodName.Language;
 import nl.utwente.groove.grammar.rule.MethodNameParser;
 import nl.utwente.groove.util.Factory;
-import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Properties;
 import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.parse.FormatChecker;
@@ -115,7 +114,7 @@ public class GraphProperties extends Properties {
             "<body>Boolean method or predicate that filters the matches of the rule. A match is only considered if the method returns <code>true</code>.<br>"
                 + "Format: <tt>lang:name</tt> where the optional <tt>lang</tt> is the name of a language (by default Java) and <tt>name</tt> the fully qualified method name.<br>"
                 + "The method may optionally take parameters of type <tt>HostGraph</tt> and <tt>RuleEvent</tt><br/>"
-                + "Supported languages are: <tt>" + Groove.toString(Language.values(), "", "", ", ")
+                + "Supported languages are: <tt>" + Strings.toString(Language.values(), "", "", ", ")
                 + "</tt>",
             ValueType.METHOD_NAME),
 

@@ -45,8 +45,8 @@ import nl.utwente.groove.lts.MatchApplier;
 import nl.utwente.groove.lts.MatchCollector;
 import nl.utwente.groove.lts.Status.Flag;
 import nl.utwente.groove.transform.Record;
-import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Reporter;
+import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.cache.AbstractCacheHolder;
 import nl.utwente.groove.util.cache.CacheReference;
 
@@ -182,7 +182,7 @@ public class StatisticsReporter extends AExplorationReporter {
     }
 
     private void reportStatistics() {
-        if (Groove.GATHER_STATISTICS) {
+        if (Reporter.GATHER_STATISTICS) {
             time("Reporting detailed statistics");
             reportGraphStatistics();
             reportGraphElementStatistics();
@@ -206,7 +206,7 @@ public class StatisticsReporter extends AExplorationReporter {
                 sizes.add(size);
             }
         }
-        return Groove.toString(sizes.toArray());
+        return Strings.toString(sizes.toArray());
     }
 
     /** Reports data on the LTS generated. */

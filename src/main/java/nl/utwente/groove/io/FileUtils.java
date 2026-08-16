@@ -16,8 +16,8 @@
  */
 package nl.utwente.groove.io;
 
-import static nl.utwente.groove.util.Groove.RESOURCE_PACKAGE;
-import static nl.utwente.groove.util.Groove.getResourceStream;
+import static nl.utwente.groove.util.Resources.RESOURCE_PACKAGE;
+import static nl.utwente.groove.util.Resources.getResourceStream;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -28,6 +28,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.JarURLConnection;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +39,8 @@ import java.util.List;
 import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvException;
+
+import nl.utwente.groove.util.Exceptions;
 
 /**
  * Useful file system functionalities for performing I/O.
@@ -266,6 +272,50 @@ public class FileUtils {
      * The number of bytes in a 50 MB.
      */
     private static final long FIFTY_MB = 1024 * 1024 * 50;
+
+    /**
+     * Converts a File to a URL.
+     */
+    public static URL toURL(File file) {
+        try {
+            return file.toURI().toURL();
+        } catch (MalformedURLException e) {
+            throw Exceptions.illegalArg("File '%s' cannot be converted to URL", file);
+        }
+    }
+
+    /**
+     * Returns the file corresponding to a given URL, if the URL points to a
+     * file. Otherwise, returns <code>null</code>. The URL points to a file in
+     * two cases:
+     * <ul>
+     * <li>its protocol is 'file' with undefined authority, query, and fragment
+     * components;
+     * <li>its protocol is 'jar' with undefined entry, and an inner URL which is
+     * a file URL of the first kind.
+     * </ul>
+     */
+    public static File toFile(URL url) {
+        if (url.getProtocol().equals("file")) {
+            try {
+                return new File(url.toURI());
+            } catch (URISyntaxException e) {
+                return null;
+            } catch (IllegalArgumentException e) {
+                // possibly thrown by the File constructor
+                return null;
+            }
+        } else if (url.getProtocol().equals("jar")) {
+            try {
+                URL innerURL = ((JarURLConnection) url.openConnection()).getJarFileURL();
+                return toFile(innerURL);
+            } catch (IOException exc) {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
 
     /** Reads a CSV file from the resources dir and returns its contents as a String matrix.
      * @param name CSV file name, without extension

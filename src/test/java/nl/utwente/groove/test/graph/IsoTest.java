@@ -38,7 +38,7 @@ import nl.utwente.groove.grammar.type.TypeFactory;
 import nl.utwente.groove.graph.Morphism;
 import nl.utwente.groove.graph.iso.IsoChecker;
 import nl.utwente.groove.graph.plain.PlainGraph;
-import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.io.Groove;
 
 import org.junit.Before;
 import org.junit.Test;

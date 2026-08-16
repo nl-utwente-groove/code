@@ -39,11 +39,12 @@ import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.Node;
+import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.lts.StateProperty;
-import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.cli.GrooveCmdLineParser;
 import nl.utwente.groove.util.cli.GrooveCmdLineTool;
 import nl.utwente.groove.util.parse.FormatErrorSet;
@@ -110,7 +111,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         long genStartTime = System.currentTimeMillis();
         ModelFacade model;
         if (genArgs != null) {
-            emit("Generator:\t%s%n", Groove.toString(genArgs, " ", ""));
+            emit("Generator:\t%s%n", Strings.toString(genArgs, " ", ""));
             model = generateModel(genArgs);
         } else if (this.modelGraph == null) {
             throw new Exception(

@@ -31,13 +31,13 @@ import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.host.HostGraphMorphism;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.model.GrammarModel;
+import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.lts.AbstractGraphState;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.lts.RuleTransition;
 import nl.utwente.groove.transform.AbstractRuleEvent;
-import nl.utwente.groove.util.Groove;
 
 /**
  * Tests that the (GUI-informational) morphism of a rule transition maps onto

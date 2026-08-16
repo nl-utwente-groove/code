@@ -39,7 +39,7 @@ import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.Signature;
 import nl.utwente.groove.grammar.UnitPar;
-import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.io.Groove;
 
 /**
  * @author Arend Rensink

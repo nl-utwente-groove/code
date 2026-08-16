@@ -44,7 +44,7 @@ import nl.utwente.groove.graph.plain.PlainEdge;
 import nl.utwente.groove.graph.plain.PlainGraph;
 import nl.utwente.groove.graph.plain.PlainMorphism;
 import nl.utwente.groove.graph.plain.PlainNode;
-import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.util.Reporter;
 import nl.utwente.groove.util.collect.Bag;
 import nl.utwente.groove.util.collect.HashBag;

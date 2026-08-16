@@ -28,8 +28,8 @@ import nl.utwente.groove.algebra.syntax.Variable;
 import nl.utwente.groove.grammar.Callable;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.Signature;
-import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Pair;
+import nl.utwente.groove.util.Strings;
 
 /**
  * Call of a callable unit.
@@ -144,7 +144,7 @@ public class Call extends Pair<Callable,List<? extends CtrlArg>> implements Comp
 
     @Override
     public String toString() {
-        return getUnit().getQualName() + Groove.toString(getArgs().toArray(), "(", ")", ", ");
+        return getUnit().getQualName() + Strings.toString(getArgs().toArray(), "(", ")", ", ");
     }
 
     @Override

@@ -32,7 +32,7 @@ import nl.utwente.groove.explore.ExploreResult;
 import nl.utwente.groove.explore.Generator;
 import nl.utwente.groove.explore.util.LTSLabels;
 import nl.utwente.groove.graph.Graph;
-import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.verify.CTLMarker;
 import nl.utwente.groove.verify.CTLModelChecker;
 import nl.utwente.groove.verify.Formula;

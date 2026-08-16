@@ -35,7 +35,7 @@ import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.grammar.aspect.GraphConverter;
 import nl.utwente.groove.grammar.host.DefaultHostGraph;
 import nl.utwente.groove.grammar.host.HostNode;
-import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.StringHandler;
 

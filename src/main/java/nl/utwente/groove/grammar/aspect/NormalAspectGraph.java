@@ -46,8 +46,8 @@ import nl.utwente.groove.grammar.aspect.AspectContent.NestedValue;
 import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
-import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Keywords;
+import nl.utwente.groove.util.NoNonNull;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -500,7 +500,7 @@ public class NormalAspectGraph extends AspectGraph {
             .filter(e -> e.target().has(Category.SORT, k -> k.hasSort(sort)))
             .filter(e -> e.target().hasConstant() || !e.target().hasExpression())
             .findAny();
-        return Groove.orElse(result, null);
+        return NoNonNull.orElse(result, null);
     }
 
     /** Looks for an outgoing edge matching a given field expression, to a sorted non-expression node.

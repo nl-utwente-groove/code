@@ -37,10 +37,10 @@ import java.util.Map;
 
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.util.Exceptions;
-import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.HTMLConverter.HTMLTag;
 import nl.utwente.groove.util.Pair;
+import nl.utwente.groove.util.Strings;
 
 /**
  * Class offering support for syntax help.
@@ -314,7 +314,7 @@ public class Help {
             if (opName != null) {
                 Arrays.stream(x.getParameters()).map(Parameter::getName).forEach(parNames::add);
                 syntaxText = "[" + Sort.USER.name() + ":]Q" + opName;
-                syntaxText += Groove.toString(parNames.toArray(), "(", ")", ",");
+                syntaxText += Strings.toString(parNames.toArray(), "(", ")", ",");
             }
         }
         if (syntaxText != null) {

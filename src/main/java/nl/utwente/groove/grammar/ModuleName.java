@@ -24,7 +24,7 @@ import java.util.List;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.Strings;
 
 /**
  * Name of a module within a grammar.
@@ -209,7 +209,7 @@ public class ModuleName {
 
     /** Returns a string representation of this name, using a given separator. */
     public String toString(String sep) {
-        return Groove.toString(this.tokens.toArray(), "", "", sep, sep);
+        return Strings.toString(this.tokens.toArray(), "", "", sep, sep);
     }
 
     @Override

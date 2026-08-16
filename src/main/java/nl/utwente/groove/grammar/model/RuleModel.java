@@ -109,7 +109,7 @@ import nl.utwente.groove.graph.NodeComparator;
 import nl.utwente.groove.util.DefaultFixable;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
-import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
@@ -694,7 +694,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             if (levelNode == null || levelNode.getLevelName() == null) {
                 suffix = isTopLevel()
                     ? ""
-                    : Groove.toString(this.index.toArray());
+                    : Strings.toString(this.index.toArray());
             } else {
                 suffix = "-" + levelNode.getLevelName();
             }
@@ -2167,7 +2167,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                              var.getKind().getDescription(false), lhsTypes.size() == 1
                                  ? ""
                                  : "s",
-                             Groove.toString(lhsTypes.toArray(), "", "", ", "), var);
+                             Strings.toString(lhsTypes.toArray(), "", "", ", "), var);
                 }
             }
             this.errors.throwException();

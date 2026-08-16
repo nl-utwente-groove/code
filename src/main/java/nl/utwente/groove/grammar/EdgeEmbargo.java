@@ -21,7 +21,7 @@ import nl.utwente.groove.grammar.rule.RuleEdge;
 import nl.utwente.groove.grammar.rule.RuleGraph;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.Node;
-import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.io.Groove;
 
 /**
  * A specialised NAC that forbids the presence of a certain edge.

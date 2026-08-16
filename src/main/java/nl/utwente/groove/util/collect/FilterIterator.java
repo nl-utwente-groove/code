@@ -21,7 +21,7 @@ import java.util.NoSuchElementException;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.io.Groove;
 
 /**
  * Iterator constructed by filtering elements from some existing iterator. The

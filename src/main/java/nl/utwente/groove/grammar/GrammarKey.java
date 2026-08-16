@@ -37,7 +37,6 @@ import nl.utwente.groove.grammar.model.RuleModel;
 import nl.utwente.groove.transform.oracle.ValueOracleKind;
 import nl.utwente.groove.util.DocumentedEnum;
 import nl.utwente.groove.util.Factory;
-import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.Properties;
 import nl.utwente.groove.util.Properties.Entry;
 import nl.utwente.groove.util.Properties.KeyParser;
@@ -449,7 +448,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
                 result
                     .add("Unknown rule name%s %s", unknowns.size() == 1
                         ? ""
-                        : "s", Groove.toString(unknowns.toArray(), "'", "'", "', '", "' and '"));
+                        : "s", Strings.toString(unknowns.toArray(), "'", "'", "', '", "' and '"));
             }
             return result;
         }
@@ -487,7 +486,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
                          unknowns.size() == 1
                              ? ""
                              : "s",
-                         Groove.toString(unknowns.toArray(), "'", "'", "', '", "' and '"));
+                         Strings.toString(unknowns.toArray(), "'", "'", "', '", "' and '"));
             }
             return result;
         }
@@ -553,7 +552,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
                          unknowns.size() == 1
                              ? ""
                              : "s",
-                         Groove.toString(unknowns.toArray(), "'", "'", "', '", "' and '"));
+                         Strings.toString(unknowns.toArray(), "'", "'", "', '", "' and '"));
             }
             return result;
         }

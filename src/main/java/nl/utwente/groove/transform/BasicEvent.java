@@ -50,7 +50,7 @@ import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.graph.plain.PlainNode;
 import nl.utwente.groove.match.TreeMatch;
 import nl.utwente.groove.transform.RuleEffect.Fragment;
-import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.cache.CacheReference;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -134,7 +134,7 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
      */
     @Override
     public String getAnchorImageString() {
-        return Groove.toString(getAnchorImages(), ANCHOR_START, ANCHOR_END, ANCHOR_SEPARATOR);
+        return Strings.toString(getAnchorImages(), ANCHOR_START, ANCHOR_END, ANCHOR_SEPARATOR);
     }
 
     /**

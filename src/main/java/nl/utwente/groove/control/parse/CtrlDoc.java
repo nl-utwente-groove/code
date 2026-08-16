@@ -16,8 +16,8 @@
  */
 package nl.utwente.groove.control.parse;
 
-import static nl.utwente.groove.util.Groove.RESOURCE_PACKAGE;
-import static nl.utwente.groove.util.Groove.getResource;
+import static nl.utwente.groove.util.Resources.RESOURCE_PACKAGE;
+import static nl.utwente.groove.util.Resources.getResource;
 import static org.antlr.works.ate.syntax.generic.ATESyntaxLexer.TOKEN_SINGLE_COMMENT;
 
 import java.io.File;

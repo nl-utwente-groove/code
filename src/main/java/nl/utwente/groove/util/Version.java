@@ -3,8 +3,8 @@
  */
 package nl.utwente.groove.util;
 
-import static nl.utwente.groove.util.Groove.RESOURCE_PACKAGE;
-import static nl.utwente.groove.util.Groove.getResourceStream;
+import static nl.utwente.groove.util.Resources.RESOURCE_PACKAGE;
+import static nl.utwente.groove.util.Resources.getResourceStream;
 
 import java.io.BufferedReader;
 import java.io.IOException;

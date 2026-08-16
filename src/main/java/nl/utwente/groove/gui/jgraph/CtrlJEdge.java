@@ -9,8 +9,8 @@ import nl.utwente.groove.control.graph.ControlEdge;
 import nl.utwente.groove.control.graph.ControlGraph;
 import nl.utwente.groove.control.instance.Step;
 import nl.utwente.groove.gui.look.Look;
-import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.HTMLConverter;
+import nl.utwente.groove.util.Strings;
 
 /**
  * JEdge class that describes the underlying edge as a graph transition.
@@ -49,7 +49,7 @@ public class CtrlJEdge
         if (displayedLabels.length == 1) {
             result.append(displayedLabels[0]);
         } else {
-            result.append(Groove.toString(displayedLabels, "<br>- ", "", "<br>- "));
+            result.append(Strings.toString(displayedLabels, "<br>- ", "", "<br>- "));
         }
         return result.toString();
     }

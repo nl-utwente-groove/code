@@ -17,6 +17,7 @@
 package nl.utwente.groove.control.template;
 
 import java.util.ArrayDeque;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.Optional;
@@ -31,7 +32,6 @@ import nl.utwente.groove.control.Call;
 import nl.utwente.groove.control.NestedCall;
 import nl.utwente.groove.grammar.Callable.Kind;
 import nl.utwente.groove.grammar.Recipe;
-import nl.utwente.groove.util.Groove;
 
 /**
  * Stack of switches, corresponding to nested procedure and rule calls.
@@ -203,13 +203,37 @@ public class NestedSwitch implements Attempt.Stage<Location,NestedSwitch>, Compa
             return false;
         }
         // note: ArrayDeque doesn't do content-based equals
-        return Groove.equals(this.switches, other.switches);
+        return equals(this.switches, other.switches);
     }
 
     @Override
     public int hashCode() {
         // note: ArrayDeque doesn't do content-based hashing
-        return Groove.hashCode(this.switches);
+        return hashCode(this.switches);
+    }
+
+    /** Hashcode for collections that don't do content-based hashing. */
+    static private int hashCode(Collection<?> collection) {
+        int result = 1;
+        for (var sw : collection) {
+            result = 31 * result + sw.hashCode();
+        }
+        return result;
+    }
+
+    /** Equality method for collections that don't do content-based equality. */
+    static private boolean equals(Collection<?> coll1, Collection<?> coll2) {
+        if (coll1.size() != coll2.size()) {
+            return false;
+        }
+        var iter1 = coll1.iterator();
+        var iter2 = coll2.iterator();
+        while (iter1.hasNext()) {
+            if (!iter1.next().equals(iter2.next())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override

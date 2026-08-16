@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import nl.utwente.groove.util.CycleChecker;
-import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.Unicode;
 
 /**
@@ -62,7 +62,7 @@ class DependencyChecker extends CycleChecker<AspectGraph,AspectNode> {
         var ids = cycle.stream().map(AspectNode::getId).collect(Collectors.toList());
         ids.add(ids.get(0));
         return "Variable dependency cycle: "
-            + Groove.toString(ids.toArray(), "", "", " " + Unicode.RA + " ");
+            + Strings.toString(ids.toArray(), "", "", " " + Unicode.RA + " ");
     }
 
     /** Returns the singleton instance of this class. */

@@ -35,8 +35,8 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.util.Exceptions;
-import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.HTMLConverter;
+import nl.utwente.groove.util.NoNonNull;
 import nl.utwente.groove.util.Strings;
 
 /**
@@ -453,7 +453,7 @@ public interface Parser<T> {
         @Override
         public <V extends List<T>> String unparse(V value) {
             List<String> strings = value.stream().map(this.inner::unparse).toList();
-            return Groove.toString(strings.toArray(), "", "", " ");
+            return Strings.toString(strings.toArray(), "", "", " ");
         }
 
         @Override
@@ -600,7 +600,7 @@ public interface Parser<T> {
             if (result == null && this.legacy) {
                 try {
                     int value = Integer.parseInt(input);
-                    result = Groove
+                    result = NoNonNull
                         .orElse(this.toStringMap
                             .keySet()
                             .stream()

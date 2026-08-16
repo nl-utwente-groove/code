@@ -65,7 +65,7 @@ import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.NodeSetEdgeSetGraph;
 import nl.utwente.groove.util.Exceptions;
-import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -839,7 +839,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
             if (allowedTypes.isEmpty()) {
                 // this must have become empty because of type variable constraints
                 Set<LabelVar> vars = nodeVarsMap.get(node);
-                String varString = Groove.toString(vars.toArray(), ", ", " and ");
+                String varString = Strings.toString(vars.toArray(), ", ", " and ");
                 if (declaredType == null) {
                     errors.add("Inconsistent type variable constraints for %s", node);
                 } else {
@@ -854,7 +854,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
                 if (type == null) {
                     errors
                         .add("Ambiguous typing: %s do not include a common supertype",
-                             Groove.toString(allowedTypes.toArray(), ", ", " and "), node);
+                             Strings.toString(allowedTypes.toArray(), ", ", " and "), node);
                 } else {
                     RuleNode image = parentTyping
                         .getFactory()

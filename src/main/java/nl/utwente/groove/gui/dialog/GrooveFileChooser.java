@@ -38,7 +38,6 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.io.FileType;
-import nl.utwente.groove.util.Groove;
 
 /**
  * A file chooser with a {@link GrooveFileView}, which prevents traversal of
@@ -131,7 +130,7 @@ public class GrooveFileChooser extends JFileChooser {
         // Set the current directory to be reused later
         File currDir = super.getCurrentDirectory();
         if (currDir != null) {
-            Groove.CURRENT_WORKING_DIR = currDir.getAbsolutePath();
+            CURRENT_WORKING_DIR = currDir.getAbsolutePath();
         }
 
         File result = super.getSelectedFile();
@@ -248,12 +247,12 @@ public class GrooveFileChooser extends JFileChooser {
 
     /** Returns the starting directory for a new file chooser.
      * This is retrieved from the persistent user properties, or if not present,
-     * initialised to {@link Groove#CURRENT_WORKING_DIR}.
+     * initialised to {@link #CURRENT_WORKING_DIR}.
      */
     static private @NonNull String getStartDirectory(Set<FileType> fileTypes) {
         var result = getPref(fileTypes, WORKING_DIR);
         return result == null
-            ? Groove.CURRENT_WORKING_DIR
+            ? CURRENT_WORKING_DIR
             : result;
     }
 
@@ -266,6 +265,9 @@ public class GrooveFileChooser extends JFileChooser {
             ? prefs[index]
             : null;
     }
+
+    /** The last accessed working directory. */
+    static private String CURRENT_WORKING_DIR = System.getProperty("user.dir");
 
     /** Index of the working directory property in the user properties. */
     static private final int WORKING_DIR = 0;

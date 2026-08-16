@@ -353,6 +353,11 @@ public class Reporter {
     static public final String TOT_TIME_FIELD = "tot(m)";
     /** Field name of the average duration */
     static public final String AVG_TIME_FIELD = "avg(mu)";
+    /**
+     * Flag to indicate if various types of statistics should be computed. This
+     * flag is intended to be used globally.
+     */
+    static public final boolean GATHER_STATISTICS = true;
     /** Flag to control whether execution times are reported. */
     static private final boolean TIME_METHODS = true;
     /**

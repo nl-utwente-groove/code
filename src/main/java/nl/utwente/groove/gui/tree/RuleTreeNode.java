@@ -39,9 +39,9 @@ import nl.utwente.groove.graph.GraphProperties.Key;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.util.Exceptions;
-import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.HTMLConverter.HTMLTag;
+import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.Unicode;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -111,7 +111,7 @@ class RuleTreeNode extends ActionTreeNode {
                     ? "recipe "
                     : "recipes ");
             result
-                .append(Groove
+                .append(Strings
                     .toString(recipes.toArray(), "<i>", "</i>", "</i>, <i>", "</i> and <i>"));
         }
         var rulePolicy = getRuleModel().getPolicy();

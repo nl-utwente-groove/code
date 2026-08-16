@@ -26,7 +26,7 @@ import nl.utwente.groove.control.Attempt;
 import nl.utwente.groove.control.Call;
 import nl.utwente.groove.control.NestedCall;
 import nl.utwente.groove.util.Factory;
-import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.NoNonNull;
 import nl.utwente.groove.util.Pair;
 
 /**
@@ -44,7 +44,7 @@ public class Derivation extends Pair<Call,Term> implements Attempt.Stage<Term,De
     public Derivation(Call outer, int depth, Term target, @Nullable Derivation nested) {
         super(outer, target);
         this.transience = depth;
-        this.nested = Groove.ofNullable(nested);
+        this.nested = NoNonNull.ofNullable(nested);
     }
 
     /**
@@ -116,7 +116,7 @@ public class Derivation extends Pair<Call,Term> implements Attempt.Stage<Term,De
         int depth = getTransience() + (enterAtom
             ? 1
             : 0);
-        return new Derivation(getOuterCall(), depth, target, Groove.orElse(getNested(), null));
+        return new Derivation(getOuterCall(), depth, target, NoNonNull.orElse(getNested(), null));
     }
 
     /**

@@ -13,8 +13,8 @@ import nl.utwente.groove.lts.GraphNextState;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.lts.RuleTransition;
-import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.HTMLConverter;
+import nl.utwente.groove.util.Strings;
 
 /**
  * JEdge class that describes the underlying edge as a graph transition.
@@ -124,7 +124,7 @@ public class LTSJEdge extends AJEdge<@NonNull GTS,LTSJGraph,LTSJModel,LTSJVertex
         if (displayedLabels.length == 1) {
             result.append(displayedLabels[0]);
         } else {
-            result.append(Groove.toString(displayedLabels, "<br>- ", "", "<br>- "));
+            result.append(Strings.toString(displayedLabels, "<br>- ", "", "<br>- "));
         }
         return result.toString();
     }

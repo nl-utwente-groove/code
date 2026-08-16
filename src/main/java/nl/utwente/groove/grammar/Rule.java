@@ -67,7 +67,7 @@ import nl.utwente.groove.transform.Proof;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
-import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.NoNonNull;
 import nl.utwente.groove.util.Visitor;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -295,7 +295,7 @@ public class Rule implements Action, Fixable {
 
     /** Returns the optional match filter method. */
     public Optional<MatchChecker> getMatchFilter() {
-        return Groove.ofNullable(this.matchFilter);
+        return NoNonNull.ofNullable(this.matchFilter);
     }
 
     private @Nullable MatchChecker matchFilter;

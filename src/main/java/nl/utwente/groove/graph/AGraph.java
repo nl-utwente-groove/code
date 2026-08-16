@@ -30,7 +30,7 @@ import nl.utwente.groove.util.DefaultFixable;
 import nl.utwente.groove.util.Dispenser;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
-import nl.utwente.groove.util.Groove;
+import nl.utwente.groove.util.Reporter;
 import nl.utwente.groove.util.cache.AbstractCacheHolder;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -397,7 +397,7 @@ public abstract class AGraph<N extends Node,E extends GEdge<N>>
     /**
      * Private copy of the static variable to allow compiler optimization.
      */
-    static private final boolean GATHER_STATISTICS = Groove.GATHER_STATISTICS;
+    static private final boolean GATHER_STATISTICS = Reporter.GATHER_STATISTICS;
 
     /**
      * Counts the number of graphs that were not fixed. Added for debugging

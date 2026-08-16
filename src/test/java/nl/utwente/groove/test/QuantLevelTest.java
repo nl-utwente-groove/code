@@ -29,10 +29,10 @@ import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.RuleModel;
+import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.util.AIGenerated;
-import nl.utwente.groove.util.Groove;
 
 /**
  * Tests explicit quantifier level names on test- and let-edges

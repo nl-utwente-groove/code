@@ -40,8 +40,8 @@ import nl.utwente.groove.graph.layout.EdgeLayout;
 import nl.utwente.groove.gui.look.Look;
 import nl.utwente.groove.gui.look.MultiLabel.Direct;
 import nl.utwente.groove.gui.look.Values;
-import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.HTMLConverter;
+import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.parse.FormatError;
 
 /**
@@ -343,7 +343,7 @@ abstract public class AJEdge<@NonNull G extends Graph,JG extends JGraph<G>,JM ex
             result.append(" (unlabelled)");
         } else {
             result.append(", labelled ");
-            result.append(Groove.toString(displayedLabels, ", ", " and "));
+            result.append(Strings.toString(displayedLabels, ", ", " and "));
         }
         return result.toString();
     }
