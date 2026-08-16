@@ -16,7 +16,6 @@
  */
 package nl.utwente.groove.util.cli;
 
-import java.awt.Window;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -196,27 +195,23 @@ public abstract class GrooveCmdLineTool<T> {
         } catch (Exception e) {
             throw new IllegalArgumentException(e);
         }
-        waitForWindows();
+        shutdownHook.run();
         System.exit(0);
     }
 
-    static private void waitForWindows() {
-        boolean exit;
-        do {
-            exit = true;
-            for (Window win : Window.getWindows()) {
-                if (win.isShowing()) {
-                    exit = false;
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        // do nothing
-                    }
-                    break;
-                }
-            }
-        } while (!exit);
+    /**
+     * Sets a hook that is run after the tool has finished, just before the
+     * JVM is terminated by {@link #tryExecute}. Used by GUI tools to delay
+     * exit until all windows have been closed.
+     */
+    public static void setShutdownHook(Runnable hook) {
+        shutdownHook = hook;
     }
+
+    /** Hook run just before JVM termination; a no-op unless a GUI tool plugs in a wait. */
+    private static Runnable shutdownHook = () -> {
+        // by default, there is nothing to wait for
+    };
 
     static private final boolean DEBUG = false;
 }

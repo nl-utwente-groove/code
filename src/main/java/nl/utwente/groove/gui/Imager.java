@@ -369,6 +369,8 @@ public class Imager extends GrooveCmdLineTool<Object> {
         if (args.length == 0) {
             new Imager(true);
         } else {
+            // delay JVM exit while any (error) windows are showing
+            GuiShutdownHook.register();
             tryExecute(Imager.class, args);
         }
     }

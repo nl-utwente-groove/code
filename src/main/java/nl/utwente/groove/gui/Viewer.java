@@ -127,6 +127,8 @@ public class Viewer extends GrooveCmdLineTool<Object> {
      * Invokes the viewer for a given list of command-line arguments.
      */
     public static void main(String[] args) {
+        // delay JVM exit until the viewer windows have been closed
+        GuiShutdownHook.register();
         GrooveCmdLineTool.tryExecute(Viewer.class, args);
     }
 
