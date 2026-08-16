@@ -97,7 +97,6 @@ import nl.utwente.groove.gui.menu.MyJMenu;
 import nl.utwente.groove.gui.prolog.GuiPredicates;
 import nl.utwente.groove.lts.GraphNextState;
 import nl.utwente.groove.lts.GraphState;
-import nl.utwente.groove.transform.oracle.ValueOracleKind;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Groove;
 import nl.utwente.groove.util.parse.FormatError;
@@ -121,7 +120,7 @@ public class Simulator implements SimulatorListener {
         // contribute the GUI-bound prolog predicates (show_graph)
         GuiPredicates.register();
         // contribute the (UI-bound) dialog value oracle
-        OracleParser.register(ValueOracleKind.DIALOG, DialogOracle.instance());
+        OracleParser.setDialogOracle(DialogOracle.instance());
         this.model = new SimulatorModel(this);
         this.actions = new ActionStore(this);
         this.undoManager = new SimulatorUndoManager(this);

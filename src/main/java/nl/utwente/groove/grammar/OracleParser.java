@@ -17,8 +17,6 @@
 package nl.utwente.groove.grammar;
 
 import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.Map;
 
 import nl.utwente.groove.transform.oracle.DefaultOracle;
 import nl.utwente.groove.transform.oracle.NoValueOracle;
@@ -107,7 +105,7 @@ public class OracleParser extends Parser.AParser<ValueOracleFactory> {
             if (par != null) {
                 throw exc;
             }
-            ValueOracleFactory dialog = registered.get(ValueOracleKind.DIALOG);
+            ValueOracleFactory dialog = dialogOracle;
             if (dialog == null) {
                 throw new FormatException(
                     "Oracle '%s' is only available in the Simulator",
@@ -153,30 +151,25 @@ public class OracleParser extends Parser.AParser<ValueOracleFactory> {
                 : "");
         } else if (value instanceof ReaderOracleFactory factory) {
             result = ValueOracleKind.READER + ":" + factory.getFilename();
+        } else if (value == dialogOracle) {
+            result = ValueOracleKind.DIALOG.getName();
         } else {
-            result = registered
-                .entrySet()
-                .stream()
-                .filter(e -> e.getValue() == value)
-                .map(e -> e.getKey().getName())
-                .findAny()
-                .orElseThrow(Exceptions::unreachable);
+            throw Exceptions.unreachable();
         }
         return result;
     }
 
     /**
-     * Registers a factory for a given oracle kind, making that kind available
-     * to {@link #parse}. Used by the GUI to contribute the (UI-bound) dialog
-     * oracle at startup.
+     * Registers the factory for the {@link ValueOracleKind#DIALOG} oracle,
+     * making that kind available to {@link #parse}. Used by the GUI to
+     * contribute the (UI-bound) dialog oracle at startup.
      */
-    public static void register(ValueOracleKind kind, ValueOracleFactory factory) {
-        registered.put(kind, factory);
+    public static void setDialogOracle(ValueOracleFactory factory) {
+        dialogOracle = factory;
     }
 
-    /** Externally registered oracle factories, by kind. */
-    private static final Map<ValueOracleKind,ValueOracleFactory> registered
-        = new EnumMap<>(ValueOracleKind.class);
+    /** Externally registered dialog oracle factory; {@code null} if the GUI is not up. */
+    private static ValueOracleFactory dialogOracle;
 
     /** Returns the singleton instance of this parser. */
     public static OracleParser instance() {
