@@ -121,18 +121,22 @@ Each phase is a separate branch/PR, in dependency order:
 4. `SystemStore` redesign (d).
 5. Maven/module-info split, including the release-reactor version handoff.
 
-## Status (2026-08-11)
+## Status (2026-08-16)
 
-- Phase 1 done on branch `module-split-deletions` (also deletes the dead
-  `Util.isGroovyPresent` probe).
-- Phase 2 done on branch `module-split-moves`, including inversion (c1)
-  (oracle registry in `OracleParser`, GUI registers `DialogOracle`), a
-  `GrooveEnvironment.addPredicates` extension point for `show_graph`, and a
-  `util.Fonts` initializer hook by which the GUI keeps LAF-before-fonts
-  ordering. Behavioural changes, all deliberate: headless runs no longer
+- Phase 1 (deletions, incl. the dead `Util.isGroovyPresent` probe) and
+  phase 2 (moves plus inversion (c1): oracle registry in `OracleParser`, a
+  `GrooveEnvironment.addPredicates` extension point for `show_graph`, a
+  `util.Fonts` initializer hook for LAF-before-fonts ordering) are merged
+  into master. Behavioural changes, all deliberate: headless runs no longer
   initialise a Swing LAF via HTML formatting, `show_graph` and the dialog
   value oracle are Simulator-only.
-- Both branches are independent of each other (based on the same master);
-  merge in any order.
-- Remaining: phase 3 (c2 label-render options, c3 shutdown hook), phase 4
-  (`SystemStore`), phase 5 (build split + deferred shim/test moves).
+- Phase 3 done on branch `label-render-options`: inversion (c2) —
+  `RuleTransitionLabel` consults a static `BooleanSupplier` hook instead of
+  `gui.Options`, with the Simulator plugging in the live option (a dedicated
+  label-render-options interface was rejected: only this one flag is read
+  from core) — and inversion (c3) — `GrooveCmdLineTool.tryExecute` runs a
+  pluggable no-op shutdown hook, with `gui.GuiShutdownHook` contributing the
+  former wait-for-windows loop, registered by the `Viewer` and batch-`Imager`
+  mains.
+- Remaining: phase 4 (`SystemStore`), phase 5 (build split + deferred
+  shim/test moves).
