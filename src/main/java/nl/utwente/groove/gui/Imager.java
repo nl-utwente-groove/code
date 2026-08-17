@@ -16,12 +16,12 @@
  */
 package nl.utwente.groove.gui;
 
-import static nl.utwente.groove.explore.Verbosity.MEDIUM;
 import static nl.utwente.groove.io.FileType.GRAMMAR;
 import static nl.utwente.groove.io.FileType.GXL;
 import static nl.utwente.groove.io.FileType.RULE;
 import static nl.utwente.groove.io.FileType.STATE;
 import static nl.utwente.groove.io.FileType.TYPE;
+import static nl.utwente.groove.util.cli.Verbosity.MEDIUM;
 
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -58,7 +58,6 @@ import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 
-import nl.utwente.groove.explore.Verbosity;
 import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
@@ -80,6 +79,7 @@ import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.cli.CmdLineException;
 import nl.utwente.groove.util.cli.ExistingFileHandler;
 import nl.utwente.groove.util.cli.GrooveCmdLineTool;
+import nl.utwente.groove.util.cli.Verbosity;
 import nl.utwente.groove.util.parse.FormatException;
 import picocli.CommandLine.ITypeConverter;
 import picocli.CommandLine.Option;
