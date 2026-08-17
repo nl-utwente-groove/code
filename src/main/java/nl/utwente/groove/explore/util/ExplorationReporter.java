@@ -17,10 +17,11 @@
 package nl.utwente.groove.explore.util;
 
 import java.io.IOException;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 
 import nl.utwente.groove.explore.ExplorationListener;
+import nl.utwente.groove.util.Log;
 
 /**
  * Listener that will produce output after invoking a method {@link #report()}.
@@ -35,15 +36,12 @@ public interface ExplorationReporter extends ExplorationListener {
      */
     public abstract void report() throws IOException;
 
-    /** Prints a timed message on stdout. */
+    /** Emits a timing message, logged at {@link Level#TRACE} on the
+     * {@code explore.timing} diagnostic logger (enable with {@code -log trace:explore.timing}). */
     static public void time(String message) {
-        if (TIME) {
-            System.out.println(formatter.format(LocalTime.now()) + ": " + message);
-        }
+        TIMING.log(Level.TRACE, message);
     }
 
-    /** Flag determining whether timing information should be emitted. */
-    static final boolean TIME = false;
-    /** Formatter for the time stamp of timing information. */
-    static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss:SSS");
+    /** Logger for exploration timing diagnostics. */
+    static final Logger TIMING = Log.getLogger("explore.timing");
 }

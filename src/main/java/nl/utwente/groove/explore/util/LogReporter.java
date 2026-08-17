@@ -109,7 +109,6 @@ public class LogReporter extends AExplorationReporter {
         }
         // now write to the log file, if any
         if (this.log != null) {
-            time("Exporting log to " + this.log);
             // copy the (high-verbosity) exploration statistics to the log
             String report = this.exploreStats.getReport(HIGH);
             if (report.length() > 0) {
@@ -120,6 +119,7 @@ public class LogReporter extends AExplorationReporter {
             String logId = getGTS().getGrammar().getId() + "-"
                 + this.startTime.toString().replace(' ', '_').replace(':', '-');
             String logFileName = FileType.LOG.addExtension(logId);
+            time("Exporting log to " + logFileName);
             try (PrintWriter logFile = new PrintWriter(new File(this.logDir, logFileName))) {
                 // copy the initial messages
                 logFile.print(this.log.toString());
