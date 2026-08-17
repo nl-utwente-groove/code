@@ -29,6 +29,7 @@ import nl.utwente.groove.grammar.AnchorKind;
 import nl.utwente.groove.grammar.aspect.AspectParser;
 import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.graph.ANode;
+import nl.utwente.groove.util.AIGenerated;
 
 /**
  * Implementation of graph elements that represent algebraic data values.
@@ -81,6 +82,21 @@ final public class ValueNode extends ANode implements HostNode {
         return super.equals(obj) && obj instanceof ValueNode other
             && Objects.equals(this.algebra, other.algebra)
             && Objects.equals(this.value, other.value);
+    }
+
+    /** The certificate seed of a value node is the value it represents. */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    @Override
+    public Object certificateSeed() {
+        return getValue();
+    }
+
+    /** A value node is completely identified by its value, independent
+     * of the surrounding graph structure. */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    @Override
+    public boolean hasIdentityCertificate() {
+        return true;
     }
 
     /**
