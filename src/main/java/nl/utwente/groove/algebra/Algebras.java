@@ -18,11 +18,17 @@ package nl.utwente.groove.algebra;
 
 import static nl.utwente.groove.util.Factory.lazy;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
 import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,6 +38,8 @@ import nl.utwente.groove.annotation.HelpMap;
 import nl.utwente.groove.annotation.OpSymbol;
 import nl.utwente.groove.annotation.ToolTipBody;
 import nl.utwente.groove.annotation.ToolTipHeader;
+import nl.utwente.groove.annotation.UserOperation;
+import nl.utwente.groove.annotation.UserType;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.HTMLConverter;
@@ -124,7 +132,7 @@ public class Algebras {
         for (var e : UserSignature.getMethods().entrySet()) {
             var name = e.getKey().getName();
             sigMap.put("Q" + name, name);
-            Help help = Help.createHelp(e.getValue(), sigMap);
+            Help help = createUserHelp(e.getValue(), sigMap);
             if (help != null) {
                 help
                     .addBody("<p style=\"margin-top:5;\"/>Declared in "
@@ -141,6 +149,47 @@ public class Algebras {
         UserSignature.addUser(() -> opDocMap.reset());
         return result;
     }
+
+    /**
+     * Creates a syntax help object for a user-defined operation, being either
+     * a {@link UserType}-annotated record constructor or a
+     * {@link UserOperation}-annotated method. The syntax line is derived from
+     * the signature, with the {@link Sort#USER} sort as optional prefix.
+     * Returns {@code null} if the executable is neither of the above.
+     */
+    private static Help createUserHelp(Executable exec, Map<String,String> tokenMap) {
+        String opName = null;
+        String resultSort = null;
+        var parNames = new LinkedList<String>();
+        switch (exec) {
+        case Constructor<?> c:
+            var claz = c.getDeclaringClass();
+            if (claz.getAnnotation(UserType.class) != null) {
+                opName = claz.getSimpleName();
+                resultSort = Sort.USER.name();
+            }
+            break;
+        case Method m:
+            if (m.getAnnotation(UserOperation.class) != null) {
+                opName = m.getName();
+                if (!Modifier.isStatic(m.getModifiers())) {
+                    parNames.add(SELF_NAME);
+                }
+                resultSort = Sort.toSort(m.getReturnType()).name();
+            }
+        }
+        Help result = null;
+        if (opName != null) {
+            Arrays.stream(exec.getParameters()).map(Parameter::getName).forEach(parNames::add);
+            String syntaxText = "[" + Sort.USER.name() + ":]Q" + opName;
+            syntaxText += Strings.toString(parNames.toArray(), "(", ")", ",");
+            result = Help.createOpHelp(exec, opName, syntaxText, resultSort, tokenMap);
+        }
+        return result;
+    }
+
+    /** Parameter name for the receiving object of a non-static user operation. */
+    static private final String SELF_NAME = "self";
 
     /** Syntax helper map for operators, from syntax items to associated tool tips. */
     private static final Factory<HelpMap> opDocMap = lazy(Algebras::computeOpDocMap);

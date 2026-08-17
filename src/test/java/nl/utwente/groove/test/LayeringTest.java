@@ -215,8 +215,6 @@ public class LayeringTest {
      */
     private static final Set<String> WHITELIST = Set
         .of(
-            // P2: annotation.Help derives sorts for user operations
-            "annotation -> algebra",
             // P2: RelationCalculator implements GTSListener
             "automaton -> lts",
             // P2: GrammarKey/GrammarProperties typed accessors for explore types
