@@ -71,6 +71,7 @@ module nl.utwente.groove {
     exports nl.utwente.groove.explore.util;
     exports nl.utwente.groove.prolog.builtin.rule;
     exports nl.utwente.groove.lts;
+    exports nl.utwente.groove.lts.export;
     exports nl.utwente.groove.util.cache;
     exports nl.utwente.groove.util.collect;
     exports nl.utwente.groove.util.io;
@@ -82,6 +83,9 @@ module nl.utwente.groove {
     provides nl.utwente.groove.grammar.model.SettingsSchema.Provider
         with nl.utwente.groove.io.external.format.ecore.EcoreMappingSchema.Provider,
         nl.utwente.groove.explore.config.ExploreConfigSchema.Provider;
+    uses nl.utwente.groove.io.external.Exporter.Provider;
+    provides nl.utwente.groove.io.external.Exporter.Provider
+        with nl.utwente.groove.lts.export.LTS2ControlExporter.Provider;
 
     requires antlr.complete;
     requires antlrworks;
