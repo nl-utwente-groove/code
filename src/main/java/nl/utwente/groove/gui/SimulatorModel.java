@@ -21,7 +21,6 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.explore.ExplorationListener;
-import nl.utwente.groove.explore.ExploreResult;
 import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreConfigSchema;
@@ -40,6 +39,7 @@ import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.io.store.SystemStore;
+import nl.utwente.groove.lts.ExploreResult;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSChangeListener;
 import nl.utwente.groove.lts.GTSCounter;

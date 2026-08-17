@@ -25,7 +25,6 @@ import java.util.List;
 
 import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.explore.ExplorationListener;
-import nl.utwente.groove.explore.ExploreResult;
 import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.GrammarKey;
@@ -37,6 +36,7 @@ import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.io.store.SystemStore;
+import nl.utwente.groove.lts.ExploreResult;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.util.QualName;

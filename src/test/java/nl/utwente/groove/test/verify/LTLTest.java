@@ -26,11 +26,11 @@ import org.junit.Test;
 
 import org.junit.Assert;
 import nl.utwente.groove.explore.Exploration;
-import nl.utwente.groove.explore.ExploreResult;
-import nl.utwente.groove.explore.ExploreResult.Lasso;
 import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.Generator;
 import nl.utwente.groove.explore.LTLExploreType;
+import nl.utwente.groove.lts.ExploreResult;
+import nl.utwente.groove.lts.ExploreResult.Lasso;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;

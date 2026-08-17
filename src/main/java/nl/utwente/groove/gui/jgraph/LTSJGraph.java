@@ -45,7 +45,6 @@ import javax.swing.SwingUtilities;
 import org.eclipse.jdt.annotation.NonNull;
 import org.jgraph.graph.GraphModel;
 
-import nl.utwente.groove.explore.ExploreResult;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.GraphRole;
@@ -56,6 +55,7 @@ import nl.utwente.groove.gui.layout.ForestLayouter;
 import nl.utwente.groove.gui.layout.Layouter;
 import nl.utwente.groove.gui.menu.ModelCheckingMenu;
 import nl.utwente.groove.gui.menu.MyJMenu;
+import nl.utwente.groove.lts.ExploreResult;
 import nl.utwente.groove.lts.Filter;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSFragment;

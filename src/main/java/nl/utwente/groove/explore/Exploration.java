@@ -23,6 +23,7 @@ import java.util.List;
 import nl.utwente.groove.explore.engine.Strategy;
 import nl.utwente.groove.explore.result.ResultCollector;
 import nl.utwente.groove.grammar.Grammar;
+import nl.utwente.groove.lts.ExploreResult;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.util.Reporter;

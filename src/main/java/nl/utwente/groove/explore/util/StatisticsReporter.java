@@ -27,7 +27,6 @@ import java.util.Formatter;
 import java.util.List;
 
 import nl.utwente.groove.explore.Exploration;
-import nl.utwente.groove.explore.ExploreResult;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.host.HostFactory;
 import nl.utwente.groove.graph.AGraph;
@@ -35,6 +34,7 @@ import nl.utwente.groove.graph.iso.CertificateStrategy;
 import nl.utwente.groove.graph.iso.IsoChecker;
 import nl.utwente.groove.graph.iso.PartitionRefiner;
 import nl.utwente.groove.lts.AbstractGraphState;
+import nl.utwente.groove.lts.ExploreResult;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSListener;
 import nl.utwente.groove.lts.GraphNextState;

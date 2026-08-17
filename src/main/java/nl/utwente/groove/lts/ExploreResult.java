@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.explore;
+package nl.utwente.groove.lts;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -26,12 +26,6 @@ import java.util.Set;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.lts.GTS;
-import nl.utwente.groove.lts.GTSFragment;
-import nl.utwente.groove.lts.GraphState;
-import nl.utwente.groove.lts.GraphTransition;
-import nl.utwente.groove.lts.StateProperty;
-import nl.utwente.groove.lts.UserStateProperty;
 import nl.utwente.groove.util.AIGenerated;
 
 /**

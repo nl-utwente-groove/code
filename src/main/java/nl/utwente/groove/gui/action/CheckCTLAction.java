@@ -5,11 +5,11 @@ import java.util.List;
 
 import javax.swing.JOptionPane;
 
-import nl.utwente.groove.explore.ExploreResult;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.dialog.StringDialog;
 import nl.utwente.groove.gui.display.DisplayKind;
+import nl.utwente.groove.lts.ExploreResult;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.StateProperty;
 import nl.utwente.groove.util.parse.FormatException;
