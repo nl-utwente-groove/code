@@ -19,7 +19,6 @@ package nl.utwente.groove.transform.oracle;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.grammar.GrammarProperties;
-import nl.utwente.groove.util.Properties;
 import nl.utwente.groove.util.Properties.ValueType;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -37,7 +36,8 @@ public interface ValueOracleFactory {
     /** Returns the kind of value oracle this factory produces. */
     public ValueOracleKind getKind();
 
-    /** Value type of {@link ValueOracleFactory}-valued property keys (see {@link Properties.Key}). */
+    /** Value type of {@link ValueOracleFactory}-valued property keys
+     * (see {@link nl.utwente.groove.util.Properties.Key}). */
     public static final ValueType<ValueOracleFactory> VALUE_TYPE
         = ValueType.of(ValueOracleFactory.class);
 }

@@ -17,7 +17,6 @@
 package nl.utwente.groove.grammar;
 
 import nl.utwente.groove.util.DocumentedEnum;
-import nl.utwente.groove.util.Properties;
 import nl.utwente.groove.util.Properties.ValueType;
 
 /**
@@ -74,6 +73,7 @@ public enum ParallelMode implements DocumentedEnum {
         return this == DPO;
     }
 
-    /** Value type of {@link ParallelMode}-valued property keys (see {@link Properties.Key}). */
+    /** Value type of {@link ParallelMode}-valued property keys
+     * (see {@link nl.utwente.groove.util.Properties.Key}). */
     public static final ValueType<ParallelMode> VALUE_TYPE = ValueType.of(ParallelMode.class);
 }
