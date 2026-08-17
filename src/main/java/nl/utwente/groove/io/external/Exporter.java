@@ -81,23 +81,4 @@ public interface Exporter {
         /** Instances of {@link ResourceModel}. */
         RESOURCE;
     }
-
-    /**
-     * Service interface through which exporters outside the io framework are
-     * contributed to {@link Exporters}, which loads all providers on the
-     * {@link java.util.ServiceLoader} when the registry is first consulted.
-     * The indirection through a provider keeps the exporter classes free to
-     * remain singletons: a provider has a public no-argument constructor, as
-     * required for class-path service loading, and hands out the existing
-     * instance. Implementations must be declared both in
-     * {@code META-INF/services/nl.utwente.groove.io.external.Exporter$Provider}
-     * (for class-path runs, in particular the installed application) and in a
-     * {@code provides} clause of {@code module-info.java} (for module-path
-     * runs). GUI-side exporters use {@link Exporters#register} instead, since
-     * they are only meaningful with the Simulator running.
-     */
-    public interface Provider {
-        /** Returns the contributed exporter instance. */
-        public Exporter getExporter();
-    }
 }
