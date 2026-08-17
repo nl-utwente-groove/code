@@ -157,6 +157,7 @@ public class Algebras {
      * the signature, with the {@link Sort#USER} sort as optional prefix.
      * Returns {@code null} if the executable is neither of the above.
      */
+    @SuppressWarnings("null")
     private static Help createUserHelp(Executable exec, Map<String,String> tokenMap) {
         String opName = null;
         String resultSort = null;
@@ -175,7 +176,9 @@ public class Algebras {
                 if (!Modifier.isStatic(m.getModifiers())) {
                     parNames.add(SELF_NAME);
                 }
-                resultSort = Sort.toSort(m.getReturnType()).name();
+                var sort = Sort.toSort(m.getReturnType());
+                assert sort != null; // guaranteed by the UserSignature validation
+                resultSort = sort.name();
             }
         }
         Help result = null;
