@@ -231,8 +231,6 @@ public class LayeringTest {
             "graph.iso -> grammar",
             // P2 (gh #891): AutIO uses ExplorationReporter stopwatch calls
             "io.graph -> explore",
-            // P2: transform.Phase/Record mention lts types
-            "transform -> lts",
             // P2: util.Properties.ValueType hard-codes domain value types
             "util -> algebra", "util -> explore", "util -> grammar", "util -> transform",
             // P2: ATermTreeParser bakes algebra.Sort into the tokenizer

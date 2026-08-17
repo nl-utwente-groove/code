@@ -25,7 +25,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.lts.Status.Flag;
-import nl.utwente.groove.transform.Phase;
 
 /**
  * Combination of graph and node functionality, used to store the state of a
