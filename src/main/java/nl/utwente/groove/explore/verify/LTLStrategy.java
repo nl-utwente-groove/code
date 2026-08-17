@@ -47,7 +47,6 @@ import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.verify.BuchiGraph;
 import nl.utwente.groove.verify.BuchiLocation;
 import nl.utwente.groove.verify.BuchiTransition;
-import nl.utwente.groove.verify.CycleAcceptor;
 import nl.utwente.groove.verify.ModelChecking.Record;
 import nl.utwente.groove.verify.ProductState;
 import nl.utwente.groove.verify.ProductStateSet;

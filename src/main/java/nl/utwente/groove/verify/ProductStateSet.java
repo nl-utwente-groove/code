@@ -19,6 +19,7 @@ package nl.utwente.groove.verify;
 import java.util.HashSet;
 import java.util.Set;
 
+import nl.utwente.groove.explore.verify.CycleAcceptor;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSListener;
 import nl.utwente.groove.lts.GraphState;
