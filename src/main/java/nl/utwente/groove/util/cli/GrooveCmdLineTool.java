@@ -18,6 +18,8 @@ package nl.utwente.groove.util.cli;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import org.eclipse.jdt.annotation.Nullable;
@@ -25,6 +27,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import picocli.CommandLine.Option;
 
 import nl.utwente.groove.explore.Verbosity;
+import nl.utwente.groove.util.Log;
 
 /**
  * Command-line tool superclass that implements help and verbosity options.
@@ -77,6 +80,7 @@ public abstract class GrooveCmdLineTool<T> {
             getParser().printHelp();
             return null;
         } else {
+            this.logSettings.forEach(Log.Setting::apply);
             return run();
         }
     }
@@ -110,6 +114,10 @@ public abstract class GrooveCmdLineTool<T> {
     @Option(names = VerbosityHandler.NAME, paramLabel = VerbosityHandler.VAR,
         description = VerbosityHandler.USAGE, converter = VerbosityHandler.class)
     private Verbosity verbosity = Verbosity.MEDIUM;
+
+    @Option(names = LogHandler.NAME, paramLabel = LogHandler.VAR,
+        description = LogHandler.USAGE, converter = LogHandler.class)
+    private List<Log.Setting> logSettings = new ArrayList<>();
 
     /**
      * Returns the parser used for parsing the command-line arguments
