@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.gui.dialog;
 
-import static nl.utwente.groove.explore.util.LTSLabels.PLACEHOLDER;
+import static nl.utwente.groove.lts.LTSLabels.PLACEHOLDER;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -50,11 +50,11 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import nl.utwente.groove.explore.util.LTSLabels;
-import nl.utwente.groove.explore.util.LTSLabels.Flag;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.UserSettings;
 import nl.utwente.groove.gui.UserSettings.Persistable;
+import nl.utwente.groove.lts.LTSLabels;
+import nl.utwente.groove.lts.LTSLabels.Flag;
 import nl.utwente.groove.util.Exceptions;
 
 /**

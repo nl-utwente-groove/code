@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.explore.result;
 
-import nl.utwente.groove.explore.ExploreResult;
+import nl.utwente.groove.lts.ExploreResult;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSListener;
 import nl.utwente.groove.lts.GraphState;

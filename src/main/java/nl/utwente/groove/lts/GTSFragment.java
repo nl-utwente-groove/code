@@ -30,8 +30,6 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.explore.ExploreResult;
-import nl.utwente.groove.explore.util.LTSLabels;
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.graph.AGraph;
 import nl.utwente.groove.graph.GGraph;

@@ -27,14 +27,14 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.syntax.Expression;
-import nl.utwente.groove.explore.util.LTSLabels;
-import nl.utwente.groove.explore.util.LTSLabels.Flag;
 import nl.utwente.groove.grammar.Action;
 import nl.utwente.groove.grammar.host.DefaultHostNode;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.host.ValueNode;
 import nl.utwente.groove.lts.ActionLabel;
 import nl.utwente.groove.lts.GTS;
+import nl.utwente.groove.lts.LTSLabels;
+import nl.utwente.groove.lts.LTSLabels.Flag;
 import nl.utwente.groove.lts.StateProperty;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.QualName;

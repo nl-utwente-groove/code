@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.explore.util;
+package nl.utwente.groove.lts;
 
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -28,8 +28,6 @@ import java.util.Set;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.explore.Generator;
-import nl.utwente.groove.lts.StateProperty;
 import nl.utwente.groove.util.Pair;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.StringHandler;
@@ -96,7 +94,8 @@ public class LTSLabels {
 
     /**
      * Constructs a flags object according to a specification
-     * formatted as described in {@link Generator}.
+     * formatted as described in the documentation of the Generator
+     * command-line tool.
      */
     public LTSLabels(String spec) throws FormatException {
         Pair<String,List<String>> parsedFlags = FLAG_PARSER.parse(spec);
