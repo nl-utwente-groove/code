@@ -48,6 +48,7 @@ import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.grammar.rule.RuleToHostMap;
 import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.graph.plain.PlainNode;
+import nl.utwente.groove.match.Proof;
 import nl.utwente.groove.match.TreeMatch;
 import nl.utwente.groove.transform.RuleEffect.Fragment;
 import nl.utwente.groove.util.Strings;
@@ -206,7 +207,7 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
 
     @Override
     public RuleEvent createEvent(Proof proof) {
-        return proof.newEvent(null);
+        return RuleEvent.createEvent(proof, null);
     }
 
     /**

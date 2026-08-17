@@ -23,7 +23,7 @@ import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologCollectionIterator;
 import gnu.prolog.vm.PrologException;
-import nl.utwente.groove.transform.Proof;
+import nl.utwente.groove.match.Proof;
 
 /**
  * Predicate rulematch_node(+RuleMatch,?Node)

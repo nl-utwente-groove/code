@@ -41,9 +41,9 @@ import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.grammar.rule.RuleToHostMap;
 import nl.utwente.groove.match.Matcher;
 import nl.utwente.groove.match.MatcherFactory;
+import nl.utwente.groove.match.Proof;
 import nl.utwente.groove.match.SearchStrategy;
 import nl.utwente.groove.match.TreeMatch;
-import nl.utwente.groove.transform.Proof;
 import nl.utwente.groove.util.Visitor;
 
 /**

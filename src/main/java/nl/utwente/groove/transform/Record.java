@@ -17,6 +17,7 @@ import nl.utwente.groove.grammar.RuleDependencies;
 import nl.utwente.groove.grammar.host.HostFactory;
 import nl.utwente.groove.grammar.rule.RuleToHostMap;
 import nl.utwente.groove.lts.RuleTransitionLabel;
+import nl.utwente.groove.match.Proof;
 import nl.utwente.groove.transform.RuleEvent.Reuse;
 import nl.utwente.groove.util.collect.Pool;
 
@@ -112,7 +113,7 @@ public class Record {
      * set, events are stored internally and reused.
      */
     public RuleEvent getEvent(Proof proof) {
-        return proof.newEvent(this);
+        return RuleEvent.createEvent(proof, this);
     }
 
     /**

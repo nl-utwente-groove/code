@@ -35,7 +35,6 @@ import nl.utwente.groove.grammar.rule.AnchorKey;
 import nl.utwente.groove.grammar.rule.RuleEdge;
 import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.grammar.rule.RuleToHostMap;
-import nl.utwente.groove.transform.Proof;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
 import nl.utwente.groove.util.Visitor;

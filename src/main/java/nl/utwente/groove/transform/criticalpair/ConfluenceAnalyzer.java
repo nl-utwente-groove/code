@@ -35,7 +35,7 @@ import nl.utwente.groove.grammar.rule.RuleToHostMap;
 import nl.utwente.groove.graph.Morphism;
 import nl.utwente.groove.graph.iso.IsoChecker;
 import nl.utwente.groove.graph.iso.IsoChecker.IsoCheckerState;
-import nl.utwente.groove.transform.Proof;
+import nl.utwente.groove.match.Proof;
 import nl.utwente.groove.transform.Record;
 import nl.utwente.groove.transform.RuleApplication;
 import nl.utwente.groove.transform.RuleEvent;
@@ -188,7 +188,7 @@ class ConfluenceAnalyzer {
             for (var prover : provers) {
                 Collection<Proof> matches = prover.getAllMatches(state.getHostGraph());
                 for (Proof proof : matches) {
-                    RuleEvent event = proof.newEvent(record);
+                    RuleEvent event = RuleEvent.createEvent(proof, record);
                     RuleApplication app = new RuleApplication(event, state.getHostGraph());
                     result
                         .add(new HostGraphWithMorphism(app.getTarget(),

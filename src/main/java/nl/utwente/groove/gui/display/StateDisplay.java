@@ -83,7 +83,7 @@ import nl.utwente.groove.lts.MatchResult;
 import nl.utwente.groove.lts.RecipeTransition;
 import nl.utwente.groove.lts.RuleTransition;
 import nl.utwente.groove.lts.StartGraphState;
-import nl.utwente.groove.transform.Proof;
+import nl.utwente.groove.match.Proof;
 import nl.utwente.groove.transform.RuleApplication;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.line.LineStyle;

@@ -41,6 +41,7 @@ import nl.utwente.groove.grammar.host.ValueNode;
 import nl.utwente.groove.grammar.rule.Anchor;
 import nl.utwente.groove.grammar.rule.AnchorKey;
 import nl.utwente.groove.grammar.rule.RuleNode;
+import nl.utwente.groove.match.Proof;
 import nl.utwente.groove.match.TreeMatch;
 import nl.utwente.groove.transform.oracle.ValueOracle;
 import nl.utwente.groove.util.Exceptions;
