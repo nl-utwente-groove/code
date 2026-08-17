@@ -127,6 +127,18 @@ the split introduces a root aggregator pom, make it own `revision` and pull the
 release modules into that reactor, eliminating the `-Drevision` handoff, the
 launch prompt, and the derivation steps in the script and workflow.
 
+The **checked-in Eclipse metadata** splits along with the build. `.classpath`,
+`.project` and `.settings/` are tracked and m2e-generated; after the split the
+root holds the aggregator project and core/gui/cli each need their own set.
+Two things not to lose in the copy: `.settings/org.eclipse.jdt.core.prefs`
+carries the whole null-analysis configuration (`annotation.nullanalysis=enabled`,
+`nullSpecViolation=error`, the `org.eclipse.jdt.annotation` type names), so a
+module that does not get it silently compiles without null checking; and
+`.settings/org.eclipse.jdt.apt.core.prefs` likewise. The `launch/` configs name
+the project explicitly (`PROJECT_ATTR` and, in `GROOVE - all JUnit tests`, a
+`runtimeClasspathEntry projectName="groove"`) and have to be retargeted —
+at which point the launch that runs the whole suite has to span three projects.
+
 ## Open decision: keep or drop `module-info` (2026-08-17)
 
 **To be settled before phase 5 starts**, because the deferred root-shim move
