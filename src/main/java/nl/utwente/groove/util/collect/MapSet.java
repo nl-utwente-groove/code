@@ -97,6 +97,7 @@ abstract public class MapSet<K,E> extends AbstractSet<E> implements Set<E> {
     @Override
     public void clear() {
         this.map.clear();
+        this.size = 0;
     }
 
     /** Retrieves the set of elements corresponding to a given key. */
