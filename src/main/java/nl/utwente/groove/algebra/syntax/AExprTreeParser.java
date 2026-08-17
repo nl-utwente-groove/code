@@ -14,10 +14,14 @@
  *
  * $Id$
  */
-package nl.utwente.groove.util.parse;
+package nl.utwente.groove.algebra.syntax;
 
 import static nl.utwente.groove.util.parse.ATermTreeParser.TokenClaz.CONST;
 import static nl.utwente.groove.util.parse.ATermTreeParser.TokenClaz.NAME;
+
+import nl.utwente.groove.util.parse.ATermTreeParser;
+import nl.utwente.groove.util.parse.FormatException;
+import nl.utwente.groove.util.parse.Op;
 
 /**
  * Extension of term tree parser that recognises identifiers and constants as atoms.

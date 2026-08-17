@@ -34,7 +34,6 @@ import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.util.Keywords;
 import nl.utwente.groove.util.NoNonNull;
-import nl.utwente.groove.util.parse.AExprTree;
 import nl.utwente.groove.util.parse.DefaultOp;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.OpKind;

@@ -14,10 +14,13 @@
  *
  * $Id$
  */
-package nl.utwente.groove.util.parse;
+package nl.utwente.groove.algebra.syntax;
 
 import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.grammar.QualName;
+import nl.utwente.groove.util.parse.ATermTree;
+import nl.utwente.groove.util.parse.Op;
+import nl.utwente.groove.util.parse.OpKind;
 
 /**
  * Abstract expression tree, to be instantiated with an operator type.
