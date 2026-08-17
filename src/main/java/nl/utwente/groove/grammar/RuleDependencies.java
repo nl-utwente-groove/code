@@ -166,7 +166,7 @@ public class RuleDependencies {
      * Constructs and returns a mapping from rules to the sets of labels
      * consumed by those rules.
      */
-    Map<Rule,Set<TypeElement>> getConsumedMap() {
+    public Map<Rule,Set<TypeElement>> getConsumedMap() {
         if (!this.rules.isEmpty() && this.consumedMap.isEmpty()) {
             collectCharacteristics();
         }
@@ -177,7 +177,7 @@ public class RuleDependencies {
      * Constructs and returns a mapping from rules to the sets of labels
      * occurring in a negative application condition.
      */
-    Map<Rule,Set<TypeElement>> getNegativeMap() {
+    public Map<Rule,Set<TypeElement>> getNegativeMap() {
         if (!this.rules.isEmpty() && this.negativeMap.isEmpty()) {
             collectCharacteristics();
         }
@@ -188,7 +188,7 @@ public class RuleDependencies {
      * Constructs and returns a mapping from rules to the sets of labels
      * occurring in a positive application condition.
      */
-    Map<Rule,Set<TypeElement>> getPositiveMap() {
+    public Map<Rule,Set<TypeElement>> getPositiveMap() {
         if (!this.rules.isEmpty() && this.positiveMap.isEmpty()) {
             collectCharacteristics();
         }
@@ -199,7 +199,7 @@ public class RuleDependencies {
      * Constructs and returns a mapping from rules to the sets of labels
      * produced by those rules.
      */
-    Map<Rule,Set<TypeElement>> getProducedElementMap() {
+    public Map<Rule,Set<TypeElement>> getProducedElementMap() {
         if (!this.rules.isEmpty() && this.producedMap.isEmpty()) {
             collectCharacteristics();
         }
