@@ -14,6 +14,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -62,22 +63,22 @@ import nl.utwente.groove.util.parse.SearchResult;
  * a transaction on this object.
  */
 public class SimulatorModel implements Cloneable {
-    /** Greates a model for a given Simulator. */
-    public SimulatorModel(Simulator simulator) {
-        this.simulator = simulator;
+    /** Creates a model, with a given selector for the boolean display options
+     * (identified by their {@link Options} names) that determine the
+     * visibility of states and matches.
+     * The Simulator passes in its options; a headless user can pass in
+     * any fixed or programmatic selection.
+     */
+    public SimulatorModel(Predicate<String> optionSelector) {
+        this.optionSelector = optionSelector;
     }
 
-    /** Returns the Simulator for which this is a model. */
-    private Simulator getSimulator() {
-        return this.simulator;
-    }
+    /** Selector for the boolean display options that determine visibility. */
+    private final Predicate<String> optionSelector;
 
-    /** The Simulator for which this is a model. */
-    private final Simulator simulator;
-
-    /** Convenience method to return the {@link Options} set in the Simulator. */
-    private Options getOptions() {
-        return getSimulator().getOptions();
+    /** Convenience method to test whether a given boolean display option is selected. */
+    private boolean isSelected(String option) {
+        return this.optionSelector.test(option);
     }
 
     /**
@@ -894,8 +895,8 @@ public class SimulatorModel implements Cloneable {
         if (state == null) {
             return true;
         }
-        return (getOptions().isSelected(Options.SHOW_RECIPE_STEPS_OPTION) || !state.isInner())
-            && (getOptions().isSelected(Options.SHOW_ABSENT_STATES_OPTION) || !state.isAbsent());
+        return (isSelected(Options.SHOW_RECIPE_STEPS_OPTION) || !state.isInner())
+            && (isSelected(Options.SHOW_ABSENT_STATES_OPTION) || !state.isAbsent());
     }
 
     /** Checks if a given match result is visible according to the current options setting. */
@@ -905,8 +906,8 @@ public class SimulatorModel implements Cloneable {
             if (trans == null) {
                 return true;
             } else {
-                return (getOptions().isSelected(Options.SHOW_RECIPE_STEPS_OPTION)
-                    || !trans.isInnerStep()) && isVisible(trans.target());
+                return (isSelected(Options.SHOW_RECIPE_STEPS_OPTION) || !trans.isInnerStep())
+                    && isVisible(trans.target());
             }
         } else {
             return true;

@@ -44,13 +44,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.Consumer;
 
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoableEdit;
-import javax.swing.undo.UndoableEditSupport;
 
 import org.eclipse.jdt.annotation.NonNull;
 
@@ -83,7 +83,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class SystemStore extends UndoableEditSupport implements GrammarSource {
+public class SystemStore implements GrammarSource {
     /** Error message if a grammar cannot be loaded. */
     private static final String LOAD_ERROR = "Can't load graph grammar";
 
@@ -521,7 +521,7 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
         }
         GrammarProperties newProperties = this.properties.relabel(oldLabel, newLabel);
         if (newProperties != this.properties) {
-            Edit edit = doPutProperties(newProperties);
+            var edit = doPutProperties(newProperties);
             result.addEdit(edit);
         }
         result.end();
@@ -958,14 +958,33 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
         return new File(basis, kind.getFileType().addExtension(shortName));
     }
 
-    /** Posts the edit, and also notifies the observers. */
-    @Override
-    public synchronized void postEdit(UndoableEdit e) {
+    /** Posts the edit to the edit listeners, and also notifies the observers. */
+    private synchronized void postEdit(Edit e) {
         if (!isUndoSuspended()) {
-            super.postEdit(e);
-            notifyObservers((Edit) e);
+            for (var listener : this.editListeners) {
+                listener.accept(e);
+            }
+            notifyObservers(e);
         }
     }
+
+    /**
+     * Adds a listener that is notified of every posted {@link Edit}.
+     * Used by the GUI to maintain an undo history. In contrast to the
+     * observers, edit listeners are not notified of a {@link #reload()},
+     * which must not become undoable.
+     */
+    public void addEditListener(Consumer<Edit> listener) {
+        this.editListeners.add(listener);
+    }
+
+    /** Removes a listener registered with {@link #addEditListener(Consumer)}. */
+    public void removeEditListener(Consumer<Edit> listener) {
+        this.editListeners.remove(listener);
+    }
+
+    /** The listeners notified of posted edits. */
+    private final List<Consumer<Edit>> editListeners = new ArrayList<>();
 
     /**
      * Adds an observer to the model.
@@ -1000,8 +1019,12 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
     /** Flag indicating whether the store has been loaded. */
     private boolean initialised;
 
-    /** Edit object for system stores. */
-    public static interface Edit extends UndoableEdit {
+    /**
+     * Edit object for system stores.
+     * The interface itself is Swing-free; the implementations double as
+     * {@link UndoableEdit}s, which the GUI relies on for its undo history.
+     */
+    public static interface Edit {
         /**
          * Returns the set of changes of this edit.
          */

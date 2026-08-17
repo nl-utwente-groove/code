@@ -189,60 +189,66 @@ public class RuleTree extends AbstractResourceTree {
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel, Set<Change> changes) {
         if (suspendListening()) {
-            boolean renewSelection = false;
-            if (changes.contains(GRAMMAR)) {
-                GrammarModel grammar = source.getGrammar();
-                if (grammar == null) {
-                    this.clearAllMaps();
-                    this.topDirectoryNode.removeAllChildren();
-                    this.ruleDirectory.reload();
-                } else {
-                    loadGrammar(grammar);
-                }
-                refresh(source.getState());
-                renewSelection = true;
-            } else {
-                if (changes.contains(GTS) || changes.contains(STATE) || changes.contains(TRACE)) {
-                    // if the GTS has changed, this may mean that the state
-                    // displayed here has been closed, in which case we have to refresh
-                    // since the rule events have been changed into transitions
+            try {
+                boolean renewSelection = false;
+                if (changes.contains(GRAMMAR)) {
+                    GrammarModel grammar = source.getGrammar();
+                    if (grammar == null) {
+                        this.clearAllMaps();
+                        this.topDirectoryNode.removeAllChildren();
+                        this.ruleDirectory.reload();
+                    } else {
+                        loadGrammar(grammar);
+                    }
                     refresh(source.getState());
                     renewSelection = true;
-                }
-                if (changes.contains(MATCH) || changes.contains(RULE)) {
-                    renewSelection = true;
-                }
-            }
-            if (renewSelection) {
-                DisplayTreeNode node = null;
-                if (source.hasTransition()) {
-                    var trans = source.getTransition();
-                    if (trans instanceof RuleTransition ruleTrans) {
-                        node = this.actionMatchNodeMap.get(ruleTrans.getKey());
-                    } else {
-                        node = this.recipeTransitionNodeMap
-                            .get(((RecipeTransition) trans).getKey());
-                    }
-                } else if (source.hasMatch()) {
-                    var match = source.getMatch();
-                    node = this.actionMatchNodeMap.get(match);
                 } else {
-                    var rule = source.getResource(ResourceKind.RULE);
-                    if (rule != null) {
-                        node = this.actionNodeMap.get(rule.getQualName());
+                    if (changes.contains(GTS) || changes.contains(STATE)
+                        || changes.contains(TRACE)) {
+                        // if the GTS has changed, this may mean that the state
+                        // displayed here has been closed, in which case we have to refresh
+                        // since the rule events have been changed into transitions
+                        refresh(source.getState());
+                        renewSelection = true;
+                    }
+                    if (changes.contains(MATCH) || changes.contains(RULE)) {
+                        renewSelection = true;
                     }
                 }
-                TreePath path = null;
-                if (node != null) {
-                    path = new TreePath(node.getPath());
+                if (renewSelection) {
+                    DisplayTreeNode node = null;
+                    if (source.hasTransition()) {
+                        var trans = source.getTransition();
+                        if (trans instanceof RuleTransition ruleTrans) {
+                            node = this.actionMatchNodeMap.get(ruleTrans.getKey());
+                        } else {
+                            node = this.recipeTransitionNodeMap
+                                .get(((RecipeTransition) trans).getKey());
+                        }
+                    } else if (source.hasMatch()) {
+                        var match = source.getMatch();
+                        node = this.actionMatchNodeMap.get(match);
+                    } else {
+                        var rule = source.getResource(ResourceKind.RULE);
+                        if (rule != null) {
+                            node = this.actionNodeMap.get(rule.getQualName());
+                        }
+                    }
+                    TreePath path = null;
+                    if (node != null) {
+                        path = new TreePath(node.getPath());
+                    }
+                    setSelectionPath(path);
+                    if (path != null) {
+                        scrollPathToVisible(path);
+                    }
                 }
-                setSelectionPath(path);
-                if (path != null) {
-                    scrollPathToVisible(path);
-                }
+                selectSiblings();
+            } finally {
+                // always resume listening, also if the update failed halfway:
+                // a suspended tree silently ignores all further updates
+                activateListening();
             }
-            selectSiblings();
-            activateListening();
         }
     }
 
@@ -315,10 +321,19 @@ public class RuleTree extends AbstractResourceTree {
         setSelectionPaths(selectedPaths.toArray(new TreePath[0]));
     }
 
-    /** Clears all maps of the tree. */
+    /**
+     * Clears all maps of the tree, without firing node-removal events.
+     * Only to be used when the entire tree is reloaded straight afterwards:
+     * per-node removal events cause the UI to re-render the remaining nodes,
+     * which at this point may refer to resources of a grammar that is no
+     * longer the current one.
+     */
     private void clearAllMaps() {
         this.actionNodeMap.clear();
-        clearMatchNodeMaps();
+        this.actionMatchNodeMap.clear();
+        this.recipeTransitionNodeMap.clear();
+        this.recipeMatchNodeMap.clear();
+        this.ongoingRecipeNode = null;
     }
 
     /**
