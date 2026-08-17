@@ -399,7 +399,8 @@ public class ExplorationTest {
      * @return the explored GTS
      */
     protected GTS testExploration(String grammarName, int nodeCount, int edgeCount) {
-        return testExploration(grammarName, Groove.DEFAULT_START_GRAPH_NAME, nodeCount, edgeCount);
+        return testExploration(grammarName, ResourceKind.HOST.getDefaultName().get().toString(),
+                               nodeCount, edgeCount);
     }
 
     private GrammarModel loadGrammar(String grammarName, String startGraphName) {

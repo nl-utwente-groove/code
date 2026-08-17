@@ -62,7 +62,6 @@ import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.type.TypeLabel;
-import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.io.graph.AttrGraph;
 import nl.utwente.groove.io.graph.GxlIO;
 import nl.utwente.groove.io.graph.NodeNrDispenser;
@@ -816,7 +815,7 @@ public class SystemStore implements GrammarSource {
         if (kind != ResourceKind.SETTINGS) {
             return false;
         }
-        if (name.get(0).equals(Groove.PROPERTY_NAME)) {
+        if (name.get(0).equals(PROPERTIES.getDefaultName().get().toString())) {
             return true;
         }
         return this.legacyPropertiesFile && name.size() == 1
@@ -873,7 +872,8 @@ public class SystemStore implements GrammarSource {
 
     /** Returns the file that by default holds the system properties. */
     private File getDefaultPropertiesFile() {
-        return new File(this.file, PROPERTIES.getFileType().addExtension(Groove.PROPERTY_NAME));
+        return new File(this.file,
+            PROPERTIES.getFileType().addExtension(PROPERTIES.getDefaultName().get().toString()));
     }
 
     /** Returns the file that held the system properties in the distant past. */

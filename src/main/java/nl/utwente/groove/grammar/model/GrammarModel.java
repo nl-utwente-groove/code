@@ -56,7 +56,6 @@ import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.GraphRole;
-import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.io.store.EditType;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.prolog.GrooveEnvironment;
@@ -86,7 +85,7 @@ public class GrammarModel implements PropertyChangeListener {
         boolean noActiveStartGraphs = store.getProperties().getActiveNames(HOST).isEmpty();
         if (Version.compareGrammarVersions(grammarVersion, Version.GRAMMAR_VERSION_3_2) < 0
             && noActiveStartGraphs) {
-            setLocalActiveNames(HOST, QualName.name(Groove.DEFAULT_START_GRAPH_NAME));
+            setLocalActiveNames(HOST, HOST.getDefaultName().get());
         }
         syncResources(ResourceKind.all(true));
     }
