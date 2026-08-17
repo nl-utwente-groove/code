@@ -29,7 +29,7 @@ import org.eclipse.jdt.annotation.NonNull;
 import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.algebra.Sort;
-import nl.utwente.groove.grammar.type.TypeLabel;
+import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.parse.OpKind;
 import nl.utwente.groove.util.parse.OpKind.Direction;
@@ -95,7 +95,7 @@ public final class CallExpr extends Expression {
     }
 
     @Override
-    public Expression relabel(TypeLabel oldLabel, TypeLabel newLabel) {
+    public Expression relabel(Label oldLabel, Label newLabel) {
         CallExpr result = this;
         if (oldLabel.getRole() == BINARY) {
             List<Expression> newArgs = new ArrayList<>();
