@@ -289,6 +289,10 @@ public class GTSFragment extends AGraph<GraphState,GraphTransition> {
             }
             PlainNode sourceImage = nodeMap.get(transition.source());
             PlainNode targetImage = nodeMap.get(transition.target());
+            // don't include transitions of which an end state was left out
+            if (sourceImage == null || targetImage == null) {
+                continue;
+            }
             result.addEdge(sourceImage, transition.label().text(), targetImage);
         }
         return result;

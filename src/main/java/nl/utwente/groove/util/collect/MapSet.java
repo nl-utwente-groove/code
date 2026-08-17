@@ -58,7 +58,8 @@ abstract public class MapSet<K,E> extends AbstractSet<E> implements Set<E> {
         boolean result = false;
         K key = getKey(o);
         if (key != null) {
-            result = this.map.get(key).contains(o);
+            Set<E> set = this.map.get(key);
+            result = set != null && set.contains(o);
         }
         return result;
     }

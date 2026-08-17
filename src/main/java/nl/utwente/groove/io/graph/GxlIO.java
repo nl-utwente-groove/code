@@ -514,10 +514,13 @@ public class GxlIO extends GraphIO<AttrGraph> {
         }
         GraphInfo.setProperties(graph, properties);
         String roleName = gxlGraph.getRole();
-        graph
-            .setRole(roleName == null
-                ? GraphRole.HOST
-                : GraphRole.roles.get(roleName));
+        GraphRole role = roleName == null
+            ? GraphRole.HOST
+            : GraphRole.roles.get(roleName);
+        if (role == null) {
+            throw new FormatException("Unknown graph role %s", roleName);
+        }
+        graph.setRole(role);
         // the graph is simple unless the edgeids flag declares edge identities;
         // LTS graphs are non-simple regardless, for backward compatibility with
         // LTS files saved by older versions, which may contain parallel edges

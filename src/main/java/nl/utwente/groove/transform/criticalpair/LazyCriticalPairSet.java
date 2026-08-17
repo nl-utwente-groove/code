@@ -145,7 +145,8 @@ class LazyCriticalPairSet implements Set<CriticalPair> {
             if (this.ruleTuplesToProcess.contains(tuple)) {
                 return computePairs(tuple).contains(pair);
             } else {
-                return this.pairMap.containsKey(tuple) && this.pairMap.get(tuple).contains(pair);
+                LinkedHashSet<CriticalPair> pairSet = this.pairMap.get(tuple);
+                return pairSet != null && pairSet.contains(pair);
             }
         } else {
             return false;
@@ -284,8 +285,9 @@ class LazyCriticalPairSet implements Set<CriticalPair> {
             if (this.ruleTuplesToProcess.contains(tuple)) {
                 computePairs(tuple);
             }
-            if (this.pairMap.get(tuple) != null) {
-                return this.pairMap.get(tuple).remove(pair);
+            LinkedHashSet<CriticalPair> pairSet = this.pairMap.get(tuple);
+            if (pairSet != null) {
+                return pairSet.remove(pair);
             }
         }
         return false;
