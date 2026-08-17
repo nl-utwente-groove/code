@@ -1049,35 +1049,19 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
             return this.type;
         }
 
+        /** Bumps the stored version stamp to the current version, if it is older.
+         * The bump is not part of the undoable change: undoing the edit rewrites
+         * the resource files through the current version's marshaller, so the
+         * stamp remains truthful only if it survives the undo.
+         */
         public void checkAndSetVersion() {
             if (!getProperties().isCurrentVersionProperties()) {
-                this.origProp = getProperties().clone();
                 getProperties().setCurrentVersionProperties();
                 try {
                     saveProperties();
                 } catch (IOException e) {
                     // Silently fail..?
                 }
-            }
-        }
-
-        @Override
-        public void redo() throws CannotRedoException {
-            super.redo();
-            this.checkAndSetVersion();
-        }
-
-        @Override
-        public void undo() throws CannotUndoException {
-            super.undo();
-            try {
-                if (this.origProp != null) {
-                    SystemStore.this.properties = this.origProp;
-                    saveProperties();
-                    this.origProp = null;
-                }
-            } catch (IOException exc) {
-                throw new CannotUndoException();
             }
         }
 
@@ -1099,8 +1083,6 @@ public class SystemStore extends UndoableEditSupport implements GrammarSource {
          * @see #getChange()
          */
         private final Set<ResourceKind> change;
-
-        private GrammarProperties origProp = null;
     }
 
     /** Edit consisting of additions and deletions of text-based resources. */
