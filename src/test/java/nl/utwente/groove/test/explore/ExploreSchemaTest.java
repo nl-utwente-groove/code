@@ -216,7 +216,7 @@ public class ExploreSchemaTest {
         assertEquals(QualName.name("fast"), grammar.getProperties().getExplorationName());
         model = (SettingsModel) grammar.getResource(ResourceKind.SETTINGS, name);
         assertTrue(model.isActive());
-        assertEquals(ExploreConfig.parse("next=newest"), grammar.getDefaultExploreConfig());
+        assertEquals(ExploreConfig.parse("next=newest"), ExploreConfig.ofGrammar(grammar));
         // deactivation removes the reference again
         props = grammar.getProperties().clone();
         schema.setActive(props, name, false);
@@ -284,7 +284,7 @@ public class ExploreSchemaTest {
         store.putProperties(props);
         assertTrue(schema.isActive(grammar, name));
         assertEquals(name, schema.getResourceName(local));
-        assertEquals(ExploreConfig.parse("next=newest"), grammar.getDefaultExploreConfig());
+        assertEquals(ExploreConfig.parse("next=newest"), ExploreConfig.ofGrammar(grammar));
     }
 
     /** Tests that the generated template is valid and semantically empty. */

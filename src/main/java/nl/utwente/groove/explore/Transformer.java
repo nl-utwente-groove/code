@@ -339,7 +339,7 @@ public class Transformer {
 
     private ExploreType computeExploreType() {
         ExploreType result = this.fixedExploreType == null
-            ? getGrammarModel().getDefaultExploreType()
+            ? ExploreType.ofGrammar(getGrammarModel())
             : this.fixedExploreType;
         if (hasResultCount() && getResultCount() != result.getResultCount()) {
             result = result.withResultCount(getResultCount());

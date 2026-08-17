@@ -19,7 +19,6 @@ import java.util.TreeSet;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.AlgebraFamily;
-import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.grammar.CheckPolicy.PolicyMap;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
@@ -347,8 +346,8 @@ public class GrammarProperties extends Properties {
      * default exploration configuration — the name within the {@code explore}
      * folder, so {@code fast} for the resource {@code explore.fast} — or
      * {@code null} if the property is unset or unparsable. Resolution of the
-     * name against the settings resources happens at the grammar model level
-     * (see {@code GrammarModel#getDefaultExploreType()}).
+     * name against the settings resources happens in the explore layer
+     * (see {@code ExploreType#ofGrammar(GrammarModel)}).
      */
     public @Nullable QualName getExplorationName() {
         if (!containsKey(GrammarKey.EXPLORE_CONFIG)) {
@@ -381,16 +380,6 @@ public class GrammarProperties extends Properties {
      */
     public void removeExplorationName() {
         remove(GrammarKey.EXPLORE_CONFIG);
-    }
-
-    /**
-     * Returns the exploration type stored in the deprecated legacy
-     * exploration strategy key, or {@link ExploreType#getDefault()} if that key is
-     * unset. Only consulted when the exploration reference (see
-     * {@link #getExplorationName()}) is absent.
-     */
-    public ExploreType getLegacyExploreType() {
-        return parsePropertyOrDefault(GrammarKey.EXPLORATION).value(ExploreType.VALUE_TYPE);
     }
 
     /**
@@ -780,7 +769,7 @@ public class GrammarProperties extends Properties {
         // Note: the legacy exploration strategy key is NOT converted here.
         // The 'exploration' key names a settings resource, and creating a
         // resource is beyond a properties-level repair; the read-time
-        // fallback (see getLegacyExploreType) interprets the legacy key
+        // fallback (see ExploreType#ofLegacy) interprets the legacy key
         // indefinitely, and the first dialog save migrates it.
         return result;
     }

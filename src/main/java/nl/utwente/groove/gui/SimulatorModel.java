@@ -1346,14 +1346,14 @@ public class SimulatorModel implements Cloneable {
      * Returns the simulator's exploration, which is always the exploration
      * saved with the grammar: the settings resource referenced by the
      * {@code exploration} property, or the legacy/default exploration if there
-     * is no such reference (see {@link GrammarModel#getDefaultExploreType()}).
+     * is no such reference (see {@link ExploreType#ofGrammar(GrammarModel)}).
      * There is no transient exploration: custom explorations (such as those of
      * a model-checking run) are passed to
      * {@code ExploreAction#explore(ExploreType)} directly and are not stored.
      */
     public ExploreType getExploreType() {
         return hasGrammar()
-            ? getGrammar().getDefaultExploreType()
+            ? ExploreType.ofGrammar(getGrammar())
             : ExploreType.getDefault();
     }
 

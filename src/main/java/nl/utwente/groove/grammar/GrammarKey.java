@@ -30,8 +30,6 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.algebra.UserSignature;
-import nl.utwente.groove.explore.ExploreType;
-import nl.utwente.groove.explore.config.LegacySyntaxParser;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.RuleModel;
@@ -202,13 +200,15 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
         CheckPolicy.VALUE_TYPE),
 
     /**
-     * Exploration strategy description.
-     * Superseded by {@link #EXPLORE_CONFIG}; still recognised for backward
-     * compatibility, but ignored if {@link #EXPLORE_CONFIG} is also set.
+     * Exploration strategy description, in the legacy strategy/acceptor
+     * syntax. Superseded by {@link #EXPLORE_CONFIG}; still recognised for
+     * backward compatibility, but ignored if {@link #EXPLORE_CONFIG} is also
+     * set. Stored as an uninterpreted string: the syntax is owned and parsed
+     * by the exploration subsystem (see {@code ExploreType#ofLegacy}).
      */
     EXPLORATION("explorationStrategy", "Default exploration strategy for this grammar"
         + "<p><b>(Deprecated; superseded by 'exploration')</b>",
-        ExploreType.VALUE_TYPE),
+        ValueType.STRING),
 
     /**
      * Name of the default exploration configuration.
@@ -342,7 +342,6 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
             case ACTION_POLICY -> CheckPolicy.multiParser;
             case DEAD_POLICY -> new Parser.EnumParser<>(CheckPolicy.class, CheckPolicy.OFF,
                 convert("off", null, "error", null));
-            case EXPLORATION -> LegacySyntaxParser.parser();
             case EXPLORE_CONFIG -> new Parser.OptionalParser<>(QualName.parser());
             case TRANSITION_PARAMETERS -> new Parser.EnumParser<>(ThreeValued.class,
                 ThreeValued.SOME, true);
