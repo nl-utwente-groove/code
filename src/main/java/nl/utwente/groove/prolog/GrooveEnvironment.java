@@ -43,6 +43,11 @@ import gnu.prolog.term.CompoundTermTag;
 import gnu.prolog.vm.Environment;
 import gnu.prolog.vm.PrologCode;
 import gnu.prolog.vm.PrologException;
+import nl.utwente.groove.grammar.Grammar;
+import nl.utwente.groove.grammar.model.GrammarModel;
+import nl.utwente.groove.grammar.model.NamedResourceModel;
+import nl.utwente.groove.grammar.model.PrologModel;
+import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.prolog.builtin.AlgebraPredicates;
 import nl.utwente.groove.prolog.builtin.GraphPredicates;
 import nl.utwente.groove.prolog.builtin.GroovePredicates;
@@ -195,6 +200,49 @@ public class GrooveEnvironment extends Environment {
                     className);
             }
         }
+    }
+
+    /**
+     * Creates an environment loaded with the active prolog programs of a
+     * given grammar model, using the default input and output streams.
+     * A program that fails to load is skipped; the load errors are recorded
+     * on the corresponding resource model (and cleared again on a successful
+     * load), which is how prolog errors surface on the grammar (see
+     * {@code GrammarModel#initGrammar} and {@link PrologValidator}).
+     */
+    public static GrooveEnvironment ofGrammar(GrammarModel grammar) {
+        var result = new GrooveEnvironment(null, null);
+        for (NamedResourceModel<?> model : grammar.getResourceSet(ResourceKind.PROLOG)) {
+            PrologModel prologModel = (PrologModel) model;
+            if (model.isActive()) {
+                try {
+                    result.loadProgram(prologModel.getProgram());
+                    prologModel.clearErrors();
+                } catch (FormatException e) {
+                    prologModel.setErrors(e.getErrors());
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Creates an environment loaded with the prolog programs carried by a
+     * given (compiled) grammar, using the default input and output streams.
+     * @throws FormatException if one of the programs fails to load; this is
+     * unexpected, since the programs were validated when the grammar was built
+     */
+    public static GrooveEnvironment ofGrammar(Grammar grammar) throws FormatException {
+        var result = new GrooveEnvironment(null, null);
+        for (var entry : grammar.getPrologPrograms().entrySet()) {
+            try {
+                result.loadProgram(entry.getValue());
+            } catch (FormatException e) {
+                throw new FormatException("Error in prolog program '%s': %s", entry.getKey(),
+                    e.getMessage());
+            }
+        }
+        return result;
     }
 
     /** Loads Prolog declarations from a program, given as a string. */

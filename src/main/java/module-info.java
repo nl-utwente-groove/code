@@ -82,6 +82,9 @@ module nl.utwente.groove {
     provides nl.utwente.groove.grammar.model.SettingsSchema.Provider
         with nl.utwente.groove.io.external.format.ecore.EcoreMappingSchema.Provider,
         nl.utwente.groove.explore.config.ExploreConfigSchema.Provider;
+    uses nl.utwente.groove.grammar.model.ResourceValidator;
+    provides nl.utwente.groove.grammar.model.ResourceValidator
+        with nl.utwente.groove.prolog.PrologValidator;
 
     requires antlr.complete;
     requires antlrworks;

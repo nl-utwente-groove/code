@@ -215,12 +215,8 @@ public class LayeringTest {
      */
     private static final Set<String> WHITELIST = Set
         .of(
-            // P2: Grammar carries the prolog environment
-            "grammar -> prolog",
             // accepted: GrammarModel <-> SystemStore editable-model/backing-store pair
             "grammar.model -> io",
-            // P2: GrammarModel loads .pro resources for validation
-            "grammar.model -> prolog",
             // P2 (gh #891): AutIO uses ExplorationReporter stopwatch calls
             "io.graph -> explore",
             // P2: ATermTreeParser bakes algebra.Sort into the tokenizer
