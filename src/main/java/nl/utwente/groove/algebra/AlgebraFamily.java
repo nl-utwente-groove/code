@@ -39,7 +39,6 @@ import nl.utwente.groove.algebra.syntax.Expression.Kind;
 import nl.utwente.groove.algebra.syntax.Variable;
 import nl.utwente.groove.util.DocumentedEnum;
 import nl.utwente.groove.util.Exceptions;
-import nl.utwente.groove.util.Properties;
 import nl.utwente.groove.util.Properties.ValueType;
 
 /**
@@ -344,7 +343,8 @@ public enum AlgebraFamily implements DocumentedEnum {
         }
     }
 
-    /** Value type of {@link AlgebraFamily}-valued property keys (see {@link Properties.Key}). */
+    /** Value type of {@link AlgebraFamily}-valued property keys
+     * (see {@link nl.utwente.groove.util.Properties.Key}). */
     public static final ValueType<AlgebraFamily> VALUE_TYPE = ValueType.of(AlgebraFamily.class);
 
     /** Implementation of a system-provided operator. */
