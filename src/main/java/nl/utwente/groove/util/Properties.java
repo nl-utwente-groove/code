@@ -57,6 +57,13 @@ import nl.utwente.groove.util.parse.Parser;
  * <li> parsing and unparsing between {@link String}s and {@link Entry}s
  * <li> wrapping and unwrapping between {@link Entry}s and the actual values for the corresponding keys
  * </ul>
+ * The stored representation is canonical: a value that parses to its key's
+ * default value is never stored, but rather removed from the map (see
+ * {@link #setProperty(String, String)}, through which all mutations and
+ * {@link #load(InputStream)} are funnelled). Consequently, equality of the
+ * underlying map coincides with equality of the effective (parsed) values of
+ * all keys, and {@link #equals(Object)} and {@link #hashCode()} delegate to
+ * the underlying map.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -157,6 +164,26 @@ public abstract class Properties implements Fixable {
             }
         }
         return result.toString();
+    }
+
+    /** Content-based equality: two property maps are equal if they are of the
+     * same class and their stored entries coincide. Because the stored
+     * representation is canonical (values parsing to their key's default are
+     * never stored), this coincides with equality of the effective values of
+     * all keys. Fixedness (see {@link Fixable}) does not enter into the
+     * comparison.
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    @Override
+    public synchronized boolean equals(Object obj) {
+        return this == obj || obj != null && getClass() == obj.getClass()
+            && getProperties().equals(((Properties) obj).getProperties());
+    }
+
+    @AIGenerated("Claude Fable 5, 2026-08")
+    @Override
+    public synchronized int hashCode() {
+        return getProperties().hashCode();
     }
 
     /** Retrieves and parses the stored value for a given key.
