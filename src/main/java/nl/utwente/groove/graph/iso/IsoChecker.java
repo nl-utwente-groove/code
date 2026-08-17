@@ -34,16 +34,11 @@ import nl.utwente.groove.graph.AGraph;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.EdgeComparator;
 import nl.utwente.groove.graph.Graph;
-import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Morphism;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.iso.CertificateStrategy.EdgeCertificate;
 import nl.utwente.groove.graph.iso.CertificateStrategy.ElementCertificate;
 import nl.utwente.groove.graph.iso.CertificateStrategy.NodeCertificate;
-import nl.utwente.groove.graph.plain.PlainEdge;
-import nl.utwente.groove.graph.plain.PlainGraph;
-import nl.utwente.groove.graph.plain.PlainMorphism;
-import nl.utwente.groove.graph.plain.PlainNode;
 import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.util.Reporter;
 import nl.utwente.groove.util.collect.Bag;
@@ -1055,61 +1050,6 @@ public class IsoChecker {
      */
     static public int getDistinctSimCount() {
         return distinctSimCount;
-    }
-
-    /**
-     * If called with two file names, compares the graphs stored in those files
-     * and reports whether they are isomorphic.
-     */
-    public static void main(String[] args) {
-        try {
-            if (args.length == 1) {
-                testIso(args[0]);
-            } else if (args.length == 2) {
-                compareGraphs(args[0], args[1]);
-            } else {
-                System.out.println("Usage: DefaultIsoChecker file1 file2");
-                return;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void testIso(String name) throws IOException {
-        PlainGraph graph1 = Groove.loadGraph(name);
-        IsoChecker checker = getInstance(true);
-        System.out
-            .printf("Graph certificate: %s%n",
-                    checker.getCertifier(graph1, true).getGraphCertificate());
-        for (int i = 0; i < 1000; i++) {
-            PlainGraph graph2 = new PlainGraph(name, GraphRole.NONE);
-            PlainMorphism nodeMap = new PlainMorphism(graph2.getFactory());
-            for (PlainNode node : graph1.nodeSet()) {
-                PlainNode newNode = graph2.addNode();
-                nodeMap.putNode(node, newNode);
-            }
-            for (PlainEdge edge : graph1.edgeSet()) {
-                var image = nodeMap.mapEdge(edge);
-                assert image != null;
-                graph2.addEdgeContext(image);
-            }
-            if (!checker.areIsomorphic(graph1, graph2)) {
-                System.out.println("Error! Graph not isomorphic to itself");
-            }
-        }
-    }
-
-    @SuppressWarnings({})
-    private static void compareGraphs(String name1, String name2) throws IOException {
-        PlainGraph graph1 = Groove.loadGraph(name1);
-        PlainGraph graph2 = Groove.loadGraph(name2);
-        System.out.printf("Graphs '%s' and '%s' isomorphic?%n", name1, name2);
-        System.out
-            .printf("Done. Result: %b%n",
-                    (IsoChecker.getInstance(true)).areIsomorphic(graph1, graph2));
-        System.out.printf("Certification time: %d%n", getCertifyingTime());
-        System.out.printf("Simulation time: %d%n", getSimCheckTime());
     }
 
     /** The singleton strong instance of this class. */
