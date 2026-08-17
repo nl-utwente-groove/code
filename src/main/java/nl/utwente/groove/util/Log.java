@@ -33,7 +33,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 /**
  * Bootstrap for runtime-switchable diagnostic logging (see gh #891).
  * <p>
- * Diagnostic messages are emitted through {@link System.Logger} (JEP 264),
+ * Diagnostic messages are emitted through {@link Logger System.Logger} (JEP 264),
  * which is zero-dependency and can be redirected by an embedding application
  * via a {@code LoggerFinder}. In the default JDK backend the loggers are backed
  * by {@code java.util.logging}; {@link #set} configures that backend to print
@@ -112,7 +112,7 @@ public final class Log {
      * settings from garbage collection. */
     static private final List<java.util.logging.Logger> configured = new ArrayList<>();
 
-    /** Converts a {@link System.Logger} level to its backend equivalent. */
+    /** Converts a {@link Logger System.Logger} level to its backend equivalent. */
     static private java.util.logging.Level toJul(Logger.Level level) {
         return switch (level) {
         case ALL -> java.util.logging.Level.ALL;
@@ -125,7 +125,7 @@ public final class Log {
         };
     }
 
-    /** Display name of a backend level, in {@link System.Logger} terms
+    /** Display name of a backend level, in {@link Logger System.Logger} terms
      * where an equivalent exists. */
     static private String toLevelName(java.util.logging.Level level) {
         if (level == java.util.logging.Level.FINER) {
@@ -157,7 +157,9 @@ public final class Log {
 
     /** Single-line formatter: {@code HH:mm:ss.SSS LEVEL [subsystem] message}. */
     static private class TerseFormatter extends Formatter {
+        // no default annotation: the inherited method's parameter is unconstrained
         @Override
+        @NonNullByDefault({})
         public String format(LogRecord record) {
             var time = LocalTime.ofInstant(record.getInstant(), ZoneId.systemDefault());
             var name = record.getLoggerName();
