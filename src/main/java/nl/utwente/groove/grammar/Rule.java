@@ -57,6 +57,7 @@ import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
 import nl.utwente.groove.util.NoNonNull;
+import nl.utwente.groove.util.Properties.ValueType;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -205,9 +206,10 @@ public class Rule implements Action, Fixable {
     public void setProperties(GraphProperties properties) {
         testFixed(false);
         try {
-            this.priority = properties.parseProperty(Key.PRIORITY).getInteger();
-            this.transitionLabel = properties.parseProperty(Key.TRANSITION_LABEL).getString();
-            this.formatString = properties.parseProperty(Key.FORMAT).getString();
+            this.priority = properties.parseProperty(Key.PRIORITY).value(ValueType.INTEGER);
+            this.transitionLabel
+                = properties.parseProperty(Key.TRANSITION_LABEL).value(ValueType.STRING);
+            this.formatString = properties.parseProperty(Key.FORMAT).value(ValueType.STRING);
         } catch (FormatException exc) {
             throw Exceptions.illegalState("Error in graph properties: %s", exc.getMessage());
         }

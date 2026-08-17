@@ -27,6 +27,7 @@ import nl.utwente.groove.grammar.Action.Role;
 import nl.utwente.groove.grammar.aspect.AspectContent.IntegerContent;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectKind.Category;
+import nl.utwente.groove.grammar.rule.MethodName;
 import nl.utwente.groove.grammar.rule.MethodName.Language;
 import nl.utwente.groove.grammar.rule.MethodNameParser;
 import nl.utwente.groove.util.Factory;
@@ -107,7 +108,7 @@ public class GraphProperties extends Properties {
             + "<li>- <i>forbidden</i>: forbidden graph pattern, dealt with as dictated by the violation policy"
             + "<li>- <i>invariant</i>: invariant graph property, dealt with as dictated by the violation policy"
             + "<li>- <i>condition</i>: unmodifying, parameterless action, checked at every state. "
-            + "Default for parameterless, unmodifying rules", ValueType.ROLE),
+            + "Default for parameterless, unmodifying rules", Role.VALUE_TYPE),
 
         /** Match filter. */
         FILTER("matchFilter",
@@ -116,7 +117,7 @@ public class GraphProperties extends Properties {
                 + "The method may optionally take parameters of type <tt>HostGraph</tt> and <tt>RuleEvent</tt><br/>"
                 + "Supported languages are: <tt>" + Strings.toString(Language.values(), "", "", ", ")
                 + "</tt>",
-            ValueType.METHOD_NAME),
+            MethodName.VALUE_TYPE),
 
         /** Output line format. */
         FORMAT("printFormat",
@@ -139,7 +140,7 @@ public class GraphProperties extends Properties {
          * @param name name of the key; should be an identifier possibly prefixed by #SYSTEM_KEY_PREFIX
          * @param explanation short explanation of the meaning of the key
          */
-        private Key(String name, String explanation, ValueType keyType) {
+        private Key(String name, String explanation, ValueType<?> keyType) {
             this(name, null, explanation, keyType);
         }
 
@@ -150,7 +151,7 @@ public class GraphProperties extends Properties {
          * the key phrase is constructed from {@code name}
          * @param explanation short explanation of the meaning of the key
          */
-        private Key(String name, String keyPhrase, String explanation, ValueType keyType) {
+        private Key(String name, String keyPhrase, String explanation, ValueType<?> keyType) {
             this.name = name;
             this.system = name.startsWith(SYSTEM_KEY_PREFIX);
             if (keyPhrase == null) {
@@ -196,11 +197,11 @@ public class GraphProperties extends Properties {
 
         /** Returns the type of the values belonging to this key. */
         @Override
-        public ValueType getKeyType() {
+        public ValueType<?> getKeyType() {
             return this.valueType;
         }
 
-        private final ValueType valueType;
+        private final ValueType<?> valueType;
 
         @Override
         public KeyParser parser() {
@@ -290,7 +291,7 @@ public class GraphProperties extends Properties {
             .orElse(0);
         Object[] args = new Object[maxPar];
         Arrays.fill(args, "");
-        var formatString = v.getString();
+        var formatString = v.value(ValueType.STRING);
         try {
             String.format(formatString, args);
         } catch (IllegalFormatException exc) {

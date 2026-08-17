@@ -30,10 +30,12 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.algebra.UserSignature;
+import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.config.LegacySyntaxParser;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.RuleModel;
+import nl.utwente.groove.transform.oracle.ValueOracleFactory;
 import nl.utwente.groove.transform.oracle.ValueOracleKind;
 import nl.utwente.groove.util.DocumentedEnum;
 import nl.utwente.groove.util.Factory;
@@ -69,14 +71,14 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
     /** Property name for the algebra to be used during simulation. */
     ALGEBRA("algebraFamily",
         "<body>Algebra used for attributes" + DocumentedEnum.document(AlgebraFamily.class),
-        ValueType.ALGEBRA_FAMILY),
+        AlgebraFamily.VALUE_TYPE),
 
     /** Property name for the value oracle to be used for matching unbound value parameters. */
     ORACLE("valueOracle",
         "Source of values for unbound value parameters"
             + DocumentedEnum.document(ValueOracleKind.class)
             + "<p>If the algebra family is set to <i>point</i>, the oracle is disregarded",
-        ValueType.ORACLE_FACTORY),
+        ValueOracleFactory.VALUE_TYPE),
 
     /** Name of a class containing user-defined algebraic operations. */
     USER_OPS("userOperations",
@@ -100,7 +102,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
         "<body>Mode controlling if the host and rule graphs may have parallel edges "
             + "(making them multigraphs), and if so, under which semantics they are transformed"
             + DocumentedEnum.document(ParallelMode.class),
-        ValueType.PARALLEL_MODE),
+        ParallelMode.VALUE_TYPE),
     /**
      * Flag accepting rules in which a composite regular expression may match a
      * path through an edge that the rule erases. Default is {@code false}.
@@ -181,7 +183,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
             + "<li> - <i>error</i> (default): applicability is an error"
             + "<li> - <i>remove</i>: applicability causes the state to be removed from the state space"
             + "<p>The last three are only valid for forbidden and invariant properties",
-        ValueType.POLICY_MAP),
+        CheckPolicy.PolicyMap.VALUE_TYPE),
 
     /** Policy for dealing with type violations. */
     TYPE_POLICY("typePolicy",
@@ -189,7 +191,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
             + "<li>- <i>off</i>: dynamic type constraints are not checked"
             + "<li>- <i>error</i> (default): dynamic type violations are flagged as errors"
             + "<li>- <i>remove</i>: dynamic type violations cause the state to be removed from the state space",
-        ValueType.CHECK_POLICY),
+        CheckPolicy.VALUE_TYPE),
 
     /** Policy for dealing with deadlocks. */
     DEAD_POLICY("deadlockPolicy",
@@ -197,7 +199,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
             + "<br>(A state is considered deadlocked if no scheduled transformer is applicable.)"
             + "<li>- <i>off</i> (default): deadlocks are not checked"
             + "<li>- <i>error</i>: deadlocks are flagged as errors",
-        ValueType.CHECK_POLICY),
+        CheckPolicy.VALUE_TYPE),
 
     /**
      * Exploration strategy description.
@@ -206,7 +208,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
      */
     EXPLORATION("explorationStrategy", "Default exploration strategy for this grammar"
         + "<p><b>(Deprecated; superseded by 'exploration')</b>",
-        ValueType.EXPLORE_TYPE),
+        ExploreType.VALUE_TYPE),
 
     /**
      * Name of the default exploration configuration.
@@ -269,7 +271,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
      * @param explanation short explanation of the meaning of the key
      * {@link StringParser#identity()} is used
      */
-    private GrammarKey(String name, String explanation, ValueType keyType) {
+    private GrammarKey(String name, String explanation, ValueType<?> keyType) {
         this(name, null, explanation, keyType);
     }
 
@@ -281,7 +283,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
      * @param explanation short explanation of the meaning of the key
      * {@link StringParser#identity()} is used
      */
-    private GrammarKey(String name, String keyPhrase, String explanation, ValueType keyType) {
+    private GrammarKey(String name, String keyPhrase, String explanation, ValueType<?> keyType) {
         this.name = name;
         this.keyPhrase = keyPhrase == null
             ? Strings.unCamel(name, false)
@@ -388,11 +390,11 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
     }
 
     @Override
-    public ValueType getKeyType() {
+    public ValueType<?> getKeyType() {
         return this.keyType;
     }
 
-    private final ValueType keyType;
+    private final ValueType<?> keyType;
 
     @Override
     public boolean isNotable() {
@@ -440,7 +442,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
     private static class RuleDeltaChecker implements GrammarChecker {
         @Override
         public FormatErrorSet apply(GrammarModel grammar, Entry value) {
-            var deltaMap = value.getQualNameDeltaMap();
+            var deltaMap = value.value(ValueType.QUAL_NAME_DELTA_MAP);
             var unknowns = new ArrayList<>();
             deltaMap.entrySet().stream().map(Map.Entry::getKey).forEach(unknowns::add);
             var result = new FormatErrorSet();
@@ -478,7 +480,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
 
         @Override
         public FormatErrorSet apply(GrammarModel grammar, Entry value) {
-            var unknowns = new ArrayList<>(value.getQualNameList());
+            var unknowns = new ArrayList<>(value.value(ValueType.QUAL_NAME_LIST));
             var result = new FormatErrorSet();
             unknowns.removeAll(grammar.getResourceMap(getKind()).keySet());
             if (!unknowns.isEmpty()) {
@@ -532,7 +534,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
         public FormatErrorSet apply(GrammarModel grammar, Entry value) {
             FormatErrorSet result = new FormatErrorSet();
             List<QualName> unknowns = new ArrayList<>();
-            var map = value.getPolicyMap();
+            var map = value.value(CheckPolicy.PolicyMap.VALUE_TYPE);
             for (Map.Entry<QualName,CheckPolicy> entry : map.entrySet()) {
                 QualName name = entry.getKey();
                 RuleModel rule = grammar.getRuleModel(name);
@@ -567,7 +569,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
         public FormatErrorSet apply(GrammarModel grammar, Entry value) {
             FormatErrorSet result = new FormatErrorSet();
             var family = grammar.getProperties().getAlgebraFamily();
-            var classNames = value.getQualNameList();
+            var classNames = value.value(ValueType.QUAL_NAME_LIST);
             if (!classNames.isEmpty()) {
                 try {
                     UserSignature.checkUserClass(classNames);
@@ -610,7 +612,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
      */
     private static GrammarChecker exploreConfigChecker = (g, v) -> {
         FormatErrorSet result = new FormatErrorSet();
-        QualName local = v.getQualName().orElse(null);
+        QualName local = v.value(ValueType.QUAL_NAME).orElse(null);
         if (local != null) {
             try {
                 var model = g.getExploreSettings(local);

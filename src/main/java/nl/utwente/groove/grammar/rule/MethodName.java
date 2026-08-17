@@ -18,10 +18,13 @@ package nl.utwente.groove.grammar.rule;
 
 import java.util.Arrays;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.util.Properties;
+import nl.utwente.groove.util.Properties.ValueType;
 import nl.utwente.groove.util.QualName;
 
 /**
@@ -125,4 +128,8 @@ public class MethodName {
                 .findFirst().get();
         }
     }
+
+    /** Value type of property keys valued by an optional {@link MethodName}
+     * (see {@link Properties.Key}). */
+    public static final ValueType<Optional<MethodName>> VALUE_TYPE = ValueType.of(Optional.class);
 }
