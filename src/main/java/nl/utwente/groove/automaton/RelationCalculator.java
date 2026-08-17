@@ -27,16 +27,13 @@ import nl.utwente.groove.automaton.RegExpr.Sharp;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Node;
-import nl.utwente.groove.lts.GTS;
-import nl.utwente.groove.lts.GTSListener;
-import nl.utwente.groove.lts.GraphTransition;
 
 /**
  * Calculator yielding a {@link NodeRelation}.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class RelationCalculator implements RegExprCalculator<NodeRelation>, GTSListener {
+public class RelationCalculator implements RegExprCalculator<NodeRelation> {
     /**
      * Creates a relation calculator based on a given graph and
      * relation factory.
@@ -169,24 +166,14 @@ public class RelationCalculator implements RegExprCalculator<NodeRelation>, GTSL
         return this.factory;
     }
 
-    @Override
-    public void addUpdate(GTS gts, GraphTransition transition) {
+    /**
+     * Adds an edge to the underlying label-edge map, if that has been
+     * computed. To be called if the wrapped graph grows after this
+     * calculator was first used.
+     */
+    public void addEdge(Edge edge) {
         if (this.labelEdgeMap != null) {
-            addToLabelEdgeMap(transition, this.labelEdgeMap);
-        }
-    }
-
-    /** Start listening to the wrapped graph, if it supports listeners. */
-    public void startListening() {
-        if (this.graph instanceof GTS) {
-            ((GTS) this.graph).addLTSListener(this);
-        }
-    }
-
-    /** Stop listening to the wrapped graph. */
-    public void stopListening() {
-        if (this.graph instanceof GTS) {
-            ((GTS) this.graph).removeLTSListener(this);
+            addToLabelEdgeMap(edge, this.labelEdgeMap);
         }
     }
 
