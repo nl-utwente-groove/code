@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.grammar;
+package nl.utwente.groove.test.grammar;
 
 import static nl.utwente.groove.grammar.model.ResourceKind.RULE;
 
@@ -23,6 +23,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import nl.utwente.groove.grammar.Action;
+import nl.utwente.groove.grammar.Rule;
+import nl.utwente.groove.grammar.RuleDependencies;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.NamedResourceModel;
 import nl.utwente.groove.grammar.model.RuleModel;
@@ -47,7 +50,6 @@ public class RuleDependenciesTool {
         try {
             GrammarModel grammar = Groove.loadGrammar(args[0]);
             RuleDependencies data = new RuleDependencies(grammar);
-            data.collectCharacteristics();
             List<Rule> rules = getRules(grammar);
             for (Rule rule : rules) {
                 System.out.println("Rule " + rule.getQualName() + ":");
