@@ -125,7 +125,7 @@ public class Version {
      * taken literally in graphs, but surround atoms in rules.
      * </ul>
      */
-    static public final String GXL_VERSION = "curly";
+    static public final String GXL_VERSION = read("GXL_VERSION");
 
     /**
      * @return the latest grammar version.
