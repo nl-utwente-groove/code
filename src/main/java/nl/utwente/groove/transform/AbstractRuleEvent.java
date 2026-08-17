@@ -28,6 +28,7 @@ import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.host.HostNodeSet;
 import nl.utwente.groove.grammar.host.ValueNode;
 import nl.utwente.groove.grammar.rule.RuleToHostMap;
+import nl.utwente.groove.match.Proof;
 import nl.utwente.groove.match.TreeMatch;
 import nl.utwente.groove.util.Visitor;
 import nl.utwente.groove.util.cache.AbstractCacheHolder;

@@ -28,7 +28,7 @@ import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.host.HostGraphMorphism;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.graph.EdgeRole;
-import nl.utwente.groove.transform.Proof;
+import nl.utwente.groove.match.Proof;
 import nl.utwente.groove.transform.RuleApplication;
 import nl.utwente.groove.transform.RuleEvent;
 import nl.utwente.groove.util.Exceptions;

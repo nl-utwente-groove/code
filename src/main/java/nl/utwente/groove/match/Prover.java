@@ -39,7 +39,6 @@ import nl.utwente.groove.grammar.host.ValueNode;
 import nl.utwente.groove.grammar.rule.Anchor;
 import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.grammar.rule.RuleToHostMap;
-import nl.utwente.groove.transform.Proof;
 import nl.utwente.groove.util.Visitor;
 
 /**
