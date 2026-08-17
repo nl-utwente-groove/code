@@ -21,7 +21,9 @@ From the root of the checkout or worktree being verified:
 
    The script runs `mvn -q test-compile` first, fetches ecj 3.42.0 via Maven if not yet in the
    local repository, caches the dependency classpath in `target/ecj-classpath.txt`, and runs ecj
-   with the project's own `.settings/org.eclipse.jdt.core.prefs` at `--release 21`.
+   with the project's own `.settings/org.eclipse.jdt.core.prefs` at `--release 21`, with the
+   curated external null annotations from `lib/eea` attached (`-annotationpath`) — the same
+   set Eclipse applies via the `.classpath` JRE container attribute.
 
 2. Fix every error and any warning introduced by the change, then rerun until clean.
 

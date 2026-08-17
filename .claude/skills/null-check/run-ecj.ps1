@@ -46,5 +46,6 @@ if ($All) {
 
 $scratch = 'target\ecj-out'
 java -jar $ecj -properties .settings/org.eclipse.jdt.core.prefs --release 21 -proc:none `
+    -annotationpath lib/eea `
     -d $scratch -cp "target/classes;target/test-classes;$cp" @Files
 exit $LASTEXITCODE
