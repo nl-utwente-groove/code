@@ -81,6 +81,7 @@ module nl.utwente.groove {
     requires transitive jakarta.xml.bind;
     requires transitive java.desktop;
     requires transitive java.prefs;
+    requires java.logging;
     requires java.xml;
     requires com.formdev.flatlaf;
     requires transitive jgraph;
