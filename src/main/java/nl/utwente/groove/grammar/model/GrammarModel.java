@@ -33,6 +33,7 @@ import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -53,11 +54,9 @@ import nl.utwente.groove.grammar.ResourceProperties;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.io.store.EditType;
 import nl.utwente.groove.io.store.SystemStore;
-import nl.utwente.groove.prolog.GrooveEnvironment;
 import nl.utwente.groove.util.ChangeCount;
 import nl.utwente.groove.util.ChangeCount.Tracker;
 import nl.utwente.groove.util.Exceptions;
-import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.Version;
 import nl.utwente.groove.util.collect.DeltaMap.Delta;
@@ -480,7 +479,7 @@ public class GrammarModel implements PropertyChangeListener {
         } catch (FormatException exc) {
             this.errors.addAll(exc.getErrors());
         }
-        getPrologEnvironment();
+        ResourceValidators.validate(this);
         for (NamedResourceModel<?> prologModel : getResourceSet(PROLOG)) {
             for (FormatError error : prologModel.getErrors()) {
                 this.errors
@@ -560,8 +559,15 @@ public class GrammarModel implements PropertyChangeListener {
             errors.addAll(e.getErrors());
         }
         errors.throwException();
-        // Set the Prolog environment.
-        result.setPrologEnvironment(this.getPrologEnvironment());
+        // Set the active prolog programs, carried as plain texts; the prolog
+        // layer builds its environment from them
+        var prologPrograms = new LinkedHashMap<QualName,String>();
+        for (NamedResourceModel<?> model : getResourceSet(PROLOG)) {
+            if (model.isActive()) {
+                prologPrograms.put(model.getQualName(), ((PrologModel) model).getProgram());
+            }
+        }
+        result.setPrologPrograms(prologPrograms);
         assert result.getControl() != null : "Grammar must have control";
         result.setFixed();
         return result;
@@ -574,37 +580,6 @@ public class GrammarModel implements PropertyChangeListener {
     public boolean hasRules() {
         return !getResourceSet(RULE).isEmpty();
     }
-
-    /**
-     * Creates a Prolog environment that produces its standard output
-     * on a the default {@link GrooveEnvironment} output stream.
-     */
-    public GrooveEnvironment getPrologEnvironment() {
-        return this.prologEnvironment.get();
-    }
-
-    /**
-     *
-     */
-    private GrooveEnvironment computePrologEnvironment() {
-        var result = new GrooveEnvironment(null, null);
-        for (NamedResourceModel<?> model : getResourceSet(PROLOG)) {
-            PrologModel prologModel = (PrologModel) model;
-            if (model.isActive()) {
-                try {
-                    result.loadProgram(prologModel.getProgram());
-                    prologModel.clearErrors();
-                } catch (FormatException e) {
-                    prologModel.setErrors(e.getErrors());
-                }
-            }
-        }
-        return result;
-    }
-
-    /** The prolog environment derived from the system store. */
-    private final Factory<GrooveEnvironment> prologEnvironment
-        = Factory.lazy(this::computePrologEnvironment);
 
     /**
      * Resets the {@link #grammar} and {@link #errors} objects, making sure that
@@ -652,9 +627,6 @@ public class GrammarModel implements PropertyChangeListener {
         // This might possibly be refined
         this.resourceChangeCounts.get(kind).increase();
         switch (kind) {
-        case PROLOG:
-            this.prologEnvironment.reset();
-            break;
         case PROPERTIES:
             return;
         default:

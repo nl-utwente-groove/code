@@ -75,7 +75,7 @@ public class PrologChecker extends GrooveCmdLineTool<Object> {
         long prologStartTime = System.currentTimeMillis();
 
         Grammar grammar = gts.getGrammar();
-        GrooveEnvironment prologEnv = grammar.getPrologEnvironment();
+        GrooveEnvironment prologEnv = GrooveEnvironment.ofGrammar(grammar);
         PrologEngine prologEngine = new PrologEngine(prologEnv);
         prologEngine.setGrooveState(new GrooveState(grammar, gts, null, null));
 
