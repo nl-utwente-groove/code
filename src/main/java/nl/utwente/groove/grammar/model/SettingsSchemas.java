@@ -20,13 +20,12 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.explore.config.ExploreConfigSchema;
-import nl.utwente.groove.io.external.format.ecore.EcoreMappingSchema;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.QualName;
 
@@ -92,8 +91,8 @@ public class SettingsSchemas {
     static private final Map<String,@Nullable SettingsSchema> schemaMap = new LinkedHashMap<>();
 
     static {
-        // registration of the built-in schemas
-        register(EcoreMappingSchema.INSTANCE);
-        register(ExploreConfigSchema.INSTANCE);
+        // registration of the schemas contributed through the service loader;
+        // see SettingsSchema.Provider for the double declaration of providers
+        ServiceLoader.load(SettingsSchema.Provider.class).forEach(p -> register(p.getSchema()));
     }
 }

@@ -103,4 +103,12 @@ public class EcoreMappingSchema implements SettingsSchema {
     /** The name of this schema, as declared by the {@code $schema} entry of
      * its settings resources. */
     public static final String NAME = "ecore";
+
+    /** Service provider contributing {@link #INSTANCE} to the schema registry. */
+    public static class Provider implements SettingsSchema.Provider {
+        @Override
+        public SettingsSchema getSchema() {
+            return INSTANCE;
+        }
+    }
 }

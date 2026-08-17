@@ -75,6 +75,14 @@ module nl.utwente.groove {
     exports nl.utwente.groove.util.collect;
     exports nl.utwente.groove.util.io;
 
+    // service contributions; each provider is also declared in META-INF/services,
+    // which takes over when GROOVE runs from the class path (as the installed
+    // application does)
+    uses nl.utwente.groove.grammar.model.SettingsSchema.Provider;
+    provides nl.utwente.groove.grammar.model.SettingsSchema.Provider
+        with nl.utwente.groove.io.external.format.ecore.EcoreMappingSchema.Provider,
+        nl.utwente.groove.explore.config.ExploreConfigSchema.Provider;
+
     requires antlr.complete;
     requires antlrworks;
     requires transitive info.picocli;
