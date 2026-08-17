@@ -18,7 +18,6 @@ package nl.utwente.groove.io.external;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.ServiceLoader;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -27,6 +26,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.io.external.format.AutPorter;
 import nl.utwente.groove.io.external.format.FsmExporter;
 import nl.utwente.groove.io.external.format.GraphExportListener.DotListener;
+import nl.utwente.groove.io.external.format.LTS2ControlExporter;
 import nl.utwente.groove.io.external.format.ListenerExporter;
 import nl.utwente.groove.io.external.format.NativeResourcePorter;
 import nl.utwente.groove.io.external.format.ecore.EcorePorter;
@@ -88,9 +88,7 @@ public class Exporters {
     static private final Factory<Set<Exporter>> exporters
         = Factory.lazy(Exporters::createExporters);
 
-    /** Creates the set of exporters of the io framework itself,
-     * extended with the exporters contributed through the service loader;
-     * see {@link Exporter.Provider} for the double declaration of providers. */
+    /** Creates the set of exporters of the io framework itself. */
     private static Set<Exporter> createExporters() {
         Set<Exporter> result = new LinkedHashSet<>();
         result.add(NativeResourcePorter.getInstance());
@@ -98,7 +96,7 @@ public class Exporters {
         result.add(AutPorter.instance());
         result.add(FsmExporter.getInstance());
         result.add(ListenerExporter.instance(DotListener.instance()));
-        ServiceLoader.load(Exporter.Provider.class).forEach(p -> result.add(p.getExporter()));
+        result.add(LTS2ControlExporter.instance());
         return result;
     }
 }
