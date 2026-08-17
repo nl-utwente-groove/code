@@ -41,7 +41,7 @@ import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.EdgeComparator;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.GraphMap;
-import nl.utwente.groove.graph.GraphProperties.Key;
+import nl.utwente.groove.grammar.ResourceProperties.Key;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.NodeComparator;
 import nl.utwente.groove.lts.GraphState;

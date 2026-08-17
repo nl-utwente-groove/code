@@ -49,8 +49,7 @@ import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.type.Multiplicity;
 import nl.utwente.groove.graph.EdgeRole;
-import nl.utwente.groove.graph.GraphInfo;
-import nl.utwente.groove.graph.GraphProperties;
+import nl.utwente.groove.grammar.ResourceProperties;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.IdValidator;
 
@@ -102,7 +101,7 @@ public class GraphsToEcore {
      */
     public List<EPackage> addTypeGraph(AspectGraph typeGraph) {
         this.typeGraph = typeGraph;
-        GraphProperties properties = GraphInfo.getProperties(typeGraph);
+        ResourceProperties properties = ResourceProperties.getProperties(typeGraph);
         collectNodes(typeGraph);
         collectFeatureData(properties);
         List<EPackage> result = createPackages(properties, typeGraph.getName());
@@ -156,7 +155,7 @@ public class GraphsToEcore {
     }
 
     /** Collects the per-feature metadata records. */
-    private void collectFeatureData(GraphProperties properties) {
+    private void collectFeatureData(ResourceProperties properties) {
         for (var record : records(properties, EcoreToGraphs.FEATURES_KEY, 8)) {
             this.featureData
                 .put(record[0] + FEATURE_SEP + record[1],
@@ -178,7 +177,7 @@ public class GraphsToEcore {
     /** Creates the packages recorded in the metadata, and returns the root ones.
      * If there is no package metadata, a single default package is created.
      */
-    private List<EPackage> createPackages(GraphProperties properties, String graphName) {
+    private List<EPackage> createPackages(ResourceProperties properties, String graphName) {
         List<EPackage> result = new ArrayList<>();
         for (var record : records(properties, EcoreToGraphs.PACKAGES_KEY, 3)) {
             String path = record[0];
@@ -212,7 +211,7 @@ public class GraphsToEcore {
     }
 
     /** Creates the classifiers of the meta-model, in metadata order. */
-    private void createClassifiers(GraphProperties properties) {
+    private void createClassifiers(ResourceProperties properties) {
         var records = records(properties, EcoreToGraphs.TYPES_KEY, 4);
         if (records.isEmpty()) {
             // there is no classifier metadata: every node type is a class,
@@ -499,7 +498,7 @@ public class GraphsToEcore {
     }
 
     /** Wires up the opposite reference pairs recorded in the metadata. */
-    private void createOpposites(GraphProperties properties) {
+    private void createOpposites(ResourceProperties properties) {
         for (var record : records(properties, EcoreToGraphs.OPPOSITES_KEY, 2)) {
             var one = this.features.get(record[0]);
             var two = this.features.get(record[1]);
@@ -829,7 +828,7 @@ public class GraphsToEcore {
     }
 
     /** Returns the records of a metadata property, restricted to those of the right arity. */
-    private List<String[]> records(GraphProperties properties, String key, int arity) {
+    private List<String[]> records(ResourceProperties properties, String key, int arity) {
         String text = properties.getProperty(key);
         List<String[]> result = new ArrayList<>();
         if (text == null || text.isEmpty()) {

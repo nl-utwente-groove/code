@@ -22,7 +22,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.graph.Element;
-import nl.utwente.groove.graph.GraphProperties.Key;
+import nl.utwente.groove.grammar.ResourceProperties.Key;
 import nl.utwente.groove.util.QualName;
 
 /** Interface for entries of a selectable list, such as the GUI's error and

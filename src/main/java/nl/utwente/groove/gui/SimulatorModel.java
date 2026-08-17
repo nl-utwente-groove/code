@@ -36,7 +36,7 @@ import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.SettingsModel;
 import nl.utwente.groove.grammar.model.TextBasedModel;
 import nl.utwente.groove.grammar.type.TypeLabel;
-import nl.utwente.groove.graph.GraphInfo;
+import nl.utwente.groove.grammar.ResourceProperties;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.lts.ExploreResult;
@@ -202,7 +202,7 @@ public class SimulatorModel implements Cloneable {
             for (QualName ruleName : names) {
                 AspectGraph oldRule = getStore().getGraphs(ResourceKind.RULE).get(ruleName);
                 AspectGraph newRule = oldRule.clone();
-                GraphInfo.setEnabled(newRule, !GraphInfo.isEnabled(oldRule));
+                ResourceProperties.setEnabled(newRule, !ResourceProperties.isEnabled(oldRule));
                 newRule.setFixed();
                 newRules.add(newRule);
             }
@@ -369,9 +369,9 @@ public class SimulatorModel implements Cloneable {
         Set<AspectGraph> newGraphs = new HashSet<>();
         for (Map.Entry<QualName,Integer> entry : priorityMap.entrySet()) {
             AspectGraph oldGraph = getStore().getGraphs(ResourceKind.RULE).get(entry.getKey());
-            if (GraphInfo.getPriority(oldGraph) != entry.getValue()) {
+            if (ResourceProperties.getPriority(oldGraph) != entry.getValue()) {
                 AspectGraph newGraph = oldGraph.clone();
-                GraphInfo.setPriority(newGraph, entry.getValue());
+                ResourceProperties.setPriority(newGraph, entry.getValue());
                 newGraph.setFixed();
                 newGraphs.add(newGraph);
             }

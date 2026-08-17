@@ -26,8 +26,8 @@ import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
 
+import nl.utwente.groove.grammar.ResourceProperties;
 import nl.utwente.groove.grammar.type.TypeGuard;
-import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.NodeSetEdgeSetGraph;
 
@@ -57,7 +57,7 @@ public class RuleGraph extends NodeSetEdgeSetGraph<@NonNull RuleNode,@NonNull Ru
         super(name, simple);
         this.factory = factory;
         if (injective) {
-            GraphInfo.setInjective(this, true);
+            ResourceProperties.setInjective(this, true);
         }
     }
 
@@ -202,6 +202,6 @@ public class RuleGraph extends NodeSetEdgeSetGraph<@NonNull RuleNode,@NonNull Ru
 
     /** Indicates if this rule graph is to be injectively mapped. */
     public boolean isInjective() {
-        return GraphInfo.isInjective(this);
+        return ResourceProperties.isInjective(this);
     }
 }

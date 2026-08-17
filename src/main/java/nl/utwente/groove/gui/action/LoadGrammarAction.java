@@ -17,7 +17,7 @@ import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
-import nl.utwente.groove.graph.GraphInfo;
+import nl.utwente.groove.grammar.ResourceProperties;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.dialog.VersionDialog;
@@ -248,8 +248,8 @@ public class LoadGrammarAction extends SimulatorAction {
                 // store old name as transition label
                 // if there was no explicit transition label
                 // so the name change does not affect the LTS
-                if (GraphInfo.getTransitionLabel(newGraph) == null) {
-                    GraphInfo.setTransitionLabel(newGraph, oldName.toString());
+                if (ResourceProperties.getTransitionLabel(newGraph) == null) {
+                    ResourceProperties.setTransitionLabel(newGraph, oldName.toString());
                 }
             }
             newGraph.setFixed();

@@ -98,12 +98,11 @@ import nl.utwente.groove.grammar.type.TypeElement;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.grammar.type.TypeNode;
+import nl.utwente.groove.grammar.ResourceProperties;
+import nl.utwente.groove.grammar.ResourceProperties.Key;
 import nl.utwente.groove.graph.EdgeComparator;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Element;
-import nl.utwente.groove.graph.GraphInfo;
-import nl.utwente.groove.graph.GraphProperties;
-import nl.utwente.groove.graph.GraphProperties.Key;
 import nl.utwente.groove.graph.NodeComparator;
 import nl.utwente.groove.util.DefaultFixable;
 import nl.utwente.groove.util.Exceptions;
@@ -176,7 +175,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
     /** Returns the action role of this rule. */
     public Role getRole() {
         if (this.role == null) {
-            this.role = GraphInfo.getRole(getSource()).orElse(getDefaultRole());
+            this.role = ResourceProperties.getRole(getSource()).orElse(getDefaultRole());
         }
         return this.role;
     }
@@ -246,7 +245,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
      * result as <code>toRule().getPriority()</code>.
      */
     public int getPriority() {
-        return GraphInfo.getPriority(getSource());
+        return ResourceProperties.getPriority(getSource());
     }
 
     @Override
@@ -378,7 +377,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
      * @return <code>true</code> if the rule is to be matched injectively.
      */
     final public boolean isInjective() {
-        return GraphInfo.isInjective(getSource()) || getGrammarProperties().isInjective();
+        return ResourceProperties.isInjective(getSource()) || getGrammarProperties().isInjective();
     }
 
     final boolean isRhsAsNac() {
@@ -466,7 +465,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             result = conditionTree.firstEntry().getValue().getRule();
         }
         if (result != null) {
-            GraphProperties properties = getSource().getProperties();
+            ResourceProperties properties = ResourceProperties.getProperties(getSource());
             result.setProperties(properties);
             result.setCheckDangling(getGrammarProperties().isCheckDangling());
             Parameters parameters = new Parameters();

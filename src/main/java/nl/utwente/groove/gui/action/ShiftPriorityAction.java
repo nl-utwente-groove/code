@@ -16,7 +16,7 @@ import java.util.TreeMap;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.ResourceModel;
 import nl.utwente.groove.grammar.model.RuleModel;
-import nl.utwente.groove.graph.GraphInfo;
+import nl.utwente.groove.grammar.ResourceProperties;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
@@ -135,7 +135,7 @@ public class ShiftPriorityAction extends SimulatorAction {
             for (QualName ruleName : newCells.get(i)) {
                 AspectGraph ruleGraph = getGrammarStore().getGraphs(RULE)
                     .get(ruleName);
-                if (GraphInfo.getPriority(ruleGraph) != priority) {
+                if (ResourceProperties.getPriority(ruleGraph) != priority) {
                     priorityMap.put(ruleName, priority);
                 }
             }

@@ -73,9 +73,8 @@ import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.NamedResourceModel;
 import nl.utwente.groove.graph.EdgeRole;
-import nl.utwente.groove.graph.GraphInfo;
-import nl.utwente.groove.graph.GraphProperties;
-import nl.utwente.groove.graph.GraphProperties.Key;
+import nl.utwente.groove.grammar.ResourceProperties;
+import nl.utwente.groove.grammar.ResourceProperties.Key;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
@@ -220,8 +219,8 @@ final public class GraphEditorTab extends ResourceTab
         } else if (isDirty() || source == getGraph()) {
             // to keep the edit history, don't change the underlying graph
             // check if the properties have changed
-            GraphProperties properties = source.getProperties();
-            if (!properties.equals(getGraph().getProperties())) {
+            ResourceProperties properties = ResourceProperties.getProperties(source);
+            if (!properties.equals(ResourceProperties.getProperties(getGraph()))) {
                 changeProperties(properties.entryStream(), true);
             } else {
                 getNonNullJModel().setGraphModified();
@@ -265,7 +264,7 @@ final public class GraphEditorTab extends ResourceTab
      * Adapt the properties header according to the notability of the properties
      */
     private void updatePropertiesNotable() {
-        boolean notableProperties = getGraph().getProperties().isNotable();
+        boolean notableProperties = ResourceProperties.getProperties(getGraph()).isNotable();
         this.propertiesHeader
             .setForeground(notableProperties
                 ? Values.INFO_NORMAL_FOREGROUND
@@ -304,9 +303,9 @@ final public class GraphEditorTab extends ResourceTab
     private void changeProperties(Stream<Map.Entry<String,String>> propertiesStream,
                                   boolean updatePropertiesPanel) {
         AspectGraph newGraph = getGraph().clone();
-        GraphProperties newProperties = new GraphProperties();
+        ResourceProperties newProperties = new ResourceProperties();
         propertiesStream.forEach(e -> newProperties.setProperty(e.getKey(), e.getValue()));
-        GraphInfo.setProperties(newGraph, newProperties);
+        ResourceProperties.setProperties(newGraph, newProperties);
         newGraph.setFixed();
         getNonNullJModel().loadGraph(newGraph);
         loadProperties(newGraph, updatePropertiesPanel);
@@ -325,7 +324,7 @@ final public class GraphEditorTab extends ResourceTab
             // get the table first as creating it sets listenToPropertiesPanel to true
             PropertiesTable panel = getPropertiesPanel();
             this.listenToPropertiesPanel = false;
-            var properties = newGraph.getProperties();
+            var properties = ResourceProperties.getProperties(newGraph);
             panel.setProperties(properties);
             panel.setCheckerMap(properties.getCheckers(newGraph));
             this.listenToPropertiesPanel = true;
@@ -574,10 +573,10 @@ final public class GraphEditorTab extends ResourceTab
     private @NonNull PropertiesTable getPropertiesPanel() {
         PropertiesTable result = this.propertiesPanel;
         if (result == null) {
-            final var panel = new PropertiesTable(GraphProperties.Key.class, true);
+            final var panel = new PropertiesTable(ResourceProperties.Key.class, true);
             panel.setName("Properties");
             panel.setBackground(JAttr.EDITOR_BACKGROUND);
-            panel.setProperties(getGraph().getProperties());
+            panel.setProperties(ResourceProperties.getProperties(getGraph()));
             // add the listener after initialising the properties, to avoid needless refreshes
             panel.getModel().addTableModelListener(e -> {
                 if (GraphEditorTab.this.listenToPropertiesPanel) {
