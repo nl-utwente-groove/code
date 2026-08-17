@@ -215,8 +215,6 @@ public class LayeringTest {
      */
     private static final Set<String> WHITELIST = Set
         .of(
-            // P2: RelationCalculator implements GTSListener
-            "automaton -> lts",
             // P2: GrammarKey/GrammarProperties typed accessors for explore types
             "grammar -> explore",
             // P2: Grammar carries the prolog environment
