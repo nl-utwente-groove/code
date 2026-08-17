@@ -15,5 +15,3 @@ OpenCSV;reading (and writing) comma-separated value files;https://opencsv.source
 OSXAdapter;supporting Mac OS X-specific features;https://developer.apple.com/library/archive/samplecode/OSXAdapter;2.0
 picocli;command-line option parsing;https://picocli.info/;4.7.7
 RSyntaxTextArea;editing syntax-highlighted control and Prolog programs;https://github.com/bobbylight/RSyntaxTextArea;3.6.3
-Xerces;XML parsing;http://xerces.apache.org;2.12.2
-XML resolver;interoperable URL resolution;https://xerces.apache.org/xml-commons/components/resolver/;1.2
