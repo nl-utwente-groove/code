@@ -16,9 +16,9 @@
  */
 package nl.utwente.groove.io;
 
-import static nl.utwente.groove.io.FileType.GRAMMAR;
-import static nl.utwente.groove.io.FileType.GXL;
-import static nl.utwente.groove.io.FileType.STATE;
+import static nl.utwente.groove.util.io.FileType.GRAMMAR;
+import static nl.utwente.groove.util.io.FileType.GXL;
+import static nl.utwente.groove.util.io.FileType.STATE;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,6 +32,7 @@ import nl.utwente.groove.graph.plain.PlainGraph;
 import nl.utwente.groove.io.graph.GraphIO;
 import nl.utwente.groove.io.graph.GxlIO;
 import nl.utwente.groove.io.store.SystemStore;
+import nl.utwente.groove.util.io.FileType;
 
 /**
  * Façade for loading and saving graphs and grammars, with the associated

@@ -14,7 +14,7 @@
 /*
  * $Id$
  */
-package nl.utwente.groove.io;
+package nl.utwente.groove.util.io;
 
 import java.io.File;
 import java.util.List;

@@ -23,7 +23,6 @@ import java.util.Set;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.format.AutPorter;
 import nl.utwente.groove.io.external.format.FsmExporter;
 import nl.utwente.groove.io.external.format.GraphExportListener.DotListener;
@@ -32,6 +31,7 @@ import nl.utwente.groove.io.external.format.ListenerExporter;
 import nl.utwente.groove.io.external.format.NativeResourcePorter;
 import nl.utwente.groove.io.external.format.ecore.EcorePorter;
 import nl.utwente.groove.util.Factory;
+import nl.utwente.groove.util.io.FileType;
 
 /**
  * Registry of the known {@link Exporter}s.

@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.test.graph;
 
-import static nl.utwente.groove.io.FileType.STATE;
+import static nl.utwente.groove.util.io.FileType.STATE;
 
 import java.io.File;
 import java.io.IOException;

@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.io;
+package nl.utwente.groove.util.io;
 
 import static nl.utwente.groove.util.Resources.RESOURCE_PACKAGE;
 import static nl.utwente.groove.util.Resources.getResourceStream;

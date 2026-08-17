@@ -37,10 +37,10 @@ import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.gui.SimulatorModel.Change;
 import nl.utwente.groove.gui.display.DisplayKind;
-import nl.utwente.groove.io.FileUtils;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.QualName;
+import nl.utwente.groove.util.io.FileUtils;
 
 /**
  * Smoke test for the headless use of {@link SimulatorModel}: the model can be

@@ -43,13 +43,13 @@ import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.GraphConverter;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
-import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.AbstractExporter;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Imported;
 import nl.utwente.groove.io.external.Importer;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.util.QualName;
+import nl.utwente.groove.util.io.FileType;
 
 /**
  * Importer and exporter for Ecore meta-models ({@code .ecore}) and XMI instance

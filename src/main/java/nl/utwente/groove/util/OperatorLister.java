@@ -28,8 +28,8 @@ import com.opencsv.CSVWriter;
 import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.algebra.Signature.OpValue;
-import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.util.cli.GrooveCmdLineTool;
+import nl.utwente.groove.util.io.FileType;
 
 /**
  * Command-line tool to list the available operators in a format that

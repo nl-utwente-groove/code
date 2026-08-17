@@ -27,11 +27,11 @@ import javax.imageio.ImageIO;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.gui.jgraph.JGraph;
-import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.AbstractExporter;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Exporter;
 import nl.utwente.groove.io.external.PortException;
+import nl.utwente.groove.util.io.FileType;
 
 /**
  * Class that implements saving graphs as raster (JPEG or PNG (Portable Network Graphics)) images.

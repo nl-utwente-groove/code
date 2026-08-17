@@ -19,12 +19,12 @@ import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.dialog.GrooveFileChooser;
-import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.Imported;
 import nl.utwente.groove.io.external.Importer;
 import nl.utwente.groove.io.external.Importers;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.util.QualName;
+import nl.utwente.groove.util.io.FileType;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

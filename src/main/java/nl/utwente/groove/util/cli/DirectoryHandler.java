@@ -23,7 +23,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import picocli.CommandLine.ITypeConverter;
 import picocli.CommandLine.TypeConversionException;
 
-import nl.utwente.groove.io.FileType;
+import nl.utwente.groove.util.io.FileType;
 
 /**
  * Option handler that checks whether a value is an existing directory.

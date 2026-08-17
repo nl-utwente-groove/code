@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.io;
+package nl.utwente.groove.util.io;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -27,7 +27,6 @@ import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
 
@@ -317,22 +316,6 @@ public enum FileType {
             }
         }
         return result;
-    }
-
-    /** Returns the extension filter associated with the given graph role. */
-    public static ExtensionFilter getFilter(GraphRole role) {
-        switch (role) {
-        case HOST:
-            return FileType.STATE.getFilter();
-        case RULE:
-            return FileType.RULE.getFilter();
-        case TYPE:
-            return FileType.TYPE.getFilter();
-        case LTS:
-            return FileType.GXL.getFilter();
-        default:
-            return null;
-        }
     }
 
     /**

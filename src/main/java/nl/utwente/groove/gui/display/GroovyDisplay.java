@@ -35,8 +35,8 @@ import groovy.lang.GroovyRuntimeException;
 import groovy.lang.GroovyShell;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.Simulator;
-import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.util.QualName;
+import nl.utwente.groove.util.io.FileType;
 
 /**
  * The Simulator panel that shows the groovy program, with a button that shows

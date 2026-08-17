@@ -26,11 +26,11 @@ import nl.utwente.groove.gui.export.util.GraphToEPS;
 import nl.utwente.groove.gui.export.util.GraphToPDF;
 import nl.utwente.groove.gui.export.util.GraphToSVG;
 import nl.utwente.groove.gui.export.util.GraphToVector;
-import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.AbstractExporter;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Exporter;
 import nl.utwente.groove.io.external.PortException;
+import nl.utwente.groove.util.io.FileType;
 
 /**
  * Class that implements saving graphs as vectorised EPS (Embedded PostScript) or PDF images.

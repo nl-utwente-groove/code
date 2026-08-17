@@ -24,11 +24,11 @@ import java.io.PrintWriter;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.gui.export.util.GraphToTikz;
-import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.AbstractExporter;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Exporter;
 import nl.utwente.groove.io.external.PortException;
+import nl.utwente.groove.util.io.FileType;
 
 /**
  * Class that implements saving graphs in the Tikz format.

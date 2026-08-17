@@ -23,9 +23,9 @@ import java.util.Map;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.io.ExtensionFilter;
-import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.util.AIGenerated;
+import nl.utwente.groove.util.io.ExtensionFilter;
+import nl.utwente.groove.util.io.FileType;
 
 /**
  * Swing file-chooser adapter for the (plain {@link java.io.FileFilter})
