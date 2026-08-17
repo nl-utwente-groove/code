@@ -20,8 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import nl.utwente.groove.io.Groove;
-
 /**
  * A history log that allows browsing back and forth, and adding a new element
  * at the current position. Resembles <tt>ListIterator</tt> in the
@@ -55,7 +53,7 @@ public class History<T> {
      */
     public boolean hasNext() {
         if (DEBUG) {
-            Groove.message("Invoking History.hasNext at index " + this.index);
+            Trace.message("Invoking History.hasNext at index " + this.index);
         }
         return this.index < this.log.size() - 1;
     }
@@ -68,7 +66,7 @@ public class History<T> {
      */
     public boolean hasPrevious() {
         if (DEBUG) {
-            Groove.message("Invoking History.hasPrevious at index " + this.index);
+            Trace.message("Invoking History.hasPrevious at index " + this.index);
         }
         return this.index > 0;
     }
@@ -82,7 +80,7 @@ public class History<T> {
      */
     public T next() {
         if (DEBUG) {
-            Groove.message("History.next() at index " + this.index);
+            Trace.message("History.next() at index " + this.index);
         }
         if (hasNext()) {
             this.index++;
@@ -100,7 +98,7 @@ public class History<T> {
      */
     public T current() {
         if (DEBUG) {
-            Groove.message("History.current() at index " + this.index);
+            Trace.message("History.current() at index " + this.index);
         }
         if (!isEmpty()) {
             return this.log.get(this.index);
@@ -118,7 +116,7 @@ public class History<T> {
      */
     public T previous() {
         if (DEBUG) {
-            Groove.message("History.previous() at index " + this.index);
+            Trace.message("History.previous() at index " + this.index);
         }
         if (hasPrevious()) {
             this.index--;
@@ -137,14 +135,14 @@ public class History<T> {
      */
     public void replace(T element) {
         if (DEBUG) {
-            Groove.startMessage("History.replace(" + element + ") at index " + this.index);
+            Trace.startMessage("History.replace(" + element + ") at index " + this.index);
         }
         this.log.set(this.index, element);
         for (int i = this.log.size() - 1; i > this.index; i--) {
             this.log.remove(i);
         }
         if (DEBUG) {
-            Groove.endMessage("History.replace(" + element + ") at index " + this.index);
+            Trace.endMessage("History.replace(" + element + ") at index " + this.index);
         }
     }
 
@@ -158,7 +156,7 @@ public class History<T> {
      */
     public void add(T element) {
         if (DEBUG) {
-            Groove.startMessage("History.add(" + element + ") at index " + this.index);
+            Trace.startMessage("History.add(" + element + ") at index " + this.index);
         }
         if (this.index < 0 || !element.equals(current())) {
             assert this.index < this.log.size();
@@ -172,7 +170,7 @@ public class History<T> {
             }
         }
         if (DEBUG) {
-            Groove.endMessage("History.add(" + element + ") at index " + this.index);
+            Trace.endMessage("History.add(" + element + ") at index " + this.index);
         }
     }
 
