@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.io.external.format;
+package nl.utwente.groove.lts.export;
 
 import java.lang.reflect.Array;
 import java.util.HashSet;
@@ -26,6 +26,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.io.external.AbstractExporter;
 import nl.utwente.groove.io.external.Exportable;
+import nl.utwente.groove.io.external.Exporter;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSFragment;
@@ -166,4 +167,12 @@ public class LTS2ControlExporter extends AbstractExporter.Writer {
 
     /** The singleton instance of this class. */
     static private LTS2ControlExporter INSTANCE = new LTS2ControlExporter();
+
+    /** Service provider contributing {@link #instance()} to the exporter registry. */
+    public static class Provider implements Exporter.Provider {
+        @Override
+        public Exporter getExporter() {
+            return instance();
+        }
+    }
 }
