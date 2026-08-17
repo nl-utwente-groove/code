@@ -195,6 +195,45 @@ modulepath/classpath disagreement class. It costs the enforced `exports`/`opens`
 encapsulation, and forecloses ever jlink-ing a modular runtime image (jpackage
 as used here does not need one).
 
+## IDE choice: Eclipse stays (2026-08-17)
+
+Considered and rejected: doing the split in IntelliJ instead. IDEA does handle
+multi-module Maven better on every axis that bears on phase 5 — its project
+model has real modules (Eclipse has a flat workspace of peers that m2e makes
+look like a reactor), it has no lifecycle-mapping concept so generated sources
+need no connector, it can delegate builds to Maven and therefore cannot
+disagree with it about the module path, and it derives JUnit command lines from
+the module model rather than needing the hand-written per-test-package
+`--add-opens`.
+
+None of that outweighs **JDT's null analysis, which is Eclipse-only** and is
+currently the only place the `@NonNullByDefault` discipline is checked at all,
+the Maven build not running it. IDEA's nullability inspections are a different
+and weaker analysis with no `@NonNullByDefault` equivalent. The lever for the
+Eclipse-side friction is the `module-info` decision above, not the IDE.
+
+Cheap use of IDEA anyway: it imports from the pom and needs nothing checked in,
+so during phase 5 it can serve as a second opinion — a split that compiles
+there but not in Eclipse localises the problem to m2e's classpath computation
+rather than to the pom. `.idea/` is already tracked (`modules.xml`,
+`compiler.xml`, `jarRepositories.xml`) and, unlike `.classpath`, is regenerated
+from the pom, so it needs no hand-migration.
+
+Also rejected: splitting into three Eclipse projects ahead of the Maven split.
+m2e regenerates `.classpath` from the pom, so hand-written projects last until
+the next Update Project unless they are un-managed (losing dependency
+resolution); Eclipse projects cannot share a source tree, so the trial requires
+either the physical package move — which is the expensive half of the split,
+after which three Maven modules is the small remaining step — or linked folders
+that neither `mvn` nor CI checks. A one-shot import scan of `src/main/java`
+outside `gui` on 2026-08-17 found no unexpected core→gui edges: only the three
+root shims deferred above, plus `SystemStore`'s `javax.swing.undo` and
+`util.Fonts`' `UIManager`, both inside core's accepted `requires java.desktop`.
+A standing architecture test was judged not worth adding this late: once core
+is its own Maven module javac enforces the boundary permanently and catches
+more than an import scan does. Re-run the scan once immediately before starting
+phase 5 instead.
+
 ## Phasing
 
 Each phase is a separate branch/PR, in dependency order:
