@@ -30,8 +30,8 @@ import nl.utwente.groove.algebra.Signature.OpValue;
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.annotation.Help;
 import nl.utwente.groove.annotation.HelpMap;
-import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.EdgeRole;
+import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.parse.FormatException;
@@ -156,7 +156,7 @@ public sealed abstract class Expression permits Constant, Variable, FieldExpr, C
      * @return a clone of this object with changed labels, or this object
      *         if {@code oldLabel} did not occur
      */
-    public Expression relabel(TypeLabel oldLabel, TypeLabel newLabel) {
+    public Expression relabel(Label oldLabel, Label newLabel) {
         return this;
     }
 

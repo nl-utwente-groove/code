@@ -16,8 +16,8 @@
  */
 package nl.utwente.groove.algebra.syntax;
 
-import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.EdgeRole;
+import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.util.Unicode;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.parse.FormatException;
@@ -115,7 +115,7 @@ public class Assignment {
      * @return a clone of this object with changed labels, or this object
      *         if {@code oldLabel} did not occur
      */
-    public Assignment relabel(TypeLabel oldLabel, TypeLabel newLabel) {
+    public Assignment relabel(Label oldLabel, Label newLabel) {
         Assignment result = this;
         if (oldLabel.getRole() == EdgeRole.BINARY) {
             Expression newRhs = getRhs().relabel(oldLabel, newLabel);

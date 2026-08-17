@@ -26,7 +26,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.Sort;
-import nl.utwente.groove.grammar.type.TypeLabel;
+import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Keywords;
 import nl.utwente.groove.util.line.Line;
@@ -79,7 +79,7 @@ public final class FieldExpr extends Expression {
     }
 
     @Override
-    public Expression relabel(TypeLabel oldLabel, TypeLabel newLabel) {
+    public Expression relabel(Label oldLabel, Label newLabel) {
         if (oldLabel.getRole() == BINARY && oldLabel.text().equals(getField())) {
             return new FieldExpr(isPrefixed(), getTarget(), newLabel.text(), getSort());
         } else {
