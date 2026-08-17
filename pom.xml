@@ -411,6 +411,14 @@
 
 		<!-- Test libraries -->
 		<dependency>
+			<!-- Jemmy 2 Swing UI test library, as republished by Apache NetBeans;
+			     spike dependency to assess Java 21 compatibility -->
+			<groupId>org.netbeans.external</groupId>
+			<artifactId>jemmy-2.3.1.1</artifactId>
+			<version>RELEASE300</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.13.2</version>
