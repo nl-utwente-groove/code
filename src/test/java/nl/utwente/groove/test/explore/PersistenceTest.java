@@ -31,6 +31,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import nl.utwente.groove.explore.Exploration;
+import nl.utwente.groove.explore.Transformer;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.explore.config.LegacySyntaxParser;
@@ -41,7 +42,6 @@ import nl.utwente.groove.lts.GraphNextState;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.test.MasterSeedGuard;
-import nl.utwente.groove.transform.Transformer;
 import nl.utwente.groove.util.Randomness;
 import nl.utwente.groove.util.parse.FormatException;
 

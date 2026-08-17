@@ -48,7 +48,6 @@ import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.lts.ExploreResult;
 import nl.utwente.groove.lts.Filter;
 import nl.utwente.groove.lts.LTSLabels;
-import nl.utwente.groove.transform.Transformer;
 import nl.utwente.groove.util.Randomness;
 import nl.utwente.groove.util.Resources;
 import nl.utwente.groove.util.cli.CmdLineException;
