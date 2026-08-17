@@ -229,8 +229,6 @@ public class LayeringTest {
             "grammar.model -> prolog",
             // P2: GraphProperties is rule-resource metadata; GraphInfo role accessors
             "graph -> grammar",
-            // P2: IsoChecker uses CallStack.areEqual for control-stack comparison
-            "graph.iso -> control",
             // P2: certificate strategies special-case host-graph nodes
             "graph.iso -> grammar",
             // P2 (gh #891): AutIO uses ExplorationReporter stopwatch calls
