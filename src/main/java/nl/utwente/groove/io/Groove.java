@@ -36,7 +36,7 @@ import nl.utwente.groove.util.io.FileType;
 
 /**
  * Façade for loading and saving graphs and grammars, with the associated
- * default resource names, and simple timestamped tracing for the GROOVE tools.
+ * default resource names.
  * @version $Revision$
  * @author Arend Rensink
  */
@@ -134,65 +134,6 @@ public class Groove {
     static public GrammarModel loadGrammar(String dirname) throws IOException {
         File dir = new File(GRAMMAR.addExtension(dirname));
         return SystemStore.newGrammar(dir);
-    }
-
-    /**
-     * Gives the current time as a number-formatted string with given
-     * parameters.
-     * @param lossfactor the multiple of milliseconds by which time should be
-     *        measured; i.e. a value of 10 means measure by centiseconds, 100
-     *        means by deciseconds
-     * @param modulo the multiple of the measured time unit (after taking loss
-     *        into account) above which time should be cut off
-     * @param fraction the fraction of the measured time that should appear
-     *        after the decimal point
-     */
-    public static String currentTime(int lossfactor, int modulo, int fraction) {
-        long time = (System.currentTimeMillis() / lossfactor);
-        StringBuffer res = new StringBuffer();
-        while (modulo > 1) {
-            res
-                .insert(0, time > 0
-                    ? "" + time % 10
-                    : "");
-            time /= 10;
-            fraction /= 10;
-            if (fraction == 1) {
-                res.insert(0, ".");
-            }
-            modulo /= 10;
-        }
-        return res.toString();
-    }
-
-    /**
-     * Gives the current time as a number-formatted string of the form "ss.cc",
-     * where ss are seconds and cc centiseconds.
-     */
-    public static String currentTime() {
-        return currentTime(10, 10000, 100);
-    }
-
-    /**
-     * Prints a timestamped message.
-     */
-    public static void message(Object obj) {
-        System.out.println(currentTime() + ": " + obj);
-    }
-
-    /**
-     * Prints a timestamped message regarding the time of starting a given
-     * method.
-     */
-    public static void startMessage(String method) {
-        message("Starting " + method);
-    }
-
-    /**
-     * Prints a timestamped message regarding the time of ending a given method.
-     */
-    public static void endMessage(String method) {
-        message("Ending " + method);
     }
 
     private Groove() {

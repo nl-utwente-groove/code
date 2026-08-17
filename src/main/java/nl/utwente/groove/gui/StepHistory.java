@@ -23,11 +23,11 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 
 import nl.utwente.groove.gui.SimulatorModel.Change;
-import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.lts.RuleTransition;
 import nl.utwente.groove.util.History;
+import nl.utwente.groove.util.Trace;
 
 /**
  * History of simulation steps.
@@ -135,7 +135,7 @@ public class StepHistory implements SimulatorListener {
                 StepHistory.this.ignoreSimulationUpdates = true;
                 HistoryAction next = StepHistory.this.history.next();
                 if (DEBUG) {
-                    Groove.message("Redo: restore " + next);
+                    Trace.message("Redo: restore " + next);
                 }
                 doHistoryAction(next);
                 StepHistory.this.ignoreSimulationUpdates = false;
@@ -163,7 +163,7 @@ public class StepHistory implements SimulatorListener {
                 StepHistory.this.ignoreSimulationUpdates = true;
                 HistoryAction previous = StepHistory.this.history.previous();
                 if (DEBUG) {
-                    Groove.message("Undo: restore " + previous);
+                    Trace.message("Undo: restore " + previous);
                 }
                 doHistoryAction(previous);
                 StepHistory.this.ignoreSimulationUpdates = false;
