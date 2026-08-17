@@ -29,6 +29,8 @@ import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
+import nl.utwente.groove.util.Properties;
+import nl.utwente.groove.util.Properties.ValueType;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -235,4 +237,7 @@ public abstract class ExploreType {
                                           exc.getMessage());
         }
     });
+
+    /** Value type of {@link ExploreType}-valued property keys (see {@link Properties.Key}). */
+    public static final ValueType<ExploreType> VALUE_TYPE = ValueType.of(ExploreType.class);
 }

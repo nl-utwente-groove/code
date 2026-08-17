@@ -30,15 +30,6 @@ import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.algebra.Algebra;
-import nl.utwente.groove.algebra.AlgebraFamily;
-import nl.utwente.groove.explore.ExploreType;
-import nl.utwente.groove.grammar.Action.Role;
-import nl.utwente.groove.grammar.CheckPolicy;
-import nl.utwente.groove.grammar.CheckPolicy.PolicyMap;
-import nl.utwente.groove.grammar.ParallelMode;
-import nl.utwente.groove.grammar.rule.MethodName;
-import nl.utwente.groove.transform.oracle.ValueOracleFactory;
 import nl.utwente.groove.util.HTMLConverter.HTMLTag;
 import nl.utwente.groove.util.collect.DeltaMap;
 import nl.utwente.groove.util.parse.FormatChecker;
@@ -500,7 +491,7 @@ public abstract class Properties implements Fixable {
          * Note that this is <i>not</i> the value type of the parser (which is {@link Entry})
          * but the value type of the inner parser.
          */
-        ValueType getKeyType();
+        ValueType<?> getKeyType();
 
         /**
          * Start character that distinguishes system properties from user-definable
@@ -509,58 +500,65 @@ public abstract class Properties implements Fixable {
         static public final String SYSTEM_KEY_PREFIX = "$";
     }
 
-    /** Exhaustive enumeration of all value types occurring for {@link Key} implementations. */
-    public static enum ValueType {
-        /** Value for type {@link Boolean}. */
-        BOOLEAN(Boolean.class),
-        /** Value for type {@link Integer}. */
-        INTEGER(Integer.class),
-        /** Value for type {@link Integer}. */
-        STRING(String.class),
-        /** Value for type {@link List} of {@link QualName}s. */
-        QUAL_NAME_LIST(List.class),
-        /** Value for type {@link DeltaMap} of {@link QualName}s. */
-        QUAL_NAME_DELTA_MAP(DeltaMap.class),
-        /** Value for type {@link MethodName}. */
-        CLAZ(Optional.class),
-        /** Value for type {@link MethodName}. */
-        METHOD_NAME(Optional.class),
-        /** Value for type {@link List}. */
-        STRING_LIST(List.class),
-        /** Value for type {@link CheckPolicy}. */
-        CHECK_POLICY(CheckPolicy.class),
-        /** Value for type {@link PolicyMap}. */
-        POLICY_MAP(CheckPolicy.PolicyMap.class),
-        /** Value for type {@link Algebra}. */
-        ALGEBRA_FAMILY(AlgebraFamily.class),
-        /** Value for type {@link ParallelMode}. */
-        PARALLEL_MODE(ParallelMode.class),
-        /** Value for type {@link Role}. */
-        ROLE(Optional.class),
-        /** Value for type {@link ExploreType}. */
-        EXPLORE_TYPE(ExploreType.class),
-        /** Value for an optional single {@link QualName}. */
-        QUAL_NAME(Optional.class),
-        /** Value for type {@link ThreeValued}. */
-        THREE_VALUED(ThreeValued.class),
-        /** Value for type {@link Path}. */
-        PATH(Path.class),
-        /** Value for type {@link ThreeValued}. */
-        ORACLE_FACTORY(ValueOracleFactory.class),;
-
-        ValueType(Class<?> type) {
+    /** Identity token for the value type of a {@link Key}.
+     * Tokens are singletons, compared by identity: two keys have the same value
+     * type only if their {@link Key#getKeyType()} tokens are the same object.
+     * This distinguishes value types with the same erasure (such as the various
+     * {@link Optional}-based types). The type parameter {@code V} is the
+     * (possibly generic) type of the wrapped values; the token also records the
+     * raw erasure of {@code V}, used for the runtime instance check in
+     * {@link Entry}. Tokens for value types outside the {@code util} layer are
+     * declared as {@code VALUE_TYPE} constants on the value types themselves.
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    public static final class ValueType<V> {
+        private ValueType(Class<?> type) {
             this.type = type;
         }
 
+        /** Returns the raw erasure of the value type {@code V}. */
         Class<?> type() {
             return this.type;
         }
 
         private final Class<?> type;
+
+        @Override
+        public String toString() {
+            return "ValueType(" + this.type.getName() + ")";
+        }
+
+        /** Creates a value-type token for values of type {@code V}.
+         * The caller asserts that {@code type} is the raw erasure of {@code V};
+         * this correspondence is not checked by the compiler.
+         */
+        public static <V> ValueType<V> of(Class<?> type) {
+            return new ValueType<>(type);
+        }
+
+        /** Value type of {@link Boolean}-valued keys. */
+        public static final ValueType<Boolean> BOOLEAN = of(Boolean.class);
+        /** Value type of {@link Integer}-valued keys. */
+        public static final ValueType<Integer> INTEGER = of(Integer.class);
+        /** Value type of {@link String}-valued keys. */
+        public static final ValueType<String> STRING = of(String.class);
+        /** Value type of keys valued by a {@link List} of {@link String}s. */
+        public static final ValueType<List<String>> STRING_LIST = of(List.class);
+        /** Value type of {@link Path}-valued keys. */
+        public static final ValueType<Path> PATH = of(Path.class);
+        /** Value type of {@link ThreeValued}-valued keys. */
+        public static final ValueType<ThreeValued> THREE_VALUED = of(ThreeValued.class);
+        /** Value type of keys valued by an optional single {@link QualName}. */
+        public static final ValueType<Optional<QualName>> QUAL_NAME = of(Optional.class);
+        /** Value type of keys valued by a {@link List} of {@link QualName}s. */
+        public static final ValueType<List<QualName>> QUAL_NAME_LIST = of(List.class);
+        /** Value type of keys valued by a {@link DeltaMap} of {@link QualName}s. */
+        public static final ValueType<DeltaMap<QualName>> QUAL_NAME_DELTA_MAP = of(DeltaMap.class);
     }
 
     /** Property entry, consisting of a key and a wrapped value for that key.
-     * Includes functionality to cast the wrapped value to any of the types supported by {@link ValueType}.
+     * Includes functionality to cast the wrapped value to the type of a given
+     * {@link ValueType} token (see {@link #value(ValueType)}).
      */
     public static record Entry(Key key, Object value) {
         /** Record constructor, checking the invariant using #checkInvariant. */
@@ -594,203 +592,21 @@ public abstract class Properties implements Fixable {
         }
 
         /**
-         * Casts the wrapped value to an {@link AlgebraFamily}.
-         * This is only valid if this entry's key type is {@link ValueType#ALGEBRA_FAMILY}
-         * @throws UnsupportedOperationException if this entry's key type is inappropriate
+         * Casts the wrapped value to the value type of a given token.
+         * This is only valid if the token <i>is</i> this entry's key type
+         * (an identity check, see {@link ValueType}).
+         * @param keyType the value-type token of this entry's key
+         * @throws UnsupportedOperationException if this entry's key type is a different token
          */
-        public AlgebraFamily getAlgebraFamily() {
-            check(ValueType.ALGEBRA_FAMILY);
-            return (AlgebraFamily) value();
-        }
-
-        /**
-         * Casts the wrapped value to a {@link ParallelMode}.
-         * This is only valid if this entry's key type is {@link ValueType#PARALLEL_MODE}
-         * @throws UnsupportedOperationException if this entry's key type is inappropriate
-         */
-        public ParallelMode getParallelMode() {
-            check(ValueType.PARALLEL_MODE);
-            return (ParallelMode) value();
-        }
-
-        /**
-         * Casts the wrapped value to a {@link Boolean}.
-         * This is only valid if this entry's key type is {@link ValueType#BOOLEAN}
-         * @throws UnsupportedOperationException if this entry's key type is inappropriate
-         */
-        public Boolean getBoolean() {
-            check(ValueType.BOOLEAN);
-            return (Boolean) value();
-        }
-
-        /**
-         * Casts the wrapped value to a {@link CheckPolicy}.
-         * This is only valid if this entry's key type is {@link ValueType#CHECK_POLICY}
-         * @throws UnsupportedOperationException if this entry's key type is inappropriate
-         */
-        public CheckPolicy getCheckPolicy() {
-            check(ValueType.CHECK_POLICY);
-            return (CheckPolicy) value();
-        }
-
-        /**
-         * Casts the wrapped value to an {@link ExploreType}.
-         * This is only valid if this entry's key type is {@link ValueType#EXPLORE_TYPE}
-         * @throws UnsupportedOperationException if this entry's key type is inappropriate
-         */
-        public ExploreType getExploreType() {
-            check(ValueType.EXPLORE_TYPE);
-            return (ExploreType) value();
-        }
-
-        /**
-         * Casts the wrapped value to an optional {@link QualName}.
-         * This is only valid if this entry's key type is {@link ValueType#QUAL_NAME}
-         * @throws UnsupportedOperationException if this entry's key type is inappropriate
-         */
+        @AIGenerated("Claude Fable 5, 2026-08")
         @SuppressWarnings("unchecked")
-        public Optional<QualName> getQualName() {
-            check(ValueType.QUAL_NAME);
-            return (Optional<QualName>) value();
-        }
-
-        /**
-         * Casts the wrapped value to an {@link Integer}.
-         * This is only valid if this entry's key type is {@link ValueType#INTEGER}
-         * @throws UnsupportedOperationException if this entry's key type is inappropriate
-         */
-        public Integer getInteger() {
-            check(ValueType.INTEGER);
-            return (Integer) value();
-        }
-
-        /**
-         * Casts the wrapped value to an optional {@link Class}.
-         * This is only valid if this entry's key type is {@link ValueType#CLAZ}
-         * @throws UnsupportedOperationException if this entry's key type is inappropriate
-         */
-        @SuppressWarnings("unchecked")
-        public Optional<Class<?>> getClaz() {
-            check(ValueType.CLAZ);
-            return (Optional<Class<?>>) value();
-        }
-
-        /**
-         * Casts the wrapped value to a {@link MethodName}.
-         * This is only valid if this entry's key type is {@link ValueType#METHOD_NAME}
-         * @throws UnsupportedOperationException if this entry's key type is inappropriate
-         */
-        @SuppressWarnings("unchecked")
-        public Optional<MethodName> getMethodName() {
-            check(ValueType.METHOD_NAME);
-            return (Optional<MethodName>) value();
-        }
-
-        /**
-         * Casts the wrapped value to a {@link ValueOracleFactory}.
-         * This is only valid if this entry's key type is {@link ValueType#ORACLE_FACTORY}
-         * @throws UnsupportedOperationException if this entry's key type is inappropriate
-         */
-        public ValueOracleFactory getOracleFactory() {
-            check(ValueType.ORACLE_FACTORY);
-            return (ValueOracleFactory) value();
-        }
-
-        /**
-         * Casts the wrapped value to a {@link Path}.
-         * This is only valid if this entry's key type is {@link ValueType#PATH}
-         * @throws UnsupportedOperationException if this entry's key type is inappropriate
-         */
-        public Path getPath() {
-            check(ValueType.PATH);
-            return (Path) value();
-        }
-
-        /**
-         * Casts the wrapped value to a {@link PolicyMap}.
-         * This is only valid if this entry's key type is {@link ValueType#POLICY_MAP}
-         * @throws UnsupportedOperationException if this entry's key type is inappropriate
-         */
-        public PolicyMap getPolicyMap() {
-            check(ValueType.POLICY_MAP);
-            return (PolicyMap) value();
-        }
-
-        /**
-         * Casts the wrapped value to a {@link List} of {@link QualName}s.
-         * This is only valid if this entry's key type is {@link ValueType#QUAL_NAME_LIST}
-         * @throws UnsupportedOperationException if this entry's key type is inappropriate
-         */
-        @SuppressWarnings("unchecked")
-        public List<QualName> getQualNameList() {
-            check(ValueType.QUAL_NAME_LIST);
-            return (List<QualName>) value();
-        }
-
-        /**
-         * Casts the wrapped value to a {@link DeltaMap} of {@link QualName}s.
-         * This is only valid if this entry's key type is {@link ValueType#QUAL_NAME_DELTA_MAP}
-         * @throws UnsupportedOperationException if this entry's key type is inappropriate
-         */
-        @SuppressWarnings("unchecked")
-        public DeltaMap<QualName> getQualNameDeltaMap() {
-            check(ValueType.QUAL_NAME_DELTA_MAP);
-            return (DeltaMap<QualName>) value();
-        }
-
-        /**
-         * Casts the wrapped value to a {@link Role}.
-         * This is only valid if this entry's key type is {@link ValueType#ROLE}
-         * @throws UnsupportedOperationException if this entry's key type is inappropriate
-         */
-        @SuppressWarnings("unchecked")
-        public Optional<Role> getRole() {
-            check(ValueType.ROLE);
-            return (Optional<Role>) value();
-        }
-
-        /**
-         * Casts the wrapped value to a {@link String}.
-         * This is only valid if this entry's key type is {@link ValueType#STRING}
-         * @throws UnsupportedOperationException if this entry's key type is inappropriate
-         */
-        public String getString() {
-            check(ValueType.STRING);
-            return (String) value();
-        }
-
-        /**
-         * Casts the wrapped value to a {@link List} of {@link String}s.
-         * This is only valid if this entry's key type is {@link ValueType#STRING_LIST}
-         * @throws UnsupportedOperationException if this entry's key type is inappropriate
-         */
-        @SuppressWarnings("unchecked")
-        public List<String> getStringList() {
-            check(ValueType.STRING_LIST);
-            return (List<String>) value();
-        }
-
-        /**
-         * Casts the wrapped value to a {@link ThreeValued}.
-         * This is only valid if this entry's key type is {@link ValueType#THREE_VALUED}
-         * @throws UnsupportedOperationException if this entry's key type is inappropriate
-         */
-        public ThreeValued getThreeValued() {
-            check(ValueType.THREE_VALUED);
-            return (ThreeValued) value();
-        }
-
-        /** Checks whether the key type of this entry equals a given key type.
-         * Throws an {@link UnsupportedOperationException} if the two key types do not coincide.
-         * @param keyType they key type to check for
-         * @throws UnsupportedOperationException of {@code keyType} does not equal this entry's key type
-         */
-        private void check(ValueType keyType) {
+        public <V> V value(ValueType<V> keyType) {
             if (this.key().getKeyType() != keyType) {
                 throw Exceptions
                     .unsupportedOp("Can't extract %s value from %s entry", keyType.type(),
                                    this.key());
             }
+            return (V) value();
         }
     }
 

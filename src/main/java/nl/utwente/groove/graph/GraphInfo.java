@@ -30,6 +30,7 @@ import nl.utwente.groove.graph.GraphProperties.Key;
 import nl.utwente.groove.graph.layout.LayoutMap;
 import nl.utwente.groove.util.DefaultFixable;
 import nl.utwente.groove.util.Properties.Entry;
+import nl.utwente.groove.util.Properties.ValueType;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -241,7 +242,7 @@ public class GraphInfo extends DefaultFixable {
      * @see Key#PRIORITY
      */
     static public int getPriority(Graph graph) {
-        return getProperty(graph, PRIORITY).getInteger();
+        return getProperty(graph, PRIORITY).value(ValueType.INTEGER);
     }
 
     /**
@@ -260,7 +261,7 @@ public class GraphInfo extends DefaultFixable {
      * @see Key#ROLE
      */
     static public Optional<Role> getRole(Graph graph) {
-        return getProperty(graph, Key.ROLE).getRole();
+        return getProperty(graph, Key.ROLE).value(Role.VALUE_TYPE);
     }
 
     /**
@@ -279,7 +280,7 @@ public class GraphInfo extends DefaultFixable {
      * @see Key#ENABLED
      */
     static public boolean isEnabled(Graph graph) {
-        return getProperty(graph, ENABLED).getBoolean();
+        return getProperty(graph, ENABLED).value(ValueType.BOOLEAN);
     }
 
     /**
@@ -298,7 +299,7 @@ public class GraphInfo extends DefaultFixable {
      * @see Key#INJECTIVE
      */
     static public boolean isInjective(Graph graph) {
-        return getProperty(graph, INJECTIVE).getBoolean();
+        return getProperty(graph, INJECTIVE).value(ValueType.BOOLEAN);
     }
 
     /**
@@ -317,7 +318,7 @@ public class GraphInfo extends DefaultFixable {
      * @see Key#REMARK
      */
     static public String getRemark(Graph graph) {
-        return getProperty(graph, Key.REMARK).getString();
+        return getProperty(graph, Key.REMARK).value(ValueType.STRING);
     }
 
     /**
@@ -337,7 +338,7 @@ public class GraphInfo extends DefaultFixable {
      * @see Key#FORMAT
      */
     static public String getFormatString(Graph graph) {
-        return getProperty(graph, Key.FORMAT).getString();
+        return getProperty(graph, Key.FORMAT).value(ValueType.STRING);
     }
 
     /**
@@ -356,7 +357,7 @@ public class GraphInfo extends DefaultFixable {
      * @see Key#TRANSITION_LABEL
      */
     static public String getTransitionLabel(Graph graph) {
-        return getProperty(graph, Key.TRANSITION_LABEL).getString();
+        return getProperty(graph, Key.TRANSITION_LABEL).value(ValueType.STRING);
     }
 
     /**
@@ -376,7 +377,7 @@ public class GraphInfo extends DefaultFixable {
      * @see Key#VERSION
      */
     static public String getVersion(Graph graph) {
-        return getProperty(graph, Key.VERSION).getString();
+        return getProperty(graph, Key.VERSION).value(ValueType.STRING);
     }
 
     /**

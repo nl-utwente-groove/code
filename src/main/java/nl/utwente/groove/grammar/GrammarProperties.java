@@ -109,7 +109,7 @@ public class GrammarProperties extends Properties {
      * Default value: <code>true</code>.
      */
     public boolean isShowLoopsAsLabels() {
-        return parsePropertyOrDefault(GrammarKey.LOOPS_AS_LABELS).getBoolean();
+        return parsePropertyOrDefault(GrammarKey.LOOPS_AS_LABELS).value(ValueType.BOOLEAN);
     }
 
     /**
@@ -125,7 +125,7 @@ public class GrammarProperties extends Properties {
      * value: {@code false}
      */
     public boolean isStoreOutPars() {
-        return parsePropertyOrDefault(GrammarKey.STORE_OUT_PARS).getBoolean();
+        return parsePropertyOrDefault(GrammarKey.STORE_OUT_PARS).value(ValueType.BOOLEAN);
     }
 
     /** Sets the {@link GrammarKey#STORE_OUT_PARS} property to the given value * */
@@ -138,7 +138,8 @@ public class GrammarProperties extends Properties {
      * value: {@link ThreeValued#FALSE}.
      */
     public ThreeValued isUseParameters() {
-        return parsePropertyOrDefault(GrammarKey.TRANSITION_PARAMETERS).getThreeValued();
+        return parsePropertyOrDefault(GrammarKey.TRANSITION_PARAMETERS)
+            .value(ValueType.THREE_VALUED);
     }
 
     /** Sets the {@link GrammarKey#TRANSITION_PARAMETERS} property to the given value * */
@@ -155,7 +156,7 @@ public class GrammarProperties extends Properties {
      * Returns the version of Groove that created the grammar.
      */
     public String getGrooveVersion() {
-        return parsePropertyOrDefault(GrammarKey.GROOVE_VERSION).getString();
+        return parsePropertyOrDefault(GrammarKey.GROOVE_VERSION).value(ValueType.STRING);
     }
 
     /** Sets the {@link GrammarKey#GRAMMAR_VERSION} property to the given value */
@@ -167,14 +168,14 @@ public class GrammarProperties extends Properties {
      * Returns the version of the grammar.
      */
     public String getGrammarVersion() {
-        return parsePropertyOrDefault(GrammarKey.GRAMMAR_VERSION).getString();
+        return parsePropertyOrDefault(GrammarKey.GRAMMAR_VERSION).value(ValueType.STRING);
     }
 
     /**
      * Returns the location of the grammar.
      */
     public Path getLocation() {
-        return parsePropertyOrDefault(GrammarKey.LOCATION).getPath();
+        return parsePropertyOrDefault(GrammarKey.LOCATION).value(ValueType.PATH);
     }
 
     /** Sets the {@link GrammarKey#LOCATION} property to the given value. */
@@ -188,7 +189,7 @@ public class GrammarProperties extends Properties {
      * @see GrammarKey#CONTROL_LABELS
      */
     public List<String> getControlLabels() {
-        return parsePropertyOrDefault(GrammarKey.CONTROL_LABELS).getStringList();
+        return parsePropertyOrDefault(GrammarKey.CONTROL_LABELS).value(ValueType.STRING_LIST);
     }
 
     /**
@@ -213,7 +214,7 @@ public class GrammarProperties extends Properties {
      * @see GrammarKey#ACTION_POLICY
      */
     public PolicyMap getRulePolicy() {
-        return parsePropertyOrDefault(GrammarKey.ACTION_POLICY).getPolicyMap();
+        return parsePropertyOrDefault(GrammarKey.ACTION_POLICY).value(PolicyMap.VALUE_TYPE);
     }
 
     /**
@@ -230,7 +231,7 @@ public class GrammarProperties extends Properties {
      * @see GrammarKey#DEAD_POLICY
      */
     public CheckPolicy getDeadPolicy() {
-        return parsePropertyOrDefault(GrammarKey.DEAD_POLICY).getCheckPolicy();
+        return parsePropertyOrDefault(GrammarKey.DEAD_POLICY).value(CheckPolicy.VALUE_TYPE);
     }
 
     /**
@@ -247,7 +248,7 @@ public class GrammarProperties extends Properties {
      * @see GrammarKey#TYPE_POLICY
      */
     public CheckPolicy getTypePolicy() {
-        return parsePropertyOrDefault(GrammarKey.TYPE_POLICY).getCheckPolicy();
+        return parsePropertyOrDefault(GrammarKey.TYPE_POLICY).value(CheckPolicy.VALUE_TYPE);
     }
 
     /**
@@ -256,7 +257,7 @@ public class GrammarProperties extends Properties {
      * @see GrammarKey#COMMON_LABELS
      */
     public List<String> getCommonLabels() {
-        return parsePropertyOrDefault(GrammarKey.COMMON_LABELS).getStringList();
+        return parsePropertyOrDefault(GrammarKey.COMMON_LABELS).value(ValueType.STRING_LIST);
     }
 
     /**
@@ -281,7 +282,7 @@ public class GrammarProperties extends Properties {
      * @return if <code>true</code>, non-injective matches are disallowed
      */
     public boolean isInjective() {
-        return parsePropertyOrDefault(GrammarKey.INJECTIVE).getBoolean();
+        return parsePropertyOrDefault(GrammarKey.INJECTIVE).value(ValueType.BOOLEAN);
     }
 
     /**
@@ -298,7 +299,7 @@ public class GrammarProperties extends Properties {
      * if so, whether they are transformed under SPO or DPO semantics.
      */
     public ParallelMode getParallelMode() {
-        return parsePropertyOrDefault(GrammarKey.PARALLEL).getParallelMode();
+        return parsePropertyOrDefault(GrammarKey.PARALLEL).value(ParallelMode.VALUE_TYPE);
     }
 
     /**
@@ -317,7 +318,7 @@ public class GrammarProperties extends Properties {
      * rather than reported as errors.
      */
     public boolean isIgnoreRegExp() {
-        return parsePropertyOrDefault(GrammarKey.IGNORE_REG_EXP).getBoolean();
+        return parsePropertyOrDefault(GrammarKey.IGNORE_REG_EXP).value(ValueType.BOOLEAN);
     }
 
     /**
@@ -337,7 +338,7 @@ public class GrammarProperties extends Properties {
      * @return if <code>true</code>, matches with dangling edges are disallowed.
      */
     public boolean isCheckDangling() {
-        return parsePropertyOrDefault(GrammarKey.DANGLING).getBoolean()
+        return parsePropertyOrDefault(GrammarKey.DANGLING).value(ValueType.BOOLEAN)
             || getParallelMode().isDPO();
     }
 
@@ -354,7 +355,9 @@ public class GrammarProperties extends Properties {
             return null;
         }
         try {
-            return parseProperty(GrammarKey.EXPLORE_CONFIG).getQualName().orElse(null);
+            return parseProperty(GrammarKey.EXPLORE_CONFIG)
+                .value(ValueType.QUAL_NAME)
+                .orElse(null);
         } catch (FormatException exc) {
             // reported by the key checker
             return null;
@@ -387,7 +390,7 @@ public class GrammarProperties extends Properties {
      * {@link #getExplorationName()}) is absent.
      */
     public ExploreType getLegacyExploreType() {
-        return parsePropertyOrDefault(GrammarKey.EXPLORATION).getExploreType();
+        return parsePropertyOrDefault(GrammarKey.EXPLORATION).value(ExploreType.VALUE_TYPE);
     }
 
     /**
@@ -412,7 +415,7 @@ public class GrammarProperties extends Properties {
     public Set<QualName> getActiveNames(ResourceKind kind) {
         var names = switch (kind) {
         case GROOVY, PROPERTIES, RULE, SETTINGS -> Collections.<QualName>emptyList();
-        default -> parsePropertyOrDefault(resourceKeyMap.get(kind)).getQualNameList();
+        default -> parsePropertyOrDefault(resourceKeyMap.get(kind)).value(ValueType.QUAL_NAME_LIST);
         };
         return new TreeSet<>(names);
     }
@@ -430,7 +433,7 @@ public class GrammarProperties extends Properties {
      * @return a (non-{@code null}, but possibly empty) rule delta map
      */
     public DeltaMap<QualName> getRuleEnabling() {
-        return parsePropertyOrDefault(RULE_ENABLING).getQualNameDeltaMap();
+        return parsePropertyOrDefault(RULE_ENABLING).value(ValueType.QUAL_NAME_DELTA_MAP);
     }
 
     /**
@@ -446,14 +449,14 @@ public class GrammarProperties extends Properties {
      * if none is selected.
      */
     public AlgebraFamily getAlgebraFamily() {
-        return parsePropertyOrDefault(GrammarKey.ALGEBRA).getAlgebraFamily();
+        return parsePropertyOrDefault(GrammarKey.ALGEBRA).value(AlgebraFamily.VALUE_TYPE);
     }
 
     /**
      * Returns the user-defined operations class.
      */
     public List<QualName> getUserOperations() {
-        return parsePropertyOrDefault(GrammarKey.USER_OPS).getQualNameList();
+        return parsePropertyOrDefault(GrammarKey.USER_OPS).value(ValueType.QUAL_NAME_LIST);
     }
 
     /**
@@ -472,7 +475,7 @@ public class GrammarProperties extends Properties {
             // so we can just take the default value
             return DefaultOracle.instance();
         } else {
-            return parsePropertyOrDefault(GrammarKey.ORACLE).getOracleFactory();
+            return parsePropertyOrDefault(GrammarKey.ORACLE).value(ValueOracleFactory.VALUE_TYPE);
         }
     }
 
@@ -498,7 +501,7 @@ public class GrammarProperties extends Properties {
      *         application conditions
      */
     public boolean isCheckCreatorEdges() {
-        return parsePropertyOrDefault(GrammarKey.CREATOR_EDGE).getBoolean();
+        return parsePropertyOrDefault(GrammarKey.CREATOR_EDGE).value(ValueType.BOOLEAN);
     }
 
     /**
@@ -515,7 +518,7 @@ public class GrammarProperties extends Properties {
      * @return if <code>true</code>, state graphs are compared up to isomorphism
      */
     public boolean isCheckIsomorphism() {
-        return parsePropertyOrDefault(GrammarKey.ISOMORPHISM).getBoolean();
+        return parsePropertyOrDefault(GrammarKey.ISOMORPHISM).value(ValueType.BOOLEAN);
     }
 
     /**
@@ -525,7 +528,7 @@ public class GrammarProperties extends Properties {
      *         being applied twice in a row
      */
     public boolean isRhsAsNac() {
-        return parsePropertyOrDefault(GrammarKey.RHS_AS_NAC).getBoolean();
+        return parsePropertyOrDefault(GrammarKey.RHS_AS_NAC).value(ValueType.BOOLEAN);
     }
 
     /**
@@ -551,7 +554,7 @@ public class GrammarProperties extends Properties {
      * @return if <code>true</code>, stored node IDs are used to generate node numbers
      */
     public boolean isUseStoredNodeIds() {
-        return parsePropertyOrDefault(GrammarKey.USE_STORED_NODE_IDS).getBoolean();
+        return parsePropertyOrDefault(GrammarKey.USE_STORED_NODE_IDS).value(ValueType.BOOLEAN);
     }
 
     /**
