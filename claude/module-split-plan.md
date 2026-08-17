@@ -8,7 +8,8 @@ current master; do not resurrect the old working branches.*
 
 Split GROOVE into Maven modules: a **gui** module first (everything Swing/JGraph),
 a **cli** module second. The core module must compile and run headless without any
-GUI classes on the classpath.
+GUI classes on the classpath. *(2026-08-17: the cli module is likely not viable —
+picocli is woven into core; see the readiness assessment below.)*
 
 ## History
 
@@ -73,6 +74,8 @@ Further moves:
   core). *Deferred to phase 5 — nothing to do while there is one module.*
 - Prolog builtin `Predicate_show_graph` → registered by the GUI.
 - `ImagerTest` → gui test set. *Deferred to phase 5 likewise.*
+  `SimulatorModelTest` (added 2026-08-17) joins it — the only two tests
+  referencing gui.
 
 ### (c) SPI/registry inversions — the three real design points
 
@@ -111,7 +114,8 @@ presentation names of the edits, produced by `SystemStore` itself.
 ## Endgame: the Maven/module-info split
 
 Once (a)–(d) are done, split the build: the gui module takes `jgraph`,
-`jgoodies.looks`, `osxadapter`, RSyntaxTextArea, `batik`, `fop`. Core keeps a
+`flatlaf` (which replaced `jgoodies.looks` in 2026-07), `osxadapter`,
+RSyntaxTextArea, `batik`, `fop`. Core keeps a
 non-transitive `requires java.desktop` for the ~20 files using awt
 `Color`/`Point`/geom classes as plain data — accepted trade-off; defining our
 own geometry types was judged not worth it.
@@ -234,6 +238,129 @@ is its own Maven module javac enforces the boundary permanently and catches
 more than an import scan does. Re-run the scan once immediately before starting
 phase 5 instead.
 
+## Phase-5 readiness assessment (2026-08-17)
+
+Three read-only fact sweeps ahead of phase 5 — dependency edges, build/release
+infrastructure, resources and tests. **Code side: ready.** Beyond the import
+scan recorded above: no `Class.forName` or string literal anywhere can name a
+gui class (the only reflective loads are in `prolog.GrooveEnvironment` and
+`util.antlr.ParseTree`, neither fed gui names); there is no `ServiceLoader`
+use at all — every registry is wired by explicit gui→core calls at startup;
+the gui libraries (jgraph, FlatLaf, RSyntaxTextArea, batik, fop, osxadapter)
+are imported only under `gui/` (plus two javadoc-string mentions elsewhere);
+`java.awt` outside gui is exactly the seven accepted data types (`Color`,
+`Font`, `FontFormatException`, `Point`, `Rectangle`, `Point2D`,
+`Rectangle2D`) in 23 files. Two tests reference gui and move with it:
+`ImagerTest` and `SimulatorModelTest`; they drag along nothing but the
+`SlowTest` marker (the only cross-subpackage test imports are `SlowTest` and
+`MasterSeedGuard`).
+
+**Build side: seven work items the sections above do not yet record.**
+
+1. **flatten-maven-plugin becomes mandatory.** There is none today; the
+   `${revision}` scheme only works because the single pom both defines and
+   uses the property. With a parent/aggregator, installed and deployed child
+   poms carry an unresolvable `${revision}` parent reference; CI-friendly
+   versions require `flatten-maven-plugin` (flattenMode
+   `resolveCiFriendliesOnly`) for Central publishing to work.
+
+2. **The release reactor is coupled to today's artifact and class names in
+   three places**: the five runnable stub poms derive their main class as
+   `${project.groupId}.${project.artifactId}` — exactly the root-package
+   shims; `release/jpackage/build-installer.sh` hardcodes
+   `lib/groove-$VERSION.jar` as the jdeps main jar; and the assembly `zip.xml`
+   dependencySet includes only `nl.utwente.groove:groove` with
+   `useTransitiveFiltering`. Recommendation: the gui module keeps artifactId
+   **`groove`** and depends on a new **`groove-core`** — then all three
+   couplings survive nearly unchanged and the existing consumer coordinate
+   keeps meaning "the whole thing"; headless consumers opt into `groove-core`
+   deliberately. (`release.yml`'s hardcoded `-pl '!assembly/bin+doc'` and the
+   `bin+doc` assembly's `../../../target/apidocs` path still need touching —
+   see item 6.)
+
+3. **Fixture paths are cwd-relative.** ~60 bare `junit/...` string literals
+   resolve against the working directory (= surefire's module basedir, =
+   Eclipse's project dir). Splitting the source tree into `core/`/`gui/`
+   breaks them all unless `junit/` moves too (but `ImagerTest` in the gui
+   module uses `junit/samples/ferryman.gps` and `junit/try`), or surefire's
+   `workingDirectory` is pinned to `${maven.multiModuleProjectDirectory}`
+   plus per-launch cwd settings in Eclipse, or a fixture-root property is
+   introduced. Decide explicitly; a mis-solve fails silently (cf.
+   `GrammarsTest`'s assume-skip in worktrees). `GrammarsTest`'s `../samples`
+   default is cwd-relative too.
+
+4. **Test-tree split mechanics**: the `SlowTest` marker and a `TestSuite` (or
+   surefire equivalent) are needed on both sides of the split;
+   `@SelectPackages("nl.utwente.groove.test")` works per module unchanged.
+
+5. **Resource ownership** (single root `src/main/resources/.../resource/`):
+   the icons (134 files) are gui-only and move with `gui.Icons`; the font
+   stays core (`util.HTMLConverter` and `util.line.HTMLLineFormat` use it
+   headless); the version files stay core;
+   `contributors.csv`/`libraries.csv` are loaded by core `io.FileUtils` but
+   consumed gui-only — either home works, the loader stays core; the `Ctrl.g`
+   copy into `resource/antlr` is done by a dedicated pom `<resource>` block
+   that must land in the core pom, or `CtrlDoc` returns null streams at
+   runtime. `util.Resources` resolves via `ClassLoader.getSystemResource` —
+   fine on the classpath from any module; under a kept `module-info` each
+   resource package must instead sit whole in the module that `opens` it (as
+   noted above).
+
+6. **Central publishing and javadoc**: Central requires per-module sources
+   and javadoc jars (the existing plugin config moves to a shared parent);
+   the release `bin+doc` zip wants an *aggregate* javadoc instead, whose
+   output directory differs from today's single-module `target/apidocs` —
+   update the assembly path.
+
+7. **Local tooling rework**: `.claude/skills/null-check/run-ecj.ps1` and
+   `grammar-smoke/run-generator.ps1` assume a single `target/` and one
+   `.settings`; SonarLint's `moduleKey=groove`, `.checkstyle` and the
+   IntelliJ `.iml` are single-project. (Eclipse `.settings`/launch
+   retargeting is already recorded under Endgame.)
+
+**Devil's advocate.**
+
+- *module-info, sharpened.* Two facts push further toward dropping: the
+  descriptor's 71 `exports` are all unqualified, with no `uses`/`provides` —
+  it exports essentially everything, so the encapsulation it would enforce is
+  not actually being used; and keeping it makes the shim problem worse than
+  recorded above, because renaming the shim package breaks the release stubs'
+  derived main classes and every documented
+  `java -cp … nl.utwente.groove.Simulator` invocation, not just internal
+  structure. Also, batik/fop/antlr resolve as filename-derived automatic
+  modules, so a fully modular runtime was never reachable anyway. Steelman
+  for keeping: a statement of intent for library consumers, and dropping is
+  socially a one-way door. Lean: drop, with `Automatic-Module-Name` per
+  module.
+- *The cli module looks dead.* picocli is imported by `util.cli`, `util`,
+  `explore`, `verify` and `prolog` — CLI parsing is woven into core, so a cli
+  module is either nearly empty (three shims) or major surgery, to save
+  consumers a ~400 KB dependency. Plan for two modules; strike "cli second"
+  from the goal.
+- *Worth-it, honestly.* The Maven boundary is the durable form of the
+  enforcement, but the split's distinctive payoff is `groove-core` on Central
+  without jgraph/FlatLaf/RSyntaxTextArea/batik/fop (tens of MB of
+  transitives) for headless consumers, plus groundwork for the gui test
+  harness. If no such consumers exist, phase 5 mostly pays permanent workflow
+  cost for a guarantee. Judged worth it given the decoupling is already paid
+  for; keep the counterfactual in mind if phase 5 gets expensive.
+- *The tree move is the riskiest step.* Relocating `src/` into `core/`/`gui/`
+  is a commit that conflicts with every open branch and degrades blame across
+  it. Do it in a quiet window with nothing in flight (currently
+  `simulator-model-decoupling` is pending — land or drop it first), and keep
+  the pure-rename commit separate from the pom/metadata commits so git and
+  Eclipse can track the renames.
+- *Silent-degradation checklist for review*: fixture tests skipping instead
+  of failing after the path change; a module missing the
+  `org.eclipse.jdt.core.prefs` copy compiling happily with null analysis
+  off; the `Ctrl.g` resource block missing from the core pom (runtime nulls,
+  no compile error).
+
+**Side findings, no phase-5 action**: `GXL_VERSION` is an orphan resource
+(`Version` hardcodes "curly"), as are `Ecore.ecore`/`groove.ecore`; `xerces`
+and `xml-resolver` have zero source imports (probably reflective JAXP/batik
+use — do not remove blindly); the nexus-staging launch config is stale.
+
 ## Phasing
 
 Each phase is a separate branch/PR, in dependency order:
@@ -243,7 +370,8 @@ Each phase is a separate branch/PR, in dependency order:
 3. Remaining inversions (c2), (c3).
 4. `SystemStore` redesign (d).
 5. Maven/module-info split, including the release-reactor version handoff.
-   Settle the keep-or-drop-`module-info` decision above before starting.
+   Settle the keep-or-drop-`module-info` decision above before starting; the
+   readiness assessment above lists the build-side work items.
 
 ## Status (2026-08-16)
 
@@ -274,3 +402,6 @@ Each phase is a separate branch/PR, in dependency order:
   `gui.look.Values` colour re-exports removed.
 - Remaining: phase 5 (build split + deferred shim/test moves + release-reactor
   version handoff), blocked on the `module-info` decision recorded above.
+- Phase-5 readiness assessment done 2026-08-17 (see the section above): code
+  side ready, seven build-side work items recorded, cli module judged not
+  viable; the `module-info` decision remains the gate.
