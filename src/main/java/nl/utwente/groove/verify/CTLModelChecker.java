@@ -16,8 +16,8 @@
  */
 package nl.utwente.groove.verify;
 
-import static nl.utwente.groove.explore.Verbosity.LOW;
 import static nl.utwente.groove.lts.StateProperty.isStateProperty;
+import static nl.utwente.groove.util.cli.Verbosity.LOW;
 
 import java.io.File;
 import java.util.ArrayList;

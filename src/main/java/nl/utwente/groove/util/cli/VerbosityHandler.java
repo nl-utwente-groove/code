@@ -19,8 +19,6 @@ package nl.utwente.groove.util.cli;
 import picocli.CommandLine.ITypeConverter;
 import picocli.CommandLine.TypeConversionException;
 
-import nl.utwente.groove.explore.Verbosity;
-
 /**
  * Option handler that checks whether a verbosity value is in the correct range.
  */
