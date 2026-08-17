@@ -124,7 +124,7 @@ public class Simulator implements SimulatorListener {
         // contribute the live "show call nesting" option to transition label texts
         RuleTransitionLabel
             .setShowCallNesting(() -> Options.instance().isSelected(SHOW_CALL_NESTING_OPTION));
-        this.model = new SimulatorModel(this);
+        this.model = new SimulatorModel(getOptions()::isSelected);
         this.actions = new ActionStore(this);
         this.undoManager = new SimulatorUndoManager(this);
         GraphPreviewDialog.setSimulator(this);
