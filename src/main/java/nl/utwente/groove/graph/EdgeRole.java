@@ -30,7 +30,6 @@ import nl.utwente.groove.annotation.Syntax;
 import nl.utwente.groove.annotation.ToolTipBody;
 import nl.utwente.groove.annotation.ToolTipHeader;
 import nl.utwente.groove.annotation.ToolTipPars;
-import nl.utwente.groove.grammar.aspect.AspectParser;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Pair;
 
@@ -66,8 +65,11 @@ public enum EdgeRole {
         this.name = name;
         this.prefix = name.length() == 0
             ? name
-            : name + AspectParser.SEPARATOR;
+            : name + SEPARATOR;
     }
+
+    /** Separator between a label prefix and the main label text. */
+    static public final char SEPARATOR = ':';
 
     /**
      * Returns the name of this edge role.
@@ -197,6 +199,6 @@ public enum EdgeRole {
             nameToSymbolMap.put(role.name(), role.getName());
             index++;
         }
-        nameToSymbolMap.put("COLON", "" + AspectParser.SEPARATOR);
+        nameToSymbolMap.put("COLON", "" + SEPARATOR);
     }
 }

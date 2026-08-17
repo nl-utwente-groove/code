@@ -18,17 +18,15 @@ package nl.utwente.groove.graph;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
-import nl.utwente.groove.grammar.host.ValueNode;
-
 /**
  * Generic command interface to deal with graph changes.
  */
 @NonNullByDefault
 public interface GDeltaTarget<N extends Node,E extends GEdge<N>> {
     /** Callback method invoked to indicate that a node is to be added.
-     * If the node is not a {@link ValueNode}, it is required to be fresh.
+     * Unless the node is a value node, it is required to be fresh.
      * @return {@code true} if the node was added (which can only fail to be true
-     * if the node is a {@link ValueNode})
+     * for value nodes)
      */
     public boolean addNode(N node);
 
