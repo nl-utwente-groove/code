@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.IOException;
 
 import gnu.prolog.vm.PrologException;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.io.store.SystemStore;
@@ -29,6 +28,7 @@ import nl.utwente.groove.prolog.GrooveState;
 import nl.utwente.groove.prolog.PrologEngine;
 import nl.utwente.groove.prolog.QueryResult;
 import nl.utwente.groove.prolog.QueryReturnValue;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

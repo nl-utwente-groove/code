@@ -41,7 +41,6 @@ import org.jgraph.graph.DefaultPort;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.ParentMap;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectKind;
@@ -60,6 +59,7 @@ import nl.utwente.groove.graph.layout.EdgeLayout;
 import nl.utwente.groove.graph.layout.LayoutMap;
 import nl.utwente.groove.util.ChangeCount;
 import nl.utwente.groove.util.ChangeCount.Derived;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatError;
 
 /**

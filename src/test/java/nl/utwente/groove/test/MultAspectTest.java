@@ -26,7 +26,6 @@ import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Test;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.GraphConverter;
@@ -37,6 +36,7 @@ import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.ResourceModel;
 import nl.utwente.groove.io.Groove;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

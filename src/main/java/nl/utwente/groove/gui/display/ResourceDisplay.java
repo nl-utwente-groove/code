@@ -42,7 +42,6 @@ import javax.swing.JTree;
 import javax.swing.border.EmptyBorder;
 
 import nl.utwente.groove.grammar.Action;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.NamedResourceModel;
@@ -62,6 +61,7 @@ import nl.utwente.groove.gui.action.SaveAction;
 import nl.utwente.groove.gui.action.SimulatorAction;
 import nl.utwente.groove.gui.tree.ResourceTree;
 import nl.utwente.groove.util.HTMLConverter;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Resource display class that includes a tabbed pane,

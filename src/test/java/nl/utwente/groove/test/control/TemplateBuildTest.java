@@ -41,7 +41,7 @@ import nl.utwente.groove.control.template.Program;
 import nl.utwente.groove.control.template.Switch;
 import nl.utwente.groove.control.template.SwitchAttempt;
 import nl.utwente.groove.control.template.Template;
-import nl.utwente.groove.grammar.QualName;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

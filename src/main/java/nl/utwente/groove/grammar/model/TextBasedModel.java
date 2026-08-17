@@ -22,7 +22,7 @@ import java.io.PrintWriter;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
-import nl.utwente.groove.grammar.QualName;
+import nl.utwente.groove.util.QualName;
 
 /**
  * General interface for resource models constructed from a flat text.

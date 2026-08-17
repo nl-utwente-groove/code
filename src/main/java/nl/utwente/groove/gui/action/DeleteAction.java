@@ -3,11 +3,11 @@ package nl.utwente.groove.gui.action;
 import java.io.IOException;
 import java.util.Set;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.io.store.EditType;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Action to delete the currently displayed control program.

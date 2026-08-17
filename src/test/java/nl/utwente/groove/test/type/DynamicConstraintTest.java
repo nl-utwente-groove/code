@@ -23,11 +23,11 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import nl.utwente.groove.explore.Exploration;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.lts.GTS;
+import nl.utwente.groove.util.QualName;
 
 /** Set of tests for dynamic type constraints. */
 public class DynamicConstraintTest {

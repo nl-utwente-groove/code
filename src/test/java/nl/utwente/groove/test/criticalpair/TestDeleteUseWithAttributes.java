@@ -24,11 +24,11 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.transform.criticalpair.CriticalPair;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

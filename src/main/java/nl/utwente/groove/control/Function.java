@@ -17,10 +17,10 @@
 package nl.utwente.groove.control;
 
 import nl.utwente.groove.grammar.GrammarProperties;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Signature;
 import nl.utwente.groove.grammar.UnitPar;
 import nl.utwente.groove.util.Fixable;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Control program function.

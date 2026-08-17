@@ -12,8 +12,6 @@ import java.io.IOException;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.grammar.QualName;
-
 /**
  * Class to include version info in a maintainable way. Taken from <a
  * href="http://forum.java.sun.com/thread.jspa?forumID=31&threadID=583820">here</a>

@@ -57,6 +57,7 @@ import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
 import nl.utwente.groove.util.NoNonNull;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

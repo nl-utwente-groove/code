@@ -40,12 +40,12 @@ import org.junit.jupiter.api.io.TempDir;
 
 import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.GrammarProperties;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.io.FileUtils;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.util.AIGenerated;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Smoke test for the undo channel of {@link SystemStore}: the edit-listener

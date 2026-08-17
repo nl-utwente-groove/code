@@ -2,11 +2,11 @@ package nl.utwente.groove.gui.action;
 
 import static nl.utwente.groove.grammar.model.ResourceKind.HOST;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.io.store.EditType;
+import nl.utwente.groove.util.QualName;
 
 /** Action to start editing the currently displayed resource. */
 public class EditAction extends SimulatorAction {

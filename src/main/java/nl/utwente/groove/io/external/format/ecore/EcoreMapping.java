@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.Settings;
@@ -38,6 +37,7 @@ import nl.utwente.groove.grammar.model.SettingsSchemas;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;

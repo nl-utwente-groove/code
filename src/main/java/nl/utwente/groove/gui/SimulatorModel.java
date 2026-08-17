@@ -29,7 +29,6 @@ import nl.utwente.groove.explore.util.StatisticsReporter;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.GrammarProperties;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.GraphBasedModel;
@@ -53,6 +52,7 @@ import nl.utwente.groove.lts.MatchResult;
 import nl.utwente.groove.lts.RecipeEvent;
 import nl.utwente.groove.lts.RuleTransition;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.SearchResult;
 

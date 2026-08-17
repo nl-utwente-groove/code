@@ -12,7 +12,6 @@ import java.util.Set;
 
 import javax.swing.JFileChooser;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
@@ -25,6 +24,7 @@ import nl.utwente.groove.io.external.Imported;
 import nl.utwente.groove.io.external.Importer;
 import nl.utwente.groove.io.external.Importers;
 import nl.utwente.groove.io.external.PortException;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

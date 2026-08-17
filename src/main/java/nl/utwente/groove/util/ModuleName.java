@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.grammar;
+package nl.utwente.groove.util;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -23,8 +23,6 @@ import java.util.List;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-
-import nl.utwente.groove.util.Strings;
 
 /**
  * Name of a module within a grammar.

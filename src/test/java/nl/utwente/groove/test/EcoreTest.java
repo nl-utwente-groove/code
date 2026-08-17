@@ -44,7 +44,6 @@ import org.eclipse.emf.ecore.EcoreFactory;
 import org.junit.Test;
 
 import nl.utwente.groove.annotation.HelpMap;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.model.GrammarModel;
@@ -68,6 +67,7 @@ import nl.utwente.groove.io.external.format.ecore.EcorePorter;
 import nl.utwente.groove.io.external.format.ecore.EcoreToGraphs;
 import nl.utwente.groove.io.external.format.ecore.GraphsToEcore;
 import nl.utwente.groove.io.store.SystemStore;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;

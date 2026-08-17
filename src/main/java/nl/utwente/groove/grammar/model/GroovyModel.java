@@ -18,7 +18,7 @@ package nl.utwente.groove.grammar.model;
 
 import static nl.utwente.groove.grammar.model.ResourceKind.GROOVY;
 
-import nl.utwente.groove.grammar.QualName;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

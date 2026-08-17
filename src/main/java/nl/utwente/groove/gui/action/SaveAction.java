@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.TextBasedModel;
@@ -16,6 +15,7 @@ import nl.utwente.groove.gui.display.ResourceTab;
 import nl.utwente.groove.gui.display.TextTab;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.graph.GxlIO;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Action to save the resource in an editor panel.

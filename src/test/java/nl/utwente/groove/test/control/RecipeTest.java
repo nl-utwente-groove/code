@@ -31,12 +31,12 @@ import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.config.LegacySyntaxParser;
 import nl.utwente.groove.grammar.Grammar;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSCounter;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

@@ -24,6 +24,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Interface for a source from which a {@link GrammarModel} and eventually a

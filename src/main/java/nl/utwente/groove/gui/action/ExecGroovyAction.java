@@ -2,11 +2,11 @@ package nl.utwente.groove.gui.action;
 
 import static nl.utwente.groove.grammar.model.ResourceKind.GROOVY;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GroovyModel;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.display.GroovyDisplay;
+import nl.utwente.groove.util.QualName;
 
 /** Action to execute the currently selected Groovy script. */
 public class ExecGroovyAction extends SimulatorAction {

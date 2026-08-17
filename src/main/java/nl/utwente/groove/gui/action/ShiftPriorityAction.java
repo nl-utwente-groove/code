@@ -13,7 +13,6 @@ import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.ResourceModel;
 import nl.utwente.groove.grammar.model.RuleModel;
@@ -21,6 +20,7 @@ import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Action that raises the priority of a selected set of rules.

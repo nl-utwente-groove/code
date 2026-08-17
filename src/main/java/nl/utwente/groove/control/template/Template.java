@@ -43,7 +43,7 @@ import nl.utwente.groove.control.graph.ControlGraph;
 import nl.utwente.groove.grammar.Action;
 import nl.utwente.groove.grammar.Callable;
 import nl.utwente.groove.grammar.Callable.Kind;
-import nl.utwente.groove.grammar.QualName;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Control automaton template.

@@ -18,9 +18,9 @@ package nl.utwente.groove.gui.action;
 
 import static nl.utwente.groove.grammar.model.ResourceKind.RULE;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Action for editing the current state or rule.

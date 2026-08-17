@@ -42,11 +42,11 @@ import nl.utwente.groove.grammar.Action;
 import nl.utwente.groove.grammar.Callable;
 import nl.utwente.groove.grammar.Callable.Kind;
 import nl.utwente.groove.grammar.CheckPolicy;
-import nl.utwente.groove.grammar.ModuleName;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Signature;
 import nl.utwente.groove.grammar.UnitPar;
 import nl.utwente.groove.grammar.UnitPar.Direction;
+import nl.utwente.groove.util.ModuleName;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.parse.FormatException;
 

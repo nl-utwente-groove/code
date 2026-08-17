@@ -31,11 +31,11 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreePath;
 
 import nl.utwente.groove.control.parse.CtrlDoc;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.gui.SimulatorModel.Change;
+import nl.utwente.groove.util.QualName;
 
 /**
  * The Simulator panel that shows the control program, with a button that shows

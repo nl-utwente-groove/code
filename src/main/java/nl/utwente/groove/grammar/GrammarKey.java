@@ -41,6 +41,7 @@ import nl.utwente.groove.util.Properties;
 import nl.utwente.groove.util.Properties.Entry;
 import nl.utwente.groove.util.Properties.KeyParser;
 import nl.utwente.groove.util.Properties.ValueType;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.ThreeValued;
 import nl.utwente.groove.util.collect.DeltaMap;

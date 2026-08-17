@@ -18,7 +18,7 @@
 package nl.utwente.groove.test.verify;
 
 import static nl.utwente.groove.algebra.Constant.instance;
-import static nl.utwente.groove.grammar.QualName.name;
+import static nl.utwente.groove.util.QualName.name;
 import static nl.utwente.groove.verify.Formula.always;
 import static nl.utwente.groove.verify.Formula.and;
 import static nl.utwente.groove.verify.Formula.literal;

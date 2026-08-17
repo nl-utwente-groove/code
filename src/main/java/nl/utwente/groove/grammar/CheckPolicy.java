@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.TreeMap;
 
 import nl.utwente.groove.grammar.Action.Role;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatException;

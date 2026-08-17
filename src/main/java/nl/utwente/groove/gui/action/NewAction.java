@@ -7,7 +7,6 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import nl.utwente.groove.explore.config.ExploreConfigSchema;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.SettingsSchema;
@@ -16,6 +15,7 @@ import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.UserSettings;
 import nl.utwente.groove.io.store.EditType;
+import nl.utwente.groove.util.QualName;
 
 /** Action to create and start editing a new control program. */
 public class NewAction extends SimulatorAction {

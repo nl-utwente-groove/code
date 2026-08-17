@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import nl.utwente.groove.control.Procedure;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Class wrapping a transaction.

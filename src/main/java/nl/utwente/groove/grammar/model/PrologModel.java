@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.grammar.model;
 
-import nl.utwente.groove.grammar.QualName;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 

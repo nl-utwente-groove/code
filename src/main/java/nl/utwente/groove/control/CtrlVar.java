@@ -21,8 +21,8 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.algebra.syntax.Variable;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Control variables, consisting of an optional scope (being the defining procedure

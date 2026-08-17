@@ -24,14 +24,14 @@ import org.codehaus.groovy.control.CompilationFailedException;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import groovy.lang.GroovyClassLoader;
-import nl.utwente.groove.grammar.ModuleName;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.GroovyModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.rule.MethodName.Language;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.ModuleName;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

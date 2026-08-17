@@ -49,9 +49,9 @@ import nl.utwente.groove.control.template.Program;
 import nl.utwente.groove.control.template.Switch;
 import nl.utwente.groove.grammar.Callable;
 import nl.utwente.groove.grammar.Grammar;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.io.Groove;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

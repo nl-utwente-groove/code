@@ -19,9 +19,9 @@ package nl.utwente.groove.gui.tree;
 import javax.swing.Icon;
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.util.HTMLConverter;
+import nl.utwente.groove.util.QualName;
 
 /**
  * A {@link ResourceTreeNode} is a {@link DefaultMutableTreeNode} that

@@ -20,8 +20,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 
-import nl.utwente.groove.grammar.QualName;
-
 /**
  * The GROOVE package name space, and access to the resources residing in it.
  * @version $Revision$

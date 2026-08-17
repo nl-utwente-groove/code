@@ -33,7 +33,6 @@ import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.algebra.syntax.Variable;
 import nl.utwente.groove.control.CtrlType;
 import nl.utwente.groove.control.CtrlVar;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Signature;
 import nl.utwente.groove.grammar.UnitPar;
 import nl.utwente.groove.grammar.UnitPar.Direction;
@@ -43,6 +42,7 @@ import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.grammar.rule.VariableNode;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeNode;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

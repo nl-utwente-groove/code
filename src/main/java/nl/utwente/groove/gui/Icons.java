@@ -29,10 +29,10 @@ import java.awt.image.BufferedImage;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.tree.CheckBoxPassiveIcon;
 import nl.utwente.groove.io.store.EditType;
+import nl.utwente.groove.util.QualName;
 
 /**
  * List of all icons used in the GUI.

@@ -37,7 +37,6 @@ import nl.utwente.groove.grammar.Action.Role;
 import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.grammar.CheckPolicy.PolicyMap;
 import nl.utwente.groove.grammar.ParallelMode;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.rule.MethodName;
 import nl.utwente.groove.transform.oracle.ValueOracleFactory;
 import nl.utwente.groove.util.HTMLConverter.HTMLTag;

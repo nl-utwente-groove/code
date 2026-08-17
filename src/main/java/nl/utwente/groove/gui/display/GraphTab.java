@@ -20,7 +20,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.jgraph.JGraph;
 import org.jgraph.graph.DefaultGraphModel.GraphModelEdit;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
@@ -36,6 +35,7 @@ import nl.utwente.groove.gui.jgraph.JModel;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.tree.RuleLevelTree;
 import nl.utwente.groove.gui.tree.TypeTree;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatError;
 
 /** Display tab component showing a graph-based resource. */

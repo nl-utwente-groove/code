@@ -36,10 +36,10 @@ import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.GrammarProperties;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.io.store.SystemStore;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.Version;
 import nl.utwente.groove.util.parse.FormatException;
 

@@ -35,7 +35,6 @@ import org.junit.Test;
 import junit.framework.TestCase;
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.algebra.UserOpsExample;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.aspect.GraphConverter;
 import nl.utwente.groove.grammar.host.HostGraph;
@@ -50,6 +49,7 @@ import nl.utwente.groove.transform.Proof;
 import nl.utwente.groove.transform.RuleApplication;
 import nl.utwente.groove.transform.RuleEvent;
 import nl.utwente.groove.transform.oracle.ValueOracle;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
 /** Set of tests for rule application. */
