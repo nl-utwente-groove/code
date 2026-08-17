@@ -280,4 +280,12 @@ public class ExploreConfigSchema implements SettingsSchema {
     /** The name of this schema, doubling as the top-level folder its settings
      * resources live in. */
     public static final String NAME = "explore";
+
+    /** Service provider contributing {@link #INSTANCE} to the schema registry. */
+    public static class Provider implements SettingsSchema.Provider {
+        @Override
+        public SettingsSchema getSchema() {
+            return INSTANCE;
+        }
+    }
 }
