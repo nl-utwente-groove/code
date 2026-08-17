@@ -27,6 +27,10 @@ import org.junit.platform.suite.api.Suite;
  * classes themselves; the "GROOVE - all JUnit tests" launch configuration runs
  * exactly this class. Surefire, which does discover the classes directly,
  * excludes this file in the pom — running both would execute every test twice.
+ * <p>
+ * Note that the launch configuration lists an {@code --add-opens} VM argument
+ * per test package (the JUnit engines live in the unnamed module and access
+ * test classes reflectively); a new test package needs a line added there.
  * @author Arend Rensink
  * @version $Revision$
  */
