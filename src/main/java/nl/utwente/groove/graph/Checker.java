@@ -14,9 +14,8 @@
  *
  * $Id$
  */
-package nl.utwente.groove.util;
+package nl.utwente.groove.graph;
 
-import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 
 /**

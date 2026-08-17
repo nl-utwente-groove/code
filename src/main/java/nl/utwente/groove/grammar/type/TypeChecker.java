@@ -17,7 +17,7 @@
 package nl.utwente.groove.grammar.type;
 
 import nl.utwente.groove.grammar.host.HostGraph;
-import nl.utwente.groove.util.Checker;
+import nl.utwente.groove.graph.Checker;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 
 /**
