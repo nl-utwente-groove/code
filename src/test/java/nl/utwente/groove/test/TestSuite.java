@@ -1,6 +1,5 @@
 package nl.utwente.groove.test;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.platform.suite.api.ExcludeEngines;
 import org.junit.platform.suite.api.SelectPackages;
 import org.junit.platform.suite.api.Suite;
@@ -23,11 +22,14 @@ import org.junit.platform.suite.api.Suite;
  */
 
 /**
- * Test suite for all GROOVE tests
+ * Test suite for all GROOVE tests.
+ * This is the single-class entry point for runners that do not discover test
+ * classes themselves; the "GROOVE - all JUnit tests" launch configuration runs
+ * exactly this class. Surefire, which does discover the classes directly,
+ * excludes this file in the pom — running both would execute every test twice.
  * @author Arend Rensink
  * @version $Revision$
  */
-@Tag("all")
 @Suite
 @SelectPackages("nl.utwente.groove.test")
 @ExcludeEngines("junit-platform-suite")

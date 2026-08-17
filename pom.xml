@@ -132,9 +132,10 @@
 				<configuration>
 					<excludedGroups>${excluded.test.groups}</excludedGroups>
 					<excludes>
-						<!-- TestSuite aggregates the whole package tree for the
-						     Eclipse JUnit launcher; Surefire discovers the test
-						     classes directly, so running the suite as well would
+						<!-- TestSuite aggregates the whole package tree as the
+						     entry point of the "GROOVE - all JUnit tests"
+						     launch; Surefire discovers the test classes
+						     directly, so running the suite as well would
 						     execute every test twice. -->
 						<exclude>**/TestSuite.java</exclude>
 					</excludes>
