@@ -15,14 +15,17 @@
  * $Id$
  */
 
-package nl.utwente.groove.verify;
+package nl.utwente.groove.explore.verify;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import nl.utwente.groove.explore.result.ResultCollector;
-import nl.utwente.groove.explore.verify.LTLStrategy;
 import nl.utwente.groove.verify.ModelChecking.Record;
+import nl.utwente.groove.verify.ProductListener;
+import nl.utwente.groove.verify.ProductState;
+import nl.utwente.groove.verify.ProductStateSet;
+import nl.utwente.groove.verify.ProductTransition;
 
 /**
  * Acceptor that is notified on closing a Buchi graph-state in a
