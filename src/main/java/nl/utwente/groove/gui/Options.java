@@ -107,7 +107,9 @@ public class Options implements Cloneable {
      */
     private final JCheckBoxMenuItem addCheckbox(final String name) {
         JCheckBoxMenuItem result = new JCheckBoxMenuItem(name);
-        boolean selected = userPrefs.getBoolean(name, boolOptionDefaults.get(name));
+        Boolean defaultValue = boolOptionDefaults.get(name);
+        assert defaultValue != null; // every checkbox option has a registered default
+        boolean selected = userPrefs.getBoolean(name, defaultValue);
         boolean enabled = isEnabled(name);
         result.setSelected(selected & enabled);
         this.itemMap.put(name, result);
@@ -141,7 +143,9 @@ public class Options implements Cloneable {
      */
     private final BehaviourOption addBehaviour(final String name, int optionCount) {
         BehaviourOption result = new BehaviourOption(name, optionCount);
-        result.setValue(userPrefs.getInt(name, intOptionDefaults.get(name)));
+        Integer defaultValue = intOptionDefaults.get(name);
+        assert defaultValue != null; // every behaviour option has a registered default
+        result.setValue(userPrefs.getInt(name, defaultValue));
         result.addPropertyChangeListener(BehaviourOption.SELECTION, new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent e) {
@@ -177,7 +181,9 @@ public class Options implements Cloneable {
      * @return the value of the checkbox item with the given name
      */
     public boolean isSelected(String name) {
-        return this.itemMap.get(name).isSelected();
+        JMenuItem item = this.itemMap.get(name);
+        assert item != null; // the item map is filled for all option names
+        return item.isSelected();
     }
 
     /**
@@ -186,7 +192,9 @@ public class Options implements Cloneable {
      * @param selected the new selection value of the menu item
      */
     public void setSelected(String name, boolean selected) {
-        this.itemMap.get(name).setSelected(selected);
+        JMenuItem item = this.itemMap.get(name);
+        assert item != null; // the item map is filled for all option names
+        item.setSelected(selected);
     }
 
     /**
@@ -198,6 +206,7 @@ public class Options implements Cloneable {
      */
     public int getValue(String name) {
         JMenuItem item = this.itemMap.get(name);
+        assert item != null; // the item map is filled for all option names
         if (item instanceof BehaviourOption) {
             return ((BehaviourOption) item).getValue();
         } else {
@@ -215,6 +224,7 @@ public class Options implements Cloneable {
      */
     public void setValue(String name, int value) {
         JMenuItem item = this.itemMap.get(name);
+        assert item != null; // the item map is filled for all option names
         if (item instanceof BehaviourOption) {
             ((BehaviourOption) item).setValue(value);
         } else {

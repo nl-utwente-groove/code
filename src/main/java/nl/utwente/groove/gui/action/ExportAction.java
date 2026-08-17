@@ -98,7 +98,9 @@ public class ExportAction extends SimulatorAction {
                 if (!askEcoreOptions(fileType)) {
                     return;
                 }
-                exporters.get(fileType).doExport(exportable, selectedFile, fileType);
+                Exporter exporter = exporters.get(fileType);
+                assert exporter != null; // the chooser only offers file types from the exporter map
+                exporter.doExport(exportable, selectedFile, fileType);
             } catch (PortException | IOException e) {
                 showErrorDialog(e, "Error while exporting to " + selectedFile);
             }

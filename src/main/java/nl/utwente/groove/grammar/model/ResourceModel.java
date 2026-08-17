@@ -199,7 +199,9 @@ abstract public class ResourceModel<R> {
      * @throws IllegalArgumentException if the kind is not a registered dependency
      */
     private @NonNull Tracker getTracker(ResourceKind kind) {
-        return this.resourceTrackers.get(kind);
+        var result = this.resourceTrackers.get(kind);
+        assert result != null; // all resource kinds are pre-populated
+        return result;
     }
 
     /** Resource modification trackers. */

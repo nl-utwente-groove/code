@@ -260,18 +260,26 @@ public class Namespace implements ParseInfo, Fallible {
 
     /** Adds an import to the map of the current control program. */
     public void addImport(QualName fullName) {
-        this.importedMap.get(this.controlName).add(fullName);
-        this.importMap.get(this.controlName).put(fullName.last(), fullName);
+        var imported = this.importedMap.get(this.controlName);
+        assert imported != null; // the control name has been registered by setControlInfo
+        imported.add(fullName);
+        var imports = this.importMap.get(this.controlName);
+        assert imports != null; // the control name has been registered by setControlInfo
+        imports.put(fullName.last(), fullName);
     }
 
     /** Tests if a given qualified name is imported. */
     public boolean hasImport(QualName fullName) {
-        return this.importedMap.get(this.controlName).contains(fullName);
+        var imported = this.importedMap.get(this.controlName);
+        assert imported != null; // the control name has been registered by setControlInfo
+        return imported.contains(fullName);
     }
 
     /** Returns a mapping from last names to full names for all imported names. */
     public Map<String,QualName> getImportMap() {
-        return this.importMap.get(this.controlName);
+        var result = this.importMap.get(this.controlName);
+        assert result != null; // the control name has been registered by setControlInfo
+        return result;
     }
 
     /** Map from control names to sets of imported action names. */

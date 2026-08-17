@@ -239,8 +239,9 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
         boolean find() {
             Valuation valuation = new Valuation();
             for (LabelVar var : RegExprEdgeSearchItem.this.prematchedVars) {
-                TypeElement image =
-                    this.search.getVar(RegExprEdgeSearchItem.this.varIxMap.get(var));
+                Integer varIx = RegExprEdgeSearchItem.this.varIxMap.get(var);
+                assert varIx != null; // the var index map is filled for all prematched vars
+                TypeElement image = this.search.getVar(varIx);
                 assert image != null;
                 valuation.put(var, image);
             }
@@ -324,8 +325,9 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
             }
             Valuation valuation = new Valuation();
             for (LabelVar var : RegExprEdgeSearchItem.this.prematchedVars) {
-                TypeElement image =
-                    this.search.getVar(RegExprEdgeSearchItem.this.varIxMap.get(var));
+                Integer varIx = RegExprEdgeSearchItem.this.varIxMap.get(var);
+                assert varIx != null; // the var index map is filled for all prematched vars
+                TypeElement image = this.search.getVar(varIx);
                 assert image != null;
                 valuation.put(var, image);
             }

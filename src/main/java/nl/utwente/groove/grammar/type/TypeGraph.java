@@ -134,8 +134,10 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
             otherToThis.put(source, image);
         }
         for (TypeEdge otherEdge : other.edgeSet()) {
-            TypeEdge image = addEdge(otherToThis.get(otherEdge.source()), otherEdge.label(),
-                                     otherToThis.get(otherEdge.target()));
+            var imageSource = otherToThis.get(otherEdge.source());
+            var imageTarget = otherToThis.get(otherEdge.target());
+            assert imageSource != null && imageTarget != null; // all nodes of other were mapped above
+            TypeEdge image = addEdge(imageSource, otherEdge.label(), imageTarget);
             image.setInMult(otherEdge.getInMult());
             image.setOutMult(otherEdge.getOutMult());
             image.setAbstract(otherEdge.isAbstract());
@@ -225,20 +227,29 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
         if (subtype.label().isSort()) {
             throw new FormatException("Data type '%s' cannot be subtype", subtype);
         }
-        if (this.nodeSupertypeMap.get(supertype).contains(subtype)) {
+        Set<TypeNode> supersupertypes = this.nodeSupertypeMap.get(supertype);
+        assert supersupertypes != null; // supertype is a node of this graph
+        if (supersupertypes.contains(subtype)) {
             throw new FormatException(String
                 .format("The relation '%s -> %s' introduces a cyclic type dependency", subtype,
                         supertype));
         }
-        this.nodeDirectSubtypeMap.get(supertype).add(subtype);
-        this.nodeDirectSupertypeMap.get(subtype).add(supertype);
+        Set<TypeNode> directSubtypes = this.nodeDirectSubtypeMap.get(supertype);
+        Set<TypeNode> directSupertypes = this.nodeDirectSupertypeMap.get(subtype);
         Set<TypeNode> subsubtypes = this.nodeSubtypeMap.get(subtype);
-        Set<TypeNode> supersupertypes = this.nodeSupertypeMap.get(supertype);
+        assert directSubtypes != null && directSupertypes != null
+            && subsubtypes != null; // subtype and supertype are nodes of this graph
+        directSubtypes.add(subtype);
+        directSupertypes.add(supertype);
         for (TypeNode subsubtype : subsubtypes) {
-            this.nodeSupertypeMap.get(subsubtype).addAll(supersupertypes);
+            var subsuperTypes = this.nodeSupertypeMap.get(subsubtype);
+            assert subsuperTypes != null; // subsubtype is a node of this graph
+            subsuperTypes.addAll(supersupertypes);
         }
         for (TypeNode supersupertype : supersupertypes) {
-            this.nodeSubtypeMap.get(supersupertype).addAll(subsubtypes);
+            var supersubTypes = this.nodeSubtypeMap.get(supersupertype);
+            assert supersubTypes != null; // supersupertype is a node of this graph
+            supersubTypes.addAll(subsubtypes);
         }
     }
 
@@ -354,14 +365,19 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
             // add the relations from abstract edge types to subtypes and back
             for (TypeEdge edge : edgeSet()) {
                 Set<TypeEdge> subtypes = this.edgeSubtypeMap.get(edge);
+                assert subtypes != null; // filled for all edges above
                 if (edge.isAbstract()) {
                     Set<TypeNode> sourceSubnodes = this.nodeSubtypeMap.get(edge.source());
                     Set<TypeNode> targetSubnodes = this.nodeSubtypeMap.get(edge.target());
+                    assert sourceSubnodes != null
+                        && targetSubnodes != null; // edge ends are nodes of this graph
                     for (TypeEdge subEdge : edgeSet(edge.label())) {
                         if (sourceSubnodes.contains(subEdge.source())
                             && targetSubnodes.contains(subEdge.target())) {
                             subtypes.add(subEdge);
-                            this.edgeSupertypeMap.get(subEdge).add(edge);
+                            var superTypes = this.edgeSupertypeMap.get(subEdge);
+                            assert superTypes != null; // filled for all edges above
+                            superTypes.add(edge);
                         }
                     }
                 }
@@ -534,6 +550,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
                     // get the type from the parent typing or from the node type edges
                     RuleNode parentImage = parentTyping.getNode(node);
                     image = nodeImageMap.get(node);
+                    assert image != null; // computeNodeImages covers all default rule nodes
                     if (parentImage != null) {
                         TypeNode parentType = parentImage.getType();
                         if (!isSubtype(image.getType(), parentType)) {
@@ -824,8 +841,10 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
             for (var e : nodeVarsMap.entrySet()) {
                 RuleNode node = e.getKey();
                 Set<TypeNode> nodeTypes = allowedTypesMap.get(node);
+                assert nodeTypes != null; // an error was thrown above otherwise
                 for (LabelVar var : e.getValue()) {
                     Set<TypeNode> varTypes = varTypesMap.get(var);
+                    assert varTypes != null; // filled for all vars occurring on nodes
                     changed |= varTypes.retainAll(nodeTypes);
                     changed |= nodeTypes.retainAll(varTypes);
                 }
@@ -839,6 +858,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
             if (allowedTypes.isEmpty()) {
                 // this must have become empty because of type variable constraints
                 Set<LabelVar> vars = nodeVarsMap.get(node);
+                assert vars != null; // the types were emptied by variable constraints
                 String varString = Strings.toString(vars.toArray(), ", ", " and ");
                 if (declaredType == null) {
                     errors.add("Inconsistent type variable constraints for %s", node);

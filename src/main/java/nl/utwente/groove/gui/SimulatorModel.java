@@ -201,6 +201,7 @@ public class SimulatorModel implements Cloneable {
             Collection<AspectGraph> newRules = new ArrayList<>(names.size());
             for (QualName ruleName : names) {
                 AspectGraph oldRule = getStore().getGraphs(ResourceKind.RULE).get(ruleName);
+                assert oldRule != null; // the named rules exist in the store
                 AspectGraph newRule = oldRule.clone();
                 GraphInfo.setEnabled(newRule, !GraphInfo.isEnabled(oldRule));
                 newRule.setFixed();
@@ -369,6 +370,7 @@ public class SimulatorModel implements Cloneable {
         Set<AspectGraph> newGraphs = new HashSet<>();
         for (Map.Entry<QualName,Integer> entry : priorityMap.entrySet()) {
             AspectGraph oldGraph = getStore().getGraphs(ResourceKind.RULE).get(entry.getKey());
+            assert oldGraph != null; // the priority map keys are names of rules in the store
             if (GraphInfo.getPriority(oldGraph) != entry.getValue()) {
                 AspectGraph newGraph = oldGraph.clone();
                 GraphInfo.setPriority(newGraph, entry.getValue());
@@ -1256,6 +1258,7 @@ public class SimulatorModel implements Cloneable {
      */
     public final QualName getSelected(ResourceKind kind) {
         Set<QualName> resourceSet = this.resources.get(kind);
+        assert resourceSet != null; // the resource map is initialised for all non-properties kinds
         return resourceSet.isEmpty()
             ? null
             : resourceSet.iterator().next();
@@ -1505,6 +1508,7 @@ public class SimulatorModel implements Cloneable {
         }
         for (Change change : changes) {
             List<SimulatorListener> listeners = this.listeners.get(change);
+            assert listeners != null; // the listener map is initialised for all change kinds
             if (!listeners.contains(listener)) {
                 listeners.add(listener);
             }
@@ -1522,7 +1526,9 @@ public class SimulatorModel implements Cloneable {
             changes = Change.values();
         }
         for (Change change : changes) {
-            this.listeners.get(change).remove(listener);
+            List<SimulatorListener> listeners = this.listeners.get(change);
+            assert listeners != null; // the listener map is initialised for all change kinds
+            listeners.remove(listener);
         }
     }
 

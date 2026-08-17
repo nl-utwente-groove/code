@@ -465,7 +465,9 @@ public class Operator implements Comparable<Operator> {
      * for that sort with that symbol/name; or {@code null} if there is no
      * such operator. */
     public static @Nullable Operator getOp(Sort sort, String name) {
-        return sortOpLookupMap.get().get(sort).get(name);
+        var sortOps = sortOpLookupMap.get().get(sort);
+        assert sortOps != null; // all sorts are pre-populated
+        return sortOps.get(name);
     }
 
     /** Mapping from sorts plus operator names and symbols to the (optional) operator

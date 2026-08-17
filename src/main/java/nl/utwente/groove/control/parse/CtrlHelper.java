@@ -212,7 +212,9 @@ public class CtrlHelper {
             String simpleName = qualName.last();
             Map<String,QualName> importMap = getNamespace().getImportMap();
             if (importMap.containsKey(simpleName)) {
-                qualName = importMap.get(simpleName);
+                var imported = importMap.get(simpleName);
+                assert imported != null; // the key presence has just been tested
+                qualName = imported;
             } else if (!isAnyOther(simpleName)) {
                 qualName = this.packageName.extend(simpleName);
             }

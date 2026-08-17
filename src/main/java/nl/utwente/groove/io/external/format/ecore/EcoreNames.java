@@ -383,7 +383,8 @@ public class EcoreNames {
             for (var group : groupByName(depths).values()) {
                 if (group.size() > 1) {
                     for (var c : group) {
-                        int depth = depths.get(c);
+                        Integer depth = depths.get(c);
+                        assert depth != null; // the groups are built from the depth map
                         if (depth < segmentsOf(c.getEPackage()).size()) {
                             depths.put(c, depth + 1);
                             changed = true;
@@ -395,7 +396,9 @@ public class EcoreNames {
         // classifiers that are still ambiguous get a numeric suffix
         for (var c : this.classifiers) {
             if (!this.typeNameOverrides.containsKey(c)) {
-                this.labelMap.put(c, disambiguate(nameOf(c, depths.get(c)), used));
+                Integer depth = depths.get(c);
+                assert depth != null; // all non-overridden classifiers are in the depth map
+                this.labelMap.put(c, disambiguate(nameOf(c, depth), used));
             }
         }
         // enum literals are named after their enum, their style or their override
@@ -423,7 +426,9 @@ public class EcoreNames {
     private Map<String,List<EClassifier>> groupByName(Map<EClassifier,Integer> depths) {
         Map<String,List<EClassifier>> result = new LinkedHashMap<>();
         for (var c : depths.keySet()) {
-            result.computeIfAbsent(nameOf(c, depths.get(c)), n -> new ArrayList<>()).add(c);
+            Integer depth = depths.get(c);
+            assert depth != null; // c is a key of the depth map
+            result.computeIfAbsent(nameOf(c, depth), n -> new ArrayList<>()).add(c);
         }
         return result;
     }

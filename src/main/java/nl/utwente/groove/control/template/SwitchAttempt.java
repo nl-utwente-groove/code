@@ -74,8 +74,11 @@ public class SwitchAttempt extends Attempt<Location,NestedSwitch> implements Rel
     @Override
     public SwitchAttempt relocate(Relocation map) {
         Location newSource = map.get(source());
+        assert newSource != null; // the relocation map is defined on all locations
         Location newSuccess = map.get(onSuccess());
+        assert newSuccess != null; // the relocation map is defined on all locations
         Location newFailure = map.get(onFailure());
+        assert newFailure != null; // the relocation map is defined on all locations
         return new SwitchAttempt(newSource, newSuccess, newFailure, size(), getPropertyCount(),
             stream().map(s -> s.relocate(map)));
     }

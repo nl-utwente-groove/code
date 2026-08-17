@@ -278,7 +278,10 @@ public class PlanSearchStrategy implements SearchStrategy {
                             .stream()
                             .map(this.edgeIxMap::get)
                             .filter(ix -> ix != null)
-                            .mapToInt(Integer::intValue)
+                            .mapToInt(ix -> {
+                                assert ix != null; // the null values have just been filtered out
+                                return ix;
+                            })
                             .toArray();
                     }
                 }

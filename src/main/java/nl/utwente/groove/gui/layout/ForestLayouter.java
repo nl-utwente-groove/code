@@ -148,6 +148,7 @@ public class ForestLayouter extends AbstractLayouter {
                 }
             }
             Set<LayoutNode> branchSet = branchMap.get(key);
+            assert branchSet != null; // the branch map was filled for every layout map key
             for (JEdge<?> edge : outEdges) {
                 JVertex<?> targetVertex = edge.getTargetVertex();
                 branchSet.add(this.layoutMap.get(targetVertex));

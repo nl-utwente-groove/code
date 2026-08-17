@@ -103,6 +103,7 @@ public class AntlrGrapher {
             assert next != null;
             pool.remove(next);
             HostNode nextNode = treeNodeMap.get(next);
+            assert nextNode != null; // every tree in the pool has been added to the map
             HostNode prevChild = null;
             for (int i = 0; i < next.getChildCount(); i++) {
                 CommonTree child = (CommonTree) next.getChild(i);

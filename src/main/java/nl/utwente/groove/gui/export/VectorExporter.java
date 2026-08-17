@@ -65,7 +65,9 @@ public class VectorExporter extends AbstractExporter {
                 .format("'%s' does not contain a rendered graph and hence cannot be exported to %s",
                         exportable.qualName(), fileType.getExtension()));
         }
-        this.formats.get(fileType).renderGraph(jExportable.jGraph(), file);
+        var format = this.formats.get(fileType);
+        assert format != null; // the format map holds an entry for every registered file type
+        format.renderGraph(jExportable.jGraph(), file);
     }
 
     private final Map<FileType,GraphToVector> formats = new EnumMap<>(FileType.class);

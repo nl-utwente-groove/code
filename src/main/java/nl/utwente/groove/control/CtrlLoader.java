@@ -163,7 +163,9 @@ public class CtrlLoader {
         Program result = new Program();
         for (QualName name : progNames) {
             try {
-                CtrlTree tree = this.controlTreeMap.get(name).check();
+                CtrlTree controlTree = this.controlTreeMap.get(name);
+                assert controlTree != null; // the program names have been parsed by addControl
+                CtrlTree tree = controlTree.check();
                 result.add(tree.toFragment());
             } catch (FormatException e) {
                 for (FormatError error : e.getErrors()) {
@@ -267,7 +269,9 @@ public class CtrlLoader {
         }
         Map<QualName,String> result = new HashMap<>();
         for (QualName controlName : changed) {
-            result.put(controlName, rewriterMap.get(controlName).toString());
+            var rewriter = rewriterMap.get(controlName);
+            assert rewriter != null; // a name is only changed after its rewriter has been created
+            result.put(controlName, rewriter.toString());
         }
         return result;
     }

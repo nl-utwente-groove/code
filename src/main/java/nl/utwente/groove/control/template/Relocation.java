@@ -55,6 +55,7 @@ public class Relocation extends HashMap<Location,Location> {
                     for (Location sourceLoc : source.getLocations()) {
                         if (sourceLoc.isTrial()) {
                             Location targetLoc = get(sourceLoc);
+                            assert targetLoc != null; // all locations of a relocated template are in the map
                             targetLoc.setAttempt(sourceLoc.getAttempt().relocate(Relocation.this));
                         }
                     }

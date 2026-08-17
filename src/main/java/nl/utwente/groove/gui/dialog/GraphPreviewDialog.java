@@ -177,7 +177,9 @@ public class GraphPreviewDialog<G extends @NonNull Graph> extends JDialog {
         final GraphRole role = graph.getRole();
         final String name = graph.getName();
         synchronized (recentPreviews) {
-            if (!TIMER || recentPreviews.get(role).add(name)) {
+            final Set<String> previews = recentPreviews.get(role);
+            assert previews != null; // all graph roles are pre-populated
+            if (!TIMER || previews.add(name)) {
                 new GraphPreviewDialog<>(simulator, graph).setVisible(true);
                 if (TIMER) {
                     final Timer timer = new Timer();
@@ -185,7 +187,7 @@ public class GraphPreviewDialog<G extends @NonNull Graph> extends JDialog {
                         @Override
                         public void run() {
                             synchronized (recentPreviews) {
-                                recentPreviews.get(role).remove(name);
+                                previews.remove(name);
                             }
                             timer.cancel();
                         }

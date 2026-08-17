@@ -375,7 +375,9 @@ class ConfluenceAnalyzer {
                 morphism.putNode(cHostNode, tHostNode);
             } else {
                 //if the morphism already has a different target for cHostNode
-                if (!morphism.nodeMap().get(cHostNode).equals(tHostNode)) {
+                HostNode cImage = morphism.nodeMap().get(cHostNode);
+                assert cImage != null; // the morphism has cHostNode in its key set
+                if (!cImage.equals(tHostNode)) {
                     return false;
                 }
             }
@@ -394,7 +396,9 @@ class ConfluenceAnalyzer {
                 morphism.putEdge(cHostEdge, tHostEdge);
             } else {
                 //if the morphism already has a different target for cHostNode
-                if (!morphism.edgeMap().get(cHostEdge).equals(tHostEdge)) {
+                HostEdge cImage = morphism.edgeMap().get(cHostEdge);
+                assert cImage != null; // the morphism has cHostEdge in its key set
+                if (!cImage.equals(tHostEdge)) {
                     return false;
                 }
             }

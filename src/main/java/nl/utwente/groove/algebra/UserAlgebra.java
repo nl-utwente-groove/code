@@ -47,6 +47,7 @@ public final class UserAlgebra extends UserSignature implements Algebra<Object> 
         assert claz.getAnnotation(UserType.class) != null : "Object type '%s' is not user-defined"
             .formatted(claz);
         var op = UserSignature.getOperators().get(claz.getSimpleName());
+        assert op != null; // every user type has a constructor operator of the same name
         var rc = claz.getRecordComponents();
         var args = new Expression[rc.length];
         for (int i = 0; i < rc.length; i++) {

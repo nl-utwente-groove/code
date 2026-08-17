@@ -156,6 +156,7 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<@NonNull RegNode,@NonNull Reg
             valuation = Valuation.EMPTY;
         }
         Map<List<TypeLabel>,DFA> dfaMap = this.dfas.get(dir);
+        assert dfaMap != null; // the DFA map is filled for all directions on fixing
         List<TypeLabel> varImages = getVarImages(valuation);
         DFA result = dfaMap.get(varImages);
         if (result == null) {
@@ -198,7 +199,9 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<@NonNull RegNode,@NonNull Reg
                             addToImages(succMap, l, opposite);
                         }
                     } else {
-                        TypeLabel l = valuation.get(guard.getVar()).label();
+                        TypeElement e = valuation.get(guard.getVar());
+                        assert e != null; // the valuation is total for the label vars of this NFA
+                        TypeLabel l = e.label();
                         if (matches.contains(l)) {
                             addToImages(succMap, l, opposite);
                         }
@@ -206,7 +209,9 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<@NonNull RegNode,@NonNull Reg
                 }
             }
             for (Direction d : Direction.values()) {
-                for (Map.Entry<TypeLabel,Set<RegNode>> le : succMaps.get(d).entrySet()) {
+                Map<TypeLabel,Set<RegNode>> dSuccMap = succMaps.get(d);
+                assert dSuccMap != null; // the successor maps are filled for all directions
+                for (Map.Entry<TypeLabel,Set<RegNode>> le : dSuccMap.entrySet()) {
                     Set<RegNode> ns = le.getValue();
                     DFAState target = result.getState(ns);
                     if (target == null) {
@@ -294,12 +299,13 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<@NonNull RegNode,@NonNull Reg
                 letter = letter.substring(invOp.length());
             }
             TypeLabel label = typeFactory.createLabel(letter);
-            dfaState = dfaState
+            Map<TypeLabel,DFAState> labelMap = dfaState
                 .getLabelMap()
                 .get(inverse
                     ? INCOMING
-                    : OUTGOING)
-                .get(label);
+                    : OUTGOING);
+            assert labelMap != null; // the label map is filled for all directions
+            dfaState = labelMap.get(label);
             if (dfaState == null) {
                 break;
             }

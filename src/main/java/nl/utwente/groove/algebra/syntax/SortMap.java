@@ -52,7 +52,6 @@ public class SortMap {
 
     /** Adds a variable plus sort to this sort map.
      * @throws IllegalArgumentException if variable already occurs with another sort. */
-    @SuppressWarnings("null")
     public void add(String var, Sort sort) {
         Sort oldType = this.sortMap.put(var, sort);
         if (oldType != null && !oldType.equals(sort)) {
@@ -106,7 +105,9 @@ public class SortMap {
      */
     public Optional<Sort> getSort(String varName) {
         Sort sort = this.sortMap.get(varName);
-        return Optional.ofNullable(sort);
+        return sort == null
+            ? Optional.empty()
+            : Optional.of(sort);
     }
 
     /**
@@ -116,7 +117,9 @@ public class SortMap {
      */
     public Optional<Sort> getSort(QualName qualName) {
         Sort sort = this.sortMap.get(qualName.toString());
-        return Optional.ofNullable(sort);
+        return sort == null
+            ? Optional.empty()
+            : Optional.of(sort);
     }
 
     /** Returns the variable names typed by this sort map. */

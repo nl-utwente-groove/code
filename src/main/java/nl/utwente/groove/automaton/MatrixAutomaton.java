@@ -267,11 +267,13 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<@NonNull RegNode,@NonNu
         for (Direction direction : Direction.values()) {
             Map<TypeLabel,int[]>[] posLabelEdgeIndices = new Map[indexedNodeCount];
             Map<TypeLabel,int[]>[] invLabelEdgeIndices = new Map[indexedNodeCount];
+            Map<TypeLabel,Set<RegEdge>>[] posLabelEdges = nodePosLabelEdgeMap.get(direction);
+            assert posLabelEdges != null; // the map is filled for all directions
+            Map<TypeLabel,Set<RegEdge>>[] invLabelEdges = nodeInvLabelEdgeMap.get(direction);
+            assert invLabelEdges != null; // the map is filled for all directions
             for (int nodeIndex = 0; nodeIndex < indexedNodeCount; nodeIndex++) {
-                posLabelEdgeIndices[nodeIndex]
-                    = toIntArrayMap(nodePosLabelEdgeMap.get(direction)[nodeIndex]);
-                invLabelEdgeIndices[nodeIndex]
-                    = toIntArrayMap(nodeInvLabelEdgeMap.get(direction)[nodeIndex]);
+                posLabelEdgeIndices[nodeIndex] = toIntArrayMap(posLabelEdges[nodeIndex]);
+                invLabelEdgeIndices[nodeIndex] = toIntArrayMap(invLabelEdges[nodeIndex]);
             }
             this.nodePosLabelEdgeIndicesMap.put(direction, posLabelEdgeIndices);
             this.nodeInvLabelEdgeIndicesMap.put(direction, invLabelEdgeIndices);
@@ -303,7 +305,9 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<@NonNull RegNode,@NonNu
                 if (allVarMap.containsKey(target)) {
                     // the target is known; take the union of all vars and the
                     // intersection of the bound vars
-                    allVarMap.get(target).addAll(targetAllVarSet);
+                    Set<LabelVar> targetVars = allVarMap.get(target);
+                    assert targetVars != null; // the target is a key of the map
+                    targetVars.addAll(targetAllVarSet);
                 } else {
                     // the target is new; store all and bound vars
                     remainingNodes.add(target);

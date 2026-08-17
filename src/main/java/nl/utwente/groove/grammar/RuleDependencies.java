@@ -564,6 +564,7 @@ public class RuleDependencies {
         // if (valueSet == null) {
         // map.put(key, valueSet = createRuleSet());
         // }
+        assert valueSet != null; // the relation maps are initialised for all rules
         valueSet.add(value);
     }
 

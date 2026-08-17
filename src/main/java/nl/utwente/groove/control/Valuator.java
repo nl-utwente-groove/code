@@ -59,7 +59,6 @@ public class Valuator {
      * @throws UnsupportedOperationException if this valuator does not contain the information
      * necessary to evaluate {@code bind}
      */
-    @SuppressWarnings("null")
     public @Nullable HostNode eval(Binding bind) throws UnsupportedOperationException {
         var map = this.map.get(bind.type());
         if (map == null) {

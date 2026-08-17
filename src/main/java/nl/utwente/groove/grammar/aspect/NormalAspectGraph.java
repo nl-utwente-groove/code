@@ -117,7 +117,9 @@ public class NormalAspectGraph extends AspectGraph {
      */
     private void addNormalToSource(AspectElement orig, AspectElement added) {
         var normalToSourceMap = this.normalToOriginMap;
-        normalToSourceMap.put(added, normalToSourceMap.get(orig));
+        var source = normalToSourceMap.get(orig);
+        assert source != null; // orig is an element of the normalised graph
+        normalToSourceMap.put(added, source);
     }
 
     /** Replaces a given aspect edge in this normalised graph by another, in the

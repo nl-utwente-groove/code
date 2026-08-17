@@ -242,6 +242,7 @@ public class LoadGrammarAction extends SimulatorAction {
             QualName oldName = e.getKey();
             QualName newName = e.getValue();
             AspectGraph oldGraph = oldGraphMap.get(oldName);
+            assert oldGraph != null; // the rename map keys are taken from the graph map
             AspectGraph newGraph = oldGraph.clone();
             newGraph.setName(newName.toString());
             if (kind == ResourceKind.RULE) {

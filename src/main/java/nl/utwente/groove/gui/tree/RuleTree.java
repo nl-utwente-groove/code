@@ -524,6 +524,7 @@ public class RuleTree extends AbstractResourceTree {
                 continue;
             }
             // child index of the new node in the parent node
+            assert parentNode != null; // every action of the grammar has an action node
             int matchCount = parentNode.getChildCount();
             MatchTreeNode newNode;
             if (key instanceof MatchResult match) {
@@ -565,6 +566,7 @@ public class RuleTree extends AbstractResourceTree {
             // parent node of the new node
             var recipe = state.getActualFrame().getRecipe().get();
             var parentNode = this.actionNodeMap.get(recipe.getQualName());
+            assert parentNode != null; // every action of the grammar has an action node
             int matchCount = parentNode.getChildCount();
             var newNode = new RecipeOngoingTreeNode(getSimulatorModel(), state, ongoingRecipeMatch,
                 matchCount + 1);
@@ -577,6 +579,7 @@ public class RuleTree extends AbstractResourceTree {
             // parent node of the new node
             var recipe = match.getStep().getRecipe().get();
             var parentNode = this.actionNodeMap.get(recipe.getQualName());
+            assert parentNode != null; // every action of the grammar has an action node
             int matchCount = parentNode.getChildCount();
             var newNode = new RecipeMatchTreeNode(getSimulatorModel(), state, match, matchCount + 1,
                 isShowAnchors());

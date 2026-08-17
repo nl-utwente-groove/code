@@ -159,7 +159,9 @@ public class GrammarModel implements PropertyChangeListener {
 
     /** Returns the collection of resource models of a given kind. */
     public Collection<NamedResourceModel<?>> getResourceSet(ResourceKind kind) {
-        return this.resourceMap.get(kind).values();
+        var models = this.resourceMap.get(kind);
+        assert models != null; // filled for all kinds
+        return models.values();
     }
 
     /** Returns a named graph-based resource model of a given kind. */
@@ -235,6 +237,7 @@ public class GrammarModel implements PropertyChangeListener {
         if (result == null) {
             // if there are none, check for active names in the store
             result = this.storedActiveNamesMap.get(kind);
+            assert result != null; // filled for all kinds
         }
         result.retainAll(getNames(kind));
         return Collections.unmodifiableSortedSet(result);
@@ -270,7 +273,7 @@ public class GrammarModel implements PropertyChangeListener {
     public void setLocalActiveNames(ResourceKind kind, Collection<QualName> names) {
         assert names != null;// && !names.isEmpty();
         this.localActiveNamesMap.put(kind, new TreeSet<>(names));
-        this.resourceChangeCounts.get(kind).increase();
+        getChangeCount(kind).increase();
         invalidate();
     }
 
@@ -408,7 +411,7 @@ public class GrammarModel implements PropertyChangeListener {
         }
         this.startGraphModel = new CompositeHostModel(this, startGraph);
         this.isExternalStartGraphModel = true;
-        this.resourceChangeCounts.get(HOST).increase();
+        getChangeCount(HOST).increase();
         invalidate();
     }
 
@@ -439,7 +442,14 @@ public class GrammarModel implements PropertyChangeListener {
      * Returns a fresh change tracker for a given resource kind.
      */
     public Tracker createChangeTracker(ResourceKind kind) {
-        return this.resourceChangeCounts.get(kind).createTracker();
+        return getChangeCount(kind).createTracker();
+    }
+
+    /** Returns the change count for a given resource kind. */
+    private ChangeCount getChangeCount(ResourceKind kind) {
+        var result = this.resourceChangeCounts.get(kind);
+        assert result != null; // filled for all kinds
+        return result;
     }
 
     private final Map<ResourceKind,ChangeCount> resourceChangeCounts
@@ -656,7 +666,7 @@ public class GrammarModel implements PropertyChangeListener {
     private void syncResource(ResourceKind kind) {
         // register a change in this resource, regardless of what actually happens.
         // This might possibly be refined
-        this.resourceChangeCounts.get(kind).increase();
+        getChangeCount(kind).increase();
         switch (kind) {
         case PROLOG:
             this.prologEnvironment.reset();
@@ -669,6 +679,7 @@ public class GrammarModel implements PropertyChangeListener {
         // update the set of resource models
         // don't call getResourceMap beause the return type is not what we want here
         var modelMap = this.resourceMap.get(kind);
+        assert modelMap != null; // filled for all kinds
         Set<QualName> names = getNames(kind);
         // restrict the resources to those whose names are in the store
         modelMap.keySet().retainAll(names);
@@ -694,6 +705,7 @@ public class GrammarModel implements PropertyChangeListener {
         names.forEach(n -> modelMap.put(n, createModel(kind, n)));
         // update the active names set
         Set<QualName> oldActiveNames = this.storedActiveNamesMap.get(kind);
+        assert oldActiveNames != null; // filled for all kinds
         if (!oldActiveNames.equals(newActiveNames)) {
             oldActiveNames.clear();
             oldActiveNames.addAll(newActiveNames);
@@ -919,16 +931,20 @@ public class GrammarModel implements PropertyChangeListener {
         /** Adds a dependency and constructs the transitive closure. */
         static private void addDependency(ResourceKind source, ResourceKind target) {
             var sourcePreds = backwardMap.get(source);
+            assert sourcePreds != null; // filled for all kinds
             if (source == target || sourcePreds.contains(target)) {
                 throw Exceptions.illegalArg("Cyclic dependency between %s and %s", source, target);
             }
             var sourceSuccs = forwardMap.get(source);
             var targetPreds = backwardMap.get(target);
             var targetSuccs = forwardMap.get(target);
+            assert sourceSuccs != null && targetPreds != null
+                && targetSuccs != null; // filled for all kinds
             sourceSuccs.add(target);
             sourceSuccs.addAll(targetSuccs);
             for (var pred : sourcePreds) {
                 var predSuccs = forwardMap.get(pred);
+                assert predSuccs != null; // filled for all kinds
                 predSuccs.add(target);
                 predSuccs.addAll(targetSuccs);
             }
@@ -936,6 +952,7 @@ public class GrammarModel implements PropertyChangeListener {
             targetPreds.addAll(sourcePreds);
             for (var succ : targetSuccs) {
                 var succPreds = backwardMap.get(succ);
+                assert succPreds != null; // filled for all kinds
                 succPreds.add(source);
                 succPreds.addAll(sourcePreds);
             }
@@ -964,10 +981,13 @@ public class GrammarModel implements PropertyChangeListener {
                 if (o1 == o2) {
                     return 0;
                 }
-                if (backwardMap.get(o1).contains(o2)) {
+                var o1Preds = backwardMap.get(o1);
+                var o1Succs = forwardMap.get(o1);
+                assert o1Preds != null && o1Succs != null; // filled for all kinds
+                if (o1Preds.contains(o2)) {
                     return -1;
                 }
-                if (forwardMap.get(o1).contains(o2)) {
+                if (o1Succs.contains(o2)) {
                     return 1;
                 }
                 return o1.ordinal() - o2.ordinal();

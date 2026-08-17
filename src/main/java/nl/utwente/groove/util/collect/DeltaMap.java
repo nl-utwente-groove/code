@@ -84,7 +84,9 @@ public class DeltaMap<T> {
 
     /** Returns the set of keys with a given delta. */
     public Set<T> getKeys(Delta delta) {
-        return this.inverseMap.get(delta);
+        var result = this.inverseMap.get(delta);
+        assert result != null; // populated for all deltas in the constructor
+        return result;
     }
 
     /** Returns the entry set of the delta map. */

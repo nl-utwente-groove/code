@@ -139,6 +139,7 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
                     nodeMergeMap.putAll(result.add(graph));
                     for (TypeNode node : graph.getImports()) {
                         var nodeImage = nodeMergeMap.get(node);
+                        assert nodeImage != null; // the merge map covers all nodes of graph
                         if (nodeImage.isImported() && !importModels.containsKey(nodeImage)) {
                             importModels.put(nodeImage, model);
                         }
@@ -155,6 +156,7 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
                 errors.applyInverse(nodeMergeMap);
                 for (var imported : imports) {
                     TypeModel origModel = importModels.get(imported);
+                    assert origModel != null; // every remaining import was registered with its model
                     errors.applyInverse(origModel.getMap());
                     errors.add("Unresolved type import %s", imported, origModel.getSource());
                 }

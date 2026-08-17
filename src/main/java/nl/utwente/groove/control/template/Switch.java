@@ -187,7 +187,8 @@ public class Switch implements Comparable<Switch>, Relocatable {
             Binding bind;
             if (arg instanceof CtrlArg.Var v) {
                 if (arg.inOnly()) {
-                    int ix = sourceVars.get(v.var());
+                    Integer ix = sourceVars.get(v.var());
+                    assert ix != null; // input arguments are variables of the source location
                     assert ix >= 0;
                     bind = Binding.var(target, ix);
                 } else if (arg.outOnly()) {
@@ -246,7 +247,8 @@ public class Switch implements Comparable<Switch>, Relocatable {
             Binding rhs;
             if (ix == null) {
                 // the value comes from the source variables
-                int pos = sourceVars.get(var);
+                Integer pos = sourceVars.get(var);
+                assert pos != null; // non-output target variables are variables of the source location
                 assert pos >= 0;
                 rhs = Binding.var(var, pos);
             } else if (getUnit() instanceof Rule rule) {

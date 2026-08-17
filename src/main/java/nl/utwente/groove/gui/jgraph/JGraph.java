@@ -1374,7 +1374,9 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
                 this.modeButtonMap.put(any, button);
                 modeButtonGroup.add(button);
             }
-            this.modeButtonMap.get(EDIT_MODE).setSelected(true);
+            var editButton = this.modeButtonMap.get(EDIT_MODE);
+            assert editButton != null; // the button map is filled for all modes
+            editButton.setSelected(true);
         }
         return this.modeButtonMap;
     }

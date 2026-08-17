@@ -90,7 +90,9 @@ public class GraphConverter {
         for (TypeNode node : type.nodeSet()) {
             AspectNode nodeImage = result.getNode(node);
             assert nodeImage != null;
-            for (TypeNode nodeSuper : superMap.get(node)) {
+            var nodeSupers = superMap.get(node);
+            assert nodeSupers != null; // the supertype map is defined for all type nodes
+            for (TypeNode nodeSuper : nodeSupers) {
                 var nodeSuperImage = result.getNode(nodeSuper);
                 assert nodeSuperImage != null;
                 target.addEdge(nodeImage, SUBTYPE.getPrefix(), nodeSuperImage);

@@ -104,7 +104,9 @@ public class GTSCounter implements GTSListener {
         if (target.isAbsent()) {
             this.absentTransitionCount++;
         } else if (trans instanceof RuleTransition rt && !target.isFull()) {
-            this.inTransMap.get(target).add(rt);
+            List<RuleTransition> inTrans = this.inTransMap.get(target);
+            assert inTrans != null; // every state is registered while it is not yet full
+            inTrans.add(rt);
         }
     }
 
@@ -120,6 +122,7 @@ public class GTSCounter implements GTSListener {
         }
         if (Flag.FULL.test(change)) {
             List<RuleTransition> inTrans = this.inTransMap.remove(state);
+            assert inTrans != null; // the state was registered while it was not yet full
             if (state.isAbsent()) {
                 this.absentTransitionCount += inTrans.size();
                 this.absentCount++;

@@ -655,7 +655,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
                     String id = e.source().getId();
                     var typeLabel = e.getRuleLabel().getTypeLabel();
                     if (typeLabel != null && typeSortMap.containsKey(typeLabel)) {
-                        for (var se : typeSortMap.get(typeLabel).entrySet()) {
+                        var fieldSorts = typeSortMap.get(typeLabel);
+                        assert fieldSorts != null; // key presence was just tested
+                        for (var se : fieldSorts.entrySet()) {
                             var fieldName = new QualName(id, se.getKey());
                             result.add(fieldName, se.getValue());
                         }
@@ -676,7 +678,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
         var typeSortMap = getTypeSortMap();
         if (self != null && typeSortMap != null && typeSortMap.containsKey(self)) {
             result = new SortMap().add(result);
-            for (var se : typeSortMap.get(self).entrySet()) {
+            var fieldSorts = typeSortMap.get(self);
+            assert fieldSorts != null; // key presence was just tested
+            for (var se : fieldSorts.entrySet()) {
                 var fieldName = new QualName("", se.getKey());
                 result.add(fieldName, se.getValue());
                 fieldName = new QualName(Keywords.SELF, se.getKey());

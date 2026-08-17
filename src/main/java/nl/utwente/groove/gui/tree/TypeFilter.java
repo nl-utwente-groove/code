@@ -64,7 +64,9 @@ class TypeFilter extends LabelFilter<AspectGraph,TypeEntry> {
     @Override
     public TypeEntry getEntry(Label label) {
         if (label instanceof TypeElement type) {
-            return getEntryMap(type.getGraph()).keyMap().get(type.key());
+            var result = getEntryMap(type.getGraph()).keyMap().get(type.key());
+            assert result != null; // the entry map has an entry for every type graph element
+            return result;
         }
         throw Exceptions.unreachable();
     }
@@ -168,14 +170,20 @@ class TypeFilter extends LabelFilter<AspectGraph,TypeEntry> {
                     .stream()
                     .map(TypeNode::key)
                     .map(keyMap()::get)
-                    .forEach(edgeEntry::addNode);
+                    .forEach(ne -> {
+                        assert ne != null; // every type graph node has an entry
+                        edgeEntry.addNode(ne);
+                    });
                 e
                     .target()
                     .getSubtypes()
                     .stream()
                     .map(TypeNode::key)
                     .map(keyMap()::get)
-                    .forEach(edgeEntry::addNode);
+                    .forEach(ne -> {
+                        assert ne != null; // every type graph node has an entry
+                        edgeEntry.addNode(ne);
+                    });
                 // add this edge to the incident edges of the subtypes of source and target
                 e
                     .source()
@@ -183,20 +191,25 @@ class TypeFilter extends LabelFilter<AspectGraph,TypeEntry> {
                     .stream()
                     .map(TypeNode::key)
                     .map(keyMap()::get)
-                    .forEach(ne -> ne.addEdge(edgeEntry));
+                    .forEach(ne -> {
+                        assert ne != null; // every type graph node has an entry
+                        ne.addEdge(edgeEntry);
+                    });
                 e
                     .target()
                     .getSubtypes()
                     .stream()
                     .map(TypeNode::key)
                     .map(keyMap()::get)
-                    .forEach(ne -> ne.addEdge(edgeEntry));
+                    .forEach(ne -> {
+                        assert ne != null; // every type graph node has an entry
+                        ne.addEdge(edgeEntry);
+                    });
             }
         }
 
         /** Constructs a fresh map from a given type graph,
          * taking a set of previously selected elements into account. */
-        @SuppressWarnings("null")
         EntryMap(TypeGraph typeGraph, Collection<TypeKey> unselected) {
             this(typeGraph);
             for (var key : unselected) {

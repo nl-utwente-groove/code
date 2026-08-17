@@ -375,7 +375,9 @@ public class MultiLabel {
 
         /** Returns a direction count. */
         public int get(Direct dir) {
-            return this.values.get(dir);
+            Integer result = this.values.get(dir);
+            assert result != null; // all directions are pre-populated
+            return result;
         }
 
         /** Returns the multiset that equals this one, with one of the directions increased. */

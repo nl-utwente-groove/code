@@ -288,7 +288,7 @@ public interface Action extends Callable, Comparable<Action> {
         /** Returns the role corresponding to a given string,
          * or {@code null} if the string does not denote a role.
          */
-        static public Role toRole(String text) {
+        static public @Nullable Role toRole(String text) {
             var roleMap = Role.roleMap;
             if (roleMap == null) {
                 Role.roleMap = roleMap = new HashMap<>();

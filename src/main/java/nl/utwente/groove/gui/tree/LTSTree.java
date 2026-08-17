@@ -79,7 +79,9 @@ public class LTSTree extends LabelTree<GTS> {
         boolean headers = false;
         var typedEntries = new EnumMap<LTSEntry.Type,Set<LTSEntry>>(LTSEntry.Type.class);
         for (var entryType : LTSEntry.Type.values()) {
-            this.headerNodes.get(entryType).removeAllChildren();
+            var headerNode = this.headerNodes.get(entryType);
+            assert headerNode != null; // all entry types are pre-populated
+            headerNode.removeAllChildren();
             typedEntries.put(entryType, new TreeSet<>());
         }
         for (var entry : getFilter().getEntries()) {
@@ -94,6 +96,7 @@ public class LTSTree extends LabelTree<GTS> {
             for (var e : typedEntries.entrySet()) {
                 if (!e.getValue().isEmpty()) {
                     var header = this.headerNodes.get(e.getKey());
+                    assert header != null; // all entry types are pre-populated
                     getTopNode().add(header);
                     result.add(header);
                     fillTree(header, e.getValue());

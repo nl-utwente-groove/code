@@ -73,7 +73,7 @@ public enum SystemStateProperty implements StateProperty {
     }
 
     /** Returns the system state property for a given name, if any. */
-    public static final SystemStateProperty get(String name) {
+    public static final @Nullable SystemStateProperty get(String name) {
         return propertyMap.get(name);
     }
 

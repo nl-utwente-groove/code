@@ -361,7 +361,9 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
             if (this.nodeIdxMap == null) {
                 return node.getNumber();
             } else {
-                return this.nodeIdxMap.get(node);
+                Integer result = this.nodeIdxMap.get(node);
+                assert result != null; // the map is filled with all states of the GTS
+                return result;
             }
         }
 

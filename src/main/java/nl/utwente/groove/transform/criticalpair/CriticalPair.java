@@ -539,6 +539,7 @@ public class CriticalPair {
             nodeMatch.put(targetGroup, new LinkedHashSet<>());
         }
         Set<RuleNode> nodeSet = nodeMatch.get(targetGroup);
+        assert nodeSet != null; // the target group was just added if it was not yet there
         //Add ruleNode to the Set
         nodeSet.add(ruleNode);
     }

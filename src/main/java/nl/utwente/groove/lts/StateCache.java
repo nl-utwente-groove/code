@@ -798,7 +798,11 @@ public class StateCache implements Cache {
                 // apply the transition's permutation, if it is not the identity
                 if (!partial.getMorphism().isIdentity()) {
                     var nodeMap = partial.getMorphism().nodeMap();
-                    result = Assignment.map(result, n -> nodeMap.get(n));
+                    result = Assignment.map(result, n -> {
+                        var image = nodeMap.get(n);
+                        assert image != null; // out-parameters are not deleted by the final step
+                        return image;
+                    });
                 }
             }
             return result;

@@ -21,6 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.graph.ANumberedEdge;
 import nl.utwente.groove.graph.plain.PlainLabel;
@@ -53,8 +54,8 @@ public class AttrEdge extends ANumberedEdge<AttrNode,PlainLabel> {
         this.attributeMap.put(key, value);
     }
 
-    /** Returns a value from this edge's attribute map. */
-    public String getAttribute(String key) {
+    /** Returns a value from this edge's attribute map, or {@code null} if the key is not in the map. */
+    public @Nullable String getAttribute(String key) {
         return this.attributeMap.get(key);
     }
 

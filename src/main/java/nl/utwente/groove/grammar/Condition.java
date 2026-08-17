@@ -634,7 +634,9 @@ public class Condition implements Fixable {
                     if (resolver.isEmpty()) {
                         resolved.add(target);
                     } else {
-                        result.get(target).add(resolver);
+                        var targetResolvers = result.get(target);
+                        assert targetResolvers != null; // key presence was tested above
+                        targetResolvers.add(resolver);
                     }
                 }
             }

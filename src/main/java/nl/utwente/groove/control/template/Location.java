@@ -287,6 +287,7 @@ public class Location
         List<Binding> bindings = new ArrayList<>();
         for (var var : getVars()) {
             var parIx = owner.getInPars().get(var);
+            assert parIx != null; // the variables of a procedure's start location are its in-parameters
             bindings.add(Binding.var(var, parIx));
         }
         return new Assignment(bindings);
@@ -314,6 +315,7 @@ public class Location
             Binding bind;
             if (par.isOutOnly()) {
                 var varIx = getVarIxMap().get(par.getVar());
+                assert varIx != null; // out-parameters are variables of a final location
                 bind = Binding.var(par, varIx);
             } else {
                 bind = Binding.none(par);
@@ -326,6 +328,7 @@ public class Location
     @Override
     public Location relocate(Relocation map) {
         Location result = map.get(this);
+        assert result != null; // the relocation map is defined on all locations
         result.setAttempt(getAttempt().relocate(map));
         return result;
     }

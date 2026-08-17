@@ -74,7 +74,8 @@ class OrderedCriticalPairSet implements Set<CriticalPair> {
         if (o instanceof CriticalPair) {
             CriticalPair pair = (CriticalPair) o;
             int size = pair.getHostGraph().nodeCount();
-            return this.pairMap.get(size) != null && this.pairMap.get(size).contains(pair);
+            LinkedHashSet<CriticalPair> pairSet = this.pairMap.get(size);
+            return pairSet != null && pairSet.contains(pair);
         } else {
             return false;
         }
@@ -86,7 +87,8 @@ class OrderedCriticalPairSet implements Set<CriticalPair> {
             if (obj instanceof CriticalPair) {
                 CriticalPair pair = (CriticalPair) obj;
                 int size = pair.getHostGraph().nodeCount();
-                if (this.pairMap.get(size) == null || !this.pairMap.get(size).contains(pair)) {
+                LinkedHashSet<CriticalPair> pairSet = this.pairMap.get(size);
+                if (pairSet == null || !pairSet.contains(pair)) {
                     return false;
                 }
             } else {
@@ -123,16 +125,25 @@ class OrderedCriticalPairSet implements Set<CriticalPair> {
             Iterator<Integer> keyIt
                 = new TreeSet<>(OrderedCriticalPairSet.this.pairMap.keySet()).descendingIterator();
 
-            Iterator<CriticalPair> currentIt = this.keyIt.hasNext()
-                ? OrderedCriticalPairSet.this.pairMap.get(this.keyIt.next()).iterator()
-                //initialize with emptySet iterator if the pairMap was empty
-                : new HashSet<CriticalPair>().iterator();
+            Iterator<CriticalPair> currentIt = nextIterator();
+
+            /** Returns an iterator over the pairs at the next key,
+             * or over the empty set if there is no next key. */
+            private Iterator<CriticalPair> nextIterator() {
+                if (!this.keyIt.hasNext()) {
+                    //initialize with emptySet iterator if the pairMap was empty
+                    return new HashSet<CriticalPair>().iterator();
+                }
+                LinkedHashSet<CriticalPair> pairSet
+                    = OrderedCriticalPairSet.this.pairMap.get(this.keyIt.next());
+                assert pairSet != null; // the key comes from the pair map's key set
+                return pairSet.iterator();
+            }
 
             @Override
             public boolean hasNext() {
                 while (this.keyIt.hasNext() && !this.currentIt.hasNext()) {
-                    this.currentIt
-                        = OrderedCriticalPairSet.this.pairMap.get(this.keyIt.next()).iterator();
+                    this.currentIt = nextIterator();
                     this.currentItReplaced = true;
                 }
                 return this.currentIt.hasNext();
@@ -170,8 +181,9 @@ class OrderedCriticalPairSet implements Set<CriticalPair> {
         if (o instanceof CriticalPair) {
             CriticalPair pair = (CriticalPair) o;
             int size = pair.getHostGraph().nodeCount();
-            if (this.pairMap.get(size) != null) {
-                return this.pairMap.get(size).remove(pair);
+            LinkedHashSet<CriticalPair> pairSet = this.pairMap.get(size);
+            if (pairSet != null) {
+                return pairSet.remove(pair);
             }
         }
         return false;

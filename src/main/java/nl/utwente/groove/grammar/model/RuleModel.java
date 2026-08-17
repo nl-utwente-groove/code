@@ -426,10 +426,14 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 if (rule != null && !index.isTopLevel()) {
                     // look for the first parent rule
                     Index parentIndex = index.getParent();
-                    var parentRule = conditionTree.get(parentIndex).getRule();
+                    var parentLevelCond = conditionTree.get(parentIndex);
+                    assert parentLevelCond != null; // all indices are mapped to conditions
+                    var parentRule = parentLevelCond.getRule();
                     while (parentRule == null) {
                         parentIndex = parentIndex.getParent();
-                        parentRule = conditionTree.get(parentIndex).getRule();
+                        parentLevelCond = conditionTree.get(parentIndex);
+                        assert parentLevelCond != null; // all indices are mapped to conditions
+                        parentRule = parentLevelCond.getRule();
                     }
                     rule.setParent(parentRule, index.getIntArray());
                 }
@@ -443,6 +447,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 if (!index.isTopLevel()) {
                     condition.setFixed();
                     Condition parentCond = conditionTree.get(index.getParent());
+                    assert parentCond != null; // all indices are mapped to conditions
                     parentCond.addSubCondition(condition);
                 }
             }
@@ -864,7 +869,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                         parentIndex = getIndex(parentKind, parentNode, indexTree);
                     }
                     Index myIndex = getIndex(node.getKind(Category.NESTING), node, indexTree);
-                    indexTree.get(parentIndex).add(myIndex);
+                    var siblings = indexTree.get(parentIndex);
+                    assert siblings != null; // getIndex registers all indices in the tree
+                    siblings.add(myIndex);
                     if (node.getMatchCount() != null) {
                         this.matchCountMap.put(myIndex, node.getMatchCount());
                     }
@@ -879,6 +886,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 assert next != null; // queue is non-empty
                 next.setFixed();
                 List<Index> children = indexTree.get(next);
+                assert children != null; // all indices are registered in the tree
                 // add an implicit existential sub-level to childless universal
                 // levels
                 if (next.getOperator() == Op.FORALL && children.isEmpty()) {
@@ -973,11 +981,14 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                     errors.add("Match count not defined at appropriate level", matchCount);
                 }
                 Level1 level = result.get(usedAt);
+                assert level != null; // all indices have a level
                 // add the match count node to all intermediate levels
                 // (between definition and usage)
                 Index addTo = usedAt.getParent();
                 while (addTo != null && !addTo.equals(definedAt)) {
-                    result.get(addTo).addNode(matchCount);
+                    var addToLevel = result.get(addTo);
+                    assert addToLevel != null; // all indices have a level
+                    addToLevel.addNode(matchCount);
                     addTo = addTo.getParent();
                 }
                 level.setMatchCount(matchCount);
@@ -1007,11 +1018,13 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 LabelVar var = varEntry.getKey();
                 LabelVar oldVar = nameVarMap.put(var.getName(), var);
                 if (oldVar != null && !oldVar.equals(var)) {
+                    var oldVarEdges = modelVarMap.get(oldVar);
+                    assert oldVarEdges != null; // oldVar was taken from this map
                     errors
                         .add("Duplicate variable '%s' for %s and %s labels", var,
                              var.getKind().getDescription(false),
                              oldVar.getKind().getDescription(false), varEntry.getValue().toArray(),
-                             modelVarMap.get(oldVar).toArray());
+                             oldVarEdges.toArray());
                 }
             }
             for (Level1 level : result.values()) {
@@ -1698,6 +1711,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             for (RuleNode node : this.nacNodeSet) {
                 if (node instanceof OperatorNode opNode) {
                     Cell nodeCell = result.get(opNode);
+                    assert nodeCell != null; // filled for all NAC nodes above
                     for (RuleNode argNode : opNode.getArguments()) {
                         Cell argCell = result.get(argNode);
                         if (argCell != null) {

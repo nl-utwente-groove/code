@@ -44,7 +44,9 @@ public interface AspectElement extends Element, Fixable {
     /** If */
     default public AspectElement denormalise() {
         if (getGraph() instanceof NormalAspectGraph nag) {
-            return nag.normalToOriginalMap().get(this);
+            var result = nag.normalToOriginalMap().get(this);
+            assert result != null; // this is an element of the normalised graph
+            return result;
         } else {
             return this;
         }

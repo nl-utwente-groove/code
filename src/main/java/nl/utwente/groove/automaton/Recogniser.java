@@ -145,15 +145,16 @@ public class Recogniser {
             Map<Direction,Map<TypeLabel,DFAState>> succMaps = from.state()
                 .getLabelMap();
             // Add successor according to node type label
-            DFAState ns = succMaps.get(Direction.OUTGOING)
-                .get(fromNode.getType()
-                    .label());
+            Map<TypeLabel,DFAState> outSuccMap = succMaps.get(Direction.OUTGOING);
+            assert outSuccMap != null; // the label map is filled for all directions
+            DFAState ns = outSuccMap.get(fromNode.getType().label());
             if (ns != null) {
                 result.add(new Tuple(fromNode, ns));
             }
             // Add successors according to edge labels
             for (Direction d : Direction.values()) {
                 Map<TypeLabel,DFAState> succMap = succMaps.get(d);
+                assert succMap != null; // the label map is filled for all directions
                 if (!succMap.isEmpty()) {
                     for (HostEdge e : d.edges(this.graph, fromNode)) {
                         DFAState s = succMap.get(e.label());
@@ -168,7 +169,9 @@ public class Recogniser {
     }
 
     private void addResults(Set<Result> result, HostNode from) {
-        for (HostNode to : this.reachMap.get(createStartTuple(from))) {
+        HostNodeSet related = this.reachMap.get(createStartTuple(from));
+        assert related != null; // the reach map was augmented for this start node
+        for (HostNode to : related) {
             result.add(createResult(from, to));
         }
     }
@@ -186,16 +189,19 @@ public class Recogniser {
             newReachIter.remove();
             HostNodeSet toSet = newReachEntry.getValue();
             // add the toSet to all predecessors
-            for (Tuple tp : predMap.get(newReachEntry.getKey())) {
+            TupleSet preds = predMap.get(newReachEntry.getKey());
+            assert preds != null; // the new reach map only has keys of the predecessor map
+            for (Tuple tp : preds) {
                 HostNodeSet tpToSet = newReachMap.get(tp);
                 boolean tpFresh = tpToSet == null;
                 if (tpFresh) {
                     tpToSet = new HostNodeSet();
                 }
                 assert tpToSet != null; // just initialised in case it was null
+                HostNodeSet tpReached = this.reachMap.get(tp);
+                assert tpReached != null; // all predecessor map keys are in the reach map
                 for (HostNode hn : toSet) {
-                    if (this.reachMap.get(tp)
-                        .add(hn)) {
+                    if (tpReached.add(hn)) {
                         // it's a new reachable node, which has to be propagated
                         tpToSet.add(hn);
                     }

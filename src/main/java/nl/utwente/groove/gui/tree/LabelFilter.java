@@ -80,7 +80,9 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
             this.jCellEntryMap.put(jCell, entries);
             // also modify the inverse map
             for (LabelEntry entry : entries) {
-                result |= this.entryDataMap.get(entry).add(jCell);
+                var data = this.entryDataMap.get(entry);
+                assert data != null; // every entry is registered upon creation
+                result |= data.add(jCell);
             }
         }
         return result;
@@ -95,7 +97,9 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
         Set<E> jCellEntries = this.jCellEntryMap.remove(jCell);
         if (jCellEntries != null) {
             for (LabelEntry jCellEntry : jCellEntries) {
-                result |= this.entryDataMap.get(jCellEntry).remove(jCell);
+                var data = this.entryDataMap.get(jCellEntry);
+                assert data != null; // every entry is registered upon creation
+                result |= data.remove(jCell);
             }
         }
         return result;
@@ -117,13 +121,17 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
             // remove the obsolete entries
             for (LabelEntry oldEntry : oldEntrySet) {
                 if (!newEntrySet.contains(oldEntry)) {
-                    result |= this.entryDataMap.get(oldEntry).remove(jCell);
+                    var data = this.entryDataMap.get(oldEntry);
+                    assert data != null; // every entry is registered upon creation
+                    result |= data.remove(jCell);
                 }
             }
             // add the new entries
             for (LabelEntry newEntry : newEntrySet) {
                 if (!oldEntrySet.contains(newEntry)) {
-                    result |= this.entryDataMap.get(newEntry).add(jCell);
+                    var data = this.entryDataMap.get(newEntry);
+                    assert data != null; // every entry is registered upon creation
+                    result |= data.add(jCell);
                 }
             }
         }
@@ -132,12 +140,16 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
 
     /** Returns the set of {@link JCell}s for a given entry. */
     public Set<JCell<G>> getJCells(LabelEntry entry) {
-        return this.entryDataMap.get(entry).jCells();
+        var data = this.entryDataMap.get(entry);
+        assert data != null; // every entry is registered upon creation
+        return data.jCells();
     }
 
     /** Returns the number of instances for a given entry. */
     public int getCount(LabelEntry entry) {
-        return this.entryDataMap.get(entry).count().value();
+        var data = this.entryDataMap.get(entry);
+        assert data != null; // every entry is registered upon creation
+        return data.count().value();
     }
 
     /** Indicates if there is at least one {@link JCell} with a given entry. */
@@ -164,7 +176,6 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
     /** Adds a newly created entry to the data structures of this filter.
      * Should be called directly after creation of the entry.
      */
-    @SuppressWarnings("null")
     void registerEntry(E entry) {
         var old = this.entryDataMap.put(entry, new EntryData(entry));
         assert old == null : "Duplicate label entry for %s (existing entry contained %s)"

@@ -148,8 +148,9 @@ public class Template {
         var pars = owner.getSignature().getPars();
         for (int i = 0; i < pars.size(); i++) {
             var parVar = pars.get(i).getVar();
-            if (varIxMap.containsKey(parVar)) {
-                bindings[varIxMap.get(parVar)] = Binding.var(parVar, i);
+            var parIx = varIxMap.get(parVar);
+            if (parIx != null) {
+                bindings[parIx] = Binding.var(parVar, i);
             }
         }
         return new Assignment(bindings);

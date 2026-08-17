@@ -330,6 +330,7 @@ public class PlanSearchEngine extends SearchEngine {
                 // but differ in their type constraints
                 for (RuleNode seedNode : seedItem.bindsNodes()) {
                     RuleNode myNode = unmatchedNodes.get(seedNode);
+                    assert myNode != null; // the seed consists of nodes of the pattern
                     if (seedNode.stronglyEquals(myNode)) {
                         unmatchedNodes.remove(seedNode);
                     } else {

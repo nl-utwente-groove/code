@@ -251,7 +251,9 @@ public enum AlgebraFamily implements DocumentedEnum {
      * Returns the method associated with a certain operator.
      */
     public Operation getOperation(Operator operator) {
-        return getOpsMap().get(operator.getDeclaringSort()).get().get(operator);
+        var ops = getOpsMap().get(operator.getDeclaringSort());
+        assert ops != null; // all sorts are pre-populated
+        return ops.get().get(operator);
     }
 
     /**

@@ -179,9 +179,11 @@ public class StringHandler {
                         nextChar);
                 }
                 Character openBracket = bracketStack.pop();
-                int openBracketIndex = this.openBracketsIndexMap.get(openBracket);
-                int closeBracketIndex = this.closeBracketsIndexMap.get(nextCharObject);
-                if (openBracketIndex != closeBracketIndex) {
+                Integer openBracketIndex = this.openBracketsIndexMap.get(openBracket);
+                assert openBracketIndex != null; // all open bracket chars are in the index map
+                Integer closeBracketIndex = this.closeBracketsIndexMap.get(nextCharObject);
+                assert closeBracketIndex != null; // all close bracket chars are in the index map
+                if (openBracketIndex.intValue() != closeBracketIndex.intValue()) {
                     throw new FormatException(
                         "Unbalanced brackets in expression '%s': '%c' closed by '%c'", expr,
                         openBracket, nextChar);

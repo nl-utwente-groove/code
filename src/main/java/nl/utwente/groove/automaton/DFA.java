@@ -107,10 +107,9 @@ public class DFA {
         for (DFAState state : getStates()) {
             result.append(String.format("%s, final=%s%n", state, state.isFinal()));
             for (Direction dir : Direction.values()) {
-                for (Map.Entry<TypeLabel,DFAState> labelEntry : state
-                    .getLabelMap()
-                    .get(dir)
-                    .entrySet()) {
+                Map<TypeLabel,DFAState> labelMap = state.getLabelMap().get(dir);
+                assert labelMap != null; // the label map is filled for all directions
+                for (Map.Entry<TypeLabel,DFAState> labelEntry : labelMap.entrySet()) {
                     result
                         .append(dir == OUTGOING
                             ? "   "
@@ -127,8 +126,11 @@ public class DFA {
 
     /** Tests if this DFA has an empty language. */
     public boolean isEmpty() {
-        return getStartState().getLabelMap().get(OUTGOING).isEmpty()
-            && getStartState().getLabelMap().get(INCOMING).isEmpty() && !getStartState().isFinal();
+        Map<TypeLabel,DFAState> outMap = getStartState().getLabelMap().get(OUTGOING);
+        assert outMap != null; // the label map is filled for all directions
+        Map<TypeLabel,DFAState> inMap = getStartState().getLabelMap().get(INCOMING);
+        assert inMap != null; // the label map is filled for all directions
+        return outMap.isEmpty() && inMap.isEmpty() && !getStartState().isFinal();
     }
 
     /** Tests if this automaton is isomorphic with another. */
@@ -185,7 +187,9 @@ public class DFA {
         }
         for (Direction dir : Direction.values()) {
             Map<TypeLabel,DFAState> oneLabelMap = one.getLabelMap().get(dir);
+            assert oneLabelMap != null; // the label map is filled for all directions
             Map<TypeLabel,DFAState> twoLabelMap = two.getLabelMap().get(dir);
+            assert twoLabelMap != null; // the label map is filled for all directions
             if (oneLabelMap.size() != twoLabelMap.size()) {
                 return null;
             }
@@ -285,7 +289,9 @@ public class DFA {
             DFAState s1 = distIter.next();
             DFAState s2 = distIter.next();
             Cell s1Cell = result.get(s1);
+            assert s1Cell != null; // the partition covers all states
             Cell s2Cell = result.get(s2);
+            assert s2Cell != null; // the partition covers all states
             // merge the cells if they are not already the same
             if (s1Cell != s2Cell) {
                 s1Cell.addAll(s2Cell);
@@ -302,6 +308,7 @@ public class DFA {
         Map<Cell,DFAState> newStateMap = new HashMap<>();
         // create an image for the start cell
         Cell startCell = partition.remove(getStartState());
+        assert startCell != null; // the partition covers all states
         Set<RegNode> startNodes = startCell.flatten();
         DFA result = new DFA(this.dir, startNodes, getStartState().isFinal());
         newStateMap.put(startCell, result.getStartState());
@@ -318,10 +325,9 @@ public class DFA {
             DFAState oldState = newStateEntry.getKey().iterator().next();
             DFAState newState = newStateEntry.getValue();
             for (Direction dir : Direction.values()) {
-                for (Map.Entry<TypeLabel,DFAState> entry : oldState
-                    .getLabelMap()
-                    .get(dir)
-                    .entrySet()) {
+                Map<TypeLabel,DFAState> labelMap = oldState.getLabelMap().get(dir);
+                assert labelMap != null; // the label map is filled for all directions
+                for (Map.Entry<TypeLabel,DFAState> entry : labelMap.entrySet()) {
                     DFAState newSucc = newStateMap.get(partition.get(entry.getValue()));
                     newState.addSuccessor(dir, entry.getKey(), newSucc);
                 }

@@ -564,7 +564,6 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
         }
 
         /** Adds an algebra operator to the operators wrapped in this object. */
-        @SuppressWarnings("null")
         public void add(Operator sortOp) {
             assert sortOp.getArity() == getArity();
             assert sortOp.isVarArgs() == isVarArgs();
@@ -579,7 +578,9 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
          */
         public Operator getOperator(Sort sort) {
             assert sort != null;
-            return this.sortOps.get(sort);
+            var result = this.sortOps.get(sort);
+            assert result != null; // operators are only requested for sorts they are defined for
+            return result;
         }
 
         /** Returns the collection of algebra operators wrapped in this object. */

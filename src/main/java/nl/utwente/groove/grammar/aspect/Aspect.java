@@ -180,7 +180,9 @@ public class Aspect {
 
     /** Indicates that this aspect kind is allowed to appear on edges of a particular graph kind. */
     public boolean isForEdge(GraphRole role) {
-        boolean result = AspectKind.allowedEdgeKinds.get(role).contains(getKind());
+        var allowedKinds = AspectKind.allowedEdgeKinds.get(role);
+        assert allowedKinds != null; // all graph roles are pre-populated
+        boolean result = allowedKinds.contains(getKind());
         if (result && getKind().hasSort()) {
             result = !(getContent() instanceof ConstContent || getContent() instanceof ExprContent);
         }
@@ -189,7 +191,9 @@ public class Aspect {
 
     /** Indicates that this aspect kind is allowed to appear on nodes of a particular graph kind. */
     public boolean isForNode(GraphRole role) {
-        boolean result = AspectKind.allowedNodeKinds.get(role).contains(getKind());
+        var allowedKinds = AspectKind.allowedNodeKinds.get(role);
+        assert allowedKinds != null; // all graph roles are pre-populated
+        boolean result = allowedKinds.contains(getKind());
         if (result && getKind().hasSort()) {
             result = switch (role) {
             case TYPE -> !hasContent();
@@ -203,12 +207,16 @@ public class Aspect {
 
     /** Returns the prototypical aspect for a given aspect name. */
     public static Aspect getAspect(String name) {
-        return aspectNameMap.get(name);
+        var result = aspectNameMap.get(name);
+        assert result != null; // the parameter is required to be an aspect name
+        return result;
     }
 
     /** Returns the prototypical aspect for a given data sort. */
     public static Aspect getAspect(Sort sort) {
-        return aspectNameMap.get(sort.getName());
+        var result = aspectNameMap.get(sort.getName());
+        assert result != null; // every sort has an aspect kind of the same name
+        return result;
     }
 
     /** Creates a new, sorted aspect containing a given expression.
@@ -477,10 +485,9 @@ public class Aspect {
     }
 
     /** Returns a normalised version of a (fixed) aspect map. */
-    @SuppressWarnings("null")
     static public Map normalise(Map original) {
         assert original.isFixed();
-        Map result = normalisedMap.get(original);
+        var result = normalisedMap.get(original);
         if (result == null) {
             normalisedMap.put(original, original);
             result = original;

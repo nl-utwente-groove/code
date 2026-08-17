@@ -43,6 +43,7 @@ public class CopyAction extends SimulatorAction {
         } else {
             AspectGraph host = getGrammarStore().getGraphs(resourceKind)
                 .get(oldName);
+            assert host != null; // the selected resource exists in the store
             AspectGraph newHost = host.rename(newName);
             try {
                 getSimulatorModel().doAddGraph(resourceKind, newHost, false);

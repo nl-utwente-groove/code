@@ -47,12 +47,14 @@ public class AspectParser {
      */
     public AspectLabel parse(String text, GraphRole role) {
         assert role.inGrammar();
-        var result = parseMap.get(role).get(text);
+        var roleMap = parseMap.get(role);
+        assert roleMap != null; // all graph roles are pre-populated
+        var result = roleMap.get(text);
         if (result == null) {
             result = new AspectLabel(role);
             parse(text, result);
             result.setFixed();
-            parseMap.get(role).put(text, result);
+            roleMap.put(text, result);
         }
         return result;
     }

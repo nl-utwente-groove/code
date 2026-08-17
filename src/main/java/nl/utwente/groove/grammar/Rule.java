@@ -1454,7 +1454,9 @@ public class Rule implements Action, Fixable {
                 RuleNode oldValue = mergeEntry.getValue();
                 RuleNode newValue = oldValue;
                 while (mergeMap.containsKey(newValue)) {
-                    newValue = mergeMap.get(newValue);
+                    var nextValue = mergeMap.get(newValue);
+                    assert nextValue != null; // key presence was just tested
+                    newValue = nextValue;
                 }
                 mergeEntry.setValue(newValue);
             }

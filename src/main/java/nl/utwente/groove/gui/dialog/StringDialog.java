@@ -213,6 +213,7 @@ abstract public class StringDialog {
                         var selectedItem = choiceBox.getSelectedItem();
                         if (selectedItem != null) {
                             var entry = choiceItems.get(selectedItem);
+                            assert entry != null; // all choice box items beyond the first are keys of the choice map
                             getNameField().setText(entry.name());
                             getTextArea().setText(entry.value());
                             getTextArea().selectAll();

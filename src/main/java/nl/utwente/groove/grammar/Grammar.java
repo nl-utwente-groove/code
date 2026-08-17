@@ -163,7 +163,9 @@ public class Grammar {
                 this.roleActionMap.put(r, new ArrayList<>());
             }
             for (Action action : getActions()) {
-                this.roleActionMap.get(action.getRole()).add(action);
+                var roleActions = this.roleActionMap.get(action.getRole());
+                assert roleActions != null; // all roles are pre-populated
+                roleActions.add(action);
             }
         }
         return this.roleActionMap.get(role);

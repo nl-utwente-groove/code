@@ -132,6 +132,7 @@ public class TypeFactory extends ElementFactory<TypeNode,TypeEdge> {
     private TypeLabel newLabel(EdgeRole kind, String text) {
         Map<String,TypeLabel> labelMap;
         labelMap = this.labelMaps.get(kind);
+        assert labelMap != null; // all edge roles are pre-populated
         TypeLabel result = labelMap.get(text);
         if (result == null) {
             result = new TypeLabel(text, kind);

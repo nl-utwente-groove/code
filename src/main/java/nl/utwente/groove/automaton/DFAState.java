@@ -56,7 +56,9 @@ public class DFAState {
 
     /** Adds an outgoing, concretely labelled transition to another state. */
     public void addSuccessor(Direction dir, TypeLabel label, DFAState succ) {
-        DFAState oldSucc = this.labelSuccMap.get(dir).put(label, succ);
+        Map<TypeLabel,DFAState> succMap = this.labelSuccMap.get(dir);
+        assert succMap != null; // the successor map is filled for all directions
+        DFAState oldSucc = succMap.put(label, succ);
         assert oldSucc == null : "Overrides existing transition to " + oldSucc;
     }
 

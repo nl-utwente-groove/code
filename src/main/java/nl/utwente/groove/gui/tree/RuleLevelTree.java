@@ -144,6 +144,7 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
                     getTopNode().add(levelNode);
                 } else {
                     LevelNode parentNode = this.levelNodeMap.get(index.getParent());
+                    assert parentNode != null; // the indices are traversed parents first
                     parentNode.add(levelNode);
                 }
                 this.levelNodeMap.put(index, levelNode);

@@ -147,6 +147,7 @@ public class TemplateBuilder {
      */
     private NestedSwitch getExternalSwitch(Location loc, Derivation deriv) {
         Builder builder = this.builderMap.get(loc.getTemplate().get());
+        assert builder != null; // every template is registered by the builder that created it
         NestedSwitch result = builder.getSwitch(loc, deriv);
         assert result != null;
         return result;
@@ -212,6 +213,7 @@ public class TemplateBuilder {
          */
         private void buildAttempt(TermKey termKey) {
             Location loc = getLocMap().get(termKey);
+            assert loc != null; // a term key is only made fresh after its location has been mapped
             Term term = termKey.term();
             Type locType = term.getType();
             // property switches

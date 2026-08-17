@@ -164,7 +164,9 @@ public class PropertiesTable extends JTable {
      */
     void check(Key key) {
         String value = NoNonNull.orElse(this.properties.get(key.getName()), "");
-        this.errorMap.put(key, this.checkerMap.get(key).check(value));
+        var checker = this.checkerMap.get(key);
+        assert checker != null; // CheckerMap substitutes a default checker for unknown keys
+        this.errorMap.put(key, checker.check(value));
     }
 
     private final Map<Key,FormatErrorSet> errorMap;
@@ -272,7 +274,8 @@ public class PropertiesTable extends JTable {
     /** Sets the selection to a given property key. */
     public void setSelected(Key key) {
         if (this.keyIndexMap.containsKey(key)) {
-            int index = this.keyIndexMap.get(key);
+            Integer index = this.keyIndexMap.get(key);
+            assert index != null; // guaranteed by the containsKey test
             getSelectionModel().setSelectionInterval(index, index);
         }
     }

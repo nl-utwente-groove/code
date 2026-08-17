@@ -125,7 +125,9 @@ public enum EdgeRole {
      * This is the inverse to {@link #getRole(int)}
      */
     public static int getIndex(EdgeRole role) {
-        return indexMap.get(role);
+        Integer result = indexMap.get(role);
+        assert result != null; // the index map is filled for all edge roles
+        return result;
     }
 
     /**

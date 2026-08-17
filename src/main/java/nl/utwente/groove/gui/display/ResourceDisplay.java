@@ -714,7 +714,9 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         }
         result.append(suffix);
         if (isEdited(name)) {
-            getEditors().get(name).decorateText(result);
+            var editor = getEditors().get(name);
+            assert editor != null; // guaranteed by the isEdited test
+            editor.decorateText(result);
         }
         if (enabled) {
             if (getKind() != DisplayKind.RULE) {
@@ -763,7 +765,9 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     final public boolean hasError(QualName name) {
         boolean result;
         if (this.editorMap.containsKey(name)) {
-            result = this.editorMap.get(name).hasErrors();
+            var editor = this.editorMap.get(name);
+            assert editor != null; // guaranteed by the containsKey test
+            result = editor.hasErrors();
         } else {
             ResourceModel<?> model = getResource(name);
             result = model != null && model.hasErrors();

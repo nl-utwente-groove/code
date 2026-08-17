@@ -351,7 +351,9 @@ public class Program implements Fixable {
     /** Indicates, for a given procedure, if it can potentially
      * immediately evolve (via verdict transitions only) to a final position. */
     public boolean mayFinalise(Procedure proc) {
-        return getFinalityMap().get(proc).may();
+        var finality = getFinalityMap().get(proc);
+        assert finality != null; // the finality map is initialised for all procedures of this program
+        return finality.may();
     }
 
     /** Indicates, for a given term, if it can potentially
@@ -363,7 +365,9 @@ public class Program implements Fixable {
     /** Indicates, for a given procedure, if it will certainly
      * immediately evolve (via verdict transitions only) to a final position. */
     public boolean willFinalise(Procedure proc) {
-        return getFinalityMap().get(proc).will();
+        var finality = getFinalityMap().get(proc);
+        assert finality != null; // the finality map is initialised for all procedures of this program
+        return finality.will();
     }
 
     /** Returns a mapping from procedures to their potential and certain immediate termination. */
