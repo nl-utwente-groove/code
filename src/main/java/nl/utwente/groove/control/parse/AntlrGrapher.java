@@ -1,7 +1,7 @@
 /**
  *
  */
-package nl.utwente.groove.util.antlr;
+package nl.utwente.groove.control.parse;
 
 import java.util.BitSet;
 import java.util.HashMap;
