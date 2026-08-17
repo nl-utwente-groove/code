@@ -35,22 +35,12 @@ import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.util.io.FileType;
 
 /**
- * Façade for loading and saving graphs and grammars, with the associated
- * default resource names.
+ * Façade for loading and saving graphs and grammars.
  * @version $Revision$
  * @author Arend Rensink
  */
 @NonNullByDefault
 public class Groove {
-    /** Default name for the start graph. */
-    public static final String DEFAULT_START_GRAPH_NAME = "start";
-    /** Default name for control files. */
-    public static final String DEFAULT_CONTROL_NAME = "control";
-    /** Default name for the type graph */
-    public static final String DEFAULT_TYPE_NAME = "type";
-    /** Default name for property files. */
-    public static final String PROPERTY_NAME = "system";
-
     /**
      * Attempts to load in a graph from a given <tt>.gst</tt> file and return
      * it. Tries out the <tt>.gxl</tt> and <tt>.gst</tt> extensions if the

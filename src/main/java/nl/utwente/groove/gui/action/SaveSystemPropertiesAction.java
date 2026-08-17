@@ -11,7 +11,6 @@ import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
-import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.util.QualName;
 
 /**
@@ -27,7 +26,8 @@ public class SaveSystemPropertiesAction extends SimulatorAction {
     @Override
     public void execute() {
         File selectedFile = askSaveResource(QualName
-            .name(PROPERTIES.getFileType().addExtension(Groove.PROPERTY_NAME)));
+            .name(PROPERTIES.getFileType()
+                .addExtension(PROPERTIES.getDefaultName().get().toString())));
         if (selectedFile == null) {
             showErrorDialog(null, "No file selected");
         } else {
