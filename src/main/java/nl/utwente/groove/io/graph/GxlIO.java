@@ -47,7 +47,7 @@ import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphInfo;
-import nl.utwente.groove.graph.GraphProperties;
+import nl.utwente.groove.grammar.ResourceProperties;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.layout.EdgeLayout;
@@ -228,13 +228,13 @@ public class GxlIO extends GraphIO<AttrGraph> {
             gxlGraph.setId(graph.getName());
             gxlGraph.setRole(graph.getRole().toString());
             // add the graph attributes, if any
-            GraphProperties properties = graph.getProperties();
+            ResourceProperties properties = ResourceProperties.getProperties(graph);
             properties
                 .entryStream()
                 .forEach(e -> storeAttribute(gxlGraph, e.getKey(), e.getValue()));
             // Add version info
-            if (!properties.containsKey(GraphProperties.Key.VERSION)) {
-                storeAttribute(gxlGraph, GraphProperties.Key.VERSION.getName(),
+            if (!properties.containsKey(ResourceProperties.Key.VERSION)) {
+                storeAttribute(gxlGraph, ResourceProperties.Key.VERSION.getName(),
                                Version.GXL_VERSION);
             }
         }
@@ -345,7 +345,7 @@ public class GxlIO extends GraphIO<AttrGraph> {
         // add old-style priority, if necessitated by the file name
         PriorityFileName priorityName = new PriorityFileName(file);
         if (priorityName.hasPriority()) {
-            GraphInfo.setPriority(result, priorityName.getPriority());
+            ResourceProperties.setPriority(result, priorityName.getPriority());
         }
         // add old-style layout information, if there is a separate layout file
         File layoutFile = toLayoutFile(file);
@@ -373,7 +373,7 @@ public class GxlIO extends GraphIO<AttrGraph> {
             } catch (FormatException exc) {
                 throw new IOException(String.format("Format error: %s", exc.getMessage()), exc);
             }
-            String version = GraphInfo.getVersion(graph);
+            String version = ResourceProperties.getVersion(graph);
             if (!Version.isKnownGxlVersion(version)) {
                 graph
                     .addError("GXL file format version '%s' is higher than supported version '%s'",
@@ -494,7 +494,7 @@ public class GxlIO extends GraphIO<AttrGraph> {
             }
         }
         // add the graph attributes
-        GraphProperties properties = new GraphProperties();
+        ResourceProperties properties = new ResourceProperties();
         for (AttrType graphAttr : gxlGraph.getAttr()) {
             // EZ: Removed this conversion because it causes problems
             // with rule properties keys.
@@ -512,7 +512,7 @@ public class GxlIO extends GraphIO<AttrGraph> {
             }
             properties.setProperty(attrName, dataValue.toString());
         }
-        GraphInfo.setProperties(graph, properties);
+        ResourceProperties.setProperties(graph, properties);
         String roleName = gxlGraph.getRole();
         graph
             .setRole(roleName == null

@@ -73,6 +73,12 @@ public abstract class Properties implements Fixable {
     /** This internal properties map. */
     private final java.util.Properties properties = new java.util.Properties();
 
+    /** Returns a copy of this properties object, of the same concrete class.
+     * The copy is not fixed, even if this object is.
+     */
+    @Override
+    public abstract Properties clone();
+
     /** Returns the key type of this properties class. */
     public Class<? extends Key> getKeyType() {
         return this.keyType;

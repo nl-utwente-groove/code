@@ -54,7 +54,7 @@ import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.type.TypeGraph;
-import nl.utwente.groove.graph.GraphInfo;
+import nl.utwente.groove.grammar.ResourceProperties;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.io.store.EditType;
 import nl.utwente.groove.io.store.SystemStore;
@@ -681,7 +681,7 @@ public class GrammarModel implements PropertyChangeListener {
         case RULE:
             names
                 .stream()
-                .filter(n -> GraphInfo.isEnabled(getStore().getGraphs(RULE).get(n)))
+                .filter(n -> ResourceProperties.isEnabled(getStore().getGraphs(RULE).get(n)))
                 .forEach(newActiveNames::add);
             newActiveNames.removeAll(getProperties().getRuleEnabling().getKeys(Delta.REMOVE));
             newActiveNames.addAll(getProperties().getRuleEnabling().getKeys(Delta.ADD));

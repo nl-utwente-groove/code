@@ -23,8 +23,8 @@ import org.jgraph.graph.DefaultGraphModel.GraphModelEdit;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
-import nl.utwente.groove.graph.GraphProperties;
-import nl.utwente.groove.graph.GraphProperties.Key;
+import nl.utwente.groove.grammar.ResourceProperties;
+import nl.utwente.groove.grammar.ResourceProperties.Key;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.dialog.PropertiesTable;
@@ -164,7 +164,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     private PropertiesTable getPropertiesPanel() {
         PropertiesTable result = this.propertiesPanel;
         if (result == null) {
-            this.propertiesPanel = result = new PropertiesTable(GraphProperties.Key.class, false);
+            this.propertiesPanel = result = new PropertiesTable(ResourceProperties.Key.class, false);
             result.setName("Properties");
             result.addMouseListener(new EditMouseListener());
         }
@@ -204,7 +204,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     private void updatePropertiesNotable() {
         var graph = getGraph();
         if (graph != null) {
-            boolean notableProperties = graph.getProperties().isNotable();
+            boolean notableProperties = ResourceProperties.getProperties(graph).isNotable();
             this.propertiesHeader
                 .setForeground(notableProperties
                     ? Values.INFO_NORMAL_FOREGROUND

@@ -44,8 +44,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.type.Multiplicity;
-import nl.utwente.groove.graph.GraphInfo;
-import nl.utwente.groove.graph.GraphProperties;
+import nl.utwente.groove.grammar.ResourceProperties;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.plain.PlainGraph;
 import nl.utwente.groove.graph.plain.PlainNode;
@@ -157,7 +156,7 @@ public class EcoreToGraphs {
                 addTypeReference(result, node, eClass, reference, classNodes);
             }
         }
-        GraphInfo.setProperties(result, createMetadata());
+        ResourceProperties.setProperties(result, createMetadata());
         return AspectGraph.newInstance(result);
     }
 
@@ -255,8 +254,8 @@ public class EcoreToGraphs {
     }
 
     /** Creates the round-trip metadata of the meta-model. */
-    private GraphProperties createMetadata() {
-        GraphProperties result = new GraphProperties();
+    private ResourceProperties createMetadata() {
+        ResourceProperties result = new ResourceProperties();
         StringBuilder packages = new StringBuilder();
         for (var pkg : this.names.packages()) {
             append(packages, this.names.pathOf(pkg), nonNull(pkg.getNsURI()),

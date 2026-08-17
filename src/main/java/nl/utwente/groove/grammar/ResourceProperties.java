@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.graph;
+package nl.utwente.groove.grammar;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -30,6 +30,7 @@ import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.rule.MethodName;
 import nl.utwente.groove.grammar.rule.MethodName.Language;
 import nl.utwente.groove.grammar.rule.MethodNameParser;
+import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Properties;
 import nl.utwente.groove.util.Strings;
@@ -40,19 +41,20 @@ import nl.utwente.groove.util.parse.Parser;
 import nl.utwente.groove.util.parse.StringParser;
 
 /**
- * Specialised properties class for graphs. This can be stored as part of the
- * graph info.
+ * Specialised properties class for graph-based grammar resources
+ * (rules in particular, but also host and type graphs).
+ * This is stored as part of the graph info of the resource's aspect graph.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class GraphProperties extends Properties {
+public class ResourceProperties extends Properties {
     /** Constructs an empty properties object. */
-    public GraphProperties() {
+    public ResourceProperties() {
         super(Key.class);
     }
 
     /** Constructs a properties object initialised on a given map. */
-    public GraphProperties(GraphProperties properties) {
+    public ResourceProperties(ResourceProperties properties) {
         this();
         putAll(properties);
     }
@@ -63,8 +65,8 @@ public class GraphProperties extends Properties {
     }
 
     @Override
-    public synchronized GraphProperties clone() {
-        return new GraphProperties(this);
+    public synchronized ResourceProperties clone() {
+        return new ResourceProperties(this);
     }
 
     /** Returns a map from property keys to checkers driven by a given grammar model. */
@@ -83,7 +85,7 @@ public class GraphProperties extends Properties {
         return result;
     }
 
-    /** Predefined graph property keys. */
+    /** Predefined resource property keys. */
     public static enum Key implements Properties.Key, Checker {
         /** User-defined comment. */
         REMARK("remark", "One-line explanation of the rule, shown e.g. as tool tip",
@@ -257,7 +259,7 @@ public class GraphProperties extends Properties {
         }
     }
 
-    /** Checker interface for graph property keys. */
+    /** Checker interface for resource property keys. */
     public interface Checker extends BiFunction<AspectGraph,Entry,FormatErrorSet> {
         /**
          * Checks the consistency of a property with a given model.
@@ -304,11 +306,230 @@ public class GraphProperties extends Properties {
 
     /** Mapping from key names (as in {@link Key#getName()}) to keys. */
     static private final Factory<Map<String,Key>> nameKeyMap
-        = Factory.lazy(GraphProperties::createNameKeyMap);
+        = Factory.lazy(ResourceProperties::createNameKeyMap);
 
     static private Map<String,Key> createNameKeyMap() {
         var result = new HashMap<String,Key>();
         Arrays.stream(Key.values()).forEach(k -> result.put(k.getName(), k));
         return result;
+    }
+
+    /**
+     * Returns the resource properties of a given graph.
+     * @param graph the queried graph; non-{@code null}
+     * @return the properties object of the queried graph, or a fixed empty
+     * properties object if the graph has none
+     */
+    public static ResourceProperties getProperties(Graph graph) {
+        Properties result = graph.hasInfo()
+            ? graph.getInfo().getProperties()
+            : null;
+        return result == null
+            ? EMPTY_PROPERTIES
+            : (ResourceProperties) result;
+    }
+
+    /**
+     * Convenience method to set the resource properties of a given graph.
+     * The graph will receive a copy of the properties passed in.
+     * @param graph the graph to be modified; non-{@code null}
+     * @param properties the new properties map; non-{@code null}
+     */
+    public static void setProperties(Graph graph, ResourceProperties properties) {
+        assert !graph.isFixed();
+        graph.getInfo().setProperties(new ResourceProperties(properties));
+    }
+
+    /**
+     * Returns the role of a given rule graph.
+     * @param graph the queried graph; non-{@code null}
+     * @return the role; non-{@code null}
+     * @see Key#ROLE
+     */
+    static public Optional<Role> getRole(Graph graph) {
+        return getProperty(graph, Key.ROLE).value(Role.VALUE_TYPE);
+    }
+
+    /**
+     * Sets the role of a given rule graph to a certain value.
+     * @param graph the graph to be modified; non-{@code null} and non-fixed
+     * @param role the new role; non-{@code null}
+     */
+    static public void setRole(Graph graph, Role role) {
+        setProperty(graph, Key.ROLE, role);
+    }
+
+    /**
+     * Returns the priority property of a given graph. The priority is a non-negative number.
+     * Yields the default priority {@code 0} if the priority has not been set explicitly.
+     * @param graph the queried graph; non-{@code null}
+     * @return the non-negative priority of {@code graph}
+     * @see Key#PRIORITY
+     */
+    static public int getPriority(Graph graph) {
+        return getProperty(graph, Key.PRIORITY).value(ValueType.INTEGER);
+    }
+
+    /**
+     * Sets the priority of a given graph to a certain value.
+     * @param graph the graph to be modified; non-{@code null} and non-fixed
+     * @param priority the new priority value; should be non-negative
+     */
+    static public void setPriority(Graph graph, int priority) {
+        setProperty(graph, Key.PRIORITY, priority);
+    }
+
+    /**
+     * Returns the enabledness property of a given graph.
+     * Yields <code>true</code> by default.
+     * @param graph the queried graph; non-{@code null}
+     * @see Key#ENABLED
+     */
+    static public boolean isEnabled(Graph graph) {
+        return getProperty(graph, Key.ENABLED).value(ValueType.BOOLEAN);
+    }
+
+    /**
+     * Sets the enabledness of a given graph to a certain value.
+     * @param graph the graph to be modified; non-{@code null} and non-fixed
+     * @param enabled the new enabledness value
+     */
+    static public void setEnabled(Graph graph, boolean enabled) {
+        setProperty(graph, Key.ENABLED, enabled);
+    }
+
+    /**
+     * Returns the injectivity property of a given graph.
+     * Yields <code>false</code> by default.
+     * @param graph the queried graph; non-{@code null}
+     * @see Key#INJECTIVE
+     */
+    static public boolean isInjective(Graph graph) {
+        return getProperty(graph, Key.INJECTIVE).value(ValueType.BOOLEAN);
+    }
+
+    /**
+     * Sets the injectivity of a given graph to a certain value.
+     * @param graph the graph to be modified; non-{@code null} and non-fixed
+     * @param injective the new injectivity value
+     */
+    static public void setInjective(Graph graph, boolean injective) {
+        setProperty(graph, Key.INJECTIVE, injective);
+    }
+
+    /**
+     * Returns the remark property from a given graph.
+     * Yields the empty string by default.
+     * @param graph the queried graph; non-{@code null}
+     * @see Key#REMARK
+     */
+    static public String getRemark(Graph graph) {
+        return getProperty(graph, Key.REMARK).value(ValueType.STRING);
+    }
+
+    /**
+     * Sets the remark for a given graph to a certain value.
+     * @param graph the graph to be modified; non-{@code null} and non-fixed
+     * @param remark the remark for this graph; non-{@code null}
+     */
+    static public void setRemark(Graph graph, String remark) {
+        setProperty(graph, Key.REMARK, remark);
+    }
+
+    /**
+     * Returns the string format property from a given graph.
+     * Yields the empty string if the graph has
+     * no explicitly set format string.
+     * @param graph the queried graph; non-{@code null}
+     * @see Key#FORMAT
+     */
+    static public String getFormatString(Graph graph) {
+        return getProperty(graph, Key.FORMAT).value(ValueType.STRING);
+    }
+
+    /**
+     * Sets the format string for a given graph to a certain value.
+     * @param graph the graph to be modified; non-{@code null} and non-fixed
+     * @param formatString the format string for this graph; may be {@code null}
+     */
+    static public void setFormatString(Graph graph, String formatString) {
+        setProperty(graph, Key.FORMAT, formatString);
+    }
+
+    /**
+     * Returns the transition label of a given graph.
+     * Yields the empty string if the transition label has not been set explicitly
+     * @param graph the queried graph; non-{@code null}
+     * @see Key#TRANSITION_LABEL
+     */
+    static public String getTransitionLabel(Graph graph) {
+        return getProperty(graph, Key.TRANSITION_LABEL).value(ValueType.STRING);
+    }
+
+    /**
+     * Convenience method to set the transition label for a given graph to a certain value.
+     * @param graph the graph to be modified; non-{@code null} and non-fixed
+     * @param label the transition label for this graph; may be {@code null}
+     */
+    static public void setTransitionLabel(Graph graph, String label) {
+        setProperty(graph, Key.TRANSITION_LABEL, label);
+    }
+
+    /**
+     * Returns the version property from a given graph.
+     * Yields the empty string if the graph has
+     * no explicitly set version.
+     * @param graph the queried graph; non-{@code null}
+     * @see Key#VERSION
+     */
+    static public String getVersion(Graph graph) {
+        return getProperty(graph, Key.VERSION).value(ValueType.STRING);
+    }
+
+    /**
+     * Convenience method to retrieve a resource property from a given graph.
+     * @param graph the queried graph; non-{@code null}
+     * @return the stored or default property value for the given key;
+     * non-{@code null}
+     */
+    private static Entry getProperty(Graph graph, Key key) {
+        Entry result = null;
+        try {
+            var properties = graph.hasInfo()
+                ? graph.getInfo().getProperties()
+                : null;
+            if (properties != null) {
+                result = properties.parseProperty(key);
+            }
+        } catch (FormatException exc) {
+            // do nothing; default value set below
+        }
+        if (result == null) {
+            result = key.parser().getDefaultValue();
+        }
+        return result;
+    }
+
+    /**
+     * Convenience method to change a resource property of a given graph.
+     * Creates the properties object if the graph does not yet have one.
+     * @param graph the graph to be modified; non-{@code null} and non-fixed
+     */
+    private static void setProperty(Graph graph, Key key, Object value) {
+        var info = graph.getInfo();
+        var properties = info.getProperties();
+        if (properties == null) {
+            properties = new ResourceProperties();
+            info.setProperties(properties);
+        }
+        properties.storeValue(key, value);
+    }
+
+    /** Constant empty properties object. */
+    private static final ResourceProperties EMPTY_PROPERTIES;
+
+    static {
+        EMPTY_PROPERTIES = new ResourceProperties();
+        EMPTY_PROPERTIES.setFixed();
     }
 }

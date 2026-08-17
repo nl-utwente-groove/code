@@ -16,23 +16,14 @@
  */
 package nl.utwente.groove.graph;
 
-import static nl.utwente.groove.graph.GraphProperties.Key.ENABLED;
-import static nl.utwente.groove.graph.GraphProperties.Key.INJECTIVE;
-import static nl.utwente.groove.graph.GraphProperties.Key.PRIORITY;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
-import nl.utwente.groove.grammar.Action.Role;
-import nl.utwente.groove.graph.GraphProperties.Key;
 import nl.utwente.groove.graph.layout.LayoutMap;
 import nl.utwente.groove.util.DefaultFixable;
-import nl.utwente.groove.util.Properties.Entry;
-import nl.utwente.groove.util.Properties.ValueType;
+import nl.utwente.groove.util.Properties;
 import nl.utwente.groove.util.parse.FormatErrorSet;
-import nl.utwente.groove.util.parse.FormatException;
 
 /**
  * Class storing additional information about a graph.
@@ -46,7 +37,6 @@ public class GraphInfo extends DefaultFixable {
     public GraphInfo() {
         this.data = new HashMap<>();
         this.data.put(LAYOUT_KEY, new LayoutMap());
-        this.data.put(PROPERTIES_KEY, new GraphProperties());
         this.data.put(ERRORS_KEY, new FormatErrorSet());
     }
 
@@ -87,30 +77,36 @@ public class GraphInfo extends DefaultFixable {
     }
 
     /**
-     * Returns the graph properties map associated with the graph (key
-     * {@link #PROPERTIES_KEY}).
-     * @return a property map, or <code>null</code>
-     * @see #setProperties(GraphProperties)
+     * Returns the properties map associated with the graph (key
+     * {@link #PROPERTIES_KEY}). The map is stored and returned as a base
+     * {@link Properties} object; the concrete subclass is determined by the
+     * code that stores it (see {@link #setProperties(Properties)}).
+     * @return the stored property map, or <code>null</code> if none was stored
+     * @see #setProperties(Properties)
      */
-    private GraphProperties getProperties() {
-        return (GraphProperties) this.data.get(PROPERTIES_KEY);
+    public Properties getProperties() {
+        return (Properties) this.data.get(PROPERTIES_KEY);
     }
 
     /**
-     * Copies the properties in a given map to this info object (key
-     * {@link #PROPERTIES_KEY}).
+     * Stores a given property map in this info object (key
+     * {@link #PROPERTIES_KEY}). The map is stored as given, without copying;
+     * defensive copying is the caller's responsibility.
      * @see #getProperties()
      */
-    private void setProperties(GraphProperties properties) {
+    public void setProperties(Properties properties) {
         testFixed(false);
-        this.data.put(PROPERTIES_KEY, new GraphProperties(properties));
+        this.data.put(PROPERTIES_KEY, properties);
     }
 
     @Override
     public boolean setFixed() {
         boolean result = super.setFixed();
         if (result) {
-            getProperties().setFixed();
+            var properties = getProperties();
+            if (properties != null) {
+                properties.setFixed();
+            }
             this.data = Collections.unmodifiableMap(this.data);
         }
         return result;
@@ -157,9 +153,11 @@ public class GraphInfo extends DefaultFixable {
                 sourceLayoutMap = sourceLayoutMap.afterInverse(elementMap);
             }
             targetInfo.setLayoutMap(sourceLayoutMap);
-            // copy rather than clone the graph properties
-            GraphProperties properties = sourceInfo.getProperties();
-            targetInfo.setProperties(properties);
+            // copy the graph properties, if any
+            var properties = sourceInfo.getProperties();
+            if (properties != null) {
+                targetInfo.setProperties(properties.clone());
+            }
         }
     }
 
@@ -208,211 +206,6 @@ public class GraphInfo extends DefaultFixable {
     }
 
     /**
-     * Returns an unmodifiable copy of the properties map of a given graph.
-     * @param graph the queried graph; non-{@code null}
-     * @return a copy of the properties object of the queried graph, or an empty
-     * properties map if the graph has no info object
-     */
-    public static GraphProperties getProperties(Graph graph) {
-        GraphProperties result = null;
-        if (graph.hasInfo()) {
-            result = graph.getInfo().getProperties();
-        } else {
-            result = EMPTY_PROPERTIES;
-        }
-        return result;
-    }
-
-    /**
-     * Convenience method to set the graph properties map of a given graph.
-     * The graph will receive a copy of the properties passed in.
-     * @param graph the graph to be modified; non-{@code null}
-     * @param properties the new properties map; non-{@code null}
-     */
-    public static void setProperties(Graph graph, GraphProperties properties) {
-        assert !graph.isFixed();
-        graph.getInfo().setProperties(properties);
-    }
-
-    /**
-     * Returns the priority property of a given graph. The priority is a non-negative number.
-     * Yields the default priority {@code 0} if the priority has not been set explicitly.
-     * @param graph the queried graph; non-{@code null}
-     * @return the non-negative priority of {@code graph}
-     * @see Key#PRIORITY
-     */
-    static public int getPriority(Graph graph) {
-        return getProperty(graph, PRIORITY).value(ValueType.INTEGER);
-    }
-
-    /**
-     * Sets the role of a given rule graph to a certain value.
-     * @param graph the graph to be modified; non-{@code null} and non-fixed
-     * @param role the new role; non-{@code null}
-     */
-    static public void setRole(Graph graph, Role role) {
-        setProperty(graph, Key.ROLE, role);
-    }
-
-    /**
-     * Returns the role of a given rule graph.
-     * @param graph the queried graph; non-{@code null}
-     * @return the role; non-{@code null}
-     * @see Key#ROLE
-     */
-    static public Optional<Role> getRole(Graph graph) {
-        return getProperty(graph, Key.ROLE).value(Role.VALUE_TYPE);
-    }
-
-    /**
-     * Sets the priority of a given graph to a certain value.
-     * @param graph the graph to be modified; non-{@code null} and non-fixed
-     * @param priority the new priority value; should be non-negative
-     */
-    static public void setPriority(Graph graph, int priority) {
-        setProperty(graph, PRIORITY, priority);
-    }
-
-    /**
-     * Returns the enabledness property of a given graph.
-     * Yields <code>true</code> by default.
-     * @param graph the queried graph; non-{@code null}
-     * @see Key#ENABLED
-     */
-    static public boolean isEnabled(Graph graph) {
-        return getProperty(graph, ENABLED).value(ValueType.BOOLEAN);
-    }
-
-    /**
-     * Sets the enabledness of a given graph to a certain value.
-     * @param graph the graph to be modified; non-{@code null} and non-fixed
-     * @param enabled the new enabledness value
-     */
-    static public void setEnabled(Graph graph, boolean enabled) {
-        setProperty(graph, ENABLED, enabled);
-    }
-
-    /**
-     * Returns the injectivity property of a given graph.
-     * Yields <code>false</code> by default.
-     * @param graph the queried graph; non-{@code null}
-     * @see Key#INJECTIVE
-     */
-    static public boolean isInjective(Graph graph) {
-        return getProperty(graph, INJECTIVE).value(ValueType.BOOLEAN);
-    }
-
-    /**
-     * Sets the injectivity of a given graph to a certain value.
-     * @param graph the graph to be modified; non-{@code null} and non-fixed
-     * @param injective the new injectivity value
-     */
-    static public void setInjective(Graph graph, boolean injective) {
-        setProperty(graph, INJECTIVE, injective);
-    }
-
-    /**
-     * Returns the remark property from a given graph.
-     * Yields the empty string by default.
-     * @param graph the queried graph; non-{@code null}
-     * @see Key#REMARK
-     */
-    static public String getRemark(Graph graph) {
-        return getProperty(graph, Key.REMARK).value(ValueType.STRING);
-    }
-
-    /**
-     * Sets the remark for a given graph to a certain value.
-     * @param graph the graph to be modified; non-{@code null} and non-fixed
-     * @param remark the remark for this graph; non-{@code null}
-     */
-    static public void setRemark(Graph graph, String remark) {
-        setProperty(graph, Key.REMARK, remark);
-    }
-
-    /**
-     * Returns the string format property from a given graph.
-     * Yields the empty string if the graph has
-     * no explicitly set format string.
-     * @param graph the queried graph; non-{@code null}
-     * @see Key#FORMAT
-     */
-    static public String getFormatString(Graph graph) {
-        return getProperty(graph, Key.FORMAT).value(ValueType.STRING);
-    }
-
-    /**
-     * Sets the format string for a given graph to a certain value.
-     * @param graph the graph to be modified; non-{@code null} and non-fixed
-     * @param formatString the format string for this graph; may be {@code null}
-     */
-    static public void setFormatString(Graph graph, String formatString) {
-        setProperty(graph, Key.FORMAT, formatString);
-    }
-
-    /**
-     * Returns the transition label of a given graph.
-     * Yields the empty string if the transition label has not been set explicitly
-     * @param graph the queried graph; non-{@code null}
-     * @see Key#TRANSITION_LABEL
-     */
-    static public String getTransitionLabel(Graph graph) {
-        return getProperty(graph, Key.TRANSITION_LABEL).value(ValueType.STRING);
-    }
-
-    /**
-     * Convenience method to set the transition label for a given graph to a certain value.
-     * @param graph the graph to be modified; non-{@code null} and non-fixed
-     * @param label the transition label for this graph; may be {@code null}
-     */
-    static public void setTransitionLabel(Graph graph, String label) {
-        setProperty(graph, Key.TRANSITION_LABEL, label);
-    }
-
-    /**
-     * Returns the version property from a given graph.
-     * Yields the empty string if the graph has
-     * no explicitly set version.
-     * @param graph the queried graph; non-{@code null}
-     * @see Key#VERSION
-     */
-    static public String getVersion(Graph graph) {
-        return getProperty(graph, Key.VERSION).value(ValueType.STRING);
-    }
-
-    /**
-     * Convenience method to retrieve a graph property from a given graph.
-     * Delegates to {@link GraphProperties#getProperty}
-     * @param graph the queried graph; non-{@code null}
-     * @return the stored or default property value for the given key;
-     * non-{@code null}
-     */
-    private static nl.utwente.groove.util.Properties.Entry getProperty(Graph graph, Key key) {
-        Entry result = null;
-        try {
-            if (graph.hasInfo()) {
-                result = graph.getInfo().getProperties().parseProperty(key);
-            }
-        } catch (FormatException exc) {
-            // do nothing; default value set below
-        }
-        if (result == null) {
-            result = key.parser().getDefaultValue();
-        }
-        return result;
-    }
-
-    /**
-     * Convenience method to change a graph property of a given graph.
-     * Delegates to {@link GraphProperties#setProperty}
-     * @param graph the graph to be modified; non-{@code null} and non-fixed
-     */
-    private static void setProperty(Graph graph, Key key, Object value) {
-        GraphProperties properties = graph.getInfo().getProperties();
-        properties.storeValue(key, value);
-    }
-
-    /**
      * Key for error list.
      */
     private static final String ERRORS_KEY = "errors";
@@ -424,11 +217,4 @@ public class GraphInfo extends DefaultFixable {
      * Key for layout-info.
      */
     private static final String LAYOUT_KEY = "layout";
-    /** Constant empty properties object. */
-    private static final GraphProperties EMPTY_PROPERTIES;
-
-    static {
-        EMPTY_PROPERTIES = new GraphProperties();
-        EMPTY_PROPERTIES.setFixed();
-    }
 }

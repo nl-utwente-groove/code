@@ -50,8 +50,7 @@ import nl.utwente.groove.grammar.rule.RuleGraph;
 import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeGuard;
-import nl.utwente.groove.graph.GraphProperties;
-import nl.utwente.groove.graph.GraphProperties.Key;
+import nl.utwente.groove.grammar.ResourceProperties.Key;
 import nl.utwente.groove.match.Prover;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
@@ -201,9 +200,9 @@ public class Rule implements Action, Fixable {
     private @Nullable Rule parent;
 
     /**
-     * Sets the rule properties from a graph property map.
+     * Sets the rule properties from a resource property map.
      */
-    public void setProperties(GraphProperties properties) {
+    public void setProperties(ResourceProperties properties) {
         testFixed(false);
         try {
             this.priority = properties.parseProperty(Key.PRIORITY).value(ValueType.INTEGER);

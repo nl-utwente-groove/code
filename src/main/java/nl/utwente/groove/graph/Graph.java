@@ -204,11 +204,6 @@ public interface Graph {
         return getInfo().getErrors();
     }
 
-    /** Returns the set of properties associated with this graph. */
-    default public GraphProperties getProperties() {
-        return GraphInfo.getProperties(this);
-    }
-
     /**
      * Makes a copy of this Graph with cloned (not aliased) node and edge sets
      * but aliased nodes and edges.

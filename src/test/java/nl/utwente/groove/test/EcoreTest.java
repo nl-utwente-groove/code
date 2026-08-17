@@ -48,7 +48,7 @@ import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
-import nl.utwente.groove.graph.GraphInfo;
+import nl.utwente.groove.grammar.ResourceProperties;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.iso.IsoChecker;
 import nl.utwente.groove.graph.plain.PlainGraph;
@@ -120,7 +120,7 @@ public class EcoreTest {
     @Test
     public void testMetadata() throws Exception {
         AspectGraph type = single(importFrom("shop.ecore", Ordering.NONE, true), ResourceKind.TYPE);
-        var properties = GraphInfo.getProperties(type);
+        var properties = ResourceProperties.getProperties(type);
         assertEquals("shop|http://groove.utwente.nl/ecore/shop|shop;"
             + "shop.catalog|http://groove.utwente.nl/ecore/shop/catalog|catalog",
                      properties.getProperty(EcoreToGraphs.PACKAGES_KEY));
@@ -511,7 +511,7 @@ public class EcoreTest {
         assertEquals(Set.of("Network -out=2..4:part:stations-> Station"), binaryEdges(type));
         // the opposite pairing is not structural: it lives in the metadata
         assertEquals("Station.next|Station.previous",
-                     GraphInfo.getProperties(type).getProperty(EcoreToGraphs.OPPOSITES_KEY));
+                     ResourceProperties.getProperties(type).getProperty(EcoreToGraphs.OPPOSITES_KEY));
         AspectGraph host = single(imported, ResourceKind.HOST);
         // both directions of an opposite pair are present as ordinary edges
         assertEquals(Set.of("north -next-> middle", "middle -next-> south"),
@@ -553,7 +553,7 @@ public class EcoreTest {
         assertEquals(Set
             .of("packages$Item -part:entries-> core$Item", "core$Item -part:details-> detail$Item",
                 "Line_HYPH_Item -sub:-> core$Item"), binaryEdges(type));
-        var properties = GraphInfo.getProperties(type);
+        var properties = ResourceProperties.getProperties(type);
         assertEquals("packages|http://groove.utwente.nl/ecore/packages|packages;"
             + "packages.core|http://groove.utwente.nl/ecore/packages/core|core;"
             + "packages.core.detail|http://groove.utwente.nl/ecore/packages/core/detail|detail",
@@ -584,13 +584,13 @@ public class EcoreTest {
                 + "Line_HYPH_Item|unit_UNKN_price||true|true|0|1|unit.price;"
                 + "Line_HYPH_Item|unit_price||true|true|0|1|unit-price";
         assertEquals(expected,
-                     GraphInfo.getProperties(type).getProperty(EcoreToGraphs.FEATURES_KEY));
+                     ResourceProperties.getProperties(type).getProperty(EcoreToGraphs.FEATURES_KEY));
         // the re-import can only record 'unit-price' again if the export wrote
         // the attribute back under that name
         AspectGraph result
             = single(assertRoundTrip("packages.xmi", Ordering.NONE), ResourceKind.TYPE);
         assertEquals(expected,
-                     GraphInfo.getProperties(result).getProperty(EcoreToGraphs.FEATURES_KEY));
+                     ResourceProperties.getProperties(result).getProperty(EcoreToGraphs.FEATURES_KEY));
     }
 
     /** Tests that the intermediate node of an indexed feature is named after the
@@ -979,7 +979,7 @@ public class EcoreTest {
 
     /** Returns the Ecore round-trip metadata of a graph, as a key-to-value map. */
     static private Map<String,String> metadata(AspectGraph graph) {
-        var properties = GraphInfo.getProperties(graph);
+        var properties = ResourceProperties.getProperties(graph);
         Map<String,String> result = new LinkedHashMap<>();
         for (var key : List
             .of(EcoreToGraphs.PACKAGES_KEY, EcoreToGraphs.TYPES_KEY, EcoreToGraphs.FEATURES_KEY,

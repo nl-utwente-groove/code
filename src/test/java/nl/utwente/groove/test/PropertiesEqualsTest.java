@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Test;
 
 import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.GrammarProperties;
-import nl.utwente.groove.graph.GraphProperties;
+import nl.utwente.groove.grammar.ResourceProperties;
 import nl.utwente.groove.util.AIGenerated;
 
 /**
@@ -121,7 +121,7 @@ public class PropertiesEqualsTest {
         var grammarProps = new GrammarProperties();
         grammarProps.remove(GrammarKey.GROOVE_VERSION);
         grammarProps.remove(GrammarKey.GRAMMAR_VERSION);
-        var graphProps = new GraphProperties();
+        var graphProps = new ResourceProperties();
         assertNotEquals(grammarProps, graphProps);
         assertNotEquals(graphProps, grammarProps);
         assertEquals(grammarProps, grammarProps.clone());
