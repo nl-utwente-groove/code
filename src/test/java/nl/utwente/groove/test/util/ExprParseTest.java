@@ -22,8 +22,8 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import nl.utwente.groove.util.parse.AExprTree;
-import nl.utwente.groove.util.parse.AExprTreeParser;
+import nl.utwente.groove.algebra.syntax.AExprTree;
+import nl.utwente.groove.algebra.syntax.AExprTreeParser;
 import nl.utwente.groove.util.parse.Op;
 import nl.utwente.groove.util.parse.OpKind;
 
