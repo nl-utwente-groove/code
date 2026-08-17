@@ -64,15 +64,15 @@ Status: P1 = on the `dependency-cleanup` branch, P2/P3 = later, acc = accepted.
 
 | Culprit | Actual dependency | Class | Remedy | Status |
 |---|---|---|---|---|
-| `annotation.Help` → algebra | `Sort.USER` + `Sort.toSort` in the user-operation help branch | B | move that branch to `algebra` (`Algebras` already post-processes) | P2 |
+| `annotation.Help` → algebra | `Sort.USER` + `Sort.toSort` in the user-operation help branch | B | move that branch to `algebra` (`Algebras` already post-processes) | done (P2 branch) |
 | `graph.GraphInfo` → grammar | javadoc-only `Rule` import + `Action.Role` convenience accessors | A | delete import; Role accessors ride on `GraphProperties` move | P1 (javadoc) / P2 |
 | `graph.GraphProperties` → grammar, grammar.aspect, grammar.rule | an enum of *rule* properties (`PRIORITY`, `INJECTIVE`, `FILTER`, …) with an `AspectGraph`-typed checker | A | move next to `GrammarProperties` in `grammar`; `GraphInfo` keeps base `util.Properties`. Rides on the `Properties.ValueType` fix | P2 |
 | `graph.iso` certificate strategies → grammar.host, grammar.type | `instanceof HostNode/ValueNode` seeding in all four strategies (once per node per cert build, not per iteration) | B | `Node.certificateSeed()` default method; `DefaultHostNode` returns type label, `ValueNode` its value. No SPI/registry — would cost more than the instanceof. **Gate with determinism-check + IsoTest + grammar-smoke**: value-node certs change subtly | P2 |
 | `graph.iso.IsoChecker` → io | `Groove.loadGraph/saveGraph` only in `main` + compile-time-false debug dumps | A | relocate harness to src/test | P1 |
-| `graph.iso.IsoChecker` → control | `CallStack.areEqual` — generic nested-`Object[]` comparison, sole prod caller `GTS` state collapse | B | extract array helpers to `util.collect`; `CallStack` delegates | P2 |
+| `graph.iso.IsoChecker` → control | `CallStack.areEqual` — generic nested-`Object[]` comparison, sole prod caller `GTS` state collapse | B | extract array helpers to `util.collect`; `CallStack` delegates | done (P2 branch: `util.collect.NestedArrays`) |
 | `graph.EdgeRole` → grammar.aspect | `AspectParser.SEPARATOR` used as a char constant | A | move the constant down | P1 |
 | `graph.GDeltaTarget` → grammar.host | javadoc-only `ValueNode` | A | delete import | P1 |
-| `algebra.syntax` relabel chain → grammar.type | `relabel(TypeLabel,…)` uses only `graph.Label` members | B | widen parameters to `graph.Label` (same shape in `RegExpr.relabel`) | P2 |
+| `algebra.syntax` relabel chain → grammar.type | `relabel(TypeLabel,…)` uses only `graph.Label` members | B | widen parameters to `graph.Label` (same shape in `RegExpr.relabel`) | done (P2 branch) |
 | `algebra.syntax`/`UserSignature` → grammar | `QualName` as dotted identifier | A | covered by the `QualName` move | P1 |
 
 ### Mid-layer cycles
@@ -87,7 +87,7 @@ Status: P1 = on the `dependency-cleanup` branch, P2/P3 = later, acc = accepted.
 | `grammar.host` → transform | delta vocabulary (`DeltaTarget`, `DeltaStore`, `DeltaApplier`, …) is a graph-mutation primitive | A | move delta types down to `grammar.host` (or `graph.delta`); `transform` keeps rule application only | P2 |
 | `grammar.model.ResourceKind`/`control.CtrlDoc`/`CtrlLoader` → io | `FileType`/`FileUtils` leaf utilities stranded in a high-level package | A | **`util.io` split** (decision 2026-08-17): new `util.io` package for `FileType`, `FileUtils`, `ExtensionFilter`; requires decoupling `FileType` from `graph.GraphRole` first | P1 |
 | `transform.Transformer` → lts, explore, io | top-of-stack facade (grammar file → exploration → `ExploreResult`); only prod caller `explore.Generator` | A | move to `explore` | P1 |
-| `transform.Phase`/`Record` → lts | `Phase` is `GraphState`'s super-interface but mentions `lts.MatchResult`; `Record` pools `RuleTransitionLabel` | B | move `Phase`+`MatchResult` up to `lts` (cheaper than inverting the label pool) | P2 |
+| `transform.Phase`/`Record` → lts | `Phase` is `GraphState`'s super-interface but mentions `lts.MatchResult`; `Record` pools `RuleTransitionLabel` | B | move `Phase`+`MatchResult` up to `lts` (cheaper than inverting the label pool) | done (P2 branch: `Phase` → lts, label pool → `GTS.normaliseLabel`) |
 | `match.TreeMatch` ↔ transform | entire output vocabulary is `transform.Proof`, which is a *match* witness | A | move `Proof` to `match`; handle its `RuleEvent.Reuse` import | P1 |
 | `lts.GTSFragment` → explore | `ExploreResult` imports only lts; `LTSLabels` is LTS serialization flags | A | move both to `lts` (also fixes `verify`→explore and `AutIO`) | P1 |
 | `io.external` LTS exporters → lts | `LTS2ControlExporter`, `ListenerExporter` GTS branch, registered eagerly inside `Exporters` | B | resolved by ranking `io` *above* `lts` (revised 2026-08-17): the exporters stay in `io.external.format` and their GTS references become downward; `lts` itself has no `io` dependency | P1 |
@@ -95,7 +95,7 @@ Status: P1 = on the `dependency-cleanup` branch, P2/P3 = later, acc = accepted.
 | `verify.CycleAcceptor` ↔ `explore.verify.LTLStrategy` | acceptor/strategy callback pair split across packages | A | move `CycleAcceptor` to `explore.verify` | P1 |
 | `verify.CTLModelChecker` → explore | `Generator.LTSLabelsHandler` CLI reuse (+ `ExploreResult`, fixed by the lts move) | B | extract shared picocli handler to `util.cli` | P2 |
 | `automaton` ↔ grammar | two tiers sharing a package: `RegExpr` syntax (belongs beside `grammar.rule`) vs host-graph evaluation (belongs beside `match`) | B/C | split, e.g. `match.regexpr` for the evaluation tier; residual `RuleLabel`→`RegAut` needs a factory hook | P3 |
-| `automaton.RelationCalculator` → lts | `implements GTSListener` for incremental label indexing; sole caller `gui.menu.ShowHideMenu` | B | strip the listener, GUI caller registers an adapter | P2 |
+| `automaton.RelationCalculator` → lts | `implements GTSListener` for incremental label indexing; sole caller `gui.menu.ShowHideMenu` | B | strip the listener, GUI caller registers an adapter | done (P2 branch) |
 | `RuleDependencies.main`, `CtrlLoader.main` → io | debug drivers using `Groove.loadGrammar` | A | relocate mains to src/test tool classes | P1 |
 
 ## Decisions (Arend, 2026-08-17)
