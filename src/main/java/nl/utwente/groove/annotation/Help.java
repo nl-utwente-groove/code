@@ -305,6 +305,7 @@ public class Help {
      * {@link #createHelp(AccessibleObject, Map)}, with a generated
      * "Operation" header as fallback.
      */
+    @SuppressWarnings("null")
     public static Help createOpHelp(Executable source, String opName, String syntaxText,
                                     String resultSort, Map<String,String> tokenMap) {
         Help result = new Help(tokenMap);
