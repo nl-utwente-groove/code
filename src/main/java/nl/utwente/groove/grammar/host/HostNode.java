@@ -18,6 +18,7 @@ package nl.utwente.groove.grammar.host;
 
 import java.util.Comparator;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.grammar.type.TypeNode;
@@ -41,7 +42,7 @@ public sealed interface HostNode extends Node, HostElement, AnchorValue
     /** The certificate seed of a host node is its type label. */
     @AIGenerated("Claude Fable 5, 2026-08")
     @Override
-    default public Object certificateSeed() {
+    default public @NonNull Object certificateSeed() {
         return getType().label();
     }
 

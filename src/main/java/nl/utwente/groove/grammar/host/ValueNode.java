@@ -18,6 +18,7 @@ package nl.utwente.groove.grammar.host;
 
 import java.util.Objects;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -87,7 +88,7 @@ final public class ValueNode extends ANode implements HostNode {
     /** The certificate seed of a value node is the value it represents. */
     @AIGenerated("Claude Fable 5, 2026-08")
     @Override
-    public Object certificateSeed() {
+    public @NonNull Object certificateSeed() {
         return getValue();
     }
 
