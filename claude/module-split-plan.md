@@ -127,6 +127,62 @@ the split introduces a root aggregator pom, make it own `revision` and pull the
 release modules into that reactor, eliminating the `-Drevision` handoff, the
 launch prompt, and the derivation steps in the script and workflow.
 
+## Open decision: keep or drop `module-info` (2026-08-17)
+
+**To be settled before phase 5 starts**, because the deferred root-shim move
+depends on the answer. Undecided; Arend's call.
+
+Keeping a modular build means splitting the single `module-info.java` (~70
+`exports`, 30 `requires`) into one descriptor per Maven module. Three things
+that are currently free stop being free:
+
+- **Split packages become illegal.** A package may live in exactly one named
+  module; two named modules containing the same package fail at boot-layer
+  creation, exported or not. This hits the deferred shim move in (b) directly:
+  moving `Simulator`/`Viewer`/`Imager` to the gui module while
+  `Generator`/`ModelChecker`/`PrologChecker` stay in core splits package
+  `nl.utwente.groove` across two modules. Under one module the move is a free
+  choice; under JPMS it forces either all six shims into one module or two
+  differently-named packages.
+- **Resource packages must land whole.** `nl.utwente.groove.resource.icon`,
+  `.font`, `.version`, `.antlr` (each with its `Stub.java`, which exists only
+  so the package is real enough to `opens`) must each sit in one module, and
+  that module must be the one opening it. A package straddling the boundary
+  gives a null stream at runtime, not a compile error.
+- **`requires transitive` becomes load-bearing** across our own modules: every
+  core-exported signature mentioning jgraph, picocli, jdt.annotation or awt
+  types forces `transitive` or the downstream module will not compile. A pass
+  over all exports. Likewise the eight automatic modules (`antlr.complete`,
+  `antlrworks`, `jgraph`, `ltl2buchi`, `osxadapter`, `batik.all`,
+  `xmlgraphics.commons`, `fop.core`) get requires-d per module, with the derived
+  name having to agree between javac, JDT and the runtime in each.
+
+The recurring Eclipse cost: maven-compiler-plugin and JDT compute modulepath
+vs. classpath placement independently, m2e mediates via the `module` classpath
+attribute, and hand-fixes to `.classpath` do not survive a Maven > Update
+Project — so IDE/`mvn` disagreements have to be resolved in the pom. Test
+sources are patched into the main module, which is why
+`launch/GROOVE - all JUnit tests.launch` carries per-test-package `--add-opens`
+(f4908e152); after the split that becomes one such list per module, plus
+`--add-exports`/`--add-opens` for any test reaching across our own module
+boundaries.
+
+Against all that: **the shipped product does not use JPMS at runtime**.
+`release/jpackage/build-installer.sh` packages with `--main-jar` plus a
+jdeps-computed `--add-modules`, i.e. GROOVE runs from the classpath in the
+unnamed module; `module-info.class` is inert there and the `opens` clauses have
+no effect in the installed app. The descriptor buys compile-time dependency
+discipline and IDE/`mvn` launch enforcement — and the Maven split delivers the
+same direction of enforcement (core cannot see gui) on its own, coarser but
+sufficient for the goal stated at the top of this document.
+
+So the alternative is to **drop `module-info` as part of phase 5** and give each
+module an `Automatic-Module-Name` manifest entry instead. That makes the shim
+split package legal, removes the add-opens maintenance and the whole
+modulepath/classpath disagreement class. It costs the enforced `exports`/`opens`
+encapsulation, and forecloses ever jlink-ing a modular runtime image (jpackage
+as used here does not need one).
+
 ## Phasing
 
 Each phase is a separate branch/PR, in dependency order:
@@ -136,6 +192,7 @@ Each phase is a separate branch/PR, in dependency order:
 3. Remaining inversions (c2), (c3).
 4. `SystemStore` redesign (d).
 5. Maven/module-info split, including the release-reactor version handoff.
+   Settle the keep-or-drop-`module-info` decision above before starting.
 
 ## Status (2026-08-16)
 
@@ -165,4 +222,4 @@ Each phase is a separate branch/PR, in dependency order:
   `FileUtils`, `io.Util` split into `util.Unicode` + `io.FileUtils`,
   `gui.look.Values` colour re-exports removed.
 - Remaining: phase 5 (build split + deferred shim/test moves + release-reactor
-  version handoff).
+  version handoff), blocked on the `module-info` decision recorded above.
