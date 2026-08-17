@@ -18,18 +18,15 @@ package nl.utwente.groove.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -39,6 +36,7 @@ import java.util.spi.ToolProvider;
 import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.junit.Assume;
 import org.junit.Test;
 
@@ -100,23 +98,18 @@ public class LayeringTest {
 
     /** Copies all class files except module-info.class. */
     private void copyClasses(Path from, Path to) throws IOException {
-        Files.walkFileTree(from, new SimpleFileVisitor<>() {
-            @Override
-            public FileVisitResult preVisitDirectory(Path dir,
-                                                     BasicFileAttributes attrs) throws IOException {
-                Files.createDirectories(to.resolve(from.relativize(dir)));
-                return FileVisitResult.CONTINUE;
+        List<Path> paths;
+        try (Stream<Path> walk = Files.walk(from)) {
+            paths = walk.toList();
+        }
+        for (Path path : paths) {
+            Path dest = to.resolve(from.relativize(path));
+            if (Files.isDirectory(path)) {
+                Files.createDirectories(dest);
+            } else if (!path.getFileName().toString().equals("module-info.class")) {
+                Files.copy(path, dest);
             }
-
-            @Override
-            public FileVisitResult visitFile(Path file,
-                                             BasicFileAttributes attrs) throws IOException {
-                if (!file.getFileName().toString().equals("module-info.class")) {
-                    Files.copy(file, to.resolve(from.relativize(file)));
-                }
-                return FileVisitResult.CONTINUE;
-            }
-        });
+        }
     }
 
     /** Parses the jdeps output and collects layering violations. */
@@ -140,17 +133,7 @@ public class LayeringTest {
             if (srcLayer.equals(dstLayer)) {
                 continue; // same layer, including within the rule-system cluster
             }
-            Integer srcRank = RANKS.get(srcLayer);
-            Integer dstRank = RANKS.get(dstLayer);
-            if (srcRank == null) {
-                fail("Unknown top-level package '" + srcTop + "': assign it a layer in "
-                    + getClass().getSimpleName());
-            }
-            if (dstRank == null) {
-                fail("Unknown top-level package '" + dstTop + "': assign it a layer in "
-                    + getClass().getSimpleName());
-            }
-            if (srcRank > dstRank) {
+            if (rank(srcLayer) > rank(dstLayer)) {
                 continue; // downward dependency
             }
             String edge = shortName(src) + " -> " + dstTop;
@@ -188,6 +171,16 @@ public class LayeringTest {
             : top;
     }
 
+    /** Returns the rank of a layer; fails the test on an unknown layer. */
+    private int rank(String layer) {
+        Integer result = RANKS.get(layer);
+        if (result == null) {
+            throw new AssertionError("Unknown top-level package '" + layer
+                + "': assign it a layer in " + getClass().getSimpleName());
+        }
+        return result;
+    }
+
     /** Returns the package name without the common prefix, or {@link #ROOT}. */
     private String shortName(String pkg) {
         String rest = pkg.substring(PREFIX.length());
@@ -206,7 +199,7 @@ public class LayeringTest {
     private static final Set<String> CLUSTER
         = Set.of("grammar", "control", "automaton", "match", "transform");
     /** Layer ranks; a dependency must go from a higher to a lower rank. */
-    private static final Map<String,Integer> RANKS = Map
+    private static final Map<String,@Nullable Integer> RANKS = Map
         .ofEntries(Map.entry("util", 0), Map.entry("annotation", 1), Map.entry("graph", 2),
                    Map.entry("algebra", 3), Map.entry(CLUSTER_NAME, 4), Map.entry("io", 5),
                    Map.entry("lts", 6), Map.entry("verify", 7), Map.entry("explore", 8),
