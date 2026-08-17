@@ -225,8 +225,6 @@ public class LayeringTest {
             "grammar.model -> io",
             // P2: GrammarModel loads .pro resources for validation
             "grammar.model -> prolog",
-            // P2: certificate strategies special-case host-graph nodes
-            "graph.iso -> grammar",
             // P2 (gh #891): AutIO uses ExplorationReporter stopwatch calls
             "io.graph -> explore",
             // P2: ATermTreeParser bakes algebra.Sort into the tokenizer

@@ -17,6 +17,9 @@
 package nl.utwente.groove.graph;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
+import nl.utwente.groove.util.AIGenerated;
 
 /**
  * Interface of a graph node. A node is a graph element that is not a composite.
@@ -31,4 +34,30 @@ public interface Node extends Element {
      * with its actual type, uniquely defines the node.
      */
     public int getNumber();
+
+    /**
+     * Returns an object seeding the isomorphism certificate of this node,
+     * or {@code null} if the node carries no seed.
+     * The seed determines the initial certificate value, and nodes with
+     * non-equal seeds are never considered symmetric.
+     * This callback allows node implementations to refine isomorphism
+     * checking without the certificate strategies knowing their type.
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    default public @Nullable Object certificateSeed() {
+        return null;
+    }
+
+    /**
+     * Indicates if this node is completely identified by its certificate seed,
+     * meaning that two nodes may be related by isomorphism if and only if
+     * their seeds are equal, regardless of the surrounding graph structure.
+     * This is the case for nodes whose identity is fixed across graphs, such
+     * as data value nodes. If {@code true}, {@link #certificateSeed()} must
+     * return a non-{@code null} value.
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    default public boolean hasIdentityCertificate() {
+        return false;
+    }
 }
