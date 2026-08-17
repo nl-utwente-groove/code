@@ -22,7 +22,7 @@ import java.util.Set;
 
 import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostGraph;
-import nl.utwente.groove.util.CycleChecker;
+import nl.utwente.groove.graph.CycleChecker;
 
 /**
  * The {@link ContainmentChecker} class provides functionality for

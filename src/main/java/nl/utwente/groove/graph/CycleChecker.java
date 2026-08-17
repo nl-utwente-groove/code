@@ -14,7 +14,7 @@
  *
  * $Id: ContainmentChecker.java 6204 2023-10-12 15:49:34Z rensink $
  */
-package nl.utwente.groove.util;
+package nl.utwente.groove.graph;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -23,14 +23,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.Stack;
 
-import nl.utwente.groove.grammar.host.HostGraph;
-import nl.utwente.groove.graph.Graph;
-import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 
 /**
  * The {@link CycleChecker} class provides functionality for
- * verifying containment in a {@link HostGraph}.
+ * detecting cycles in a graph.
  *
  * @author Arend Rensink
  */

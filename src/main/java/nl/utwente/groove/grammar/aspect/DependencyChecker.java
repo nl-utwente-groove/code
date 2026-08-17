@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import nl.utwente.groove.util.CycleChecker;
+import nl.utwente.groove.graph.CycleChecker;
 import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.Unicode;
 
