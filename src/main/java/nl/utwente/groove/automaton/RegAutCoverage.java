@@ -93,6 +93,7 @@ public class RegAutCoverage {
         Map<State,List<Step>> inSteps = new HashMap<>();
         while (!queue.isEmpty()) {
             State state = queue.poll();
+            assert state != null; // queue is non-empty
             for (RegEdge autEdge : this.aut.outEdgeSet(state.node())) {
                 RuleLabel label = autEdge.label();
                 boolean inverse = label.isInv();

@@ -133,6 +133,7 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
         while (!splitterList.isEmpty()) {
             // find the first non-empty splitter in the queue
             Block splitter = splitterList.poll();
+            assert splitter != null; // queue is non-empty
             if (splitter.size() > 0) {
                 splitNext(splitter, splitterList);
             }

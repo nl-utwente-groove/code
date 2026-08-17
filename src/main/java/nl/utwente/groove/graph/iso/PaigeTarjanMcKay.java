@@ -160,7 +160,9 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
         // && !splitterList.isEmpty()) {
         while (!splitterList.isEmpty()) {
             // find the first non-empty splitter in the queue
-            if (splitterList.peek().size() > 0) {
+            Block splitter = splitterList.peek();
+            assert splitter != null; // queue is non-empty
+            if (splitter.size() > 0) {
                 splitNext(splitterList);
                 this.iterateCount++;
             } else {

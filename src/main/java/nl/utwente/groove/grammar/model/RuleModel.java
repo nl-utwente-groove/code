@@ -876,6 +876,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
             indexQueue.add(this.topLevelIndex);
             while (!indexQueue.isEmpty()) {
                 Index next = indexQueue.poll();
+                assert next != null; // queue is non-empty
                 next.setFixed();
                 List<Index> children = indexTree.get(next);
                 // add an implicit existential sub-level to childless universal

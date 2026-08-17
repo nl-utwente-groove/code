@@ -128,7 +128,8 @@ public class ControlGraph extends NodeSetEdgeSetGraph<ControlNode,ControlEdge> {
         Queue<P> fresh = new LinkedList<>();
         addNode(result, nodeMap, init, fresh);
         while (!fresh.isEmpty()) {
-            P next = fresh.poll();
+            var next = fresh.poll();
+            assert next != null; // queue is non-empty
             ControlNode node = nodeMap.get(next);
             assert node != null;
             if (next.isTrial()) {

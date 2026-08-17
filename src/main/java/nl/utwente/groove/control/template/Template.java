@@ -196,6 +196,7 @@ public class Template {
         todo.add(this);
         while (!todo.isEmpty()) {
             Template t = todo.poll();
+            assert t != null; // queue is non-empty
             for (Location loc : t.getLocations()) {
                 if (!loc.isTrial()) {
                     continue;

@@ -381,7 +381,8 @@ public class CTLMarker {
         }
         // recurse to the predecessors of newly marked states
         while (!newStates.isEmpty()) {
-            int newState = newStates.poll();
+            Integer newState = newStates.poll();
+            assert newState != null; // queue is non-empty
             int[] preds = this.backward[newState];
             for (int b = 0; b < preds.length; b++) {
                 int pred = preds[b];
@@ -412,7 +413,8 @@ public class CTLMarker {
         }
         // recurse to the predecessors of newly marked states
         while (!newStates.isEmpty()) {
-            int newState = newStates.poll();
+            Integer newState = newStates.poll();
+            assert newState != null; // queue is non-empty
             int[] preds = this.backward[newState];
             for (int b = 0; b < preds.length; b++) {
                 int pred = preds[b];

@@ -128,7 +128,9 @@ public class NestedSwitch implements Attempt.Stage<Location,NestedSwitch>, Compa
 
     /** Returns the innermost switch of this nested switch. */
     public Switch getInnermost() {
-        return this.switches.peek();
+        var result = this.switches.peek();
+        assert result != null; // a nested switch is never empty
+        return result;
     }
 
     @Override

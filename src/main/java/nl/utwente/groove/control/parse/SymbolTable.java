@@ -61,8 +61,8 @@ public class SymbolTable {
      * @return true if the declaration succeeded, false if not
      */
     public boolean declareSymbol(String symbolName, CtrlType symbolType) {
-        if (!this.scopes.peek().isDeclared(symbolName)) {
-            this.scopes.peek().declare(symbolName, symbolType, false);
+        if (!topScope().isDeclared(symbolName)) {
+            topScope().declare(symbolName, symbolType, false);
             this.sortMap.reset();
             return true;
         } else {
@@ -77,8 +77,8 @@ public class SymbolTable {
      * @return true if the declaration succeeded, false if not
      */
     public boolean declareSymbol(String symbolName, CtrlType symbolType, boolean out) {
-        if (!this.scopes.peek().isDeclared(symbolName)) {
-            this.scopes.peek().declare(symbolName, symbolType, out);
+        if (!topScope().isDeclared(symbolName)) {
+            topScope().declare(symbolName, symbolType, out);
             this.sortMap.reset();
             return true;
         } else {
@@ -88,7 +88,14 @@ public class SymbolTable {
 
     /** Returns the output parameters in the current scope. */
     public Set<String> getOutPars() {
-        return this.scopes.peek().getOutPars();
+        return topScope().getOutPars();
+    }
+
+    /** Returns the current (innermost) scope, which is assumed to exist. */
+    private Scope topScope() {
+        var result = this.scopes.peek();
+        assert result != null; // there is always an open scope
+        return result;
     }
 
     /**

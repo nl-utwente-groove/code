@@ -105,6 +105,7 @@ public class Automaton {
         fresh.add(getStart());
         while (!fresh.isEmpty()) {
             Frame next = fresh.poll();
+            assert next != null; // queue is non-empty
             if (!next.isTrial()) {
                 continue;
             }

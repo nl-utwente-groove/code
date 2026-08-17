@@ -519,6 +519,7 @@ public class StateCache implements Cache {
         queue.add(this);
         while (!queue.isEmpty()) {
             var source = queue.poll();
+            assert source != null; // queue is non-empty
             var state = source.getState();
             assert state.getPrimeFrame().isInner();
             if (state.isInner()) {
