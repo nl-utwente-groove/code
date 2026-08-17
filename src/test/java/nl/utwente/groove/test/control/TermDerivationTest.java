@@ -35,11 +35,11 @@ import nl.utwente.groove.control.term.Term;
 import nl.utwente.groove.grammar.Callable;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.GrammarProperties;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.Signature;
 import nl.utwente.groove.grammar.UnitPar;
 import nl.utwente.groove.io.Groove;
+import nl.utwente.groove.util.QualName;
 
 /**
  * @author Arend Rensink

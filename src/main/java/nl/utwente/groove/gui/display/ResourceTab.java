@@ -36,7 +36,6 @@ import javax.swing.event.ChangeListener;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.NamedResourceModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
@@ -52,6 +51,7 @@ import nl.utwente.groove.gui.action.SimulatorAction;
 import nl.utwente.groove.gui.list.ErrorListPanel;
 import nl.utwente.groove.gui.list.ListPanel;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 
 /**

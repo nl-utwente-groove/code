@@ -21,11 +21,11 @@ import java.util.Set;
 
 import javax.swing.Action;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.io.store.EditType;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Action that enables a single resource, and disables all others.

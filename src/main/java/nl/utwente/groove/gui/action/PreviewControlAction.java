@@ -13,7 +13,6 @@ import javax.swing.JPopupMenu;
 
 import nl.utwente.groove.control.template.Program;
 import nl.utwente.groove.control.template.Template;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.ControlModel;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
@@ -21,6 +20,7 @@ import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.dialog.GraphPreviewDialog;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

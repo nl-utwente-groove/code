@@ -17,6 +17,7 @@
 package nl.utwente.groove.grammar;
 
 import nl.utwente.groove.control.Procedure;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Unit of functionality that can be called from a control program.

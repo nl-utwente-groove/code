@@ -26,7 +26,6 @@ import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.GraphConverter;
 import nl.utwente.groove.grammar.host.HostGraph;
@@ -37,6 +36,7 @@ import nl.utwente.groove.io.external.Imported;
 import nl.utwente.groove.io.external.Importer;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.io.graph.ColIO;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Class that implements loading of graphs in the DIMACS .col graph format.

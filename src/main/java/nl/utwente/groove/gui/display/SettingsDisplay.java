@@ -27,13 +27,13 @@ import javax.swing.ToolTipManager;
 
 import nl.utwente.groove.annotation.HelpMap;
 import nl.utwente.groove.explore.config.ExploreConfigSchema;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.SettingsModel;
 import nl.utwente.groove.grammar.model.SettingsSchema;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.io.external.format.ecore.EcoreMappingSchema;
+import nl.utwente.groove.util.QualName;
 
 /**
  * The Simulator panel that shows the settings resources, with an info panel

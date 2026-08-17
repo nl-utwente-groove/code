@@ -33,7 +33,6 @@ import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.automaton.RegExpr;
 import nl.utwente.groove.automaton.RegExprTyper;
 import nl.utwente.groove.automaton.RegExprTyper.Result;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.host.HostNode;
@@ -49,6 +48,7 @@ import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Pair;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
 /** Tests the class {@link RegExpr}. */

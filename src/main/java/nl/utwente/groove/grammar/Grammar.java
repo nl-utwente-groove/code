@@ -38,6 +38,7 @@ import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.prolog.GrooveEnvironment;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

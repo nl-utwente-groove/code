@@ -34,8 +34,8 @@ import java.util.Map;
 
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.annotation.Help;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.lts.StateProperty;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.ATermTreeParser;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.IdValidator;

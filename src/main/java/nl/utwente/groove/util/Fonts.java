@@ -30,8 +30,6 @@ import javax.swing.UIManager;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.grammar.QualName;
-
 /**
  * Provider of the fonts used for text formatting throughout the tool,
  * in particular in the HTML rendering of labels and messages.

@@ -66,7 +66,6 @@ import nl.utwente.groove.explore.feature.Frontier;
 import nl.utwente.groove.explore.feature.Goal;
 import nl.utwente.groove.explore.feature.Setting;
 import nl.utwente.groove.grammar.GrammarKey;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.SettingsSchemas;
@@ -75,6 +74,7 @@ import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.util.HTMLConverter;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 

@@ -19,9 +19,9 @@ package nl.utwente.groove.io.external;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.ResourceKind;
+import nl.utwente.groove.util.QualName;
 
 /**
  * An imported grammar resource: either a graph or text (not both).

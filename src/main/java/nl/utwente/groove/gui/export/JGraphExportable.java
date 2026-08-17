@@ -22,13 +22,13 @@ import java.util.Set;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.ResourceModel;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.gui.jgraph.AspectJModel;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Exporter.ExportKind;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Exportable wrapping a rendered {@link JGraph}, next to the graph and

@@ -54,9 +54,9 @@ import java.util.Objects;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.syntax.Expression;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.parse.ATermTree;
 import nl.utwente.groove.util.parse.FormatErrorSet;

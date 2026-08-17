@@ -20,8 +20,8 @@ import java.util.function.Function;
 
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.algebra.syntax.Variable;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.UnitPar.Direction;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Class representing a control argument in an action call.

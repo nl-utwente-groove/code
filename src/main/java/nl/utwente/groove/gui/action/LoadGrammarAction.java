@@ -14,7 +14,6 @@ import javax.swing.JOptionPane;
 
 import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.GrammarProperties;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
@@ -23,6 +22,7 @@ import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.dialog.VersionDialog;
 import nl.utwente.groove.io.store.SystemStore;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.Version;
 
 /**

@@ -68,7 +68,6 @@ import nl.utwente.groove.algebra.Algebras;
 import nl.utwente.groove.algebra.UserSignature;
 import nl.utwente.groove.annotation.HelpMap;
 import nl.utwente.groove.automaton.RegExpr;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.grammar.model.GrammarModel;
@@ -92,6 +91,7 @@ import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.tree.TypeTree;
 import nl.utwente.groove.io.store.EditType;
 import nl.utwente.groove.util.AIGenerated;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatError;
 
 /**

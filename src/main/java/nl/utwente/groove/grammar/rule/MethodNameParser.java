@@ -18,8 +18,8 @@ package nl.utwente.groove.grammar.rule;
 
 import java.util.NoSuchElementException;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.rule.MethodName.Language;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.Parser;
 

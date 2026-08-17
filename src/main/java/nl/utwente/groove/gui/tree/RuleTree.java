@@ -54,8 +54,6 @@ import javax.swing.tree.TreeSelectionModel;
 
 import nl.utwente.groove.grammar.Action;
 import nl.utwente.groove.grammar.CheckPolicy;
-import nl.utwente.groove.grammar.ModuleName;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
@@ -80,6 +78,8 @@ import nl.utwente.groove.lts.RuleTransition;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.HTMLConverter;
+import nl.utwente.groove.util.ModuleName;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Panel that displays a two-level directory of rules and matches.

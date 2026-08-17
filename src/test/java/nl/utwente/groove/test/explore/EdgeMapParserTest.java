@@ -25,13 +25,13 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.explore.config.EdgeMapParser;
 import nl.utwente.groove.util.AIGenerated;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

@@ -4,12 +4,12 @@ import java.io.IOException;
 
 import javax.swing.SwingUtilities;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
+import nl.utwente.groove.util.QualName;
 
 /** Action to start editing the currently selected state. */
 public class EditStateAction extends SimulatorAction {

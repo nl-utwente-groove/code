@@ -21,10 +21,10 @@ import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.util.AIGenerated;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Tests the error messages for calls and imports of units that are declared

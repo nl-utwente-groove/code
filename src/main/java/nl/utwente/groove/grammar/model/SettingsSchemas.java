@@ -26,9 +26,9 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.explore.config.ExploreConfigSchema;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.io.external.format.ecore.EcoreMappingSchema;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Registry of the known settings schemas, keyed by schema name.

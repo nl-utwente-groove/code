@@ -22,7 +22,7 @@ import java.util.NoSuchElementException;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.grammar.QualName;
+import nl.utwente.groove.util.QualName;
 
 /**
  * encoded method name in a given language,

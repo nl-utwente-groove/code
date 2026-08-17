@@ -27,9 +27,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import nl.utwente.groove.control.CtrlLoader;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.util.AIGenerated;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

@@ -19,7 +19,7 @@ package nl.utwente.groove.grammar.model;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.grammar.QualName;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Singular resource model, with a qualified name.

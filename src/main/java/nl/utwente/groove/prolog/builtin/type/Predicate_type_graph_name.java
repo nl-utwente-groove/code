@@ -21,11 +21,11 @@ import java.util.stream.Collectors;
 import gnu.prolog.term.Term;
 import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.prolog.GrooveEnvironment;
 import nl.utwente.groove.prolog.builtin.graph.GraphPrologCode;
 import nl.utwente.groove.prolog.util.PrologStringCollectionIterator;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Predicate type_graph_name(?Name)

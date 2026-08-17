@@ -18,7 +18,7 @@
  * Object-Oriented & Software Engineering technologies) Vrije Universiteit
  * Brussel - Ecole des Mines de Nantes - Universiteit Twente
  */
-package nl.utwente.groove.grammar;
+package nl.utwente.groove.util;
 
 import java.io.File;
 import java.util.Arrays;

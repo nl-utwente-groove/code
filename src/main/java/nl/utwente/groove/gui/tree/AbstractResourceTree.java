@@ -36,7 +36,6 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.Options;
@@ -48,6 +47,7 @@ import nl.utwente.groove.gui.action.ActionStore;
 import nl.utwente.groove.gui.display.DismissDelayer;
 import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.util.Factory;
+import nl.utwente.groove.util.QualName;
 
 /** Abstract superclass for all display trees. */
 public abstract class AbstractResourceTree extends JTree implements SimulatorListener {

@@ -20,9 +20,9 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.explore.result.Predicate;
 import nl.utwente.groove.grammar.Grammar;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.lts.GraphState;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

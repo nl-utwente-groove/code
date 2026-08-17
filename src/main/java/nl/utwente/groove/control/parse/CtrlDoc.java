@@ -40,10 +40,10 @@ import org.antlr.works.grammar.syntax.GrammarSyntaxLexer;
 import org.antlr.works.grammar.syntax.GrammarSyntaxParser;
 
 import nl.utwente.groove.annotation.Help;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Pair;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.StringHandler;
 

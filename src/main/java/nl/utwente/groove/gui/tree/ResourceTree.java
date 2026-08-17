@@ -38,8 +38,6 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import nl.utwente.groove.grammar.ModuleName;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
@@ -48,6 +46,8 @@ import nl.utwente.groove.gui.SimulatorModel.Change;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.lts.GraphState;
+import nl.utwente.groove.util.ModuleName;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Panel that displays a tree of resources. Each resource is added by means of

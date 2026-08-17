@@ -22,10 +22,10 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.graph.Element;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Class encoding a single message reporting a search result in a graph view.

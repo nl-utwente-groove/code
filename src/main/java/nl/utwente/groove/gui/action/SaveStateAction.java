@@ -3,7 +3,6 @@ package nl.utwente.groove.gui.action;
 import java.io.File;
 import java.io.IOException;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.Icons;
@@ -11,6 +10,7 @@ import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.graph.GxlIO;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Action to save the currently selected state.

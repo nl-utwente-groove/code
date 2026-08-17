@@ -29,6 +29,7 @@ import nl.utwente.groove.transform.oracle.ValueOracle;
 import nl.utwente.groove.transform.oracle.ValueOracleFactory;
 import nl.utwente.groove.transform.oracle.ValueOracleKind;
 import nl.utwente.groove.util.Properties;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.ThreeValued;
 import nl.utwente.groove.util.Version;
 import nl.utwente.groove.util.collect.DeltaMap;
