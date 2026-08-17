@@ -127,6 +127,49 @@ prerequisites.
 
 ## Status
 
-- P1 items in progress on branch `dependency-cleanup` (this branch).
+- **P1 complete** on branch `dependency-cleanup` (this branch), 2026-08-17:
+  all moves and inversions listed as P1 above, the change-log entries for the
+  public-API relocations, and `LayeringTest` (see below). Verified by
+  compile, ecj null analysis, targeted schema/exporter tests, a class-path
+  service-loading run, and the fast suite.
+- **`LayeringTest`** (`src/test/.../test/LayeringTest.java`) now guards the
+  layering: jdeps over `target/classes` via `ToolProvider`, rule-system
+  cluster as one layer, `io` below `lts` (because `lts.export` uses the
+  `io.external` framework). Every remaining upward edge is whitelisted with a
+  pointer into this document, and stale whitelist entries fail the test, so
+  the list can only shrink. Remove entries here and there together as P2/P3
+  items land.
 - P2/P3 not started; `FormatError` and the `automaton` split deserve design
   notes before anyone touches them.
+
+### Findings from the implementation (2026-08-17)
+
+- `FileType.getFilter(GraphRole)` had zero callers and was deleted outright —
+  the leaf/graph decoupling needed no redesign.
+- `Groove`'s tracing helpers moved to new `util.Trace`; its default resource
+  names were inlined into `ResourceKind` (users go through
+  `getDefaultName()`); only the loader facade remains in `io.Groove`.
+- `Proof`'s only transform coupling was event construction; it is now
+  `static RuleEvent.createEvent(Proof, Record)`. Note `RuleEvent` is not
+  `@NonNullByDefault`, so the extracted code lost its non-null default.
+- Moving `CycleAcceptor` exposed a **suspect listener filter**:
+  `verify.ProductStateSet.fireCloseState` dispatches `closeUpdate` only to
+  listeners that are `instanceof CycleAcceptor`, silently dropping every
+  other `ProductListener`. Left untouched (behaviour change); worth a look.
+- `RuleDependencies.main` needed package-private members, so
+  `RuleDependenciesTool` sits in the test tree under package
+  `nl.utwente.groove.grammar` — a split package across source roots, legal
+  while tests are patched into the module, but exactly the pattern the
+  gh #887 module split dislikes. Alternative: make the four package-private
+  getters public and move the tool to `test.grammar`.
+- `IsoChecker`'s `SAVE_FALSE_NEGATIVES` branch keeps its `io.Groove` import
+  in source, but javac eliminates the `if (false)` branch, so the edge is
+  invisible to the bytecode-based `LayeringTest` — no whitelist entry. If
+  the flag is ever switched on, the test will flag it, correctly.
+- The `ServiceLoader` inversions use a `Provider` indirection because the
+  contributed schemas/exporters are identity-sensitive singletons
+  (`GrammarModel` asserts on `INSTANCE` identity) and class-path service
+  loading cannot call static factories. Providers are declared twice:
+  `META-INF/services` (class path, installed app) and `module-info`
+  (module path, Eclipse). A Simulator export/settings smoke test in Eclipse
+  is part of the review.
