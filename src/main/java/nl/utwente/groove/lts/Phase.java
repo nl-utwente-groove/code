@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.transform;
+package nl.utwente.groove.lts;
 
 import java.util.List;
 
@@ -24,7 +24,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.control.instance.CallStackChange;
 import nl.utwente.groove.control.instance.Frame;
 import nl.utwente.groove.grammar.host.HostGraph;
-import nl.utwente.groove.lts.MatchResult;
+import nl.utwente.groove.transform.Record;
 
 /**
  * Class encoding a phase during the transformation of a graph according

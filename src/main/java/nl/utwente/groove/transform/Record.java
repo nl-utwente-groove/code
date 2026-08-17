@@ -7,8 +7,6 @@ import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.NonNull;
-
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.control.Valuator;
 import nl.utwente.groove.grammar.Grammar;
@@ -16,10 +14,8 @@ import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.RuleDependencies;
 import nl.utwente.groove.grammar.host.HostFactory;
 import nl.utwente.groove.grammar.rule.RuleToHostMap;
-import nl.utwente.groove.lts.RuleTransitionLabel;
 import nl.utwente.groove.match.Proof;
 import nl.utwente.groove.transform.RuleEvent.Reuse;
-import nl.utwente.groove.util.collect.Pool;
 
 /**
  * Usage instance of a given graph grammar. Stores information gathered during
@@ -163,13 +159,6 @@ public class Record {
     }
 
     /**
-     * Normalises a given transition label.
-     */
-    public @NonNull RuleTransitionLabel normaliseLabel(@NonNull RuleTransitionLabel prototype) {
-        return this.labelPool.canonical(prototype);
-    }
-
-    /**
      * Returns the set of rules that may be enabled by a given rule, according
      * to the currently calculated dependencies.
      * @param enabler the (potential) enabler rule
@@ -211,8 +200,6 @@ public class Record {
      * Events are stored only if {@link #getReuse()} is set.
      */
     private final RuleEventSet eventMap = new RuleEventSet();
-    /** Identity map of normal transition labels. */
-    private final Pool<RuleTransitionLabel> labelPool = new Pool<>();
 
     /**
      * Sets the policy of the GTS in determining state equivalence. This is only
