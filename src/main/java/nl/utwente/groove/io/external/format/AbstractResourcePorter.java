@@ -35,7 +35,6 @@ import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.TextBasedModel;
 import nl.utwente.groove.graph.plain.PlainGraph;
-import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.AbstractExporter;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Imported;
@@ -44,6 +43,7 @@ import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.io.graph.AttrGraph;
 import nl.utwente.groove.io.graph.GxlIO;
 import nl.utwente.groove.util.QualName;
+import nl.utwente.groove.util.io.FileType;
 
 /**
  * Imports and exports (certain types of) resources.
@@ -153,7 +153,7 @@ public class AbstractResourcePorter extends AbstractExporter implements Importer
                 xmlGraph.setName(name.toString());
                 result = new Imported(kind, xmlGraph.toAspectGraph());
             } else {
-                String program = nl.utwente.groove.io.FileUtils.readFileToString(file);
+                String program = nl.utwente.groove.util.io.FileUtils.readFileToString(file);
                 result = new Imported(kind, name, program);
             }
         } catch (IOException e) {
@@ -176,7 +176,7 @@ public class AbstractResourcePorter extends AbstractExporter implements Importer
 
         Imported result;
         try {
-            String resource = nl.utwente.groove.io.FileUtils.readInputStreamToString(stream);
+            String resource = nl.utwente.groove.util.io.FileUtils.readInputStreamToString(stream);
             result = new Imported(kind, name, resource);
         } catch (IOException e) {
             throw new PortException(e);

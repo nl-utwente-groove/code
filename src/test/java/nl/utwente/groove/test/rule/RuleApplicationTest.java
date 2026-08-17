@@ -43,13 +43,13 @@ import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.rule.MatchChecker;
 import nl.utwente.groove.grammar.rule.RuleToHostMap;
 import nl.utwente.groove.graph.iso.IsoChecker;
-import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.transform.Proof;
 import nl.utwente.groove.transform.RuleApplication;
 import nl.utwente.groove.transform.RuleEvent;
 import nl.utwente.groove.transform.oracle.ValueOracle;
 import nl.utwente.groove.util.QualName;
+import nl.utwente.groove.util.io.FileType;
 import nl.utwente.groove.util.parse.FormatException;
 
 /** Set of tests for rule application. */

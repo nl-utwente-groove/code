@@ -25,12 +25,12 @@ import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Node;
-import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.external.AbstractExporter;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Exporter;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.lts.GTS;
+import nl.utwente.groove.util.io.FileType;
 
 /**
  * Class that implements saving graphs using a {@link GraphExportListener}.

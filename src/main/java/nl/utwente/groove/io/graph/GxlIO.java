@@ -18,7 +18,7 @@ package nl.utwente.groove.io.graph;
 
 import static nl.utwente.groove.grammar.aspect.AspectKind.ABSTRACT;
 import static nl.utwente.groove.grammar.aspect.AspectKind.SUBTYPE;
-import static nl.utwente.groove.io.FileType.LAYOUT;
+import static nl.utwente.groove.util.io.FileType.LAYOUT;
 
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
@@ -65,9 +65,9 @@ import nl.utwente.groove.gxl_1_0.ObjectFactory;
 import nl.utwente.groove.gxl_1_0.RelType;
 import nl.utwente.groove.gxl_1_0.RelendType;
 import nl.utwente.groove.gxl_1_0.TypedElementType;
-import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.Version;
+import nl.utwente.groove.util.io.FileType;
 import nl.utwente.groove.util.line.LineStyle;
 import nl.utwente.groove.util.parse.FormatException;
 

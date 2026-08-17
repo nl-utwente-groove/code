@@ -33,7 +33,7 @@ import static nl.utwente.groove.gui.Options.SHOW_STATE_STATUS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_SYSTEM_STATE_PROPERTIES_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_USER_NODE_IDS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_VALUE_NODES_OPTION;
-import static nl.utwente.groove.io.FileType.GRAMMAR;
+import static nl.utwente.groove.util.io.FileType.GRAMMAR;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;

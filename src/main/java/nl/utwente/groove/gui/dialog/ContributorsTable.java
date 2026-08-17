@@ -37,8 +37,8 @@ import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 
-import nl.utwente.groove.io.FileUtils;
 import nl.utwente.groove.util.HTMLConverter;
+import nl.utwente.groove.util.io.FileUtils;
 
 /**
  * Table containing information about the auxiliary libraries used in Groove.

@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.grammar;
 
-import static nl.utwente.groove.io.FileType.GRAMMAR;
+import static nl.utwente.groove.util.io.FileType.GRAMMAR;
 
 import java.nio.file.Path;
 import java.util.ArrayList;

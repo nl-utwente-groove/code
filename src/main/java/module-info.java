@@ -73,6 +73,7 @@ module nl.utwente.groove {
     exports nl.utwente.groove.lts;
     exports nl.utwente.groove.util.cache;
     exports nl.utwente.groove.util.collect;
+    exports nl.utwente.groove.util.io;
 
     requires antlr.complete;
     requires antlrworks;

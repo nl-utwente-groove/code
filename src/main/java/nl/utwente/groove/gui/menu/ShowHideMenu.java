@@ -53,10 +53,10 @@ import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.jgraph.LTSJCell;
 import nl.utwente.groove.gui.jgraph.LTSJGraph;
 import nl.utwente.groove.gui.tree.LabelTree.LabelledCells;
-import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.util.HTMLConverter;
+import nl.utwente.groove.util.io.FileType;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
