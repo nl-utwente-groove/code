@@ -12,9 +12,15 @@ Upcoming release
   strategy for a two-player game encoded as a grammar with parametrised rules;
   command lines or saved explorations using `minimax` now fail with an error
   pointing to gh issue #890
-- API change: the programmatic exploration interface `transform.Transformer` lost its
-  `setStrategy` and `setAcceptor` methods (without deprecation); use `setExploreType`
-  instead
+- API change: the programmatic exploration interface `explore.Transformer` (until
+  this release `transform.Transformer`) lost its `setStrategy` and `setAcceptor`
+  methods (without deprecation); use `setExploreType` instead
+- API change: a dependency-layering cleanup moved a number of classes to new
+  packages (without deprecation), notably `transform.Transformer` →
+  `explore.Transformer`, `grammar.QualName` and `grammar.ModuleName` → `util`,
+  `io.FileType`, `io.FileUtils` and `io.ExtensionFilter` → `util.io`,
+  `explore.ExploreResult` and `explore.util.LTSLabels` → `lts`,
+  `transform.Proof` → `match`, and `explore.Verbosity` → `util.cli`
 
 Release 7.5.3, 3 March 2026
 -------------------------------
