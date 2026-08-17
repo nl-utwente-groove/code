@@ -90,7 +90,7 @@ Status: P1 = on the `dependency-cleanup` branch, P2/P3 = later, acc = accepted.
 | `transform.Phase`/`Record` → lts | `Phase` is `GraphState`'s super-interface but mentions `lts.MatchResult`; `Record` pools `RuleTransitionLabel` | B | move `Phase`+`MatchResult` up to `lts` (cheaper than inverting the label pool) | P2 |
 | `match.TreeMatch` ↔ transform | entire output vocabulary is `transform.Proof`, which is a *match* witness | A | move `Proof` to `match`; handle its `RuleEvent.Reuse` import | P1 |
 | `lts.GTSFragment` → explore | `ExploreResult` imports only lts; `LTSLabels` is LTS serialization flags | A | move both to `lts` (also fixes `verify`→explore and `AutIO`) | P1 |
-| `io.external` LTS exporters → lts | `LTS2ControlExporter`, `ListenerExporter` GTS branch, registered eagerly inside `Exporters` | B | move to lts side, contribute via ServiceLoader (decision 2026-08-17) | P1 |
+| `io.external` LTS exporters → lts | `LTS2ControlExporter`, `ListenerExporter` GTS branch, registered eagerly inside `Exporters` | B | resolved by ranking `io` *above* `lts` (revised 2026-08-17): the exporters stay in `io.external.format` and their GTS references become downward; `lts` itself has no `io` dependency | P1 |
 | `io.graph.AutIO` → explore.util | `ExplorationReporter.time()` stopwatch calls | A | fold into the gh #891 diagnostic-logging work | P2 |
 | `verify.CycleAcceptor` ↔ `explore.verify.LTLStrategy` | acceptor/strategy callback pair split across packages | A | move `CycleAcceptor` to `explore.verify` | P1 |
 | `verify.CTLModelChecker` → explore | `Generator.LTSLabelsHandler` CLI reuse (+ `ExploreResult`, fixed by the lts move) | B | extract shared picocli handler to `util.cli` | P2 |
@@ -107,7 +107,12 @@ Status: P1 = on the `dependency-cleanup` branch, P2/P3 = later, acc = accepted.
   minimal-churn "io root becomes leaf" variant.
 - **Registration inversions use `ServiceLoader`** for both `SettingsSchemas`
   and the LTS exporters (new pattern for this codebase; works on classpath
-  and under JPMS).
+  and under JPMS). *Revised during review (2026-08-17): the exporter
+  inversion was undone again — `LTS2ControlExporter` was the only `lts → io`
+  edge, so moving it back to `io.external.format` and ranking `io` above
+  `lts` is strictly cleaner (one whitelist entry fewer, no single-class
+  `lts.export` package, no service machinery). The `SettingsSchemas`
+  inversion stands; its contributors genuinely live in different layers.*
 - **Layering regression test: yes**, jdeps-based, on this branch, seeded with
   the remaining violations as a whitelist that shrinks as P2/P3 land.
 - Made without asking (recorded here): `QualName`/`ModuleName` land in `util`
@@ -134,11 +139,12 @@ prerequisites.
   service-loading run, and the fast suite.
 - **`LayeringTest`** (`src/test/.../test/LayeringTest.java`) now guards the
   layering: jdeps over `target/classes` via `ToolProvider`, rule-system
-  cluster as one layer, `io` below `lts` (because `lts.export` uses the
-  `io.external` framework). Every remaining upward edge is whitelisted with a
-  pointer into this document, and stale whitelist entries fail the test, so
-  the list can only shrink. Remove entries here and there together as P2/P3
-  items land.
+  cluster as one layer, `io` *above* `lts` — `io` is a domain-serialization
+  layer that consumes the objects it serializes (including the GTS), and
+  nothing in `lts` refers to `io`. Every remaining upward edge is
+  whitelisted with a pointer into this document, and stale whitelist entries
+  fail the test, so the list can only shrink. Remove entries here and there
+  together as P2/P3 items land.
 - P2/P3 not started; `FormatError` and the `automaton` split deserve design
   notes before anyone touches them.
 
@@ -153,23 +159,27 @@ prerequisites.
   `static RuleEvent.createEvent(Proof, Record)`. Note `RuleEvent` is not
   `@NonNullByDefault`, so the extracted code lost its non-null default.
 - Moving `CycleAcceptor` exposed a **suspect listener filter**:
-  `verify.ProductStateSet.fireCloseState` dispatches `closeUpdate` only to
+  `verify.ProductStateSet.fireCloseState` dispatched `closeUpdate` only to
   listeners that are `instanceof CycleAcceptor`, silently dropping every
-  other `ProductListener`. Left untouched (behaviour change); worth a look.
-- `RuleDependencies.main` needed package-private members, so
-  `RuleDependenciesTool` sits in the test tree under package
-  `nl.utwente.groove.grammar` — a split package across source roots, legal
-  while tests are patched into the module, but exactly the pattern the
-  gh #887 module split dislikes. Alternative: make the four package-private
-  getters public and move the tool to `test.grammar`.
+  other `ProductListener`. Resolved by Arend during review (widened to
+  arbitrary `ProductListener`s).
+- `RuleDependenciesTool` initially sat in the test tree under package
+  `nl.utwente.groove.grammar` (split package across source roots) because it
+  used package-private members. Resolved during review: the four map getters
+  of `RuleDependencies` were made public and the tool moved to
+  `test.grammar`; its explicit `collectCharacteristics()` call was dropped
+  as redundant (every getter lazily triggers collection).
 - `IsoChecker`'s `SAVE_FALSE_NEGATIVES` branch keeps its `io.Groove` import
   in source, but javac eliminates the `if (false)` branch, so the edge is
   invisible to the bytecode-based `LayeringTest` — no whitelist entry. If
   the flag is ever switched on, the test will flag it, correctly.
-- The `ServiceLoader` inversions use a `Provider` indirection because the
-  contributed schemas/exporters are identity-sensitive singletons
-  (`GrammarModel` asserts on `INSTANCE` identity) and class-path service
-  loading cannot call static factories. Providers are declared twice:
-  `META-INF/services` (class path, installed app) and `module-info`
-  (module path, Eclipse). A Simulator export/settings smoke test in Eclipse
-  is part of the review.
+- The `ServiceLoader` inversion (now only `SettingsSchemas`) uses a
+  `Provider` indirection because the contributed schemas are
+  identity-sensitive singletons (`GrammarModel` asserts on `INSTANCE`
+  identity) and class-path service loading cannot call static factories.
+  Providers are declared twice: `META-INF/services` (class path, installed
+  app) and `module-info` (module path, Eclipse). A Simulator settings smoke
+  test in Eclipse is part of the review. The parallel `Exporter.Provider`
+  mechanism existed briefly but was reverted with the `lts.export` undo; it
+  is cheap to reinstate if a higher layer ever needs to contribute an
+  exporter.
