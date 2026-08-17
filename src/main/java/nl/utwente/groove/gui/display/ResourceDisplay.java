@@ -698,10 +698,12 @@ public class ResourceDisplay extends Display implements SimulatorListener {
      * @param full flag indicating if the full name should be used
      */
     public String getLabelText(QualName name, String suffix, boolean enabled, boolean full) {
+        // the model may be null if the label is (re)computed while the
+        // component showing it is being torn down after a grammar switch
         NamedResourceModel<?> model = getResource(name);
         StringBuilder result = new StringBuilder(full
-            ? getDisplayName(model.getQualName())
-            : model.getLastName());
+            ? getDisplayName(name)
+            : name.last());
         if (model instanceof RuleModel && ((RuleModel) model).isProperty()) {
             HTMLConverter.ITALIC_TAG.on(result);
             Action.Role actionRole = ((RuleModel) model).getRole();
