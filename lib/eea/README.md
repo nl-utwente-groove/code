@@ -37,9 +37,10 @@ Current contents:
 |---|---|
 | `java/util/Queue.eea` | `poll`/`peek` return `@Nullable` (verbatim from no-npe) |
 | `java/util/Deque.eea` | idem, plus `pollFirst`/`peekLast` etc. (verbatim from no-npe) |
+| `java/util/Map.eea` | `get`/`put`/`remove`/`compute*`/`merge` return `@Nullable` (verbatim from no-npe) |
 
-Planned next (gh #881): `java/util/Map.eea` (`get` returns `@Nullable`), which surfaces
-roughly 200 sites needing triage.
+Planned next (gh #881): once the curated set stabilises, switching to the full
+`no-npe-eea-all` artifact is the realistic endgame (~170 further findings).
 
 ## Reviewing `.eea` files
 
