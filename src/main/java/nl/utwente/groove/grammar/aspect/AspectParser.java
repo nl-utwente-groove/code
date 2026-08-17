@@ -118,7 +118,7 @@ public class AspectParser {
     static public final char ASSIGN = '=';
 
     /** Separator between aspect prefix and main label text. */
-    static public final char SEPARATOR = ':';
+    static public final char SEPARATOR = EdgeRole.SEPARATOR;
 
     /** Returns the singleton instance of this class. */
     public static AspectParser getInstance() {

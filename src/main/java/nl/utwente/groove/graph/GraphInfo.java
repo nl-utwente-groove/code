@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import nl.utwente.groove.grammar.Action.Role;
-import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.graph.GraphProperties.Key;
 import nl.utwente.groove.graph.layout.LayoutMap;
 import nl.utwente.groove.util.DefaultFixable;
@@ -236,7 +235,7 @@ public class GraphInfo extends DefaultFixable {
 
     /**
      * Returns the priority property of a given graph. The priority is a non-negative number.
-     * Yields {@link Rule#DEFAULT_PRIORITY} if the priority has not been set explicitly.
+     * Yields the default priority {@code 0} if the priority has not been set explicitly.
      * @param graph the queried graph; non-{@code null}
      * @return the non-negative priority of {@code graph}
      * @see Key#PRIORITY
