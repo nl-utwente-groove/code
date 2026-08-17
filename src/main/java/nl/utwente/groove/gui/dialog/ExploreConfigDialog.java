@@ -165,11 +165,11 @@ public class ExploreConfigDialog extends JDialog {
         var properties = getGrammar().getProperties();
         if (properties.getExplorationName() == null
             && properties.containsKey(GrammarKey.EXPLORATION)
-            && !(properties.getLegacyExploreType() instanceof ConfiguredExploreType)) {
+            && !(ExploreType.ofLegacy(properties) instanceof ConfiguredExploreType)) {
             this.legacyNotice = "The legacy exploration strategy cannot be expressed"
                 + " in the feature model; showing the default configuration";
         }
-        loadConfig(getGrammar().getDefaultExploreConfig());
+        loadConfig(ExploreConfig.ofGrammar(getGrammar()));
         refresh();
 
         add(content);
@@ -229,7 +229,7 @@ public class ExploreConfigDialog extends JDialog {
         }
         var errors = new FormatErrorSet();
         ExploreConfig config = storeConfig(errors);
-        var savedConfig = getGrammar().getDefaultExploreConfig();
+        var savedConfig = ExploreConfig.ofGrammar(getGrammar());
         if (!errors.isEmpty() || !config.unparse().equals(savedConfig.unparse())) {
             int answer = JOptionPane
                 .showConfirmDialog(this, ASK_DISCARD_TEXT, ASK_DISCARD_TITLE,
@@ -249,7 +249,7 @@ public class ExploreConfigDialog extends JDialog {
             new ErrorDialog(this, "Error while setting the exploration reference", exc)
                 .setVisible(true);
         }
-        resetTo(getGrammar().getDefaultExploreConfig());
+        resetTo(ExploreConfig.ofGrammar(getGrammar()));
     }
 
     /** Sets the selector to the item for a given settings name, without triggering a selection. */
@@ -312,7 +312,7 @@ public class ExploreConfigDialog extends JDialog {
         settingsRow.add(this.saveAsButton);
         this.revertButton = new JButton(REVERT_COMMAND);
         this.revertButton.setToolTipText(REVERT_TOOLTIP);
-        this.revertButton.addActionListener(e -> resetTo(getGrammar().getDefaultExploreConfig()));
+        this.revertButton.addActionListener(e -> resetTo(ExploreConfig.ofGrammar(getGrammar())));
         settingsRow.add(this.revertButton);
         JButton cancelButton = new JButton(CANCEL_COMMAND);
         cancelButton.addActionListener(e -> closeDialog());
@@ -462,13 +462,19 @@ public class ExploreConfigDialog extends JDialog {
             problems.append(HTMLConverter.toHtml(new StringBuilder(problem)));
         }
         // an unparseable stored exploration value cannot be loaded into the
-        // dialog widgets, so its error has to be reported here explicitly
+        // dialog widgets, so its error has to be reported here explicitly;
+        // the legacy key is stored uninterpreted, so it is validated by the
+        // explore-side parser rather than the key parser
         for (var key : new GrammarKey[] {GrammarKey.EXPLORE_CONFIG, GrammarKey.EXPLORATION}) {
             if (!grammar.getProperties().containsKey(key)) {
                 continue;
             }
             try {
-                grammar.getProperties().parseProperty(key);
+                if (key == GrammarKey.EXPLORATION) {
+                    ExploreType.parseLegacy(grammar.getProperties());
+                } else {
+                    grammar.getProperties().parseProperty(key);
+                }
             } catch (FormatException exc) {
                 if (!problems.isEmpty()) {
                     problems.append("<br>");
@@ -499,7 +505,7 @@ public class ExploreConfigDialog extends JDialog {
         this.statusLabel.setText(status);
         // mark the keys whose composed value deviates from the saved settings:
         // those are the unsaved edits, which have to be saved before a run
-        var savedConfig = grammar.getDefaultExploreConfig();
+        var savedConfig = ExploreConfig.ofGrammar(grammar);
         boolean savedDiffers = !config.unparse().equals(savedConfig.unparse());
         for (var key : ExploreKey.values()) {
             var savedSetting = savedConfig.get(key);

@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.swing.JOptionPane;
 
+import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.dialog.StringDialog;
@@ -39,7 +40,7 @@ public class CheckCTLAction extends SimulatorAction {
             // completely re-explore if the GTS has open states
             if (getSimulatorModel().getGTS().hasOpenStates() && this.full
                 && getSimulatorModel().resetGTS()) {
-                getActions().getExploreAction().explore(getGrammarModel().getDefaultExploreType());
+                getActions().getExploreAction().explore(ExploreType.ofGrammar(getGrammarModel()));
                 doCheck = !getSimulatorModel().getGTS().hasOpenStates();
             }
             if (doCheck) {

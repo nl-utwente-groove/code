@@ -215,12 +215,8 @@ public class LayeringTest {
      */
     private static final Set<String> WHITELIST = Set
         .of(
-            // P2: GrammarKey/GrammarProperties typed accessors for explore types
-            "grammar -> explore",
             // P2: Grammar carries the prolog environment
             "grammar -> prolog",
-            // P2: GrammarModel explore-configuration resolution
-            "grammar.model -> explore",
             // accepted: GrammarModel <-> SystemStore editable-model/backing-store pair
             "grammar.model -> io",
             // P2: GrammarModel loads .pro resources for validation

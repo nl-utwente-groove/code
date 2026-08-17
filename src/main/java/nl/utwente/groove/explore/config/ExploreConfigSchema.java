@@ -278,8 +278,10 @@ public class ExploreConfigSchema implements SettingsSchema {
     /** The singleton instance of this schema. */
     public static final ExploreConfigSchema INSTANCE = new ExploreConfigSchema();
     /** The name of this schema, doubling as the top-level folder its settings
-     * resources live in. */
-    public static final String NAME = "explore";
+     * resources live in. Aliases the grammar-level constant, which is the
+     * source of truth so that the {@code exploration} property can be
+     * resolved without the grammar layer referencing this class. */
+    public static final String NAME = GrammarModel.EXPLORE_SCHEMA_NAME;
 
     /** Service provider contributing {@link #INSTANCE} to the schema registry. */
     public static class Provider implements SettingsSchema.Provider {
