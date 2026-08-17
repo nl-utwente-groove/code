@@ -28,6 +28,7 @@ import nl.utwente.groove.control.template.Location;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.Node;
+import nl.utwente.groove.util.collect.NestedArrays;
 
 /**
  * Class wrapping the functionality to deal with control valuations.
@@ -122,7 +123,7 @@ public class CallStack {
 
     /** Tests if two call stacks have equal content. */
     static public boolean areEqual(Object[] stack1, Object[] stack2) {
-        return areEqual(stack1, stack2, null);
+        return NestedArrays.areEqual(stack1, stack2);
     }
 
     /** Tests if two call stacks have equal content, under a node map
@@ -131,70 +132,22 @@ public class CallStack {
      */
     static public boolean areEqual(Object[] stack1, Object[] stack2,
                                    Map<? extends Node,? extends Node> nodeMap) {
-        if (nodeMap == null && stack1 == stack2) {
-            return true;
-        }
-        if (stack1.length != stack2.length) {
-            return false;
-        }
-        boolean isNested = isNested(stack1);
-        if (isNested != isNested(stack2)) {
-            return false;
-        }
-        int count = isNested
-            ? stack1.length - 1
-            : stack1.length;
-        for (int i = 0; i < count; i++) {
-            Object image = nodeMap == null
-                ? stack1[i]
-                : nodeMap.get(stack1[i]);
-            if (image == null) {
-                if (stack2[i] != null) {
-                    return false;
-                }
-            } else if (!image.equals(stack2[i])) {
-                return false;
-            }
-        }
-        if (isNested && !areEqual(pop(stack1), pop(stack2))) {
-            return false;
-        }
-        return true;
+        return NestedArrays.areEqual(stack1, stack2, nodeMap);
     }
 
     /** Computes the hash code of a call stack. */
     static public int hashCode(Object[] stack) {
-        return hashCode(stack, null);
+        return NestedArrays.hashCode(stack);
     }
 
     /**
      * Computes the hash code of a call stack, given a modifier map
      * from host nodes to representative objects from which the hash code is to be taken.
-     * The modifier may be {@code null}, in which case only the length of the
-     * valuation is used.
+     * The modifier may be {@code null}, in which case the host nodes themselves
+     * determine the hash code.
      */
     static public int hashCode(Object[] stack, Map<? extends Element,?> modifier) {
-        int prime = 31;
-        int result = 1;
-        boolean isNested = isNested(stack);
-        int count = isNested
-            ? stack.length - 1
-            : stack.length;
-        for (int i = 0; i < count; i++) {
-            Object repr = stack[i] == null
-                ? null
-                : modifier == null
-                    ? stack[i]
-                    : modifier.get(stack[i]);
-            int code = repr == null
-                ? 0
-                : repr.hashCode();
-            result = result * prime + code;
-        }
-        if (isNested) {
-            result = result * prime + hashCode(pop(stack), modifier);
-        }
-        return result;
+        return NestedArrays.hashCode(stack, modifier);
     }
 
     /** Turns a given call stack into a nested list of objects. */
