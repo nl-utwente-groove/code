@@ -137,4 +137,14 @@ order-bearing collections (2 and 4 in particular).
   the compiler mirrors the original accessor names over explicit
   constructor inputs. Verified: full suite incl. slow groups (593 tests,
   0 failures), ecj null-check clean on both files.
-- Steps 2–4 not started.
+- Step 2 done (2026-08-18): `LevelPattern` value class introduced as the
+  inter-stage currency; `Level3` reduced to the typing pass (produces a
+  pattern, checks walk the pattern parent chain); `Level4` dissolved into
+  compiler-level assembly methods parameterized by the pattern. De-classing
+  verified mechanically by diffing the old region under the systematic
+  substitutions. Bonus finds: the `mid` graph (LHS∩RHS) was write-only and
+  is removed; the errors set in `buildLevels3` was dead. Verified: full
+  suite incl. slow groups at exact baseline (593 tests), ecj null-check
+  clean, determinism checklist (no new hash use, collection types and
+  iteration orders preserved verbatim).
+- Steps 3–4 not started.
