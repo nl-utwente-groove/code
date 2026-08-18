@@ -147,7 +147,9 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
                 } catch (FormatException e) {
                     errors.addAll(e.getErrors());
                 } catch (IllegalArgumentException e) {
-                    errors.add(e.getMessage());
+                    var message = e.getMessage();
+                    assert message != null; // type graph combination reports its rejections with a message
+                    errors.add(message);
                 }
             }
             errors.throwException();

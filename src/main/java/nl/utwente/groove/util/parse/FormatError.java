@@ -221,7 +221,7 @@ public class FormatError implements Comparable<FormatError>, Fixable, Cloneable 
      */
     FormatError apply(Map<?,?> map) {
         if (!map.isEmpty()) {
-            var newContext = new ArrayList<Object>(this.context.size());
+            var newContext = new ArrayList<>(this.context.size());
             for (var e : this.context) {
                 var i = map.get(e);
                 if (i != null) {
@@ -239,7 +239,7 @@ public class FormatError implements Comparable<FormatError>, Fixable, Cloneable 
      */
     FormatError apply(Relation<?,?> relation) {
         if (!relation.isEmpty()) {
-            var newContext = new ArrayList<Object>(this.context.size());
+            var newContext = new ArrayList<>(this.context.size());
             for (var e : this.context) {
                 var i = relation.get(e);
                 if (i != null) {

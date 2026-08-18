@@ -248,7 +248,7 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
      * @param map mapping from contextual objects to current error context objects
      */
     public FormatErrorSet applyInverse(Map<?,?> map) {
-        var inverse = new Relation<Object,Object>();
+        var inverse = new Relation<>();
         inverse.addInverse(map);
         return apply(inverse);
     }
