@@ -138,6 +138,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
         try {
             result.test();
         } catch (FormatException exc) {
+            assert typeModelMap != null; // the converter has run, so the model map exists
             typeModelMap.applyInverse(exc.getErrors()).throwException();
         }
         this.typeModelMap = typeModelMap;
