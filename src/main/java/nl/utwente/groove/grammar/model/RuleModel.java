@@ -103,6 +103,7 @@ import nl.utwente.groove.graph.EdgeComparator;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.NodeComparator;
+import nl.utwente.groove.match.automaton.RegAutCalculator;
 import nl.utwente.groove.match.automaton.RegAutCoverage;
 import nl.utwente.groove.util.DefaultFixable;
 import nl.utwente.groove.util.Exceptions;
@@ -561,8 +562,9 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                     // root edges are shared between levels; check them once
                     continue;
                 }
-                var coverage = new RegAutCoverage(label.getAutomaton(typeGraph),
-                    edge.source().getMatchingTypes(), edge.target().getMatchingTypes());
+                var labelAut = RegAutCalculator.instance().compute(label.getMatchExpr(), typeGraph);
+                var coverage = new RegAutCoverage(labelAut, edge.source().getMatchingTypes(),
+                    edge.target().getMatchingTypes());
                 for (var erasedEntry : erasedTypes.entrySet()) {
                     if (coverage.result().contains(erasedEntry.getKey())) {
                         errors

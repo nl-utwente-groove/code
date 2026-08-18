@@ -34,14 +34,11 @@ import nl.utwente.groove.grammar.rule.RegExpr.Sharp;
 import nl.utwente.groove.grammar.rule.RegExpr.Star;
 import nl.utwente.groove.grammar.rule.RegExpr.Wildcard;
 import nl.utwente.groove.grammar.type.TypeEdge;
-import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeGuard;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.ALabel;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
-import nl.utwente.groove.match.automaton.RegAut;
-import nl.utwente.groove.match.automaton.RegAutCalculator;
 import nl.utwente.groove.util.line.Line;
 
 /**
@@ -129,24 +126,6 @@ public class RuleLabel extends ALabel {
     public RegExpr getMatchExpr() {
         return this.regExpr;
     }
-
-    /**
-     * Returns the regular automaton for this label., given a store
-     * of existing labels. It is required that all the regular expression
-     * labels occur in the label store.
-     * @param typeGraph alphabet of the automaton,
-     * used to match node type labels properly; non-{@code null}
-     */
-    public RegAut getAutomaton(TypeGraph typeGraph) {
-        var result = this.automaton;
-        if (result == null || result.getTypeGraph() != typeGraph) {
-            this.automaton = result = calculator.compute(getMatchExpr(), typeGraph);
-        }
-        return result;
-    }
-
-    /** An automaton constructed lazily for the regular expression. */
-    private @Nullable RegAut automaton;
 
     @Override
     public boolean equals(@Nullable Object obj) {
@@ -469,8 +448,6 @@ public class RuleLabel extends ALabel {
 
     /** The underlying regular expression, if any. */
     private final RegExpr regExpr;
-    /** Calculator used to construct all the automata. */
-    static private final RegAutCalculator calculator = new RegAutCalculator();
     /** Number used for labels that are not argument labels. */
     public static final int INVALID_ARG_NR = -1;
 }

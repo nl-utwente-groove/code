@@ -42,6 +42,7 @@ import nl.utwente.groove.grammar.type.TypeElement;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.match.automaton.RegAut;
+import nl.utwente.groove.match.automaton.RegAutCalculator;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -535,7 +536,8 @@ public class RuleDependencies {
                 assert inner != null;
                 label = inner.toLabel();
             }
-            RegAut labelAut = label.getAutomaton(this.typeGraph);
+            RegAut labelAut
+                = RegAutCalculator.instance().compute(label.getMatchExpr(), this.typeGraph);
             result.addAll(labelAut.getAlphabet());
             if (labelAut.isAcceptsEmptyWord()) {
                 result.addAll(this.typeGraph.nodeSet());

@@ -20,6 +20,7 @@ import nl.utwente.groove.grammar.type.TypeElement;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.graph.EdgeComparator;
 import nl.utwente.groove.match.automaton.RegAut;
+import nl.utwente.groove.match.automaton.RegAutCalculator;
 import nl.utwente.groove.match.plan.PlanSearchStrategy.Search;
 
 /**
@@ -44,7 +45,7 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
         this.boundNodes.add(edge.source());
         this.boundNodes.add(edge.target());
         RuleLabel label = edge.label();
-        this.labelAutomaton = label.getAutomaton(typeGraph);
+        this.labelAutomaton = RegAutCalculator.instance().compute(label.getMatchExpr(), typeGraph);
         this.edgeExpr = label.getMatchExpr();
         this.boundVars = label.getMatchExpr()
             .boundVarSet();

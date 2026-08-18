@@ -37,6 +37,7 @@ import nl.utwente.groove.grammar.rule.RegExprCalculator;
 import nl.utwente.groove.grammar.rule.RuleLabel;
 import nl.utwente.groove.grammar.type.ImplicitTypeGraph;
 import nl.utwente.groove.grammar.type.TypeGraph;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Dispenser;
 
 /**
@@ -47,7 +48,7 @@ import nl.utwente.groove.util.Dispenser;
  */
 @NonNullByDefault
 public class RegAutCalculator implements RegExprCalculator<RegAut> {
-    /** Creates an instance based on {@link MatrixAutomaton}. */
+    /** Creates an instance based on {@link SimpleNFA}. */
     public RegAutCalculator() {
         this(SimpleNFA.PROTOTYPE);
     }
@@ -56,6 +57,15 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
     public RegAutCalculator(RegAut prototype) {
         this.prototype = prototype;
     }
+
+    /** Returns the singleton instance of the {@link SimpleNFA}-based calculator. */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    public static RegAutCalculator instance() {
+        return INSTANCE;
+    }
+
+    /** The singleton instance of the {@link SimpleNFA}-based calculator. */
+    private static final RegAutCalculator INSTANCE = new RegAutCalculator();
 
     /**
      * Calculates the automaton for a given regular expression, using the
