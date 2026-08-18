@@ -2487,7 +2487,7 @@ class RuleCompiler {
          * @param context the context-graph
          * @param embargoEdge the edge to be turned into an embargo
          * @return the new {@link nl.utwente.groove.grammar.EdgeEmbargo}
-         * @see #toResource()
+         * @see RuleModel#toResource()
          */
         private EdgeEmbargo createEdgeEmbargo(RuleGraph context, RuleEdge embargoEdge) {
             return new EdgeEmbargo(context, embargoEdge, getGrammarProperties());
@@ -2497,7 +2497,7 @@ class RuleCompiler {
          * Callback method to create a general NAC on a given graph.
          * @param nac the context-graph
          * @return the new {@link nl.utwente.groove.grammar.Condition}
-         * @see #toResource()
+         * @see RuleModel#toResource()
          */
         private Condition createNAC(RuleGraph lhs, RuleGraph nac) {
             String name = nac.getName();
