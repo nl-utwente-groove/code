@@ -39,6 +39,7 @@ import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.rule.LabelVar;
 import nl.utwente.groove.grammar.rule.RegExpr;
+import nl.utwente.groove.grammar.rule.RegExpr.Inv;
 import nl.utwente.groove.grammar.rule.RuleLabel;
 import nl.utwente.groove.grammar.rule.Valuation;
 import nl.utwente.groove.grammar.type.TypeEdge;
@@ -494,7 +495,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<@NonNull RegNode,@NonNu
     /**
      * Returns a mapping from source nodes to mappings from labels to
      * (non-empty) sets of (automaton) edges with that source node, and the
-     * label wrapped in a {@link RegExpr.Inv}.
+     * label wrapped in a {@link Inv}.
      */
     final Map<TypeLabel,int[]>[] getNodeInvLabelEdgeMap(Direction direction) {
         return this.nodeInvLabelEdgeIndicesMap.get(direction);
@@ -688,7 +689,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<@NonNull RegNode,@NonNu
     /**
      * Direction-indexed array of mappings from nodes in this automaton to maps
      * from labels to sets of edges where the label occurs in the context of a
-     * {@link RegExpr.Inv}. The node key is either the source node or the target
+     * {@link Inv}. The node key is either the source node or the target
      * node of the edge, depending on the direction.
      */
     private Map<Direction,Map<TypeLabel,int[]>[]> nodeInvLabelEdgeIndicesMap;

@@ -26,7 +26,6 @@ import java.util.Set;
 import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.grammar.rule.LabelVar;
-import nl.utwente.groove.grammar.rule.RegExpr;
 import nl.utwente.groove.grammar.rule.RegExpr.Atom;
 import nl.utwente.groove.grammar.rule.RegExpr.Choice;
 import nl.utwente.groove.grammar.rule.RegExpr.Empty;

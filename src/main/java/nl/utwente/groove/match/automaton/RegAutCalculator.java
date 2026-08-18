@@ -275,8 +275,8 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
 
     /**
      * Constructs the inverse of a given label. The inverse is a
-     * {@link RuleLabel} with a {@link RegExpr.Inv} inside if the original
-     * label is not already of this form; otherwise, the {@link RegExpr.Inv} is
+     * {@link RuleLabel} with a {@link Inv} inside if the original
+     * label is not already of this form; otherwise, the {@link Inv} is
      * stripped. Also takes wildcards into account.
      */
     protected RuleLabel invert(RuleLabel label) {
