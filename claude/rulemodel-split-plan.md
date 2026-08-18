@@ -171,4 +171,33 @@ order-bearing collections (2 and 4 in particular).
     checklist (collection types and iteration orders preserved; eraser maps
     are `TreeMap<Index,…>` with `LinkedHashSet` values filled in the
     original sequence).
-- Step 4 not started.
+- Step 4 done (2026-08-18), in two commits:
+  - Error-pullback unification: the phases report errors in their own
+    element vocabulary (plain `FormatErrorSet`s; the pre-projected
+    `createErrors` delegates are gone), and `RuleCompiler` translates at a
+    single boundary — one catch around the whole pipeline applies the
+    inverse typed model map, the inverse untyped model map and the
+    normal-to-source map in sequence. `FormatError` projection
+    *accumulates* context elements rather than replacing them, so the
+    three applications chain; maps not yet filled at the point of failure
+    are empty no-ops. This fixes a latent misattribution: the old
+    pre-installed projection applied only one hop per added error, so
+    errors raised on rule elements never gained the final
+    normal-to-source hop and lacked source-graph context in normalised
+    rules. The typer's internal `applyInverse(typing)` stays: it
+    normalises that pass's errors to its *input* (untyped) vocabulary
+    using the per-level typing, which the global maps cannot reproduce.
+  - `@NonNullByDefault` on `RuleCompiler` and the four pass classes.
+    `ruleFactory` and `modelMap` became final constructor-initialised
+    fields; `typeMap`/`distribution` stay `@Nullable` (the
+    `getTypeMap`/`getLevelTree` null contracts are GUI-observable).
+    Notable finds: `PatternBuilder.getEdgeImage` keeps its `@Nullable`
+    return contract but its body never returns null (`computeEdgeImage`
+    throws instead), so the dead inner null check was dropped; the
+    `parentNodes` set in `PatternTyper.checkTypeSpecialisation` is an
+    unused parameter that used to collect null images of nodes untyped
+    at the level — it now skips them.
+  - Verified: full suite incl. slow groups at baseline, ecj per-file
+    clean and whole-project at the 17-problem baseline, determinism
+    checklist (error-path only; no new hash use, no iteration-order
+    changes on the exploration path).
