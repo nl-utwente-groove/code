@@ -17,23 +17,16 @@
 
 package nl.utwente.groove.grammar.model;
 
-import static nl.utwente.groove.grammar.aspect.AspectKind.CONNECT;
-import static nl.utwente.groove.grammar.aspect.AspectKind.PARAM_ASK;
 import static nl.utwente.groove.grammar.aspect.AspectKind.PARAM_BI;
 import static nl.utwente.groove.grammar.aspect.AspectKind.PARAM_IN;
-import static nl.utwente.groove.grammar.aspect.AspectKind.PRODUCT;
 import static nl.utwente.groove.grammar.aspect.AspectKind.Category.ROLE;
-import static nl.utwente.groove.grammar.aspect.AspectKind.Category.SORT;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -41,17 +34,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.algebra.Constant;
-import nl.utwente.groove.algebra.Operator;
-import nl.utwente.groove.algebra.syntax.Expression;
-import nl.utwente.groove.algebra.syntax.Variable;
 import nl.utwente.groove.grammar.Action.Role;
 import nl.utwente.groove.grammar.Condition;
 import nl.utwente.groove.grammar.Condition.Op;
@@ -79,7 +67,6 @@ import nl.utwente.groove.grammar.rule.DefaultRuleNode;
 import nl.utwente.groove.grammar.rule.LabelVar;
 import nl.utwente.groove.grammar.rule.MatchChecker;
 import nl.utwente.groove.grammar.rule.MethodName;
-import nl.utwente.groove.grammar.rule.OperatorNode;
 import nl.utwente.groove.grammar.rule.RegExpr;
 import nl.utwente.groove.grammar.rule.RuleEdge;
 import nl.utwente.groove.grammar.rule.RuleElement;
@@ -88,20 +75,12 @@ import nl.utwente.groove.grammar.rule.RuleGraph;
 import nl.utwente.groove.grammar.rule.RuleGraphMorphism;
 import nl.utwente.groove.grammar.rule.RuleLabel;
 import nl.utwente.groove.grammar.rule.RuleNode;
-import nl.utwente.groove.grammar.rule.VariableNode;
 import nl.utwente.groove.grammar.type.TypeEdge;
-import nl.utwente.groove.grammar.type.TypeElement;
 import nl.utwente.groove.grammar.type.TypeGraph;
-import nl.utwente.groove.grammar.type.TypeNode;
-import nl.utwente.groove.graph.EdgeComparator;
 import nl.utwente.groove.graph.EdgeRole;
-import nl.utwente.groove.graph.Element;
-import nl.utwente.groove.graph.NodeComparator;
 import nl.utwente.groove.match.automaton.RegAutCalculator;
 import nl.utwente.groove.match.automaton.RegAutCoverage;
-import nl.utwente.groove.util.Fixable;
 import nl.utwente.groove.util.QualName;
-import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
@@ -115,9 +94,9 @@ import nl.utwente.groove.util.parse.FormatException;
  * The translation is staged: the quantification level index tree is built
  * from the nesting aspects ({@link LevelIndexTree}), the aspect elements are
  * distributed over the levels ({@link LevelDistribution}), converted to
- * untyped rule graphs split into LHS/RHS/NACs ({@link Level2}), typed into
- * per-level patterns ({@link Level3}, producing {@link LevelPattern}s), and
- * assembled into a tree of {@link Condition}s by the condition-assembly
+ * untyped per-level patterns split into LHS/RHS/NACs ({@link PatternBuilder}),
+ * typed ({@link PatternTyper}, producing the typed {@link LevelPattern}s),
+ * and assembled into a tree of {@link Condition}s by the condition-assembly
  * methods.
  * @author Arend Rensink
  * @version $Revision$
@@ -140,15 +119,43 @@ class RuleCompiler {
 
     /**
      * Compiles the rule from the (error-free) source graph.
-     * The level tree and the model and type maps are stored in this compiler
-     * as a side effect, insofar as their construction succeeded.
+     * The level distribution and the model and type maps are stored in this
+     * compiler as a side effect, insofar as their construction succeeded.
      * @throws FormatException if the source graph cannot be converted to a valid rule
      */
     Rule compile() throws FormatException {
         this.ruleFactory = RuleFactory.newInstance(getTypeGraph().getFactory());
         this.modelMap = new RuleModelMap(this.ruleFactory);
-        this.levelTree = new LevelTree(getNormalSource());
-        this.modelMap.putAll(this.levelTree.getModelMap());
+        LevelIndexTree indexTree = LevelIndexTree.from(getNormalSource(), getQualName());
+        LevelDistribution distribution = this.distribution
+            = LevelDistribution.from(this, getNormalSource(), indexTree);
+        RuleModelMap untypedModelMap = new RuleModelMap();
+        SortedMap<Index,LevelPattern> untypedPatterns;
+        try {
+            untypedPatterns = new PatternBuilder(this, untypedModelMap).build(distribution);
+        } catch (FormatException e) {
+            throw new FormatException(e.getErrors().applyInverse(untypedModelMap));
+        }
+        RuleGraphMorphism typingMap = new RuleGraphMorphism(this.ruleFactory);
+        SortedMap<Index,LevelPattern> patternMap;
+        try {
+            patternMap = new PatternTyper(this, typingMap).type(untypedPatterns);
+        } catch (FormatException e) {
+            throw new FormatException(e.getErrors().applyInverse(untypedModelMap));
+        }
+        // compose the untyped model map with the typing morphism
+        for (Map.Entry<AspectNode,RuleNode> nodeEntry : untypedModelMap.nodeMap().entrySet()) {
+            RuleNode image = typingMap.getNode(nodeEntry.getValue());
+            if (image != null) {
+                this.modelMap.putNode(nodeEntry.getKey(), image);
+            }
+        }
+        for (Map.Entry<AspectEdge,RuleEdge> edgeEntry : untypedModelMap.edgeMap().entrySet()) {
+            RuleEdge image = typingMap.getEdge(edgeEntry.getValue());
+            if (image != null) {
+                this.modelMap.putEdge(edgeEntry.getKey(), image);
+            }
+        }
         this.typeMap = new TypeModelMap(getTypeGraph().getFactory());
         for (Map.Entry<AspectNode,RuleNode> nodeEntry : this.modelMap.nodeMap().entrySet()) {
             this.typeMap.putNode(nodeEntry.getKey(), nodeEntry.getValue().getType());
@@ -157,7 +164,7 @@ class RuleCompiler {
             var edgeType = (@NonNull TypeEdge) edgeEntry.getValue().getType();
             this.typeMap.putEdge(edgeEntry.getKey(), edgeType);
         }
-        return computeRule(this.levelTree);
+        return computeRule(patternMap);
     }
 
     /** Returns the qualified name of the rule being compiled. */
@@ -201,12 +208,12 @@ class RuleCompiler {
     private final Role role;
 
     /** Convenience method to retrieve the grammar properties. */
-    private GrammarProperties getGrammarProperties() {
+    GrammarProperties getGrammarProperties() {
         return getGrammar().getProperties();
     }
 
     /** Convenience method to retrieve the (implicit or explicit) type graph of the grammar. */
-    private TypeGraph getTypeGraph() {
+    TypeGraph getTypeGraph() {
         return getGrammar().getTypeGraph();
     }
 
@@ -218,11 +225,11 @@ class RuleCompiler {
         return ResourceProperties.isInjective(getSource()) || getGrammarProperties().isInjective();
     }
 
-    private boolean isRhsAsNac() {
+    boolean isRhsAsNac() {
         return getGrammarProperties().isRhsAsNac();
     }
 
-    private boolean isCheckCreatorEdges() {
+    boolean isCheckCreatorEdges() {
         return getGrammarProperties().isCheckCreatorEdges();
     }
 
@@ -248,15 +255,14 @@ class RuleCompiler {
 
     /** Returns a mapping from rule nesting levels to sets of aspect elements
      * on that level; {@code null} if compilation failed before the level
-     * tree was built. */
+     * distribution was built. */
     TreeMap<Index,Set<AspectElement>> getLevelTree() {
-        var levelTree = this.levelTree;
-        if (levelTree == null) {
+        var distribution = this.distribution;
+        if (distribution == null) {
             return null;
         }
         TreeMap<Index,Set<AspectElement>> result = new TreeMap<>();
-        for (Map.Entry<Index,LevelDistribution.Level> levelEntry : levelTree
-            .getDistribution()
+        for (Map.Entry<Index,LevelDistribution.Level> levelEntry : distribution
             .getLevelMap()
             .entrySet()) {
             Index index = levelEntry.getKey();
@@ -277,8 +283,8 @@ class RuleCompiler {
     private RuleModelMap modelMap;
     /** Map from source model to types. */
     private TypeModelMap typeMap;
-    /** Mapping from level indices to conditions on those levels. */
-    private LevelTree levelTree;
+    /** The distribution of rule elements over the quantification levels. */
+    private LevelDistribution distribution;
 
     /**
      * Callback method to compute a rule from the source graph. All auxiliary data
@@ -286,7 +292,7 @@ class RuleCompiler {
      * the structures are filled.
      * @throws FormatException if the model cannot be converted to a valid rule
      */
-    private Rule computeRule(LevelTree levelTree) throws FormatException {
+    private Rule computeRule(SortedMap<Index,LevelPattern> patternMap) throws FormatException {
         Rule result;
         FormatErrorSet errors = createErrors();
         // store the derived subrules in order
@@ -297,13 +303,13 @@ class RuleCompiler {
         // under SPO (simple graphs or multigraphs alike), identifications
         // are resolved by letting deletion win
         if (getGrammarProperties().getParallelMode().isDPO()) {
-            for (LevelPattern level : levelTree.getPatternMap().values()) {
+            for (LevelPattern level : patternMap.values()) {
                 importEraserConflicts(level);
             }
         }
         // construct the rule tree and add parent rules
         try {
-            for (LevelPattern level : levelTree.getPatternMap().values()) {
+            for (LevelPattern level : patternMap.values()) {
                 Index index = level.getIndex();
                 Op operator = index.getOperator();
                 Condition condition;
@@ -345,7 +351,7 @@ class RuleCompiler {
         } catch (FormatException exc) {
             errors.addAll(exc.getErrors());
         }
-        checkRegExprErasure(levelTree, errors);
+        checkRegExprErasure(patternMap, errors);
         // infer and set the role
         Role role = getRole();
         if (role.isProperty()) {
@@ -387,7 +393,7 @@ class RuleCompiler {
                 errors.addAll(exc.getErrors());
             }
         }
-        errors.applyInverse(levelTree.getModelMap()).throwException();
+        errors.applyInverse(this.modelMap).throwException();
         assert result != null;
         return result;
     }
@@ -409,7 +415,8 @@ class RuleCompiler {
      * are exempt, as erasure cannot invalidate an established negative
      * condition; the empty expression traverses nothing.
      */
-    private void checkRegExprErasure(LevelTree levelTree, FormatErrorSet errors) {
+    private void checkRegExprErasure(SortedMap<Index,LevelPattern> patternMap,
+                                     FormatErrorSet errors) {
         var properties = getGrammarProperties();
         if (!properties.getParallelMode().isDPO() || properties.isIgnoreRegExp()) {
             return;
@@ -418,7 +425,7 @@ class RuleCompiler {
         // with a witnessing eraser element for error reporting
         Map<TypeEdge,RuleElement> erasedTypes = new LinkedHashMap<>();
         var typeGraph = getTypeGraph();
-        for (LevelPattern level : levelTree.getPatternMap().values()) {
+        for (LevelPattern level : patternMap.values()) {
             if (!level.getIndex().getOperator().isQuantifier()) {
                 continue;
             }
@@ -435,7 +442,7 @@ class RuleCompiler {
         }
         // check the composite regular expression edges of all levels
         Set<RuleEdge> checked = new HashSet<>();
-        for (LevelPattern level : levelTree.getPatternMap().values()) {
+        for (LevelPattern level : patternMap.values()) {
             if (!level.getIndex().getOperator().isQuantifier()) {
                 continue;
             }
@@ -495,1158 +502,6 @@ class RuleCompiler {
         var result = new FormatErrorSet();
         result.apply(normalToSourceMap());
         return result;
-    }
-
-    /** Tree of quantification levels occurring in this rule model. */
-    private class LevelTree {
-        /** Constructs an instance for a given source graph. */
-        public LevelTree(AspectGraph source) throws FormatException {
-            LevelIndexTree indexTree = LevelIndexTree.from(source, getQualName());
-            this.distribution = LevelDistribution.from(RuleCompiler.this, source, indexTree);
-            RuleModelMap untypedModelMap = new RuleModelMap();
-            SortedMap<Index,Level2> level2Map;
-            try {
-                level2Map = buildLevels2(this.distribution.getLevelMap(), untypedModelMap);
-            } catch (FormatException e) {
-                throw new FormatException(e.getErrors().applyInverse(untypedModelMap));
-            }
-            RuleFactory typedFactory = RuleCompiler.this.ruleFactory;
-            RuleGraphMorphism typingMap = new RuleGraphMorphism(typedFactory);
-            try {
-                this.patternMap = buildLevels3(level2Map, typingMap);
-            } catch (FormatException e) {
-                throw new FormatException(e.getErrors().applyInverse(untypedModelMap));
-            }
-            RuleModelMap modelMap = new RuleModelMap(typedFactory);
-            for (Map.Entry<AspectNode,RuleNode> nodeEntry : untypedModelMap.nodeMap().entrySet()) {
-                RuleNode image = typingMap.getNode(nodeEntry.getValue());
-                if (image != null) {
-                    modelMap.putNode(nodeEntry.getKey(), image);
-                }
-            }
-            for (Map.Entry<AspectEdge,RuleEdge> edgeEntry : untypedModelMap.edgeMap().entrySet()) {
-                RuleEdge image = typingMap.getEdge(edgeEntry.getValue());
-                if (image != null) {
-                    modelMap.putEdge(edgeEntry.getKey(), image);
-                }
-            }
-            this.modelMap = modelMap;
-        }
-
-        /** Constructs the level2 map. */
-        private SortedMap<Index,Level2> buildLevels2(SortedMap<Index,LevelDistribution.Level> level1Map,
-                                                     RuleModelMap modelMap) throws FormatException {
-            SortedMap<Index,Level2> result = new TreeMap<>();
-            FormatErrorSet errors = createErrors();
-            var allocator = new ParallelIndexAllocator();
-            for (LevelDistribution.Level level1 : level1Map.values()) {
-                try {
-                    Index index = level1.getIndex();
-                    Level2 parent = index.isTopLevel()
-                        ? null
-                        : result.get(index.parent);
-                    Level2 level2 = new Level2(level1, parent, modelMap, allocator);
-                    result.put(index, level2);
-                } catch (FormatException e) {
-                    errors.addAll(e.getErrors());
-                }
-            }
-            errors.throwException();
-            return result;
-        }
-
-        /** Constructs the typed level patterns, in the tree-order of the indices. */
-        private SortedMap<Index,LevelPattern> buildLevels3(SortedMap<Index,Level2> level2Map,
-                                                           RuleGraphMorphism typingMap) throws FormatException {
-            SortedMap<Index,Level3> level3Map = new TreeMap<>();
-            SortedMap<Index,LevelPattern> result = new TreeMap<>();
-            for (Level2 level2 : level2Map.values()) {
-                Index index = level2.getIndex();
-                Level3 parent = index.isTopLevel()
-                    ? null
-                    : level3Map.get(index.getParent());
-                Level3 level3 = new Level3(level2, parent, typingMap);
-                level3Map.put(index, level3);
-                result.put(index, level3.pattern);
-            }
-            return result;
-        }
-
-        /**
-         * Returns the distribution of rule elements over the quantification levels
-         */
-        public final LevelDistribution getDistribution() {
-            return this.distribution;
-        }
-
-        /**
-         * Returns the typed level patterns in ascending or descending order
-         */
-        public final Map<Index,LevelPattern> getPatternMap() {
-            return this.patternMap;
-        }
-
-        /** Returns the mapping from aspect graph elements to rule elements. */
-        public final RuleModelMap getModelMap() {
-            return this.modelMap;
-        }
-
-        @Override
-        public String toString() {
-            return "LevelMap: " + this.patternMap;
-        }
-
-        /** The distribution of rule elements over the quantification levels. */
-        private final LevelDistribution distribution;
-        /** Mapping from level indices to typed level patterns. */
-        private SortedMap<Index,LevelPattern> patternMap;
-        /** Mapping from aspect graph elements to untyped rule elements. */
-        private RuleModelMap modelMap;
-    }
-
-    /**
-     * Class containing all rule elements on a given rule level,
-     * differentiated by role (LHS, RHS and NACs).
-     */
-    private class Level2 {
-        /**
-         * Creates a new level, with a given index and parent level.
-         * @param origin the level distribution data from which this level 2 object is created
-         * @param parent the parent's level 2 object, if this is not a top level
-         */
-        public Level2(LevelDistribution.Level origin, Level2 parent, RuleModelMap modelMap,
-                      ParallelIndexAllocator allocator) throws FormatException {
-            this.factory = modelMap.getFactory();
-            Index index = this.index = origin.index;
-            this.parent = parent;
-            this.modelMap = modelMap;
-            this.allocator = allocator;
-            this.isRule = index.isTopLevel();
-            // initialise the rule data structures
-            this.lhs = createGraph(getQualName() + "-" + index + "-lhs");
-            this.rhs = createGraph(getQualName() + "-" + index + "-rhs");
-            FormatErrorSet errors = createErrors();
-            try {
-                if (origin.countNode != null) {
-                    this.countNode = (VariableNode) getNodeImage(origin.countNode);
-                    this.outputNodes.add(this.countNode);
-                }
-            } catch (FormatException exc) {
-                errors.addAll(exc.getErrors());
-            }
-            for (AspectNode modelNode : origin.modelNodes) {
-                try {
-                    if (modelNode.has(ROLE) && !modelNode.has(PRODUCT)) {
-                        processNode(modelNode);
-                    }
-                } catch (FormatException exc) {
-                    errors.addAll(exc.getErrors());
-                }
-            }
-            // if there are errors in the node map, don't try mapping the edges
-            errors.throwException();
-            for (AspectEdge modelEdge : origin.modelEdges) {
-                try {
-                    if (modelEdge.has(CONNECT)) {
-                        addConnect(modelEdge);
-                    } else if (modelEdge.has(SORT)) {
-                        assert modelEdge.isOperator();
-                        addOperator(modelEdge);
-                    } else if (modelEdge.has(ROLE) && !modelEdge.isArgument()) {
-                        processEdge(modelEdge);
-                    }
-                } catch (FormatException exc) {
-                    errors.addAll(exc.getErrors());
-                }
-            }
-            for (LabelVar modelVar : origin.modelVars.keySet()) {
-                processVar(modelVar);
-            }
-            try {
-                this.nacs.addAll(computeNacs());
-            } catch (FormatException exc) {
-                errors.addAll(exc.getErrors());
-            }
-            if (!index.isTopLevel()) {
-                this.parentVars.addAll(origin.parent.modelVars.keySet());
-            }
-            checkAttributes(errors);
-            checkVariables(errors);
-            errors.throwException();
-        }
-
-        private void processVar(LabelVar modelVar) {
-            this.lhs.addVar(modelVar);
-        }
-
-        /**
-         * Adds a node to the LHS, RHS or NAC node set, whichever is appropriate.
-         */
-        private void processNode(AspectNode modelNode) throws FormatException {
-            AspectKind roleKind = modelNode.getKind(ROLE);
-            assert roleKind != null;
-            this.isRule |= roleKind.inLHS() != roleKind.inRHS();
-            RuleNode ruleNode = getNodeImage(modelNode);
-            boolean isAskNode = modelNode.has(PARAM_ASK);
-            if (roleKind.inLHS() && !isAskNode) {
-                this.lhs.addNode(ruleNode);
-                if (roleKind.inRHS()) {
-                    this.rhs.addNode(ruleNode);
-                }
-            } else {
-                if (roleKind.inNAC()) {
-                    // embargo node
-                    this.nacNodeSet.add(ruleNode);
-                }
-                if (roleKind.inRHS()) {
-                    // creator node
-                    this.rhs.addNode(ruleNode);
-                    if (isRhsAsNac() && !isAskNode) {
-                        this.nacNodeSet.add(ruleNode);
-                    }
-                }
-            }
-            if (modelNode.hasColor()) {
-                this.colorMap.put(ruleNode, modelNode.getColor());
-            }
-        }
-
-        /**
-         * Adds an edge to the LHS, RHS or NAC edge set, whichever is appropriate.
-         */
-        private void processEdge(AspectEdge modelEdge) throws FormatException {
-            AspectKind roleKind = modelEdge.getKind(ROLE);
-            assert roleKind != null;
-            this.isRule |= roleKind.inLHS() != roleKind.inRHS();
-            RuleEdge ruleEdge = getEdgeImage(modelEdge);
-            if (ruleEdge == null) {
-                // this was an argument or operation edge;
-                // it has been processed by adding the info to the operator node
-                return;
-            }
-            if (roleKind.inLHS()) {
-                // flag indicating that the rule edge is fresh in the LHS
-                boolean freshInLhs = this.lhs.addEdgeContext(ruleEdge);
-                if (freshInLhs) {
-                    if (roleKind.inRHS()) {
-                        this.rhs.addEdgeContext(ruleEdge);
-                    } else if (getTypeGraph().isNodeType(ruleEdge)
-                        && this.rhs.containsNode(ruleEdge.source())) {
-                        throw new FormatException("Node type label %s cannot be deleted",
-                            ruleEdge.label().text(), modelEdge.source());
-                    }
-                } else {
-                    if (!roleKind.inRHS()) {
-                        // remove the edge from the RHS, if it was there
-                        // (which is the case if it also exists as reader edge)
-                        this.rhs.removeEdge(ruleEdge);
-                    }
-                }
-            } else {
-                if (roleKind.inNAC()) {
-                    // embargo edge
-                    this.nacEdgeSet.add(ruleEdge);
-                }
-                if (roleKind.inRHS()) {
-                    // creator edge
-                    if (getTypeGraph().isNodeType(ruleEdge)
-                        && this.lhs.containsNode(ruleEdge.source())) {
-                        throw new FormatException("Node type %s cannot be created",
-                            ruleEdge.label(), modelEdge.source());
-                    }
-                    this.rhs.addEdgeContext(ruleEdge);
-                    if (isRhsAsNac()) {
-                        this.nacEdgeSet.add(ruleEdge);
-                    } else if (isCheckCreatorEdges()
-                        && modelEdge.source().has(ROLE, AspectKind::inLHS)
-                        && modelEdge.target().has(ROLE, AspectKind::inLHS)) {
-                        this.nacEdgeSet.add(ruleEdge);
-                    }
-                }
-            }
-        }
-
-        /** Adds a NAC connection edge. */
-        private void addConnect(AspectEdge connectEdge) throws FormatException {
-            RuleNode node1 = getNodeImage(connectEdge.source());
-            RuleNode node2 = getNodeImage(connectEdge.target());
-            Set<RuleNode> nodeSet = new HashSet<>(Arrays.asList(node1, node2));
-            this.connectMap.put(connectEdge, nodeSet);
-        }
-
-        private void addOperator(AspectEdge operatorEdge) throws FormatException {
-            AspectNode productNode = operatorEdge.source();
-            Operator operator = operatorEdge.getOperator();
-            assert operator != null;
-            if (productNode.getLevelNode() != null && operator.isIndeterminate()) {
-                //                throw new FormatException(
-                //                    "Indeterminate operator '%s' not allowed on quantified level "
-                //                        + "(do a feature request if you want this constraint dropped!)",
-                //                    operator.getName(), operatorEdge);
-            }
-            boolean embargo = productNode.has(ROLE, AspectKind::inNAC);
-            List<VariableNode> arguments = new ArrayList<>();
-            for (AspectNode argModelNode : productNode.getArgNodes()) {
-                VariableNode argument = (VariableNode) getNodeImage(argModelNode);
-                boolean argOnThisLevel = this.lhs.nodeSet().contains(argument);
-                if (!(argOnThisLevel || embargo && this.nacNodeSet.contains(argument))) {
-                    String nodeName = argModelNode.hasId()
-                        ? "'" + argModelNode.getId() + "' "
-                        : "";
-                    if (argModelNode.has(PARAM_ASK)) {
-                        throw new FormatException(
-                            "User input value %s not supported as expression argument", nodeName,
-                            argModelNode, operatorEdge);
-                    } else {
-                        throw new FormatException(
-                            "Argument %s does not exist on the level of the operator '%s'",
-                            nodeName, operator.getName(), argModelNode, operatorEdge);
-                    }
-                }
-                arguments.add(argument);
-            }
-            AspectNode targetModelNode = operatorEdge.target();
-            VariableNode target = (VariableNode) getNodeImage(targetModelNode);
-            boolean setOperator = operator.isVarArgs();
-            if (!(setOperator || this.lhs.nodeSet().contains(target)
-                || embargo && this.nacNodeSet.contains(target))) {
-                String nodeName = targetModelNode.hasId()
-                    ? targetModelNode.getId()
-                    : targetModelNode.toString();
-                throw new FormatException(
-                    "Target of operator '%s' does not exist on the level of the operator edge",
-                    nodeName, operator.getName(), operatorEdge);
-            }
-            // make sure that set operator targets appear on the parent level already
-            if (setOperator) {
-                if (!(this.parent != null && this.parent.lhs.nodeSet().contains(target))) {
-                    throw new FormatException(
-                        "Target of set operator '%s' must be defined on the parent level",
-                        operator.getName(), operatorEdge);
-                }
-                if (!getIndex().isUniversal()) {
-                    throw new FormatException(
-                        "Argument of set operator '%s' must be universally quantified",
-                        operator.getName(), operatorEdge);
-                }
-                if (!operator.isZeroArgs() && !getIndex().isPositive()) {
-                    throw new FormatException(
-                        "Argument of set operator '%s' needs a non-vacuous quantification",
-                        operator.getName(), operatorEdge);
-                }
-                // a set operator argument is an output node of the condition
-                this.outputNodes.add(arguments.get(0));
-            }
-            RuleNode opNode = this.factory
-                .createOperatorNode(productNode.getNumber(), operator, arguments, target);
-            Level2 level = setOperator
-                ? this.parent
-                : this;
-            if (operatorEdge.has(ROLE, AspectKind::inNAC)) {
-                level.nacNodeSet.add(opNode);
-            } else {
-                level.lhs.addNode(opNode);
-                level.rhs.addNode(opNode);
-            }
-        }
-
-        /** Constructs the NACs for this rule. */
-        private List<RuleGraph> computeNacs() throws FormatException {
-            List<RuleGraph> result = new ArrayList<>();
-            // add the nacs to the rule
-            // find connected sets of NAC nodes, taking the
-            // connection edges into account
-            for (Cell cell : getConnectedSets()) {
-                // construct the NAC graph
-                RuleGraph nac = createGraph(this.lhs.getName() + "-nac-" + result.size());
-                for (RuleNode node : cell.getNodes()) {
-                    nac.addNode(node);
-                    if (node instanceof OperatorNode) {
-                        nac.addNodeSet(((OperatorNode) node).getArguments());
-                        nac.addNode(((OperatorNode) node).getTarget());
-                    }
-                }
-                for (RuleEdge edge : cell.getEdges()) {
-                    nac.addEdgeContext(edge);
-                }
-                result.add(nac);
-            }
-            return result;
-        }
-
-        /**
-         * Partitions a set of graph elements into its maximal connected subsets.
-         * The set does not necessarily contain all endpoints of edges it contains.
-         * A subset is connected if there is a chain of edges and edge endpoints,
-         * all of which are in the set, between all pairs of elements in the set.
-         * @return The set of maximal connected subsets of {@link #nacNodeSet} and
-         * {@link #nacEdgeSet}
-         */
-        private SortedSet<Cell> getConnectedSets() throws FormatException {
-            // mapping from nodes of elementSet to sets of connected elements
-            Map<Element,Cell> result = new HashMap<>();
-            for (RuleNode node : this.nacNodeSet) {
-                Cell nodeCell = new Cell();
-                nodeCell.add(node);
-                result.put(node, nodeCell);
-            }
-            // merge cells connected by an operator
-            for (RuleNode node : this.nacNodeSet) {
-                if (node instanceof OperatorNode opNode) {
-                    Cell nodeCell = result.get(opNode);
-                    assert nodeCell != null; // filled for all NAC nodes above
-                    for (RuleNode argNode : opNode.getArguments()) {
-                        Cell argCell = result.get(argNode);
-                        if (argCell != null) {
-                            nodeCell.addAll(argCell);
-                        }
-                    }
-                    VariableNode target = opNode.getTarget();
-                    Cell targetCell = result.get(target);
-                    if (targetCell != null) {
-                        nodeCell.addAll(targetCell);
-                    }
-                    for (RuleElement elem : nodeCell) {
-                        result.put(elem, nodeCell);
-                    }
-                }
-            }
-            // merge cells connected by an edge
-            for (RuleEdge edge : this.nacEdgeSet) {
-                Cell edgeCell = new Cell();
-                edgeCell.add(edge);
-                Cell sourceCell = result.get(edge.source());
-                if (sourceCell != null) {
-                    edgeCell.addAll(sourceCell);
-                }
-                Cell targetCell = result.get(edge.target());
-                if (targetCell != null) {
-                    edgeCell.addAll(targetCell);
-                }
-                for (RuleElement elem : edgeCell) {
-                    result.put(elem, edgeCell);
-                }
-            }
-            // merge cells connected by an explicit connection
-            for (Map.Entry<AspectEdge,Set<RuleNode>> connection : this.connectMap.entrySet()) {
-                // find the (separate) cells for the target nodes of the connect edge
-                Cell newCell = new Cell();
-                for (RuleNode node : connection.getValue()) {
-                    Cell nodeCell = result.get(node);
-                    if (nodeCell == null) {
-                        throw new FormatException("Connect edge should be between distinct NACs",
-                            connection.getKey());
-                    }
-                    newCell.addAll(nodeCell);
-                }
-                for (RuleElement elem : newCell) {
-                    result.put(elem, newCell);
-                }
-            }
-            return new TreeSet<>(result.values());
-        }
-
-        private class Cell extends HashSet<RuleElement> implements Comparable<Cell>, Fixable {
-            public Cell() {
-                // empty
-            }
-
-            @Override
-            public boolean setFixed() {
-                boolean result = !this.fixed;
-                this.fixed = true;
-                return result;
-            }
-
-            @Override
-            public boolean isFixed() {
-                return this.fixed;
-            }
-
-            @Override
-            public boolean add(RuleElement e) {
-                testFixed(false);
-                return super.add(e);
-            }
-
-            @Override
-            public boolean remove(Object o) {
-                testFixed(false);
-                return super.remove(o);
-            }
-
-            @Override
-            public void clear() {
-                testFixed(false);
-                super.clear();
-            }
-
-            /**
-             * Returns the set of nodes in this cell. Only call after
-             * the cell has been completely fixed.
-             */
-            public SortedSet<RuleNode> getNodes() {
-                setFixed();
-                if (this.nodes == null) {
-                    this.nodes = computeNodes();
-                }
-                return this.nodes;
-            }
-
-            private SortedSet<RuleNode> computeNodes() {
-                TreeSet<RuleNode> result = new TreeSet<>(NodeComparator.instance());
-                for (RuleElement elem : this) {
-                    if (elem instanceof RuleNode) {
-                        result.add((RuleNode) elem);
-                    }
-                }
-                return result;
-            }
-
-            /**
-             * Returns the set of edges in this cell. Only call after
-             * the cell has been completely fixed.
-             */
-            public SortedSet<RuleEdge> getEdges() {
-                setFixed();
-                if (this.edges == null) {
-                    this.edges = computeEdges();
-                }
-                return this.edges;
-            }
-
-            private SortedSet<RuleEdge> computeEdges() {
-                TreeSet<RuleEdge> result = new TreeSet<>(EdgeComparator.instance());
-                for (RuleElement elem : this) {
-                    if (elem instanceof RuleEdge) {
-                        result.add((RuleEdge) elem);
-                    }
-                }
-                return result;
-            }
-
-            @Override
-            public int compareTo(Cell o) {
-                // comparison of node set size
-                int result = getNodes().size() - o.getNodes().size();
-                if (result != 0) {
-                    return result;
-                }
-                // comparison of edge set size
-                result = getEdges().size() - o.getEdges().size();
-                if (result != 0) {
-                    return result;
-                }
-                // lexicographical comparison of the ordered sets of nodes
-                Iterator<RuleNode> myNodeIter = getNodes().iterator();
-                Iterator<RuleNode> otherNodeIter = o.getNodes().iterator();
-                Comparator<? super RuleNode> nodeComp = getNodes().comparator();
-                assert nodeComp != null; // the node set is created with an explicit comparator
-                while (myNodeIter.hasNext()) {
-                    result = nodeComp.compare(myNodeIter.next(), otherNodeIter.next());
-                    if (result != 0) {
-                        return result;
-                    }
-                }
-                // lexicographical comparison of the ordered sets of edges
-                Iterator<RuleEdge> myEdgeIter = getEdges().iterator();
-                Iterator<RuleEdge> otherEdgeIter = o.getEdges().iterator();
-                Comparator<? super RuleEdge> edgeComp = getEdges().comparator();
-                assert edgeComp != null; // the edge set is created with an explicit comparator
-                while (myEdgeIter.hasNext()) {
-                    result = edgeComp.compare(myEdgeIter.next(), otherEdgeIter.next());
-                    if (result != 0) {
-                        return result;
-                    }
-                }
-                return result;
-            }
-
-            private boolean fixed = false;
-            private SortedSet<RuleNode> nodes;
-            private SortedSet<RuleEdge> edges;
-        }
-
-        /**
-         * Checks if all product nodes have all their arguments.
-         */
-        private void checkAttributes(FormatErrorSet errors) {
-            // check if product nodes have all their arguments (on this level)
-            for (RuleNode prodNode : this.lhs.nodeSet()) {
-                if (!(prodNode instanceof OperatorNode opNode)) {
-                    continue;
-                }
-                for (RuleNode argNode : opNode.getArguments()) {
-                    if (!this.lhs.nodeSet().contains(argNode)) {
-                        errors
-                            .add("Argument must occur on the level of the product node", opNode,
-                                 argNode);
-
-                    }
-                }
-                RuleNode opTarget = opNode.getTarget();
-                if (!this.lhs.nodeSet().contains(opTarget)) {
-                    errors
-                        .add("Operation target must occur on the level of the product node", opNode,
-                             opTarget);
-
-                }
-            }
-        }
-
-        /**
-         * Checks if all label variables are bound
-         */
-        private void checkVariables(FormatErrorSet errors) {
-            Map<LabelVar,Set<RuleElement>> allVars = new HashMap<>();
-            allVars.putAll(this.lhs.varMap());
-            allVars.putAll(this.rhs.varMap());
-            for (RuleGraph nac : this.nacs) {
-                allVars.putAll(nac.varMap());
-            }
-            Map<String,LabelVar> varNames = new HashMap<>();
-            for (Map.Entry<LabelVar,Set<RuleElement>> varEntry : allVars.entrySet()) {
-                LabelVar var = varEntry.getKey();
-                LabelVar oldVar = varNames.put(var.getKey(), var);
-                if (oldVar != null && !oldVar.equals(var)) {
-                    errors
-                        .add("Duplicate variable '%s' for %s and %s labels", var,
-                             var.getKind().getDescription(false),
-                             oldVar.getKind().getDescription(false), varEntry.getValue().toArray());
-                }
-            }
-            allVars.keySet().removeAll(this.lhs.getBoundVars());
-            allVars.keySet().removeAll(this.parentVars);
-            for (Map.Entry<LabelVar,Set<RuleElement>> varEntry : allVars.entrySet()) {
-                LabelVar var = varEntry.getKey();
-                errors.add("Unassigned label variable %s", var, varEntry.getValue().toArray());
-            }
-        }
-
-        /**
-         * Lazily creates and returns a rule image for a given model node.
-         * @param modelNode the node for which an image is to be created
-         * @throws FormatException if <code>node</code> does not occur in a
-         *         correct way in <code>context</code>
-         */
-        private RuleNode getNodeImage(AspectNode modelNode) throws FormatException {
-            RuleNode result = this.modelMap.getNode(modelNode);
-            if (result == null) {
-                this.modelMap.putNode(modelNode, result = computeNodeImage(modelNode));
-            }
-            return result;
-        }
-
-        /**
-         * Lazily creates and returns a rule image for a given model edge.
-         * @param modelEdge the node for which an image is to be created
-         * @return the rule edge corresponding to <code>viewEdge</code>; may be
-         *         <code>null</code>
-         * @throws FormatException if <code>node</code> does not occur in a
-         *         correct way in <code>context</code>
-         */
-        private RuleEdge getEdgeImage(AspectEdge modelEdge) throws FormatException {
-            RuleEdge result = this.modelMap.getEdge(modelEdge);
-            if (result == null) {
-                result = computeEdgeImage(modelEdge, this.modelMap.nodeMap());
-                if (result != null) {
-                    this.modelMap.putEdge(modelEdge, result);
-                }
-            }
-            return result;
-        }
-
-        /**
-         * Creates an image for a given aspect node. Node numbers are copied.
-         * @param node the node for which an image is to be created
-         * @return the fresh node
-         * @throws FormatException if <code>node</code> does not occur in a correct
-         *         way in <code>context</code>
-         */
-        private RuleNode computeNodeImage(AspectNode node) throws FormatException {
-            RuleNode result;
-            if (node.has(Category.PARAM) && !this.index.isTopLevel()) {
-                throw new FormatException("Parameter '%d' only allowed on top existential level",
-                    node.getNumber(), node);
-            }
-            int nr = node.getNumber();
-            AspectKind sortKind = node.getKind(SORT);
-            if (sortKind != null) {
-                Expression term;
-                String id = node.getId();
-                if (node.hasExpression()) {
-                    term = node.getExpression();
-                    assert term instanceof Constant;
-                } else {
-                    String varName = id == null
-                        ? VariableNode.TO_STRING_PREFIX + nr
-                        : id;
-                    term = new Variable(varName, sortKind.getSort());
-                }
-                VariableNode image = this.factory.createVariableNode(nr, term);
-                if (id != null) {
-                    image.setId(id);
-                }
-                result = image;
-            } else {
-                DefaultRuleNode image = (DefaultRuleNode) this.factory.createNode(nr);
-                result = image;
-            }
-            return result;
-        }
-
-        /**
-         * Creates an edge by copying a given model edge under a given node mapping. The
-         * mapping is assumed to have images for all end nodes.
-         * @param edge the edge for which an image is to be created
-         * @param elementMap the mapping of the end nodes
-         * @return the new edge
-         * @throws FormatException if <code>edge</code> does not occur in a correct
-         *         way in <code>context</code>
-         */
-        private RuleEdge computeEdgeImage(AspectEdge edge,
-                                          Map<AspectNode,? extends RuleNode> elementMap) throws FormatException {
-            assert edge.getRuleLabel() != null : String
-                .format("Edge '%s' does not belong in model", edge);
-            RuleNode sourceImage = elementMap.get(edge.source());
-            if (sourceImage == null) {
-                throw new FormatException(
-                    "Cannot compute image of '%s'-edge: source node does not have image",
-                    edge.label(), edge.source());
-            }
-            RuleNode targetImage = elementMap.get(edge.target());
-            if (targetImage == null) {
-                throw new FormatException(
-                    "Cannot compute image of '%s'-edge: target node does not have image",
-                    edge.label(), edge.target());
-            }
-            RuleEdge result = this.factory.createEdge(sourceImage, edge.getRuleLabel(), targetImage);
-            // in multigraph mode, every aspect edge gets its own parallel
-            // index for its content, so that copies declared by distinct
-            // aspect edges never coalesce; in particular, created copies are
-            // always fresh with respect to matched copies. Embargo edges are
-            // exempt: they declare no copies of their own
-            if (getGrammarProperties().getParallelMode().isMulti()
-                && edge.has(ROLE, k -> k != AspectKind.EMBARGO)) {
-                int index = this.allocator.getIndex(edge, result);
-                if (index > 0) {
-                    result = this.factory
-                        .createEdge(sourceImage, edge.getRuleLabel(), targetImage, index);
-                }
-            }
-            return result;
-        }
-
-        /**
-         * Callback method to create an untyped graph that can serve as LHS or RHS of a rule.
-         * The graph is non-simple if the grammar allows parallel edges.
-         * @see #getSource()
-         */
-        private RuleGraph createGraph(String name) {
-            return new RuleGraph(name, isInjective(),
-                !getGrammarProperties().getParallelMode().isMulti(), this.factory);
-        }
-
-        @Override
-        public String toString() {
-            return String.format("Rule %s, level %s, stage 2", getQualName(), getIndex());
-        }
-
-        /** Returns the index of this level. */
-        public final Index getIndex() {
-            return this.index;
-        }
-
-        private final RuleFactory factory;
-        /** Mapping from aspect graph elements to rule elements. */
-        private final RuleModelMap modelMap;
-        /** Parallel-index allocator, shared between the levels of this rule. */
-        private final ParallelIndexAllocator allocator;
-        /** Index of this level. */
-        private final Index index;
-        /** Parent level. */
-        private final Level2 parent;
-        /** Map of all connect edges on this level. */
-        private final Map<AspectEdge,Set<RuleNode>> connectMap = new HashMap<>();
-        /** The rule node registering the match count. */
-        private VariableNode countNode;
-        /** Condition output nodes. */
-        private final Set<VariableNode> outputNodes = new HashSet<>();
-        /** Map from rule nodes to declared colours. */
-        private final Map<RuleNode,Color> colorMap = new HashMap<>();
-        /** Flag indicating that modifiers have been found at this level. */
-        private boolean isRule;
-        /** The left hand side graph of the rule. */
-        private final RuleGraph lhs;
-        /** The right hand side graph of the rule. */
-        private final RuleGraph rhs;
-        /** The set of nodes appearing in NACs. */
-        private final Set<RuleNode> nacNodeSet = new HashSet<>();
-        /** The set of edges appearing in NACs. */
-        private final Set<RuleEdge> nacEdgeSet = new HashSet<>();
-        /** Collection of NAC graphs. */
-        private final List<RuleGraph> nacs = new ArrayList<>();
-        /** Variables bound at the parent level. */
-        private final Set<LabelVar> parentVars = new HashSet<>();
-    }
-
-    /**
-     * Allocator of parallel-edge indices for the aspect edges of a multigraph
-     * rule: every aspect edge gets its own parallel index for its content, so
-     * that the copies declared by distinct aspect edges never coalesce — in
-     * particular, created copies are always fresh with respect to matched
-     * copies. Shared between all levels of one rule, so that an aspect edge
-     * occurring at several quantification levels keeps the same copy.
-     */
-    static private class ParallelIndexAllocator {
-        /**
-         * Returns the parallel index allocated to a given aspect edge,
-         * allocating the next free index for its content on the first call.
-         * @param modelEdge the aspect edge for which the index is allocated
-         * @param edge0 the index-0 rule edge image of the aspect edge,
-         * serving as the content representative
-         */
-        int getIndex(AspectEdge modelEdge, RuleEdge edge0) {
-            Integer result = this.indexMap.get(modelEdge);
-            if (result == null) {
-                result = this.nextIndexMap.getOrDefault(edge0, 0);
-                this.indexMap.put(modelEdge, result);
-                this.nextIndexMap.put(edge0, result + 1);
-            }
-            return result;
-        }
-
-        /** Map from aspect edges to their allocated index. */
-        private final Map<AspectEdge,Integer> indexMap = new HashMap<>();
-        /** Map from index-0 content representatives to the next free index. */
-        private final Map<RuleEdge,Integer> nextIndexMap = new HashMap<>();
-    }
-
-
-    /**
-     * The typing pass for one level: constructs the typed pattern of the
-     * level from its level 2 (untyped) origin, or an identically typed
-     * pattern if there is no type graph.
-     * @author Arend Rensink
-     * @version $Revision$
-     */
-    private class Level3 {
-        public Level3(Level2 origin, Level3 parent,
-                      RuleGraphMorphism globalTypeMap) throws FormatException {
-            this.parent = parent;
-            this.factory = globalTypeMap.getFactory();
-            this.globalTypeMap = globalTypeMap;
-            RuleGraphMorphism parentTypeMap = parent == null
-                ? new RuleGraphMorphism(this.factory)
-                : parent.typeMap;
-            this.typeMap = new RuleGraphMorphism(this.factory);
-            RuleGraph lhs = toTypedGraph(origin.lhs, parentTypeMap, this.typeMap);
-            // type the RHS taking the typing of the LHS into account
-            // to allow use of the typed label variables
-            RuleGraphMorphism lhsTypeMap = new RuleGraphMorphism(this.factory);
-            lhsTypeMap.putAll(parentTypeMap);
-            lhsTypeMap.putAll(this.typeMap);
-            RuleGraph rhs = toTypedGraph(origin.rhs, lhsTypeMap, this.typeMap);
-            // check against label type restrictions in RHS
-            for (Map.Entry<LabelVar,Set<? extends TypeElement>> entry : lhsTypeMap
-                .getVarTyping()
-                .entrySet()) {
-                LabelVar var = entry.getKey();
-                if (!this.typeMap.getVarTyping().containsKey(var)) {
-                    continue;
-                }
-                Set<? extends TypeElement> lhsTypes = entry.getValue();
-                lhsTypes.removeAll(this.typeMap.getVarTypes(var));
-                if (!lhsTypes.isEmpty()) {
-                    this.errors
-                        .add("Invalid %s type%s %s for creator variable %s",
-                             var.getKind().getDescription(false), lhsTypes.size() == 1
-                                 ? ""
-                                 : "s",
-                             Strings.toString(lhsTypes.toArray(), "", "", ", "), var);
-                }
-            }
-            this.errors.throwException();
-            List<RuleGraph> nacs = new ArrayList<>();
-            for (RuleGraph nac : origin.nacs) {
-                nacs.add(toTypedGraph(nac, this.typeMap, null));
-            }
-            this.pattern = new LevelPattern(origin.index, parent == null
-                ? null
-                : parent.pattern, lhs, rhs, nacs, origin.countNode, origin.outputNodes,
-                new HashMap<>(), origin.isRule);
-            // check for correct type specialisation
-            // this has to be done after the NACs have been added
-            try {
-                Set<RuleNode> parentNodes = new HashSet<>();
-                for (RuleNode origParentNode : parentTypeMap.nodeMap().keySet()) {
-                    parentNodes.add(this.typeMap.getNode(origParentNode));
-                }
-                checkTypeSpecialisation(parentNodes, lhs, rhs);
-            } catch (FormatException exc) {
-                this.errors.addAll(exc.getErrors());
-            }
-            this.errors.throwException();
-            for (Map.Entry<RuleNode,Color> colorEntry : origin.colorMap.entrySet()) {
-                this.pattern.colorMap
-                    .put(globalTypeMap.getNode(colorEntry.getKey()), colorEntry.getValue());
-            }
-        }
-
-        /**
-         * Constructs a typed version of a given rule graph.
-         * {@link #globalTypeMap} is updated with all new elements.
-         * @param graph the untyped input graph
-         * @param parentTypeMap typing inherited from the parent level;
-         * may be {@code null} if there is no parent level
-         * @param typeMap typing constructed for this level;
-         * may be {@code null} if this is a NAC graph of which the typing
-         * should not be recorded
-         * @return a typed version of the input graph
-         */
-        private RuleGraph toTypedGraph(RuleGraph graph, RuleGraphMorphism parentTypeMap,
-                                       RuleGraphMorphism typeMap) {
-            RuleGraph result = createGraph(graph.getName());
-            try {
-                RuleGraphMorphism typing = getTypeGraph().analyzeRule(graph, parentTypeMap);
-                this.errors.applyInverse(typing);
-                if (typeMap != null) {
-                    typeMap.putAll(typing);
-                }
-                for (Map.Entry<RuleNode,RuleNode> nodeEntry : typing.nodeMap().entrySet()) {
-                    RuleNode key = nodeEntry.getKey();
-                    RuleNode image = nodeEntry.getValue();
-                    assert image != null;
-                    RuleNode globalImage = this.globalTypeMap.getNode(key);
-                    if (globalImage == null) {
-                        this.globalTypeMap.putNode(key, image);
-                    }
-                    result.addNode(image);
-                }
-                for (Map.Entry<RuleEdge,RuleEdge> edgeEntry : typing.edgeMap().entrySet()) {
-                    RuleEdge key = edgeEntry.getKey();
-                    RuleEdge image = edgeEntry.getValue();
-                    assert image != null;
-                    RuleEdge globalImage = this.globalTypeMap.getEdge(key);
-                    if (globalImage == null) {
-                        this.globalTypeMap.putEdge(key, globalImage = image);
-                    }
-                    result.addEdgeContext(globalImage);
-                }
-                result.addVarSet(graph.varSet());
-            } catch (FormatException e) {
-                this.errors.addAll(e.getErrors());
-            }
-            return result;
-        }
-
-        /**
-         * If the RHS type for a reader node is changed w.r.t. the LHS type,
-         * the LHS type has to be sharp and the RHS type a subtype of it.
-         * @param parentNodes nodes from a higher quantification level
-         * @throws FormatException if there are typing errors
-         */
-        private void checkTypeSpecialisation(Set<RuleNode> parentNodes, RuleGraph lhs,
-                                             RuleGraph rhs) throws FormatException {
-            FormatErrorSet errors = createErrors();
-            for (RuleNode node : rhs.nodeSet()) {
-                TypeNode nodeType = node.getType();
-                if (nodeType.isAbstract() && !lhs.containsNode(node)
-                    && node.getTypeGuards().isEmpty()) {
-                    errors
-                        .add("Creation of abstract %s-node not allowed", nodeType.label().text(),
-                             node);
-                }
-            }
-            // check for ambiguous mergers
-            List<RuleEdge> mergers = new ArrayList<>();
-            Set<RuleNode> mergedNodes = new HashSet<>();
-            for (RuleEdge edge : rhs.edgeSet()) {
-                if (isMerger(edge)) {
-                    mergers.add(edge);
-                    RuleNode source = edge.source();
-                    TypeNode sourceType = source.getType();
-                    RuleNode target = edge.target();
-                    TypeNode targetType = target.getType();
-                    if (!targetType.getSupertypes().containsAll(source.getMatchingTypes())) {
-                        errors
-                            .add("Actual type of merged %s-node may be subtype of merge target",
-                                 sourceType.label().text(), edge);
-                    } else if (!mergedNodes.add(source)) {
-                        errors
-                            .add("%s-node is merged with two distinct nodes",
-                                 sourceType.label().text(), source);
-                    } else if (isUniversal(target) && !haveMinType(target)) {
-                        errors
-                            .add("Actual target types of %s-merger may be ambiguous",
-                                 sourceType.label().text(), edge);
-                    } else if (!getTypeGraph().isSubtype(targetType, sourceType)) {
-                        errors
-                            .add("Merged %s-node must be supertype of %s",
-                                 sourceType.label().text(), targetType.label().text(), source);
-                    } else if (source.getType().isSort()) {
-                        errors
-                            .add("Primitive %s-node can't be merged", sourceType.label().text(),
-                                 source);
-                    }
-                } else {
-                    TypeEdge edgeType = edge.getType();
-                    if (edgeType != null && edgeType.isAbstract() && !lhs.containsEdge(edge)) {
-                        errors
-                            .add("Creation of abstract %s-edge not allowed",
-                                 edgeType.label().text(), edge);
-                    }
-                }
-            }
-            // check for non-injectively matched merge sources
-            if (!isInjective()) {
-                outer: for (RuleEdge merger1 : mergers) {
-                    for (RuleEdge merger2 : mergers) {
-                        // only check lower left half of matrix
-                        if (merger1 == merger2) {
-                            continue outer;
-                        }
-                        RuleNode source1 = merger1.source();
-                        RuleNode source2 = merger2.source();
-                        RuleNode target1 = merger1.target();
-                        RuleNode target2 = merger2.target();
-                        if (!injective(source1, source2) && !target1.equals(target2)
-                            && !haveMinType(target1, target2)) {
-                            errors
-                                .add("Non-injectively matched mergers have ambiguous target types",
-                                     merger1, merger2);
-                        }
-                    }
-                }
-            }
-            errors.throwException();
-        }
-
-        /** Tests if a given node is matched on a universal level. */
-        private boolean isUniversal(RuleNode node) {
-            LevelPattern highestLevel = this.pattern;
-            LevelPattern parent = highestLevel.parent;
-            while (parent != null && parent.rhs.containsNode(node)) {
-                highestLevel = parent;
-                parent = highestLevel.parent;
-            }
-            return highestLevel.getIndex().isUniversal();
-        }
-
-        private boolean injective(RuleNode n1, RuleNode n2) {
-            boolean result = false;
-            // check for type overlap
-            Set<TypeNode> types = new HashSet<>(n1.getMatchingTypes());
-            types.retainAll(n2.getMatchingTypes());
-            result = types.isEmpty();
-            if (!result) {
-                // check for != edges
-                RuleLabel injection = new RuleLabel(RegExpr.empty().neg());
-                for (RuleEdge edge : this.pattern.lhs.edgeSet(injection)) {
-                    if (edge.source().equals(n1) && edge.target().equals(n2)
-                        || edge.source().equals(n2) && edge.target().equals(n1)) {
-                        result = true;
-                        break;
-                    }
-                }
-            }
-            if (!result) {
-                // check for NACs
-                for (RuleGraph nac : this.pattern.nacs) {
-                    Set<RuleNode> nacNodes = nac.nodeSet();
-                    Set<RuleEdge> nacEdges = nac.edgeSet();
-                    if (nacNodes.size() == 2 && nacNodes.contains(n1) && nacNodes.contains(n2)
-                        && nacEdges.size() == 1 && nacEdges.iterator().next().label().isEmpty()) {
-                        result = true;
-                        break;
-                    }
-                }
-            }
-            if (!result && this.parent != null && this.parent.pattern.lhs.containsNode(n1)
-                && this.parent.pattern.lhs.containsNode(n2)) {
-                result = this.parent.injective(n1, n2);
-            }
-            return result;
-        }
-
-        /** Tests if the host nodes that can be matched non-injectively by
-         * a given non-empty set of rule nodes are certain to have a minimum type. */
-        private boolean haveMinType(RuleNode... mergeTargets) {
-            assert mergeTargets.length > 0;
-            boolean result = true;
-            // collect the common type label variables
-            Set<LabelVar> commonVars = null;
-            if (mergeTargets.length == 1) {
-                commonVars = mergeTargets[0].getVars();
-            } else {
-                for (RuleNode node : mergeTargets) {
-                    if (commonVars == null) {
-                        commonVars = new HashSet<>(node.getVars());
-                    } else {
-                        commonVars.retainAll(node.getVars());
-                    }
-                }
-                assert commonVars != null; // because mergeTargets is not empty
-            }
-            // if there is a common variable, the types are fixed and equal
-            if (commonVars.isEmpty()) {
-                // take the union of all merge target types
-                Set<TypeNode> allTypes = null;
-                if (mergeTargets.length == 1) {
-                    allTypes = mergeTargets[0].getMatchingTypes();
-                } else {
-                    for (RuleNode node : mergeTargets) {
-                        if (allTypes == null) {
-                            allTypes = new HashSet<>(node.getMatchingTypes());
-                        } else {
-                            allTypes.addAll(node.getMatchingTypes());
-                        }
-                    }
-                    assert allTypes != null; // because mergeTargets is not empty
-                }
-                // check that the set of types is linearly ordered
-                outer: for (TypeNode one : allTypes) {
-                    for (TypeNode two : allTypes) {
-                        // we only check the lower left part of the matrix
-                        if (two == one) {
-                            continue outer;
-                        }
-                        if (!one.getSubtypes().contains(two)
-                            && !one.getSupertypes().contains(two)) {
-                            result = false;
-                            break outer;
-                        }
-                    }
-                }
-            }
-            return result;
-        }
-
-        /** Tests if a given RHS edge is a merger. */
-        private boolean isMerger(RuleEdge rhsEdge) {
-            return !this.pattern.lhs.containsEdge(rhsEdge) && rhsEdge.label().isEmpty();
-        }
-
-        /**
-         * Callback method to create an untyped graph that can serve as LHS or RHS of a rule.
-         * The graph is non-simple if the grammar allows parallel edges.
-         * @see #getSource()
-         */
-        private RuleGraph createGraph(String name) {
-            return new RuleGraph(name, isInjective(),
-                !getGrammarProperties().getParallelMode().isMulti(), this.factory);
-        }
-
-        private final Level3 parent;
-        private final RuleFactory factory;
-        /** The global, rule-wide mapping from untyped to typed rule elements. */
-        private final RuleGraphMorphism globalTypeMap;
-        /** Combined type map for this level. */
-        private final RuleGraphMorphism typeMap;
-        /** The typed pattern constructed by this pass. */
-        private final LevelPattern pattern;
-        /** List of typing errors. */
-        private final FormatErrorSet errors = createErrors();
     }
 
     /*
