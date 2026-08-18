@@ -28,9 +28,9 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Fixable;
 import nl.utwente.groove.util.Relation;
@@ -42,6 +42,7 @@ import nl.utwente.groove.util.Relation;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public class FormatErrorSet implements Iterable<FormatError>, Fixable {
     /** Constructs a fresh, empty error set. */
     public FormatErrorSet() {
@@ -53,7 +54,7 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
     }
 
     /** Constructs a singleton error set. */
-    public FormatErrorSet(String message, Object... args) {
+    public FormatErrorSet(String message, @Nullable Object... args) {
         add(message, args);
     }
 
@@ -73,7 +74,7 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
     /** Adds a format error based on a given error message and set of arguments.
      * @return this object itself, for chaining
      */
-    public FormatErrorSet add(String message, Object... args) {
+    public FormatErrorSet add(String message, @Nullable Object... args) {
         add(new FormatError(message, args));
         return this;
     }
@@ -81,7 +82,7 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
     /** Adds a format error based on an existing error and set of additional arguments
     * @return this object itself, for chaining
     */
-    public FormatErrorSet add(FormatError error, Object... args) {
+    public FormatErrorSet add(FormatError error, @Nullable Object... args) {
         add(error.extend(args));
         return this;
     }
@@ -187,17 +188,17 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
 
     /**
      * Collapses errors that are indistinguishable in a given context: errors
-     * with the same message whose context elements (those satisfying the
+     * with the same message whose context objects (those satisfying the
      * given predicate) coincide are merged into the first of them, which
-     * keeps its full element list. This is meant for the point where errors
+     * keeps its full context. This is meant for the point where errors
      * are pulled back to a source graph, where several errors raised on
      * distinct derived elements may trace back to the same source elements.
      * Should not be invoked after {@link #setFixed()}.
-     * @param context predicate selecting the elements that count as context
+     * @param context predicate selecting the context objects that count
      * @return this object itself, for chaining
      */
     @AIGenerated("Claude Fable 5, 2026-08")
-    public FormatErrorSet collapse(Predicate<Element> context) {
+    public FormatErrorSet collapse(Predicate<Object> context) {
         assert !isFixed();
         var errors = getErrorSet();
         var collapsed = new LinkedHashMap<List<Object>,FormatError>();
@@ -208,7 +209,7 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
             // the accumulated maximum severity exact (the ordinal enters the
             // key rather than the enum itself, whose hash is identity-based)
             key.add(error.getSeverity().ordinal());
-            error.getElements().stream().filter(context).forEach(key::add);
+            error.getContext().stream().filter(context).forEach(key::add);
             collapsed.putIfAbsent(key, error);
         }
         if (collapsed.size() < errors.size()) {
@@ -240,27 +241,27 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
 
     /**
      * Modifies the errors currently in this set, as well as all errors added in the future,
-     * by applying the inverse a given element map to their graph elements.
+     * by applying the inverse of a given map to their context objects.
      * The method returns this {@link FormatErrorSet} for chaining.
      * Should not be invoked after {@link #setFixed()}.
      * @see #apply(Map)
-     * @param map mapping from contextual {@link Element}s to current error {@link Element}s
+     * @param map mapping from contextual objects to current error context objects
      */
-    public FormatErrorSet applyInverse(Map<? extends Element,? extends Element> map) {
-        var inverse = new Relation<Element,Element>();
+    public FormatErrorSet applyInverse(Map<?,?> map) {
+        var inverse = new Relation<Object,Object>();
         inverse.addInverse(map);
         return apply(inverse);
     }
 
     /**
      * Modifies the errors in this set, as well as all errors added in the future,
-     * by applying a given element map to their graph elements.
+     * by applying a given map to their context objects.
      * The method returns this {@link FormatErrorSet} for chaining.
      * Should not be invoked after {@link #setFixed()}.
      * @see #applyInverse(Map)
-     * @param map mapping from current error {@link Element}s to contextual {@link Element}s
+     * @param map mapping from current error context objects to contextual objects
      */
-    public FormatErrorSet apply(Map<? extends Element,? extends Element> map) {
+    public FormatErrorSet apply(Map<?,?> map) {
         getErrorSet().forEach(e -> e.apply(map));
         getProjection().addAll(map);
         return this;
@@ -268,23 +269,23 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
 
     /**
      * Modifies the errors in this set, as well as all errors added in the future,
-     * by applying a given relation to their graph elements.
+     * by applying a given relation to their context objects.
      * The method returns this {@link FormatErrorSet} for chaining.
      * Should not be invoked after {@link #setFixed()}.
      * @see #applyInverse(Map)
-     * @param relation relation between current error {@link Element}s to contextual {@link Element}s
+     * @param relation relation between current error context objects and contextual objects
      */
-    public FormatErrorSet apply(Relation<? extends Element,? extends Element> relation) {
+    public FormatErrorSet apply(Relation<?,?> relation) {
         getErrorSet().forEach(e -> e.apply(relation));
         getProjection().addAll(relation);
         return this;
     }
 
     /**
-     * Returns the projection map from error elements to (sets of) context elements.
+     * Returns the projection map from error context objects to (sets of) contextual objects.
      * This is applied to any error added to the set.
      */
-    Relation<Element,Element> getProjection() {
+    Relation<Object,Object> getProjection() {
         var result = this.projection;
         if (result == null) {
             result = this.projection = new Relation<>();
@@ -292,8 +293,8 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
         return result;
     }
 
-    /** Projection from (inner) graph elements to sets of (outer, contextual) graph elements. */
-    private Relation<Element,Element> projection;
+    /** Projection from (inner) context objects to sets of (outer) contextual objects. */
+    private @Nullable Relation<Object,Object> projection;
 
     @Override
     public int hashCode() {
@@ -301,7 +302,7 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (this == obj) {
             return true;
         }

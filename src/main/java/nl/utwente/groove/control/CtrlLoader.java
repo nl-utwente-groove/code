@@ -44,6 +44,7 @@ import nl.utwente.groove.control.template.Program;
 import nl.utwente.groove.grammar.Callable;
 import nl.utwente.groove.grammar.Callable.Kind;
 import nl.utwente.groove.grammar.Grammar;
+import nl.utwente.groove.grammar.model.ResourceId;
 import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.Rule;
@@ -168,7 +169,7 @@ public class CtrlLoader {
                 result.add(tree.toFragment());
             } catch (FormatException e) {
                 for (FormatError error : e.getErrors()) {
-                    errors.add(error, FormatError.control(name));
+                    errors.add(error, ResourceId.control(name));
                 }
             }
         }

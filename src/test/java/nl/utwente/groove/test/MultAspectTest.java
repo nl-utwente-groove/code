@@ -35,6 +35,7 @@ import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.ResourceModel;
+import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.QualName;
@@ -138,7 +139,7 @@ public class MultAspectTest {
             for (FormatError error : hostModel.getErrors()) {
                 assertTrue("Error not attributed to the source graph of " + hostName + ": " + error,
                            error
-                               .getElements()
+                               .getContext(Element.class)
                                .stream()
                                .anyMatch(e -> e instanceof AspectEdge edge
                                    && source.containsEdge(edge)));

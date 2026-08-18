@@ -31,6 +31,7 @@ import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.HostModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.graph.Edge;
+import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.lts.GTS;
@@ -73,9 +74,9 @@ public class DynamicConstraintTest {
             AspectGraph source = model.getSource();
             for (FormatError error : model.getErrors()) {
                 assertTrue("Error not attributed to the source graph of " + spec[1] + ": "
-                    + error + " " + error.getElements(),
+                    + error + " " + error.getContext(Element.class),
                            error
-                               .getElements()
+                               .getContext(Element.class)
                                .stream()
                                .anyMatch(e -> e instanceof Node n
                                    ? source.containsNode(n)

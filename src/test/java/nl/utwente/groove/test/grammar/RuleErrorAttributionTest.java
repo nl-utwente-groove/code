@@ -74,14 +74,14 @@ public class RuleErrorAttributionTest {
         for (FormatError error : model.getErrors()) {
             if (error.toString().contains(text)) {
                 List<Element> result = error
-                    .getElements()
+                    .getContext(Element.class)
                     .stream()
                     .filter(e -> e instanceof Node n
                         ? source.containsNode(n)
                         : source.containsEdge((Edge) e))
                     .toList();
                 assertTrue("Error '" + error + "' carries no source element, only "
-                    + error.getElements(), !result.isEmpty());
+                    + error.getContext(Element.class), !result.isEmpty());
                 return result;
             }
         }

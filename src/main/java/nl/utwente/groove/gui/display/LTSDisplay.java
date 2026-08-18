@@ -70,6 +70,7 @@ import nl.utwente.groove.gui.jgraph.LTSJEdge;
 import nl.utwente.groove.gui.jgraph.LTSJGraph;
 import nl.utwente.groove.gui.jgraph.LTSJModel;
 import nl.utwente.groove.gui.jgraph.LTSJVertex;
+import nl.utwente.groove.gui.list.ErrorEntry;
 import nl.utwente.groove.gui.list.ErrorListPanel;
 import nl.utwente.groove.gui.tree.LTSTree;
 import nl.utwente.groove.lts.ExploreResult;
@@ -80,7 +81,6 @@ import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.lts.Status.Flag;
 import nl.utwente.groove.util.AIGenerated;
-import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 
 /**
@@ -405,8 +405,14 @@ public class LTSDisplay extends Display implements SimulatorListener {
 
     private PropertyChangeListener createErrorListener() {
         return evt -> {
-            if (evt.getNewValue() instanceof FormatError error) {
-                getSimulatorModel().setState(error.getState());
+            if (evt.getNewValue() instanceof ErrorEntry entry) {
+                var error = entry.getError();
+                getSimulatorModel()
+                    .setState(error
+                        .getContext(GraphState.class)
+                        .stream()
+                        .findFirst()
+                        .orElse(null));
                 getSimulatorModel().setDisplay(DisplayKind.STATE);
                 var stateDisplay = (StateDisplay) getSimulator()
                     .getDisplaysPanel()
@@ -429,7 +435,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
         } else {
             errors = gts.getErrors();
         }
-        getErrorPanel().setEntries(errors.get());
+        getErrorPanel().setEntries(ErrorEntry.wrap(errors.get()));
         if (getErrorPanel().isVisible()) {
             getMainPanel().setBottomComponent(getErrorPanel());
             getMainPanel().setDividerSize(1);

@@ -48,6 +48,7 @@ import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.gui.action.CancelEditAction;
 import nl.utwente.groove.gui.action.SaveAction;
 import nl.utwente.groove.gui.action.SimulatorAction;
+import nl.utwente.groove.gui.list.ErrorEntry;
 import nl.utwente.groove.gui.list.ErrorListPanel;
 import nl.utwente.groove.gui.list.ListPanel;
 import nl.utwente.groove.util.Exceptions;
@@ -144,7 +145,7 @@ abstract public class ResourceTab extends JPanel {
      * Displays a list of errors, or hides the error panel if the list is empty.
      */
     final protected void updateErrors() {
-        getErrorPanel().setEntries(getErrors().get());
+        getErrorPanel().setEntries(ErrorEntry.wrap(getErrors().get()));
         if (getErrorPanel().isVisible()) {
             getMainPanel().setBottomComponent(getErrorPanel());
             getMainPanel().setDividerSize(1);

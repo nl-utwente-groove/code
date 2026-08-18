@@ -216,7 +216,5 @@ public class LayeringTest {
     private static final Set<String> WHITELIST = Set
         .of(
             // accepted: GrammarModel <-> SystemStore editable-model/backing-store pair
-            "grammar.model -> io",
-            // P3: FormatError/SearchResult/SelectableListEntry context dispatch
-            "util.parse -> grammar", "util.parse -> graph", "util.parse -> lts");
+            "grammar.model -> io");
 }
