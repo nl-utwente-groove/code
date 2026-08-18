@@ -222,7 +222,5 @@ public class LayeringTest {
             // P2: ATermTreeParser bakes algebra.Sort into the tokenizer
             "util.parse -> algebra",
             // P3: FormatError/SearchResult/SelectableListEntry context dispatch
-            "util.parse -> grammar", "util.parse -> graph", "util.parse -> lts",
-            // P2: BoundaryParser/CTLModelChecker/ProductStateSet references
-            "verify -> explore");
+            "util.parse -> grammar", "util.parse -> graph", "util.parse -> lts");
 }

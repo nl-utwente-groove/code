@@ -34,8 +34,8 @@ import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.lts.ExploreResult;
 import nl.utwente.groove.lts.LTSLabels;
 import nl.utwente.groove.verify.CTLMarker;
-import nl.utwente.groove.verify.CTLModelChecker;
 import nl.utwente.groove.verify.Formula;
+import nl.utwente.groove.verify.ModelFacade;
 
 /**
  * Tests the CTLStarFormula class.
@@ -182,10 +182,9 @@ public class CTLTest {
         try {
             // all states satisfy the following property
             Formula property = Formula.parse(formula).toCtlFormula();
-            CTLMarker marker = new CTLMarker(property, CTLModelChecker.newModel(this.result));
+            CTLMarker marker = new CTLMarker(property, ModelFacade.newModel(this.result));
             assertEquals(stateCount, marker.getCount());
-            marker
-                = new CTLMarker(property, CTLModelChecker.newModel(this.gtsGraph, this.ltsLabels));
+            marker = new CTLMarker(property, ModelFacade.newModel(this.gtsGraph, this.ltsLabels));
             assertEquals(stateCount, marker.getCount());
         } catch (Exception efe) {
             fail(efe.getMessage());

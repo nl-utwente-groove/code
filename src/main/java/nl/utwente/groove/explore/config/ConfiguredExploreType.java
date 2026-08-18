@@ -51,6 +51,7 @@ import nl.utwente.groove.explore.feature.Successor;
 import nl.utwente.groove.explore.feature.Traversal;
 import nl.utwente.groove.explore.result.Predicate;
 import nl.utwente.groove.explore.result.ResultCollector;
+import nl.utwente.groove.grammar.EnabledRuleParser;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.lts.GTS;

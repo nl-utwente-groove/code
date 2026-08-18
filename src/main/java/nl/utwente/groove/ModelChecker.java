@@ -18,7 +18,7 @@ package nl.utwente.groove;
 
 /**
  * Wrapper class for the model checker.
- * @see nl.utwente.groove.verify.CTLModelChecker
+ * @see nl.utwente.groove.explore.CTLModelChecker
  * @author Harmen Kastenberg
  * @version $Revision$ $Date: 2007-03-20 10:42:39 $
  */
@@ -28,6 +28,6 @@ public class ModelChecker {
      * @param args list of command-line arguments
      */
     public static void main(String[] args) {
-        nl.utwente.groove.verify.CTLModelChecker.main(args);
+        nl.utwente.groove.explore.CTLModelChecker.main(args);
     }
 }

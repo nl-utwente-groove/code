@@ -14,12 +14,10 @@
  *
  * $Id$
  */
-package nl.utwente.groove.explore.config;
+package nl.utwente.groove.grammar;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
-import nl.utwente.groove.grammar.Grammar;
-import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
