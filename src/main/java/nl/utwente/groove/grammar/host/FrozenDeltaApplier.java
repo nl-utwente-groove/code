@@ -14,11 +14,8 @@
  *
  * $Id$
  */
-package nl.utwente.groove.transform;
+package nl.utwente.groove.grammar.host;
 
-import nl.utwente.groove.grammar.host.HostEdge;
-import nl.utwente.groove.grammar.host.HostElement;
-import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.util.Exceptions;
 
 /**

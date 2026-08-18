@@ -20,11 +20,11 @@ import java.util.Optional;
 import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.control.instance.Step;
+import nl.utwente.groove.grammar.host.DeltaApplier;
 import nl.utwente.groove.grammar.host.DeltaHostGraph;
 import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostGraphMorphism;
 import nl.utwente.groove.grammar.host.HostNode;
-import nl.utwente.groove.transform.DeltaApplier;
 import nl.utwente.groove.transform.RuleApplication;
 import nl.utwente.groove.transform.RuleEvent;
 
