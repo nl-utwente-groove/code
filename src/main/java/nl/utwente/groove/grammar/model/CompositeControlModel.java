@@ -198,7 +198,7 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
 
     /** Adds a control program-related error. */
     private void addPartError(FormatError error) {
-        var names = error.getResourceNames();
+        var names = ErrorLocation.of(error).names();
         if (names.isEmpty()) {
             getPartErrors(null).add(error);
         } else {
@@ -216,7 +216,7 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
                 } else {
                     result
                         .add("Error in control program '%s': %s", entry.getKey(), error,
-                             FormatError.control(entry.getKey()));
+                             ResourceId.control(entry.getKey()));
                 }
             }
         }

@@ -377,10 +377,9 @@ class RuleCompiler {
         this.untypedModelMap.applyInverse(errors);
         errors.apply(normalToSourceMap());
         var source = getSource();
-        return errors
-            .collapse(e -> e instanceof Node n
-                ? source.containsNode(n)
-                : source.containsEdge((Edge) e));
+        return errors.collapse(e -> e instanceof Node n
+            ? source.containsNode(n)
+            : e instanceof Edge edge && source.containsEdge(edge));
     }
 
 }

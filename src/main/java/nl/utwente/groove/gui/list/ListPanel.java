@@ -37,7 +37,6 @@ import javax.swing.ScrollPaneConstants;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.look.Values.Mode;
 import nl.utwente.groove.util.HTMLConverter;
-import nl.utwente.groove.util.parse.SelectableListEntry;
 
 /**
  * Panel showing a list of messages. The panel hides itself when the

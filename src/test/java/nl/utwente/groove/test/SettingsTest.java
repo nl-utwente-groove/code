@@ -37,6 +37,7 @@ import org.junit.Test;
 
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
+import nl.utwente.groove.grammar.model.ErrorLocation;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.Settings;
 import nl.utwente.groove.grammar.model.SettingsContent;
@@ -448,8 +449,9 @@ public class SettingsTest {
             .toList();
         assertEquals(propagated.toString(), 1, propagated.size());
         FormatError error = propagated.get(0);
-        assertEquals(ResourceKind.SETTINGS, error.getResourceKind());
-        assertTrue(error.getResourceNames().toString(), error.getResourceNames().contains(name));
+        var location = ErrorLocation.of(error);
+        assertEquals(ResourceKind.SETTINGS, location.kind());
+        assertTrue(location.names().toString(), location.names().contains(name));
         // the numbers of the nested error are inherited
         assertEquals(getError(grammar, "test.mismatch").getNumbers(), error.getNumbers());
         assertFalse(error.getNumbers().isEmpty());

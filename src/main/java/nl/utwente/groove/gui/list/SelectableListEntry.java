@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package nl.utwente.groove.util.parse;
+package nl.utwente.groove.gui.list;
 
 import java.util.Collection;
 import java.util.SortedSet;

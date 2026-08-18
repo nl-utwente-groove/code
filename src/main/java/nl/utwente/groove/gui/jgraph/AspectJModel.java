@@ -255,7 +255,7 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
             jCell.getErrors().clear();
         }
         for (FormatError error : getResourceModel().getErrors()) {
-            for (Element errorObject : error.getElements()) {
+            for (Element errorObject : error.getContext(Element.class)) {
                 AspectJCell errorCell = getJCell(errorObject);
                 if (errorCell == null && errorObject instanceof Edge e) {
                     errorCell = getJCell(e.source());

@@ -509,7 +509,7 @@ public class GrammarModel implements PropertyChangeListener {
                 // what makes the error navigate to the settings display, and
                 // the numbers copied from the nested error to the right line
                 addWrapped(this.errors, "settings resource", settingsModel.getQualName(), error,
-                           FormatError.resource(SETTINGS, settingsModel.getQualName()));
+                           new ResourceId(SETTINGS, settingsModel.getQualName()));
             }
         }
         // check if all resource names are valid identifiers

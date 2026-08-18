@@ -18,8 +18,6 @@ package nl.utwente.groove.gui.list;
 
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.look.Values.ColorSet;
-import nl.utwente.groove.util.parse.FormatError;
-import nl.utwente.groove.util.parse.SelectableListEntry;
 
 /** List panel for showing errors. */
 public final class ErrorListPanel extends ListPanel {
@@ -37,8 +35,8 @@ public final class ErrorListPanel extends ListPanel {
     /* Renders entries in the colours of their severity. */
     @Override
     protected ColorSet getColors(SelectableListEntry entry) {
-        if (entry instanceof FormatError error) {
-            return switch (error.getSeverity()) {
+        if (entry instanceof ErrorEntry errorEntry) {
+            return switch (errorEntry.getError().getSeverity()) {
             case ERROR -> Values.ERROR_COLORS;
             case WARNING -> Values.WARNING_COLORS;
             case INFO -> Values.INFO_COLORS;

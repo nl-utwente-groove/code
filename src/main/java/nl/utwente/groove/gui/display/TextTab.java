@@ -25,7 +25,7 @@ import nl.utwente.groove.grammar.model.TextBasedModel;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.util.QualName;
-import nl.utwente.groove.util.parse.FormatError;
+import nl.utwente.groove.gui.list.ErrorEntry;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 
 /**
@@ -70,10 +70,11 @@ final public class TextTab extends ResourceTab {
     @Override
     protected PropertyChangeListener createErrorListener() {
         return arg -> {
-            if (arg.getNewValue() instanceof FormatError error) {
-                if (error.getNumbers().size() > 1) {
-                    int line = error.getNumbers().get(0);
-                    int column = error.getNumbers().get(1);
+            if (arg.getNewValue() instanceof ErrorEntry entry) {
+                var numbers = entry.getError().getNumbers();
+                if (numbers.size() > 1) {
+                    int line = numbers.get(0);
+                    int column = numbers.get(1);
                     select(line, column);
                 }
             }

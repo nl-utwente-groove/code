@@ -70,6 +70,7 @@ import nl.utwente.groove.gui.jgraph.AspectJModel;
 import nl.utwente.groove.gui.jgraph.AspectJVertex;
 import nl.utwente.groove.gui.jgraph.JAttr;
 import nl.utwente.groove.gui.jgraph.JGraph;
+import nl.utwente.groove.gui.list.ErrorEntry;
 import nl.utwente.groove.gui.list.ErrorListPanel;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
@@ -299,8 +300,10 @@ public class StateDisplay extends Display implements SimulatorListener {
     /** Creates the listener of the error panel. */
     private PropertyChangeListener createErrorListener() {
         return arg -> {
-            var error = (FormatError) arg.getNewValue();
-            selectError(error);
+            var entry = (ErrorEntry) arg.getNewValue();
+            selectError(entry == null
+                ? null
+                : entry.getError());
         };
     }
 
@@ -312,7 +315,7 @@ public class StateDisplay extends Display implements SimulatorListener {
             // the error elements may be host elements rather than aspect elements
             List<Element> elements = new ArrayList<>();
             var aspectMap = getAspectMap(getSimulatorModel().getState());
-            for (var elem : error.getElements()) {
+            for (var elem : error.getContext(Element.class)) {
                 if (elem instanceof AspectElement) {
                     elements.add(elem);
                 } else if (elem instanceof HostNode node) {
@@ -486,7 +489,8 @@ public class StateDisplay extends Display implements SimulatorListener {
             internal = state.isInner();
         }
         if (error) {
-            getErrorPanel().setEntries(getAspectGraph(state).getErrors().get());
+            getErrorPanel()
+                .setEntries(ErrorEntry.wrap(getAspectGraph(state).getErrors().get()));
             getDisplayPanel().setBottomComponent(getErrorPanel());
             getDisplayPanel().resetToPreferredSizes();
         } else {

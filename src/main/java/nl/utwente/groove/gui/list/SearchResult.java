@@ -28,7 +28,6 @@ import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.util.QualName;
-import nl.utwente.groove.util.parse.SelectableListEntry;
 
 /**
  * Class encoding a single message reporting a search result in a graph view.
