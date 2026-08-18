@@ -18,13 +18,10 @@
 package nl.utwente.groove.grammar.model;
 
 import static nl.utwente.groove.grammar.aspect.AspectKind.CONNECT;
-import static nl.utwente.groove.grammar.aspect.AspectKind.EXISTS;
-import static nl.utwente.groove.grammar.aspect.AspectKind.FORALL_POS;
 import static nl.utwente.groove.grammar.aspect.AspectKind.PARAM_ASK;
 import static nl.utwente.groove.grammar.aspect.AspectKind.PARAM_BI;
 import static nl.utwente.groove.grammar.aspect.AspectKind.PARAM_IN;
 import static nl.utwente.groove.grammar.aspect.AspectKind.PRODUCT;
-import static nl.utwente.groove.grammar.aspect.AspectKind.REMARK;
 import static nl.utwente.groove.grammar.aspect.AspectKind.Category.ROLE;
 import static nl.utwente.groove.grammar.aspect.AspectKind.Category.SORT;
 
@@ -39,11 +36,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Queue;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -117,12 +112,13 @@ import nl.utwente.groove.util.parse.FormatException;
  * level tree and the resulting element and type maps remain available after
  * compilation, also partially if compilation fails halfway.
  * <p>
- * The translation is staged: the quantification level tree is built from the
- * nesting aspects ({@link LevelTree}), the aspect elements are distributed
- * over the levels ({@link Level1}), converted to untyped rule graphs split
- * into LHS/RHS/NACs ({@link Level2}), typed into per-level patterns
- * ({@link Level3}, producing {@link LevelPattern}s), and assembled into a
- * tree of {@link Condition}s by the condition-assembly methods.
+ * The translation is staged: the quantification level index tree is built
+ * from the nesting aspects ({@link LevelIndexTree}), the aspect elements are
+ * distributed over the levels ({@link LevelDistribution}), converted to
+ * untyped rule graphs split into LHS/RHS/NACs ({@link Level2}), typed into
+ * per-level patterns ({@link Level3}, producing {@link LevelPattern}s), and
+ * assembled into a tree of {@link Condition}s by the condition-assembly
+ * methods.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -165,7 +161,7 @@ class RuleCompiler {
     }
 
     /** Returns the qualified name of the rule being compiled. */
-    private QualName getQualName() {
+    QualName getQualName() {
         return this.qualName;
     }
 
@@ -218,7 +214,7 @@ class RuleCompiler {
      * Indicates if the rule is to be matched injectively.
      * @see RuleModel#isInjective()
      */
-    private boolean isInjective() {
+    boolean isInjective() {
         return ResourceProperties.isInjective(getSource()) || getGrammarProperties().isInjective();
     }
 
@@ -259,9 +255,12 @@ class RuleCompiler {
             return null;
         }
         TreeMap<Index,Set<AspectElement>> result = new TreeMap<>();
-        for (Map.Entry<Index,Level1> levelEntry : levelTree.getLevel1Map().entrySet()) {
+        for (Map.Entry<Index,LevelDistribution.Level> levelEntry : levelTree
+            .getDistribution()
+            .getLevelMap()
+            .entrySet()) {
             Index index = levelEntry.getKey();
-            Level1 level = levelEntry.getValue();
+            LevelDistribution.Level level = levelEntry.getValue();
             Set<AspectElement> elements = new HashSet<>();
             result.put(index, elements);
             elements.addAll(level.modelNodes);
@@ -492,7 +491,7 @@ class RuleCompiler {
     /** Callback factory method for a format error set, with the
      * normal-to-source element map pre-applied so that errors get
      * source-graph context. */
-    private FormatErrorSet createErrors() {
+    FormatErrorSet createErrors() {
         var result = new FormatErrorSet();
         result.apply(normalToSourceMap());
         return result;
@@ -502,13 +501,12 @@ class RuleCompiler {
     private class LevelTree {
         /** Constructs an instance for a given source graph. */
         public LevelTree(AspectGraph source) throws FormatException {
-            this.source = source;
-            SortedSet<Index> indexSet = buildTree();
-            this.level1Map = buildLevels1(indexSet);
+            LevelIndexTree indexTree = LevelIndexTree.from(source, getQualName());
+            this.distribution = LevelDistribution.from(RuleCompiler.this, source, indexTree);
             RuleModelMap untypedModelMap = new RuleModelMap();
             SortedMap<Index,Level2> level2Map;
             try {
-                level2Map = buildLevels2(this.level1Map, untypedModelMap);
+                level2Map = buildLevels2(this.distribution.getLevelMap(), untypedModelMap);
             } catch (FormatException e) {
                 throw new FormatException(e.getErrors().applyInverse(untypedModelMap));
             }
@@ -535,276 +533,13 @@ class RuleCompiler {
             this.modelMap = modelMap;
         }
 
-        /** Builds the level data maps. */
-        private SortedSet<Index> buildTree() {
-            // First build an explicit tree of level nodes
-            Map<Index,List<Index>> indexTree = new HashMap<>();
-            this.topLevelIndex = createIndex(Op.EXISTS, false, null, indexTree);
-            // initialise the data structures
-            this.nestingIndexMap = new HashMap<>();
-            this.nameIndexMap = new HashMap<>();
-            // Mapping from levels to match count nodes
-            this.matchCountMap = new HashMap<>();
-            // build the index tree
-            indexTree.put(this.topLevelIndex, new ArrayList<>());
-            for (AspectNode node : this.source.nodeSet()) {
-                if (node.has(Category.NESTING)) {
-                    // look for the parent level
-                    Index parentIndex;
-                    // by the correctness of the aspect graph we know that
-                    // there is at most one outgoing edge, which is a parent
-                    // edge and points to the parent level node
-                    AspectNode parentNode = node.getParentNode();
-                    if (parentNode == null) {
-                        parentIndex = this.topLevelIndex;
-                    } else {
-                        AspectKind parentKind = parentNode.getKind(Category.NESTING);
-                        parentIndex = getIndex(parentKind, parentNode, indexTree);
-                    }
-                    Index myIndex = getIndex(node.getKind(Category.NESTING), node, indexTree);
-                    var siblings = indexTree.get(parentIndex);
-                    assert siblings != null; // getIndex registers all indices in the tree
-                    siblings.add(myIndex);
-                    if (node.getMatchCount() != null) {
-                        this.matchCountMap.put(myIndex, node.getMatchCount());
-                    }
-                }
-            }
-            // insert the children into the indices themselves and build the index set
-            SortedSet<Index> indexSet = new TreeSet<>();
-            Queue<Index> indexQueue = new LinkedList<>();
-            indexQueue.add(this.topLevelIndex);
-            while (!indexQueue.isEmpty()) {
-                Index next = indexQueue.poll();
-                assert next != null; // queue is non-empty
-                next.setFixed();
-                List<Index> children = indexTree.get(next);
-                assert children != null; // all indices are registered in the tree
-                // add an implicit existential sub-level to childless universal
-                // levels
-                if (next.getOperator() == Op.FORALL && children.isEmpty()) {
-                    Index implicitChild = createIndex(Op.EXISTS, true, null, indexTree);
-                    children.add(implicitChild);
-                }
-                // set the parent of all children
-                for (int i = 0; i < children.size(); i++) {
-                    children.get(i).setParent(next, i);
-                }
-                indexQueue.addAll(children);
-                indexSet.add(next);
-            }
-            return indexSet;
-        }
-
-        /**
-         * Lazily creates and returns a level index for a given level nesting node.
-         * @param nestingNode the level node for which a level is to be created;
-         *        should satisfy
-         *        {@link AspectKind#isQuantifier()}
-         */
-        private Index getIndex(AspectKind quantifier, AspectNode nestingNode,
-                               Map<Index,List<Index>> indexTree) {
-            Index result = this.nestingIndexMap.get(nestingNode);
-            if (result == null) {
-                AspectKind nestingKind = nestingNode.getKind(Category.NESTING);
-                assert nestingKind != null;
-                Condition.Op operator = nestingKind.isExists()
-                    ? Op.EXISTS
-                    : Op.FORALL;
-                boolean positive = nestingKind == EXISTS || nestingKind == FORALL_POS;
-                this.nestingIndexMap
-                    .put(nestingNode,
-                         result = createIndex(operator, positive, nestingNode, indexTree));
-                if (nestingNode.hasId()) {
-                    String id = nestingNode.getId();
-                    Index oldIndex = this.nameIndexMap.put(id, result);
-                    assert oldIndex == null : String.format("Duplicate quantifier name %s", id);
-                }
-            }
-            return result;
-        }
-
-        /** Creates a level index for a given nesting node and creates
-         * an entry in the level tree.
-         * @param levelNode the quantifier nesting node
-         * @param levelTree the tree of level indices
-         * @return the fresh level index
-         */
-        private Index createIndex(Condition.Op operator, boolean positive, AspectNode levelNode,
-                                  Map<Index,List<Index>> levelTree) {
-            Index result = new Index(operator, positive, levelNode, getQualName());
-            levelTree.put(result, new ArrayList<>());
-            return result;
-        }
-
-        /**
-         * Returns the maximum (i.e., lowest-level) level of this and another,
-         * given level; or {@code null} if neither is smaller than the other.
-         */
-        private Level1 max(Level1 first, Level1 other) {
-            if (first.index.higherThan(other.index)) {
-                return other;
-            } else if (other.index.higherThan(first.index)) {
-                return first;
-            } else {
-                return null;
-            }
-        }
-
-        /** Constructs the stage 1 rule levels. */
-        private SortedMap<Index,Level1> buildLevels1(SortedSet<Index> indexSet) throws FormatException {
-            FormatErrorSet errors = createErrors();
-            // Set the parentage in tree preorder
-            // Build the level data map,
-            // in the tree-order of the indices
-            SortedMap<Index,Level1> result = new TreeMap<>();
-            for (Index index : indexSet) {
-                Level1 parentLevel = index.isTopLevel()
-                    ? null
-                    : result.get(index.getParent());
-                Level1 level = new Level1(index, parentLevel);
-                result.put(index, level);
-            }
-            // initialise the match count nodes and check that they are defined at super-levels
-            for (Map.Entry<Index,AspectNode> matchCountEntry : this.matchCountMap.entrySet()) {
-                AspectNode matchCount = matchCountEntry.getValue();
-                Index definedAt = getLevel(result, matchCount).getIndex();
-                Index usedAt = matchCountEntry.getKey();
-                if (!definedAt.higherThan(usedAt) || definedAt.equals(usedAt)) {
-                    errors.add("Match count not defined at appropriate level", matchCount);
-                }
-                Level1 level = result.get(usedAt);
-                assert level != null; // all indices have a level
-                // add the match count node to all intermediate levels
-                // (between definition and usage)
-                Index addTo = usedAt.getParent();
-                while (addTo != null && !addTo.equals(definedAt)) {
-                    var addToLevel = result.get(addTo);
-                    assert addToLevel != null; // all indices have a level
-                    addToLevel.addNode(matchCount);
-                    addTo = addTo.getParent();
-                }
-                level.setMatchCount(matchCount);
-            }
-            // add nodes to nesting data structures
-            for (AspectNode node : this.source.nodeSet()) {
-                if (!node.has(REMARK) && !node.has(Category.NESTING)) {
-                    getLevel(result, node).addNode(node);
-                }
-            }
-            // add edges to nesting data structures
-            for (AspectEdge edge : this.source.edgeSet()) {
-                try {
-                    if (!edge.has(REMARK) && (edge.has(CONNECT) || !edge.has(Category.NESTING))) {
-                        getLevel(result, edge).addEdge(edge);
-                    }
-                } catch (FormatException exc) {
-                    errors.addAll(exc.getErrors());
-                }
-            }
-            Map<LabelVar,Set<AspectEdge>> modelVarMap = new HashMap<>();
-            for (Level1 level : result.values()) {
-                modelVarMap.putAll(level.modelVars);
-            }
-            Map<String,LabelVar> nameVarMap = new HashMap<>();
-            for (Map.Entry<LabelVar,Set<AspectEdge>> varEntry : modelVarMap.entrySet()) {
-                LabelVar var = varEntry.getKey();
-                LabelVar oldVar = nameVarMap.put(var.getName(), var);
-                if (oldVar != null && !oldVar.equals(var)) {
-                    var oldVarEdges = modelVarMap.get(oldVar);
-                    assert oldVarEdges != null; // oldVar was taken from this map
-                    errors
-                        .add("Duplicate variable '%s' for %s and %s labels", var,
-                             var.getKind().getDescription(false),
-                             oldVar.getKind().getDescription(false), varEntry.getValue().toArray(),
-                             oldVarEdges.toArray());
-                }
-            }
-            for (Level1 level : result.values()) {
-                level.setFixed();
-            }
-            errors.throwException();
-            return result;
-        }
-
-        /**
-         * Returns the quantification level of a given aspect rule node.
-         * @param node the node for which the quantification level is to be
-         *        determined
-         * @return the level for {@code node}; non-null
-         */
-        private Level1 getLevel(Map<Index,Level1> level1Map, AspectNode node) {
-            Level1 result = getNodeLevelMap().get(node);
-            if (result == null) {
-                // find the corresponding quantifier node
-                AspectNode nestingNode = node.getLevelNode();
-                Index index = nestingNode == null
-                    ? this.topLevelIndex
-                    : this.nestingIndexMap.get(nestingNode);
-                assert index != null : String.format("No valid nesting level found for %s", node);
-                result = level1Map.get(index);
-                assert result != null : String
-                    .format("Level map %s does not contain entry for index %s", level1Map, index);
-                getNodeLevelMap().put(node, result);
-            }
-            return result;
-        }
-
-        /**
-         * Returns the quantification level of a given aspect rule edge.
-         * @param edge the edge for which the quantification level is to be
-         *        determined
-         */
-        private Level1 getLevel(Map<Index,Level1> level1Map,
-                                AspectEdge edge) throws FormatException {
-            Level1 sourceLevel = getLevel(level1Map, edge.source());
-            Level1 targetLevel = getLevel(level1Map, edge.target());
-            Level1 result = max(sourceLevel, targetLevel);
-            // if one of the end nodes is a NAC, it must be the max of the two
-            if (edge.source().has(Category.ROLE, AspectKind::inNAC) && !sourceLevel.equals(result)
-                || edge.target().has(Category.ROLE, AspectKind::inNAC)
-                    && !targetLevel.equals(result)) {
-                result = null;
-            }
-            if (result == null) {
-                throw new FormatException("Source and target of edge %s have incompatible nesting",
-                    edge);
-            }
-            String levelName = edge.getLevelName();
-            if (levelName != null) {
-                Index edgeLevelIndex = this.nameIndexMap.get(levelName);
-                if (edgeLevelIndex == null) {
-                    throw new FormatException("Undefined nesting level '%s' in edge %s", levelName,
-                        edge);
-                }
-                result = max(result, level1Map.get(edgeLevelIndex));
-                if (result == null) {
-                    throw new FormatException(
-                        "Nesting level %s in edge %s is incompatible with end nodes", levelName,
-                        edge);
-                }
-            }
-            return result;
-        }
-
-        /**
-         * Lazily creates and returns the mapping from rule model nodes to the
-         * corresponding quantification levels.
-         */
-        private Map<AspectNode,Level1> getNodeLevelMap() {
-            if (this.nodeLevelMap == null) {
-                this.nodeLevelMap = new HashMap<>();
-            }
-            return this.nodeLevelMap;
-        }
-
         /** Constructs the level2 map. */
-        private SortedMap<Index,Level2> buildLevels2(SortedMap<Index,Level1> level1Map,
+        private SortedMap<Index,Level2> buildLevels2(SortedMap<Index,LevelDistribution.Level> level1Map,
                                                      RuleModelMap modelMap) throws FormatException {
             SortedMap<Index,Level2> result = new TreeMap<>();
             FormatErrorSet errors = createErrors();
             var allocator = new ParallelIndexAllocator();
-            for (Level1 level1 : level1Map.values()) {
+            for (LevelDistribution.Level level1 : level1Map.values()) {
                 try {
                     Index index = level1.getIndex();
                     Level2 parent = index.isTopLevel()
@@ -838,10 +573,10 @@ class RuleCompiler {
         }
 
         /**
-         * Returns the quantification levels in ascending or descending order
+         * Returns the distribution of rule elements over the quantification levels
          */
-        public final Map<Index,Level1> getLevel1Map() {
-            return this.level1Map;
+        public final LevelDistribution getDistribution() {
+            return this.distribution;
         }
 
         /**
@@ -861,238 +596,12 @@ class RuleCompiler {
             return "LevelMap: " + this.patternMap;
         }
 
-        /** The normalised source of the rule model. */
-        private final AspectGraph source;
-        /** The top level of the rule tree. */
-        private Index topLevelIndex;
-        /** Mapping from level indices to stage 1 levels. */
-        private SortedMap<Index,Level1> level1Map;
+        /** The distribution of rule elements over the quantification levels. */
+        private final LevelDistribution distribution;
         /** Mapping from level indices to typed level patterns. */
         private SortedMap<Index,LevelPattern> patternMap;
-        /** mapping from nesting nodes to nesting levels. */
-        private Map<AspectNode,Index> nestingIndexMap;
-        /** mapping from nesting level names to nesting levels. */
-        private Map<String,Index> nameIndexMap;
-        /** Mapping from model nodes to the corresponding nesting level. */
-        private Map<AspectNode,Level1> nodeLevelMap;
-        /** Mapping from (universal) levels to match count nodes. */
-        private Map<Index,AspectNode> matchCountMap;
         /** Mapping from aspect graph elements to untyped rule elements. */
         private RuleModelMap modelMap;
-    }
-
-    /**
-     * Class collecting all rule model elements on a given rule level.
-     * The elements are not yet differentiated by role.
-     * This is the first stage of constructing the
-     * flat rule at that level.
-     */
-    private class Level1 implements Comparable<Level1> {
-        /**
-         * Creates a new level, with a given index and parent level.
-         * @param index the index of the new level
-         * @param parent the parent level; may be {@code null} if this is the
-         *        top level.
-         */
-        public Level1(Index index, Level1 parent) {
-            this.index = index;
-            this.parent = parent;
-            if (parent != null) {
-                assert index.getParent().equals(parent.getIndex()) : String
-                    .format("Parent index %s should be parent of %s", parent.index, index);
-                parent.addChild(this);
-            } else {
-                assert index.isTopLevel() : String
-                    .format("Level with index %s should have non-null parent", index);
-            }
-        }
-
-        /** Adds a child level to this level. */
-        private void addChild(Level1 child) {
-            assert this.index.equals(child.index.parent);
-            this.children.add(child);
-        }
-
-        /**
-         * Considers adding a node to the set of nodes on this level. The node
-         * is also added to the
-         * child levels if it satisfies {@link #isForNextLevel(AspectElement)}.
-         */
-        public void addNode(AspectNode modelNode) {
-            if (isForThisLevel(modelNode)) {
-                // put the node on this level
-                this.modelNodes.add(modelNode);
-            }
-            // put the node on the sublevels, if it is supposed to be there
-            if (isForNextLevel(modelNode)) {
-                for (Level1 sublevel : this.children) {
-                    sublevel.addNode(modelNode);
-                }
-            }
-        }
-
-        /**
-         * Consider adding an edge to the set of edges on this level. The edge
-         * is also added to the
-         * child levels if it satisfies {@link #isForNextLevel(AspectElement)}.
-         */
-        public void addEdge(AspectEdge modelEdge) {
-            if (isForThisLevel(modelEdge)) {
-                // put the edge on this level
-                this.modelEdges.add(modelEdge);
-                // add end nodes to this and all parent levels, if
-                // they are not yet there
-                addNodeToParents(modelEdge.source());
-                if (!isSetOperator(modelEdge)) {
-                    addNodeToParents(modelEdge.target());
-                }
-                // add variables
-                addToVars(modelEdge);
-            }
-            // put the edge on the sublevels, if it is supposed to be there
-            if (isForNextLevel(modelEdge)) {
-                for (Level1 sublevel : this.children) {
-                    sublevel.addEdge(modelEdge);
-                }
-            }
-        }
-
-        /** Adds the variables of a given aspect edge to the variable map. */
-        private void addToVars(AspectEdge modelEdge) {
-            RuleLabel ruleLabel = modelEdge.getRuleLabel();
-            if (ruleLabel != null) {
-                for (LabelVar var : ruleLabel.allVarSet()) {
-                    Set<AspectEdge> binders = this.modelVars.get(var);
-                    if (binders == null) {
-                        this.modelVars.put(var, binders = new HashSet<>());
-                    }
-                    binders.add(modelEdge);
-                }
-            }
-        }
-
-        /** Initialises the match count for this (universal) level. */
-        public void setMatchCount(AspectNode matchCount) {
-            this.countNode = matchCount;
-        }
-
-        /**
-         * Adds a node to this and all parent levels, if it is not yet there
-         */
-        private void addNodeToParents(AspectNode modelNode) {
-            Level1 ascendingLevel = this;
-            while (ascendingLevel.modelNodes.add(modelNode)) {
-                assert !ascendingLevel.index.isTopLevel() : String
-                    .format("Node not found at any level");
-                ascendingLevel = ascendingLevel.parent;
-                assert ascendingLevel.modelNodes != null : String
-                    .format("Nodes on level %s not yet initialised", ascendingLevel.getIndex());
-            }
-        }
-
-        private boolean isSetOperator(AspectEdge edge) {
-            Operator op = edge.getOperator();
-            return op != null && op.isVarArgs();
-        }
-
-        /**
-         * Indicates if a given element should be included on the level on which
-         * it it is defined in the model. Node creators should not appear on
-         * universal levels since those get translated to conditions, not rules;
-         * instead they are pushed to the next (existential) sublevels.
-         * @param elem the element about which the question is asked
-         */
-        private boolean isForThisLevel(AspectElement elem) {
-            return this.index.getOperator().hasPattern();
-        }
-
-        /**
-         * Indicates if a given element should occur on the sublevels of the
-         * level on which it is defined in the model. This is the case for nodes
-         * in injective rules (otherwise we cannot check injectivity) as well as
-         * for edges that bind variables.
-         * @param elem the element about which the question is asked
-         */
-        private boolean isForNextLevel(AspectElement elem) {
-            assert elem.has(CONNECT) || !elem.has(Category.NESTING);
-            boolean result = false;
-            if (!this.index.getOperator().hasPattern()) {
-                result = true;
-            } else if (elem instanceof AspectNode n) {
-                // we need to push non-attribute nodes down in injective mode
-                // to be able to compare images of nodes at different levels
-                result = isInjective() && n.has(ROLE, AspectKind::inLHS) && !n.has(SORT)
-                    && !n.has(PRODUCT);
-            } else {
-                // we need to push down edges that bind wildcards
-                // to ensure the bound value is known at sublevels
-                // (there is currently no way to do this only when required)
-                // as well as  all node type labels
-                // to enable correct typing at sublevels
-                //                RuleLabel varLabel = ((AspectEdge) elem).getRuleLabel();
-                //                if (varLabel != null) {
-                //                    result = getType().isNodeType(varLabel);
-                //                }
-            }
-            return result;
-        }
-
-        /** Returns the index of this level. */
-        public final Index getIndex() {
-            return this.index;
-        }
-
-        @Override
-        public String toString() {
-            return String.format("Rule %s, level %s, stage 1", getQualName(), getIndex());
-        }
-
-        @Override
-        public int compareTo(Level1 o) {
-            return getIndex().compareTo(o.getIndex());
-        }
-
-        /**
-         * Does some post-processing after all elements have been added
-         * to this and the parent levels.
-         */
-        public void setFixed() {
-            if (this.parent != null) {
-                for (LabelVar var : this.modelVars.keySet()) {
-                    this.parent.testParentBinding(var);
-                }
-            }
-        }
-
-        /** Tests if a given variable is already bound at this or a parent
-         * level and, if so, adds it to the {@link #modelVars} at the intermediate
-         * levels.
-         */
-        private boolean testParentBinding(LabelVar var) {
-            boolean result = this.modelVars.containsKey(var);
-            if (!result && this.parent != null) {
-                result = this.parent.testParentBinding(var);
-                if (result) {
-                    this.modelVars.put(var, new HashSet<>());
-                }
-            }
-            return result;
-        }
-
-        /** Index of this level. */
-        final Index index;
-        /** Parent level; {@code null} if this is the top level. */
-        private final Level1 parent;
-        /** Children level data. */
-        private final List<Level1> children = new ArrayList<>();
-        /** Set of model nodes on this level. */
-        final Set<AspectNode> modelNodes = new HashSet<>();
-        /** Set of model edges on this level. */
-        final Set<AspectEdge> modelEdges = new HashSet<>();
-        /** Set of label variables used on this level. */
-        final Map<LabelVar,Set<AspectEdge>> modelVars = new HashMap<>();
-        /** The model node registering the match count. */
-        AspectNode countNode;
     }
 
     /**
@@ -1102,10 +611,10 @@ class RuleCompiler {
     private class Level2 {
         /**
          * Creates a new level, with a given index and parent level.
-         * @param origin the level 1 object from which this level 2 object is created
+         * @param origin the level distribution data from which this level 2 object is created
          * @param parent the parent's level 2 object, if this is not a top level
          */
-        public Level2(Level1 origin, Level2 parent, RuleModelMap modelMap,
+        public Level2(LevelDistribution.Level origin, Level2 parent, RuleModelMap modelMap,
                       ParallelIndexAllocator allocator) throws FormatException {
             this.factory = modelMap.getFactory();
             Index index = this.index = origin.index;
@@ -1813,57 +1322,6 @@ class RuleCompiler {
         private final Map<RuleEdge,Integer> nextIndexMap = new HashMap<>();
     }
 
-    /**
-     * Per-level pattern data handed between the construction stages: the
-     * LHS, RHS and NAC graphs of one quantification level, together with
-     * the count node, the output nodes, the colour map and the rule flag
-     * of that level. Patterns link to the pattern of the parent level,
-     * forming a tree congruent to the index tree.
-     */
-    private class LevelPattern {
-        LevelPattern(Index index, LevelPattern parent, RuleGraph lhs, RuleGraph rhs,
-                     List<RuleGraph> nacs, VariableNode countNode, Set<VariableNode> outputNodes,
-                     Map<RuleNode,Color> colorMap, boolean isRule) {
-            this.index = index;
-            this.parent = parent;
-            this.lhs = lhs;
-            this.rhs = rhs;
-            this.nacs = nacs;
-            this.countNode = countNode;
-            this.outputNodes = outputNodes;
-            this.colorMap = colorMap;
-            this.isRule = isRule;
-        }
-
-        /** Returns the index of this level. */
-        public Index getIndex() {
-            return this.index;
-        }
-
-        @Override
-        public String toString() {
-            return String.format("Rule %s, level %s pattern", getQualName(), getIndex());
-        }
-
-        /** Index of this level. */
-        final Index index;
-        /** Pattern of the parent level; {@code null} if this is the top level. */
-        final LevelPattern parent;
-        /** The left hand side graph of the rule. */
-        final RuleGraph lhs;
-        /** The right hand side graph of the rule. */
-        final RuleGraph rhs;
-        /** List of NAC graphs. */
-        final List<RuleGraph> nacs;
-        /** The rule node registering the match count. */
-        final VariableNode countNode;
-        /** Output nodes of the condition. */
-        final Set<VariableNode> outputNodes;
-        /** Map from rule nodes to declared colours. */
-        final Map<RuleNode,Color> colorMap;
-        /** Flag indicating that modifiers have been found at this level. */
-        final boolean isRule;
-    }
 
     /**
      * The typing pass for one level: constructs the typed pattern of the
