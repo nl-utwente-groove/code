@@ -18,7 +18,7 @@ import nl.utwente.groove.verify.CTLMarker;
 import nl.utwente.groove.verify.Formula;
 import nl.utwente.groove.verify.FormulaParser;
 import nl.utwente.groove.verify.Logic;
-import nl.utwente.groove.verify.ModelFacade;
+import nl.utwente.groove.verify.CTLModelFacade;
 
 /**
  * Action for verifying a CTL formula.
@@ -91,7 +91,7 @@ public class CheckCTLAction extends SimulatorAction {
                                  String property) throws FormatException {
         Formula formula = Formula.parse(property).toCtlFormula();
         formula.check(result.getGTS());
-        CTLMarker modelChecker = new CTLMarker(formula, ModelFacade.newModel(result));
+        CTLMarker modelChecker = new CTLMarker(formula, CTLModelFacade.newModel(result));
         int witnesscCount = modelChecker.getCount();
         List<GraphState> witnesses = new ArrayList<>(witnesscCount);
         String message;
