@@ -178,7 +178,12 @@ public class RegExprTyper implements RegExprCalculator<Result> {
         LabelVar var = expr.getWildcardId();
         Set<@NonNull TypeNode> candidates = new HashSet<>();
         if (var.hasName()) {
-            candidates.addAll((Collection<@NonNull TypeNode>) this.varTyping.get(var));
+            Set<? extends TypeElement> varTypes = this.varTyping.get(var);
+            // the variable has no typing if the element binding it was itself left
+            // untyped due to an earlier error; then there are no candidates
+            if (varTypes != null) {
+                candidates.addAll((Collection<@NonNull TypeNode>) varTypes);
+            }
         } else {
             candidates.addAll(this.typeGraph.nodeSet());
         }
@@ -195,7 +200,12 @@ public class RegExprTyper implements RegExprCalculator<Result> {
         LabelVar var = expr.getWildcardId();
         Set<@NonNull TypeEdge> candidates = new HashSet<>();
         if (var.hasName()) {
-            candidates.addAll((Collection<@NonNull TypeEdge>) this.varTyping.get(var));
+            Set<? extends TypeElement> varTypes = this.varTyping.get(var);
+            // the variable has no typing if the element binding it was itself left
+            // untyped due to an earlier error; then there are no candidates
+            if (varTypes != null) {
+                candidates.addAll((Collection<@NonNull TypeEdge>) varTypes);
+            }
         } else {
             candidates.addAll(this.typeGraph.edgeSet());
         }
