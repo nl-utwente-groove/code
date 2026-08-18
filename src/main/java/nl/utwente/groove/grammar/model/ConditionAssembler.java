@@ -30,6 +30,9 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.Condition;
 import nl.utwente.groove.grammar.Condition.Op;
 import nl.utwente.groove.grammar.EdgeEmbargo;
@@ -62,6 +65,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 class ConditionAssembler {
     /** Constructs an assembler for a given rule compiler.
      * @param compiler the compiler providing the compilation context
@@ -75,6 +79,7 @@ class ConditionAssembler {
      * patterns. Problems are reported in the given error set; the result is
      * the top-level rule, or {@code null} if it could not be constructed.
      */
+    @Nullable
     Rule assemble(SortedMap<Index,LevelPattern> patternMap, FormatErrorSet errors) {
         Rule result;
         // store the derived subrules in order
@@ -139,7 +144,9 @@ class ConditionAssembler {
         if (conditionTree.isEmpty()) {
             result = null;
         } else {
-            result = conditionTree.firstEntry().getValue().getRule();
+            var firstEntry = conditionTree.firstEntry();
+            assert firstEntry != null; // the tree is not empty
+            result = firstEntry.getValue().getRule();
         }
         return result;
     }
@@ -460,7 +467,7 @@ class ConditionAssembler {
      * Returns the mapping from the LHS rule elements at the parent level to
      * the LHS rule elements at a given level.
      */
-    private RuleGraph getRootGraph(LevelPattern level) {
+    private @Nullable RuleGraph getRootGraph(LevelPattern level) {
         if (level.getIndex().isTopLevel()) {
             return null;
         }
@@ -472,7 +479,7 @@ class ConditionAssembler {
     /**
      * Returns the intersection of the parent RHS and a given level's RHS
      */
-    private RuleGraph getCoRootGraph(LevelPattern level) {
+    private @Nullable RuleGraph getCoRootGraph(LevelPattern level) {
         // find the first parent that has a rule
         LevelPattern parent = level.parent;
         while (parent != null && !parent.isRule) {
@@ -582,7 +589,7 @@ class ConditionAssembler {
      *        nodes of this rule
      * @return the fresh rule created by the factory
      */
-    private Rule createRule(Condition condition, RuleGraph rhs, RuleGraph coRoot) {
+    private Rule createRule(Condition condition, RuleGraph rhs, @Nullable RuleGraph coRoot) {
         Rule result = new Rule(condition, rhs, coRoot);
         return result;
     }
@@ -593,7 +600,8 @@ class ConditionAssembler {
      * @param pattern target graph of the new condition
      * @return the fresh condition
      */
-    private Condition createCondition(LevelPattern level, RuleGraph root, RuleGraph pattern) {
+    private Condition createCondition(LevelPattern level, @Nullable RuleGraph root,
+                                      RuleGraph pattern) {
         Condition result = new Condition(level.getIndex().getName(),
             level.getIndex().getOperator(), pattern, root, getGrammarProperties());
         result.setTypeGraph(getTypeGraph());

@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.grammar.Signature;
 import nl.utwente.groove.grammar.UnitPar;
 import nl.utwente.groove.grammar.aspect.AspectContent;
@@ -49,6 +51,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 class SignatureExtractor {
     /** Extracts the signature information from the compiler's source graph.
      * @param compiler the compiler providing the compilation context
@@ -150,9 +153,9 @@ class SignatureExtractor {
     }
 
     /** Set of all rule parameter nodes */
-    private Set<RuleNode> hiddenPars;
+    private final Set<RuleNode> hiddenPars;
     /** Signature of the rule. */
-    private List<UnitPar.RulePar> sig;
+    private final List<UnitPar.RulePar> sig;
 
     /** Convenience method to retrieve the normalised source graph from the compiler. */
     private AspectGraph getNormalSource() {

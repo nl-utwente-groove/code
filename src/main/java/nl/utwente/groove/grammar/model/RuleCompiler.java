@@ -26,6 +26,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.Action.Role;
@@ -72,6 +73,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 class RuleCompiler {
     /**
      * Constructs a compiler for a given rule aspect graph.
@@ -86,6 +88,8 @@ class RuleCompiler {
         this.normalSource = normalSource;
         this.role = role;
         this.qualName = source.getQualName();
+        this.ruleFactory = RuleFactory.newInstance(getTypeGraph().getFactory());
+        this.modelMap = new RuleModelMap(this.ruleFactory);
     }
 
     /**
@@ -95,8 +99,6 @@ class RuleCompiler {
      * @throws FormatException if the source graph cannot be converted to a valid rule
      */
     Rule compile() throws FormatException {
-        this.ruleFactory = RuleFactory.newInstance(getTypeGraph().getFactory());
-        this.modelMap = new RuleModelMap(this.ruleFactory);
         try {
             LevelIndexTree indexTree = LevelIndexTree.from(getNormalSource(), getQualName());
             LevelDistribution distribution = this.distribution
@@ -123,13 +125,13 @@ class RuleCompiler {
                     this.modelMap.putEdge(edgeEntry.getKey(), image);
                 }
             }
-            this.typeMap = new TypeModelMap(getTypeGraph().getFactory());
+            var typeMap = this.typeMap = new TypeModelMap(getTypeGraph().getFactory());
             for (Map.Entry<AspectNode,RuleNode> nodeEntry : this.modelMap.nodeMap().entrySet()) {
-                this.typeMap.putNode(nodeEntry.getKey(), nodeEntry.getValue().getType());
+                typeMap.putNode(nodeEntry.getKey(), nodeEntry.getValue().getType());
             }
             for (Map.Entry<AspectEdge,RuleEdge> edgeEntry : this.modelMap.edgeMap().entrySet()) {
                 var edgeType = (@NonNull TypeEdge) edgeEntry.getValue().getType();
-                this.typeMap.putEdge(edgeEntry.getKey(), edgeType);
+                typeMap.putEdge(edgeEntry.getKey(), edgeType);
             }
             return computeRule(patternMap);
         } catch (FormatException e) {
@@ -207,7 +209,7 @@ class RuleCompiler {
      * Tests if the rule may be used as a graph condition.
      * @see RuleModel#testAsProperty(AspectGraph)
      */
-    private FormatError testAsProperty() {
+    private @Nullable FormatError testAsProperty() {
         return RuleModel.testAsProperty(getSource());
     }
 
@@ -219,6 +221,7 @@ class RuleCompiler {
 
     /** Returns the mapping from source graph elements to type elements;
      * {@code null} if compilation failed before typing. */
+    @Nullable
     TypeModelMap getTypeMap() {
         return this.typeMap;
     }
@@ -226,6 +229,7 @@ class RuleCompiler {
     /** Returns a mapping from rule nesting levels to sets of aspect elements
      * on that level; {@code null} if compilation failed before the level
      * distribution was built. */
+    @Nullable
     TreeMap<Index,Set<AspectElement>> getLevelTree() {
         var distribution = this.distribution;
         if (distribution == null) {
@@ -245,7 +249,7 @@ class RuleCompiler {
         return result;
     }
 
-    private RuleFactory ruleFactory;
+    private final RuleFactory ruleFactory;
     /**
      * Mapping from the elements of the aspect graph representation to the
      * corresponding untyped rule elements, filled by the {@link PatternBuilder}.
@@ -255,11 +259,12 @@ class RuleCompiler {
      * Mapping from the elements of the aspect graph representation to the
      * corresponding elements of the rule.
      */
-    private RuleModelMap modelMap;
-    /** Map from source model to types. */
-    private TypeModelMap typeMap;
-    /** The distribution of rule elements over the quantification levels. */
-    private LevelDistribution distribution;
+    private final RuleModelMap modelMap;
+    /** Map from source model to types; {@code null} until typing has succeeded. */
+    private @Nullable TypeModelMap typeMap;
+    /** The distribution of rule elements over the quantification levels;
+     * {@code null} until it has been built. */
+    private @Nullable LevelDistribution distribution;
 
     /**
      * Callback method to compute a rule from the source graph. All auxiliary data

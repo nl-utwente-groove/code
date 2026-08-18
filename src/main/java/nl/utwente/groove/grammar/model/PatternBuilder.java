@@ -38,6 +38,9 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.algebra.syntax.Expression;
@@ -75,6 +78,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 class PatternBuilder {
     /** Constructs a builder for a given rule compiler.
      * @param compiler the compiler providing the compilation context
@@ -155,7 +159,7 @@ class PatternBuilder {
          * @param origin the level distribution data from which this level is created
          * @param parent the parent's level object, if this is not a top level
          */
-        public Level(LevelDistribution.Level origin, Level parent) throws FormatException {
+        public Level(LevelDistribution.Level origin, @Nullable Level parent) throws FormatException {
             this.factory = PatternBuilder.this.modelMap.getFactory();
             Index index = this.index = origin.index;
             this.parent = parent;
@@ -165,9 +169,11 @@ class PatternBuilder {
             this.rhs = createGraph(getQualName() + "-" + index + "-rhs");
             FormatErrorSet errors = new FormatErrorSet();
             try {
-                if (origin.countNode != null) {
-                    this.countNode = (VariableNode) getNodeImage(origin.countNode);
-                    this.outputNodes.add(this.countNode);
+                var originCountNode = origin.countNode;
+                if (originCountNode != null) {
+                    var countNode = (VariableNode) getNodeImage(originCountNode);
+                    this.countNode = countNode;
+                    this.outputNodes.add(countNode);
                 }
             } catch (FormatException exc) {
                 errors.addAll(exc.getErrors());
@@ -251,7 +257,9 @@ class PatternBuilder {
                 }
             }
             if (modelNode.hasColor()) {
-                this.colorMap.put(ruleNode, modelNode.getColor());
+                var color = modelNode.getColor();
+                assert color != null; // guaranteed by hasColor()
+                this.colorMap.put(ruleNode, color);
             }
         }
 
@@ -362,8 +370,9 @@ class PatternBuilder {
                     nodeName, operator.getName(), operatorEdge);
             }
             // make sure that set operator targets appear on the parent level already
+            var parent = this.parent;
             if (setOperator) {
-                if (!(this.parent != null && this.parent.lhs.nodeSet().contains(target))) {
+                if (!(parent != null && parent.lhs.nodeSet().contains(target))) {
                     throw new FormatException(
                         "Target of set operator '%s' must be defined on the parent level",
                         operator.getName(), operatorEdge);
@@ -383,9 +392,13 @@ class PatternBuilder {
             }
             RuleNode opNode = this.factory
                 .createOperatorNode(productNode.getNumber(), operator, arguments, target);
-            Level level = setOperator
-                ? this.parent
-                : this;
+            Level level;
+            if (setOperator) {
+                assert parent != null; // established by the check above
+                level = parent;
+            } else {
+                level = this;
+            }
             if (operatorEdge.has(ROLE, AspectKind::inNAC)) {
                 level.nacNodeSet.add(opNode);
             } else {
@@ -531,10 +544,11 @@ class PatternBuilder {
              */
             public SortedSet<RuleNode> getNodes() {
                 setFixed();
-                if (this.nodes == null) {
-                    this.nodes = computeNodes();
+                var result = this.nodes;
+                if (result == null) {
+                    this.nodes = result = computeNodes();
                 }
-                return this.nodes;
+                return result;
             }
 
             private SortedSet<RuleNode> computeNodes() {
@@ -553,10 +567,11 @@ class PatternBuilder {
              */
             public SortedSet<RuleEdge> getEdges() {
                 setFixed();
-                if (this.edges == null) {
-                    this.edges = computeEdges();
+                var result = this.edges;
+                if (result == null) {
+                    this.edges = result = computeEdges();
                 }
-                return this.edges;
+                return result;
             }
 
             private SortedSet<RuleEdge> computeEdges() {
@@ -607,8 +622,8 @@ class PatternBuilder {
             }
 
             private boolean fixed = false;
-            private SortedSet<RuleNode> nodes;
-            private SortedSet<RuleEdge> edges;
+            private @Nullable SortedSet<RuleNode> nodes;
+            private @Nullable SortedSet<RuleEdge> edges;
         }
 
         /**
@@ -689,13 +704,11 @@ class PatternBuilder {
          * @throws FormatException if <code>node</code> does not occur in a
          *         correct way in <code>context</code>
          */
-        private RuleEdge getEdgeImage(AspectEdge modelEdge) throws FormatException {
+        private @Nullable RuleEdge getEdgeImage(AspectEdge modelEdge) throws FormatException {
             RuleEdge result = PatternBuilder.this.modelMap.getEdge(modelEdge);
             if (result == null) {
                 result = computeEdgeImage(modelEdge, PatternBuilder.this.modelMap.nodeMap());
-                if (result != null) {
-                    PatternBuilder.this.modelMap.putEdge(modelEdge, result);
-                }
+                PatternBuilder.this.modelMap.putEdge(modelEdge, result);
             }
             return result;
         }
@@ -806,11 +819,11 @@ class PatternBuilder {
         /** Index of this level. */
         private final Index index;
         /** Parent level. */
-        private final Level parent;
+        private final @Nullable Level parent;
         /** Map of all connect edges on this level. */
         private final Map<AspectEdge,Set<RuleNode>> connectMap = new HashMap<>();
         /** The rule node registering the match count. */
-        private VariableNode countNode;
+        private @Nullable VariableNode countNode;
         /** Condition output nodes. */
         private final Set<VariableNode> outputNodes = new HashSet<>();
         /** Map from rule nodes to declared colours. */

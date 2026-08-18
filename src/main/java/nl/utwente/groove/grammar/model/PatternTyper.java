@@ -27,6 +27,9 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.model.RuleModel.Index;
 import nl.utwente.groove.grammar.rule.LabelVar;
@@ -53,6 +56,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 class PatternTyper {
     /** Constructs a typer for a given rule compiler.
      * @param compiler the compiler providing the compilation context
@@ -107,7 +111,7 @@ class PatternTyper {
      * pattern if there is no type graph.
      */
     private class Level {
-        public Level(LevelPattern origin, Level parent,
+        public Level(LevelPattern origin, @Nullable Level parent,
                       RuleGraphMorphism globalTypeMap) throws FormatException {
             this.parent = parent;
             this.factory = globalTypeMap.getFactory();
@@ -124,9 +128,7 @@ class PatternTyper {
             lhsTypeMap.putAll(this.typeMap);
             RuleGraph rhs = toTypedGraph(origin.rhs, lhsTypeMap, this.typeMap);
             // check against label type restrictions in RHS
-            for (Map.Entry<LabelVar,Set<? extends TypeElement>> entry : lhsTypeMap
-                .getVarTyping()
-                .entrySet()) {
+            for (var entry : lhsTypeMap.getVarTyping().entrySet()) {
                 LabelVar var = entry.getKey();
                 if (!this.typeMap.getVarTyping().containsKey(var)) {
                     continue;
@@ -156,7 +158,10 @@ class PatternTyper {
             try {
                 Set<RuleNode> parentNodes = new HashSet<>();
                 for (RuleNode origParentNode : parentTypeMap.nodeMap().keySet()) {
-                    parentNodes.add(this.typeMap.getNode(origParentNode));
+                    var image = this.typeMap.getNode(origParentNode);
+                    if (image != null) {
+                        parentNodes.add(image);
+                    }
                 }
                 checkTypeSpecialisation(parentNodes, lhs, rhs);
             } catch (FormatException exc) {
@@ -182,7 +187,7 @@ class PatternTyper {
          * @return a typed version of the input graph
          */
         private RuleGraph toTypedGraph(RuleGraph graph, RuleGraphMorphism parentTypeMap,
-                                       RuleGraphMorphism typeMap) {
+                                       @Nullable RuleGraphMorphism typeMap) {
             RuleGraph result = createGraph(graph.getName());
             try {
                 RuleGraphMorphism typing = getTypeGraph().analyzeRule(graph, parentTypeMap);
@@ -339,9 +344,10 @@ class PatternTyper {
                     }
                 }
             }
-            if (!result && this.parent != null && this.parent.pattern.lhs.containsNode(n1)
-                && this.parent.pattern.lhs.containsNode(n2)) {
-                result = this.parent.injective(n1, n2);
+            var parent = this.parent;
+            if (!result && parent != null && parent.pattern.lhs.containsNode(n1)
+                && parent.pattern.lhs.containsNode(n2)) {
+                result = parent.injective(n1, n2);
             }
             return result;
         }
@@ -413,7 +419,7 @@ class PatternTyper {
                 !getGrammarProperties().getParallelMode().isMulti(), this.factory);
         }
 
-        private final Level parent;
+        private final @Nullable Level parent;
         private final RuleFactory factory;
         /** The global, rule-wide mapping from untyped to typed rule elements. */
         private final RuleGraphMorphism globalTypeMap;
