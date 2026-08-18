@@ -24,6 +24,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import nl.utwente.groove.util.Exceptions;
+
 /**
  * A bag (= multiset) of elements, based on an underlying hash map.
  * @author Arend Rensink
@@ -341,8 +343,8 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
             try {
                 return (MyMultiplicity) super.clone();
             } catch (CloneNotSupportedException exc) {
-                assert false;
-                return null;
+                // MyMultiplicity implements Cloneable
+                throw Exceptions.unreachable();
             }
         }
 

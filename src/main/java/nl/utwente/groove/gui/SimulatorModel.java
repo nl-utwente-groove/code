@@ -1454,17 +1454,17 @@ public class SimulatorModel implements Cloneable {
 
     @Override
     protected SimulatorModel clone() {
-        SimulatorModel result = null;
         try {
-            result = (SimulatorModel) super.clone();
+            SimulatorModel result = (SimulatorModel) super.clone();
             result.resources = new EnumMap<>(ResourceKind.class);
             for (ResourceKind resource : ResourceKind.all(false)) {
                 result.resources.put(resource, new LinkedHashSet<>(this.resources.get(resource)));
             }
+            return result;
         } catch (CloneNotSupportedException e) {
-            assert false;
+            // SimulatorModel implements Cloneable
+            throw Exceptions.unreachable();
         }
-        return result;
     }
 
     /**

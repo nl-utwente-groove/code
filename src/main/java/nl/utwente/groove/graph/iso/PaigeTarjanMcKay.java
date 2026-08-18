@@ -34,6 +34,7 @@ import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.Node;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.collect.TreeHashSet;
 
 /**
@@ -1148,7 +1149,8 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
                 result.markedSize = this.markedSize;
                 return result;
             } catch (CloneNotSupportedException exc) {
-                return null;
+                // Block implements Cloneable
+                throw Exceptions.unreachable();
             }
         }
 

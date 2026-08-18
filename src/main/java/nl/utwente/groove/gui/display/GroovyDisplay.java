@@ -103,8 +103,9 @@ final public class GroovyDisplay extends ResourceDisplay {
                 newstream.println("Error during execution of Groovy script");
                 String loc = "";
                 for (StackTraceElement elem : e.getStackTrace()) {
-                    if (elem.getFileName().endsWith(FileType.GROOVY.getExtension())) {
-                        loc = elem.getFileName() + ":" + elem.getLineNumber() + " : ";
+                    var fileName = elem.getFileName();
+                    if (fileName != null && fileName.endsWith(FileType.GROOVY.getExtension())) {
+                        loc = fileName + ":" + elem.getLineNumber() + " : ";
                         break;
                     }
                 }

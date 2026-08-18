@@ -33,6 +33,7 @@ import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.Node;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.collect.TreeHashSet;
 
 /**
@@ -748,7 +749,8 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
                 result.nodes = new ArrayList<>(this.nodes);
                 return result;
             } catch (CloneNotSupportedException e) {
-                return null;
+                // Block implements Cloneable
+                throw Exceptions.unreachable();
             }
         }
 
