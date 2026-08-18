@@ -77,7 +77,11 @@ public class Version {
     /** Returns the first line of a named resource file. */
     private static String read(String filename) {
         try (var file = new BufferedReader(getResourceStream(VERSION_PACKAGE.extend(filename)))) {
-            return file.readLine();
+            String result = file.readLine();
+            if (result == null) {
+                throw Exceptions.illegalArg("Resource %s is empty", filename);
+            }
+            return result;
         } catch (IOException exc) {
             throw Exceptions.illegalArg("Can't read from %s", filename);
         }

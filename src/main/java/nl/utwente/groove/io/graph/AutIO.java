@@ -109,6 +109,9 @@ public class AutIO extends GraphIO<PlainGraph> {
         PlainGraph result = createGraph();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
             String line = reader.readLine();
+            if (line == null) {
+                throw new IOException("aut file is empty");
+            }
             int rootStart = line.indexOf('(') + 1;
             int edgeCountStart = line.indexOf(',') + 1;
             Map<Integer,PlainNode> nodeMap = new HashMap<>();

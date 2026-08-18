@@ -237,7 +237,12 @@ public class FileUtils {
      */
     public static File getRelativePath(File currentDir, File target) {
         if (currentDir.isFile()) {
-            currentDir = new File(currentDir.getParent());
+            String parentName = currentDir.getParent();
+            if (parentName == null) {
+                // a single-segment relative path; would also fail the absoluteness test below
+                return null;
+            }
+            currentDir = new File(parentName);
         }
         if (!currentDir.isAbsolute() || !target.isAbsolute()) {
             return null;

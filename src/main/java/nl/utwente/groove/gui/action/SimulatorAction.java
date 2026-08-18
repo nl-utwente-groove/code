@@ -556,7 +556,7 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
             String diff = selectedPath.substring(grammarPath.length());
             File pathDiff = new File(diff);
             List<String> pathFragments = new LinkedList<>();
-            while (!pathDiff.getName().isEmpty()) {
+            while (pathDiff != null && !pathDiff.getName().isEmpty()) {
                 pathFragments.add(0, pathDiff.getName());
                 pathDiff = pathDiff.getParentFile();
             }

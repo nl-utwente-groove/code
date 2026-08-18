@@ -192,6 +192,9 @@ public class Imager extends GrooveCmdLineTool<Object> {
         // --> output-file exists or can be created
         if (inFile.isDirectory()) {
             File[] files = inFile.listFiles();
+            if (files == null) {
+                throw new IOException("Input directory " + inFile + " cannot be read");
+            }
             if (outFile.exists() || outFile.mkdir()) {
                 for (File element : files) {
                     // see if we want to process this file
@@ -683,7 +686,9 @@ public class Imager extends GrooveCmdLineTool<Object> {
                         File dir = file.isDirectory()
                             ? file
                             : file.getParentFile();
-                        ImagerFrame.this.outFileField.setText(dir.getPath());
+                        if (dir != null) {
+                            ImagerFrame.this.outFileField.setText(dir.getPath());
+                        }
                     }
                 }
             };

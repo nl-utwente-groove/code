@@ -634,7 +634,8 @@ public class SystemStore implements GrammarSource {
         if (directory == null || !directory.isDirectory()) {
             return;
         }
-        if (directory.listFiles().length > 0) {
+        File[] files = directory.listFiles();
+        if (files == null || files.length > 0) {
             return;
         }
         File parent = directory.getParentFile();
@@ -1430,7 +1431,11 @@ public class SystemStore implements GrammarSource {
      */
     static private boolean deleteRecursive(File location) {
         if (location.isDirectory()) {
-            for (File file : location.listFiles()) {
+            File[] files = location.listFiles();
+            if (files == null) {
+                return false;
+            }
+            for (File file : files) {
                 if (!deleteRecursive(file)) {
                     return false;
                 }
@@ -1516,7 +1521,7 @@ public class SystemStore implements GrammarSource {
      */
     static private SystemStore newStoreFromTmp(String orig, Path path) throws IOException {
         File[] files = path.toFile().listFiles();
-        if (files.length != 1) {
+        if (files == null || files.length != 1) {
             throw new IOException(
                 String.format("Zip file %s should only contain production system", orig));
         }
