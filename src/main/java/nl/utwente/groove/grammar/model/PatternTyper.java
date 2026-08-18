@@ -156,14 +156,7 @@ class PatternTyper {
             // check for correct type specialisation
             // this has to be done after the NACs have been added
             try {
-                Set<RuleNode> parentNodes = new HashSet<>();
-                for (RuleNode origParentNode : parentTypeMap.nodeMap().keySet()) {
-                    var image = this.typeMap.getNode(origParentNode);
-                    if (image != null) {
-                        parentNodes.add(image);
-                    }
-                }
-                checkTypeSpecialisation(parentNodes, lhs, rhs);
+                checkTypeSpecialisation(lhs, rhs);
             } catch (FormatException exc) {
                 this.errors.addAll(exc.getErrors());
             }
@@ -225,10 +218,9 @@ class PatternTyper {
         /**
          * If the RHS type for a reader node is changed w.r.t. the LHS type,
          * the LHS type has to be sharp and the RHS type a subtype of it.
-         * @param parentNodes nodes from a higher quantification level
          * @throws FormatException if there are typing errors
          */
-        private void checkTypeSpecialisation(Set<RuleNode> parentNodes, RuleGraph lhs,
+        private void checkTypeSpecialisation(RuleGraph lhs,
                                              RuleGraph rhs) throws FormatException {
             FormatErrorSet errors = new FormatErrorSet();
             for (RuleNode node : rhs.nodeSet()) {

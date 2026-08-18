@@ -197,6 +197,14 @@ order-bearing collections (2 and 4 in particular).
     `parentNodes` set in `PatternTyper.checkTypeSpecialisation` is an
     unused parameter that used to collect null images of nodes untyped
     at the level — it now skips them.
+  - Review follow-up: the `parentNodes` parameter removed after history
+    confirmation. Introduced 6c61f8932 (2011) to reject mergers whose
+    source sits on a higher quantification level than the target; its
+    only read was removed in a8387d572 (2013), which reformulated the
+    cross-level hazard per node — `isUniversal(RuleNode)` walks the
+    pattern parent chain to the node's highest level, combined with the
+    matching-types containment clause and `haveMinType` ambiguity
+    checks — so the pre-collected parent-node set became redundant.
   - Verified: full suite incl. slow groups at baseline, ecj per-file
     clean and whole-project at the 17-problem baseline, determinism
     checklist (error-path only; no new hash use, no iteration-order
