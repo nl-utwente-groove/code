@@ -36,6 +36,7 @@ import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.grammar.rule.VariableNode;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.IdValidator;
 

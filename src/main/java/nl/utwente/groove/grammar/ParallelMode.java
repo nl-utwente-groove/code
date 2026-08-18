@@ -17,6 +17,7 @@
 package nl.utwente.groove.grammar;
 
 import nl.utwente.groove.util.DocumentedEnum;
+import nl.utwente.groove.util.Properties.ValueType;
 
 /**
  * Mode determining whether the host and rule graphs of a grammar are
@@ -71,4 +72,8 @@ public enum ParallelMode implements DocumentedEnum {
     public boolean isDPO() {
         return this == DPO;
     }
+
+    /** Value type of {@link ParallelMode}-valued property keys
+     * (see {@link nl.utwente.groove.util.Properties.Key}). */
+    public static final ValueType<ParallelMode> VALUE_TYPE = ValueType.of(ParallelMode.class);
 }

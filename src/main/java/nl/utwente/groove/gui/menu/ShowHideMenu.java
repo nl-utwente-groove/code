@@ -53,10 +53,11 @@ import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.jgraph.LTSJCell;
 import nl.utwente.groove.gui.jgraph.LTSJGraph;
 import nl.utwente.groove.gui.tree.LabelTree.LabelledCells;
-import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.lts.GTS;
+import nl.utwente.groove.lts.GTSListener;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.util.HTMLConverter;
+import nl.utwente.groove.util.io.FileType;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -540,11 +541,14 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
                     RegExpr expr = RegExpr.parse(exprText);
                     if (expr != null) {
                         if (this.calculator == null || this.calculator.getGraph() != graph) {
-                            if (this.calculator != null) {
-                                this.calculator.stopListening();
+                            if (this.calculator != null
+                                && this.calculator.getGraph() instanceof GTS gts) {
+                                gts.removeLTSListener(this.calculatorListener);
                             }
                             this.calculator = new RelationCalculator(graph, new NodeRelation());
-                            this.calculator.startListening();
+                            if (graph instanceof GTS gts) {
+                                gts.addLTSListener(this.calculatorListener);
+                            }
                         }
                         NodeRelation rel = expr.apply(this.calculator);
                         this.elementSet = rel.getSupport();
@@ -579,6 +583,14 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
          * calculator.
          */
         private RelationCalculator calculator;
+
+        /** Listener adding new GTS transitions to the calculator's label-edge map. */
+        private final GTSListener calculatorListener = new GTSListener() {
+            @Override
+            public void addUpdate(GTS gts, GraphTransition transition) {
+                RegExprAction.this.calculator.addEdge(transition);
+            }
+        };
 
         private static FormulaDialog exprDialog
             = FormulaDialog.createStringDialog("Regular Expression: ");

@@ -30,12 +30,11 @@ import javax.swing.Icon;
 
 import nl.utwente.groove.grammar.Action.Role;
 import nl.utwente.groove.grammar.CheckPolicy;
+import nl.utwente.groove.grammar.ResourceProperties;
+import nl.utwente.groove.grammar.ResourceProperties.Key;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.RuleModel;
-import nl.utwente.groove.graph.GraphInfo;
-import nl.utwente.groove.graph.GraphProperties;
-import nl.utwente.groove.graph.GraphProperties.Key;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.util.Exceptions;
@@ -97,7 +96,7 @@ class RuleTreeNode extends ActionTreeNode {
         result.append(" ");
         result.append(HTMLConverter.ITALIC_TAG.on(getQualName()));
         AspectGraph source = getRuleGraph();
-        String remark = GraphInfo.getRemark(source);
+        String remark = ResourceProperties.getRemark(source);
         if (!remark.isEmpty()) {
             result.append(": ");
             result.append(HTMLConverter.toHtml(remark));
@@ -132,7 +131,7 @@ class RuleTreeNode extends ActionTreeNode {
             result.append(HTML_LINEBREAK);
             result.append("Scheduled in this state, but has no matches");
         }
-        GraphProperties properties = source.getProperties();
+        ResourceProperties properties = ResourceProperties.getProperties(source);
         if (properties.isNotable()) {
             result.append(HTML_PAR_5PT);
             result
@@ -160,7 +159,7 @@ class RuleTreeNode extends ActionTreeNode {
         // collect the user properties
         properties
             .entryStream()
-            .filter(e -> GraphProperties.Key.isKey(e.getKey()))
+            .filter(e -> ResourceProperties.Key.isKey(e.getKey()))
             .filter(e -> !e.getValue().isEmpty())
             .forEach(e -> {
                 result.append(HTML_LINEBREAK);
@@ -225,7 +224,7 @@ class RuleTreeNode extends ActionTreeNode {
                 : RULE_SUFFIX;
         var result
             = getDisplay().getLabelText(getQualName(), suffix, getStatus().isEnabled(), false);
-        if (getRuleGraph().getProperties().isNotable()) {
+        if (ResourceProperties.getProperties(getRuleGraph()).isNotable()) {
             result += "  " + INFO_SYMBOL;
         }
         return result;

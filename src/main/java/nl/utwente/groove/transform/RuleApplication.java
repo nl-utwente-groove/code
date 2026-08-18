@@ -31,6 +31,8 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.UnitPar.Direction;
+import nl.utwente.groove.grammar.host.DeltaApplier;
+import nl.utwente.groove.grammar.host.DeltaTarget;
 import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostEdgeSet;
 import nl.utwente.groove.grammar.host.HostGraph;
@@ -41,6 +43,7 @@ import nl.utwente.groove.grammar.host.ValueNode;
 import nl.utwente.groove.grammar.rule.Anchor;
 import nl.utwente.groove.grammar.rule.AnchorKey;
 import nl.utwente.groove.grammar.rule.RuleNode;
+import nl.utwente.groove.match.Proof;
 import nl.utwente.groove.match.TreeMatch;
 import nl.utwente.groove.transform.oracle.ValueOracle;
 import nl.utwente.groove.util.Exceptions;

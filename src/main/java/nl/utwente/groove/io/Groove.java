@@ -16,9 +16,9 @@
  */
 package nl.utwente.groove.io;
 
-import static nl.utwente.groove.io.FileType.GRAMMAR;
-import static nl.utwente.groove.io.FileType.GXL;
-import static nl.utwente.groove.io.FileType.STATE;
+import static nl.utwente.groove.util.io.FileType.GRAMMAR;
+import static nl.utwente.groove.util.io.FileType.GXL;
+import static nl.utwente.groove.util.io.FileType.STATE;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,24 +32,15 @@ import nl.utwente.groove.graph.plain.PlainGraph;
 import nl.utwente.groove.io.graph.GraphIO;
 import nl.utwente.groove.io.graph.GxlIO;
 import nl.utwente.groove.io.store.SystemStore;
+import nl.utwente.groove.util.io.FileType;
 
 /**
- * Façade for loading and saving graphs and grammars, with the associated
- * default resource names, and simple timestamped tracing for the GROOVE tools.
+ * Façade for loading and saving graphs and grammars.
  * @version $Revision$
  * @author Arend Rensink
  */
 @NonNullByDefault
 public class Groove {
-    /** Default name for the start graph. */
-    public static final String DEFAULT_START_GRAPH_NAME = "start";
-    /** Default name for control files. */
-    public static final String DEFAULT_CONTROL_NAME = "control";
-    /** Default name for the type graph */
-    public static final String DEFAULT_TYPE_NAME = "type";
-    /** Default name for property files. */
-    public static final String PROPERTY_NAME = "system";
-
     /**
      * Attempts to load in a graph from a given <tt>.gst</tt> file and return
      * it. Tries out the <tt>.gxl</tt> and <tt>.gst</tt> extensions if the
@@ -133,65 +124,6 @@ public class Groove {
     static public GrammarModel loadGrammar(String dirname) throws IOException {
         File dir = new File(GRAMMAR.addExtension(dirname));
         return SystemStore.newGrammar(dir);
-    }
-
-    /**
-     * Gives the current time as a number-formatted string with given
-     * parameters.
-     * @param lossfactor the multiple of milliseconds by which time should be
-     *        measured; i.e. a value of 10 means measure by centiseconds, 100
-     *        means by deciseconds
-     * @param modulo the multiple of the measured time unit (after taking loss
-     *        into account) above which time should be cut off
-     * @param fraction the fraction of the measured time that should appear
-     *        after the decimal point
-     */
-    public static String currentTime(int lossfactor, int modulo, int fraction) {
-        long time = (System.currentTimeMillis() / lossfactor);
-        StringBuffer res = new StringBuffer();
-        while (modulo > 1) {
-            res
-                .insert(0, time > 0
-                    ? "" + time % 10
-                    : "");
-            time /= 10;
-            fraction /= 10;
-            if (fraction == 1) {
-                res.insert(0, ".");
-            }
-            modulo /= 10;
-        }
-        return res.toString();
-    }
-
-    /**
-     * Gives the current time as a number-formatted string of the form "ss.cc",
-     * where ss are seconds and cc centiseconds.
-     */
-    public static String currentTime() {
-        return currentTime(10, 10000, 100);
-    }
-
-    /**
-     * Prints a timestamped message.
-     */
-    public static void message(Object obj) {
-        System.out.println(currentTime() + ": " + obj);
-    }
-
-    /**
-     * Prints a timestamped message regarding the time of starting a given
-     * method.
-     */
-    public static void startMessage(String method) {
-        message("Starting " + method);
-    }
-
-    /**
-     * Prints a timestamped message regarding the time of ending a given method.
-     */
-    public static void endMessage(String method) {
-        message("Ending " + method);
     }
 
     private Groove() {

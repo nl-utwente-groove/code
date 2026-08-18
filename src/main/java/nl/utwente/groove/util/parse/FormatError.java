@@ -30,7 +30,6 @@ import java.util.TreeSet;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.GrammarKey;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
@@ -42,12 +41,13 @@ import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.EdgeComparator;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.GraphMap;
-import nl.utwente.groove.graph.GraphProperties.Key;
+import nl.utwente.groove.grammar.ResourceProperties.Key;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.NodeComparator;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.Relation;
 import nl.utwente.groove.util.collect.CollectionComparator;
 

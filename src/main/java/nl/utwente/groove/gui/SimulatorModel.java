@@ -22,7 +22,6 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.explore.ExplorationListener;
-import nl.utwente.groove.explore.ExploreResult;
 import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreConfigSchema;
@@ -30,7 +29,6 @@ import nl.utwente.groove.explore.util.StatisticsReporter;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.GrammarProperties;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.GraphBasedModel;
@@ -39,9 +37,10 @@ import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.SettingsModel;
 import nl.utwente.groove.grammar.model.TextBasedModel;
 import nl.utwente.groove.grammar.type.TypeLabel;
-import nl.utwente.groove.graph.GraphInfo;
+import nl.utwente.groove.grammar.ResourceProperties;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.io.store.SystemStore;
+import nl.utwente.groove.lts.ExploreResult;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSChangeListener;
 import nl.utwente.groove.lts.GTSCounter;
@@ -54,6 +53,7 @@ import nl.utwente.groove.lts.MatchResult;
 import nl.utwente.groove.lts.RecipeEvent;
 import nl.utwente.groove.lts.RuleTransition;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.SearchResult;
 
@@ -204,7 +204,7 @@ public class SimulatorModel implements Cloneable {
                 AspectGraph oldRule = getStore().getGraphs(ResourceKind.RULE).get(ruleName);
                 assert oldRule != null; // the named rules exist in the store
                 AspectGraph newRule = oldRule.clone();
-                GraphInfo.setEnabled(newRule, !GraphInfo.isEnabled(oldRule));
+                ResourceProperties.setEnabled(newRule, !ResourceProperties.isEnabled(oldRule));
                 newRule.setFixed();
                 newRules.add(newRule);
             }
@@ -372,9 +372,9 @@ public class SimulatorModel implements Cloneable {
         for (Map.Entry<QualName,Integer> entry : priorityMap.entrySet()) {
             AspectGraph oldGraph = getStore().getGraphs(ResourceKind.RULE).get(entry.getKey());
             assert oldGraph != null; // the priority map keys are names of rules in the store
-            if (GraphInfo.getPriority(oldGraph) != entry.getValue()) {
+            if (ResourceProperties.getPriority(oldGraph) != entry.getValue()) {
                 AspectGraph newGraph = oldGraph.clone();
-                GraphInfo.setPriority(newGraph, entry.getValue());
+                ResourceProperties.setPriority(newGraph, entry.getValue());
                 newGraph.setFixed();
                 newGraphs.add(newGraph);
             }
@@ -1350,14 +1350,14 @@ public class SimulatorModel implements Cloneable {
      * Returns the simulator's exploration, which is always the exploration
      * saved with the grammar: the settings resource referenced by the
      * {@code exploration} property, or the legacy/default exploration if there
-     * is no such reference (see {@link GrammarModel#getDefaultExploreType()}).
+     * is no such reference (see {@link ExploreType#ofGrammar(GrammarModel)}).
      * There is no transient exploration: custom explorations (such as those of
      * a model-checking run) are passed to
      * {@code ExploreAction#explore(ExploreType)} directly and are not stored.
      */
     public ExploreType getExploreType() {
         return hasGrammar()
-            ? getGrammar().getDefaultExploreType()
+            ? ExploreType.ofGrammar(getGrammar())
             : ExploreType.getDefault();
     }
 

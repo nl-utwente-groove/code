@@ -21,6 +21,8 @@ import java.util.Optional;
 import java.util.TreeMap;
 
 import nl.utwente.groove.grammar.Action.Role;
+import nl.utwente.groove.util.Properties.ValueType;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatException;
@@ -87,6 +89,10 @@ public enum CheckPolicy {
     /** Parser that returns a policy map. */
     public static final Parser<PolicyMap> multiParser = new PolicyMapParser();
 
+    /** Value type of {@link CheckPolicy}-valued property keys
+     * (see {@link nl.utwente.groove.util.Properties.Key}). */
+    public static final ValueType<CheckPolicy> VALUE_TYPE = ValueType.of(CheckPolicy.class);
+
     private final static char ASSIGN_CHAR = ':';
 
     /** Mapping from action names to policies. */
@@ -104,6 +110,10 @@ public enum CheckPolicy {
             }
             return result;
         }
+
+        /** Value type of {@link PolicyMap}-valued property keys
+         * (see {@link nl.utwente.groove.util.Properties.Key}). */
+        public static final ValueType<PolicyMap> VALUE_TYPE = ValueType.of(PolicyMap.class);
     }
 
     private static class PolicyMapParser extends Parser.AParser<PolicyMap> {

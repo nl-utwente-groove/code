@@ -16,15 +16,15 @@
  */
 package nl.utwente.groove.gui.dialog;
 
-import static nl.utwente.groove.io.FileType.CONTROL;
-import static nl.utwente.groove.io.FileType.GRAMMAR;
-import static nl.utwente.groove.io.FileType.GXL;
-import static nl.utwente.groove.io.FileType.JAR;
-import static nl.utwente.groove.io.FileType.PROLOG;
-import static nl.utwente.groove.io.FileType.RULE;
-import static nl.utwente.groove.io.FileType.STATE;
-import static nl.utwente.groove.io.FileType.TYPE;
-import static nl.utwente.groove.io.FileType.ZIP;
+import static nl.utwente.groove.util.io.FileType.CONTROL;
+import static nl.utwente.groove.util.io.FileType.GRAMMAR;
+import static nl.utwente.groove.util.io.FileType.GXL;
+import static nl.utwente.groove.util.io.FileType.JAR;
+import static nl.utwente.groove.util.io.FileType.PROLOG;
+import static nl.utwente.groove.util.io.FileType.RULE;
+import static nl.utwente.groove.util.io.FileType.STATE;
+import static nl.utwente.groove.util.io.FileType.TYPE;
+import static nl.utwente.groove.util.io.FileType.ZIP;
 
 import java.io.File;
 

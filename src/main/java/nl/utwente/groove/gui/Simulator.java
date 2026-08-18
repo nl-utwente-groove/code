@@ -33,7 +33,7 @@ import static nl.utwente.groove.gui.Options.SHOW_STATE_STATUS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_SYSTEM_STATE_PROPERTIES_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_USER_NODE_IDS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_VALUE_NODES_OPTION;
-import static nl.utwente.groove.io.FileType.GRAMMAR;
+import static nl.utwente.groove.util.io.FileType.GRAMMAR;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -69,7 +69,6 @@ import javax.swing.WindowConstants;
 
 import apple.dts.samplecode.osxadapter.OSXAdapter;
 import nl.utwente.groove.grammar.GrammarKey;
-import nl.utwente.groove.grammar.OracleParser;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.SimulatorModel.Change;
@@ -98,6 +97,7 @@ import nl.utwente.groove.gui.prolog.GuiPredicates;
 import nl.utwente.groove.lts.GraphNextState;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.RuleTransitionLabel;
+import nl.utwente.groove.transform.oracle.OracleParser;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;

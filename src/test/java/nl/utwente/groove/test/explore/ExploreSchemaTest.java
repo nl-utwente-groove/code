@@ -35,13 +35,13 @@ import org.junit.Test;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreConfigSchema;
 import nl.utwente.groove.explore.feature.ExploreKey;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.SettingsModel;
 import nl.utwente.groove.grammar.model.SettingsSchemas;
 import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.io.store.SystemStore;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -216,7 +216,7 @@ public class ExploreSchemaTest {
         assertEquals(QualName.name("fast"), grammar.getProperties().getExplorationName());
         model = (SettingsModel) grammar.getResource(ResourceKind.SETTINGS, name);
         assertTrue(model.isActive());
-        assertEquals(ExploreConfig.parse("next=newest"), grammar.getDefaultExploreConfig());
+        assertEquals(ExploreConfig.parse("next=newest"), ExploreConfig.ofGrammar(grammar));
         // deactivation removes the reference again
         props = grammar.getProperties().clone();
         schema.setActive(props, name, false);
@@ -284,7 +284,7 @@ public class ExploreSchemaTest {
         store.putProperties(props);
         assertTrue(schema.isActive(grammar, name));
         assertEquals(name, schema.getResourceName(local));
-        assertEquals(ExploreConfig.parse("next=newest"), grammar.getDefaultExploreConfig());
+        assertEquals(ExploreConfig.parse("next=newest"), ExploreConfig.ofGrammar(grammar));
     }
 
     /** Tests that the generated template is valid and semantically empty. */

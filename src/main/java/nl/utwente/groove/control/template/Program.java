@@ -36,10 +36,10 @@ import nl.utwente.groove.control.term.DerivationAttempt;
 import nl.utwente.groove.control.term.Term;
 import nl.utwente.groove.grammar.Action;
 import nl.utwente.groove.grammar.Callable;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.util.Fixable;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 

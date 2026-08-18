@@ -25,8 +25,8 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.annotation.HelpMap;
 import nl.utwente.groove.grammar.GrammarProperties;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 
 /**
@@ -246,5 +246,25 @@ public interface SettingsSchema {
         }
         result.append(SettingsModel.SCHEMA_KEY).append(" = ").append(getName()).append('\n');
         return result.toString();
+    }
+
+    /**
+     * Service interface through which schemas are contributed to
+     * {@link SettingsSchemas}, which loads all providers on the
+     * {@link java.util.ServiceLoader} at initialisation.
+     * The indirection through a provider (rather than loading the schemas
+     * themselves) keeps the schema classes free to remain singletons with
+     * private constructors: a provider has a public no-argument constructor,
+     * as required for class-path service loading, and hands out the existing
+     * singleton instance.
+     * Implementations must be declared both in
+     * {@code META-INF/services/nl.utwente.groove.grammar.model.SettingsSchema$Provider}
+     * (for class-path runs, in particular the installed application) and in a
+     * {@code provides} clause of {@code module-info.java} (for module-path
+     * runs).
+     */
+    public interface Provider {
+        /** Returns the contributed schema instance. */
+        public SettingsSchema getSchema();
     }
 }

@@ -59,6 +59,7 @@ import nl.utwente.groove.transform.oracle.ValueOracle;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.collect.NestedIterator;
+import nl.utwente.groove.util.collect.Pool;
 import nl.utwente.groove.util.collect.SetView;
 import nl.utwente.groove.util.collect.TreeHashSet;
 import nl.utwente.groove.util.parse.FormatError;
@@ -810,6 +811,17 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
 
     /** The system record for this GTS. */
     private @Nullable Record record;
+
+    /**
+     * Normalises a given rule transition label with respect to this GTS.
+     * @see Pool#canonical(Object)
+     */
+    public RuleTransitionLabel normaliseLabel(RuleTransitionLabel prototype) {
+        return this.labelPool.canonical(prototype);
+    }
+
+    /** Identity map of normal rule transition labels. */
+    private final Pool<RuleTransitionLabel> labelPool = new Pool<>();
 
     /**
      * Returns the set of listeners of this GTS.

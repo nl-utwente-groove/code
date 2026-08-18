@@ -16,8 +16,8 @@
  */
 package nl.utwente.groove.explore.util;
 
-import static nl.utwente.groove.explore.Verbosity.HIGH;
 import static nl.utwente.groove.explore.util.ExplorationReporter.time;
+import static nl.utwente.groove.util.cli.Verbosity.HIGH;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -30,10 +30,10 @@ import java.util.Date;
 import java.util.List;
 
 import nl.utwente.groove.explore.Exploration;
-import nl.utwente.groove.explore.Verbosity;
-import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.util.Strings;
+import nl.utwente.groove.util.cli.Verbosity;
+import nl.utwente.groove.util.io.FileType;
 import nl.utwente.groove.util.parse.StringHandler;
 
 /**

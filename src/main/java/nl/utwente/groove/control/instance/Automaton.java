@@ -24,7 +24,7 @@ import java.util.Set;
 import nl.utwente.groove.control.graph.ControlGraph;
 import nl.utwente.groove.control.template.NestedSwitch;
 import nl.utwente.groove.control.template.Program;
-import nl.utwente.groove.grammar.QualName;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.collect.Pool;
 
 /**

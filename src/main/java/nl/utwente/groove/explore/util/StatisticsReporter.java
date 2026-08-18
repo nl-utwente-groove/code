@@ -16,9 +16,9 @@
  */
 package nl.utwente.groove.explore.util;
 
-import static nl.utwente.groove.explore.Verbosity.HIGH;
-import static nl.utwente.groove.explore.Verbosity.MEDIUM;
 import static nl.utwente.groove.explore.util.ExplorationReporter.time;
+import static nl.utwente.groove.util.cli.Verbosity.HIGH;
+import static nl.utwente.groove.util.cli.Verbosity.MEDIUM;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -27,8 +27,6 @@ import java.util.Formatter;
 import java.util.List;
 
 import nl.utwente.groove.explore.Exploration;
-import nl.utwente.groove.explore.ExploreResult;
-import nl.utwente.groove.explore.Verbosity;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.host.HostFactory;
 import nl.utwente.groove.graph.AGraph;
@@ -36,6 +34,7 @@ import nl.utwente.groove.graph.iso.CertificateStrategy;
 import nl.utwente.groove.graph.iso.IsoChecker;
 import nl.utwente.groove.graph.iso.PartitionRefiner;
 import nl.utwente.groove.lts.AbstractGraphState;
+import nl.utwente.groove.lts.ExploreResult;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSListener;
 import nl.utwente.groove.lts.GraphNextState;
@@ -49,6 +48,7 @@ import nl.utwente.groove.util.Reporter;
 import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.cache.AbstractCacheHolder;
 import nl.utwente.groove.util.cache.CacheReference;
+import nl.utwente.groove.util.cli.Verbosity;
 
 /**
  * @author Eduardo Zambon

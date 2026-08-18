@@ -402,8 +402,7 @@ public class PrologDisplay extends ResourceDisplay {
             if (getSimulatorModel().getGrammar() == null) {
                 this.environment = new GrooveEnvironment(null, getUserOutput());
             } else {
-                this.environment = getSimulatorModel().getGrammar()
-                    .getPrologEnvironment();
+                this.environment = GrooveEnvironment.ofGrammar(getSimulatorModel().getGrammar());
             }
         }
         return this.environment;

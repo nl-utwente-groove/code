@@ -24,20 +24,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import nl.utwente.groove.explore.util.ExplorationReporter;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.plain.PlainGraph;
 import nl.utwente.groove.graph.plain.PlainNode;
-import nl.utwente.groove.io.FileType;
+import nl.utwente.groove.util.Log;
+import nl.utwente.groove.util.io.FileType;
 
 /**
  * Plain graph reader/writer for the CADP {@code .aut} format.
@@ -58,7 +60,7 @@ public class AutIO extends GraphIO<PlainGraph> {
             Map<Node,Integer> nodeNrMap = new HashMap<>();
             // nodes that do not have a valid number (in the range 0..nodeCount-1)
             Set<Node> restNodes = new HashSet<>();
-            ExplorationReporter.time("Building model for aut export");
+            TIMING.log(Level.TRACE, "Building model for aut export");
             // iterate over the existing nodes
             for (Node node : graph.nodeSet()) {
                 int nodeNr = node.getNumber();
@@ -76,7 +78,7 @@ public class AutIO extends GraphIO<PlainGraph> {
                 } while (nodeList.get(nextNodeNr));
                 nodeNrMap.put(restNode, nextNodeNr);
             }
-            ExplorationReporter.time("Starting aut export");
+            TIMING.log(Level.TRACE, "Starting aut export");
             int lines = 0;
             writer.printf("des (%d, %d, %d)%n", 0, graph.edgeCount(), graph.nodeCount());
             for (Edge edge : graph.edgeSet()) {
@@ -91,8 +93,9 @@ public class AutIO extends GraphIO<PlainGraph> {
                             nodeNrMap.get(edge.target()));
                 lines = (lines + 1) % MAX_LINES;
                 if (lines == 0) {
-                    ExplorationReporter
-                        .time("Flushing after writing %s lines to aut".formatted(MAX_LINES));
+                    TIMING
+                        .log(Level.TRACE,
+                             "Flushing after writing %s lines to aut".formatted(MAX_LINES));
                     writer.flush();
                 }
             }
@@ -178,4 +181,8 @@ public class AutIO extends GraphIO<PlainGraph> {
     }
 
     static private final int MAX_LINES = 100000;
+
+    /** Timing diagnostics, on the same channel as the exploration reporters
+     * (enable with {@code -log trace:explore.timing}). */
+    static private final Logger TIMING = Log.getLogger("explore.timing");
 }

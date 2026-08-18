@@ -37,11 +37,6 @@ import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.iso.CertificateStrategy;
-import nl.utwente.groove.transform.DeltaApplier;
-import nl.utwente.groove.transform.DeltaStore;
-import nl.utwente.groove.transform.DeltaTarget;
-import nl.utwente.groove.transform.FrozenDeltaApplier;
-import nl.utwente.groove.transform.StoredDeltaApplier;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 
 /**

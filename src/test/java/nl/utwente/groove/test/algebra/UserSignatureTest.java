@@ -36,7 +36,7 @@ import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.algebra.UserSignature;
-import nl.utwente.groove.grammar.QualName;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

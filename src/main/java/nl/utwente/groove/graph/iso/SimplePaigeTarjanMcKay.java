@@ -26,9 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
-import nl.utwente.groove.grammar.host.HostNode;
-import nl.utwente.groove.grammar.host.ValueNode;
-import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Label;
@@ -219,8 +216,8 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
     }
 
     @Override
-    NodeCertificate createValueNodeCertificate(ValueNode node) {
-        return new MyValueNodeCert(node);
+    NodeCertificate createIdentityNodeCertificate(Node node) {
+        return new MyIdentityNodeCert(node);
     }
 
     @Override
@@ -325,13 +322,11 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
          */
         public MyNodeCert(Node node) {
             this.node = node;
-            if (node instanceof HostNode) {
-                this.label = ((HostNode) node).getType().label();
-                this.value = this.label.hashCode();
-            } else {
-                this.label = null;
-                this.value = INIT_NODE_VALUE;
-            }
+            Object seed = node.certificateSeed();
+            this.seed = seed;
+            this.value = seed == null
+                ? INIT_NODE_VALUE
+                : seed.hashCode();
         }
 
         @Override
@@ -355,10 +350,10 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
             if (this.value != other.value) {
                 return false;
             }
-            if (this.label == null) {
+            if (this.seed == null) {
                 return true;
             }
-            return this.label.equals(other.label);
+            return this.seed.equals(other.seed);
         }
 
         /**
@@ -433,8 +428,8 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
         int value;
         /** The element for which this is a certificate. */
         private final Node node;
-        /** Potentially {@code null} node label. */
-        private final TypeLabel label;
+        /** Potentially {@code null} certificate seed of the node. */
+        final Object seed;
         /** List of certificates of incoming edges. */
         private final List<MyEdge2Cert> inEdges = new ArrayList<>();
         /** List of certificates of outgoing edges. */
@@ -447,37 +442,34 @@ public class SimplePaigeTarjanMcKay extends CertificateStrategy {
     }
 
     /**
-     * Certificate for value nodes. This takes the actual node identity into
-     * account.
+     * Certificate for nodes with an identity certificate, such as data value
+     * nodes. This takes the actual node identity (i.e., the certificate seed)
+     * into account.
      * @author Arend Rensink
      * @version $Revision$
      */
-    static class MyValueNodeCert extends MyNodeCert {
+    static class MyIdentityNodeCert extends MyNodeCert {
         /**
-         * Constructs a new certificate node. The incidence count (i.e., the
-         * number of incident edges) is passed in as a parameter. The initial
-         * value is set to the incidence count.
+         * Constructs a new certificate node. The initial value is set to the
+         * hash code of the node's certificate seed.
          */
-        public MyValueNodeCert(ValueNode node) {
+        public MyIdentityNodeCert(Node node) {
             super(node);
-            this.nodeValue = node.getValue();
-            this.value = node.getValue().hashCode();
+            assert this.seed != null;
         }
 
         /**
          * Returns <tt>true</tt> if <tt>obj</tt> is also a
-         * {@link SimplePaigeTarjanMcKay.MyValueNodeCert} and has the same node as this one.
+         * {@link SimplePaigeTarjanMcKay.MyIdentityNodeCert} and has the same seed as this one.
          */
         @Override
         public boolean equals(Object obj) {
             if (this == obj) {
                 return true;
             }
-            return obj instanceof MyValueNodeCert
-                && this.nodeValue.equals(((MyValueNodeCert) obj).nodeValue);
+            return obj instanceof MyIdentityNodeCert
+                && this.seed.equals(((MyIdentityNodeCert) obj).seed);
         }
-
-        private final Object nodeValue;
     }
 
     static class MyEdge1Cert implements EdgeCertificate {

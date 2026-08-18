@@ -21,12 +21,12 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.explore.verify.BoundedLTLStrategy;
 import nl.utwente.groove.explore.verify.BoundedPocketLTLStrategy;
+import nl.utwente.groove.explore.verify.CycleAcceptor;
 import nl.utwente.groove.explore.verify.LTLStrategy;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.verify.Boundary;
 import nl.utwente.groove.verify.BoundaryParser;
-import nl.utwente.groove.verify.CycleAcceptor;
 
 /**
  * Exploration type for LTL model checking: a nested depth-first search for a

@@ -16,10 +16,16 @@
  */
 package nl.utwente.groove.transform;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.host.AnchorValue;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.rule.RuleToHostMap;
+import nl.utwente.groove.match.Proof;
 
 /**
  * Interface to encode a rule instantiation that provides images to the rule
@@ -85,6 +91,77 @@ public interface RuleEvent extends Comparable<RuleEvent>, Event {
 
     /** Returns the reuse policy of rule events. */
     public Reuse getReuse();
+
+    /**
+     * Creates an event on the basis of a given proof.
+     * This is only allowed if the proved condition has an associated rule.
+     * An optional event factory can be used for event reuse
+     * @param proof the proof to create the event for
+     * @param record factory for fresh nodes; may be <code>null</code>, in which case
+     * events are not reused among transitions
+     */
+    public static RuleEvent createEvent(Proof proof, @Nullable Record record) {
+        var rule = proof.getRule();
+        assert rule != null;
+        Collection<BasicEvent> eventSet = new ArrayList<>();
+        collectEvents(proof, eventSet, record);
+        assert !eventSet.isEmpty();
+        if (!rule.hasSubRules()) {
+            assert eventSet.size() == 1;
+            return eventSet.iterator().next();
+        } else {
+            return createCompositeEvent(proof, record, eventSet);
+        }
+    }
+
+    /**
+     * Recursively collects the events of a given proof and all its sub-proofs
+     * into a given collection.
+     * Events of locally non-modifying rules are skipped except for the top-level rule.
+     * @param proof the proof to collect the events of
+     * @param events the resulting set of events
+     * @param record factory for events; may be <code>null</code>, in which case
+     * events are not reused among transitions
+     */
+    private static void collectEvents(Proof proof, Collection<BasicEvent> events,
+                                      @Nullable Record record) {
+        var rule = proof.getRule();
+        if (rule != null && (rule.isTop() || rule.isLocallyModifying())) {
+            BasicEvent myEvent = createSimpleEvent(proof, record);
+            events.add(myEvent);
+        }
+        for (Proof subProof : proof.getSubProofs()) {
+            collectEvents(subProof, events, record);
+        }
+    }
+
+    /**
+     * Callback factory method to create a simple event. Delegates to
+     * {@link Record#createSimpleEvent(Rule, RuleToHostMap)} if
+     * <code>record</code> is not <code>null</code>.
+     */
+    private static BasicEvent createSimpleEvent(Proof proof, @Nullable Record record) {
+        assert proof.hasRule();
+        if (record == null) {
+            return new BasicEvent(proof.getRule(), proof.getPatternMap(), Reuse.NONE);
+        } else {
+            return record.createSimpleEvent(proof.getRule(), proof.getPatternMap());
+        }
+    }
+
+    /**
+     * Callback factory method to create a composite event. Delegates to
+     * {@link Record#createSimpleEvent(Rule, RuleToHostMap)} if
+     * <code>nodeFactory</code> is not <code>null</code>.
+     */
+    private static RuleEvent createCompositeEvent(Proof proof, @Nullable Record record,
+                                                  Collection<BasicEvent> eventSet) {
+        if (record == null) {
+            return new CompositeEvent(record, proof.getRule(), eventSet, Reuse.NONE);
+        } else {
+            return record.createCompositeEvent(proof.getRule(), eventSet);
+        }
+    }
 
     /**
      * Event reuse mode.

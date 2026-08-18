@@ -24,10 +24,10 @@ import nl.utwente.groove.explore.feature.ExploreKey;
 import nl.utwente.groove.explore.feature.Goal;
 import nl.utwente.groove.explore.feature.Setting;
 import nl.utwente.groove.explore.result.Predicate;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.lts.GraphState;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 

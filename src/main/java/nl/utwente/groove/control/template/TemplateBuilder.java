@@ -44,9 +44,9 @@ import nl.utwente.groove.control.term.DerivationAttempt;
 import nl.utwente.groove.control.term.Term;
 import nl.utwente.groove.grammar.Action;
 import nl.utwente.groove.grammar.CheckPolicy;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.util.Pair;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.ThreadPool;
 import nl.utwente.groove.util.collect.NestedIterator;
 

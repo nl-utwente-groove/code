@@ -41,7 +41,6 @@ import org.jgraph.graph.DefaultPort;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.ParentMap;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectKind;
@@ -53,13 +52,14 @@ import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.GraphInfo;
-import nl.utwente.groove.graph.GraphProperties;
+import nl.utwente.groove.grammar.ResourceProperties;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.layout.EdgeLayout;
 import nl.utwente.groove.graph.layout.LayoutMap;
 import nl.utwente.groove.util.ChangeCount;
 import nl.utwente.groove.util.ChangeCount.Derived;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatError;
 
 /**
@@ -149,7 +149,7 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
         for (AspectJCell root : getRoots()) {
             root.saveToUserObject();
         }
-        this.properties = graph.getProperties();
+        this.properties = ResourceProperties.getProperties(graph);
         setLoading(false);
         setGraphModified();
     }
@@ -224,7 +224,7 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
             }
         }
         GraphInfo.setLayoutMap(graph, layoutMap);
-        GraphInfo.setProperties(graph, getProperties());
+        ResourceProperties.setProperties(graph, getProperties());
         graph.setFixed();
         this.nodeJCellMap.clear();
         this.nodeJCellMap.putAll(nodeJVertexMap);
@@ -290,9 +290,9 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
     /**
      * Returns the properties associated with this j-model.
      */
-    public final GraphProperties getProperties() {
+    public final ResourceProperties getProperties() {
         if (this.properties == null) {
-            this.properties = new GraphProperties();
+            this.properties = new ResourceProperties();
         }
         return this.properties;
     }
@@ -534,7 +534,7 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
     private boolean beingEdited = false;
 
     /** Properties map of the graph being displayed or edited. */
-    private GraphProperties properties;
+    private ResourceProperties properties;
     /** The set of used node numbers. */
     private Set<Integer> usedNrs;
     /** Flag indicating that we are loading a new aspect graph,

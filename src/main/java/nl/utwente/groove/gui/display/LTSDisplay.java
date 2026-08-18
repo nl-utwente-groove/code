@@ -57,7 +57,6 @@ import javax.swing.event.ChangeListener;
 
 import org.eclipse.jdt.annotation.NonNull;
 
-import nl.utwente.groove.explore.ExploreResult;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
@@ -73,6 +72,7 @@ import nl.utwente.groove.gui.jgraph.LTSJModel;
 import nl.utwente.groove.gui.jgraph.LTSJVertex;
 import nl.utwente.groove.gui.list.ErrorListPanel;
 import nl.utwente.groove.gui.tree.LTSTree;
+import nl.utwente.groove.lts.ExploreResult;
 import nl.utwente.groove.lts.Filter;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSListener;

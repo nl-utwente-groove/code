@@ -19,15 +19,16 @@ package nl.utwente.groove.explore.util;
 import java.io.File;
 import java.io.IOException;
 
-import nl.utwente.groove.explore.ExploreResult;
 import nl.utwente.groove.graph.plain.PlainGraph;
-import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Exporters;
 import nl.utwente.groove.io.external.PortException;
+import nl.utwente.groove.lts.ExploreResult;
 import nl.utwente.groove.lts.Filter;
 import nl.utwente.groove.lts.GTS;
+import nl.utwente.groove.lts.LTSLabels;
+import nl.utwente.groove.util.io.FileType;
 
 /**
  * Exploration reporter that saves the LTS.

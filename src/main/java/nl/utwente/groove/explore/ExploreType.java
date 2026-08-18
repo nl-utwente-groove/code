@@ -21,9 +21,13 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
+import nl.utwente.groove.explore.config.LegacySyntaxParser;
 import nl.utwente.groove.explore.engine.Strategy;
 import nl.utwente.groove.explore.result.ResultCollector;
 import nl.utwente.groove.grammar.Grammar;
+import nl.utwente.groove.grammar.GrammarKey;
+import nl.utwente.groove.grammar.GrammarProperties;
+import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.util.AIGenerated;
@@ -222,6 +226,58 @@ public abstract class ExploreType {
      * unbounded): the realisation of the default exploration configuration. */
     static public ExploreType getDefault() {
         return DEFAULT.get();
+    }
+
+    /**
+     * Returns the default exploration type of a given grammar. If the
+     * {@code exploration} property names a settings resource, the resource
+     * content is realised (an unresolvable reference or unrealisable content
+     * yields {@link #getDefault()}; the errors are reported through the
+     * property checker and on the resource itself). Otherwise the deprecated
+     * legacy exploration strategy key is consulted, which (unlike
+     * {@link ExploreConfig#ofGrammar}) may yield one of the dedicated,
+     * configuration-inexpressible exploration types.
+     */
+    static public ExploreType ofGrammar(GrammarModel grammar) {
+        var local = grammar.getProperties().getExplorationName();
+        if (local == null) {
+            return ofLegacy(grammar.getProperties());
+        }
+        try {
+            return ExploreTypeConverter.toExploreType(ExploreConfig.ofResource(grammar, local));
+        } catch (FormatException exc) {
+            return getDefault();
+        }
+    }
+
+    /**
+     * Returns the exploration type stored in the deprecated legacy
+     * exploration strategy key of a given properties bundle, or
+     * {@link #getDefault()} if that key is unset or its value does not parse
+     * (the parse errors being reported at the GUI level, see
+     * {@link #parseLegacy}). Only consulted when the exploration reference
+     * (see {@link GrammarProperties#getExplorationName()}) is absent.
+     */
+    static public ExploreType ofLegacy(GrammarProperties properties) {
+        try {
+            return parseLegacy(properties);
+        } catch (FormatException exc) {
+            return getDefault();
+        }
+    }
+
+    /**
+     * Parses the deprecated legacy exploration strategy key of a given
+     * properties bundle, returning {@link #getDefault()} if the key is unset.
+     * The grammar layer stores the key as an uninterpreted string, so this
+     * is the single point where its value is validated.
+     * @throws FormatException if the stored value does not parse
+     */
+    static public ExploreType parseLegacy(GrammarProperties properties) throws FormatException {
+        String value = properties.getProperty(GrammarKey.EXPLORATION);
+        return value == null || value.isEmpty()
+            ? getDefault()
+            : LegacySyntaxParser.parse(value);
     }
 
     /** The lazily computed realisation of the default configuration; lazy so

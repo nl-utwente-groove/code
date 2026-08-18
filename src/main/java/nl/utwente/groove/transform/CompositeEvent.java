@@ -28,6 +28,7 @@ import java.util.TreeSet;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.host.AnchorValue;
 import nl.utwente.groove.grammar.rule.RuleToHostMap;
+import nl.utwente.groove.match.Proof;
 import nl.utwente.groove.match.TreeMatch;
 import nl.utwente.groove.util.cache.CacheReference;
 
@@ -106,7 +107,7 @@ public class CompositeEvent extends AbstractRuleEvent<CompositeEvent.CompositeEv
 
     @Override
     public RuleEvent createEvent(Proof proof) {
-        return proof.newEvent(this.record);
+        return RuleEvent.createEvent(proof, this.record);
     }
 
     @Override

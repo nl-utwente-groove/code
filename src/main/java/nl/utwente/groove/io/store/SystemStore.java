@@ -17,8 +17,8 @@
 package nl.utwente.groove.io.store;
 
 import static nl.utwente.groove.grammar.model.ResourceKind.PROPERTIES;
-import static nl.utwente.groove.io.FileType.GRAMMAR;
 import static nl.utwente.groove.io.store.EditType.LAYOUT;
+import static nl.utwente.groove.util.io.FileType.GRAMMAR;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -58,22 +58,21 @@ import nl.utwente.groove.algebra.UserSignature;
 import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.GrammarSource;
-import nl.utwente.groove.grammar.ModuleName;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.type.TypeLabel;
-import nl.utwente.groove.io.ExtensionFilter;
-import nl.utwente.groove.io.FileType;
-import nl.utwente.groove.io.FileUtils;
-import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.io.graph.AttrGraph;
 import nl.utwente.groove.io.graph.GxlIO;
 import nl.utwente.groove.io.graph.NodeNrDispenser;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.ModuleName;
 import nl.utwente.groove.util.Observable;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.Unzipper;
+import nl.utwente.groove.util.io.ExtensionFilter;
+import nl.utwente.groove.util.io.FileType;
+import nl.utwente.groove.util.io.FileUtils;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -817,7 +816,7 @@ public class SystemStore implements GrammarSource {
         if (kind != ResourceKind.SETTINGS) {
             return false;
         }
-        if (name.get(0).equals(Groove.PROPERTY_NAME)) {
+        if (name.get(0).equals(PROPERTIES.getDefaultName().get().toString())) {
             return true;
         }
         return this.legacyPropertiesFile && name.size() == 1
@@ -874,7 +873,8 @@ public class SystemStore implements GrammarSource {
 
     /** Returns the file that by default holds the system properties. */
     private File getDefaultPropertiesFile() {
-        return new File(this.file, PROPERTIES.getFileType().addExtension(Groove.PROPERTY_NAME));
+        return new File(this.file,
+            PROPERTIES.getFileType().addExtension(PROPERTIES.getDefaultName().get().toString()));
     }
 
     /** Returns the file that held the system properties in the distant past. */

@@ -22,7 +22,7 @@ import java.util.Map;
 
 import nl.utwente.groove.control.Procedure;
 import nl.utwente.groove.control.term.Term;
-import nl.utwente.groove.grammar.QualName;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

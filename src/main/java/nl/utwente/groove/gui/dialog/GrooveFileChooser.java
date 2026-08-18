@@ -37,7 +37,7 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.gui.Options;
-import nl.utwente.groove.io.FileType;
+import nl.utwente.groove.util.io.FileType;
 
 /**
  * A file chooser with a {@link GrooveFileView}, which prevents traversal of

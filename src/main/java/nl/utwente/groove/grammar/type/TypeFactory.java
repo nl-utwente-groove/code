@@ -8,12 +8,12 @@ import java.util.Map;
 import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.algebra.Sort;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.ElementFactory;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.Morphism;
 import nl.utwente.groove.util.Pair;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Factory creating type nodes and edges.

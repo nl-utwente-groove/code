@@ -34,12 +34,12 @@ import nl.utwente.groove.annotation.HelpMap;
 import nl.utwente.groove.explore.feature.ExploreKey;
 import nl.utwente.groove.explore.feature.Setting;
 import nl.utwente.groove.grammar.GrammarProperties;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.SettingsContent;
 import nl.utwente.groove.grammar.model.SettingsModel;
 import nl.utwente.groove.grammar.model.SettingsSchema;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -278,6 +278,16 @@ public class ExploreConfigSchema implements SettingsSchema {
     /** The singleton instance of this schema. */
     public static final ExploreConfigSchema INSTANCE = new ExploreConfigSchema();
     /** The name of this schema, doubling as the top-level folder its settings
-     * resources live in. */
-    public static final String NAME = "explore";
+     * resources live in. Aliases the grammar-level constant, which is the
+     * source of truth so that the {@code exploration} property can be
+     * resolved without the grammar layer referencing this class. */
+    public static final String NAME = GrammarModel.EXPLORE_SCHEMA_NAME;
+
+    /** Service provider contributing {@link #INSTANCE} to the schema registry. */
+    public static class Provider implements SettingsSchema.Provider {
+        @Override
+        public SettingsSchema getSchema() {
+            return INSTANCE;
+        }
+    }
 }

@@ -18,10 +18,12 @@ package nl.utwente.groove.grammar.host;
 
 import java.util.Comparator;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.graph.Node;
+import nl.utwente.groove.util.AIGenerated;
 
 /**
  * Supertype of all nodes that can occur in a {@link DefaultHostGraph}.
@@ -36,6 +38,13 @@ public sealed interface HostNode extends Node, HostElement, AnchorValue
      * the host node is untyped. */
     @Override
     public TypeNode getType();
+
+    /** The certificate seed of a host node is its type label. */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    @Override
+    default public @NonNull Object certificateSeed() {
+        return getType().label();
+    }
 
     /** Host node comparator, based on their {@link #toString()} value. */
     static Comparator<HostNode> COMPARATOR = (h1, h2) -> h1.toString().compareTo(h2.toString());

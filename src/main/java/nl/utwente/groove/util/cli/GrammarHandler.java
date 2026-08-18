@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.util.cli;
 
-import nl.utwente.groove.io.FileType;
+import nl.utwente.groove.util.io.FileType;
 
 /**
  * Option handler that adds a {@code .gps} extension to a directory name,

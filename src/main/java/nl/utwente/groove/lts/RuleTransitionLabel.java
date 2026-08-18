@@ -31,7 +31,6 @@ import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.graph.ALabel;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
-import nl.utwente.groove.transform.Record;
 import nl.utwente.groove.transform.RuleEvent;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.line.Line;
@@ -214,7 +213,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
 
     /**
      * Creates a normalised rule label.
-     * @see Record#normaliseLabel(RuleTransitionLabel)
+     * @see GTS#normaliseLabel(RuleTransitionLabel)
      * @param source the source graph state of the transition
      * @param match the rule match on which the transition is based
      * @param addedNodes the nodes added by the transition; possibly {@code null} if
@@ -226,9 +225,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
         @NonNull
         RuleTransitionLabel result = new RuleTransitionLabel(source, match, addedNodes);
         if (REUSE_LABELS) {
-            Record record = source.getGTS().getRecord();
-            RuleTransitionLabel newResult = record.normaliseLabel(result);
-            result = newResult;
+            result = source.getGTS().normaliseLabel(result);
         }
         return result;
     }

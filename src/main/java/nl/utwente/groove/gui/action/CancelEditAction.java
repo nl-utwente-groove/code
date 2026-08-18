@@ -1,11 +1,11 @@
 package nl.utwente.groove.gui.action;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.display.ResourceTab;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Action to cancel editing the currently displayed resource.

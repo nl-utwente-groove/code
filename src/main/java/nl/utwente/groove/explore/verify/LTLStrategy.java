@@ -30,10 +30,10 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import gov.nasa.ltl.trans.Formula;
-import nl.utwente.groove.explore.ExploreResult;
 import nl.utwente.groove.explore.engine.ExploreStateStrategy;
 import nl.utwente.groove.explore.engine.Strategy;
 import nl.utwente.groove.graph.EdgeRole;
+import nl.utwente.groove.lts.ExploreResult;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
@@ -47,7 +47,6 @@ import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.verify.BuchiGraph;
 import nl.utwente.groove.verify.BuchiLocation;
 import nl.utwente.groove.verify.BuchiTransition;
-import nl.utwente.groove.verify.CycleAcceptor;
 import nl.utwente.groove.verify.ModelChecking.Record;
 import nl.utwente.groove.verify.ProductState;
 import nl.utwente.groove.verify.ProductStateSet;
@@ -295,7 +294,7 @@ public class LTLStrategy extends Strategy {
 
     /**
      * Adds a counterexample lasso to the exploration result (see
-     * {@link nl.utwente.groove.explore.ExploreResult.Lasso}).
+     * {@link nl.utwente.groove.lts.ExploreResult.Lasso}).
      * The lasso consists of the path along the current search stack, extended
      * by a given pivot state (if that is not already the top of the stack) and
      * a chain of product transitions leading from the pivot state back to a

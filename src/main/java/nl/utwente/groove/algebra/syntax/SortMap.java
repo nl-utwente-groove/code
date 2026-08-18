@@ -25,9 +25,9 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.Sort;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.NoNonNull;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Mapping from variable names to sorts.

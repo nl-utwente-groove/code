@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.control;
 
-import static nl.utwente.groove.io.FileType.CONTROL;
+import static nl.utwente.groove.util.io.FileType.CONTROL;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,11 +45,10 @@ import nl.utwente.groove.grammar.Callable;
 import nl.utwente.groove.grammar.Callable.Kind;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.GrammarProperties;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.Rule;
-import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.util.AIGenerated;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
@@ -335,22 +334,6 @@ public class CtrlLoader {
 
     /** The default main program text, used if a (combined) program does not declare a main. */
     public static final String DEFAULT_MAIN = "# *.any;";
-
-    /** Call with [grammarfile] [controlfile]* */
-    public static void main(String[] args) {
-        try {
-            String grammarName = args[0];
-            Grammar grammar = Groove.loadGrammar(grammarName).toGrammar();
-            for (int i = 1; i < args.length; i++) {
-                String programName = CONTROL.stripExtension(args[1]);
-                System.out
-                    .printf("Control automaton for %s:%n%s", programName,
-                            run(grammar, programName, new File(grammarName)));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     /** Parses a single control program on the basis of a given grammar. */
     public static Program run(Grammar grammar, String programName,

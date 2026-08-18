@@ -36,18 +36,18 @@ import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.GrammarProperties;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.io.store.SystemStore;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.Version;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
  * Tests the storage of the default exploration configuration: the
  * {@code exploration} property as a reference to an {@code explore} settings
- * resource, its resolution at the grammar model level, the property checker
- * for the reference, and the read-time fallback for the legacy
+ * resource, its resolution by the explore-side accessors, the property
+ * checker for the reference, and the read-time fallback for the legacy
  * {@code explorationStrategy} key.
  * @author Arend Rensink
  * @version $Revision$
@@ -61,11 +61,11 @@ public class ExplorePropertiesTest {
     public void testDefaults() throws Exception {
         var properties = new GrammarProperties();
         assertNull(properties.getExplorationName());
-        assertSame(ExploreType.getDefault(), properties.getLegacyExploreType());
+        assertSame(ExploreType.getDefault(), ExploreType.ofLegacy(properties));
         // a grammar without any exploration setting yields the defaults
         GrammarModel grammar = newGrammar();
-        assertSame(ExploreType.getDefault(), grammar.getDefaultExploreType());
-        assertEquals(new ExploreConfig(), grammar.getDefaultExploreConfig());
+        assertSame(ExploreType.getDefault(), ExploreType.ofGrammar(grammar));
+        assertEquals(new ExploreConfig(), ExploreConfig.ofGrammar(grammar));
     }
 
     /** Tests that a referenced resource is resolved to its configuration; the
@@ -76,9 +76,9 @@ public class ExplorePropertiesTest {
             = newGrammar(Map.of(QualName.parse("explore.fast"), "next = newest\ncount = first\n"),
                          "fast");
         assertEquals(QualName.name("fast"), grammar.getProperties().getExplorationName());
-        assertConfigured("next=newest count=first", grammar.getDefaultExploreType());
+        assertConfigured("next=newest count=first", ExploreType.ofGrammar(grammar));
         assertEquals(ExploreConfig.parse("next=newest count=first"),
-                     grammar.getDefaultExploreConfig());
+                     ExploreConfig.ofGrammar(grammar));
     }
 
     /** Tests that a nested resource name works as reference target, the
@@ -88,7 +88,7 @@ public class ExplorePropertiesTest {
         GrammarModel grammar
             = newGrammar(Map.of(QualName.parse("explore.nightly.run"), "next = random\n"),
                          "nightly.run");
-        assertConfigured("next=random", grammar.getDefaultExploreType());
+        assertConfigured("next=random", ExploreType.ofGrammar(grammar));
     }
 
     /**
@@ -106,7 +106,7 @@ public class ExplorePropertiesTest {
         assertFalse(key.check(grammar, Optional.of(QualName.name("broken"))).isEmpty());
         // resolution of a broken reference falls back to the default
         setExplorationName(grammar, "broken");
-        assertSame(ExploreType.getDefault(), grammar.getDefaultExploreType());
+        assertSame(ExploreType.getDefault(), ExploreType.ofGrammar(grammar));
     }
 
     /**
@@ -119,7 +119,7 @@ public class ExplorePropertiesTest {
             = newGrammar(Map.of(QualName.parse("explore.nen"), "heuristic = nen\n"), "nen");
         var model = grammar.getResource(ResourceKind.SETTINGS, QualName.parse("explore.nen"));
         assertTrue(model.hasErrors());
-        assertSame(ExploreType.getDefault(), grammar.getDefaultExploreType());
+        assertSame(ExploreType.getDefault(), ExploreType.ofGrammar(grammar));
     }
 
     /** Tests that a stored legacy exploration description is translated on
@@ -128,14 +128,14 @@ public class ExplorePropertiesTest {
     public void testLegacyFallback() throws Exception {
         GrammarModel grammar = newGrammar();
         setLegacy(grammar, "dfs final 1");
-        assertConfigured("next=newest count=first", grammar.getDefaultExploreType());
+        assertConfigured("next=newest count=first", ExploreType.ofGrammar(grammar));
         assertEquals(ExploreConfig.parse("next=newest count=first"),
-                     grammar.getDefaultExploreConfig());
+                     ExploreConfig.ofGrammar(grammar));
         // a non-configuration legacy value yields its dedicated type,
         // and falls back to the default configuration
         setLegacy(grammar, "ltl:true cycle 0");
-        assertInstanceOf(LTLExploreType.class, grammar.getDefaultExploreType());
-        assertEquals(new ExploreConfig(), grammar.getDefaultExploreConfig());
+        assertInstanceOf(LTLExploreType.class, ExploreType.ofGrammar(grammar));
+        assertEquals(new ExploreConfig(), ExploreConfig.ofGrammar(grammar));
     }
 
     /** Tests that the reference takes precedence over the legacy key. */
@@ -144,7 +144,7 @@ public class ExplorePropertiesTest {
         GrammarModel grammar
             = newGrammar(Map.of(QualName.parse("explore.fast"), "next = newest\n"), "fast");
         setLegacy(grammar, "linear final 0");
-        assertConfigured("next=newest", grammar.getDefaultExploreType());
+        assertConfigured("next=newest", ExploreType.ofGrammar(grammar));
     }
 
     /** Tests that setting the reference removes the legacy key. */

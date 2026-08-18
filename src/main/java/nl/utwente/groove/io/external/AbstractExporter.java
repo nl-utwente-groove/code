@@ -26,7 +26,7 @@ import java.util.Set;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.io.FileType;
+import nl.utwente.groove.util.io.FileType;
 
 /** Abstract superclass for {@link Exporter}s, containing a few helper methods. */
 @NonNullByDefault

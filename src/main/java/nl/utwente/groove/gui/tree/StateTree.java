@@ -56,7 +56,6 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import nl.utwente.groove.grammar.Action;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.model.ResourceKind;
@@ -83,6 +82,7 @@ import nl.utwente.groove.lts.RuleTransition;
 import nl.utwente.groove.lts.StartGraphState;
 import nl.utwente.groove.transform.RuleEvent;
 import nl.utwente.groove.util.HTMLConverter;
+import nl.utwente.groove.util.QualName;
 
 /**
  * List of states in the LTS.

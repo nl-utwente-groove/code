@@ -5,19 +5,20 @@ import java.util.List;
 
 import javax.swing.JOptionPane;
 
-import nl.utwente.groove.explore.ExploreResult;
+import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.dialog.StringDialog;
 import nl.utwente.groove.gui.display.DisplayKind;
+import nl.utwente.groove.lts.ExploreResult;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.StateProperty;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.verify.CTLMarker;
-import nl.utwente.groove.verify.CTLModelChecker;
 import nl.utwente.groove.verify.Formula;
 import nl.utwente.groove.verify.FormulaParser;
 import nl.utwente.groove.verify.Logic;
+import nl.utwente.groove.verify.CTLModelFacade;
 
 /**
  * Action for verifying a CTL formula.
@@ -39,7 +40,7 @@ public class CheckCTLAction extends SimulatorAction {
             // completely re-explore if the GTS has open states
             if (getSimulatorModel().getGTS().hasOpenStates() && this.full
                 && getSimulatorModel().resetGTS()) {
-                getActions().getExploreAction().explore(getGrammarModel().getDefaultExploreType());
+                getActions().getExploreAction().explore(ExploreType.ofGrammar(getGrammarModel()));
                 doCheck = !getSimulatorModel().getGTS().hasOpenStates();
             }
             if (doCheck) {
@@ -90,7 +91,7 @@ public class CheckCTLAction extends SimulatorAction {
                                  String property) throws FormatException {
         Formula formula = Formula.parse(property).toCtlFormula();
         formula.check(result.getGTS());
-        CTLMarker modelChecker = new CTLMarker(formula, CTLModelChecker.newModel(result));
+        CTLMarker modelChecker = new CTLMarker(formula, CTLModelFacade.newModel(result));
         int witnesscCount = modelChecker.getCount();
         List<GraphState> witnesses = new ArrayList<>(witnesscCount);
         String message;

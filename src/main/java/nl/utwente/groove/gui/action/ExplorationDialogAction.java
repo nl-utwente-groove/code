@@ -1,10 +1,10 @@
 package nl.utwente.groove.gui.action;
 
-import static nl.utwente.groove.grammar.GrammarKey.EXPLORATION;
 import static nl.utwente.groove.grammar.GrammarKey.EXPLORE_CONFIG;
 
 import javax.swing.Action;
 
+import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
@@ -36,8 +36,8 @@ public class ExplorationDialogAction extends SimulatorAction {
                     var entry = properties.parseProperty(EXPLORE_CONFIG);
                     error = !EXPLORE_CONFIG.apply(grammar, entry).isEmpty();
                 } else {
-                    var exploreType = properties.parseProperty(EXPLORATION);
-                    error = !EXPLORATION.check(grammar, exploreType).isEmpty();
+                    // the legacy key is stored uninterpreted; validate it here
+                    ExploreType.parseLegacy(properties);
                 }
             } catch (FormatException e) {
                 error = true;

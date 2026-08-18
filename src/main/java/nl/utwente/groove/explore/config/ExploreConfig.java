@@ -38,10 +38,14 @@ import nl.utwente.groove.explore.feature.NextState;
 import nl.utwente.groove.explore.feature.Outcome;
 import nl.utwente.groove.explore.feature.Setting;
 import nl.utwente.groove.explore.feature.Shape;
+import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.feature.Successor;
+import nl.utwente.groove.grammar.model.GrammarModel;
+import nl.utwente.groove.grammar.model.Settings;
 import nl.utwente.groove.grammar.model.SettingsContent;
 import nl.utwente.groove.grammar.model.SettingsModel;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.Parser;
@@ -261,6 +265,50 @@ public class ExploreConfig {
             result.add(current.toString());
         }
         return result;
+    }
+
+    /**
+     * Returns the default exploration configuration of a given grammar: the
+     * content of the settings resource named by the {@code exploration}
+     * property, the configuration equivalent of the legacy exploration
+     * strategy key if only that is set and expressible, or the default
+     * configuration otherwise (including when the reference does not
+     * resolve; those errors are reported through the property checker).
+     * This is the configuration-expressible projection of
+     * {@link ExploreType#ofGrammar}: a legacy key holding one of the
+     * dedicated exploration types projects to the default configuration.
+     */
+    public static ExploreConfig ofGrammar(GrammarModel grammar) {
+        var local = grammar.getProperties().getExplorationName();
+        if (local == null) {
+            // fall back to the legacy key, if its value is expressible
+            return ExploreType
+                .ofLegacy(grammar.getProperties()) instanceof ConfiguredExploreType configured
+                    ? new ExploreConfig(configured.getConfig())
+                    : new ExploreConfig();
+        }
+        try {
+            return ofResource(grammar, local);
+        } catch (FormatException exc) {
+            // reported on the resource and by the property checker
+            return new ExploreConfig();
+        }
+    }
+
+    /**
+     * Resolves an exploration reference to the content of the referenced
+     * settings resource of a given grammar.
+     * @param localName the local name held by the {@code exploration}
+     * property, i.e., the resource name within the {@code explore} folder
+     * @throws FormatException if the resource is missing or erroneous
+     */
+    public static ExploreConfig ofResource(GrammarModel grammar,
+                                           QualName localName) throws FormatException {
+        Settings settings = grammar.getExploreSettings(localName).toResource();
+        // a resource inside the 'explore' folder is of the explore schema by
+        // construction; a contradicting declaration fails toResource() above
+        assert settings.getSchema() == ExploreConfigSchema.INSTANCE;
+        return fromProperties(settings.getProperties());
     }
 
     /**

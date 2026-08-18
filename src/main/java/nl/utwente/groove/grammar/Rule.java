@@ -56,18 +56,19 @@ import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.grammar.rule.RuleToHostMap;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeGuard;
-import nl.utwente.groove.graph.GraphProperties;
-import nl.utwente.groove.graph.GraphProperties.Key;
+import nl.utwente.groove.grammar.ResourceProperties.Key;
 import nl.utwente.groove.match.Matcher;
 import nl.utwente.groove.match.MatcherFactory;
+import nl.utwente.groove.match.Proof;
 import nl.utwente.groove.match.SearchStrategy;
 import nl.utwente.groove.match.TreeMatch;
 import nl.utwente.groove.match.plan.PlanSearchStrategy;
-import nl.utwente.groove.transform.Proof;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
 import nl.utwente.groove.util.NoNonNull;
+import nl.utwente.groove.util.Properties.ValueType;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.Visitor;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -211,14 +212,15 @@ public class Rule implements Action, Fixable {
     private @Nullable Rule parent;
 
     /**
-     * Sets the rule properties from a graph property map.
+     * Sets the rule properties from a resource property map.
      */
-    public void setProperties(GraphProperties properties) {
+    public void setProperties(ResourceProperties properties) {
         testFixed(false);
         try {
-            this.priority = properties.parseProperty(Key.PRIORITY).getInteger();
-            this.transitionLabel = properties.parseProperty(Key.TRANSITION_LABEL).getString();
-            this.formatString = properties.parseProperty(Key.FORMAT).getString();
+            this.priority = properties.parseProperty(Key.PRIORITY).value(ValueType.INTEGER);
+            this.transitionLabel
+                = properties.parseProperty(Key.TRANSITION_LABEL).value(ValueType.STRING);
+            this.formatString = properties.parseProperty(Key.FORMAT).value(ValueType.STRING);
         } catch (FormatException exc) {
             throw Exceptions.illegalState("Error in graph properties: %s", exc.getMessage());
         }

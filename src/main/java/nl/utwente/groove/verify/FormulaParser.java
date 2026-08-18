@@ -18,11 +18,11 @@
  */
 package nl.utwente.groove.verify;
 
-import static nl.utwente.groove.util.parse.ATermTreeParser.TokenClaz.CONST;
-import static nl.utwente.groove.util.parse.ATermTreeParser.TokenClaz.LPAR;
-import static nl.utwente.groove.util.parse.ATermTreeParser.TokenClaz.NAME;
-import static nl.utwente.groove.util.parse.ATermTreeParser.TokenClaz.RPAR;
-import static nl.utwente.groove.util.parse.ATermTreeParser.TokenClaz.UNDER;
+import static nl.utwente.groove.algebra.syntax.ATermTreeParser.TokenClaz.CONST;
+import static nl.utwente.groove.algebra.syntax.ATermTreeParser.TokenClaz.LPAR;
+import static nl.utwente.groove.algebra.syntax.ATermTreeParser.TokenClaz.NAME;
+import static nl.utwente.groove.algebra.syntax.ATermTreeParser.TokenClaz.RPAR;
+import static nl.utwente.groove.algebra.syntax.ATermTreeParser.TokenClaz.UNDER;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -33,17 +33,17 @@ import java.util.List;
 import java.util.Map;
 
 import nl.utwente.groove.algebra.Sort;
+import nl.utwente.groove.algebra.syntax.ATermTreeParser;
 import nl.utwente.groove.annotation.Help;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.lts.StateProperty;
-import nl.utwente.groove.util.parse.ATermTreeParser;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.IdValidator;
 import nl.utwente.groove.util.parse.OpKind;
 import nl.utwente.groove.verify.Proposition.Arg;
 
 /**
- * Parser for temporal formulas, following the {@code nl.utwente.groove.util.parse} architecture.
+ * Parser for temporal formulas, following the {@code nl.utwente.groove.algebra.syntax} parser architecture.
  * @author Arend Rensink
  * @version $Revision$
  */

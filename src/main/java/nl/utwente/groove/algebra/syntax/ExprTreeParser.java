@@ -16,9 +16,9 @@
  */
 package nl.utwente.groove.algebra.syntax;
 
-import static nl.utwente.groove.util.parse.ATermTreeParser.TokenClaz.ASSIGN;
-import static nl.utwente.groove.util.parse.ATermTreeParser.TokenClaz.CONST;
-import static nl.utwente.groove.util.parse.ATermTreeParser.TokenClaz.NAME;
+import static nl.utwente.groove.algebra.syntax.ATermTreeParser.TokenClaz.ASSIGN;
+import static nl.utwente.groove.algebra.syntax.ATermTreeParser.TokenClaz.CONST;
+import static nl.utwente.groove.algebra.syntax.ATermTreeParser.TokenClaz.NAME;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -33,10 +33,9 @@ import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.algebra.syntax.ExprTree.ExprOp;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
-import nl.utwente.groove.util.parse.ATermTreeParser;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;

@@ -36,7 +36,6 @@ import nl.utwente.groove.automaton.DFAState;
 import nl.utwente.groove.automaton.RegAutCalculator;
 import nl.utwente.groove.automaton.RegExpr;
 import nl.utwente.groove.automaton.SimpleNFA;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.rule.LabelVar;
 import nl.utwente.groove.grammar.rule.Valuation;
@@ -46,6 +45,7 @@ import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.io.Groove;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

@@ -16,12 +16,12 @@ import java.util.Set;
 import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.algebra.syntax.SortMap;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.type.ImplicitTypeGraph;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.util.Factory;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;

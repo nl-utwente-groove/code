@@ -23,9 +23,9 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import nl.utwente.groove.control.CtrlLoader;
 import nl.utwente.groove.control.parse.Namespace;
 import nl.utwente.groove.control.template.Program;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 

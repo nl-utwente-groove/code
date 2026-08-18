@@ -26,7 +26,6 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import picocli.CommandLine.Option;
 
-import nl.utwente.groove.explore.Verbosity;
 import nl.utwente.groove.util.Log;
 
 /**

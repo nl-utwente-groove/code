@@ -16,9 +16,6 @@
  */
 package nl.utwente.groove.graph.iso;
 
-import nl.utwente.groove.grammar.host.HostElement;
-import nl.utwente.groove.grammar.host.ValueNode;
-import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.Graph;
@@ -160,8 +157,8 @@ public class Bisimulator extends CertificateStrategy {
     }
 
     @Override
-    MyNodeCert createValueNodeCertificate(ValueNode node) {
-        return new MyValueNodeCert(node);
+    MyNodeCert createIdentityNodeCertificate(Node node) {
+        return new MyIdentityNodeCert(node);
     }
 
     @Override
@@ -303,13 +300,11 @@ public class Bisimulator extends CertificateStrategy {
          */
         public MyNodeCert(Node node) {
             super(node);
-            if (node instanceof HostElement e) {
-                this.type = e.getType().label();
-                this.value = this.type.hashCode();
-            } else {
-                this.type = null;
-                this.value = INIT_NODE_VALUE;
-            }
+            Object seed = node.certificateSeed();
+            this.seed = seed;
+            this.value = seed == null
+                ? INIT_NODE_VALUE
+                : seed.hashCode();
         }
 
         /**
@@ -323,11 +318,11 @@ public class Bisimulator extends CertificateStrategy {
             if (obj == null || !super.equals(obj)) {
                 return false;
             }
-            if (this.type == null) {
+            if (this.seed == null) {
                 return true;
             }
             MyNodeCert other = ((MyNodeCert) obj);
-            return this.type.equals(other.type);
+            return this.seed.equals(other.seed);
         }
 
         @Override
@@ -369,39 +364,38 @@ public class Bisimulator extends CertificateStrategy {
             this.nextValue += value;
         }
 
-        /** Node type label (possibly {@code null}. */
-        private final TypeLabel type;
+        /** Certificate seed of the node (possibly {@code null}). */
+        final Object seed;
         /** The value for the next invocation of {@link #computeNewValue()} */
         int nextValue;
     }
 
     /**
-     * Certificate for value nodes. This takes the actual node identity into
-     * account. It is assumed that
-         * {@link ValueNode} is a subtype of the type parameter {@code N}.
+     * Certificate for nodes with an identity certificate, such as data value
+     * nodes. This takes the actual node identity (i.e., the certificate seed)
+     * into account.
      * @author Arend Rensink
      * @version $Revision$
      */
-    static private class MyValueNodeCert extends MyNodeCert {
+    static private class MyIdentityNodeCert extends MyNodeCert {
         /**
-         * Constructs a new value node certificate.
+         * Constructs a new identity node certificate.
          */
-        public MyValueNodeCert(ValueNode node) {
+        public MyIdentityNodeCert(Node node) {
             super(node);
-            this.nodeValue = node.getValue();
-            this.value = this.nodeValue.hashCode();
+            assert this.seed != null;
         }
 
         /**
          * Returns <tt>true</tt> if <tt>obj</tt> is also a
-         * {@link Bisimulator.MyValueNodeCert} and has the same node as this one.
+         * {@link Bisimulator.MyIdentityNodeCert} and has the same seed as this one.
          */
         @Override
         public boolean equals(Object obj) {
             if (this == obj) {
                 return true;
             }
-            return obj instanceof MyValueNodeCert cert && this.nodeValue.equals(cert.nodeValue);
+            return obj instanceof MyIdentityNodeCert cert && this.seed.equals(cert.seed);
         }
 
         /**
@@ -414,9 +408,6 @@ public class Bisimulator extends CertificateStrategy {
             this.nextValue = 0;
             return result;
         }
-
-        private final Object nodeValue;
-
     }
 
     /**

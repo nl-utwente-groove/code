@@ -33,6 +33,7 @@ import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -42,29 +43,21 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import nl.utwente.groove.explore.ExploreType;
-import nl.utwente.groove.explore.config.ConfiguredExploreType;
-import nl.utwente.groove.explore.config.ExploreConfig;
-import nl.utwente.groove.explore.config.ExploreConfigSchema;
-import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.GrammarSource;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.type.TypeGraph;
-import nl.utwente.groove.graph.GraphInfo;
+import nl.utwente.groove.grammar.ResourceProperties;
 import nl.utwente.groove.graph.GraphRole;
-import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.io.store.EditType;
 import nl.utwente.groove.io.store.SystemStore;
-import nl.utwente.groove.prolog.GrooveEnvironment;
 import nl.utwente.groove.util.ChangeCount;
 import nl.utwente.groove.util.ChangeCount.Tracker;
 import nl.utwente.groove.util.Exceptions;
-import nl.utwente.groove.util.Factory;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.Version;
 import nl.utwente.groove.util.collect.DeltaMap.Delta;
 import nl.utwente.groove.util.parse.FormatError;
@@ -86,7 +79,7 @@ public class GrammarModel implements PropertyChangeListener {
         boolean noActiveStartGraphs = store.getProperties().getActiveNames(HOST).isEmpty();
         if (Version.compareGrammarVersions(grammarVersion, Version.GRAMMAR_VERSION_3_2) < 0
             && noActiveStartGraphs) {
-            setLocalActiveNames(HOST, QualName.name(Groove.DEFAULT_START_GRAPH_NAME));
+            setLocalActiveNames(HOST, HOST.getDefaultName().get());
         }
         syncResources(ResourceKind.all(true));
     }
@@ -496,7 +489,7 @@ public class GrammarModel implements PropertyChangeListener {
         } catch (FormatException exc) {
             this.errors.addAll(exc.getErrors());
         }
-        getPrologEnvironment();
+        ResourceValidators.validate(this);
         for (NamedResourceModel<?> prologModel : getResourceSet(PROLOG)) {
             for (FormatError error : prologModel.getErrors()) {
                 this.errors
@@ -576,8 +569,15 @@ public class GrammarModel implements PropertyChangeListener {
             errors.addAll(e.getErrors());
         }
         errors.throwException();
-        // Set the Prolog environment.
-        result.setPrologEnvironment(this.getPrologEnvironment());
+        // Set the active prolog programs, carried as plain texts; the prolog
+        // layer builds its environment from them
+        var prologPrograms = new LinkedHashMap<QualName,String>();
+        for (NamedResourceModel<?> model : getResourceSet(PROLOG)) {
+            if (model.isActive()) {
+                prologPrograms.put(model.getQualName(), ((PrologModel) model).getProgram());
+            }
+        }
+        result.setPrologPrograms(prologPrograms);
         assert result.getControl() != null : "Grammar must have control";
         result.setFixed();
         return result;
@@ -590,37 +590,6 @@ public class GrammarModel implements PropertyChangeListener {
     public boolean hasRules() {
         return !getResourceSet(RULE).isEmpty();
     }
-
-    /**
-     * Creates a Prolog environment that produces its standard output
-     * on a the default {@link GrooveEnvironment} output stream.
-     */
-    public GrooveEnvironment getPrologEnvironment() {
-        return this.prologEnvironment.get();
-    }
-
-    /**
-     *
-     */
-    private GrooveEnvironment computePrologEnvironment() {
-        var result = new GrooveEnvironment(null, null);
-        for (NamedResourceModel<?> model : getResourceSet(PROLOG)) {
-            PrologModel prologModel = (PrologModel) model;
-            if (model.isActive()) {
-                try {
-                    result.loadProgram(prologModel.getProgram());
-                    prologModel.clearErrors();
-                } catch (FormatException e) {
-                    prologModel.setErrors(e.getErrors());
-                }
-            }
-        }
-        return result;
-    }
-
-    /** The prolog environment derived from the system store. */
-    private final Factory<GrooveEnvironment> prologEnvironment
-        = Factory.lazy(this::computePrologEnvironment);
 
     /**
      * Resets the {@link #grammar} and {@link #errors} objects, making sure that
@@ -668,9 +637,6 @@ public class GrammarModel implements PropertyChangeListener {
         // This might possibly be refined
         getChangeCount(kind).increase();
         switch (kind) {
-        case PROLOG:
-            this.prologEnvironment.reset();
-            break;
         case PROPERTIES:
             return;
         default:
@@ -693,7 +659,7 @@ public class GrammarModel implements PropertyChangeListener {
         case RULE:
             names
                 .stream()
-                .filter(n -> GraphInfo.isEnabled(getStore().getGraphs(RULE).get(n)))
+                .filter(n -> ResourceProperties.isEnabled(getStore().getGraphs(RULE).get(n)))
                 .forEach(newActiveNames::add);
             newActiveNames.removeAll(getProperties().getRuleEnabling().getKeys(Delta.REMOVE));
             newActiveNames.addAll(getProperties().getRuleEnabling().getKeys(Delta.ADD));
@@ -775,67 +741,18 @@ public class GrammarModel implements PropertyChangeListener {
     }
 
     /**
-     * Returns the default exploration type of this grammar. If the
-     * {@code exploration} property names a settings resource, the resource
-     * content is realised (an unresolvable reference or unrealisable content
-     * yields {@link ExploreType#getDefault()}; the errors are reported through the
-     * property checker and on the resource itself). Otherwise the deprecated
-     * legacy exploration strategy key is consulted, which (unlike
-     * {@link #getDefaultExploreConfig()}) may yield one of the dedicated,
-     * configuration-inexpressible exploration types.
-     */
-    public ExploreType getDefaultExploreType() {
-        var local = getProperties().getExplorationName();
-        if (local == null) {
-            return getProperties().getLegacyExploreType();
-        }
-        try {
-            return ExploreTypeConverter.toExploreType(resolveExploreConfig(local));
-        } catch (FormatException exc) {
-            return ExploreType.getDefault();
-        }
-    }
-
-    /**
-     * Returns the default exploration configuration of this grammar: the
-     * content of the settings resource named by the {@code exploration}
-     * property, the configuration equivalent of the legacy exploration
-     * strategy key if only that is set and expressible, or the default
-     * configuration otherwise (including when the reference does not
-     * resolve; those errors are reported through the property checker).
-     * This is the configuration-expressible projection of
-     * {@link #getDefaultExploreType()}: a legacy key holding one of the
-     * dedicated exploration types projects to the default configuration.
-     */
-    public ExploreConfig getDefaultExploreConfig() {
-        var local = getProperties().getExplorationName();
-        if (local == null) {
-            // fall back to the legacy key, if its value is expressible
-            return getProperties()
-                .getLegacyExploreType() instanceof ConfiguredExploreType configured
-                    ? new ExploreConfig(configured.getConfig())
-                    : new ExploreConfig();
-        }
-        try {
-            return resolveExploreConfig(local);
-        } catch (FormatException exc) {
-            // reported on the resource and by the property checker
-            return new ExploreConfig();
-        }
-    }
-
-    /**
      * Looks up the settings model for an exploration reference. This is the
      * single decision point for the validity of the reference: the property
      * checker (see {@code GrammarKey}) and the default-exploration getters
-     * both resolve through this method. The reference is the <i>local</i>
-     * name of the resource within the {@code explore} folder, so the schema
-     * name is prefixed before the lookup.
+     * in the explore layer (see {@code ExploreType#ofGrammar}) both resolve
+     * through this method. The reference is the <i>local</i> name of the
+     * resource within the {@code explore} folder, so the schema name is
+     * prefixed before the lookup.
      * @param localName the local name held by the {@code exploration} property
      * @throws FormatException if there is no resource with the referenced name
      */
     public SettingsModel getExploreSettings(QualName localName) throws FormatException {
-        QualName name = ExploreConfigSchema.INSTANCE.getResourceName(localName);
+        QualName name = localName.nest(EXPLORE_SCHEMA_NAME);
         var model = getResource(ResourceKind.SETTINGS, name);
         if (model == null) {
             throw new FormatException("Unknown exploration settings '%s' (there is no resource '%s')",
@@ -845,18 +762,14 @@ public class GrammarModel implements PropertyChangeListener {
     }
 
     /**
-     * Resolves the exploration reference to the content of the referenced
-     * settings resource.
-     * @param localName the local name held by the {@code exploration} property
-     * @throws FormatException if the resource is missing or erroneous
+     * Name of the settings schema (and top-level folder) holding exploration
+     * configurations; the {@code exploration} grammar property stores a local
+     * name within this folder. Declared here rather than on the schema class,
+     * which lives in the explore layer, so that the reference can be resolved
+     * at the grammar level; {@code ExploreConfigSchema#NAME} aliases this
+     * constant.
      */
-    private ExploreConfig resolveExploreConfig(QualName localName) throws FormatException {
-        Settings settings = getExploreSettings(localName).toResource();
-        // a resource inside the 'explore' folder is of the explore schema by
-        // construction; a contradicting declaration fails toResource() above
-        assert settings.getSchema() == ExploreConfigSchema.INSTANCE;
-        return ExploreConfig.fromProperties(settings.getProperties());
-    }
+    public static final String EXPLORE_SCHEMA_NAME = "explore";
 
     /** Mapping from resource kinds and names to resource models. */
     private final Map<ResourceKind,SortedMap<QualName,NamedResourceModel<?>>> resourceMap

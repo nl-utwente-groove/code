@@ -31,15 +31,15 @@ import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
-import nl.utwente.groove.explore.util.LTSLabels;
 import nl.utwente.groove.grammar.Grammar;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.lts.GTS;
+import nl.utwente.groove.lts.LTSLabels;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -399,7 +399,8 @@ public class ExplorationTest {
      * @return the explored GTS
      */
     protected GTS testExploration(String grammarName, int nodeCount, int edgeCount) {
-        return testExploration(grammarName, Groove.DEFAULT_START_GRAPH_NAME, nodeCount, edgeCount);
+        return testExploration(grammarName, ResourceKind.HOST.getDefaultName().get().toString(),
+                               nodeCount, edgeCount);
     }
 
     private GrammarModel loadGrammar(String grammarName, String startGraphName) {

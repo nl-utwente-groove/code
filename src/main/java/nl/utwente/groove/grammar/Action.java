@@ -30,6 +30,7 @@ import nl.utwente.groove.grammar.host.ValueNode;
 import nl.utwente.groove.util.Colors;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.HTMLConverter.HTMLTag;
+import nl.utwente.groove.util.Properties.ValueType;
 import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.ThreeValued;
 import nl.utwente.groove.util.collect.AbstractComparator;
@@ -300,5 +301,9 @@ public interface Action extends Callable, Comparable<Action> {
         }
 
         static private @Nullable Map<String,Role> roleMap;
+
+        /** Value type of property keys valued by an optional {@link Role}
+         * (see {@link nl.utwente.groove.util.Properties.Key}). */
+        public static final ValueType<Optional<Role>> VALUE_TYPE = ValueType.of(Optional.class);
     }
 }

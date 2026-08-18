@@ -23,7 +23,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.grammar.model.ResourceModel;
 import nl.utwente.groove.graph.Graph;
-import nl.utwente.groove.io.FileType;
+import nl.utwente.groove.util.io.FileType;
 
 /**
  * Class used to save {@link Exportable}s to files in a predefined

@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.test.graph;
 
-import static nl.utwente.groove.io.FileType.GXL;
+import static nl.utwente.groove.util.io.FileType.GXL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

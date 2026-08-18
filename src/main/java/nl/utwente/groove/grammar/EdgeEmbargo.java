@@ -21,7 +21,7 @@ import nl.utwente.groove.grammar.rule.RuleEdge;
 import nl.utwente.groove.grammar.rule.RuleGraph;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.Node;
-import nl.utwente.groove.io.Groove;
+import nl.utwente.groove.util.Trace;
 
 /**
  * A specialised NAC that forbids the presence of a certain edge.
@@ -53,8 +53,8 @@ public class EdgeEmbargo extends Condition {
             }
         }
         if (CONSTRUCTOR_DEBUG) {
-            Groove.message("Edge embargo: " + this);
-            Groove.message("Embargo edge: " + embargoEdge);
+            Trace.message("Edge embargo: " + this);
+            Trace.message("Embargo edge: " + embargoEdge);
         }
     }
 

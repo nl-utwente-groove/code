@@ -28,10 +28,10 @@ import nl.utwente.groove.control.Attempt;
 import nl.utwente.groove.control.Attempt.Stage;
 import nl.utwente.groove.control.Position;
 import nl.utwente.groove.control.template.Template;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.NodeSetEdgeSetGraph;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Graph representation of a control automaton, used for visualisation purposes.

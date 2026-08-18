@@ -36,12 +36,12 @@ import nl.utwente.groove.control.CtrlVar;
 import nl.utwente.groove.control.Procedure;
 import nl.utwente.groove.grammar.Callable;
 import nl.utwente.groove.grammar.Callable.Kind;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.Signature;
 import nl.utwente.groove.grammar.UnitPar;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Transition between control locations, bearing a call.

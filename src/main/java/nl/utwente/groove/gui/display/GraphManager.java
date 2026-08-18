@@ -20,7 +20,6 @@ import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.HashMap;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectElement;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
@@ -33,6 +32,7 @@ import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.layout.LayoutMap;
 import nl.utwente.groove.graph.layout.NodeLayout;
 import nl.utwente.groove.gui.SimulatorModel;
+import nl.utwente.groove.util.QualName;
 
 /** Auxiliary class for the GROOVY plugin. */
 public class GraphManager {

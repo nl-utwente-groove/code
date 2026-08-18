@@ -26,10 +26,10 @@ import gnu.prolog.vm.PrologException;
 import nl.utwente.groove.annotation.Signature;
 import nl.utwente.groove.annotation.ToolTipBody;
 import nl.utwente.groove.grammar.Action;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.prolog.GrooveEnvironment;
 import nl.utwente.groove.prolog.builtin.trans.TransPrologCode;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Predicate rule_name(+Name, ?Rule)

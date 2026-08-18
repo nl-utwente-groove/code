@@ -22,9 +22,9 @@ import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
-import nl.utwente.groove.io.FileType;
+import nl.utwente.groove.util.QualName;
+import nl.utwente.groove.util.io.FileType;
 
 /**
  * Importer for resources. Can import either graphs or text files.

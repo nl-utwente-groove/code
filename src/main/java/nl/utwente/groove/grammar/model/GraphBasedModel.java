@@ -30,10 +30,10 @@ import nl.utwente.groove.grammar.type.TypeFactory;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.grammar.type.TypeNode;
+import nl.utwente.groove.grammar.ResourceProperties;
 import nl.utwente.groove.graph.AGraphMap;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.ElementFactory;
-import nl.utwente.groove.graph.GraphProperties;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
@@ -114,9 +114,9 @@ abstract public class GraphBasedModel<R> extends NamedResourceModel<R> {
 
     @Override
     void checkSourceProperties() throws FormatException {
-        var properties = getSource().getProperties();
+        var properties = ResourceProperties.getProperties(getSource());
         FormatErrorSet errors = new FormatErrorSet();
-        for (var key : GraphProperties.Key.values()) {
+        for (var key : ResourceProperties.Key.values()) {
             try {
                 var value = properties.parseProperty(key);
                 for (FormatError error : key.check(getSource(), value)) {

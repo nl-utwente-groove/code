@@ -18,7 +18,6 @@ package nl.utwente.groove.grammar;
 
 import static nl.utwente.groove.grammar.model.ResourceKind.RULE;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -43,7 +42,6 @@ import nl.utwente.groove.grammar.type.TypeEdge;
 import nl.utwente.groove.grammar.type.TypeElement;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeNode;
-import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -53,57 +51,6 @@ import nl.utwente.groove.util.parse.FormatException;
  * @version $Revision$ $Date: 2008-03-04 10:51:27 $
  */
 public class RuleDependencies {
-    /**
-     * Analyzes and prints the dependencies of a given graph grammar.
-     */
-    public static void main(String[] args) {
-        try {
-            GrammarModel grammar = Groove.loadGrammar(args[0]);
-            RuleDependencies data = new RuleDependencies(grammar);
-            data.collectCharacteristics();
-            List<Rule> rules = getRules(grammar);
-            for (Rule rule : rules) {
-                System.out.println("Rule " + rule.getQualName() + ":");
-                System.out.println("Positive labels: " + data.positiveMap.get(rule));
-                System.out.println("Negative labels: " + data.negativeMap.get(rule));
-                System.out.println("Consumed labels: " + data.consumedMap.get(rule));
-                System.out.println("Produced labels: " + data.producedMap.get(rule));
-                Collection<QualName> enablerNames = new ArrayList<>();
-                for (Action depRule : data.getEnablers(rule)) {
-                    enablerNames.add(depRule.getQualName());
-                }
-                Collection<QualName> disablerNames = new ArrayList<>();
-                for (Action depRule : data.getDisablers(rule)) {
-                    disablerNames.add(depRule.getQualName());
-                }
-                Collection<QualName> enabledNames = new ArrayList<>();
-                for (Action depRule : data.getEnableds(rule)) {
-                    enabledNames.add(depRule.getQualName());
-                }
-                Collection<QualName> disabledNames = new ArrayList<>();
-                for (Action depRule : data.getDisableds(rule)) {
-                    disabledNames.add(depRule.getQualName());
-                }
-                // disablerNames.removeAll(enablerNames);
-                // disabledNames.removeAll(enabledNames);
-                Collection<QualName> allRuleNames = new ArrayList<>();
-                for (Action otherRule : rules) {
-                    allRuleNames.add(otherRule.getQualName());
-                }
-                allRuleNames.removeAll(enablerNames);
-                allRuleNames.removeAll(disablerNames);
-                System.out.println("Enabled rules:  " + enabledNames);
-                System.out.println("Disabled rules: " + disabledNames);
-                System.out.println("Enablers:       " + enablerNames);
-                System.out.println("Disablers:      " + disablerNames);
-                System.out.println("No dependency:  " + allRuleNames);
-                System.out.println();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     /** Returns the set of enabled rules that do not have errors. */
     static private List<Rule> getRules(GrammarModel grammar) {
         List<Rule> result = new ArrayList<>();
@@ -219,7 +166,7 @@ public class RuleDependencies {
      * Constructs and returns a mapping from rules to the sets of labels
      * consumed by those rules.
      */
-    Map<Rule,Set<TypeElement>> getConsumedMap() {
+    public Map<Rule,Set<TypeElement>> getConsumedMap() {
         if (!this.rules.isEmpty() && this.consumedMap.isEmpty()) {
             collectCharacteristics();
         }
@@ -230,7 +177,7 @@ public class RuleDependencies {
      * Constructs and returns a mapping from rules to the sets of labels
      * occurring in a negative application condition.
      */
-    Map<Rule,Set<TypeElement>> getNegativeMap() {
+    public Map<Rule,Set<TypeElement>> getNegativeMap() {
         if (!this.rules.isEmpty() && this.negativeMap.isEmpty()) {
             collectCharacteristics();
         }
@@ -241,7 +188,7 @@ public class RuleDependencies {
      * Constructs and returns a mapping from rules to the sets of labels
      * occurring in a positive application condition.
      */
-    Map<Rule,Set<TypeElement>> getPositiveMap() {
+    public Map<Rule,Set<TypeElement>> getPositiveMap() {
         if (!this.rules.isEmpty() && this.positiveMap.isEmpty()) {
             collectCharacteristics();
         }
@@ -252,7 +199,7 @@ public class RuleDependencies {
      * Constructs and returns a mapping from rules to the sets of labels
      * produced by those rules.
      */
-    Map<Rule,Set<TypeElement>> getProducedElementMap() {
+    public Map<Rule,Set<TypeElement>> getProducedElementMap() {
         if (!this.rules.isEmpty() && this.producedMap.isEmpty()) {
             collectCharacteristics();
         }

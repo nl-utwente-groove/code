@@ -35,7 +35,6 @@ import org.junit.Test;
 import junit.framework.TestCase;
 import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.algebra.UserOpsExample;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.aspect.GraphConverter;
 import nl.utwente.groove.grammar.host.HostGraph;
@@ -44,12 +43,13 @@ import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.rule.MatchChecker;
 import nl.utwente.groove.grammar.rule.RuleToHostMap;
 import nl.utwente.groove.graph.iso.IsoChecker;
-import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.Groove;
-import nl.utwente.groove.transform.Proof;
+import nl.utwente.groove.match.Proof;
 import nl.utwente.groove.transform.RuleApplication;
 import nl.utwente.groove.transform.RuleEvent;
 import nl.utwente.groove.transform.oracle.ValueOracle;
+import nl.utwente.groove.util.QualName;
+import nl.utwente.groove.util.io.FileType;
 import nl.utwente.groove.util.parse.FormatException;
 
 /** Set of tests for rule application. */
@@ -289,7 +289,7 @@ public class RuleApplicationTest extends TestCase {
         Set<RuleEvent> eventSet = new LinkedHashSet<>();
         Optional<MatchChecker> matchFilter = rule.getMatchFilter();
         for (Proof proof : rule.getProver().getAllMatches(start)) {
-            RuleEvent event = proof.newEvent(null);
+            RuleEvent event = RuleEvent.createEvent(proof, null);
             boolean errorExpected = start.getName().endsWith("E");
             try {
                 boolean ok = !matchFilter.isPresent()

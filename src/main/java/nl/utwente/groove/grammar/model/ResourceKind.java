@@ -22,11 +22,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.graph.GraphRole;
-import nl.utwente.groove.io.FileType;
-import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.util.NoNonNull;
+import nl.utwente.groove.util.QualName;
+import nl.utwente.groove.util.io.FileType;
 
 /**
  * Abstract type of the resources that make up a grammar.
@@ -35,19 +34,19 @@ import nl.utwente.groove.util.NoNonNull;
  */
 public enum ResourceKind {
     /** Host graph resources; in other words, potential start graphs of the grammar. */
-    HOST("Graph", "host graph", GraphRole.HOST, FileType.STATE, Groove.DEFAULT_START_GRAPH_NAME),
+    HOST("Graph", "host graph", GraphRole.HOST, FileType.STATE, "start"),
     /** Transformation rule resources. */
     RULE("Rule", "rule", GraphRole.RULE, FileType.RULE, null),
     /** Type graph resources. */
-    TYPE("Type", "type graph", GraphRole.TYPE, FileType.TYPE, Groove.DEFAULT_TYPE_NAME),
+    TYPE("Type", "type graph", GraphRole.TYPE, FileType.TYPE, "type"),
     /**
      * Control program resources.
      */
-    CONTROL("Control", "control program", FileType.CONTROL, Groove.DEFAULT_CONTROL_NAME),
+    CONTROL("Control", "control program", FileType.CONTROL, "control"),
     /** Prolog program resources. */
     PROLOG("Prolog", "prolog program", FileType.PROLOG, null),
     /** Grammar properties resource. */
-    PROPERTIES("Properties", "grammar properties", FileType.PROPERTY, Groove.PROPERTY_NAME),
+    PROPERTIES("Properties", "grammar properties", FileType.PROPERTY, "system"),
     /** Groovy script resources. */
     GROOVY("Groovy", "groovy script", FileType.GROOVY, null),
     /** Schema-typed settings resources. */

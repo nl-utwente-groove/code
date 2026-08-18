@@ -42,8 +42,8 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
-import nl.utwente.groove.io.FileUtils;
 import nl.utwente.groove.util.HTMLConverter;
+import nl.utwente.groove.util.io.FileUtils;
 
 /**
  * Table containing information about the auxiliary libraries used in Groove.

@@ -29,12 +29,11 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.algebra.Sort;
-import nl.utwente.groove.grammar.QualName;
-import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.EdgeRole;
+import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.util.Keywords;
 import nl.utwente.groove.util.NoNonNull;
-import nl.utwente.groove.util.parse.AExprTree;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.DefaultOp;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.OpKind;
@@ -421,7 +420,7 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
      * @return a clone of this object with changed labels, or this object
      *         if {@code oldLabel} did not occur
      */
-    public ExprTree relabel(TypeLabel oldLabel, TypeLabel newLabel, SortMap sortMap) {
+    public ExprTree relabel(Label oldLabel, Label newLabel, SortMap sortMap) {
         ExprTree result = this;
         QualName id = getId();
         if (getOp().getKind() == OpKind.ATOM && oldLabel.hasRole(EdgeRole.BINARY) && id != null) {

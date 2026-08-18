@@ -18,8 +18,8 @@ package nl.utwente.groove.grammar.type;
 
 import java.util.Set;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.graph.EdgeRole;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Type graph with only a single (top) node type and all data types.

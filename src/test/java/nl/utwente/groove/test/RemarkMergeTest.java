@@ -26,7 +26,6 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectKind;
@@ -36,6 +35,7 @@ import nl.utwente.groove.graph.plain.PlainGraph;
 import nl.utwente.groove.graph.plain.PlainNode;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.util.AIGenerated;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Tests the invariant that a fixed aspect graph has at most one remark edge

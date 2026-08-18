@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import nl.utwente.groove.grammar.host.ValueNode;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.Graph;
@@ -133,12 +132,11 @@ abstract public class CertificateStrategy {
      */
     private NodeCertificate initNodeCert(final Node node) {
         NodeCertificate nodeCert;
-        // if the node is an instance of OperationNode, the certificate
-        // of this node also depends on the operation represented by it
-        // therefore, the computeNewValue()-method of class
-        // CertificateNode must be overridden
-        if (node instanceof ValueNode v) {
-            nodeCert = createValueNodeCertificate(v);
+        // a node that is completely identified by its certificate seed
+        // (such as a data value node) gets a dedicated certificate that
+        // compares by seed only
+        if (node.hasIdentityCertificate()) {
+            nodeCert = createIdentityNodeCertificate(node);
         } else {
             nodeCert = createNodeCertificate(node);
         }
@@ -199,7 +197,9 @@ abstract public class CertificateStrategy {
         }
     }
 
-    abstract NodeCertificate createValueNodeCertificate(ValueNode node);
+    /** Factory method for the certificate of a node with an identity
+     * certificate (see {@link Node#hasIdentityCertificate()}). */
+    abstract NodeCertificate createIdentityNodeCertificate(Node node);
 
     abstract NodeCertificate createNodeCertificate(Node node);
 

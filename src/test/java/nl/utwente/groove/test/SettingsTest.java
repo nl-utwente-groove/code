@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
@@ -45,8 +44,9 @@ import nl.utwente.groove.grammar.model.SettingsModel;
 import nl.utwente.groove.grammar.model.SettingsSchema;
 import nl.utwente.groove.grammar.model.SettingsSchemas;
 import nl.utwente.groove.graph.GraphRole;
-import nl.utwente.groove.io.FileType;
 import nl.utwente.groove.io.store.SystemStore;
+import nl.utwente.groove.util.QualName;
+import nl.utwente.groove.util.io.FileType;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 

@@ -22,11 +22,11 @@ import static org.junit.Assert.assertNotEquals;
 import org.junit.Test;
 
 import nl.utwente.groove.grammar.Grammar;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Tests that repeated GTS-level application of an edge-creating rule in a

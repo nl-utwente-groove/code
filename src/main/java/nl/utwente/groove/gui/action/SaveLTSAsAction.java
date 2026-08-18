@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 
-import nl.utwente.groove.explore.util.LTSLabels;
 import nl.utwente.groove.explore.util.LTSReporter;
 import nl.utwente.groove.explore.util.StateReporter;
 import nl.utwente.groove.gui.Icons;
@@ -31,6 +30,7 @@ import nl.utwente.groove.gui.dialog.SaveLTSAsDialog.StateExport;
 import nl.utwente.groove.lts.Filter;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
+import nl.utwente.groove.lts.LTSLabels;
 
 /**
  * Action that takes care of saving the LTS graph under a certain name.

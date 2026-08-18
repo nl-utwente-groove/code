@@ -6,11 +6,11 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.RuleModel;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.dialog.NumberDialog;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Action that raises the priority of a selected set of rules.

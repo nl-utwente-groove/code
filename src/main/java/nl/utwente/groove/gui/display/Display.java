@@ -29,13 +29,13 @@ import javax.swing.ToolTipManager;
 
 import org.eclipse.jdt.annotation.NonNull;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.gui.action.ActionStore;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Component that can appear on a display tab in the {@link SimulatorModel}.

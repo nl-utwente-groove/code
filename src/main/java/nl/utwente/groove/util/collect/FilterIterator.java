@@ -21,7 +21,7 @@ import java.util.NoSuchElementException;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.io.Groove;
+import nl.utwente.groove.util.Trace;
 
 /**
  * Iterator constructed by filtering elements from some existing iterator. The
@@ -49,11 +49,11 @@ public abstract class FilterIterator<T> implements Iterator<T> {
                 this.removeAllowed = false;
             }
             if (ITERATE_DEBUG) {
-                Groove.message("Searching for hasNext(); now at " + next);
+                Trace.message("Searching for hasNext(); now at " + next);
             }
         }
         if (ITERATE_DEBUG) {
-            Groove.message("Found next? " + (next != null && approves(next) ? "Yes" : "No"));
+            Trace.message("Found next? " + (next != null && approves(next) ? "Yes" : "No"));
         }
         this.next = (T) next;
         return next != null;
@@ -67,7 +67,7 @@ public abstract class FilterIterator<T> implements Iterator<T> {
             this.next = null;
             this.removeAllowed = true;
             if (ITERATE_DEBUG) {
-                Groove.message("Found next(): " + result);
+                Trace.message("Found next(): " + result);
             }
             return result;
         } else {

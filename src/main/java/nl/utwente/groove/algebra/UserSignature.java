@@ -26,10 +26,10 @@ import java.util.Map;
 import java.util.Set;
 
 import nl.utwente.groove.annotation.UserOperation;
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.util.Callback;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FallibleObject;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;

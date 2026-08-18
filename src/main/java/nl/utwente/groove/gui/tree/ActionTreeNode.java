@@ -16,8 +16,8 @@
  */
 package nl.utwente.groove.gui.tree;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.gui.display.ResourceDisplay;
+import nl.utwente.groove.util.QualName;
 
 /**
  * @author Arend Rensink

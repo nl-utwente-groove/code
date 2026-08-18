@@ -23,24 +23,18 @@ import static nl.utwente.groove.util.HTMLConverter.STRONG_TAG;
 import static nl.utwente.groove.util.HTMLConverter.toHtml;
 
 import java.lang.reflect.AccessibleObject;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.HTMLConverter.HTMLTag;
 import nl.utwente.groove.util.Pair;
-import nl.utwente.groove.util.Strings;
 
 /**
  * Class offering support for syntax help.
@@ -278,59 +272,20 @@ public class Help {
         return createHelp(source, syntax, header, body, pars, tokenMap);
     }
 
-    @SuppressWarnings("null")
     private static Help createHelp(Object source, Syntax syntax, ToolTipHeader header,
                                    ToolTipBody body, ToolTipPars pars,
                                    Map<String,String> tokenMap) {
         Help result = null;
-        String syntaxText = null;
-        String opName = null;
-        String resultSort = null;
         if (syntax != null) {
-            syntaxText
+            String syntaxText
                 = String.format(syntax.value(), getReflectionName(source), getContextName(source));
-            if (source instanceof Method m) {
-                resultSort = m.getGenericReturnType().getTypeName();
-            }
-        } else if (source instanceof Executable x) {
-            var parNames = new LinkedList<String>();
-            switch (x) {
-            case Constructor<?> c:
-                var claz = c.getDeclaringClass();
-                if (claz.getAnnotation(UserType.class) != null) {
-                    opName = claz.getSimpleName();
-                    resultSort = Sort.USER.name();
-                }
-                break;
-            case Method m:
-                if (m.getAnnotation(UserOperation.class) != null) {
-                    opName = m.getName();
-                    if (!Modifier.isStatic(m.getModifiers())) {
-                        parNames.add(SELF_NAME);
-                    }
-                    resultSort = Sort.toSort(m.getReturnType()).name();
-                }
-            }
-            if (opName != null) {
-                Arrays.stream(x.getParameters()).map(Parameter::getName).forEach(parNames::add);
-                syntaxText = "[" + Sort.USER.name() + ":]Q" + opName;
-                syntaxText += Strings.toString(parNames.toArray(), "(", ")", ",");
-            }
-        }
-        if (syntaxText != null) {
             result = new Help(tokenMap);
             result.setSyntax(syntaxText);
-            String headerString = null;
             if (header != null) {
-                headerString = header.value();
-            } else if (opName != null) {
-                headerString = "Operation " + source(opName);
+                result.setHeader(header.value());
             }
-            if (headerString != null) {
-                result.setHeader(headerString);
-            }
-            if (resultSort != null) {
-                result.setResultsort(resultSort);
+            if (source instanceof Method m) {
+                result.setResultsort(m.getGenericReturnType().getTypeName());
             }
             if (body != null) {
                 result.setBody(body.value());
@@ -338,6 +293,36 @@ public class Help {
             if (pars != null) {
                 result.setPars(pars.value());
             }
+        }
+        return result;
+    }
+
+    /**
+     * Creates a syntax help object for an operation with an externally
+     * constructed syntax line, as used for user-defined operations
+     * (whose syntax is derived rather than {@link Syntax}-annotated).
+     * Tool tip annotations of the source are applied as in
+     * {@link #createHelp(AccessibleObject, Map)}, with a generated
+     * "Operation" header as fallback.
+     */
+    @SuppressWarnings("null")
+    public static Help createOpHelp(Executable source, String opName, String syntaxText,
+                                    String resultSort, Map<String,String> tokenMap) {
+        Help result = new Help(tokenMap);
+        result.setSyntax(syntaxText);
+        ToolTipHeader header = source.getAnnotation(ToolTipHeader.class);
+        result
+            .setHeader(header != null
+                ? header.value()
+                : "Operation " + source(opName));
+        result.setResultsort(resultSort);
+        ToolTipBody body = source.getAnnotation(ToolTipBody.class);
+        if (body != null) {
+            result.setBody(body.value());
+        }
+        ToolTipPars pars = source.getAnnotation(ToolTipPars.class);
+        if (pars != null) {
+            result.setPars(pars.value());
         }
         return result;
     }
@@ -504,6 +489,4 @@ public class Help {
     static private final HTMLTag TABLE_TAG = HTMLConverter
         .createHtmlTag(HTMLConverter.TABLE_TAG_NAME, "cellpadding", "0", "valign", "top");
     static private final HTMLTag SOURCE_TAG = HTMLConverter.createHtmlTag("font", "color", "green");
-    /** Parameter name for the receiving object. */
-    static private final String SELF_NAME = "self";
 }

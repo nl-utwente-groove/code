@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.grammar;
 
-import static nl.utwente.groove.io.FileType.GRAMMAR;
+import static nl.utwente.groove.util.io.FileType.GRAMMAR;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -35,9 +35,9 @@ import nl.utwente.groove.control.instance.Automaton;
 import nl.utwente.groove.grammar.Action.Role;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.type.TypeGraph;
-import nl.utwente.groove.prolog.GrooveEnvironment;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -334,26 +334,31 @@ public class Grammar {
     private Automaton control;
 
     /**
-     * Sets a Prolog environment for this grammar. This is only allowed if the
-     * grammar is not yet fixed, as indicated by {@link #isFixed()}.
+     * Sets the active prolog programs of this grammar. This is only allowed if
+     * the grammar is not yet fixed, as indicated by {@link #isFixed()}.
+     * @param prologPrograms insertion-ordered map from program names to
+     * program texts
      * @throws IllegalStateException if the grammar is already fixed
      * @see #isFixed()
      */
-    public void setPrologEnvironment(GrooveEnvironment prologEnvironment) {
+    public void setPrologPrograms(Map<QualName,String> prologPrograms) {
         testFixed(false);
-        this.prologEnvironment = prologEnvironment;
+        this.prologPrograms = prologPrograms;
     }
 
     /**
-     * Returns the Prolog environment of this grammar, or <code>null</code> if
-     * there is none.
+     * Returns the active prolog programs of this grammar, as an
+     * insertion-ordered map from program names to program texts.
+     * The programs are carried as uninterpreted strings; the prolog layer
+     * builds its environment from them (see
+     * {@code GrooveEnvironment#ofGrammar}).
      */
-    public GrooveEnvironment getPrologEnvironment() {
-        return this.prologEnvironment;
+    public Map<QualName,String> getPrologPrograms() {
+        return this.prologPrograms;
     }
 
-    /** The prolog environment derived from the system store. */
-    private GrooveEnvironment prologEnvironment;
+    /** The active prolog programs derived from the system store. */
+    private Map<QualName,String> prologPrograms = Collections.emptyMap();
 
     /** Tests for equality of the rule system and the start graph. */
     @Override

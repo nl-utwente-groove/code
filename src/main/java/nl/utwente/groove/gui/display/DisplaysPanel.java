@@ -44,7 +44,6 @@ import javax.swing.event.ChangeListener;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.grammar.QualName;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.Options;
@@ -56,6 +55,7 @@ import nl.utwente.groove.gui.display.Display.ListPanel;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.Properties;
+import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
