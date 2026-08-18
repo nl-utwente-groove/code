@@ -18,7 +18,6 @@ package nl.utwente.groove.algebra.syntax;
 
 import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.util.QualName;
-import nl.utwente.groove.util.parse.ATermTree;
 import nl.utwente.groove.util.parse.Op;
 import nl.utwente.groove.util.parse.OpKind;
 

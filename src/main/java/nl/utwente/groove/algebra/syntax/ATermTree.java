@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.util.parse;
+package nl.utwente.groove.algebra.syntax;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,6 +26,10 @@ import org.eclipse.jdt.annotation.NonNull;
 import nl.utwente.groove.util.DefaultFixable;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.line.Line;
+import nl.utwente.groove.util.parse.Fallible;
+import nl.utwente.groove.util.parse.FormatErrorSet;
+import nl.utwente.groove.util.parse.Op;
+import nl.utwente.groove.util.parse.OpKind;
 import nl.utwente.groove.util.parse.OpKind.Direction;
 import nl.utwente.groove.util.parse.OpKind.Placement;
 

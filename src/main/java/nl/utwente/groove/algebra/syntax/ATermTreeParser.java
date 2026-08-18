@@ -14,18 +14,18 @@
  *
  * $Id$
  */
-package nl.utwente.groove.util.parse;
+package nl.utwente.groove.algebra.syntax;
 
 import static nl.utwente.groove.algebra.Sort.INT;
 import static nl.utwente.groove.algebra.Sort.REAL;
+import static nl.utwente.groove.algebra.syntax.ATermTreeParser.TokenClaz.CONST;
+import static nl.utwente.groove.algebra.syntax.ATermTreeParser.TokenClaz.EOT;
+import static nl.utwente.groove.algebra.syntax.ATermTreeParser.TokenClaz.LATE_OP;
+import static nl.utwente.groove.algebra.syntax.ATermTreeParser.TokenClaz.LPAR;
+import static nl.utwente.groove.algebra.syntax.ATermTreeParser.TokenClaz.NAME;
+import static nl.utwente.groove.algebra.syntax.ATermTreeParser.TokenClaz.PRE_OP;
+import static nl.utwente.groove.algebra.syntax.ATermTreeParser.TokenClaz.RPAR;
 import static nl.utwente.groove.util.Factory.lazy;
-import static nl.utwente.groove.util.parse.ATermTreeParser.TokenClaz.CONST;
-import static nl.utwente.groove.util.parse.ATermTreeParser.TokenClaz.EOT;
-import static nl.utwente.groove.util.parse.ATermTreeParser.TokenClaz.LATE_OP;
-import static nl.utwente.groove.util.parse.ATermTreeParser.TokenClaz.LPAR;
-import static nl.utwente.groove.util.parse.ATermTreeParser.TokenClaz.NAME;
-import static nl.utwente.groove.util.parse.ATermTreeParser.TokenClaz.PRE_OP;
-import static nl.utwente.groove.util.parse.ATermTreeParser.TokenClaz.RPAR;
 import static nl.utwente.groove.util.parse.StringHandler.DOUBLE_QUOTE;
 import static nl.utwente.groove.util.parse.StringHandler.HYPHEN;
 import static nl.utwente.groove.util.parse.StringHandler.PERIOD;
@@ -50,8 +50,14 @@ import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.Unicode;
+import nl.utwente.groove.util.parse.FormatException;
+import nl.utwente.groove.util.parse.IdValidator;
+import nl.utwente.groove.util.parse.Op;
+import nl.utwente.groove.util.parse.OpKind;
 import nl.utwente.groove.util.parse.OpKind.Direction;
 import nl.utwente.groove.util.parse.OpKind.Placement;
+import nl.utwente.groove.util.parse.Parser;
+import nl.utwente.groove.util.parse.StringHandler;
 
 /**
  * General expression parser, parameterised with the type of operators to be recognised.
