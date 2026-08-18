@@ -22,6 +22,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.model.RuleModel.Index;
 import nl.utwente.groove.grammar.rule.RuleGraph;
 import nl.utwente.groove.grammar.rule.RuleNode;
@@ -36,11 +39,12 @@ import nl.utwente.groove.grammar.rule.VariableNode;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 class LevelPattern {
     /** Constructs a pattern from the given level data. */
-    LevelPattern(Index index, LevelPattern parent, RuleGraph lhs, RuleGraph rhs,
-                 List<RuleGraph> nacs, VariableNode countNode, Set<VariableNode> outputNodes,
-                 Map<RuleNode,Color> colorMap, boolean isRule) {
+    LevelPattern(Index index, @Nullable LevelPattern parent, RuleGraph lhs, RuleGraph rhs,
+                 List<RuleGraph> nacs, @Nullable VariableNode countNode,
+                 Set<VariableNode> outputNodes, Map<RuleNode,Color> colorMap, boolean isRule) {
         this.index = index;
         this.parent = parent;
         this.lhs = lhs;
@@ -65,15 +69,15 @@ class LevelPattern {
     /** Index of this level. */
     final Index index;
     /** Pattern of the parent level; {@code null} if this is the top level. */
-    final LevelPattern parent;
+    final @Nullable LevelPattern parent;
     /** The left hand side graph of the rule. */
     final RuleGraph lhs;
     /** The right hand side graph of the rule. */
     final RuleGraph rhs;
     /** List of NAC graphs. */
     final List<RuleGraph> nacs;
-    /** The rule node registering the match count. */
-    final VariableNode countNode;
+    /** The rule node registering the match count; may be {@code null}. */
+    final @Nullable VariableNode countNode;
     /** Output nodes of the condition. */
     final Set<VariableNode> outputNodes;
     /** Map from rule nodes to declared colours. */

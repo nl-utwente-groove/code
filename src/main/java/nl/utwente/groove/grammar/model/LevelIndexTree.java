@@ -29,6 +29,9 @@ import java.util.Queue;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.Condition;
 import nl.utwente.groove.grammar.Condition.Op;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
@@ -47,6 +50,7 @@ import nl.utwente.groove.util.QualName;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 class LevelIndexTree {
     /** Constructs the index tree for a given rule source graph. */
     private LevelIndexTree(AspectGraph source, QualName qualName) {
@@ -111,7 +115,7 @@ class LevelIndexTree {
      *        should satisfy
      *        {@link AspectKind#isQuantifier()}
      */
-    private Index getIndex(AspectKind quantifier, AspectNode nestingNode,
+    private Index getIndex(@Nullable AspectKind quantifier, AspectNode nestingNode,
                            Map<Index,List<Index>> indexTree) {
         Index result = this.nestingIndexMap.get(nestingNode);
         if (result == null) {
@@ -126,6 +130,7 @@ class LevelIndexTree {
                      result = createIndex(operator, positive, nestingNode, indexTree));
             if (nestingNode.hasId()) {
                 String id = nestingNode.getId();
+                assert id != null; // guaranteed by hasId()
                 Index oldIndex = this.nameIndexMap.put(id, result);
                 assert oldIndex == null : String.format("Duplicate quantifier name %s", id);
             }
@@ -139,8 +144,8 @@ class LevelIndexTree {
      * @param levelTree the tree of level indices
      * @return the fresh level index
      */
-    private Index createIndex(Condition.Op operator, boolean positive, AspectNode levelNode,
-                              Map<Index,List<Index>> levelTree) {
+    private Index createIndex(Condition.Op operator, boolean positive,
+                              @Nullable AspectNode levelNode, Map<Index,List<Index>> levelTree) {
         Index result = new Index(operator, positive, levelNode, this.qualName);
         levelTree.put(result, new ArrayList<>());
         return result;
@@ -156,13 +161,16 @@ class LevelIndexTree {
         return this.topLevelIndex;
     }
 
-    /** Returns the level index of a given nesting node. */
+    /** Returns the level index of a given nesting node,
+     * or {@code null} if the node is not a known nesting node. */
+    @Nullable
     Index getIndex(AspectNode nestingNode) {
         return this.nestingIndexMap.get(nestingNode);
     }
 
     /** Returns the level index with a given quantifier name,
      * or {@code null} if there is no such index. */
+    @Nullable
     Index getIndex(String name) {
         return this.nameIndexMap.get(name);
     }

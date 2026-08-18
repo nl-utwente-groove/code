@@ -457,7 +457,8 @@ class ConditionAssembler {
 
     /** Tests if a given node occurs in the parent level's LHS. */
     private boolean inParentLhs(LevelPattern level, RuleNode node) {
-        return level.parent != null && level.parent.lhs.containsNode(node);
+        var parent = level.parent;
+        return parent != null && parent.lhs.containsNode(node);
     }
 
     /**
@@ -465,9 +466,12 @@ class ConditionAssembler {
      * the LHS rule elements at a given level.
      */
     private RuleGraph getRootGraph(LevelPattern level) {
-        return level.getIndex().isTopLevel()
-            ? null
-            : getIntersection(level, level.parent.lhs, level.lhs);
+        if (level.getIndex().isTopLevel()) {
+            return null;
+        }
+        var parent = level.parent;
+        assert parent != null; // the pattern tree is congruent to the index tree
+        return getIntersection(level, parent.lhs, level.lhs);
     }
 
     /**
@@ -601,8 +605,9 @@ class ConditionAssembler {
         if (level.getIndex().isPositive()) {
             result.setPositive();
         }
-        if (level.countNode != null) {
-            result.setCountNode(level.countNode);
+        var countNode = level.countNode;
+        if (countNode != null) {
+            result.setCountNode(countNode);
         }
         result.addOutputNodes(level.outputNodes);
         return result;

@@ -169,8 +169,9 @@ class PatternTyper {
             }
             this.errors.throwException();
             for (Map.Entry<RuleNode,Color> colorEntry : origin.colorMap.entrySet()) {
-                this.pattern.colorMap
-                    .put(globalTypeMap.getNode(colorEntry.getKey()), colorEntry.getValue());
+                var image = globalTypeMap.getNode(colorEntry.getKey());
+                assert image != null; // typing succeeded, so all nodes have typed images
+                this.pattern.colorMap.put(image, colorEntry.getValue());
             }
         }
 

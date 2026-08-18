@@ -32,6 +32,9 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectElement;
@@ -54,6 +57,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 class LevelDistribution {
     /** Constructs the distribution for a given rule source graph. */
     private LevelDistribution(RuleCompiler compiler, AspectGraph source,
@@ -145,7 +149,7 @@ class LevelDistribution {
      * Returns the maximum (i.e., lowest-level) level of this and another,
      * given level; or {@code null} if neither is smaller than the other.
      */
-    private Level max(Level first, Level other) {
+    private @Nullable Level max(Level first, Level other) {
         if (first.index.higherThan(other.index)) {
             return other;
         } else if (other.index.higherThan(first.index)) {
@@ -186,6 +190,7 @@ class LevelDistribution {
     private Level getLevel(Map<Index,Level> levelMap, AspectEdge edge) throws FormatException {
         Level sourceLevel = getLevel(levelMap, edge.source());
         Level targetLevel = getLevel(levelMap, edge.target());
+        @Nullable
         Level result = max(sourceLevel, targetLevel);
         // if one of the end nodes is a NAC, it must be the max of the two
         if (edge.source().has(Category.ROLE, AspectKind::inNAC) && !sourceLevel.equals(result)
@@ -204,7 +209,9 @@ class LevelDistribution {
                 throw new FormatException("Undefined nesting level '%s' in edge %s", levelName,
                     edge);
             }
-            result = max(result, levelMap.get(edgeLevelIndex));
+            var edgeLevel = levelMap.get(edgeLevelIndex);
+            assert edgeLevel != null; // all indices have a level
+            result = max(result, edgeLevel);
             if (result == null) {
                 throw new FormatException(
                     "Nesting level %s in edge %s is incompatible with end nodes", levelName, edge);
@@ -218,10 +225,11 @@ class LevelDistribution {
      * corresponding quantification levels.
      */
     private Map<AspectNode,Level> getNodeLevelMap() {
-        if (this.nodeLevelMap == null) {
-            this.nodeLevelMap = new HashMap<>();
+        var result = this.nodeLevelMap;
+        if (result == null) {
+            this.nodeLevelMap = result = new HashMap<>();
         }
-        return this.nodeLevelMap;
+        return result;
     }
 
     /** Returns the mapping from level indices to per-level element data,
@@ -237,7 +245,7 @@ class LevelDistribution {
     /** Mapping from level indices to per-level element data, in tree order. */
     private final SortedMap<Index,Level> levelMap;
     /** Mapping from model nodes to the corresponding nesting level. */
-    private Map<AspectNode,Level> nodeLevelMap;
+    private @Nullable Map<AspectNode,Level> nodeLevelMap;
 
     /** Builds and returns the level distribution of a given rule source graph.
      * @param compiler the compiler providing the compilation context
@@ -259,7 +267,7 @@ class LevelDistribution {
          * @param parent the parent level; may be {@code null} if this is the
          *        top level.
          */
-        public Level(Index index, Level parent) {
+        public Level(Index index, @Nullable Level parent) {
             this.index = index;
             this.parent = parent;
             if (parent != null) {
@@ -349,9 +357,9 @@ class LevelDistribution {
             while (ascendingLevel.modelNodes.add(modelNode)) {
                 assert !ascendingLevel.index.isTopLevel() : String
                     .format("Node not found at any level");
-                ascendingLevel = ascendingLevel.parent;
-                assert ascendingLevel.modelNodes != null : String
-                    .format("Nodes on level %s not yet initialised", ascendingLevel.getIndex());
+                var parent = ascendingLevel.parent;
+                assert parent != null; // guaranteed by the preceding assert
+                ascendingLevel = parent;
             }
         }
 
@@ -419,9 +427,10 @@ class LevelDistribution {
          * to this and the parent levels.
          */
         public void setFixed() {
-            if (this.parent != null) {
+            var parent = this.parent;
+            if (parent != null) {
                 for (LabelVar var : this.modelVars.keySet()) {
-                    this.parent.testParentBinding(var);
+                    parent.testParentBinding(var);
                 }
             }
         }
@@ -432,8 +441,9 @@ class LevelDistribution {
          */
         private boolean testParentBinding(LabelVar var) {
             boolean result = this.modelVars.containsKey(var);
-            if (!result && this.parent != null) {
-                result = this.parent.testParentBinding(var);
+            var parent = this.parent;
+            if (!result && parent != null) {
+                result = parent.testParentBinding(var);
                 if (result) {
                     this.modelVars.put(var, new HashSet<>());
                 }
@@ -444,7 +454,7 @@ class LevelDistribution {
         /** Index of this level. */
         final Index index;
         /** Parent level; {@code null} if this is the top level. */
-        final Level parent;
+        final @Nullable Level parent;
         /** Children level data. */
         private final List<Level> children = new ArrayList<>();
         /** Set of model nodes on this level. */
@@ -453,7 +463,8 @@ class LevelDistribution {
         final Set<AspectEdge> modelEdges = new HashSet<>();
         /** Set of label variables used on this level. */
         final Map<LabelVar,Set<AspectEdge>> modelVars = new HashMap<>();
-        /** The model node registering the match count. */
+        /** The model node registering the match count; may be {@code null}. */
+        @Nullable
         AspectNode countNode;
     }
 }

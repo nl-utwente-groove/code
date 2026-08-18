@@ -211,7 +211,9 @@ class PatternBuilder {
                 errors.addAll(exc.getErrors());
             }
             if (!index.isTopLevel()) {
-                this.parentVars.addAll(origin.parent.modelVars.keySet());
+                var originParent = origin.parent;
+                assert originParent != null; // the level tree is congruent to the index tree
+                this.parentVars.addAll(originParent.modelVars.keySet());
             }
             checkAttributes(errors);
             checkVariables(errors);
