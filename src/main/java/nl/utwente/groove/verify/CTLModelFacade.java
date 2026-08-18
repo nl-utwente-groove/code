@@ -43,7 +43,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * @author Harmen Kastenberg
  * @version $Revision$
  */
-public interface ModelFacade {
+public interface CTLModelFacade {
     /** Returns the root node of the model. */
     public Node getRoot();
 
@@ -86,14 +86,14 @@ public interface ModelFacade {
     }
 
     /** Creates a CTL-checkable model from an exploration result. */
-    public static ModelFacade newModel(ExploreResult result) {
+    public static CTLModelFacade newModel(ExploreResult result) {
         return new GTSFacade(result);
     }
 
     /** Creates a CTL-checkable model from a graph plus special labels mapping.
      * @throws FormatException if the graph is not compatible with the special labels.
      */
-    public static ModelFacade newModel(Graph graph, LTSLabels ltsLabels) throws FormatException {
+    public static CTLModelFacade newModel(Graph graph, LTSLabels ltsLabels) throws FormatException {
         return new GraphFacade(graph, ltsLabels == null
             ? LTSLabels.DEFAULT
             : ltsLabels);
@@ -107,7 +107,7 @@ public interface ModelFacade {
      * initialization. So I'd say that this is not so bad...
      */
     /** Model facade built from an exploration result. */
-    static class GTSFacade implements ModelFacade {
+    static class GTSFacade implements CTLModelFacade {
         /** Maps an exploration result into a model. */
         GTSFacade(ExploreResult result) {
             this.gts = result.getGTS();
@@ -200,7 +200,7 @@ public interface ModelFacade {
     }
 
     /** Model facade from a graph and a special labels mapping. */
-    static class GraphFacade implements ModelFacade {
+    static class GraphFacade implements CTLModelFacade {
         /** Wraps a graph and a special labels mapping into a model.
          * @throws FormatException if the graph is not compatible with the special labels.
          */

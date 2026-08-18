@@ -37,7 +37,7 @@ import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.verify.CTLMarker;
 import nl.utwente.groove.verify.Formula;
 import nl.utwente.groove.verify.Logic;
-import nl.utwente.groove.verify.ModelFacade;
+import nl.utwente.groove.verify.CTLModelFacade;
 import picocli.CommandLine.IParameterConsumer;
 import picocli.CommandLine.ITypeConverter;
 import picocli.CommandLine.Model.ArgSpec;
@@ -98,7 +98,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
 
     private void ctlCheck(String[] genArgs) throws Exception {
         long genStartTime = System.currentTimeMillis();
-        ModelFacade model;
+        CTLModelFacade model;
         if (genArgs != null) {
             emit("Generator:\t%s%n", Strings.toString(genArgs, " ", ""));
             model = generateModel(genArgs);
@@ -111,7 +111,7 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
             model = generateModel(this.modelGraph.getPath());
         } else {
             emit("Model:\t%s%n", this.modelGraph);
-            model = ModelFacade.newModel(Groove.loadGraph(this.modelGraph), this.ltsLabels);
+            model = CTLModelFacade.newModel(Groove.loadGraph(this.modelGraph), this.ltsLabels);
             emit("Model loaded:\t%s states%n", model.nodeSet().size());
         }
         // check if the formulas match the model
@@ -155,13 +155,13 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
     /**
      * Generates a model by invoking the Generator with a given list of arguments.
      */
-    private ModelFacade generateModel(String... genArgs) throws Exception {
+    private CTLModelFacade generateModel(String... genArgs) throws Exception {
         List<String> args = new ArrayList<>();
         args.add("-v");
         args.add("" + getVerbosity().getLevel());
         args.addAll(Arrays.asList(genArgs));
         try {
-            return ModelFacade.newModel(Generator.execute(args.toArray(new String[] {})));
+            return CTLModelFacade.newModel(Generator.execute(args.toArray(new String[] {})));
         } catch (Exception e) {
             throw new Exception("Error in state space generation:\n" + e.getMessage(), e);
         }
