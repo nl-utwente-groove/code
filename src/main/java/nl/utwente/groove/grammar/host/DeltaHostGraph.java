@@ -643,7 +643,9 @@ public final class DeltaHostGraph extends AGraph<HostNode,HostEdge>
             HostNode source = edge.source();
             HostNode target = edge.target();
             if (target instanceof ValueNode val && val.getValue() instanceof ErrorValue error) {
-                this.errors.add(error.getMessage(), edge);
+                var message = error.getMessage();
+                assert message != null; // an ErrorValue is always constructed from a cause exception
+                this.errors.add(message, edge);
             }
             addToEdgeToStore(this.nodeEdgeStore, source, edge, refreshSource);
             if (source != target) {
