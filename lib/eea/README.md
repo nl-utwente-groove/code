@@ -43,13 +43,12 @@ Current contents (all files verbatim from no-npe):
 | `java/util/Properties.eea` | `getProperty` returns `@Nullable` |
 | `java/lang/*` (whole package: `Object`, `Class`, `String`, `StringBuilder`, boxed types, `Iterable`, `Thread`, `System`, `Throwable`, exceptions, …) | `Object.equals` takes a `@Nullable` parameter (propagates to every override — equals implementations must null-guard before dereferencing); `clone()` returns `@NonNull`; `Class.getEnumConstants`/`getCanonicalName`/`getClassLoader`/`getPackage`, `Throwable.getCause`/`getMessage`, `System.getProperty` return `@Nullable` |
 | `java/lang/reflect/*`, `ref/*`, `annotation/*`, `constant/*`, `invoke/*` | `Method.invoke` returns `@Nullable` (a primitive-returning method still yields a non-null box — assert with that reason); `AnnotatedElement.getAnnotation` returns `@Nullable` |
+| `java/io/*` **except `PrintStream`/`PrintWriter`**, `java/net/*`, `java/util/zip/*`, `java/util/jar/*` | `File.listFiles` genuinely returns null on I/O errors (check, don't assert); `readLine` returns `@Nullable` at end of stream; `File.getParent`/`getParentFile`, `JarURLConnection.getJarEntry` return `@Nullable`. The two printf carriers are deliberately excluded — their `@NonNull Object...` varargs flag every `System.out.printf` call for no gain (the pending trim-or-adopt decision) |
 
-Planned next (gh #881): java.io (`File.listFiles` genuinely returns null on I/O
-errors, plus `readLine`, `File.getParent`, zip/jar entries — ~8 findings).
-`PrintStream`/`Formatter` printf (~21 low-value findings) and the javax.swing
-files (inheritance conflicts in the `JModel` hierarchy) need a deliberate
-trim-or-adopt decision. Once the curated set stabilises, switching to the full
-`no-npe-eea-all` artifact is the realistic endgame.
+Planned next (gh #881): the trim-or-adopt decision on `PrintStream`/`PrintWriter`
+and `java.util.Formatter` printf (~21 low-value findings) and on the javax.swing
+files (inheritance conflicts in the `JModel` hierarchy). Once those are decided,
+switching to the full `no-npe-eea-all` artifact is the realistic endgame.
 
 ## Reviewing `.eea` files
 

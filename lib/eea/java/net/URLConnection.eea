@@ -1,0 +1,34 @@
+class java/net/URLConnection
+getFileNameMap
+ ()Ljava/net/FileNameMap;
+ ()L1java/net/FileNameMap;
+getContent
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+getContentEncoding
+ ()Ljava/lang/String;
+ ()L0java/lang/String;
+getContentType
+ ()Ljava/lang/String;
+ ()L0java/lang/String;
+getHeaderField
+ (I)Ljava/lang/String;
+ (I)L0java/lang/String;
+getHeaderField
+ (Ljava/lang/String;)Ljava/lang/String;
+ (Ljava/lang/String;)L0java/lang/String;
+getInputStream
+ ()Ljava/io/InputStream;
+ ()L1java/io/InputStream;
+getOutputStream
+ ()Ljava/io/OutputStream;
+ ()L1java/io/OutputStream;
+getPermission
+ ()Ljava/security/Permission;
+ ()L1java/security/Permission;
+getURL
+ ()Ljava/net/URL;
+ ()L1java/net/URL;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

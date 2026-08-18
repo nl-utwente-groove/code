@@ -1,0 +1,16 @@
+class java/net/URLClassLoader
+findClass
+ (Ljava/lang/String;)Ljava/lang/Class<*>;
+ (L0java/lang/String;)L1java/lang/Class<*>;
+findResource
+ (Ljava/lang/String;)Ljava/net/URL;
+ (L0java/lang/String;)L0java/net/URL;
+findResources
+ (Ljava/lang/String;)Ljava/util/Enumeration<Ljava/net/URL;>;
+ (L0java/lang/String;)L1java/util/Enumeration<L1java/net/URL;>;
+getResourceAsStream
+ (Ljava/lang/String;)Ljava/io/InputStream;
+ (L1java/lang/String;)L0java/io/InputStream;
+getURLs
+ ()[Ljava/net/URL;
+ ()[1L1java/net/URL;

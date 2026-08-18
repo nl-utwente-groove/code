@@ -1,0 +1,7 @@
+class java/io/FilterOutputStream
+write
+ ([B)V
+ ([1B)V
+write
+ ([BII)V
+ ([1BII)V
