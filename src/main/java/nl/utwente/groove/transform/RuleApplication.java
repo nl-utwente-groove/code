@@ -164,6 +164,7 @@ public class RuleApplication implements DeltaApplier {
             = value -> value.traverseProofs(eventFinder) != null;
         Finder<TreeMatch> matchFinder = Visitor.newFinder(matchContainsProof);
         boolean result = getRule()
+            .getProver()
             .getEventMatcher(source.isSimple())
             .traverse(source, event.getAnchorMap(), matchFinder) != null;
         eventFinder.dispose();
