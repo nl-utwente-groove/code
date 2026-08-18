@@ -88,7 +88,9 @@ public class LTSTree extends LabelTree<GTS> {
             entry.refreshSelection();
             if (getFilter().hasJCells(entry)) {
                 headers |= entry.getType() != Type.GRAPH_CONDITION;
-                typedEntries.get(entry.getType()).add(entry);
+                var entries = typedEntries.get(entry.getType());
+                assert entries != null; // all entry types are pre-populated
+                entries.add(entry);
             }
         }
         if (headers) {
@@ -104,7 +106,9 @@ public class LTSTree extends LabelTree<GTS> {
             }
             return result;
         } else {
-            return fillTree(getTopNode(), typedEntries.get(Type.GRAPH_CONDITION));
+            var conditionEntries = typedEntries.get(Type.GRAPH_CONDITION);
+            assert conditionEntries != null; // all entry types are pre-populated
+            return fillTree(getTopNode(), conditionEntries);
         }
     }
 

@@ -913,7 +913,9 @@ public class GrammarModel implements PropertyChangeListener {
             var result = super.add(e);
             if (result) {
                 // also add all resource kinds that depend on this one
-                addAll(backwardMap.get(e));
+                var preds = backwardMap.get(e);
+                assert preds != null; // filled for all kinds
+                addAll(preds);
             }
             return result;
         }
@@ -923,7 +925,11 @@ public class GrammarModel implements PropertyChangeListener {
             var result = super.addAll(c);
             if (result) {
                 // also add all resource kinds that depend on the ones in c
-                c.forEach(k -> addAll(backwardMap.get(k)));
+                c.forEach(k -> {
+                    var preds = backwardMap.get(k);
+                    assert preds != null; // filled for all kinds
+                    addAll(preds);
+                });
             }
             return result;
         }

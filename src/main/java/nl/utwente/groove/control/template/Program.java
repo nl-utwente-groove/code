@@ -241,6 +241,7 @@ public class Program implements Fixable {
             // propagate the changes
             for (QualName callee : changed) {
                 Set<QualName> childCallees = calls.get(callee);
+                assert childCallees != null; // changed only ever contains keys of calls
                 // add the childcallees to all callers of callee
                 for (Map.Entry<QualName,Set<QualName>> callerEntry : calls.entrySet()) {
                     QualName caller = callerEntry.getKey();

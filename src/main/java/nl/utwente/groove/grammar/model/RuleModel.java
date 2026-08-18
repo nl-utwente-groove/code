@@ -1858,6 +1858,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 Iterator<RuleNode> myNodeIter = getNodes().iterator();
                 Iterator<RuleNode> otherNodeIter = o.getNodes().iterator();
                 Comparator<? super RuleNode> nodeComp = getNodes().comparator();
+                assert nodeComp != null; // the node set is created with an explicit comparator
                 while (myNodeIter.hasNext()) {
                     result = nodeComp.compare(myNodeIter.next(), otherNodeIter.next());
                     if (result != 0) {
@@ -1868,6 +1869,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
                 Iterator<RuleEdge> myEdgeIter = getEdges().iterator();
                 Iterator<RuleEdge> otherEdgeIter = o.getEdges().iterator();
                 Comparator<? super RuleEdge> edgeComp = getEdges().comparator();
+                assert edgeComp != null; // the edge set is created with an explicit comparator
                 while (myEdgeIter.hasNext()) {
                     result = edgeComp.compare(myEdgeIter.next(), otherEdgeIter.next());
                     if (result != 0) {

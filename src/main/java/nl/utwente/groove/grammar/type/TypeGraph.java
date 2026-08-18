@@ -388,7 +388,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
                 // propagate colours
                 Color color = node.getColor();
                 assert color != null;
-                Set<TypeNode> propagatees = new HashSet<>(this.nodeSubtypeMap.get(node));
+                Set<TypeNode> nodeSubtypes = this.nodeSubtypeMap.get(node);
+                assert nodeSubtypes != null; // filled for all nodes of this graph
+                Set<TypeNode> propagatees = new HashSet<>(nodeSubtypes);
                 propagatees.remove(node);
                 while (!propagatees.isEmpty()) {
                     Iterator<TypeNode> subNodeIter = propagatees.iterator();
@@ -397,7 +399,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
                     if (subNode.getColor() == null) {
                         subNode.setDerivedColor(color);
                     } else {
-                        propagatees.removeAll(this.nodeSubtypeMap.get(subNode));
+                        Set<TypeNode> subNodeSubtypes = this.nodeSubtypeMap.get(subNode);
+                        assert subNodeSubtypes != null; // filled for all nodes of this graph
+                        propagatees.removeAll(subNodeSubtypes);
                     }
                 }
             }
@@ -407,7 +411,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
                 // propagate label patterns
                 LabelPattern nodePattern = node.getLabelPattern();
                 assert nodePattern != null;
-                Set<TypeNode> propagatees = new HashSet<>(this.nodeSubtypeMap.get(node));
+                Set<TypeNode> nodeSubtypes = this.nodeSubtypeMap.get(node);
+                assert nodeSubtypes != null; // filled for all nodes of this graph
+                Set<TypeNode> propagatees = new HashSet<>(nodeSubtypes);
                 propagatees.remove(node);
                 while (!propagatees.isEmpty()) {
                     Iterator<TypeNode> subNodeIter = propagatees.iterator();
@@ -416,7 +422,9 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
                     if (subNode.getLabelPattern() == null) {
                         subNode.setLabelPattern(nodePattern);
                     } else {
-                        propagatees.removeAll(this.nodeSubtypeMap.get(subNode));
+                        Set<TypeNode> subNodeSubtypes = this.nodeSubtypeMap.get(subNode);
+                        assert subNodeSubtypes != null; // filled for all nodes of this graph
+                        propagatees.removeAll(subNodeSubtypes);
                     }
                 }
             }

@@ -266,7 +266,6 @@ public class Aspect {
          * @throws FormatException if an aspect of the same category is already in the map,
          * either of a different kind or of the same kind and both have content.
          */
-        @SuppressWarnings("null")
         public void add(Aspect aspect) throws FormatException {
             assert !isFixed();
             Aspect old = get(aspect.getCategory());
@@ -298,8 +297,10 @@ public class Aspect {
                 .filter(c -> !c.ok(newAspect.getCategory(), this.forNode, this.role))
                 .findAny();
             if (result.isPresent()) {
+                var conflicting = get(result.get());
+                assert conflicting != null; // the category is taken from the key set of this map
                 throw new FormatException("Conflicting aspects '%s' and '%s'",
-                    get(result.get()).getKind(), newAspect.getKind());
+                    conflicting.getKind(), newAspect.getKind());
             }
         }
 
@@ -411,7 +412,6 @@ public class Aspect {
          * are present and pass the test, there is a conflict
          * @throws FormatException if the test passes
          */
-        @SuppressWarnings("null")
         private void check(Category one, Category two,
                            BiPredicate<Aspect,Aspect> test) throws FormatException {
             var aspectOne = get(one);
@@ -425,7 +425,6 @@ public class Aspect {
         }
 
         /** Checks whether this map has any entry for a given aspect kind. */
-        @SuppressWarnings("null")
         public boolean has(@Nullable AspectKind kind) {
             if (kind == null) {
                 return false;
@@ -446,7 +445,10 @@ public class Aspect {
                 int result = 0;
                 if (containsKey(cat)) {
                     if (o.containsKey(cat)) {
-                        result = get(cat).getKind().ordinal() - o.get(cat).getKind().ordinal();
+                        var myAspect = get(cat);
+                        var oAspect = o.get(cat);
+                        assert myAspect != null && oAspect != null; // both maps contain the category
+                        result = myAspect.getKind().ordinal() - oAspect.getKind().ordinal();
                     } else {
                         result = 1;
                     }

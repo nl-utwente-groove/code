@@ -310,7 +310,9 @@ public class ExploreConfig {
                 errors.add("Unknown exploration key '%s'", name, numbers);
                 continue;
             }
-            putParsed(result, errors, key, props.getProperty(name).trim(), numbers);
+            var value = props.getProperty(name);
+            assert value != null; // name is one of the property names of props
+            putParsed(result, errors, key, value.trim(), numbers);
         }
         errors.throwException();
         return result;

@@ -155,7 +155,6 @@ public class AspectJVertex extends
      * This implementation prefixes the node description with an indication
      * of the role, if the model is a rule.
      */
-    @SuppressWarnings("null")
     @Override
     StringBuilder getNodeDescription() {
         StringBuilder result = new StringBuilder();

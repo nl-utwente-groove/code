@@ -148,7 +148,6 @@ public class AspectJEdge extends
         setStale(VisualKey.ERROR);
     }
 
-    @SuppressWarnings("null")
     @Override
     StringBuilder getEdgeDescription() {
         StringBuilder result = new StringBuilder();
@@ -176,7 +175,6 @@ public class AspectJEdge extends
         return result;
     }
 
-    @SuppressWarnings("null")
     @Override
     StringBuilder getEdgeKindDescription() {
         StringBuilder result = super.getEdgeKindDescription();

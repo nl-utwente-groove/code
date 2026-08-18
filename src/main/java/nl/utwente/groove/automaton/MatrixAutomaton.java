@@ -297,6 +297,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<@NonNull RegNode,@NonNu
             RegNode source = remainingNodes.iterator().next();
             remainingNodes.remove(source);
             Set<LabelVar> sourceAllVarSet = allVarMap.get(source);
+            assert sourceAllVarSet != null; // nodes are only scheduled together with their var set
             for (RegEdge outEdge : outEdgeSet(source)) {
                 RegNode target = outEdge.target();
                 Set<LabelVar> targetAllVarSet = new HashSet<>(sourceAllVarSet);

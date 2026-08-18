@@ -109,7 +109,9 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
         if (selectionPaths != null) {
             for (TreePath selectedPath : selectionPaths) {
                 Index index = ((LevelNode) selectedPath.getLastPathComponent()).getIndex();
-                emphSet.addAll(this.levelCellMap.get(index));
+                Set<AspectJCell> levelCells = this.levelCellMap.get(index);
+                assert levelCells != null; // every level node in the tree has its cells computed
+                emphSet.addAll(levelCells);
             }
         }
         emphSet.retainAll(this.selectedSet);
@@ -163,7 +165,9 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
                 // note that we go through the indices in an ordered fashion
                 // so the parent has already been computed
                 if (!index.isTopLevel()) {
-                    levelCells.removeAll(this.levelCellMap.get(index.getParent()));
+                    Set<AspectJCell> parentCells = this.levelCellMap.get(index.getParent());
+                    assert parentCells != null; // the parent index was processed earlier
+                    levelCells.removeAll(parentCells);
                 }
                 // also add the nesting nodes and edges
                 AspectNode ruleLevelNode = index.getLevelNode();
@@ -200,6 +204,7 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
         Set<AspectJCell> unselecteds = new HashSet<>();
         for (LevelNode node : changedNodes) {
             Set<AspectJCell> levelCells = this.levelCellMap.get(node.getIndex());
+            assert levelCells != null; // every level node in the tree has its cells computed
             if (node.isSelected()) {
                 selecteds.addAll(levelCells);
             } else {

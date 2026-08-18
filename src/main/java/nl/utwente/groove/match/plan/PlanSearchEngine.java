@@ -84,7 +84,9 @@ public class PlanSearchEngine extends SearchEngine {
         if (rule != null) {
             anchorKeys.addAll(rule.getAnchor());
         }
-        anchorKeys.addAll(condition.getOutputNodes());
+        var outputNodes = condition.getOutputNodes();
+        assert outputNodes != null; // a condition that is matched has a pattern, hence output nodes
+        anchorKeys.addAll(outputNodes);
         PlanData planData = new PlanData(condition, this.simple);
         if (seed == null) {
             seed = new Anchor();

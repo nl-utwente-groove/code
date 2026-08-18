@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -212,7 +213,7 @@ public class SimulatorModel implements Cloneable {
         case HOST, TYPE, PROLOG, CONTROL:
             GrammarProperties newProperties = getGrammar().getProperties().clone();
             List<QualName> actives = new ArrayList<>(newProperties.getActiveNames(kind));
-            actives.sort(null);
+            actives.sort(Comparator.naturalOrder());
             for (QualName typeName : names) {
                 if (!actives.remove(typeName)) {
                     actives.add(typeName);
@@ -1473,7 +1474,9 @@ public class SimulatorModel implements Cloneable {
     private void fireUpdate() {
         Set<SimulatorListener> notified = new HashSet<>();
         for (Change change : this.changes) {
-            for (SimulatorListener listener : new ArrayList<>(this.listeners.get(change))) {
+            List<SimulatorListener> changeListeners = this.listeners.get(change);
+            assert changeListeners != null; // the listener map is initialised for all change kinds
+            for (SimulatorListener listener : new ArrayList<>(changeListeners)) {
                 if (notified.add(listener)) {
                     listener.update(this, this.old, this.changes);
                 }

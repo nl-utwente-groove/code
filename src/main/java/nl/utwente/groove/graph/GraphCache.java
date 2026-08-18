@@ -238,7 +238,8 @@ public class GraphCache<N extends Node,E extends GEdge<N>> implements Fixable, C
      */
     private Map<N,@Nullable Set<E>> computeNodeInEdgeMap() {
         Map<N,@Nullable Set<E>> result;
-        if (this.nodeEdgeMap == null) {
+        var nodeEdgeMap = this.nodeEdgeMap;
+        if (nodeEdgeMap == null) {
             result = new HashMap<>();
             for (N node : this.graph.nodeSet()) {
                 result.put(node, createEdgeSet(null));
@@ -250,7 +251,7 @@ public class GraphCache<N extends Node,E extends GEdge<N>> implements Fixable, C
             }
         } else {
             // reuse the precomputed node-edge-map
-            result = new HashMap<>(this.nodeEdgeMap);
+            result = new HashMap<>(nodeEdgeMap);
             for (var resultEntry : result.entrySet()) {
                 N node = resultEntry.getKey();
                 Set<E> inEdges = createEdgeSet(null);
@@ -269,7 +270,8 @@ public class GraphCache<N extends Node,E extends GEdge<N>> implements Fixable, C
      */
     private Map<N,@Nullable Set<E>> computeNodeOutEdgeMap() {
         Map<N,@Nullable Set<E>> result;
-        if (this.nodeEdgeMap == null) {
+        var nodeEdgeMap = this.nodeEdgeMap;
+        if (nodeEdgeMap == null) {
             result = new HashMap<>();
             for (N node : this.graph.nodeSet()) {
                 result.put(node, createEdgeSet(null));
@@ -281,7 +283,7 @@ public class GraphCache<N extends Node,E extends GEdge<N>> implements Fixable, C
             }
         } else {
             // reuse the precomputed node-edge-map
-            result = new HashMap<>(this.nodeEdgeMap);
+            result = new HashMap<>(nodeEdgeMap);
             for (var resultEntry : result.entrySet()) {
                 N node = resultEntry.getKey();
                 var inEdges = createEdgeSet(null);

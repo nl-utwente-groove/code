@@ -96,7 +96,9 @@ public class EcoreMapping {
             if (key.equals(SettingsModel.SCHEMA_KEY)) {
                 continue;
             }
-            String value = props.getProperty(key).trim();
+            String rawValue = props.getProperty(key);
+            assert rawValue != null; // key is one of the property names of props
+            String value = rawValue.trim();
             var numbers = SettingsContent.numbers(content, key);
             List<String> segments = Arrays.asList(key.split("\\.", -1));
             String choice = segments.get(segments.size() - 1);

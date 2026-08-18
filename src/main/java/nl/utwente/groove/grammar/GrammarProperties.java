@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -602,7 +603,7 @@ public class GrammarProperties extends Properties {
         if (activeNames.removeAll(names)) {
             hasChanged = true;
             var orderedActiveNames = new ArrayList<>(activeNames);
-            orderedActiveNames.sort(null);
+            orderedActiveNames.sort(Comparator.naturalOrder());
             result.setActiveNames(kind, orderedActiveNames);
             hasChanged = true;
         }
@@ -636,7 +637,7 @@ public class GrammarProperties extends Properties {
         if (activeNames.remove(oldName)) {
             activeNames.add(newName);
             var orderedActiveNames = new ArrayList<>(activeNames);
-            orderedActiveNames.sort(null);
+            orderedActiveNames.sort(Comparator.naturalOrder());
             result.setActiveNames(kind, orderedActiveNames);
             hasChanged = true;
         }

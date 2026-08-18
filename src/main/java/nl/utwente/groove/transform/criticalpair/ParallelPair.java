@@ -179,11 +179,13 @@ class ParallelPair {
      */
     public List<RuleNode> getCombination(Long group) {
         List<RuleNode> result = new ArrayList<>();
-        if (this.nodeMatch1.containsKey(group)) {
-            result.addAll(this.nodeMatch1.get(group));
+        Set<RuleNode> match1 = this.nodeMatch1.get(group);
+        if (match1 != null) {
+            result.addAll(match1);
         }
-        if (this.nodeMatch2.containsKey(group)) {
-            result.addAll(this.nodeMatch2.get(group));
+        Set<RuleNode> match2 = this.nodeMatch2.get(group);
+        if (match2 != null) {
+            result.addAll(match2);
         }
         return result;
     }
@@ -194,8 +196,9 @@ class ParallelPair {
     public Set<RuleNode> getCombination(Long group, MatchNumber matchnum) {
         Map<Long,Set<RuleNode>> nodeMatch = getNodeMatch(matchnum);
         Set<RuleNode> result = new LinkedHashSet<>();
-        if (nodeMatch.containsKey(group)) {
-            result.addAll(nodeMatch.get(group));
+        Set<RuleNode> match = nodeMatch.get(group);
+        if (match != null) {
+            result.addAll(match);
         }
         return result;
     }

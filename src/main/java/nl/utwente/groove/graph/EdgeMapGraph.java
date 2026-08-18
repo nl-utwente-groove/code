@@ -71,7 +71,9 @@ abstract public class EdgeMapGraph<N extends Node,E extends GEdge<N>> extends AG
     public Set<? extends E> edgeSet() {
         Set<E> result = new LinkedHashSet<>();
         for (var edgeEntry : this.edgeMap.entrySet()) {
-            result.addAll(edgeEntry.getValue());
+            var outEdges = edgeEntry.getValue();
+            assert outEdges != null; // every node in the map has an (initially empty) edge set
+            result.addAll(outEdges);
         }
         return Collections.unmodifiableSet(result);
     }

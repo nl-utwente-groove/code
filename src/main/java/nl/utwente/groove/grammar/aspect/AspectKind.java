@@ -409,7 +409,9 @@ public enum AspectKind {
 
     private static HelpMap computeNodeDocMap(GraphRole role) {
         var result = new HelpMap();
-        Set<AspectKind> nodeKinds = EnumSet.copyOf(allowedNodeKinds.get(role));
+        var allowedKinds = allowedNodeKinds.get(role);
+        assert allowedKinds != null; // filled for all graph roles
+        Set<AspectKind> nodeKinds = EnumSet.copyOf(allowedKinds);
         if (role == GraphRole.HOST || role == GraphRole.RULE) {
             nodeKinds.add(LET);
         }
@@ -431,7 +433,9 @@ public enum AspectKind {
 
     private static HelpMap computeEdgeDocMap(GraphRole role) {
         var result = new HelpMap();
-        Set<AspectKind> edgeKinds = EnumSet.copyOf(allowedEdgeKinds.get(role));
+        var allowedKinds = allowedEdgeKinds.get(role);
+        assert allowedKinds != null; // filled for all graph roles
+        Set<AspectKind> edgeKinds = EnumSet.copyOf(allowedKinds);
         edgeKinds.remove(LET);
         edgeKinds.remove(TEST);
         edgeKinds.removeAll(existsQuantifiers);
