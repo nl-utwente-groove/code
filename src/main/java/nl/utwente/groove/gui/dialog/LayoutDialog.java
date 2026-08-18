@@ -111,7 +111,9 @@ public class LayoutDialog extends JDialog implements ActionListener, WindowFocus
 
     private void refreshPanel(LayouterItem item) {
         if (getJGraph() != null) {
-            getLayoutMenu().selectLayoutAction(item).actionPerformed(null);
+            getLayoutMenu()
+                .selectLayoutAction(item)
+                .actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "layout"));
             LayouterItem layouterItem = (LayouterItem) getJGraph().getLayouter();
             replacePanel(layouterItem.getPanel());
         }

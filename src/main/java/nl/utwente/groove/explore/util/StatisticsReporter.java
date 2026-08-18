@@ -23,7 +23,6 @@ import static nl.utwente.groove.util.cli.Verbosity.MEDIUM;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Formatter;
 import java.util.List;
 
 import nl.utwente.groove.explore.Exploration;
@@ -67,7 +66,6 @@ public class StatisticsReporter extends AExplorationReporter {
     private long startUsedMemory;
 
     private StringBuilder sb;
-    private Formatter fm;
     /** The verbosity level with which {@link #sb} was built. */
     private Verbosity sbVerbosity;
 
@@ -122,7 +120,6 @@ public class StatisticsReporter extends AExplorationReporter {
         }
         // clear any previous report
         this.sb = null;
-        this.fm = null;
     }
 
     @Override
@@ -160,7 +157,6 @@ public class StatisticsReporter extends AExplorationReporter {
     private void createReport(Verbosity verbosity) {
         // Set the string builder before we start.
         this.sb = new StringBuilder();
-        this.fm = new Formatter(this.sb);
         this.sbVerbosity = verbosity;
         reportProfiling();
         reportStatistics();
@@ -398,7 +394,7 @@ public class StatisticsReporter extends AExplorationReporter {
      */
     private void emit(Verbosity at, String text, Object... args) {
         if (at.compareTo(this.sbVerbosity) <= 0) {
-            this.fm.format(text, args);
+            this.sb.append(String.format(text, args));
         }
     }
 

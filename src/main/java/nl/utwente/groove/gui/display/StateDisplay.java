@@ -299,10 +299,8 @@ public class StateDisplay extends Display implements SimulatorListener {
     /** Creates the listener of the error panel. */
     private PropertyChangeListener createErrorListener() {
         return arg -> {
-            if (arg != null) {
-                var error = (FormatError) arg.getNewValue();
-                selectError(error);
-            }
+            var error = (FormatError) arg.getNewValue();
+            selectError(error);
         };
     }
 

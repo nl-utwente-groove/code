@@ -139,7 +139,7 @@ public class SetLayoutMenu extends JMenu {
             setAction(new AbstractAction(layouter.getName()) {
                 @Override
                 public void actionPerformed(ActionEvent evt) {
-                    selectLayoutAction(LayoutItem.this.layouter).actionPerformed(null);
+                    selectLayoutAction(LayoutItem.this.layouter).actionPerformed(evt);
                 }
             });
         }

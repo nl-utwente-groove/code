@@ -151,11 +151,9 @@ final public class GraphEditorTab extends ResourceTab
     @Override
     protected PropertyChangeListener createErrorListener() {
         return arg -> {
-            if (arg != null) {
-                var error = (FormatError) arg.getNewValue();
-                if (error != null) {
-                    getJGraph().setSelectionCells(error.getElements());
-                }
+            var error = (FormatError) arg.getNewValue();
+            if (error != null) {
+                getJGraph().setSelectionCells(error.getElements());
             }
         };
     }

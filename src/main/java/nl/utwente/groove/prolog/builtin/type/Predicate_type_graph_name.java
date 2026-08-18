@@ -52,9 +52,6 @@ public class Predicate_type_graph_name extends GraphPrologCode {
                 .getActiveNames(ResourceKind.TYPE);
             var typeNames
                 = qualTypeNames.stream().map(QualName::toString).collect(Collectors.toSet());
-            if (typeNames == null) {
-                return FAIL;
-            }
 
             PrologStringCollectionIterator it = new PrologStringCollectionIterator(typeNames,
                 args[0], interpreter.getUndoPosition());

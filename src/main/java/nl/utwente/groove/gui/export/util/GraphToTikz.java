@@ -23,7 +23,6 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Formatter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -514,12 +513,10 @@ public final class GraphToTikz<G extends @NonNull Graph> {
         double adjX = x / scale;
         double adjY = -1.0 * (y / scale);
         String format = "%5.3f, %5.3f";
-        try (Formatter f = new Formatter()) {
-            if (usePar) {
-                format = enclosePar(format);
-            }
-            s.append(f.format(Locale.US, format, adjX, adjY).toString());
+        if (usePar) {
+            format = enclosePar(format);
         }
+        s.append(String.format(Locale.US, format, adjX, adjY));
     }
 
     /**
