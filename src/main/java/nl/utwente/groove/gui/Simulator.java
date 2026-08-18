@@ -69,7 +69,6 @@ import javax.swing.WindowConstants;
 
 import apple.dts.samplecode.osxadapter.OSXAdapter;
 import nl.utwente.groove.grammar.GrammarKey;
-import nl.utwente.groove.grammar.OracleParser;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.SimulatorModel.Change;
@@ -98,6 +97,7 @@ import nl.utwente.groove.gui.prolog.GuiPredicates;
 import nl.utwente.groove.lts.GraphNextState;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.RuleTransitionLabel;
+import nl.utwente.groove.transform.oracle.OracleParser;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;

@@ -14,16 +14,10 @@
  *
  * $Id$
  */
-package nl.utwente.groove.grammar;
+package nl.utwente.groove.transform.oracle;
 
 import java.util.Arrays;
 
-import nl.utwente.groove.transform.oracle.DefaultOracle;
-import nl.utwente.groove.transform.oracle.NoValueOracle;
-import nl.utwente.groove.transform.oracle.RandomOracleFactory;
-import nl.utwente.groove.transform.oracle.ReaderOracleFactory;
-import nl.utwente.groove.transform.oracle.ValueOracleFactory;
-import nl.utwente.groove.transform.oracle.ValueOracleKind;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.parse.FormatException;
