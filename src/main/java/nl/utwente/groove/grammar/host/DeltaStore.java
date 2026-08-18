@@ -14,13 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.transform;
-
-import nl.utwente.groove.grammar.host.HostEdge;
-import nl.utwente.groove.grammar.host.HostEdgeSet;
-import nl.utwente.groove.grammar.host.HostNode;
-import nl.utwente.groove.grammar.host.HostNodeSet;
-import nl.utwente.groove.grammar.host.ValueNode;
+package nl.utwente.groove.grammar.host;
 
 /**
  * Delta target that collects the addition and removal information and can play

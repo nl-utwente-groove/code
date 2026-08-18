@@ -22,7 +22,6 @@ import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.graph.GGraph;
 import nl.utwente.groove.graph.GraphInfo;
-import nl.utwente.groove.transform.DeltaTarget;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 

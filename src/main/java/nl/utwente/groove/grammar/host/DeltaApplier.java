@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.transform;
+package nl.utwente.groove.grammar.host;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 

@@ -14,16 +14,11 @@
  *
  * $Id$
  */
-package nl.utwente.groove.transform;
+package nl.utwente.groove.grammar.host;
 
 import java.util.Collection;
 import java.util.Set;
 
-import nl.utwente.groove.grammar.host.HostEdge;
-import nl.utwente.groove.grammar.host.HostEdgeSet;
-import nl.utwente.groove.grammar.host.HostElement;
-import nl.utwente.groove.grammar.host.HostNode;
-import nl.utwente.groove.grammar.host.HostNodeSet;
 import nl.utwente.groove.util.collect.DeltaSet;
 import nl.utwente.groove.util.collect.StackedSet;
 
