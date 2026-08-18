@@ -159,7 +159,8 @@ class PatternBuilder {
          * @param origin the level distribution data from which this level is created
          * @param parent the parent's level object, if this is not a top level
          */
-        public Level(LevelDistribution.Level origin, @Nullable Level parent) throws FormatException {
+        public Level(LevelDistribution.Level origin,
+                     @Nullable Level parent) throws FormatException {
             this.factory = PatternBuilder.this.modelMap.getFactory();
             Index index = this.index = origin.index;
             this.parent = parent;
@@ -271,11 +272,6 @@ class PatternBuilder {
             assert roleKind != null;
             this.isRule |= roleKind.inLHS() != roleKind.inRHS();
             RuleEdge ruleEdge = getEdgeImage(modelEdge);
-            if (ruleEdge == null) {
-                // this was an argument or operation edge;
-                // it has been processed by adding the info to the operator node
-                return;
-            }
             if (roleKind.inLHS()) {
                 // flag indicating that the rule edge is fresh in the LHS
                 boolean freshInLhs = this.lhs.addEdgeContext(ruleEdge);
@@ -691,7 +687,8 @@ class PatternBuilder {
         private RuleNode getNodeImage(AspectNode modelNode) throws FormatException {
             RuleNode result = PatternBuilder.this.modelMap.getNode(modelNode);
             if (result == null) {
-                PatternBuilder.this.modelMap.putNode(modelNode, result = computeNodeImage(modelNode));
+                PatternBuilder.this.modelMap
+                    .putNode(modelNode, result = computeNodeImage(modelNode));
             }
             return result;
         }
@@ -704,7 +701,7 @@ class PatternBuilder {
          * @throws FormatException if <code>node</code> does not occur in a
          *         correct way in <code>context</code>
          */
-        private @Nullable RuleEdge getEdgeImage(AspectEdge modelEdge) throws FormatException {
+        private RuleEdge getEdgeImage(AspectEdge modelEdge) throws FormatException {
             RuleEdge result = PatternBuilder.this.modelMap.getEdge(modelEdge);
             if (result == null) {
                 result = computeEdgeImage(modelEdge, PatternBuilder.this.modelMap.nodeMap());
@@ -777,7 +774,8 @@ class PatternBuilder {
                     "Cannot compute image of '%s'-edge: target node does not have image",
                     edge.label(), edge.target());
             }
-            RuleEdge result = this.factory.createEdge(sourceImage, edge.getRuleLabel(), targetImage);
+            RuleEdge result
+                = this.factory.createEdge(sourceImage, edge.getRuleLabel(), targetImage);
             // in multigraph mode, every aspect edge gets its own parallel
             // index for its content, so that copies declared by distinct
             // aspect edges never coalesce; in particular, created copies are
