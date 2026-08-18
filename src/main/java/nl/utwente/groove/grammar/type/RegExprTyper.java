@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.automaton;
+package nl.utwente.groove.grammar.type;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -25,7 +25,6 @@ import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
 
-import nl.utwente.groove.automaton.RegExprTyper.Result;
 import nl.utwente.groove.grammar.rule.LabelVar;
 import nl.utwente.groove.grammar.rule.RegExpr;
 import nl.utwente.groove.grammar.rule.RegExpr.Atom;
@@ -39,12 +38,7 @@ import nl.utwente.groove.grammar.rule.RegExpr.Sharp;
 import nl.utwente.groove.grammar.rule.RegExpr.Star;
 import nl.utwente.groove.grammar.rule.RegExpr.Wildcard;
 import nl.utwente.groove.grammar.rule.RegExprCalculator;
-import nl.utwente.groove.grammar.type.TypeEdge;
-import nl.utwente.groove.grammar.type.TypeElement;
-import nl.utwente.groove.grammar.type.TypeGraph;
-import nl.utwente.groove.grammar.type.TypeGuard;
-import nl.utwente.groove.grammar.type.TypeLabel;
-import nl.utwente.groove.grammar.type.TypeNode;
+import nl.utwente.groove.grammar.type.RegExprTyper.Result;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 

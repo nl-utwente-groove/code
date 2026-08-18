@@ -30,8 +30,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import nl.utwente.groove.algebra.Sort;
-import nl.utwente.groove.automaton.RegExprTyper;
-import nl.utwente.groove.automaton.RegExprTyper.Result;
 import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.host.HostNode;
@@ -39,6 +37,8 @@ import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.rule.LabelVar;
 import nl.utwente.groove.grammar.rule.RegExpr;
 import nl.utwente.groove.grammar.type.ImplicitTypeGraph;
+import nl.utwente.groove.grammar.type.RegExprTyper;
+import nl.utwente.groove.grammar.type.RegExprTyper.Result;
 import nl.utwente.groove.grammar.type.TypeEdge;
 import nl.utwente.groove.grammar.type.TypeElement;
 import nl.utwente.groove.grammar.type.TypeFactory;
