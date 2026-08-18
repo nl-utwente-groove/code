@@ -1863,10 +1863,6 @@ class RuleCompiler {
         final Map<RuleNode,Color> colorMap;
         /** Flag indicating that modifiers have been found at this level. */
         final boolean isRule;
-        /** Ancestor-level eraser edges imported into this level's pattern. */
-        final Set<RuleEdge> ancestorEraserEdges = new LinkedHashSet<>();
-        /** Ancestor-level eraser nodes imported into this level's pattern. */
-        final Set<RuleNode> ancestorEraserNodes = new LinkedHashSet<>();
     }
 
     /**
@@ -2244,7 +2240,9 @@ class RuleCompiler {
                 if (conflict) {
                     importEdge(ancEdge, path);
                     if (ancIsEraser) {
-                        level.ancestorEraserEdges.add(ancEdge);
+                        this.ancestorEraserEdgeMap
+                            .computeIfAbsent(level.getIndex(), i -> new LinkedHashSet<>())
+                            .add(ancEdge);
                     }
                 }
             }
@@ -2270,7 +2268,9 @@ class RuleCompiler {
                 if (conflict) {
                     importNode(ancNode, path);
                     if (ancIsEraser) {
-                        level.ancestorEraserNodes.add(ancNode);
+                        this.ancestorEraserNodeMap
+                            .computeIfAbsent(level.getIndex(), i -> new LinkedHashSet<>())
+                            .add(ancNode);
                     }
                 }
             }
@@ -2298,6 +2298,23 @@ class RuleCompiler {
         }
     }
 
+    /** Returns the ancestor-level eraser edges imported into a given level's pattern. */
+    private Set<RuleEdge> getAncestorEraserEdges(LevelPattern level) {
+        return this.ancestorEraserEdgeMap.getOrDefault(level.getIndex(), Collections.emptySet());
+    }
+
+    /** Returns the ancestor-level eraser nodes imported into a given level's pattern. */
+    private Set<RuleNode> getAncestorEraserNodes(LevelPattern level) {
+        return this.ancestorEraserNodeMap.getOrDefault(level.getIndex(), Collections.emptySet());
+    }
+
+    /** Ancestor-level eraser edges imported by {@link #importEraserConflicts},
+     * keyed by level index. */
+    private final Map<Index,Set<RuleEdge>> ancestorEraserEdgeMap = new TreeMap<>();
+    /** Ancestor-level eraser nodes imported by {@link #importEraserConflicts},
+     * keyed by level index. */
+    private final Map<Index,Set<RuleNode>> ancestorEraserNodeMap = new TreeMap<>();
+
     /**
      * Callback method to compute the rule on a given nesting level.
      * The resulting condition is not fixed (see {@link Condition#isFixed()}).
@@ -2307,7 +2324,7 @@ class RuleCompiler {
         FormatErrorSet errors = createErrors();
         // the resulting rule
         result = createCondition(level, getRootGraph(level), level.lhs);
-        result.addAncestorEraserEdges(level.ancestorEraserEdges);
+        result.addAncestorEraserEdges(getAncestorEraserEdges(level));
         if (level.isRule) {
             Rule rule = createRule(result, level.rhs, getCoRootGraph(level));
             rule.addColorMap(level.colorMap);
@@ -2348,7 +2365,8 @@ class RuleCompiler {
         }
         Set<RuleNode> erasers = new LinkedHashSet<>(level.lhs.nodeSet());
         erasers.removeAll(level.rhs.nodeSet());
-        if (erasers.isEmpty() && level.ancestorEraserNodes.isEmpty()) {
+        Set<RuleNode> ancestorErasers = getAncestorEraserNodes(level);
+        if (erasers.isEmpty() && ancestorErasers.isEmpty()) {
             return;
         }
         RuleLabel equality = new RuleLabel(RegExpr.empty());
@@ -2367,8 +2385,8 @@ class RuleCompiler {
                 if (!needed) {
                     // pairs of nodes shared with the parent level are
                     // checked at the ancestor level where both first coexist
-                    needed = level.ancestorEraserNodes.contains(one) && !inParentLhs(level, two)
-                        || level.ancestorEraserNodes.contains(two) && !inParentLhs(level, one);
+                    needed = ancestorErasers.contains(one) && !inParentLhs(level, two)
+                        || ancestorErasers.contains(two) && !inParentLhs(level, one);
                 }
                 if (!needed) {
                     continue;
