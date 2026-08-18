@@ -1,6 +1,7 @@
 # Runs the Eclipse batch compiler (ecj) with the project's JDT null-analysis
 # settings on the given .java files (quick check, unnamed module), or on the
-# whole main source tree compiled as the named module nl.utwente.groove (-All).
+# whole project (-All): the main source tree compiled as the named module
+# nl.utwente.groove, then the test tree in the unnamed module.
 # See SKILL.md in this directory.
 param(
     [Parameter(ValueFromRemainingArguments = $true)]
@@ -8,8 +9,22 @@ param(
     [switch]$All
 )
 $ErrorActionPreference = 'Stop'
+$usage = 'Usage: run-ecj.ps1 -All | <file.java> ...'
 if (-not $All -and -not $Files) {
-    Write-Host 'Usage: run-ecj.ps1 [-All] [<file.java> ...]'
+    Write-Host $usage
+    exit 2
+}
+if ($All -and $Files) {
+    Write-Host "-All does not combine with explicit files: $($Files -join ' ')"
+    Write-Host $usage
+    exit 2
+}
+# An unrecognized switch lands in $Files; fail fast rather than pass it to ecj
+# as a file name.
+$unknown = @($Files | Where-Object { $_ -like '-*' })
+if ($unknown) {
+    Write-Host "Unknown switch(es): $($unknown -join ' ')"
+    Write-Host $usage
     exit 2
 }
 
@@ -91,10 +106,25 @@ if ($All) {
         @(Get-ChildItem -Recurse target\generated-sources\antlr3 -Filter *.java) |
         ForEach-Object { $_.FullName } | Set-Content -Encoding ascii $listFile
 
+    Write-Host 'Checking main tree (named module)...'
     java -jar $ecj -properties .settings/org.eclipse.jdt.core.prefs --release 21 -proc:none `
         -annotationpath lib/eea `
         -d $scratch --module-path $mp `
         --patch-module "nl.utwente.groove=target\generated-sources\antlr3" "@$listFile"
+    $mainExit = $LASTEXITCODE
+
+    # The test tree compiles in the unnamed module, like the per-file mode: the
+    # test dependencies (JUnit) are not required by module-info, and the test
+    # sources contain no cross-package sealed hierarchies, so the modular/unnamed
+    # distinction does not affect the analysis there.
+    $testListFile = 'target\ecj-test-files.txt'
+    Get-ChildItem -Recurse src\test\java -Filter *.java |
+        ForEach-Object { $_.FullName } | Set-Content -Encoding ascii $testListFile
+    Write-Host 'Checking test tree (unnamed module)...'
+    java -jar $ecj -properties .settings/org.eclipse.jdt.core.prefs --release 21 -proc:none `
+        -annotationpath lib/eea `
+        -d $scratch -cp "target/classes;target/test-classes;$cp" "@$testListFile"
+    if ($mainExit -ne 0) { exit $mainExit }
     exit $LASTEXITCODE
 }
 

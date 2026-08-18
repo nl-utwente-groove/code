@@ -34,18 +34,25 @@ see the masking caveat below.
 
 ## Whole-project mode
 
-`run-ecj.ps1 -All` checks the entire main source tree, compiled as the named module
-`nl.utwente.groove`: `module-info.java` is included, the dependencies go on the module path,
-and the generated ANTLR sources are compiled into the module alongside the checked-in ones.
-ecj (up to at least 3.44.0) cannot read a module descriptor that exists only under
-`META-INF/versions/` (multi-release jars, e.g. picocli), so the script substitutes such jars
-on the module path with copies whose descriptor is duplicated at the jar root, cached in
-`target\ecj-mp`.
+`run-ecj.ps1 -All` checks the whole project, in two ecj passes. The main source tree is
+compiled as the named module `nl.utwente.groove`: `module-info.java` is included, the
+dependencies go on the module path, and the generated ANTLR sources are compiled into the
+module alongside the checked-in ones. ecj (up to at least 3.44.0) cannot read a module
+descriptor that exists only under `META-INF/versions/` (multi-release jars, e.g. picocli),
+so the script substitutes such jars on the module path with copies whose descriptor is
+duplicated at the jar root, cached in `target\ecj-mp`. The test tree (`src/test/java`) is
+then compiled in the unnamed module, like the per-file mode: the test dependencies (JUnit)
+are not required by `module-info`, and the test sources contain no cross-package sealed
+hierarchies, so the modular/unnamed distinction does not affect the analysis there.
+`-All` does not combine with explicit file arguments, and unrecognized switches are
+rejected rather than passed to ecj as file names.
 
-Expected baseline: **13 problems, exit code 0** — 12 warnings (2 missing-`@Override` in
-`control/Binding.java`, 10 TODO task tags) plus 1 info in `gui/tree/TypeTree.java` (exported
-API mentioning a non-exported type; surfaces only in modular compilation). The bar for a
-change is that it adds nothing to that set.
+Expected baseline: **17 problems, exit code 0** — 16 warnings (2 missing-`@Override` in
+`control/Binding.java`, 14 TODO task tags: 10 main, 4 test) plus 1 info in
+`gui/tree/TypeTree.java` (exported API mentioning a non-exported type; surfaces only in
+modular compilation). The Binding warnings are spurious: those record component accessors
+do carry `@Override`; the warning is an ecj 3.42.0 regression (3.37.0 does not report it).
+The bar for a change is that it adds nothing to that set.
 
 ## Error masking: why `-All` is the authoritative gate
 
@@ -61,6 +68,9 @@ null bug in that file. `-All` compiles modularly and has no such error. Conseque
   (`Constant`, `Variable`, `FieldExpr`, `CallExpr`) check cleanly per-file.
 - Generally, if a per-file run reports any error in a unit, that unit has not been
   null-checked — resolve the error (or run `-All`) before trusting the result.
+- A per-file run of `gui/tree/TypeFilter.java` reports one spurious "redundant null check"
+  warning that `-All` does not — an artifact of compiling against `target/classes` instead
+  of the sources; do not "fix" it in code.
 
 ## Notes
 
@@ -68,9 +78,12 @@ null bug in that file. `-All` compiles modularly and has no such error. Conseque
   report only failures and warnings.
 - If the classpath cache is stale after a pom change, delete `target/ecj-classpath.txt` and rerun.
 - The script pins ecj 3.42.0. Do not fall back to 3.37.0: that version dies with an internal
-  NPE on switch expressions over sealed types when given many files at once. The
-  multi-release-jar descriptor bug is still present in 3.44.0 (checked 2026-08-18), so a
-  version bump alone does not obsolete the jar patching.
+  NPE on switch expressions over sealed types when given many files at once, and reports
+  spurious "import is never used" warnings for nested subtypes of sealed types that are
+  imported only for their `permits` clauses (`grammar/aspect/AspectContent.java`,
+  `verify/Proposition.java`); 3.42.0 shows neither problem. The multi-release-jar
+  descriptor bug is still present in 3.44.0 (checked 2026-08-18), so a version bump alone
+  does not obsolete the jar patching.
 - Remember the null-annotation idioms in claude/CLAUDE.md (annotate consistently across an
   inheritance web; `Map<K,@Nullable V>` for null-checked lookups; `@Nullable` late-init fields
   with asserting accessors).
