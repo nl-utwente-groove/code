@@ -1490,7 +1490,7 @@ public class Rule implements Action, Fixable {
         testFixed(true);
         var result = this.prover;
         if (result == null) {
-            result = new Prover(this);
+            this.prover = result = new Prover(this);
         }
         return result;
     }
