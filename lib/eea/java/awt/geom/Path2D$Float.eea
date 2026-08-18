@@ -1,0 +1,4 @@
+class java/awt/geom/Path2D$Float
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;

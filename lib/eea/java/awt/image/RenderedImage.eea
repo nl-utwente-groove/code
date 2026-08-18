@@ -1,0 +1,7 @@
+class java/awt/image/RenderedImage
+getProperty
+ (Ljava/lang/String;)Ljava/lang/Object;
+ (Ljava/lang/String;)L1java/lang/Object;
+getPropertyNames
+ ()[Ljava/lang/String;
+ ()[0L1java/lang/String;

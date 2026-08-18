@@ -1,0 +1,4 @@
+class java/nio/file/InvalidPathException
+getMessage
+ ()Ljava/lang/String;
+ ()L0java/lang/String;

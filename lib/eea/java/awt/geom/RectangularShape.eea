@@ -1,0 +1,4 @@
+class java/awt/geom/RectangularShape
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;

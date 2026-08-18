@@ -1,0 +1,4 @@
+class java/awt/Toolkit
+removeAWTEventListener
+ (Ljava/awt/event/AWTEventListener;)V
+ (L1java/awt/event/AWTEventListener;)V

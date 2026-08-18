@@ -1,0 +1,4 @@
+class java/awt/geom/Rectangle2D$Double
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

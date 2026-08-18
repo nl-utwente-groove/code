@@ -1,0 +1,31 @@
+class java/util/Date
+from
+ (Ljava/time/Instant;)Ljava/util/Date;
+ (L1java/time/Instant;)L1java/util/Date;
+after
+ (Ljava/util/Date;)Z
+ (L1java/util/Date;)Z
+before
+ (Ljava/util/Date;)Z
+ (L1java/util/Date;)Z
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+compareTo
+ (Ljava/util/Date;)I
+ (L1java/util/Date;)I
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+toGMTString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+toInstant
+ ()Ljava/time/Instant;
+ ()L1java/time/Instant;
+toLocaleString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

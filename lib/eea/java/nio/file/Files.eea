@@ -1,0 +1,73 @@
+class java/nio/file/Files
+createDirectories
+ (Ljava/nio/file/Path;[Ljava/nio/file/attribute/FileAttribute<*>;)Ljava/nio/file/Path;
+ (L1java/nio/file/Path;[Ljava/nio/file/attribute/FileAttribute<*>;)L1java/nio/file/Path;
+lines
+ (Ljava/nio/file/Path;)Ljava/util/stream/Stream<Ljava/lang/String;>;
+ (L1java/nio/file/Path;)L1java/util/stream/Stream<L1java/lang/String;>;
+lines
+ (Ljava/nio/file/Path;Ljava/nio/charset/Charset;)Ljava/util/stream/Stream<Ljava/lang/String;>;
+ (L1java/nio/file/Path;Ljava/nio/charset/Charset;)L1java/util/stream/Stream<L1java/lang/String;>;
+list
+ (Ljava/nio/file/Path;)Ljava/util/stream/Stream<Ljava/nio/file/Path;>;
+ (L1java/nio/file/Path;)L1java/util/stream/Stream<L1java/nio/file/Path;>;
+newBufferedReader
+ (Ljava/nio/file/Path;)Ljava/io/BufferedReader;
+ (Ljava/nio/file/Path;)L1java/io/BufferedReader;
+newBufferedReader
+ (Ljava/nio/file/Path;Ljava/nio/charset/Charset;)Ljava/io/BufferedReader;
+ (Ljava/nio/file/Path;Ljava/nio/charset/Charset;)L1java/io/BufferedReader;
+newBufferedWriter
+ (Ljava/nio/file/Path;Ljava/nio/charset/Charset;[Ljava/nio/file/OpenOption;)Ljava/io/BufferedWriter;
+ (Ljava/nio/file/Path;Ljava/nio/charset/Charset;[Ljava/nio/file/OpenOption;)L1java/io/BufferedWriter;
+newBufferedWriter
+ (Ljava/nio/file/Path;[Ljava/nio/file/OpenOption;)Ljava/io/BufferedWriter;
+ (Ljava/nio/file/Path;[Ljava/nio/file/OpenOption;)L1java/io/BufferedWriter;
+newByteChannel
+ (Ljava/nio/file/Path;Ljava/util/Set<+Ljava/nio/file/OpenOption;>;[Ljava/nio/file/attribute/FileAttribute<*>;)Ljava/nio/channels/SeekableByteChannel;
+ (Ljava/nio/file/Path;Ljava/util/Set<+Ljava/nio/file/OpenOption;>;[Ljava/nio/file/attribute/FileAttribute<*>;)L1java/nio/channels/SeekableByteChannel;
+newByteChannel
+ (Ljava/nio/file/Path;[Ljava/nio/file/OpenOption;)Ljava/nio/channels/SeekableByteChannel;
+ (Ljava/nio/file/Path;[Ljava/nio/file/OpenOption;)L1java/nio/channels/SeekableByteChannel;
+newDirectoryStream
+ (Ljava/nio/file/Path;)Ljava/nio/file/DirectoryStream<Ljava/nio/file/Path;>;
+ (Ljava/nio/file/Path;)L1java/nio/file/DirectoryStream<Ljava/nio/file/Path;>;
+newDirectoryStream
+ (Ljava/nio/file/Path;Ljava/lang/String;)Ljava/nio/file/DirectoryStream<Ljava/nio/file/Path;>;
+ (Ljava/nio/file/Path;Ljava/lang/String;)L1java/nio/file/DirectoryStream<Ljava/nio/file/Path;>;
+newDirectoryStream
+ (Ljava/nio/file/Path;Ljava/nio/file/DirectoryStream$Filter<-Ljava/nio/file/Path;>;)Ljava/nio/file/DirectoryStream<Ljava/nio/file/Path;>;
+ (Ljava/nio/file/Path;Ljava/nio/file/DirectoryStream$Filter<-Ljava/nio/file/Path;>;)L1java/nio/file/DirectoryStream<Ljava/nio/file/Path;>;
+newInputStream
+ (Ljava/nio/file/Path;[Ljava/nio/file/OpenOption;)Ljava/io/InputStream;
+ (Ljava/nio/file/Path;[Ljava/nio/file/OpenOption;)L1java/io/InputStream;
+newOutputStream
+ (Ljava/nio/file/Path;[Ljava/nio/file/OpenOption;)Ljava/io/OutputStream;
+ (Ljava/nio/file/Path;[Ljava/nio/file/OpenOption;)L1java/io/OutputStream;
+readAllBytes
+ (Ljava/nio/file/Path;)[B
+ (L1java/nio/file/Path;)[1B
+readAllLines
+ (Ljava/nio/file/Path;)Ljava/util/List<Ljava/lang/String;>;
+ (L1java/nio/file/Path;)L1java/util/List<L1java/lang/String;>;
+readAllLines
+ (Ljava/nio/file/Path;Ljava/nio/charset/Charset;)Ljava/util/List<Ljava/lang/String;>;
+ (L1java/nio/file/Path;Ljava/nio/charset/Charset;)L1java/util/List<L1java/lang/String;>;
+readString
+ (Ljava/nio/file/Path;)Ljava/lang/String;
+ (L1java/nio/file/Path;)L1java/lang/String;
+readString
+ (Ljava/nio/file/Path;Ljava/nio/charset/Charset;)Ljava/lang/String;
+ (L1java/nio/file/Path;L1java/nio/charset/Charset;)L1java/lang/String;
+walk
+ (Ljava/nio/file/Path;I[Ljava/nio/file/FileVisitOption;)Ljava/util/stream/Stream<Ljava/nio/file/Path;>;
+ (L1java/nio/file/Path;I[1Ljava/nio/file/FileVisitOption;)L1java/util/stream/Stream<L1java/nio/file/Path;>;
+walk
+ (Ljava/nio/file/Path;[Ljava/nio/file/FileVisitOption;)Ljava/util/stream/Stream<Ljava/nio/file/Path;>;
+ (L1java/nio/file/Path;[1Ljava/nio/file/FileVisitOption;)L1java/util/stream/Stream<L1java/nio/file/Path;>;
+walkFileTree
+ (Ljava/nio/file/Path;Ljava/nio/file/FileVisitor<-Ljava/nio/file/Path;>;)Ljava/nio/file/Path;
+ (L1java/nio/file/Path;Ljava/nio/file/FileVisitor<-L1java/nio/file/Path;>;)L1java/nio/file/Path;
+walkFileTree
+ (Ljava/nio/file/Path;Ljava/util/Set<Ljava/nio/file/FileVisitOption;>;ILjava/nio/file/FileVisitor<-Ljava/nio/file/Path;>;)Ljava/nio/file/Path;
+ (L1java/nio/file/Path;L1java/util/Set<Ljava/nio/file/FileVisitOption;>;IL1java/nio/file/FileVisitor<-L1java/nio/file/Path;>;)L1java/nio/file/Path;

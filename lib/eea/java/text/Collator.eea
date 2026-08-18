@@ -1,0 +1,19 @@
+class java/text/Collator
+getAvailableLocales
+ ()[Ljava/util/Locale;
+ ()[1L1java/util/Locale;
+getInstance
+ ()Ljava/text/Collator;
+ ()L1java/text/Collator;
+getInstance
+ (Ljava/util/Locale;)Ljava/text/Collator;
+ (L1java/util/Locale;)L1java/text/Collator;
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getCollationKey
+ (Ljava/lang/String;)Ljava/text/CollationKey;
+ (L0java/lang/String;)L0java/text/CollationKey;

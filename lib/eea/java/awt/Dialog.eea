@@ -1,0 +1,4 @@
+class java/awt/Dialog
+DEFAULT_MODALITY_TYPE
+ Ljava/awt/Dialog$ModalityType;
+ L1java/awt/Dialog$ModalityType;

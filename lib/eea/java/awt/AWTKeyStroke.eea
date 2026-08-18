@@ -1,0 +1,10 @@
+class java/awt/AWTKeyStroke
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+readResolve
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

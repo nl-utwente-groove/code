@@ -1,0 +1,4 @@
+class java/awt/print/PageFormat
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;

@@ -1,0 +1,10 @@
+class java/awt/ComponentOrientation
+LEFT_TO_RIGHT
+ Ljava/awt/ComponentOrientation;
+ L1java/awt/ComponentOrientation;
+RIGHT_TO_LEFT
+ Ljava/awt/ComponentOrientation;
+ L1java/awt/ComponentOrientation;
+UNKNOWN
+ Ljava/awt/ComponentOrientation;
+ L1java/awt/ComponentOrientation;

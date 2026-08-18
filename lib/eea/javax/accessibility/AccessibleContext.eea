@@ -1,0 +1,73 @@
+class javax/accessibility/AccessibleContext
+ACCESSIBLE_ACTION_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+ACCESSIBLE_ACTIVE_DESCENDANT_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+ACCESSIBLE_CARET_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+ACCESSIBLE_CHILD_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+ACCESSIBLE_COMPONENT_BOUNDS_CHANGED
+ Ljava/lang/String;
+ L1java/lang/String;
+ACCESSIBLE_DESCRIPTION_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+ACCESSIBLE_HYPERTEXT_OFFSET
+ Ljava/lang/String;
+ L1java/lang/String;
+ACCESSIBLE_INVALIDATE_CHILDREN
+ Ljava/lang/String;
+ L1java/lang/String;
+ACCESSIBLE_NAME_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+ACCESSIBLE_SELECTION_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+ACCESSIBLE_STATE_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+ACCESSIBLE_TABLE_CAPTION_CHANGED
+ Ljava/lang/String;
+ L1java/lang/String;
+ACCESSIBLE_TABLE_COLUMN_DESCRIPTION_CHANGED
+ Ljava/lang/String;
+ L1java/lang/String;
+ACCESSIBLE_TABLE_COLUMN_HEADER_CHANGED
+ Ljava/lang/String;
+ L1java/lang/String;
+ACCESSIBLE_TABLE_MODEL_CHANGED
+ Ljava/lang/String;
+ L1java/lang/String;
+ACCESSIBLE_TABLE_ROW_DESCRIPTION_CHANGED
+ Ljava/lang/String;
+ L1java/lang/String;
+ACCESSIBLE_TABLE_ROW_HEADER_CHANGED
+ Ljava/lang/String;
+ L1java/lang/String;
+ACCESSIBLE_TABLE_SUMMARY_CHANGED
+ Ljava/lang/String;
+ L1java/lang/String;
+ACCESSIBLE_TEXT_ATTRIBUTES_CHANGED
+ Ljava/lang/String;
+ L1java/lang/String;
+ACCESSIBLE_TEXT_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+ACCESSIBLE_VALUE_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+ACCESSIBLE_VISIBLE_DATA_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+addPropertyChangeListener
+ (Ljava/beans/PropertyChangeListener;)V
+ (L1java/beans/PropertyChangeListener;)V
+removePropertyChangeListener
+ (Ljava/beans/PropertyChangeListener;)V
+ (L1java/beans/PropertyChangeListener;)V

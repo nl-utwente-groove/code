@@ -1,0 +1,4 @@
+class java/awt/Cursor
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

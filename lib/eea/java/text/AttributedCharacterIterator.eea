@@ -1,0 +1,7 @@
+class java/text/AttributedCharacterIterator
+getRunLimit
+ (Ljava/text/AttributedCharacterIterator$Attribute;)I
+ (L1java/text/AttributedCharacterIterator$Attribute;)I
+getRunStart
+ (Ljava/text/AttributedCharacterIterator$Attribute;)I
+ (L1java/text/AttributedCharacterIterator$Attribute;)I

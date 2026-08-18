@@ -1,0 +1,22 @@
+class java/awt/Font
+DIALOG
+ Ljava/lang/String;
+ L1java/lang/String;
+DIALOG_INPUT
+ Ljava/lang/String;
+ L1java/lang/String;
+MONOSPACED
+ Ljava/lang/String;
+ L1java/lang/String;
+SANS_SERIF
+ Ljava/lang/String;
+ L1java/lang/String;
+SERIF
+ Ljava/lang/String;
+ L1java/lang/String;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

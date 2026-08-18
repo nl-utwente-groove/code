@@ -1,0 +1,4 @@
+class java/awt/GridBagConstraints
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;

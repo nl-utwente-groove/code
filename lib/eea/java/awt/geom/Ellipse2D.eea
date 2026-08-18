@@ -1,0 +1,4 @@
+class java/awt/geom/Ellipse2D
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z

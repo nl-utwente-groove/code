@@ -1,0 +1,85 @@
+class java/awt/Color
+BLACK
+ Ljava/awt/Color;
+ L1java/awt/Color;
+BLUE
+ Ljava/awt/Color;
+ L1java/awt/Color;
+CYAN
+ Ljava/awt/Color;
+ L1java/awt/Color;
+DARK_GRAY
+ Ljava/awt/Color;
+ L1java/awt/Color;
+GRAY
+ Ljava/awt/Color;
+ L1java/awt/Color;
+GREEN
+ Ljava/awt/Color;
+ L1java/awt/Color;
+LIGHT_GRAY
+ Ljava/awt/Color;
+ L1java/awt/Color;
+MAGENTA
+ Ljava/awt/Color;
+ L1java/awt/Color;
+ORANGE
+ Ljava/awt/Color;
+ L1java/awt/Color;
+PINK
+ Ljava/awt/Color;
+ L1java/awt/Color;
+RED
+ Ljava/awt/Color;
+ L1java/awt/Color;
+WHITE
+ Ljava/awt/Color;
+ L1java/awt/Color;
+YELLOW
+ Ljava/awt/Color;
+ L1java/awt/Color;
+black
+ Ljava/awt/Color;
+ L1java/awt/Color;
+blue
+ Ljava/awt/Color;
+ L1java/awt/Color;
+cyan
+ Ljava/awt/Color;
+ L1java/awt/Color;
+darkGray
+ Ljava/awt/Color;
+ L1java/awt/Color;
+gray
+ Ljava/awt/Color;
+ L1java/awt/Color;
+green
+ Ljava/awt/Color;
+ L1java/awt/Color;
+lightGray
+ Ljava/awt/Color;
+ L1java/awt/Color;
+magenta
+ Ljava/awt/Color;
+ L1java/awt/Color;
+orange
+ Ljava/awt/Color;
+ L1java/awt/Color;
+pink
+ Ljava/awt/Color;
+ L1java/awt/Color;
+red
+ Ljava/awt/Color;
+ L1java/awt/Color;
+white
+ Ljava/awt/Color;
+ L1java/awt/Color;
+yellow
+ Ljava/awt/Color;
+ L1java/awt/Color;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

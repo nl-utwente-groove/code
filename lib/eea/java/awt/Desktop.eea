@@ -1,0 +1,7 @@
+class java/awt/Desktop
+addAppEventListener
+ (Ljava/awt/desktop/SystemEventListener;)V
+ (L1java/awt/desktop/SystemEventListener;)V
+removeAppEventListener
+ (Ljava/awt/desktop/SystemEventListener;)V
+ (L1java/awt/desktop/SystemEventListener;)V

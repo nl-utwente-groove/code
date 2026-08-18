@@ -1,0 +1,22 @@
+class java/awt/Window
+addPropertyChangeListener
+ (Ljava/beans/PropertyChangeListener;)V
+ (L1java/beans/PropertyChangeListener;)V
+addWindowFocusListener
+ (Ljava/awt/event/WindowFocusListener;)V
+ (L1java/awt/event/WindowFocusListener;)V
+addWindowListener
+ (Ljava/awt/event/WindowListener;)V
+ (L1java/awt/event/WindowListener;)V
+addWindowStateListener
+ (Ljava/awt/event/WindowStateListener;)V
+ (L1java/awt/event/WindowStateListener;)V
+removeWindowFocusListener
+ (Ljava/awt/event/WindowFocusListener;)V
+ (L1java/awt/event/WindowFocusListener;)V
+removeWindowListener
+ (Ljava/awt/event/WindowListener;)V
+ (L1java/awt/event/WindowListener;)V
+removeWindowStateListener
+ (Ljava/awt/event/WindowStateListener;)V
+ (L1java/awt/event/WindowStateListener;)V

@@ -1,0 +1,5 @@
+class java/util/function/Consumer
+ <T:Ljava/lang/Object;>
+andThen
+ (Ljava/util/function/Consumer<-TT;>;)Ljava/util/function/Consumer<TT;>;
+ (L1java/util/function/Consumer<-TT;>;)L1java/util/function/Consumer<TT;>;

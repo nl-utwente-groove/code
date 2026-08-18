@@ -1,0 +1,31 @@
+class java/awt/event/WindowAdapter
+windowActivated
+ (Ljava/awt/event/WindowEvent;)V
+ (L1java/awt/event/WindowEvent;)V
+windowClosed
+ (Ljava/awt/event/WindowEvent;)V
+ (L1java/awt/event/WindowEvent;)V
+windowClosing
+ (Ljava/awt/event/WindowEvent;)V
+ (L1java/awt/event/WindowEvent;)V
+windowDeactivated
+ (Ljava/awt/event/WindowEvent;)V
+ (L1java/awt/event/WindowEvent;)V
+windowDeiconified
+ (Ljava/awt/event/WindowEvent;)V
+ (L1java/awt/event/WindowEvent;)V
+windowGainedFocus
+ (Ljava/awt/event/WindowEvent;)V
+ (L1java/awt/event/WindowEvent;)V
+windowIconified
+ (Ljava/awt/event/WindowEvent;)V
+ (L1java/awt/event/WindowEvent;)V
+windowLostFocus
+ (Ljava/awt/event/WindowEvent;)V
+ (L1java/awt/event/WindowEvent;)V
+windowOpened
+ (Ljava/awt/event/WindowEvent;)V
+ (L1java/awt/event/WindowEvent;)V
+windowStateChanged
+ (Ljava/awt/event/WindowEvent;)V
+ (L1java/awt/event/WindowEvent;)V

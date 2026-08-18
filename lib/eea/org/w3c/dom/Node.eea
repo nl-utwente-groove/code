@@ -1,0 +1,58 @@
+class org/w3c/dom/Node
+appendChild
+ (Lorg/w3c/dom/Node;)Lorg/w3c/dom/Node;
+ (L1org/w3c/dom/Node;)L1org/w3c/dom/Node;
+cloneNode
+ (Z)Lorg/w3c/dom/Node;
+ (Z)L1org/w3c/dom/Node;
+getBaseURI
+ ()Ljava/lang/String;
+ ()L0java/lang/String;
+getChildNodes
+ ()Lorg/w3c/dom/NodeList;
+ ()L1org/w3c/dom/NodeList;
+getFeature
+ (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Object;
+ (Ljava/lang/String;Ljava/lang/String;)L0java/lang/Object;
+getFirstChild
+ ()Lorg/w3c/dom/Node;
+ ()L0org/w3c/dom/Node;
+getLastChild
+ ()Lorg/w3c/dom/Node;
+ ()L0org/w3c/dom/Node;
+getLocalName
+ ()Ljava/lang/String;
+ ()L0java/lang/String;
+getNextSibling
+ ()Lorg/w3c/dom/Node;
+ ()L0org/w3c/dom/Node;
+getNodeName
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+getOwnerDocument
+ ()Lorg/w3c/dom/Document;
+ ()L0org/w3c/dom/Document;
+getParentNode
+ ()Lorg/w3c/dom/Node;
+ ()L0org/w3c/dom/Node;
+getPrefix
+ ()Ljava/lang/String;
+ ()L0java/lang/String;
+getPreviousSibling
+ ()Lorg/w3c/dom/Node;
+ ()L0org/w3c/dom/Node;
+insertBefore
+ (Lorg/w3c/dom/Node;Lorg/w3c/dom/Node;)Lorg/w3c/dom/Node;
+ (L1org/w3c/dom/Node;L0org/w3c/dom/Node;)L1org/w3c/dom/Node;
+lookupNamespaceURI
+ (Ljava/lang/String;)Ljava/lang/String;
+ (Ljava/lang/String;)L0java/lang/String;
+lookupPrefix
+ (Ljava/lang/String;)Ljava/lang/String;
+ (Ljava/lang/String;)L0java/lang/String;
+removeChild
+ (Lorg/w3c/dom/Node;)Lorg/w3c/dom/Node;
+ (L1org/w3c/dom/Node;)L1org/w3c/dom/Node;
+replaceChild
+ (Lorg/w3c/dom/Node;Lorg/w3c/dom/Node;)Lorg/w3c/dom/Node;
+ (L1org/w3c/dom/Node;L1org/w3c/dom/Node;)L1org/w3c/dom/Node;

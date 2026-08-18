@@ -1,0 +1,5 @@
+class java/util/function/UnaryOperator
+ <T:Ljava/lang/Object;>
+identity
+ <T:Ljava/lang/Object;>()Ljava/util/function/UnaryOperator<TT;>;
+ <T:Ljava/lang/Object;>()L1java/util/function/UnaryOperator<TT;>;

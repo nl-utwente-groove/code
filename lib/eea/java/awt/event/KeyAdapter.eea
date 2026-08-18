@@ -1,0 +1,10 @@
+class java/awt/event/KeyAdapter
+keyPressed
+ (Ljava/awt/event/KeyEvent;)V
+ (L1java/awt/event/KeyEvent;)V
+keyReleased
+ (Ljava/awt/event/KeyEvent;)V
+ (L1java/awt/event/KeyEvent;)V
+keyTyped
+ (Ljava/awt/event/KeyEvent;)V
+ (L1java/awt/event/KeyEvent;)V

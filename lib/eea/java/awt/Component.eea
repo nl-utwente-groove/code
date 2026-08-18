@@ -1,0 +1,64 @@
+class java/awt/Component
+addComponentListener
+ (Ljava/awt/event/ComponentListener;)V
+ (L1java/awt/event/ComponentListener;)V
+addFocusListener
+ (Ljava/awt/event/FocusListener;)V
+ (L1java/awt/event/FocusListener;)V
+addHierarchyBoundsListener
+ (Ljava/awt/event/HierarchyBoundsListener;)V
+ (L1java/awt/event/HierarchyBoundsListener;)V
+addHierarchyListener
+ (Ljava/awt/event/HierarchyListener;)V
+ (L1java/awt/event/HierarchyListener;)V
+addInputMethodListener
+ (Ljava/awt/event/InputMethodListener;)V
+ (L1java/awt/event/InputMethodListener;)V
+addKeyListener
+ (Ljava/awt/event/KeyListener;)V
+ (L1java/awt/event/KeyListener;)V
+addMouseListener
+ (Ljava/awt/event/MouseListener;)V
+ (L1java/awt/event/MouseListener;)V
+addMouseMotionListener
+ (Ljava/awt/event/MouseMotionListener;)V
+ (L1java/awt/event/MouseMotionListener;)V
+addMouseWheelListener
+ (Ljava/awt/event/MouseWheelListener;)V
+ (L1java/awt/event/MouseWheelListener;)V
+addPropertyChangeListener
+ (Ljava/beans/PropertyChangeListener;)V
+ (L1java/beans/PropertyChangeListener;)V
+removeComponentListener
+ (Ljava/awt/event/ComponentListener;)V
+ (L1java/awt/event/ComponentListener;)V
+removeFocusListener
+ (Ljava/awt/event/FocusListener;)V
+ (L1java/awt/event/FocusListener;)V
+removeHierarchyBoundsListener
+ (Ljava/awt/event/HierarchyBoundsListener;)V
+ (L1java/awt/event/HierarchyBoundsListener;)V
+removeHierarchyListener
+ (Ljava/awt/event/HierarchyListener;)V
+ (L1java/awt/event/HierarchyListener;)V
+removeInputMethodListener
+ (Ljava/awt/event/InputMethodListener;)V
+ (L1java/awt/event/InputMethodListener;)V
+removeKeyListener
+ (Ljava/awt/event/KeyListener;)V
+ (L1java/awt/event/KeyListener;)V
+removeMouseListener
+ (Ljava/awt/event/MouseListener;)V
+ (L1java/awt/event/MouseListener;)V
+removeMouseMotionListener
+ (Ljava/awt/event/MouseMotionListener;)V
+ (L1java/awt/event/MouseMotionListener;)V
+removeMouseWheelListener
+ (Ljava/awt/event/MouseWheelListener;)V
+ (L1java/awt/event/MouseWheelListener;)V
+removePropertyChangeListener
+ (Ljava/beans/PropertyChangeListener;)V
+ (L1java/beans/PropertyChangeListener;)V
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

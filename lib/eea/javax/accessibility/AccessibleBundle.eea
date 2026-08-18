@@ -1,0 +1,4 @@
+class javax/accessibility/AccessibleBundle
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
