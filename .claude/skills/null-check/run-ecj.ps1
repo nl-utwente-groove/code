@@ -1,5 +1,6 @@
 # Runs the Eclipse batch compiler (ecj) with the project's JDT null-analysis
-# settings on the given .java files, or on the whole main source tree (-All).
+# settings on the given .java files (quick check, unnamed module), or on the
+# whole main source tree compiled as the named module nl.utwente.groove (-All).
 # See SKILL.md in this directory.
 param(
     [Parameter(ValueFromRemainingArguments = $true)]
@@ -32,19 +33,71 @@ if (-not (Test-Path $cpFile)) {
 }
 $cp = (Get-Content $cpFile -Raw).Trim()
 
+$scratch = 'target\ecj-out'
+
 if ($All) {
-    # Whole main source tree, except module-info.java: the harness compiles in the
-    # unnamed module (a modular compile fails because ecj cannot resolve the
-    # multi-release module-info of e.g. picocli). See SKILL.md for the one known
-    # spurious error this causes (sealed cross-package hierarchy in algebra.syntax).
+    # Whole main source tree, compiled as the named module nl.utwente.groove:
+    # module-info.java is included, dependencies go on the module path, and the
+    # generated ANTLR sources join the module via --patch-module (they are also
+    # part of the compiled file list, since ecj does not associate sourcepath
+    # units with the module under compilation).
+    #
+    # ecj (up to at least 3.44.0) cannot read a module descriptor that exists
+    # only under META-INF/versions/ (multi-release jars, e.g. picocli), so such
+    # jars are replaced on the module path by a copy in target\ecj-mp with the
+    # versioned module-info.class duplicated at the jar root.
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $mpDir = 'target\ecj-mp'
+    New-Item -ItemType Directory -Force $mpDir | Out-Null
+    $mp = (($cp -split ';') | ForEach-Object {
+        $jar = $_
+        $patched = Join-Path $mpDir ([IO.Path]::GetFileName($jar))
+        if ((Test-Path $patched) -and
+                ((Get-Item $patched).LastWriteTime -ge (Get-Item $jar).LastWriteTime)) {
+            return (Resolve-Path $patched).Path
+        }
+        $zip = [System.IO.Compression.ZipFile]::OpenRead($jar)
+        try {
+            if ($zip.GetEntry('module-info.class')) { return $jar }
+            $versioned = @($zip.Entries | ForEach-Object {
+                if ($_.FullName -match '^META-INF/versions/(\d+)/module-info\.class$') {
+                    [pscustomobject]@{ Entry = $_; Version = [int]$Matches[1] }
+                }
+            }) | Where-Object { $_.Version -le 21 } | Sort-Object Version | Select-Object -Last 1
+            if (-not $versioned) { return $jar }
+            $ms = New-Object IO.MemoryStream
+            $s = $versioned.Entry.Open()
+            $s.CopyTo($ms)
+            $s.Close()
+            $descriptor = $ms.ToArray()
+        } finally {
+            $zip.Dispose()
+        }
+        Copy-Item $jar $patched -Force
+        $zip = [System.IO.Compression.ZipFile]::Open((Resolve-Path $patched), 'Update')
+        try {
+            $os = $zip.CreateEntry('module-info.class').Open()
+            $os.Write($descriptor, 0, $descriptor.Length)
+            $os.Close()
+        } finally {
+            $zip.Dispose()
+        }
+        Write-Host "Patched multi-release module descriptor: $([IO.Path]::GetFileName($jar))"
+        return (Resolve-Path $patched).Path
+    }) -join ';'
+
     $listFile = 'target\ecj-files.txt'
-    Get-ChildItem -Recurse src\main\java -Filter *.java |
-        Where-Object { $_.Name -ne 'module-info.java' } |
+    @(Get-ChildItem -Recurse src\main\java -Filter *.java) +
+        @(Get-ChildItem -Recurse target\generated-sources\antlr3 -Filter *.java) |
         ForEach-Object { $_.FullName } | Set-Content -Encoding ascii $listFile
-    $Files = @("@$listFile")
+
+    java -jar $ecj -properties .settings/org.eclipse.jdt.core.prefs --release 21 -proc:none `
+        -annotationpath lib/eea `
+        -d $scratch --module-path $mp `
+        --patch-module "nl.utwente.groove=target\generated-sources\antlr3" "@$listFile"
+    exit $LASTEXITCODE
 }
 
-$scratch = 'target\ecj-out'
 java -jar $ecj -properties .settings/org.eclipse.jdt.core.prefs --release 21 -proc:none `
     -annotationpath lib/eea `
     -d $scratch -cp "target/classes;target/test-classes;$cp" @Files

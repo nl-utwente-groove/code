@@ -29,20 +29,38 @@ From the root of the checkout or worktree being verified:
 
 Compiling only the touched files against `target/classes` and `target/test-classes` works
 because the annotations have class-file retention; test files referencing other test classes
-(e.g. `SlowTest`) resolve against the latter.
+(e.g. `SlowTest`) resolve against the latter. Per-file runs compile in the unnamed module —
+see the masking caveat below.
 
 ## Whole-project mode
 
-`run-ecj.ps1 -All` checks the entire main source tree (excluding `module-info.java`).
-Expect a small stable set of pre-existing problems (TODO-tag warnings and the known error
-below); the bar for a change is that it adds nothing to that set.
+`run-ecj.ps1 -All` checks the entire main source tree, compiled as the named module
+`nl.utwente.groove`: `module-info.java` is included, the dependencies go on the module path,
+and the generated ANTLR sources are compiled into the module alongside the checked-in ones.
+ecj (up to at least 3.44.0) cannot read a module descriptor that exists only under
+`META-INF/versions/` (multi-release jars, e.g. picocli), so the script substitutes such jars
+on the module path with copies whose descriptor is duplicated at the jar root, cached in
+`target\ecj-mp`.
 
-The harness compiles in the unnamed module: a modular compile is not possible because ecj
-fails to resolve the multi-release-jar `module-info` of some dependencies (e.g. picocli).
-This causes **one known spurious error** in `algebra/syntax/Expression.java`: its sealed
-hierarchy has permitted subtypes in another package (`algebra.Constant`), which the JLS
-only allows within a named module. The error also appears when `Expression.java` is passed
-to a per-file run; it is a harness limitation, not a code problem.
+Expected baseline: **13 problems, exit code 0** — 12 warnings (2 missing-`@Override` in
+`control/Binding.java`, 10 TODO task tags) plus 1 info in `gui/tree/TypeTree.java` (exported
+API mentioning a non-exported type; surfaces only in modular compilation). The bar for a
+change is that it adds nothing to that set.
+
+## Error masking: why `-All` is the authoritative gate
+
+ecj skips null/flow analysis for any compilation unit with a compile error, so an error in a
+file silently suppresses **all** null-analysis findings in that file. This bit once: per-file
+runs compile in the unnamed module, where the cross-package sealed hierarchy rooted at
+`algebra/syntax/Expression.java` is illegal, and the resulting spurious error ("Permitted
+type Constant in an unnamed module should be declared in the same package") masked a real
+null bug in that file. `-All` compiles modularly and has no such error. Consequences:
+
+- A per-file run of `Expression.java` still reports the spurious sealed-permits error and
+  does **not** null-check that file; use `-All` for it. Its permitted subtypes
+  (`Constant`, `Variable`, `FieldExpr`, `CallExpr`) check cleanly per-file.
+- Generally, if a per-file run reports any error in a unit, that unit has not been
+  null-checked — resolve the error (or run `-All`) before trusting the result.
 
 ## Notes
 
@@ -50,7 +68,9 @@ to a per-file run; it is a harness limitation, not a code problem.
   report only failures and warnings.
 - If the classpath cache is stale after a pom change, delete `target/ecj-classpath.txt` and rerun.
 - The script pins ecj 3.42.0. Do not fall back to 3.37.0: that version dies with an internal
-  NPE on switch expressions over sealed types when given many files at once.
+  NPE on switch expressions over sealed types when given many files at once. The
+  multi-release-jar descriptor bug is still present in 3.44.0 (checked 2026-08-18), so a
+  version bump alone does not obsolete the jar patching.
 - Remember the null-annotation idioms in claude/CLAUDE.md (annotate consistently across an
   inheritance web; `Map<K,@Nullable V>` for null-checked lookups; `@Nullable` late-init fields
   with asserting accessors).
