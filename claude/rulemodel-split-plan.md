@@ -127,4 +127,10 @@ order-bearing collections (2 and 4 in particular).
 
 ## Status
 
-- Step 1 in progress on branch `rulemodel-split`.
+- Step 1 done on branch `rulemodel-split` (2026-08-18): `RuleCompiler`
+  extracted, `RuleModel` down to 527 lines. Moved code textually unchanged
+  except three `RuleModel.this` qualifiers and two requalified `@see` tags;
+  the compiler mirrors the original accessor names over explicit
+  constructor inputs. Verified: full suite incl. slow groups (593 tests,
+  0 failures), ecj null-check clean on both files.
+- Steps 2–4 not started.
