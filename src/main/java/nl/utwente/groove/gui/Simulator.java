@@ -102,7 +102,7 @@ import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
-import nl.utwente.groove.util.parse.SearchResult;
+import nl.utwente.groove.gui.list.SearchResult;
 import nl.utwente.groove.util.parse.SelectableListEntry;
 
 /**

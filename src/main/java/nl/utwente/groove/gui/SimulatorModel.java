@@ -55,7 +55,7 @@ import nl.utwente.groove.lts.RuleTransition;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
-import nl.utwente.groove.util.parse.SearchResult;
+import nl.utwente.groove.gui.list.SearchResult;
 
 /**
  * Collection of values that make up the state of
@@ -1222,7 +1222,7 @@ public class SimulatorModel implements Cloneable {
             }
             for (QualName name : getGrammar().getNames(kind)) {
                 AspectGraph graph = getGrammar().getModelGraph(kind, name);
-                graph.getSearchResults(label, searchResults);
+                SearchResult.collect(graph, label, searchResults);
             }
         }
         return searchResults;
