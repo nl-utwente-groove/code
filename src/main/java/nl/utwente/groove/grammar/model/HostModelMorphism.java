@@ -148,12 +148,12 @@ class HostModelMorphism {
                 if (grammar.getProperties().getTypePolicy() != CheckPolicy.OFF) {
                     // constraint violations are reported on the typed host
                     // graph; trace them back to the source graph
-                    errors.applyInverse(typeMap);
+                    typeMap.applyInverse(errors);
                     errors.addAll(target.checkTypeConstraints());
                 }
                 map = typeMap;
             } catch (FormatException exc) {
-                errors.applyInverse(map);
+                map.applyInverse(errors);
                 errors.addAll(exc.getErrors());
             }
         }

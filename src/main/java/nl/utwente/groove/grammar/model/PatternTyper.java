@@ -187,7 +187,7 @@ class PatternTyper {
             RuleGraph result = createGraph(graph.getName());
             try {
                 RuleGraphMorphism typing = getTypeGraph().analyzeRule(graph, parentTypeMap);
-                this.errors.applyInverse(typing);
+                typing.applyInverse(this.errors);
                 if (typeMap != null) {
                     typeMap.putAll(typing);
                 }

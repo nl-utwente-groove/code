@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +40,6 @@ import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.EdgeComparator;
 import nl.utwente.groove.graph.Element;
-import nl.utwente.groove.graph.GraphMap;
 import nl.utwente.groove.grammar.ResourceProperties.Key;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.NodeComparator;
@@ -331,17 +329,14 @@ public class FormatError
     private final SortedSet<QualName> resourceNames = new TreeSet<>();
 
     /** Returns a new format error in which the context information is transferred modulo
-     * a graph map. The new error has no parent.
+     * an element map. The new error has no parent.
      * @param map mapping from the context of this error to the context
-     * of the result error; or {@code null} if there is no mapping
+     * of the result error
      */
-    FormatError transfer(GraphMap map) {
+    FormatError transfer(Map<?,?> map) {
         var result = this;
         if (!map.isEmpty()) {
-            Map<Object,Object> elementMap = new HashMap<>();
-            elementMap.putAll(map.nodeMap());
-            elementMap.putAll(map.edgeMap());
-            result = clone(elementMap);
+            result = clone(map);
         }
         return result;
     }

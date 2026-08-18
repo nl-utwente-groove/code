@@ -16,8 +16,12 @@
  */
 package nl.utwente.groove.graph;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+
+import nl.utwente.groove.util.Relation;
+import nl.utwente.groove.util.parse.FormatErrorSet;
 
 /**
  * Default implementation of a generic graph-to-graph-map. The implementation is
@@ -81,6 +85,49 @@ public interface GraphMap {
             result = edgeMap().size() == edgeValues.size();
         }
         return result;
+    }
+
+    /**
+     * Returns a new format error set in which the context information of a
+     * given error set is transferred through this map.
+     * In contrast to {@link #applyInverse(FormatErrorSet)}, this creates a new
+     * {@link FormatErrorSet} rather than modifying the given one, and hence
+     * also works if the given error set is fixed.
+     * @param errors the errors to be transferred; their elements are keys of this map
+     */
+    default public FormatErrorSet transfer(FormatErrorSet errors) {
+        return errors.transfer(combinedMap());
+    }
+
+    /**
+     * Modifies a given error set, as well as all errors added to it in the future,
+     * by applying this map to the errors' graph elements.
+     * The method returns the modified error set for chaining.
+     * @param errors the errors to be modified; their elements are keys of this map
+     */
+    default public FormatErrorSet apply(FormatErrorSet errors) {
+        return errors.apply(combinedMap());
+    }
+
+    /** Returns the combined node and edge map, as an element map. */
+    private Map<Element,Element> combinedMap() {
+        var result = new HashMap<Element,Element>();
+        result.putAll(nodeMap());
+        result.putAll(edgeMap());
+        return result;
+    }
+
+    /**
+     * Modifies a given error set, as well as all errors added to it in the future,
+     * by applying the inverse of this map to the errors' graph elements.
+     * The method returns the modified error set for chaining.
+     * @param errors the errors to be modified; their elements are values of this map
+     */
+    default public FormatErrorSet applyInverse(FormatErrorSet errors) {
+        var inverse = new Relation<Element,Element>();
+        inverse.addInverse(nodeMap());
+        inverse.addInverse(edgeMap());
+        return errors.apply(inverse);
     }
 
     /**
