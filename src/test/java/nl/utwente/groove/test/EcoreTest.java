@@ -617,7 +617,9 @@ public class EcoreTest {
                                                          "List.elements.ordering = index")),
                                   ResourceKind.TYPE);
         assertEquals(Set.of("List", "Element", "List$elements"), selfLabels(type).keySet());
-        assertTrue(selfLabels(type).get("List").contains("string:labels"));
+        var listLabels = selfLabels(type).get("List");
+        assert listLabels != null; // keySet asserted above
+        assertTrue(listLabels.contains("string:labels"));
         assertEquals(Collections.emptyList(), messages(type.getErrors()));
         // a none override for the labels feature, under global index;
         // the element path may be package-qualified
@@ -626,7 +628,9 @@ public class EcoreTest {
                                              "ordered.List.labels.ordering = none")),
                       ResourceKind.TYPE);
         assertEquals(Set.of("List", "Element", "List$elements"), selfLabels(type).keySet());
-        assertTrue(selfLabels(type).get("List").contains("string:labels"));
+        listLabels = selfLabels(type).get("List");
+        assert listLabels != null; // keySet asserted above
+        assertTrue(listLabels.contains("string:labels"));
         assertEquals(Collections.emptyList(), messages(type.getErrors()));
     }
 

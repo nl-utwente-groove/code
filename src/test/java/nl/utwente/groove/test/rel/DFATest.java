@@ -169,20 +169,25 @@ public class DFATest {
         assertFalse(state.isFinal());
         Map<TypeLabel,DFAState> succMap = state.getLabelMap().get(OUTGOING);
         Map<TypeLabel,DFAState> predMap = state.getLabelMap().get(INCOMING);
+        assert succMap != null && predMap != null; // label maps have both directions
         assertEquals(Collections.singleton(this.aLabel), succMap.keySet());
         assertTrue(predMap.isEmpty());
         state = succMap.get(this.aLabel);
+        assert state != null; // keySet asserted above
         assertFalse(state.isInitial());
         assertFalse(state.isFinal());
         succMap = state.getLabelMap().get(OUTGOING);
         predMap = state.getLabelMap().get(INCOMING);
+        assert succMap != null && predMap != null; // label maps have both directions
         assertTrue(succMap.isEmpty());
         assertEquals(Collections.singleton(this.aLabel), predMap.keySet());
         state = predMap.get(this.aLabel);
+        assert state != null; // keySet asserted above
         assertFalse(state.isInitial());
         assertTrue(state.isFinal());
         succMap = state.getLabelMap().get(OUTGOING);
         predMap = state.getLabelMap().get(INCOMING);
+        assert succMap != null && predMap != null; // label maps have both directions
         assertTrue(succMap.isEmpty());
         assertTrue(predMap.isEmpty());
         DFA backward = a.getDFA(INCOMING, null);

@@ -52,8 +52,11 @@ public class RuleFormulaParserTest {
 
     /** Parses a formula over constant-valued atoms and evaluates it. */
     private boolean eval(String formula, Map<String,Boolean> atoms) throws FormatException {
-        Predicate<GraphState> predicate = RuleFormulaParser
-            .parse(name -> new Constant(atoms.get(name.toString())), formula);
+        Predicate<GraphState> predicate = RuleFormulaParser.parse(name -> {
+            Boolean value = atoms.get(name.toString());
+            assert value != null; // all tests only use atoms in the map
+            return new Constant(value);
+        }, formula);
         return predicate.test(null);
     }
 

@@ -84,6 +84,7 @@ public class TypeCheckTest {
             var hostModel = (HostModel) grammarView
                 .getResourceMap(ResourceKind.HOST)
                 .get(QualName.name("OK-merge"));
+            assert hostModel != null; // the grammar contains OK-merge
             HostGraph host = hostModel.toResource();
             Assert.assertEquals(2, host.nodeSet().size());
             Assert.assertEquals(2, host.edgeSet().size());
