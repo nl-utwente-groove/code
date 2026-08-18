@@ -33,6 +33,7 @@ import nl.utwente.groove.algebra.UserSignature;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.RuleModel;
+import nl.utwente.groove.transform.oracle.OracleParser;
 import nl.utwente.groove.transform.oracle.ValueOracleFactory;
 import nl.utwente.groove.transform.oracle.ValueOracleKind;
 import nl.utwente.groove.util.DocumentedEnum;
