@@ -56,7 +56,7 @@ New package-private top-level classes in `grammar.model` (same package as
 |---|---|---|
 | `RuleModel` (~500 lines) | outer class | `ResourceModel` adapter only: lifecycle, role/priority/policy/injective accessors, GUI views; `compute()` delegates to the compiler |
 | `RuleCompiler` | `LevelTree` + `computeRule` | orchestrator; explicit inputs (grammar model, source, role); the *single* error-pullback point; exposes rule, model map, type map, level map |
-| `LevelSchema` | `buildTree` + index maps | quantification-tree discovery from nesting aspects |
+| `LevelIndexTree` | `buildTree` + index maps | the quantification-level index tree: a *data structure* with a constructing factory (`LevelIndexTree.from(normalSource)`), not a transformer class. (Renamed from the earlier `LevelSchema` proposal, which was ambiguous between data and pass — review comment, 2026-08-18.) |
 | `LevelDistribution` | `Level1` | element-to-level assignment, variable maps, match counts |
 | `LevelPattern` | field lists of `Level2/3/4` | the inter-stage **value record**: `index`, `lhs`, `mid`, `rhs`, `nacs`, `countNode`, `outputNodes`, `colorMap`, `isRule` |
 | `PatternBuilder` | `Level2` | aspect elements → untyped `LevelPattern`s; NAC cell partition; attribute/variable checks |
@@ -111,6 +111,10 @@ Four independently mergeable steps, decreasing in mechanicalness:
 2. **Data/pass split**: introduce `LevelPattern`, dissolve `Level4` into
    the assembler, collapse the copy-constructors.
 3. **File split + renames**: per-phase top-level classes with real names.
+   Naming rule settled during step-1 review: classes named for *data* (the
+   level index tree, the level patterns) are value types constructed by
+   factories; classes named for *passes* (builder, typer, assembler) hold
+   only per-run scratch state.
 4. **Error-pullback unification** — last, because it is the only step with
    real misattribution risk, and it is much easier to verify once the
    phases are explicit.
