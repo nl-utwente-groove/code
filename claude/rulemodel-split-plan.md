@@ -58,7 +58,7 @@ New package-private top-level classes in `grammar.model` (same package as
 | `RuleCompiler` | `LevelTree` + `computeRule` | orchestrator; explicit inputs (grammar model, source, role); the *single* error-pullback point; exposes rule, model map, type map, level map |
 | `LevelIndexTree` | `buildTree` + index maps | the quantification-level index tree: a *data structure* with a constructing factory (`LevelIndexTree.from(normalSource)`), not a transformer class. (Renamed from the earlier `LevelSchema` proposal, which was ambiguous between data and pass — review comment, 2026-08-18.) |
 | `LevelDistribution` | `Level1` | element-to-level assignment, variable maps, match counts |
-| `LevelPattern` | field lists of `Level2/3/4` | the inter-stage **value record**: `index`, `lhs`, `mid`, `rhs`, `nacs`, `countNode`, `outputNodes`, `colorMap`, `isRule` |
+| `LevelPattern` | field lists of `Level2/3/4` | the inter-stage **value class**: `index`, `parent`, `lhs`, `rhs`, `nacs`, `countNode`, `outputNodes`, `colorMap`, `isRule`. (Not a `record`: contents are deliberately mutable — graphs are extended during assembly — and identity semantics are wanted, so the generated value-equality members would all have to be overridden away; review decision, 2026-08-18. The `mid` graph turned out to be write-only and was removed in step 2.) |
 | `PatternBuilder` | `Level2` | aspect elements → untyped `LevelPattern`s; NAC cell partition; attribute/variable checks |
 | `PatternTyper` | `Level3` | `LevelPattern` → typed `LevelPattern` via `TypeGraph.analyzeRule`; specialisation/merger checks; returns the typing morphism |
 | `ConditionAssembler` | `Level4` + tree knitting | eraser-conflict import, condition/rule construction, embargoes, condition-tree wiring; `checkRegExprErasure` moves here |
@@ -147,4 +147,28 @@ order-bearing collections (2 and 4 in particular).
   suite incl. slow groups at exact baseline (593 tests), ecj null-check
   clean, determinism checklist (no new hash use, collection types and
   iteration orders preserved verbatim).
-- Steps 3–4 not started.
+- Step 3 done (2026-08-18), in five commits:
+  - 3a: the ancestor-eraser sets moved out of `LevelPattern` into per-index
+    maps (assembly-phase scratch, not pattern data — follow-up to the
+    record discussion); `LevelPattern` is now construction-complete.
+  - Data classes extracted: `LevelIndexTree` and `LevelDistribution` (both
+    with `from` factories per the naming rule) and `LevelPattern` as
+    top-level files.
+  - Pass classes extracted: `PatternBuilder` (Level2 + allocator + NAC cell
+    partition) and `PatternTyper` (Level3); the inter-stage currency is now
+    uniformly `LevelPattern` (untyped → typed). `LevelTree` dissolved into
+    `compile()`. Side effect: the GUI level view survives late-stage
+    compile failures, as planned.
+  - `ConditionAssembler` (assembly methods + condition-tree knitting +
+    `checkRegExprErasure` + the eraser maps from 3a) and
+    `SignatureExtractor` (ex `Parameters`) extracted; `RuleCompiler` is a
+    ~350-line orchestrator.
+  - `@NonNullByDefault` added to the three data classes. The pass classes
+    and `RuleCompiler` stay unannotated: their null discipline is entangled
+    with the error handling that step 4 reworks, so annotation lands there.
+  - Verified: full suite incl. slow groups at baseline, ecj per-file clean
+    and whole-project at the documented 17-problem baseline, determinism
+    checklist (collection types and iteration orders preserved; eraser maps
+    are `TreeMap<Index,…>` with `LinkedHashSet` values filled in the
+    original sequence).
+- Step 4 not started.
