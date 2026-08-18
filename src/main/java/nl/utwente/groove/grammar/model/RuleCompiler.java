@@ -297,18 +297,18 @@ class RuleCompiler {
         // under SPO (simple graphs or multigraphs alike), identifications
         // are resolved by letting deletion win
         if (getGrammarProperties().getParallelMode().isDPO()) {
-            for (Level4 level : levelTree.getLevel4Map().values()) {
-                level.importEraserConflicts();
+            for (LevelPattern level : levelTree.getPatternMap().values()) {
+                importEraserConflicts(level);
             }
         }
         // construct the rule tree and add parent rules
         try {
-            for (Level4 level : levelTree.getLevel4Map().values()) {
+            for (LevelPattern level : levelTree.getPatternMap().values()) {
                 Index index = level.getIndex();
                 Op operator = index.getOperator();
                 Condition condition;
                 if (operator.isQuantifier()) {
-                    condition = level.computeFlatRule();
+                    condition = computeFlatRule(level);
                 } else {
                     condition = new Condition(index.getName(), operator);
                 }
@@ -418,7 +418,7 @@ class RuleCompiler {
         // with a witnessing eraser element for error reporting
         Map<TypeEdge,RuleElement> erasedTypes = new LinkedHashMap<>();
         var typeGraph = getTypeGraph();
-        for (Level4 level : levelTree.getLevel4Map().values()) {
+        for (LevelPattern level : levelTree.getPatternMap().values()) {
             if (!level.getIndex().getOperator().isQuantifier()) {
                 continue;
             }
@@ -435,7 +435,7 @@ class RuleCompiler {
         }
         // check the composite regular expression edges of all levels
         Set<RuleEdge> checked = new HashSet<>();
-        for (Level4 level : levelTree.getLevel4Map().values()) {
+        for (LevelPattern level : levelTree.getPatternMap().values()) {
             if (!level.getIndex().getOperator().isQuantifier()) {
                 continue;
             }
@@ -514,8 +514,7 @@ class RuleCompiler {
             RuleFactory typedFactory = RuleCompiler.this.ruleFactory;
             RuleGraphMorphism typingMap = new RuleGraphMorphism(typedFactory);
             try {
-                SortedMap<Index,Level3> level3Map = buildLevels3(level2Map, typingMap);
-                this.level4Map = build4From3(level3Map);
+                this.patternMap = buildLevels3(level2Map, typingMap);
             } catch (FormatException e) {
                 throw new FormatException(e.getErrors().applyInverse(untypedModelMap));
             }
@@ -820,33 +819,19 @@ class RuleCompiler {
             return result;
         }
 
-        /** Constructs the level3 map. */
-        private SortedMap<Index,Level3> buildLevels3(SortedMap<Index,Level2> level2Map,
-                                                     RuleGraphMorphism typingMap) throws FormatException {
-            SortedMap<Index,Level3> result = new TreeMap<>();
-            FormatErrorSet errors = createErrors();
+        /** Constructs the typed level patterns, in the tree-order of the indices. */
+        private SortedMap<Index,LevelPattern> buildLevels3(SortedMap<Index,Level2> level2Map,
+                                                           RuleGraphMorphism typingMap) throws FormatException {
+            SortedMap<Index,Level3> level3Map = new TreeMap<>();
+            SortedMap<Index,LevelPattern> result = new TreeMap<>();
             for (Level2 level2 : level2Map.values()) {
                 Index index = level2.getIndex();
                 Level3 parent = index.isTopLevel()
                     ? null
-                    : result.get(index.getParent());
+                    : level3Map.get(index.getParent());
                 Level3 level3 = new Level3(level2, parent, typingMap);
-                result.put(index, level3);
-            }
-            errors.throwException();
-            return result;
-        }
-
-        /** Constructs the level4 map. */
-        private SortedMap<Index,Level4> build4From3(SortedMap<Index,Level3> level3Map) {
-            SortedMap<Index,Level4> result = new TreeMap<>();
-            for (Level3 level3 : level3Map.values()) {
-                Index index = level3.getIndex();
-                Level4 parent = index.isTopLevel()
-                    ? null
-                    : result.get(index.getParent());
-                Level4 level4 = new Level4(level3, parent);
-                result.put(index, level4);
+                level3Map.put(index, level3);
+                result.put(index, level3.pattern);
             }
             return result;
         }
@@ -859,10 +844,10 @@ class RuleCompiler {
         }
 
         /**
-         * Returns the quantification levels in ascending or descending order
+         * Returns the typed level patterns in ascending or descending order
          */
-        public final Map<Index,Level4> getLevel4Map() {
-            return this.level4Map;
+        public final Map<Index,LevelPattern> getPatternMap() {
+            return this.patternMap;
         }
 
         /** Returns the mapping from aspect graph elements to rule elements. */
@@ -872,7 +857,7 @@ class RuleCompiler {
 
         @Override
         public String toString() {
-            return "LevelMap: " + this.level4Map;
+            return "LevelMap: " + this.patternMap;
         }
 
         /** The normalised source of the rule model. */
@@ -881,8 +866,8 @@ class RuleCompiler {
         private Index topLevelIndex;
         /** Mapping from level indices to stage 1 levels. */
         private SortedMap<Index,Level1> level1Map;
-        /** Mapping from level indices to stage 4 levels. */
-        private SortedMap<Index,Level4> level4Map;
+        /** Mapping from level indices to typed level patterns. */
+        private SortedMap<Index,LevelPattern> patternMap;
         /** mapping from nesting nodes to nesting levels. */
         private Map<AspectNode,Index> nestingIndexMap;
         /** mapping from nesting level names to nesting levels. */
@@ -1828,8 +1813,65 @@ class RuleCompiler {
     }
 
     /**
-     * A level 3 rule is a typed version of a level 2 rule,
-     * or identical to the level 2 rule if there is no type graph.
+     * Per-level pattern data handed between the construction stages: the
+     * LHS, RHS and NAC graphs of one quantification level, together with
+     * the count node, the output nodes, the colour map and the rule flag
+     * of that level. Patterns link to the pattern of the parent level,
+     * forming a tree congruent to the index tree.
+     */
+    private class LevelPattern {
+        LevelPattern(Index index, LevelPattern parent, RuleGraph lhs, RuleGraph rhs,
+                     List<RuleGraph> nacs, VariableNode countNode, Set<VariableNode> outputNodes,
+                     Map<RuleNode,Color> colorMap, boolean isRule) {
+            this.index = index;
+            this.parent = parent;
+            this.lhs = lhs;
+            this.rhs = rhs;
+            this.nacs = nacs;
+            this.countNode = countNode;
+            this.outputNodes = outputNodes;
+            this.colorMap = colorMap;
+            this.isRule = isRule;
+        }
+
+        /** Returns the index of this level. */
+        public Index getIndex() {
+            return this.index;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("Rule %s, level %s pattern", getQualName(), getIndex());
+        }
+
+        /** Index of this level. */
+        final Index index;
+        /** Pattern of the parent level; {@code null} if this is the top level. */
+        final LevelPattern parent;
+        /** The left hand side graph of the rule. */
+        final RuleGraph lhs;
+        /** The right hand side graph of the rule. */
+        final RuleGraph rhs;
+        /** List of NAC graphs. */
+        final List<RuleGraph> nacs;
+        /** The rule node registering the match count. */
+        final VariableNode countNode;
+        /** Output nodes of the condition. */
+        final Set<VariableNode> outputNodes;
+        /** Map from rule nodes to declared colours. */
+        final Map<RuleNode,Color> colorMap;
+        /** Flag indicating that modifiers have been found at this level. */
+        final boolean isRule;
+        /** Ancestor-level eraser edges imported into this level's pattern. */
+        final Set<RuleEdge> ancestorEraserEdges = new LinkedHashSet<>();
+        /** Ancestor-level eraser nodes imported into this level's pattern. */
+        final Set<RuleNode> ancestorEraserNodes = new LinkedHashSet<>();
+    }
+
+    /**
+     * The typing pass for one level: constructs the typed pattern of the
+     * level from its level 2 (untyped) origin, or an identically typed
+     * pattern if there is no type graph.
      * @author Arend Rensink
      * @version $Revision$
      */
@@ -1838,22 +1880,18 @@ class RuleCompiler {
                       RuleGraphMorphism globalTypeMap) throws FormatException {
             this.parent = parent;
             this.factory = globalTypeMap.getFactory();
-            this.index = origin.index;
-            this.countNode = origin.countNode;
-            this.outputNodes = origin.outputNodes;
             this.globalTypeMap = globalTypeMap;
             RuleGraphMorphism parentTypeMap = parent == null
                 ? new RuleGraphMorphism(this.factory)
                 : parent.typeMap;
             this.typeMap = new RuleGraphMorphism(this.factory);
-            this.isRule = origin.isRule;
-            this.lhs = toTypedGraph(origin.lhs, parentTypeMap, this.typeMap);
+            RuleGraph lhs = toTypedGraph(origin.lhs, parentTypeMap, this.typeMap);
             // type the RHS taking the typing of the LHS into account
             // to allow use of the typed label variables
             RuleGraphMorphism lhsTypeMap = new RuleGraphMorphism(this.factory);
             lhsTypeMap.putAll(parentTypeMap);
             lhsTypeMap.putAll(this.typeMap);
-            this.rhs = toTypedGraph(origin.rhs, lhsTypeMap, this.typeMap);
+            RuleGraph rhs = toTypedGraph(origin.rhs, lhsTypeMap, this.typeMap);
             // check against label type restrictions in RHS
             for (Map.Entry<LabelVar,Set<? extends TypeElement>> entry : lhsTypeMap
                 .getVarTyping()
@@ -1874,9 +1912,14 @@ class RuleCompiler {
                 }
             }
             this.errors.throwException();
+            List<RuleGraph> nacs = new ArrayList<>();
             for (RuleGraph nac : origin.nacs) {
-                this.nacs.add(toTypedGraph(nac, this.typeMap, null));
+                nacs.add(toTypedGraph(nac, this.typeMap, null));
             }
+            this.pattern = new LevelPattern(origin.index, parent == null
+                ? null
+                : parent.pattern, lhs, rhs, nacs, origin.countNode, origin.outputNodes,
+                new HashMap<>(), origin.isRule);
             // check for correct type specialisation
             // this has to be done after the NACs have been added
             try {
@@ -1884,20 +1927,15 @@ class RuleCompiler {
                 for (RuleNode origParentNode : parentTypeMap.nodeMap().keySet()) {
                     parentNodes.add(this.typeMap.getNode(origParentNode));
                 }
-                checkTypeSpecialisation(parentNodes, this.lhs, this.rhs);
+                checkTypeSpecialisation(parentNodes, lhs, rhs);
             } catch (FormatException exc) {
                 this.errors.addAll(exc.getErrors());
             }
             this.errors.throwException();
             for (Map.Entry<RuleNode,Color> colorEntry : origin.colorMap.entrySet()) {
-                this.colorMap
+                this.pattern.colorMap
                     .put(globalTypeMap.getNode(colorEntry.getKey()), colorEntry.getValue());
             }
-        }
-
-        /** Returns the tree index of this rule. */
-        public Index getIndex() {
-            return this.index;
         }
 
         /**
@@ -1968,7 +2006,7 @@ class RuleCompiler {
             // check for ambiguous mergers
             List<RuleEdge> mergers = new ArrayList<>();
             Set<RuleNode> mergedNodes = new HashSet<>();
-            for (RuleEdge edge : this.rhs.edgeSet()) {
+            for (RuleEdge edge : rhs.edgeSet()) {
                 if (isMerger(edge)) {
                     mergers.add(edge);
                     RuleNode source = edge.source();
@@ -2031,8 +2069,8 @@ class RuleCompiler {
 
         /** Tests if a given node is matched on a universal level. */
         private boolean isUniversal(RuleNode node) {
-            Level3 highestLevel = this;
-            Level3 parent = this.parent;
+            LevelPattern highestLevel = this.pattern;
+            LevelPattern parent = highestLevel.parent;
             while (parent != null && parent.rhs.containsNode(node)) {
                 highestLevel = parent;
                 parent = highestLevel.parent;
@@ -2049,7 +2087,7 @@ class RuleCompiler {
             if (!result) {
                 // check for != edges
                 RuleLabel injection = new RuleLabel(RegExpr.empty().neg());
-                for (RuleEdge edge : this.lhs.edgeSet(injection)) {
+                for (RuleEdge edge : this.pattern.lhs.edgeSet(injection)) {
                     if (edge.source().equals(n1) && edge.target().equals(n2)
                         || edge.source().equals(n2) && edge.target().equals(n1)) {
                         result = true;
@@ -2059,7 +2097,7 @@ class RuleCompiler {
             }
             if (!result) {
                 // check for NACs
-                for (RuleGraph nac : this.nacs) {
+                for (RuleGraph nac : this.pattern.nacs) {
                     Set<RuleNode> nacNodes = nac.nodeSet();
                     Set<RuleEdge> nacEdges = nac.edgeSet();
                     if (nacNodes.size() == 2 && nacNodes.contains(n1) && nacNodes.contains(n2)
@@ -2069,8 +2107,8 @@ class RuleCompiler {
                     }
                 }
             }
-            if (!result && this.parent != null && this.parent.lhs.containsNode(n1)
-                && this.parent.lhs.containsNode(n2)) {
+            if (!result && this.parent != null && this.parent.pattern.lhs.containsNode(n1)
+                && this.parent.pattern.lhs.containsNode(n2)) {
                 result = this.parent.injective(n1, n2);
             }
             return result;
@@ -2131,7 +2169,7 @@ class RuleCompiler {
 
         /** Tests if a given RHS edge is a merger. */
         private boolean isMerger(RuleEdge rhsEdge) {
-            return !this.lhs.containsEdge(rhsEdge) && rhsEdge.label().isEmpty();
+            return !this.pattern.lhs.containsEdge(rhsEdge) && rhsEdge.label().isEmpty();
         }
 
         /**
@@ -2146,421 +2184,357 @@ class RuleCompiler {
 
         private final Level3 parent;
         private final RuleFactory factory;
-        /** Index of this level. */
-        private final Index index;
-        /** Output nodes of the condition. */
-        private final Set<VariableNode> outputNodes;
-        /** The rule node registering the match count. */
-        private final VariableNode countNode;
         /** The global, rule-wide mapping from untyped to typed rule elements. */
         private final RuleGraphMorphism globalTypeMap;
         /** Combined type map for this level. */
         private final RuleGraphMorphism typeMap;
-        /** Map from rule nodes to declared colours. */
-        private final Map<RuleNode,Color> colorMap = new HashMap<>();
-        /** Flag indicating that modifiers have been found at this level. */
-        private final boolean isRule;
-        /** The left hand side graph of the rule. */
-        private final RuleGraph lhs;
-        /** The right hand side graph of the rule. */
-        private final RuleGraph rhs;
-        /** List of NAC graphs. */
-        private final List<RuleGraph> nacs = new ArrayList<>();
+        /** The typed pattern constructed by this pass. */
+        private final LevelPattern pattern;
         /** List of typing errors. */
         private final FormatErrorSet errors = createErrors();
     }
 
-    /**
-     * Class containing all rule elements on a given rule level,
-     * differentiated by role (LHS, RHS and NACs).
+    /*
+     * Condition assembly: the methods that turn the typed level patterns
+     * into the tree of conditions and rules. Each method takes the pattern
+     * of the level it operates on.
      */
-    private class Level4 {
-        /**
-         * Creates a new level, with a given index and parent level.
-         * @param origin the level 3 object from which this level 4 object is created
-         * @param parent the parent level; may be {@code null} if this is the
-         *        top level.
-         */
-        public Level4(Level3 origin, Level4 parent) {
-            this.isRule = origin.isRule;
-            this.index = origin.index;
-            this.parent = parent;
-            // initialise the rule data structures
-            this.lhs = origin.lhs;
-            this.nacs = origin.nacs;
-            this.rhs = origin.rhs;
-            this.countNode = origin.countNode;
-            this.outputNodes = origin.outputNodes;
-            this.colorMap = origin.colorMap;
-        }
 
-        /**
-         * Imports ancestor-level elements whose image may coincide with that
-         * of an eraser at this or the ancestor level (root extension): such
-         * an element is added, as a reader, to the LHS and RHS of every level
-         * from just below its own down to this one, so that its image is
-         * seeded into the search of this level's condition, where the
-         * conflict machinery enforces the cross-level DPO identification
-         * condition. Imported ancestor erasers are additionally recorded, to
-         * take part in the conflict computation as erasers.
-         * Must be called top-down over the level tree, before any condition
-         * is built.
-         */
-        public void importEraserConflicts() {
-            // snapshots of this level's own elements, before any imports
-            List<RuleNode> myNodes = new ArrayList<>(this.lhs.nodeSet());
-            List<RuleEdge> myEdges = new ArrayList<>(this.lhs.edgeSet());
-            Set<RuleNode> myEraserNodes = new LinkedHashSet<>(myNodes);
-            myEraserNodes.removeAll(this.rhs.nodeSet());
-            Set<RuleEdge> myEraserEdges = new LinkedHashSet<>(myEdges);
-            myEraserEdges.removeAll(this.rhs.edgeSet());
-            // the levels from just below the currently inspected ancestor
-            // down to this level, into which conflicting elements are imported
-            List<Level4> path = new ArrayList<>();
-            path.add(this);
-            for (Level4 anc = this.parent; anc != null; anc = anc.parent) {
-                Set<RuleEdge> ancEraserEdges = new LinkedHashSet<>(anc.lhs.edgeSet());
-                ancEraserEdges.removeAll(anc.rhs.edgeSet());
-                for (RuleEdge ancEdge : anc.lhs.edgeSet()) {
-                    boolean ancIsEraser = ancEraserEdges.contains(ancEdge);
-                    // a non-eraser ancestor edge only conflicts with my erasers
-                    Collection<RuleEdge> mine = ancIsEraser
-                        ? myEdges
-                        : myEraserEdges;
-                    boolean conflict = false;
-                    for (RuleEdge myEdge : mine) {
-                        if (myEdge != ancEdge && myEdge.canShareImage(ancEdge)) {
-                            conflict = true;
-                            break;
-                        }
-                    }
-                    if (conflict) {
-                        importEdge(ancEdge, path);
-                        if (ancIsEraser) {
-                            this.ancestorEraserEdges.add(ancEdge);
-                        }
+    /**
+     * Imports ancestor-level elements whose image may coincide with that
+     * of an eraser at this or the ancestor level (root extension): such
+     * an element is added, as a reader, to the LHS and RHS of every level
+     * from just below its own down to this one, so that its image is
+     * seeded into the search of this level's condition, where the
+     * conflict machinery enforces the cross-level DPO identification
+     * condition. Imported ancestor erasers are additionally recorded, to
+     * take part in the conflict computation as erasers.
+     * Must be called top-down over the level tree, before any condition
+     * is built.
+     */
+    private void importEraserConflicts(LevelPattern level) {
+        // snapshots of this level's own elements, before any imports
+        List<RuleNode> myNodes = new ArrayList<>(level.lhs.nodeSet());
+        List<RuleEdge> myEdges = new ArrayList<>(level.lhs.edgeSet());
+        Set<RuleNode> myEraserNodes = new LinkedHashSet<>(myNodes);
+        myEraserNodes.removeAll(level.rhs.nodeSet());
+        Set<RuleEdge> myEraserEdges = new LinkedHashSet<>(myEdges);
+        myEraserEdges.removeAll(level.rhs.edgeSet());
+        // the levels from just below the currently inspected ancestor
+        // down to this level, into which conflicting elements are imported
+        List<LevelPattern> path = new ArrayList<>();
+        path.add(level);
+        for (LevelPattern anc = level.parent; anc != null; anc = anc.parent) {
+            Set<RuleEdge> ancEraserEdges = new LinkedHashSet<>(anc.lhs.edgeSet());
+            ancEraserEdges.removeAll(anc.rhs.edgeSet());
+            for (RuleEdge ancEdge : anc.lhs.edgeSet()) {
+                boolean ancIsEraser = ancEraserEdges.contains(ancEdge);
+                // a non-eraser ancestor edge only conflicts with my erasers
+                Collection<RuleEdge> mine = ancIsEraser
+                    ? myEdges
+                    : myEraserEdges;
+                boolean conflict = false;
+                for (RuleEdge myEdge : mine) {
+                    if (myEdge != ancEdge && myEdge.canShareImage(ancEdge)) {
+                        conflict = true;
+                        break;
                     }
                 }
-                Set<RuleNode> ancEraserNodes = new LinkedHashSet<>(anc.lhs.nodeSet());
-                ancEraserNodes.removeAll(anc.rhs.nodeSet());
-                for (RuleNode ancNode : anc.lhs.nodeSet()) {
-                    if (!(ancNode instanceof DefaultRuleNode)) {
-                        continue;
-                    }
-                    boolean ancIsEraser = ancEraserNodes.contains(ancNode);
-                    Collection<RuleNode> mine = ancIsEraser
-                        ? myNodes
-                        : myEraserNodes;
-                    boolean conflict = false;
-                    for (RuleNode myNode : mine) {
-                        if (myNode != ancNode && myNode instanceof DefaultRuleNode
-                            && !Collections
-                                .disjoint(myNode.getMatchingTypes(), ancNode.getMatchingTypes())) {
-                            conflict = true;
-                            break;
-                        }
-                    }
-                    if (conflict) {
-                        importNode(ancNode, path);
-                        if (ancIsEraser) {
-                            this.ancestorEraserNodes.add(ancNode);
-                        }
+                if (conflict) {
+                    importEdge(ancEdge, path);
+                    if (ancIsEraser) {
+                        level.ancestorEraserEdges.add(ancEdge);
                     }
                 }
-                path.add(anc);
             }
-        }
-
-        /** Adds an ancestor edge, with its end nodes, as reader to the given levels. */
-        private void importEdge(RuleEdge edge, List<Level4> levels) {
-            for (Level4 level : levels) {
-                if (!level.lhs.containsEdge(edge)) {
-                    level.lhs.addEdgeContext(edge);
-                }
-                if (!level.rhs.containsEdge(edge)) {
-                    level.rhs.addEdgeContext(edge);
-                }
-            }
-        }
-
-        /** Adds an ancestor node as reader to the given levels. */
-        private void importNode(RuleNode node, List<Level4> levels) {
-            for (Level4 level : levels) {
-                level.lhs.addNode(node);
-                level.rhs.addNode(node);
-            }
-        }
-
-        /** Ancestor-level eraser edges imported into this level's pattern. */
-        private final Set<RuleEdge> ancestorEraserEdges = new LinkedHashSet<>();
-        /** Ancestor-level eraser nodes imported into this level's pattern. */
-        private final Set<RuleNode> ancestorEraserNodes = new LinkedHashSet<>();
-
-        /**
-         * Callback method to compute the rule on this nesting level.
-         * The resulting condition is not fixed (see {@link Condition#isFixed()}).
-         */
-        public Condition computeFlatRule() throws FormatException {
-            Condition result;
-            FormatErrorSet errors = createErrors();
-            // the resulting rule
-            result = createCondition(getRootGraph(), this.lhs);
-            result.addAncestorEraserEdges(this.ancestorEraserEdges);
-            if (this.isRule) {
-                Rule rule = createRule(result, this.rhs, getCoRootGraph());
-                rule.addColorMap(this.colorMap);
-                result.setRule(rule);
-            }
-            // add the NACs to the rule
-            for (RuleGraph nac : this.nacs) {
-                try {
-                    result.addSubCondition(computeNac(this.lhs, nac));
-                } catch (FormatException e) {
-                    errors.addAll(e.getErrors());
-                }
-            }
-            addEraserNodeEmbargoes(result);
-            errors.throwException();
-            return result;
-        }
-
-        /**
-         * Adds merge embargoes to the level condition for every pair of a
-         * deleted node and another type-compatible LHS node, enforcing the
-         * DPO identification condition on nodes: if a deleted node is
-         * identified with any other matched node, the pushout complement is
-         * not unique. Deleted nodes are the eraser nodes of this level plus
-         * the imported ancestor-level eraser nodes; for the latter, pairs
-         * with other nodes shared with the parent level are skipped, as they
-         * are already checked at the ancestor level where both nodes first
-         * coexist. The identification condition applies only under DPO
-         * semantics; under SPO (simple graphs or multigraphs alike),
-         * identifications are resolved by letting deletion win. Also skipped
-         * under injective matching, which subsumes the condition; the
-         * generated embargoes compile to equality tests in the search plan.
-         */
-        private void addEraserNodeEmbargoes(Condition condition) throws FormatException {
-            if (!getGrammarProperties().getParallelMode().isDPO() || isInjective()) {
-                return;
-            }
-            Set<RuleNode> erasers = new LinkedHashSet<>(this.lhs.nodeSet());
-            erasers.removeAll(this.rhs.nodeSet());
-            if (erasers.isEmpty() && this.ancestorEraserNodes.isEmpty()) {
-                return;
-            }
-            RuleLabel equality = new RuleLabel(RegExpr.empty());
-            List<RuleNode> nodes = new ArrayList<>(this.lhs.nodeSet());
-            for (int i = 0; i < nodes.size(); i++) {
-                RuleNode one = nodes.get(i);
-                if (!(one instanceof DefaultRuleNode)) {
+            Set<RuleNode> ancEraserNodes = new LinkedHashSet<>(anc.lhs.nodeSet());
+            ancEraserNodes.removeAll(anc.rhs.nodeSet());
+            for (RuleNode ancNode : anc.lhs.nodeSet()) {
+                if (!(ancNode instanceof DefaultRuleNode)) {
                     continue;
                 }
-                for (int j = i + 1; j < nodes.size(); j++) {
-                    RuleNode two = nodes.get(j);
-                    if (!(two instanceof DefaultRuleNode)) {
-                        continue;
-                    }
-                    boolean needed = erasers.contains(one) || erasers.contains(two);
-                    if (!needed) {
-                        // pairs of nodes shared with the parent level are
-                        // checked at the ancestor level where both first coexist
-                        needed = this.ancestorEraserNodes.contains(one) && !inParentLhs(two)
-                            || this.ancestorEraserNodes.contains(two) && !inParentLhs(one);
-                    }
-                    if (!needed) {
-                        continue;
-                    }
-                    if (Collections.disjoint(one.getMatchingTypes(), two.getMatchingTypes())) {
-                        continue;
-                    }
-                    RuleEdge embargoEdge = this.lhs.getFactory().createEdge(one, equality, two);
-                    EdgeEmbargo embargo = createEdgeEmbargo(this.lhs, embargoEdge);
-                    embargo.setFixed();
-                    condition.addSubCondition(embargo);
-                }
-            }
-        }
-
-        /** Tests if a given node occurs in the parent level's LHS. */
-        private boolean inParentLhs(RuleNode node) {
-            return this.parent != null && this.parent.lhs.containsNode(node);
-        }
-
-        /**
-         * Returns the mapping from the LHS rule elements at the parent level to
-         * the LHS rule elements at this level.
-         */
-        private RuleGraph getRootGraph() {
-            return this.index.isTopLevel()
-                ? null
-                : getIntersection(this.parent.lhs, this.lhs);
-        }
-
-        /**
-         * Returns the intersection of the parent RHS and this RHS
-         */
-        private RuleGraph getCoRootGraph() {
-            // find the first parent that has a rule
-            Level4 parent = this.parent;
-            while (parent != null && !parent.isRule) {
-                parent = parent.parent;
-            }
-            return parent == null
-                ? null
-                : getIntersection(parent.rhs, this.rhs);
-        }
-
-        /**
-         * Returns a rule graph that forms the intersection of the rule elements
-         * of this and the parent level.
-         */
-        private RuleGraph getIntersection(RuleGraph parentGraph, RuleGraph myGraph) {
-            RuleGraph result = parentGraph.newGraph(getQualName() + "-" + getIndex() + "-root");
-            for (RuleNode node : parentGraph.nodeSet()) {
-                if (myGraph.containsNode(node)) {
-                    result.addNode(node);
-                }
-            }
-            for (RuleEdge edge : parentGraph.edgeSet()) {
-                if (myGraph.containsEdge(edge)) {
-                    result.addEdgeContext(edge);
-                }
-            }
-            for (LabelVar var : parentGraph.varSet()) {
-                if (myGraph.containsVar(var)) {
-                    result.addVar(var);
-                }
-            }
-            return result;
-        }
-
-        /**
-         * Constructs a negative application condition based on a LHS graph and
-         * a set of graph elements that should make up the NAC target. The
-         * connection between LHS and NAC target is given by identity, i.e.,
-         * those elements in the NAC set that are in the LHS graph are indeed
-         * LHS elements.
-         * @param lhs the LHS graph
-         * @param nac the NAC graph
-         */
-        private Condition computeNac(RuleGraph lhs, RuleGraph nac) throws FormatException {
-            Condition result = null;
-            // first check for merge end edge embargoes
-            // they are characterised by the fact that there is precisely 1
-            // element
-            // in the nacElemSet, which is an edge
-            if (nac.edgeCount() == 1) {
-                RuleEdge embargoEdge = nac.edgeSet().iterator().next();
-                Set<RuleNode> ends
-                    = new HashSet<>(Arrays.asList(embargoEdge.source(), embargoEdge.target()));
-                if (nac.nodeSet().equals(ends) && lhs.nodeSet().containsAll(ends)
-                    && nac.varSet().isEmpty()) {
-                    // this is supposed to be an edge embargo
-                    result = createEdgeEmbargo(lhs, embargoEdge);
-                }
-            }
-            if (result == null) {
-                // if we're here it means we couldn't make an embargo
-                // if the rule is injective, add all non-data lhs nodes to the NAC pattern
-                if (isInjective()) {
-                    for (RuleNode node : lhs.nodeSet()) {
-                        if (node instanceof DefaultRuleNode) {
-                            nac.addNode(node);
-                        }
+                boolean ancIsEraser = ancEraserNodes.contains(ancNode);
+                Collection<RuleNode> mine = ancIsEraser
+                    ? myNodes
+                    : myEraserNodes;
+                boolean conflict = false;
+                for (RuleNode myNode : mine) {
+                    if (myNode != ancNode && myNode instanceof DefaultRuleNode
+                        && !Collections
+                            .disjoint(myNode.getMatchingTypes(), ancNode.getMatchingTypes())) {
+                        conflict = true;
+                        break;
                     }
                 }
-                result = createNAC(lhs, nac);
+                if (conflict) {
+                    importNode(ancNode, path);
+                    if (ancIsEraser) {
+                        level.ancestorEraserNodes.add(ancNode);
+                    }
+                }
             }
-            result.setFixed();
-            return result;
+            path.add(anc);
         }
-
-        /**
-         * Callback method to create an edge embargo.
-         * @param context the context-graph
-         * @param embargoEdge the edge to be turned into an embargo
-         * @return the new {@link nl.utwente.groove.grammar.EdgeEmbargo}
-         * @see RuleModel#toResource()
-         */
-        private EdgeEmbargo createEdgeEmbargo(RuleGraph context, RuleEdge embargoEdge) {
-            return new EdgeEmbargo(context, embargoEdge, getGrammarProperties());
-        }
-
-        /**
-         * Callback method to create a general NAC on a given graph.
-         * @param nac the context-graph
-         * @return the new {@link nl.utwente.groove.grammar.Condition}
-         * @see RuleModel#toResource()
-         */
-        private Condition createNAC(RuleGraph lhs, RuleGraph nac) {
-            String name = nac.getName();
-            return new Condition(name, Condition.Op.NOT, nac, getIntersection(lhs, nac),
-                getGrammarProperties());
-        }
-
-        /**
-         * Factory method for rules.
-         * @param condition name of the new rule to be created
-         * @param rhs the right hand side graph
-         * @param coRoot map of creator nodes in the parent rule to creator
-         *        nodes of this rule
-         * @return the fresh rule created by the factory
-         */
-        private Rule createRule(Condition condition, RuleGraph rhs, RuleGraph coRoot) {
-            Rule result = new Rule(condition, rhs, coRoot);
-            return result;
-        }
-
-        /**
-         * Factory method for universal conditions.
-         * @param root root graph of the new condition
-         * @param pattern target graph of the new condition
-         * @return the fresh condition
-         */
-        private Condition createCondition(RuleGraph root, RuleGraph pattern) {
-            Condition result = new Condition(this.index.getName(), this.index.getOperator(),
-                pattern, root, getGrammarProperties());
-            result.setTypeGraph(getTypeGraph());
-            if (this.index.isPositive()) {
-                result.setPositive();
-            }
-            if (this.countNode != null) {
-                result.setCountNode(this.countNode);
-            }
-            result.addOutputNodes(this.outputNodes);
-            return result;
-        }
-
-        @Override
-        public String toString() {
-            return String.format("Rule %s, level %s, stage 4", getQualName(), getIndex());
-        }
-
-        /** Returns the index of this level. */
-        public final Index getIndex() {
-            return this.index;
-        }
-
-        /** Index of this level. */
-        private final Index index;
-        /** Index of this level. */
-        private final Level4 parent;
-        /** Output nodes of the condition. */
-        private final Set<VariableNode> outputNodes;
-        /** The rule node registering the match count. */
-        private final VariableNode countNode;
-        /** Map from rule nodes to declared colours. */
-        private final Map<RuleNode,Color> colorMap;
-        /** Flag indicating that modifiers have been found at this level. */
-        private final boolean isRule;
-        /** The left hand side graph of the rule. */
-        private final RuleGraph lhs;
-        /** The right hand side graph of the rule. */
-        private final RuleGraph rhs;
-        /** List of NAC graphs. */
-        private final List<RuleGraph> nacs;
     }
 
+    /** Adds an ancestor edge, with its end nodes, as reader to the given levels. */
+    private void importEdge(RuleEdge edge, List<LevelPattern> levels) {
+        for (LevelPattern level : levels) {
+            if (!level.lhs.containsEdge(edge)) {
+                level.lhs.addEdgeContext(edge);
+            }
+            if (!level.rhs.containsEdge(edge)) {
+                level.rhs.addEdgeContext(edge);
+            }
+        }
+    }
+
+    /** Adds an ancestor node as reader to the given levels. */
+    private void importNode(RuleNode node, List<LevelPattern> levels) {
+        for (LevelPattern level : levels) {
+            level.lhs.addNode(node);
+            level.rhs.addNode(node);
+        }
+    }
+
+    /**
+     * Callback method to compute the rule on a given nesting level.
+     * The resulting condition is not fixed (see {@link Condition#isFixed()}).
+     */
+    private Condition computeFlatRule(LevelPattern level) throws FormatException {
+        Condition result;
+        FormatErrorSet errors = createErrors();
+        // the resulting rule
+        result = createCondition(level, getRootGraph(level), level.lhs);
+        result.addAncestorEraserEdges(level.ancestorEraserEdges);
+        if (level.isRule) {
+            Rule rule = createRule(result, level.rhs, getCoRootGraph(level));
+            rule.addColorMap(level.colorMap);
+            result.setRule(rule);
+        }
+        // add the NACs to the rule
+        for (RuleGraph nac : level.nacs) {
+            try {
+                result.addSubCondition(computeNac(level, level.lhs, nac));
+            } catch (FormatException e) {
+                errors.addAll(e.getErrors());
+            }
+        }
+        addEraserNodeEmbargoes(level, result);
+        errors.throwException();
+        return result;
+    }
+
+    /**
+     * Adds merge embargoes to the level condition for every pair of a
+     * deleted node and another type-compatible LHS node, enforcing the
+     * DPO identification condition on nodes: if a deleted node is
+     * identified with any other matched node, the pushout complement is
+     * not unique. Deleted nodes are the eraser nodes of this level plus
+     * the imported ancestor-level eraser nodes; for the latter, pairs
+     * with other nodes shared with the parent level are skipped, as they
+     * are already checked at the ancestor level where both nodes first
+     * coexist. The identification condition applies only under DPO
+     * semantics; under SPO (simple graphs or multigraphs alike),
+     * identifications are resolved by letting deletion win. Also skipped
+     * under injective matching, which subsumes the condition; the
+     * generated embargoes compile to equality tests in the search plan.
+     */
+    private void addEraserNodeEmbargoes(LevelPattern level,
+                                        Condition condition) throws FormatException {
+        if (!getGrammarProperties().getParallelMode().isDPO() || isInjective()) {
+            return;
+        }
+        Set<RuleNode> erasers = new LinkedHashSet<>(level.lhs.nodeSet());
+        erasers.removeAll(level.rhs.nodeSet());
+        if (erasers.isEmpty() && level.ancestorEraserNodes.isEmpty()) {
+            return;
+        }
+        RuleLabel equality = new RuleLabel(RegExpr.empty());
+        List<RuleNode> nodes = new ArrayList<>(level.lhs.nodeSet());
+        for (int i = 0; i < nodes.size(); i++) {
+            RuleNode one = nodes.get(i);
+            if (!(one instanceof DefaultRuleNode)) {
+                continue;
+            }
+            for (int j = i + 1; j < nodes.size(); j++) {
+                RuleNode two = nodes.get(j);
+                if (!(two instanceof DefaultRuleNode)) {
+                    continue;
+                }
+                boolean needed = erasers.contains(one) || erasers.contains(two);
+                if (!needed) {
+                    // pairs of nodes shared with the parent level are
+                    // checked at the ancestor level where both first coexist
+                    needed = level.ancestorEraserNodes.contains(one) && !inParentLhs(level, two)
+                        || level.ancestorEraserNodes.contains(two) && !inParentLhs(level, one);
+                }
+                if (!needed) {
+                    continue;
+                }
+                if (Collections.disjoint(one.getMatchingTypes(), two.getMatchingTypes())) {
+                    continue;
+                }
+                RuleEdge embargoEdge = level.lhs.getFactory().createEdge(one, equality, two);
+                EdgeEmbargo embargo = createEdgeEmbargo(level.lhs, embargoEdge);
+                embargo.setFixed();
+                condition.addSubCondition(embargo);
+            }
+        }
+    }
+
+    /** Tests if a given node occurs in the parent level's LHS. */
+    private boolean inParentLhs(LevelPattern level, RuleNode node) {
+        return level.parent != null && level.parent.lhs.containsNode(node);
+    }
+
+    /**
+     * Returns the mapping from the LHS rule elements at the parent level to
+     * the LHS rule elements at a given level.
+     */
+    private RuleGraph getRootGraph(LevelPattern level) {
+        return level.getIndex().isTopLevel()
+            ? null
+            : getIntersection(level, level.parent.lhs, level.lhs);
+    }
+
+    /**
+     * Returns the intersection of the parent RHS and a given level's RHS
+     */
+    private RuleGraph getCoRootGraph(LevelPattern level) {
+        // find the first parent that has a rule
+        LevelPattern parent = level.parent;
+        while (parent != null && !parent.isRule) {
+            parent = parent.parent;
+        }
+        return parent == null
+            ? null
+            : getIntersection(level, parent.rhs, level.rhs);
+    }
+
+    /**
+     * Returns a rule graph that forms the intersection of the rule elements
+     * of a given level and its parent level.
+     */
+    private RuleGraph getIntersection(LevelPattern level, RuleGraph parentGraph,
+                                      RuleGraph myGraph) {
+        RuleGraph result
+            = parentGraph.newGraph(getQualName() + "-" + level.getIndex() + "-root");
+        for (RuleNode node : parentGraph.nodeSet()) {
+            if (myGraph.containsNode(node)) {
+                result.addNode(node);
+            }
+        }
+        for (RuleEdge edge : parentGraph.edgeSet()) {
+            if (myGraph.containsEdge(edge)) {
+                result.addEdgeContext(edge);
+            }
+        }
+        for (LabelVar var : parentGraph.varSet()) {
+            if (myGraph.containsVar(var)) {
+                result.addVar(var);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Constructs a negative application condition based on a LHS graph and
+     * a set of graph elements that should make up the NAC target. The
+     * connection between LHS and NAC target is given by identity, i.e.,
+     * those elements in the NAC set that are in the LHS graph are indeed
+     * LHS elements.
+     * @param lhs the LHS graph
+     * @param nac the NAC graph
+     */
+    private Condition computeNac(LevelPattern level, RuleGraph lhs,
+                                 RuleGraph nac) throws FormatException {
+        Condition result = null;
+        // first check for merge end edge embargoes
+        // they are characterised by the fact that there is precisely 1
+        // element
+        // in the nacElemSet, which is an edge
+        if (nac.edgeCount() == 1) {
+            RuleEdge embargoEdge = nac.edgeSet().iterator().next();
+            Set<RuleNode> ends
+                = new HashSet<>(Arrays.asList(embargoEdge.source(), embargoEdge.target()));
+            if (nac.nodeSet().equals(ends) && lhs.nodeSet().containsAll(ends)
+                && nac.varSet().isEmpty()) {
+                // this is supposed to be an edge embargo
+                result = createEdgeEmbargo(lhs, embargoEdge);
+            }
+        }
+        if (result == null) {
+            // if we're here it means we couldn't make an embargo
+            // if the rule is injective, add all non-data lhs nodes to the NAC pattern
+            if (isInjective()) {
+                for (RuleNode node : lhs.nodeSet()) {
+                    if (node instanceof DefaultRuleNode) {
+                        nac.addNode(node);
+                    }
+                }
+            }
+            result = createNAC(level, lhs, nac);
+        }
+        result.setFixed();
+        return result;
+    }
+
+    /**
+     * Callback method to create an edge embargo.
+     * @param context the context-graph
+     * @param embargoEdge the edge to be turned into an embargo
+     * @return the new {@link nl.utwente.groove.grammar.EdgeEmbargo}
+     * @see RuleModel#toResource()
+     */
+    private EdgeEmbargo createEdgeEmbargo(RuleGraph context, RuleEdge embargoEdge) {
+        return new EdgeEmbargo(context, embargoEdge, getGrammarProperties());
+    }
+
+    /**
+     * Callback method to create a general NAC on a given graph.
+     * @param nac the context-graph
+     * @return the new {@link nl.utwente.groove.grammar.Condition}
+     * @see RuleModel#toResource()
+     */
+    private Condition createNAC(LevelPattern level, RuleGraph lhs, RuleGraph nac) {
+        String name = nac.getName();
+        return new Condition(name, Condition.Op.NOT, nac, getIntersection(level, lhs, nac),
+            getGrammarProperties());
+    }
+
+    /**
+     * Factory method for rules.
+     * @param condition name of the new rule to be created
+     * @param rhs the right hand side graph
+     * @param coRoot map of creator nodes in the parent rule to creator
+     *        nodes of this rule
+     * @return the fresh rule created by the factory
+     */
+    private Rule createRule(Condition condition, RuleGraph rhs, RuleGraph coRoot) {
+        Rule result = new Rule(condition, rhs, coRoot);
+        return result;
+    }
+
+    /**
+     * Factory method for universal conditions.
+     * @param root root graph of the new condition
+     * @param pattern target graph of the new condition
+     * @return the fresh condition
+     */
+    private Condition createCondition(LevelPattern level, RuleGraph root, RuleGraph pattern) {
+        Condition result = new Condition(level.getIndex().getName(),
+            level.getIndex().getOperator(), pattern, root, getGrammarProperties());
+        result.setTypeGraph(getTypeGraph());
+        if (level.getIndex().isPositive()) {
+            result.setPositive();
+        }
+        if (level.countNode != null) {
+            result.setCountNode(level.countNode);
+        }
+        result.addOutputNodes(level.outputNodes);
+        return result;
+    }
     /** Class that can extract parameter information from the model graph. */
     private class Parameters {
         /** Initialises the internal data structures. */
