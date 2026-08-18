@@ -164,18 +164,18 @@ public abstract class AbstractRuleEvent<C extends AbstractRuleEvent.AbstractEven
         // super inefficient, and if there are indeterminate operations on lower levels, the
         // "right" match may never be found
         assert isCorrectFor(source);
-        var rule = getAction();
+        var prover = getAction().getProver();
         // visitor that selects a proof that corresponds to this event
         Visitor<TreeMatch,Proof> matchVisitor = new Visitor<>() {
             @Override
             protected boolean process(TreeMatch match) {
-                if (rule.isValidPatternMap(source, match.getPatternMap())) {
+                if (prover.isValidPatternMap(source, match.getPatternMap())) {
                     setResult(extractProof(match));
                 }
                 return !hasResult();
             }
         };
-        Proof result = rule
+        Proof result = prover
             .getEventMatcher(source.isSimple())
             .traverse(source, getAnchorMap(), matchVisitor);
         return result;

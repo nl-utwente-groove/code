@@ -21,7 +21,6 @@ import static nl.utwente.groove.util.Factory.lazy;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,10 +40,6 @@ import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.control.Binding;
 import nl.utwente.groove.grammar.UnitPar.RulePar;
-import nl.utwente.groove.grammar.host.HostEdge;
-import nl.utwente.groove.grammar.host.HostGraph;
-import nl.utwente.groove.grammar.host.HostNode;
-import nl.utwente.groove.grammar.host.ValueNode;
 import nl.utwente.groove.grammar.rule.Anchor;
 import nl.utwente.groove.grammar.rule.DefaultRuleNode;
 import nl.utwente.groove.grammar.rule.LabelVar;
@@ -53,23 +48,16 @@ import nl.utwente.groove.grammar.rule.OperatorNode;
 import nl.utwente.groove.grammar.rule.RuleEdge;
 import nl.utwente.groove.grammar.rule.RuleGraph;
 import nl.utwente.groove.grammar.rule.RuleNode;
-import nl.utwente.groove.grammar.rule.RuleToHostMap;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeGuard;
 import nl.utwente.groove.grammar.ResourceProperties.Key;
-import nl.utwente.groove.match.Matcher;
-import nl.utwente.groove.match.MatcherFactory;
-import nl.utwente.groove.match.Proof;
-import nl.utwente.groove.match.SearchStrategy;
-import nl.utwente.groove.match.TreeMatch;
-import nl.utwente.groove.match.plan.PlanSearchStrategy;
+import nl.utwente.groove.match.Prover;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
 import nl.utwente.groove.util.NoNonNull;
 import nl.utwente.groove.util.Properties.ValueType;
 import nl.utwente.groove.util.QualName;
-import nl.utwente.groove.util.Visitor;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -518,227 +506,6 @@ public class Rule implements Action, Fixable {
         boolean result = !isModifying() && getPriority() == 0;
         if (result) {
             result = getSignature().stream().noneMatch(UnitPar::isInOnly);
-        }
-        return result;
-    }
-
-    /**
-     * Tests if this condition is ground and has a match to a given host graph.
-     * Convenience method for <code>getMatchIter(host, null).hasNext()</code>
-     */
-    final public boolean hasMatch(HostGraph host) {
-        return this.condition.getInputNodes().isEmpty() && getMatch(host, null) != null;
-    }
-
-    /**
-     * Returns a match of this condition into a given host graph, given a
-     * matching of the root graph.
-     * @param host the graph in which the match is to be found
-     * @param contextMap a matching of the root of this condition; may be
-     *        <code>null</code> if the condition is ground.
-     * @throws IllegalArgumentException if <code>patternMatch</code> is
-     *         <code>null</code> and the condition is not ground, or if
-     *         <code>patternMatch</code> is not compatible with the pattern
-     *         graph
-     */
-    public @Nullable Proof getMatch(HostGraph host, @Nullable RuleToHostMap contextMap) {
-        return traverseMatches(host, contextMap, Visitor.<Proof>newFinder(null));
-    }
-
-    /**
-     * Returns the collection of all matches for a given host graph, given a
-     * matching of the root context.
-     * @param host the graph in which the match is to be found
-     * @param contextMap a matching of the pattern of this condition; may be
-     *        <code>null</code> if the condition is ground.
-     * @throws IllegalArgumentException if <code>contextMap</code> is
-     *         <code>null</code> and the condition is not ground, or if
-     *         <code>contextMap</code> is not compatible with the root map
-     */
-    public Collection<Proof> getAllMatches(HostGraph host, @Nullable RuleToHostMap contextMap) {
-        List<Proof> result = new ArrayList<>();
-        traverseMatches(host, contextMap, Visitor.newCollector(result));
-        return result;
-    }
-
-    /**
-     * Traverses the matches of this rule on a given host graph and for
-     * a given context map, and calls the visitor's visit method on all
-     * of them, until the first time the visitor returns
-     * {@code false}.
-     * @param host the graph in which the match is to be found
-     * @param contextMap a matching of the pattern of this condition; may be
-     *        <code>null</code> if the condition is ground.
-     * @param visitor the visitor invoked for all the matches
-     * @return the result of the visitor after the traversal
-     * @throws IllegalArgumentException if <code>patternMatch</code> is
-     *         <code>null</code> and the condition is not ground, or if
-     *         <code>patternMatch</code> is not compatible with the pattern
-     *         graph
-     * @see Visitor#visit(Object)
-     */
-    public <R> R traverseMatches(final HostGraph host, @Nullable RuleToHostMap contextMap,
-                                 final Visitor<Proof,R> visitor) {
-        assert isFixed();
-        RuleToHostMap seedMap = contextMap == null
-            ? host.getFactory().createRuleToHostMap()
-            : contextMap;
-        getMatcher(seedMap).traverse(host, contextMap, new Visitor<TreeMatch,R>() {
-            @Override
-            protected boolean process(TreeMatch match) {
-                assert visitor.isContinue();
-                if (isValidPatternMap(host, match.getPatternMap())) {
-                    match.traverseProofs(visitor);
-                }
-                return visitor.isContinue();
-            }
-        });
-        return visitor.getResult();
-    }
-
-    /**
-     * Returns the match strategy for the target
-     * pattern. First creates the strategy using
-     * {@link #createMatcher(Anchor, boolean)} if that
-     * has not been done.
-     *
-     * @param seedMap mapping from the seed elements to a host graph.
-     *
-     * @see #createMatcher(Anchor, boolean)
-     */
-    private SearchStrategy getMatcher(RuleToHostMap seedMap) {
-        assert isTop();
-        Matcher result;
-        boolean simple = seedMap.getFactory().isSimple();
-        Signature<UnitPar.RulePar> sig = getSignature();
-        if (!sig.isEmpty()) {
-            int sigSize = sig.size();
-            BitSet initPars = new BitSet(sigSize);
-            for (int i = 0; i < sigSize; i++) {
-                // set initPars if the seed map contains a value
-                // for this parameter
-                initPars.set(i, seedMap.nodeMap().containsKey(sig.getPar(i).getNode()));
-            }
-            result = this.matcherMap.get(initPars);
-            if (result == null) {
-                Anchor seed = new Anchor(seedMap.nodeMap().keySet());
-                this.matcherMap.put(initPars, result = createMatcher(seed, simple));
-            }
-        } else {
-            result = getMatcher(simple);
-        }
-        return result;
-    }
-
-    /**
-     * Lazily creates and returns a matcher for rule events of this rule. The
-     * matcher will try to extend anchor maps to full matches. This is in
-     * contrast with the normal (condition) matcher, which is based on the
-     * images of the root map.
-     */
-    public Matcher getEventMatcher(boolean simple) {
-        return simple
-            ? this.simpleEventMatcher.get()
-            : this.multiEeventMatcher.get();
-    }
-
-    /**
-     * Callback method to create a match strategy. Typically invoked once, at
-     * the first invocation of {@link #getMatcher(boolean)}. This implementation
-     * retrieves its value from {@link #getMatcherFactory(boolean)}.
-     * @param seed the pre-matched subgraph
-     * @param simple indicates if the host graphs are simple or multi-graphs
-     */
-    private Matcher createMatcher(Anchor seed, boolean simple) {
-        testFixed(true);
-        return getMatcherFactory(simple).createMatcher(getCondition(), seed);
-    }
-
-    /** The matcher for events of this rule. */
-    private final Supplier<Matcher> simpleEventMatcher
-        = lazy(() -> createMatcher(getAnchor(), true));
-
-    /** The matcher for events of this rule. */
-    private final Supplier<Matcher> multiEeventMatcher
-        = lazy(() -> createMatcher(getAnchor(), false));
-
-    /**
-     * Mapping from sets of initialised parameters to match strategies.
-     */
-    private final Map<BitSet,@Nullable Matcher> matcherMap = new HashMap<>();
-
-    /**
-     * Returns a (precomputed) match strategy for the target
-     * pattern, based on the rule seed.
-     * @param simple indicates if the host graphs are simple or multi-graphs
-     * @see #createMatcher(Anchor, boolean)
-     */
-    public Matcher getMatcher(boolean simple) {
-        return simple
-            ? this.simpleSeedMatcher.get()
-            : this.multiSeedMatcher.get();
-    }
-
-    /**
-     * The fixed simple graph matching strategy for this graph rule. Initially
-     * <code>null</code>; set by {@link #getMatcher(boolean)} upon its first
-     * invocation.
-     */
-    private final Supplier<Matcher> simpleSeedMatcher = lazy(() -> createMatcher(getSeed(), true));
-
-    /**
-     * The fixed multi-graph matching strategy for this graph rule. Initially
-     * <code>null</code>; set by {@link #getMatcher(boolean)} upon its first
-     * invocation.
-     */
-    private final Supplier<Matcher> multiSeedMatcher = lazy(() -> createMatcher(getSeed(), false));
-
-    /** Returns a matcher factory, tuned to the properties of this rule. */
-    private MatcherFactory getMatcherFactory(boolean simple) {
-        return MatcherFactory.instance(simple);
-    }
-
-    /**
-     * Tests whether a given match map satisfies the additional constraints
-     * imposed by this rule.
-     * @param host the graph to be matched
-     * @param matchMap the proposed map from {@link #lhs()} to
-     *        <code>host</code>
-     * @return <code>true</code> if <code>matchMap</code> satisfies the
-     *         constraints imposed by the rule (if any).
-     */
-    public boolean isValidPatternMap(HostGraph host, RuleToHostMap matchMap) {
-        boolean result = true;
-        if (isCheckDangling()) {
-            result = satisfiesDangling(host, matchMap);
-        }
-        return result;
-    }
-
-    /**
-     * Tests if a given (proposed) match into a host graph leaves dangling
-     * edges.
-     */
-    private boolean satisfiesDangling(HostGraph host, RuleToHostMap match) {
-        boolean result = true;
-        for (RuleNode eraserNode : getEraserNodes()) {
-            HostNode erasedNode = match.getNode(eraserNode);
-            assert erasedNode != null;
-            Set<HostEdge> danglingEdges = host
-                .edgeSet(erasedNode)
-                .stream()
-                .filter(e -> !(e.target() instanceof ValueNode))
-                .collect(Collectors.toSet());
-            lhs()
-                .edgeSet(eraserNode)
-                .stream()
-                .map(e -> match.getEdge(e))
-                .filter(e -> !(e == null || e.target() instanceof ValueNode))
-                .forEach(e -> danglingEdges.remove(e));
-            if (!danglingEdges.isEmpty()) {
-                result = false;
-                break;
-            }
         }
         return result;
     }
@@ -1494,7 +1261,7 @@ public class Rule implements Action, Fixable {
         testFixed(true);
         var result = this.prover;
         if (result == null) {
-            result = new Prover(this);
+            this.prover = result = new Prover(this);
         }
         return result;
     }
@@ -1512,14 +1279,6 @@ public class Rule implements Action, Fixable {
      */
     public static void setAnchorFactory(AnchorFactory anchorFactory) {
         Rule.anchorFactory = anchorFactory;
-    }
-
-    /**
-     * Returns the total time doing matching-related computations. This includes
-     * time spent in certificate calculation.
-     */
-    static public long getMatchingTime() {
-        return PlanSearchStrategy.searchFindReporter.getTotalTime();
     }
 
     /**

@@ -19,7 +19,7 @@ package nl.utwente.groove.explore.result;
 import java.util.Map;
 
 import nl.utwente.groove.grammar.Action;
-import nl.utwente.groove.grammar.Prover;
+import nl.utwente.groove.match.Prover;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.type.TypeLabel;
