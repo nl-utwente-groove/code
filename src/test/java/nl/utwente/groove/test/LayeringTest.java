@@ -217,8 +217,6 @@ public class LayeringTest {
         .of(
             // accepted: GrammarModel <-> SystemStore editable-model/backing-store pair
             "grammar.model -> io",
-            // P2 (gh #891): AutIO uses ExplorationReporter stopwatch calls
-            "io.graph -> explore",
             // P3: FormatError/SearchResult/SelectableListEntry context dispatch
             "util.parse -> grammar", "util.parse -> graph", "util.parse -> lts");
 }
