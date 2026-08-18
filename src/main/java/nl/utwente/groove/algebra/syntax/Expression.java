@@ -51,8 +51,9 @@ public sealed abstract class Expression permits Constant, Variable, FieldExpr, C
      */
     protected Expression(boolean prefixed) {
         this.prefixed = prefixed;
-        this.kind = kindMap.get(getClass());
-        assert this.kind != null;
+        var kind = kindMap.get(getClass());
+        assert kind != null; // kindMap is populated for all concrete Expression subclasses
+        this.kind = kind;
     }
 
     /** Returns the type of this term. */
