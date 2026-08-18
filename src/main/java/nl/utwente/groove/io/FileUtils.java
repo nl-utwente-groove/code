@@ -243,8 +243,8 @@ public class FileUtils {
             return null;
         }
 
-        String[] dirParts = currentDir.toString().split("\\Q" + File.pathSeparator + "\\E");
-        String[] targetParts = target.toString().split("\\Q" + File.pathSeparator + "\\E");
+        String[] dirParts = currentDir.toString().split("\\Q" + File.separator + "\\E");
+        String[] targetParts = target.toString().split("\\Q" + File.separator + "\\E");
 
         int i = 0;
         int max = Math.max(dirParts.length, targetParts.length);
@@ -254,14 +254,14 @@ public class FileUtils {
         StringBuilder relPath = new StringBuilder();
         int j = i;
         while (j < dirParts.length) {
-            relPath.append(".." + File.pathSeparator);
+            relPath.append(".." + File.separator);
             j++;
         }
         while (i < targetParts.length) {
             relPath.append(targetParts[i]);
             i++;
             if (i < targetParts.length) {
-                relPath.append(File.pathSeparator);
+                relPath.append(File.separator);
             }
         }
 
