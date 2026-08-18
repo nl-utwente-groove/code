@@ -291,6 +291,7 @@ public enum AlgebraFamily implements DocumentedEnum {
         // including those from superclasses
         Class<?> myClass = getAlgebra(sort).getClass();
         while (!ops.isEmpty()) {
+            assert myClass != null; // all operations are declared somewhere in the class hierarchy
             for (Method method : myClass.getDeclaredMethods()) {
                 var name = method.getName();
                 var op = ops.remove(name);

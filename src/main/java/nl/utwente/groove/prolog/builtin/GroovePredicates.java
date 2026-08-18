@@ -201,7 +201,6 @@ abstract public class GroovePredicates {
     }
 
     /** The package name of this and all other predicates. */
-    public static final String PACKAGE_NAME = CtrlDoc.class.getPackage()
-        .getName();
+    public static final String PACKAGE_NAME = CtrlDoc.class.getPackageName();
     private static final String PRED_PRFIX = "Predicate_";
 }

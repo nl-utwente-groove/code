@@ -504,11 +504,9 @@ public class PrologDisplay extends ResourceDisplay {
         } catch (IOException e1) {
             // ignore
         }
-        if (e.getCause() instanceof PrologException) {
-            PrologException pe = (PrologException) e.getCause();
+        if (e.getCause() instanceof PrologException pe) {
             if (pe.getCause() == null) {
-                getResultsArea().append(e.getCause()
-                    .getMessage());
+                getResultsArea().append(pe.getMessage());
                 return;
             } else {
                 e = pe;

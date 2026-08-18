@@ -391,7 +391,7 @@ public class PartitionRefiner extends CertificateStrategy {
             if (this == obj) {
                 return true;
             }
-            if (obj.getClass() != getClass()) {
+            if (obj == null || obj.getClass() != getClass()) {
                 return false;
             }
             MyCert<?> other = ((MyCert<?>) obj);
@@ -506,7 +506,7 @@ public class PartitionRefiner extends CertificateStrategy {
             if (this == obj) {
                 return true;
             }
-            if (!super.equals(obj)) {
+            if (obj == null || !super.equals(obj)) {
                 return false;
             }
             if (this.label == null) {
@@ -668,7 +668,7 @@ public class PartitionRefiner extends CertificateStrategy {
             if (this == obj) {
                 return true;
             }
-            if (!super.equals(obj)) {
+            if (obj == null || !super.equals(obj)) {
                 return false;
             }
             MyEdge2Cert other = (MyEdge2Cert) obj;
@@ -740,7 +740,7 @@ public class PartitionRefiner extends CertificateStrategy {
             if (this == obj) {
                 return true;
             }
-            if (!super.equals(obj)) {
+            if (obj == null || !super.equals(obj)) {
                 return false;
             }
             MyEdge1Cert other = (MyEdge1Cert) obj;

@@ -236,7 +236,7 @@ public class Bisimulator extends CertificateStrategy {
             if (this == obj) {
                 return true;
             }
-            if (obj.getClass() != getClass()) {
+            if (obj == null || obj.getClass() != getClass()) {
                 return false;
             }
             Certificate<?> other = ((Certificate<?>) obj);
@@ -320,7 +320,7 @@ public class Bisimulator extends CertificateStrategy {
             if (this == obj) {
                 return true;
             }
-            if (!super.equals(obj)) {
+            if (obj == null || !super.equals(obj)) {
                 return false;
             }
             if (this.type == null) {
@@ -454,7 +454,7 @@ public class Bisimulator extends CertificateStrategy {
             if (this == obj) {
                 return true;
             }
-            if (!super.equals(obj)) {
+            if (obj == null || !super.equals(obj)) {
                 return false;
             }
             MyEdge2Cert other = (MyEdge2Cert) obj;
@@ -529,7 +529,7 @@ public class Bisimulator extends CertificateStrategy {
             if (this == obj) {
                 return true;
             }
-            if (!super.equals(obj)) {
+            if (obj == null || !super.equals(obj)) {
                 return false;
             }
             MyEdge1Cert other = (MyEdge1Cert) obj;

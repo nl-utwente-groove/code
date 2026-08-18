@@ -119,7 +119,7 @@ public class EqualitySearchItem extends AbstractSearchItem {
         if (obj == this) {
             return true;
         }
-        if (!super.equals(obj)) {
+        if (obj == null || !super.equals(obj)) {
             return false;
         }
         EqualitySearchItem other = (EqualitySearchItem) obj;

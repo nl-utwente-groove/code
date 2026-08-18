@@ -156,7 +156,7 @@ class Edge2SearchItem extends AbstractSearchItem {
         if (this == obj) {
             return true;
         }
-        if (!super.equals(obj)) {
+        if (obj == null || !super.equals(obj)) {
             return false;
         }
         Edge2SearchItem other = (Edge2SearchItem) obj;

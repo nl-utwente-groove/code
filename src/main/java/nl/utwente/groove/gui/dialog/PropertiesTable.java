@@ -65,7 +65,9 @@ public class PropertiesTable extends JTable {
     public PropertiesTable(Class<? extends Key> defaultKeys, boolean editable) {
         this.editable = editable;
         this.defaultKeys = new LinkedHashMap<>();
-        for (var key : defaultKeys.getEnumConstants()) {
+        var keys = defaultKeys.getEnumConstants();
+        assert keys != null; // the default key type is an enum class
+        for (var key : keys) {
             this.defaultKeys.put(key.getName(), key);
         }
         this.properties = new TreeMap<>(new IndexComparator<>(this.defaultKeys.keySet()));

@@ -76,7 +76,7 @@ class ValueNodeSearchItem extends AbstractSearchItem {
         if (this == obj) {
             return true;
         }
-        if (!super.equals(obj)) {
+        if (obj == null || !super.equals(obj)) {
             return false;
         }
         ValueNodeSearchItem other = (ValueNodeSearchItem) obj;

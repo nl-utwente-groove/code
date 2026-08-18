@@ -150,6 +150,7 @@ public class LTS2ControlExporter extends AbstractExporter.Writer {
     /** Clones and returns a given array. */
     static private <T> T[] clone(T[] array) {
         var type = array.getClass().getComponentType();
+        assert type != null; // the class of an array always has a component type
         @SuppressWarnings("unchecked")
         var result = (T[]) Array.newInstance(type, array.length);
         System.arraycopy(array, 0, result, 0, array.length);

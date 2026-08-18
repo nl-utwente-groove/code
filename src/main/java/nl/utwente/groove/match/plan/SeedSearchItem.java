@@ -88,7 +88,7 @@ class SeedSearchItem extends AbstractSearchItem {
         if (this == obj) {
             return true;
         }
-        if (!super.equals(obj)) {
+        if (obj == null || !super.equals(obj)) {
             return false;
         }
         SeedSearchItem other = (SeedSearchItem) obj;

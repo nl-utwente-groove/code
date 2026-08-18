@@ -42,8 +42,9 @@ public class JavaMatchChecker extends MatchChecker {
         String clazName = getQualName().parent()
             .toString();
         try {
-            Class<?> claz = getClass().getClassLoader()
-                .loadClass(clazName);
+            ClassLoader loader = getClass().getClassLoader();
+            assert loader != null; // GROOVE classes are loaded by an application class loader
+            Class<?> claz = loader.loadClass(clazName);
             method = getMethod(claz);
             boolean isStatic = Modifier.isStatic(method.getModifiers());
             if (!isStatic) {
@@ -65,16 +66,14 @@ public class JavaMatchChecker extends MatchChecker {
     public boolean invoke(HostGraph graph, RuleToHostMap anchorMap)
         throws InvocationTargetException {
         try {
-            switch (this.method.getParameterCount()) {
-            case 0:
-                return (Boolean) this.method.invoke(null);
-            case 1:
-                return (Boolean) this.method.invoke(null, graph);
-            case 2:
-                return (Boolean) this.method.invoke(null, graph, anchorMap);
-            default:
-                throw Exceptions.unreachable();
-            }
+            Object result = switch (this.method.getParameterCount()) {
+            case 0 -> this.method.invoke(null);
+            case 1 -> this.method.invoke(null, graph);
+            case 2 -> this.method.invoke(null, graph, anchorMap);
+            default -> throw Exceptions.unreachable();
+            };
+            assert result != null; // the method returns primitive boolean (checked in getMethod)
+            return (Boolean) result;
         } catch (IllegalAccessException | IllegalArgumentException exc) {
             throw Exceptions.unreachable();
         }

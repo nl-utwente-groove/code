@@ -147,7 +147,7 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
         if (this == obj) {
             return true;
         }
-        if (!super.equals(obj)) {
+        if (obj == null || !super.equals(obj)) {
             return false;
         }
         OperatorNodeSearchItem other = (OperatorNodeSearchItem) obj;

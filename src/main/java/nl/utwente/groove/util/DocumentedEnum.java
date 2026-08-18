@@ -40,7 +40,9 @@ public interface DocumentedEnum {
     static <T extends Enum<?> & DocumentedEnum> String document(Class<T> claz) {
         StringBuffer result = new StringBuffer();
         HTMLTag liTag = createHtmlTag("li");
-        for (T value : claz.getEnumConstants()) {
+        T[] values = claz.getEnumConstants();
+        assert values != null; // claz is an enum class
+        for (T value : values) {
             StringBuilder line = new StringBuilder();
             line.append("- ");
             line.append(ITALIC_TAG.on(value.getName()));

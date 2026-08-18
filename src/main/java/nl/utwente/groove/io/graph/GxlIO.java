@@ -608,7 +608,7 @@ public class GxlIO extends GraphIO<AttrGraph> {
 
     {
         try {
-            this.context = JAXBContext.newInstance(GxlType.class.getPackage().getName());
+            this.context = JAXBContext.newInstance(GxlType.class.getPackageName());
             this.unmarshaller = this.context.createUnmarshaller();
             this.marshaller = this.context.createMarshaller();
             this.marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);

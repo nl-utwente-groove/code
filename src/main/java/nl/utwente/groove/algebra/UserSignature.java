@@ -89,7 +89,6 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
     /** Checks whether a given class has suitable user-defined operations,
      * and returns the methods on which those operations are based.
      */
-    @SuppressWarnings("null")
     private static FallibleObject<? extends Map<Operator,Executable>> parseUserClass(Class<?> claz,
                                                                                      Set<Class<?>> others) {
         var result = new FallibleObject<>(new LinkedHashMap<Operator,Executable>());

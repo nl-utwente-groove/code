@@ -111,7 +111,7 @@ class NegatedSearchItem extends AbstractSearchItem {
         if (this == obj) {
             return true;
         }
-        if (!super.equals(obj)) {
+        if (obj == null || !super.equals(obj)) {
             return false;
         }
         return this.inner.equals(((NegatedSearchItem) obj).inner);

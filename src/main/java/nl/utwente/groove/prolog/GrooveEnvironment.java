@@ -141,7 +141,6 @@ public class GrooveEnvironment extends Environment {
     /**
      * Loads a single method definition, and tests the definition.
      */
-    @SuppressWarnings("null")
     private void ensureLoaded(Class<? extends GroovePredicates> source, CompoundTermTag tag,
         String definition) {
         DefinitionListener listener = new DefinitionListener();

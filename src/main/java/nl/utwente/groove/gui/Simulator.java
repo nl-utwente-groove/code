@@ -1136,6 +1136,11 @@ public class Simulator implements SimulatorListener {
     private static final String APPLICATION_NAME = "Production Simulator";
 
     /** Detect if we are on Mac.  */
-    private static final boolean IS_PLATFORM_MAC
-        = System.getProperty("os.name").toLowerCase().indexOf("mac os x") > -1;
+    private static final boolean IS_PLATFORM_MAC;
+
+    static {
+        var osName = System.getProperty("os.name");
+        assert osName != null; // os.name is a standard system property
+        IS_PLATFORM_MAC = osName.toLowerCase().indexOf("mac os x") > -1;
+    }
 }

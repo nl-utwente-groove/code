@@ -32,7 +32,9 @@ import org.eclipse.jdt.annotation.Nullable;
 public class SettingKindMap {
     /** Creates a map initialised to the constants of a given kind type. */
     public SettingKindMap(Class<? extends Setting.Kind> kindType) {
-        for (var kind : kindType.getEnumConstants()) {
+        var kinds = kindType.getEnumConstants();
+        assert kinds != null; // the kind type is an enum class
+        for (var kind : kinds) {
             put(kind.getName(), kind);
         }
     }

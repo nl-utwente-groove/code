@@ -49,7 +49,9 @@ public class ClassParser extends AParser<Class<?>> {
 
     @Override
     public <V extends Class<?>> String unparse(@NonNull V value) throws IllegalArgumentException {
-        return value.getCanonicalName();
+        var result = value.getCanonicalName();
+        assert result != null; // parsed classes are loaded by name, hence have a canonical name
+        return result;
     }
 
     /** Returns the singleton instance of this class. */

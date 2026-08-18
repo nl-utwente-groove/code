@@ -517,9 +517,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
             cache.setSelectsLocalInsertedCells(selectsInsertedCells);
             if (getSelectionCount() > 0) {
                 Rectangle2D scope = (Rectangle2D) getCellBounds(getSelectionCells()).clone();
-                if (scope != null) {
-                    scrollRectToVisible(toScreen(scope).getBounds());
-                }
+                scrollRectToVisible(toScreen(scope).getBounds());
             }
             JGraph.this.modelRefreshing = false;
         }

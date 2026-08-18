@@ -191,7 +191,9 @@ public class DefaultHostGraph extends NodeSetEdgeSetGraph<HostNode,HostEdge> imp
     public boolean addNode(HostNode node) {
         boolean result = super.addNode(node);
         if (node instanceof ValueNode val && val.getValue() instanceof ErrorValue error) {
-            addError(error.getMessage(), node);
+            String message = error.getMessage();
+            assert message != null; // an ErrorValue's message is the string representation of its cause
+            addError(message, node);
         }
         return result;
     }

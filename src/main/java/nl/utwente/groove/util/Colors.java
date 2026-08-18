@@ -181,6 +181,7 @@ public class Colors {
                 try {
                     String key = field.getName();
                     Color color = (Color) field.get(null);
+                    assert color != null; // the static colour fields are all initialised
                     colorMap.put(key, color);
                     colorMap.put(key + DARKER, color.darker());
                     colorMap.put(key + BRIGHTER, color.brighter());

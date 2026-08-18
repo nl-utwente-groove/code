@@ -35,7 +35,6 @@ import nl.utwente.groove.util.parse.OpKind;
  */
 public class Operator implements Comparable<Operator> {
     /** Constructs an operator based on a user-defined method. */
-    @SuppressWarnings("null")
     Operator(Executable executable) {
         Type[] parTypes = executable.getParameterTypes();
         this.declaringSort = Sort.USER;

@@ -166,7 +166,7 @@ public class RuleTransitionLabel extends ALabel implements ActionLabel {
         if (this == obj) {
             return true;
         }
-        if (getClass() != obj.getClass()) {
+        if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
         RuleTransitionLabel other = (RuleTransitionLabel) obj;

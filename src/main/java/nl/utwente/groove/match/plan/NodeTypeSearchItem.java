@@ -122,7 +122,7 @@ class NodeTypeSearchItem extends AbstractSearchItem {
         if (this == obj) {
             return true;
         }
-        if (!super.equals(obj)) {
+        if (obj == null || !super.equals(obj)) {
             return false;
         }
         return getNode().equals(((NodeTypeSearchItem) obj).getNode());

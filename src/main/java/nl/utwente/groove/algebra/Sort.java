@@ -352,7 +352,6 @@ public enum Sort {
     /** Returns the sort for a given Java type.
      * @return the sort for {@code javaType}, or {@code null} if {@code javaType} is not a sort name
      */
-    @SuppressWarnings("null")
     public static @Nullable Sort toSort(Type javaType) {
         var result = sortTypeMap.get(javaType);
         if (result == null && javaType instanceof Class<?> claz

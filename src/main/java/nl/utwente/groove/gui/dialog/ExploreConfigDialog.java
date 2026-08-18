@@ -901,7 +901,9 @@ public class ExploreConfigDialog extends JDialog {
             this.key = key;
             this.defaultKindName = key.getDefaultKind().getName();
             this.kindBox = new JComboBox<>();
-            for (var kind : key.getKindType().getEnumConstants()) {
+            var kinds = key.getKindType().getEnumConstants();
+            assert kinds != null; // the kind type is an enum class
+            for (var kind : kinds) {
                 this.kindBox.addItem(kind.getName());
             }
             this.kindBox.setRenderer(new DefaultListCellRenderer() {
@@ -968,7 +970,9 @@ public class ExploreConfigDialog extends JDialog {
 
         /** Returns the display hint of the kind with a given name, if any. */
         private String getKindHint(String kindName) {
-            for (var kind : this.key.getKindType().getEnumConstants()) {
+            var kinds = this.key.getKindType().getEnumConstants();
+            assert kinds != null; // the kind type is an enum class
+            for (var kind : kinds) {
                 if (kind.getName().equals(kindName)) {
                     return kind.getHint();
                 }
@@ -997,7 +1001,9 @@ public class ExploreConfigDialog extends JDialog {
             result.append("</b>: ");
             result.append(key.getExplanation());
             result.append(". Possible values:");
-            for (var kind : key.getKindType().getEnumConstants()) {
+            var kinds = key.getKindType().getEnumConstants();
+            assert kinds != null; // the kind type is an enum class
+            for (var kind : kinds) {
                 result.append("<br>- <i>");
                 result.append(kind.getName());
                 result.append("</i>");

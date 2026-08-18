@@ -263,7 +263,9 @@ public class Imager extends GrooveCmdLineTool<Object> {
                 } catch (InterruptedException exc) {
                     // do nothing
                 } catch (InvocationTargetException exc) {
-                    throw new IOException(exc.getCause().getCause());
+                    Throwable cause = exc.getCause();
+                    assert cause != null; // invokeAndWait wraps the exception thrown by the runnable
+                    throw new IOException(cause.getCause());
                 }
             }
         }

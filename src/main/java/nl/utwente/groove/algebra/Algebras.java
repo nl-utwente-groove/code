@@ -230,8 +230,11 @@ public class Algebras {
         var headers = new ArrayList<String>();
         methods
             .stream()
-            .map(m -> m.getAnnotation(ToolTipHeader.class))
-            .map(ToolTipHeader::value)
+            .map(m -> {
+                var header = m.getAnnotation(ToolTipHeader.class);
+                assert header != null; // every operator method has a tool tip header
+                return header.value();
+            })
             .map(Strings::toLower)
             .forEach(headers::add);
         var header = Strings.toString(headers.toArray(), ", ", " or ");
@@ -255,7 +258,9 @@ public class Algebras {
                 var sorts = getSorts(m);
                 result += Strings.toString(sorts.toArray(), "<li> For ", ": ", ", ", " or ");
             }
-            for (var line : m.getAnnotation(ToolTipBody.class).value()) {
+            var body = m.getAnnotation(ToolTipBody.class);
+            assert body != null; // every operator method has a tool tip body
+            for (var line : body.value()) {
                 result += line;
             }
         }

@@ -66,7 +66,9 @@ public class SettingParser extends Parser.AParser<Setting> {
         result
             .append("A value of the form <i>kind</i>:<i>content</i> "
                 + "(without the separator if there is no content), where <i>kind</i> is one of");
-        for (var kind : key.getKindType().getEnumConstants()) {
+        var kinds = key.getKindType().getEnumConstants();
+        assert kinds != null; // the kind type is an enum class
+        for (var kind : kinds) {
             result.append("<li> - ");
             result.append(HTMLConverter.ITALIC_TAG.on(kind.getName()));
             result.append(": ");

@@ -539,6 +539,7 @@ public interface Parser<T> {
             this.toStringMap = new EnumMap<>(enumType);
             this.toValueMap = new HashMap<>();
             T[] values = enumType.getEnumConstants();
+            assert values != null; // enumType is an enum class
             assert values.length == texts.length;
             for (int i = 0; i < values.length; i++) {
                 var text = texts[i];
@@ -568,7 +569,7 @@ public interface Parser<T> {
          * @param enumType the enum type supported by this property
          */
         public EnumParser(Class<T> enumType) {
-            this(enumType, toCamel(enumType.getEnumConstants()));
+            this(enumType, toCamel(enumType));
         }
 
         /**
@@ -578,7 +579,7 @@ public interface Parser<T> {
          * by the empty string
          */
         public EnumParser(Class<T> enumType, @NonNull T defaultValue) {
-            this(enumType, defaultValue, toCamel(enumType.getEnumConstants()));
+            this(enumType, defaultValue, toCamel(enumType));
         }
 
         /**
@@ -658,7 +659,9 @@ public interface Parser<T> {
 
         private boolean legacy;
 
-        private static final <T extends Enum<T>> String[] toCamel(T[] vals) {
+        private static final <T extends Enum<T>> String[] toCamel(Class<T> enumType) {
+            T[] vals = enumType.getEnumConstants();
+            assert vals != null; // enumType is an enum class
             String[] result = new String[vals.length];
             for (int i = 0; i < vals.length; i++) {
                 result[i] = Strings.toCamel(vals[i].name());

@@ -70,9 +70,8 @@ public class SearchResult implements SelectableListEntry {
     /** Compares the message. */
     @Override
     public boolean equals(Object obj) {
-        boolean result = obj instanceof SearchResult;
-        if (result) {
-            SearchResult err = (SearchResult) obj;
+        boolean result = false;
+        if (obj instanceof SearchResult err) {
             result = toString().equals(err.toString());
         }
         return result;
