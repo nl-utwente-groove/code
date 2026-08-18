@@ -31,7 +31,7 @@ properties keep the surface controllable:
 - Annotations propagate to overriding declarations, so annotating an interface
   (`Queue.poll`) also covers all implementations (`LinkedList.poll`, `ArrayDeque.poll`, …).
 
-Current contents (all files verbatim from no-npe):
+Current contents (all files verbatim from no-npe, except the one documented trim):
 
 | File(s) | Why |
 |---|---|
@@ -43,12 +43,13 @@ Current contents (all files verbatim from no-npe):
 | `java/util/Properties.eea` | `getProperty` returns `@Nullable` |
 | `java/lang/*` (whole package: `Object`, `Class`, `String`, `StringBuilder`, boxed types, `Iterable`, `Thread`, `System`, `Throwable`, exceptions, …) | `Object.equals` takes a `@Nullable` parameter (propagates to every override — equals implementations must null-guard before dereferencing); `clone()` returns `@NonNull`; `Class.getEnumConstants`/`getCanonicalName`/`getClassLoader`/`getPackage`, `Throwable.getCause`/`getMessage`, `System.getProperty` return `@Nullable` |
 | `java/lang/reflect/*`, `ref/*`, `annotation/*`, `constant/*`, `invoke/*` | `Method.invoke` returns `@Nullable` (a primitive-returning method still yields a non-null box — assert with that reason); `AnnotatedElement.getAnnotation` returns `@Nullable` |
-| `java/io/*` **except `PrintStream`/`PrintWriter`**, `java/net/*`, `java/util/zip/*`, `java/util/jar/*` | `File.listFiles` genuinely returns null on I/O errors (check, don't assert); `readLine` returns `@Nullable` at end of stream; `File.getParent`/`getParentFile`, `JarURLConnection.getJarEntry` return `@Nullable`. The two printf carriers are deliberately excluded — their `@NonNull Object...` varargs flag every `System.out.printf` call for no gain (the pending trim-or-adopt decision) |
+| `java/io/*` **except `PrintStream`/`PrintWriter`**, `java/net/*`, `java/util/zip/*`, `java/util/jar/*` | `File.listFiles` genuinely returns null on I/O errors (check, don't assert); `readLine` returns `@Nullable` at end of stream; `File.getParent`/`getParentFile`, `JarURLConnection.getJarEntry` return `@Nullable`. The two printf carriers are permanently excluded: annotating their fluent methods (`printf`/`format`/`append`) as returning `@NonNull PrintStream` makes JDT's *resource-leak* analysis track every unassigned `System.out.printf(...)` as an unclosed `Closeable` (~21 warnings with no null content and no sensible call-site fix) |
+| `javax/swing/**` (whole tree incl. `event`, `plaf`, `table`, `text`, `tree`, `undo`) | `JFileChooser.getSelectedFile`, various model/selection getters return `@Nullable`. **Trimmed**: `undo/UndoableEditSupport.eea` drops its `addUndoableEditListener`/`removeUndoableEditListener` entries — their `@NonNull` parameters clash with jgraph's unannotated `GraphModel` interface, which `DefaultGraphModel` satisfies with exactly these inherited methods, producing "incompatible nullness constraints" errors in the whole `JModel` hierarchy (and errors suppress all null analysis in the affected files) |
 
-Planned next (gh #881): the trim-or-adopt decision on `PrintStream`/`PrintWriter`
-and `java.util.Formatter` printf (~21 low-value findings) and on the javax.swing
-files (inheritance conflicts in the `JModel` hierarchy). Once those are decided,
-switching to the full `no-npe-eea-all` artifact is the realistic endgame.
+Planned next (gh #881): the endgame is covering the full `no-npe-eea-all` contents.
+Since the published artifact cannot be edited per member, that means copying its
+files into this directory and re-applying the documented deviations (the
+`PrintStream`/`PrintWriter` exclusion and the `UndoableEditSupport` trim above).
 
 ## Reviewing `.eea` files
 

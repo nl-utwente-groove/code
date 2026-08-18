@@ -1,0 +1,8 @@
+class javax/swing/DefaultListModel
+ <E:Ljava/lang/Object;>
+getElementAt
+ (I)TE;
+ (I)T0E;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

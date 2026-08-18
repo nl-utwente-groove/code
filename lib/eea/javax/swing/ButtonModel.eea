@@ -1,0 +1,19 @@
+class javax/swing/ButtonModel
+addActionListener
+ (Ljava/awt/event/ActionListener;)V
+ (L1java/awt/event/ActionListener;)V
+addChangeListener
+ (Ljavax/swing/event/ChangeListener;)V
+ (L1javax/swing/event/ChangeListener;)V
+addItemListener
+ (Ljava/awt/event/ItemListener;)V
+ (L1java/awt/event/ItemListener;)V
+removeActionListener
+ (Ljava/awt/event/ActionListener;)V
+ (L1java/awt/event/ActionListener;)V
+removeChangeListener
+ (Ljavax/swing/event/ChangeListener;)V
+ (L1javax/swing/event/ChangeListener;)V
+removeItemListener
+ (Ljava/awt/event/ItemListener;)V
+ (L1java/awt/event/ItemListener;)V

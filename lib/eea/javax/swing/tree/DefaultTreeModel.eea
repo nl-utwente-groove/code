@@ -1,0 +1,7 @@
+class javax/swing/tree/DefaultTreeModel
+addTreeModelListener
+ (Ljavax/swing/event/TreeModelListener;)V
+ (L1javax/swing/event/TreeModelListener;)V
+removeTreeModelListener
+ (Ljavax/swing/event/TreeModelListener;)V
+ (L1javax/swing/event/TreeModelListener;)V

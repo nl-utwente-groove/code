@@ -1,0 +1,23 @@
+class javax/swing/JList
+ <E:Ljava/lang/Object;>
+<init>
+ (Ljava/util/Vector<+TE;>;)V
+ (L1java/util/Vector<+TE;>;)V
+<init>
+ (Ljavax/swing/ListModel<TE;>;)V
+ (L1javax/swing/ListModel<TE;>;)V
+<init>
+ ([TE;)V
+ ([1TE;)V
+addListSelectionListener
+ (Ljavax/swing/event/ListSelectionListener;)V
+ (L1javax/swing/event/ListSelectionListener;)V
+getPrototypeCellValue
+ ()TE;
+ ()T0E;
+getToolTipText
+ (Ljava/awt/event/MouseEvent;)Ljava/lang/String;
+ (L1java/awt/event/MouseEvent;)Ljava/lang/String;
+removeListSelectionListener
+ (Ljavax/swing/event/ListSelectionListener;)V
+ (L1javax/swing/event/ListSelectionListener;)V

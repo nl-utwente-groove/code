@@ -1,0 +1,37 @@
+class javax/swing/JTable
+columnAdded
+ (Ljavax/swing/event/TableColumnModelEvent;)V
+ (L1javax/swing/event/TableColumnModelEvent;)V
+columnMarginChanged
+ (Ljavax/swing/event/ChangeEvent;)V
+ (L1javax/swing/event/ChangeEvent;)V
+columnMoved
+ (Ljavax/swing/event/TableColumnModelEvent;)V
+ (L1javax/swing/event/TableColumnModelEvent;)V
+columnRemoved
+ (Ljavax/swing/event/TableColumnModelEvent;)V
+ (L1javax/swing/event/TableColumnModelEvent;)V
+columnSelectionChanged
+ (Ljavax/swing/event/ListSelectionEvent;)V
+ (L1javax/swing/event/ListSelectionEvent;)V
+editingCanceled
+ (Ljavax/swing/event/ChangeEvent;)V
+ (L1javax/swing/event/ChangeEvent;)V
+editingStopped
+ (Ljavax/swing/event/ChangeEvent;)V
+ (L1javax/swing/event/ChangeEvent;)V
+getToolTipText
+ (Ljava/awt/event/MouseEvent;)Ljava/lang/String;
+ (L1java/awt/event/MouseEvent;)Ljava/lang/String;
+prepareRenderer
+ (Ljavax/swing/table/TableCellRenderer;II)Ljava/awt/Component;
+ (L1javax/swing/table/TableCellRenderer;II)L1java/awt/Component;
+sorterChanged
+ (Ljavax/swing/event/RowSorterEvent;)V
+ (L1javax/swing/event/RowSorterEvent;)V
+tableChanged
+ (Ljavax/swing/event/TableModelEvent;)V
+ (L1javax/swing/event/TableModelEvent;)V
+valueChanged
+ (Ljavax/swing/event/ListSelectionEvent;)V
+ (L1javax/swing/event/ListSelectionEvent;)V

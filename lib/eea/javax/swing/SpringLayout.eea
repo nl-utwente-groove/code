@@ -1,0 +1,28 @@
+class javax/swing/SpringLayout
+BASELINE
+ Ljava/lang/String;
+ L1java/lang/String;
+EAST
+ Ljava/lang/String;
+ L1java/lang/String;
+HEIGHT
+ Ljava/lang/String;
+ L1java/lang/String;
+HORIZONTAL_CENTER
+ Ljava/lang/String;
+ L1java/lang/String;
+NORTH
+ Ljava/lang/String;
+ L1java/lang/String;
+SOUTH
+ Ljava/lang/String;
+ L1java/lang/String;
+VERTICAL_CENTER
+ Ljava/lang/String;
+ L1java/lang/String;
+WEST
+ Ljava/lang/String;
+ L1java/lang/String;
+WIDTH
+ Ljava/lang/String;
+ L1java/lang/String;

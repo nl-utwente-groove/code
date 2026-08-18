@@ -1,0 +1,7 @@
+class javax/swing/text/PlainDocument
+lineLimitAttribute
+ Ljava/lang/String;
+ L1java/lang/String;
+tabSizeAttribute
+ Ljava/lang/String;
+ L1java/lang/String;

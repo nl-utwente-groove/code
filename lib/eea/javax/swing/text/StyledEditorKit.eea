@@ -1,0 +1,4 @@
+class javax/swing/text/StyledEditorKit
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;

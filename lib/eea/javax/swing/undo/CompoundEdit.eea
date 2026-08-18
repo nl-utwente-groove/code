@@ -1,0 +1,4 @@
+class javax/swing/undo/CompoundEdit
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

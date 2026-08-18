@@ -1,0 +1,7 @@
+class javax/swing/table/AbstractTableModel
+addTableModelListener
+ (Ljavax/swing/event/TableModelListener;)V
+ (L1javax/swing/event/TableModelListener;)V
+removeTableModelListener
+ (Ljavax/swing/event/TableModelListener;)V
+ (L1javax/swing/event/TableModelListener;)V

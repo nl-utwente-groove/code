@@ -1,0 +1,4 @@
+class javax/swing/undo/UndoableEditSupport
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

@@ -1,0 +1,19 @@
+class javax/swing/JComponent
+TOOL_TIP_TEXT_KEY
+ Ljava/lang/String;
+ L1java/lang/String;
+addAncestorListener
+ (Ljavax/swing/event/AncestorListener;)V
+ (L1javax/swing/event/AncestorListener;)V
+addVetoableChangeListener
+ (Ljava/beans/VetoableChangeListener;)V
+ (L1java/beans/VetoableChangeListener;)V
+getToolTipText
+ (Ljava/awt/event/MouseEvent;)Ljava/lang/String;
+ (L1java/awt/event/MouseEvent;)Ljava/lang/String;
+removeAncestorListener
+ (Ljavax/swing/event/AncestorListener;)V
+ (L1javax/swing/event/AncestorListener;)V
+removeVetoableChangeListener
+ (Ljava/beans/VetoableChangeListener;)V
+ (L1java/beans/VetoableChangeListener;)V

@@ -1,0 +1,37 @@
+class javax/swing/JSplitPane
+BOTTOM
+ Ljava/lang/String;
+ L1java/lang/String;
+CONTINUOUS_LAYOUT_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+DIVIDER
+ Ljava/lang/String;
+ L1java/lang/String;
+DIVIDER_LOCATION_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+DIVIDER_SIZE_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+LAST_DIVIDER_LOCATION_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+LEFT
+ Ljava/lang/String;
+ L1java/lang/String;
+ONE_TOUCH_EXPANDABLE_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+ORIENTATION_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+RESIZE_WEIGHT_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+RIGHT
+ Ljava/lang/String;
+ L1java/lang/String;
+TOP
+ Ljava/lang/String;
+ L1java/lang/String;

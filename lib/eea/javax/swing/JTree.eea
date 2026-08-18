@@ -1,0 +1,70 @@
+class javax/swing/JTree
+ANCHOR_SELECTION_PATH_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+CELL_EDITOR_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+CELL_RENDERER_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+EDITABLE_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+EXPANDS_SELECTED_PATHS_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+INVOKES_STOP_CELL_EDITING_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+LARGE_MODEL_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+LEAD_SELECTION_PATH_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+ROOT_VISIBLE_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+ROW_HEIGHT_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+SCROLLS_ON_EXPAND_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+SELECTION_MODEL_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+SHOWS_ROOT_HANDLES_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+TOGGLE_CLICK_COUNT_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+TREE_MODEL_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+VISIBLE_ROW_COUNT_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+addTreeExpansionListener
+ (Ljavax/swing/event/TreeExpansionListener;)V
+ (L1javax/swing/event/TreeExpansionListener;)V
+addTreeSelectionListener
+ (Ljavax/swing/event/TreeSelectionListener;)V
+ (L1javax/swing/event/TreeSelectionListener;)V
+addTreeWillExpandListener
+ (Ljavax/swing/event/TreeWillExpandListener;)V
+ (L1javax/swing/event/TreeWillExpandListener;)V
+getToolTipText
+ (Ljava/awt/event/MouseEvent;)Ljava/lang/String;
+ (L1java/awt/event/MouseEvent;)Ljava/lang/String;
+removeTreeExpansionListener
+ (Ljavax/swing/event/TreeExpansionListener;)V
+ (L1javax/swing/event/TreeExpansionListener;)V
+removeTreeSelectionListener
+ (Ljavax/swing/event/TreeSelectionListener;)V
+ (L1javax/swing/event/TreeSelectionListener;)V
+removeTreeWillExpandListener
+ (Ljavax/swing/event/TreeWillExpandListener;)V
+ (L1javax/swing/event/TreeWillExpandListener;)V

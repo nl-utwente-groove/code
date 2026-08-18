@@ -1,0 +1,7 @@
+class javax/swing/table/TableColumnModel
+addColumnModelListener
+ (Ljavax/swing/event/TableColumnModelListener;)V
+ (L1javax/swing/event/TableColumnModelListener;)V
+removeColumnModelListener
+ (Ljavax/swing/event/TableColumnModelListener;)V
+ (L1javax/swing/event/TableColumnModelListener;)V

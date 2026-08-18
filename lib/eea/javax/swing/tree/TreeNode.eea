@@ -1,0 +1,4 @@
+class javax/swing/tree/TreeNode
+getIndex
+ (Ljavax/swing/tree/TreeNode;)I
+ (L1javax/swing/tree/TreeNode;)I

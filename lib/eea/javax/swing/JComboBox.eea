@@ -1,0 +1,35 @@
+class javax/swing/JComboBox
+ <E:Ljava/lang/Object;>
+actionPerformed
+ (Ljava/awt/event/ActionEvent;)V
+ (L1java/awt/event/ActionEvent;)V
+addActionListener
+ (Ljava/awt/event/ActionListener;)V
+ (L1java/awt/event/ActionListener;)V
+addItemListener
+ (Ljava/awt/event/ItemListener;)V
+ (L1java/awt/event/ItemListener;)V
+addPopupMenuListener
+ (Ljavax/swing/event/PopupMenuListener;)V
+ (L1javax/swing/event/PopupMenuListener;)V
+contentsChanged
+ (Ljavax/swing/event/ListDataEvent;)V
+ (L1javax/swing/event/ListDataEvent;)V
+getItemAt
+ (I)TE;
+ (I)T0E;
+intervalAdded
+ (Ljavax/swing/event/ListDataEvent;)V
+ (L1javax/swing/event/ListDataEvent;)V
+intervalRemoved
+ (Ljavax/swing/event/ListDataEvent;)V
+ (L1javax/swing/event/ListDataEvent;)V
+removeActionListener
+ (Ljava/awt/event/ActionListener;)V
+ (L1java/awt/event/ActionListener;)V
+removeItemListener
+ (Ljava/awt/event/ItemListener;)V
+ (L1java/awt/event/ItemListener;)V
+removePopupMenuListener
+ (Ljavax/swing/event/PopupMenuListener;)V
+ (L1javax/swing/event/PopupMenuListener;)V

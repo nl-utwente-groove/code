@@ -1,0 +1,19 @@
+class javax/swing/text/JTextComponent
+DEFAULT_KEYMAP
+ Ljava/lang/String;
+ L1java/lang/String;
+FOCUS_ACCELERATOR_KEY
+ Ljava/lang/String;
+ L1java/lang/String;
+addCaretListener
+ (Ljavax/swing/event/CaretListener;)V
+ (L1javax/swing/event/CaretListener;)V
+addInputMethodListener
+ (Ljava/awt/event/InputMethodListener;)V
+ (L1java/awt/event/InputMethodListener;)V
+getToolTipText
+ (Ljava/awt/event/MouseEvent;)Ljava/lang/String;
+ (L1java/awt/event/MouseEvent;)Ljava/lang/String;
+removeCaretListener
+ (Ljavax/swing/event/CaretListener;)V
+ (L1javax/swing/event/CaretListener;)V

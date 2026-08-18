@@ -1,0 +1,37 @@
+class javax/swing/JOptionPane
+ICON_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+INITIAL_SELECTION_VALUE_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+INITIAL_VALUE_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+INPUT_VALUE_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+MESSAGE_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+MESSAGE_TYPE_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+OPTIONS_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+OPTION_TYPE_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+SELECTION_VALUES_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+UNINITIALIZED_VALUE
+ Ljava/lang/Object;
+ L1java/lang/Object;
+VALUE_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+WANTS_INPUT_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;

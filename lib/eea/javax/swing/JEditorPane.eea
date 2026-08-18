@@ -1,0 +1,13 @@
+class javax/swing/JEditorPane
+HONOR_DISPLAY_PROPERTIES
+ Ljava/lang/String;
+ L1java/lang/String;
+W3C_LENGTH_UNITS
+ Ljava/lang/String;
+ L1java/lang/String;
+addHyperlinkListener
+ (Ljavax/swing/event/HyperlinkListener;)V
+ (L1javax/swing/event/HyperlinkListener;)V
+removeHyperlinkListener
+ (Ljavax/swing/event/HyperlinkListener;)V
+ (L1javax/swing/event/HyperlinkListener;)V

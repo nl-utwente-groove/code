@@ -1,0 +1,10 @@
+class javax/swing/ImageIcon
+component
+ Ljava/awt/Component;
+ L1java/awt/Component;
+tracker
+ Ljava/awt/MediaTracker;
+ L1java/awt/MediaTracker;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

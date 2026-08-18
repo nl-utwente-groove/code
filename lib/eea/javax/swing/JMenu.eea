@@ -1,0 +1,7 @@
+class javax/swing/JMenu
+addMenuListener
+ (Ljavax/swing/event/MenuListener;)V
+ (L1javax/swing/event/MenuListener;)V
+removeMenuListener
+ (Ljavax/swing/event/MenuListener;)V
+ (L1javax/swing/event/MenuListener;)V

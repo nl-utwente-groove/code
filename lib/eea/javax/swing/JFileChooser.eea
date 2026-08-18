@@ -1,0 +1,67 @@
+class javax/swing/JFileChooser
+ACCEPT_ALL_FILE_FILTER_USED_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+ACCESSORY_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+APPROVE_BUTTON_MNEMONIC_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+APPROVE_BUTTON_TEXT_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+APPROVE_BUTTON_TOOL_TIP_TEXT_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+APPROVE_SELECTION
+ Ljava/lang/String;
+ L1java/lang/String;
+CANCEL_SELECTION
+ Ljava/lang/String;
+ L1java/lang/String;
+CHOOSABLE_FILE_FILTER_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+CONTROL_BUTTONS_ARE_SHOWN_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+DIALOG_TITLE_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+DIALOG_TYPE_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+DIRECTORY_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+FILE_FILTER_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+FILE_HIDING_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+FILE_SELECTION_MODE_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+FILE_SYSTEM_VIEW_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+FILE_VIEW_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+MULTI_SELECTION_ENABLED_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+SELECTED_FILES_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+SELECTED_FILE_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+addActionListener
+ (Ljava/awt/event/ActionListener;)V
+ (L1java/awt/event/ActionListener;)V
+removeActionListener
+ (Ljava/awt/event/ActionListener;)V
+ (L1java/awt/event/ActionListener;)V

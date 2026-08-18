@@ -1,0 +1,19 @@
+class javax/swing/text/Document
+StreamDescriptionProperty
+ Ljava/lang/String;
+ L1java/lang/String;
+TitleProperty
+ Ljava/lang/String;
+ L1java/lang/String;
+addDocumentListener
+ (Ljavax/swing/event/DocumentListener;)V
+ (L1javax/swing/event/DocumentListener;)V
+addUndoableEditListener
+ (Ljavax/swing/event/UndoableEditListener;)V
+ (L1javax/swing/event/UndoableEditListener;)V
+removeDocumentListener
+ (Ljavax/swing/event/DocumentListener;)V
+ (L1javax/swing/event/DocumentListener;)V
+removeUndoableEditListener
+ (Ljavax/swing/event/UndoableEditListener;)V
+ (L1javax/swing/event/UndoableEditListener;)V

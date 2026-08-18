@@ -1,0 +1,7 @@
+class javax/swing/plaf/basic/BasicHTML
+documentBaseKey
+ Ljava/lang/String;
+ L1java/lang/String;
+propertyKey
+ Ljava/lang/String;
+ L1java/lang/String;

@@ -1,0 +1,7 @@
+class javax/swing/text/AttributeSet
+NameAttribute
+ Ljava/lang/Object;
+ L1java/lang/Object;
+ResolveAttribute
+ Ljava/lang/Object;
+ L1java/lang/Object;

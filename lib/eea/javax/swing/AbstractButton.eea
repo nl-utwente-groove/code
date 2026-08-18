@@ -1,0 +1,76 @@
+class javax/swing/AbstractButton
+BORDER_PAINTED_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+CONTENT_AREA_FILLED_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+DISABLED_ICON_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+DISABLED_SELECTED_ICON_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+FOCUS_PAINTED_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+HORIZONTAL_ALIGNMENT_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+HORIZONTAL_TEXT_POSITION_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+ICON_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+MARGIN_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+MNEMONIC_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+MODEL_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+PRESSED_ICON_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+ROLLOVER_ENABLED_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+ROLLOVER_ICON_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+ROLLOVER_SELECTED_ICON_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+SELECTED_ICON_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+TEXT_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+VERTICAL_ALIGNMENT_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+VERTICAL_TEXT_POSITION_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+addActionListener
+ (Ljava/awt/event/ActionListener;)V
+ (L1java/awt/event/ActionListener;)V
+addChangeListener
+ (Ljavax/swing/event/ChangeListener;)V
+ (L1javax/swing/event/ChangeListener;)V
+addItemListener
+ (Ljava/awt/event/ItemListener;)V
+ (L1java/awt/event/ItemListener;)V
+removeActionListener
+ (Ljava/awt/event/ActionListener;)V
+ (L1java/awt/event/ActionListener;)V
+removeChangeListener
+ (Ljavax/swing/event/ChangeListener;)V
+ (L1javax/swing/event/ChangeListener;)V
+removeItemListener
+ (Ljava/awt/event/ItemListener;)V
+ (L1java/awt/event/ItemListener;)V

@@ -1,0 +1,13 @@
+class javax/swing/tree/DefaultMutableTreeNode
+EMPTY_ENUMERATION
+ Ljava/util/Enumeration<Ljavax/swing/tree/TreeNode;>;
+ L1java/util/Enumeration<Ljavax/swing/tree/TreeNode;>;
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+getIndex
+ (Ljavax/swing/tree/TreeNode;)I
+ (L1javax/swing/tree/TreeNode;)I
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

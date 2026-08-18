@@ -1,0 +1,43 @@
+class javax/swing/text/html/HTMLEditorKit
+BOLD_ACTION
+ Ljava/lang/String;
+ L1java/lang/String;
+COLOR_ACTION
+ Ljava/lang/String;
+ L1java/lang/String;
+DEFAULT_CSS
+ Ljava/lang/String;
+ L1java/lang/String;
+FONT_CHANGE_BIGGER
+ Ljava/lang/String;
+ L1java/lang/String;
+FONT_CHANGE_SMALLER
+ Ljava/lang/String;
+ L1java/lang/String;
+IMG_ALIGN_BOTTOM
+ Ljava/lang/String;
+ L1java/lang/String;
+IMG_ALIGN_MIDDLE
+ Ljava/lang/String;
+ L1java/lang/String;
+IMG_ALIGN_TOP
+ Ljava/lang/String;
+ L1java/lang/String;
+IMG_BORDER
+ Ljava/lang/String;
+ L1java/lang/String;
+ITALIC_ACTION
+ Ljava/lang/String;
+ L1java/lang/String;
+LOGICAL_STYLE_ACTION
+ Ljava/lang/String;
+ L1java/lang/String;
+PARA_INDENT_LEFT
+ Ljava/lang/String;
+ L1java/lang/String;
+PARA_INDENT_RIGHT
+ Ljava/lang/String;
+ L1java/lang/String;
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;

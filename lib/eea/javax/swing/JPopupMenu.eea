@@ -1,0 +1,13 @@
+class javax/swing/JPopupMenu
+addMenuKeyListener
+ (Ljavax/swing/event/MenuKeyListener;)V
+ (L1javax/swing/event/MenuKeyListener;)V
+addPopupMenuListener
+ (Ljavax/swing/event/PopupMenuListener;)V
+ (L1javax/swing/event/PopupMenuListener;)V
+removeMenuKeyListener
+ (Ljavax/swing/event/MenuKeyListener;)V
+ (L1javax/swing/event/MenuKeyListener;)V
+removePopupMenuListener
+ (Ljavax/swing/event/PopupMenuListener;)V
+ (L1javax/swing/event/PopupMenuListener;)V

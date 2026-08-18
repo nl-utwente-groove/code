@@ -1,0 +1,13 @@
+class javax/swing/JMenuItem
+addMenuDragMouseListener
+ (Ljavax/swing/event/MenuDragMouseListener;)V
+ (L1javax/swing/event/MenuDragMouseListener;)V
+addMenuKeyListener
+ (Ljavax/swing/event/MenuKeyListener;)V
+ (L1javax/swing/event/MenuKeyListener;)V
+removeMenuDragMouseListener
+ (Ljavax/swing/event/MenuDragMouseListener;)V
+ (L1javax/swing/event/MenuDragMouseListener;)V
+removeMenuKeyListener
+ (Ljavax/swing/event/MenuKeyListener;)V
+ (L1javax/swing/event/MenuKeyListener;)V

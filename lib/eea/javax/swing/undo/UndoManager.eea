@@ -1,0 +1,7 @@
+class javax/swing/undo/UndoManager
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+undoableEditHappened
+ (Ljavax/swing/event/UndoableEditEvent;)V
+ (L1javax/swing/event/UndoableEditEvent;)V

@@ -1,0 +1,13 @@
+class javax/swing/DefaultListSelectionModel
+addListSelectionListener
+ (Ljavax/swing/event/ListSelectionListener;)V
+ (L1javax/swing/event/ListSelectionListener;)V
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+removeListSelectionListener
+ (Ljavax/swing/event/ListSelectionListener;)V
+ (L1javax/swing/event/ListSelectionListener;)V
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

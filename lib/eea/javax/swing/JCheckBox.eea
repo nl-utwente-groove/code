@@ -1,0 +1,4 @@
+class javax/swing/JCheckBox
+BORDER_PAINTED_FLAT_CHANGED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;

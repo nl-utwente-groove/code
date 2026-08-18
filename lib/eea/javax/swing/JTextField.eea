@@ -1,0 +1,10 @@
+class javax/swing/JTextField
+notifyAction
+ Ljava/lang/String;
+ L1java/lang/String;
+addActionListener
+ (Ljava/awt/event/ActionListener;)V
+ (L1java/awt/event/ActionListener;)V
+removeActionListener
+ (Ljava/awt/event/ActionListener;)V
+ (L1java/awt/event/ActionListener;)V

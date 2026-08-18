@@ -1,0 +1,10 @@
+class javax/swing/JColorChooser
+CHOOSER_PANELS_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+PREVIEW_PANEL_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+SELECTION_MODEL_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;

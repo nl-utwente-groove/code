@@ -1,0 +1,22 @@
+class javax/swing/JLayeredPane
+DEFAULT_LAYER
+ Ljava/lang/Integer;
+ L1java/lang/Integer;
+DRAG_LAYER
+ Ljava/lang/Integer;
+ L1java/lang/Integer;
+FRAME_CONTENT_LAYER
+ Ljava/lang/Integer;
+ L1java/lang/Integer;
+LAYER_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+MODAL_LAYER
+ Ljava/lang/Integer;
+ L1java/lang/Integer;
+PALETTE_LAYER
+ Ljava/lang/Integer;
+ L1java/lang/Integer;
+POPUP_LAYER
+ Ljava/lang/Integer;
+ L1java/lang/Integer;

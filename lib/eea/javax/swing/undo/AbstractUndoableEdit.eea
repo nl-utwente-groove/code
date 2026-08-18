@@ -1,0 +1,10 @@
+class javax/swing/undo/AbstractUndoableEdit
+RedoName
+ Ljava/lang/String;
+ L1java/lang/String;
+UndoName
+ Ljava/lang/String;
+ L1java/lang/String;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

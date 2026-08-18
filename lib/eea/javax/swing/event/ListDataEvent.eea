@@ -1,0 +1,4 @@
+class javax/swing/event/ListDataEvent
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

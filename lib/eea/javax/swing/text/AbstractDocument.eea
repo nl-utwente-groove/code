@@ -1,0 +1,31 @@
+class javax/swing/text/AbstractDocument
+BAD_LOCATION
+ Ljava/lang/String;
+ L1java/lang/String;
+BidiElementName
+ Ljava/lang/String;
+ L1java/lang/String;
+ContentElementName
+ Ljava/lang/String;
+ L1java/lang/String;
+ElementNameAttribute
+ Ljava/lang/String;
+ L1java/lang/String;
+ParagraphElementName
+ Ljava/lang/String;
+ L1java/lang/String;
+SectionElementName
+ Ljava/lang/String;
+ L1java/lang/String;
+addDocumentListener
+ (Ljavax/swing/event/DocumentListener;)V
+ (L1javax/swing/event/DocumentListener;)V
+addUndoableEditListener
+ (Ljavax/swing/event/UndoableEditListener;)V
+ (L1javax/swing/event/UndoableEditListener;)V
+removeDocumentListener
+ (Ljavax/swing/event/DocumentListener;)V
+ (L1javax/swing/event/DocumentListener;)V
+removeUndoableEditListener
+ (Ljavax/swing/event/UndoableEditListener;)V
+ (L1javax/swing/event/UndoableEditListener;)V
