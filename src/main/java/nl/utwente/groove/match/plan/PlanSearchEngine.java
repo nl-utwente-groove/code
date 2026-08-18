@@ -35,7 +35,6 @@ import java.util.TreeSet;
 import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.algebra.AlgebraFamily;
-import nl.utwente.groove.automaton.RegExpr;
 import nl.utwente.groove.grammar.Condition;
 import nl.utwente.groove.grammar.Condition.Op;
 import nl.utwente.groove.grammar.EdgeEmbargo;
@@ -45,6 +44,7 @@ import nl.utwente.groove.grammar.rule.AnchorKey;
 import nl.utwente.groove.grammar.rule.DefaultRuleNode;
 import nl.utwente.groove.grammar.rule.LabelVar;
 import nl.utwente.groove.grammar.rule.OperatorNode;
+import nl.utwente.groove.grammar.rule.RegExpr;
 import nl.utwente.groove.grammar.rule.RuleEdge;
 import nl.utwente.groove.grammar.rule.RuleGraph;
 import nl.utwente.groove.grammar.rule.RuleLabel;

@@ -38,8 +38,8 @@ import javax.swing.JPopupMenu;
 import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.automaton.NodeRelation;
-import nl.utwente.groove.automaton.RegExpr;
 import nl.utwente.groove.automaton.RelationCalculator;
+import nl.utwente.groove.grammar.rule.RegExpr;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.Graph;

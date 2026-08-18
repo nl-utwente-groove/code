@@ -38,7 +38,6 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.syntax.SortMap;
-import nl.utwente.groove.automaton.RegExpr;
 import nl.utwente.groove.automaton.RegExprTyper;
 import nl.utwente.groove.automaton.RegExprTyper.Result;
 import nl.utwente.groove.grammar.host.HostEdge;
@@ -50,6 +49,7 @@ import nl.utwente.groove.grammar.host.ValueNode;
 import nl.utwente.groove.grammar.rule.DefaultRuleNode;
 import nl.utwente.groove.grammar.rule.LabelVar;
 import nl.utwente.groove.grammar.rule.OperatorNode;
+import nl.utwente.groove.grammar.rule.RegExpr;
 import nl.utwente.groove.grammar.rule.RuleEdge;
 import nl.utwente.groove.grammar.rule.RuleFactory;
 import nl.utwente.groove.grammar.rule.RuleGraph;

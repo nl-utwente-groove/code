@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.automaton;
+package nl.utwente.groove.grammar.rule;
 
 import static nl.utwente.groove.graph.EdgeRole.NODE_TYPE;
 import static nl.utwente.groove.util.parse.StringHandler.DOUBLE_QUOTE;
@@ -43,8 +43,6 @@ import nl.utwente.groove.annotation.Syntax;
 import nl.utwente.groove.annotation.ToolTipBody;
 import nl.utwente.groove.annotation.ToolTipHeader;
 import nl.utwente.groove.annotation.ToolTipPars;
-import nl.utwente.groove.grammar.rule.LabelVar;
-import nl.utwente.groove.grammar.rule.RuleLabel;
 import nl.utwente.groove.grammar.type.TypeGuard;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.EdgeRole;

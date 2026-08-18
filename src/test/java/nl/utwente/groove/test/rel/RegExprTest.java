@@ -16,9 +16,9 @@
  */
 package nl.utwente.groove.test.rel;
 
-import static nl.utwente.groove.automaton.RegExpr.atom;
-import static nl.utwente.groove.automaton.RegExpr.empty;
-import static nl.utwente.groove.automaton.RegExpr.wildcard;
+import static nl.utwente.groove.grammar.rule.RegExpr.atom;
+import static nl.utwente.groove.grammar.rule.RegExpr.empty;
+import static nl.utwente.groove.grammar.rule.RegExpr.wildcard;
 import static nl.utwente.groove.grammar.type.TypeLabel.createLabel;
 import static nl.utwente.groove.graph.EdgeRole.BINARY;
 import static nl.utwente.groove.graph.EdgeRole.FLAG;
@@ -38,9 +38,9 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 
-import nl.utwente.groove.automaton.RegExpr;
-import nl.utwente.groove.automaton.RegExpr.Atom;
 import nl.utwente.groove.grammar.rule.LabelVar;
+import nl.utwente.groove.grammar.rule.RegExpr;
+import nl.utwente.groove.grammar.rule.RegExpr.Atom;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.util.parse.FormatException;
 

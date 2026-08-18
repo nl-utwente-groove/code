@@ -22,16 +22,18 @@ import java.util.List;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.automaton.RegExpr.Atom;
-import nl.utwente.groove.automaton.RegExpr.Choice;
-import nl.utwente.groove.automaton.RegExpr.Empty;
-import nl.utwente.groove.automaton.RegExpr.Inv;
-import nl.utwente.groove.automaton.RegExpr.Neg;
-import nl.utwente.groove.automaton.RegExpr.Plus;
-import nl.utwente.groove.automaton.RegExpr.Seq;
-import nl.utwente.groove.automaton.RegExpr.Sharp;
-import nl.utwente.groove.automaton.RegExpr.Star;
-import nl.utwente.groove.automaton.RegExpr.Wildcard;
+import nl.utwente.groove.grammar.rule.RegExpr;
+import nl.utwente.groove.grammar.rule.RegExpr.Atom;
+import nl.utwente.groove.grammar.rule.RegExpr.Choice;
+import nl.utwente.groove.grammar.rule.RegExpr.Empty;
+import nl.utwente.groove.grammar.rule.RegExpr.Inv;
+import nl.utwente.groove.grammar.rule.RegExpr.Neg;
+import nl.utwente.groove.grammar.rule.RegExpr.Plus;
+import nl.utwente.groove.grammar.rule.RegExpr.Seq;
+import nl.utwente.groove.grammar.rule.RegExpr.Sharp;
+import nl.utwente.groove.grammar.rule.RegExpr.Star;
+import nl.utwente.groove.grammar.rule.RegExpr.Wildcard;
+import nl.utwente.groove.grammar.rule.RegExprCalculator;
 import nl.utwente.groove.grammar.rule.RuleLabel;
 import nl.utwente.groove.grammar.type.ImplicitTypeGraph;
 import nl.utwente.groove.grammar.type.TypeGraph;
@@ -91,7 +93,7 @@ public class RegAutCalculator implements RegExprCalculator<RegAut> {
      */
     @Override
     public RegAut computeStar(Star expr, RegAut arg) {
-        RegAut result = computePlus(new Plus(), arg);
+        RegAut result = computePlus(new Plus(expr.getOperand()), arg);
         result.setAcceptsEmptyWord(true);
         return result;
     }

@@ -26,8 +26,8 @@ import java.util.function.Predicate;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.automaton.RegExpr;
 import nl.utwente.groove.grammar.rule.LabelVar;
+import nl.utwente.groove.grammar.rule.RegExpr;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.util.NoNonNull;

@@ -23,7 +23,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import nl.utwente.groove.automaton.RegExpr.Sharp;
+import nl.utwente.groove.grammar.rule.RegExpr;
+import nl.utwente.groove.grammar.rule.RegExpr.Sharp;
+import nl.utwente.groove.grammar.rule.RegExprCalculator;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Node;

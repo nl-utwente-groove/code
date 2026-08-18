@@ -38,9 +38,9 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.algebra.syntax.SortMap;
-import nl.utwente.groove.automaton.RegExpr;
 import nl.utwente.groove.grammar.aspect.AspectContent.NestedValue;
 import nl.utwente.groove.grammar.aspect.AspectKind.Category;
+import nl.utwente.groove.grammar.rule.RegExpr;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.AGraphMap;
 import nl.utwente.groove.graph.Edge;

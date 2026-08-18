@@ -26,16 +26,15 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.automaton.RegAut;
 import nl.utwente.groove.automaton.RegAutCalculator;
-import nl.utwente.groove.automaton.RegExpr;
-import nl.utwente.groove.automaton.RegExpr.Atom;
-import nl.utwente.groove.automaton.RegExpr.Choice;
-import nl.utwente.groove.automaton.RegExpr.Inv;
-import nl.utwente.groove.automaton.RegExpr.Neg;
-import nl.utwente.groove.automaton.RegExpr.Plus;
-import nl.utwente.groove.automaton.RegExpr.Seq;
-import nl.utwente.groove.automaton.RegExpr.Sharp;
-import nl.utwente.groove.automaton.RegExpr.Star;
-import nl.utwente.groove.automaton.RegExpr.Wildcard;
+import nl.utwente.groove.grammar.rule.RegExpr.Atom;
+import nl.utwente.groove.grammar.rule.RegExpr.Choice;
+import nl.utwente.groove.grammar.rule.RegExpr.Inv;
+import nl.utwente.groove.grammar.rule.RegExpr.Neg;
+import nl.utwente.groove.grammar.rule.RegExpr.Plus;
+import nl.utwente.groove.grammar.rule.RegExpr.Seq;
+import nl.utwente.groove.grammar.rule.RegExpr.Sharp;
+import nl.utwente.groove.grammar.rule.RegExpr.Star;
+import nl.utwente.groove.grammar.rule.RegExpr.Wildcard;
 import nl.utwente.groove.grammar.type.TypeEdge;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeGuard;
@@ -163,13 +162,13 @@ public class RuleLabel extends ALabel {
         return getMatchExpr().isSingular();
     }
 
-    /** Tests if this label wraps a {@link nl.utwente.groove.automaton.RegExpr.Atom}. */
+    /** Tests if this label wraps a {@link nl.utwente.groove.grammar.rule.RegExpr.Atom}. */
     public boolean isAtom() {
         return getAtomText() != null;
     }
 
     /**
-     * If this label wraps a {@link nl.utwente.groove.automaton.RegExpr.Atom}, returns the
+     * If this label wraps a {@link nl.utwente.groove.grammar.rule.RegExpr.Atom}, returns the
      * text of the atom. Returns <code>null</code> otherwise.
      */
     public @Nullable String getAtomText() {
@@ -181,7 +180,7 @@ public class RuleLabel extends ALabel {
 
     /**
      * If this label wraps a
-     * {@link nl.utwente.groove.automaton.RegExpr.Atom} or a {@link nl.utwente.groove.automaton.RegExpr.Sharp},
+     * {@link nl.utwente.groove.grammar.rule.RegExpr.Atom} or a {@link nl.utwente.groove.grammar.rule.RegExpr.Sharp},
      * returns the default label corresponding
      * to the atom or sharp text. Returns
      * <code>null</code> otherwise.
@@ -194,19 +193,19 @@ public class RuleLabel extends ALabel {
         };
     }
 
-    /** Tests if this label wraps a {@link nl.utwente.groove.automaton.RegExpr.Empty}. */
+    /** Tests if this label wraps a {@link nl.utwente.groove.grammar.rule.RegExpr.Empty}. */
     public boolean isEmpty() {
         return getMatchExpr() instanceof RegExpr.Empty;
     }
 
-    /** Tests if this label wraps a {@link nl.utwente.groove.automaton.RegExpr.Sharp}. */
+    /** Tests if this label wraps a {@link nl.utwente.groove.grammar.rule.RegExpr.Sharp}. */
     public boolean isSharp() {
         return getMatchExpr().isSharp();
     }
 
     /**
      * If this label wraps a
-     * {@link nl.utwente.groove.automaton.RegExpr.Sharp}, returns the sharp type label.
+     * {@link nl.utwente.groove.grammar.rule.RegExpr.Sharp}, returns the sharp type label.
      * Returns {@code null} otherwise.
      */
     public TypeLabel getSharpLabel() {
@@ -230,14 +229,14 @@ public class RuleLabel extends ALabel {
 
     /**
      * If this label wraps a
-     * {@link nl.utwente.groove.automaton.RegExpr.Wildcard}, returns the guard of the wildcard.
+     * {@link nl.utwente.groove.grammar.rule.RegExpr.Wildcard}, returns the guard of the wildcard.
      * Returns <code>null</code> in all other cases.
      */
     public @Nullable TypeGuard getWildcardGuard() {
         return getMatchExpr().getWildcardGuard();
     }
 
-    /** Tests if this label wraps a {@link nl.utwente.groove.automaton.RegExpr.Choice}. */
+    /** Tests if this label wraps a {@link nl.utwente.groove.grammar.rule.RegExpr.Choice}. */
     public boolean isChoice() {
         return getChoiceOperands() != null;
     }
@@ -360,7 +359,7 @@ public class RuleLabel extends ALabel {
 
     /**
      * If this label wraps a
-     * {@link nl.utwente.groove.automaton.RegExpr.Choice}, returns the list of operands of the regular
+     * {@link nl.utwente.groove.grammar.rule.RegExpr.Choice}, returns the list of operands of the regular
      * expression. Returns <code>null</code> otherwise.
      */
     public @Nullable List<RegExpr> getChoiceOperands() {
@@ -370,13 +369,13 @@ public class RuleLabel extends ALabel {
         };
     }
 
-    /** Tests if this label wraps a {@link nl.utwente.groove.automaton.RegExpr.Seq}. */
+    /** Tests if this label wraps a {@link nl.utwente.groove.grammar.rule.RegExpr.Seq}. */
     public boolean isSeq() {
         return getSeqOperands() != null;
     }
 
     /**
-     * If this label wraps a {@link nl.utwente.groove.automaton.RegExpr.Seq},
+     * If this label wraps a {@link nl.utwente.groove.grammar.rule.RegExpr.Seq},
      * returns the list of operands of the regular expression. Returns
      * <code>null</code> in all other cases.
      */
@@ -387,14 +386,14 @@ public class RuleLabel extends ALabel {
         };
     }
 
-    /** Tests if this label wraps a {@link nl.utwente.groove.automaton.RegExpr.Star}. */
+    /** Tests if this label wraps a {@link nl.utwente.groove.grammar.rule.RegExpr.Star}. */
     public boolean isStar() {
         return getStarOperand() != null;
     }
 
     /**
      * If this label wraps a
-     * {@link nl.utwente.groove.automaton.RegExpr.Star}, returns the operand of the regular expression.
+     * {@link nl.utwente.groove.grammar.rule.RegExpr.Star}, returns the operand of the regular expression.
      * Returns <code>null</code> otherwise.
      */
     public @Nullable RegExpr getStarOperand() {
@@ -404,14 +403,14 @@ public class RuleLabel extends ALabel {
         };
     }
 
-    /** Tests if this label wraps a {@link nl.utwente.groove.automaton.RegExpr.Plus}. */
+    /** Tests if this label wraps a {@link nl.utwente.groove.grammar.rule.RegExpr.Plus}. */
     public boolean isPlus() {
         return getPlusOperand() != null;
     }
 
     /**
      * If this label wraps a
-     * {@link nl.utwente.groove.automaton.RegExpr.Plus}, returns the operand of the regular expression.
+     * {@link nl.utwente.groove.grammar.rule.RegExpr.Plus}, returns the operand of the regular expression.
      * Returns <code>null</code> otherwise.
      */
     public @Nullable RegExpr getPlusOperand() {
@@ -421,13 +420,13 @@ public class RuleLabel extends ALabel {
         };
     }
 
-    /** Tests if this label wraps a {@link nl.utwente.groove.automaton.RegExpr.Inv}. */
+    /** Tests if this label wraps a {@link nl.utwente.groove.grammar.rule.RegExpr.Inv}. */
     public boolean isInv() {
         return getInvLabel() != null;
     }
 
     /**
-     * If this label wraps a {@link nl.utwente.groove.automaton.RegExpr.Inv},
+     * If this label wraps a {@link nl.utwente.groove.grammar.rule.RegExpr.Inv},
      * returns the operand label. Returns
      * <code>null</code> otherwise.
      */

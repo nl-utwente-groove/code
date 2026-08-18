@@ -20,7 +20,6 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import nl.utwente.groove.automaton.RegExpr;
 import nl.utwente.groove.grammar.Condition;
 import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.ParallelMode;
@@ -28,6 +27,7 @@ import nl.utwente.groove.grammar.host.DefaultHostGraph;
 import nl.utwente.groove.grammar.host.HostFactory;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.host.HostNode;
+import nl.utwente.groove.grammar.rule.RegExpr;
 import nl.utwente.groove.grammar.rule.RuleFactory;
 import nl.utwente.groove.grammar.rule.RuleGraph;
 import nl.utwente.groove.grammar.rule.RuleLabel;

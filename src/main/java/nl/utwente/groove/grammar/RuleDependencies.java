@@ -523,7 +523,7 @@ public class RuleDependencies {
     /**
      * Returns the type elements that may be matched modulo subtyping by a given
      * rule edge.
-     * The label may not wrap {@link nl.utwente.groove.automaton.RegExpr.Neg}.
+     * The label may not wrap {@link nl.utwente.groove.grammar.rule.RegExpr.Neg}.
      */
     private Set<TypeElement> getMatchingTypes(RuleEdge edge) {
         Set<TypeElement> result = new HashSet<>();

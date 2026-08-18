@@ -38,6 +38,7 @@ import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.rule.LabelVar;
+import nl.utwente.groove.grammar.rule.RegExpr;
 import nl.utwente.groove.grammar.rule.RuleLabel;
 import nl.utwente.groove.grammar.rule.Valuation;
 import nl.utwente.groove.grammar.type.TypeEdge;

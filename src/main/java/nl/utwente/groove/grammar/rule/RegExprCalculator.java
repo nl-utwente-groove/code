@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.automaton;
+package nl.utwente.groove.grammar.rule;
 
 import java.util.List;
 

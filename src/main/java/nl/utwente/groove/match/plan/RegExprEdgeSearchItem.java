@@ -9,10 +9,10 @@ import java.util.Map;
 import java.util.Set;
 
 import nl.utwente.groove.automaton.RegAut;
-import nl.utwente.groove.automaton.RegExpr;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.rule.LabelVar;
+import nl.utwente.groove.grammar.rule.RegExpr;
 import nl.utwente.groove.grammar.rule.RuleEdge;
 import nl.utwente.groove.grammar.rule.RuleLabel;
 import nl.utwente.groove.grammar.rule.RuleNode;

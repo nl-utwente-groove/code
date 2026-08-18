@@ -19,7 +19,6 @@ package nl.utwente.groove.grammar.rule;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.automaton.RegExpr;
 import nl.utwente.groove.grammar.AnchorKind;
 import nl.utwente.groove.graph.EdgeRole;
 
