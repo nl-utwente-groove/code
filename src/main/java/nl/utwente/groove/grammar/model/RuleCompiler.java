@@ -1129,7 +1129,6 @@ class RuleCompiler {
             this.isRule = index.isTopLevel();
             // initialise the rule data structures
             this.lhs = createGraph(getQualName() + "-" + index + "-lhs");
-            this.mid = createGraph(getQualName() + "-" + index + "-mid");
             this.rhs = createGraph(getQualName() + "-" + index + "-rhs");
             FormatErrorSet errors = createErrors();
             try {
@@ -1198,7 +1197,6 @@ class RuleCompiler {
                 this.lhs.addNode(ruleNode);
                 if (roleKind.inRHS()) {
                     this.rhs.addNode(ruleNode);
-                    this.mid.addNode(ruleNode);
                 }
             } else {
                 if (roleKind.inNAC()) {
@@ -1237,7 +1235,6 @@ class RuleCompiler {
                 if (freshInLhs) {
                     if (roleKind.inRHS()) {
                         this.rhs.addEdgeContext(ruleEdge);
-                        this.mid.addEdgeContext(ruleEdge);
                     } else if (getTypeGraph().isNodeType(ruleEdge)
                         && this.rhs.containsNode(ruleEdge.source())) {
                         throw new FormatException("Node type label %s cannot be deleted",
@@ -1248,7 +1245,6 @@ class RuleCompiler {
                         // remove the edge from the RHS, if it was there
                         // (which is the case if it also exists as reader edge)
                         this.rhs.removeEdge(ruleEdge);
-                        this.mid.removeEdge(ruleEdge);
                     }
                 }
             } else {
@@ -1355,7 +1351,6 @@ class RuleCompiler {
                 level.nacNodeSet.add(opNode);
             } else {
                 level.lhs.addNode(opNode);
-                level.mid.addNode(opNode);
                 level.rhs.addNode(opNode);
             }
         }
@@ -1790,8 +1785,6 @@ class RuleCompiler {
         private final RuleGraph lhs;
         /** The right hand side graph of the rule. */
         private final RuleGraph rhs;
-        /** Rule morphism (from LHS to RHS). */
-        private final RuleGraph mid;
         /** The set of nodes appearing in NACs. */
         private final Set<RuleNode> nacNodeSet = new HashSet<>();
         /** The set of edges appearing in NACs. */
