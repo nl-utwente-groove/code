@@ -120,8 +120,9 @@ import nl.utwente.groove.util.parse.FormatException;
  * The translation is staged: the quantification level tree is built from the
  * nesting aspects ({@link LevelTree}), the aspect elements are distributed
  * over the levels ({@link Level1}), converted to untyped rule graphs split
- * into LHS/RHS/NACs ({@link Level2}), typed ({@link Level3}), and assembled
- * into a tree of {@link Condition}s ({@link Level4}).
+ * into LHS/RHS/NACs ({@link Level2}), typed into per-level patterns
+ * ({@link Level3}, producing {@link LevelPattern}s), and assembled into a
+ * tree of {@link Condition}s by the condition-assembly methods.
  * @author Arend Rensink
  * @version $Revision$
  */
