@@ -844,7 +844,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
 
         // Finalise combined graph.
         GraphInfo.setLayoutMap(result, newLayoutMap);
-        result.setErrors(newErrors.apply(transfer));
+        result.setErrors(transfer.apply(newErrors));
         result.setFixed();
         return result;
     }

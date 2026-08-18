@@ -18,7 +18,6 @@ package nl.utwente.groove.util.parse;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -32,7 +31,6 @@ import java.util.stream.Stream;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.graph.Element;
-import nl.utwente.groove.graph.GraphMap;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Fixable;
 import nl.utwente.groove.util.Relation;
@@ -222,12 +220,12 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
 
     /** Returns a new format error set in which the context information is transferred.
      * @param map mapping from the context of this error to the context
-     * of the result error; or {@code null} if there is no mapping.
-     * The resulting error set is equal to that obtained by {@link #apply(GraphMap)},
+     * of the result error.
+     * The resulting error set is equal to that obtained by {@link #apply(Map)},
      * except that this method creates a new {@link FormatErrorSet} instead of
      * modifying {@code this}, and hence also works if {@code this} is fixed.
      */
-    public FormatErrorSet transfer(GraphMap map) {
+    public FormatErrorSet transfer(Map<?,?> map) {
         FormatErrorSet result = new FormatErrorSet();
         stream().map(e -> e.transfer(map)).forEach(result::add);
         return result;
@@ -245,7 +243,6 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
      * by applying the inverse a given element map to their graph elements.
      * The method returns this {@link FormatErrorSet} for chaining.
      * Should not be invoked after {@link #setFixed()}.
-     * @see #applyInverse(GraphMap)
      * @see #apply(Map)
      * @param map mapping from contextual {@link Element}s to current error {@link Element}s
      */
@@ -257,27 +254,10 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
 
     /**
      * Modifies the errors in this set, as well as all errors added in the future,
-     * by applying the inverse of a given graph map to their graph elements.
-     * The method returns this {@link FormatErrorSet} for chaining.
-     * Should not be invoked after {@link #setFixed()}.
-     * @see #applyInverse(Map)
-     * @see #apply(Map)
-     * @param map mapping from contextual {@link Element}s to current error {@link Element}s
-     */
-    public FormatErrorSet applyInverse(GraphMap map) {
-        var inverse = new Relation<Element,Element>();
-        inverse.addInverse(map.nodeMap());
-        inverse.addInverse(map.edgeMap());
-        return apply(inverse);
-    }
-
-    /**
-     * Modifies the errors in this set, as well as all errors added in the future,
      * by applying a given element map to their graph elements.
      * The method returns this {@link FormatErrorSet} for chaining.
      * Should not be invoked after {@link #setFixed()}.
      * @see #applyInverse(Map)
-     * @see #apply(GraphMap)
      * @param map mapping from current error {@link Element}s to contextual {@link Element}s
      */
     public FormatErrorSet apply(Map<? extends Element,? extends Element> map) {
@@ -292,29 +272,12 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
      * The method returns this {@link FormatErrorSet} for chaining.
      * Should not be invoked after {@link #setFixed()}.
      * @see #applyInverse(Map)
-     * @see #apply(GraphMap)
      * @param relation relation between current error {@link Element}s to contextual {@link Element}s
      */
     public FormatErrorSet apply(Relation<? extends Element,? extends Element> relation) {
         getErrorSet().forEach(e -> e.apply(relation));
         getProjection().addAll(relation);
         return this;
-    }
-
-    /**
-     * Modifies the errors in this set, as well as all errors added in the future,
-     * by applying a given graph map to their graph elements.
-     * The method returns this {@link FormatErrorSet} for chaining.
-     * Should not be invoked after {@link #setFixed()}.
-     * @see #applyInverse(GraphMap)
-     * @see #apply(Map)
-     * @param map mapping from current error {@link Element}s to contextual {@link Element}s
-     */
-    public FormatErrorSet apply(GraphMap map) {
-        var combinedMap = new HashMap<Element,Element>();
-        combinedMap.putAll(map.nodeMap());
-        combinedMap.putAll(map.edgeMap());
-        return apply(combinedMap);
     }
 
     /**

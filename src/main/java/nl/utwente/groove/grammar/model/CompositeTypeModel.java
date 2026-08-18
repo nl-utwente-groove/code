@@ -157,7 +157,7 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
                 for (var imported : imports) {
                     TypeModel origModel = importModels.get(imported);
                     assert origModel != null; // every remaining import was registered with its model
-                    errors.applyInverse(origModel.getMap());
+                    origModel.getMap().applyInverse(errors);
                     errors.add("Unresolved type import %s", imported, origModel.getSource());
                 }
             }

@@ -373,8 +373,8 @@ class RuleCompiler {
      * @return the given error set, modified in place, for chaining
      */
     private FormatErrorSet pullback(FormatErrorSet errors) {
-        errors.applyInverse(this.modelMap);
-        errors.applyInverse(this.untypedModelMap);
+        this.modelMap.applyInverse(errors);
+        this.untypedModelMap.applyInverse(errors);
         errors.apply(normalToSourceMap());
         var source = getSource();
         return errors

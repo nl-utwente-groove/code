@@ -176,7 +176,7 @@ public class GraphInfo extends DefaultFixable {
             var sourceErrors = source.getErrors();
             if (elementMap != null) {
                 // modify the errors using the element map
-                sourceErrors = sourceErrors.transfer(elementMap);
+                sourceErrors = elementMap.transfer(sourceErrors);
             }
             target.setErrors(sourceErrors);
         }
