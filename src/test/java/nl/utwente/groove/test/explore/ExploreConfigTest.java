@@ -62,7 +62,9 @@ public class ExploreConfigTest {
     @Test
     public void testSettingRoundTrip() throws FormatException {
         for (var key : ExploreKey.values()) {
-            for (var kind : key.getKindType().getEnumConstants()) {
+            var kinds = key.getKindType().getEnumConstants();
+            assert kinds != null; // the kind type is an enum class
+            for (var kind : kinds) {
                 Setting setting = createSetting(kind);
                 String text = key.parser().unparse(setting);
                 assertEquals(setting, key.parser().parse(text),

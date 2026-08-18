@@ -659,7 +659,9 @@ public class EcoreTest {
             EcorePorter.instance().doImport(new File(DIR + "shop.ecore"), FileType.ECORE, grammar);
             fail("Import with multiple mapping resources should not succeed");
         } catch (PortException expected) {
-            assertTrue(expected.getMessage(), expected.getMessage().contains("Multiple"));
+            var message = expected.getMessage();
+            assert message != null; // the import refusal carries a message
+            assertTrue(message, message.contains("Multiple"));
         }
     }
 
@@ -828,7 +830,9 @@ public class EcoreTest {
                     .doImport(new File(DIR + "shop.ecore"), FileType.ECORE, grammar);
                 fail("Import with broken mapping resource should not succeed");
             } catch (PortException expected) {
-                assertTrue(expected.getMessage().contains(EcoreMapping.RESOURCE_NAME));
+                var message = expected.getMessage();
+                assert message != null; // the import refusal carries a message
+                assertTrue(message.contains(EcoreMapping.RESOURCE_NAME));
             }
         }
     }

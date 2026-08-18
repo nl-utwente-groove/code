@@ -486,7 +486,9 @@ public class SettingsTest {
                               Map.of(QualName.parse(name), "colour=black\n"));
                 fail("Storing settings under reserved name '" + name + "' should fail");
             } catch (IOException exc) {
-                assertTrue(exc.getMessage(), exc.getMessage().contains("reserved"));
+                var message = exc.getMessage();
+                assert message != null; // the reserved-name refusal carries a message
+                assertTrue(message, message.contains("reserved"));
             }
         }
         // the same segment is unproblematic below the top level
@@ -500,7 +502,9 @@ public class SettingsTest {
                         QualName.name("system"));
             fail("Renaming settings to reserved name 'system' should fail");
         } catch (IOException exc) {
-            assertTrue(exc.getMessage(), exc.getMessage().contains("reserved"));
+            var message = exc.getMessage();
+            assert message != null; // the reserved-name refusal carries a message
+            assertTrue(message, message.contains("reserved"));
         }
         // the grammar name itself is only reserved in the legacy situation;
         // with a system.properties present it is a name like any other
@@ -533,7 +537,9 @@ public class SettingsTest {
             store.putTexts(ResourceKind.SETTINGS, Map.of(legacyName, "$schema=test\n"));
             fail("Storing settings under the legacy properties name should fail");
         } catch (IOException exc) {
-            assertTrue(exc.getMessage(), exc.getMessage().contains("reserved"));
+            var message = exc.getMessage();
+            assert message != null; // the reserved-name refusal carries a message
+            assertTrue(message, message.contains("reserved"));
         }
         // saving the properties migrates them to system.properties and frees the name
         store.putProperties(store.getProperties());

@@ -54,7 +54,9 @@ public class GrammarsTest {
         Assume
             .assumeTrue(String.format("Directory %s cannot be found", location.getAbsolutePath()),
                         location.isDirectory());
-        for (File file : location.listFiles()) {
+        File[] files = location.listFiles();
+        assert files != null; // location is a directory by the assumption above
+        for (File file : files) {
             if (FileType.GRAMMAR.hasExtension(file)) {
                 testGrammar(file);
             }

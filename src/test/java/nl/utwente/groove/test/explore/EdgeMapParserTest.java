@@ -74,8 +74,9 @@ public class EdgeMapParserTest {
             EdgeMapParser.parse(this.typeGraph, text);
             fail("Expected a format error on '" + text + "'");
         } catch (FormatException exc) {
-            assertTrue("Unexpected error: " + exc.getMessage(),
-                       exc.getMessage().contains(message));
+            var error = exc.getMessage();
+            assert error != null; // format exceptions carry a message
+            assertTrue("Unexpected error: " + error, error.contains(message));
         }
     }
 

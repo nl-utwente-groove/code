@@ -142,8 +142,9 @@ public class UserSignatureTest {
             UserSignature.checkUserClass(qualClassNames);
             fail(classNames + " contain errors and should not be loadable");
         } catch (FormatException exc) {
-            assertFalse("Failed to load " + classNames,
-                        exc.getMessage().contains("cannot be loaded"));
+            var message = exc.getMessage();
+            assert message != null; // format exceptions carry a message
+            assertFalse("Failed to load " + classNames, message.contains("cannot be loaded"));
         }
     }
 

@@ -55,7 +55,9 @@ public class IsoTest {
     @Before
     public void setUp() {
         this.graphMap = new HashMap<>();
-        for (File stateFile : new File(INPUT_DIR).listFiles(STATE.getFilter())) {
+        File[] stateFiles = new File(INPUT_DIR).listFiles(STATE.getFilter());
+        assert stateFiles != null; // INPUT_DIR is a checked-in fixture directory
+        for (File stateFile : stateFiles) {
             if (stateFile.isDirectory()) {
                 continue;
             }

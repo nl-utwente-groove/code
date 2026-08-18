@@ -198,7 +198,9 @@ public class LegacySyntaxParserTest {
         var minimaxError = assertThrows(FormatException.class,
                                         () -> LegacySyntaxParser
                                             .parse("minimax:1,10,eat;load,max,eat,2 final 0"));
-        assertTrue(minimaxError.getMessage().contains("890"),
+        var minimaxMessage = minimaxError.getMessage();
+        assert minimaxMessage != null; // format exceptions carry a message
+        assertTrue(minimaxMessage.contains("890"),
                    "The minimax error should point to the removal issue");
         // the cycle acceptor requires an LTL strategy, and vice versa
         assertThrows(FormatException.class, () -> LegacySyntaxParser.parse("bfs cycle 0"));

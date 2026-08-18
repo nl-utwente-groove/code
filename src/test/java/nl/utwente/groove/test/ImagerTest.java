@@ -45,7 +45,9 @@ public class ImagerTest {
     @Before
     public void setUp() {
         this.graphFiles = new TreeSet<>();
-        for (File file : new File(TEST_DIR).listFiles(FileType.GRAPHS.getFilter())) {
+        File[] files = new File(TEST_DIR).listFiles(FileType.GRAPHS.getFilter());
+        assert files != null; // TEST_DIR is a checked-in fixture directory
+        for (File file : files) {
             this.graphFiles.add(file.getName());
         }
         new File(OUTPUT_DIR).mkdir();
@@ -53,8 +55,12 @@ public class ImagerTest {
 
     @After
     public void tearDown() {
-        for (File file : new File(OUTPUT_DIR).listFiles()) {
-            file.delete();
+        // the test itself may already have deleted the output directory
+        File[] files = new File(OUTPUT_DIR).listFiles();
+        if (files != null) {
+            for (File file : files) {
+                file.delete();
+            }
         }
         new File(OUTPUT_DIR).delete();
     }
@@ -90,7 +96,9 @@ public class ImagerTest {
             Assert.fail(exc.getMessage());
         }
         Set<String> imageFiles = new TreeSet<>();
-        for (File file : new File(OUTPUT_DIR).listFiles()) {
+        File[] files = new File(OUTPUT_DIR).listFiles();
+        assert files != null; // OUTPUT_DIR was created above
+        for (File file : files) {
             imageFiles.add(type.stripExtension(file.getName()));
         }
         Assert.assertEquals(this.graphFiles, imageFiles);
