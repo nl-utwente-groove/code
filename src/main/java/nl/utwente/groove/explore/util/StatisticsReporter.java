@@ -29,7 +29,6 @@ import java.util.List;
 import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.explore.ExploreResult;
 import nl.utwente.groove.explore.Verbosity;
-import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.grammar.host.HostFactory;
 import nl.utwente.groove.graph.AGraph;
 import nl.utwente.groove.graph.iso.CertificateStrategy;
@@ -44,6 +43,7 @@ import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.lts.MatchApplier;
 import nl.utwente.groove.lts.MatchCollector;
 import nl.utwente.groove.lts.Status.Flag;
+import nl.utwente.groove.match.plan.PlanSearchStrategy;
 import nl.utwente.groove.transform.Record;
 import nl.utwente.groove.util.Reporter;
 import nl.utwente.groove.util.Strings;
@@ -329,7 +329,9 @@ public class StatisticsReporter extends AExplorationReporter {
         time("Reporting time usage");
         // Timing figures.
         long total = Exploration.getRunningTime();
-        long matching = Rule.getMatchingTime();
+        // total time doing matching-related computations,
+        // including certificate calculation
+        long matching = PlanSearchStrategy.searchFindReporter.getTotalTime();
         long isoChecking = IsoChecker.getTotalTime();
         long generateTime = MatchApplier.getGenerateTime();
         long building = generateTime - isoChecking;

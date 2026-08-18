@@ -53,7 +53,6 @@ import nl.utwente.groove.grammar.type.TypeGuard;
 import nl.utwente.groove.graph.GraphProperties;
 import nl.utwente.groove.graph.GraphProperties.Key;
 import nl.utwente.groove.match.Prover;
-import nl.utwente.groove.match.plan.PlanSearchStrategy;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
@@ -1276,14 +1275,6 @@ public class Rule implements Action, Fixable {
      */
     public static void setAnchorFactory(AnchorFactory anchorFactory) {
         Rule.anchorFactory = anchorFactory;
-    }
-
-    /**
-     * Returns the total time doing matching-related computations. This includes
-     * time spent in certificate calculation.
-     */
-    static public long getMatchingTime() {
-        return PlanSearchStrategy.searchFindReporter.getTotalTime();
     }
 
     /**
