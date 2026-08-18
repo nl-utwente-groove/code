@@ -1,0 +1,4 @@
+class java/lang/invoke/MethodHandles$Lookup
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

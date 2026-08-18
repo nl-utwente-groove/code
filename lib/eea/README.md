@@ -41,11 +41,12 @@ Current contents (all files verbatim from no-npe):
 | abstract bases and implementations: `AbstractCollection`/`AbstractList`/`AbstractMap` (+`$SimpleEntry`/`$SimpleImmutableEntry`)/`AbstractQueue`/`AbstractSequentialList`/`AbstractSet`, `ArrayDeque`, `ArrayList`, `EnumMap`, `EnumSet`, `HashMap`, `HashSet`, `Hashtable`, `LinkedHashMap`, `LinkedHashSet`, `LinkedList`, `TreeMap`, `TreeSet`, `Vector`, `WeakHashMap` | constructor and override contracts consistent with the interfaces |
 | helpers: `Arrays.eea`, `Collections.eea`, `Objects.eea` | `@NonNull` parameters on copy/wrap methods; `Objects` null-contract methods |
 | `java/util/Properties.eea` | `getProperty` returns `@Nullable` |
+| `java/lang/*` (whole package: `Object`, `Class`, `String`, `StringBuilder`, boxed types, `Iterable`, `Thread`, `System`, `Throwable`, exceptions, …) | `Object.equals` takes a `@Nullable` parameter (propagates to every override — equals implementations must null-guard before dereferencing); `clone()` returns `@NonNull`; `Class.getEnumConstants`/`getCanonicalName`/`getClassLoader`/`getPackage`, `Throwable.getCause`/`getMessage`, `System.getProperty` return `@Nullable` |
+| `java/lang/reflect/*`, `ref/*`, `annotation/*`, `constant/*`, `invoke/*` | `Method.invoke` returns `@Nullable` (a primitive-returning method still yields a non-null box — assert with that reason); `AnnotatedElement.getAnnotation` returns `@Nullable` |
 
-Planned next (gh #881): java.lang core (`Object` — the `@Nullable` parameter of
-`equals` —, `Class`/reflection, `System.getProperty`) is the largest remaining
-category (~50 findings), then java.io (`File.listFiles` genuinely returns null on
-I/O errors). `PrintStream.printf` (~17 low-value findings) and the javax.swing
+Planned next (gh #881): java.io (`File.listFiles` genuinely returns null on I/O
+errors, plus `readLine`, `File.getParent`, zip/jar entries — ~8 findings).
+`PrintStream`/`Formatter` printf (~21 low-value findings) and the javax.swing
 files (inheritance conflicts in the `JModel` hierarchy) need a deliberate
 trim-or-adopt decision. Once the curated set stabilises, switching to the full
 `no-npe-eea-all` artifact is the realistic endgame.

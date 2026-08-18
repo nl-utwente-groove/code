@@ -1,0 +1,34 @@
+class java/lang/reflect/Parameter
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getAnnotation
+ <T::Ljava/lang/annotation/Annotation;>(Ljava/lang/Class<TT;>;)TT;
+ <T::Ljava/lang/annotation/Annotation;>(L1java/lang/Class<TT;>;)T0T;
+getAnnotations
+ ()[Ljava/lang/annotation/Annotation;
+ ()[1L1java/lang/annotation/Annotation;
+getAnnotationsByType
+ <T::Ljava/lang/annotation/Annotation;>(Ljava/lang/Class<TT;>;)[TT;
+ <T::Ljava/lang/annotation/Annotation;>(L1java/lang/Class<TT;>;)[1T1T;
+getDeclaredAnnotation
+ <T::Ljava/lang/annotation/Annotation;>(Ljava/lang/Class<TT;>;)TT;
+ <T::Ljava/lang/annotation/Annotation;>(L1java/lang/Class<TT;>;)T0T;
+getDeclaredAnnotations
+ ()[Ljava/lang/annotation/Annotation;
+ ()[1L1java/lang/annotation/Annotation;
+getDeclaredAnnotationsByType
+ <T::Ljava/lang/annotation/Annotation;>(Ljava/lang/Class<TT;>;)[TT;
+ <T::Ljava/lang/annotation/Annotation;>(L1java/lang/Class<TT;>;)[1T1T;
+getDeclaringExecutable
+ ()Ljava/lang/reflect/Executable;
+ ()L1java/lang/reflect/Executable;
+getName
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+getType
+ ()Ljava/lang/Class<*>;
+ ()L1java/lang/Class<*>;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

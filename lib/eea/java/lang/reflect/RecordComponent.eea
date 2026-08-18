@@ -1,0 +1,13 @@
+class java/lang/reflect/RecordComponent
+getAnnotation
+ <T::Ljava/lang/annotation/Annotation;>(Ljava/lang/Class<TT;>;)TT;
+ <T::Ljava/lang/annotation/Annotation;>(L1java/lang/Class<TT;>;)T0T;
+getAnnotations
+ ()[Ljava/lang/annotation/Annotation;
+ ()[1L1java/lang/annotation/Annotation;
+getDeclaredAnnotations
+ ()[Ljava/lang/annotation/Annotation;
+ ()[1L1java/lang/annotation/Annotation;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

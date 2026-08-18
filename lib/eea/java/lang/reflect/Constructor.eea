@@ -1,0 +1,47 @@
+class java/lang/reflect/Constructor
+ <T:Ljava/lang/Object;>
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getAnnotatedReceiverType
+ ()Ljava/lang/reflect/AnnotatedType;
+ ()L0java/lang/reflect/AnnotatedType;
+getAnnotatedReturnType
+ ()Ljava/lang/reflect/AnnotatedType;
+ ()L1java/lang/reflect/AnnotatedType;
+getAnnotation
+ <T::Ljava/lang/annotation/Annotation;>(Ljava/lang/Class<TT;>;)TT;
+ <T::Ljava/lang/annotation/Annotation;>(L1java/lang/Class<TT;>;)T0T;
+getDeclaredAnnotations
+ ()[Ljava/lang/annotation/Annotation;
+ ()[1L1java/lang/annotation/Annotation;
+getDeclaringClass
+ ()Ljava/lang/Class<TT;>;
+ ()L1java/lang/Class<TT;>;
+getExceptionTypes
+ ()[Ljava/lang/Class<*>;
+ ()[1L1java/lang/Class<*>;
+getGenericExceptionTypes
+ ()[Ljava/lang/reflect/Type;
+ ()[1L1java/lang/reflect/Type;
+getGenericParameterTypes
+ ()[Ljava/lang/reflect/Type;
+ ()[1L1java/lang/reflect/Type;
+getName
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+getParameterAnnotations
+ ()[[Ljava/lang/annotation/Annotation;
+ ()[1[1L1java/lang/annotation/Annotation;
+getParameterTypes
+ ()[Ljava/lang/Class<*>;
+ ()[1L1java/lang/Class<*>;
+newInstance
+ ([Ljava/lang/Object;)TT;
+ ([Ljava/lang/Object;)T1T;
+toGenericString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

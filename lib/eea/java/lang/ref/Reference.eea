@@ -1,0 +1,10 @@
+class java/lang/ref/Reference
+ <T:Ljava/lang/Object;>
+reachabilityFence
+ (Ljava/lang/Object;)V
+ (L0java/lang/Object;)V
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+get
+ ()TT;

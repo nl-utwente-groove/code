@@ -1,0 +1,5 @@
+class java/lang/Enum$EnumDesc
+ <E:Ljava/lang/Enum<TE;>;>
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
