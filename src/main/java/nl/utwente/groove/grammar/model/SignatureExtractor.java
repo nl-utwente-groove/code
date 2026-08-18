@@ -55,7 +55,7 @@ class SignatureExtractor {
      */
     SignatureExtractor(RuleCompiler compiler) throws FormatException {
         this.compiler = compiler;
-        FormatErrorSet errors = createErrors();
+        FormatErrorSet errors = new FormatErrorSet();
         this.hiddenPars = new HashSet<>();
         // Mapping from parameter position to parameter
         Map<Integer,UnitPar.RulePar> parMap = new HashMap<>();
@@ -111,7 +111,7 @@ class SignatureExtractor {
 
     private void processNode(Map<Integer,UnitPar.RulePar> parMap, AspectNode node,
                              Integer nr) throws FormatException {
-        var errors = createErrors();
+        var errors = new FormatErrorSet();
 
         AspectKind nodeKind = node.getKind(ROLE);
         assert nodeKind != null;
@@ -157,11 +157,6 @@ class SignatureExtractor {
     /** Convenience method to retrieve the normalised source graph from the compiler. */
     private AspectGraph getNormalSource() {
         return this.compiler.getNormalSource();
-    }
-
-    /** Convenience method to create a pre-projected error set. */
-    private FormatErrorSet createErrors() {
-        return this.compiler.createErrors();
     }
 
     /** The compiler providing the compilation context. */

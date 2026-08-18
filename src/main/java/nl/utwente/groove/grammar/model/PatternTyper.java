@@ -96,11 +96,6 @@ class PatternTyper {
         return this.compiler.isInjective();
     }
 
-    /** Convenience method to create a pre-projected error set. */
-    private FormatErrorSet createErrors() {
-        return this.compiler.createErrors();
-    }
-
     /** The compiler providing the compilation context. */
     private final RuleCompiler compiler;
     /** The global, rule-wide mapping from untyped to typed rule elements. */
@@ -230,7 +225,7 @@ class PatternTyper {
          */
         private void checkTypeSpecialisation(Set<RuleNode> parentNodes, RuleGraph lhs,
                                              RuleGraph rhs) throws FormatException {
-            FormatErrorSet errors = createErrors();
+            FormatErrorSet errors = new FormatErrorSet();
             for (RuleNode node : rhs.nodeSet()) {
                 TypeNode nodeType = node.getType();
                 if (nodeType.isAbstract() && !lhs.containsNode(node)
@@ -427,6 +422,6 @@ class PatternTyper {
         /** The typed pattern constructed by this pass. */
         private final LevelPattern pattern;
         /** List of typing errors. */
-        private final FormatErrorSet errors = createErrors();
+        private final FormatErrorSet errors = new FormatErrorSet();
     }
 }

@@ -90,7 +90,7 @@ class PatternBuilder {
     SortedMap<Index,LevelPattern> build(LevelDistribution distribution) throws FormatException {
         SortedMap<Index,Level> levelMap = new TreeMap<>();
         SortedMap<Index,LevelPattern> result = new TreeMap<>();
-        FormatErrorSet errors = createErrors();
+        FormatErrorSet errors = new FormatErrorSet();
         for (LevelDistribution.Level level1 : distribution.getLevelMap().values()) {
             try {
                 Index index = level1.getIndex();
@@ -138,11 +138,6 @@ class PatternBuilder {
         return this.compiler.isCheckCreatorEdges();
     }
 
-    /** Convenience method to create a pre-projected error set. */
-    private FormatErrorSet createErrors() {
-        return this.compiler.createErrors();
-    }
-
     /** The compiler providing the compilation context. */
     private final RuleCompiler compiler;
     /** Mapping from aspect graph elements to untyped rule elements. */
@@ -168,7 +163,7 @@ class PatternBuilder {
             // initialise the rule data structures
             this.lhs = createGraph(getQualName() + "-" + index + "-lhs");
             this.rhs = createGraph(getQualName() + "-" + index + "-rhs");
-            FormatErrorSet errors = createErrors();
+            FormatErrorSet errors = new FormatErrorSet();
             try {
                 if (origin.countNode != null) {
                     this.countNode = (VariableNode) getNodeImage(origin.countNode);

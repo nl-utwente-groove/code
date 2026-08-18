@@ -164,11 +164,6 @@ class ConditionAssembler {
         return this.compiler.isInjective();
     }
 
-    /** Convenience method to create a pre-projected error set. */
-    private FormatErrorSet createErrors() {
-        return this.compiler.createErrors();
-    }
-
     /** The compiler providing the compilation context. */
     private final RuleCompiler compiler;
 
@@ -374,7 +369,7 @@ class ConditionAssembler {
      */
     private Condition computeFlatRule(LevelPattern level) throws FormatException {
         Condition result;
-        FormatErrorSet errors = createErrors();
+        FormatErrorSet errors = new FormatErrorSet();
         // the resulting rule
         result = createCondition(level, getRootGraph(level), level.lhs);
         result.addAncestorEraserEdges(getAncestorEraserEdges(level));

@@ -97,45 +97,44 @@ class RuleCompiler {
     Rule compile() throws FormatException {
         this.ruleFactory = RuleFactory.newInstance(getTypeGraph().getFactory());
         this.modelMap = new RuleModelMap(this.ruleFactory);
-        LevelIndexTree indexTree = LevelIndexTree.from(getNormalSource(), getQualName());
-        LevelDistribution distribution = this.distribution
-            = LevelDistribution.from(this, getNormalSource(), indexTree);
-        RuleModelMap untypedModelMap = new RuleModelMap();
-        SortedMap<Index,LevelPattern> untypedPatterns;
         try {
-            untypedPatterns = new PatternBuilder(this, untypedModelMap).build(distribution);
-        } catch (FormatException e) {
-            throw new FormatException(e.getErrors().applyInverse(untypedModelMap));
-        }
-        RuleGraphMorphism typingMap = new RuleGraphMorphism(this.ruleFactory);
-        SortedMap<Index,LevelPattern> patternMap;
-        try {
-            patternMap = new PatternTyper(this, typingMap).type(untypedPatterns);
-        } catch (FormatException e) {
-            throw new FormatException(e.getErrors().applyInverse(untypedModelMap));
-        }
-        // compose the untyped model map with the typing morphism
-        for (Map.Entry<AspectNode,RuleNode> nodeEntry : untypedModelMap.nodeMap().entrySet()) {
-            RuleNode image = typingMap.getNode(nodeEntry.getValue());
-            if (image != null) {
-                this.modelMap.putNode(nodeEntry.getKey(), image);
+            LevelIndexTree indexTree = LevelIndexTree.from(getNormalSource(), getQualName());
+            LevelDistribution distribution = this.distribution
+                = LevelDistribution.from(this, getNormalSource(), indexTree);
+            SortedMap<Index,LevelPattern> untypedPatterns
+                = new PatternBuilder(this, this.untypedModelMap).build(distribution);
+            RuleGraphMorphism typingMap = new RuleGraphMorphism(this.ruleFactory);
+            SortedMap<Index,LevelPattern> patternMap
+                = new PatternTyper(this, typingMap).type(untypedPatterns);
+            // compose the untyped model map with the typing morphism
+            for (Map.Entry<AspectNode,RuleNode> nodeEntry : this.untypedModelMap
+                .nodeMap()
+                .entrySet()) {
+                RuleNode image = typingMap.getNode(nodeEntry.getValue());
+                if (image != null) {
+                    this.modelMap.putNode(nodeEntry.getKey(), image);
+                }
             }
-        }
-        for (Map.Entry<AspectEdge,RuleEdge> edgeEntry : untypedModelMap.edgeMap().entrySet()) {
-            RuleEdge image = typingMap.getEdge(edgeEntry.getValue());
-            if (image != null) {
-                this.modelMap.putEdge(edgeEntry.getKey(), image);
+            for (Map.Entry<AspectEdge,RuleEdge> edgeEntry : this.untypedModelMap
+                .edgeMap()
+                .entrySet()) {
+                RuleEdge image = typingMap.getEdge(edgeEntry.getValue());
+                if (image != null) {
+                    this.modelMap.putEdge(edgeEntry.getKey(), image);
+                }
             }
+            this.typeMap = new TypeModelMap(getTypeGraph().getFactory());
+            for (Map.Entry<AspectNode,RuleNode> nodeEntry : this.modelMap.nodeMap().entrySet()) {
+                this.typeMap.putNode(nodeEntry.getKey(), nodeEntry.getValue().getType());
+            }
+            for (Map.Entry<AspectEdge,RuleEdge> edgeEntry : this.modelMap.edgeMap().entrySet()) {
+                var edgeType = (@NonNull TypeEdge) edgeEntry.getValue().getType();
+                this.typeMap.putEdge(edgeEntry.getKey(), edgeType);
+            }
+            return computeRule(patternMap);
+        } catch (FormatException e) {
+            throw new FormatException(pullback(e.getErrors()));
         }
-        this.typeMap = new TypeModelMap(getTypeGraph().getFactory());
-        for (Map.Entry<AspectNode,RuleNode> nodeEntry : this.modelMap.nodeMap().entrySet()) {
-            this.typeMap.putNode(nodeEntry.getKey(), nodeEntry.getValue().getType());
-        }
-        for (Map.Entry<AspectEdge,RuleEdge> edgeEntry : this.modelMap.edgeMap().entrySet()) {
-            var edgeType = (@NonNull TypeEdge) edgeEntry.getValue().getType();
-            this.typeMap.putEdge(edgeEntry.getKey(), edgeType);
-        }
-        return computeRule(patternMap);
     }
 
     /** Returns the qualified name of the rule being compiled. */
@@ -249,6 +248,11 @@ class RuleCompiler {
     private RuleFactory ruleFactory;
     /**
      * Mapping from the elements of the aspect graph representation to the
+     * corresponding untyped rule elements, filled by the {@link PatternBuilder}.
+     */
+    private final RuleModelMap untypedModelMap = new RuleModelMap();
+    /**
+     * Mapping from the elements of the aspect graph representation to the
      * corresponding elements of the rule.
      */
     private RuleModelMap modelMap;
@@ -264,7 +268,7 @@ class RuleCompiler {
      * @throws FormatException if the model cannot be converted to a valid rule
      */
     private Rule computeRule(SortedMap<Index,LevelPattern> patternMap) throws FormatException {
-        FormatErrorSet errors = createErrors();
+        FormatErrorSet errors = new FormatErrorSet();
         Rule result = new ConditionAssembler(this).assemble(patternMap, errors);
         // infer and set the role
         Role role = getRole();
@@ -300,7 +304,7 @@ class RuleCompiler {
                 errors.addAll(exc.getErrors());
             }
         }
-        errors.applyInverse(this.modelMap).throwException();
+        errors.throwException();
         assert result != null;
         return result;
     }
@@ -323,13 +327,21 @@ class RuleCompiler {
     /** Mapping from normalised source model to source model. */
     private @Nullable Map<AspectElement,AspectElement> normalToSourceMap;
 
-    /** Callback factory method for a format error set, with the
-     * normal-to-source element map pre-applied so that errors get
-     * source-graph context. */
-    FormatErrorSet createErrors() {
-        var result = new FormatErrorSet();
-        result.apply(normalToSourceMap());
-        return result;
+    /** Pulls the errors of any compilation phase back to the source graph
+     * vocabulary: typed and untyped rule elements are traced back through
+     * the respective model maps to normalised aspect elements, which are in
+     * turn traced back to source aspect elements. This is the single point
+     * where error context is translated; the phases report errors in their
+     * own element vocabulary. Since error projection accumulates context
+     * elements rather than replacing them, the three applications chain.
+     * Maps not yet filled at the point of failure are empty, so applying
+     * them is a no-op.
+     * @return the given error set, modified in place, for chaining
+     */
+    private FormatErrorSet pullback(FormatErrorSet errors) {
+        errors.applyInverse(this.modelMap);
+        errors.applyInverse(this.untypedModelMap);
+        return errors.apply(normalToSourceMap());
     }
 
 }

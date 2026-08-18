@@ -69,7 +69,7 @@ class LevelDistribution {
 
     /** Distributes the elements of the source graph over the levels. */
     private SortedMap<Index,Level> buildLevels(AspectGraph source) throws FormatException {
-        FormatErrorSet errors = this.compiler.createErrors();
+        FormatErrorSet errors = new FormatErrorSet();
         // Set the parentage in tree preorder
         // Build the level data map,
         // in the tree-order of the indices
