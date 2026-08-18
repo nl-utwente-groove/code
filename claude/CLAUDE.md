@@ -39,7 +39,7 @@ Thin wrappers in `src/main/java/nl/utwente/groove/` delegate to the real impleme
 | `Simulator` | GUI | Interactive grammar editor/simulator (delegates to `gui.Simulator`) |
 | `Viewer` | GUI | Read-only graph/grammar viewer |
 | `Generator` | CLI | Headless state-space exploration (`explore.Generator`) |
-| `ModelChecker` | CLI | CTL model checking (`verify.CTLModelChecker`) |
+| `ModelChecker` | CLI | CTL model checking (`explore.CTLModelChecker`) |
 | `PrologChecker` | CLI | Prolog queries over a grammar/GTS (`prolog.PrologChecker`) |
 | `Imager` | GUI/CLI | Renders graphs/grammars to image files (`gui.Imager`) |
 
@@ -75,7 +75,7 @@ CLI argument parsing uses picocli via `util.cli`.
 - **LTS** (`lts`): `GTS` extends `AGraph`; nodes are `GraphState`s, edges are `RuleTransition`/`RecipeTransition`.
 - **Exploration** (`explore`): `Exploration` combines a `Strategy` (BFS, DFS, linear, LTL-guided, RETE variants, symbolic, …) with an `Acceptor` (final states, cycles, predicates, …). Strategies/acceptors are registered in `StrategyEnumerator`/`AcceptorEnumerator` and are string-parseable for CLI/GUI use.
 - **Control language** (`control`): steers which rules fire when (sequencing, choice, loops, recipes/functions with parameters). Compiled via `control/template` into an executable automaton (`control/instance.Automaton`) that exploration walks in lock-step with matching.
-- **Verification** (`verify`): CTL checking via `CTLModelChecker`/`CTLMarker`; LTL via Büchi automata (external `ltl2buchi` lib) and a product construction.
+- **Verification** (`verify`): CTL checking via `CTLMarker` over a `ModelFacade` (the CLI shell is `explore.CTLModelChecker`, since it generates the state space before checking it); LTL via Büchi automata (external `ltl2buchi` lib) and a product construction.
 - **Algebras** (`algebra`): data attribute semantics. `AlgebraFamily` selects the interpretation: DEFAULT/BIG (concrete Java/BigInteger), POINT (collapsed, for abstraction), TERM (symbolic).
 - **I/O** (`io`): `io/store.SystemStore` for `.gps` bundles; `io/graph` for native formats (GXL is the native graph serialization); `io/external` for the headless `Importer`/`Exporter` framework and registries (`Exporters`/`Importers`). Exporters that work by rendering a graph via JGraph live on the GUI side (`gui/export`) and are contributed to the registry at start-up through `Exporters.register`.
 - **GUI** (`gui`): Swing `Simulator` around a central `SimulatorModel`; graphs rendered with JGraph (`gui/jgraph`, `AspectJGraph` etc.).

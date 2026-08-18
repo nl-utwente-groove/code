@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Stack;
 
 import picocli.CommandLine.IParameterConsumer;
-import picocli.CommandLine.ITypeConverter;
 import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
@@ -341,7 +340,7 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
             + "  t - include transient states (label: 't#', '#' replaced by depth)\n" //
             + "  r - result state label (default: 'result')\n" //
             + "Specify label to be used by appending flag with 'label' (single-quoted)",
-        converter = LTSLabelsHandler.class)
+        converter = LTSLabels.Handler.class)
     private LTSLabels ltsLabels;
 
     /**
@@ -612,14 +611,6 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
      * Generator instances work as expected.
      */
     private static ExploreResult staticResult;
-
-    /** Handler for the {@link #ltsLabels} option. */
-    public static class LTSLabelsHandler implements ITypeConverter<LTSLabels> {
-        @Override
-        public LTSLabels convert(String value) throws FormatException {
-            return new LTSLabels(value);
-        }
-    }
 
     /** Handler for the {@link #grammarProperties} option. */
     public static class PropertiesHandler implements IParameterConsumer {

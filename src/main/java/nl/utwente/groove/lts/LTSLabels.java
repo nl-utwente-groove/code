@@ -31,6 +31,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.util.Pair;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.StringHandler;
+import picocli.CommandLine.ITypeConverter;
 
 /**
  * Class containing special state labels for serialised LTSs.
@@ -344,6 +345,15 @@ public class LTSLabels {
         for (Flag f : Flag.values()) {
             flagMap.put(f.getId(), f);
             nameFlagMap.put(f.getDefault(), f);
+        }
+    }
+
+    /** picocli option handler, converting a flag specification to an
+     * {@link LTSLabels} object. */
+    public static class Handler implements ITypeConverter<LTSLabels> {
+        @Override
+        public LTSLabels convert(String value) throws FormatException {
+            return new LTSLabels(value);
         }
     }
 
