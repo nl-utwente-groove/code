@@ -16,10 +16,9 @@
  */
 package nl.utwente.groove.algebra.syntax;
 
-import static nl.utwente.groove.util.parse.ATermTreeParser.TokenClaz.CONST;
-import static nl.utwente.groove.util.parse.ATermTreeParser.TokenClaz.NAME;
+import static nl.utwente.groove.algebra.syntax.ATermTreeParser.TokenClaz.CONST;
+import static nl.utwente.groove.algebra.syntax.ATermTreeParser.TokenClaz.NAME;
 
-import nl.utwente.groove.util.parse.ATermTreeParser;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.Op;
 

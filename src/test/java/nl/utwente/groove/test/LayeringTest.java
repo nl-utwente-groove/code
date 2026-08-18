@@ -219,8 +219,6 @@ public class LayeringTest {
             "grammar.model -> io",
             // P2 (gh #891): AutIO uses ExplorationReporter stopwatch calls
             "io.graph -> explore",
-            // P2: ATermTreeParser bakes algebra.Sort into the tokenizer
-            "util.parse -> algebra",
             // P3: FormatError/SearchResult/SelectableListEntry context dispatch
             "util.parse -> grammar", "util.parse -> graph", "util.parse -> lts");
 }
