@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.grammar;
+package nl.utwente.groove.match;
 
 import static nl.utwente.groove.util.Factory.lazy;
 
@@ -24,25 +24,21 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import org.eclipse.jdt.annotation.Nullable;
-
+import nl.utwente.groove.grammar.Condition;
+import nl.utwente.groove.grammar.Rule;
+import nl.utwente.groove.grammar.Signature;
+import nl.utwente.groove.grammar.UnitPar;
 import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.host.ValueNode;
 import nl.utwente.groove.grammar.rule.Anchor;
-import nl.utwente.groove.grammar.rule.MatchChecker;
 import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.grammar.rule.RuleToHostMap;
-import nl.utwente.groove.match.Matcher;
-import nl.utwente.groove.match.MatcherFactory;
-import nl.utwente.groove.match.SearchStrategy;
-import nl.utwente.groove.match.TreeMatch;
 import nl.utwente.groove.transform.Proof;
 import nl.utwente.groove.util.Visitor;
 
@@ -74,18 +70,6 @@ public class Prover {
     public Condition getCondition() {
         return getRule().getCondition();
     }
-
-    /** Sets the match filter method. */
-    public void setMatchFilter(MatchChecker matchFilter) {
-        this.matchFilter = matchFilter;
-    }
-
-    /** Returns the optional match filter method. */
-    public Optional<MatchChecker> getMatchFilter() {
-        return Optional.ofNullable(this.matchFilter);
-    }
-
-    private @Nullable MatchChecker matchFilter;
 
     /**
      * Tests if the condition is ground and has a proof for a given host graph.

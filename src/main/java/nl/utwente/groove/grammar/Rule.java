@@ -60,6 +60,7 @@ import nl.utwente.groove.graph.GraphProperties;
 import nl.utwente.groove.graph.GraphProperties.Key;
 import nl.utwente.groove.match.Matcher;
 import nl.utwente.groove.match.MatcherFactory;
+import nl.utwente.groove.match.Prover;
 import nl.utwente.groove.match.SearchStrategy;
 import nl.utwente.groove.match.TreeMatch;
 import nl.utwente.groove.match.plan.PlanSearchStrategy;
