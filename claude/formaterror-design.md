@@ -79,6 +79,24 @@ renaming the class is hundreds of sites of churn; kept as-is, documented.
   the generic-context design anyway.
 - Moving `ResourceKind` to `util`: too grammar-entangled.
 
+## Findings from the implementation (2026-08-18)
+
+- The old `instanceof` chain silently dropped `null` parameters and any
+  unrecognized object (including plain `String` format arguments). The
+  generic context keeps unrecognized objects — required, since consumers
+  like `LTSDisplay` fish the `GraphState` out of the context — so format
+  strings now land in the context too. Harmless: the formatted message
+  already contains them, so equality is unaffected in practice.
+  `null` parameters are still dropped, now explicitly (`SettingsTest`
+  caught this: `OracleParser` passes a null argument).
+- `Collections.unmodifiableCollection` does not implement value equality;
+  `FormatError.equals` must compare the backing sets, not the
+  `getContext()` views. (Bug in the first cut, fixed in the severity
+  commit, covered by `FormatErrorTest`.)
+- `@NonNullByDefault` on `FormatError`/`FormatErrorSet` required declaring
+  the varargs as `@Nullable Object...` — hundreds of existing call sites
+  legitimately pass nullable arguments.
+
 ## Known behavioural deltas
 
 - **Dedup**: equality now includes the full context (resource-bearing
