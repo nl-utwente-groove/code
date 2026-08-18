@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import nl.utwente.groove.automaton.RegAut;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.rule.LabelVar;
@@ -20,6 +19,7 @@ import nl.utwente.groove.grammar.rule.Valuation;
 import nl.utwente.groove.grammar.type.TypeElement;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.graph.EdgeComparator;
+import nl.utwente.groove.match.automaton.RegAut;
 import nl.utwente.groove.match.plan.PlanSearchStrategy.Search;
 
 /**

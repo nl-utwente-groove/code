@@ -11,7 +11,7 @@ module nl.utwente.groove {
     exports nl.utwente.groove.prolog.util;
     exports nl.utwente.groove.io.external.format;
     exports nl.utwente.groove.io.external.format.ecore;
-    exports nl.utwente.groove.automaton;
+    exports nl.utwente.groove.match.automaton;
     exports nl.utwente.groove.grammar;
     exports nl.utwente.groove.gui.action;
     exports nl.utwente.groove.control.parse;

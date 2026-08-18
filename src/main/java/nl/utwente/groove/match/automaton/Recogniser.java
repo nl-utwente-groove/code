@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.automaton;
+package nl.utwente.groove.match.automaton;
 
 import static nl.utwente.groove.graph.Direction.OUTGOING;
 
@@ -24,13 +24,13 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import nl.utwente.groove.automaton.RegAut.Result;
 import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.host.HostNodeSet;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.Direction;
+import nl.utwente.groove.match.automaton.RegAut.Result;
 
 /**
  * Class that finds matches for a regular automaton

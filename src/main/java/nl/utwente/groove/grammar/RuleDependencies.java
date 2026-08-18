@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import nl.utwente.groove.automaton.RegAut;
 import nl.utwente.groove.grammar.Condition.Op;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.NamedResourceModel;
@@ -42,6 +41,7 @@ import nl.utwente.groove.grammar.type.TypeEdge;
 import nl.utwente.groove.grammar.type.TypeElement;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeNode;
+import nl.utwente.groove.match.automaton.RegAut;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

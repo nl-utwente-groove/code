@@ -16,8 +16,8 @@
  */
 package nl.utwente.groove.test.rel;
 
-import nl.utwente.groove.automaton.MatrixAutomaton;
-import nl.utwente.groove.automaton.RegAut;
+import nl.utwente.groove.match.automaton.MatrixAutomaton;
+import nl.utwente.groove.match.automaton.RegAut;
 
 /**
  * Tests the available {@link RegAut} interface.

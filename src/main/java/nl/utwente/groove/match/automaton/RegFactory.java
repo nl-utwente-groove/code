@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.automaton;
+package nl.utwente.groove.match.automaton;
 
 import nl.utwente.groove.grammar.rule.RuleLabel;
 import nl.utwente.groove.graph.ElementFactory;

@@ -24,8 +24,6 @@ import java.util.function.Predicate;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.automaton.RegAut;
-import nl.utwente.groove.automaton.RegAutCalculator;
 import nl.utwente.groove.grammar.rule.RegExpr.Atom;
 import nl.utwente.groove.grammar.rule.RegExpr.Choice;
 import nl.utwente.groove.grammar.rule.RegExpr.Inv;
@@ -42,6 +40,8 @@ import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.ALabel;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
+import nl.utwente.groove.match.automaton.RegAut;
+import nl.utwente.groove.match.automaton.RegAutCalculator;
 import nl.utwente.groove.util.line.Line;
 
 /**

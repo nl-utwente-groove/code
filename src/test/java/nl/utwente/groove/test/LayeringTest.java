@@ -48,7 +48,7 @@ import nl.utwente.groove.util.AIGenerated;
  * {@code claude/dependency-analysis.md}. The layering (bottom to top) is
  * <pre>
  * util, annotation, graph, algebra,
- * {grammar+control+automaton+match+transform} (the rule-system cluster),
+ * {grammar+control+match+transform} (the rule-system cluster),
  * lts, io, verify, explore, prolog, gui
  * </pre>
  * where the braced cluster counts as a single layer. Every remaining
@@ -197,7 +197,7 @@ public class LayeringTest {
     private static final String CLUSTER_NAME = "(rule system)";
     /** The mutually dependent packages forming the rule-system layer. */
     private static final Set<String> CLUSTER
-        = Set.of("grammar", "control", "automaton", "match", "transform");
+        = Set.of("grammar", "control", "match", "transform");
     /** Layer ranks; a dependency must go from a higher to a lower rank. */
     private static final Map<String,@Nullable Integer> RANKS = Map
         .ofEntries(Map.entry("util", 0), Map.entry("annotation", 1), Map.entry("graph", 2),

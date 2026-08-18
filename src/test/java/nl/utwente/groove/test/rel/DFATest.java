@@ -31,10 +31,6 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 
-import nl.utwente.groove.automaton.DFA;
-import nl.utwente.groove.automaton.DFAState;
-import nl.utwente.groove.automaton.RegAutCalculator;
-import nl.utwente.groove.automaton.SimpleNFA;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.rule.LabelVar;
 import nl.utwente.groove.grammar.rule.RegExpr;
@@ -45,6 +41,10 @@ import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.io.Groove;
+import nl.utwente.groove.match.automaton.DFA;
+import nl.utwente.groove.match.automaton.DFAState;
+import nl.utwente.groove.match.automaton.RegAutCalculator;
+import nl.utwente.groove.match.automaton.SimpleNFA;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 

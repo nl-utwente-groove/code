@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.automaton;
+package nl.utwente.groove.match.automaton;
 
 import static nl.utwente.groove.graph.Direction.INCOMING;
 import static nl.utwente.groove.graph.Direction.OUTGOING;

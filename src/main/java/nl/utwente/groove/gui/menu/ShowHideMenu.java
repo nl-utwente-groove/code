@@ -37,8 +37,6 @@ import javax.swing.JPopupMenu;
 
 import org.eclipse.jdt.annotation.NonNull;
 
-import nl.utwente.groove.automaton.NodeRelation;
-import nl.utwente.groove.automaton.RelationCalculator;
 import nl.utwente.groove.grammar.rule.RegExpr;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Element;
@@ -56,6 +54,8 @@ import nl.utwente.groove.gui.tree.LabelTree.LabelledCells;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSListener;
 import nl.utwente.groove.lts.GraphTransition;
+import nl.utwente.groove.match.automaton.NodeRelation;
+import nl.utwente.groove.match.automaton.RelationCalculator;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.io.FileType;
 import nl.utwente.groove.util.parse.FormatException;
