@@ -1,0 +1,68 @@
+class java/util/Vector
+ <E:Ljava/lang/Object;>
+addAll
+ (ILjava/util/Collection<+TE;>;)Z
+ (IL1java/util/Collection<+TE;>;)Z
+addAll
+ (Ljava/util/Collection<+TE;>;)Z
+ (L1java/util/Collection<+TE;>;)Z
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+contains
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+containsAll
+ (Ljava/util/Collection<*>;)Z
+ (L1java/util/Collection<*>;)Z
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+get
+ (I)TE;
+ (I)T1E;
+indexOf
+ (Ljava/lang/Object;)I
+ (L0java/lang/Object;)I
+iterator
+ ()Ljava/util/Iterator<TE;>;
+ ()L1java/util/Iterator<TE;>;
+lastIndexOf
+ (Ljava/lang/Object;)I
+ (L0java/lang/Object;)I
+listIterator
+ ()Ljava/util/ListIterator<TE;>;
+ ()L1java/util/ListIterator<TE;>;
+listIterator
+ (I)Ljava/util/ListIterator<TE;>;
+ (I)L1java/util/ListIterator<TE;>;
+removeAll
+ (Ljava/util/Collection<*>;)Z
+ (L1java/util/Collection<*>;)Z
+removeIf
+ (Ljava/util/function/Predicate<-TE;>;)Z
+ (L1java/util/function/Predicate<-TE;>;)Z
+replaceAll
+ (Ljava/util/function/UnaryOperator<TE;>;)V
+ (L1java/util/function/UnaryOperator<TE;>;)V
+retainAll
+ (Ljava/util/Collection<*>;)Z
+ (L1java/util/Collection<*>;)Z
+sort
+ (Ljava/util/Comparator<-TE;>;)V
+ (L1java/util/Comparator<-TE;>;)V
+spliterator
+ ()Ljava/util/Spliterator<TE;>;
+ ()L1java/util/Spliterator<TE;>;
+subList
+ (II)Ljava/util/List<TE;>;
+ (II)L1java/util/List<TE;>;
+toArray
+ ()[Ljava/lang/Object;
+ ()[1Ljava/lang/Object;
+toArray
+ <T:Ljava/lang/Object;>([TT;)[TT;
+ <T:Ljava/lang/Object;>([1TT;)[1TT;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

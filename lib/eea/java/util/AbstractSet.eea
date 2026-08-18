@@ -1,0 +1,8 @@
+class java/util/AbstractSet
+ <E:Ljava/lang/Object;>
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+removeAll
+ (Ljava/util/Collection<*>;)Z
+ (L1java/util/Collection<*>;)Z

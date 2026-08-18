@@ -1,0 +1,77 @@
+class java/util/ArrayDeque
+ <E:Ljava/lang/Object;>
+add
+ (TE;)Z
+ (T1E;)Z
+addAll
+ (Ljava/util/Collection<+TE;>;)Z
+ (L1java/util/Collection<+TE;>;)Z
+clone
+ ()Ljava/util/ArrayDeque<TE;>;
+ ()L1java/util/ArrayDeque<TE;>;
+descendingIterator
+ ()Ljava/util/Iterator<TE;>;
+ ()L1java/util/Iterator<TE;>;
+element
+ ()TE;
+ ()T1E;
+getFirst
+ ()TE;
+ ()T1E;
+getLast
+ ()TE;
+ ()T1E;
+iterator
+ ()Ljava/util/Iterator<TE;>;
+ ()L1java/util/Iterator<TE;>;
+offer
+ (TE;)Z
+ (T1E;)Z
+peek
+ ()TE;
+ ()T0E;
+peekFirst
+ ()TE;
+ ()T0E;
+peekLast
+ ()TE;
+ ()T0E;
+poll
+ ()TE;
+ ()T0E;
+pollFirst
+ ()TE;
+ ()T0E;
+pollLast
+ ()TE;
+ ()T0E;
+pop
+ ()TE;
+ ()T1E;
+remove
+ ()TE;
+ ()T1E;
+removeAll
+ (Ljava/util/Collection<*>;)Z
+ (L1java/util/Collection<*>;)Z
+removeFirst
+ ()TE;
+ ()T1E;
+removeIf
+ (Ljava/util/function/Predicate<-TE;>;)Z
+ (L1java/util/function/Predicate<-TE;>;)Z
+removeLast
+ ()TE;
+ ()T1E;
+retainAll
+ (Ljava/util/Collection<*>;)Z
+ (L1java/util/Collection<*>;)Z
+spliterator
+ ()Ljava/util/Spliterator<TE;>;
+ ()L1java/util/Spliterator<TE;>;
+toArray
+ ()[Ljava/lang/Object;
+ ()[1Ljava/lang/Object;
+toArray
+ <T:Ljava/lang/Object;>([TT;)[TT;
+ <T:Ljava/lang/Object;>([1TT;)[1TT;

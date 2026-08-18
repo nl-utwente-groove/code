@@ -1,0 +1,3 @@
+class java/util/PrimitiveIterator
+ <T:Ljava/lang/Object;T_CONS:Ljava/lang/Object;>
+ <1T:Ljava/lang/Object;1T_CONS:Ljava/lang/Object;>

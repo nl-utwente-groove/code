@@ -1,0 +1,14 @@
+class java/util/AbstractQueue
+ <E:Ljava/lang/Object;>
+add
+ (TE;)Z
+ (T1E;)Z
+addAll
+ (Ljava/util/Collection<+TE;>;)Z
+ (L1java/util/Collection<+TE;>;)Z
+element
+ ()TE;
+ ()T1E;
+remove
+ ()TE;
+ ()T1E;

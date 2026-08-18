@@ -1,0 +1,26 @@
+class java/util/AbstractList
+ <E:Ljava/lang/Object;>
+addAll
+ (ILjava/util/Collection<+TE;>;)Z
+ (IL1java/util/Collection<+TE;>;)Z
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+indexOf
+ (Ljava/lang/Object;)I
+ (L0java/lang/Object;)I
+iterator
+ ()Ljava/util/Iterator<TE;>;
+ ()L1java/util/Iterator<TE;>;
+lastIndexOf
+ (Ljava/lang/Object;)I
+ (L0java/lang/Object;)I
+listIterator
+ ()Ljava/util/ListIterator<TE;>;
+ ()L1java/util/ListIterator<TE;>;
+listIterator
+ (I)Ljava/util/ListIterator<TE;>;
+ (I)L1java/util/ListIterator<TE;>;
+subList
+ (II)Ljava/util/List<TE;>;
+ (II)L1java/util/List<TE;>;

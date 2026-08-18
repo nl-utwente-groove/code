@@ -1,0 +1,8 @@
+class java/util/AbstractMap$SimpleImmutableEntry
+ <K:Ljava/lang/Object;V:Ljava/lang/Object;>
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

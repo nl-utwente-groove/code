@@ -31,16 +31,24 @@ properties keep the surface controllable:
 - Annotations propagate to overriding declarations, so annotating an interface
   (`Queue.poll`) also covers all implementations (`LinkedList.poll`, `ArrayDeque.poll`, …).
 
-Current contents:
+Current contents (all files verbatim from no-npe):
 
-| File | Why |
+| File(s) | Why |
 |---|---|
-| `java/util/Queue.eea` | `poll`/`peek` return `@Nullable` (verbatim from no-npe) |
-| `java/util/Deque.eea` | idem, plus `pollFirst`/`peekLast` etc. (verbatim from no-npe) |
-| `java/util/Map.eea` | `get`/`put`/`remove`/`compute*`/`merge` return `@Nullable` (verbatim from no-npe) |
+| `java/util/Queue.eea`, `Deque.eea` | `poll`/`peek` (+ `pollFirst`/`peekLast` etc.) return `@Nullable` |
+| `java/util/Map.eea`, `Map$Entry.eea` | `get`/`put`/`remove`/`compute*`/`merge` return `@Nullable` |
+| collection interfaces: `Collection`, `List`, `Set`, `SortedSet`, `NavigableSet`, `SortedMap`, `Iterator`, `PrimitiveIterator*`, `Spliterator`, `Comparator` | bulk operations and copy constructors take `@NonNull` arguments; `List.sort` takes a `@NonNull` comparator (stricter than the JDK, which accepts null for natural ordering — call sites use `Comparator.naturalOrder()` instead) |
+| abstract bases and implementations: `AbstractCollection`/`AbstractList`/`AbstractMap` (+`$SimpleEntry`/`$SimpleImmutableEntry`)/`AbstractQueue`/`AbstractSequentialList`/`AbstractSet`, `ArrayDeque`, `ArrayList`, `EnumMap`, `EnumSet`, `HashMap`, `HashSet`, `Hashtable`, `LinkedHashMap`, `LinkedHashSet`, `LinkedList`, `TreeMap`, `TreeSet`, `Vector`, `WeakHashMap` | constructor and override contracts consistent with the interfaces |
+| helpers: `Arrays.eea`, `Collections.eea`, `Objects.eea` | `@NonNull` parameters on copy/wrap methods; `Objects` null-contract methods |
+| `java/util/Properties.eea` | `getProperty` returns `@Nullable` |
 
-Planned next (gh #881): once the curated set stabilises, switching to the full
-`no-npe-eea-all` artifact is the realistic endgame (~170 further findings).
+Planned next (gh #881): java.lang core (`Object` — the `@Nullable` parameter of
+`equals` —, `Class`/reflection, `System.getProperty`) is the largest remaining
+category (~50 findings), then java.io (`File.listFiles` genuinely returns null on
+I/O errors). `PrintStream.printf` (~17 low-value findings) and the javax.swing
+files (inheritance conflicts in the `JModel` hierarchy) need a deliberate
+trim-or-adopt decision. Once the curated set stabilises, switching to the full
+`no-npe-eea-all` artifact is the realistic endgame.
 
 ## Reviewing `.eea` files
 

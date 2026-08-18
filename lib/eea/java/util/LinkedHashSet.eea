@@ -1,0 +1,5 @@
+class java/util/LinkedHashSet
+ <E:Ljava/lang/Object;>
+spliterator
+ ()Ljava/util/Spliterator<TE;>;
+ ()L1java/util/Spliterator<TE;>;
