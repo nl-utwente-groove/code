@@ -157,7 +157,6 @@ public class Algebras {
      * the signature, with the {@link Sort#USER} sort as optional prefix.
      * Returns {@code null} if the executable is neither of the above.
      */
-    @SuppressWarnings("null")
     private static Help createUserHelp(Executable exec, Map<String,String> tokenMap) {
         String opName = null;
         String resultSort = null;
