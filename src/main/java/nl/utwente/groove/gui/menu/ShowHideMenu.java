@@ -636,6 +636,7 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
             int result = fileChooser.showOpenDialog(this.jgraph);
             if (result == JFileChooser.APPROVE_OPTION) {
                 File labelsFile = fileChooser.getSelectedFile();
+                assert labelsFile != null; // a file has been selected on approve
                 String fileLine;
                 Set<String> labels = new HashSet<>();
                 try (BufferedReader in = new BufferedReader(new FileReader(labelsFile))) {

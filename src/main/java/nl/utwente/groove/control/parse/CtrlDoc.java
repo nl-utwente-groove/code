@@ -88,8 +88,10 @@ public class CtrlDoc {
                 // We are running from a JAR file so we cannot read the file
                 // directly because it is compressed.
                 JarURLConnection conn = ((JarURLConnection) url.openConnection());
+                var entry = conn.getJarEntry();
+                assert entry != null; // the resource URL names an entry within the jar
                 try (ZipFile zipFile = conn.getJarFile();
-                     InputStream in = zipFile.getInputStream(conn.getJarEntry());) {
+                     InputStream in = zipFile.getInputStream(entry);) {
                     grammarText = nl.utwente.groove.io.FileUtils.readInputStreamToString(in);
                 }
             } else {
