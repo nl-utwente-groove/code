@@ -1,0 +1,9 @@
+== rule argBelowLevel
+errors:
+  - Argument  does not exist on the level of the operator 'add'
+== rule askArgument
+errors:
+  - User input value  not supported as expression argument
+== rule setTargetOnOwnLevel
+errors:
+  - Target of set operator 'sum' must be defined on the parent level

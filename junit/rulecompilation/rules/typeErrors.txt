@@ -1,0 +1,40 @@
+== rule ambiguousMergers
+errors:
+  - Non-injectively matched mergers have ambiguous target types
+== rule createAbstractEdge
+errors:
+  - Creation of abstract a-edge not allowed
+== rule mergeSubIntoSuper
+errors:
+  - Actual type of merged B-node may be subtype of merge target
+== rule mergersDistinct
+signature: ()
+hidden: []
+anchor: [n0:A#, n1:A#, n2:B, n3:C]
+Existential mergersDistinct [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:A#, n1:A#, n2:B, n3:C] edges [n0--!=-->n1]
+  rhs: nodes [n0:A#, n1:A#, n2:B, n3:C] edges [n0--!=-->n1, n0--=-->n2, n1--=-->n3]
+== rule mergersDistinctNac
+signature: ()
+hidden: []
+anchor: [n0:A#, n1:A#, n2:B, n3:C]
+Existential mergersDistinctNac [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:A#, n1:A#, n2:B, n3:C] edges []
+  rhs: nodes [n0:A#, n1:A#, n2:B, n3:C] edges [n0--=-->n2, n1--=-->n3]
+  Negated mergersDistinctNac-[]-lhs:!(n0--=-->n1) [non-positive]
+    root: nodes [n0:A, n1:A] edges []
+    lhs: nodes [n0:A, n1:A] edges [n0--=-->n1]
+== rule mergersDistinctParent
+signature: ()
+hidden: []
+anchor: [n0:A, n1:A]
+Existential mergersDistinctParent [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:A#, n1:A#] edges [n0--!=-->n1]
+  rhs: nodes [n0:A#, n1:A#] edges [n0--!=-->n1]
+  Existential mergersDistinctParent[0]
+    root: nodes [n0:A#, n1:A#] edges []
+    lhs: nodes [n0:A, n1:A, n2:B, n3:C] edges []
+    rhs: nodes [n0:A, n1:A, n2:B, n3:C] edges [n0--=-->n2, n1--=-->n3]

@@ -1,3 +1,11 @@
+== rule equalityBesideEraser
+signature: ()
+hidden: []
+anchor: [n0:A, n0--a-->n0]
+Existential equalityBesideEraser [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:A, n1:A, n2:A] edges [n0--a-->n0, n0--!=-->n1, n1--=-->n2]
+  rhs: nodes [n0:A, n1:A, n2:A] edges [n0--!=-->n1, n1--=-->n2]
 == rule nodeEraserIncident
 signature: ()
 hidden: []
@@ -20,6 +28,9 @@ Existential seqBesideEraser [non-positive]
 == rule seqThroughEraser
 errors:
   - Regular expression a.b may match a path through a b-edge erased by this rule (set the ignoreRegExp grammar property to accept this)
+== rule seqThroughSublevelEraser
+errors:
+  - Regular expression a* may match a path through a a-edge erased by this rule (set the ignoreRegExp grammar property to accept this)
 == rule wildcardPositional
 signature: ()
 hidden: []

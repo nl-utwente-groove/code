@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph edgemode="directed" edgeids="false" role="rule" id="argBelowLevel">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="n0">
+            <attr name="layout">
+                <string>40 40 60 30</string>
+            </attr>
+        </node>
+        <node id="n1">
+            <attr name="layout">
+                <string>40 140 60 30</string>
+            </attr>
+        </node>
+        <node id="n2">
+            <attr name="layout">
+                <string>300 40 60 30</string>
+            </attr>
+        </node>
+        <node id="n3">
+            <attr name="layout">
+                <string>300 140 60 30</string>
+            </attr>
+        </node>
+        <node id="n4">
+            <attr name="layout">
+                <string>300 240 60 30</string>
+            </attr>
+        </node>
+        <node id="n5">
+            <attr name="layout">
+                <string>170 240 60 30</string>
+            </attr>
+        </node>
+        <node id="n6">
+            <attr name="layout">
+                <string>170 340 60 30</string>
+            </attr>
+        </node>
+        <edge to="n0" from="n0">
+            <attr name="label">
+                <string>type:A</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n0">
+            <attr name="label">
+                <string>x</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n1">
+            <attr name="label">
+                <string>int:</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n2">
+            <attr name="label">
+                <string>forall:</string>
+            </attr>
+        </edge>
+        <edge to="n3" from="n3">
+            <attr name="label">
+                <string>type:B</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n3">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge to="n4" from="n3">
+            <attr name="label">
+                <string>y</string>
+            </attr>
+        </edge>
+        <edge to="n4" from="n4">
+            <attr name="label">
+                <string>int:</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n4">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge to="n5" from="n5">
+            <attr name="label">
+                <string>prod:</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n5">
+            <attr name="label">
+                <string>arg:0</string>
+            </attr>
+        </edge>
+        <edge to="n4" from="n5">
+            <attr name="label">
+                <string>arg:1</string>
+            </attr>
+        </edge>
+        <edge to="n6" from="n5">
+            <attr name="label">
+                <string>int:add</string>
+            </attr>
+        </edge>
+        <edge to="n6" from="n6">
+            <attr name="label">
+                <string>int:</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>

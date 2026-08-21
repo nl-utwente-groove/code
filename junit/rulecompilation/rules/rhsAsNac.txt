@@ -1,0 +1,14 @@
+== rule creators
+signature: ()
+hidden: []
+anchor: [n0:Ω#, n1:Ω#]
+Existential creators [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, n1:Ω#] edges [n0--A-->n0, n1--A-->n1]
+  rhs: nodes [n0:Ω#, n1:Ω#, n2:Ω#] edges [n0--A-->n0, n0--a-->n1, n0--b-->n2, n1--A-->n1, n2--B-->n2]
+  Negated creators-[]-lhs-nac-1 [non-positive]
+    root: nodes [n0:Ω#] edges []
+    lhs: nodes [n0:Ω#, n2:Ω#] edges [n0--b-->n2, n2--B-->n2]
+  Negated creators-[]-lhs:!(n0--a-->n1) [non-positive]
+    root: nodes [n0:Ω#, n1:Ω#] edges []
+    lhs: nodes [n0:Ω#, n1:Ω#] edges [n0--a-->n1]

@@ -1,3 +1,12 @@
+== rule anchorNotBi
+errors:
+  - Anchor node must be 'par'
+== rule anchorNotLhs
+errors:
+  - Anchor node must be in LHS
+== rule dupVarKinds
+errors:
+  - Duplicate variable '?x' for flag and edge labels
 == rule letUnknown
 errors:
   - A-node has unknown y-edge to int

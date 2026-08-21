@@ -1,0 +1,15 @@
+== rule pushDown
+signature: ()
+hidden: []
+anchor: []
+Existential pushDown [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, x1:int] edges [n0--A-->n0, n0--x-->x1]
+  rhs: nodes [n0:Ω#, x1:int] edges [n0--A-->n0, n0--x-->x1]
+  Universal pushDown[0] [non-positive]
+    root: nodes [n0:Ω#] edges []
+    lhs: nodes [n0:Ω#, n2:Ω#] edges [n2--B-->n2]
+    rhs: nodes [n0:Ω#, n2:Ω#] edges [n2--B-->n2, n2--seen-->n2]
+    Existential pushDown[0,0]
+      root: nodes [n0:Ω#, n2:Ω#] edges []
+      lhs: nodes [n0:Ω#, n2:Ω#] edges []

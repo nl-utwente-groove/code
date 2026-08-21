@@ -1,3 +1,11 @@
+== rule delOverReader
+signature: ()
+hidden: []
+anchor: [n0:Ω#, n1:Ω#, n0--a-->n1]
+Existential delOverReader [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, n1:Ω#] edges [n0--A-->n0, n0--a-->n1, n1--B-->n1]
+  rhs: nodes [n0:Ω#, n1:Ω#] edges [n0--A-->n0, n1--B-->n1]
 == rule eraseCreate
 signature: ()
 hidden: []

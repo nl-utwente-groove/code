@@ -1,6 +1,9 @@
 == rule countAtOwnLevel
 errors:
   - Match count not defined at appropriate level
+== rule nacAcrossLevel
+errors:
+  - Source and target of edge n1--a-->n2 have incompatible nesting
 == rule siblingEdge
 errors:
   - Source and target of edge n2--a-->n3 have incompatible nesting
