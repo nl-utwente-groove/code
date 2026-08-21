@@ -81,8 +81,8 @@ class SignatureExtractor {
                     // this is an unnumbered parameter,
                     // which serves as an explicit anchor node
                     if (!node.has(PARAM_BI)) {
-                        throw new FormatException("Anchor node must be '%s'",
-                            PARAM_BI.getName(), node);
+                        throw new FormatException("Anchor node must be '%s'", PARAM_BI.getName(),
+                            node);
                     }
                     if (!node.has(ROLE, AspectKind::inLHS)) {
                         throw new FormatException("Anchor node must be in LHS", node);
@@ -126,9 +126,6 @@ class SignatureExtractor {
         assert nodeImage != null;
         if (parKind == PARAM_IN && nodeKind.isCreator()) {
             errors.add("Input parameter %d cannot be creator node", nr, node);
-        }
-        if (nodeKind.inNAC()) {
-            errors.add("Parameter '%d' may not occur in NAC", nr, node);
         }
         UnitPar.RulePar par = new UnitPar.RulePar(parKind, nodeImage, nodeKind.isCreator());
         this.parOriginMap.put(par, node);
