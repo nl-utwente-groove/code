@@ -290,7 +290,10 @@ public class DFA {
         Map<DFAState,Cell> result = new LinkedHashMap<>();
         Cell finalCell = new Cell(0);
         Cell nonFinalCell = new Cell(1);
-        for (DFAState s : kept) {
+        for (DFAState s : getStates()) {
+            if (!kept.contains(s)) {
+                continue;
+            }
             Cell cell = s.isFinal()
                 ? finalCell
                 : nonFinalCell;
