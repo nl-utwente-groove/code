@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.io.external;
 
+import java.util.Objects;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -34,6 +35,12 @@ import nl.utwente.groove.util.QualName;
 @NonNullByDefault
 public record Imported(QualName qualName, ResourceKind kind, @Nullable AspectGraph graph,
                        @Nullable String text) {
+
+    /** Overrides the generated hash code, which would use identity-based enum hashes. */
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.qualName, this.kind.ordinal(), this.graph, this.text);
+    }
     /** Constructs a graph-based resource. */
     public Imported(ResourceKind kind, AspectGraph resource) {
         this(resource.getQualName(), kind, resource, null);

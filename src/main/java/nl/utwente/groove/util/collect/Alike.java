@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.util.collect;
 
+import java.util.Objects;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -24,6 +25,12 @@ import org.eclipse.jdt.annotation.Nullable;
  */
 @NonNullByDefault
 public record Alike<T>(@Nullable T value, Likeness likeness) {
+
+    /** Overrides the generated hash code, which would use identity-based enum hashes. */
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.value, this.likeness.ordinal());
+    }
     /** Constructs the unique {@link #DISTINCT} value. */
     private Alike() {
         this(null, Likeness.DISTINCT);

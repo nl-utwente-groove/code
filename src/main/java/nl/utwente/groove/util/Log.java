@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.util;
 
+import java.util.Objects;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.System.Logger;
@@ -149,6 +150,12 @@ public final class Log {
      * empty for all GROOVE loggers
      */
     public record Setting(Logger.Level level, String subsystem) {
+
+        /** Overrides the generated hash code, which would use identity-based enum hashes. */
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.level.ordinal(), this.subsystem);
+        }
         /** Puts this setting into effect (see {@link Log#set}). */
         public void apply() {
             set(subsystem(), level());

@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.io.external.format.ecore;
 
+import java.util.Objects;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -855,6 +856,14 @@ public class GraphsToEcore {
      */
     private static record Descriptor(String name, @Nullable Sort sort, @Nullable String targetLabel,
         boolean containment, @Nullable Multiplicity mult, boolean indexed) {
+
+        /** Overrides the generated hash code, which would use identity-based enum hashes. */
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.name, this.sort == null
+                    ? -1
+                    : this.sort.ordinal(), this.targetLabel, this.containment, this.mult, this.indexed);
+        }
         // no additional members
     }
 
@@ -865,6 +874,14 @@ public class GraphsToEcore {
      */
     private static record Intermediate(@Nullable Sort sort, @Nullable String targetLabel,
         boolean containment) {
+
+        /** Overrides the generated hash code, which would use identity-based enum hashes. */
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.sort == null
+                    ? -1
+                    : this.sort.ordinal(), this.targetLabel, this.containment);
+        }
         // no additional members
     }
 

@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.util.parse;
 
+import java.util.Objects;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -414,6 +415,12 @@ public class FormatError
 
     /** Resource parameter class. */
     public static record Resource(ResourceKind kind, QualName name) {
+
+        /** Overrides the generated hash code, which would use identity-based enum hashes. */
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.kind.ordinal(), this.name);
+        }
         // empty by design
 
     }

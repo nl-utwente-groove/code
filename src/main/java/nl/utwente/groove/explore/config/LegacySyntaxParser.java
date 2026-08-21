@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.explore.config;
 
+import java.util.Objects;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
@@ -317,6 +318,12 @@ public class LegacySyntaxParser {
      * goal feature of a configuration.
      */
     private record AcceptorSpec(Kind kind, String content) {
+
+        /** Overrides the generated hash code, which would use identity-based enum hashes. */
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.kind.ordinal(), this.content);
+        }
         /** The legacy acceptor kinds. */
         enum Kind {
             /** Final states, i.e., states without outgoing transitions. */
