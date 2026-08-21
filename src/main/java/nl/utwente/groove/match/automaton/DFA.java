@@ -34,6 +34,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.Direction;
@@ -44,6 +47,7 @@ import nl.utwente.groove.util.AIGenerated;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public class DFA {
     /**
      * Creates an automaton with a start state constructed from a given set of regular nodes.
@@ -62,8 +66,11 @@ public class DFA {
         this(dir, Collections.singleton(startNode), isFinal);
     }
 
-    /** Returns the normalised state corresponding to a set of regular automaton nodes. */
-    public DFAState getState(Set<RegNode> nodes) {
+    /**
+     * Returns the normalised state corresponding to a set of regular automaton nodes,
+     * or {@code null} if there is no such state.
+     */
+    public @Nullable DFAState getState(Set<RegNode> nodes) {
         return this.stateMap.get(nodes);
     }
 
@@ -177,10 +184,11 @@ public class DFA {
 
     /** Returns a recogniser for this automaton, working on a given graph. */
     public Recogniser getRecogniser(HostGraph graph) {
-        if (this.recogniser == null || this.recogniser.getGraph() != graph) {
-            this.recogniser = new Recogniser(this, graph);
+        Recogniser result = this.recogniser;
+        if (result == null || result.getGraph() != graph) {
+            this.recogniser = result = new Recogniser(this, graph);
         }
-        return this.recogniser;
+        return result;
     }
 
     /**
@@ -189,7 +197,7 @@ public class DFA {
      * transitions, or {@code null} if there is no one-to-one correspondence
      * between the transitions.
      */
-    private Set<Pair> compareStates(Pair statePair) {
+    private @Nullable Set<Pair> compareStates(Pair statePair) {
         Set<Pair> result = new HashSet<>();
         DFAState one = statePair.one();
         DFAState two = statePair.two();
@@ -371,7 +379,9 @@ public class DFA {
                     if (!kept.contains(entry.getValue())) {
                         continue;
                     }
-                    DFAState newSucc = newStateMap.get(partition.get(entry.getValue()));
+                    Cell succCell = partition.get(entry.getValue());
+                    assert succCell != null; // the partition covers all kept states
+                    DFAState newSucc = newStateMap.get(succCell);
                     assert newSucc != null; // all cells have images
                     newState.addSuccessor(dir, entry.getKey(), newSucc);
                 }
@@ -386,8 +396,8 @@ public class DFA {
     private final DFAState startState;
     /** Mapping from regular automaton nodes to states. */
     private final Map<Set<RegNode>,DFAState> stateMap = new LinkedHashMap<>();
-    /** Currently instantiated recogniser for this automaton. */
-    private Recogniser recogniser;
+    /** Currently instantiated recogniser for this automaton, if any. */
+    private @Nullable Recogniser recogniser;
 
     private record Pair(DFAState one, DFAState two) {
         // no additional functionality
