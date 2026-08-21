@@ -167,7 +167,7 @@ public interface CtrlArg {
 
         @Override
         public int hashCode() {
-            return Wild.class.hashCode();
+            return Wild.class.getName().hashCode();
         }
 
         @Override

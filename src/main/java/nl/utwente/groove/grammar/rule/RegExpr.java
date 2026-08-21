@@ -897,7 +897,7 @@ abstract sealed public class RegExpr { // implements VarSetSupport {
     }
 
     /** Constant hash code characterising the class. */
-    static private final int classHashCode = System.identityHashCode(RegExpr.class);
+    static private final int classHashCode = RegExpr.class.getName().hashCode();
 
     /**
      * Returns a syntax helper mapping from syntax items

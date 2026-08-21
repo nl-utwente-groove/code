@@ -160,7 +160,7 @@ public abstract class AbstractSearchItem implements SearchItem {
 
     /** Callback method to compute this search item's hash code. */
     int computeHashCode() {
-        return getClass().hashCode();
+        return getClass().getName().hashCode();
     }
 
     private int hashCode;

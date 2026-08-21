@@ -129,8 +129,10 @@ abstract public class ANode implements Node, Cloneable {
      */
     protected int computeHashCode() {
         // for the sake of determinism we base the hash code on the node number
+        // and the class name (not the class object, whose hash is identity-based
+        // and so varies between JVM runs)
         // the following is taken from java.util.HashMap
-        int h = (this.nodeNr + 2) ^ getClass().hashCode();
+        int h = (this.nodeNr + 2) ^ getClass().getName().hashCode();
         h *= h;
         h += ~(h << 14);
         h ^= (h >>> 19);
