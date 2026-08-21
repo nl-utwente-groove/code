@@ -307,7 +307,7 @@ public class DFA {
     private DFA computeQuotient(Map<DFAState,Cell> partition) {
         Map<Cell,DFAState> newStateMap = new HashMap<>();
         // create an image for the start cell
-        Cell startCell = partition.remove(getStartState());
+        Cell startCell = partition.get(getStartState());
         assert startCell != null; // the partition covers all states
         Set<RegNode> startNodes = startCell.flatten();
         DFA result = new DFA(this.dir, startNodes, getStartState().isFinal());
