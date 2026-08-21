@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -186,7 +187,11 @@ public class RuleCompilationTest {
         if (rule != null) {
             dump("rhs", rule.rhs(), inner, out);
         }
-        for (Condition sub : condition.getSubConditions()) {
+        // the subcondition order of a rule is hash-dependent, like the anchor
+        // key order (see sortedAnchor), so it is canonicalised by name
+        List<Condition> subs = new ArrayList<>(condition.getSubConditions());
+        subs.sort(Comparator.comparing(Condition::getName));
+        for (Condition sub : subs) {
             dump(sub, inner, out);
         }
     }
