@@ -50,6 +50,7 @@ import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.grammar.type.TypeEdge;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.graph.EdgeRole;
+import nl.utwente.groove.graph.NodeComparator;
 import nl.utwente.groove.match.automaton.RegAutCalculator;
 import nl.utwente.groove.match.automaton.RegAutCoverage;
 import nl.utwente.groove.util.QualName;
@@ -426,6 +427,9 @@ class ConditionAssembler {
         }
         RuleLabel equality = new RuleLabel(RegExpr.empty());
         List<RuleNode> nodes = new ArrayList<>(level.lhs.nodeSet());
+        // the embargo direction follows the pair order; the node set's own
+        // iteration order is not stable across runs, so sort canonically
+        nodes.sort(NodeComparator.instance());
         for (int i = 0; i < nodes.size(); i++) {
             RuleNode one = nodes.get(i);
             if (!(one instanceof DefaultRuleNode)) {
