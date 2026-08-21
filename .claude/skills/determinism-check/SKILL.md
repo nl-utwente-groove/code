@@ -17,6 +17,11 @@ Review the touched code against these rules (full background: `claude/determinis
 
 1. **No identity-based hashes** on the exploration path: hash codes must be number- or
    content-based, never `System.identityHashCode` (house pattern: `ANode.computeHashCode`).
+   This includes the disguised forms `Enum.hashCode()` (use `ordinal()`; also reached through
+   `EnumSet`/`EnumMap` hash codes and records with enum components) and `Class.hashCode()` /
+   `identityHashCode(X.class)` (use `getClass().getName().hashCode()`). These are constant within
+   a JVM — the tests below cannot detect them — but vary between runs, reordering every plain
+   `HashSet`/`HashMap` keyed by such values; only code review catches them.
 2. **Iterated collections are ordered**: insertion-ordered (`LinkedHashSet`/`LinkedHashMap`/
    `ArrayList`) or sorted — plain `HashSet`/`HashMap` only if the keys' hashes are deterministic.
    `TreeHashSet.iterator()` iterates in insertion order and code relies on that.

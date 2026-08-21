@@ -211,8 +211,10 @@ public class RuleCompilationTest {
     /**
      * Returns the anchor keys sorted by kind (node, edge, label variable) and
      * then by the deterministic element comparators. The anchor's own key
-     * order is hash-dependent and varies between JVM runs, so it is not
-     * part of the characterised output.
+     * order follows the LHS edge-set order, which is hash-dependent; it is
+     * deterministic since the per-run class and enum identity hashes were
+     * removed from the element hash codes, but the sorting insulates this
+     * characterisation from that order anyway.
      */
     private static List<String> sortedAnchor(Anchor anchor) {
         List<String> result = new ArrayList<>(sortedNodes(anchor.nodeSet()));
