@@ -19,8 +19,10 @@ package nl.utwente.groove.match.automaton;
 import static nl.utwente.groove.graph.Direction.INCOMING;
 import static nl.utwente.groove.graph.Direction.OUTGOING;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Deque;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -99,10 +101,15 @@ public class DFA {
     //        return this.guardList;
     //    }
 
-    /** Returns the minimised automaton depending on this one. */
+    /**
+     * Returns the minimised automaton depending on this one.
+     * Dead states (from which no final state is reachable) are pruned,
+     * except for the start state; equivalent states are merged.
+     */
     public DFA toMinimised() {
-        Map<DFAState,Cell> partition = computePartition();
-        return computeQuotient(partition);
+        Set<DFAState> kept = computeKeptStates();
+        Map<DFAState,Cell> partition = computePartition(kept);
+        return computeQuotient(partition, kept);
     }
 
     @Override
@@ -210,24 +217,72 @@ public class DFA {
     }
 
     /**
-     * Computes the coarsest partition of the states of this automaton into cells
+     * Computes the states to be kept in the minimised automaton: the live states,
+     * i.e., those from which a final state is reachable, plus the start state.
+     * Transitions into states that are not kept are dropped from the quotient,
+     * which is language-preserving, and ensures that the quotient is minimal
+     * as a partial automaton (missing and dead transitions become indistinguishable).
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    private Set<DFAState> computeKeptStates() {
+        // collect the predecessors of every state
+        Map<DFAState,Set<DFAState>> predMap = new LinkedHashMap<>();
+        for (DFAState s : getStates()) {
+            predMap.put(s, new LinkedHashSet<>());
+        }
+        for (DFAState s : getStates()) {
+            for (Map<TypeLabel,DFAState> labelMap : s.getLabelMap().values()) {
+                for (DFAState succ : labelMap.values()) {
+                    Set<DFAState> succPreds = predMap.get(succ);
+                    assert succPreds != null; // the predecessor map covers all states
+                    succPreds.add(s);
+                }
+            }
+        }
+        // backward reachability from the final states
+        Set<DFAState> result = new LinkedHashSet<>();
+        Deque<DFAState> queue = new ArrayDeque<>();
+        for (DFAState s : getStates()) {
+            if (s.isFinal()) {
+                result.add(s);
+                queue.add(s);
+            }
+        }
+        while (!queue.isEmpty()) {
+            DFAState s = queue.poll();
+            assert s != null; // the queue is non-empty
+            Set<DFAState> preds = predMap.get(s);
+            assert preds != null; // the predecessor map covers all states
+            for (DFAState pred : preds) {
+                if (result.add(pred)) {
+                    queue.add(pred);
+                }
+            }
+        }
+        result.add(getStartState());
+        return result;
+    }
+
+    /**
+     * Computes the coarsest partition of the kept states of this automaton into cells
      * of equivalent states, by Moore-style partition refinement: starting from the
      * division into final and non-final states, every cell is split according to
      * the successor signatures of its states (see {@link #computeSignature}),
      * until no cell splits any more. Two states thus end up in the same cell if they
      * are both final or both non-final and, for every direction and label, either
-     * both lack a transition or their successors are again in the same cell.
+     * both lack a transition to a kept state or their successors are again in the same cell.
      * <p>
      * The state order of this automaton is preserved throughout, so the resulting
      * partition, and hence the numbering of the quotient states, is deterministic.
+     * @param kept the states to be partitioned; transitions to other states are ignored
      */
     @AIGenerated("Claude Fable 5, 2026-08")
-    private Map<DFAState,Cell> computePartition() {
+    private Map<DFAState,Cell> computePartition(Set<DFAState> kept) {
         // initial partition: final versus non-final states
         Map<DFAState,Cell> result = new LinkedHashMap<>();
         Cell finalCell = new Cell(0);
         Cell nonFinalCell = new Cell(1);
-        for (DFAState s : getStates()) {
+        for (DFAState s : kept) {
             Cell cell = s.isFinal()
                 ? finalCell
                 : nonFinalCell;
@@ -262,6 +317,7 @@ public class DFA {
      * Computes the signature of a state with respect to a given partition:
      * per direction, the mapping from transition labels to the numbers of the
      * cells containing the corresponding successor states.
+     * Transitions to states outside the partition are ignored.
      */
     @AIGenerated("Claude Fable 5, 2026-08")
     private Signature computeSignature(DFAState state, Map<DFAState,Cell> partition) {
@@ -272,16 +328,20 @@ public class DFA {
             Map<TypeLabel,Integer> dirCells = new HashMap<>();
             for (Map.Entry<TypeLabel,DFAState> entry : labelMap.entrySet()) {
                 Cell succCell = partition.get(entry.getValue());
-                assert succCell != null; // the partition covers all states
-                dirCells.put(entry.getKey(), succCell.number());
+                if (succCell != null) {
+                    dirCells.put(entry.getKey(), succCell.number());
+                }
             }
             succCells.put(dir, dirCells);
         }
         return new Signature(succCells);
     }
 
-    /** Computes the quotient of this automaton, based on a given state partition. */
-    private DFA computeQuotient(Map<DFAState,Cell> partition) {
+    /**
+     * Computes the quotient of this automaton, based on a given state partition.
+     * @param kept the states covered by the partition; transitions to other states are dropped
+     */
+    private DFA computeQuotient(Map<DFAState,Cell> partition, Set<DFAState> kept) {
         Map<Cell,DFAState> newStateMap = new LinkedHashMap<>();
         // create an image for the start cell
         Cell startCell = partition.get(getStartState());
@@ -308,6 +368,9 @@ public class DFA {
                 Map<TypeLabel,DFAState> labelMap = oldState.getLabelMap().get(dir);
                 assert labelMap != null; // the label map is filled for all directions
                 for (Map.Entry<TypeLabel,DFAState> entry : labelMap.entrySet()) {
+                    if (!kept.contains(entry.getValue())) {
+                        continue;
+                    }
                     DFAState newSucc = newStateMap.get(partition.get(entry.getValue()));
                     assert newSucc != null; // all cells have images
                     newState.addSuccessor(dir, entry.getKey(), newSucc);

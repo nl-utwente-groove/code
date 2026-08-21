@@ -216,6 +216,17 @@ public class DFATest {
         assertEquivalent("a.a*", "a*.a", true);
         assertEquivalent("(a|b)*.a", "(a|b)*.a.(=|b.(a|b)*.a)", true);
         assertEquivalent("a*", "a+", false);
+        // dead states are pruned: under x=b, ?x[^b] matches nothing,
+        // so the state reached after a is dead
+        this.useType = true;
+        Valuation val = new Valuation();
+        val.put(this.xVar, this.bEdge);
+        assertStateCount("a.?x[^b]", val, 1);
+        assertEmpty("a.?x[^b]", val, true);
+        assertStateCount("b|a.?x[^b]", val, 2);
+        assertEquivalent("b|a.?x[^b]", "b", val, true);
+        assertEquivalent("a.?x[^b]", "=", val, false);
+        this.useType = false;
         // language preservation and well-formedness of the quotient
         for (String e : new String[] {"a*", "a.a*", "(a.b)*|(a.b)+", "(a|b)*.a", "-a.a*"}) {
             SimpleNFA nfa = createNFA(e);
@@ -239,7 +250,15 @@ public class DFATest {
 
     /** Asserts that the (minimised) forward DFA of an expression has a given number of states. */
     private void assertStateCount(String e, int count) {
-        assertEquals(e, count, createNFA(e).getDFA(OUTGOING, null).getStates().size());
+        assertStateCount(e, null, count);
+    }
+
+    /**
+     * Asserts that the (minimised) forward DFA of an expression under a given valuation
+     * has a given number of states.
+     */
+    private void assertStateCount(String e, Valuation val, int count) {
+        assertEquals(e, count, createNFA(e).getDFA(OUTGOING, val).getStates().size());
     }
 
     /** Asserts that all transitions of a DFA have a target state. */
