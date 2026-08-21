@@ -320,7 +320,7 @@ public abstract class Line {
             int result = 1;
             result = prime * result + this.color.hashCode();
             result = prime * result + this.subline.hashCode();
-            result = prime * result + this.type.hashCode();
+            result = prime * result + this.type.ordinal();
             return result;
         }
 

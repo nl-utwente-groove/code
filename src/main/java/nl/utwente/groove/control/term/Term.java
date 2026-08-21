@@ -258,7 +258,7 @@ abstract public class Term implements Position<Term,Derivation> {
         final int prime = 31;
         int result = 1;
         result = prime * result + Arrays.hashCode(this.args);
-        result = prime * result + getOp().hashCode();
+        result = prime * result + getOp().ordinal();
         return result == 0
             ? 1
             : result;

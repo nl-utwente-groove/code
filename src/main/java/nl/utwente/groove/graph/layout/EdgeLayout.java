@@ -121,7 +121,7 @@ public class EdgeLayout implements ElementLayout {
      */
     @Override
     public int hashCode() {
-        return getPoints().hashCode() + getLabelPosition().hashCode() + getLineStyle().hashCode();
+        return getPoints().hashCode() + getLabelPosition().hashCode() + getLineStyle().ordinal();
     }
 
     @Override

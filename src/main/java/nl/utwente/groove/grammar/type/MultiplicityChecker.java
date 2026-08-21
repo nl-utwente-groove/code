@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.grammar.type;
 
+import java.util.Objects;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -112,6 +113,12 @@ public class MultiplicityChecker implements TypeChecker {
     private final Map<TypeNode,List<Check>> checks;
 
     private record Check(TypeEdge type, Direction dir) {
+
+    /** Overrides the generated hash code, which would use identity-based enum hashes. */
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.type, this.dir.ordinal());
+    }
         // no additional functionality
     }
 }

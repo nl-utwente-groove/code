@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.control.parse;
 
+import java.util.Objects;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -137,6 +138,12 @@ public class Namespace implements ParseInfo, Fallible {
      */
     @AIGenerated("Claude Fable 5, 2026-08")
     public record InvisibleDecl(Callable.Kind kind, @Nullable QualName controlName, Reason reason) {
+
+    /** Overrides the generated hash code, which would use identity-based enum hashes. */
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.kind.ordinal(), this.controlName, this.reason.ordinal());
+    }
         /** Reason for the invisibility of a declared callable unit. */
         public enum Reason {
             /** The declaring resource is not enabled in the grammar. */

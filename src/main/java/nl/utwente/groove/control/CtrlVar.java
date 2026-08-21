@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.control;
 
+import java.util.Objects;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -32,6 +33,12 @@ import nl.utwente.groove.util.QualName;
  */
 public record CtrlVar(@Nullable QualName scope, @NonNull String name, @NonNull CtrlType type)
     implements Comparable<CtrlVar> {
+
+    /** Overrides the generated hash code, which would use identity-based enum hashes. */
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.scope, this.name, this.type.ordinal());
+    }
     /**
      * Constructs a control variable with a given scope, name and type.
      * @param scope procedure name of the defining scope (possible {@code null})

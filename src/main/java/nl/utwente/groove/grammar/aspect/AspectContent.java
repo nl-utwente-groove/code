@@ -781,7 +781,7 @@ public sealed interface AspectContent
 
         @Override
         public int hashCode() {
-            return Objects.hash(kind(), get());
+            return Objects.hash(kind().ordinal(), get());
         }
 
         @Override
@@ -969,7 +969,7 @@ public sealed interface AspectContent
 
         @Override
         public int hashCode() {
-            return kind().hashCode();
+            return kind().ordinal();
         }
 
         @Override

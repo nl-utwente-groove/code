@@ -90,7 +90,7 @@ abstract public class TextLabel implements Label, Cloneable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getRole(), text());
+        return Objects.hash(getRole().ordinal(), text());
     }
 
     @Override

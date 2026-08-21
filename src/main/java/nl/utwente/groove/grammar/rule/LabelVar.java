@@ -102,7 +102,7 @@ public class LabelVar implements AnchorKey, Comparable<LabelVar> {
 
     @Override
     public int hashCode() {
-        return getKey().hashCode() ^ getKind().hashCode();
+        return getKey().hashCode() ^ getKind().ordinal();
     }
 
     @Override

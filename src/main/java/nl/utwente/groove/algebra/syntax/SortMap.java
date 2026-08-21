@@ -129,7 +129,12 @@ public class SortMap {
 
     @Override
     public int hashCode() {
-        return this.sortMap.hashCode();
+        // sum of entry hashes, as in Map.hashCode, but with deterministic enum hashes
+        int result = 0;
+        for (var entry : this.sortMap.entrySet()) {
+            result += entry.getKey().hashCode() ^ entry.getValue().ordinal();
+        }
+        return result;
     }
 
     @Override

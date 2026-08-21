@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.control.template;
 
+import java.util.Objects;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
@@ -529,6 +530,12 @@ public class TemplateBuilder {
      */
     private static record LocationKey(Position.Type type, AttemptKey attempt, int transcience,
         List<CtrlVar> ctrlVars) {
+
+    /** Overrides the generated hash code, which would use identity-based enum hashes. */
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.type.ordinal(), this.attempt, this.transcience, this.ctrlVars);
+    }
         LocationKey(Location loc) {
             this(loc.getType(), loc.isTrial()
                 ? new AttemptKey(loc.getAttempt())

@@ -245,7 +245,7 @@ public abstract sealed class Proposition permits Literal, Derived, Call {
         public int hashCode() {
             final int prime = 31;
             int result = 1;
-            result = prime * result + this.kind.hashCode();
+            result = prime * result + this.kind.ordinal();
             result = prime * result + ((this.expr == null)
                 ? 0
                 : this.expr.hashCode());
@@ -343,7 +343,7 @@ public abstract sealed class Proposition permits Literal, Derived, Call {
 
         @Override
         public int hashCode() {
-            return Objects.hash(getClass(), getLabel());
+            return Objects.hash(getClass().getName(), getLabel());
         }
 
         @Override
@@ -422,7 +422,7 @@ public abstract sealed class Proposition permits Literal, Derived, Call {
 
         @Override
         public int hashCode() {
-            return Objects.hash(getClass(), getName());
+            return Objects.hash(getClass().getName(), getName());
         }
 
         @Override
@@ -565,7 +565,7 @@ public abstract sealed class Proposition permits Literal, Derived, Call {
 
         @Override
         public int hashCode() {
-            return Objects.hash(getClass(), getId(), getArgs());
+            return Objects.hash(getClass().getName(), getId(), getArgs());
         }
 
         @Override

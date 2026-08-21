@@ -254,7 +254,7 @@ public final class Constant extends Expression {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getSort(), getRepr());
+        return Objects.hash(getSort().ordinal(), getRepr());
     }
 
     @Override

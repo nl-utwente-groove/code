@@ -407,7 +407,12 @@ public class ExploreConfig {
 
     @Override
     public int hashCode() {
-        return this.map.hashCode();
+        // sum of entry hashes, as in Map.hashCode, but with deterministic enum hashes
+        int result = 0;
+        for (var entry : this.map.entrySet()) {
+            result += entry.getKey().ordinal() ^ entry.getValue().hashCode();
+        }
+        return result;
     }
 
     @Override

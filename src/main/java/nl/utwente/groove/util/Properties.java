@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.util;
 
+import java.util.Objects;
 import static nl.utwente.groove.util.HTMLConverter.TABLE_TAG_NAME;
 
 import java.io.IOException;
@@ -567,6 +568,12 @@ public abstract class Properties implements Fixable {
      * {@link ValueType} token (see {@link #value(ValueType)}).
      */
     public static record Entry(Key key, Object value) {
+
+    /** Overrides the generated hash code, which would use identity-based enum hashes. */
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.key.getName(), this.value);
+    }
         /** Record constructor, checking the invariant using #checkInvariant. */
         public Entry {
             checkInvariant(key, value);

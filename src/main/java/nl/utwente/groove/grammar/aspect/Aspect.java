@@ -68,7 +68,7 @@ public class Aspect {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + this.aspectKind.hashCode();
+        result = prime * result + this.aspectKind.ordinal();
         result = prime * result + this.content.hashCode();
         return result;
     }

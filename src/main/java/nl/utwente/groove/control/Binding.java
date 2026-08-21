@@ -36,6 +36,12 @@ import nl.utwente.groove.grammar.host.HostNode;
 public record Binding(Binding.Source type, Object target, int index, @Nullable Expression expr,
     int depth) {
 
+    /** Overrides the generated hash code, which would use identity-based enum hashes. */
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.type.ordinal(), this.target, this.index, this.expr, this.depth);
+    }
+
     /** Constructs a top-level binding (depth {@code 0}). */
     private Binding(Source type, Object target, int index, @Nullable Expression expr) {
         this(type, target, index, expr, 0);

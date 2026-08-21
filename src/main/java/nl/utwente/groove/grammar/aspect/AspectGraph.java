@@ -692,7 +692,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
 
     /** Returns a hash code for this graph based on normal status, name and role. */
     int externalHashCode() {
-        return Objects.hash(isNormal(), getRole(), getName());
+        return Objects.hash(isNormal(), getRole().ordinal(), getName());
     }
 
     /** Compares this graph to another one on the basis of normal status, name and role. */

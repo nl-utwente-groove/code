@@ -128,7 +128,7 @@ public final class Variable extends Expression {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getSort(), getName(), this.binding);
+        return Objects.hash(getSort().ordinal(), getName(), this.binding);
     }
 
     @Override

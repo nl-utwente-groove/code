@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.explore.feature;
 
+import java.util.Objects;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -36,6 +37,12 @@ import nl.utwente.groove.util.parse.StringParser;
  */
 @NonNullByDefault
 public record Setting(Kind kind, Object content) {
+
+    /** Overrides the generated hash code, which would use identity-based enum hashes. */
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.kind.getName(), this.content);
+    }
     /** Checks that the content is admissible for the kind. */
     public Setting {
         if (!kind.contentType().type().isInstance(content)) {

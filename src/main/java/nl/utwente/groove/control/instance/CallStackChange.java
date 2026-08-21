@@ -42,6 +42,12 @@ import nl.utwente.groove.util.Exceptions;
 @NonNullByDefault
 public record CallStackChange(Kind kind, List<Assignment> assigns, @Nullable CallStackChange pred) {
 
+    /** Overrides the generated hash code, which would use identity-based enum hashes. */
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.kind.ordinal(), this.assigns, this.pred);
+    }
+
     private CallStackChange(Kind kind, Assignment... assigns) {
         this(kind, Arrays.asList(assigns), null);
     }

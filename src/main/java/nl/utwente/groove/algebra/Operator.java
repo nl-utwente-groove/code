@@ -316,7 +316,7 @@ public class Operator implements Comparable<Operator> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.declaringSort, this.name);
+        return Objects.hash(this.declaringSort.ordinal(), this.name);
     }
 
     @Override

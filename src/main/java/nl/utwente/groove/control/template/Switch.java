@@ -358,7 +358,7 @@ public class Switch implements Comparable<Switch>, Relocatable {
         int result = 1;
         result = prime * result + getSource().hashCode();
         result = prime * result + onFinish().hashCode();
-        result = prime * result + getKind().hashCode();
+        result = prime * result + getKind().ordinal();
         result = prime * result + getTransience();
         result = prime * result + ((this.call == null)
             ? 0

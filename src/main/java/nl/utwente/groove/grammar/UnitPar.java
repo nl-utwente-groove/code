@@ -132,8 +132,8 @@ public abstract class UnitPar {
 
     @Override
     public int hashCode() {
-        int result = getDirection().hashCode();
-        result = result * 31 + getType().hashCode();
+        int result = getDirection().ordinal();
+        result = result * 31 + getType().ordinal();
         result = result * 31 + getName().hashCode();
         return result;
     }

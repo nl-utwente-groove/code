@@ -278,7 +278,12 @@ public class LTSLabels {
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.flagToLabelMap, this.derived);
+        // sum of entry hashes, as in Map.hashCode, but with deterministic enum hashes
+        int result = this.derived.hashCode();
+        for (var entry : this.flagToLabelMap.entrySet()) {
+            result += entry.getKey().ordinal() ^ Objects.hashCode(entry.getValue());
+        }
+        return result;
     }
 
     @Override

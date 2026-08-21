@@ -131,7 +131,7 @@ public final class FieldExpr extends Expression {
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.sort, this.field, this.target);
+        return Objects.hash(this.sort.ordinal(), this.field, this.target);
     }
 
     @Override

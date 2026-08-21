@@ -337,7 +337,8 @@ abstract public class ATermTree<O extends Op,T extends ATermTree<O,T>> extends D
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + this.op.hashCode();
+        // the operator may be an enum, whose hash code is identity-based
+        result = prime * result + 31 * this.op.getSymbol().hashCode() + this.op.getArity();
         result = prime * result + this.args.hashCode();
         result = prime * result + this.errors.hashCode();
         return result;

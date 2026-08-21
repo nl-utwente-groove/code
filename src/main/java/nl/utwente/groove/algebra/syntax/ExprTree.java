@@ -462,7 +462,9 @@ public class ExprTree extends AExprTree<ExprTree.ExprOp,ExprTree> {
     public int hashCode() {
         final int prime = 31;
         int result = super.hashCode();
-        result = prime * result + Objects.hashCode(this.declaredSort);
+        result = prime * result + (this.declaredSort == null
+            ? 0
+            : this.declaredSort.ordinal());
         return result;
     }
 
