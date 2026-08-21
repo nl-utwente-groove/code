@@ -19,11 +19,13 @@ package nl.utwente.groove.grammar.model;
 import static nl.utwente.groove.grammar.model.LevelFixture.names;
 import static nl.utwente.groove.grammar.model.LevelFixture.strings;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,6 +33,7 @@ import java.util.Set;
 import org.junit.Test;
 
 import nl.utwente.groove.grammar.aspect.AspectEdge;
+import nl.utwente.groove.grammar.aspect.AspectElement;
 import nl.utwente.groove.grammar.model.LevelDistribution.Level;
 import nl.utwente.groove.grammar.model.RuleModel.Index;
 import nl.utwente.groove.grammar.rule.LabelVar;
@@ -175,5 +178,31 @@ public class LevelDistributionTest {
     public void testCountAtOwnLevel() {
         assertDistributionError("countAtOwnLevel", "Match count not defined at appropriate level",
                                 "x2"); // the normalised form of the int: node n2
+    }
+
+    /** The level tree exposed by the rule model (used by the GUI to colour
+     * the levels) has one entry per index, holding that level's nodes and
+     * edges; it is absent if compilation fails before the distribution is
+     * built, and present if compilation fails in a later phase. */
+    @Test
+    public void testLevelTree() throws Exception {
+        LevelFixture f = LevelFixture.loadValid("regression", "nestedForall");
+        Map<Index,Set<AspectElement>> levelTree = f.model().getLevelTree();
+        assertNotNull(levelTree);
+        assertEquals(strings(f.tree().getIndices()), strings(levelTree.keySet()));
+        for (Level level : f.distribution().getLevelMap().values()) {
+            Set<AspectElement> expected = new HashSet<>(level.modelNodes);
+            expected.addAll(level.modelEdges);
+            assertEquals("Elements of level " + level.index, expected,
+                         levelTree.get(level.index));
+        }
+        // normalisation error: no compiler at all
+        assertNull(LevelFixture.load("quantLevelErrors", "undefLevel").model().getLevelTree());
+        // distribution error: compiler without distribution
+        assertNull(LevelFixture.load("quantLevelErrors", "undefEdgeLevel").model().getLevelTree());
+        // typing error: the distribution survives
+        levelTree = LevelFixture.load("varTypes", "creatorVarNarrowed").model().getLevelTree();
+        assertNotNull(levelTree);
+        assertEquals(1, levelTree.size());
     }
 }

@@ -1,0 +1,17 @@
+== rule creatorVarNarrowed
+errors:
+  - Invalid edge types B--b-->B, B--c-->B for creator variable ?x
+== rule varInParentOnly
+signature: ()
+hidden: []
+anchor: []
+Existential varInParentOnly [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:A, n1:A] edges [n0--?x-->n1] vars [?x]
+  rhs: nodes [n0:A, n1:A] edges [n0--?x-->n1] vars [?x]
+  Universal varInParentOnly[0] [non-positive]
+    root: nodes [] edges []
+    lhs: nodes [n3:B] edges []
+    Existential varInParentOnly[0,0]
+      root: nodes [] edges []
+      lhs: nodes [] edges []
