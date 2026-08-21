@@ -26,6 +26,7 @@ import static nl.utwente.groove.grammar.aspect.AspectKind.Category.SORT;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -120,7 +121,7 @@ class LevelDistribution {
                 errors.addAll(exc.getErrors());
             }
         }
-        Map<LabelVar,Set<AspectEdge>> modelVarMap = new HashMap<>();
+        Map<LabelVar,Set<AspectEdge>> modelVarMap = new LinkedHashMap<>();
         for (Level level : result.values()) {
             modelVarMap.putAll(level.modelVars);
         }
@@ -462,7 +463,7 @@ class LevelDistribution {
         /** Set of model edges on this level. */
         final Set<AspectEdge> modelEdges = new HashSet<>();
         /** Set of label variables used on this level. */
-        final Map<LabelVar,Set<AspectEdge>> modelVars = new HashMap<>();
+        final Map<LabelVar,Set<AspectEdge>> modelVars = new LinkedHashMap<>();
         /** The model node registering the match count; may be {@code null}. */
         @Nullable
         AspectNode countNode;
