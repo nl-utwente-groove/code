@@ -217,8 +217,9 @@ class ConditionAssembler {
         if (erasedTypes.isEmpty()) {
             return;
         }
-        // check the composite regular expression edges of all levels
-        Set<RuleEdge> checked = new HashSet<>();
+        // check the composite regular expression edges of all levels; every
+        // edge is in the LHS of exactly one level (importEraserConflicts only
+        // imports edges with an edge image), so none is checked twice
         for (LevelPattern level : patternMap.values()) {
             if (!level.getIndex().getOperator().isQuantifier()) {
                 continue;
@@ -231,10 +232,6 @@ class ConditionAssembler {
                 // a lone node type atom is not a path: its witness is the
                 // (tracked) node itself, not an edge traversal
                 if (label.getRole() == EdgeRole.NODE_TYPE) {
-                    continue;
-                }
-                if (!checked.add(edge)) {
-                    // root edges are shared between levels; check them once
                     continue;
                 }
                 var labelAut = RegAutCalculator.instance().compute(label.getMatchExpr(), typeGraph);

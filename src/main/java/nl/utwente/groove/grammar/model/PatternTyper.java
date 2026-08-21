@@ -44,6 +44,7 @@ import nl.utwente.groove.grammar.type.TypeEdge;
 import nl.utwente.groove.grammar.type.TypeElement;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeNode;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
@@ -131,7 +132,9 @@ class PatternTyper {
             for (var entry : lhsTypeMap.getVarTyping().entrySet()) {
                 LabelVar var = entry.getKey();
                 if (!this.typeMap.getVarTyping().containsKey(var)) {
-                    continue;
+                    // the level's typing is seeded with its parent's
+                    // (TypeGraph.analyzeRule), so every LHS variable is in it
+                    throw Exceptions.unreachable();
                 }
                 Set<? extends TypeElement> lhsTypes = entry.getValue();
                 lhsTypes.removeAll(this.typeMap.getVarTypes(var));

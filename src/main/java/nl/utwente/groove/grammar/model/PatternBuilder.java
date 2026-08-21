@@ -65,6 +65,7 @@ import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.graph.EdgeComparator;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.NodeComparator;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatErrorSet;
@@ -698,10 +699,8 @@ class PatternBuilder {
          * @param modelEdge the node for which an image is to be created
          * @return the rule edge corresponding to <code>viewEdge</code>; may be
          *         <code>null</code>
-         * @throws FormatException if <code>node</code> does not occur in a
-         *         correct way in <code>context</code>
          */
-        private RuleEdge getEdgeImage(AspectEdge modelEdge) throws FormatException {
+        private RuleEdge getEdgeImage(AspectEdge modelEdge) {
             RuleEdge result = PatternBuilder.this.modelMap.getEdge(modelEdge);
             if (result == null) {
                 result = computeEdgeImage(modelEdge, PatternBuilder.this.modelMap.nodeMap());
@@ -755,24 +754,18 @@ class PatternBuilder {
          * @param edge the edge for which an image is to be created
          * @param elementMap the mapping of the end nodes
          * @return the new edge
-         * @throws FormatException if <code>edge</code> does not occur in a correct
-         *         way in <code>context</code>
          */
         private RuleEdge computeEdgeImage(AspectEdge edge,
-                                          Map<AspectNode,? extends RuleNode> elementMap) throws FormatException {
+                                          Map<AspectNode,? extends RuleNode> elementMap) {
             assert edge.getRuleLabel() != null : String
                 .format("Edge '%s' does not belong in model", edge);
+            // the end nodes are on the edge's level or above (LevelDistribution
+            // pulls them up to the edge's level), levels are built top-down and
+            // each level processes its nodes before its edges, so both images exist
             RuleNode sourceImage = elementMap.get(edge.source());
-            if (sourceImage == null) {
-                throw new FormatException(
-                    "Cannot compute image of '%s'-edge: source node does not have image",
-                    edge.label(), edge.source());
-            }
             RuleNode targetImage = elementMap.get(edge.target());
-            if (targetImage == null) {
-                throw new FormatException(
-                    "Cannot compute image of '%s'-edge: target node does not have image",
-                    edge.label(), edge.target());
+            if (sourceImage == null || targetImage == null) {
+                throw Exceptions.unreachable();
             }
             RuleEdge result
                 = this.factory.createEdge(sourceImage, edge.getRuleLabel(), targetImage);
