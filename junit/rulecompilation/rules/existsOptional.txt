@@ -1,0 +1,28 @@
+== rule edgeOpt
+signature: ()
+hidden: []
+anchor: []
+Existential edgeOpt [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#] edges [n0--A-->n0]
+  rhs: nodes [n0:Ω#] edges [n0--A-->n0]
+  Existential edgeOpt[0] [non-positive]
+    root: nodes [n0:Ω#] edges []
+    lhs: nodes [n0:Ω#, n1:Ω#] edges [n0--a-->n1, n1--B-->n1]
+    rhs: nodes [n0:Ω#, n1:Ω#] edges [n0--a-->n1, n1--B-->n1, n1--mark-->n1]
+== rule optionals
+signature: ()
+hidden: []
+anchor: []
+Existential optionals [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [] edges []
+  rhs: nodes [] edges []
+  Existential optionals[1] [non-positive]
+    root: nodes [] edges []
+    lhs: nodes [n5:Ω#] edges [n5--A-->n5]
+    rhs: nodes [n5:Ω#] edges [n5--A-->n5, n5--mark-->n5]
+  Existential optionals[0] [non-positive]
+    root: nodes [] edges []
+    lhs: nodes [n3:Ω#] edges [n3--B-->n3]
+    rhs: nodes [n3:Ω#] edges [n3--B-->n3, n3--mark-->n3]

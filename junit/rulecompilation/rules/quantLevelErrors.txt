@@ -1,0 +1,6 @@
+== rule siblingLevel
+errors:
+  - Nesting level 'q2' in edge n2--use=q2:test:1 > 0-->n2 is incompatible with the source node level
+== rule undefLevel
+errors:
+  - Undefined nesting level 'zz' in edge n0--use=zz:test:1 > 0-->n0

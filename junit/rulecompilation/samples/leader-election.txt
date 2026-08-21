@@ -1,0 +1,130 @@
+== rule Leader
+signature: ()
+hidden: []
+anchor: []
+Existential Leader [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, n1:Ω#] edges [n0--Process-->n0, n1--Leader-->n1, n1--leader-->n0]
+  rhs: nodes [n0:Ω#, n1:Ω#] edges [n0--Process-->n0, n1--Leader-->n1, n1--leader-->n0]
+== rule go-1-1a
+signature: ()
+hidden: []
+anchor: [int:2:int, n1:Ω#, n2:Ω#, n4:Ω#, n5:Ω#, x8:int, int:1:int, x10:int, n1--first-->int:1, n2--left-->x8, n2--message-->n1, n4--go-->n2]
+Existential go-1-1a [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [int:2:int, n1:Ω#, n2:Ω#, x3:int, n4:Ω#, n5:Ω#, bool:false:bool, p7:int:eq(int,int), x8:int, int:1:int, x10:int] edges [n1--Message-->n1, n1--first-->int:1, n1--second-->x10, n2--Process-->n2, n2--active-->n2, n2--left-->x8, n2--max-->x3, n2--message-->n1, n2--next-->n5, n4--Scheduler-->n4, n4--go-->n2, n5--Process-->n5]
+  rhs: nodes [int:2:int, n1:Ω#, n2:Ω#, x3:int, n4:Ω#, n5:Ω#, bool:false:bool, p7:int:eq(int,int), x8:int, int:1:int, x10:int] edges [n1--Message-->n1, n1--first-->int:2, n1--second-->x10, n1--to-->n5, n2--Process-->n2, n2--active-->n2, n2--left-->x10, n2--max-->x3, n2--next-->n5, n4--Scheduler-->n4, n5--Process-->n5]
+== rule go-1-1b
+signature: ()
+hidden: []
+anchor: [n0:Ω#, int:2:int, int:1:int, n6:Ω#, n7:Ω#, n8:Ω#, x9:int, n6--go-->n7, n7--message-->n8, n8--first-->int:1]
+Existential go-1-1b [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, int:2:int, x2:int, bool:false:bool, p4:int:eq(int,int), int:1:int, n6:Ω#, n7:Ω#, n8:Ω#, x9:int] edges [n0--Process-->n0, n6--Scheduler-->n6, n6--go-->n7, n7--Process-->n7, n7--active-->n7, n7--max-->x2, n7--message-->n8, n7--next-->n0, n8--Message-->n8, n8--first-->int:1, n8--second-->x9]
+  rhs: nodes [n0:Ω#, int:2:int, x2:int, bool:false:bool, p4:int:eq(int,int), int:1:int, n6:Ω#, n7:Ω#, n8:Ω#, x9:int] edges [n0--Process-->n0, n6--Scheduler-->n6, n7--Process-->n7, n7--active-->n7, n7--left-->x9, n7--max-->x2, n7--next-->n0, n8--Message-->n8, n8--first-->int:2, n8--second-->x9, n8--to-->n0]
+  Negated go-1-1b-[]-lhs-nac-0 [non-positive]
+    root: nodes [n7:Ω#] edges []
+    lhs: nodes [n7:Ω#, n10:Ω#] edges [n7--left-->n10]
+== rule go-1-2
+signature: ()
+hidden: []
+anchor: [n1:Ω#, n2:Ω#, x5:int, n7:Ω#]
+Existential go-1-2 [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n1:Ω#, n2:Ω#, p3:int:eq(int,int), x4:int, x5:int, int:1:int, n7:Ω#, bool:true:bool] edges [n1--Message-->n1, n1--first-->int:1, n1--second-->x5, n2--Process-->n2, n2--active-->n2, n2--max-->x4, n2--message-->n1, n7--Scheduler-->n7, n7--go-->n2]
+  rhs: nodes [n0:Ω#, n2:Ω#, p3:int:eq(int,int), x4:int, x5:int, int:1:int, bool:true:bool] edges [n0--Leader-->n0, n0--leader-->n2, n2--Process-->n2, n2--active-->n2, n2--left-->x5, n2--max-->x4]
+== rule go-2-1
+signature: ()
+hidden: []
+anchor: [x2:int, x3:int, int:1:int, n5:Ω#, n6:Ω#, n7:Ω#, n8:Ω#, int:2:int, x10:int, n6--go-->n8, n7--first-->int:2, n7--second-->x2, n8--max-->x10, n8--message-->n7]
+Existential go-2-1 [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [bool:true:bool, p1:int:gt(int,int), x2:int, x3:int, int:1:int, n5:Ω#, n6:Ω#, n7:Ω#, n8:Ω#, int:2:int, x10:int, p11:int:gt(int,int)] edges [n5--Process-->n5, n6--Scheduler-->n6, n6--go-->n8, n7--Message-->n7, n7--first-->int:2, n7--second-->x2, n8--Process-->n8, n8--active-->n8, n8--left-->x3, n8--max-->x10, n8--message-->n7, n8--next-->n5]
+  rhs: nodes [bool:true:bool, p1:int:gt(int,int), x2:int, x3:int, int:1:int, n5:Ω#, n6:Ω#, n7:Ω#, n8:Ω#, int:2:int, x10:int, p11:int:gt(int,int)] edges [n5--Process-->n5, n6--Scheduler-->n6, n7--Message-->n7, n7--first-->int:1, n7--second-->x3, n7--to-->n5, n8--Process-->n8, n8--active-->n8, n8--left-->x3, n8--max-->x3, n8--next-->n5]
+== rule go-2-2a
+signature: ()
+hidden: []
+anchor: [n2:Ω#, n4:Ω#, n6:Ω#, n2--active-->n2, n6--go-->n2]
+Existential go-2-2a [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [p0:int:gt(int,int), bool:false:bool, n2:Ω#, int:2:int, n4:Ω#, x5:int, n6:Ω#, x7:int, x8:int] edges [n2--Process-->n2, n2--active-->n2, n2--left-->x7, n2--max-->x8, n2--message-->n4, n4--Message-->n4, n4--first-->int:2, n4--second-->x5, n6--Scheduler-->n6, n6--go-->n2]
+  rhs: nodes [p0:int:gt(int,int), bool:false:bool, n2:Ω#, int:2:int, x5:int, n6:Ω#, x7:int, x8:int] edges [n2--Process-->n2, n2--left-->x7, n2--max-->x8, n2--passive-->n2, n6--Scheduler-->n6]
+== rule go-2-2b
+signature: ()
+hidden: []
+anchor: [n1:Ω#, n6:Ω#, n7:Ω#, n6--active-->n6, n7--go-->n6]
+Existential go-2-2b [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [x0:int, n1:Ω#, int:2:int, bool:false:bool, p4:int:gt(int,int), x5:int, n6:Ω#, n7:Ω#] edges [n1--Message-->n1, n1--first-->int:2, n1--second-->x5, n6--Process-->n6, n6--active-->n6, n6--left-->x0, n6--message-->n1, n7--Scheduler-->n7, n7--go-->n6]
+  rhs: nodes [x0:int, int:2:int, bool:false:bool, p4:int:gt(int,int), x5:int, n6:Ω#, n7:Ω#] edges [n6--Process-->n6, n6--left-->x0, n6--passive-->n6, n7--Scheduler-->n7]
+== rule init
+signature: ()
+hidden: []
+anchor: [n0:Ω#, int:1:int, x3:int, n4:Ω#, n5:Ω#, n4--init-->n0]
+Existential init [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, int:1:int, x3:int, n4:Ω#, n5:Ω#] edges [n0--Process-->n0, n0--max-->x3, n0--next-->n5, n4--Scheduler-->n4, n4--init-->n0, n5--Process-->n5]
+  rhs: nodes [n0:Ω#, n1:Ω#, int:1:int, x3:int, n4:Ω#, n5:Ω#] edges [n0--Process-->n0, n0--max-->x3, n0--next-->n5, n1--Message-->n1, n1--first-->int:1, n1--second-->x3, n1--to-->n5, n4--Scheduler-->n4, n5--Process-->n5]
+== rule multiple-leaders
+signature: ()
+hidden: []
+anchor: []
+Existential multiple-leaders [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, n1:Ω#, n2:Ω#, n3:Ω#] edges [n0--Process-->n0, n1--Process-->n1, n2--Leader-->n2, n2--leader-->n1, n3--Leader-->n3, n3--leader-->n0]
+  rhs: nodes [n0:Ω#, n1:Ω#, n2:Ω#, n3:Ω#] edges [n0--Process-->n0, n1--Process-->n1, n2--Leader-->n2, n2--leader-->n1, n3--Leader-->n3, n3--leader-->n0]
+  Negated multiple-leaders-[]-lhs:!(n1--=-->n0) [non-positive]
+    root: nodes [n0:Ω#, n1:Ω#] edges []
+    lhs: nodes [n0:Ω#, n1:Ω#] edges [n1--=-->n0]
+== rule next-phase
+signature: ()
+hidden: []
+anchor: [n1:Ω#]
+Existential next-phase [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n1:Ω#] edges [n1--Scheduler-->n1]
+  rhs: nodes [n1:Ω#] edges [n1--Scheduler-->n1]
+  Universal next-phase[0] [non-positive]
+    root: nodes [n1:Ω#] edges []
+    lhs: nodes [n0:Ω#, n1:Ω#, n2:Ω#] edges [n0--Process-->n0, n2--Process-->n2]
+    rhs: nodes [n0:Ω#, n1:Ω#, n2:Ω#] edges [n0--Process-->n0, n1--go-->n2, n2--Process-->n2]
+    Negated next-phase-[0]-lhs:!(n1--go-->n0) [non-positive]
+      root: nodes [n0:Ω#, n1:Ω#] edges []
+      lhs: nodes [n0:Ω#, n1:Ω#] edges [n1--go-->n0]
+    Existential next-phase[0,0]
+      root: nodes [] edges []
+      lhs: nodes [] edges []
+== rule pass-message
+signature: ()
+hidden: []
+anchor: []
+Existential pass-message [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [] edges []
+  rhs: nodes [] edges []
+  Universal pass-message[0]
+    root: nodes [] edges []
+    lhs: nodes [n0:Ω#, n1:Ω#] edges [n0--Message-->n0, n0--to-->n1, n1--Process-->n1]
+    rhs: nodes [n0:Ω#, n1:Ω#] edges [n0--Message-->n0, n1--Process-->n1, n1--message-->n0]
+    Existential pass-message[0,0]
+      root: nodes [] edges []
+      lhs: nodes [] edges []
+== rule passive
+signature: ()
+hidden: []
+anchor: [n0:Ω#, n1:Ω#, n2:Ω#, n0--message-->n2]
+Existential passive [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, n1:Ω#, n2:Ω#] edges [n0--Process-->n0, n0--message-->n2, n0--next-->n1, n0--passive-->n0, n1--Process-->n1, n2--Message-->n2]
+  rhs: nodes [n0:Ω#, n1:Ω#, n2:Ω#] edges [n0--Process-->n0, n0--next-->n1, n0--passive-->n0, n1--Process-->n1, n1--message-->n2, n2--Message-->n2]
+== rule pick-number
+signature: ()
+hidden: []
+anchor: [x0:int, n2:Ω#, n3:Ω#, n2--number-->x0]
+Existential pick-number [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [x0:int, n2:Ω#, n3:Ω#] edges [n2--Numbers-->n2, n2--number-->x0, n3--Process-->n3]
+  rhs: nodes [x0:int, n2:Ω#, n3:Ω#] edges [n2--Numbers-->n2, n3--Process-->n3, n3--max-->x0, n3--number-->x0]
+  Negated pick-number-[]-lhs-nac-0 [non-positive]
+    root: nodes [n3:Ω#] edges []
+    lhs: nodes [x1:int, n3:Ω#] edges [n3--number-->x1]

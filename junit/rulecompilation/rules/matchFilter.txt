@@ -1,0 +1,24 @@
+== rule errorFilter
+signature: ()
+hidden: []
+anchor: []
+Existential errorFilter [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [] edges []
+  rhs: nodes [] edges []
+== rule groovyFilterFlag
+signature: ()
+hidden: []
+anchor: [n0:Ω#, n0--mark-->n0]
+Existential groovyFilterFlag [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#] edges [n0--Node-->n0, n0--mark-->n0]
+  rhs: nodes [n0:Ω#] edges [n0--Node-->n0]
+== rule javaFilterFlag
+signature: ()
+hidden: []
+anchor: [n0:Ω#, n0--mark-->n0]
+Existential javaFilterFlag [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#] edges [n0--Node-->n0, n0--mark-->n0]
+  rhs: nodes [n0:Ω#] edges [n0--Node-->n0]

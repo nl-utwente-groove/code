@@ -1,0 +1,8 @@
+== rule readerEraser
+signature: ()
+hidden: []
+anchor: [n0:Ω#, n1:Ω#, n0--a-->n1]
+Existential readerEraser [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, n1:Ω#] edges [n0--a-->n1, n0--a-->n1]
+  rhs: nodes [n0:Ω#, n1:Ω#] edges [n0--a-->n1]

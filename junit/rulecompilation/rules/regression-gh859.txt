@@ -1,0 +1,15 @@
+== rule letFieldCrossLevel
+signature: ()
+hidden: []
+anchor: [n0:Ω#, x4:int, x10:int, n0--row-->x4]
+Existential letFieldCrossLevel [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, x4:int, int:1:int, int:1:int, p9:int:add(int,int), x10:int] edges [n0--Counter-->n0, n0--row-->x4]
+  rhs: nodes [n0:Ω#, x4:int, int:1:int, int:1:int, p9:int:add(int,int), x10:int] edges [n0--Counter-->n0, n0--row-->x10]
+  Universal letFieldCrossLevel[0] [non-positive]
+    root: nodes [x4:int, int:1:int] edges []
+    lhs: nodes [n1:Ω#, x4:int, int:1:int, p6:int:add(int,int), x7:int] edges [n1--Space-->n1]
+    rhs: nodes [n1:Ω#, n2:Ω#, x4:int, int:1:int, p6:int:add(int,int), x7:int] edges [n1--Space-->n1, n2--Space-->n2, n2--row-->x7]
+    Existential letFieldCrossLevel[0,0]
+      root: nodes [] edges []
+      lhs: nodes [] edges []

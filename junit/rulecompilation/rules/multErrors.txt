@@ -1,0 +1,4 @@
+== rule ruleMult
+errors:
+  - Aspect 'mult=2:' not allowed in rule graph
+  - Aspect 'mult=2:' not allowed on edge

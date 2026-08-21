@@ -1,0 +1,64 @@
+== rule inBool
+signature: (bi bool)
+hidden: []
+anchor: [x0:bool, n1:Ω#]
+Existential inBool [non-positive]
+  root: nodes [x0:bool] edges []
+  lhs: nodes [x0:bool, n1:Ω#] edges []
+  rhs: nodes [x0:bool, n1:Ω#] edges [n1--b-->x0]
+== rule inInt
+signature: (bi int)
+hidden: []
+anchor: [x0:int, n1:Ω#]
+Existential inInt [non-positive]
+  root: nodes [x0:int] edges []
+  lhs: nodes [x0:int, n1:Ω#] edges []
+  rhs: nodes [x0:int, n1:Ω#] edges [n1--i-->x0]
+== rule inReal
+signature: (bi real)
+hidden: []
+anchor: [x0:real, n1:Ω#]
+Existential inReal [non-positive]
+  root: nodes [x0:real] edges []
+  lhs: nodes [x0:real, n1:Ω#] edges []
+  rhs: nodes [x0:real, n1:Ω#] edges [n1--r-->x0]
+== rule inString
+signature: (bi string)
+hidden: []
+anchor: [x0:string, n1:Ω#]
+Existential inString [non-positive]
+  root: nodes [x0:string] edges []
+  lhs: nodes [x0:string, n1:Ω#] edges []
+  rhs: nodes [x0:string, n1:Ω#] edges [n1--s-->x0]
+== rule newBool
+signature: ()
+hidden: []
+anchor: [x0:bool, n1:Ω#]
+Existential newBool [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [x0:bool, n1:Ω#] edges []
+  rhs: nodes [x0:bool, n1:Ω#] edges [n1--b-->x0]
+== rule newInt
+signature: ()
+hidden: []
+anchor: [x0:int, n1:Ω#]
+Existential newInt [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [x0:int, n1:Ω#] edges []
+  rhs: nodes [x0:int, n1:Ω#] edges [n1--i-->x0]
+== rule newReal
+signature: ()
+hidden: []
+anchor: [x0:real, n1:Ω#]
+Existential newReal [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [x0:real, n1:Ω#] edges []
+  rhs: nodes [x0:real, n1:Ω#] edges [n1--r-->x0]
+== rule newString
+signature: ()
+hidden: []
+anchor: [x0:string, n1:Ω#]
+Existential newString [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [x0:string, n1:Ω#] edges []
+  rhs: nodes [x0:string, n1:Ω#] edges [n1--s-->x0]

@@ -415,7 +415,7 @@ public class Rule implements Action, Fixable {
      * Returns the set of hidden (i.e., unnumbered) parameter nodes of this
      * rule.
      */
-    Set<RuleNode> getHiddenPars() {
+    public Set<RuleNode> getHiddenPars() {
         var result = this.hiddenPars;
         if (result == null) {
             this.hiddenPars = result = new HashSet<>();

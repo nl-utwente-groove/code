@@ -1,0 +1,64 @@
+== rule delA
+signature: ()
+hidden: []
+anchor: [n0:A, n0--taken-->n0]
+Existential delA [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:A] edges [n0--taken-->n0]
+  rhs: nodes [n0:A] edges [n0--available-->n0]
+== rule delB
+signature: ()
+hidden: []
+anchor: [n1:B, n1--taken-->n1]
+Existential delB [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n1:B] edges [n1--taken-->n1]
+  rhs: nodes [n1:B] edges [n1--available-->n1]
+== rule delC
+signature: ()
+hidden: []
+anchor: [n1:C, n1--taken-->n1]
+Existential delC [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n1:C] edges [n1--taken-->n1]
+  rhs: nodes [n1:C] edges [n1--available-->n1]
+== rule delD
+signature: ()
+hidden: []
+anchor: [n1:D, n1--taken-->n1]
+Existential delD [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n1:D] edges [n1--taken-->n1]
+  rhs: nodes [n1:D] edges [n1--available-->n1]
+== rule newA
+signature: ()
+hidden: []
+anchor: [n0:A, n0--available-->n0]
+Existential newA [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:A] edges [n0--available-->n0]
+  rhs: nodes [n0:A] edges [n0--taken-->n0]
+== rule newB
+signature: ()
+hidden: []
+anchor: [n0:B, n0--available-->n0]
+Existential newB [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:B] edges [n0--available-->n0]
+  rhs: nodes [n0:B] edges [n0--taken-->n0]
+== rule newC
+signature: ()
+hidden: []
+anchor: [n0:C, n0--available-->n0]
+Existential newC [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:C] edges [n0--available-->n0]
+  rhs: nodes [n0:C] edges [n0--taken-->n0]
+== rule newD
+signature: ()
+hidden: []
+anchor: [n0:D, n0--available-->n0]
+Existential newD [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:D] edges [n0--available-->n0]
+  rhs: nodes [n0:D] edges [n0--taken-->n0]

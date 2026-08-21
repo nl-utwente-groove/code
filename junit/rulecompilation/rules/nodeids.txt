@@ -1,0 +1,9 @@
+== rule ERR-duplicateLevelName
+errors:
+  - Duplicate node ID 'x'
+== rule ERR-duplicateLevelNodeName
+errors:
+  - Duplicate node ID 'x'
+== rule ERR-duplicateNodeName
+errors:
+  - Duplicate node ID 'x'

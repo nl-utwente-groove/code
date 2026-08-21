@@ -1,0 +1,19 @@
+== rule get
+signature: ()
+hidden: []
+anchor: [n19:Ω#, n20:Ω#, n21:Ω#, n22:Ω#, n20--first-->n21]
+Existential get [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n19:Ω#, n20:Ω#, n21:Ω#, n22:Ω#] edges [n19--Cell-->n19, n20--Buffer-->n20, n20--first-->n21, n21--Cell-->n21, n21--next-->n19, n21--val-->n22, n22--Object-->n22]
+  rhs: nodes [n19:Ω#, n20:Ω#, n21:Ω#] edges [n19--Cell-->n19, n20--Buffer-->n20, n20--first-->n19, n21--Cell-->n21, n21--next-->n19]
+== rule put
+signature: ()
+hidden: []
+anchor: [n74:Ω#, n75:Ω#, n76:Ω#, n75--last-->n76]
+Existential put [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n74:Ω#, n75:Ω#, n76:Ω#] edges [n74--Cell-->n74, n75--Buffer-->n75, n75--last-->n76, n76--Cell-->n76, n76--next-->n74]
+  rhs: nodes [n73:Ω#, n74:Ω#, n75:Ω#, n76:Ω#] edges [n73--Object-->n73, n74--Cell-->n74, n74--val-->n73, n75--Buffer-->n75, n75--last-->n74, n76--Cell-->n76, n76--next-->n74]
+  Negated put-[]-lhs-nac-0 [non-positive]
+    root: nodes [n74:Ω#] edges []
+    lhs: nodes [n74:Ω#, n77:Ω#] edges [n74--val-->n77, n77--Object-->n77]

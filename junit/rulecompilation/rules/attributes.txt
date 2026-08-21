@@ -1,0 +1,86 @@
+== rule cnewlet
+signature: ()
+hidden: []
+anchor: [n0:Ω#, int:1:int]
+Existential cnewlet [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, int:1:int] edges [n0--A-->n0]
+  rhs: nodes [n0:Ω#, int:1:int] edges [n0--A-->n0, n0--x-->int:1]
+  Negated cnewlet-[]-lhs:!(n0--x-->int:1) [non-positive]
+    root: nodes [n0:Ω#, int:1:int] edges []
+    lhs: nodes [n0:Ω#, int:1:int] edges [n0--x-->int:1]
+== rule delInt
+signature: ()
+hidden: []
+anchor: [n0:Ω#, x1:int, n0--x-->x1]
+Existential delInt [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, x1:int] edges [n0--x-->x1]
+  rhs: nodes [n0:Ω#, x1:int] edges []
+== rule divByZero
+signature: ()
+hidden: []
+anchor: [x4:int]
+Existential divByZero [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [int:1:int, int:0:int, p3:int:div(int,int), x4:int] edges []
+  rhs: nodes [n0:Ω#, int:1:int, int:0:int, p3:int:div(int,int), x4:int] edges [n0--y-->x4]
+== rule let-var-constant
+signature: ()
+hidden: []
+anchor: [int:3:int]
+Existential let-var-constant [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [int:3:int] edges []
+  rhs: nodes [n0:Ω#, int:3:int] edges [n0--a-->int:3]
+== rule let-var-expr
+signature: ()
+hidden: []
+anchor: [x8:int]
+Existential let-var-expr [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [int:3:int, int:5:int, p4:int:mul(int,int), x5:int, int:2:int, p7:int:sub(int,int), x8:int] edges []
+  rhs: nodes [n0:Ω#, int:3:int, int:5:int, p4:int:mul(int,int), x5:int, int:2:int, p7:int:sub(int,int), x8:int] edges [n0--a-->x8]
+== rule let-var-multi
+signature: ()
+hidden: []
+anchor: [n2:Ω#, x13:int]
+Existential let-var-multi [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n2:Ω#, x4:int, int:5:int, p6:int:mul(int,int), x7:int, int:2:int, p9:int:sub(int,int), x10:int, x11:int, p12:int:add(int,int), x13:int] edges [n2--a-->x4, n2--b-->x11]
+  rhs: nodes [n0:Ω#, n2:Ω#, x4:int, int:5:int, p6:int:mul(int,int), x7:int, int:2:int, p9:int:sub(int,int), x10:int, x11:int, p12:int:add(int,int), x13:int] edges [n0--a-->x13, n0--from-->n2, n2--a-->x4, n2--b-->x11]
+== rule let-x
+signature: ()
+hidden: []
+anchor: [n0:Ω#, int:1:int, x2:int, n0--x-->x2]
+Existential let-x [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, int:1:int, x2:int] edges [n0--A-->n0, n0--x-->x2]
+  rhs: nodes [n0:Ω#, int:1:int, x2:int] edges [n0--A-->n0, n0--x-->int:1]
+== rule newlet
+signature: ()
+hidden: []
+anchor: [n0:Ω#, int:1:int]
+Existential newlet [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, int:1:int] edges [n0--A-->n0]
+  rhs: nodes [n0:Ω#, int:1:int] edges [n0--A-->n0, n0--x-->int:1]
+== rule notInt
+signature: ()
+hidden: []
+anchor: []
+Existential notInt [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#] edges []
+  rhs: nodes [n0:Ω#] edges []
+  Negated notInt-[]-lhs-nac-0 [non-positive]
+    root: nodes [n0:Ω#] edges []
+    lhs: nodes [n0:Ω#, x1:int] edges [n0--x-->x1]
+== rule useInt
+signature: ()
+hidden: []
+anchor: []
+Existential useInt [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, x1:int] edges [n0--x-->x1]
+  rhs: nodes [n0:Ω#, x1:int] edges [n0--x-->x1]

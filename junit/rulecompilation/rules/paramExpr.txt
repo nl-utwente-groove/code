@@ -1,0 +1,16 @@
+== rule parIdLet
+signature: (bi int)
+hidden: []
+anchor: [n0:Ω#, x1:int, x4:int, x5:int, n0--w-->x5]
+Existential parIdLet [non-positive]
+  root: nodes [x1:int] edges []
+  lhs: nodes [n0:Ω#, x1:int, int:1:int, p3:int:add(int,int), x4:int, x5:int] edges [n0--A-->n0, n0--v-->x1, n0--w-->x5]
+  rhs: nodes [n0:Ω#, x1:int, int:1:int, p3:int:add(int,int), x4:int, x5:int] edges [n0--A-->n0, n0--v-->x1, n0--w-->x4]
+== rule parIdTest
+signature: (bi int)
+hidden: []
+anchor: [n0:Ω#, x1:int, x4:int, x5:int, n0--w-->x5]
+Existential parIdTest [non-positive]
+  root: nodes [x1:int] edges []
+  lhs: nodes [n0:Ω#, x1:int, int:1:int, p3:int:add(int,int), x4:int, x5:int, int:0:int, p7:int:gt(int,int), bool:true:bool] edges [n0--A-->n0, n0--v-->x1, n0--w-->x5]
+  rhs: nodes [n0:Ω#, x1:int, int:1:int, p3:int:add(int,int), x4:int, x5:int, int:0:int, p7:int:gt(int,int), bool:true:bool] edges [n0--A-->n0, n0--v-->x1, n0--w-->x4]

@@ -1,0 +1,51 @@
+== rule arrive-empty
+signature: ()
+hidden: []
+anchor: [n329:Ω#, n330:Ω#, n330--go-->n329]
+Existential arrive-empty [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n329:Ω#, n330:Ω#] edges [n329--bank-->n329, n330--boat-->n330, n330--go-->n329]
+  rhs: nodes [n329:Ω#, n330:Ω#] edges [n329--bank-->n329, n330--boat-->n330, n330--moored-->n329]
+  Negated arrive-empty-[]-lhs-nac-0 [non-positive]
+    root: nodes [n330:Ω#] edges []
+    lhs: nodes [n330:Ω#, n331:Ω#] edges [n331--in-->n330]
+== rule eat
+signature: ()
+hidden: []
+anchor: [n36:Ω#]
+Existential eat [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n34:Ω#, n35:Ω#, n36:Ω#, n37:Ω#] edges [n34--boat-->n34, n34--!moored-->n37, n35--likes-->n36, n35--on-->n37, n36--on-->n37, n37--bank-->n37]
+  rhs: nodes [n34:Ω#, n35:Ω#, n37:Ω#] edges [n34--boat-->n34, n34--!moored-->n37, n35--on-->n37, n37--bank-->n37]
+== rule final
+signature: ()
+hidden: []
+anchor: []
+Existential final [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n22:Ω#, n23:Ω#, n24:Ω#, n25:Ω#] edges [n22--on-->n23, n22--wolf-->n22, n23--bank-->n23, n23--right-->n23, n24--goat-->n24, n24--on-->n23, n25--cabbage-->n25, n25--on-->n23]
+  rhs: nodes [n22:Ω#, n23:Ω#, n24:Ω#, n25:Ω#] edges [n22--on-->n23, n22--wolf-->n22, n23--bank-->n23, n23--right-->n23, n24--goat-->n24, n24--on-->n23, n25--cabbage-->n25, n25--on-->n23]
+== rule go-empty
+signature: ()
+hidden: []
+anchor: [n60:Ω#, n61:Ω#, n62:Ω#, n60--moored-->n61]
+Existential go-empty [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n60:Ω#, n61:Ω#, n62:Ω#] edges [n60--boat-->n60, n60--moored-->n61, n61--bank-->n61, n62--bank-->n62, n62--!=-->n61]
+  rhs: nodes [n60:Ω#, n61:Ω#, n62:Ω#] edges [n60--boat-->n60, n60--go-->n62, n61--bank-->n61, n62--bank-->n62, n62--!=-->n61]
+== rule load
+signature: ()
+hidden: []
+anchor: [n87:Ω#, n88:Ω#, n89:Ω#, n90:Ω#, n88--moored-->n87, n89--on-->n87]
+Existential load [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n87:Ω#, n88:Ω#, n89:Ω#, n90:Ω#] edges [n87--bank-->n87, n88--boat-->n88, n88--moored-->n87, n89--on-->n87, n90--bank-->n90, n90--!=-->n87]
+  rhs: nodes [n87:Ω#, n88:Ω#, n89:Ω#, n90:Ω#] edges [n87--bank-->n87, n88--boat-->n88, n88--go-->n90, n89--in-->n88, n90--bank-->n90, n90--!=-->n87]
+== rule unload
+signature: ()
+hidden: []
+anchor: [n183:Ω#, n184:Ω#, n185:Ω#, n183--in-->n185, n185--go-->n184]
+Existential unload [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n183:Ω#, n184:Ω#, n185:Ω#] edges [n183--in-->n185, n184--bank-->n184, n185--boat-->n185, n185--go-->n184]
+  rhs: nodes [n183:Ω#, n184:Ω#, n185:Ω#] edges [n183--on-->n184, n184--bank-->n184, n185--boat-->n185, n185--moored-->n184]

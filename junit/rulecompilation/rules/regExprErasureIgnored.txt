@@ -1,0 +1,8 @@
+== rule seqThroughEraser
+signature: ()
+hidden: []
+anchor: [n0:A, n1:B, n0--b-->n1]
+Existential seqThroughEraser [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:A, n1:B] edges [n0--b-->n1, n0--a.b-->n1]
+  rhs: nodes [n0:A, n1:B] edges [n0--a.b-->n1]

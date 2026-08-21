@@ -1,0 +1,73 @@
+== rule combinedMerge
+signature: ()
+hidden: []
+anchor: [n0:A#, n2:A]
+Existential combinedMerge [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:A#, n2:A] edges []
+  rhs: nodes [n0:A#, n1:B, n2:A, n3:C] edges [n0--=-->n1, n2--=-->n3]
+== rule merge
+signature: ()
+hidden: []
+anchor: [n0:A#, n1:A#]
+Existential merge [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:A#, n1:A#] edges []
+  rhs: nodes [n0:A#, n1:A#] edges [n0--=-->n1]
+== rule merge-injective
+signature: ()
+hidden: []
+anchor: [n0:A#, n1:A#]
+Existential merge-injective [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:A#, n1:A#] edges []
+  rhs: nodes [n0:A#, n1:A#] edges [n0--=-->n1]
+  Negated merge-injective-[]-lhs:!(n0--=-->n1) [non-positive]
+    root: nodes [n0:A#, n1:A#] edges []
+    lhs: nodes [n0:A#, n1:A#] edges [n0--=-->n1]
+== rule mergeDeleteEdge
+signature: ()
+hidden: []
+anchor: [n0:A#, n1:A#, n2:B, n1--a-->n2]
+Existential mergeDeleteEdge [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:A#, n1:A#, n2:B] edges [n0--a-->n2, n1--a-->n2]
+  rhs: nodes [n0:A#, n1:A#, n2:B] edges [n0--a-->n2, n0--=-->n1]
+== rule mergeDeleteNode
+signature: ()
+hidden: []
+anchor: [n0:A, n1:A]
+Existential mergeDeleteNode [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:A#, n1:A, n2:B] edges [n0--a-->n2, n1--a-->n2]
+  rhs: nodes [n0:A#, n2:B] edges [n0--a-->n2]
+  Universal mergeDeleteNode[0] [non-positive]
+    root: nodes [n0:A#] edges []
+    lhs: nodes [n0:A] edges []
+    rhs: nodes [n0:A, n3:B] edges [n0--=-->n3]
+    Existential mergeDeleteNode[0,0]
+      root: nodes [] edges []
+      lhs: nodes [] edges []
+== rule mergeSpecialise
+signature: ()
+hidden: []
+anchor: [n0:A#]
+Existential mergeSpecialise [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:A#] edges []
+  rhs: nodes [n0:A#, n1:B] edges [n0--=-->n1]
+== rule universalMerge
+signature: ()
+hidden: []
+anchor: []
+Existential universalMerge [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [] edges []
+  rhs: nodes [n6:A#] edges []
+  Universal universalMerge[0] [non-positive]
+    root: nodes [] edges []
+    lhs: nodes [n4:A] edges []
+    rhs: nodes [n4:A, n6:A] edges [n6--=-->n4]
+    Existential universalMerge[0,0]
+      root: nodes [] edges []
+      lhs: nodes [] edges []

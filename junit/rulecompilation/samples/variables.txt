@@ -1,0 +1,19 @@
+== rule matchAB
+signature: ()
+hidden: []
+anchor: [n28:Ω#, n30:Ω#]
+Existential matchAB [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n28:Ω#, n29:Ω#, n30:Ω#] edges [n28--A-->n28, n28--?x-->n29, n29--C-->n29, n30--B-->n30, n30--?x-->n30] vars [?x]
+  rhs: nodes [n28:Ω#, n29:Ω#, n30:Ω#] edges [n28--A-->n28, n28--match-->n30, n28--?x-->n29, n29--C-->n29, n30--B-->n30, n30--?x-->n30] vars [?x]
+== rule transferAB
+signature: ()
+hidden: []
+anchor: [n42:Ω#, n43:Ω#, n44:Ω#, n42--?x-->n43, ?x]
+Existential transferAB [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n42:Ω#, n43:Ω#, n44:Ω#] edges [n42--A-->n42, n42--?x-->n43, n43--C-->n43, n44--B-->n44] vars [?x]
+  rhs: nodes [n42:Ω#, n43:Ω#, n44:Ω#] edges [n42--A-->n42, n42--transfer-->n44, n43--C-->n43, n44--B-->n44, n44--?x-->n44] vars [?x]
+  Negated transferAB-[]-lhs-nac-0 [non-positive]
+    root: nodes [n44:Ω#] edges [] vars [?x]
+    lhs: nodes [n44:Ω#] edges [n44--?x-->n44] vars [?x]

@@ -1,0 +1,79 @@
+== rule allRandom
+signature: ()
+hidden: []
+anchor: []
+Existential allRandom [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [int:10:int] edges []
+  rhs: nodes [int:10:int] edges []
+  Universal allRandom[0] [non-positive]
+    root: nodes [int:10:int] edges []
+    lhs: nodes [n1:Ω#, int:10:int, p3:user:randomInt(int), x4:int] edges []
+    rhs: nodes [n1:Ω#, int:10:int, p3:user:randomInt(int), x4:int] edges [n1--x-->x4]
+    Existential allRandom[0,0]
+      root: nodes [] edges []
+      lhs: nodes [] edges []
+== rule charAt
+signature: ()
+hidden: []
+anchor: [n1:Ω#, x5:string]
+Existential charAt [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n1:Ω#, string:"abcd":string, x3:int, p4:user:charAt(string,int), x5:string] edges [n1--i-->x3]
+  rhs: nodes [n0:Ω#, n1:Ω#, string:"abcd":string, x3:int, p4:user:charAt(string,int), x5:string] edges [n0--from-->n1, n0--x-->x5, n1--i-->x3]
+== rule create
+signature: ()
+hidden: []
+anchor: [n0:Ω#, user:UserTypeIntBool(0, true):user, x5:int]
+Existential create [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, user:UserTypeIntBool(0, true):user, int:0:int, int:1:int, p4:int:max(int,int), x5:int] edges []
+  rhs: nodes [n0:Ω#, user:UserTypeIntBool(0, true):user, int:0:int, int:1:int, p4:int:max(int,int), x5:int] edges [n0--x-->user:UserTypeIntBool(0, true), n0--y-->x5]
+== rule intField
+signature: ()
+hidden: []
+anchor: [n0:Ω#, x3:int]
+Existential intField [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, x1:user, p2:user:intField(user), x3:int] edges [n0--x-->x1]
+  rhs: nodes [n0:Ω#, x1:user, p2:user:intField(user), x3:int] edges [n0--i-->x3, n0--x-->x1]
+== rule intFieldTest
+signature: ()
+hidden: []
+anchor: []
+Existential intFieldTest [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, x1:user, p2:user:intField(user), x3:int, int:-10:int, p5:int:eq(int,int), bool:true:bool] edges [n0--x-->x1]
+  rhs: nodes [n0:Ω#, x1:user, p2:user:intField(user), x3:int, int:-10:int, p5:int:eq(int,int), bool:true:bool] edges [n0--x-->x1]
+== rule isNeg
+signature: ()
+hidden: []
+anchor: [n0:Ω#, x3:bool]
+Existential isNeg [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, x1:user, p2:user:isNeg(user), x3:bool] edges [n0--x-->x1]
+  rhs: nodes [n0:Ω#, x1:user, p2:user:isNeg(user), x3:bool] edges [n0--b-->x3, n0--x-->x1]
+== rule isPrefix
+signature: ()
+hidden: []
+anchor: []
+Existential isPrefix [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, n1:Ω#, string:"a":string, x3:string, p4:user:isPrefix(string,string), bool:true:bool] edges [n1--s-->x3]
+  rhs: nodes [n0:Ω#, n1:Ω#, string:"a":string, x3:string, p4:user:isPrefix(string,string), bool:true:bool] edges [n1--s-->x3]
+== rule one
+signature: ()
+hidden: []
+anchor: [x3:int, x5:int]
+Existential one [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [p2:user:one(), x3:int, p4:user:one(), x5:int] edges []
+  rhs: nodes [n0:Ω#, n1:Ω#, p2:user:one(), x3:int, p4:user:one(), x5:int] edges [n0--x-->x3, n1--y-->x5]
+== rule random
+signature: ()
+hidden: []
+anchor: [x4:int, x7:int]
+Existential random [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [int:8:int, p3:user:randomInt(int), x4:int, int:12:int, p6:user:randomInt(int), x7:int] edges []
+  rhs: nodes [n0:Ω#, n1:Ω#, int:8:int, p3:user:randomInt(int), x4:int, int:12:int, p6:user:randomInt(int), x7:int] edges [n0--x-->x4, n1--y-->x7]

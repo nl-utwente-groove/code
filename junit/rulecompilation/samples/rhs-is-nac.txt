@@ -1,0 +1,30 @@
+== rule addA
+signature: ()
+hidden: []
+anchor: [n0:Ω#, n1:Ω#]
+Existential addA [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, n1:Ω#] edges [n0--A-->n0, n1--B-->n1]
+  rhs: nodes [n0:Ω#, n1:Ω#] edges [n0--A-->n0, n0--a-->n1, n1--B-->n1]
+  Negated addA-[]-lhs:!(n0--a-->n1) [non-positive]
+    root: nodes [n0:Ω#, n1:Ω#] edges []
+    lhs: nodes [n0:Ω#, n1:Ω#] edges [n0--a-->n1]
+== rule addC
+signature: ()
+hidden: []
+anchor: [n1:Ω#]
+Existential addC [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n1:Ω#] edges [n1--B-->n1]
+  rhs: nodes [n0:Ω#, n1:Ω#] edges [n0--C-->n0, n1--B-->n1, n1--c-->n0]
+  Negated addC-[]-lhs-nac-0 [non-positive]
+    root: nodes [n1:Ω#] edges []
+    lhs: nodes [n0:Ω#, n1:Ω#] edges [n0--C-->n0, n1--c-->n0]
+== rule delBNode
+signature: ()
+hidden: []
+anchor: [n0:Ω#]
+Existential delBNode [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#] edges [n0--B-->n0]
+  rhs: nodes [] edges []

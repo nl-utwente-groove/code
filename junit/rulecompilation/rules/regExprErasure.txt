@@ -1,0 +1,30 @@
+== rule nodeEraserIncident
+signature: ()
+hidden: []
+anchor: [n2:B]
+Existential nodeEraserIncident [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:A, n1:B, n2:B] edges [n0--a.b-->n1]
+  rhs: nodes [n0:A, n1:B] edges [n0--a.b-->n1]
+  Negated nodeEraserIncident-[]-lhs:!(n1--=-->n2) [non-positive]
+    root: nodes [n1:B, n2:B] edges []
+    lhs: nodes [n1:B, n2:B] edges [n1--=-->n2]
+== rule seqBesideEraser
+signature: ()
+hidden: []
+anchor: [n2:B, n2--c-->n2]
+Existential seqBesideEraser [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:A, n1:B, n2:B] edges [n0--a.b-->n1, n2--c-->n2]
+  rhs: nodes [n0:A, n1:B, n2:B] edges [n0--a.b-->n1]
+== rule seqThroughEraser
+errors:
+  - Regular expression a.b may match a path through a b-edge erased by this rule (set the ignoreRegExp grammar property to accept this)
+== rule wildcardPositional
+signature: ()
+hidden: []
+anchor: [n2:B, n2--c-->n2]
+Existential wildcardPositional [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:A, n1:A, n2:B] edges [n0--?.?-->n1, n2--c-->n2]
+  rhs: nodes [n0:A, n1:A, n2:B] edges [n0--?.?-->n1]

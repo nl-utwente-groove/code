@@ -1,0 +1,8 @@
+== rule inputInt
+signature: (ask int)
+hidden: []
+anchor: [n0:Ω#, n0--mark-->n0]
+Existential inputInt [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#] edges [n0--A-->n0, n0--mark-->n0]
+  rhs: nodes [n0:Ω#, x1:int] edges [n0--A-->n0, n0--x-->x1]

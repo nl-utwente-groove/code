@@ -1,0 +1,33 @@
+== rule append
+signature: ()
+hidden: []
+anchor: [n67:Ω#, n68:Ω#]
+Existential append [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n66:Ω#, n67:Ω#, n68:Ω#] edges [n66--List-->n66, n66--next*-->n68, n67--1|2|3-->n67]
+  rhs: nodes [n66:Ω#, n67:Ω#, n68:Ω#, n69:Ω#] edges [n66--List-->n66, n66--next*-->n68, n67--1|2|3-->n67, n68--next-->n69, n69--val-->n67]
+  Negated append-[]-lhs:!(n66--next*.val-->n67) [non-positive]
+    root: nodes [n66:Ω#, n67:Ω#] edges []
+    lhs: nodes [n66:Ω#, n67:Ω#] edges [n66--next*.val-->n67]
+  Negated append-[]-lhs-nac-1 [non-positive]
+    root: nodes [n68:Ω#] edges []
+    lhs: nodes [n65:Ω#, n68:Ω#] edges [n68--next-->n65]
+== rule del-end
+signature: ()
+hidden: []
+anchor: [n162:Ω#]
+Existential del-end [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n158:Ω#, n159:Ω#, n161:Ω#, n162:Ω#] edges [n158--next-->n162, n159--List-->n159, n159--next*-->n158, n161--1|2|3|4|6|7|8-->n161, n162--val-->n161]
+  rhs: nodes [n158:Ω#, n159:Ω#, n161:Ω#] edges [n159--List-->n159, n159--next*-->n158, n161--1|2|3|4|6|7|8-->n161]
+  Negated del-end-[]-lhs-nac-0 [non-positive]
+    root: nodes [n162:Ω#] edges []
+    lhs: nodes [n160:Ω#, n162:Ω#] edges [n162--next-->n160]
+== rule del-mid
+signature: ()
+hidden: []
+anchor: [n208:Ω#, n209:Ω#, n212:Ω#]
+Existential del-mid [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n208:Ω#, n209:Ω#, n210:Ω#, n211:Ω#, n212:Ω#] edges [n208--next-->n209, n208--val-->n210, n210--1|2|3|4|6|7|8-->n210, n211--List-->n211, n211--next*-->n212, n212--next-->n208]
+  rhs: nodes [n209:Ω#, n210:Ω#, n211:Ω#, n212:Ω#] edges [n210--1|2|3|4|6|7|8-->n210, n211--List-->n211, n211--next*-->n212, n212--next-->n209]

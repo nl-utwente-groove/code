@@ -1,0 +1,11 @@
+== rule test
+signature: ()
+hidden: []
+anchor: [n59010:Ω#, n59012:Ω#, n59012--a-->n59010]
+Existential test [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n59010:Ω#, n59012:Ω#] edges [n59012--a-->n59010]
+  rhs: nodes [n59010:Ω#, n59012:Ω#] edges []
+  Negated test-[]-lhs-nac-0 [non-positive]
+    root: nodes [n59010:Ω#, n59012:Ω#] edges []
+    lhs: nodes [n59010:Ω#, n59011:Ω#, n59012:Ω#] edges [n59012--a-->n59011]

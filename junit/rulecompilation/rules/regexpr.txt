@@ -1,0 +1,82 @@
+== rule createA1Node
+signature: ()
+hidden: []
+anchor: [?x]
+Existential createA1Node [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n1:A] edges [] vars [?x]
+  rhs: nodes [n0:A1, n1:A] edges [n0--a1-->n0] vars [?x]
+== rule createANode
+signature: ()
+hidden: []
+anchor: [?x]
+Existential createANode [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n1:A] edges [] vars [?x]
+  rhs: nodes [n0:A, n1:A] edges [n0--a-->n0] vars [?x]
+== rule createNotANode
+signature: ()
+hidden: []
+anchor: [n2:B, ?x, ?y]
+Existential createNotANode [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n1:A, n2:B] edges [n1--?y-->n2] vars [?x, ?y]
+  rhs: nodes [n0:A, n1:A, n2:B] edges [n0--a-->n0, n0--?y-->n2, n1--?y-->n2] vars [?x, ?y]
+== rule delWildA
+signature: ()
+hidden: []
+anchor: [n0:A]
+Existential delWildA [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:A] edges []
+  rhs: nodes [] edges []
+== rule delWildA1OrA2
+signature: ()
+hidden: []
+anchor: [n0:A]
+Existential delWildA1OrA2 [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:A] edges []
+  rhs: nodes [] edges []
+== rule deleteANode
+signature: ()
+hidden: []
+anchor: [n0:A, ?x]
+Existential deleteANode [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:A, n1:A] edges [n0--a-->n0] vars [?x]
+  rhs: nodes [n1:A] edges [] vars [?x]
+== rule deleteSharpANode
+signature: ()
+hidden: []
+anchor: [n0:A, ?x]
+Existential deleteSharpANode [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:A, n1:A#] edges [n0--a-->n0] vars [?x]
+  rhs: nodes [n1:A#] edges [] vars [?x]
+== rule setSublevelVar
+signature: ()
+hidden: []
+anchor: [?x]
+Existential setSublevelVar [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:A] edges [n0--?x-->n0] vars [?x]
+  rhs: nodes [n0:A] edges [n0--?x-->n0] vars [?x]
+  Universal setSublevelVar[0] [non-positive]
+    root: nodes [n0:A] edges [] vars [?x]
+    lhs: nodes [n0:A, n1:B] edges [n0--?-->n1] vars [?x]
+    Existential setSublevelVar[0,0]
+      root: nodes [n1:B] edges [] vars [?x]
+      lhs: nodes [n1:B, n3:A] edges [n1--?-->n3] vars [?x]
+      rhs: nodes [n1:B, n3:A] edges [n1--?-->n3, n3--?x-->n3] vars [?x]
+== rule testNegVar
+signature: ()
+hidden: []
+anchor: [n0:A, n1:B, ?x]
+Existential testNegVar [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:A, n1:B, n3:B] edges [n0--?x-->n3] vars [?x]
+  rhs: nodes [n0:A, n1:B, n3:B] edges [n0--?x-->n1, n0--?x-->n3] vars [?x]
+  Negated testNegVar-[]-lhs-nac-0 [non-positive]
+    root: nodes [n1:B] edges [] vars [?x]
+    lhs: nodes [n1:B, n2:A] edges [n2--?x-->n1] vars [?x]

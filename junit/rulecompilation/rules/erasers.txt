@@ -1,0 +1,71 @@
+== rule eraseCreate
+signature: ()
+hidden: []
+anchor: [n0:Ω#, n1:Ω#, n2:Ω#]
+Existential eraseCreate [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, n1:Ω#, n2:Ω#] edges [n0--A-->n0, n1--B-->n1, n2--B-->n2]
+  rhs: nodes [n0:Ω#, n2:Ω#] edges [n0--A-->n0, n0--a-->n2, n2--B-->n2]
+== rule eraseEdge
+signature: ()
+hidden: []
+anchor: [n0:Ω#, n1:Ω#, n0--a-->n1]
+Existential eraseEdge [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, n1:Ω#] edges [n0--A-->n0, n0--a-->n1, n1--B-->n1]
+  rhs: nodes [n0:Ω#, n1:Ω#] edges [n0--A-->n0, n1--B-->n1]
+== rule eraseNode
+signature: ()
+hidden: []
+anchor: [n0:Ω#]
+Existential eraseNode [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#] edges [n0--A-->n0]
+  rhs: nodes [] edges []
+== rule eraseNodeEdge
+signature: ()
+hidden: []
+anchor: [n0:Ω#]
+Existential eraseNodeEdge [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, n1:Ω#] edges [n0--A-->n0, n0--a-->n1, n1--B-->n1]
+  rhs: nodes [n1:Ω#] edges [n1--B-->n1]
+== rule eraseNodeEdgePar
+signature: ()
+hidden: [n1:Ω#]
+anchor: [n0:Ω#, n1:Ω#]
+Existential eraseNodeEdgePar [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, n1:Ω#] edges [n0--A-->n0, n0--a-->n1, n1--B-->n1]
+  rhs: nodes [n1:Ω#] edges [n1--B-->n1]
+== rule eraseOverlap
+signature: ()
+hidden: []
+anchor: [n0:Ω#, n1:Ω#, n2:Ω#, n1--a-->n2]
+Existential eraseOverlap [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, n1:Ω#, n2:Ω#] edges [n0--A-->n0, n1--A-->n1, n1--a-->n2, n2--B-->n2]
+  rhs: nodes [n1:Ω#, n2:Ω#] edges [n1--A-->n1, n2--B-->n2]
+== rule eraseTwo
+signature: ()
+hidden: []
+anchor: []
+Existential eraseTwo [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [int:2:int] edges []
+  rhs: nodes [int:2:int] edges []
+  Universal eraseTwo[0] [non-positive] count=int:2 outputs=[int:2:int]
+    root: nodes [] edges []
+    lhs: nodes [n0:Ω#] edges [n0--B-->n0]
+    rhs: nodes [] edges []
+    Existential eraseTwo[0,0]
+      root: nodes [] edges []
+      lhs: nodes [] edges []
+== rule eraseTwoExplicit
+signature: ()
+hidden: []
+anchor: [n0:Ω#, n1:Ω#]
+Existential eraseTwoExplicit [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, n1:Ω#] edges [n0--B-->n0, n1--B-->n1]
+  rhs: nodes [] edges []

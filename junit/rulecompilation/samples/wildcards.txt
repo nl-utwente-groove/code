@@ -1,0 +1,16 @@
+== rule matchNeg
+signature: ()
+hidden: []
+anchor: [n0:Ω#, n1:Ω#, n1--?x[^a,b]-->n0, ?x]
+Existential matchNeg [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, n1:Ω#] edges [n1--?x[^a,b]-->n0] vars [?x]
+  rhs: nodes [n0:Ω#, n1:Ω#] edges []
+== rule matchPos
+signature: ()
+hidden: []
+anchor: [n0:Ω#, n1:Ω#, n1--?x[a,b]-->n0, ?x]
+Existential matchPos [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, n1:Ω#] edges [n1--?x[a,b]-->n0] vars [?x]
+  rhs: nodes [n0:Ω#, n1:Ω#] edges []

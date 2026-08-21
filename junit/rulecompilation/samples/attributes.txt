@@ -1,0 +1,56 @@
+== rule add_score
+signature: (bi node,int)
+hidden: []
+anchor: [n0:Ω#, x1:int, x3:int, x4:int, n0--score-->x1]
+Existential add_score [non-positive]
+  root: nodes [n0:Ω#, x3:int] edges []
+  lhs: nodes [n0:Ω#, x1:int, p2:int:add(int,int), x3:int, x4:int] edges [n0--score-->x1]
+  rhs: nodes [n0:Ω#, x1:int, p2:int:add(int,int), x3:int, x4:int] edges [n0--score-->x4]
+== rule cast_values
+signature: ()
+hidden: []
+anchor: [n0:Ω#, x3:int, x4:int, n0--intGravity-->x4]
+Existential cast_values [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, x1:real, p2:real:toInt(real), x3:int, x4:int] edges [n0--gravity-->x1, n0--intGravity-->x4]
+  rhs: nodes [n0:Ω#, x1:real, p2:real:toInt(real), x3:int, x4:int] edges [n0--gravity-->x1, n0--intGravity-->x3]
+== rule get_score
+signature: (bi node,out int)
+hidden: []
+anchor: [n0:Ω#, x1:int]
+Existential get_score [non-positive]
+  root: nodes [n0:Ω#, x1:int] edges []
+  lhs: nodes [n0:Ω#, x1:int] edges [n0--score-->x1]
+  rhs: nodes [n0:Ω#, x1:int] edges [n0--score-->x1]
+== rule set_finished
+signature: (bool)
+hidden: []
+anchor: [n0:Ω#, x1:bool, x2:bool, n0--finished-->x1]
+Existential set_finished [non-positive]
+  root: nodes [x2:bool] edges []
+  lhs: nodes [n0:Ω#, x1:bool, x2:bool] edges [n0--Properties-->n0, n0--finished-->x1]
+  rhs: nodes [n0:Ω#, x1:bool, x2:bool] edges [n0--Properties-->n0, n0--finished-->x2]
+== rule set_gravity
+signature: (real)
+hidden: []
+anchor: [n0:Ω#, x1:real]
+Existential set_gravity [non-positive]
+  root: nodes [x1:real] edges []
+  lhs: nodes [n0:Ω#, x1:real] edges [n0--Properties-->n0]
+  rhs: nodes [n0:Ω#, x1:real] edges [n0--Properties-->n0, n0--gravity-->x1]
+== rule set_name
+signature: (string)
+hidden: []
+anchor: [n0:Ω#, x1:string]
+Existential set_name [non-positive]
+  root: nodes [x1:string] edges []
+  lhs: nodes [n0:Ω#, x1:string] edges [n0--Properties-->n0]
+  rhs: nodes [n0:Ω#, x1:string] edges [n0--Properties-->n0, n0--name-->x1]
+== rule set_score
+signature: (bi node,int)
+hidden: []
+anchor: [n0:Ω#, x1:int, x2:int, n0--score-->x2]
+Existential set_score [non-positive]
+  root: nodes [n0:Ω#, x1:int] edges []
+  lhs: nodes [n0:Ω#, x1:int, x2:int] edges [n0--score-->x2]
+  rhs: nodes [n0:Ω#, x1:int, x2:int] edges [n0--score-->x1]

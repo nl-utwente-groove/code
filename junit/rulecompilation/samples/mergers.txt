@@ -1,0 +1,24 @@
+== rule merge-a-b
+signature: ()
+hidden: []
+anchor: [n23:Ω#, n24:Ω#, n24--b-->n24]
+Existential merge-a-b [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n23:Ω#, n24:Ω#] edges [n23--a-->n23, n24--b-->n24]
+  rhs: nodes [n23:Ω#, n24:Ω#] edges [n23--a-->n23, n23--=-->n24]
+== rule merge-and-del
+signature: ()
+hidden: []
+anchor: [n75:Ω#, n76:Ω#, n77:Ω#]
+Existential merge-and-del [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n75:Ω#, n76:Ω#, n77:Ω#] edges [n75--c-->n75, n76--a-->n76, n77--a-->n77]
+  rhs: nodes [n75:Ω#, n77:Ω#] edges [n75--c-->n75, n77--a-->n77, n77--=-->n75]
+== rule merge-and-merge
+signature: ()
+hidden: []
+anchor: [n45:Ω#, n46:Ω#, n47:Ω#, n48:Ω#, n47--b-->n47, n48--c-->n48]
+Existential merge-and-merge [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n45:Ω#, n46:Ω#, n47:Ω#, n48:Ω#] edges [n45--a-->n45, n46--a-->n46, n47--b-->n47, n48--c-->n48]
+  rhs: nodes [n45:Ω#, n46:Ω#, n47:Ω#, n48:Ω#] edges [n45--a-->n45, n45--=-->n47, n46--a-->n46, n46--=-->n48]

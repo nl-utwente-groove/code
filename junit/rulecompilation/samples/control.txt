@@ -1,0 +1,24 @@
+== rule enter
+signature: ()
+hidden: []
+anchor: [n999:Ω#, n1000:Ω#, n1001:Ω#, n999--at-->n1001]
+Existential enter [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n999:Ω#, n1000:Ω#, n1001:Ω#] edges [n999--Person-->n999, n999--at-->n1001, n1000--Train-->n1000, n1000--at-->n1001, n1001--Station-->n1001]
+  rhs: nodes [n999:Ω#, n1000:Ω#, n1001:Ω#] edges [n999--Person-->n999, n999--at-->n1000, n1000--Train-->n1000, n1000--at-->n1001, n1001--Station-->n1001]
+== rule exit
+signature: ()
+hidden: []
+anchor: [n1052:Ω#]
+Existential exit [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n1051:Ω#, n1052:Ω#, n1053:Ω#] edges [n1051--Station-->n1051, n1052--Person-->n1052, n1052--at-->n1053, n1052--dest-->n1051, n1053--Train-->n1053, n1053--at-->n1051]
+  rhs: nodes [n1051:Ω#, n1053:Ω#] edges [n1051--Station-->n1051, n1053--Train-->n1053, n1053--at-->n1051]
+== rule move
+signature: ()
+hidden: []
+anchor: [n1282:Ω#, n1283:Ω#, n1284:Ω#, n1282--at-->n1284]
+Existential move [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n1282:Ω#, n1283:Ω#, n1284:Ω#] edges [n1282--Train-->n1282, n1282--at-->n1284, n1283--Station-->n1283, n1284--Station-->n1284, n1284--next-->n1283]
+  rhs: nodes [n1282:Ω#, n1283:Ω#, n1284:Ω#] edges [n1282--Train-->n1282, n1282--at-->n1283, n1283--Station-->n1283, n1284--Station-->n1284, n1284--next-->n1283]

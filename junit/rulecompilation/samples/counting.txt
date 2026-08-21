@@ -1,0 +1,22 @@
+== rule sole-unclaimed
+signature: ()
+hidden: []
+anchor: [n42:Ω#, n43:Ω#]
+Existential sole-unclaimed [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n42:Ω#, n43:Ω#] edges [n42--root-->n42, n42--!mine-->n43, n43--A-->n43]
+  rhs: nodes [n42:Ω#, n43:Ω#] edges [n42--mine-->n43, n42--root-->n42, n42--!mine-->n43, n43--A-->n43]
+  Negated sole-unclaimed-[]-lhs-nac-0 [non-positive]
+    root: nodes [n42:Ω#, n43:Ω#] edges []
+    lhs: nodes [n41:Ω#, n42:Ω#, n43:Ω#] edges [n41--A-->n41, n41--!=-->n43, n42--!mine-->n41]
+== rule up-to-three
+signature: ()
+hidden: []
+anchor: []
+Existential up-to-three [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [] edges []
+  rhs: nodes [n24:Ω#] edges [n24--A-->n24]
+  Negated up-to-three-[]-lhs-nac-0 [non-positive]
+    root: nodes [] edges []
+    lhs: nodes [n25:Ω#, n26:Ω#, n27:Ω#] edges [n25--A-->n25, n25--!=-->n26, n26--A-->n26, n26--!=-->n27, n27--A-->n27, n27--!=-->n25]
