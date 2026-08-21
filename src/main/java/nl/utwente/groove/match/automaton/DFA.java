@@ -19,18 +19,23 @@ package nl.utwente.groove.match.automaton;
 import static nl.utwente.groove.graph.Direction.INCOMING;
 import static nl.utwente.groove.graph.Direction.OUTGOING;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.Direction;
+import nl.utwente.groove.util.AIGenerated;
 
 /**
  * Deterministic automaton optimised towards matching.
@@ -96,8 +101,7 @@ public class DFA {
 
     /** Returns the minimised automaton depending on this one. */
     public DFA toMinimised() {
-        Set<Cell> equivalence = computeEquivalence();
-        Map<DFAState,Cell> partition = computePartition(equivalence);
+        Map<DFAState,Cell> partition = computePartition();
         return computeQuotient(partition);
     }
 
@@ -206,106 +210,79 @@ public class DFA {
     }
 
     /**
-     * Computes the equivalence relation of the states of this automaton,
-     * based on the states incoming and outgoing label and variable transitions.
+     * Computes the coarsest partition of the states of this automaton into cells
+     * of equivalent states, by Moore-style partition refinement: starting from the
+     * division into final and non-final states, every cell is split according to
+     * the successor signatures of its states (see {@link #computeSignature}),
+     * until no cell splits any more. Two states thus end up in the same cell if they
+     * are both final or both non-final and, for every direction and label, either
+     * both lack a transition or their successors are again in the same cell.
+     * <p>
+     * The state order of this automaton is preserved throughout, so the resulting
+     * partition, and hence the numbering of the quotient states, is deterministic.
      */
-    private Set<Cell> computeEquivalence() {
-        Set<Cell> result = new HashSet<>();
-        // declare and initialise the dependencies
-        // for each state pair, this records the previous state pairs
-        // that are distinct if this state pair is distinct.
-        Map<Cell,Set<Cell>> depMap = new HashMap<>();
-        for (DFAState i : getStates()) {
-            for (DFAState j : getStates()) {
-                if (i.getNumber() < j.getNumber()) {
-                    Cell ijPair = new Cell(i, j);
-                    Set<Cell> depSet = new HashSet<>();
-                    depSet.add(ijPair);
-                    depMap.put(ijPair, depSet);
-                    // states are equivalent until proven otherwise
-                    result.add(ijPair);
-                }
-            }
+    @AIGenerated("Claude Fable 5, 2026-08")
+    private Map<DFAState,Cell> computePartition() {
+        // initial partition: final versus non-final states
+        Map<DFAState,Cell> result = new LinkedHashMap<>();
+        Cell finalCell = new Cell(0);
+        Cell nonFinalCell = new Cell(1);
+        for (DFAState s : getStates()) {
+            Cell cell = s.isFinal()
+                ? finalCell
+                : nonFinalCell;
+            cell.states().add(s);
+            result.put(s, cell);
         }
-        for (DFAState i : getStates()) {
-            for (DFAState j : getStates()) {
-                if (i.getNumber() < j.getNumber()) {
-                    Cell ijPair = new Cell(i, j);
-                    Set<Cell> depSet = depMap.remove(ijPair);
-                    assert depSet != null;
-                    boolean distinct = i.isFinal() != j.isFinal();
-                    if (!distinct) {
-                        for (Direction dir : Direction.values()) {
-                            if (areDistinct(i.getLabelMap().get(dir), j.getLabelMap().get(dir),
-                                            depSet, depMap)) {
-                                distinct = true;
-                                break;
-                            }
-                        }
+        boolean refined;
+        do {
+            refined = false;
+            Map<DFAState,Cell> next = new LinkedHashMap<>();
+            int cellCount = 0;
+            for (Cell cell : new LinkedHashSet<>(result.values())) {
+                // split the cell according to the signatures of its states
+                Map<Signature,Cell> split = new LinkedHashMap<>();
+                for (DFAState s : cell.states()) {
+                    Signature sig = computeSignature(s, result);
+                    Cell newCell = split.get(sig);
+                    if (newCell == null) {
+                        split.put(sig, newCell = new Cell(cellCount++));
                     }
-                    if (distinct) {
-                        result.removeAll(depSet);
-                    }
+                    newCell.states().add(s);
+                    next.put(s, newCell);
                 }
+                refined |= split.size() > 1;
             }
-        }
+            result = next;
+        } while (refined);
         return result;
     }
 
     /**
-     * Tests if two states can be distinguished on the basis of a mapping to next states.
-     * If no distinction exists, the pair is added as a dependent to all
-     * corresponding pairs of target states.
+     * Computes the signature of a state with respect to a given partition:
+     * per direction, the mapping from transition labels to the numbers of the
+     * cells containing the corresponding successor states.
      */
-    private <K> boolean areDistinct(Map<K,DFAState> iMap, Map<K,DFAState> jMap, Set<Cell> ijDepSet,
-                                    Map<Cell,Set<Cell>> depMap) {
-        boolean result = false;
-        if (!iMap.keySet().equals(jMap.keySet())) {
-            result = true;
-        } else {
-            for (Map.Entry<K,DFAState> iEntry : iMap.entrySet()) {
-                DFAState iSucc = iEntry.getValue();
-                DFAState jSucc = iMap.get(iEntry.getKey());
-                Cell ijTargetPair = new Cell(iSucc, jSucc);
-                Set<Cell> ijTargetDep = depMap.get(ijTargetPair);
-                if (ijTargetDep == null) {
-                    result = true;
-                    break;
-                } else {
-                    ijTargetDep.addAll(ijDepSet);
-                }
+    @AIGenerated("Claude Fable 5, 2026-08")
+    private Signature computeSignature(DFAState state, Map<DFAState,Cell> partition) {
+        Map<Direction,Map<TypeLabel,Integer>> succCells = new EnumMap<>(Direction.class);
+        for (Direction dir : Direction.values()) {
+            Map<TypeLabel,DFAState> labelMap = state.getLabelMap().get(dir);
+            assert labelMap != null; // the label map is filled for all directions
+            Map<TypeLabel,Integer> dirCells = new HashMap<>();
+            for (Map.Entry<TypeLabel,DFAState> entry : labelMap.entrySet()) {
+                Cell succCell = partition.get(entry.getValue());
+                assert succCell != null; // the partition covers all states
+                dirCells.put(entry.getKey(), succCell.number());
             }
+            succCells.put(dir, dirCells);
         }
-        return result;
-    }
-
-    private Map<DFAState,Cell> computePartition(Set<Cell> equivalence) {
-        Map<DFAState,Cell> result = new HashMap<>();
-        // initially the partition is discrete
-        getStates().stream().forEach(s -> result.put(s, new Cell(s)));
-        for (Cell equiv : equivalence) {
-            assert equiv.size() == 2;
-            Iterator<DFAState> distIter = equiv.iterator();
-            DFAState s1 = distIter.next();
-            DFAState s2 = distIter.next();
-            Cell s1Cell = result.get(s1);
-            assert s1Cell != null; // the partition covers all states
-            Cell s2Cell = result.get(s2);
-            assert s2Cell != null; // the partition covers all states
-            // merge the cells if they are not already the same
-            if (s1Cell != s2Cell) {
-                s1Cell.addAll(s2Cell);
-                for (DFAState s2Sib : s2Cell) {
-                    result.put(s2Sib, s1Cell);
-                }
-            }
-        }
-        return result;
+        return new Signature(succCells);
     }
 
     /** Computes the quotient of this automaton, based on a given state partition. */
     private DFA computeQuotient(Map<DFAState,Cell> partition) {
-        Map<Cell,DFAState> newStateMap = new HashMap<>();
+        Map<Cell,DFAState> newStateMap = new LinkedHashMap<>();
         // create an image for the start cell
         Cell startCell = partition.get(getStartState());
         assert startCell != null; // the partition covers all states
@@ -313,6 +290,9 @@ public class DFA {
         DFA result = new DFA(this.dir, startNodes, getStartState().isFinal());
         newStateMap.put(startCell, result.getStartState());
         // create images for the other cells of the partition
+        // Note that distinct cells have distinct flattened node sets:
+        // the language of a state is the union of the languages of its nodes,
+        // so equal node sets would imply equal languages and hence the same cell
         for (Map.Entry<DFAState,Cell> cellEntry : partition.entrySet()) {
             Cell cell = cellEntry.getValue();
             if (!newStateMap.containsKey(cell)) {
@@ -322,13 +302,14 @@ public class DFA {
         }
         // copy the successor maps
         for (Map.Entry<Cell,DFAState> newStateEntry : newStateMap.entrySet()) {
-            DFAState oldState = newStateEntry.getKey().iterator().next();
+            DFAState oldState = newStateEntry.getKey().states().get(0);
             DFAState newState = newStateEntry.getValue();
             for (Direction dir : Direction.values()) {
                 Map<TypeLabel,DFAState> labelMap = oldState.getLabelMap().get(dir);
                 assert labelMap != null; // the label map is filled for all directions
                 for (Map.Entry<TypeLabel,DFAState> entry : labelMap.entrySet()) {
                     DFAState newSucc = newStateMap.get(partition.get(entry.getValue()));
+                    assert newSucc != null; // all cells have images
                     newState.addSuccessor(dir, entry.getKey(), newSucc);
                 }
             }
@@ -349,25 +330,44 @@ public class DFA {
         // no additional functionality
     }
 
-    private static class Cell extends HashSet<DFAState> {
-        /** Constructs a singleton cell. */
-        Cell(DFAState one) {
-            this.add(one);
+    /**
+     * Successor signature of a state with respect to a partition:
+     * per direction, the mapping from labels to successor cell numbers.
+     */
+    private record Signature(Map<Direction,Map<TypeLabel,Integer>> succCells) {
+        // no additional functionality
+    }
+
+    /**
+     * Numbered cell of a state partition.
+     * Cells are compared by identity; the number distinguishes
+     * the cells of one partition from one another in signatures.
+     */
+    private static final class Cell {
+        Cell(int number) {
+            this.number = number;
         }
 
-        /** Constructs a cell consisting of two states. */
-        Cell(DFAState one, DFAState two) {
-            this.add(one);
-            this.add(two);
+        /** Returns the number of this cell. */
+        int number() {
+            return this.number;
+        }
+
+        /** Returns the (modifiable) list of states in this cell, in state order. */
+        List<DFAState> states() {
+            return this.states;
         }
 
         /** Returns the set of all nodes in this cell. */
         Set<RegNode> flatten() {
             Set<RegNode> result = new HashSet<>();
-            for (DFAState state : this) {
+            for (DFAState state : this.states) {
                 result.addAll(state.getNodes());
             }
             return result;
         }
+
+        private final int number;
+        private final List<DFAState> states = new ArrayList<>();
     }
 }

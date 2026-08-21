@@ -20,11 +20,13 @@ import static nl.utwente.groove.graph.Direction.INCOMING;
 import static nl.utwente.groove.graph.Direction.OUTGOING;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -45,6 +47,7 @@ import nl.utwente.groove.match.automaton.DFA;
 import nl.utwente.groove.match.automaton.DFAState;
 import nl.utwente.groove.match.automaton.RegAutCalculator;
 import nl.utwente.groove.match.automaton.SimpleNFA;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -192,6 +195,62 @@ public class DFATest {
         assertTrue(predMap.isEmpty());
         DFA backward = a.getDFA(INCOMING, null);
         backward.isEquivalent(forward);
+    }
+
+    /**
+     * Tests that minimisation merges equivalent states, preserves the language
+     * and handles transitions back into the start cell (gh #892).
+     */
+    @Test
+    @AIGenerated("Claude Fable 5, 2026-08")
+    public void testMinimisation() {
+        // minimal state counts; all but the last involve genuine merges
+        assertStateCount("a*", 1);
+        assertStateCount("a.a*", 2);
+        assertStateCount("a*.a", 2);
+        assertStateCount("(a|b)*.a", 2);
+        assertStateCount("(a.b)*|(a.b)+", 2);
+        assertStateCount("a.(b|c)|a.b", 3);
+        // equivalences that only hold for minimal automata
+        assertEquivalent("a*", "=|a.a*", true);
+        assertEquivalent("a.a*", "a*.a", true);
+        assertEquivalent("(a|b)*.a", "(a|b)*.a.(=|b.(a|b)*.a)", true);
+        assertEquivalent("a*", "a+", false);
+        // language preservation and well-formedness of the quotient
+        for (String e : new String[] {"a*", "a.a*", "(a.b)*|(a.b)+", "(a|b)*.a", "-a.a*"}) {
+            SimpleNFA nfa = createNFA(e);
+            DFA dfa = nfa.getDFA(OUTGOING, null);
+            assertNoNullSuccessors(dfa);
+            // minimisation is idempotent
+            assertTrue(dfa.isEquivalent(dfa.toMinimised()));
+        }
+        SimpleNFA aStar = createNFA("a*");
+        assertTrue(aStar.accepts(List.of()));
+        assertTrue(aStar.accepts(List.of("a")));
+        assertTrue(aStar.accepts(List.of("a", "a", "a")));
+        assertFalse(aStar.accepts(List.of("b")));
+        SimpleNFA abPlus = createNFA("(a.b)*|(a.b)+");
+        assertTrue(abPlus.accepts(List.of()));
+        assertTrue(abPlus.accepts(List.of("a", "b")));
+        assertTrue(abPlus.accepts(List.of("a", "b", "a", "b")));
+        assertFalse(abPlus.accepts(List.of("a")));
+        assertFalse(abPlus.accepts(List.of("a", "b", "a")));
+    }
+
+    /** Asserts that the (minimised) forward DFA of an expression has a given number of states. */
+    private void assertStateCount(String e, int count) {
+        assertEquals(e, count, createNFA(e).getDFA(OUTGOING, null).getStates().size());
+    }
+
+    /** Asserts that all transitions of a DFA have a target state. */
+    private void assertNoNullSuccessors(DFA dfa) {
+        for (DFAState state : dfa.getStates()) {
+            for (Map<TypeLabel,DFAState> labelMap : state.getLabelMap().values()) {
+                for (Map.Entry<TypeLabel,DFAState> entry : labelMap.entrySet()) {
+                    assertNotNull(state + " --" + entry.getKey() + "--> null", entry.getValue());
+                }
+            }
+        }
     }
 
     /**
