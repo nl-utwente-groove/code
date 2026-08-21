@@ -36,9 +36,9 @@ public class StateReporter extends AExplorationReporter {
     /**
      * Constructs a state reporter with a given file name pattern.
      */
-    public StateReporter(String statePattern, LogReporter logger) {
+    public StateReporter(String statePattern, ReportContext context) {
         this.statePattern = statePattern;
-        this.logger = logger;
+        this.context = context;
     }
 
     @Override
@@ -46,19 +46,19 @@ public class StateReporter extends AExplorationReporter {
         var fileType = FileType.getType(this.statePattern);
         var exporter = Exporters.getExporter(fileType);
         if (exporter == null) {
-            this.logger
-                .append("Pattern %s does not specify known export format: states saved in native %s%n",
-                        this.statePattern, FileType.STATE.getExtension());
+            this.context
+                .add("Pattern %s does not specify known export format: states saved in native %s%n",
+                     this.statePattern, FileType.STATE.getExtension());
         } else {
-            this.logger.append("States saved as %s%n", fileType.getDescription());
+            this.context.add("States saved as %s%n", fileType.getDescription());
         }
         for (GraphState state : getExploration().getResult().getStates()) {
             File savedFile = exportState(state, this.statePattern);
-            this.logger.append("State saved: %s%n", savedFile);
+            this.context.add("State saved: %s%n", savedFile);
         }
     }
 
-    private final LogReporter logger;
+    private final ReportContext context;
     private final String statePattern;
 
     /**

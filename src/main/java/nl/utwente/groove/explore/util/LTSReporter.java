@@ -40,23 +40,24 @@ public class LTSReporter extends AExplorationReporter {
      * a set of format flags and an LTS filter.
      * @param filter determines which part of the LTS should be included
      */
-    public LTSReporter(String filePattern, LTSLabels labels, LogReporter logger, Filter filter) {
+    public LTSReporter(String filePattern, LTSLabels labels, ReportContext context,
+                       Filter filter) {
         this.filePattern = filePattern;
         this.labels = labels == null
             ? LTSLabels.DEFAULT
             : labels;
         this.filter = filter;
-        this.logger = logger;
+        this.context = context;
     }
 
     @Override
     public void report() throws IOException {
         File outFile = exportLTS(getGTS(), this.filePattern, this.labels, this.filter,
                                  getExploration().getResult());
-        this.logger.append("LTS saved as %s%n", outFile.getPath());
+        this.context.add("LTS saved as %s%n", outFile.getPath());
     }
 
-    private final LogReporter logger;
+    private final ReportContext context;
     private final String filePattern;
     private final Filter filter;
     private final LTSLabels labels;

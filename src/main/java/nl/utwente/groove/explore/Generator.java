@@ -37,11 +37,14 @@ import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.explore.config.LegacySyntaxParser;
 import nl.utwente.groove.explore.util.CompositeReporter;
+import nl.utwente.groove.explore.util.ConsoleReporter;
 import nl.utwente.groove.explore.util.ExplorationReporter;
 import nl.utwente.groove.explore.util.GenerateProgressListener;
 import nl.utwente.groove.explore.util.LTSReporter;
-import nl.utwente.groove.explore.util.LogReporter;
+import nl.utwente.groove.explore.util.ReportContext;
+import nl.utwente.groove.explore.util.RunLogReporter;
 import nl.utwente.groove.explore.util.StateReporter;
+import nl.utwente.groove.explore.util.StatisticsReporter;
 import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.lts.ExploreResult;
@@ -226,7 +229,9 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
     }
 
     @Option(names = "-l", paramLabel = "dir",
-        description = "Log the generation process in the directory <dir>",
+        description = "Log the generation process in the directory <dir>. Also makes the "
+            + "reported space usage precise (all state caches are cleared before measuring), "
+            + "at the cost of reporting time",
         converter = DirectoryHandler.class)
     private File logdir;
 
@@ -463,16 +468,24 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
     /** Factory method for the reporters associated with this invocation. */
     private CompositeReporter computeReporter() {
         CompositeReporter result = new CompositeReporter();
-        LogReporter logger = new LogReporter(getArgs(), getVerbosity(), getLogDir());
+        // the context must come first, so that its start time precedes the others
+        ReportContext context = new ReportContext(getArgs());
+        result.add(context);
         if (isSaveLts()) {
-            result.add(new LTSReporter(getLtsPattern(), getLtsLabels(), logger, getFilter()));
+            result.add(new LTSReporter(getLtsPattern(), getLtsLabels(), context, getFilter()));
         }
         if (isSaveState()) {
-            result.add(new StateReporter(getStatePattern(), logger));
+            result.add(new StateReporter(getStatePattern(), context));
         }
-        // add the logger last, to ensure that any messages from the
-        // other reporters are included.
-        result.add(logger);
+        // the statistics are collected once, and emitted by the console
+        // and run log reporters; these come last, to ensure that any
+        // messages from the other reporters are included
+        StatisticsReporter statistics = new StatisticsReporter(getVerbosity(), isLogging());
+        result.add(statistics);
+        result.add(new ConsoleReporter(context, getVerbosity(), statistics));
+        if (isLogging()) {
+            result.add(new RunLogReporter(context, getLogDir(), statistics));
+        }
         return result;
     }
 
