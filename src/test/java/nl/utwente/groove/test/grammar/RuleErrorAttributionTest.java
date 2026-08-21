@@ -88,10 +88,18 @@ public class RuleErrorAttributionTest {
         throw new IllegalStateException();
     }
 
-    /** Level distribution: an undefined quantifier level name (normalised rule). */
+    /** Normalisation, before the compiler proper: an undefined quantifier
+     * level name on a {@code test} edge. */
+    @Test
+    public void testNormalisationError() {
+        assertSourceError(getRuleModel("quantLevelErrors", "undefLevel"),
+                          "Undefined nesting level");
+    }
+
+    /** Level distribution: an undefined quantifier level name on an ordinary edge. */
     @Test
     public void testDistributionError() {
-        assertSourceError(getRuleModel("quantLevelErrors", "undefLevel"),
+        assertSourceError(getRuleModel("quantLevelErrors", "undefEdgeLevel"),
                           "Undefined nesting level");
     }
 
