@@ -19,15 +19,11 @@ package nl.utwente.groove.explore.util;
 import static nl.utwente.groove.explore.util.ExplorationReporter.time;
 import static nl.utwente.groove.util.cli.Verbosity.HIGH;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 
 import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.lts.GTS;
@@ -121,23 +117,7 @@ public class LogReporter extends AExplorationReporter {
             String logFileName = FileType.LOG.addExtension(logId);
             time("Exporting log to " + logFileName);
             try (PrintWriter logFile = new PrintWriter(new File(this.logDir, logFileName))) {
-                // copy the initial messages
                 logFile.print(this.log.toString());
-                // copy the garbage collector log, if any, to the log file
-                File gcLogFile = new File(GC_LOG_NAME);
-                if (gcLogFile.exists()) {
-                    try (BufferedReader gcLog = new BufferedReader(new FileReader(gcLogFile))) {
-                        List<String> gcList = new ArrayList<>();
-                        String nextLine = gcLog.readLine();
-                        while (nextLine != null) {
-                            gcList.add(nextLine);
-                            nextLine = gcLog.readLine();
-                        }
-                        for (int i = 1; i < gcList.size() - 2; i++) {
-                            logFile.println(gcList.get(i));
-                        }
-                    }
-                }
             }
         }
         emit("%s%n", getExploration().getLastMessage());
@@ -190,11 +170,6 @@ public class LogReporter extends AExplorationReporter {
     private Date startTime;
     private StringBuilder log;
     private StringBuilder extra;
-    /**
-     * Fixed name of the gc log file. If a file with this name is found, and
-     * logging is switched on, the gc log is appended to the generator log.
-     */
-    static public final String GC_LOG_NAME = "gc.log";
     /** Number of bytes per kB */
     static private long B_PER_KB = 1024;
     /** Number of bytes per MB */
