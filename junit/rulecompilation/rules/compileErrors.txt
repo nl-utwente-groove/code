@@ -5,6 +5,9 @@ errors:
 == rule parDuplicate
 errors:
   - Parameter '0' defined more than once
+== rule parGap
+errors:
+  - Parameters [0] missing
 == rule parOnForall
 errors:
   - Parameter '1' only allowed on top existential level

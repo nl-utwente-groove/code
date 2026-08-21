@@ -138,12 +138,19 @@ public class RuleErrorAttributionTest {
                           "may match a path through");
     }
 
-    /** Signature extraction: a parameter number used twice. (The other
-     * extractor checks are unsuitable: a parameter in a NAC is already
-     * rejected as an aspect conflict and never reaches the extractor, and a
-     * gap in the numbering has no source element to point at.) */
+    /** Signature extraction: a parameter number used twice. (A parameter in
+     * a NAC is already rejected as an aspect conflict and never reaches the
+     * extractor.) */
     @Test
     public void testSignatureError() {
         assertSourceError(getRuleModel("compileErrors", "parDuplicate"), "more than once");
+    }
+
+    /** Signature extraction: a gap in the parameter numbering. The error
+     * has no node of its own to point at, so it carries the existing
+     * parameter nodes instead. */
+    @Test
+    public void testSignatureGapError() {
+        assertSourceError(getRuleModel("compileErrors", "parGap"), "missing");
     }
 }

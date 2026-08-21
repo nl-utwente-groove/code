@@ -102,7 +102,9 @@ class SignatureExtractor {
         }
         missingPars.removeAll(parMap.keySet());
         if (!missingPars.isEmpty()) {
-            errors.add("Parameters %s missing", missingPars);
+            // attach the existing parameter nodes, so the GUI has something to highlight
+            Object[] parNodes = parMap.values().stream().map(this.parOriginMap::get).toArray();
+            errors.add("Parameters %s missing", missingPars, parNodes);
         }
         errors.throwException();
         UnitPar.RulePar[] sigArray = new UnitPar.RulePar[parCount];
