@@ -115,11 +115,17 @@ Decisions refined with Arend after Phase 1 review:
 
 ### Open ends (deliberately deferred)
 
-- `GxlIO`/`LayoutIO` persist layout via `gui.layout.LayoutMap`, whose classes
-  are entangled with JGraph internals (`AttributeMap`, `GraphConstants`,
-  `PortView`, `VisualMap`). Extracting neutral layout-data classes would make
-  `io` fully GUI-free but risks file-format fidelity; candidate for a later
-  phase of its own.
+- ~~`GxlIO`/`LayoutIO` persist layout via `gui.layout.LayoutMap`, whose
+  classes are entangled with JGraph internals.~~ **Done** on master
+  (commit `3cf1c368d`, 2026-07-31): the layout data model now lives in the
+  JGraph-free package `graph.layout` (`LayoutMap`, `ElementLayout`,
+  `NodeLayout`, `EdgeLayout`), with the `VisualMap` conversions on the gui
+  side; the on-disk GXL/`.lyt` formats were not touched. The single JGraph
+  remnant is the unit of relative label positions, kept as
+  `ElementLayout.PERMILLE` (documented as required to equal
+  `GraphConstants.PERMILLE`). Re-verified 2026-08-22: `nl.utwente.groove.io`
+  imports nothing from `gui` or `org.jgraph`; its remaining non-core imports
+  are `java.awt.geom` (layout geometry) and `javax.swing.undo` (see above).
 - `src/main/resources/nl/utwente/groove/resource/{Ecore.ecore, groove.ecore}`
   were already orphaned before Phase 1 and are left in place; revisit in
   Phase 3 (candidate test fixtures).
