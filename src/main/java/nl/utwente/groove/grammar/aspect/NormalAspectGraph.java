@@ -84,11 +84,6 @@ public class NormalAspectGraph extends AspectGraph {
         return this.origin;
     }
 
-    /** Returns the errors in this normal graph, transferred to the context of the origin. */
-    public FormatErrorSet getOriginErrors() {
-        return getErrors().apply(this.normalToOriginMap);
-    }
-
     /** The (non-normalised) source of this normalised aspect graph. */
     private final AspectGraph origin;
 
