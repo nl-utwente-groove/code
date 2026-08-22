@@ -57,6 +57,11 @@ class HostModelMorphism {
         var map = new HostModelMap(target.getFactory());
         var normalSource = source.normalise();
         var errors = new FormatErrorSet();
+        if (normalSource instanceof NormalAspectGraph ng) {
+            // errors raised on elements of the normalised graph are pulled
+            // back to the source graph, so that the GUI can highlight them
+            errors.apply(ng.normalToOriginalMap());
+        }
         // copy the nodes from source to target
         // first the non-value nodes because their numbers are fixed
         var family = grammar == null
@@ -101,7 +106,7 @@ class HostModelMorphism {
             }
         }
         if (normalSource instanceof NormalAspectGraph ng) {
-            errors.addAll(ng.getOriginErrors());
+            errors.addAll(ng.getErrors());
             // modify the map so it goes from source rather than normalSource
             var originMap = new HostModelMap(target.getFactory());
             for (var ne : ng.originToNormalMap().nodeMap().entrySet()) {

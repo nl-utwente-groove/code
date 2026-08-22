@@ -36,7 +36,9 @@ import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.ResourceModel;
 import nl.utwente.groove.io.Groove;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.QualName;
+import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -120,6 +122,28 @@ public class MultAspectTest {
     @Test
     public void testNoParallelHost() {
         assertError(getHostModel("multNoParallel", "hostMult"), "parallelEdges grammar property");
+    }
+
+    /** The missing-parallelEdges error is attributed to an edge of the host
+     * model's source graph, also when the host graph is normalised before
+     * compilation (here because of a {@code let} edge) so that the error is
+     * raised on an edge of the normalised graph. */
+    @Test
+    @AIGenerated("Claude Fable 5, 2026-08")
+    public void testNoParallelHostErrorContext() {
+        for (String hostName : new String[] {"hostMult", "hostLet"}) {
+            var hostModel = getGrammar("multNoParallel").getHostModel(QualName.parse(hostName));
+            assertError(hostModel, "parallelEdges grammar property");
+            AspectGraph source = hostModel.getSource();
+            for (FormatError error : hostModel.getErrors()) {
+                assertTrue("Error not attributed to the source graph of " + hostName + ": " + error,
+                           error
+                               .getElements()
+                               .stream()
+                               .anyMatch(e -> e instanceof AspectEdge edge
+                                   && source.containsEdge(edge)));
+            }
+        }
     }
 
     /** A host graph edge with multiplicity 2 compiles into 2 parallel edges. */
