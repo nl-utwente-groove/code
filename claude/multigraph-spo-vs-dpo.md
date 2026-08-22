@@ -117,8 +117,9 @@ matcher / application / compilation pipeline.
   (3) and the proof filter (4) would have to be re-gated too, or the
   guarantee holds within a level only. Conceptually this is *not* SPO any
   more: it is the edge half of the identification condition — a fourth
-  mode ("SPO with edge injectivity"), with all of DPO's case distinctions
-  for edges and none for nodes.
+  mode next to `none`/`SPO`/`DPO`, and a third *semantics* next to
+  delete-wins and DPO ("SPO with edge injectivity"), with all of DPO's
+  case distinctions for edges and none for nodes.
 
 ### 2.2 Eraser/eraser overlap across quantifier instances
 
@@ -136,13 +137,16 @@ matcher / application / compilation pipeline.
 - *Expectation*: one fresh copy, 1 → 2.
 - *SPO and DPO*: identical (`mult.gps/readerCreator-0-0`: `mult=2:a`);
   simple mode absorbs the creator instead.
-- *Seam, both modes, not pinned*: under `checkCreatorEdges` or `rhsAsNac`
-  the creator rule edge itself — carrying its fresh index — is put into
-  the NAC set (`PatternBuilder.java:307-312`). Under non-injective NAC
-  matching that embargo copy binds the reader's host image, so the rule
-  would be inapplicable whenever a copy exists. Expected from the code,
-  unverified; needs a probe before any multigraph grammar uses those
-  properties. Orthogonal to SPO/DPO.
+- *Bug, both modes* (**confirmed by probe 2026-08-22, gh #901**): under
+  `checkCreatorEdges` or `rhsIsNAC` the creator rule edge itself —
+  carrying its fresh index — is put into the NAC set
+  (`PatternBuilder.java:307-312`). Under non-injective NAC matching that
+  embargo copy binds the reader's host image: `readerCreator` has 0
+  matches on a 1-copy and on a 2-copy host in SPO and DPO alike (1 resp.
+  2 without the property); under `matchInjective` it fires on 1 copy but
+  not on 2. In `none` mode 0 is correct (the creation would be a no-op);
+  in multigraph mode the creator is always fresh, so the NAC suppresses a
+  real transformation. Orthogonal to SPO/DPO.
 
 ### 2.4 Regular expressions traversing erased edges
 
@@ -197,7 +201,7 @@ matcher / application / compilation pipeline.
 | S4 | cross-instance reader vs other-instance eraser (case F): deletion wins | both | Yes, decided 2026-07-20 (undetectable deterministically) |
 | S5 | value-node edges exempt from the dangling condition | DPO | Yes, consistent with value nodes being implicit |
 | S6 | counting NACs: no syntax, semantics undecided | both | Moot until rule-side `mult=` returns |
-| S7 | creator-NAC copy vs reader twin under `checkCreatorEdges`/`rhsAsNac` (2.3) | both | **Unverified; probably a bug**, independent of this decision |
+| S7 | creator-NAC copy vs reader twin under `checkCreatorEdges`/`rhsIsNAC` (2.3) | both | **Confirmed bug, gh #901**; independent of this decision |
 
 The SPO-specific seams S1–S3 share one root: the rule text suggests a
 multiset (counts of copies), SPO matching delivers morphisms. Once SPO is
@@ -214,7 +218,7 @@ Cost: manual text (grammar 3.12 section, `ParallelMode` explanations —
 exploration sample (today every GTS-level multigraph test —
 `parallel-pump`, `FreshCreatorEdgeTest`, `CacheReconstructionTest` — runs
 DPO; SPO has only the three `spoErasers` pins and one matcher test), and
-a probe for S7. Risk: users picking SPO with the multiset reading in mind
+the fix for gh #901 (S7). Risk: users picking SPO with the multiset reading in mind
 (S2). Mitigated by documentation and by `matchInjective`, which restores
 injective bundles where a rule needs them.
 
@@ -224,8 +228,8 @@ Two readings. (b1) *Specify what exists*: textbook SPO plus "regexprs are
 path predicates" is already a complete, consistent definition — (b1)
 collapses into (a) plus a formal paragraph. (b2) *Make SPO multiset-aware*:
 edge-injectivity for same-content rule edges (2.1). Code cost is small
-(the machinery is DPO's, re-gated), but the result is a fourth semantics
-— the edge half of the gluing condition without the node half or
+(the machinery is DPO's, re-gated), but the result is a third semantics
+(fourth mode) — the edge half of the gluing condition without the node half or
 dangling — with its own quantifier case matrix (which of cases A–F apply
 to edges only?), its own critical-pair treatment, and no theory behind it.
 This is the "very costly in case distinctions" outcome the 2026-07-27 note
@@ -268,7 +272,7 @@ invents a semantics; DPO already provides it for those who want it.
 **Recommendation: (a).** Keep DPO as the canonical multigraph semantics
 (the one with a theory and the conflict analysis); keep SPO as the
 documented classic semantics on multigraphs, with S1–S3 recorded as
-properties rather than seams; add SPO GTS-level coverage; probe S7. Do not
+properties rather than seams; add SPO GTS-level coverage; fix gh #901. Do not
 build (b2). Revisit only if a concrete user need for edge-injective-only
 matching turns up — and then consider whether `matchInjective` per rule
 already serves it.
@@ -291,8 +295,10 @@ already serves it.
 - [ ] Add an SPO variant of `junit/samples/parallel-pump.gps` to
       `ExplorationTest`/`CacheReconstructionTest` (fresh-edge and
       reconstruction machinery has never run under SPO).
-- [ ] Probe S7 (`checkCreatorEdges`/`rhsAsNac` creator NAC vs reader twin
-      in multigraph mode); file an issue if confirmed.
+- [x] Probe S7 (`checkCreatorEdges`/`rhsIsNAC` creator NAC vs reader twin
+      in multigraph mode) — confirmed, filed as gh #901; decide there
+      between neutralising the NAC in multigraph mode and rejecting the
+      property combination.
 - [ ] Critical pairs (gh #886): slice 3 must enumerate edge
       identifications for both modes; decide whether SPO strict-confluence
       verdicts are wanted at all, given the theory is DPO's.
