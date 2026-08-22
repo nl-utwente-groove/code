@@ -116,10 +116,11 @@ matcher / application / compilation pipeline.
   code exists. Application: none. Pipeline: the cross-level root extension
   (3) and the proof filter (4) would have to be re-gated too, or the
   guarantee holds within a level only. Conceptually this is *not* SPO any
-  more: it is the edge half of the identification condition — a fourth
-  mode next to `none`/`SPO`/`DPO`, and a third *semantics* next to
-  delete-wins and DPO ("SPO with edge injectivity"), with all of DPO's
-  case distinctions for edges and none for nodes.
+  more: it is the edge half of the identification condition — a third
+  semantics next to delete-wins and DPO ("SPO with edge injectivity"),
+  with all of DPO's case distinctions for edges and none for nodes.
+  **Rejected (user, 2026-08-22)**: edge-injectivity for rule edges that
+  merely happen to share source and target makes no sense as a semantics.
 
 ### 2.2 Eraser/eraser overlap across quantifier instances
 
@@ -229,7 +230,7 @@ path predicates" is already a complete, consistent definition — (b1)
 collapses into (a) plus a formal paragraph. (b2) *Make SPO multiset-aware*:
 edge-injectivity for same-content rule edges (2.1). Code cost is small
 (the machinery is DPO's, re-gated), but the result is a third semantics
-(fourth mode) — the edge half of the gluing condition without the node half or
+— the edge half of the gluing condition without the node half or
 dangling — with its own quantifier case matrix (which of cases A–F apply
 to edges only?), its own critical-pair treatment, and no theory behind it.
 This is the "very costly in case distinctions" outcome the 2026-07-27 note
@@ -280,21 +281,30 @@ already serves it.
 ## 5. Decision checklist
 
 - [ ] Confirm (a): SPO stays, documented as classic delete-wins on
-      multigraphs; DPO stays canonical. (Alternatives: (b2) fourth mode;
-      (c) drop SPO.)
+      multigraphs; DPO stays canonical. ((b2), the third semantics, was
+      rejected by the user on 2026-08-22; (c) drop SPO remains the only
+      alternative.)
 - [ ] Accept S1 (atom vs regexpr counting under SPO `forall`) as
       permanent, with the "atoms are edges, regexprs are path tests"
       wording in the manual.
 - [ ] Accept S2 (bundle sizes are upper bounds under SPO; `matchInjective`
-      is the opt-in for injective bundles), or reopen (b2).
-- [ ] Naming: keep `parallelEdges=none|SPO|DPO` although `none` is
-      simple+SPO, or split into structure (`parallelEdges=true|false`) and
-      semantics (`transformation=SPO|DPO`) before 8.0.0 ships. Splitting
-      would create the simple+DPO combination; decide whether that is
-      wanted or must be rejected.
-- [ ] Add an SPO variant of `junit/samples/parallel-pump.gps` to
-      `ExplorationTest`/`CacheReconstructionTest` (fresh-edge and
-      reconstruction machinery has never run under SPO).
+      is the opt-in for injective bundles). With (b2) rejected there is no
+      alternative short of (c).
+- [ ] Naming and default: rename the property and make SPO-multi the
+      default for new grammars — see §6 for the advice and the conditions.
+- [x] SPO multigraph tests are needed (user, 2026-08-22). Plan, one
+      branch `spo-multigraph-tests`: (i) an SPO twin of
+      `junit/samples/parallel-pump.gps` in `ExplorationTest` and
+      `CacheReconstructionTest` (fresh-edge minting and reconstruction
+      have never run under SPO); (ii) `spoErasers.gps` extended with the
+      delete-wins twins of the `dpoErasers` quantifier cases
+      (`eraseForallEraser`, `eraseForallReader`, `eraseForallOnReader`:
+      instances legal, edge erased once), a merger over parallel copies,
+      and a `let` assignment next to a same-value twin; (iii) an SPO
+      variant of `FreshCreatorEdgeTest`; (iv) a `ChoiceEdgeMatchingTest`
+      pin that `del:a` + `a|b` applies on a lone `a` under SPO.
+      `DeterminismTest` cannot host any of this (fresh element mints
+      change the enumeration signature, see aspect-parallel-edges.md).
 - [x] Probe S7 (`checkCreatorEdges`/`rhsIsNAC` creator NAC vs reader twin
       in multigraph mode) — confirmed, filed as gh #901; decide there
       between neutralising the NAC in multigraph mode and rejecting the
@@ -304,3 +314,63 @@ already serves it.
       verdicts are wanted at all, given the theory is DPO's.
 - [ ] gh #900 (censored re-match) remains DPO-only; confirm SPO is out of
       its scope.
+
+## 6. Property name and default (advice, 2026-08-22)
+
+The user finds `parallelEdges=none|SPO|DPO` misleading: the key names the
+structure axis, the values the semantics axis, and neither exposes the two
+dimensions. Proposal on the table: a new key with values `SPO-simple`,
+`SPO-multi`, `DPO`, and — since no released grammar carries the key
+(`parallelEdges` predates GitHub but was never wired, see
+eraser-injectivity.md) — `SPO-multi` as the default.
+
+**Rename: agreed.** Recommended key `semantics`; value names as
+proposed, with both dimensions spelled out in every value that has a
+choice: `SPO-simple`, `SPO-multi`, `DPO`. Not `DPO-multi`: the suffix
+would suggest that `DPO-simple` is a missing option rather than an
+excluded one. (DPO on simple graphs is a coherent semantics — the
+machinery is gated on the mode, not on pattern simplicity, except the
+regexpr edge images at `PlanSearchEngine.java:465` — but it has the
+classic oddity that `use:a` + `del:a` can never match, since a simple host
+graph has only one such edge; not worth a fourth value now. If it ever
+comes, `DPO` can stay as the alias of `DPO-multi`.) Migration: a stale
+`parallelEdges=true|false` from an old checkout currently yields a parse
+error; with the rename the old key becomes unknown and should be dropped
+on 3.12 conversion rather than carried along.
+
+**Default SPO-multi: acceptable for new grammars, not for existing
+ones.** A grammar whose graphs contain no parallel edges does *not*
+behave the same under `SPO-simple` and `SPO-multi`:
+
+1. *Idempotent creation is gone.* In simple mode `new:a` (and
+   `new:flag:f`) next to an existing copy is absorbed — the "ensure this
+   edge/flag exists" idiom, common in existing grammars. In multi mode
+   every application adds a copy; a loop over such a rule produces an
+   unbounded bundle and an infinite state space.
+2. *The guard for that idiom is broken in multi mode*: `checkCreatorEdges`
+   and `rhsIsNAC` block the rule outright (gh #901). So a multi default
+   requires #901 to be fixed by *neutralising* the NAC copy against
+   matched twins, not by rejecting the property combination — otherwise
+   users lose the idiom and its guard at once.
+3. *Merges* create parallel bundles instead of pooling (2.5).
+4. *Cost*: non-simple host graphs carry edge numbers, per-state added-edge
+   arrays, and the used-edges set under injective matching; the overhead
+   on ordinary simple-graph samples has never been measured.
+5. *Fixtures*: 9 grammars under `junit/` set the key; the rest, and all
+   `ExplorationTest` state counts, assume the simple default.
+
+Hence the conditions: (i) the 3.12 conversion writes `semantics=SPO-simple`
+explicitly into every pre-3.12 grammar — which means dropping the
+silent-load shortcut in `LoadGrammarAction.java:98-111`, since every old
+grammar now needs a repair and resave — and the `junit` fixtures get the
+same line mechanically; an implicit version-dependent default
+(absent key + version < 3.12 ⇒ simple) would avoid the edits but hides
+the semantics in the version number, which is worse; (ii) gh #901 fixed
+as neutralisation first; (iii) the SPO test plan from §5 landed first;
+(iv) a timing comparison of `SPO-simple` vs `SPO-multi` on two or three
+standard samples before flipping the default. Given (i)–(iv), the
+default for *new* grammars is a free choice and `SPO-multi` is the better
+one: it is the general case, and the one place a new user meets the
+difference — `new:a` where an `a` may already exist — is exactly where the
+neutralised `checkCreatorEdges` guard of (ii) gives them the simple-mode
+reading back on request.
