@@ -18,16 +18,25 @@ package nl.utwente.groove.test.type;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import nl.utwente.groove.explore.Exploration;
+import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
+import nl.utwente.groove.grammar.model.HostModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
+import nl.utwente.groove.graph.Edge;
+import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.lts.GTS;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.QualName;
+import nl.utwente.groove.util.parse.FormatError;
 
 /** Set of tests for dynamic type constraints. */
 public class DynamicConstraintTest {
@@ -48,6 +57,31 @@ public class DynamicConstraintTest {
         testError("mult", "ERR-start-violates-out");
         test("mult", "OK-start-correct-in", 3, 3, 2);
         test("mult", "OK-start-correct-out", 3, 3, 2);
+    }
+
+    /** A constraint violation found on the typed host graph is attributed to
+     * an element of the host model's source graph, so that the editor can
+     * highlight it. */
+    @Test
+    @AIGenerated("Claude Fable 5, 2026-08")
+    public void testErrorAttribution() throws IOException {
+        for (String[] spec : new String[][] {{"mult", "ERR-start-violates-in"},
+            {"mult", "ERR-start-violates-out"}, {"containment", "ERR-start-cycle"}}) {
+            GrammarModel grammar = Groove.loadGrammar(INPUT_DIR + "/" + spec[0]);
+            HostModel model = grammar.getHostModel(QualName.parse(spec[1]));
+            assertTrue("Expected errors in " + spec[1], model.hasErrors());
+            AspectGraph source = model.getSource();
+            for (FormatError error : model.getErrors()) {
+                assertTrue("Error not attributed to the source graph of " + spec[1] + ": "
+                    + error + " " + error.getElements(),
+                           error
+                               .getElements()
+                               .stream()
+                               .anyMatch(e -> e instanceof Node n
+                                   ? source.containsNode(n)
+                                   : e instanceof Edge edge && source.containsEdge(edge)));
+            }
+        }
     }
 
     private void testError(String grammarName, String startGraphName) {
