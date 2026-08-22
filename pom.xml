@@ -318,6 +318,13 @@
 					<groupId>org.antlr</groupId>
 					<artifactId>antlr</artifactId>
 				</exclusion>
+				<exclusion>
+					<!-- antlr 2.7.7, pulled in via stringtemplate; shares package
+					     antlr.debug with antlr-complete, a split package that
+					     fails module resolution if both land on the module path -->
+					<groupId>antlr</groupId>
+					<artifactId>antlr</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
