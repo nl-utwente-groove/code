@@ -10,7 +10,6 @@ errors:
 == rule letUnknown
 errors:
   - A-node has unknown y-edge to int
-  - A-node has unknown y-edge to int
 == rule parDuplicate
 errors:
   - Parameter '0' defined more than once

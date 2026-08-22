@@ -395,12 +395,12 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         public String getName() {
             String suffix;
             AspectNode levelNode = this.levelNode;
-            if (levelNode == null || levelNode.getLevelName() == null) {
+            if (levelNode == null || levelNode.getId() == null) {
                 suffix = isTopLevel()
                     ? ""
                     : Strings.toString(this.index.toArray());
             } else {
-                suffix = "-" + levelNode.getLevelName();
+                suffix = "-" + levelNode.getId();
             }
             return this.namePrefix + suffix;
         }

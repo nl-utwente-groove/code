@@ -280,7 +280,7 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
                 StringBuilder result = new StringBuilder(this.index.getOperator().getSymbol());
                 String levelName = null;
                 if (this.index.getLevelNode() != null) {
-                    levelName = this.index.getLevelNode().getLevelName();
+                    levelName = this.index.getLevelNode().getId();
                 }
                 if (levelName == null) {
                     for (int level : this.index.getIntArray()) {
