@@ -51,6 +51,8 @@ import nl.utwente.groove.grammar.rule.RuleGraphMorphism;
 import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.grammar.type.TypeEdge;
 import nl.utwente.groove.grammar.type.TypeGraph;
+import nl.utwente.groove.graph.Edge;
+import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
@@ -340,13 +342,21 @@ class RuleCompiler {
      * own element vocabulary. Since error projection accumulates context
      * elements rather than replacing them, the three applications chain.
      * Maps not yet filled at the point of failure are empty, so applying
-     * them is a no-op.
+     * them is a no-op. Errors that become indistinguishable in the source
+     * vocabulary are collapsed: normalisation can split one source edge
+     * into several (a {@code let} becomes an eraser and a creator edge),
+     * and a phase then reports the same error once per derived edge.
      * @return the given error set, modified in place, for chaining
      */
     private FormatErrorSet pullback(FormatErrorSet errors) {
         errors.applyInverse(this.modelMap);
         errors.applyInverse(this.untypedModelMap);
-        return errors.apply(normalToSourceMap());
+        errors.apply(normalToSourceMap());
+        var source = getSource();
+        return errors
+            .collapse(e -> e instanceof Node n
+                ? source.containsNode(n)
+                : source.containsEdge((Edge) e));
     }
 
 }

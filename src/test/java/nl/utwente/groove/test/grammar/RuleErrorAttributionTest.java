@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.test.grammar;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -126,17 +127,21 @@ public class RuleErrorAttributionTest {
     /**
      * Typing: a {@code let} assigning a field that the type graph does not
      * declare. The error arises on an edge of the normalised graph; it must
-     * be traced back to the {@code let} edge of the source graph.
+     * be traced back to the {@code let} edge of the source graph. The
+     * normalised eraser and creator halves of the {@code let} each raise
+     * the error, but only one error reaches the source graph.
      */
     @Test
     public void testTyperLetError() {
-        List<Element> elements
-            = assertSourceError(getRuleModel("compileErrors", "letUnknown"), "y");
+        RuleModel model = getRuleModel("compileErrors", "letUnknown");
+        List<Element> elements = assertSourceError(model, "y");
         assertTrue("Error not attributed to the let edge: " + elements,
                    elements
                        .stream()
                        .anyMatch(e -> e instanceof AspectEdge edge
                            && edge.has(AspectKind.LET)));
+        assertEquals("Duplicate errors: " + model.getErrors(), 1,
+                     model.getErrors().stream().count());
     }
 
     /** Condition assembly: a regular-expression path through an erased edge. */

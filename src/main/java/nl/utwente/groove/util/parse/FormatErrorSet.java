@@ -16,17 +16,22 @@
  */
 package nl.utwente.groove.util.parse;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.GraphMap;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Fixable;
 import nl.utwente.groove.util.Relation;
 
@@ -137,6 +142,35 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
         if (!isEmpty()) {
             throw new FormatException(this);
         }
+    }
+
+    /**
+     * Collapses errors that are indistinguishable in a given context: errors
+     * with the same message whose context elements (those satisfying the
+     * given predicate) coincide are merged into the first of them, which
+     * keeps its full element list. This is meant for the point where errors
+     * are pulled back to a source graph, where several errors raised on
+     * distinct derived elements may trace back to the same source elements.
+     * Should not be invoked after {@link #setFixed()}.
+     * @param context predicate selecting the elements that count as context
+     * @return this object itself, for chaining
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    public FormatErrorSet collapse(Predicate<Element> context) {
+        assert !isFixed();
+        var errors = getErrorSet();
+        var collapsed = new LinkedHashMap<List<Object>,FormatError>();
+        for (var error : errors) {
+            List<Object> key = new ArrayList<>();
+            key.add(error.toString());
+            error.getElements().stream().filter(context).forEach(key::add);
+            collapsed.putIfAbsent(key, error);
+        }
+        if (collapsed.size() < errors.size()) {
+            errors.clear();
+            errors.addAll(collapsed.values());
+        }
+        return this;
     }
 
     /** Returns a new format error set in which the context information is transferred.
