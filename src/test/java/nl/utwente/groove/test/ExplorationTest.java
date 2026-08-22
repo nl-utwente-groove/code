@@ -128,6 +128,20 @@ public class ExplorationTest {
         testExploration("mergers.gps", "start", "", 66, 143);
     }
 
+    /** Tests the parallel-pump multigraph sample under DPO semantics. */
+    @Test
+    public void testParallelPump() {
+        testExploration("parallel-pump.gps", "start", "", 23, 121);
+    }
+
+    /** Tests the parallel-pump-spo multigraph sample under SPO semantics.
+     * Besides the three rules of the DPO sample it has a reader/eraser rule
+     * (trim) that under SPO also fires on a single edge copy. */
+    @Test
+    public void testParallelPumpSpo() {
+        testExploration("parallel-pump-spo.gps", "start", "", 44, 241);
+    }
+
     /** Tests the regexpr sample. */
     @Test
     public void testRegExpr() {

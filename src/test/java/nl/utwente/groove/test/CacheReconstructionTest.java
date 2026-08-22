@@ -69,6 +69,13 @@ public class CacheReconstructionTest {
         test("parallel-pump");
     }
 
+    /** Tests graph reconstruction in the SPO variant of the multigraph
+     * grammar, where reader and eraser copies may share an image. */
+    @Test
+    public void testParallelPumpSpo() {
+        test("parallel-pump-spo");
+    }
+
     /**
      * Fully explores a named grammar, records the node and edge identities of
      * every state graph, clears all state caches (simulating a

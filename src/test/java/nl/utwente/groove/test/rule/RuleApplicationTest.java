@@ -122,7 +122,9 @@ public class RuleApplicationTest extends TestCase {
     }
 
     /** Tests the rules in the spoErasers grammar
-     * (multigraph SPO: non-injective eraser matching with delete-wins). */
+     * (multigraph SPO: non-injective eraser matching with delete-wins,
+     * also across quantifier instances and for regular expressions;
+     * merging and assignment over parallel copies). */
     @Test
     public void testSpoErasers() {
         test("spoErasers");
