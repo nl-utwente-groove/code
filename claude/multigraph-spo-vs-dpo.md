@@ -442,11 +442,13 @@ on-disk edits.
    Delivered as: `GrammarKey` documentation for both properties, the
    `CreatorNacTest` matrix over `junit/rules/creatorNac.gps`
    (3 semantics × 3 guard settings × 2 matching regimes × 0/1/2-copy
-   hosts), and this note. Open (user to decide): whether a rule whose
-   implicit creator NAC is structurally always violated (reader+creator
-   under non-injective matching) should draw a static diagnosis at rule
-   compilation, and whether gh #901 should be closed with this
-   resolution.
+   hosts), and this note. Both follow-ups are settled (2026-08-24):
+   gh #901 is closed with this resolution, and the static diagnosis is
+   tracked as gh #904 — a *warning* (never an error, since in SPO-simple
+   suppressing the no-op application is the properties' documented
+   purpose), which first requires introducing a warning severity in the
+   `FormatError` machinery; `EcoreToGraphs` documents the same gap and is
+   a second consumer.
 3. `semantics-default-flip` — atomic per fact 1: parser default →
    `SPO_MULTI`; `repairVersion` clause injecting explicit
    `semantics=SPO-simple` into pre-3.12 bundles, plus the same injection
