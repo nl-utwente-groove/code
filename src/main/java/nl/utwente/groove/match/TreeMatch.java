@@ -290,7 +290,7 @@ public class TreeMatch implements Fixable {
         // under DPO semantics; under SPO (simple graphs or multigraphs
         // alike), shared deletion between instances is fine
         boolean checkErasers = rule != null && rule.isTop()
-            && rule.getGrammarProperties().getParallelMode().isDPO() && rule.hasEraserSubRules();
+            && rule.getGrammarProperties().getSemantics().isDPO() && rule.hasEraserSubRules();
         int rowCount = rowSize.length;
         int index[] = new int[rowCount];
         do {

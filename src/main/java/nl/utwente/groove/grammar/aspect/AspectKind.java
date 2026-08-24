@@ -886,7 +886,7 @@ public enum AspectKind {
             s = "%s.EQUALS.count.COLON.label";
             h = "Parallel edge multiplicity";
             b.add("Declares the %2$s-edge to stand for %1$s parallel copies.");
-            b.add("Only allowed if the parallelEdges grammar property is SPO or DPO.");
+            b.add("Only allowed if the semantics grammar property is SPO-multi or DPO.");
             p.add("number of parallel copies; a positive constant");
             p.add(edgePar);
             break;

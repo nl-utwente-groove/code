@@ -22,7 +22,7 @@ import static org.junit.Assert.assertNotEquals;
 import org.junit.Test;
 
 import nl.utwente.groove.grammar.Grammar;
-import nl.utwente.groove.grammar.ParallelMode;
+import nl.utwente.groove.grammar.Semantics;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.lts.GTS;
@@ -43,22 +43,22 @@ public class FreshCreatorEdgeTest {
     /** A binary-edge creator keeps growing the parallel-edge count. */
     @Test
     public void testReaderCreator() throws Exception {
-        test("readerCreator", ParallelMode.DPO);
-        test("readerCreator", ParallelMode.SPO);
+        test("readerCreator", Semantics.DPO);
+        test("readerCreator", Semantics.SPO_MULTI);
     }
 
     /** A flag creator keeps growing the parallel-flag count. */
     @Test
     public void testFlagCreator() throws Exception {
-        test("flagCreator", ParallelMode.DPO);
-        test("flagCreator", ParallelMode.SPO);
+        test("flagCreator", Semantics.DPO);
+        test("flagCreator", Semantics.SPO_MULTI);
     }
 
     /** A field-assignment creator keeps growing the parallel-value-edge count. */
     @Test
     public void testLetCreator() throws Exception {
-        test("letCreator", ParallelMode.DPO);
-        test("letCreator", ParallelMode.SPO);
+        test("letCreator", Semantics.DPO);
+        test("letCreator", Semantics.SPO_MULTI);
     }
 
     /**
@@ -67,10 +67,10 @@ public class FreshCreatorEdgeTest {
      * multigraph mode, and asserts that every application yields a fresh
      * state with one edge more.
      */
-    private void test(String ruleName, ParallelMode mode) throws Exception {
+    private void test(String ruleName, Semantics mode) throws Exception {
         var grammarModel = Groove.loadGrammar("junit/rules/mult");
         var properties = grammarModel.getProperties().clone();
-        properties.setParallelMode(mode);
+        properties.setSemantics(mode);
         grammarModel.setProperties(properties);
         grammarModel.setLocalActiveNames(ResourceKind.HOST, QualName.name(ruleName + "-0"));
         Grammar grammar = grammarModel.toGrammar();

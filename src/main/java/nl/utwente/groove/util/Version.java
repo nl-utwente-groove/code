@@ -342,14 +342,17 @@ public class Version {
      * (now a load error).
      * <li> Host graphs can now be multigraphs, holding parallel edges
      * (multiple edges with the same end nodes and label). This is controlled
-     * by the new grammar property {@code parallelEdges}, with values
-     * {@code none} (the default; the classical simple-graph semantics),
-     * {@code SPO} and {@code DPO}. Parallel host graph edges are written to
-     * disk using the new {@code mult=k:} aspect prefix, which stands for
-     * {@code k} parallel copies of the same (binary) edge, flag or let-edge.
-     * Grammars that do not set {@code parallelEdges} are unaffected; older
-     * Groove versions reject the {@code mult=} aspect and the
-     * {@code parallelEdges} property as unknown.
+     * by the new grammar property {@code semantics}, with values
+     * {@code SPO-simple} (the default; the classical simple-graph semantics),
+     * {@code SPO-multi} and {@code DPO}. Parallel host graph edges are
+     * written to disk using the new {@code mult=k:} aspect prefix, which
+     * stands for {@code k} parallel copies of the same (binary) edge, flag
+     * or let-edge. Grammars that do not set {@code semantics} are unaffected;
+     * older Groove versions reject the {@code mult=} aspect and the
+     * {@code semantics} property as unknown. (During the development of this
+     * version the property was briefly called {@code parallelEdges}, with
+     * values {@code none}, {@code SPO} and {@code DPO}; a stored legacy key
+     * is translated on load and dropped on the next save.)
      * </ul>
      */
     public static final String GRAMMAR_VERSION_3_12 = "3.12";

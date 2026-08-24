@@ -200,7 +200,7 @@ public class PlanSearchEngine extends SearchEngine {
         /** Indicates if the condition is matched under DPO semantics. */
         private boolean isDPO() {
             var properties = this.condition.getGrammarProperties();
-            return properties != null && properties.getParallelMode().isDPO();
+            return properties != null && properties.getSemantics().isDPO();
         }
 
         private boolean getInjectivity() {

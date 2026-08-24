@@ -78,7 +78,7 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
         var pattern = this.condition.getPattern();
         var ancestorErasers = this.condition.getAncestorEraserEdges();
         var properties = this.condition.getGrammarProperties();
-        boolean dpo = properties != null && properties.getParallelMode().isDPO();
+        boolean dpo = properties != null && properties.getSemantics().isDPO();
         if (!this.injective && dpo && pattern != null
             && (rule != null || !ancestorErasers.isEmpty())) {
             var root = this.condition.getRoot();

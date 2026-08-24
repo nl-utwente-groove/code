@@ -45,8 +45,8 @@ import nl.utwente.groove.util.parse.FormatException;
  * Tests the static checks on the parallel-edge multiplicity aspect
  * ({@code mult=k:}): it is only allowed in host graphs (its use in rules is
  * deferred until a real use case comes by), the value must be a positive
- * constant, the edge must be binary, and any use requires the parallelEdges
- * grammar property to be SPO or DPO. Also tests that a host graph edge with
+ * constant, the edge must be binary, and any use requires the semantics
+ * grammar property to be SPO-multi or DPO. Also tests that a host graph edge with
  * a multiplicity compiles into that many parallel host edges.
  * @author Arend Rensink
  * @version $Revision$
@@ -118,13 +118,13 @@ public class MultAspectTest {
         assertEquals(2, hostModel.toResource().edgeSet().size());
     }
 
-    /** A host graph multiplicity above 1 requires the parallelEdges property. */
+    /** A host graph multiplicity above 1 requires a multigraph semantics. */
     @Test
     public void testNoParallelHost() {
-        assertError(getHostModel("multNoParallel", "hostMult"), "parallelEdges grammar property");
+        assertError(getHostModel("multNoParallel", "hostMult"), "semantics grammar property");
     }
 
-    /** The missing-parallelEdges error is attributed to an edge of the host
+    /** The missing-multigraph-semantics error is attributed to an edge of the host
      * model's source graph, also when the host graph is normalised before
      * compilation (here because of a {@code let} edge) so that the error is
      * raised on an edge of the normalised graph. */
@@ -133,7 +133,7 @@ public class MultAspectTest {
     public void testNoParallelHostErrorContext() {
         for (String hostName : new String[] {"hostMult", "hostLet"}) {
             var hostModel = getGrammar("multNoParallel").getHostModel(QualName.parse(hostName));
-            assertError(hostModel, "parallelEdges grammar property");
+            assertError(hostModel, "semantics grammar property");
             AspectGraph source = hostModel.getSource();
             for (FormatError error : hostModel.getErrors()) {
                 assertTrue("Error not attributed to the source graph of " + hostName + ": " + error,

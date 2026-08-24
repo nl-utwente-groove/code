@@ -411,7 +411,7 @@ class PatternTyper {
          */
         private RuleGraph createGraph(String name) {
             return new RuleGraph(name, isInjective(),
-                !getGrammarProperties().getParallelMode().isMulti(), this.factory);
+                !getGrammarProperties().getSemantics().isMulti(), this.factory);
         }
 
         private final @Nullable Level parent;

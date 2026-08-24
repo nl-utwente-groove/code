@@ -286,20 +286,20 @@ public class GrammarProperties extends Properties {
     }
 
     /**
-     * Sets the parallel edge mode to a given value.
-     * @param mode the new parallel edge mode
+     * Sets the transformation semantics to a given value.
+     * @param semantics the new transformation semantics
      */
-    public void setParallelMode(ParallelMode mode) {
-        storeValue(GrammarKey.PARALLEL, mode);
+    public void setSemantics(Semantics semantics) {
+        storeValue(GrammarKey.SEMANTICS, semantics);
     }
 
     /**
-     * Returns the value of the parallel edge mode property, determining
-     * whether host and rule graphs are multigraphs (with parallel edges) and,
-     * if so, whether they are transformed under SPO or DPO semantics.
+     * Returns the value of the semantics property, determining whether host
+     * and rule graphs are multigraphs (with parallel edges) or simple graphs,
+     * and whether they are transformed under SPO or DPO semantics.
      */
-    public ParallelMode getParallelMode() {
-        return parsePropertyOrDefault(GrammarKey.PARALLEL).value(ParallelMode.VALUE_TYPE);
+    public Semantics getSemantics() {
+        return parsePropertyOrDefault(GrammarKey.SEMANTICS).value(Semantics.VALUE_TYPE);
     }
 
     /**
@@ -333,13 +333,13 @@ public class GrammarProperties extends Properties {
     /**
      * Returns the value of the dangling edge property.
      * The dangling condition is part of the DPO gluing condition, so it is
-     * implied (regardless of the property value) if the parallel edge mode
-     * is {@link ParallelMode#DPO}.
+     * implied (regardless of the property value) if the semantics
+     * is {@link Semantics#DPO}.
      * @return if <code>true</code>, matches with dangling edges are disallowed.
      */
     public boolean isCheckDangling() {
         return parsePropertyOrDefault(GrammarKey.DANGLING).value(ValueType.BOOLEAN)
-            || getParallelMode().isDPO();
+            || getSemantics().isDPO();
     }
 
     /**
@@ -766,6 +766,24 @@ public class GrammarProperties extends Properties {
         if (Version.compareGrammarVersions(version, Version.GRAMMAR_VERSION_3_10) == -1) {
             result = result.clone();
             result.setUseStoredNodeIds(true);
+        }
+        // translate or drop the legacy parallelEdges key, which was renamed
+        // to semantics (with new value names) within grammar version 3.12;
+        // not version-gated, since grammars saved during the 3.12 development
+        // period carry the old key under the current version stamp
+        String parallelEdges = getProperty(GrammarKey.PARALLEL_EDGES);
+        if (parallelEdges != null) {
+            result = result.clone();
+            result.remove(GrammarKey.PARALLEL_EDGES);
+            switch (parallelEdges) {
+            case "none" -> result.setSemantics(Semantics.SPO_SIMPLE);
+            case "SPO" -> result.setSemantics(Semantics.SPO_MULTI);
+            case "DPO" -> result.setSemantics(Semantics.DPO);
+            default -> {
+                // a stale value from before the key was wired (e.g. a boolean);
+                // there is nothing to preserve
+            }
+            }
         }
         // Note: the legacy exploration strategy key is NOT converted here.
         // The 'exploration' key names a settings resource, and creating a

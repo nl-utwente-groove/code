@@ -90,7 +90,7 @@ class ConditionAssembler {
         // The identification condition applies only under DPO semantics;
         // under SPO (simple graphs or multigraphs alike), identifications
         // are resolved by letting deletion win
-        if (getGrammarProperties().getParallelMode().isDPO()) {
+        if (getGrammarProperties().getSemantics().isDPO()) {
             for (LevelPattern level : patternMap.values()) {
                 importEraserConflicts(level);
             }
@@ -195,7 +195,7 @@ class ConditionAssembler {
     private void checkRegExprErasure(SortedMap<Index,LevelPattern> patternMap,
                                      FormatErrorSet errors) {
         var properties = getGrammarProperties();
-        if (!properties.getParallelMode().isDPO() || properties.isIgnoreRegExp()) {
+        if (!properties.getSemantics().isDPO() || properties.isIgnoreRegExp()) {
             return;
         }
         // collect the possibly erased edge types over all levels,
@@ -413,7 +413,7 @@ class ConditionAssembler {
      */
     private void addEraserNodeEmbargoes(LevelPattern level,
                                         Condition condition) throws FormatException {
-        if (!getGrammarProperties().getParallelMode().isDPO() || isInjective()) {
+        if (!getGrammarProperties().getSemantics().isDPO() || isInjective()) {
             return;
         }
         Set<RuleNode> erasers = new LinkedHashSet<>(level.lhs.nodeSet());
