@@ -1,0 +1,16 @@
+== rule freshCreator
+signature: ()
+hidden: []
+anchor: [n0:Ω#, n1:Ω#]
+Existential freshCreator [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, n1:Ω#] edges [n0--src-->n0, n1--tgt-->n1]
+  rhs: nodes [n0:Ω#, n1:Ω#] edges [n0--src-->n0, n0--a-->n1, n1--tgt-->n1]
+== rule readerCreator
+signature: ()
+hidden: []
+anchor: [n0:Ω#, n1:Ω#]
+Existential readerCreator [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, n1:Ω#] edges [n0--a-->n1]
+  rhs: nodes [n0:Ω#, n1:Ω#] edges [n0--a-->n1, n0--a-->n1]

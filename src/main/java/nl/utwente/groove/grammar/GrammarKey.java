@@ -131,13 +131,24 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
      * <code>false</code>.
      */
     CREATOR_EDGE("checkCreatorEdges",
-        "Flag controlling if creator edges should be treated as implicit NACs", ValueType.BOOLEAN),
+        "<body>Flag controlling if creator edges should be treated as implicit NACs: "
+            + "the rule is only applicable if the created edge does not yet occur in the "
+            + "host graph. "
+            + "<p>Under injective matching of a multigraph rule, copies already matched by "
+            + "the rule itself do not count; under non-injective matching any copy blocks "
+            + "the application, so a rule that also reads a copy of a created edge "
+            + "never fires.",
+        ValueType.BOOLEAN),
 
     /**
      * RHS-as-NAC property. If <code>true</code>, each RHS
      * is implicitly treated as a NAC. Default is <code>false</code>.
      */
-    RHS_AS_NAC("rhsIsNAC", "Flag controlling if RHSs should be treated as implicit NACs",
+    RHS_AS_NAC("rhsIsNAC",
+        "<body>Flag controlling if RHSs should be treated as implicit NACs: "
+            + "the rule is only applicable if its created edges do not yet occur in the "
+            + "host graph. Copies in the host graph count in the same way as for "
+            + "checkCreatorEdges.",
         ValueType.BOOLEAN),
 
     /**

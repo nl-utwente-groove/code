@@ -306,9 +306,9 @@ already serves it.
       `DeterminismTest` cannot host any of this (fresh element mints
       change the enumeration signature, see aspect-parallel-edges.md).
 - [x] Probe S7 (`checkCreatorEdges`/`rhsIsNAC` creator NAC vs reader twin
-      in multigraph mode) — confirmed, filed as gh #901; decide there
-      between neutralising the NAC in multigraph mode and rejecting the
-      property combination.
+      in multigraph mode) — confirmed, filed as gh #901; resolved
+      2026-08-24 by pinning the existing semantics rather than changing it
+      (see §7, slice 2): neither neutralisation nor rejection.
 - [ ] Critical pairs (gh #886): slice 3 must enumerate edge
       identifications for both modes; decide whether SPO strict-confluence
       verdicts are wanted at all, given the theory is DPO's.
@@ -347,11 +347,10 @@ behave the same under `SPO-simple` and `SPO-multi`:
    edge/flag exists" idiom, common in existing grammars. In multi mode
    every application adds a copy; a loop over such a rule produces an
    unbounded bundle and an infinite state space.
-2. *The guard for that idiom is broken in multi mode*: `checkCreatorEdges`
-   and `rhsIsNAC` block the rule outright (gh #901). So a multi default
-   requires #901 to be fixed by *neutralising* the NAC copy against
-   matched twins, not by rejecting the property combination — otherwise
-   users lose the idiom and its guard at once.
+2. *The guard for that idiom* (`checkCreatorEdges`, `rhsIsNAC`) — see
+   gh #901. [Resolved 2026-08-24, §7 slice 2: the guard works unchanged
+   for the pure-creator idiom in every semantics; only the reader+creator
+   shape requires injective matching. No neutralisation.]
 3. *Merges* create parallel bundles instead of pooling (2.5).
 4. *Cost*: non-simple host graphs carry edge numbers, per-state added-edge
    arrays, and the used-edges set under injective matching; the overhead
@@ -365,15 +364,16 @@ silent-load shortcut in `LoadGrammarAction.java:98-111`, since every old
 grammar now needs a repair and resave — and the `junit` fixtures get the
 same line mechanically; an implicit version-dependent default
 (absent key + version < 3.12 ⇒ simple) would avoid the edits but hides
-the semantics in the version number, which is worse; (ii) gh #901 fixed
-as neutralisation first; (iii) the SPO test plan from §5 landed first;
+the semantics in the version number, which is worse; (ii) gh #901
+resolved first [done 2026-08-24, §7 slice 2 — by documentation and tests,
+not neutralisation]; (iii) the SPO test plan from §5 landed first;
 (iv) a timing comparison of `SPO-simple` vs `SPO-multi` on two or three
 standard samples before flipping the default. Given (i)–(iv), the
 default for *new* grammars is a free choice and `SPO-multi` is the better
 one: it is the general case, and the one place a new user meets the
 difference — `new:a` where an `a` may already exist — is exactly where the
-neutralised `checkCreatorEdges` guard of (ii) gives them the simple-mode
-reading back on request.
+unchanged `checkCreatorEdges` guard gives them the simple-mode
+"create only if absent" reading in every semantics.
 
 ## 7. Migration plan (2026-08-24)
 
@@ -420,12 +420,33 @@ on-disk edits.
    in-repo. Based on `spo-multigraph-tests` (whose `FreshCreatorEdgeTest`
    imports `ParallelMode` and whose `parallel-pump-spo.gps` carries the
    key), so that branch merges first.
-2. `creator-nac-multi` — the gh #901 fix, precondition (ii). The
-   semantics of the guard in multi mode is **not yet decided**: the
-   distinctness-based reading proposed here (block only if the host holds
-   a copy the match does not already read, via used-edge distinctness
-   between the NAC edge and the rule's parallel reader twins) is *not*
-   the reading the user wants — ask before starting this slice.
+2. `creator-nac-semantics` — the gh #901 resolution, precondition (ii).
+   **Decided 2026-08-24** (branch of the same name): the guard semantics
+   is *pinned, not changed*. The implicit creator NACs test for the
+   absence of **any** host copy of the created edge under non-injective
+   matching, and for the absence of a copy **not already used by the
+   match** under injective matching — the latter is not new machinery but
+   a consequence of the NAC edge being bound in the same search as the
+   pattern edges (`EdgeEmbargo` → `NegatedSearchItem` inlining,
+   `PlanSearchEngine.java:298`, plus the shared used-edges set,
+   `PlanSearchStrategy.java:591`), the same way NAC nodes avoid
+   match-used nodes under injective matching. The interpretation is
+   uniform across the three semantics; the earlier distinctness-based
+   "neutralisation" proposal was rejected — the non-matched-parts reading
+   is coherent under injective matching only, and there it already holds.
+   Consequences: the pure-creator "create only if absent" idiom works
+   with either guard in every semantics and matching regime; a
+   reader+creator rule with a guard never fires under non-injective
+   matching (by the pinned semantics, not by accident) and needs
+   injective matching to express "add a copy only if none is unread".
+   Delivered as: `GrammarKey` documentation for both properties, the
+   `CreatorNacTest` matrix over `junit/rules/creatorNac.gps`
+   (3 semantics × 3 guard settings × 2 matching regimes × 0/1/2-copy
+   hosts), and this note. Open (user to decide): whether a rule whose
+   implicit creator NAC is structurally always violated (reader+creator
+   under non-injective matching) should draw a static diagnosis at rule
+   compilation, and whether gh #901 should be closed with this
+   resolution.
 3. `semantics-default-flip` — atomic per fact 1: parser default →
    `SPO_MULTI`; `repairVersion` clause injecting explicit
    `semantics=SPO-simple` into pre-3.12 bundles, plus the same injection
