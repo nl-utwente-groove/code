@@ -374,3 +374,75 @@ one: it is the general case, and the one place a new user meets the
 difference — `new:a` where an `a` may already exist — is exactly where the
 neutralised `checkCreatorEdges` guard of (ii) gives them the simple-mode
 reading back on request.
+
+## 7. Migration plan (2026-08-24)
+
+Code analysis for the §6 migration surfaced four facts the conditions
+(i)–(iv) did not account for:
+
+1. **Injection cannot precede the default flip.** `Properties.storeEntry`
+   (`Properties.java:264`) removes an entry whose value equals the key's
+   default, so writing `semantics=SPO-simple` while `SPO-simple` is still
+   the default stores nothing. Conversion and default flip must land as
+   one atomic slice.
+2. **The silent-load shortcut does not self-disable.** The rename happens
+   *within* grammar version 3.12 (never released; 8.0.0 pending), so the
+   current version does not move and the shortcut at
+   `LoadGrammarAction.java:98-114` stays live. It must be deleted
+   explicitly.
+3. **A `.gps` without `system.properties` skips `repairVersion`**
+   (`SystemStore.java:860-870`): it reads as version 1.0 but would get the
+   new `SPO-multi` default. The no-file branch needs the same injection
+   (only that — moving all of `repairVersion` there would also flip
+   `useStoredNodeIds` for such grammars, out of scope).
+4. **After the rename, a stale `parallelEdges` key is silently kept as a
+   user property** (`Properties.java:277-278`), not rejected. So
+   `repairVersion` needs an active translate-and-drop clause, not
+   version-gated (dev-era grammars already stamped 3.12 carry the old
+   key): `none`→`SPO-simple`, `SPO`→`SPO-multi`, `DPO`→`DPO`,
+   unparsable (the old boolean) → dropped.
+
+Fixture census, sharper than §6 item 5: exactly the grammars at version
+3.12 are the ones that set `parallelEdges` (10 including the
+`spo-multigraph-tests` branch); no 3.12 fixture relies on the absent-key
+default, and the load-time injection covers all pre-3.12 fixtures without
+on-disk edits.
+
+**Slices** (one branch each, in order):
+
+1. `semantics-key-rename` — pure rename, zero behaviour change. Enum
+   `ParallelMode` → `Semantics` (`NONE`→`SPO_SIMPLE("SPO-simple")`,
+   `SPO`→`SPO_MULTI("SPO-multi")`, `DPO`); key `parallelEdges` →
+   `semantics`, default still `SPO-simple`; the translate-and-drop clause
+   of fact 4; user-visible strings (`AspectKind.java:889`,
+   `HostModelMorphism.java:256`, the `ignoreRegExp`/`checkDangling` key
+   docs, the 3.12 javadoc in `Version.java`); the fixture keys renamed
+   in-repo. Based on `spo-multigraph-tests` (whose `FreshCreatorEdgeTest`
+   imports `ParallelMode` and whose `parallel-pump-spo.gps` carries the
+   key), so that branch merges first.
+2. `creator-nac-multi` — the gh #901 fix, precondition (ii). The
+   semantics of the guard in multi mode is **not yet decided**: the
+   distinctness-based reading proposed here (block only if the host holds
+   a copy the match does not already read, via used-edge distinctness
+   between the NAC edge and the rule's parallel reader twins) is *not*
+   the reading the user wants — ask before starting this slice.
+3. `semantics-default-flip` — atomic per fact 1: parser default →
+   `SPO_MULTI`; `repairVersion` clause injecting explicit
+   `semantics=SPO-simple` into pre-3.12 bundles, plus the same injection
+   for the no-properties-file case (fact 3); delete the silent-load
+   shortcut (fact 2); rewrite the `Version` 3.12 javadoc. Gate before
+   merging: the §6 (iv) timing comparison, run as a scratchpad script
+   over 2–3 sizeable samples in both modes (state counts must be
+   identical; a difference is a semantics leak and a finding in itself).
+   If the multi overhead on simple-graph samples is material, the
+   fallback is keeping `SPO-simple` as default; slices 1–2 stand
+   regardless.
+
+Open choices: whether the ~144 pre-3.12 junit fixtures get the explicit
+`semantics=SPO-simple` line anyway (the §6 (i) decision) or rely on the
+now-proven injection — recommendation: only where a test's meaning
+depends on visibility; and whether `semantics` should be a *notable* key
+(flagged when non-default) — recommendation: yes.
+
+External follow-ups once slice 1 merges: the web manual's grammar chapter
+and the 8.0.0 release notes still say `parallelEdges`.
