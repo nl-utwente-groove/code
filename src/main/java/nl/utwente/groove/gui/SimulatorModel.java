@@ -1253,13 +1253,18 @@ public class SimulatorModel implements Cloneable {
 
     /**
      * Returns the currently selected resource name of a given kind.
-     * @param kind the resource kind
+     * @param kind the resource kind; must not be {@link ResourceKind#PROPERTIES},
+     * which has no selection
      * @return the currently selected resource, or {@code null} if
      * none is selected
+     * @throws IllegalArgumentException if {@code kind} is {@link ResourceKind#PROPERTIES}
      */
     public final QualName getSelected(ResourceKind kind) {
+        if (kind == ResourceKind.PROPERTIES) {
+            throw Exceptions.illegalArg("%s resource kind has no selection", kind);
+        }
         Set<QualName> resourceSet = this.resources.get(kind);
-        assert resourceSet != null; // the resource map is initialised for all non-properties kinds
+        assert resourceSet != null; // the resource map is initialised for all other kinds
         return resourceSet.isEmpty()
             ? null
             : resourceSet.iterator().next();

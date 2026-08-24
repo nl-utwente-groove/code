@@ -40,6 +40,16 @@ import nl.utwente.groove.util.Factory;
 
 /**
  * Location in a control template.
+ * <p>
+ * For a template with a procedure as owner, construction (see
+ * {@link TemplateBuilder}) guarantees the following invariants relating
+ * locations' control variables to the procedure's signature:
+ * <ul>
+ * <li>the variables of the start location are exactly the procedure's
+ * in-parameters;
+ * <li>the procedure's out-parameters are among the variables of every final
+ * location.
+ * </ul>
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -287,7 +297,7 @@ public class Location
         List<Binding> bindings = new ArrayList<>();
         for (var var : getVars()) {
             var parIx = owner.getInPars().get(var);
-            assert parIx != null; // the variables of a procedure's start location are its in-parameters
+            assert parIx != null; // start-location variables are in-parameters, see class javadoc
             bindings.add(Binding.var(var, parIx));
         }
         return new Assignment(bindings);
@@ -315,7 +325,7 @@ public class Location
             Binding bind;
             if (par.isOutOnly()) {
                 var varIx = getVarIxMap().get(par.getVar());
-                assert varIx != null; // out-parameters are variables of a final location
+                assert varIx != null; // out-parameters are final-location variables, see class javadoc
                 bind = Binding.var(par, varIx);
             } else {
                 bind = Binding.none(par);
