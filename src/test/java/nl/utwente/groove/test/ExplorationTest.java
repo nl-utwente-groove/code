@@ -131,12 +131,13 @@ public class ExplorationTest {
     /** Tests the parallel-pump multigraph sample under DPO semantics. */
     @Test
     public void testParallelPump() {
-        testExploration("parallel-pump.gps", "start", "", 23, 121);
+        testExploration("parallel-pump.gps", "start", "", 38, 198);
     }
 
     /** Tests the parallel-pump-spo multigraph sample under SPO semantics.
-     * Besides the three rules of the DPO sample it has a reader/eraser rule
-     * (trim) that under SPO also fires on a single edge copy. */
+     * The rule set is identical to that of the DPO sample, so the count
+     * difference pins the semantics: the reader/eraser rule (trim) fires
+     * on a single edge copy under SPO, but needs two copies under DPO. */
     @Test
     public void testParallelPumpSpo() {
         testExploration("parallel-pump-spo.gps", "start", "", 44, 241);
