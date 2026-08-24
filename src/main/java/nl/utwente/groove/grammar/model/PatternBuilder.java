@@ -774,7 +774,7 @@ class PatternBuilder {
             // aspect edges never coalesce; in particular, created copies are
             // always fresh with respect to matched copies. Embargo edges are
             // exempt: they declare no copies of their own
-            if (getGrammarProperties().getParallelMode().isMulti()
+            if (getGrammarProperties().getSemantics().isMulti()
                 && edge.has(ROLE, k -> k != AspectKind.EMBARGO)) {
                 int index = PatternBuilder.this.allocator.getIndex(edge, result);
                 if (index > 0) {
@@ -791,7 +791,7 @@ class PatternBuilder {
          */
         private RuleGraph createGraph(String name) {
             return new RuleGraph(name, isInjective(),
-                !getGrammarProperties().getParallelMode().isMulti(), this.factory);
+                !getGrammarProperties().getSemantics().isMulti(), this.factory);
         }
 
         @Override

@@ -20,18 +20,21 @@ import nl.utwente.groove.util.DocumentedEnum;
 import nl.utwente.groove.util.Properties.ValueType;
 
 /**
- * Mode determining whether the host and rule graphs of a grammar are
- * multigraphs (i.e., may contain parallel edges), and if so, under which
- * transformation semantics they are matched and transformed.
+ * Transformation semantics of a grammar, combining two dimensions:
+ * whether the host and rule graphs are multigraphs (i.e., may contain
+ * parallel edges) or simple graphs, and whether matching and transformation
+ * follow the single-pushout (SPO) or double-pushout (DPO) approach.
  * @author Arend Rensink
  * @version $Revision$
  */
-public enum ParallelMode implements DocumentedEnum {
-    /** Simple graphs, without parallel edges: the classic GROOVE
-     * (single-pushout style) semantics. */
-    NONE("none", "Simple graphs, without parallel edges (the classic GROOVE semantics)"),
+public enum Semantics implements DocumentedEnum {
+    /** Simple graphs under single-pushout semantics: the classic GROOVE
+     * behaviour. */
+    SPO_SIMPLE("SPO-simple",
+        "Simple graphs, without parallel edges, under single-pushout semantics "
+            + "(the classic GROOVE behaviour)"),
     /** Multigraphs under single-pushout semantics. */
-    SPO("SPO",
+    SPO_MULTI("SPO-multi",
         "Multigraphs (with parallel edges) under single-pushout semantics: matches may "
             + "identify deleted with preserved elements, and deletion wins"),
     /** Multigraphs under double-pushout semantics. */
@@ -40,7 +43,7 @@ public enum ParallelMode implements DocumentedEnum {
             + "condition forbids matches identifying a deleted element with any other element, "
             + "and the dangling condition (checkDangling) is implied");
 
-    private ParallelMode(String name, String explanation) {
+    private Semantics(String name, String explanation) {
         this.name = name;
         this.explanation = explanation;
     }
@@ -59,21 +62,21 @@ public enum ParallelMode implements DocumentedEnum {
 
     private final String explanation;
 
-    /** Indicates if this mode admits parallel edges, i.e., uses multigraphs.
+    /** Indicates if this semantics admits parallel edges, i.e., uses multigraphs.
      * If not, host and rule graphs are simple.
      */
     public boolean isMulti() {
-        return this != NONE;
+        return this != SPO_SIMPLE;
     }
 
-    /** Indicates if this mode imposes the double-pushout semantics,
+    /** Indicates if this semantics imposes the double-pushout approach,
      * in particular the identification condition on deleted elements.
      */
     public boolean isDPO() {
         return this == DPO;
     }
 
-    /** Value type of {@link ParallelMode}-valued property keys
+    /** Value type of {@link Semantics}-valued property keys
      * (see {@link nl.utwente.groove.util.Properties.Key}). */
-    public static final ValueType<ParallelMode> VALUE_TYPE = ValueType.of(ParallelMode.class);
+    public static final ValueType<Semantics> VALUE_TYPE = ValueType.of(Semantics.class);
 }

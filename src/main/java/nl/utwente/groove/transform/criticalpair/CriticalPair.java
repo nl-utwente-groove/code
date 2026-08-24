@@ -315,7 +315,7 @@ public class CriticalPair {
      * resolved by letting deletion win.
      */
     private static boolean satisfiesIdentificationCondition(Rule rule, RuleToHostMap match) {
-        if (!rule.getGrammarProperties().getParallelMode().isDPO()) {
+        if (!rule.getGrammarProperties().getSemantics().isDPO()) {
             return true;
         }
         for (RuleNode eraser : rule.getEraserNodes()) {

@@ -93,15 +93,17 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
             + "<p>If true, overrules the local rule injectivity property",
         ValueType.BOOLEAN),
     /**
-     * Mode determining whether host and rule graphs are multigraphs
-     * (with parallel edges), and if so, under which transformation semantics.
-     * Default is {@link ParallelMode#NONE}.
+     * The transformation semantics: whether host and rule graphs are
+     * multigraphs (with parallel edges) or simple graphs, and whether they
+     * are transformed under the single- or double-pushout approach.
+     * Default is {@link Semantics#SPO_SIMPLE}.
      */
-    PARALLEL("parallelEdges",
-        "<body>Mode controlling if the host and rule graphs may have parallel edges "
-            + "(making them multigraphs), and if so, under which semantics they are transformed"
-            + DocumentedEnum.document(ParallelMode.class),
-        ParallelMode.VALUE_TYPE),
+    SEMANTICS("semantics",
+        "<body>The transformation semantics: whether the host and rule graphs may have "
+            + "parallel edges (making them multigraphs), and whether they are transformed "
+            + "under the single-pushout (SPO) or double-pushout (DPO) approach"
+            + DocumentedEnum.document(Semantics.class),
+        Semantics.VALUE_TYPE),
     /**
      * Flag accepting rules in which a composite regular expression may match a
      * path through an edge that the rule erases. Default is {@code false}.
@@ -111,7 +113,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
             + "through an edge that the rule erases. The matched path is not tracked, so such "
             + "an overlap escapes the identification condition that otherwise governs erasure "
             + "under DPO semantics. If false (the default), such rules are errors; "
-            + "only relevant if parallelEdges is DPO.",
+            + "only relevant if the semantics property is DPO.",
         ValueType.BOOLEAN),
     /**
      * Dangling edge check. If <code>true</code>, all
@@ -120,7 +122,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
      */
     DANGLING("checkDangling",
         "Flag controlling if dangling edges should be forbidden rather than deleted. "
-            + "Implied (regardless of the value set here) if parallelEdges is DPO.",
+            + "Implied (regardless of the value set here) if the semantics property is DPO.",
         ValueType.BOOLEAN),
 
     /**
@@ -330,8 +332,8 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
         if (result == null) {
             var inner = switch (this) {
             case ALGEBRA -> new Parser.EnumParser<>(AlgebraFamily.class, AlgebraFamily.DEFAULT);
-            case PARALLEL -> new Parser.EnumParser<>(ParallelMode.class, ParallelMode.NONE, "none",
-                "SPO", "DPO");
+            case SEMANTICS -> new Parser.EnumParser<>(Semantics.class, Semantics.SPO_SIMPLE,
+                "SPO-simple", "SPO-multi", "DPO");
             case COMMON_LABELS, CONTROL_LABELS -> Parser.splitter;
             case CREATOR_EDGE, IGNORE_REG_EXP, DANGLING, RHS_AS_NAC, INJECTIVE, STORE_OUT_PARS, USE_STORED_NODE_IDS -> Parser.boolFalse;
             case ISOMORPHISM, LOOPS_AS_LABELS -> Parser.boolTrue;
@@ -437,6 +439,10 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
     static public final String ATTRIBUTE_SUPPORT = "attributeSupport";
     /** Name of deprecated key for transition brackets. */
     static public final String TRANSITION_BRACKETS = "transitionBrackets";
+    /** Name of deprecated key for the transformation semantics,
+     * renamed to {@link #SEMANTICS} (with new value names) within grammar
+     * version 3.12. */
+    static public final String PARALLEL_EDGES = "parallelEdges";
 
     /** Checks whether a value is a {@link DeltaMap} of rule names. */
     private static class RuleDeltaChecker implements GrammarChecker {

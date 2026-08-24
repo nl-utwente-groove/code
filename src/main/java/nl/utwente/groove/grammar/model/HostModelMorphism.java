@@ -52,7 +52,7 @@ class HostModelMorphism {
         // the host graph is a multigraph if the grammar allows parallel edges;
         // this determines the matching mode of the entire grammar, as the
         // GTS host factory is taken from the start graph
-        var simple = grammar == null || !grammar.getProperties().getParallelMode().isMulti();
+        var simple = grammar == null || !grammar.getProperties().getSemantics().isMulti();
         var target = new DefaultHostGraph(source.getName(), simple);
         var map = new HostModelMap(target.getFactory());
         var normalSource = source.normalise();
@@ -253,8 +253,8 @@ class HostModelMorphism {
         if (mult > 1) {
             if (target.isSimple()) {
                 errors
-                    .add("Edge multiplicity requires the parallelEdges grammar property "
-                        + "to be SPO or DPO", modelEdge);
+                    .add("Edge multiplicity requires the semantics grammar property "
+                        + "to be SPO-multi or DPO", modelEdge);
             } else {
                 for (int i = 1; i < mult; i++) {
                     target.addEdge(hostSource, hostLabel, hostNode);

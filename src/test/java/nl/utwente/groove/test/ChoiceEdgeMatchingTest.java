@@ -22,7 +22,7 @@ import org.junit.Test;
 
 import nl.utwente.groove.grammar.Condition;
 import nl.utwente.groove.grammar.GrammarProperties;
-import nl.utwente.groove.grammar.ParallelMode;
+import nl.utwente.groove.grammar.Semantics;
 import nl.utwente.groove.grammar.host.DefaultHostGraph;
 import nl.utwente.groove.grammar.host.HostFactory;
 import nl.utwente.groove.grammar.host.HostGraph;
@@ -68,7 +68,7 @@ public class ChoiceEdgeMatchingTest {
      * also an atom edge {@code a} from r0 to r1. */
     private Condition createCondition(String labelText, Condition.Op op, boolean injective,
                                       boolean simple, boolean atomEdge,
-                                      ParallelMode mode) throws FormatException {
+                                      Semantics mode) throws FormatException {
         RuleFactory factory = RuleFactory.newInstance(this.typeGraph.getFactory());
         RuleGraph pattern = new RuleGraph("pattern", injective, simple, factory);
         RuleNode r0 = factory.createNode();
@@ -80,7 +80,7 @@ public class ChoiceEdgeMatchingTest {
             pattern.addEdge(factory.createEdge(r0, factory.createLabel("a"), r1));
         }
         GrammarProperties properties = new GrammarProperties();
-        properties.setParallelMode(mode);
+        properties.setSemantics(mode);
         Condition result = new Condition("choice", op, pattern, null, properties);
         result.setTypeGraph(this.typeGraph);
         result.setFixed();
@@ -111,7 +111,7 @@ public class ChoiceEdgeMatchingTest {
     private int matchCount(String labelText, Condition.Op op, boolean injective, boolean atomEdge,
                            String... hostEdges) throws FormatException {
         Condition condition
-            = createCondition(labelText, op, injective, false, atomEdge, ParallelMode.DPO);
+            = createCondition(labelText, op, injective, false, atomEdge, Semantics.DPO);
         HostGraph host = createHost(false, hostEdges);
         return MatcherFactory.instance(false).createMatcher(condition).findAll(host, null).size();
     }
@@ -208,7 +208,7 @@ public class ChoiceEdgeMatchingTest {
     @Test
     public void testSimpleModeCollapse() throws FormatException {
         Condition condition
-            = createCondition("a|b", Condition.Op.FORALL, false, true, false, ParallelMode.DPO);
+            = createCondition("a|b", Condition.Op.FORALL, false, true, false, Semantics.DPO);
         HostGraph host = createHost(true, "a", "b");
         assertEquals(1,
                      MatcherFactory.instance(true).createMatcher(condition).findAll(host, null)
@@ -221,7 +221,7 @@ public class ChoiceEdgeMatchingTest {
     @Test
     public void testSpoModeCollapse() throws FormatException {
         Condition condition
-            = createCondition("a|b", Condition.Op.FORALL, false, false, false, ParallelMode.SPO);
+            = createCondition("a|b", Condition.Op.FORALL, false, false, false, Semantics.SPO_MULTI);
         HostGraph host = createHost(false, "a", "b");
         assertEquals(1,
                      MatcherFactory.instance(false).createMatcher(condition).findAll(host, null)
