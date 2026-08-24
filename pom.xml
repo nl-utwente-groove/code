@@ -12,8 +12,9 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<junit.version>5.14.4</junit.version>
 		<!-- Test categories excluded from the default test run;
-		     override with -Dexcluded.test.groups= to run all tests -->
-		<excluded.test.groups>nl.utwente.groove.test.SlowTest</excluded.test.groups>
+		     override with -Dexcluded.test.groups= to run all tests
+		     (GUI tests additionally skip themselves when headless) -->
+		<excluded.test.groups>nl.utwente.groove.test.SlowTest,nl.utwente.groove.test.GuiTest</excluded.test.groups>
 	</properties>
 
 	<name>${project.groupId}:${project.artifactId}</name>
@@ -131,6 +132,12 @@
 				<version>3.2.5</version>
 				<configuration>
 					<excludedGroups>${excluded.test.groups}</excludedGroups>
+					<!-- Keep all tests out of the real user preference store:
+					     the in-memory preferences factory replaces the platform
+					     one for the whole test JVM. Surefire patches the tests
+					     into module nl.utwente.groove, so java.prefs needs the
+					     add-exports to instantiate the factory reflectively. -->
+					<argLine>-Djava.util.prefs.PreferencesFactory=nl.utwente.groove.test.gui.InMemoryPreferencesFactory --add-exports=nl.utwente.groove/nl.utwente.groove.test.gui=java.prefs</argLine>
 					<excludes>
 						<!-- TestSuite aggregates the whole package tree as the
 						     entry point of the "GROOVE - all JUnit tests"
@@ -402,6 +409,18 @@
 		</dependency>
 
 		<!-- Test libraries -->
+		<dependency>
+			<!-- Jemmy 2 Swing UI test library, as republished (verbatim, from
+			     the 2012 upstream build) by every Apache NetBeans release;
+			     drives the Simulator in the GUI smoke tests (GuiTest category).
+			     License CDDL-1.0, verified via the Apache NetBeans attribution
+			     file harness/jemmy/external/jemmy-2.3.1.1-license.txt:
+			     acceptable as a test-scope (never distributed) dependency. -->
+			<groupId>org.netbeans.external</groupId>
+			<artifactId>jemmy-2.3.1.1</artifactId>
+			<version>RELEASE300</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>

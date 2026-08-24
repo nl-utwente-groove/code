@@ -26,5 +26,9 @@ package nl.utwente.groove.test;
  * @version $Revision$
  */
 public interface SlowTest {
-    // marker interface, empty by design
+    /** This category's tag name for JUnit 5 tests: the qualified class name.
+     * The vintage engine exposes categories as tags named by their fully
+     * qualified class name, so JUnit 5 tests tagged with this value are
+     * matched by the same {@code excluded.test.groups} entry. */
+    String TAG = "nl.utwente.groove.test.SlowTest";
 }
