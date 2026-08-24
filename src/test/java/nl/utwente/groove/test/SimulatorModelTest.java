@@ -19,6 +19,7 @@ package nl.utwente.groove.test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
@@ -33,14 +34,19 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.grammar.model.ResourceKind;
+import nl.utwente.groove.gui.SimulatorListener;
 import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.gui.SimulatorModel.Change;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.io.store.SystemStore;
+import nl.utwente.groove.lts.GTS;
+import nl.utwente.groove.lts.RuleTransition;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.io.FileUtils;
+import nl.utwente.groove.util.parse.FormatException;
 
 /**
  * Smoke test for the headless use of {@link SimulatorModel}: the model can be
@@ -112,5 +118,113 @@ public class SimulatorModelTest {
             .contains(model.getSelected(ResourceKind.CONTROL)));
         assertEquals(4, updates.size());
         assertTrue(updates.get(3).contains(Change.GRAMMAR));
+    }
+
+    /** Location of the grammar used for the GTS-layer test (loaded read-only). */
+    static private final String GTS_FIXTURE = "junit/samples/ferryman.gps";
+    /** Known state space size of {@link #GTS_FIXTURE}. */
+    static private final int FERRYMAN_STATES = 114;
+    /** Known transition count of {@link #GTS_FIXTURE}. */
+    static private final int FERRYMAN_TRANSITIONS = 198;
+
+    /**
+     * Drives the GTS/state/match selection layer headlessly: creates a GTS,
+     * explores it, and selects transitions, states and matches, checking the
+     * selection invariants (transition selection implies match, rule and source
+     * state selection; state selection clears the match; rule selection clears
+     * the match) and the listener contract (per-change registration, at most
+     * one notification per transaction, deregistration).
+     */
+    @Test
+    public void testGtsStateAndMatchSelection() throws IOException, FormatException {
+        SimulatorModel model = new SimulatorModel(option -> false);
+        var store = new SystemStore(new File(GTS_FIXTURE), false);
+        store.reload();
+        model.setGrammar(store);
+
+        // register one listener for all changes and one for state changes only
+        List<Set<Change>> updates = new ArrayList<>();
+        model.addListener((source, oldModel, changes) -> updates.add(EnumSet.copyOf(changes)));
+        List<Set<Change>> stateUpdates = new ArrayList<>();
+        model
+            .addListener((source, oldModel,
+                          changes) -> stateUpdates.add(EnumSet.copyOf(changes)),
+                         Change.STATE);
+
+        // creating the GTS selects its start state
+        assertTrue(model.resetGTS());
+        GTS gts = model.getGTS();
+        assertNotNull(gts);
+        assertEquals(gts.startState(), model.getState());
+        assertEquals(1, updates.size());
+        assertTrue(updates.get(0).containsAll(Set.of(Change.GTS, Change.STATE)));
+        assertEquals(1, stateUpdates.size());
+
+        // explore fully (headlessly) and publish the result, as ExploreAction does
+        var exploration = new Exploration(model.getExploreType(), model.getState());
+        exploration.play();
+        model.setExploreResult(exploration.getResult(), model.getExploreType());
+        assertEquals(FERRYMAN_STATES, gts.nodeCount());
+        assertEquals(FERRYMAN_TRANSITIONS, gts.edgeCount());
+        assertEquals(2, updates.size());
+        assertTrue(updates.get(1).contains(Change.GTS));
+
+        // selecting a transition selects its match, rule and source state
+        RuleTransition trans = gts
+            .startState()
+            .getRuleTransitions()
+            .stream()
+            .filter(t -> t.target() != t.source())
+            .findFirst()
+            .orElseThrow();
+        assertTrue(model.setTransition(trans));
+        assertEquals(trans, model.getTransition());
+        assertEquals(trans.getKey(), model.getMatch());
+        assertEquals(trans.source(), model.getState());
+        assertEquals(trans.getAction().getQualName(), model.getSelected(ResourceKind.RULE));
+        // the all-changes listener was notified exactly once for this
+        // transaction, even though it is registered for every fired change
+        assertEquals(3, updates.size());
+        assertTrue(updates.get(2).containsAll(Set.of(Change.MATCH, Change.RULE)));
+        // the state did not change (the transition leaves the selected state),
+        // so the state-only listener was not notified
+        assertEquals(1, stateUpdates.size());
+
+        // selecting the target state clears match and transition
+        assertTrue(model.setState(trans.target()));
+        assertEquals(trans.target(), model.getState());
+        assertFalse(model.hasMatch());
+        assertFalse(model.hasTransition());
+        assertEquals(4, updates.size());
+        assertTrue(updates.get(3).contains(Change.STATE));
+        assertEquals(2, stateUpdates.size());
+
+        // doSetStateAndMatch auto-selects an outgoing match of the new state
+        assertTrue(model.doSetStateAndMatch(gts.startState(), null));
+        assertEquals(gts.startState(), model.getState());
+        assertTrue(model.hasMatch());
+        assertEquals(5, updates.size());
+
+        // selecting another rule clears the match
+        QualName selectedRule = model.getSelected(ResourceKind.RULE);
+        QualName otherRule = model
+            .getGrammar()
+            .getNames(ResourceKind.RULE)
+            .stream()
+            .filter(n -> !n.equals(selectedRule))
+            .findFirst()
+            .orElseThrow();
+        assertTrue(model.doSelect(ResourceKind.RULE, otherRule));
+        assertEquals(otherRule, model.getSelected(ResourceKind.RULE));
+        assertFalse(model.hasMatch());
+        assertEquals(6, updates.size());
+        assertTrue(updates.get(5).containsAll(Set.of(Change.RULE, Change.MATCH)));
+
+        // after deregistration, listeners are no longer notified
+        SimulatorListener late = (source, oldModel, changes) -> updates.add(EnumSet.copyOf(changes));
+        model.addListener(late);
+        model.removeListener(late);
+        assertTrue(model.setState(trans.target()));
+        assertEquals(7, updates.size());
     }
 }
