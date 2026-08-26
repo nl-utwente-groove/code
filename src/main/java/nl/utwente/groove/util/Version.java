@@ -343,16 +343,20 @@ public class Version {
      * <li> Host graphs can now be multigraphs, holding parallel edges
      * (multiple edges with the same end nodes and label). This is controlled
      * by the new grammar property {@code semantics}, with values
-     * {@code SPO-simple} (the default; the classical simple-graph semantics),
-     * {@code SPO-multi} and {@code DPO}. Parallel host graph edges are
-     * written to disk using the new {@code mult=k:} aspect prefix, which
-     * stands for {@code k} parallel copies of the same (binary) edge, flag
-     * or let-edge. Grammars that do not set {@code semantics} are unaffected;
-     * older Groove versions reject the {@code mult=} aspect and the
-     * {@code semantics} property as unknown. (During the development of this
-     * version the property was briefly called {@code parallelEdges}, with
-     * values {@code none}, {@code SPO} and {@code DPO}; a stored legacy key
-     * is translated on load and dropped on the next save.)
+     * {@code SPO-simple} (the classical simple-graph semantics),
+     * {@code SPO-multi} (the default for grammars created at this version or
+     * later) and {@code DPO}. Parallel host graph edges are written to disk
+     * using the new {@code mult=k:} aspect prefix, which stands for
+     * {@code k} parallel copies of the same (binary) edge, flag or let-edge.
+     * Grammars from before this version keep the simple-graph semantics they
+     * were written under: the version repair pins {@code semantics=SPO-simple}
+     * explicitly into any pre-3.12 grammar that does not set the key (also
+     * when it has no properties file at all), and the value is persisted on
+     * the next save. Older Groove versions reject the {@code mult=} aspect
+     * and the {@code semantics} property as unknown. (During the development
+     * of this version the property was briefly called {@code parallelEdges},
+     * with values {@code none}, {@code SPO} and {@code DPO}; a stored legacy
+     * key is translated on load and dropped on the next save.)
      * </ul>
      */
     public static final String GRAMMAR_VERSION_3_12 = "3.12";

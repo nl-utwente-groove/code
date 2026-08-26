@@ -96,7 +96,10 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
      * The transformation semantics: whether host and rule graphs are
      * multigraphs (with parallel edges) or simple graphs, and whether they
      * are transformed under the single- or double-pushout approach.
-     * Default is {@link Semantics#SPO_SIMPLE}.
+     * Default is {@link Semantics#SPO_MULTI}; grammars from before version
+     * 3.12 are converted to an explicit {@link Semantics#SPO_SIMPLE} by
+     * {@link GrammarProperties#repairVersion()}, so the default only reaches
+     * newly created grammars.
      */
     SEMANTICS("semantics",
         "<body>The transformation semantics: whether the host and rule graphs may have "
@@ -343,7 +346,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
         if (result == null) {
             var inner = switch (this) {
             case ALGEBRA -> new Parser.EnumParser<>(AlgebraFamily.class, AlgebraFamily.DEFAULT);
-            case SEMANTICS -> new Parser.EnumParser<>(Semantics.class, Semantics.SPO_SIMPLE,
+            case SEMANTICS -> new Parser.EnumParser<>(Semantics.class, Semantics.SPO_MULTI,
                 "SPO-simple", "SPO-multi", "DPO");
             case COMMON_LABELS, CONTROL_LABELS -> Parser.splitter;
             case CREATOR_EDGE, IGNORE_REG_EXP, DANGLING, RHS_AS_NAC, INJECTIVE, STORE_OUT_PARS, USE_STORED_NODE_IDS -> Parser.boolFalse;

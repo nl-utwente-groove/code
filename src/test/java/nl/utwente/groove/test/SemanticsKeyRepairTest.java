@@ -40,34 +40,71 @@ import nl.utwente.groove.util.AIGenerated;
 @AIGenerated("Claude Fable 5, 2026-08")
 @NonNullByDefault
 public class SemanticsKeyRepairTest {
-    /** The legacy multigraph modes translate to their new value names. */
+    /** The legacy multigraph modes translate to their new value names.
+     * A translated {@code SPO-multi} equals the key's default, so by the
+     * canonical-representation invariant of
+     * {@link nl.utwente.groove.util.Properties} it is not stored explicitly
+     * — and the pre-3.12 conversion must nevertheless not overwrite it
+     * with {@code SPO-simple}. */
     @Test
     public void testTranslateMultiModes() {
         var repaired = repair("SPO");
         assertEquals(Semantics.SPO_MULTI, repaired.getSemantics());
-        assertEquals("SPO-multi", repaired.getProperty(GrammarKey.SEMANTICS.getName()));
+        assertNull(repaired.getProperty(GrammarKey.SEMANTICS.getName()));
         repaired = repair("DPO");
         assertEquals(Semantics.DPO, repaired.getSemantics());
         assertEquals("DPO", repaired.getProperty(GrammarKey.SEMANTICS.getName()));
     }
 
-    /** The legacy simple mode translates to the default, which by the
-     * canonical-representation invariant of
-     * {@link nl.utwente.groove.util.Properties} is not stored explicitly. */
+    /** The legacy simple mode translates to an explicitly stored
+     * {@code SPO-simple}, now that the key's default is {@code SPO-multi}. */
     @Test
     public void testTranslateSimpleMode() {
         var repaired = repair("none");
         assertEquals(Semantics.SPO_SIMPLE, repaired.getSemantics());
-        assertNull(repaired.getProperty(GrammarKey.SEMANTICS.getName()));
+        assertEquals("SPO-simple", repaired.getProperty(GrammarKey.SEMANTICS.getName()));
     }
 
-    /** A stale value from before the key was wired is dropped without
-     * a replacement. */
+    /** A stale value from before the key was wired is dropped; the
+     * pre-3.12 conversion then pins the simple semantics explicitly. */
     @Test
     public void testDropStaleValue() {
         var repaired = repair("true");
         assertEquals(Semantics.SPO_SIMPLE, repaired.getSemantics());
+        assertEquals("SPO-simple", repaired.getProperty(GrammarKey.SEMANTICS.getName()));
+    }
+
+    /** A pre-3.12 bundle without the semantics key gets an explicitly
+     * stored {@code SPO-simple}: such grammars must keep the simple-graph
+     * semantics they were written under, while the absent-key default is
+     * {@code SPO-multi}. */
+    @Test
+    public void testInjectSimpleIntoOldGrammar() {
+        var properties = new GrammarProperties();
+        var repaired = properties.repairVersion();
+        assertEquals(Semantics.SPO_SIMPLE, repaired.getSemantics());
+        assertEquals("SPO-simple", repaired.getProperty(GrammarKey.SEMANTICS.getName()));
+    }
+
+    /** A current-version bundle without the semantics key is left alone:
+     * the {@code SPO-multi} default applies, unstored. */
+    @Test
+    public void testCurrentGrammarKeepsDefault() {
+        var properties = new GrammarProperties(true);
+        var repaired = properties.repairVersion();
+        assertEquals(Semantics.SPO_MULTI, repaired.getSemantics());
         assertNull(repaired.getProperty(GrammarKey.SEMANTICS.getName()));
+    }
+
+    /** An explicitly stored semantics value survives the pre-3.12
+     * conversion untouched. */
+    @Test
+    public void testExplicitValueSurvives() {
+        var properties = new GrammarProperties();
+        properties.setSemantics(Semantics.DPO);
+        var repaired = properties.repairVersion();
+        assertEquals(Semantics.DPO, repaired.getSemantics());
+        assertEquals("DPO", repaired.getProperty(GrammarKey.SEMANTICS.getName()));
     }
 
     /** Repairs a properties bundle holding the legacy key with a given value,

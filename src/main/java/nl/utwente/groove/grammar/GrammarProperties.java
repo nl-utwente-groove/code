@@ -772,18 +772,34 @@ public class GrammarProperties extends Properties {
         // not version-gated, since grammars saved during the 3.12 development
         // period carry the old key under the current version stamp
         String parallelEdges = getProperty(GrammarKey.PARALLEL_EDGES);
+        @Nullable
+        Semantics translated = null;
         if (parallelEdges != null) {
             result = result.clone();
             result.remove(GrammarKey.PARALLEL_EDGES);
-            switch (parallelEdges) {
-            case "none" -> result.setSemantics(Semantics.SPO_SIMPLE);
-            case "SPO" -> result.setSemantics(Semantics.SPO_MULTI);
-            case "DPO" -> result.setSemantics(Semantics.DPO);
-            default -> {
-                // a stale value from before the key was wired (e.g. a boolean);
-                // there is nothing to preserve
+            translated = switch (parallelEdges) {
+            case "none" -> Semantics.SPO_SIMPLE;
+            case "SPO" -> Semantics.SPO_MULTI;
+            case "DPO" -> Semantics.DPO;
+            // a stale value from before the key was wired (e.g. a boolean);
+            // there is nothing to preserve
+            default -> null;
+            };
+            if (translated != null) {
+                result.setSemantics(translated);
             }
-            }
+        }
+        // pre-3.12 grammars predate the semantics key, whose default is
+        // SPO-multi; they must keep the simple-graph semantics they were
+        // written under, so the conversion pins it explicitly. A translated
+        // or explicitly stored value is left alone — the translation is
+        // tracked in its own variable, since a translated SPO-multi equals
+        // the key's default and is therefore not visible in the store.
+        if (translated == null
+            && Version.compareGrammarVersions(version, Version.GRAMMAR_VERSION_3_12) == -1
+            && result.getProperty(GrammarKey.SEMANTICS.getName()) == null) {
+            result = result.clone();
+            result.setSemantics(Semantics.SPO_SIMPLE);
         }
         // Note: the legacy exploration strategy key is NOT converted here.
         // The 'exploration' key names a settings resource, and creating a

@@ -461,11 +461,49 @@ on-disk edits.
    fallback is keeping `SPO-simple` as default; slices 1–2 stand
    regardless.
 
-Open choices: whether the ~144 pre-3.12 junit fixtures get the explicit
-`semantics=SPO-simple` line anyway (the §6 (i) decision) or rely on the
-now-proven injection — recommendation: only where a test's meaning
-depends on visibility; and whether `semantics` should be a *notable* key
-(flagged when non-default) — recommendation: yes.
+**Slice 3 delivered (2026-08-25, branch `semantics-default-flip`).**
+Two more canonical-default-drop consequences surfaced during
+implementation: a translated legacy `parallelEdges=SPO` equals the new
+default and vanishes from the store, so the injection tracks the
+translation in a local variable instead of re-reading the bundle; and an
+explicit `semantics=SPO-multi` in a *pre-3.12* file is indistinguishable
+from an absent key after load, so the injection would wrongly pin such a
+grammar to `SPO-simple` — since the key only exists from 3.12 on, the
+two fixtures carrying that anachronism (`spoErasers`,
+`parallel-pump-spo`, both stamped 3.0) were restamped to 3.12 rather
+than complicating the repair. Fixture handling: the injection covers all
+pre-3.12 fixtures; the nine 3.12-stamped fixtures *without* the key
+(from the rule-compilation and settings work — among them
+`checkCreatorEdges.gps` and `rhsAsNac.gps`, whose expectations are
+mode-sensitive) got the explicit `SPO-simple` line, per the
+"only where a test's meaning depends on it" recommendation. The
+*notable*-key question remains open.
+
+**Timing gate (§6 iv), measured 2026-08-25** — 5 interleaved
+fresh-JVM Generator runs per sample per mode, medians of the reported
+exploration time:
+
+| sample | states simple/multi | simple | multi | overhead |
+|---|---|---|---|---|
+| `inheritance` | 756 = 756 | 249 ms | 255 ms | ≈ 0% |
+| `append` (append-3-list-8) | 3888 = 3888 | 552 ms | 681 ms | +23% |
+| `car-platooning` (start-05) | 110366 ≠ 130896 | 48 µs/state | 48 µs/state | ≈ 0% per state |
+| `As-and-Bs-reg-exp-benchmark` | 8240 ≠ unbounded | 0.74 s | diverges | — |
+
+Two of the four samples turned out not to be timing samples but
+*semantics* evidence: `car-platooning` grows 19% more states under
+`SPO-multi` (unguarded re-creation of existing edges, absorbed in simple
+mode), and `As-and-Bs` diverges outright — its `AaB` rule creates
+`new:a` with no guard against the existing copy, so every application
+mints another parallel edge (§6 item 1 on a real sample). Both confirm
+that the conversion pinning pre-3.12 grammars to `SPO-simple` is
+mandatory, not cosmetic. On the samples with identical state spaces the
+multi overhead is ≈ 0% (`inheritance`, and per-state on
+`car-platooning`) to +23% (`append`, attribute-heavy — value-node-rich
+hosts are where the non-simple edge store costs). Verdict: acceptable
+for a new-grammars-only default; if +23% on attribute-heavy grammars is
+judged too much at review, the fallback is reverting the one-line parser
+default while keeping the conversion machinery.
 
 External follow-ups once slice 1 merges: the web manual's grammar chapter
 and the 8.0.0 release notes still say `parallelEdges`.

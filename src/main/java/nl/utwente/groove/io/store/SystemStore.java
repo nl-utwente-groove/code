@@ -58,6 +58,7 @@ import nl.utwente.groove.algebra.UserSignature;
 import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.GrammarSource;
+import nl.utwente.groove.grammar.Semantics;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
@@ -866,6 +867,11 @@ public class SystemStore implements GrammarSource {
             result = result.repairVersion().addDerivedProperties(this.file.toPath());
             this.hasSystemPropertiesFile = true;
         } else {
+            // a grammar without a properties file predates every version, in
+            // particular the semantics key: pin the simple-graph semantics it
+            // was written under, as repairVersion would if it ran (it only
+            // runs when there is a properties file to repair)
+            result.setSemantics(Semantics.SPO_SIMPLE);
             this.hasSystemPropertiesFile = false;
         }
         return result;

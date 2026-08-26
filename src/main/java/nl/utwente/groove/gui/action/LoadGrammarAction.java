@@ -12,7 +12,6 @@ import java.util.Set;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
-import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
@@ -96,22 +95,12 @@ public class LoadGrammarAction extends SimulatorAction {
         }
         String fileGrammarVersion = props.getGrammarVersion();
         int compare = Version.compareGrammarVersion(fileGrammarVersion);
-        // an older grammar whose only version gap is the exploration-property
-        // conversion (3.11 -> 3.12) and that has no stored legacy property
-        // needs no repair, so it is loaded silently, without a resave prompt;
-        // the shortcut self-disables as soon as the current grammar version
-        // moves past 3.12, since it does not cover later conversions
-        String legacyExploration = props.getProperty(GrammarKey.EXPLORATION);
-        if (compare > 0
-            && Version
-                .compareGrammarVersions(fileGrammarVersion, Version.GRAMMAR_VERSION_3_11) >= 0
-            && Version
-                .compareGrammarVersions(Version.getCurrentGrammarVersion(),
-                                        Version.GRAMMAR_VERSION_3_12)
-                <= 0
-            && (legacyExploration == null || legacyExploration.isEmpty())) {
-            compare = 0;
-        }
+        // (An earlier shortcut loaded 3.11 grammars silently, without a
+        // resave prompt, when their only version gap was the
+        // exploration-property conversion. Since the semantics default
+        // became SPO-multi, every pre-3.12 grammar needs the explicit
+        // semantics=SPO-simple line of the version repair persisted, so the
+        // resave prompt is back for all of them.)
         final boolean saveAfterLoading = (compare != 0);
         final File newGrammarFile;
         if (compare < 0) {
