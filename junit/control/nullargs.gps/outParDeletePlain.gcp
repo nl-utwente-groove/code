@@ -1,0 +1,7 @@
+recipe r(out node x) {
+	bind(out x);
+	del(x);
+}
+
+node z;
+r(out z);

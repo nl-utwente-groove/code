@@ -1,0 +1,7 @@
+recipe s(node y) {
+	fuse;
+}
+
+node x;
+bind(out x);
+s(x);

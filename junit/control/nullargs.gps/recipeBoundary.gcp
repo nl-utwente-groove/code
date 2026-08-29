@@ -1,0 +1,9 @@
+recipe r(node y) {
+	grow;
+	use(y);
+}
+
+node x;
+bind(out x);
+del(x);
+r(x);
