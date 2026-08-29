@@ -110,3 +110,59 @@ at StateCache:801-805; null-guard `MergeMap.getNode`).
 Counterexample grammars are trivially reconstructible from the descriptions above;
 they should become junit fixtures (with expected outcomes) once the F1 semantics
 is decided.
+
+## Null-variable semantics outside recipes (verified 2026-08-29)
+
+Follow-up question (Arend): is "deleted parameter node ⇒ variable null ⇒
+consuming calls inapplicable" already the established semantics for plain
+control variables? **Yes, verified in code and by exploration.**
+
+- Code: `MatchCollector.extractBinding` evaluates each in-parameter binding of a
+  step from the call stack; `isCompatible` returns false for a null value, upon
+  which `extractBinding` returns null and `computeMatches` skips match search
+  entirely — the call simply has no matches. The binding is computed for the
+  *innermost rule call* of the step (`Step.getParAssign` chains the rule's
+  parameters through the entered procedure switches), so the gate triggers
+  exactly when the step's **rule** consumes the null value.
+- Exploration (`node x; bind(out x); del(x); use(x);` where `del` erases its
+  argument node): after `del(x)`, `use(x)` never matches; the state deadlocks,
+  no crash, no error. Deleted-parameter-node ⇒ null is effected by
+  `MatchApplier.computeTargetStack` / `RuleEffect.mapNode`.
+
+This supports **option 1** for F1: a deleted out-parameter binding becoming null
+is the same rule applied at the recipe boundary.
+
+### Recipe calls with null in-arguments: no boundary check (verified)
+
+Because the null gate lives on the innermost *rule* call only, a recipe invoked
+with a null in-argument is **not** inapplicable as a whole — contrary to the
+recipes-are-atomic-rules principle. Verified with
+`recipe r(node y) { grow; use(y); }` called as `r(x)` after `del(x)`
+(`grow` independent of `y`): the recipe *starts*, `grow` fires as an inner step,
+`use(y)` then has no match, and the stuck inner state is marked transient+absent,
+so no recipe transition arises. The LTS-visible outcome equals "inapplicable",
+but only via the post-hoc absence machinery: the partial execution is explored
+and discarded, and a body with an alternative path avoiding `y` would complete —
+making the recipe applicable despite the null argument.
+
+Related compiler behaviour: a wildcard argument for a recipe in-parameter
+(`r(_)`) is statically rejected ("Recipe r(node) not applicable for arguments
+(null)"), so the intent that in-parameters be bound exists — it just cannot see
+runtime nulls.
+
+Possible follow-up (separate concern from F1): an up-front applicability check —
+when computing matches for a step that *enters* a recipe, treat the step as
+matchless if any in-argument of the entered recipe call evaluates to null
+(extending `MatchCollector.extractBinding` to the entered procedure switches of
+`Step.getStack`, not just the innermost rule call). This would make recipe
+applicability uniform with rule applicability and avoid the wasted transient
+exploration. Behavioural change: recipes that today complete despite a null
+in-argument via a body path that avoids the variable would become inapplicable.
+
+### Pitfall for test grammars
+
+`other` (like `any`) is a control-language keyword — a rule named `other` is
+never callable by name; a call `other` expands to the set of not-explicitly-
+called rules, which (when empty) compiles to Delta and then trips the "recipe
+may fail to terminate" check. Cost an hour of confusion; don't name fixture
+rules `any` or `other`.
