@@ -98,6 +98,7 @@ import nl.utwente.groove.lts.GraphNextState;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.RuleTransitionLabel;
 import nl.utwente.groove.transform.oracle.OracleParser;
+import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
@@ -112,8 +113,17 @@ import nl.utwente.groove.util.parse.SelectableListEntry;
 public class Simulator implements SimulatorListener {
     /**
      * Constructs a simulator with an empty graph grammar.
+     * At most one simulator can be constructed per JVM.
      */
     public Simulator() {
+        // fail fast on a second instance: without this guard the violation
+        // only surfaces as an obscure UserSettings error during start()
+        if (instantiated) {
+            throw Exceptions
+                .illegalState("Only one Simulator can be created per JVM: UserSettings, "
+                    + "GraphPreviewDialog and DialogOracle are bound to a single instance");
+        }
+        instantiated = true;
         // the simulator can export by rendering, so it contributes
         // the JGraph-based exporters to the exporter registry
         JGraphExporters.register();
@@ -133,6 +143,9 @@ public class Simulator implements SimulatorListener {
         this.actions.initialiseRemainingActions();
         installListeners();
     }
+
+    /** Flag registering that a simulator was constructed in this JVM. */
+    static private boolean instantiated;
 
     private void installListeners() {
         this.model.addListener(this, Change.GRAMMAR, Change.DISPLAY);
