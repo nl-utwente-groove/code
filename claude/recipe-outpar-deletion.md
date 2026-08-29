@@ -124,10 +124,21 @@ like `Step.getParAssign()`, empty for steps not entering a recipe — and declar
 the step matchless if any non-`NONE` binding evaluates to null. Consequences: a
 recipe called with a null in-argument no longer starts (no transient exploration,
 no absent states), and a body path avoiding the variable no longer makes the
-recipe applicable despite the undefined argument. Deliberate limitation: a null
-that arises only through composition (e.g. an in-argument fed from an enclosing
-procedure's still-unbound out-parameter) yields a `NONE` binding and is skipped —
-such cases degrade to the previous post-hoc absence behaviour.
+recipe applicable despite the undefined argument. The gate skips `NONE` bindings;
+this is exact, not a limitation: `NONE` arises only for the recipe call's own
+out-parameters and wildcard arguments, where skipping is required. All static
+routes to a `NONE` on an in-argument slot are closed by the control compiler —
+wildcards are incompatible with in-only formals (`UnitPar.compatibleWith` /
+`CtrlArg.Wild.inOnly()`), and possibly-uninitialised variables (including an
+enclosing procedure's not-yet-assigned out-parameter) are rejected by the
+initialised-variables analysis ("Variable x may not have been initialised",
+`CtrlHelper.checkVar`); via composition, an inner in-argument can only reference
+the entered outer procedure's start-location variables, which are exactly its
+in-parameters, themselves fed from in-only (hence non-`NONE`) arguments. The only
+runtime nulls reaching a recipe in-argument are deletion-produced variable
+values, which the gate catches — also through a simultaneous function entry
+(verified: `function f(node u) { r(u); }` with a nulled argument leaves the
+recipe unstarted).
 
 **Tests.** `junit/control/nullargs.gps` + `RecipeNullArgsTest` cover the plain
 null-variable deadlock, the boundary check (recipe must not start), both
