@@ -264,6 +264,15 @@ public class MatchCollector {
         var valuator = this.state.getGTS().getRecord().getValuator();
         Object[] stack = this.state.getActualStack();
         valuator.setVarInfo(stack);
+        // a step that enters a recipe is only applicable if all in-arguments of
+        // the recipe call are defined: an undefined (null) argument makes the
+        // recipe as a whole inapplicable, in analogy to rule in-parameters below
+        // (see claude/recipe-outpar-deletion.md)
+        for (var bind : step.getRecipeParAssign()) {
+            if (bind.type() != Source.NONE && valuator.eval(bind) == null) {
+                return null;
+            }
+        }
         for (var bind : step.getParAssign()) {
             if (bind.type() == Source.NONE) {
                 // this corresponds to an output or wildcard parameter
