@@ -97,8 +97,10 @@ public class CallStack {
 
     /** Applies a node mapping recursively throughout a given call stack, and
      * returns the resulting stack.
+     * {@code null} entries (unset or undefined variables) are passed through
+     * unchanged, without invoking the mapping.
      */
-    static public Object[] map(Object[] stack, Function<HostNode,HostNode> map) {
+    static public Object[] map(Object[] stack, Function<HostNode,@Nullable HostNode> map) {
         Object[] result = new Object[stack.length];
         boolean changed = false;
         boolean nested = isNested(stack);
@@ -107,7 +109,9 @@ public class CallStack {
             : stack.length;
         for (int i = 0; i < size; i++) {
             var oldVal = stack[i];
-            var newVal = map.apply((HostNode) stack[i]);
+            var newVal = oldVal == null
+                ? null
+                : map.apply((HostNode) oldVal);
             changed |= newVal != oldVal;
             result[i] = newVal;
         }

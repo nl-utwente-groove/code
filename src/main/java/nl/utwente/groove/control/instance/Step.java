@@ -37,6 +37,7 @@ import nl.utwente.groove.control.template.Switch;
 import nl.utwente.groove.grammar.Callable;
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.Rule;
+import nl.utwente.groove.util.AIGenerated;
 
 /**
  * Run-time control step, instantiating a control edge.
@@ -182,6 +183,42 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
             result = result.after(switchIter.next().assignSource2Init());
         }
         return result;
+    }
+
+    /** Returns an assignment to the parameters of the recipe entered by this step,
+     * based on the source variables of the outer call.
+     * The bindings are {@link nl.utwente.groove.control.Binding.Source#NONE} for
+     * output parameters and wildcard arguments.
+     * If this step does not enter a recipe, the assignment is empty.
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    public Assignment getRecipeParAssign() {
+        return this.recipeParAssign.get();
+    }
+
+    /** Lazily computed assignment to the parameters of the recipe entered by this
+     * step, based on the source variables of the outer call.
+     */
+    private final Supplier<Assignment> recipeParAssign = lazy(this::computeRecipeParAssign);
+
+    /** Computes the value for {@link #recipeParAssign}. */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    private Assignment computeRecipeParAssign() {
+        Assignment result = null;
+        // traverse the entered switches from the innermost outward;
+        // recipes cannot be nested, so at most one recipe switch occurs
+        for (var swt : getStack().outIterable()) {
+            if (result == null) {
+                if (swt.getKind() == Callable.Kind.RECIPE) {
+                    result = swt.assignSource2Par();
+                }
+            } else {
+                result = result.after(swt.assignSource2Init());
+            }
+        }
+        return result == null
+            ? new Assignment()
+            : result;
     }
 
     /**

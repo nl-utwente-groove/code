@@ -1,0 +1,4 @@
+node x;
+bind(out x);
+del(x);
+use(x);

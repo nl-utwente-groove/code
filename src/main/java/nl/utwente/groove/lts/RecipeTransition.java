@@ -232,14 +232,17 @@ public class RecipeTransition extends ALabelEdge<GraphState>
         return this.arguments;
     }
 
-    /** Array of out-parameter values, containing one element per out-parameter. */
+    /** Array of argument values, containing one element per parameter.
+     * Entries may be {@code null} for out-parameters whose value was deleted
+     * during the recipe execution (see claude/recipe-outpar-deletion.md).
+     */
     private final HostNode[] arguments;
 
     /** Computes the arguments of this recipe transition,
      * based on a given array of out-parameter values.
      * @param outValues array sized to the number of arguments of this transition,
-     * with {@code null} values for the in-parameters and concrete values for
-     * the out-parameters.
+     * with {@code null} values for the in-parameters and concrete or {@code null}
+     * (undefined) values for the out-parameters.
      */
     private HostNode[] computeArguments(HostNode[] outValues) {
         int argCount = outValues.length;
