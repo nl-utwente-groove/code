@@ -114,9 +114,14 @@ public abstract sealed class Proposition permits Literal, Derived, Call {
         }
     }
 
-    /** Converts a host node to a proposition argument. */
-    private static Arg toArg(HostNode node) {
+    /** Converts a host node to a proposition argument.
+     * An undefined ({@code null}) node — e.g., a recipe out-parameter deleted
+     * before the recipe completed — converts to the wildcard argument, as it
+     * would after a round trip through the transition label text.
+     */
+    private static Arg toArg(@Nullable HostNode node) {
         return switch (node) {
+        case null -> Arg.WILD_ARG;
         case DefaultHostNode d -> Arg.arg(d.toString());
         case ValueNode v -> Arg.arg(v.toTerm());
         };

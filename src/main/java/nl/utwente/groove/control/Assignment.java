@@ -208,6 +208,8 @@ public class Assignment implements Iterable<Binding> {
     }
 
     /** Applies a node mapping to an assignment record, and returns the result.
+     * {@code null} entries (unset or undefined values) are passed through
+     * unchanged, without invoking the mapping.
      */
     static public HostNode[] map(HostNode[] record, Function<HostNode,HostNode> map) {
         HostNode[] result = new HostNode[record.length];
@@ -215,7 +217,9 @@ public class Assignment implements Iterable<Binding> {
         var size = record.length;
         for (int i = 0; i < size; i++) {
             var oldVal = record[i];
-            var newVal = map.apply(oldVal);
+            var newVal = oldVal == null
+                ? null
+                : map.apply(oldVal);
             changed |= newVal != oldVal;
             result[i] = newVal;
         }

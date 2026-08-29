@@ -793,17 +793,16 @@ public class StateCache implements Cache {
                     .findFirst()
                     .get();
                 stack = step.getPopUntil(s -> s == recipeFinal).apply(stack);
-                // now obtain the parameter values
+                // now obtain the parameter values;
+                // in-parameter slots are null (Source.NONE bindings)
                 result = recipeFinal.onFinish().assignFinal2Par().lookup(stack);
-                // apply the transition's permutation, if it is not the identity
-                if (!partial.getMorphism().isIdentity()) {
-                    var nodeMap = partial.getMorphism().nodeMap();
-                    result = Assignment.map(result, n -> {
-                        var image = nodeMap.get(n);
-                        assert image != null; // out-parameters are not deleted by the final step
-                        return image;
-                    });
-                }
+                // map the values into the target graph through the transition
+                // morphism: an out-parameter node deleted by the final step has
+                // no image and becomes null (undefined), a merged node is mapped
+                // to its merge target, and a possible isomorphism to the actual
+                // target state is applied (see claude/recipe-outpar-deletion.md)
+                var nodeMap = partial.getMorphism().nodeMap();
+                result = Assignment.map(result, nodeMap::get);
             }
             return result;
         }

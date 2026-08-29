@@ -143,7 +143,16 @@ public class RecipeEvent
         var args = this.arguments;
         var oArgs = o.arguments;
         for (int i = 0; i < args.length && result == 0; i++) {
-            result = comparator.compare(args[i], oArgs[i]);
+            var arg = args[i];
+            var oArg = oArgs[i];
+            // arguments may be null (undefined out-parameters); null compares first
+            result = arg == null
+                ? (oArg == null
+                    ? 0
+                    : -1)
+                : oArg == null
+                    ? 1
+                    : comparator.compare(arg, oArg);
         }
         return result;
     }
