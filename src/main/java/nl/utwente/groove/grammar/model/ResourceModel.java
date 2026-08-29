@@ -247,16 +247,28 @@ abstract public class ResourceModel<R> {
     }
 
     /**
-     * Indicates that there are errors in the model.
-     * Convenience method for {@code !getErrors().isEmpty()}.
+     * Indicates that there are blocking errors in the model,
+     * preventing its conversion to a resource.
+     * Convenience method for {@code getErrors().hasErrors()};
+     * non-blocking diagnostics do not count.
      */
     public final boolean hasErrors() {
-        return !getErrors().isEmpty();
+        return getErrors().hasErrors();
     }
 
     /** Callback factory method to create an appropriate error collection. */
     protected FormatErrorSet createErrors() {
         return new FormatErrorSet();
+    }
+
+    /**
+     * Adds diagnostics to the errors stored in this model.
+     * To be called from {@link #compute()} on its success path,
+     * for non-blocking messages that should travel with the
+     * successfully computed resource.
+     */
+    final void addErrors(FormatErrorSet errors) {
+        this.errors.addAll(errors);
     }
 
     /** The errors found during resource construction. */

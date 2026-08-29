@@ -416,9 +416,10 @@ public class GrammarModel implements PropertyChangeListener {
         return this.errors;
     }
 
-    /** Indicates if this grammar model has errors. */
+    /** Indicates if this grammar model has blocking errors,
+     * preventing its conversion to a grammar. */
     public boolean hasErrors() {
-        return !getErrors().isEmpty();
+        return getErrors().hasErrors();
     }
 
     /** Possibly empty list of errors found in the conversion to a grammar. */
@@ -537,11 +538,17 @@ public class GrammarModel implements PropertyChangeListener {
             if (ruleModel.isActive()) {
                 try {
                     result.add(((RuleModel) ruleModel).toResource());
+                    // the rule compiled, but may still carry non-blocking diagnostics
+                    for (FormatError error : ruleModel.getErrors()) {
+                        errors
+                            .add("%s in rule '%s': %s", error.getSeverity().getCapText(),
+                                 ruleModel.getQualName(), error, ruleModel.getSource());
+                    }
                 } catch (FormatException exc) {
                     for (FormatError error : exc.getErrors()) {
                         errors
-                            .add("Error in rule '%s': %s", ruleModel.getQualName(), error,
-                                 ruleModel.getSource());
+                            .add("%s in rule '%s': %s", error.getSeverity().getCapText(),
+                                 ruleModel.getQualName(), error, ruleModel.getSource());
                     }
                 }
             }
@@ -569,6 +576,9 @@ public class GrammarModel implements PropertyChangeListener {
             errors.addAll(e.getErrors());
         }
         errors.throwException();
+        // any remaining errors are non-blocking diagnostics;
+        // keep them with the grammar model
+        this.errors.addAll(errors);
         // Set the active prolog programs, carried as plain texts; the prolog
         // layer builds its environment from them
         var prologPrograms = new LinkedHashMap<QualName,String>();

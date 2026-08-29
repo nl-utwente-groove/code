@@ -190,9 +190,11 @@ public interface Graph {
         getInfo().getErrors().add(message, pars);
     }
 
-    /** Checks if this graph has an error. */
+    /** Checks if this graph has a blocking error.
+     * @see FormatErrorSet#hasErrors()
+     */
     default public boolean hasErrors() {
-        return hasInfo() && !getInfo().getErrors().isEmpty();
+        return hasInfo() && getInfo().getErrors().hasErrors();
     }
 
     /** Returns the set of errors associated with this graph.

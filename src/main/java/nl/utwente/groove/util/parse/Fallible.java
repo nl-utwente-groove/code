@@ -40,9 +40,11 @@ public interface Fallible {
         getErrors().addAll(error);
     }
 
-    /** Indicates if this fallible object has any errors. */
+    /** Indicates if this fallible object has any blocking errors.
+     * @see FormatErrorSet#hasErrors()
+     */
     public default boolean hasErrors() {
-        return !getErrors().isEmpty();
+        return getErrors().hasErrors();
     }
 
     /** Returns the errors in this object. */

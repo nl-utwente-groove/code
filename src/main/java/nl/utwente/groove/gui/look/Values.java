@@ -141,6 +141,28 @@ public class Values {
         ERROR_COLORS.putColors(NONE, ERROR_NORMAL_FOREGROUND, ERROR_NORMAL_BACKGROUND);
     }
 
+    /** Colour used for indicating warnings. */
+    static public final Color WARNING_COLOR = new Color(190, 110, 0);
+    /** Background colour used for focused warning items in lists. */
+    static public final Color WARNING_FOCUS_BACKGROUND = WARNING_COLOR.darker();
+    /** Text colour used for focused warning items in lists. */
+    static public final Color WARNING_FOCUS_FOREGROUND = Color.WHITE;
+    /** Background colour used for selected, non-focused warning items in lists. */
+    static public final Color WARNING_SELECT_BACKGROUND = new Color(250, 230, 200);
+    /** Text colour used for selected, non-focused warning items in lists. */
+    static public final Color WARNING_SELECT_FOREGROUND = WARNING_COLOR;
+    /** Background colour used for non-selected, non-focused warning items in lists. */
+    static public final Color WARNING_NORMAL_BACKGROUND = Color.WHITE;
+    /** Text colour used for non-selected, non-focused warning items in lists. */
+    static public final Color WARNING_NORMAL_FOREGROUND = WARNING_COLOR;
+    /** Text display colours to be used in warning mode. */
+    static public final Values.ColorSet WARNING_COLORS = new Values.ColorSet();
+    static {
+        WARNING_COLORS.putColors(FOCUSED, WARNING_FOCUS_FOREGROUND, WARNING_FOCUS_BACKGROUND);
+        WARNING_COLORS.putColors(SELECTED, WARNING_SELECT_FOREGROUND, WARNING_SELECT_BACKGROUND);
+        WARNING_COLORS.putColors(NONE, WARNING_NORMAL_FOREGROUND, WARNING_NORMAL_BACKGROUND);
+    }
+
     /** Colour used for indicating information in graphs. */
     static public final Color INFO_COLOR = new Color(0, 102, 255, 40);
     /** Background colour used for focused info items in lists. */

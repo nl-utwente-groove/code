@@ -60,15 +60,27 @@ import nl.utwente.groove.util.collect.CollectionComparator;
 public class FormatError
     implements Comparable<FormatError>, SelectableListEntry, Fixable, Cloneable {
     /**
-     * Constructs an error consisting of a message to be formatted.
+     * Constructs an error of severity {@link Severity#ERROR}, consisting of a
+     * message to be formatted.
      * The actual message is constructed by calling {@link String#format(String, Object...)}
-     * The parameters are interpreted as giving information about the error.
+     * The parameters are interpreted as giving information about the error;
+     * in particular, a {@link Severity} parameter sets the severity level.
      */
     public FormatError(String message, Object... pars) {
         this.message = String.format(message, pars);
         for (Object par : pars) {
             addContext(par);
         }
+    }
+
+    /**
+     * Constructs an error of a given severity, consisting of a message to be formatted.
+     * Equivalent to passing the severity among the parameters.
+     * @see #FormatError(String, Object...)
+     */
+    public FormatError(Severity severity, String message, Object... pars) {
+        this(message, pars);
+        this.severity = severity;
     }
 
     /**
@@ -85,6 +97,11 @@ public class FormatError
             e.getArguments().forEach(this::addContext);
             this.resourceKind = e.getResourceKind();
             e.getResourceNames().forEach(n -> addResource(getResourceKind(), n));
+            // an error wrapping another error is a contextualisation of the
+            // nested error, and so takes over its severity
+            this.severity = e.getSeverity();
+        } else if (par instanceof Severity s) {
+            this.severity = s;
         } else if (par instanceof Key k) {
             this.key = k;
         } else if (par instanceof GraphState s) {
@@ -115,12 +132,26 @@ public class FormatError
         }
     }
 
-    /** Compares the error graph, error object and message. */
+    /** Returns the severity level of this error. */
+    public final Severity getSeverity() {
+        return this.severity;
+    }
+
+    /** Indicates if this error is of severity {@link Severity#ERROR}. */
+    public final boolean isBlocking() {
+        return getSeverity().isBlocking();
+    }
+
+    /** The severity level of this error. */
+    private Severity severity = Severity.ERROR;
+
+    /** Compares the error graph, error object, severity and message. */
     @Override
     public boolean equals(Object obj) {
         boolean result;
         if (obj instanceof FormatError err) {
-            result = getArguments().equals(err.getArguments());
+            result = getSeverity() == err.getSeverity();
+            result &= getArguments().equals(err.getArguments());
             result &= toString().equals(err.toString());
         } else {
             result = false;
@@ -128,11 +159,13 @@ public class FormatError
         return result;
     }
 
-    /** The hash code is based on the error graph, error object and message. */
+    /** The hash code is based on the error graph, error object, severity and message. */
     @Override
     public int hashCode() {
         int result = toString().hashCode();
         result += getArguments().hashCode();
+        // the enum's own hash code is identity-based, hence not deterministic
+        result = result * 31 + getSeverity().ordinal();
         return result;
     }
 
@@ -356,7 +389,7 @@ public class FormatError
      * An optional graph map determines how the context arguments are mapped.
      */
     private FormatError clone(@Nullable Map<?,?> map) {
-        var result = new FormatError(toFormattableString());
+        var result = new FormatError(getSeverity(), toFormattableString());
         for (var arg : getArguments()) {
             var newArg = map != null && map.containsKey(arg)
                 ? map.get(arg)

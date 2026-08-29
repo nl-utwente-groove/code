@@ -29,6 +29,8 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.GraphMap;
 import nl.utwente.groove.util.AIGenerated;
@@ -134,12 +136,48 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
     }
 
     /**
-     * Throws an exception based on this error set if the error set is nonempty.
-     * Does nothing otherwise.
-     * @throws FormatException if this error set is nonempty.
+     * Returns the highest severity level occurring in this error set,
+     * or {@code null} if the set is empty.
+     */
+    public @Nullable Severity getSeverity() {
+        Severity result = null;
+        for (var error : getErrorSet()) {
+            var severity = error.getSeverity();
+            result = result == null
+                ? severity
+                : Severity.max(result, severity);
+        }
+        return result;
+    }
+
+    /**
+     * Indicates if this set contains at least one blocking error,
+     * i.e., one of severity {@link Severity#ERROR}.
+     * This is the test that decides whether the object the errors are about
+     * can still be used; a set that is nonempty but has no blocking errors
+     * only carries diagnostics.
+     */
+    public boolean hasErrors() {
+        return stream().anyMatch(FormatError::isBlocking);
+    }
+
+    /** Returns the subset of this error set consisting of the errors of a given severity. */
+    public FormatErrorSet filter(Severity severity) {
+        var result = new FormatErrorSet();
+        stream().filter(e -> e.getSeverity() == severity).forEach(result::add);
+        return result;
+    }
+
+    /**
+     * Throws an exception based on this error set if the set contains
+     * blocking errors. Does nothing otherwise; in particular, a set holding
+     * only warnings or informational messages does not throw, and the messages
+     * are expected to be retained by the object they are about.
+     * @throws FormatException if this error set has blocking errors
+     * @see #hasErrors()
      */
     public void throwException() throws FormatException {
-        if (!isEmpty()) {
+        if (hasErrors()) {
             throw new FormatException(this);
         }
     }

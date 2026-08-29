@@ -381,9 +381,9 @@ abstract public class ResourceTab extends JPanel {
         }
     }
 
-    /** Indicates if the displayed resource is currently in an error state. */
+    /** Indicates if the displayed resource currently has blocking errors. */
     final protected boolean hasErrors() {
-        return !getErrors().isEmpty();
+        return getErrors().hasErrors();
     }
 
     /** Creates and returns a Cancel button, for use on the tool bar. */
