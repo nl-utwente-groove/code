@@ -31,6 +31,7 @@ import java.util.TreeSet;
 
 import nl.utwente.groove.graph.AGraph;
 import nl.utwente.groove.graph.Edge;
+import nl.utwente.groove.graph.EdgeBundles;
 import nl.utwente.groove.graph.EdgeComparator;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Morphism;
@@ -182,10 +183,82 @@ public class IsoChecker {
                         .keySet()
                         .equals(codCertifier.getCertificateMap().keySet());
                 }
+                if (!result && !dom.isSimple()) {
+                    // in a non-simple graph, content-equal edges are distinct
+                    // objects, so graphs that differ only in the identity of
+                    // parallel copies have unequal edge sets; such graphs are
+                    // still isomorphic, which is all that is claimed here
+                    result = areBundleEqual(dom, cod, domCertifier, codCertifier);
+                    if (result) {
+                        equalBundlesCount++;
+                    }
+                }
             }
         }
         equalsTestReporter.stop();
         return result;
+    }
+
+    /**
+     * Tests if two graphs have the same node set and the same edges up to the
+     * identity of parallel copies. If so, the graphs are isomorphic: the
+     * identity on the nodes, combined with an arbitrary bijection between
+     * corresponding bundles of parallel edges, is an isomorphism. Note that
+     * this is a sufficient but not a necessary condition; a negative result
+     * says nothing.
+     * Only meaningful for non-simple graphs sharing their element factory,
+     * and with coinciding node counts.
+     * @param dom the first graph to be tested
+     * @param cod the second graph to be tested
+     * @param domCertifier certifier of the domain, if it has one; may be {@code null}
+     * @param codCertifier certifier of the codomain, if it has one; may be {@code null}
+     */
+    private boolean areBundleEqual(Graph dom, Graph cod, CertificateStrategy domCertifier,
+                                   CertificateStrategy codCertifier) {
+        // the node counts are known to coincide, so the node sets are equal as
+        // soon as every domain node occurs in the codomain
+        if (domCertifier == null || codCertifier == null) {
+            // for the aliasing hazard addressed by the copy, see areGraphEqual
+            Set<?> codNodeSet = new HashSet<Node>(cod.nodeSet());
+            if (!codNodeSet.containsAll(dom.nodeSet())) {
+                return false;
+            }
+        } else {
+            // the certificate maps were materialised for the equality test
+            // above, and their keys include all nodes
+            var codCertMap = codCertifier.getCertificateMap();
+            for (Node node : dom.nodeSet()) {
+                if (!codCertMap.containsKey(node)) {
+                    return false;
+                }
+            }
+        }
+        // Only one of the graphs is indexed; the other is compared edge by
+        // edge, and is not touched again afterwards. Which one is indexed is
+        // purely a matter of cost: an index pays off if the graph it belongs
+        // to is compared repeatedly, and is a dead loss for a graph that is
+        // compared once - the typical case in state space exploration, where
+        // one side is a freshly derived graph and the other a stored state.
+        // Hence: index a graph that has been indexed before, otherwise one
+        // that has a certifier to keep the index alive, preferring the
+        // codomain, which is the stored side in the state set.
+        EdgeBundles bundles;
+        Graph other;
+        if (domCertifier != null && domCertifier.hasEdgeBundles()) {
+            bundles = domCertifier.getEdgeBundles();
+            other = cod;
+        } else if (codCertifier != null) {
+            bundles = codCertifier.getEdgeBundles();
+            other = dom;
+        } else if (domCertifier != null) {
+            bundles = domCertifier.getEdgeBundles();
+            other = cod;
+        } else {
+            // no certifier to keep an index alive; the choice makes no difference
+            bundles = EdgeBundles.newInstance(cod);
+            other = dom;
+        }
+        return bundles.hasSameEdges(other);
     }
 
     /**
@@ -1022,6 +1095,14 @@ public class IsoChecker {
 
     /**
      * Returns the number of times that isomorphism was established on the basis
+     * of graph equality up to the identity of parallel edges.
+     */
+    static public int getEqualBundlesCount() {
+        return equalBundlesCount;
+    }
+
+    /**
+     * Returns the number of times that isomorphism was established on the basis
      * of (a one-to-one mapping betwen) certificates.
      */
     static public int getEqualCertsCount() {
@@ -1067,6 +1148,11 @@ public class IsoChecker {
      * found to be isomorphic.
      */
     static private int equalGraphsCount;
+    /**
+     * The number of times graphs were found to be isomorphic because their
+     * elements coincide up to the identity of parallel edges.
+     */
+    static private int equalBundlesCount;
     /**
      * The number of times graphs were compared based on their certificates and
      * found to be isomorphic.

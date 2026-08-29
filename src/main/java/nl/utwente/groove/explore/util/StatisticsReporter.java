@@ -281,6 +281,7 @@ public class StatisticsReporter extends AExplorationReporter {
         emit(HIGH, percFormat, "False pos 2:", falsePos2,
              (double) 100 * falsePos2 / (predicted - intCertOverlap));
         emit(HIGH, intFormat, "Equal graphs:", equalGraphCount);
+        emit(HIGH, intFormat, "Equal bundles:", IsoChecker.getEqualBundlesCount());
         emit(HIGH, intFormat, "Equal certificates:", equalCertsCount);
         emit(HIGH, intFormat, "Equal simulation:", equalSimCount);
         emit(HIGH, stringFormat, "Iterations:", CertificateStrategy.getIterateCount());

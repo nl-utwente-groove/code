@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import nl.utwente.groove.graph.Edge;
+import nl.utwente.groove.graph.EdgeBundles;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Node;
@@ -77,6 +78,31 @@ abstract public class CertificateStrategy {
         // return the computed certificate
         return this.graphCertificate;
     }
+
+    /**
+     * Tests if the edge bundles of the underlying graph have been computed.
+     * @see #getEdgeBundles()
+     */
+    boolean hasEdgeBundles() {
+        return this.edgeBundles != null;
+    }
+
+    /**
+     * Returns the edges of the underlying graph, grouped into bundles of
+     * parallel copies. Computed on demand, and kept here because the
+     * certifier's lifetime is that of the graph's cache; this is unrelated to
+     * the certificates themselves, and does not trigger their computation.
+     */
+    EdgeBundles getEdgeBundles() {
+        var result = this.edgeBundles;
+        if (result == null) {
+            this.edgeBundles = result = EdgeBundles.newInstance(getGraph());
+        }
+        return result;
+    }
+
+    /** The pre-computed edge bundles, if any. */
+    private EdgeBundles edgeBundles;
 
     /** Returns the node certificates calculated for the graph. */
     public NodeCertificate[] getNodeCertificates() {
