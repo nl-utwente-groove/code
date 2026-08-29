@@ -100,7 +100,7 @@ public class CallStack {
      * {@code null} entries (unset or undefined variables) are passed through
      * unchanged, without invoking the mapping.
      */
-    static public Object[] map(Object[] stack, Function<HostNode,HostNode> map) {
+    static public Object[] map(Object[] stack, Function<HostNode,@Nullable HostNode> map) {
         Object[] result = new Object[stack.length];
         boolean changed = false;
         boolean nested = isNested(stack);

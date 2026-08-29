@@ -211,7 +211,7 @@ public class Assignment implements Iterable<Binding> {
      * {@code null} entries (unset or undefined values) are passed through
      * unchanged, without invoking the mapping.
      */
-    static public HostNode[] map(HostNode[] record, Function<HostNode,HostNode> map) {
+    static public HostNode[] map(HostNode[] record, Function<HostNode,@Nullable HostNode> map) {
         HostNode[] result = new HostNode[record.length];
         boolean changed = false;
         var size = record.length;
