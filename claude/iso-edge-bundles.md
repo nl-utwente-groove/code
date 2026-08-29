@@ -99,11 +99,12 @@ computation itself is unavoidable — `GTS.StateSet.getCode` forces a graph
 certificate and a certificate map for every state in both modes, and the
 iteration histograms are within 1.5% of each other — but the partition maps
 are built lazily, only when a comparison gets past the equality shortcut: ~2.6k
-times in simple mode against ~78.6k in multi. That is the +441 ms, and slice 1
-avoids most of it. The JFR comment on the issue is right that the second-line
-test recovers nearly all of the overhead; the certificate *computation* is the
-only part it cannot touch. (Cache statistics show zero clears, collections and
-reconstructions in both modes, so soft-cache pressure plays no part.)
+times in simple mode against ~78.6k in multi. That is the +441 ms, and it is
+partly recoverable, unlike the certificate computation itself. (Cache
+statistics show zero clears, collections and reconstructions in both modes,
+so soft-cache pressure plays no part.) This does not make the JFR comment's
+"recovers nearly all of the overhead" come out right — see the slice-1
+outcome below.
 
 **43% of the append overhead is created-node reuse, not edges (gh #905).**
 The 33851 comparisons with differing node sets are the shadow of a collapse in
@@ -120,10 +121,9 @@ in its text, and makes it the other half of the `append` overhead.
 
 ## Plan
 
-**Slice 1 — second-line content-up-to-count equality.** An `EdgeBundles` value
-object (content key → copies, plus a summary hash), built once per graph and
-cached in `GraphCache` beside the certifier, computed on the fly for
-non-`AGraph` graphs. `areGraphEqual` keeps real set equality as its first line;
+**Slice 1 — second-line content-up-to-count equality.** An `EdgeBundles`
+index, computed on demand and kept with the graph's certifier.
+`areGraphEqual` keeps real set equality as its first line;
 on failure, and only for non-simple graphs passing the existing same-factory
 guard, it compares node sets plus edge-bundle multisets (summary hash first).
 Boolean path only — `getIsomorphism` untouched. Sound because equal node sets
@@ -132,6 +132,41 @@ Order-independent, so no determinism exposure. No identity-morphism hazard:
 `MatchApplier.apply` already marks every collapse-onto-existing-state
 transition as a symmetry when iso checking is on.
 Target: the 44219 comparisons and most of the partition-map time on `append`.
+
+**Slice 1 delivered (2026-08-29).** Net −7% on `append-4-list-8` (4052 →
+3763 ms), isomorphism checking −33% (2228 → 1503 ms), 44219 comparisons
+answered as predicted, state and transition counts unchanged. That is well
+short of "nearly all of the overhead": half the overhead is #905's
+node-identity problem, and the second line has an O(E) cost per comparison
+that the equality shortcut does not — the domain of a comparison is always a
+freshly derived graph, so indexing *it* is pure loss (measured: 460 ms of the
+810 ms that a symmetric map-versus-map implementation cost, which was a net
+wash). The implementation therefore indexes one graph and streams the other's
+edges through that index, allocating one counter per bundle and nothing else;
+node sets are compared by probing the codomain's certificate map, which the
+equality test has already materialised. On `As-and-Bs`, where the second line
+never succeeds, it costs +4%, to be repaid by slice 2.
+
+Which graph gets indexed matters, and the obvious rule — index the codomain —
+would have rested on an undocumented convention: that the domain of a
+comparison is the fresh graph and the codomain the stored one. That holds
+through three hops (`TreeHashSet.areEqual(newKey, oldKey)` →
+`GTS.StateSet.areEqual` → `IsoChecker.areIsomorphic`), was stated nowhere and
+enforced nowhere, and a caller reversing it would have silently indexed the
+throw-away side. Two answers, both applied: the choice is made from what the
+graphs actually carry (index one that has been indexed before, else one with a
+certifier to keep an index alive, preferring the codomain), so it self-corrects
+for any caller that compares the same graph twice; and the convention is now
+documented where it originates, in `TreeHashSet.areEqual`, with
+`GTS.StateSet.areEqual`'s parameters renamed to match. Renaming the checker's
+own `dom`/`cod` was rejected: they are right for the morphism-returning half of
+the class, whose callers have no new/old relation at all.
+
+The index lives in `CertificateStrategy` rather than in `GraphCache`, so that
+no further specialised accessor is added to `AGraph` (`hasCertifier`/
+`getCertifier` are already there for want of an alternative), and because it is
+package-visible to the checker only. Slice 2 needs the bundles inside the
+certificate machinery in any case.
 
 **Slice 2 — bundle certificates.** One `EdgeCertificate` per bundle, carrying
 its multiplicity, replacing one per copy. Parallel copies provably carry
