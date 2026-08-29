@@ -119,9 +119,8 @@ public class Simulator implements SimulatorListener {
         // fail fast on a second instance: without this guard the violation
         // only surfaces as an obscure UserSettings error during start()
         if (instantiated) {
-            throw Exceptions
-                .illegalState("Only one Simulator can be created per JVM: UserSettings, "
-                    + "GraphPreviewDialog and DialogOracle are bound to a single instance");
+            // UserSettings GraphPreviewDialog and DialogOracle are bound to a single instance
+            throw Exceptions.illegalState("Only one Simulator can be created per JVM");
         }
         instantiated = true;
         // the simulator can export by rendering, so it contributes
