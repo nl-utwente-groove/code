@@ -14,11 +14,13 @@
  *
  * $Id$
  */
-package nl.utwente.groove.graph;
+package nl.utwente.groove.graph.iso;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.graph.Edge;
+import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.util.AIGenerated;
 
 /**
@@ -27,11 +29,12 @@ import nl.utwente.groove.util.AIGenerated;
  * and target, and only the size of each bundle is recorded.
  * <p>
  * In a non-simple graph, content-equal edges are distinct objects (their
- * numbers differ, see {@link ANumberedEdge}), so two graphs that differ only
+ * numbers differ, see {@link nl.utwente.groove.graph.ANumberedEdge}), so two
+ * graphs that differ only
  * in the identity of such copies have unequal edge sets. They are nevertheless
  * isomorphic, by the identity on the nodes and any per-bundle bijection on the
  * edges; comparing bundles rather than edges recognises this (see
- * {@link nl.utwente.groove.graph.iso.IsoChecker}).
+ * {@link IsoChecker}).
  * <p>
  * An index is built for one graph and compared against the <i>edges</i> of
  * another ({@link #hasSameEdges}), rather than against a second index: in the
@@ -44,7 +47,7 @@ import nl.utwente.groove.util.AIGenerated;
  */
 @NonNullByDefault
 @AIGenerated("Claude Opus 5, 2026-08")
-public class EdgeBundles {
+class EdgeBundles {
     /** Constructs the bundle index of a given graph. */
     private EdgeBundles(Graph graph) {
         int edgeCount = graph.edgeCount();
@@ -116,7 +119,7 @@ public class EdgeBundles {
      * to the identity of parallel copies. Only the edges of the parameter are
      * inspected; the graph of the index is not touched.
      */
-    public boolean hasSameEdges(Graph graph) {
+    boolean hasSameEdges(Graph graph) {
         if (graph.edgeCount() != this.edgeCount) {
             return false;
         }
@@ -162,7 +165,7 @@ public class EdgeBundles {
     private final int mask;
 
     /** Returns the bundle index of a given graph. */
-    static public EdgeBundles newInstance(Graph graph) {
+    static EdgeBundles newInstance(Graph graph) {
         return new EdgeBundles(graph);
     }
 }

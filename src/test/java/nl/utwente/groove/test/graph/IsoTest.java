@@ -131,6 +131,39 @@ public class IsoTest {
         Assert.assertEquals(dom.edgeCount(), new HashSet<>(iso.edgeMap().values()).size());
     }
 
+    /** Tests that graphs which differ only in the identity of their parallel
+     * edges are recognised as isomorphic by the equality test, rather than by
+     * the more expensive certificate machinery.
+     */
+    @Test
+    public void testRenumberedParallelEdges() {
+        HostFactory factory = HostFactory.newInstance(TypeFactory.newInstance(), false);
+        DefaultHostGraph one = new DefaultHostGraph("one", factory);
+        HostNode source = one.addNode();
+        HostNode target = one.addNode();
+        one.addEdge(source, "a", target);
+        one.addEdge(source, "a", target);
+        // the same graph, but with freshly minted (hence differently
+        // numbered) copies of the parallel edges
+        DefaultHostGraph two = new DefaultHostGraph("two", factory);
+        two.addNode(source);
+        two.addNode(target);
+        two.addEdge(source, "a", target);
+        two.addEdge(source, "a", target);
+        Assert.assertEquals(2, two.edgeCount());
+        Assert.assertNotEquals(one.edgeSet(), two.edgeSet());
+        int bundleCount = IsoChecker.getEqualBundlesCount();
+        Assert.assertTrue(checker.areIsomorphic(one, two));
+        Assert.assertEquals(bundleCount + 1, IsoChecker.getEqualBundlesCount());
+        // the same nodes and the same number of edges, but a different bundle
+        DefaultHostGraph three = new DefaultHostGraph("three", factory);
+        three.addNode(source);
+        three.addNode(target);
+        three.addEdge(source, "a", target);
+        three.addEdge(target, "a", source);
+        Assert.assertFalse(checker.areIsomorphic(one, three));
+    }
+
     /** Creates a multigraph with three parallel a-loops and two parallel
      * b-edges. The shared edge certificates of the parallel copies force the
      * isomorphism to be constructed by the search plan rather than directly

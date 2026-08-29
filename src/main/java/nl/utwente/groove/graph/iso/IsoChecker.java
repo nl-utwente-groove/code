@@ -31,7 +31,6 @@ import java.util.TreeSet;
 
 import nl.utwente.groove.graph.AGraph;
 import nl.utwente.groove.graph.Edge;
-import nl.utwente.groove.graph.EdgeBundles;
 import nl.utwente.groove.graph.EdgeComparator;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Morphism;

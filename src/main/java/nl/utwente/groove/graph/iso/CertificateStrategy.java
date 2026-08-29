@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 import nl.utwente.groove.graph.Edge;
-import nl.utwente.groove.graph.EdgeBundles;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Node;
