@@ -16,42 +16,36 @@
  */
 package nl.utwente.groove.test.gui;
 
+import static nl.utwente.groove.test.gui.SimulatorFixture.frame;
+import static nl.utwente.groove.test.gui.SimulatorFixture.getModel;
+import static nl.utwente.groove.test.gui.SimulatorFixture.loadGrammar;
+import static nl.utwente.groove.test.gui.SimulatorFixture.waitFor;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.awt.Component;
-import java.awt.GraphicsEnvironment;
-import java.lang.Thread.UncaughtExceptionHandler;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.function.BooleanSupplier;
 
 import javax.swing.SwingUtilities;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.io.TempDir;
 import org.netbeans.jemmy.ComponentChooser;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
-import org.netbeans.jemmy.operators.JFrameOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 
@@ -68,14 +62,14 @@ import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.io.FileUtils;
 
 /**
- * GUI smoke tests: launch the real Simulator and drive it through the
- * Jemmy 2 UI robot, asserting on the {@link SimulatorModel} state that
- * results. The Simulator is launched once for the whole class (it is a
- * one-instance-per-JVM design: {@link nl.utwente.groove.gui.UserSettings}
- * guards against double initialisation); each test starts by loading a
- * fresh scratch copy of the ferryman grammar, so tests do not see each
- * other's edits. Uncaught exceptions on the event dispatch thread fail the
- * test that provoked them.
+ * GUI smoke tests: drive the real Simulator through the Jemmy 2 UI robot,
+ * asserting on the {@link SimulatorModel} state that results. The Simulator
+ * instance is owned by the {@link SimulatorFixture} extension, which shares
+ * it across all GUI test classes (it is a one-instance-per-JVM design);
+ * each test starts by loading a fresh scratch copy of the ferryman grammar,
+ * so tests do not see each other's edits. Uncaught exceptions on the event
+ * dispatch thread fail the test that provoked them (also handled by the
+ * fixture).
  * <p>
  * The tests target menus, trees and dialogs only: the JGraph canvas is not
  * widget-addressable. Actions that block the event dispatch thread behind a
@@ -85,8 +79,6 @@ import nl.utwente.groove.util.io.FileUtils;
  * <p>
  * Excluded from the default test run via the {@link SlowTest} and
  * {@link GuiTest} categories, and skipped in headless environments.
- * Requires the in-memory preference isolation set up by the surefire
- * {@code argLine} (see {@link InMemoryPreferencesFactory}).
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -94,20 +86,8 @@ import nl.utwente.groove.util.io.FileUtils;
 @NonNullByDefault
 @Tag(SlowTest.TAG)
 @Tag(GuiTest.TAG)
+@ExtendWith(SimulatorFixture.class)
 public class SimulatorGuiTest {
-    /** System property from which {@link java.util.prefs.Preferences} takes its factory. */
-    private static final String PREFS_FACTORY_PROPERTY = "java.util.prefs.PreferencesFactory";
-
-    static {
-        // normally set on the JVM command line (surefire argLine, Eclipse
-        // launch); setting it here as well covers runners that omit it,
-        // provided nothing has touched java.util.prefs yet
-        if (System.getProperty(PREFS_FACTORY_PROPERTY) == null) {
-            System
-                .setProperty(PREFS_FACTORY_PROPERTY, InMemoryPreferencesFactory.class.getName());
-        }
-    }
-
     /** Directory containing the sample grammars used as fixtures. */
     private static final String SAMPLES = "junit/samples";
     /** Grammar every test starts on (scratch copy). */
@@ -118,70 +98,11 @@ public class SimulatorGuiTest {
     private static final int FERRYMAN_STATES = 114;
     /** Known transition count of the fully explored {@link #FIRST_GRAMMAR}. */
     private static final int FERRYMAN_TRANSITIONS = 198;
-    /** Poll timeout for {@link #waitFor(String, BooleanSupplier)}, in ms. */
-    private static final long TIMEOUT = 60_000;
-
-    /**
-     * Checks the environment, quiets Jemmy's default stdout chatter and
-     * launches the Simulator (once for the whole class).
-     */
-    @BeforeAll
-    static void launchSimulator() throws Exception {
-        assumeFalse(GraphicsEnvironment.isHeadless(), "GUI tests need a display");
-        assertTrue(InMemoryPreferencesFactory.isInstalled(),
-                   "Preferences are not isolated: run with -D" + PREFS_FACTORY_PROPERTY + "="
-                       + InMemoryPreferencesFactory.class.getName()
-                       + " (plus the --add-exports to java.prefs), as the surefire argLine"
-                       + " and the 'GROOVE - all JUnit tests' launch do");
-        JemmyProperties.setCurrentOutput(TestOut.getNullOutput());
-        oldHandler = Thread.getDefaultUncaughtExceptionHandler();
-        Thread.setDefaultUncaughtExceptionHandler((t, e) -> EDT_ERRORS.add(e));
-        SwingUtilities.invokeAndWait(() -> {
-            var sim = new Simulator();
-            simulator = sim;
-            sim.start();
-        });
-        frame = new JFrameOperator("Production Simulator");
-    }
-
-    /** Disposes the Simulator frame and restores the exception handler. */
-    @AfterAll
-    static void disposeSimulator() throws Exception {
-        var sim = simulator;
-        if (sim != null) {
-            SwingUtilities.invokeAndWait(() -> sim.getFrame().dispose());
-        }
-        Thread.setDefaultUncaughtExceptionHandler(oldHandler);
-    }
 
     /** Loads a fresh scratch copy of {@link #FIRST_GRAMMAR} into the Simulator. */
     @BeforeEach
     void loadFirstGrammar() throws Exception {
-        EDT_ERRORS.clear();
         loadGrammar(copyGrammar(FIRST_GRAMMAR));
-    }
-
-    /** Fails on uncaught EDT exceptions provoked by the test. */
-    @AfterEach
-    void checkEventThreadErrors() {
-        assertEquals(List.of(), EDT_ERRORS, "uncaught exceptions on the event dispatch thread");
-    }
-
-    /**
-     * Loads a grammar directory into the running Simulator, through the same
-     * (synchronous) action the File menu uses, but without the file chooser.
-     */
-    private void loadGrammar(Path grammarDir) throws Exception {
-        SwingUtilities.invokeAndWait(() -> {
-            try {
-                simulator().getActions().getLoadGrammarAction().load(grammarDir.toFile());
-            } catch (IOException e) {
-                throw new IllegalStateException(e);
-            }
-        });
-        var store = getModel().getStore();
-        assertNotNull(store);
-        assertEquals(grammarDir.toFile(), store.getLocation());
     }
 
     /**
@@ -259,29 +180,23 @@ public class SimulatorGuiTest {
         waitFor("redo to raise the priority again", () -> priority(rule) == raised);
     }
 
+    /**
+     * The Simulator is a one-instance-per-JVM design; a second construction
+     * (here, next to the instance owned by {@link SimulatorFixture}) must
+     * fail fast with a diagnostic naming the constraint.
+     */
+    @Test
+    void secondSimulatorConstructionFailsFast() throws Exception {
+        SwingUtilities.invokeAndWait(() -> {
+            var error = assertThrows(IllegalStateException.class, Simulator::new);
+            assertTrue(String.valueOf(error.getMessage()).contains("one Simulator"));
+        });
+    }
+
     /** Copies a sample grammar into the scratch directory and returns the copy. */
     private Path copyGrammar(String name) throws IOException {
         Path result = tmp().resolve(name);
         FileUtils.copyDirectory(new File(SAMPLES, name), result.toFile(), false);
-        return result;
-    }
-
-    /** Returns the running Simulator. */
-    private static Simulator simulator() {
-        var result = simulator;
-        assert result != null; // launched in the class setup
-        return result;
-    }
-
-    /** Returns the simulator model of the running Simulator. */
-    private static SimulatorModel getModel() {
-        return simulator().getModel();
-    }
-
-    /** Returns the operator for the Simulator frame. */
-    private static JFrameOperator frame() {
-        var result = frame;
-        assert result != null; // created in the class setup
         return result;
     }
 
@@ -330,30 +245,8 @@ public class SimulatorGuiTest {
             : -1;
     }
 
-    /** Polls a condition until it holds, failing after {@link #TIMEOUT} ms. */
-    private static void waitFor(String description,
-                                BooleanSupplier condition) throws InterruptedException {
-        long deadline = System.currentTimeMillis() + TIMEOUT;
-        while (!condition.getAsBoolean()) {
-            if (System.currentTimeMillis() > deadline) {
-                fail("Timed out waiting for " + description);
-            }
-            Thread.sleep(100);
-        }
-    }
-
     /** Scratch directory for the grammar copies; injected by JUnit per test. */
     @TempDir
     @Nullable
     Path tmp;
-
-    /** The Simulator under test; launched once, in the class setup. */
-    private static @Nullable Simulator simulator;
-    /** Operator for the Simulator frame. */
-    private static @Nullable JFrameOperator frame;
-    /** Uncaught EDT exceptions collected during the tests. */
-    private static final List<Throwable> EDT_ERRORS
-        = Collections.synchronizedList(new ArrayList<>());
-    /** Default uncaught-exception handler to restore after the class. */
-    private static @Nullable UncaughtExceptionHandler oldHandler;
 }
