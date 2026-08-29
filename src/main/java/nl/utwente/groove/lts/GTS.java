@@ -1082,31 +1082,37 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
         /**
          * First compares the control locations, then calls
          * {@link IsoChecker#areIsomorphic(Graph, Graph)}.
+         * The parameter names reflect the roles fixed by
+         * {@link TreeHashSet#areEqual}: the new state is the one being added,
+         * the old state one that this set already holds. The isomorphism
+         * checker is passed them in that order, and invests in the old state,
+         * which is the one that will be compared again.
          */
         @Override
-        protected boolean areEqual(GraphState myState, GraphState otherState) {
+        protected boolean areEqual(GraphState newState, GraphState oldState) {
             if (this.collapse == COLLAPSE_NONE) {
-                return myState == otherState;
+                return newState == oldState;
             }
-            if (CHECK_CONTROL_LOCATION && myState.getPrimeFrame() != otherState.getPrimeFrame()) {
+            if (CHECK_CONTROL_LOCATION && newState.getPrimeFrame() != oldState.getPrimeFrame()) {
                 return false;
             }
-            Object[] myCallStack = myState.getPrimeStack();
-            Object[] otherCallStack = otherState.getPrimeStack();
-            HostGraph myGraph = myState.getGraph();
-            HostGraph otherGraph = otherState.getGraph();
+            Object[] newCallStack = newState.getPrimeStack();
+            Object[] oldCallStack = oldState.getPrimeStack();
+            HostGraph newGraph = newState.getGraph();
+            HostGraph oldGraph = oldState.getGraph();
             if (this.collapse == COLLAPSE_EQUAL) {
                 // check for equality of the bound nodes
-                if (!CallStack.areEqual(myCallStack, otherCallStack)) {
+                if (!CallStack.areEqual(newCallStack, oldCallStack)) {
                     return false;
                 }
                 // check for graph equality
-                Set<?> myNodeSet = new HostNodeSet(myGraph.nodeSet());
-                Set<?> myEdgeSet = new HostEdgeSet(myGraph.edgeSet());
-                return myNodeSet.equals(otherGraph.nodeSet())
-                    && myEdgeSet.equals(otherGraph.edgeSet());
+                Set<?> newNodeSet = new HostNodeSet(newGraph.nodeSet());
+                Set<?> newEdgeSet = new HostEdgeSet(newGraph.edgeSet());
+                return newNodeSet.equals(oldGraph.nodeSet())
+                    && newEdgeSet.equals(oldGraph.edgeSet());
             } else {
-                return this.checker.areIsomorphic(myGraph, otherGraph, myCallStack, otherCallStack);
+                return this.checker
+                    .areIsomorphic(newGraph, oldGraph, newCallStack, oldCallStack);
             }
         }
 

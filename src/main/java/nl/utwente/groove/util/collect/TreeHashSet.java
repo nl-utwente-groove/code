@@ -613,6 +613,12 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * The default implementation calls <code>areEqual(key, otherKey)</code> on
      * the equator. If a the {@link #HASHCODE_EQUATOR} is set during
      * construction time, this method is <i>not</i> called.
+     * The roles of the parameters are fixed: the first is always the key that
+     * is being looked up, added or removed, the second one already in the set.
+     * Overriding implementations may rely on this, for instance to decide
+     * which of the two is worth investing in.
+     * @param newKey the key passed in by the caller of the set operation
+     * @param oldKey a key already stored in this set
      */
     protected boolean areEqual(T newKey, T oldKey) {
         return this.equator.areEqual(newKey, oldKey);
