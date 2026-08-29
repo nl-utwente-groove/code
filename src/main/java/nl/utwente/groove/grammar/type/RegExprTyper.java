@@ -400,9 +400,9 @@ public class RegExprTyper implements RegExprCalculator<Result> {
             return this.errors;
         }
 
-        /** Indicates if this relation has errors. */
+        /** Indicates if this relation has blocking errors. */
         public boolean hasErrors() {
-            return !getErrors().isEmpty();
+            return getErrors().hasErrors();
         }
 
         /** Copies this relation (including the errors) into another. */

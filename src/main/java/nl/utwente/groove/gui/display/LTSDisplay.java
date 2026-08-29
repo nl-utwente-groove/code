@@ -487,7 +487,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
                     @Override
                     public void run() {
                         GrammarModel grammar = getSimulatorModel().getGrammar();
-                        if (grammar != null && grammar.getErrors().isEmpty()) {
+                        if (grammar != null && !grammar.hasErrors()) {
                             getActions().getStartSimulationAction().execute();
                         }
                     }

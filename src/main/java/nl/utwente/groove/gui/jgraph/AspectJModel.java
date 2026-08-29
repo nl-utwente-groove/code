@@ -255,6 +255,11 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
             jCell.getErrors().clear();
         }
         for (FormatError error : getResourceModel().getErrors()) {
+            if (!error.isBlocking()) {
+                // non-blocking diagnostics are shown in the error list panel
+                // but do not paint the cell in the error colours
+                continue;
+            }
             for (Element errorObject : error.getElements()) {
                 AspectJCell errorCell = getJCell(errorObject);
                 if (errorCell == null && errorObject instanceof Edge e) {

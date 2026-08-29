@@ -86,6 +86,14 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
             Randomness.setMasterSeed(this.seed);
         }
         Transformer transformer = this.transformer = computeTransformer();
+        // surface non-blocking grammar diagnostics; blocking errors
+        // make the exploration itself fail with an exception
+        var grammarErrors = transformer.getGrammarModel().getErrors();
+        if (!grammarErrors.hasErrors()) {
+            for (var error : grammarErrors) {
+                emit("%s%n", error);
+            }
+        }
         transformer.addListener(getReporter());
         if (!getVerbosity().isLow()) {
             transformer.addListener(new GenerateProgressListener());

@@ -191,9 +191,9 @@ class HostModelMorphism {
 
     private final HostGraph target;
 
-    /** Checks whether the set of errors is non-empty. */
+    /** Checks whether the set of errors contains blocking errors. */
     boolean hasErrors() {
-        return !getErrors().isEmpty();
+        return getErrors().hasErrors();
     }
 
     /**
