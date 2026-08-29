@@ -89,27 +89,51 @@ top-level `node x; merge; bind(out x);` triggers it just as well, no recipe
 needed). Without `-ea`, `HashMap.get(null)` → null → `internalToExternal(null,
 null)` → null: correct null-propagation. Also an over-strict assert.
 
-## Options for the deletion semantics (F1) — decision needed
+## Options for the deletion semantics (F1) — decided 2026-08-29
 
 1. **Out-parameter becomes undefined (null)** — consistent with what the stack
-   machinery already does everywhere else. Fix `getOutValuesFromFinalTrans` to
-   apply the morphism mapping unconditionally (dropping the `isIdentity` shortcut,
-   which is what silently keeps dangling nodes today), let missing entries map to
-   null, skip null inputs. Then audit downstream consumers of
-   `RecipeTransition` arguments (label text, GUI, serialisation) for null-safety.
+   machinery already does everywhere else. **CHOSEN (Arend, 2026-08-29)** and
+   implemented, see below.
 2. **Runtime error** (FormatException-like) when a recipe completes with a deleted
-   out-parameter value. Heavy: the recipe body itself executed successfully;
+   out-parameter value. Rejected: the recipe body itself executed successfully;
    aborting exploration for this seems disproportionate, and the target-state path
    would need the same detection.
 3. **Static rejection** by the control compiler: not viable — whether the deleted
    node coincides with the bound one is a runtime property of the match.
 
-F2 and F3 are assert bugs to fix regardless of the F1 decision (skip null slots
-at StateCache:801-805; null-guard `MergeMap.getNode`).
+## Implementation (2026-08-29, this branch)
 
-Counterexample grammars are trivially reconstructible from the descriptions above;
-they should become junit fixtures (with expected outcomes) once the F1 semantics
-is decided.
+**Null out-parameters (F1, F2, F3).** `getOutValuesFromFinalTrans` now maps the
+out-values through the transition morphism unconditionally: a node deleted by the
+final step has no image and becomes null, a merged node follows the merge, and a
+target-state isomorphism is applied as before; the former `isIdentity()` shortcut
+was what silently kept dangling deleted nodes. `Assignment.map` and
+`CallStack.map` pass null entries through instead of feeding them to the mapping —
+the latter fixes F3 at its root (the null never reaches `MergeMap.getNode`),
+so the type assert there stays. Argument consumers audited for null:
+`Action.toLabelString` already rendered null as `_`; `Proposition.toArg` converts
+null to the wildcard argument (matching the label-text round trip);
+`RecipeEvent.compareTo` orders null arguments first (deterministically);
+`Arrays`-based equality/hashing was already null-safe.
+
+**Recipe boundary check.** Rule applicability for undefined in-arguments now
+applies at the recipe boundary too: `MatchCollector.extractBinding` evaluates the
+new `Step.getRecipeParAssign()` — the recipe-call parameter assignment of a step
+that enters a recipe, composed through outer entered procedure switches exactly
+like `Step.getParAssign()`, empty for steps not entering a recipe — and declares
+the step matchless if any non-`NONE` binding evaluates to null. Consequences: a
+recipe called with a null in-argument no longer starts (no transient exploration,
+no absent states), and a body path avoiding the variable no longer makes the
+recipe applicable despite the undefined argument. Deliberate limitation: a null
+that arises only through composition (e.g. an in-argument fed from an enclosing
+procedure's still-unbound out-parameter) yields a `NONE` binding and is skipped —
+such cases degrade to the previous post-hoc absence behaviour.
+
+**Tests.** `junit/control/nullargs.gps` + `RecipeNullArgsTest` cover the plain
+null-variable deadlock, the boundary check (recipe must not start), both
+out-parameter deletion variants (merger/non-identity and pure-delete/identity
+morphism, both formerly broken in different ways), and an in-parameter surviving
+a merging final step (the F2 false alarm).
 
 ## Null-variable semantics outside recipes (verified 2026-08-29)
 
