@@ -22,15 +22,18 @@ import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.gui.jgraph.AspectJCell;
 import nl.utwente.groove.gui.jgraph.JCell;
 import nl.utwente.groove.gui.jgraph.JGraph;
+import nl.utwente.groove.util.parse.Severity;
 
 /**
- * Refresher for the {@link VisualKey#ERROR} value of a {@link AspectJCell}.
+ * Refresher for the {@link VisualKey#ERROR} value of a {@link AspectJCell}:
+ * the maximum severity of the cell's diagnostics, or {@code null} if there
+ * are none.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class ErrorValue implements VisualValue<Boolean> {
+public class ErrorValue implements VisualValue<Severity> {
     @Override
-    public <G extends @NonNull Graph> Boolean get(JGraph<G> jGraph, JCell<G> cell) {
-        return cell.hasErrors();
+    public <G extends @NonNull Graph> Severity get(JGraph<G> jGraph, JCell<G> cell) {
+        return cell.getErrorSeverity();
     }
 }
