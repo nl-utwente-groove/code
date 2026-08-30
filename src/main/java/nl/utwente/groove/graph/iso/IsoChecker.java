@@ -904,18 +904,9 @@ public class IsoChecker {
     }
 
     /**
-     * Tests if the nodes of a graph have all different certificates.
-     * @param certifier the graph to be tested
-     * @return <code>true</code> if the graph has distinct
-     *         node certificates
-     */
-    private boolean hasDiscreteNodeCerts(CertificateStrategy certifier) {
-        return certifier.getNodePartitionMap().isOneToOne()
-            && certifier.getEdgePartitionMap().isOneToOne();
-    }
-
-    /**
-     * Tests if the elements of a graph have all different certificates. If this
+     * Tests if the elements of a graph have all different certificates, where
+     * for edges "all different" is up to parallelism: the certificate of a
+     * bundle of parallel edges counts as one. If this
      * holds, then
      * {@link #areCertEqual(CertificateStrategy, CertificateStrategy, Object[], Object[])} can be
      * called to check for isomorphism.
@@ -924,7 +915,8 @@ public class IsoChecker {
      *         certificates
      */
     private boolean hasDiscreteCerts(CertificateStrategy certifier) {
-        return hasDiscreteNodeCerts(certifier) && certifier.getEdgePartitionMap().isOneToOne();
+        return certifier.getNodePartitionMap().isOneToOne()
+            && certifier.getEdgePartitionMap().isOneToOne();
     }
 
     /**
