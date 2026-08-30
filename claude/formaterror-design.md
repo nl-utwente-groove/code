@@ -7,6 +7,20 @@ by `FormatError`, `FormatErrorSet`, `SearchResult` and `SelectableListEntry`.
 Also implements the mechanics of gh #885 (error severity), which reworks the
 same construction surface.*
 
+*2026-08-30 update: the branch was rebased onto `format-error-severity`,
+which had independently implemented the gh #885 severity mechanics (as a
+top-level `util.parse.Severity` enum with a dedicated constructor,
+blocking-only `hasErrors()`, incremental max-severity accumulation in
+`FormatErrorSet`) plus everything this note deferred as adoption work:
+severity-aware decoration of graph cells, resource tabs and tree entries,
+a first warning producer (gh #904), and tests. That branch's version is
+authoritative; this branch's own severity commit was dropped in the rebase,
+except for its backing-set equality fix and its context-mechanism test
+coverage (now `FormatErrorContextTest`). The severity section below is the
+original design and matches the merged result in approach; where details
+differ (e.g. the dedicated severity constructor), the severity branch
+prevails.*
+
 ## Constraints found in the code
 
 - The error family (`FormatError`, `FormatErrorSet`, `FormatException`) cannot
@@ -91,8 +105,8 @@ renaming the class is hundreds of sites of churn; kept as-is, documented.
   caught this: `OracleParser` passes a null argument).
 - `Collections.unmodifiableCollection` does not implement value equality;
   `FormatError.equals` must compare the backing sets, not the
-  `getContext()` views. (Bug in the first cut, fixed in the severity
-  commit, covered by `FormatErrorTest`.)
+  `getContext()` views. (Bug in the first cut, fixed in a follow-up
+  commit, covered by `FormatErrorContextTest`.)
 - `@NonNullByDefault` on `FormatError`/`FormatErrorSet` required declaring
   the varargs as `@Nullable Object...` — hundreds of existing call sites
   legitimately pass nullable arguments.
