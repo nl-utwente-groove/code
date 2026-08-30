@@ -49,11 +49,9 @@ public class NodeRelation implements Cloneable {
     /**
      * Adds a pair to the relation, consisting of the source and target
      * of a given edge.
-     * The return value indicates if the pair was actually added or was already
-     * in the relation.
      * @param edge the source of the pair to be added
-     * @return <tt>true</tt> if the pair was actually added, <tt>false</tt> if
-     *         it was already in the relation.
+     * @return <tt>true</tt> if the relation changed as a result, meaning that
+     *         the pair was new or the support of an existing pair was extended.
      */
     public boolean addRelated(Edge edge) {
         return addRelated(createEntry(edge));
@@ -193,7 +191,10 @@ public class NodeRelation implements Cloneable {
         this.allSupport.clear();
     }
 
-    /** Adds a given entry to this relation. */
+    /** Adds a given entry to this relation, merging supports of equal pairs.
+     * @return <tt>true</tt> if the relation changed as a result, meaning that
+     *         the pair was new or the support of an existing pair was extended.
+     */
     protected boolean addRelated(Entry entry) {
         boolean result;
         addToEntryMap(entry);
@@ -335,16 +336,23 @@ public class NodeRelation implements Cloneable {
             return result;
         }
 
-        /** Entries can be hash keys, we revert to object identity. */
+        /**
+         * Entries are equal if they relate the same pair of nodes; the
+         * (mutable) support set is not part of the identity. This is what
+         * makes {@link NodeRelation#addRelated(Entry)} merge the support of
+         * duplicate pairs rather than accumulate them, and hence what makes
+         * {@link NodeRelation#doTransitiveClosure()} terminate.
+         */
         @Override
         public boolean equals(Object obj) {
-            return this == obj;
+            return this == obj || obj instanceof Entry other && source().equals(other.source())
+                && target().equals(other.target());
         }
 
-        /** Entries can be hash keys, we revert to object identity. */
+        /** Hash code consistent with {@link #equals}, based on source and target only. */
         @Override
         public int hashCode() {
-            return System.identityHashCode(this);
+            return source().hashCode() * 31 + target().hashCode();
         }
 
         /** Augments the support of this entry with a single element. */
