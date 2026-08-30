@@ -94,7 +94,12 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
     */
     public FormatErrorSet add(FormatError e) {
         assert !isFixed();
-        getErrorSet().add(e.clone().apply(getProjection()));
+        var error = e.clone().apply(getProjection());
+        getErrorSet().add(error);
+        var severity = this.severity;
+        this.severity = severity == null
+            ? error.getSeverity()
+            : Severity.max(severity, error.getSeverity());
         return this;
     }
 
@@ -128,6 +133,7 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
         assert !isFixed();
         getErrorSet().clear();
         getProjection().clear();
+        this.severity = null;
     }
 
     /** Indicates if this error set is empty. */
@@ -140,15 +146,14 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
      * or {@code null} if the set is empty.
      */
     public @Nullable Severity getSeverity() {
-        Severity result = null;
-        for (var error : getErrorSet()) {
-            var severity = error.getSeverity();
-            result = result == null
-                ? severity
-                : Severity.max(result, severity);
-        }
-        return result;
+        return this.severity;
     }
+
+    /** The highest severity level occurring in this error set, accumulated
+     * as errors are added; {@code null} as long as the set is empty.
+     * Sound because errors can only be added or cleared, never removed,
+     * and the stored clones are private to the set. */
+    private @Nullable Severity severity;
 
     /**
      * Indicates if this set contains at least one blocking error,
@@ -158,7 +163,7 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
      * only carries diagnostics.
      */
     public boolean hasErrors() {
-        return stream().anyMatch(FormatError::isBlocking);
+        return this.severity == Severity.ERROR;
     }
 
     /** Returns the subset of this error set consisting of the errors of a given severity. */
@@ -201,6 +206,10 @@ public class FormatErrorSet implements Iterable<FormatError>, Fixable {
         for (var error : errors) {
             List<Object> key = new ArrayList<>();
             key.add(error.toString());
+            // errors of different severities never collapse; this also keeps
+            // the accumulated maximum severity exact (the ordinal enters the
+            // key rather than the enum itself, whose hash is identity-based)
+            key.add(error.getSeverity().ordinal());
             error.getElements().stream().filter(context).forEach(key::add);
             collapsed.putIfAbsent(key, error);
         }
