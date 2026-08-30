@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostEdgeSet;
@@ -34,6 +35,7 @@ import nl.utwente.groove.grammar.host.HostNodeSet;
 import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.transform.oracle.ValueOracle;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.DefaultFixable;
 import nl.utwente.groove.util.collect.FilterIterator;
 
@@ -212,11 +214,44 @@ public class RuleEffect extends DefaultFixable {
 
     private Set<HostNode> createdNodeSet;
 
-    /** Creates and adds an edge by invoking the source graph's factory. */
+    /** Creates and adds an edge by invoking the source graph's factory.
+     * In a non-simple graph, the edge is drawn from the factory's content
+     * pool, excluding the edges already in the source graph or created by
+     * this effect, so that content-equal creations across events and
+     * applications resolve to the same edge identity (gh #905). */
     void addCreateEdge(HostNode source, TypeLabel label, HostNode target) {
-        HostEdge edge = getSource().getFactory().createEdge(source, label, target);
+        HostGraph host = getSource();
+        HostEdge edge = host.isSimple()
+            ? host.getFactory().createEdge(source, label, target)
+            : host.getFactory().createEdge(source, label, target, excluded());
         addCreatedEdge(edge);
     }
+
+    /** Tests if either the source graph contains a given edge or this effect record adds it. */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    boolean containsEdge(HostEdge edge) {
+        if (getSource().containsEdge(edge)) {
+            return true;
+        }
+        var createdEdges = this.createdEdges;
+        return createdEdges != null && createdEdges.contains(edge);
+    }
+
+    /** Returns the exclusion predicate for pooled edge creation:
+     * the edges of the source graph plus the edges created by this effect.
+     * @see #containsEdge(HostEdge)
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    Predicate<HostEdge> excluded() {
+        var result = this.excluded;
+        if (result == null) {
+            this.excluded = result = this::containsEdge;
+        }
+        return result;
+    }
+
+    /** Lazily created exclusion predicate wrapping {@link #containsEdge(HostEdge)}. */
+    private Predicate<HostEdge> excluded;
 
     /**
      * Adds a collection of erased nodes to those already stored in this record.

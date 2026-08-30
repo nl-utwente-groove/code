@@ -82,13 +82,6 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
         } else {
             this.freshNodeList = createFreshNodeList();
         }
-        if (reuse == NONE || this.hostFactory.isSimple()) {
-            // fresh copies of creator edge images only play a role
-            // in non-simple graphs
-            this.freshEdgeList = NO_REUSE_EDGE_LIST;
-        } else {
-            this.freshEdgeList = createFreshEdgeList();
-        }
     }
 
     /**
@@ -113,12 +106,6 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
      * The list of nodes created by {@link #createNode(TypeNode)}.
      */
     private final List<List<HostNode>> freshNodeList;
-
-    /**
-     * The list of fresh copies of simple creator edge images, minted by
-     * {@link #createEdge(RuleEffect, int, HostEdge)}.
-     */
-    private final List<List<HostEdge>> freshEdgeList;
 
     /**
      * Returns a map from the rule anchors to elements of the host graph.
@@ -379,18 +366,21 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
         } else {
             // in a non-simple graph, the cached creator edge images may
             // already occur in the source graph, if this event was applied
-            // before on the exploration path; such images must be replaced
-            // by fresh parallel copies, in the manner of created nodes
-            HostEdgeSet createdEdges = createEdgeSet();
+            // before on the exploration path; each image is therefore
+            // resolved through the factory's content pool, excluding the
+            // source graph and the edges already created by this effect,
+            // so that content-equal creations across events resolve to the
+            // same edge identity (gh #905)
             RuleToHostMap coanchorMap = getCoanchorMap();
-            RuleEdge[] creatorEdges = getAction().getSimpleCreatorEdges();
-            for (int i = 0; i < creatorEdges.length; i++) {
-                HostEdge image = coanchorMap.mapEdge(creatorEdges[i]);
+            for (RuleEdge creatorEdge : getAction().getSimpleCreatorEdges()) {
+                HostEdge image = coanchorMap.mapEdge(creatorEdge);
                 if (image != null) {
-                    createdEdges.add(createEdge(record, i, image));
+                    record
+                        .addCreatedEdge(getHostFactory()
+                            .createEdge(image.source(), image.getType(), image.target(),
+                                        record.excluded()));
                 }
             }
-            record.addCreatedEdges(createdEdges);
         }
         Map<RuleNode,HostNode> createdNodeMap = record.getCreatedNodeMap();
         RuleToHostMap anchorMap = getAnchorMap();
@@ -635,66 +625,6 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
         }
     }
 
-    /**
-     * Returns an image for a simple creator edge that is fresh with respect
-     * to a given record. If the given (cached) image is already in the
-     * record's source graph, previously minted fresh copies are tried first
-     * (see {@link #getFreshEdges(int)}); only if all of those are also in
-     * the source graph, a new fresh copy is minted.
-     * This is only relevant for non-simple graphs; in a simple graph,
-     * creating an already existing edge has no effect.
-     * @param record the rule effect with respect to which the edge should be fresh
-     * @param creatorIndex index in the simple creator edges array indicating
-     *        the creator edge for which the image is intended
-     * @param image the cached image of the creator edge
-     */
-    private HostEdge createEdge(RuleEffect record, int creatorIndex, HostEdge image) {
-        if (!record.getSource().containsEdge(image)) {
-            return image;
-        }
-        List<HostEdge> previous = getFreshEdges(creatorIndex);
-        if (previous != null) {
-            for (HostEdge candidate : previous) {
-                if (!record.getSource().containsEdge(candidate)) {
-                    return candidate;
-                }
-            }
-        }
-        HostEdge result
-            = getHostFactory().createEdge(image.source(), image.getType(), image.target());
-        if (previous != null) {
-            previous.add(result);
-        }
-        return result;
-    }
-
-    /**
-     * Creates an array of lists to store the fresh copies of the simple
-     * creator edge images minted by this event.
-     */
-    private List<List<HostEdge>> createFreshEdgeList() {
-        int creatorEdgeCount = getAction().getSimpleCreatorEdges().length;
-        List<List<HostEdge>> result = new ArrayList<>();
-        for (int i = 0; i < creatorEdgeCount; i++) {
-            result.add(new ArrayList<>());
-        }
-        return result;
-    }
-
-    /**
-     * Returns the list of all previously minted fresh copies of a given
-     * simple creator edge's image. Returns <code>null</code> if the reuse
-     * policy is set to <code>false</code> or the host graphs are simple.
-     */
-    private List<HostEdge> getFreshEdges(int creatorIndex) {
-        var freshEdgeList = this.freshEdgeList;
-        if (freshEdgeList == NO_REUSE_EDGE_LIST) {
-            return null;
-        } else {
-            return freshEdgeList.get(creatorIndex);
-        }
-    }
-
     @Override
     protected BasicEventCache createCache() {
         return new BasicEventCache();
@@ -731,9 +661,6 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
     static private final HostNodeSet EMPTY_NODE_SET = new HostNodeSet(0);
     /** Value for {@link #freshNodeList} that indicates {@link #NONE} mode. */
     static private List<List<HostNode>> NO_REUSE_LIST = new ArrayList<>();
-    /** Sentinel value for {@link #freshEdgeList} if fresh edge copies are not
-     * stored, because reuse is switched off or the host graphs are simple. */
-    static private List<List<HostEdge>> NO_REUSE_EDGE_LIST = new ArrayList<>();
     /** Template reference to create empty caches. */
     static private final CacheReference<BasicEventCache> reference
         = CacheReference.<BasicEventCache>newInstance(false);
