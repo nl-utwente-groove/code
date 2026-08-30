@@ -101,6 +101,12 @@ public class HostFactoryTest {
         Assert.assertNotEquals(e0, e1);
         Assert.assertSame(e0, factory.createEdge(a, label, b, edge -> false));
         Assert.assertSame(e1, factory.createEdge(a, label, b, Set.of(e0)::contains));
+        // a minted copy takes a low free number and from then on precedes the
+        // explicitly numbered copies in the canonical (number) order
+        HostEdge e2 = factory.createEdge(a, label, b, Set.of(e0, e1)::contains);
+        Assert.assertTrue(e2.getNumber() < e0.getNumber());
+        Assert.assertSame(e2, factory.createEdge(a, label, b, edge -> false));
+        Assert.assertSame(e2, factory.copy().createEdge(a, label, b, edge -> false));
     }
 
     private void assertContent(HostNode source, TypeLabel label, HostNode target, HostEdge edge) {

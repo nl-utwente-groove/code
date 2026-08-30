@@ -145,10 +145,25 @@ collapsing toward simple mode's, states/transitions bit-identical.
    CacheReconstructionTest, full suite, null-check; re-measured `append` table.
 4. Close-out: note update, issue comment, merge handoff.
 
+## Slices 1+2: delivered (functional outcome)
+
+Factory pool (commit "Added a content-indexed edge pool…") and transform layer
+("Resolved created edges through the factory content pool…"). Functional result on
+`append` (SPO-multi, `append-4-list-8`): **every counter is bit-identical to SPO-simple**
+— Events 88 (from 3326), Coanchor reuse 1497/38 (from 0/1535), Equal graphs 80297,
+bundles 0, certificates 2546, simulation 62. The event explosion and its downstream
+isomorphism checking are eliminated entirely; even #906's bundle second line is idle on
+this sample, since confluent paths now produce *identical* target graphs. States and
+transitions unchanged (31104 / 114008).
+
+`As-and-Bs-reg-exp-benchmark` (bfs:9, SPO-multi): 30674 states / 119843 transitions
+(unchanged), Events 21, Equal graphs 59571, bundles 0, certificates 27539, simulation
+2060. Timing comparison deferred to slice 3 (baseline on the same build day).
+
 ## Status
 
 - [x] Slice 0: note committed; baselines measured (see table below)
-- [ ] Slice 1
-- [ ] Slice 2
-- [ ] Slice 3
-- [ ] Slice 4
+- [x] Slice 1: factory pool + HostFactoryTest
+- [x] Slice 2: transform layer (BasicEvent, RuleEffect)
+- [ ] Slice 3: verification (suites running) + clean timing table
+- [ ] Slice 4: close-out

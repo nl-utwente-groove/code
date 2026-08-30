@@ -275,14 +275,16 @@ abstract public class StoreFactory<N extends Node,E extends NumberedEdge,L exten
             registerEdge(probe);
             return probe;
         }
-        if (!excluded.test(head)) {
-            return head;
-        }
         var edgeCopies = this.edgeCopies;
         List<E> copies = edgeCopies == null
             ? null
             : edgeCopies.get(head);
-        if (copies != null) {
+        if (copies == null) {
+            // the head is the only existing copy
+            if (!excluded.test(head)) {
+                return head;
+            }
+        } else {
             for (E copy : copies) {
                 if (!excluded.test(copy)) {
                     return copy;
@@ -291,7 +293,7 @@ abstract public class StoreFactory<N extends Node,E extends NumberedEdge,L exten
         }
         // all existing copies are excluded; mint the probe as a fresh copy
         registerEdge(probe);
-        appendEdgeCopy(head, probe);
+        insertEdgeCopy(head, probe);
         return probe;
     }
 
@@ -300,9 +302,8 @@ abstract public class StoreFactory<N extends Node,E extends NumberedEdge,L exten
      * content-equal edge exists, as a further copy of the existing head
      * otherwise. Every registered edge of a non-simple factory passes
      * through here exactly once (via {@link #storeEdge},
-     * {@link #storePooledEdge} or the copy constructor), so the pool mirrors
-     * the {@link #edges} array; the copy constructor replays the array in
-     * number order, which reproduces the pool of the original.
+     * {@link #storePooledEdge} or the copy constructor), so the pool covers
+     * the {@link #edges} array.
      */
     @AIGenerated("Claude Fable 5, 2026-08")
     private void poolEdge(E edge) {
@@ -310,13 +311,22 @@ abstract public class StoreFactory<N extends Node,E extends NumberedEdge,L exten
         E head = this.edgeStore.put(edge);
         if (head != null) {
             assert !isSimple();
-            appendEdgeCopy(head, edge);
+            insertEdgeCopy(head, edge);
         }
     }
 
-    /** Appends a parallel copy to the pool list of a given head edge. */
+    /**
+     * Inserts a parallel copy into the pool list of a given head edge,
+     * maintaining number order. The list holds all copies of its content,
+     * the head included; it is created (seeded with the head) when the
+     * second copy arrives. Number order makes the pool canonical: the list
+     * is independent of registration order, and in particular a factory
+     * copy, whose constructor replays the edges array in number order and
+     * may thus elect a different head, still answers pooled requests
+     * identically to the original.
+     */
     @AIGenerated("Claude Fable 5, 2026-08")
-    private void appendEdgeCopy(E head, E copy) {
+    private void insertEdgeCopy(E head, E copy) {
         var edgeCopies = this.edgeCopies;
         if (edgeCopies == null) {
             this.edgeCopies = edgeCopies = new HashMap<>();
@@ -324,18 +334,22 @@ abstract public class StoreFactory<N extends Node,E extends NumberedEdge,L exten
         List<E> copies = edgeCopies.get(head);
         if (copies == null) {
             edgeCopies.put(head, copies = new ArrayList<>());
+            copies.add(head);
         }
-        assert copies.isEmpty()
-            || copies.get(copies.size() - 1).getNumber() < copy.getNumber() : String
-                .format("Pool copies of %s not appended in number order", head);
-        copies.add(copy);
+        int nr = copy.getNumber();
+        int i = copies.size();
+        while (i > 0 && copies.get(i - 1).getNumber() > nr) {
+            i--;
+        }
+        copies.add(i, copy);
     }
 
     /**
-     * Lazily created map from pool head edges (the first-minted copy of their
-     * content, stored in {@link #edgeStore}) to the further parallel copies,
-     * in number order. Only used in non-simple mode; lookup-only, never
-     * iterated, so a hash map is deterministic here.
+     * Lazily created map from pool head edges (the copy of their content
+     * stored in {@link #edgeStore}) to all parallel copies of that content,
+     * the head included, in number order; contents with a single copy have
+     * no entry. Only used in non-simple mode; lookup-only, never iterated,
+     * so a hash map is deterministic here.
      */
     private @Nullable Map<E,List<E>> edgeCopies;
 
