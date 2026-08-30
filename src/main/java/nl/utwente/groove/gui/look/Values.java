@@ -143,6 +143,9 @@ public class Values {
 
     /** Colour used for indicating warnings. */
     static public final Color WARNING_COLOR = new Color(190, 110, 0);
+    /** Translucent colour used for indicating warnings in tab labels;
+     * the analog of {@link Colors#ERROR_COLOR} for errors. */
+    static public final Color WARNING_BACKGROUND = new Color(255, 160, 0, 60);
     /** Background colour used for focused warning items in lists. */
     static public final Color WARNING_FOCUS_BACKGROUND = WARNING_COLOR.darker();
     /** Text colour used for focused warning items in lists. */

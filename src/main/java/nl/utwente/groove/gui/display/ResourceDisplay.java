@@ -41,6 +41,8 @@ import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.border.EmptyBorder;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.grammar.Action;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
@@ -62,6 +64,7 @@ import nl.utwente.groove.gui.action.SimulatorAction;
 import nl.utwente.groove.gui.tree.ResourceTree;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.QualName;
+import nl.utwente.groove.util.parse.Severity;
 
 /**
  * Resource display class that includes a tabbed pane,
@@ -635,7 +638,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
             // refreshed here rather than fixed at tab label creation
             tabLabel.getLabel().setIcon(getMainTab().getIcon());
             tabLabel.setTitle(getLabelText(name, true));
-            tabLabel.setError(hasError(name));
+            tabLabel.setSeverity(getSeverity(name));
             getTabPane().setSelectedIndex(index);
         }
     }
@@ -761,16 +764,24 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         return 0;
     }
 
-    /** Indicates if a given (named) resource has errors. */
+    /** Indicates if a given (named) resource has blocking errors. */
     final public boolean hasError(QualName name) {
-        boolean result;
+        return getSeverity(name) == Severity.ERROR;
+    }
+
+    /** Returns the maximum severity of the diagnostics of a given (named)
+     * resource, or {@code null} if there are none. */
+    final public @Nullable Severity getSeverity(QualName name) {
+        Severity result;
         if (this.editorMap.containsKey(name)) {
             var editor = this.editorMap.get(name);
             assert editor != null; // guaranteed by the containsKey test
-            result = editor.hasErrors();
+            result = editor.getSeverity();
         } else {
             ResourceModel<?> model = getResource(name);
-            result = model != null && model.hasErrors();
+            result = model == null
+                ? null
+                : model.getErrors().getSeverity();
         }
         return result;
     }

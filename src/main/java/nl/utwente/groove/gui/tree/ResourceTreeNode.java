@@ -19,9 +19,12 @@ package nl.utwente.groove.gui.tree;
 import javax.swing.Icon;
 import javax.swing.tree.DefaultMutableTreeNode;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.QualName;
+import nl.utwente.groove.util.parse.Severity;
 
 /**
  * A {@link ResourceTreeNode} is a {@link DefaultMutableTreeNode} that
@@ -62,6 +65,12 @@ class ResourceTreeNode extends DisplayTreeNode {
     @Override
     boolean isError() {
         return getDisplay().hasError(getQualName());
+    }
+
+    @Override
+    @Nullable
+    Severity getSeverity() {
+        return getDisplay().getSeverity(getQualName());
     }
 
     /** Indicates if this tree node is enabled. */
