@@ -108,5 +108,11 @@ public class FormatErrorSeverityTest {
         assertEquals(1, mixed.filter(Severity.WARNING).get().size());
         assertEquals(1, mixed.filter(Severity.ERROR).get().size());
         assertEquals(0, mixed.filter(Severity.INFO).get().size());
+        // the accumulated severity is reset on clear
+        mixed.clear();
+        assertEquals(null, mixed.getSeverity());
+        assertFalse(mixed.hasErrors());
+        mixed.add(new FormatError(Severity.INFO, "some info"));
+        assertEquals(Severity.INFO, mixed.getSeverity());
     }
 }
