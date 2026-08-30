@@ -524,7 +524,7 @@ public class Bisimulator extends CertificateStrategy {
                 return false;
             }
             MyEdge1Cert other = (MyEdge1Cert) obj;
-            return this.source.equals(other.source) && !this.label.equals(other.label);
+            return this.source.equals(other.source) && this.label.equals(other.label);
         }
 
         /**
