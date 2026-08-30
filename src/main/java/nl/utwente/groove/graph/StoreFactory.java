@@ -16,6 +16,12 @@
  */
 package nl.utwente.groove.graph;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Predicate;
+
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -60,7 +66,7 @@ abstract public class StoreFactory<N extends Node,E extends NumberedEdge,L exten
         this.edgeStore = createEdgeStore();
         for (E edge : this.edges) {
             if (edge != null) {
-                this.edgeStore.put(edge);
+                poolEdge(edge);
             }
         }
     }
@@ -239,10 +245,99 @@ abstract public class StoreFactory<N extends Node,E extends NumberedEdge,L exten
                     + " is already used by " + stored;
                 return stored;
             }
+            poolEdge(edge);
         }
         registerEdge(edge);
         return edge;
     }
+
+    /**
+     * Returns an edge with the given content (source, label and target of the
+     * probe) that does not satisfy a given exclusion predicate, minting the
+     * probe as a fresh parallel copy only if all existing content-equal edges
+     * are excluded. The existing copies are tried in edge number order, which
+     * coincides with minting order, so that the answer is a function of the
+     * content and the exclusion alone (see gh #905).
+     * Only supported for non-simple factories; in a simple factory,
+     * {@link #storeEdge} is canonical already.
+     * @param probe freshly constructed edge carrying the requested content
+     *        and the next free edge number
+     * @param excluded predicate determining which existing copies are not
+     *        acceptable as a result
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    protected E storePooledEdge(@NonNull E probe, Predicate<E> excluded) {
+        assert !isSimple();
+        @Nullable
+        E head = this.edgeStore.put(probe);
+        if (head == null) {
+            // no content-equal edge exists yet; the probe becomes the first copy
+            registerEdge(probe);
+            return probe;
+        }
+        if (!excluded.test(head)) {
+            return head;
+        }
+        var edgeCopies = this.edgeCopies;
+        List<E> copies = edgeCopies == null
+            ? null
+            : edgeCopies.get(head);
+        if (copies != null) {
+            for (E copy : copies) {
+                if (!excluded.test(copy)) {
+                    return copy;
+                }
+            }
+        }
+        // all existing copies are excluded; mint the probe as a fresh copy
+        registerEdge(probe);
+        appendEdgeCopy(head, probe);
+        return probe;
+    }
+
+    /**
+     * Inserts an edge into the content-indexed pool: as the head if no
+     * content-equal edge exists, as a further copy of the existing head
+     * otherwise. Every registered edge of a non-simple factory passes
+     * through here exactly once (via {@link #storeEdge},
+     * {@link #storePooledEdge} or the copy constructor), so the pool mirrors
+     * the {@link #edges} array; the copy constructor replays the array in
+     * number order, which reproduces the pool of the original.
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    private void poolEdge(E edge) {
+        @Nullable
+        E head = this.edgeStore.put(edge);
+        if (head != null) {
+            assert !isSimple();
+            appendEdgeCopy(head, edge);
+        }
+    }
+
+    /** Appends a parallel copy to the pool list of a given head edge. */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    private void appendEdgeCopy(E head, E copy) {
+        var edgeCopies = this.edgeCopies;
+        if (edgeCopies == null) {
+            this.edgeCopies = edgeCopies = new HashMap<>();
+        }
+        List<E> copies = edgeCopies.get(head);
+        if (copies == null) {
+            edgeCopies.put(head, copies = new ArrayList<>());
+        }
+        assert copies.isEmpty()
+            || copies.get(copies.size() - 1).getNumber() < copy.getNumber() : String
+                .format("Pool copies of %s not appended in number order", head);
+        copies.add(copy);
+    }
+
+    /**
+     * Lazily created map from pool head edges (the first-minted copy of their
+     * content, stored in {@link #edgeStore}) to the further parallel copies,
+     * in number order. Only used in non-simple mode; lookup-only, never
+     * iterated, so a hash map is deterministic here.
+     */
+    private @Nullable Map<E,List<E>> edgeCopies;
 
     /**
      * Puts an edge into the store kept by this factory.

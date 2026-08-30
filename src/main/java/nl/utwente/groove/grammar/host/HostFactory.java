@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import org.eclipse.jdt.annotation.NonNull;
 
@@ -177,6 +178,34 @@ public class HostFactory extends StoreFactory<HostNode,HostEdge,TypeLabel> {
     public HostEdge createEdge(HostNode source, TypeEdge type, HostNode target, int nr) {
         HostEdge edge = newEdge(source, type, target, nr);
         return storeEdge(edge);
+    }
+
+    /**
+     * Returns a host edge with the given content that does not satisfy the
+     * exclusion predicate, minting a fresh parallel copy only if all existing
+     * content-equal edges are excluded; see {@link StoreFactory#storePooledEdge}.
+     * Only supported for non-simple factories.
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    public HostEdge createEdge(HostNode source, Label label, HostNode target,
+                               Predicate<HostEdge> excluded) {
+        TypeEdge type = getTypeFactory()
+            .createEdge(source.getType(), (TypeLabel) label, target.getType(), false);
+        assert type != null;
+        return createEdge(source, type, target, excluded);
+    }
+
+    /**
+     * Returns a host edge with the given content that does not satisfy the
+     * exclusion predicate, minting a fresh parallel copy only if all existing
+     * content-equal edges are excluded; see {@link StoreFactory#storePooledEdge}.
+     * Only supported for non-simple factories.
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    public HostEdge createEdge(HostNode source, TypeEdge type, HostNode target,
+                               Predicate<HostEdge> excluded) {
+        HostEdge probe = newEdge(source, type, target, getNextEdgeNr());
+        return storePooledEdge(probe, excluded);
     }
 
     /**
