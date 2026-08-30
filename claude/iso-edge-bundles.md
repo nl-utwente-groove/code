@@ -62,7 +62,14 @@ equality shortcut in multi mode:
 Certificate discreteness in multi mode: 71006 discrete, 7643 with clashing
 *node* certificates, and **zero** with clashing edge certificates. So `append`
 contains no parallel edges at all, confirming the parenthetical in the issue
-text: it measures defect 1 only.
+text: it measures defect 1 only. *Confirmed in slice 2:* under bundle
+certificates every `-v 2` counter on `append` is bit-identical to the
+per-copy baseline (equal certificates 31965, equal simulation 2465), so no
+comparison changed paths — every bundle of every compared state is singular.
+(A slice-2 draft of this note briefly claimed the opposite, from comparing
+these 2465 positive simulation answers against the 7643 above; the two are
+different measures — the 7643 count comparisons *entering* the search,
+negative outcomes included.)
 
 ### `As-and-Bs-reg-exp-benchmark`, `-s bfs:9`, SPO-multi, 30674 states
 
@@ -188,6 +195,60 @@ injective node mapping plus content keying already rules out.
 Gate: identical verdicts and identical graph certificates against master over
 the corpus. Target: the 10599 bundle-only searches on `As-and-Bs`.
 
+**Slice 2 delivered (2026-08-30).** Two commits: the bundle certificates
+themselves, and a follow-up that stops the certificate fast path from
+materialising morphisms. Same-day totals against the slice-1 tip (three runs
+each, all state counts identical):
+
+| | slice 1 | bundle certs | + node-map answer |
+|---|---|---|---|
+| `append` multi | 3980 ms | 4100 | 3850 |
+| `As-and-Bs` bfs:9 | 1765 | 1700 | **1610 (−9%)** |
+| `As-and-Bs` bfs:11 | 6110 | 6150 | 5950 (−2.7%) |
+
+The search collapsed as planned (`As-and-Bs` sim check 190 → 42 ms at bfs:9,
+565 → 60 at bfs:11), but the first commit alone was a wash: the comparisons
+that used to search moved onto the certificate path, where `areCertEqual`
+materialised a full morphism per answer — costing about what the search had
+(bfs:11: cert check 15 → 336 ms), on top of the eager bundle build in every
+non-simple certificate initialisation (certifying 741 → 1050 ms at bfs:11).
+On `append` nothing moves (its bundles are all singular, see above), so its
+column isolates the two overheads against the node-map saving — which there
+relieves a cost the per-copy fast path had all along, its 31965 cert answers
+each having built a morphism.
+The second commit removes the first cost: the node map alone carries the
+whole verification — edge-certificate equality implies endpoint-certificate
+equality, so node-partition discreteness makes the node map injective, and
+equal multiplicities make any in-order pairing of the copies of matched
+bundles a valid completion; with the explicit node/edge-count check this is
+also surjective, which incidentally closes a collision-sized surjectivity
+hole that predates the change (the per-copy fast path never compared edge
+counts). The morphism-returning `getCertEqualIsomorphism` is rebuilt on the
+same node-map construction and keeps the edge pairing for its callers.
+
+What remains on the table is the eager bundle build: every certified
+non-simple graph pays one extra O(E) hash-probe scan plus five small array
+allocations, whether or not it has parallel edges (≈ +280 ms of certifying at
+bfs:11, ≈ +90 on `append`). Folding the bundle grouping into the certificate
+initialisation scan (create a certificate on new content, bump a mutable
+multiplicity on a duplicate) would halve that, at the price of spreading
+mutable multiplicities through all four certifier implementations; judged not
+worth the review surface for now, recorded here in case profiles later say
+otherwise.
+
+Outcome-identity of the refinement was re-derived adversarially before
+implementation: per-copy contributions are `int` sums, so k separate
+additions equal one addition of k·v under wraparound, and the graph
+certificate accumulates in `long`, where k additions of a sign-extended `int`
+equal `(long) k * v` — the widened form is what the code uses. The
+`usedEdgeImages` removal argument in the plan above glossed over its own main
+case: the set also guarded two copies *within* one bundle mapping to the same
+cod copy, which bundling eliminates by construction (one plan item, pairwise
+assignment); the cross-bundle case is the one node injectivity catches.
+Found in passing: `Bisimulator.MyEdge1Cert.equals` negates its label
+comparison (`!this.label.equals(...)`), a latent bug reachable only under the
+`ISO_ASSERT` debug flag; preserved as found, to be fixed separately.
+
 **Slice 3 — close-out.** Re-measured table, note updated, issues closed.
 
 Deferred, recorded on the issue: with bundle certificates the *enumerating*
@@ -204,6 +265,8 @@ be *identical* — slice 1 can only turn certificate false negatives into
 positives and slice 2 is outcome-preserving, so any count change is a bug);
 `determinism-check` (slice 2 touches the search plan); `null-check` on touched
 files. `IsoTest.testParallelEdges` is the standing guard that parallel copies
-must not collapse onto one image; `GraphTest.testGetPartitionMap` asserts
-partition sizes against edge counts on simple graphs, so it doubles as a check
-that simple mode is untouched.
+must not collapse onto one image — since slice 2 it additionally asserts that
+such graphs are answered by the certificates rather than the search, and its
+morphism assertions pin the pairwise copy mapping of the fast path;
+`GraphTest.testGetPartitionMap` asserts partition sizes against edge counts on
+simple graphs, so it doubles as a check that simple mode is untouched.
