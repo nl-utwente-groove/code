@@ -172,7 +172,10 @@ public class ProductState {
 
     @Override
     public int hashCode() {
-        return System.identityHashCode(this.state) + System.identityHashCode(this.buchiLocation);
+        // deterministic combination of the state number and the (number-based)
+        // Buchi location hash; consistent with the reference-based equals
+        // because both components are canonical
+        return this.state.getNumber() * 31 + this.buchiLocation.hashCode();
     }
 
     @Override
