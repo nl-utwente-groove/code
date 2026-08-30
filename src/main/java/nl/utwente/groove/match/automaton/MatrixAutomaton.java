@@ -800,6 +800,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<@NonNull RegNode,@NonNu
              */
             public MatchingComputation(int keyIndex, HostNode image, MatchingComputation dependent,
                                        Valuation valuation) {
+                this.nr = MatchingAlgorithm.this.computationCount++;
                 this.keyIndex = keyIndex;
                 this.image = image;
                 this.valuation = valuation;
@@ -1125,12 +1126,21 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<@NonNull RegNode,@NonNu
                 return this == o;
             }
 
-            /** This implementation returns the system identity of this object. */
+            /**
+             * This implementation returns the creation sequence number, which
+             * (unlike the system identity hash) is deterministic across JVM runs.
+             */
             @Override
             public int hashCode() {
-                return System.identityHashCode(this);
+                return this.nr;
             }
 
+            /**
+             * Creation sequence number within the current
+             * {@link MatchingAlgorithm#computeMatches} invocation; used as
+             * deterministic hash code.
+             */
+            private final int nr;
             /**
              * The collection of dependent sets. If <code>null</code>, the
              * computation is considered to be finished.
@@ -1194,6 +1204,7 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<@NonNull RegNode,@NonNu
                 ? graph.nodeSet()
                 : Collections.singleton(endImage);
             this.storeIntermediates = !hasVars();
+            this.computationCount = 0;
             this.result = new HashSet<>();
             Set<? extends HostNode> startImages = startImage == null
                 ? graph.nodeSet()
@@ -1432,6 +1443,13 @@ public class MatrixAutomaton extends NodeSetEdgeSetGraph<@NonNull RegNode,@NonNu
          * Number of images yet to add. Only used if non-negative.
          */
         transient int remainingImageCount;
+
+        /**
+         * Number of {@link MatchingComputation}s created in the current
+         * {@link #computeMatches} invocation; source of their deterministic
+         * hash codes.
+         */
+        transient int computationCount;
 
         /**
          * Relation where the result of the current matching computation is
