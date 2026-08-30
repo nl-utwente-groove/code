@@ -124,7 +124,9 @@ public class FormatError implements Comparable<FormatError>, Fixable, Cloneable 
             result = getSeverity() == err.getSeverity();
             result &= toString().equals(err.toString());
             result &= getNumbers().equals(err.getNumbers());
-            result &= getContext().equals(err.getContext());
+            // compare the backing sets; the unmodifiable view returned by
+            // getContext() does not implement value equality
+            result &= this.context.equals(err.context);
         } else {
             result = false;
         }
@@ -136,7 +138,9 @@ public class FormatError implements Comparable<FormatError>, Fixable, Cloneable 
     public int hashCode() {
         int result = toString().hashCode();
         result += getNumbers().hashCode();
-        result += getContext().hashCode();
+        // hash the backing set; the unmodifiable view returned by
+        // getContext() has an identity-based (so non-deterministic) hash
+        result += this.context.hashCode();
         // the enum's own hash code is identity-based, hence not deterministic
         result = result * 31 + getSeverity().ordinal();
         return result;
