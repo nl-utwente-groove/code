@@ -158,12 +158,42 @@ transitions unchanged (31104 / 114008).
 
 `As-and-Bs-reg-exp-benchmark` (bfs:9, SPO-multi): 30674 states / 119843 transitions
 (unchanged), Events 21, Equal graphs 59571, bundles 0, certificates 27539, simulation
-2060. Timing comparison deferred to slice 3 (baseline on the same build day).
+2060 — **bit-identical to the baseline**: this grammar's event set is tiny either way, so
+it serves purely as an overhead probe for the pool bookkeeping.
+
+## Slice 3: verification and measured outcome
+
+Gates (all on the branch tip): DeterminismTest, CacheReconstructionTest, IsoTest,
+HostFactoryTest, StoreFactoryTest green; ExplorationTest 25/25 with unchanged counts;
+full fast suite 692 tests green; ecj null-check on the five touched files clean.
+The first full-suite run caught a real defect: `StoreFactoryTest.testNonSimpleNumberedReuse`
+tripped the pool's append-order assert — explicitly numbered creation interleaves with
+lowest-free-number minting, so registration order is *not* number order. Fixed by making
+the pool canonical by number (list holds all copies incl. head, sorted; answer = lowest-
+numbered admissible copy), which also removes any dependence on which copy the factory
+copy-constructor elects as head.
+
+Timings, three runs each, same machine and day (baseline = master `9a110441a`):
+
+| run | baseline (ms) | pooled (ms) |
+|---|---|---|
+| append multi | 4129 / 3778 / 3757 (~3888) | 2839 / 2814 / 2811 (~2821, **−27%**) |
+| append simple | 2699 / 2631 / 2821 (~2717) | 2629 / 2603 (unchanged) |
+| As-and-Bs bfs:9 multi | 1657 / 1705 / 1716 (~1693) | 1697 / 1691 / 1633 (~1674, wash) |
+| As-and-Bs bfs:11 multi | 6183 / 6025 / 5931 / 6044 / 6044 / 6023 (~6042) | 5998 / 6069 / 5997 (~6021, wash)¹ |
+
+¹ An earlier pooled bfs:11 batch (6251/6215/6330) ran on a warm machine directly after
+eight prior JVM runs; the re-run above is the clean comparison.
+
+SPO-multi on `append` is now ~8% over SPO-simple (was +43%); the remaining gap is the
+per-application `RuleEffect` bookkeeping plus the pooled lookups themselves. The pool
+bookkeeping (one content-hash probe per non-simple edge registration) is not measurable
+on the parallel-heavy As-and-Bs.
 
 ## Status
 
 - [x] Slice 0: note committed; baselines measured (see table below)
 - [x] Slice 1: factory pool + HostFactoryTest
 - [x] Slice 2: transform layer (BasicEvent, RuleEffect)
-- [ ] Slice 3: verification (suites running) + clean timing table
-- [ ] Slice 4: close-out
+- [x] Slice 3: verification + timing table (complete slow suite pending at time of writing)
+- [ ] Slice 4: close-out (issue comment, merge)
