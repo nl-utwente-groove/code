@@ -315,14 +315,14 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
     }
 
     @Override
-    MyEdge1Cert createEdge1Certificate(Edge edge, NodeCertificate source) {
-        return new MyEdge1Cert(edge, (MyNodeCert) source);
+    MyEdge1Cert createEdge1Certificate(Edge edge, NodeCertificate source, int multiplicity) {
+        return new MyEdge1Cert(edge, (MyNodeCert) source, multiplicity);
     }
 
     @Override
     EdgeCertificate createEdge2Certificate(Edge edge, NodeCertificate source,
-                                           NodeCertificate target) {
-        return new MyEdge2Cert(edge, (MyNodeCert) source, (MyNodeCert) target);
+                                           NodeCertificate target, int multiplicity) {
+        return new MyEdge2Cert(edge, (MyNodeCert) source, (MyNodeCert) target, multiplicity);
     }
 
     /**
@@ -496,21 +496,25 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
             return this.element;
         }
 
-        /** Adds a self-edge certificate to this node certificate. */
+        /** Adds a self-edge certificate to this node certificate.
+         * The contribution is scaled by the certificate's multiplicity, as
+         * each parallel copy would have contributed the same value. */
         void addSelf(MyEdge1Cert edgeCert) {
-            this.value += edgeCert.getValue();
+            this.value += edgeCert.getMultiplicity() * edgeCert.getValue();
         }
 
-        /** Adds an outgoing edge certificate to this node certificate. */
+        /** Adds an outgoing edge certificate to this node certificate.
+         * The contribution is scaled by the certificate's multiplicity. */
         void addOutEdge(MyEdge2Cert edgeCert) {
             this.outEdges.add(edgeCert);
-            this.value += edgeCert.getValue();
+            this.value += edgeCert.getMultiplicity() * edgeCert.getValue();
         }
 
-        /** Adds an incoming edge certificate to this node certificate. */
+        /** Adds an incoming edge certificate to this node certificate.
+         * The contribution is scaled by the certificate's multiplicity. */
         void addInEdge(MyEdge2Cert edgeCert) {
             this.inEdges.add(edgeCert);
-            this.value += edgeCert.getValue() ^ TARGET_MASK;
+            this.value += edgeCert.getMultiplicity() * (edgeCert.getValue() ^ TARGET_MASK);
         }
 
         /** Returns the list of incoming edge certificates. */
@@ -680,13 +684,22 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
     }
 
     private class MyEdge1Cert implements EdgeCertificate {
-        MyEdge1Cert(Edge edge, MyNodeCert sourceCert) {
+        /** Constructs a certificate for a bundle of parallel unary edges.
+         * @param edge a representative of the bundle
+         * @param multiplicity the number of parallel copies in the bundle */
+        MyEdge1Cert(Edge edge, MyNodeCert sourceCert, int multiplicity) {
             this.edge = edge;
             this.sourceCert = sourceCert;
+            this.multiplicity = multiplicity;
             this.label = edge.label();
             this.initValue = this.label.hashCode();
             this.value = this.initValue;
             sourceCert.addSelf(this);
+        }
+
+        @Override
+        public int getMultiplicity() {
+            return this.multiplicity;
         }
 
         @Override
@@ -707,7 +720,8 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
             if (!(obj instanceof PaigeTarjanMcKay.MyEdge1Cert other)) {
                 return false;
             }
-            return other.sourceCert.equals(this.sourceCert) && other.label.equals(this.label);
+            return other.sourceCert.equals(this.sourceCert) && other.label.equals(this.label)
+                && other.multiplicity == this.multiplicity;
         }
 
         @Override
@@ -732,6 +746,8 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
         private final Edge edge;
         private final Label label;
         private final MyNodeCert sourceCert;
+        /** The number of parallel edges represented by this certificate. */
+        private final int multiplicity;
         /**
          * The hash code of the original edge label.
          */
@@ -740,8 +756,8 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
     }
 
     private class MyEdge2Cert extends MyEdge1Cert {
-        MyEdge2Cert(Edge edge, MyNodeCert sourceCert, MyNodeCert targetCert) {
-            super(edge, sourceCert);
+        MyEdge2Cert(Edge edge, MyNodeCert sourceCert, MyNodeCert targetCert, int multiplicity) {
+            super(edge, sourceCert, multiplicity);
             this.targetCert = targetCert;
             sourceCert.addOutEdge(this);
             targetCert.addInEdge(this);
@@ -774,14 +790,17 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
             return this.targetCert;
         }
 
-        /** Updates the (next) value of the source certificate. */
+        /** Updates the (next) value of the source certificate.
+         * The contribution is scaled by the multiplicity, as each parallel
+         * copy would have contributed the same value. */
         void updateSource() {
-            getSource().addNextValue(3 * computeValue());
+            getSource().addNextValue(getMultiplicity() * 3 * computeValue());
         }
 
-        /** Updates the (next) value of the source certificate. */
+        /** Updates the (next) value of the target certificate.
+         * The contribution is scaled by the multiplicity. */
         void updateTarget() {
-            getTarget().addNextValue(-5 * computeValue());
+            getTarget().addNextValue(getMultiplicity() * -5 * computeValue());
         }
 
         /**
@@ -794,7 +813,10 @@ public class PaigeTarjanMcKay extends CertificateStrategy {
             int sourceValue = getSource().getValue();
             int result = ((sourceValue << shift) | (sourceValue >>> (INT_WIDTH - shift)))
                 + ((targetValue >>> shift) | (targetValue << (INT_WIDTH - shift))) + this.initValue;
-            PaigeTarjanMcKay.this.graphCertificate += result;
+            // each parallel copy would have contributed the same value; widen
+            // before multiplying, as the graph certificate accumulates in long
+            // arithmetic
+            PaigeTarjanMcKay.this.graphCertificate += (long) getMultiplicity() * result;
             return result;
         }
 

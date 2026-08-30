@@ -36,7 +36,6 @@ import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Morphism;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.iso.CertificateStrategy.EdgeCertificate;
-import nl.utwente.groove.graph.iso.CertificateStrategy.ElementCertificate;
 import nl.utwente.groove.graph.iso.CertificateStrategy.NodeCertificate;
 import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.util.Reporter;
@@ -376,24 +375,32 @@ public class IsoChecker {
     @SuppressWarnings("unchecked")
     private Morphism<Node,Edge> getCertEqualIsomorphism(CertificateStrategy dom,
                                                         CertificateStrategy cod) {
+        // with equal counts, an injective mapping of dom bundles to cod
+        // bundles of equal multiplicity (which multiplicity-including
+        // certificate equality guarantees) is necessarily surjective
+        if (dom.getGraph().nodeCount() != cod.getGraph().nodeCount()
+            || dom.getGraph().edgeCount() != cod.getGraph().edgeCount()) {
+            return null;
+        }
         Morphism<Node,Edge> result
             = (Morphism<Node,Edge>) dom.getGraph().getFactory().createMorphism();
-        // the certificates uniquely identify the elements;
+        // the certificates uniquely identify the bundles;
         // it is straightforward to construct a morphism
-        // Go over the domain edges
-        ElementCertificate<Edge>[] edgeCerts = dom.getEdgeCertificates();
-        PartitionMap<Edge> codPartitionMap = cod.getEdgePartitionMap();
+        // Go over the domain edge bundles
+        EdgeCertificate[] edgeCerts = dom.getEdgeCertificates();
+        PartitionMap<EdgeCertificate> codPartitionMap = cod.getEdgePartitionMap();
         int edgeCount = edgeCerts.length;
         for (int i = 0; i < edgeCount && edgeCerts[i] != null; i++) {
-            ElementCertificate<Edge> domEdgeCert = edgeCerts[i];
-            SmallCollection<Edge> image = codPartitionMap.get(domEdgeCert);
+            EdgeCertificate domEdgeCert = edgeCerts[i];
+            SmallCollection<EdgeCertificate> image = codPartitionMap.get(domEdgeCert);
             if (image == null) {
                 result = null;
                 break;
             }
             Edge edgeKey = domEdgeCert.getElement();
-            Edge edgeImage = image.getSingleton();
-            assert edgeImage != null; // image is known to be a singleton
+            EdgeCertificate imageCert = image.getSingleton();
+            assert imageCert != null; // image is known to be a singleton
+            Edge edgeImage = imageCert.getElement();
             // add the source mapping to the result, and test for compatibility
             Node imageSource = edgeImage.source();
             Node oldSourceImage = result.putNode(edgeKey.source(), imageSource);
@@ -408,9 +415,37 @@ public class IsoChecker {
                 result = null;
                 break;
             }
-            result.putEdge(edgeKey, edgeImage);
+            putEdges(dom, cod, domEdgeCert, imageCert, result);
         }
         return result;
+    }
+
+    /**
+     * Adds the edge mappings for a matched pair of bundle certificates to a
+     * morphism: the bundles' singleton edges, or their parallel copies paired
+     * in order. The multiplicities coincide, being part of certificate
+     * equality; any pairing yields a valid morphism, as parallel copies are
+     * interchangeable.
+     * @param dom certifier of the domain of the morphism
+     * @param cod certifier of the codomain of the morphism
+     * @param domCert the domain bundle
+     * @param codCert the image bundle; equal to {@code domCert}
+     * @param result the morphism being constructed
+     */
+    private void putEdges(CertificateStrategy dom, CertificateStrategy cod,
+                          EdgeCertificate domCert, EdgeCertificate codCert,
+                          Morphism<Node,Edge> result) {
+        int multiplicity = domCert.getMultiplicity();
+        assert multiplicity == codCert.getMultiplicity();
+        if (multiplicity == 1) {
+            result.putEdge(domCert.getElement(), codCert.getElement());
+        } else {
+            Edge[] domCopies = dom.getCopies(domCert.getElement());
+            Edge[] codCopies = cod.getCopies(codCert.getElement());
+            for (int i = 0; i < multiplicity; i++) {
+                result.putEdge(domCopies[i], codCopies[i]);
+            }
+        }
     }
 
     private boolean hasIsomorphism(CertificateStrategy domCertifier,
@@ -469,21 +504,24 @@ public class IsoChecker {
         if (result != null && result.nodeMap().size() != domCertifier.getGraph().nodeCount()) {
             // there's sure to be an isomorphism, but we have to add the
             // isolated nodes
-            PartitionMap<Node> codPartitionMap = codCertifier.getNodePartitionMap();
+            PartitionMap<NodeCertificate> codPartitionMap = codCertifier.getNodePartitionMap();
             Set<Node> usedNodeImages = new HashSet<>();
             NodeCertificate[] nodeCerts = domCertifier.getNodeCertificates();
             for (NodeCertificate nodeCert : nodeCerts) {
                 Node node = nodeCert.getElement();
                 if (!result.nodeMap().containsKey(node)) {
                     // this is an isolated node
-                    SmallCollection<Node> nodeImages = codPartitionMap.get(nodeCert);
+                    SmallCollection<NodeCertificate> nodeImages = codPartitionMap.get(nodeCert);
                     if (nodeImages.isSingleton()) {
                         // it follows that there is only one isolated node
-                        result.putNode(node, nodeImages.getSingleton());
+                        NodeCertificate imageCert = nodeImages.getSingleton();
+                        assert imageCert != null; // the collection is a singleton
+                        result.putNode(node, imageCert.getElement());
                         break;
                     } else {
                         // find an unused node
-                        for (Node nodeImage : nodeImages) {
+                        for (NodeCertificate imageCert : nodeImages) {
+                            Node nodeImage = imageCert.getElement();
                             if (usedNodeImages.add(nodeImage)) {
                                 result.putNode(node, nodeImage);
                                 break;
@@ -538,10 +576,11 @@ public class IsoChecker {
         }
         Morphism<Node,Edge> result;
         Set<Node> usedNodeImages;
-        // set of used edge images, for non-simple graphs only: there,
-        // edge injectivity is not implied by node injectivity, as parallel
-        // edges share their end nodes and label
-        Set<Edge> usedEdgeImages;
+        // note that there is no set of used *edge* images: the search assigns
+        // whole bundles, and two distinct dom bundles mapping to the same cod
+        // bundle would clash on an endpoint image, since distinct bundles with
+        // the same label (which certificate equality implies) must differ in
+        // source or target; so edge injectivity follows from node injectivity
 
         // Compute a new plan or restore the one from the state.
         List<IsoSearchItem> plan;
@@ -553,18 +592,12 @@ public class IsoChecker {
                 return null;
             } else {
                 usedNodeImages = new HashSet<>(state.usedNodeImages);
-                usedEdgeImages = state.usedEdgeImages == null
-                    ? null
-                    : new HashSet<>(state.usedEdgeImages);
                 result = state.result.clone();
             }
         } else {
             // construct the search plan
             result = (Morphism<Node,Edge>) domCertifier.getGraph().getFactory().createMorphism();
             usedNodeImages = new HashSet<>();
-            usedEdgeImages = dom.isSimple()
-                ? null
-                : new HashSet<>();
             plan = computePlan(domCertifier, codCertifier, result, usedNodeImages);
         }
         if (plan == null) {
@@ -572,7 +605,7 @@ public class IsoChecker {
         }
 
         // Create new records and images or restore the ones from the state.
-        Iterator<Edge>[] records;
+        Iterator<EdgeCertificate>[] records;
         Node[] sourceImages;
         Node[] targetImages;
         if (state != null && state.records != null) {
@@ -589,14 +622,6 @@ public class IsoChecker {
             targetImages = state.targetImages;
         } else {
             targetImages = new Node[plan.size()];
-        }
-        Edge[] edgeImages;
-        if (state != null && state.edgeImages != null) {
-            edgeImages = state.edgeImages;
-        } else {
-            edgeImages = usedEdgeImages == null
-                ? null
-                : new Edge[plan.size()];
         }
 
         if (ISO_PRINT) {
@@ -633,14 +658,6 @@ public class IsoChecker {
                                 targetImages[i], item.key.target(), usedNodeImages);
                     targetImages[i] = null;
                 }
-                if (edgeImages != null && edgeImages[i] != null) {
-                    assert usedEdgeImages != null;
-                    boolean removed = usedEdgeImages.remove(edgeImages[i]);
-                    assert removed : String
-                        .format("Image %s for edge %s not present in used edge set %s",
-                                edgeImages[i], item.key, usedEdgeImages);
-                    edgeImages[i] = null;
-                }
             }
             if (!records[i].hasNext()) {
                 // we're moving backward
@@ -650,12 +667,8 @@ public class IsoChecker {
                 Edge key = item.key;
                 Node keyTarget = key.target();
                 Node keySource = key.source();
-                Edge image = records[i].next();
-                if (usedEdgeImages != null && usedEdgeImages.contains(image)) {
-                    // edge injectivity is destroyed (the image is a parallel
-                    // copy already used for another edge); take next edge image
-                    continue;
-                }
+                EdgeCertificate imageCert = records[i].next();
+                Edge image = imageCert.getElement();
                 Node imageSource = image.source();
                 Node imageTarget = image.target();
                 if (item.sourcePreMatched) {
@@ -697,12 +710,7 @@ public class IsoChecker {
                     result.putNode(keyTarget, imageTarget);
                     targetImages[i] = imageTarget;
                 }
-                result.putEdge(key, image);
-                if (edgeImages != null) {
-                    assert usedEdgeImages != null;
-                    usedEdgeImages.add(image);
-                    edgeImages[i] = image;
-                }
+                putEdges(domCertifier, codCertifier, item.cert, imageCert, result);
                 i++;
             }
         }
@@ -722,12 +730,8 @@ public class IsoChecker {
                 state.plan = plan;
                 state.result = result.clone();
                 state.usedNodeImages = new HashSet<>(usedNodeImages);
-                state.usedEdgeImages = usedEdgeImages == null
-                    ? null
-                    : new HashSet<>(usedEdgeImages);
                 state.sourceImages = sourceImages;
                 state.targetImages = targetImages;
-                state.edgeImages = edgeImages;
                 state.records = records;
                 state.i = i - 1;
             }
@@ -751,50 +755,55 @@ public class IsoChecker {
                                             Set<Node> usedNodeImages) {
         Graph dom = domCertifier.getGraph();
         List<IsoSearchItem> result = new ArrayList<>();
-        PartitionMap<Edge> codPartitionMap = codCertifier.getEdgePartitionMap();
-        Map<Edge,Collection<Edge>> remainingEdgeSet = new HashMap<>();
+        PartitionMap<EdgeCertificate> codPartitionMap = codCertifier.getEdgePartitionMap();
+        // remaining search items, keyed by the representative of their bundle
+        Map<Edge,IsoSearchItem> remainingEdgeSet = new HashMap<>();
         // the set of dom nodes that have an image in result, but whose incident
         // images possibly don't
         Set<Node> connectedNodes = new HashSet<>();
-        ElementCertificate<Edge>[] edgeCerts = domCertifier.getEdgeCertificates();
-        // collect the pairs of edge keys and edge image sets
+        EdgeCertificate[] edgeCerts = domCertifier.getEdgeCertificates();
+        // collect the pairs of bundle keys and bundle image sets
         int edgeCount = edgeCerts.length;
         for (int i = 0; i < edgeCount && edgeCerts[i] != null; i++) {
-            ElementCertificate<Edge> edgeCert = edgeCerts[i];
-            SmallCollection<Edge> images = codPartitionMap.get(edgeCert);
+            EdgeCertificate edgeCert = edgeCerts[i];
+            SmallCollection<EdgeCertificate> images = codPartitionMap.get(edgeCert);
             if (images == null) {
                 return null;
             } else if (images.isSingleton()) {
-                if (!setEdge(edgeCert.getElement(), images.getSingleton(), resultMap,
+                EdgeCertificate image = images.getSingleton();
+                assert image != null; // the collection is a singleton
+                if (!setEdge(domCertifier, codCertifier, edgeCert, image, resultMap,
                              connectedNodes, usedNodeImages)) {
                     return null;
                 }
             } else {
-                remainingEdgeSet.put(edgeCert.getElement(), images);
+                remainingEdgeSet
+                    .put(edgeCert.getElement(), new IsoSearchItem(edgeCert, images));
             }
         }
         // pick an edge key to start planning the next connected component
         while (!remainingEdgeSet.isEmpty()) {
-            Iterator<Map.Entry<Edge,Collection<Edge>>> remainingEdgeIter
+            Iterator<Map.Entry<Edge,IsoSearchItem>> remainingEdgeIter
                 = remainingEdgeSet.entrySet().iterator();
-            Map.Entry<Edge,Collection<Edge>> first = remainingEdgeIter.next();
+            Map.Entry<Edge,IsoSearchItem> first = remainingEdgeIter.next();
             remainingEdgeIter.remove();
             TreeSet<IsoSearchItem> subPlan = new TreeSet<>();
-            subPlan.add(new IsoSearchItem(first.getKey(), first.getValue()));
+            subPlan.add(first.getValue());
             // repeatedly pick an edge from the component
             while (!subPlan.isEmpty()) {
                 Iterator<IsoSearchItem> subIter = subPlan.iterator();
                 IsoSearchItem next = subIter.next();
                 subIter.remove();
                 // add incident edges from the source node, if that was not
-                // already matched
+                // already matched; only a bundle's representative occurs as a
+                // key, its other copies miss and are rightly skipped
                 Node keySource = next.key.source();
                 next.sourcePreMatched = !connectedNodes.add(keySource);
                 if (!next.sourcePreMatched) {
                     for (Edge edge : dom.edgeSet(keySource)) {
-                        Collection<Edge> images = remainingEdgeSet.remove(edge);
-                        if (images != null) {
-                            subPlan.add(new IsoSearchItem(edge, images));
+                        IsoSearchItem item = remainingEdgeSet.remove(edge);
+                        if (item != null) {
+                            subPlan.add(item);
                         }
                     }
                 }
@@ -804,9 +813,9 @@ public class IsoChecker {
                 next.targetPreMatched = !connectedNodes.add(keyTarget);
                 if (!next.targetPreMatched) {
                     for (Edge edge : dom.edgeSet(keyTarget)) {
-                        Collection<Edge> images = remainingEdgeSet.remove(edge);
-                        if (images != null) {
-                            subPlan.add(new IsoSearchItem(edge, images));
+                        IsoSearchItem item = remainingEdgeSet.remove(edge);
+                        if (item != null) {
+                            subPlan.add(item);
                         }
                     }
                 }
@@ -817,10 +826,12 @@ public class IsoChecker {
     }
 
     /**
-     * Inserts an edge into the result mapping, testing if the resulting end
-     * node mapping is consistent with the current state.
-     * @param key the dom edge to be inserted
-     * @param value the cod edge that is the image of <code>key</code>
+     * Inserts an edge bundle into the result mapping, testing if the resulting
+     * end node mapping is consistent with the current state.
+     * @param domCertifier certifier of the domain of the morphism
+     * @param codCertifier certifier of the codomain of the morphism
+     * @param key the dom bundle to be inserted
+     * @param value the cod bundle that is the image of <code>key</code>
      * @param result the result map
      * @param connectedNodes the set of dom nodes that are mapped but may have
      *        unmapped incident edges
@@ -828,15 +839,18 @@ public class IsoChecker {
      * @return <code>true</code> if the key/value-pair was successfully added
      *         to <code>result</code>
      */
-    private boolean setEdge(Edge key, Edge value, Morphism<Node,Edge> result,
+    private boolean setEdge(CertificateStrategy domCertifier, CertificateStrategy codCertifier,
+                            EdgeCertificate key, EdgeCertificate value, Morphism<Node,Edge> result,
                             Set<Node> connectedNodes, Set<Node> usedCodNodes) {
-        if (!setNode(key.source(), value.source(), result, connectedNodes, usedCodNodes)) {
+        Edge keyEdge = key.getElement();
+        Edge valueEdge = value.getElement();
+        if (!setNode(keyEdge.source(), valueEdge.source(), result, connectedNodes, usedCodNodes)) {
             return false;
         }
-        if (!setNode(key.target(), value.target(), result, connectedNodes, usedCodNodes)) {
+        if (!setNode(keyEdge.target(), valueEdge.target(), result, connectedNodes, usedCodNodes)) {
             return false;
         }
-        result.putEdge(key, value);
+        putEdges(domCertifier, codCertifier, key, value, result);
         return true;
     }
 
@@ -1208,8 +1222,9 @@ public class IsoChecker {
 
     private class IsoSearchPair implements Comparable<IsoSearchPair> {
         /** Constructs an instance from given data. */
-        public IsoSearchPair(Edge key, Collection<Edge> images) {
-            this.key = key;
+        public IsoSearchPair(EdgeCertificate cert, Collection<EdgeCertificate> images) {
+            this.cert = cert;
+            this.key = cert.getElement();
             this.images = images;
         }
 
@@ -1224,13 +1239,15 @@ public class IsoChecker {
             return result;
         }
 
-        /** The domain key of this record. */
+        /** The domain bundle certificate of this record. */
+        final EdgeCertificate cert;
+        /** A representative of the domain bundle of this record. */
         final Edge key;
         /**
-         * The codomain images of this record; guaranteed to contain at least
-         * two elements.
+         * The codomain bundle images of this record; guaranteed to contain at
+         * least two elements.
          */
-        final Collection<Edge> images;
+        final Collection<EdgeCertificate> images;
     }
 
     /**
@@ -1238,8 +1255,8 @@ public class IsoChecker {
      */
     private class IsoSearchItem extends IsoSearchPair {
         /** Constructs an instance from given data. */
-        public IsoSearchItem(Edge key, Collection<Edge> images) {
-            super(key, images);
+        public IsoSearchItem(EdgeCertificate cert, Collection<EdgeCertificate> images) {
+            super(cert, images);
         }
 
         @Override
@@ -1286,19 +1303,12 @@ public class IsoChecker {
         List<IsoSearchItem> plan = null;
         /** Set of images used in the isomorphism so far. */
         Set<Node> usedNodeImages = null;
-        /** Set of edge images used in the isomorphism so far; {@code null}
-         * for simple graphs, where edge injectivity is implied by node
-         * injectivity. */
-        Set<Edge> usedEdgeImages = null;
         /** Records of the search for isomorphism. */
-        Iterator<Edge>[] records = null;
+        Iterator<EdgeCertificate>[] records = null;
         /** Array of source nodes in the order of the search plan. */
         Node[] sourceImages = null;
         /** Array of target nodes in the order of the search plan. */
         Node[] targetImages = null;
-        /** Array of edge images in the order of the search plan; {@code null}
-         * for simple graphs. */
-        Edge[] edgeImages = null;
         /** Result of the search. */
         Morphism<Node,Edge> result = null;
         /** Position in the search plan. */

@@ -123,7 +123,14 @@ public class IsoTest {
         TypeFactory typeFactory = TypeFactory.newInstance();
         DefaultHostGraph dom = createParallelGraph(typeFactory);
         DefaultHostGraph cod = createParallelGraph(typeFactory);
+        int certCount = IsoChecker.getEqualCertsCount();
+        int simCount = IsoChecker.getEqualSimCount();
         Assert.assertTrue(checker.areIsomorphic(dom, cod));
+        // each bundle of parallel copies carries a single certificate, so the
+        // partition maps are discrete and the comparison is answered by the
+        // certificates, not by the simulation search (gh #906)
+        Assert.assertEquals(certCount + 1, IsoChecker.getEqualCertsCount());
+        Assert.assertEquals(simCount, IsoChecker.getEqualSimCount());
         Morphism<HostNode,HostEdge> iso = checker.getIsomorphism(dom, cod);
         Assert.assertNotNull(iso);
         Assert.assertEquals(dom.nodeCount(), iso.nodeMap().size());
@@ -165,9 +172,9 @@ public class IsoTest {
     }
 
     /** Creates a multigraph with three parallel a-loops and two parallel
-     * b-edges. The shared edge certificates of the parallel copies force the
-     * isomorphism to be constructed by the search plan rather than directly
-     * from the certificates. */
+     * b-edges. The parallel copies of each bundle share a single certificate
+     * carrying their multiplicity, so the isomorphism is constructed directly
+     * from the certificates, pairing the copies of matched bundles. */
     private DefaultHostGraph createParallelGraph(TypeFactory typeFactory) {
         DefaultHostGraph result
             = new DefaultHostGraph("parallel", HostFactory.newInstance(typeFactory, false));

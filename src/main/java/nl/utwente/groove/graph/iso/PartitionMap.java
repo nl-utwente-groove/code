@@ -1,46 +1,46 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2023
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package nl.utwente.groove.graph.iso;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.iso.CertificateStrategy.ElementCertificate;
 import nl.utwente.groove.util.collect.SmallCollection;
 
 /**
- * Mapping from certificate values to sets of graph elements having those
- * certificates. For efficiency, images are stored as {@link SmallCollection}s
+ * Mapping from certificate values to the certificates having those values.
+ * Certificates are the units at which the graph is partitioned: for nodes
+ * there is one per node, but for edges there is one per bundle of parallel
+ * copies, so a certificate may stand for more than one graph element.
+ * For efficiency, images are stored as {@link SmallCollection}s.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class PartitionMap<E extends Element> {
-    /** Adds a pair of certificate and graph element to the partition map. */
-    public void add(ElementCertificate<? extends E> certificate) {
-        E elem = certificate.getElement();
-        // retrieve the image of the certificate, if any
-        SmallCollection<E> oldPartition = this.partitionMap.get(certificate);
+public class PartitionMap<C extends ElementCertificate<?>> {
+    /** Adds a certificate to the partition map. */
+    public void add(C certificate) {
+        // retrieve the image of the certificate value, if any
+        SmallCollection<C> oldPartition = this.partitionMap.get(certificate);
         if (oldPartition == null) {
-            // no, the certificate did not yet exist; create an entry for it
-            this.partitionMap.put(certificate, new SmallCollection<>(elem));
+            // no, the certificate value did not yet exist; create an entry for it
+            this.partitionMap.put(certificate, new SmallCollection<>(certificate));
         } else {
-            oldPartition.add(elem);
+            oldPartition.add(certificate);
             this.oneToOne = false;
         }
     }
@@ -51,17 +51,17 @@ public class PartitionMap<E extends Element> {
     }
 
     /**
-     * Retrieves the partition for a given certificate value. The partition can
-     * be a single {@link Element} or a {@link Collection} of elements.
-     * @param certificate the value for which we want the partition.
-     * @return an object of type {@link Element} or type {@link Collection}, or
-     *         <code>null</code>
+     * Retrieves the partition for a given certificate value.
+     * @param certificate the value for which we want the partition; need not
+     *        be a certificate of the underlying graph, only equal to one
+     * @return the certificates equal to <code>certificate</code>, or
+     *         <code>null</code> if there are none
      */
-    public SmallCollection<E> get(ElementCertificate<E> certificate) {
+    public SmallCollection<C> get(C certificate) {
         return this.partitionMap.get(certificate);
     }
 
-    /** Number of certificates in the map. */
+    /** Number of distinct certificate values in the map. */
     public int size() {
         return this.partitionMap.size();
     }
@@ -75,8 +75,7 @@ public class PartitionMap<E extends Element> {
     }
 
     /** The actual mapping. */
-    private final Map<ElementCertificate<? extends E>,SmallCollection<E>> partitionMap =
-        new HashMap<>();
+    private final Map<C,SmallCollection<C>> partitionMap = new HashMap<>();
     /** Flag indicating if the partition map contains non-singleton images. */
     private boolean oneToOne = true;
 }

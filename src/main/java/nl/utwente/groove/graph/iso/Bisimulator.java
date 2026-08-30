@@ -82,8 +82,10 @@ public class Bisimulator extends CertificateStrategy {
             certStore.clear(nodeCertCount);
             // first compute the new edge certificates
             for (int i = 0; i < this.edge2CertCount; i++) {
-                Certificate<Edge> edgeCert = (MyEdge2Cert) this.edgeCerts[i];
-                certificateValue += edgeCert.setNewValue();
+                MyEdge2Cert edgeCert = (MyEdge2Cert) this.edgeCerts[i];
+                // the parallel copies of the bundle would each have
+                // contributed the same value
+                certificateValue += (long) edgeCert.getMultiplicity() * edgeCert.setNewValue();
             }
             // now compute the new node certificates
             // while keeping track of the lowest value, in case
@@ -167,14 +169,16 @@ public class Bisimulator extends CertificateStrategy {
     }
 
     @Override
-    EdgeCertificate createEdge1Certificate(Edge edge, CertificateStrategy.NodeCertificate source) {
-        return new MyEdge1Cert(edge, (MyNodeCert) source);
+    EdgeCertificate createEdge1Certificate(Edge edge, CertificateStrategy.NodeCertificate source,
+                                           int multiplicity) {
+        return new MyEdge1Cert(edge, (MyNodeCert) source, multiplicity);
     }
 
     @Override
     EdgeCertificate createEdge2Certificate(Edge edge, CertificateStrategy.NodeCertificate source,
-                                           CertificateStrategy.NodeCertificate target) {
-        return new MyEdge2Cert(edge, (MyNodeCert) source, (MyNodeCert) target);
+                                           CertificateStrategy.NodeCertificate target,
+                                           int multiplicity) {
+        return new MyEdge2Cert(edge, (MyNodeCert) source, (MyNodeCert) target, multiplicity);
     }
 
     /**
@@ -418,20 +422,27 @@ public class Bisimulator extends CertificateStrategy {
      */
     static private class MyEdge2Cert extends Certificate<Edge> implements EdgeCertificate {
         /**
-         * Constructs a certificate for a binary edge.
-         * @param edge The target certificate node
+         * Constructs a certificate for a bundle of parallel binary edges.
+         * @param edge a representative of the bundle
          * @param source The source certificate node
-         * @param target The label of the original edge
+         * @param target The target certificate node
+         * @param multiplicity the number of parallel copies in the bundle
          */
-        public MyEdge2Cert(Edge edge, MyNodeCert source, MyNodeCert target) {
+        public MyEdge2Cert(Edge edge, MyNodeCert source, MyNodeCert target, int multiplicity) {
             super(edge);
             this.source = source;
             this.target = target;
+            this.multiplicity = multiplicity;
             this.label = edge.label();
             this.initValue = this.label.hashCode();
             initValue();
-            source.addValue(this.value);
-            target.addValue(this.value << 1);
+            source.addValue(multiplicity * this.value);
+            target.addValue(multiplicity * (this.value << 1));
+        }
+
+        @Override
+        public int getMultiplicity() {
+            return this.multiplicity;
         }
 
         @Override
@@ -449,7 +460,8 @@ public class Bisimulator extends CertificateStrategy {
                 return false;
             }
             MyEdge2Cert other = (MyEdge2Cert) obj;
-            if (!this.source.equals(other.source) || !this.label.equals(other.label)) {
+            if (!this.source.equals(other.source) || !this.label.equals(other.label)
+                || this.multiplicity != other.multiplicity) {
                 return false;
             }
             if (this.target == this.source) {
@@ -468,8 +480,8 @@ public class Bisimulator extends CertificateStrategy {
             int targetHashCode = this.target.value;
             int result = ((sourceHashCode << 8) | (sourceHashCode >>> 24))
                 + ((targetHashCode << targetShift) | (targetHashCode >>> targetShift)) + this.value;
-            this.source.nextValue += 2 * result;
-            this.target.nextValue -= 3 * result;
+            this.source.nextValue += this.multiplicity * 2 * result;
+            this.target.nextValue -= this.multiplicity * 3 * result;
             return result;
         }
 
@@ -485,6 +497,8 @@ public class Bisimulator extends CertificateStrategy {
         private final MyNodeCert source;
         /** The target certificate for the edge; may be <tt>null</tt>. */
         private final MyNodeCert target;
+        /** The number of parallel edges represented by this certificate. */
+        private final int multiplicity;
         /** The original edge label. */
         private final Label label;
         /**
@@ -500,14 +514,23 @@ public class Bisimulator extends CertificateStrategy {
      * @version $Revision$
      */
     static private class MyEdge1Cert extends Certificate<Edge> implements EdgeCertificate {
-        /** Constructs a certificate edge for a predicate (i.e., a unary edge). */
-        public MyEdge1Cert(Edge edge, MyNodeCert source) {
+        /** Constructs a certificate edge for a bundle of parallel predicates
+         * (i.e., unary edges).
+         * @param edge a representative of the bundle
+         * @param multiplicity the number of parallel copies in the bundle */
+        public MyEdge1Cert(Edge edge, MyNodeCert source, int multiplicity) {
             super(edge);
             this.source = source;
+            this.multiplicity = multiplicity;
             this.label = edge.label();
             this.initValue = this.label.hashCode();
             initValue();
-            source.addValue(this.value);
+            source.addValue(multiplicity * this.value);
+        }
+
+        @Override
+        public int getMultiplicity() {
+            return this.multiplicity;
         }
 
         @Override
@@ -524,7 +547,8 @@ public class Bisimulator extends CertificateStrategy {
                 return false;
             }
             MyEdge1Cert other = (MyEdge1Cert) obj;
-            return this.source.equals(other.source) && !this.label.equals(other.label);
+            return this.source.equals(other.source) && !this.label.equals(other.label)
+                && this.multiplicity == other.multiplicity;
         }
 
         /**
@@ -548,6 +572,8 @@ public class Bisimulator extends CertificateStrategy {
 
         /** The source certificate for the edge. */
         private final MyNodeCert source;
+        /** The number of parallel edges represented by this certificate. */
+        private final int multiplicity;
         /** The original edge label. */
         private final Label label;
         /**

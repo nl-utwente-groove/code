@@ -88,9 +88,11 @@ abstract public class CertificateStrategy {
 
     /**
      * Returns the edges of the underlying graph, grouped into bundles of
-     * parallel copies. Computed on demand, and kept here because the
-     * certifier's lifetime is that of the graph's cache; this is unrelated to
-     * the certificates themselves, and does not trigger their computation.
+     * parallel copies. For a non-simple graph the bundles are computed as part
+     * of {@link #initCertificates()}, since the certificates are assigned to
+     * bundles rather than to individual edges; otherwise they are computed on
+     * demand. Retrieving them does not trigger the computation of the
+     * certificates.
      */
     EdgeBundles getEdgeBundles() {
         var result = this.edgeBundles;
@@ -98,6 +100,16 @@ abstract public class CertificateStrategy {
             this.edgeBundles = result = EdgeBundles.newInstance(getGraph());
         }
         return result;
+    }
+
+    /**
+     * Returns the parallel copies of a given edge of the underlying graph,
+     * being the edges represented by that edge's certificate. Only defined if
+     * the certificate has a multiplicity larger than one.
+     * @see EdgeCertificate#getMultiplicity()
+     */
+    Edge[] getCopies(Edge edge) {
+        return getEdgeBundles().getCopies(edge);
     }
 
     /** The pre-computed edge bundles, if any. */
@@ -141,13 +153,25 @@ abstract public class CertificateStrategy {
         int nodeCount = getGraph().nodeCount();
         int edgeCount = getGraph().edgeCount();
         this.nodeCerts = new NodeCertificate[nodeCount];
-        this.edgeCerts = new EdgeCertificate[edgeCount];
-        // create the edge certificates
         for (Node node : getGraph().nodeSet()) {
             initNodeCert(node);
         }
-        for (Edge edge : getGraph().edgeSet()) {
-            initEdgeCert(edge);
+        // create the edge certificates
+        if (getGraph().isSimple()) {
+            this.edgeCerts = new EdgeCertificate[edgeCount];
+            for (Edge edge : getGraph().edgeSet()) {
+                initEdgeCert(edge, 1);
+            }
+        } else {
+            // parallel copies are interchangeable, and provably carry equal
+            // certificate values at every iteration, so they share a single
+            // certificate that records how many of them there are (gh #906)
+            var bundles = getEdgeBundles();
+            int bundleCount = bundles.size();
+            this.edgeCerts = new EdgeCertificate[bundleCount];
+            for (int i = 0; i < bundleCount; i++) {
+                initEdgeCert(bundles.getRepresentative(i), bundles.getCount(i));
+            }
         }
     }
 
@@ -196,15 +220,18 @@ abstract public class CertificateStrategy {
     }
 
     /**
-     * Creates an {@link EdgeCertificate} for a given graph edge, and inserts
-     * into the certificate edge map.
+     * Creates an {@link EdgeCertificate} for a given bundle of parallel edges,
+     * identified by one of its copies, and inserts it into the certificate
+     * edge map.
+     * @param edge a representative of the bundle
+     * @param multiplicity the number of parallel copies in the bundle
      */
-    private void initEdgeCert(Edge edge) {
+    private void initEdgeCert(Edge edge, int multiplicity) {
         Node source = edge.source();
         NodeCertificate sourceCert = getNodeCert(source);
         assert sourceCert != null : String.format("No source certifiate found for %s", edge);
         if (source == edge.target()) {
-            EdgeCertificate edge1Cert = createEdge1Certificate(edge, sourceCert);
+            EdgeCertificate edge1Cert = createEdge1Certificate(edge, sourceCert, multiplicity);
             this.edgeCerts[this.edgeCerts.length - this.edge1CertCount - 1] = edge1Cert;
             this.edge1CertCount++;
             assert this.edge1CertCount + this.edge2CertCount <= this.edgeCerts.length : String
@@ -213,7 +240,8 @@ abstract public class CertificateStrategy {
         } else {
             NodeCertificate targetCert = getNodeCert(edge.target());
             assert targetCert != null : String.format("No target certifiate found for %s", edge);
-            EdgeCertificate edge2Cert = createEdge2Certificate(edge, sourceCert, targetCert);
+            EdgeCertificate edge2Cert
+                = createEdge2Certificate(edge, sourceCert, targetCert, multiplicity);
             this.edgeCerts[this.edge2CertCount] = edge2Cert;
             this.edge2CertCount++;
             assert this.edge1CertCount + this.edge2CertCount <= this.edgeCerts.length : String
@@ -228,12 +256,20 @@ abstract public class CertificateStrategy {
 
     abstract NodeCertificate createNodeCertificate(Node node);
 
+    /** Factory method for the certificate of a bundle of parallel unary edges.
+     * @param edge a representative of the bundle
+     * @param multiplicity the number of parallel copies in the bundle */
     abstract EdgeCertificate createEdge1Certificate(Edge edge,
-                                                    nl.utwente.groove.graph.iso.CertificateStrategy.NodeCertificate source);
+                                                    nl.utwente.groove.graph.iso.CertificateStrategy.NodeCertificate source,
+                                                    int multiplicity);
 
+    /** Factory method for the certificate of a bundle of parallel binary edges.
+     * @param edge a representative of the bundle
+     * @param multiplicity the number of parallel copies in the bundle */
     abstract EdgeCertificate createEdge2Certificate(Edge edge,
                                                     nl.utwente.groove.graph.iso.CertificateStrategy.NodeCertificate source,
-                                                    nl.utwente.groove.graph.iso.CertificateStrategy.NodeCertificate target);
+                                                    nl.utwente.groove.graph.iso.CertificateStrategy.NodeCertificate target,
+                                                    int multiplicity);
 
     /**
      * Returns a map from graph elements to certificates for the underlying
@@ -255,9 +291,16 @@ abstract public class CertificateStrategy {
             for (NodeCertificate nodeCert : this.nodeCerts) {
                 this.certificateMap.put(nodeCert.getElement(), nodeCert);
             }
-            // add the edge certificates to the certificate map
+            // add the edge certificates to the certificate map;
+            // every parallel copy is a key, mapped to its bundle's certificate
             for (EdgeCertificate edgeCert : this.edgeCerts) {
-                this.certificateMap.put(edgeCert.getElement(), edgeCert);
+                if (edgeCert.getMultiplicity() == 1) {
+                    this.certificateMap.put(edgeCert.getElement(), edgeCert);
+                } else {
+                    for (Edge edge : getCopies(edgeCert.getElement())) {
+                        this.certificateMap.put(edge, edgeCert);
+                    }
+                }
             }
         }
         return this.certificateMap;
@@ -270,7 +313,7 @@ abstract public class CertificateStrategy {
      * isomorphism if their certificates are equal; i.e., if they are in the
      * image of the same certificate.
      */
-    public PartitionMap<Node> getNodePartitionMap() {
+    public PartitionMap<NodeCertificate> getNodePartitionMap() {
         // check if the map has been computed before
         if (this.nodePartitionMap == null) {
             // no; go ahead and compute it
@@ -284,9 +327,9 @@ abstract public class CertificateStrategy {
      * Computes the partition map, i.e., the mapping from certificates to sets
      * of graph elements having those certificates.
      */
-    private PartitionMap<Node> computeNodePartitionMap() {
+    private PartitionMap<NodeCertificate> computeNodePartitionMap() {
         getPartitionReporter.start();
-        PartitionMap<Node> result = new PartitionMap<>();
+        PartitionMap<NodeCertificate> result = new PartitionMap<>();
         // invert the certificate map
         for (NodeCertificate cert : this.nodeCerts) {
             result.add(cert);
@@ -302,7 +345,7 @@ abstract public class CertificateStrategy {
      * isomorphism if their certificates are equal; i.e., if they are in the
      * image of the same certificate.
      */
-    public PartitionMap<Edge> getEdgePartitionMap() {
+    public PartitionMap<EdgeCertificate> getEdgePartitionMap() {
         // check if the map has been computed before
         if (this.edgePartitionMap == null) {
             // no; go ahead and compute it
@@ -316,9 +359,9 @@ abstract public class CertificateStrategy {
      * Computes the partition map, i.e., the mapping from certificates to sets
      * of graph elements having those certificates.
      */
-    private PartitionMap<Edge> computeEdgePartitionMap() {
+    private PartitionMap<EdgeCertificate> computeEdgePartitionMap() {
         getPartitionReporter.start();
-        PartitionMap<Edge> result = new PartitionMap<>();
+        PartitionMap<EdgeCertificate> result = new PartitionMap<>();
         // invert the certificate map
         int bound = this.edgeCerts.length;
         for (int i = 0; i < bound; i++) {
@@ -358,9 +401,9 @@ abstract public class CertificateStrategy {
     /** The pre-computed certificate map, if any. */
     Map<Element,ElementCertificate<?>> certificateMap;
     /** The pre-computed node partition map, if any. */
-    PartitionMap<Node> nodePartitionMap;
+    PartitionMap<NodeCertificate> nodePartitionMap;
     /** The pre-computed edge partition map, if any. */
-    PartitionMap<Edge> edgePartitionMap;
+    PartitionMap<EdgeCertificate> edgePartitionMap;
 
     /**
      * The list of node certificates in this bisimulator.
@@ -451,8 +494,18 @@ abstract public class CertificateStrategy {
         // no added functionality
     }
 
-    /** Specialised certificate for edges. */
+    /**
+     * Specialised certificate for edges. An edge certificate stands for a
+     * bundle of parallel edges, of which {@link #getElement()} returns a
+     * representative; only in a non-simple graph can a bundle have more than
+     * one member.
+     */
     static public interface EdgeCertificate extends ElementCertificate<Edge> {
-        // no added functionality
+        /**
+         * Returns the number of parallel edges for which this is the
+         * certificate; at least one. The edges themselves are obtained through
+         * {@link CertificateStrategy#getCopies(Edge)}.
+         */
+        int getMultiplicity();
     }
 }

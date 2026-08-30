@@ -183,7 +183,10 @@ public class PartitionRefiner extends CertificateStrategy {
     private void advanceEdgeCerts() {
         for (int i = 0; i < this.edge2CertCount; i++) {
             MyEdge2Cert edgeCert = (MyEdge2Cert) this.edgeCerts[i];
-            this.graphCertificate += edgeCert.setNewValue();
+            // the parallel copies of the bundle would each have contributed
+            // the same value; widen before multiplying, since the graph
+            // certificate accumulates in long arithmetic
+            this.graphCertificate += (long) edgeCert.getMultiplicity() * edgeCert.setNewValue();
         }
     }
 
@@ -301,13 +304,14 @@ public class PartitionRefiner extends CertificateStrategy {
     }
 
     @Override
-    MyEdge1Cert createEdge1Certificate(Edge edge, NodeCertificate source) {
-        return new MyEdge1Cert(edge, (MyNodeCert) source);
+    MyEdge1Cert createEdge1Certificate(Edge edge, NodeCertificate source, int multiplicity) {
+        return new MyEdge1Cert(edge, (MyNodeCert) source, multiplicity);
     }
 
     @Override
-    MyEdge2Cert createEdge2Certificate(Edge edge, NodeCertificate source, NodeCertificate target) {
-        return new MyEdge2Cert(edge, (MyNodeCert) source, (MyNodeCert) target);
+    MyEdge2Cert createEdge2Certificate(Edge edge, NodeCertificate source, NodeCertificate target,
+                                       int multiplicity) {
+        return new MyEdge2Cert(edge, (MyNodeCert) source, (MyNodeCert) target, multiplicity);
     }
 
     /**
@@ -628,32 +632,42 @@ public class PartitionRefiner extends CertificateStrategy {
      */
     static class MyEdge2Cert extends MyCert<Edge> implements EdgeCertificate {
         /**
-         * Constructs a certificate for a binary edge.
-         * @param edge The target certificate node
+         * Constructs a certificate for a bundle of parallel binary edges.
+         * @param edge a representative of the bundle
          * @param source The source certificate node
-         * @param target The label of the original edge
+         * @param target The target certificate node
+         * @param multiplicity the number of parallel copies in the bundle
          */
-        public MyEdge2Cert(Edge edge, MyNodeCert source, MyNodeCert target) {
+        public MyEdge2Cert(Edge edge, MyNodeCert source, MyNodeCert target, int multiplicity) {
             super(edge);
             this.source = source;
             this.target = target;
+            this.multiplicity = multiplicity;
             this.label = edge.label();
             this.initValue = this.label.hashCode();
             this.value = this.initValue;
-            source.addValue(this.value);
-            target.addValue(this.value << 1);
+            source.addValue(multiplicity * this.value);
+            target.addValue(multiplicity * (this.value << 1));
+        }
+
+        @Override
+        public int getMultiplicity() {
+            return this.multiplicity;
         }
 
         @Override
         public String toString() {
             return "[" + this.source + "," + this.label + "(" + this.initValue + ")," + this.target
+                + (this.multiplicity == 1
+                    ? ""
+                    : "*" + this.multiplicity)
                 + "]";
         }
 
         /**
          * Returns <tt>true</tt> if <tt>obj</tt> is also a
          * {@link PartitionRefiner.MyEdge2Cert} and has the same value, as well as the same
-         * source and target values, as this one.
+         * source and target values and the same multiplicity, as this one.
          * @see #getValue()
          */
         @Override
@@ -665,7 +679,8 @@ public class PartitionRefiner extends CertificateStrategy {
                 return false;
             }
             MyEdge2Cert other = (MyEdge2Cert) obj;
-            if (!this.source.equals(other.source) || !this.label.equals(other.label)) {
+            if (!this.source.equals(other.source) || !this.label.equals(other.label)
+                || this.multiplicity != other.multiplicity) {
                 return false;
             }
             if (this.target == this.source) {
@@ -684,12 +699,14 @@ public class PartitionRefiner extends CertificateStrategy {
             int targetHashCode = this.target.value;
             int result = ((sourceHashCode << 8) | (sourceHashCode >>> 24))
                 + ((targetHashCode << targetShift) | (targetHashCode >>> targetShift)) + this.value;
-            this.source.nextValue += 2 * result;
-            this.target.nextValue -= 3 * result;
+            this.source.nextValue += this.multiplicity * 2 * result;
+            this.target.nextValue -= this.multiplicity * 3 * result;
             return result;
         }
 
         private final Label label;
+        /** The number of parallel edges represented by this certificate. */
+        private final int multiplicity;
         /** The source certificate for the edge. */
         private final MyNodeCert source;
         /** The target certificate for the edge; may be <tt>null</tt>. */
@@ -707,25 +724,38 @@ public class PartitionRefiner extends CertificateStrategy {
      * @version $Revision$
      */
     static class MyEdge1Cert extends MyCert<Edge> implements EdgeCertificate {
-        /** Constructs a certificate edge for a predicate (i.e., a unary edge). */
-        public MyEdge1Cert(Edge edge, MyNodeCert source) {
+        /** Constructs a certificate edge for a bundle of parallel predicates
+         * (i.e., unary edges).
+         * @param edge a representative of the bundle
+         * @param multiplicity the number of parallel copies in the bundle */
+        public MyEdge1Cert(Edge edge, MyNodeCert source, int multiplicity) {
             super(edge);
             this.source = source;
+            this.multiplicity = multiplicity;
             this.label = edge.label();
             this.initValue = this.label.hashCode();
             this.value = this.initValue;
-            source.addValue(this.value);
+            source.addValue(multiplicity * this.value);
+        }
+
+        @Override
+        public int getMultiplicity() {
+            return this.multiplicity;
         }
 
         @Override
         public String toString() {
-            return "[" + this.source + "," + this.label + "(" + this.initValue + ")]";
+            return "[" + this.source + "," + this.label + "(" + this.initValue + ")"
+                + (this.multiplicity == 1
+                    ? ""
+                    : "*" + this.multiplicity)
+                + "]";
         }
 
         /**
          * Returns <tt>true</tt> if <tt>obj</tt> is also a
          * {@link PartitionRefiner.MyEdge1Cert} and has the same value, as well as the same
-         * source and target values, as this one.
+         * source and target values and the same multiplicity, as this one.
          * @see #getValue()
          */
         @Override
@@ -737,7 +767,7 @@ public class PartitionRefiner extends CertificateStrategy {
                 return false;
             }
             MyEdge1Cert other = (MyEdge1Cert) obj;
-            return this.label.equals(other.label);
+            return this.label.equals(other.label) && this.multiplicity == other.multiplicity;
         }
 
         /**
@@ -755,6 +785,8 @@ public class PartitionRefiner extends CertificateStrategy {
         private final MyNodeCert source;
         /** Possibly {@code null} node label. */
         private final Label label;
+        /** The number of parallel edges represented by this certificate. */
+        private final int multiplicity;
         /**
          * The hash code of the original edge label.
          */

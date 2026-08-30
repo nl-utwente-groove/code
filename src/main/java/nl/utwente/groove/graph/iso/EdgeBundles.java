@@ -24,31 +24,29 @@ import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.util.AIGenerated;
 
 /**
- * Multiset view of the edges of a graph: the edges are grouped into
- * <i>bundles</i> of parallel copies, i.e., edges sharing their source, label
- * and target, and only the size of each bundle is recorded.
+ * Grouping of the edges of a graph into <i>bundles</i> of parallel copies,
+ * i.e., maximal sets of edges sharing their source, label and target.
  * <p>
  * In a non-simple graph, content-equal edges are distinct objects (their
  * numbers differ, see {@link nl.utwente.groove.graph.ANumberedEdge}), so two
- * graphs that differ only
- * in the identity of such copies have unequal edge sets. They are nevertheless
- * isomorphic, by the identity on the nodes and any per-bundle bijection on the
- * edges; comparing bundles rather than edges recognises this (see
- * {@link IsoChecker}).
+ * graphs that differ only in the identity of such copies have unequal edge
+ * sets. They are nevertheless isomorphic, by the identity on the nodes and any
+ * per-bundle bijection on the edges. Bundles are therefore the granularity at
+ * which the isomorphism machinery works: they are the units compared in
+ * {@link #hasSameEdges}, and the units to which {@link CertificateStrategy}
+ * assigns edge certificates.
  * <p>
- * An index is built for one graph and compared against the <i>edges</i> of
- * another ({@link #hasSameEdges}), rather than against a second index: in the
- * isomorphism checker one side is a state that is compared repeatedly, and so
- * profits from being indexed, whereas the other is a freshly derived graph
- * that would pay for an index it uses once. The comparison allocates nothing
- * beyond a counter per bundle.
+ * Two of the three arrays that make up a bundle - its representative and its
+ * size - are filled while the edges are scanned; the parallel copies
+ * themselves are collected in a second scan, and only for bundles that have
+ * more than one, since a graph typically has few.
  * @author Arend Rensink
  * @version $Revision$
  */
 @NonNullByDefault
 @AIGenerated("Claude Opus 5, 2026-08")
 class EdgeBundles {
-    /** Constructs the bundle index of a given graph. */
+    /** Constructs the bundles of a given graph. */
     private EdgeBundles(Graph graph) {
         int edgeCount = graph.edgeCount();
         this.edgeCount = edgeCount;
@@ -64,6 +62,9 @@ class EdgeBundles {
         for (Edge edge : graph.edgeSet()) {
             add(edge);
         }
+        this.copies = this.bundleCount == edgeCount
+            ? null
+            : collectCopies(graph);
     }
 
     /** Adds an edge to the index, as a fresh bundle or a further copy. */
@@ -93,8 +94,33 @@ class EdgeBundles {
     }
 
     /**
+     * Collects the parallel copies of every bundle that has more than one, in
+     * a second scan over the edges. Called from the constructor, after all
+     * bundle sizes are known.
+     */
+    private @Nullable Edge[] @Nullable [] collectCopies(Graph graph) {
+        @Nullable
+        Edge[] @Nullable [] result = new Edge[this.bundleCount][];
+        int[] filled = new int[this.bundleCount];
+        for (Edge edge : graph.edgeSet()) {
+            int index = indexOf(edge);
+            int count = this.counts[index];
+            if (count > 1) {
+                @Nullable
+                Edge[] bundle = result[index];
+                if (bundle == null) {
+                    result[index] = bundle = new Edge[count];
+                }
+                bundle[filled[index]] = edge;
+                filled[index]++;
+            }
+        }
+        return result;
+    }
+
+    /**
      * Returns the index of the bundle of parallel copies of a given edge, or
-     * {@code -1} if this index has no such bundle.
+     * {@code -1} if there is no such bundle.
      */
     private int indexOf(Edge edge) {
         int hash = hash(edge);
@@ -114,10 +140,45 @@ class EdgeBundles {
         }
     }
 
+    /** Returns the number of bundles. */
+    int size() {
+        return this.bundleCount;
+    }
+
+    /** Returns the first-encountered copy of the bundle at a given index. */
+    Edge getRepresentative(int index) {
+        Edge result = this.reps[index];
+        assert result != null; // the index is that of an existing bundle
+        return result;
+    }
+
+    /** Returns the number of parallel copies of the bundle at a given index. */
+    int getCount(int index) {
+        return this.counts[index];
+    }
+
     /**
-     * Tests if a given graph has the same edges as the graph of this index, up
-     * to the identity of parallel copies. Only the edges of the parameter are
-     * inspected; the graph of the index is not touched.
+     * Returns the parallel copies of the bundle containing a given edge, in
+     * the order in which the graph presented them. Only defined for bundles of
+     * more than one copy; for a singleton bundle the edge itself is the only
+     * copy, and no array is stored. Every slot of the result is filled,
+     * despite the element type.
+     */
+    @Nullable
+    Edge[] getCopies(Edge edge) {
+        @Nullable
+        Edge[] @Nullable [] copies = this.copies;
+        assert copies != null; // some bundle has more than one copy
+        @Nullable
+        Edge[] result = copies[indexOf(edge)];
+        assert result != null : String.format("Edge %s has no parallel copies", edge);
+        return result;
+    }
+
+    /**
+     * Tests if a given graph has the same edges as the graph of these bundles,
+     * up to the identity of parallel copies. Only the edges of the parameter
+     * are inspected; the graph of the bundles is not touched.
      */
     boolean hasSameEdges(Graph graph) {
         if (graph.edgeCount() != this.edgeCount) {
@@ -149,22 +210,28 @@ class EdgeBundles {
             && one.label().equals(two.label());
     }
 
-    /** The number of edges of the indexed graph. */
+    /** The number of edges of the underlying graph. */
     private final int edgeCount;
     /** The number of bundles, i.e., the number of used entries of {@link #reps}. */
     private int bundleCount;
-    /** For every bundle, an arbitrary one of its parallel copies. */
+    /** For every bundle, its first-encountered copy. */
     private final @Nullable Edge[] reps;
     /** For every bundle, the content hash of its copies. */
     private final int[] hashes;
     /** For every bundle, the number of its parallel copies. */
     private final int[] counts;
+    /**
+     * For every bundle of more than one copy, its copies; {@code null} if the
+     * graph has no such bundle, and {@code null} at the index of every bundle
+     * that has a single copy.
+     */
+    private final @Nullable Edge @Nullable [] @Nullable [] copies;
     /** Open-addressed table from content hash to bundle index, raised by one. */
     private final int[] table;
     /** Bit mask for the length of {@link #table}. */
     private final int mask;
 
-    /** Returns the bundle index of a given graph. */
+    /** Returns the edge bundles of a given graph. */
     static EdgeBundles newInstance(Graph graph) {
         return new EdgeBundles(graph);
     }
