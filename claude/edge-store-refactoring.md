@@ -1,9 +1,9 @@
 # Design note: the StoreFactory edge store and the per-factory perfect hash
 
-*Status (2026-07-16): steps 1–2 landed on `master`; step 3 committed on branch
-`worktree-numbered-edge-split`; steps 4–7 planned. The as-built design (the pool
-layering and the perfect-hash invariant) is stable; the migration below is the agreed
-direction for making edge identity number-based and retiring `graph.multi`.*
+*Status (2026-08-29): all seven steps landed on `master`; gh #895 (steps 4–7) is closed.
+The migration section below records what was planned and, where the as-built shape
+deviated, what was actually done and why. The design sections (pool layering,
+perfect-hash invariant, iso guard) describe the code as it stands.*
 
 ## The problem that started it
 
@@ -72,15 +72,16 @@ as well as edge sets (it previously compared node counts only, so graphs differi
 isolated nodes' types were wrongly declared equal — which could in principle mis-collapse GTS
 states). This guard becomes load-bearing once edge identity goes number-based (steps 4/6).
 
-## Open goal: subsume `graph.multi`
+## Subsumed: `graph.multi` (step 7, master, `3ac7acba9`)
 
-`MultiGraph`/`MultiEdge`/`MultiFactory`/`MultiLabel`/`MultiMorphism`/`MultiNode` are a
+`MultiGraph`/`MultiEdge`/`MultiFactory`/`MultiLabel`/`MultiMorphism`/`MultiNode` were a
 hand-rolled precursor of non-simple edges (`MultiEdge.isSimple() == false`, equals by number).
-They are **not dead**: `GTSFragment.toPlainGraph(LTSLabels, ExploreResult)` builds a
-`MultiGraph` for LTS serialisation (used by `LTSReporter` — the Generator CLI and
-`SaveLTSAsAction` — and by `ExplorationTest`). The subsumption plan is to give plain graphs a
-simplicity flag, switch that one call site to a non-simple `PlainGraph`, and delete the six
-`graph.multi` classes plus their `module-info` export.
+Their one production use — `GTSFragment.toPlainGraph(LTSLabels, ExploreResult)` building the
+LTS-export graph for `LTSReporter` — now produces a non-simple `PlainGraph`; the six classes
+and their `module-info` export are deleted. Two behavioural improvements came for free: the
+per-graph factory numbers each export from 0 (the JVM-wide `MultiFactory` counter made edge
+numbers depend on session history), and the export factory dies with the graph instead of
+accruing every edge for the Simulator's lifetime.
 
 ## Migration path (agreed direction; one branch per step, fast suite green after each)
 
@@ -94,19 +95,42 @@ simplicity flag, switch that one call site to a non-simple `PlainGraph`, and del
    it). Numbered edges are exactly `PlainEdge`, `DefaultHostEdge`, `MultiEdge`, `AspectEdge`,
    `AttrEdge`; `TypeEdge`/`RuleEdge`/`RegEdge`/`ALabelEdge` and the LTS transitions stay on an
    unnumbered content-identified base. *(done — branch `worktree-numbered-edge-split`)*
-4. **Identity switch** (the deep step) — `ANumberedEdge` equality becomes class + number, hash
-   `spread(number)` (the `ANode` pattern); drop `PlainEdge`'s identity-equals + asserts and
-   `DefaultHostEdge`'s type-check-in-equals. Requires the full slow suite (Exploration,
-   Determinism, IO) plus a Generator benchmark for the performance claim.
-5. **Demote `isSimple` off the edge** — remove `Edge.isSimple`; simplicity stays a
-   factory/graph property, selecting pool-vs-number in `storeEdge`.
-6. **Per-graph PlainFactory** — retire the global singleton (precedent: `AspectGraph`'s
-   per-graph factory); simplicity in the constructor. This also removes a monotone retention
-   leak: the singleton keeps every plain node/edge ever created for the JVM lifetime.
-7. **Subsume `graph.multi`** — non-simple per-graph plain factory for LTS export; delete the
-   six multi classes; verify the LTS save path (slow suite).
+4. **Identity switch** (the deep step) — *(done — master, `4a71e96e4`/`85c878df1`, with a
+   deliberate deviation)*. The plan said equality = class + number, hash = `spread(number)`
+   (the `ANode` pattern). As built, the number **refines** content instead of replacing it:
+   `ANumberedEdge.equals` is `super.equals` (content) plus number equality,
+   `computeHashCode()` is `31 * super + number`, using `AEdge`'s cached-hash field. This is
+   extensionally the same within one factory (pooling makes equal content imply the same
+   number) while staying safe across coexisting factories, where number-only equality would
+   collide — which per-graph factories (step 6) made a live concern rather than a theoretical
+   one. `PlainEdge`'s identity-equals and both its canonicity asserts are gone (they encoded
+   the single-global-factory assumption); `DefaultHostEdge` **keeps** its `getType()`
+   comparison in `equals`, since distinct types over equal labels remain possible under
+   subtyping and the type is not derivable from the content triple.
+5. **Demote `isSimple` off the edge** — *(done — master, `4a71e96e4`)*. `Edge.isSimple` and
+   all implementations removed; simplicity survives on `Graph` and `StoreFactory` only, and
+   `storeEdge`'s edge-vs-factory simplicity assert went with it (the edge no longer has an
+   opinion). `EdgeComparator` now always uses the number as final tiebreaker.
+6. **Per-graph PlainFactory** — *(done — master, `85c878df1` + `1f9eecc52`)*.
+   `PlainFactory(boolean simple)` per graph family (shared with clones and `newGraph`
+   derivates so numbering stays consistent); `PlainFactory.instance()` and the static
+   `PlainEdge.createEdge` helpers retired; construction sites now take the owning factory
+   (`AspectToPlainMap`, `PlainMorphism`, RETE dump graphs). Kills the JVM-lifetime retention
+   of every plain element, and makes numbering in converted graphs start at 0 per family
+   instead of continuing a session-wide counter. Known residue, recorded in `85c878df1`:
+   `AspectGraph.toPlainGraph` and the GXL/`AttrGraph` I/O chain still convert always-simple,
+   so non-simple graphs do not round-trip through disk yet.
+7. **Subsume `graph.multi`** — *(done — master, `3ac7acba9`)*, see the section above.
 
-Dependencies: 3 after 1; 4 after 1–3; 5–7 after 4 in order (7 needs 6).
+Dependencies held as planned: 3 after 1; 4 after 1–3; 5–7 after 4 in order (7 needed 6).
+Steps 3–7 landed as one branch (`worktree-numbered-edge-split`, merged `3222b7e15`) rather
+than one branch per step — the identity switch and the per-graph factory justify each other
+(see the step-4 deviation), so splitting them would have meant committing an intermediate
+equality contract nothing kept. The same branch also revised step 3's roster: `AspectEdge`
+became content-identified rather than numbered (`93239449c` — its number only kept identical
+remark edges between the same node pair distinct; those now collapse into one multi-line
+remark edge, `d9c5806ae`), leaving `PlainEdge`, `DefaultHostEdge` and `AttrEdge` as the
+numbered classes once `MultiEdge` was deleted.
 
 ## Why this shape (design rationale worth keeping)
 
@@ -116,8 +140,9 @@ Dependencies: 3 after 1; 4 after 1–3; 5–7 after 4 in order (7 needs 6).
   element" is simply false for the unnumbered edge classes. Edge numbers never leave the JVM
   (GXL/Aut serialisation writes node numbers only), so relocating them is serialization-safe.
 - **A survey of all correctness-relevant equality comparisons found them same-factory.** GTS
-  collapsing uses the single per-GTS `HostFactory`; all plain graphs share the global
-  `PlainFactory` singleton; `AGraph` has no `equals`; store/model change detection is by name.
+  collapsing uses the single per-GTS `HostFactory`; all plain graphs shared the global
+  `PlainFactory` singleton (per-graph since step 6, which the step-4 as-built equality keeps
+  safe); `AGraph` has no `equals`; store/model change detection is by name.
   The only cross-factory equality use is the `areGraphEqual` fast path — hence the step-2 guard.
   This is what makes number-based edge identity safe: within a factory it is invisible (content
   equality already implies the same object/number), and the one cross-factory site is guarded.
@@ -128,11 +153,11 @@ Dependencies: 3 after 1; 4 after 1–3; 5–7 after 4 in order (7 needs 6).
   global that never releases anything. Per-graph plain factories (step 6) pool at graph scope
   and give the non-simple factory slot that step 7 needs.
 
-## Open decisions
+## Open decisions — resolved
 
-- Whether step 4 keeps a cached-hashCode field on `ANumberedEdge` or computes `spread(number)`
-  live (a node-style number hash is cheap enough that caching may not pay).
-- Whether to push edge numbering all the way up to `ElementFactory` (committing `RegFactory`,
-  `TypeFactory`, `RuleFactory`, `AspectFactory`, `MultiFactory`) or keep it scoped to the
-  hot-path `Store`/`Numbered` edge classes. Step 3 chose the scoped shape; the broader push
-  remains a possible follow-up.
+- Cached hash vs. live `spread(number)`: moot in the form posed, since the hash still mixes
+  in content (step-4 deviation above); the content part is worth caching, so `ANumberedEdge`
+  stays on `AEdge`'s cached `computeHashCode` pattern.
+- Pushing edge numbering up to `ElementFactory` (committing `RegFactory`, `TypeFactory`,
+  `RuleFactory`, `AspectFactory`): still not done; the scoped shape chosen at step 3 stands.
+  Remains a possible follow-up, with `MultiFactory` no longer on the list.
