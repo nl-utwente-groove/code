@@ -21,7 +21,10 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.gui.tree.AbstractResourceTree.FolderTreeNode;
+import nl.utwente.groove.util.parse.Severity;
 
 /** Superclass for tree nodes in a display-related list. */
 class DisplayTreeNode extends DefaultMutableTreeNode {
@@ -43,6 +46,16 @@ class DisplayTreeNode extends DefaultMutableTreeNode {
     /** Indicates if this tree node contains an error. */
     boolean isError() {
         return false;
+    }
+
+    /** Returns the maximum severity of the diagnostics of this tree node,
+     * or {@code null} if there are none.
+     * This implementation derives the severity from {@link #isError()}. */
+    @Nullable
+    Severity getSeverity() {
+        return isError()
+            ? Severity.ERROR
+            : null;
     }
 
     /** Indicates if this tree node represents part of a recipe. */

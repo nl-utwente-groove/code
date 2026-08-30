@@ -30,6 +30,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.tree.DisplayTreeNode.Status;
 import nl.utwente.groove.util.HTMLConverter;
+import nl.utwente.groove.util.parse.Severity;
 
 /**
  * Cell renderer for display trees.
@@ -51,14 +52,14 @@ class DisplayTreeCellRenderer extends DefaultTreeCellRenderer {
         String tip = null;
         String text = value.toString();
         boolean active = true;
-        boolean error = false;
+        Severity severity = null;
         boolean inRecipe = false;
         if (value instanceof DisplayTreeNode node) {
             tip = node.getTip();
             icon = node.getIcon();
             text = node.getText();
             active = node.getStatus() == Status.ACTIVE;
-            error = node.isError();
+            severity = node.getSeverity();
             inRecipe = node.isInternal();
         }
         if (icon != null) {
@@ -70,9 +71,11 @@ class DisplayTreeCellRenderer extends DefaultTreeCellRenderer {
         setToolTipText(tip);
         Values.ColorSet colors = inRecipe
             ? Values.RECIPE_COLORS
-            : error
+            : severity == Severity.ERROR
                 ? Values.ERROR_COLORS
-                : Values.NORMAL_COLORS;
+                : severity == Severity.WARNING
+                    ? Values.WARNING_COLORS
+                    : Values.NORMAL_COLORS;
         Color foreground = colors.getForeground(cellSelected, cellFocused);
         setForeground(foreground);
         Color background = colors.getBackground(cellSelected, cellFocused);

@@ -19,12 +19,14 @@ package nl.utwente.groove.gui.tree;
 import javax.swing.Icon;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.Signature;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.util.HTMLConverter;
+import nl.utwente.groove.util.parse.Severity;
 
 /**
  * Recipe nodes of the directory
@@ -56,6 +58,17 @@ class RecipeTreeNode extends ActionTreeNode {
     @Override
     boolean isError() {
         return getRecipe().getTemplate() == null;
+    }
+
+    /* Restores the default derivation from isError(), which the inherited
+     * implementation would replace by a resource-model lookup that does not
+     * apply to recipe nodes. */
+    @Override
+    @Nullable
+    Severity getSeverity() {
+        return isError()
+            ? Severity.ERROR
+            : null;
     }
 
     @Override

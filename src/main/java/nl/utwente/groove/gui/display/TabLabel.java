@@ -43,8 +43,10 @@ import javax.swing.plaf.basic.BasicButtonUI;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.list.ListTabbedPane;
+import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.util.Colors;
 import nl.utwente.groove.util.HTMLConverter;
+import nl.utwente.groove.util.parse.Severity;
 
 /**
  * Component to be used as tabComponent;
@@ -95,7 +97,6 @@ public class TabLabel extends JPanel {
         this.kind = tabKind;
         this.hasButton = button;
         this.iconLabel = new JLabel(title, icon, SwingConstants.LEFT);
-        this.iconLabel.setBackground(Colors.ERROR_COLOR);
         this.iconLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, tabKind.getHGap()));
         if (tabKind != Kind.RESOURCE) {
             this.iconLabel.setFont(this.iconLabel.getFont()
@@ -150,10 +151,30 @@ public class TabLabel extends JPanel {
         }
     }
 
-    /** Visually displays the error property. */
-    public void setError(boolean error) {
-        this.iconLabel.setOpaque(error);
+    /** Visually displays the given severity by painting the label background:
+     * red for {@link Severity#ERROR}, orange for {@link Severity#WARNING},
+     * undecorated for {@link Severity#INFO} or {@code null} (no diagnostics).
+     */
+    public void setSeverity(Severity severity) {
+        boolean decorated = severity == Severity.ERROR || severity == Severity.WARNING;
+        if (decorated) {
+            this.iconLabel
+                .setBackground(severity == Severity.ERROR
+                    ? Colors.ERROR_COLOR
+                    : Values.WARNING_BACKGROUND);
+        }
+        this.iconLabel.setOpaque(decorated);
         this.repaint();
+    }
+
+    /** Visually displays the error property.
+     * Convenience method for {@link #setSeverity(Severity)} with
+     * {@link Severity#ERROR} or {@code null}.
+     */
+    public void setError(boolean error) {
+        setSeverity(error
+            ? Severity.ERROR
+            : null);
     }
 
     @Override

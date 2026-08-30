@@ -53,6 +53,7 @@ import nl.utwente.groove.gui.list.ListPanel;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatErrorSet;
+import nl.utwente.groove.util.parse.Severity;
 
 /**
  * Superclass for grammar component editors.
@@ -384,6 +385,12 @@ abstract public class ResourceTab extends JPanel {
     /** Indicates if the displayed resource currently has blocking errors. */
     final protected boolean hasErrors() {
         return getErrors().hasErrors();
+    }
+
+    /** Returns the maximum severity of the displayed resource's diagnostics,
+     * or {@code null} if there are none. */
+    final @Nullable Severity getSeverity() {
+        return getErrors().getSeverity();
     }
 
     /** Creates and returns a Cancel button, for use on the tool bar. */

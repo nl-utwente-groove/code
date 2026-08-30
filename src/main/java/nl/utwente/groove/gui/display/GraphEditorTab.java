@@ -780,7 +780,7 @@ final public class GraphEditorTab extends ResourceTab
             }
         });
         updateDirty();
-        getTabLabel().setError(hasErrors());
+        getTabLabel().setSeverity(getSeverity());
     }
 
     /** Undoes the last registered change to the Model or the View. */
