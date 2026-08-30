@@ -346,17 +346,70 @@ public class IsoChecker {
     private boolean areCertEqual(CertificateStrategy dom, CertificateStrategy cod,
                                  Object[] domValues, Object[] codValues) {
         boolean result;
-        // map to store dom-to-cod node mapping
-        Morphism<Node,Edge> iso = getCertEqualIsomorphism(dom, cod);
-        result = iso != null;
+        // only the node map is constructed: it carries the entire
+        // verification (see getCertEqualNodeMap), whereas the edge pairing is
+        // free by the interchangeability of parallel copies, so materialising
+        // a full morphism here would be pure overhead on a hot path
+        Map<Node,Node> nodeMap = getCertEqualNodeMap(dom, cod);
+        result = nodeMap != null;
         if (result && domValues != null) {
-            assert iso != null;
             // now test correspondence of the node arrays
-            result = NestedArrays.areEqual(domValues, codValues, iso.nodeMap());
+            result = NestedArrays.areEqual(domValues, codValues, nodeMap);
         }
         if (ISO_PRINT) {
             if (!result) {
                 System.out.printf("Graphs have distinct but unequal certificates%n");
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Constructs the node map of the certificate-based isomorphism, or
+     * returns {@code null} if there is none. This is the verification content
+     * of {@link #getCertEqualIsomorphism(CertificateStrategy, CertificateStrategy)}:
+     * a consistent node map plus equal element counts prove the isomorphism,
+     * since edge certificate equality implies endpoint certificate equality,
+     * so that (by the discreteness of the node certificates) the node map is
+     * injective, and matched bundles have equal multiplicities, so that any
+     * in-order pairing of their copies completes the map. Isolated nodes are
+     * <i>not</i> mapped.
+     * @param dom certifier of the first graph to be tested
+     * @param cod certifier of the second graph to be tested
+     */
+    private Map<Node,Node> getCertEqualNodeMap(CertificateStrategy dom, CertificateStrategy cod) {
+        // with equal counts, an injective mapping of dom bundles to cod
+        // bundles of equal multiplicity (which multiplicity-including
+        // certificate equality guarantees) is necessarily surjective
+        if (dom.getGraph().nodeCount() != cod.getGraph().nodeCount()
+            || dom.getGraph().edgeCount() != cod.getGraph().edgeCount()) {
+            return null;
+        }
+        Map<Node,Node> result = new HashMap<>();
+        EdgeCertificate[] edgeCerts = dom.getEdgeCertificates();
+        PartitionMap<EdgeCertificate> codPartitionMap = cod.getEdgePartitionMap();
+        int edgeCount = edgeCerts.length;
+        for (int i = 0; i < edgeCount && edgeCerts[i] != null; i++) {
+            EdgeCertificate domEdgeCert = edgeCerts[i];
+            SmallCollection<EdgeCertificate> image = codPartitionMap.get(domEdgeCert);
+            if (image == null) {
+                return null;
+            }
+            Edge edgeKey = domEdgeCert.getElement();
+            EdgeCertificate imageCert = image.getSingleton();
+            assert imageCert != null; // image is known to be a singleton
+            Edge edgeImage = imageCert.getElement();
+            // add the source mapping to the result, and test for compatibility
+            Node imageSource = edgeImage.source();
+            Node oldSourceImage = result.put(edgeKey.source(), imageSource);
+            if (oldSourceImage != null && !oldSourceImage.equals(imageSource)) {
+                return null;
+            }
+            // add the target mapping to the result, and test for compatibility
+            Node imageTarget = edgeImage.target();
+            Node oldTargetImage = result.put(edgeKey.target(), imageTarget);
+            if (oldTargetImage != null && !oldTargetImage.equals(imageTarget)) {
+                return null;
             }
         }
         return result;
@@ -375,47 +428,26 @@ public class IsoChecker {
     @SuppressWarnings("unchecked")
     private Morphism<Node,Edge> getCertEqualIsomorphism(CertificateStrategy dom,
                                                         CertificateStrategy cod) {
-        // with equal counts, an injective mapping of dom bundles to cod
-        // bundles of equal multiplicity (which multiplicity-including
-        // certificate equality guarantees) is necessarily surjective
-        if (dom.getGraph().nodeCount() != cod.getGraph().nodeCount()
-            || dom.getGraph().edgeCount() != cod.getGraph().edgeCount()) {
-            return null;
-        }
-        Morphism<Node,Edge> result
-            = (Morphism<Node,Edge>) dom.getGraph().getFactory().createMorphism();
-        // the certificates uniquely identify the bundles;
-        // it is straightforward to construct a morphism
-        // Go over the domain edge bundles
-        EdgeCertificate[] edgeCerts = dom.getEdgeCertificates();
-        PartitionMap<EdgeCertificate> codPartitionMap = cod.getEdgePartitionMap();
-        int edgeCount = edgeCerts.length;
-        for (int i = 0; i < edgeCount && edgeCerts[i] != null; i++) {
-            EdgeCertificate domEdgeCert = edgeCerts[i];
-            SmallCollection<EdgeCertificate> image = codPartitionMap.get(domEdgeCert);
-            if (image == null) {
-                result = null;
-                break;
+        Morphism<Node,Edge> result = null;
+        // the node map carries all the verification
+        Map<Node,Node> nodeMap = getCertEqualNodeMap(dom, cod);
+        if (nodeMap != null) {
+            result = (Morphism<Node,Edge>) dom.getGraph().getFactory().createMorphism();
+            for (Map.Entry<Node,Node> entry : nodeMap.entrySet()) {
+                result.putNode(entry.getKey(), entry.getValue());
             }
-            Edge edgeKey = domEdgeCert.getElement();
-            EdgeCertificate imageCert = image.getSingleton();
-            assert imageCert != null; // image is known to be a singleton
-            Edge edgeImage = imageCert.getElement();
-            // add the source mapping to the result, and test for compatibility
-            Node imageSource = edgeImage.source();
-            Node oldSourceImage = result.putNode(edgeKey.source(), imageSource);
-            if (oldSourceImage != null && !oldSourceImage.equals(imageSource)) {
-                result = null;
-                break;
+            // pair the edges of the matched bundles
+            EdgeCertificate[] edgeCerts = dom.getEdgeCertificates();
+            PartitionMap<EdgeCertificate> codPartitionMap = cod.getEdgePartitionMap();
+            int edgeCount = edgeCerts.length;
+            for (int i = 0; i < edgeCount && edgeCerts[i] != null; i++) {
+                EdgeCertificate domEdgeCert = edgeCerts[i];
+                SmallCollection<EdgeCertificate> image = codPartitionMap.get(domEdgeCert);
+                assert image != null; // the node map construction found it
+                EdgeCertificate imageCert = image.getSingleton();
+                assert imageCert != null; // image is known to be a singleton
+                putEdges(dom, cod, domEdgeCert, imageCert, result);
             }
-            // add the target mapping to the result, and test for compatibility
-            Node imageTarget = edgeImage.target();
-            Node oldTargetImage = result.putNode(edgeKey.target(), imageTarget);
-            if (oldTargetImage != null && !oldTargetImage.equals(imageTarget)) {
-                result = null;
-                break;
-            }
-            putEdges(dom, cod, domEdgeCert, imageCert, result);
         }
         return result;
     }
