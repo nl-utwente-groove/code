@@ -30,6 +30,7 @@ import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.gui.look.Look;
 import nl.utwente.groove.gui.look.VisualKey;
+import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.parse.FormatError;
 
@@ -156,9 +157,8 @@ public class AspectJEdge extends
                 if (result.length() > 0) {
                     result.append("<br>");
                 }
-                result.append(error.toString());
+                result.append(Values.getSeverityTag(error.getSeverity()).on(error.toString()));
             }
-            HTMLConverter.EMBARGO_TAG.on(result);
         } else {
             if (getEdge().has(ARGUMENT)) {
                 result.append(new StringBuilder("Argument edge"));

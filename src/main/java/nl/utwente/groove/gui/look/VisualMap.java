@@ -30,12 +30,15 @@ import java.util.Set;
 
 import org.jgraph.graph.AttributeMap;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.graph.layout.EdgeLayout;
 import nl.utwente.groove.graph.layout.NodeLayout;
 import nl.utwente.groove.gui.look.VisualKey.Nature;
 import nl.utwente.groove.util.DefaultFixable;
 import nl.utwente.groove.util.NodeShape;
 import nl.utwente.groove.util.line.LineStyle;
+import nl.utwente.groove.util.parse.Severity;
 
 /**
  * Map of visual attributes to corresponding values.
@@ -388,20 +391,28 @@ public class VisualMap extends DefaultFixable {
     }
 
     /**
-     * Returns the error property stored in this attribute map.
-     * @return the stored emphasis, or the default value if
-     * there is nothing stored
+     * Returns the diagnostic severity stored in this attribute map;
+     * {@code null} if there are no diagnostics.
      * @see VisualKey#ERROR
      */
-    public boolean isError() {
-        return (Boolean) get(VisualKey.ERROR);
+    public @Nullable Severity getErrorSeverity() {
+        return (Severity) get(VisualKey.ERROR);
     }
 
     /**
-     * Sets a new error value.
+     * Indicates if this attribute map stores a blocking error.
+     * Convenience method for {@code getErrorSeverity() == Severity.ERROR}.
      * @see VisualKey#ERROR
      */
-    public void setError(boolean newValue) {
+    public boolean isError() {
+        return getErrorSeverity() == Severity.ERROR;
+    }
+
+    /**
+     * Sets a new diagnostic severity.
+     * @see VisualKey#ERROR
+     */
+    public void setErrorSeverity(@Nullable Severity newValue) {
         put(VisualKey.ERROR, newValue);
     }
 

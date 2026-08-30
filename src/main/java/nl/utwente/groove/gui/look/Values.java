@@ -29,7 +29,10 @@ import org.jgraph.graph.GraphConstants;
 import nl.utwente.groove.gui.jgraph.JAttr;
 import nl.utwente.groove.util.Colors;
 import nl.utwente.groove.util.DefaultFixable;
+import nl.utwente.groove.util.HTMLConverter;
+import nl.utwente.groove.util.HTMLConverter.HTMLTag;
 import nl.utwente.groove.util.line.LineStyle;
+import nl.utwente.groove.util.parse.Severity;
 
 /** Attribute values for the nodes and edges.
  *
@@ -143,9 +146,39 @@ public class Values {
 
     /** Colour used for indicating warnings. */
     static public final Color WARNING_COLOR = new Color(190, 110, 0);
-    /** Translucent colour used for indicating warnings in tab labels;
-     * the analog of {@link Colors#ERROR_COLOR} for errors. */
+    /** Translucent colour used for indicating warnings in tab labels and
+     * cell overlays; the analog of {@link Colors#ERROR_COLOR} for errors. */
     static public final Color WARNING_BACKGROUND = new Color(255, 160, 0, 60);
+
+    /** Returns the translucent overlay colour for a given diagnostic
+     * severity: {@link Colors#ERROR_COLOR} for {@link Severity#ERROR},
+     * {@link #WARNING_BACKGROUND} for {@link Severity#WARNING}, and
+     * {@code null} (no overlay) for {@link Severity#INFO} or {@code null}.
+     */
+    static public Color getSeverityOverlay(Severity severity) {
+        if (severity == null) {
+            return null;
+        }
+        return switch (severity) {
+        case ERROR -> Colors.ERROR_COLOR;
+        case WARNING -> WARNING_BACKGROUND;
+        case INFO -> null;
+        };
+    }
+
+    /** HTML colour tag for warning diagnostic text. */
+    static public final HTMLTag WARNING_TAG = HTMLConverter.createColorTag(WARNING_COLOR);
+    /** HTML colour tag for info diagnostic text. */
+    static public final HTMLTag INFO_TAG = HTMLConverter.createColorTag(Colors.INFO_COLOR);
+
+    /** Returns the HTML colour tag for diagnostic text of a given severity. */
+    static public HTMLTag getSeverityTag(Severity severity) {
+        return switch (severity) {
+        case ERROR -> HTMLConverter.EMBARGO_TAG;
+        case WARNING -> WARNING_TAG;
+        case INFO -> INFO_TAG;
+        };
+    }
     /** Background colour used for focused warning items in lists. */
     static public final Color WARNING_FOCUS_BACKGROUND = WARNING_COLOR.darker();
     /** Text colour used for focused warning items in lists. */

@@ -22,6 +22,7 @@ import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.util.collect.NestedIterator;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
+import nl.utwente.groove.util.parse.Severity;
 
 /**
  * Object holding the errors for a given {@link AspectJCell}.
@@ -68,6 +69,20 @@ public class AspectJCellErrors implements Iterable<FormatError> {
     /** Indicates if the object contains no errors whatsoever. */
     public boolean isEmpty() {
         return this.aspectErrors.isEmpty() && this.extraErrors.isEmpty();
+    }
+
+    /** Returns the maximum severity of the errors in this object,
+     * or {@code null} if there are none. */
+    public Severity getSeverity() {
+        Severity aspect = this.aspectErrors.getSeverity();
+        Severity extra = this.extraErrors.getSeverity();
+        if (aspect == null) {
+            return extra;
+        }
+        if (extra == null) {
+            return aspect;
+        }
+        return Severity.max(aspect, extra);
     }
 
     /** Returns either the aspect errors or the extra errors, depending on a flag.

@@ -36,6 +36,7 @@ import nl.utwente.groove.gui.look.Look;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualKey.Nature;
 import nl.utwente.groove.gui.look.VisualMap;
+import nl.utwente.groove.util.parse.Severity;
 
 /**
  * Abstract JCell implementation, providing some of the basic functionality.
@@ -263,6 +264,14 @@ public abstract class AJCell<G extends @NonNull Graph,JG extends JGraph<G>,JM ex
             result = !this.errors.isEmpty();
         }
         return result;
+    }
+
+    @Override
+    public Severity getErrorSeverity() {
+        var errors = this.errors;
+        return errors == null
+            ? null
+            : errors.getSeverity();
     }
 
     @Override
