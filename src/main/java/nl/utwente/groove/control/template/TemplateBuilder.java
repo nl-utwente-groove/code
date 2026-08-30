@@ -435,7 +435,7 @@ public class TemplateBuilder {
             LocationKey key = new LocationKey(loc);
             Cell cell = cellMap.get(key);
             if (cell == null) {
-                cellMap.put(key, cell = new Cell());
+                cellMap.put(key, cell = result.newCell());
             }
             cell.add(loc);
         }
@@ -457,7 +457,7 @@ public class TemplateBuilder {
                 Record<Cell> rec = append(locRecords.get(loc.getNumber()), orig);
                 Cell locCell = split.get(rec);
                 if (locCell == null) {
-                    split.put(rec, locCell = new Cell());
+                    split.put(rec, locCell = orig.newCell());
                 }
                 locCell.add(loc);
             }
@@ -565,16 +565,26 @@ public class TemplateBuilder {
 
     /** Local type for a cell of a partition of locations. */
     private static class Cell extends ArrayList<Location> {
+        Cell(int nr) {
+            this.nr = nr;
+        }
+
         @Override
         public boolean equals(Object o) {
             return this == o;
         }
 
+        /**
+         * This implementation returns the creation sequence number, which
+         * (unlike the system identity hash) is deterministic across JVM runs.
+         */
         @Override
         public int hashCode() {
-            return System.identityHashCode(this);
+            return this.nr;
         }
 
+        /** Creation sequence number within the partition. */
+        private final int nr;
     }
 
     /** Local type for a partition of locations. */
@@ -628,6 +638,14 @@ public class TemplateBuilder {
                 ? null
                 : this.locCells[loc.getNumber()];
         }
+
+        /** Creates a fresh, empty cell with the next sequence number. */
+        Cell newCell() {
+            return new Cell(this.cellCount++);
+        }
+
+        /** Number of cells created for this partition. */
+        private int cellCount;
 
         private final Cell[] locCells;
     }
