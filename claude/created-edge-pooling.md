@@ -197,3 +197,52 @@ on the parallel-heavy As-and-Bs.
 - [x] Slice 2: transform layer (BasicEvent, RuleEffect)
 - [x] Slice 3: verification + timing table (complete slow suite pending at time of writing)
 - [ ] Slice 4: close-out (issue comment, merge)
+
+## Follow-up: unifying node and edge replay (branch `edge-replay-unification`)
+
+Created nodes and created edges are recorded and replayed by two structurally different
+mechanisms, though they solve the same problem: making a re-derivation of a transition
+(after state-cache collapse) reproduce the identities of the first derivation.
+
+| | created nodes | created edges |
+|---|---|---|
+| first computed | eagerly, at state creation (`MatchApplier.createState`, partial `RuleEffect`, `Fragment.NODE_CREATION`/`NODE_ALL`) | lazily, at the first full delta (`StateCache.createDelta`) |
+| stored on the state | final field, transition-identity-relevant (`RuleTransitionLabel` — out-parameters can expose created nodes) | nullable field, set post hoc (`setAddedEdges`); not identity-relevant |
+| replay | *predefined* path: `RuleEffect(source, createdNodes)` sets `isNodesPredefined`; `BasicEvent.recordCreatedNodes` consumes the array positionally (`addCreatorNodes` cursor), skipping creation entirely | *recompute-then-substitute*: creation re-runs in full (pooled), then `RuleApplication.addEdges` discards the results, substituting content-equal recorded identities (`findAddedEdge`, linear scan + consumed flags); `computeMorphism` adds ghost-edge bookkeeping for merge images |
+| extra sharing | `reuseCreatedNodes` (parent transition's array) | none needed — the #905 pool provides cross-application sharing implicitly |
+
+The edge retrofit predates the pool: creation was then irreproducible (fresh number per
+mint), and the only stable record was the post-filter, post-merge-map *output* of
+`RuleEffect.getAddedEdges()`, whose elements are not positional w.r.t. creator edges. With
+the pool, re-derived creation reproduces the recorded identities for everything except
+merge-map images — the substitution re-finds what creation just produced.
+
+Key enabling observation: the recorded array (`RuleApplication.getAddedEdgeArray`) *is*
+the final added-edge set — post-merge-map, post-filter, including merge-induced additions.
+So a replay does not need to reproduce edge *creation* at all: it can skip creation and
+take the recorded array as the answer of `getAddedEdges()` directly. This sidesteps the
+irreproducibility of merge-map images entirely, rather than repairing it.
+
+Slices:
+
+- **A — predefined edges in `RuleEffect`** (this branch): a predefined added-edge array +
+  `isEdgesPredefined()`, passed by `RuleApplication.computeEffect` from its `addedEdges`
+  field. When predefined, `BasicEvent.recordEffect` skips `recordCreatedEdges` (mirroring
+  the `isNodesPredefined` branch, but skipping instead of cursor-consuming — there is no
+  per-creator positional record to rebuild) and `getAddedEdges()` returns the recorded
+  array verbatim. Erasures and the merge map are still recomputed (the delta's removals
+  are deterministic and not recorded). The `findAddedEdge` substitution in `addEdges`
+  becomes dead and is deleted. Removal sets replay identically because they derive from
+  the anchor map, so the re-derived delta equals the recorded one by construction.
+- **B — pooled merge images** (not in scope, riskier): route `MergeMap.mapEdge` image
+  minting through the pool. Not needed for replay correctness after A; its value is
+  deleting the ghost-edge/consumed-slot logic in `computeMorphism` (the last
+  content-matching remnant) and extending cross-branch sharing to merger grammars, which
+  currently keep falling back to isomorphism checking.
+- **C — cosmetic symmetry**: constructor consolidation in `RuleEffect`, documentation of
+  the two-phase effect lifecycle (partial node effect at state creation, full effect at
+  first delta).
+
+Deliberately kept asymmetric: eager/final vs lazy/nullable storage (the node array must
+exist at state creation for the transition label; the edge array is large and only needed
+for delta replay), and `reuseCreatedNodes` (no edge analogue needed, see table).
