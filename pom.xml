@@ -226,6 +226,17 @@
     								<includes>
     									<include>nl.utwente.groove.*</include>
     								</includes>
+    								<!-- Skip the ANTLR-generated control parser
+    								     (built from Ctrl.g/CtrlChecker.g): its
+    								     coverage says nothing about the hand-
+    								     written code. Mirrored in the report
+    								     execution below, in that goal's ant-style
+    								     class-file syntax. -->
+    								<excludes>
+    									<exclude>nl.utwente.groove.control.parse.CtrlLexer*</exclude>
+    									<exclude>nl.utwente.groove.control.parse.CtrlParser*</exclude>
+    									<exclude>nl.utwente.groove.control.parse.CtrlChecker*</exclude>
+    								</excludes>
     							</configuration>
     						</execution>
     						<execution>
@@ -239,6 +250,13 @@
     							<goals>
     								<goal>report</goal>
     							</goals>
+    							<configuration>
+    								<excludes>
+    									<exclude>nl/utwente/groove/control/parse/CtrlLexer*</exclude>
+    									<exclude>nl/utwente/groove/control/parse/CtrlParser*</exclude>
+    									<exclude>nl/utwente/groove/control/parse/CtrlChecker*</exclude>
+    								</excludes>
+    							</configuration>
     						</execution>
     					</executions>
     				</plugin>
