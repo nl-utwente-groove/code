@@ -38,6 +38,7 @@ import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.plain.PlainGraph;
 import nl.utwente.groove.graph.plain.PlainNode;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Log;
 import nl.utwente.groove.util.io.FileType;
 
@@ -82,15 +83,9 @@ public class AutIO extends GraphIO<PlainGraph> {
             int lines = 0;
             writer.printf("des (%d, %d, %d)%n", 0, graph.edgeCount(), graph.nodeCount());
             for (Edge edge : graph.edgeSet()) {
-                String format;
-                if (edge.label().text().indexOf(',') >= 0) {
-                    format = "(%d,\"%s\",%d)%n";
-                } else {
-                    format = "(%d,%s,%d)%n";
-                }
                 writer
-                    .printf(format, nodeNrMap.get(edge.source()), edge.label(),
-                            nodeNrMap.get(edge.target()));
+                    .printf("(%d,%s,%d)%n", nodeNrMap.get(edge.source()),
+                            toLabelField(edge.label().text()), nodeNrMap.get(edge.target()));
                 lines = (lines + 1) % MAX_LINES;
                 if (lines == 0) {
                     TIMING
@@ -131,7 +126,7 @@ public class AutIO extends GraphIO<PlainGraph> {
                     int targetStart = line.lastIndexOf(',') + 1;
                     int source
                         = Integer.parseInt(line.substring(sourceStart, labelStart - 1).trim());
-                    String label = line.substring(labelStart, targetStart - 1);
+                    String label = parseLabelField(line.substring(labelStart, targetStart - 1));
                     int target = Integer
                         .parseInt(line.substring(targetStart, line.lastIndexOf(')')).trim());
                     PlainNode sourceNode = nodeMap.get(source);
@@ -177,6 +172,44 @@ public class AutIO extends GraphIO<PlainGraph> {
         // the .aut format has no way to declare this, hence the role decides
         GraphRole role = getGraphRole();
         PlainGraph result = new PlainGraph(getGraphName(), role, role != GraphRole.LTS);
+        return result;
+    }
+
+    /**
+     * Converts label text to its on-disk {@code .aut} field form.
+     * A label containing a comma or a quote character is surrounded by
+     * quotes, with embedded backslashes and quotes backslash-escaped;
+     * any other label is written verbatim.
+     * @see #parseLabelField(String)
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    static private String toLabelField(String text) {
+        String result = text;
+        if (text.indexOf(',') >= 0 || text.indexOf('"') >= 0) {
+            result = '"' + text.replace("\\", "\\\\").replace("\"", "\\\"") + '"';
+        }
+        return result;
+    }
+
+    /**
+     * Converts an on-disk {@code .aut} label field back to label text.
+     * A field that (after trimming) is surrounded by quotes is unquoted
+     * and backslash-unescaped; any other field is taken verbatim.
+     * @see #toLabelField(String)
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    static private String parseLabelField(String field) {
+        String result = field;
+        String trimmed = field.trim();
+        if (trimmed.length() >= 2 && trimmed.charAt(0) == '"'
+            && trimmed.charAt(trimmed.length() - 1) == '"') {
+            // unescape \" before \\; every quote in the escaped text is part
+            // of a \" pair, so the replacements cannot match across pairs
+            result = trimmed
+                .substring(1, trimmed.length() - 1)
+                .replace("\\\"", "\"")
+                .replace("\\\\", "\\");
+        }
         return result;
     }
 
