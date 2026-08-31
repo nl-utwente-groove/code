@@ -83,7 +83,7 @@ public class ProductTransition {
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
-            return false;
+            return true;
         }
         if (!(obj instanceof ProductTransition)) {
             return false;
