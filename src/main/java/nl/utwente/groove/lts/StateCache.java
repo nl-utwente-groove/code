@@ -37,6 +37,7 @@ import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostElement;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.host.HostNode;
+import nl.utwente.groove.grammar.host.ValueNode;
 import nl.utwente.groove.lts.GraphTransition.Claz;
 import nl.utwente.groove.transform.Record;
 import nl.utwente.groove.transform.RuleApplication;
@@ -794,9 +795,32 @@ public class StateCache implements Cache {
                 // morphism: an out-parameter node deleted by the final step has
                 // no image and becomes null (undefined), a merged node is mapped
                 // to its merge target, and a possible isomorphism to the actual
-                // target state is applied (see claude/recipe-outpar-deletion.md)
+                // target state is applied (see claude/recipe-outpar-deletion.md).
+                // Two kinds of values have no image in the morphism (whose
+                // domain is the source graph) yet must not become null: value
+                // nodes computed by the final step (anchor images that are not
+                // source graph nodes; canonical, hence stable under the target
+                // isomorphism) and nodes created by the final step (filled in
+                // from the added nodes above, so a target-graph identity
+                // already; under a symmetry collapse this yields the derived
+                // identity, as for the creator arguments of rule transition
+                // labels). Both pass through unchanged.
                 var nodeMap = partial.getMorphism().nodeMap();
-                result = Assignment.map(result, nodeMap::get);
+                result = Assignment.map(result, n -> {
+                    var image = nodeMap.get(n);
+                    if (image == null && n instanceof ValueNode) {
+                        image = n;
+                    }
+                    if (image == null) {
+                        for (var added : addedNodes) {
+                            if (added == n) {
+                                image = n;
+                                break;
+                            }
+                        }
+                    }
+                    return image;
+                });
             }
             return result;
         }

@@ -50,7 +50,11 @@ import nl.utwente.groove.util.parse.FormatException;
  * <li>a recipe call with a null in-argument is inapplicable as a whole,
  * without any partial (transient) execution;
  * <li>a recipe out-parameter bound to a node that is deleted before the recipe
- * completes results in a null recipe transition argument, displayed as "_".
+ * completes results in a null recipe transition argument, displayed as "_";
+ * <li>a recipe out-parameter bound to a value node computed, or a node
+ * created, by the final step survives as the recipe transition argument
+ * (neither has an image in the final transition's morphism, but both are
+ * valid target values).
  * </ul>
  * The exploration of the out-parameter cases formerly failed an assertion in
  * {@code StateCache} (with assertions enabled) or produced a dangling node
@@ -122,6 +126,36 @@ public class RecipeNullArgsTest {
         RecipeTransition trans = getSingleRecipeTransition(gts);
         assertEquals(1, trans.getArguments().length);
         assertNotNull(trans.getArguments()[0]);
+    }
+
+    /** A recipe out-parameter bound to a value node computed by the final
+     * step survives as the recipe transition argument: the value node is an
+     * anchor image that is not a source-graph node of the final transition,
+     * so it has no image in the transition morphism, but is canonical and
+     * hence a valid target value. Formerly nulled by the unconditional
+     * morphism mapping. */
+    @Test
+    public void testOutParComputedValue() {
+        GTS gts = explore("outParValue");
+        RecipeTransition trans = getSingleRecipeTransition(gts);
+        assertEquals(1, trans.getArguments().length);
+        assertNotNull(trans.getArguments()[0]);
+        assertEquals("v(1)", trans.label().text(false));
+    }
+
+    /** A recipe out-parameter bound to a node created by the final step
+     * survives as the recipe transition argument: the created node has no
+     * image in the transition morphism (whose domain is the source graph),
+     * but is a target-graph identity. Formerly nulled by the unconditional
+     * morphism mapping. */
+    @Test
+    public void testOutParCreatedNode() {
+        GTS gts = explore("outParCreated");
+        RecipeTransition trans = getSingleRecipeTransition(gts);
+        assertEquals(1, trans.getArguments().length);
+        var arg = trans.getArguments()[0];
+        assertNotNull(arg);
+        assertTrue(trans.target().getGraph().containsNode(arg));
     }
 
     /** Explores the fixture grammar under a given control program

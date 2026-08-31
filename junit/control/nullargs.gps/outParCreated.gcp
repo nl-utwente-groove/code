@@ -1,0 +1,10 @@
+// Recipe whose out-parameter is a node created by the final step; the
+// created node has no image in the transition morphism (whose domain is the
+// source graph), but is a target-graph identity and must survive as the
+// recipe transition argument rather than becoming null.
+recipe c(out node x) {
+	make(out x);
+}
+
+node z;
+c(out z);

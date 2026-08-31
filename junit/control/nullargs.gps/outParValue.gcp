@@ -1,0 +1,12 @@
+// Recipe whose out-parameter is a value node computed by the final step;
+// the value node is not a source-graph node of the final transition, so it
+// has no image in the transition morphism, but must survive as the recipe
+// transition argument rather than becoming null.
+recipe v(out int n) {
+	node y;
+	bind(out y);
+	n := outInt();
+}
+
+int w;
+v(out w);

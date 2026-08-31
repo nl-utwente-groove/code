@@ -116,6 +116,24 @@ null to the wildcard argument (matching the label-text round trip);
 `RecipeEvent.compareTo` orders null arguments first (deterministically);
 `Arrays`-based equality/hashing was already null-safe.
 
+**Regression and repair (2026-08-31).** The unconditional mapping was too
+coarse: its analysis assumed the looked-up values are source-graph nodes, but
+two kinds are not, and both were nulled as collateral. (i) Value nodes
+*computed* by the final step — anchor images minted by the algebra, e.g. the
+sum of `add(y, z, out result)` in `samples/fibonacci`, whose recipe transition
+regressed from `fib(6,8)` to `fib(6,_)` — are canonical, hence never deleted,
+merged, or renamed by the target isomorphism. (ii) Nodes *created* by the final
+step — creator-bound out-parameters, filled in from `getAddedNodes()` — are
+target-graph identities already (under a symmetry collapse the derived
+identity, the same approximation `RuleTransition.getArguments` has always used
+for creator arguments). Both now pass through the mapping unchanged; source
+nodes without an image (the genuinely deleted ones) still become null, so the
+F1/F2/F3 semantics above is unaffected. Covered by `testOutParComputedValue`
+and `testOutParCreatedNode` (differential: null arguments before the repair).
+Found during the gh #561 review; note that retaining out-parameter bindings in
+the target state would not have masked this — the final-transition path never
+reads the caller's stack level.
+
 **Recipe boundary check.** Rule applicability for undefined in-arguments now
 applies at the recipe boundary too: `MatchCollector.extractBinding` evaluates the
 new `Step.getRecipeParAssign()` — the recipe-call parameter assignment of a step
