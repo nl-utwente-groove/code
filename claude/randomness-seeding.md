@@ -111,9 +111,14 @@ where they exist.
   `ExploreKey.SEED` (`seed=<long>`, default kind `auto`) with the new feature
   enum `Seed`, content type `Setting.ContentType.LONG` and `Parser.longNumber`
   (seeds are signed 64-bit values, so `Parser.natural` did not fit). The
-  schema, settings-resource template, help and the exploration dialog all
-  derive generically from the key, so the GUI editor came for free (plus a
-  content hint for the `LONG` type).
+  schema, settings-resource template and help derive generically from the
+  key; the exploration dialog builds a row per key generically too, but lays
+  the rows out in hand-enumerated sections, which initially left the seed row
+  constructed-but-invisible (caught by Arend in review; the seed sits in the
+  Engine section, and a content hint for the `LONG` type was added). The
+  section table is now the static `ExploreConfigDialog.SECTIONS`, and
+  `ExploreConfigDialogTest` asserts it partitions the keys, so a future key
+  cannot silently vanish the same way.
 - **Semantics**: `ConfiguredExploreType.realise` calls
   `Randomness.setMasterSeed` for an explicit seed, before the strategy (and
   its generators) is created. The master seed being session-global, the seed
