@@ -152,8 +152,9 @@ public class RuleEffect extends DefaultFixable {
     }
 
     /** The predefined added edges; {@code null} if the added edges are yet
-     * to be generated. Non-{@code null} only in re-derivations over a
-     * non-simple host graph. */
+     * to be generated. Non-{@code null} in re-derivations of a recorded
+     * transition; only relevant for a non-simple host graph, where the
+     * factory would otherwise mint fresh edge identities. */
     private HostEdge[] predefinedAddedEdges;
 
     /** Returns the value oracle for ask-parameter
