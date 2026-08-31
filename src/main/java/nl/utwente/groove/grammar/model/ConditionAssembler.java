@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -259,6 +260,10 @@ class ConditionAssembler {
      * conflict machinery enforces the cross-level DPO identification
      * condition. Imported ancestor erasers are additionally recorded, to
      * take part in the conflict computation as erasers.
+     * Under strict semantics (the ignoreRegExp property unset), an
+     * ancestor eraser edge is also imported if it can destroy the witness
+     * of a composite regular expression at this level, so that the
+     * expression's dynamic censoring (gh #900) sees its seeded image.
      * Must be called top-down over the level tree, before any condition
      * is built.
      */
@@ -270,6 +275,7 @@ class ConditionAssembler {
         myEraserNodes.removeAll(level.rhs.nodeSet());
         Set<RuleEdge> myEraserEdges = new LinkedHashSet<>(myEdges);
         myEraserEdges.removeAll(level.rhs.edgeSet());
+        boolean censoring = !getGrammarProperties().isIgnoreRegExp();
         // the levels from just below the currently inspected ancestor
         // down to this level, into which conflicting elements are imported
         List<LevelPattern> path = new ArrayList<>();
@@ -288,6 +294,18 @@ class ConditionAssembler {
                     if (myEdge != ancEdge && myEdge.canShareImage(ancEdge)) {
                         conflict = true;
                         break;
+                    }
+                }
+                if (!conflict && ancIsEraser && censoring && ancEdge.hasEdgeImage()) {
+                    // an ancestor eraser is also imported if its erasure can
+                    // destroy the witness of one of my regular expressions,
+                    // so that the dynamic censoring sees its image
+                    for (RuleEdge myEdge : myEdges) {
+                        if (!Collections
+                            .disjoint(ancEdge.getMatchingTypes(), getRegExprCoverage(myEdge))) {
+                            conflict = true;
+                            break;
+                        }
                     }
                 }
                 if (conflict) {
@@ -360,6 +378,38 @@ class ConditionAssembler {
     private Set<RuleNode> getAncestorEraserNodes(LevelPattern level) {
         return this.ancestorEraserNodeMap.getOrDefault(level.getIndex(), Collections.emptySet());
     }
+
+    /**
+     * Returns the type edges traversable by a given edge's label, if that
+     * label is a composite regular expression subject to dynamic censoring
+     * (gh #900); the empty set otherwise. Edges with a host edge image are
+     * covered by the match-time conflict machinery; negated expressions are
+     * immune to erasure; a lone node type expression's witness is the
+     * (tracked) node itself. The result is cached per edge.
+     */
+    private Set<TypeEdge> getRegExprCoverage(RuleEdge edge) {
+        var result = this.regExprCoverageMap.get(edge);
+        if (result == null) {
+            this.regExprCoverageMap.put(edge, result = computeRegExprCoverage(edge));
+        }
+        return result;
+    }
+
+    /** Computes the value of {@link #getRegExprCoverage(RuleEdge)}. */
+    private Set<TypeEdge> computeRegExprCoverage(RuleEdge edge) {
+        RuleLabel label = edge.label();
+        if (edge.hasEdgeImage() || label.isEmpty() || label.isNeg()
+            || label.getRole() == EdgeRole.NODE_TYPE) {
+            return Collections.emptySet();
+        }
+        var labelAut = RegAutCalculator.instance().compute(label.getMatchExpr(), getTypeGraph());
+        return new RegAutCoverage(labelAut, edge.source().getMatchingTypes(),
+            edge.target().getMatchingTypes()).result();
+    }
+
+    /** Traversable type edges per censorable regular expression edge;
+     * lazily filled cache of {@link #getRegExprCoverage(RuleEdge)}. */
+    private final Map<RuleEdge,@Nullable Set<TypeEdge>> regExprCoverageMap = new HashMap<>();
 
     /** Ancestor-level eraser edges imported by {@link #importEraserConflicts},
      * keyed by level index. */
