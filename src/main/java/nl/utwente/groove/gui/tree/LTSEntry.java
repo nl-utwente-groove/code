@@ -23,7 +23,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
-import nl.utwente.groove.lts.RuleTransitionLabel;
+import nl.utwente.groove.lts.ActionLabel;
 import nl.utwente.groove.lts.StateProperty;
 import nl.utwente.groove.lts.StatePropertyLabel;
 import nl.utwente.groove.util.Exceptions;
@@ -112,7 +112,7 @@ public class LTSEntry implements LabelEntry {
     @Override
     public String getToolTipDescription() {
         return switch (this.content) {
-        case RuleTransitionLabel l -> l.hasRole(EdgeRole.BINARY)
+        case ActionLabel l -> l.hasRole(EdgeRole.BINARY)
             ? "transition label"
             : "graph condition";
         case StatePropertyLabel l -> (l.prop().isSystem()
