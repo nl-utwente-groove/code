@@ -31,6 +31,7 @@ import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
 
+import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.rule.LabelVar;
@@ -317,6 +318,12 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<@NonNull RegNode,@NonNull Reg
     @Override
     public Set<Result> getMatches(HostGraph graph, HostNode startImage, HostNode endImage,
                                   Valuation valuation) {
+        return getMatches(graph, startImage, endImage, valuation, Collections.emptySet());
+    }
+
+    @Override
+    public Set<Result> getMatches(HostGraph graph, HostNode startImage, HostNode endImage,
+                                  Valuation valuation, Set<HostEdge> censored) {
         assert isFixed();
         if (valuation == null) {
             valuation = Valuation.EMPTY;
@@ -333,7 +340,7 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<@NonNull RegNode,@NonNull Reg
             toNode = startImage;
         }
         DFA normalAut = getDFA(dir, valuation);
-        return normalAut.getRecogniser(graph).getMatches(fromNode, toNode);
+        return normalAut.getRecogniser(graph, censored).getMatches(fromNode, toNode);
     }
 
     @Override
