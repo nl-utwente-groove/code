@@ -632,10 +632,14 @@ public class RuleEffect extends DefaultFixable {
             if (addedEdges == null) {
                 this.addedEdges = addedEdges = new HostEdgeSet();
                 MergeMap mergeMap = getMergeMap();
+                // memoises the (possibly null) image per source edge, so that
+                // an edge reached twice (e.g. incident to two merged nodes)
+                // resolves to a single image rather than two pooled copies
+                Map<HostEdge,HostEdge> imageMap = new HashMap<>();
                 if (createdEdges != null) {
                     // transform the created edges through the merge map
                     for (HostEdge edge : createdEdges) {
-                        HostEdge image = mergeMap.mapEdge(edge);
+                        HostEdge image = mapMergedEdge(mergeMap, edge, imageMap, addedEdges);
                         if (image == null) {
                             continue;
                         }
@@ -655,7 +659,7 @@ public class RuleEffect extends DefaultFixable {
                         if (isErasedEdge(edge)) {
                             continue;
                         }
-                        HostEdge image = mergeMap.mapEdge(edge);
+                        HostEdge image = mapMergedEdge(mergeMap, edge, imageMap, addedEdges);
                         if (image == null) {
                             continue;
                         }
@@ -695,6 +699,48 @@ public class RuleEffect extends DefaultFixable {
     }
 
     private HostEdgeSet addedEdges;
+
+    /**
+     * Maps an edge through the merge map. An edge whose end nodes are
+     * unaffected maps to itself; an edge with a removed end node maps to
+     * {@code null}; a redirected edge maps to a fresh image. In a non-simple
+     * graph, the image is resolved through the factory's content pool,
+     * excluding the source graph, the created edges and the images already
+     * handed out for this effect, so that content-equal merge images across
+     * events and applications resolve to the same edge identity, while
+     * distinct redirected edges with equal content keep distinct parallel
+     * copies (gh #905). This deliberately bypasses the edge image cache of
+     * the (event-cached, cross-application) merge map, whose entries are
+     * minted without regard for the pool.
+     * @param imageMap memoisation of the images resolved by this run
+     * @param addedEdges the images already handed out by this run
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    private HostEdge mapMergedEdge(MergeMap mergeMap, HostEdge edge,
+                                   Map<HostEdge,HostEdge> imageMap, HostEdgeSet addedEdges) {
+        if (imageMap.containsKey(edge)) {
+            return imageMap.get(edge);
+        }
+        HostEdge image;
+        HostNode source = mergeMap.getNode(edge.source());
+        HostNode target = source == null
+            ? null
+            : mergeMap.getNode(edge.target());
+        if (source == null || target == null) {
+            image = null;
+        } else if (source == edge.source() && target == edge.target()) {
+            image = edge;
+        } else {
+            HostGraph host = getSource();
+            image = host.isSimple()
+                ? host.getFactory().createEdge(source, edge.label(), target)
+                : host.getFactory()
+                    .createEdge(source, edge.label(), target,
+                                e -> containsEdge(e) || addedEdges.contains(e));
+        }
+        imageMap.put(edge, image);
+        return image;
+    }
 
     /**
      * Returns the added edges as an array, in the deterministic iteration
