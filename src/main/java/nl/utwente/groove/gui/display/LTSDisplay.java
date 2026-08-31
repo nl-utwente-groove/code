@@ -57,6 +57,7 @@ import javax.swing.event.ChangeListener;
 
 import org.eclipse.jdt.annotation.NonNull;
 
+import nl.utwente.groove.grammar.ResourceProperties;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
@@ -716,6 +717,10 @@ public class LTSDisplay extends Display implements SimulatorListener {
             text.append(", ");
             text.append(gts.getTransitionCount());
             text.append(" transitions");
+            ResourceProperties.getRandomSeed(gts).ifPresent(seed -> {
+                text.append(", random seed ");
+                text.append(seed);
+            });
         }
         getGraphPanel().getStatusLabel().setText(text.toString());
     }
