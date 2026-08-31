@@ -101,7 +101,7 @@ public class ProductTransitionTest {
         ProductTransition other = new ProductTransition(source, trans2, target2);
         assertNotEquals(product, other);
         assertFalse(product.equals(null));
-        assertFalse(product.equals("no transition"));
+        assertFalse(product.equals((Object) "no transition"));
     }
 
     /** Explores the fixture grammar and returns the resulting GTS. */
