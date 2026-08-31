@@ -148,7 +148,7 @@ public class ExploreConfigDialog extends JDialog {
                                ExploreKey.SHAPE, ExploreKey.COUNT));
         content
             .add(createSection("Engine", ExploreKey.COLLAPSE, ExploreKey.ALGEBRA,
-                               ExploreKey.PERSISTENCE));
+                               ExploreKey.PERSISTENCE, ExploreKey.SEED));
         content.add(createErrorPanel());
         content.add(createButtonPanel());
 
@@ -491,8 +491,8 @@ public class ExploreConfigDialog extends JDialog {
         this.errorLabel
             .setText(problemsHtml == null
                 ? null
-                : "<html><body style='width:" + getErrorWrapWidth()
-                    + "px'><font color='red'>" + problemsHtml + "</font></body></html>");
+                : "<html><body style='width:" + getErrorWrapWidth() + "px'><font color='red'>"
+                    + problemsHtml + "</font></body></html>");
         QualName exploreName = getExploreName();
         refreshNameBox(exploreName);
         // the status label only carries informational messages
@@ -515,9 +515,8 @@ public class ExploreConfigDialog extends JDialog {
                 if (text.isEmpty()) {
                     text = savedSetting.kind().getName();
                 }
-                deviationHtml
-                    = "Saved settings use: <b>" + HTMLConverter.toHtml(new StringBuilder(text))
-                        + "</b>";
+                deviationHtml = "Saved settings use: <b>"
+                    + HTMLConverter.toHtml(new StringBuilder(text)) + "</b>";
             }
             getRow(key).setDeviating(deviationHtml);
         }
@@ -531,9 +530,10 @@ public class ExploreConfigDialog extends JDialog {
         // on a fresh state space there is no difference between restarting
         // and continuing: the start button reads "Start" and Continue is off
         boolean fresh = isFreshGTS();
-        this.startButton.setText(fresh
-            ? START_FRESH_COMMAND
-            : START_COMMAND);
+        this.startButton
+            .setText(fresh
+                ? START_FRESH_COMMAND
+                : START_COMMAND);
         // only the saved exploration settings can be run: unsaved edits block
         // the run buttons, rather than being run without leaving a trace
         this.startButton.setEnabled(explorable && !savedDiffers);
@@ -726,8 +726,9 @@ public class ExploreConfigDialog extends JDialog {
             // the settings text and the exploration reference are two
             // separate store edits; a failure may leave the settings
             // resource saved but unreferenced, which the user can retry
-            new ErrorDialog(this, "Error while saving the exploration settings '%s'"
-                .formatted(target), exc).setVisible(true);
+            new ErrorDialog(this,
+                "Error while saving the exploration settings '%s'".formatted(target), exc)
+                .setVisible(true);
         }
         // the grammar has changed, so the status may have as well
         refresh();
@@ -753,15 +754,14 @@ public class ExploreConfigDialog extends JDialog {
         }
         // the name is not required to be fresh: the suggestion may well be the
         // current name, and saving in place must stay possible
-        FreshNameDialog<QualName> nameDialog
-            = new FreshNameDialog<>(existingNames, current == null
-                ? DEFAULT_CONFIG_NAME
-                : current.toString(), false) {
-                @Override
-                protected QualName createName(String name) throws FormatException {
-                    return QualName.parse(name).testValid();
-                }
-            };
+        FreshNameDialog<QualName> nameDialog = new FreshNameDialog<>(existingNames, current == null
+            ? DEFAULT_CONFIG_NAME
+            : current.toString(), false) {
+            @Override
+            protected QualName createName(String name) throws FormatException {
+                return QualName.parse(name).testValid();
+            }
+        };
         return nameDialog.showDialog(this.simulator.getFrame(), ASK_NAME_TITLE)
             ? nameDialog.getName()
             : null;
@@ -989,11 +989,9 @@ public class ExploreConfigDialog extends JDialog {
         /** Sets the widths of the key and kind columns (shared by all rows). */
         void setColumnWidths(int keyWidth, int kindWidth) {
             this.label
-                .setPreferredSize(new Dimension(keyWidth,
-                    this.label.getPreferredSize().height));
+                .setPreferredSize(new Dimension(keyWidth, this.label.getPreferredSize().height));
             this.kindBox
-                .setPreferredSize(new Dimension(kindWidth,
-                    this.kindBox.getPreferredSize().height));
+                .setPreferredSize(new Dimension(kindWidth, this.kindBox.getPreferredSize().height));
         }
 
         /**
