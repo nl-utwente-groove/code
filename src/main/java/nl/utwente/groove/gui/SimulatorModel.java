@@ -52,6 +52,7 @@ import nl.utwente.groove.lts.GraphTransitionKey;
 import nl.utwente.groove.lts.MatchResult;
 import nl.utwente.groove.lts.RecipeEvent;
 import nl.utwente.groove.lts.RuleTransition;
+import nl.utwente.groove.match.MatchBoundException;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
@@ -646,7 +647,7 @@ public class SimulatorModel implements Cloneable {
         }
         // find a visible unexplored match
         if (result == null) {
-            for (var match : state.getMatches()) {
+            for (var match : getDisplayableMatches(state)) {
                 if (isVisible(match)) {
                     result = match;
                     break;
@@ -665,6 +666,22 @@ public class SimulatorModel implements Cloneable {
             }
         }
         return result;
+    }
+
+    /**
+     * Returns the unexplored matches of a given state for display purposes:
+     * the state's matches, or an empty list if computing them exceeds the
+     * match bound. In the latter case the state has been flagged as an error
+     * state, and the display shows it without its matches rather than
+     * letting the exception escape to the event dispatch thread (see gh #784).
+     * All display code should compute state matches through this method.
+     */
+    public static List<MatchResult> getDisplayableMatches(GraphState state) {
+        try {
+            return state.getMatches();
+        } catch (MatchBoundException exc) {
+            return Collections.emptyList();
+        }
     }
 
     /** Indicates if there is an active GTS. */

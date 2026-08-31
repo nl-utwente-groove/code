@@ -460,7 +460,7 @@ public class RuleTree extends AbstractResourceTree {
             for (GraphTransition trans : state.getTransitions(Claz.ANY)) {
                 matches.add(trans.getKey());
             }
-            matches.addAll(state.getMatches());
+            matches.addAll(SimulatorModel.getDisplayableMatches(state));
         }
         refreshMatches(state, matches);
         setEnabled(getGrammar() != null);

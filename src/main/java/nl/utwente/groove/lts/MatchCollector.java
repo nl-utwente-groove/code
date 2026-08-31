@@ -40,6 +40,7 @@ import nl.utwente.groove.grammar.rule.MatchChecker;
 import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.grammar.rule.RuleToHostMap;
 import nl.utwente.groove.grammar.rule.VariableNode;
+import nl.utwente.groove.match.MatchBoundException;
 import nl.utwente.groove.match.Proof;
 import nl.utwente.groove.transform.CompositeEvent;
 import nl.utwente.groove.transform.Record;
@@ -60,6 +61,7 @@ public class MatchCollector {
     public MatchCollector(GraphState state) {
         this.state = state;
         this.record = state.getRecord();
+        this.matchBound = state.getGTS().getGrammar().getProperties().getMatchBound();
         if (state instanceof GraphNextState ns) {
             GraphState parent = ns.source();
             this.parentClosed = parent.isClosed();
@@ -78,8 +80,30 @@ public class MatchCollector {
     /**
      * Returns the set of matching events for a given control step.
      * @param step the control step for which matches are to be found; non-{@code null}
+     * @throws MatchBoundException if the number of matches collected for the
+     * state exceeds the match bound set by the grammar properties; the state
+     * is flagged as an error state before the exception is propagated
      */
-    public MatchResultSet computeMatches(final Step step) {
+    public MatchResultSet computeMatches(final Step step) throws MatchBoundException {
+        try {
+            MatchResultSet result = collectMatches(step);
+            this.matchCount += result.size();
+            return result;
+        } catch (MatchBoundException exc) {
+            // flag the state as an error state before letting the exception
+            // propagate, so that the running exploration halts gracefully
+            // rather than crashing (see gh #784)
+            this.state.getGraph().addError("%s", exc.getMessage());
+            this.state.setError();
+            throw exc;
+        }
+    }
+
+    /**
+     * Collects the set of matching events for a given control step.
+     * @param step the control step for which matches are to be found; non-{@code null}
+     */
+    private MatchResultSet collectMatches(final Step step) {
         final MatchResultSet result = new MatchResultSet();
         if (DEBUG) {
             System.out.printf("Matches for %s, %s%n  ", this.state, this.state.getGraph());
@@ -103,6 +127,7 @@ public class MatchCollector {
                             match = new MatchResult(match.getEvent(), step);
                         }
                         result.add(match);
+                        checkMatchBound(result.size(), rule);
                         if (DEBUG) {
                             System.out.print(" T" + System.identityHashCode(trans.getEvent()));
                         }
@@ -144,6 +169,7 @@ public class MatchCollector {
                                 match = getParentTrans(match);
                             }
                             result.add(match);
+                            checkMatchBound(result.size(), rule);
                             if (DEBUG) {
                                 System.out.print(" E" + System.identityHashCode(match.getEvent()));
                                 checkEvent(match.getEvent());
@@ -324,6 +350,30 @@ public class MatchCollector {
         }
         return result;
     }
+
+    /**
+     * Checks a prospective per-state match count against the match bound.
+     * @param freshCount the number of matches collected by the current call
+     * of {@link #computeMatches(Step)}
+     * @param rule the rule whose matches are being collected
+     * @throws MatchBoundException if the bound is set and exceeded
+     */
+    private void checkMatchBound(int freshCount, Rule rule) throws MatchBoundException {
+        int bound = this.matchBound;
+        if (bound > 0 && this.matchCount + freshCount > bound) {
+            // collection stops at the first violation, so only the lower
+            // bound is known; the actual count is not computed, as full
+            // enumeration is exactly what the bound is meant to prevent
+            throw new MatchBoundException(rule.getQualName().toString(), bound, false, bound);
+        }
+    }
+
+    /** Match bound set by the grammar properties; {@code 0} means no bound. */
+    private final int matchBound;
+
+    /** Number of matches collected for the state so far, accumulated over
+     * all calls of {@link #computeMatches(Step)}. */
+    private int matchCount;
 
     /** The host graph we are working on. */
     protected final GraphState state;

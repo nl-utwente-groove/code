@@ -93,6 +93,20 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
             + "<p>If true, overrules the local rule injectivity property",
         ValueType.BOOLEAN),
     /**
+     * Upper bound on the number of matches collected for any single state.
+     * When the bound is exceeded, the state is flagged as an error state and
+     * exploration halts gracefully. Default is {@link #DEFAULT_MATCH_BOUND};
+     * {@code 0} disables the configured bound, but a match count beyond
+     * {@link Integer#MAX_VALUE} always halts exploration.
+     */
+    MATCH_BOUND("matchBound",
+        "<body>Upper bound on the number of matches collected for any single state, "
+            + "as a protection against excessive fanout (e.g., through amalgamation). "
+            + "<p>When the bound is exceeded, the state is flagged as an error state "
+            + "and exploration halts; 0 disables the bound, up to the fixed maximum "
+            + "of 2^31-1 matches that GROOVE can enumerate",
+        ValueType.INTEGER),
+    /**
      * The transformation semantics: whether host and rule graphs are
      * multigraphs (with parallel edges) or simple graphs, and whether they
      * are transformed under the single- or double-pushout approach.
@@ -352,6 +366,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
             case REG_EXP_MATCHING -> new Parser.EnumParser<>(RegExpMatching.class,
                 RegExpMatching.FAITHFUL);
             case CREATOR_EDGE, DANGLING, RHS_AS_NAC, INJECTIVE, STORE_OUT_PARS, USE_STORED_NODE_IDS -> Parser.boolFalse;
+            case MATCH_BOUND -> new Parser.IntParser(false, DEFAULT_MATCH_BOUND);
             case ISOMORPHISM, LOOPS_AS_LABELS -> Parser.boolTrue;
             case USER_OPS, START_GRAPH_NAMES, CONTROL_NAMES, TYPE_NAMES, PROLOG_NAMES -> QualName
                 .listParser();
@@ -417,7 +432,7 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
     @Override
     public boolean isNotable() {
         return switch (this) {
-        case ACTION_POLICY, ALGEBRA, CREATOR_EDGE, DANGLING, DEAD_POLICY, INJECTIVE, ISOMORPHISM, ORACLE, RHS_AS_NAC, STORE_OUT_PARS, TRANSITION_PARAMETERS, RULE_ENABLING, TYPE_POLICY -> true;
+        case ACTION_POLICY, ALGEBRA, CREATOR_EDGE, DANGLING, DEAD_POLICY, INJECTIVE, ISOMORPHISM, MATCH_BOUND, ORACLE, RHS_AS_NAC, STORE_OUT_PARS, TRANSITION_PARAMETERS, RULE_ENABLING, TYPE_POLICY -> true;
         default -> false;
         };
     }
@@ -450,6 +465,9 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
         Arrays.stream(GrammarKey.values()).forEach(k -> result.put(k.getName(), k));
         return result;
     }
+
+    /** Default value of the {@link #MATCH_BOUND} key. */
+    static public final int DEFAULT_MATCH_BOUND = 10000;
 
     /** Name of deprecated key for attribute support. */
     static public final String ATTRIBUTE_SUPPORT = "attributeSupport";
