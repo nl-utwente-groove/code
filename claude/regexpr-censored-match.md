@@ -8,12 +8,20 @@ this note documents the implementation and its discovered subtleties.
 
 ## The semantics
 
-Under strict DPO semantics (`ignoreRegExp` unset), a positive composite
-regular expression edge only matches if it has a witness path that avoids
-the current images of the eraser edges at its own or an ancestor
-quantification level. `ignoreRegExp` is thereby a genuine strict/sloppy
-semantics switch: sloppy retains pure automaton (ends-only) semantics in
-which a witness may be erased by the same application. The static check
+Under faithful DPO matching, a positive composite regular expression edge
+only matches if it has a witness path that avoids the current images of
+the eraser edges at its own or an ancestor quantification level. The
+discipline is selected by the enum-valued grammar property
+`regExpMatching = faithful | sloppy` (default faithful; user-chosen name,
+2026-08-31, replacing the boolean `ignoreRegExp`, which is translated by
+`GrammarProperties.repairVersion` like the `parallelEdges` key before it):
+sloppy retains pure automaton (ends-only) semantics in which a witness may
+be erased by the same application. Names weighed and rejected in the
+renaming discussion: `sloppyRegExp` (names the mode's quality, not its
+content), `ignoreRegExpErasure` (accurate but still check-suppression
+flavoured), `nonDPORegExp` (the grammar stays DPO), `preserveRegExpPaths`
+(boolean naming only the faithful pole; the enum documents both poles in
+the tooltip via `DocumentedEnum`). The static check
 (`ConditionAssembler.checkRegExprErasure`) remains only for the
 configurations with no coherent per-match verdict — erasers at a level
 that is *not* an ancestor-or-self of the expression's level (deeper, or in
@@ -108,7 +116,7 @@ deterministic.
   (`junit/rulecompilation/rules/regExprCensor.txt`) pins that the kernel
   eraser reaches the sublevel root through the new import trigger.
 - `junit/rules/regExprCensorIgnored.gps`: sloppy counterpart — with
-  `ignoreRegExp`, `censorPlus` deletes its own witness.
+  `regExpMatching=sloppy`, `censorPlus` deletes its own witness.
 - `junit/rules/regExprErasure.gps`: `seqThroughEraser` (same level) now
   compiles cleanly; `seqThroughSublevelEraser` (deeper) and the new
   `seqThroughSiblingEraser` (sibling forall branches) pin the remaining

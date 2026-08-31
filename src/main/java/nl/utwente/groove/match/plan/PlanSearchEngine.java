@@ -485,7 +485,7 @@ public class PlanSearchEngine extends SearchEngine {
         /**
          * Lazily computes the eraser edges whose images censor the matching
          * of positive composite regular expressions in this condition: under
-         * strict DPO semantics (the ignoreRegExp grammar property unset), a
+         * faithful DPO matching (the regExpMatching grammar property), a
          * regular expression only holds if it is witnessed by a path avoiding
          * the images of all eraser edges at this or an ancestor level (the
          * dynamic censored re-match of gh #900). The set consists of the
@@ -493,9 +493,8 @@ public class PlanSearchEngine extends SearchEngine {
          * (matched) incident edges of eraser nodes, plus the ancestor-level
          * eraser edges imported into the condition's root; only edges with a
          * single host edge image qualify, as only those have a deterministic
-         * image to censor. The set is empty under SPO semantics or if
-         * ignoreRegExp is set, so that the automaton-based semantics is
-         * retained.
+         * image to censor. The set is empty under SPO semantics or sloppy
+         * matching, so that the automaton-based semantics is retained.
          */
         private Set<RuleEdge> getCensorErasers() {
             var result = this.censorErasers;
@@ -510,7 +509,7 @@ public class PlanSearchEngine extends SearchEngine {
             Set<RuleEdge> result = new LinkedHashSet<>();
             var properties = this.condition.getGrammarProperties();
             if (properties == null || !properties.getSemantics().isDPO()
-                || properties.isIgnoreRegExp()) {
+                || properties.getRegExpMatching().isSloppy()) {
                 return result;
             }
             var rule = this.condition.getRule();

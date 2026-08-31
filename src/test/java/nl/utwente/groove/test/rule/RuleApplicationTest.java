@@ -130,9 +130,9 @@ public class RuleApplicationTest extends TestCase {
     }
 
     /** Tests the rules in the regExprCensorIgnored grammar
-     * (the sloppy counterpart of regExprCensor: with ignoreRegExp set,
-     * regular expressions keep pure automaton semantics and a witness may
-     * be erased by the same application). */
+     * (the sloppy counterpart of regExprCensor: with regExpMatching set
+     * to sloppy, regular expressions keep pure automaton semantics and a
+     * witness may be erased by the same application). */
     @Test
     public void testRegExprCensorIgnored() {
         test("regExprCensorIgnored");

@@ -35,10 +35,10 @@ Existential seqThroughEraser [non-positive]
   rhs: nodes [n0:A, n1:B] edges [n0--a.b-->n1]
 == rule seqThroughSiblingEraser
 errors:
-  - Regular expression a* may match a path through a a-edge erased at an incomparable or deeper quantification level (set the ignoreRegExp grammar property to accept this)
+  - Regular expression a* may match a path through a a-edge erased at an incomparable or deeper quantification level (set the regExpMatching grammar property to sloppy to accept this)
 == rule seqThroughSublevelEraser
 errors:
-  - Regular expression a* may match a path through a a-edge erased at an incomparable or deeper quantification level (set the ignoreRegExp grammar property to accept this)
+  - Regular expression a* may match a path through a a-edge erased at an incomparable or deeper quantification level (set the regExpMatching grammar property to sloppy to accept this)
 == rule wildcardPositional
 signature: ()
 hidden: []

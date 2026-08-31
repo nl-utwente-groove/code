@@ -303,22 +303,19 @@ public class GrammarProperties extends Properties {
     }
 
     /**
-     * Sets the ignore-regular-expressions property to a given value.
-     * @param ignore if <code>true</code>, rules in which a composite regular
-     * expression may match a path through an erased edge are accepted.
+     * Sets the regular expression matching discipline to a given value.
      */
-    public void setIgnoreRegExp(boolean ignore) {
-        storeValue(GrammarKey.IGNORE_REG_EXP, ignore);
+    public void setRegExpMatching(RegExpMatching matching) {
+        storeValue(GrammarKey.REG_EXP_MATCHING, matching);
     }
 
     /**
-     * Returns the value of the ignore-regular-expressions property.
-     * @return if <code>true</code>, rules in which a composite regular
-     * expression may match a path through an erased edge are accepted
-     * rather than reported as errors.
+     * Returns the matching discipline for composite regular expressions
+     * under DPO semantics: faithful (witness paths must survive the
+     * application's erasure) or sloppy (pure path tests).
      */
-    public boolean isIgnoreRegExp() {
-        return parsePropertyOrDefault(GrammarKey.IGNORE_REG_EXP).value(ValueType.BOOLEAN);
+    public RegExpMatching getRegExpMatching() {
+        return parsePropertyOrDefault(GrammarKey.REG_EXP_MATCHING).value(RegExpMatching.VALUE_TYPE);
     }
 
     /**
@@ -788,6 +785,19 @@ public class GrammarProperties extends Properties {
             if (translated != null) {
                 result.setSemantics(translated);
             }
+        }
+        // translate or drop the legacy boolean ignoreRegExp key, which was
+        // replaced by the enum-valued regExpMatching within grammar version
+        // 3.12; not version-gated, for the same reason as parallelEdges above
+        String ignoreRegExp = getProperty(GrammarKey.IGNORE_REG_EXP);
+        if (ignoreRegExp != null) {
+            result = result.clone();
+            result.remove(GrammarKey.IGNORE_REG_EXP);
+            if (Boolean.parseBoolean(ignoreRegExp)) {
+                result.setRegExpMatching(RegExpMatching.SLOPPY);
+            }
+            // false (or an unparsable value) equals the faithful default,
+            // so there is nothing to preserve
         }
         // pre-3.12 grammars predate the semantics key, whose default is
         // SPO-multi; they must keep the simple-graph semantics they were

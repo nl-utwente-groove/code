@@ -189,8 +189,9 @@ class ConditionAssembler {
      * (deeper, or in a sibling branch), amalgamation means witness
      * destruction can be joint across instances, so there is no coherent
      * per-match verdict; such overlaps are reported as errors, unless the
-     * ignoreRegExp grammar property is set - which switches off both the
-     * check and the dynamic censoring, retaining pure automaton semantics.
+     * regExpMatching grammar property is set to sloppy - which switches off
+     * both the check and the dynamic censoring, retaining pure automaton
+     * semantics.
      * The traversable edge types of a regular expression are computed
      * positionally, by {@link RegAutCoverage}. Eraser nodes contribute
      * nothing: DPO semantics implies the dangling-edge condition, so node
@@ -201,7 +202,7 @@ class ConditionAssembler {
     private void checkRegExprErasure(SortedMap<Index,LevelPattern> patternMap,
                                      FormatErrorSet errors) {
         var properties = getGrammarProperties();
-        if (!properties.getSemantics().isDPO() || properties.isIgnoreRegExp()) {
+        if (!properties.getSemantics().isDPO() || properties.getRegExpMatching().isSloppy()) {
             return;
         }
         // collect the possibly erased edge types per level,
@@ -251,9 +252,9 @@ class ConditionAssembler {
                             errors
                                 .add("Regular expression %s may match a path through a %s-edge "
                                     + "erased at an incomparable or deeper quantification level "
-                                    + "(set the ignoreRegExp grammar property to accept this)",
-                                     edge.label(), erasedEntry.getKey().label(), edge,
-                                     erasedEntry.getValue());
+                                    + "(set the regExpMatching grammar property to sloppy "
+                                    + "to accept this)", edge.label(),
+                                     erasedEntry.getKey().label(), edge, erasedEntry.getValue());
                             reported = true;
                             break;
                         }
@@ -274,10 +275,11 @@ class ConditionAssembler {
      * conflict machinery enforces the cross-level DPO identification
      * condition. Imported ancestor erasers are additionally recorded, to
      * take part in the conflict computation as erasers.
-     * Under strict semantics (the ignoreRegExp property unset), an
-     * ancestor eraser edge is also imported if it can destroy the witness
-     * of a composite regular expression at this level, so that the
-     * expression's dynamic censoring (gh #900) sees its seeded image.
+     * Under faithful regular expression matching (the regExpMatching
+     * property), an ancestor eraser edge is also imported if it can
+     * destroy the witness of a composite regular expression at this
+     * level, so that the expression's dynamic censoring (gh #900) sees
+     * its seeded image.
      * Must be called top-down over the level tree, before any condition
      * is built.
      */
@@ -289,7 +291,7 @@ class ConditionAssembler {
         myEraserNodes.removeAll(level.rhs.nodeSet());
         Set<RuleEdge> myEraserEdges = new LinkedHashSet<>(myEdges);
         myEraserEdges.removeAll(level.rhs.edgeSet());
-        boolean censoring = !getGrammarProperties().isIgnoreRegExp();
+        boolean censoring = !getGrammarProperties().getRegExpMatching().isSloppy();
         // the levels from just below the currently inspected ancestor
         // down to this level, into which conflicting elements are imported
         List<LevelPattern> path = new ArrayList<>();

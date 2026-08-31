@@ -31,7 +31,7 @@ import nl.utwente.groove.util.QualName;
 
 /**
  * Tests the static check on composite regular expressions versus erasers
- * (the ignoreRegExp grammar property): in a grammar with parallel edges,
+ * (the regExpMatching grammar property): in a grammar with parallel edges,
  * a rule is erroneous if a composite regular expression edge may match a
  * path through an edge that the rule erases at a quantification level that
  * is not an ancestor-or-self of the expression's level. Erasers at an
@@ -108,7 +108,7 @@ public class RegExprErasureCheckTest {
         assertFalse(getRuleModel("regExprErasure", "nodeEraserIncident").hasErrors());
     }
 
-    /** The ignoreRegExp property accepts the overlapping rule. */
+    /** Sloppy regular expression matching accepts the overlapping rule. */
     @Test
     public void testIgnoreRegExp() {
         assertFalse(getRuleModel("regExprErasureIgnored", "seqThroughEraser").hasErrors());
