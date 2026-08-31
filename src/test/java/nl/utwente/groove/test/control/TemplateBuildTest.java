@@ -201,7 +201,8 @@ public class TemplateBuildTest extends CtrlTester {
         //
         build("int x; bInt(out x);");
         Location loc = getInit(bIntXCall);
-        assertEquals(xList, loc.getVars());
+        // x is not live after the call, so it is no variable of the target location (gh #561)
+        assertTrue(loc.getVars().isEmpty());
         assertTrue(loc.isFinal());
         //
         build("bInt(_);");
@@ -221,7 +222,8 @@ public class TemplateBuildTest extends CtrlTester {
         //
         build("int x; bInt(out x); bInt(_);");
         loc = getInit(bIntXCall);
-        assertEquals(xList, loc.getVars());
+        // the wildcard argument does not read x, so x is dead after the first call (gh #561)
+        assertTrue(loc.getVars().isEmpty());
         //
         buildWrong("node x; if (a) bNode(out x); bNode(x);");
     }

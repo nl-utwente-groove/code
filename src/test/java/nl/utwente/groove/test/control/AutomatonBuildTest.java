@@ -165,7 +165,8 @@ public class AutomatonBuildTest {
         assertEquals(2, s1.getCallDepthChange());
         change = s1.getApplyChange().toList();
         assertEquals(1, change.size());
-        aMain = new Assignment(Binding.none(n));
+        // n is not live after the call of f, so the main level becomes empty (gh #561)
+        aMain = new Assignment();
         var aF = new Assignment(Binding.var(fx, 0), Binding.none(fy));
         var aG = new Assignment(Binding.anchor(gx, 0), Binding.creator(gy, 0));
         assertEquals(CallStackChange.push(aMain, aF, aG), change.get(0));
@@ -201,7 +202,8 @@ public class AutomatonBuildTest {
         assertEquals(CallStackChange.push(aF, aH), change.get(0));
         aF = new Assignment(Binding.none(fy));
         assertEquals(CallStackChange.pop(aF), change.get(1));
-        aMain = new Assignment(Binding.var(n, 0));
+        // the main level was emptied at the call of f, and n is dead afterwards (gh #561)
+        aMain = new Assignment();
         assertEquals(CallStackChange.pop(aMain), change.get(2));
         //
         assertTrue(f6.isFinal());
