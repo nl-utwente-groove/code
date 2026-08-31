@@ -31,6 +31,7 @@ import nl.utwente.groove.grammar.rule.MethodName;
 import nl.utwente.groove.grammar.rule.MethodName.Language;
 import nl.utwente.groove.grammar.rule.MethodNameParser;
 import nl.utwente.groove.graph.Graph;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Properties;
 import nl.utwente.groove.util.Strings;
@@ -135,7 +136,15 @@ public class ResourceProperties extends Properties {
             ValueType.STRING),
 
         /** Graph version. */
-        VERSION("$version", "Graph version", ValueType.STRING);
+        VERSION("$version", "Graph version", ValueType.STRING),
+
+        /** Master random seed recorded for a saved LTS. */
+        RANDOM_SEED("$randomSeed",
+            "<body>Master random seed in effect when the LTS was explored; "
+                + "recorded only if the exploration actually drew randomness. "
+                + "<br>Pass it to a new run (Generator option <tt>-seed</tt> or "
+                + "<tt>-Dgroove.randomSeed=...</tt>) to reproduce the LTS.",
+            ValueType.STRING);
 
         /**
          * Constructor for a key with a plain string value
@@ -484,6 +493,34 @@ public class ResourceProperties extends Properties {
      */
     static public String getVersion(Graph graph) {
         return getProperty(graph, Key.VERSION).value(ValueType.STRING);
+    }
+
+    /**
+     * Returns the random seed recorded for a given (LTS) graph.
+     * @param graph the queried graph; non-{@code null}
+     * @return the recorded seed, or {@link Optional#empty()} if the graph has
+     * no recorded seed
+     * @see Key#RANDOM_SEED
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    static public Optional<String> getRandomSeed(Graph graph) {
+        String result = getProperty(graph, Key.RANDOM_SEED).value(ValueType.STRING);
+        return result.isEmpty()
+            ? Optional.empty()
+            : Optional.of(result);
+    }
+
+    /**
+     * Records the random seed for a given (LTS) graph.
+     * The seed is stored in decimal form, as accepted by the Generator
+     * {@code -seed} option and the {@code groove.randomSeed} system property.
+     * @param graph the graph to be modified; non-{@code null} and non-fixed
+     * @param seed the master seed to be recorded
+     * @see Key#RANDOM_SEED
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    static public void setRandomSeed(Graph graph, long seed) {
+        setProperty(graph, Key.RANDOM_SEED, Long.toString(seed));
     }
 
     /**

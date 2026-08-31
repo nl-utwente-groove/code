@@ -23,9 +23,11 @@ import java.util.List;
 import nl.utwente.groove.explore.engine.Strategy;
 import nl.utwente.groove.explore.result.ResultCollector;
 import nl.utwente.groove.grammar.Grammar;
+import nl.utwente.groove.grammar.ResourceProperties;
 import nl.utwente.groove.lts.ExploreResult;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
+import nl.utwente.groove.util.Randomness;
 import nl.utwente.groove.util.Reporter;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -122,6 +124,7 @@ public class Exploration {
      */
     final public Exploration play() {
         // initialize profiling and prepare graph listener
+        long drawCount = Randomness.getUseCount();
         playReporter.start();
         for (ExplorationListener listener : this.listeners) {
             listener.start(this, this.gts);
@@ -143,6 +146,11 @@ public class Exploration {
         }
         // stop profiling
         playReporter.stop();
+        if (Randomness.getUseCount() > drawCount) {
+            // this run drew randomness, so record the master seed in the GTS
+            // info; from there it is carried into saved LTS files (gh #897)
+            ResourceProperties.setRandomSeed(this.gts, Randomness.getMasterSeed());
+        }
 
         // store result
         this.lastResult = this.collector.getResult();

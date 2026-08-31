@@ -33,6 +33,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.graph.AGraph;
 import nl.utwente.groove.graph.GGraph;
+import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.plain.PlainGraph;
 import nl.utwente.groove.graph.plain.PlainNode;
@@ -293,6 +294,9 @@ public class GTSFragment extends AGraph<GraphState,GraphTransition> {
             }
             result.addEdge(sourceImage, transition.label().text(), targetImage);
         }
+        // carry over the exploration metadata recorded in the GTS info,
+        // notably the random seed (gh #897)
+        GraphInfo.transferProperties(gts(), result, null);
         return result;
 
     }
