@@ -249,18 +249,14 @@ public class TreeMatch implements Fixable {
             if (resultSize == 0) {
                 result = Collections.emptyList();
             } else {
-                var condition = getCondition();
-                var properties = condition.getGrammarProperties();
+                var properties = getCondition().getGrammarProperties();
                 int bound = properties == null
                     ? 0
                     : properties.getMatchBound();
                 if (bound > 0 && resultSize > bound) {
-                    var rule = condition.getRule();
-                    throw new MatchBoundException(rule == null
-                        ? condition.getName()
-                        : rule.getQualName().toString(), bound);
+                    throw new MatchBoundException(getConditionName(), bound);
                 }
-                result = new ArrayList<>((int) Math.min(resultSize, Integer.MAX_VALUE - 8));
+                result = new ArrayList<>((int) resultSize);
                 Visitor<Proof,?> collector = Visitor.newCollector(result);
                 traverseMatrix(matrix, rowSize, collector);
                 collector.dispose();
@@ -367,10 +363,13 @@ public class TreeMatch implements Fixable {
      * an array of the correct length (the number of submatches)
      * @param rowSize the number of elements per matrix row. Should
      * be initialised to an array of the correct length (the number of submatches)
-     * @return the product of the row sizes, saturated at {@link Long#MAX_VALUE}
-     * in case of overflow
+     * @return the product of the row sizes; always at most {@link Integer#MAX_VALUE}
+     * @throws MatchBoundException if the product of the row sizes exceeds
+     * {@link Integer#MAX_VALUE}; such a number of matches can never be
+     * enumerated, regardless of any configured match bound
      */
-    private long computeProofMatrix(List<Proof>[] matrix, int[] rowSize) {
+    private long computeProofMatrix(List<Proof>[] matrix,
+                                    int[] rowSize) throws MatchBoundException {
         long resultSize = 1;
         int i = 0;
         for (TreeMatch subMatch : getSubMatches()) {
@@ -387,7 +386,20 @@ public class TreeMatch implements Fixable {
             rowSize[i] = row.size();
             i++;
         }
+        if (resultSize > Integer.MAX_VALUE) {
+            throw new MatchBoundException(getConditionName());
+        }
         return resultSize;
+    }
+
+    /** Returns the qualified name of the rule of this tree match's condition,
+     * or the condition name itself if the condition has no associated rule. */
+    private String getConditionName() {
+        var condition = getCondition();
+        var rule = condition.getRule();
+        return rule == null
+            ? condition.getName()
+            : rule.getQualName().toString();
     }
 
     /** Callback factory method for proofs based on this tree match. */

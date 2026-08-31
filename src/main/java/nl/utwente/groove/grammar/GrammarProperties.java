@@ -288,7 +288,8 @@ public class GrammarProperties extends Properties {
     /**
      * Sets the match bound property to a certain value.
      * @param bound the maximum number of matches collected for any single
-     * state; {@code 0} means no bound
+     * state; {@code 0} disables the configured bound, though a match count
+     * beyond {@link Integer#MAX_VALUE} always halts exploration
      */
     public void setMatchBound(int bound) {
         storeValue(GrammarKey.MATCH_BOUND, bound);
@@ -296,9 +297,11 @@ public class GrammarProperties extends Properties {
 
     /**
      * Returns the value of the match bound property: the maximum number of
-     * matches collected for any single state, or {@code 0} for no bound.
-     * When the bound is exceeded during exploration, the state is flagged as
-     * an error state and exploration halts.
+     * matches collected for any single state, or {@code 0} if no bound is
+     * configured (in which case only the fixed maximum of
+     * {@link Integer#MAX_VALUE} applies). When the bound is exceeded during
+     * exploration, the state is flagged as an error state and exploration
+     * halts.
      */
     public int getMatchBound() {
         return parsePropertyOrDefault(GrammarKey.MATCH_BOUND).value(ValueType.INTEGER);

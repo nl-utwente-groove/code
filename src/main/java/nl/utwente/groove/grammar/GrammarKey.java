@@ -96,13 +96,15 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
      * Upper bound on the number of matches collected for any single state.
      * When the bound is exceeded, the state is flagged as an error state and
      * exploration halts gracefully. Default is {@link #DEFAULT_MATCH_BOUND};
-     * {@code 0} means no bound.
+     * {@code 0} disables the configured bound, but a match count beyond
+     * {@link Integer#MAX_VALUE} always halts exploration.
      */
     MATCH_BOUND("matchBound",
         "<body>Upper bound on the number of matches collected for any single state, "
             + "as a protection against excessive fanout (e.g., through amalgamation). "
             + "<p>When the bound is exceeded, the state is flagged as an error state "
-            + "and exploration halts; 0 means no bound",
+            + "and exploration halts; 0 disables the bound, up to the fixed maximum "
+            + "of 2^31-1 matches that GROOVE can enumerate",
         ValueType.INTEGER),
     /**
      * The transformation semantics: whether host and rule graphs are

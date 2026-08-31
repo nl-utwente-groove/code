@@ -113,6 +113,19 @@ public class MatchBoundTest {
         assertEquals(16, gts.startState().getTransitions().size());
     }
 
+    /** A match count beyond Integer.MAX_VALUE halts exploration even without
+     * a configured bound: on 32 universal instances with 2 choices each, the
+     * computed proof product is 2^32, which can never be enumerated. */
+    @Test
+    public void testIntRangeAlwaysBounds() throws Exception {
+        Exploration exploration = explore("bipartite32", 0);
+        assertTrue(exploration.isHalted());
+        assertTrue(exploration.getLastMessage().contains("maximum"));
+        GTS gts = exploration.getGTS();
+        assertTrue(gts.hasErrors());
+        assertTrue(gts.startState().isError());
+    }
+
     /** Loads the fixture grammar. */
     private GrammarModel loadGrammar() throws Exception {
         return Groove.loadGrammar(GRAMMAR);

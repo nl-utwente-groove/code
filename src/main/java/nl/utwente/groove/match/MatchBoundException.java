@@ -24,8 +24,10 @@ import nl.utwente.groove.util.AIGenerated;
 /**
  * Exception thrown when the number of matches collected for a single state
  * exceeds the bound set by the {@link GrammarKey#MATCH_BOUND} grammar
- * property. Exploration catches this exception and halts gracefully,
- * after the offending state has been flagged as an error state.
+ * property, or (regardless of that property) the maximum number
+ * representable in an {@code int}. Exploration catches this exception and
+ * halts gracefully, after the offending state has been flagged as an error
+ * state.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -44,6 +46,21 @@ public class MatchBoundException extends RuntimeException {
                     GrammarKey.MATCH_BOUND.getName(), bound));
         this.name = name;
         this.bound = bound;
+    }
+
+    /**
+     * Constructs an exception for a given rule or condition whose match
+     * count exceeds the maximum representable number, {@link Integer#MAX_VALUE}.
+     * This limit applies even if the {@link GrammarKey#MATCH_BOUND} grammar
+     * property does not set a bound.
+     * @param name name of the rule or condition whose matches exceed the limit
+     */
+    public MatchBoundException(String name) {
+        super(String
+            .format("Number of matches for '%s' exceeds the maximum of %d supported by GROOVE",
+                    name, Integer.MAX_VALUE));
+        this.name = name;
+        this.bound = Integer.MAX_VALUE;
     }
 
     /** Returns the name of the rule or condition whose matches exceed the bound. */
