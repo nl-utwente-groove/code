@@ -26,8 +26,10 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -73,6 +75,7 @@ import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.gui.look.Values;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatErrorSet;
@@ -139,16 +142,7 @@ public class ExploreConfigDialog extends JDialog {
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
         content.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         content.add(createResourcePanel());
-        content
-            .add(createSection("Search order", ExploreKey.NEXT, ExploreKey.SUCCESSOR,
-                               ExploreKey.FRONTIER, ExploreKey.HEURISTIC, ExploreKey.COST,
-                               ExploreKey.BOUND));
-        content
-            .add(createSection("Goal and results", ExploreKey.GOAL, ExploreKey.OUTCOME,
-                               ExploreKey.SHAPE, ExploreKey.COUNT));
-        content
-            .add(createSection("Engine", ExploreKey.COLLAPSE, ExploreKey.ALGEBRA,
-                               ExploreKey.PERSISTENCE, ExploreKey.SEED));
+        SECTIONS.forEach((title, keys) -> content.add(createSection(title, keys)));
         content.add(createErrorPanel());
         content.add(createButtonPanel());
 
@@ -178,8 +172,35 @@ public class ExploreConfigDialog extends JDialog {
         setVisible(true);
     }
 
+    /**
+     * The dialog sections: each title mapped to the keys shown in that
+     * section, in display order. Together the sections must cover every
+     * {@link ExploreKey} exactly once — a key outside every section would
+     * silently have no editor in the dialog (this once happened to the seed
+     * key); the partition is guarded by {@code ExploreConfigDialogTest}.
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    static final Map<String,List<ExploreKey>> SECTIONS;
+    static {
+        var sections = new LinkedHashMap<String,List<ExploreKey>>();
+        sections
+            .put("Search order",
+                 List
+                     .of(ExploreKey.NEXT, ExploreKey.SUCCESSOR, ExploreKey.FRONTIER,
+                         ExploreKey.HEURISTIC, ExploreKey.COST, ExploreKey.BOUND));
+        sections
+            .put("Goal and results",
+                 List.of(ExploreKey.GOAL, ExploreKey.OUTCOME, ExploreKey.SHAPE, ExploreKey.COUNT));
+        sections
+            .put("Engine",
+                 List
+                     .of(ExploreKey.COLLAPSE, ExploreKey.ALGEBRA, ExploreKey.PERSISTENCE,
+                         ExploreKey.SEED));
+        SECTIONS = Collections.unmodifiableMap(sections);
+    }
+
     /** Creates a titled section panel with one row per given key. */
-    private JPanel createSection(String title, ExploreKey... keys) {
+    private JPanel createSection(String title, List<ExploreKey> keys) {
         JPanel result = new JPanel(new java.awt.GridLayout(0, 1, 0, 2));
         result.setBorder(BorderFactory.createTitledBorder(title));
         for (var key : keys) {
