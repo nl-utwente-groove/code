@@ -65,11 +65,20 @@ public class RuleEffect extends DefaultFixable {
     }
 
     /**
-     * Creates a full record based on a predefined set of created nodes.
+     * Creates a full record based on a predefined set of created nodes
+     * and (optionally) a predefined set of added edges.
      * @param source host graph to which this effect refers.
+     * @param createdNodes the created nodes, in the order of the rule's coanchor
+     * @param addedEdges the added edges recorded by a previous derivation of
+     * the same event and source graph, or {@code null} if the added edges are
+     * yet to be generated. If non-{@code null}, edge creation is skipped
+     * altogether and {@link #getAddedEdges()} returns this array verbatim;
+     * see {@link #isEdgesPredefined()}.
      */
-    public RuleEffect(HostGraph source, HostNode[] createdNodes) {
+    @AIGenerated("Claude Fable 5, 2026-08")
+    public RuleEffect(HostGraph source, HostNode[] createdNodes, HostEdge[] addedEdges) {
         this(source, createdNodes, Fragment.ALL);
+        this.predefinedAddedEdges = addedEdges;
     }
 
     /**
@@ -111,6 +120,26 @@ public class RuleEffect extends DefaultFixable {
 
     /** Flag indicating that the effect was initialised with predefined nodes. */
     private final boolean nodesPredefined;
+
+    /**
+     * Indicates that the added edges have been predefined, by a previous
+     * derivation of the same event and source graph. This implies that edge
+     * creation is skipped ({@link BasicEvent#recordEffect(RuleEffect)} does
+     * not invoke {@link #addCreateEdge} or {@link #addCreatedEdges}) and that
+     * {@link #getAddedEdges()} returns the predefined array verbatim. The
+     * recorded array is the post-merge, post-filter added edge set of the
+     * first derivation, so replaying it wholesale reproduces that derivation's
+     * target graph without re-minting any edge identity (gh #905).
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    final boolean isEdgesPredefined() {
+        return this.predefinedAddedEdges != null;
+    }
+
+    /** The predefined added edges; {@code null} if the added edges are yet
+     * to be generated. Non-{@code null} only in re-derivations over a
+     * non-simple host graph. */
+    private HostEdge[] predefinedAddedEdges;
 
     /** Returns the value oracle for ask-parameter
      * @return a no-<code>null</code> oracle if the nodes are not predefined
@@ -561,6 +590,9 @@ public class RuleEffect extends DefaultFixable {
      */
     public final boolean hasAddedEdges() {
         assert isFixed();
+        if (isEdgesPredefined()) {
+            return this.predefinedAddedEdges.length > 0;
+        }
         return this.createdEdges != null || hasMergeMap();
     }
 
@@ -570,9 +602,14 @@ public class RuleEffect extends DefaultFixable {
      * This includes the edges that are created due to merging.
      * The edges returned by the iterator are guaranteed to be
      * without duplicates and fresh w.r.t. the source graph.
+     * If the added edges are predefined, they are returned verbatim.
+     * @see #isEdgesPredefined()
      */
     final public Iterable<HostEdge> getAddedEdges() {
         assert isFixed();
+        if (isEdgesPredefined()) {
+            return Arrays.asList(this.predefinedAddedEdges);
+        }
         Iterable<HostEdge> result = null;
         final Set<HostEdge> createdEdges = this.createdEdges;
         if (hasMergeMap()) {

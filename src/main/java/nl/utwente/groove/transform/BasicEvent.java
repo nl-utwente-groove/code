@@ -328,7 +328,10 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
                 if (getAction().getEraserEdges().length > 0) {
                     recordErasedEdges(record);
                 }
-                if (getAction().getCreatorEdges().length > 0) {
+                // with predefined added edges, creation is skipped altogether:
+                // the record replays the added edge set of a previous
+                // derivation verbatim (gh #905)
+                if (getAction().getCreatorEdges().length > 0 && !record.isEdgesPredefined()) {
                     recordCreatedEdges(record);
                 }
             }

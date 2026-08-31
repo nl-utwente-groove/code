@@ -414,12 +414,13 @@ public class RuleApplication implements DeltaApplier {
 
     private RuleEffect computeEffect() {
         RuleEffect result;
-        // use the predefined created nodes, if available
+        // use the predefined created nodes and added edges, if available
         var addedNodes = getAddedNodes();
         if (addedNodes == null) {
+            assert this.addedEdges == null : "Added edges can only be predefined together with added nodes";
             result = new RuleEffect(getSource(), getOracle());
         } else {
-            result = new RuleEffect(getSource(), addedNodes);
+            result = new RuleEffect(getSource(), addedNodes, this.addedEdges);
         }
         try {
             getEvent().recordEffect(result);
@@ -518,18 +519,10 @@ public class RuleApplication implements DeltaApplier {
      */
     private void addEdges(RuleEffect record, DeltaTarget target) {
         if (record.hasAddedEdges()) {
-            // in a re-derivation with predefined added edges, substitute the
-            // recorded edge identities for the freshly minted ones, which (in
-            // a non-simple graph) are not reproducible
-            HostEdge[] replay = this.addedEdges;
-            boolean[] consumed = replay == null
-                ? null
-                : new boolean[replay.length];
+            // in a re-derivation with predefined added edges, the record
+            // replays the recorded edge identities verbatim, so no
+            // substitution is needed here
             for (HostEdge edge : record.getAddedEdges()) {
-                if (replay != null) {
-                    assert consumed != null;
-                    edge = findAddedEdge(replay, consumed, edge);
-                }
                 HostNode targetNode = edge.target();
                 if (targetNode instanceof ValueNode valueNode) {
                     if (this.source.containsNode(targetNode)) {
@@ -545,8 +538,11 @@ public class RuleApplication implements DeltaApplier {
 
     /**
      * Retrieves the not-yet-consumed predefined added edge with the same
-     * content as a given (freshly minted) added edge, and marks it as
-     * consumed. Content-equal parallel copies are interchangeable at this
+     * content as a given (freshly minted) merge image, and marks it as
+     * consumed. Only used by {@link #computeMorphism()}: the delta itself
+     * replays the recorded identities verbatim through the rule effect,
+     * but the merge map still mints fresh, irreproducible images.
+     * Content-equal parallel copies are interchangeable at this
      * point, so any consistent assignment reproduces the recorded target
      * graph.
      */
