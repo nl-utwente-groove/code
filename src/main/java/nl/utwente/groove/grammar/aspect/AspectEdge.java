@@ -413,7 +413,7 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
 
     @Override
     public boolean hasErrors() {
-        return !getErrors().isEmpty();
+        return getErrors().hasErrors();
     }
 
     @Override

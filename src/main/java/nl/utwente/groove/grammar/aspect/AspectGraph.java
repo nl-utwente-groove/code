@@ -68,7 +68,6 @@ import nl.utwente.groove.util.Pair;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
-import nl.utwente.groove.util.parse.SearchResult;
 
 /**
  * Graph implementation to convert from a label prefix representation of an
@@ -134,19 +133,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
 
     /** Mapping from node type labels to their sort maps. */
     private @Nullable Map<TypeLabel,SortMap> typeSortMap;
-
-    /**
-     * Collects search results matching the given label into the given list.
-     */
-    public void getSearchResults(TypeLabel label, List<SearchResult> results) {
-        String msg = getRole().getDescription() + " '%s' - Element '%s'";
-        for (AspectEdge edge : edgeSet()) {
-            if ((edge.getRuleLabel() != null && label.equals(edge.getRuleLabel().getTypeLabel()))
-                || label.equals(edge.getTypeLabel())) {
-                results.add(new SearchResult(msg, this.getName(), edge, this));
-            }
-        }
-    }
 
     /**
      * Creates a graph where the aspect values are represented as label prefixes
@@ -858,7 +844,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
 
         // Finalise combined graph.
         GraphInfo.setLayoutMap(result, newLayoutMap);
-        result.setErrors(newErrors.apply(transfer));
+        result.setErrors(transfer.apply(newErrors));
         result.setFixed();
         return result;
     }

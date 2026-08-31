@@ -16,123 +16,133 @@
  */
 package nl.utwente.groove.util.parse;
 
-import java.util.Objects;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.stream.Collectors;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.grammar.GrammarKey;
-import nl.utwente.groove.grammar.Recipe;
-import nl.utwente.groove.grammar.Rule;
-import nl.utwente.groove.grammar.aspect.AspectGraph;
-import nl.utwente.groove.grammar.model.ControlModel;
-import nl.utwente.groove.grammar.model.PrologModel;
-import nl.utwente.groove.grammar.model.ResourceKind;
-import nl.utwente.groove.grammar.type.TypeGraph;
-import nl.utwente.groove.graph.Edge;
-import nl.utwente.groove.graph.EdgeComparator;
-import nl.utwente.groove.graph.Element;
-import nl.utwente.groove.graph.GraphMap;
-import nl.utwente.groove.grammar.ResourceProperties.Key;
-import nl.utwente.groove.graph.Node;
-import nl.utwente.groove.graph.NodeComparator;
-import nl.utwente.groove.lts.GraphState;
-import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
-import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.Relation;
-import nl.utwente.groove.util.collect.CollectionComparator;
 
 /**
  * Class encoding a single message reporting an error in a graph view.
+ * <p>
+ * Apart from its message, an error holds <i>context</i> information passed in
+ * as constructor parameters: an insertion-ordered set of objects giving
+ * information about where the error occurs. The context is opaque at this
+ * level; interpretation is up to the consumers (see, e.g.,
+ * {@code nl.utwente.groove.grammar.model.ErrorLocation}). {@link Integer}
+ * parameters are collected separately as {@link #getNumbers() numbers}
+ * (typically line and column numbers), and arrays, collections and nested
+ * {@link FormatError}s are flattened into their constituents.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class FormatError
-    implements Comparable<FormatError>, SelectableListEntry, Fixable, Cloneable {
+@NonNullByDefault
+public class FormatError implements Comparable<FormatError>, Fixable, Cloneable {
     /**
-     * Constructs an error consisting of a message to be formatted.
+     * Constructs an error of severity {@link Severity#ERROR}, consisting of a
+     * message to be formatted.
      * The actual message is constructed by calling {@link String#format(String, Object...)}
-     * The parameters are interpreted as giving information about the error.
+     * The parameters are interpreted as giving information about the error;
+     * in particular, a {@link Severity} parameter sets the severity level.
      */
-    public FormatError(String message, Object... pars) {
+    public FormatError(String message, @Nullable Object... pars) {
         this.message = String.format(message, pars);
-        for (Object par : pars) {
+        for (var par : pars) {
             addContext(par);
         }
     }
 
     /**
-     * Attempts to set a context value ({@link #graph}, {@link #control},
-     * {@link #elements}) from a given object.
+     * Constructs an error of a given severity, consisting of a message to be formatted.
+     * Equivalent to passing the severity among the parameters.
+     * @see #FormatError(String, Object...)
      */
-    private void addContext(Object par) {
+    public FormatError(Severity severity, String message, @Nullable Object... pars) {
+        this(message, pars);
+        this.severity = severity;
+    }
+
+    /**
+     * Adds a context value from a given object.
+     * Arrays, collections and nested errors are flattened; {@link Integer}s
+     * are added to the {@link #getNumbers() numbers}; a {@link Severity}
+     * sets the severity level; all other objects are
+     * added to the {@link #getContext() context}. {@code null} values are
+     * silently ignored.
+     */
+    private void addContext(@Nullable Object par) {
         assert !isFixed();
-        if (par instanceof Object[] a) {
+        if (par == null) {
+            // null parameters carry no context information
+        } else if (par instanceof Object[] a) {
             Arrays.stream(a).forEach(this::addContext);
         } else if (par instanceof Collection<?> c) {
             c.forEach(this::addContext);
         } else if (par instanceof FormatError e) {
-            e.getArguments().forEach(this::addContext);
-            this.resourceKind = e.getResourceKind();
-            e.getResourceNames().forEach(n -> addResource(getResourceKind(), n));
-        } else if (par instanceof Key k) {
-            this.key = k;
-        } else if (par instanceof GraphState s) {
-            this.state = s;
-        } else if (par instanceof AspectGraph g) {
-            this.graph = g;
-            addResource(ResourceKind.toResource(g.getRole()), g.getQualName());
-        } else if (par instanceof ControlModel c) {
-            this.control = c;
-            addResource(ResourceKind.CONTROL, c.getQualName());
-        } else if (par instanceof PrologModel p) {
-            this.prolog = p;
-            addResource(ResourceKind.PROLOG, p.getQualName());
-        } else if (par instanceof Element e) {
-            this.elements.add(e);
+            e.getContext().forEach(this::addContext);
+            this.numbers.addAll(e.getNumbers());
+            // an error wrapping another error is a contextualisation of the
+            // nested error, and so takes over its severity
+            this.severity = e.getSeverity();
+        } else if (par instanceof Severity s) {
+            this.severity = s;
         } else if (par instanceof Integer i) {
             this.numbers.add(i);
-        } else if (par instanceof TypeGraph tg) {
-            addResource(ResourceKind.TYPE, tg.getQualName());
-        } else if (par instanceof Rule r) {
-            addResource(ResourceKind.RULE, r.getQualName());
-        } else if (par instanceof Recipe r) {
-            addResource(ResourceKind.CONTROL, r.getControlName());
-        } else if (par instanceof GrammarKey k) {
-            addResource(ResourceKind.PROPERTIES, QualName.name(k.getName()));
-        } else if (par instanceof Resource r) {
-            addResource(r.kind(), r.name());
+        } else {
+            this.context.add(par);
         }
     }
 
-    /** Compares the error graph, error object and message. */
+    /** Returns the severity level of this error. */
+    public final Severity getSeverity() {
+        return this.severity;
+    }
+
+    /** Indicates if this error is of severity {@link Severity#ERROR}. */
+    public final boolean isBlocking() {
+        return getSeverity().isBlocking();
+    }
+
+    /** The severity level of this error. */
+    private Severity severity = Severity.ERROR;
+
+    /** Compares the severity, message, numbers and context. */
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         boolean result;
         if (obj instanceof FormatError err) {
-            result = getArguments().equals(err.getArguments());
+            result = getSeverity() == err.getSeverity();
             result &= toString().equals(err.toString());
+            result &= getNumbers().equals(err.getNumbers());
+            // compare the backing sets; the unmodifiable view returned by
+            // getContext() does not implement value equality
+            result &= this.context.equals(err.context);
         } else {
             result = false;
         }
         return result;
     }
 
-    /** The hash code is based on the error graph, error object and message. */
+    /** The hash code is based on the severity, message, numbers and context. */
     @Override
     public int hashCode() {
         int result = toString().hashCode();
-        result += getArguments().hashCode();
+        result += getNumbers().hashCode();
+        // hash the backing set; the unmodifiable view returned by
+        // getContext() has an identity-based (so non-deterministic) hash
+        result += this.context.hashCode();
+        // the enum's own hash code is identity-based, hence not deterministic
+        result = result * 31 + getSeverity().ordinal();
         return result;
     }
 
@@ -164,102 +174,83 @@ public class FormatError
     private final String message;
 
     /**
-     * Compares only the error element and message.
-     * This means that identically worded errors with the same element but for different graphs will be collapsed.
+     * Compares the message and then the context.
+     * The context comparison is a best-effort deterministic order over the
+     * otherwise opaque context objects, by class name and string rendering.
      */
     @Override
     public int compareTo(FormatError other) {
         int result = toString().compareTo(other.toString());
-        // establish lexicographical ordering of error objects
         if (result == 0) {
-            result = elemsComparator.compare(getElements(), other.getElements());
+            result = Integer.compare(getContext().size(), other.getContext().size());
+        }
+        if (result == 0) {
+            Iterator<Object> myIter = getContext().iterator();
+            Iterator<Object> otherIter = other.getContext().iterator();
+            while (result == 0 && myIter.hasNext()) {
+                Object mine = myIter.next();
+                Object his = otherIter.next();
+                result = mine.getClass().getName().compareTo(his.getClass().getName());
+                if (result == 0) {
+                    result = String.valueOf(mine).compareTo(String.valueOf(his));
+                }
+            }
         }
         return result;
     }
 
-    /** Returns the control view in which the error occurs. May be {@code null}. */
-    public final @Nullable ControlModel getControl() {
-        return this.control;
+    /** Returns the context objects of this error, in insertion order.
+     * The context is opaque at this level; interpretation is up to the caller.
+     * May be empty. */
+    public Collection<Object> getContext() {
+        return Collections.unmodifiableCollection(this.context);
     }
 
-    /** The control view in which the error occurs. */
-    private ControlModel control;
-
-    /** Returns the prolog view in which the error occurs. May be {@code null}. */
-    public final @Nullable PrologModel getProlog() {
-        return this.prolog;
+    /** Returns the context objects of this error that are instances of a
+     * given type, in insertion order. May be empty. */
+    public <T> List<T> getContext(Class<T> type) {
+        return this.context
+            .stream()
+            .filter(type::isInstance)
+            .map(type::cast)
+            .collect(Collectors.toList());
     }
 
-    /** The prolog view in which the error occurs. */
-    private PrologModel prolog;
+    /** The (insertion-ordered, duplicate-free) context of the error. */
+    private final Collection<Object> context = new LinkedHashSet<>();
 
-    /** Returns the graph in which the error occurs. May be {@code null}. */
-    public final @Nullable AspectGraph getGraph() {
-        return this.graph;
-    }
-
-    /** The graph in which the error occurs. */
-    private AspectGraph graph;
-
-    /** Returns the state in which the error occurs. May be {@code null}. */
-    public final @Nullable GraphState getState() {
-        return this.state;
-    }
-
-    /** The (possibly {@code null}) state in which the error occurs. */
-    private GraphState state;
-
-    /** Returns the property key in which the error occurs. May be {@code null}. */
-    @Override
-    public final @Nullable Key getPropertyKey() {
-        return this.key;
-    }
-
-    /** The (possibly {@code null}) key in which the error occurs. */
-    private Key key;
-
-    /** Returns the list of elements in which the error occurs, together
-     * with its projections. May be empty. */
-    @Override
-    public Collection<Element> getElements() {
-        return this.elements;
-    }
-
-    /** List of erroneous elements. */
-    private Collection<Element> elements = new LinkedHashSet<>();
-
-    /** Modifies the list of elements in this error by applying a mapping to it.
+    /** Modifies the context of this error by applying a mapping to it:
+     * the images of context objects in the map are added to the context.
      * Returns this error for chaining.
      */
-    FormatError apply(Map<? extends Element,? extends Element> map) {
+    FormatError apply(Map<?,?> map) {
         if (!map.isEmpty()) {
-            var elements = this.elements;
-            var newElements = new ArrayList<Element>(elements.size());
-            for (var e : elements) {
+            var newContext = new ArrayList<>(this.context.size());
+            for (var e : this.context) {
                 var i = map.get(e);
                 if (i != null) {
-                    newElements.add(i);
+                    newContext.add(i);
                 }
             }
-            this.elements.addAll(newElements);
+            this.context.addAll(newContext);
         }
         return this;
     }
 
-    /** Modifies the list of elements in this error by applying a relation to it.
+    /** Modifies the context of this error by applying a relation to it:
+     * the images of context objects in the relation are added to the context.
      * Returns this error for chaining.
      */
-    FormatError apply(Relation<? extends Element,? extends Element> relation) {
+    FormatError apply(Relation<?,?> relation) {
         if (!relation.isEmpty()) {
-            var elements = this.elements;
-            var newElements = new ArrayList<Element>(elements.size());
-            for (var e : elements) {
+            var newContext = new ArrayList<>(this.context.size());
+            for (var e : this.context) {
                 var i = relation.get(e);
                 if (i != null) {
-                    newElements.addAll(i);
+                    newContext.addAll(i);
                 }
             }
-            this.elements.addAll(newElements);
+            this.context.addAll(newContext);
         }
         return this;
     }
@@ -273,42 +264,15 @@ public class FormatError
     /** List of numbers; typically the line and column number in a textual program. */
     private final List<Integer> numbers = new ArrayList<>();
 
-    /** Sets the resource in which this error occurs. */
-    private void addResource(ResourceKind kind, QualName name) {
-        this.resourceKind = kind;
-        this.resourceNames.add(name);
-    }
-
-    /** Returns the resource kind for which this error occurs. */
-    @Override
-    public final ResourceKind getResourceKind() {
-        return this.resourceKind;
-    }
-
-    /** The resource kind for which the error occurs. May be {@code null}. */
-    private ResourceKind resourceKind;
-
-    /** Returns the resource kind for which this error occurs. */
-    @Override
-    public final SortedSet<QualName> getResourceNames() {
-        return this.resourceNames;
-    }
-
-    /** The name of the resource on which the error occurs. May be {@code null}. */
-    private final SortedSet<QualName> resourceNames = new TreeSet<>();
-
     /** Returns a new format error in which the context information is transferred modulo
-     * a graph map. The new error has no parent.
+     * an element map. The new error has no parent.
      * @param map mapping from the context of this error to the context
-     * of the result error; or {@code null} if there is no mapping
+     * of the result error
      */
-    FormatError transfer(GraphMap map) {
+    FormatError transfer(Map<?,?> map) {
         var result = this;
         if (!map.isEmpty()) {
-            Map<Object,Object> elementMap = new HashMap<>();
-            elementMap.putAll(map.nodeMap());
-            elementMap.putAll(map.edgeMap());
-            result = clone(elementMap);
+            result = clone(map);
         }
         return result;
     }
@@ -316,33 +280,10 @@ public class FormatError
     /** Returns a new format error that extends this one with context information.
      * The new error has no parent as yet.
      */
-    public FormatError extend(Object... pars) {
+    public FormatError extend(@Nullable Object... pars) {
         FormatError result = clone(null);
-        for (Object par : pars) {
+        for (var par : pars) {
             result.addContext(par);
-        }
-        return result;
-    }
-
-    /** Returns the contextual arguments of this error. */
-    private List<Object> getArguments() {
-        List<Object> result = new ArrayList<>();
-        result.addAll(getElements());
-        if (this.control != null) {
-            result.add(this.control);
-        }
-        if (this.prolog != null) {
-            result.add(this.prolog);
-        }
-        result.addAll(this.numbers);
-        if (this.graph != null) {
-            result.add(this.graph);
-        }
-        if (this.state != null) {
-            result.add(this.state);
-        }
-        if (this.key != null) {
-            result.add(this.key);
         }
         return result;
     }
@@ -353,18 +294,18 @@ public class FormatError
     }
 
     /** Returns a clone of this error, with no parent.
-     * An optional graph map determines how the context arguments are mapped.
+     * An optional map determines how the context objects are mapped.
      */
     private FormatError clone(@Nullable Map<?,?> map) {
-        var result = new FormatError(toFormattableString());
-        for (var arg : getArguments()) {
+        var result = new FormatError(getSeverity(), toFormattableString());
+        result.numbers.addAll(getNumbers());
+        for (var arg : getContext()) {
             var newArg = map != null && map.containsKey(arg)
                 ? map.get(arg)
                 : arg;
+            assert newArg != null; // map.get(arg) is non-null since map.containsKey(arg)
             result.addContext(newArg);
         }
-        result.resourceKind = getResourceKind();
-        getResourceNames().forEach(n -> result.addResource(getResourceKind(), n));
         return result;
     }
 
@@ -384,44 +325,4 @@ public class FormatError
 
     /** Flag indicating if this object is fixed. */
     private boolean fixed;
-
-    private static final NodeComparator nodeComparator = NodeComparator.instance();
-    private static final Comparator<Edge> edgeComparator = EdgeComparator.instance();
-    /** Comparator for graph elements. */
-    private static final Comparator<Element> elemComparator = (el1, el2) -> {
-        int result = el1.getClass().getName().compareTo(el2.getClass().getName());
-        if (result != 0) {
-            return result;
-        }
-        return switch (el1) {
-        case Node n1 -> nodeComparator.compare(n1, (Node) el2);
-        case Edge e1 -> edgeComparator.compare(e1, (Edge) el2);
-        default -> throw Exceptions.unreachable();
-        };
-    };
-    /** Comparator for lists of graph elements. */
-    private static final Comparator<Collection<Element>> elemsComparator
-        = CollectionComparator.<Element>instance(elemComparator);
-
-    /** Constructs a control parameter from a given name. */
-    public static Resource control(QualName name) {
-        return resource(ResourceKind.CONTROL, name);
-    }
-
-    /** Constructs a resource parameter from a given resource kind and name. */
-    public static Resource resource(ResourceKind kind, QualName name) {
-        return new Resource(kind, name);
-    }
-
-    /** Resource parameter class. */
-    public static record Resource(ResourceKind kind, QualName name) {
-
-        /** Overrides the generated hash code, which would use identity-based enum hashes. */
-        @Override
-        public int hashCode() {
-            return Objects.hash(this.kind.ordinal(), this.name);
-        }
-        // empty by design
-
-    }
 }

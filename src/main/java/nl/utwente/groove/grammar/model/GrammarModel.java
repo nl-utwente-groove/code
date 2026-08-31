@@ -416,9 +416,10 @@ public class GrammarModel implements PropertyChangeListener {
         return this.errors;
     }
 
-    /** Indicates if this grammar model has errors. */
+    /** Indicates if this grammar model has blocking errors,
+     * preventing its conversion to a grammar. */
     public boolean hasErrors() {
-        return !getErrors().isEmpty();
+        return getErrors().hasErrors();
     }
 
     /** Possibly empty list of errors found in the conversion to a grammar. */
@@ -492,9 +493,8 @@ public class GrammarModel implements PropertyChangeListener {
         ResourceValidators.validate(this);
         for (NamedResourceModel<?> prologModel : getResourceSet(PROLOG)) {
             for (FormatError error : prologModel.getErrors()) {
-                this.errors
-                    .add("Error in prolog program '%s': %s", prologModel.getQualName(), error,
-                         prologModel);
+                addWrapped(this.errors, "prolog program", prologModel.getQualName(), error,
+                           prologModel);
             }
         }
         // errors of active settings resources block the grammar;
@@ -508,9 +508,8 @@ public class GrammarModel implements PropertyChangeListener {
                 // (null) resource kind would otherwise overwrite it; it is
                 // what makes the error navigate to the settings display, and
                 // the numbers copied from the nested error to the right line
-                this.errors
-                    .add("Error in settings resource '%s': %s", settingsModel.getQualName(), error,
-                         FormatError.resource(SETTINGS, settingsModel.getQualName()));
+                addWrapped(this.errors, "settings resource", settingsModel.getQualName(), error,
+                           new ResourceId(SETTINGS, settingsModel.getQualName()));
             }
         }
         // check if all resource names are valid identifiers
@@ -519,6 +518,24 @@ public class GrammarModel implements PropertyChangeListener {
                 this.errors.addAll(model.getQualName().getErrors());
             }
         }
+    }
+
+    /**
+     * Wraps a resource diagnostic into a grammar-level one, naming its
+     * severity: the message reads "«Severity» in «context» '«name»': «error»".
+     * The nested error's severity carries over to the wrapping error
+     * (see {@link FormatError}), so text and severity cannot drift apart.
+     * @param errors the error set to add the wrapped diagnostic to
+     * @param context description of the resource kind, e.g. "rule"
+     * @param name the name of the resource the diagnostic stems from
+     * @param error the nested resource-level diagnostic
+     * @param pars additional context parameters for the wrapping error
+     */
+    private static void addWrapped(FormatErrorSet errors, String context, QualName name,
+                                   FormatError error, Object... pars) {
+        errors
+            .add("%s in " + context + " '%s': %s", error.getSeverity().getCapText(), name, error,
+                 pars);
     }
 
     /**
@@ -537,11 +554,15 @@ public class GrammarModel implements PropertyChangeListener {
             if (ruleModel.isActive()) {
                 try {
                     result.add(((RuleModel) ruleModel).toResource());
+                    // the rule compiled, but may still carry non-blocking diagnostics
+                    for (FormatError error : ruleModel.getErrors()) {
+                        addWrapped(errors, "rule", ruleModel.getQualName(), error,
+                                   ruleModel.getSource());
+                    }
                 } catch (FormatException exc) {
                     for (FormatError error : exc.getErrors()) {
-                        errors
-                            .add("Error in rule '%s': %s", ruleModel.getQualName(), error,
-                                 ruleModel.getSource());
+                        addWrapped(errors, "rule", ruleModel.getQualName(), error,
+                                   ruleModel.getSource());
                     }
                 }
             }
@@ -569,6 +590,9 @@ public class GrammarModel implements PropertyChangeListener {
             errors.addAll(e.getErrors());
         }
         errors.throwException();
+        // any remaining errors are non-blocking diagnostics;
+        // keep them with the grammar model
+        this.errors.addAll(errors);
         // Set the active prolog programs, carried as plain texts; the prolog
         // layer builds its environment from them
         var prologPrograms = new LinkedHashMap<QualName,String>();

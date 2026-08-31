@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.util.parse;
+package nl.utwente.groove.gui.list;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,8 +22,10 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.ResourceKind;
+import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.util.QualName;
 
@@ -32,6 +34,20 @@ import nl.utwente.groove.util.QualName;
  * @author Eduardo Zambon
  */
 public class SearchResult implements SelectableListEntry {
+    /**
+     * Collects search results matching the given label into the given list.
+     */
+    public static void collect(AspectGraph graph, TypeLabel label, List<SearchResult> results) {
+        String msg = graph.getRole().getDescription() + " '%s' - Element '%s'";
+        for (AspectEdge edge : graph.edgeSet()) {
+            var ruleLabel = edge.getRuleLabel();
+            if ((ruleLabel != null && label.equals(ruleLabel.getTypeLabel()))
+                || label.equals(edge.getTypeLabel())) {
+                results.add(new SearchResult(msg, graph.getName(), edge, graph));
+            }
+        }
+    }
+
     /** Constructs an error consisting of a string message. */
     public SearchResult(String message) {
         this.message = message;

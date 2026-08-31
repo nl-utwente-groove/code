@@ -147,7 +147,9 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
                 } catch (FormatException e) {
                     errors.addAll(e.getErrors());
                 } catch (IllegalArgumentException e) {
-                    errors.add(e.getMessage());
+                    var message = e.getMessage();
+                    assert message != null; // type graph combination reports its rejections with a message
+                    errors.add(message);
                 }
             }
             errors.throwException();
@@ -157,7 +159,7 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
                 for (var imported : imports) {
                     TypeModel origModel = importModels.get(imported);
                     assert origModel != null; // every remaining import was registered with its model
-                    errors.applyInverse(origModel.getMap());
+                    origModel.getMap().applyInverse(errors);
                     errors.add("Unresolved type import %s", imported, origModel.getSource());
                 }
             }

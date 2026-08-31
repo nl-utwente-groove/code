@@ -30,6 +30,7 @@ import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.gui.look.VisualKey.Nature;
 import nl.utwente.groove.util.Colors;
 import nl.utwente.groove.util.NodeShape;
+import nl.utwente.groove.util.parse.Severity;
 
 /**
  * Graph element look values.
@@ -249,7 +250,7 @@ public enum Look {
         @Override
         void init() {
             //add(VisualKey.BACKGROUND, Values.ERROR_BACKGROUND);
-            add(VisualKey.ERROR, true);
+            add(VisualKey.ERROR, Severity.ERROR);
         }
     },
     /** Change in look due to result state status. */

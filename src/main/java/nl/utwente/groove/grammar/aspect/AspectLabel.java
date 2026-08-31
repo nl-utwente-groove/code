@@ -339,10 +339,10 @@ public class AspectLabel extends ALabel implements Fixable {
         this.errors.add(message, args);
     }
 
-    /** Indicates if there are any errors in this label. */
+    /** Indicates if there are any blocking errors in this label. */
     public boolean hasErrors() {
         testFixed(true);
-        return !this.errors.isEmpty();
+        return this.errors.hasErrors();
     }
 
     /** Returns the (possibly empty) list of errors in this label. */

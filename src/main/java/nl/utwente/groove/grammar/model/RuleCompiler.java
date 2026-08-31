@@ -57,6 +57,7 @@ import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
+import nl.utwente.groove.util.parse.Severity;
 
 /**
  * Compiler from a rule aspect graph to a {@link Rule}.
@@ -135,11 +136,32 @@ class RuleCompiler {
                 var edgeType = (@NonNull TypeEdge) edgeEntry.getValue().getType();
                 typeMap.putEdge(edgeEntry.getKey(), edgeType);
             }
-            return computeRule(patternMap);
+            var result = computeRule(patternMap);
+            pullback(this.warnings);
+            return result;
         } catch (FormatException e) {
             throw new FormatException(pullback(e.getErrors()));
         }
     }
+
+    /** Adds a non-blocking diagnostic of severity {@link Severity#WARNING},
+     * to be attached to the compiled rule's model after a successful compilation.
+     * The message and parameters are as for {@link FormatError#FormatError(String, Object...)};
+     * the phases report context elements in their own vocabulary, which is
+     * pulled back to the source graph as for errors. */
+    void addWarning(String message, Object... args) {
+        this.warnings.add(new FormatError(Severity.WARNING, message, args));
+    }
+
+    /** Returns the non-blocking diagnostics collected during compilation,
+     * in the source graph vocabulary.
+     * Only valid after a successful {@link #compile()}. */
+    FormatErrorSet getWarnings() {
+        return this.warnings;
+    }
+
+    /** Non-blocking diagnostics collected during compilation. */
+    private final FormatErrorSet warnings = new FormatErrorSet();
 
     /** Returns the qualified name of the rule being compiled. */
     QualName getQualName() {
@@ -312,6 +334,8 @@ class RuleCompiler {
             }
         }
         errors.throwException();
+        // any remaining errors are non-blocking diagnostics
+        this.warnings.addAll(errors);
         assert result != null;
         return result;
     }
@@ -349,14 +373,13 @@ class RuleCompiler {
      * @return the given error set, modified in place, for chaining
      */
     private FormatErrorSet pullback(FormatErrorSet errors) {
-        errors.applyInverse(this.modelMap);
-        errors.applyInverse(this.untypedModelMap);
+        this.modelMap.applyInverse(errors);
+        this.untypedModelMap.applyInverse(errors);
         errors.apply(normalToSourceMap());
         var source = getSource();
-        return errors
-            .collapse(e -> e instanceof Node n
-                ? source.containsNode(n)
-                : source.containsEdge((Edge) e));
+        return errors.collapse(e -> e instanceof Node n
+            ? source.containsNode(n)
+            : e instanceof Edge edge && source.containsEdge(edge));
     }
 
 }

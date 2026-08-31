@@ -31,4 +31,17 @@ public final class ErrorListPanel extends ListPanel {
     protected ColorSet getColors() {
         return Values.ERROR_COLORS;
     }
+
+    /* Renders entries in the colours of their severity. */
+    @Override
+    protected ColorSet getColors(SelectableListEntry entry) {
+        if (entry instanceof ErrorEntry errorEntry) {
+            return switch (errorEntry.getError().getSeverity()) {
+            case ERROR -> Values.ERROR_COLORS;
+            case WARNING -> Values.WARNING_COLORS;
+            case INFO -> Values.INFO_COLORS;
+            };
+        }
+        return getColors();
+    }
 }

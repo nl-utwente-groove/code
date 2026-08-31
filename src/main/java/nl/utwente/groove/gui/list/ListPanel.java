@@ -37,7 +37,6 @@ import javax.swing.ScrollPaneConstants;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.look.Values.Mode;
 import nl.utwente.groove.util.HTMLConverter;
-import nl.utwente.groove.util.parse.SelectableListEntry;
 
 /**
  * Panel showing a list of messages. The panel hides itself when the
@@ -172,6 +171,12 @@ public abstract class ListPanel extends JPanel {
     /** Normal background color for entries. */
     protected abstract Values.ColorSet getColors();
 
+    /** Colors for a given entry; defaults to {@link #getColors()}.
+     * Subclasses can override this to differentiate entries. */
+    protected Values.ColorSet getColors(SelectableListEntry entry) {
+        return getColors();
+    }
+
     /** The text area containing the messages. */
     private JList<SelectableListEntry> entryArea;
     /** The title of the panel. */
@@ -193,8 +198,11 @@ public abstract class ListPanel extends JPanel {
                 : isSelected
                     ? Mode.SELECTED
                     : Mode.NONE;
-            result.setBackground(getColors().getBackground(mode));
-            result.setForeground(getColors().getForeground(mode));
+            var colors = value instanceof SelectableListEntry entry
+                ? getColors(entry)
+                : getColors();
+            result.setBackground(colors.getBackground(mode));
+            result.setForeground(colors.getForeground(mode));
             return result;
         }
     }

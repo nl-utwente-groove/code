@@ -37,6 +37,7 @@ import nl.utwente.groove.grammar.aspect.AspectElement;
 import nl.utwente.groove.grammar.model.LevelDistribution.Level;
 import nl.utwente.groove.grammar.model.RuleModel.Index;
 import nl.utwente.groove.grammar.rule.LabelVar;
+import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatException;
@@ -156,7 +157,7 @@ public class LevelDistributionTest {
         FormatError error = exc.getErrors().iterator().next();
         assertTrue(error.toString(), error.toString().contains(text));
         assertTrue("Error " + error + " does not mention " + edge,
-                   names(error.getElements()).contains(edge));
+                   names(error.getContext(Element.class)).contains(edge));
     }
 
     /** A level name on an ordinary rule edge that names no quantifier is

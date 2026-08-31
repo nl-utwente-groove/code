@@ -197,7 +197,10 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         normalSource.getErrors().throwException();
         var compiler = this.compiler
             = new RuleCompiler(getGrammar(), getSource(), normalSource, getRole());
-        return compiler.compile();
+        var result = compiler.compile();
+        // compilation succeeded, but may have left non-blocking diagnostics
+        addErrors(compiler.getWarnings());
+        return result;
     }
 
     @Override

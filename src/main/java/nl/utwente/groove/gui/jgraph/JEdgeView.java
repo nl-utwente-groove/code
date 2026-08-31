@@ -16,7 +16,6 @@
  */
 package nl.utwente.groove.gui.jgraph;
 
-import static nl.utwente.groove.util.Colors.ERROR_COLOR;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -432,8 +431,8 @@ public class JEdgeView extends EdgeView {
             VisualMap visuals = view.getCell().getVisuals();
             this.line2color = visuals.getInnerLine();
             this.twoLines = this.line2color != null;
-            this.error = visuals.isError();
-            if (this.error) {
+            this.errorOverlay = Values.getSeverityOverlay(visuals.getErrorSeverity());
+            if (this.errorOverlay != null) {
                 Rectangle b = getLabelBounds(jGraph, view).getBounds();
                 b.setRect(b.x - 1, b.y - 1, b.width, b.height + 1);
                 this.errorBounds = b;
@@ -478,10 +477,10 @@ public class JEdgeView extends EdgeView {
                 g2.setStroke(new BasicStroke(1));
                 paintLabels(g);
             }
-            if (this.error) {
-                // overlay with error colour
+            if (this.errorOverlay != null) {
+                // overlay with the severity colour
                 int s = JAttr.EXTRA_BORDER_SPACE;
-                g.setColor(ERROR_COLOR);
+                g.setColor(this.errorOverlay);
                 g2.setStroke(JAttr.createStroke(this.lineWidth + s, null));
                 g2.draw(this.view.lineShape);
                 if (this.view.endShape != null) {
@@ -489,7 +488,7 @@ public class JEdgeView extends EdgeView {
                     g2.draw(this.view.endShape);
                 }
                 paintLabels(g);
-                g.setColor(ERROR_COLOR);
+                g.setColor(this.errorOverlay);
                 g2.fill(this.errorBounds);
             }
         }
@@ -786,8 +785,8 @@ public class JEdgeView extends EdgeView {
         // properties for drawing a second line
         private boolean twoLines = false;
         private Color line2color;
-        /** Flag indicating that the underlying edge has an error. */
-        private boolean error;
+        /** Overlay colour for the underlying edge's diagnostics, if any. */
+        private Color errorOverlay;
         private Rectangle2D errorBounds;
 
         /** Component used for rendering HTML text. */

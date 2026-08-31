@@ -35,6 +35,7 @@ import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.NodeShape;
 import nl.utwente.groove.util.line.LineStyle;
+import nl.utwente.groove.util.parse.Severity;
 
 /**
  * Visual attribute keys.
@@ -65,8 +66,9 @@ public enum VisualKey {
     EDGE_TARGET_LABEL(String.class, null, REFRESHABLE),
     /** Position of the optional edge target label. Defaults to {@link ElementLayout#defaultLabelPosition}. */
     EDGE_TARGET_POS(Point2D.class, ElementLayout.defaultLabelPosition, CONTROLLED),
-    /** Node or edge error. Defaults to {@code false}. */
-    ERROR(Boolean.class, false, REFRESHABLE),
+    /** Maximum severity of the node or edge diagnostics.
+     * Defaults to {@code null}, meaning there are none. */
+    ERROR(Severity.class, null, REFRESHABLE),
     /** Node or edge emphasis. Defaults to {@code false}. */
     EMPHASIS(Boolean.class, false, CONTROLLED),
     /** Font setting for text, as a {@link Font} style value. Defaults to {@link Font#PLAIN}. */

@@ -48,11 +48,13 @@ import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.gui.action.CancelEditAction;
 import nl.utwente.groove.gui.action.SaveAction;
 import nl.utwente.groove.gui.action.SimulatorAction;
+import nl.utwente.groove.gui.list.ErrorEntry;
 import nl.utwente.groove.gui.list.ErrorListPanel;
 import nl.utwente.groove.gui.list.ListPanel;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatErrorSet;
+import nl.utwente.groove.util.parse.Severity;
 
 /**
  * Superclass for grammar component editors.
@@ -143,7 +145,7 @@ abstract public class ResourceTab extends JPanel {
      * Displays a list of errors, or hides the error panel if the list is empty.
      */
     final protected void updateErrors() {
-        getErrorPanel().setEntries(getErrors().get());
+        getErrorPanel().setEntries(ErrorEntry.wrap(getErrors().get()));
         if (getErrorPanel().isVisible()) {
             getMainPanel().setBottomComponent(getErrorPanel());
             getMainPanel().setDividerSize(1);
@@ -381,9 +383,15 @@ abstract public class ResourceTab extends JPanel {
         }
     }
 
-    /** Indicates if the displayed resource is currently in an error state. */
+    /** Indicates if the displayed resource currently has blocking errors. */
     final protected boolean hasErrors() {
-        return !getErrors().isEmpty();
+        return getErrors().hasErrors();
+    }
+
+    /** Returns the maximum severity of the displayed resource's diagnostics,
+     * or {@code null} if there are none. */
+    final @Nullable Severity getSeverity() {
+        return getErrors().getSeverity();
     }
 
     /** Creates and returns a Cancel button, for use on the tool bar. */

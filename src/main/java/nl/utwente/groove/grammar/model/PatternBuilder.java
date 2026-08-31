@@ -45,6 +45,7 @@ import nl.utwente.groove.algebra.Constant;
 import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.algebra.syntax.Expression;
 import nl.utwente.groove.algebra.syntax.Variable;
+import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectKind;
@@ -65,6 +66,7 @@ import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.graph.EdgeComparator;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.NodeComparator;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
 import nl.utwente.groove.util.QualName;
@@ -210,6 +212,7 @@ class PatternBuilder {
             }
             try {
                 this.nacs.addAll(computeNacs());
+                checkCreatorNacs();
             } catch (FormatException exc) {
                 errors.addAll(exc.getErrors());
             }
@@ -304,12 +307,16 @@ class PatternBuilder {
                             ruleEdge.label(), modelEdge.source());
                     }
                     this.rhs.addEdgeContext(ruleEdge);
+                    boolean endsInLhs = modelEdge.source().has(ROLE, AspectKind::inLHS)
+                        && modelEdge.target().has(ROLE, AspectKind::inLHS);
                     if (isRhsAsNac()) {
                         this.nacEdgeSet.add(ruleEdge);
-                    } else if (isCheckCreatorEdges()
-                        && modelEdge.source().has(ROLE, AspectKind::inLHS)
-                        && modelEdge.target().has(ROLE, AspectKind::inLHS)) {
+                        if (endsInLhs) {
+                            this.creatorNacEdges.put(ruleEdge, modelEdge);
+                        }
+                    } else if (isCheckCreatorEdges() && endsInLhs) {
                         this.nacEdgeSet.add(ruleEdge);
+                        this.creatorNacEdges.put(ruleEdge, modelEdge);
                     }
                 }
             }
@@ -405,6 +412,60 @@ class PatternBuilder {
         }
 
         /** Constructs the NACs for this rule. */
+        /**
+         * Diagnoses implicit creator NACs that are structurally violated:
+         * a single-edge NAC arising from the rhsIsNAC or checkCreatorEdges
+         * grammar property whose edge has a content-equal LHS twin (reader
+         * or eraser). The twin's image always supplies a host copy of the
+         * created edge, so the NAC can never be satisfied and the rule can
+         * never be applied — except under injective matching of a multigraph
+         * rule, where the NAC only tests for copies not used by the match.
+         * Since the situation is almost certainly a mistake but the rule is
+         * not ill-formed, this adds a warning rather than an error.
+         */
+        @AIGenerated("Claude Opus 5, 2026-08")
+        private void checkCreatorNacs() {
+            if (this.creatorNacEdges.isEmpty()) {
+                return;
+            }
+            var compiler = PatternBuilder.this.compiler;
+            if (compiler.getGrammarProperties().getSemantics().isMulti() && isInjective()) {
+                // the implicit NAC only tests for copies not used by the match,
+                // so a matched twin does not violate it
+                return;
+            }
+            for (RuleGraph nac : this.nacs) {
+                var nacEdges = nac.edgeSet();
+                if (nacEdges.size() != 1) {
+                    continue;
+                }
+                RuleEdge nacEdge = nacEdges.iterator().next();
+                AspectEdge modelEdge = this.creatorNacEdges.get(nacEdge);
+                if (modelEdge == null) {
+                    continue;
+                }
+                // look for a content-equal LHS twin (same endpoints and label,
+                // disregarding the parallel index)
+                boolean hasTwin = this.lhs
+                    .edgeSet()
+                    .stream()
+                    .anyMatch(e -> e.source().equals(nacEdge.source())
+                        && e.target().equals(nacEdge.target())
+                        && e.label().equals(nacEdge.label()));
+                if (hasTwin) {
+                    String property = isRhsAsNac()
+                        ? GrammarKey.RHS_AS_NAC.getName()
+                        : GrammarKey.CREATOR_EDGE.getName();
+                    compiler
+                        .addWarning("Created edge %s duplicates a left-hand-side edge, "
+                            + "so the implicit NAC arising from the %s property is always violated "
+                            + "and the rule can never be applied; use injective matching under "
+                            + "a multigraph semantics, or disable the property",
+                                    nacEdge.label(), property, modelEdge);
+                }
+            }
+        }
+
         private List<RuleGraph> computeNacs() throws FormatException {
             List<RuleGraph> result = new ArrayList<>();
             // add the nacs to the rule
@@ -829,6 +890,13 @@ class PatternBuilder {
         private final Set<RuleNode> nacNodeSet = new HashSet<>();
         /** The set of edges appearing in NACs. */
         private final Set<RuleEdge> nacEdgeSet = new HashSet<>();
+        /** Map from creator edges added to the NACs as implicit creator NACs
+         * (due to the rhsIsNac or checkCreatorEdges grammar property) and
+         * whose endpoints are both LHS nodes, to their originating aspect edges.
+         * Used to diagnose implicit NACs that are structurally violated.
+         * @see #checkCreatorNacs()
+         */
+        private final Map<RuleEdge,AspectEdge> creatorNacEdges = new HashMap<>();
         /** Collection of NAC graphs. */
         private final List<RuleGraph> nacs = new ArrayList<>();
         /** Variables bound at the parent level. */

@@ -31,6 +31,7 @@ import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.gui.look.Look;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
+import nl.utwente.groove.util.parse.Severity;
 
 /**
  * Extension of a graph cell that recognises that cells have underlying edges.
@@ -97,6 +98,19 @@ public interface JCell<G extends @NonNull Graph> extends GraphCell, Serializable
      * i.e., if {@link #getErrors()} would return a non-empty object.
      */
     boolean hasErrors();
+
+    /**
+     * Returns the maximum severity of the diagnostics in this JCell,
+     * or {@code null} if there are none.
+     * This implementation derives the severity from {@link #hasErrors()},
+     * which is appropriate for cells whose error condition is not
+     * diagnostic-based (such as LTS error states).
+     */
+    default @Nullable Severity getErrorSeverity() {
+        return hasErrors()
+            ? Severity.ERROR
+            : null;
+    }
 
     /**
      * Returns the errors in this jCell.

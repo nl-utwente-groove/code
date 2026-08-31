@@ -178,13 +178,14 @@ public interface AspectElement extends Element, Fixable {
     }
 
     /**
-     * Indicates if this element has format errors.
-     * Convenience methods for {@code !getErrors().isEmpty()}
+     * Indicates if this element has blocking format errors.
+     * Convenience method for {@code getErrors().hasErrors()};
+     * non-blocking diagnostics do not count.
      * Should only be called after the element has been fixed.
      * @see #getErrors()
      */
     default boolean hasErrors() {
-        return !getErrors().isEmpty();
+        return getErrors().hasErrors();
     }
 
     /** Adds a set of format errors to the errors stored in this aspect element,

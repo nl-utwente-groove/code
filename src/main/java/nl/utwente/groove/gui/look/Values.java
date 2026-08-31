@@ -29,7 +29,10 @@ import org.jgraph.graph.GraphConstants;
 import nl.utwente.groove.gui.jgraph.JAttr;
 import nl.utwente.groove.util.Colors;
 import nl.utwente.groove.util.DefaultFixable;
+import nl.utwente.groove.util.HTMLConverter;
+import nl.utwente.groove.util.HTMLConverter.HTMLTag;
 import nl.utwente.groove.util.line.LineStyle;
+import nl.utwente.groove.util.parse.Severity;
 
 /** Attribute values for the nodes and edges.
  *
@@ -139,6 +142,61 @@ public class Values {
         ERROR_COLORS.putColors(FOCUSED, ERROR_FOCUS_FOREGROUND, ERROR_FOCUS_BACKGROUND);
         ERROR_COLORS.putColors(SELECTED, ERROR_SELECT_FOREGROUND, ERROR_SELECT_BACKGROUND);
         ERROR_COLORS.putColors(NONE, ERROR_NORMAL_FOREGROUND, ERROR_NORMAL_BACKGROUND);
+    }
+
+    /** Colour used for indicating warnings. */
+    static public final Color WARNING_COLOR = new Color(190, 110, 0);
+    /** Translucent colour used for indicating warnings in tab labels and
+     * cell overlays; the analog of {@link Colors#ERROR_COLOR} for errors. */
+    static public final Color WARNING_BACKGROUND = new Color(255, 160, 0, 60);
+
+    /** Returns the translucent overlay colour for a given diagnostic
+     * severity: {@link Colors#ERROR_COLOR} for {@link Severity#ERROR},
+     * {@link #WARNING_BACKGROUND} for {@link Severity#WARNING}, and
+     * {@code null} (no overlay) for {@link Severity#INFO} or {@code null}.
+     */
+    static public Color getSeverityOverlay(Severity severity) {
+        if (severity == null) {
+            return null;
+        }
+        return switch (severity) {
+        case ERROR -> Colors.ERROR_COLOR;
+        case WARNING -> WARNING_BACKGROUND;
+        case INFO -> null;
+        };
+    }
+
+    /** HTML colour tag for warning diagnostic text. */
+    static public final HTMLTag WARNING_TAG = HTMLConverter.createColorTag(WARNING_COLOR);
+    /** HTML colour tag for info diagnostic text. */
+    static public final HTMLTag INFO_TAG = HTMLConverter.createColorTag(Colors.INFO_COLOR);
+
+    /** Returns the HTML colour tag for diagnostic text of a given severity. */
+    static public HTMLTag getSeverityTag(Severity severity) {
+        return switch (severity) {
+        case ERROR -> HTMLConverter.EMBARGO_TAG;
+        case WARNING -> WARNING_TAG;
+        case INFO -> INFO_TAG;
+        };
+    }
+    /** Background colour used for focused warning items in lists. */
+    static public final Color WARNING_FOCUS_BACKGROUND = WARNING_COLOR.darker();
+    /** Text colour used for focused warning items in lists. */
+    static public final Color WARNING_FOCUS_FOREGROUND = Color.WHITE;
+    /** Background colour used for selected, non-focused warning items in lists. */
+    static public final Color WARNING_SELECT_BACKGROUND = new Color(250, 230, 200);
+    /** Text colour used for selected, non-focused warning items in lists. */
+    static public final Color WARNING_SELECT_FOREGROUND = WARNING_COLOR;
+    /** Background colour used for non-selected, non-focused warning items in lists. */
+    static public final Color WARNING_NORMAL_BACKGROUND = Color.WHITE;
+    /** Text colour used for non-selected, non-focused warning items in lists. */
+    static public final Color WARNING_NORMAL_FOREGROUND = WARNING_COLOR;
+    /** Text display colours to be used in warning mode. */
+    static public final Values.ColorSet WARNING_COLORS = new Values.ColorSet();
+    static {
+        WARNING_COLORS.putColors(FOCUSED, WARNING_FOCUS_FOREGROUND, WARNING_FOCUS_BACKGROUND);
+        WARNING_COLORS.putColors(SELECTED, WARNING_SELECT_FOREGROUND, WARNING_SELECT_BACKGROUND);
+        WARNING_COLORS.putColors(NONE, WARNING_NORMAL_FOREGROUND, WARNING_NORMAL_BACKGROUND);
     }
 
     /** Colour used for indicating information in graphs. */

@@ -40,7 +40,7 @@ import nl.utwente.groove.gui.jgraph.JCell;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.tree.LabelTree;
 import nl.utwente.groove.gui.tree.TypeTree.TypeTreeNode;
-import nl.utwente.groove.util.parse.SearchResult;
+import nl.utwente.groove.gui.list.SearchResult;
 
 /**
  * Action for changing one label into another throughout the grammar.

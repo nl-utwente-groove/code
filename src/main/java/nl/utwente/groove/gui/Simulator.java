@@ -90,6 +90,7 @@ import nl.utwente.groove.gui.display.TextTab;
 import nl.utwente.groove.gui.export.JGraphExporters;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.JGraph;
+import nl.utwente.groove.gui.list.ErrorEntry;
 import nl.utwente.groove.gui.list.ListTabbedPane;
 import nl.utwente.groove.gui.menu.ModelCheckingMenu;
 import nl.utwente.groove.gui.menu.MyJMenu;
@@ -100,10 +101,9 @@ import nl.utwente.groove.lts.RuleTransitionLabel;
 import nl.utwente.groove.transform.oracle.OracleParser;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
-import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
-import nl.utwente.groove.util.parse.SearchResult;
-import nl.utwente.groove.util.parse.SelectableListEntry;
+import nl.utwente.groove.gui.list.SearchResult;
+import nl.utwente.groove.gui.list.SelectableListEntry;
 
 /**
  * Program that applies a production system to an initial graph.
@@ -250,7 +250,7 @@ public class Simulator implements SimulatorListener {
      * Displays a list of errors, or hides the error panel if the list is empty.
      */
     private void setErrors(FormatErrorSet grammarErrors) {
-        getResultsPanel().getErrorListPanel().setEntries(grammarErrors.get());
+        getResultsPanel().getErrorListPanel().setEntries(ErrorEntry.wrap(grammarErrors.get()));
         adjustResultsPanel();
     }
 
@@ -497,10 +497,11 @@ public class Simulator implements SimulatorListener {
                     // select the error cell and switch to the panel
                     jGraph.setSelectionCells(entry.getElements());
                     resourceTab.setPropertyKey(entry.getPropertyKey());
-                } else if (entry instanceof FormatError error) {
-                    if (error.getNumbers().size() > 1) {
-                        int line = error.getNumbers().get(0);
-                        int column = error.getNumbers().get(1);
+                } else if (entry instanceof ErrorEntry errorEntry) {
+                    var numbers = errorEntry.getError().getNumbers();
+                    if (numbers.size() > 1) {
+                        int line = numbers.get(0);
+                        int column = numbers.get(1);
                         ((TextTab) resourceTab).select(line, column);
                     }
                 }

@@ -52,10 +52,11 @@ import org.jgraph.graph.PortView;
 import org.jgraph.graph.VertexView;
 
 import nl.utwente.groove.gui.look.Look;
+import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.look.MultiLabel;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
-import nl.utwente.groove.util.Colors;
+import nl.utwente.groove.util.parse.Severity;
 import nl.utwente.groove.util.Fonts;
 import nl.utwente.groove.util.NodeShape;
 import nl.utwente.groove.util.line.HTMLLineFormat;
@@ -423,7 +424,7 @@ public class JVertexView extends VertexView {
             setText(jView.getText());
             // set alignment so any extra space goes to the top
             // setVerticalAlignment(SwingConstants.BOTTOM);
-            this.error = visuals.isError();
+            this.errorSeverity = visuals.getErrorSeverity();
             this.nodeEdge = this.cell.getLooks().contains(Look.NODIFIED);
             // do this last: it calls getTextSize, which depends on nodeEdge among others
             setBorder(createEmptyBorder());
@@ -453,12 +454,14 @@ public class JVertexView extends VertexView {
         }
 
         /**
-         * Paints a transparent overlay for an error node.
+         * Paints a transparent overlay for a node with diagnostics:
+         * red for errors, orange for warnings, nothing for info.
          */
         private void paintErrorOverlay(Graphics2D g2) {
-            if (this.error) {
+            Color overlay = Values.getSeverityOverlay(this.errorSeverity);
+            if (overlay != null) {
                 Shape shape = getShape(EXTRA_BORDER_SPACE);
-                g2.setColor(Colors.ERROR_COLOR);
+                g2.setColor(overlay);
                 g2.fill(shape);
             }
         }
@@ -914,8 +917,8 @@ public class JVertexView extends VertexView {
         private Color line2color;
         private float[] line2dash;
         private float line2width;
-        /** Flag indicating that the vertex has an error. */
-        private boolean error;
+        /** Maximum severity of the vertex diagnostics, if any. */
+        private Severity errorSeverity;
         private String parAdornment;
         private int parAdornHeight;
         private int parAdornWidth;
