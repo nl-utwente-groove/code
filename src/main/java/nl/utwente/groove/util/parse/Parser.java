@@ -364,9 +364,18 @@ public interface Parser<T> {
          * @param neg if {@code true}, the parser allows negative values.
          */
         protected IntParser(boolean neg) {
+            this(neg, 0);
+        }
+
+        /** Creates a parser with an explicit default value, and a parameter
+         * to determine if negative values are allowed.
+         * @param neg if {@code true}, the parser allows negative values.
+         * @param defaultValue the default value of the parser
+         */
+        public IntParser(boolean neg, int defaultValue) {
             super(neg
                 ? "Integer value"
-                : "Natural number", 0);
+                : "Natural number", defaultValue);
             this.neg = neg;
         }
 

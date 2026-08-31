@@ -286,6 +286,25 @@ public class GrammarProperties extends Properties {
     }
 
     /**
+     * Sets the match bound property to a certain value.
+     * @param bound the maximum number of matches collected for any single
+     * state; {@code 0} means no bound
+     */
+    public void setMatchBound(int bound) {
+        storeValue(GrammarKey.MATCH_BOUND, bound);
+    }
+
+    /**
+     * Returns the value of the match bound property: the maximum number of
+     * matches collected for any single state, or {@code 0} for no bound.
+     * When the bound is exceeded during exploration, the state is flagged as
+     * an error state and exploration halts.
+     */
+    public int getMatchBound() {
+        return parsePropertyOrDefault(GrammarKey.MATCH_BOUND).value(ValueType.INTEGER);
+    }
+
+    /**
      * Sets the transformation semantics to a given value.
      * @param semantics the new transformation semantics
      */
