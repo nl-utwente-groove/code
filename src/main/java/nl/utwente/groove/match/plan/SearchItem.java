@@ -76,6 +76,12 @@ public interface SearchItem extends Comparable<SearchItem> {
     Collection<LabelVar> bindsVars();
 
     /**
+     * Returns the collection of edges whose images should already be matched
+     * before this item should be scheduled.
+     */
+    Collection<RuleEdge> needsEdges();
+
+    /**
      * Returns the collection of edges for which this search item will find a
      * matching.
      */
