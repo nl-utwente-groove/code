@@ -217,6 +217,44 @@ public class FormulaTest {
         }
     }
 
+    /** Tests the instance-level combinators against their static
+     * counterparts. Regression test for {@link Formula#EU}, which formerly
+     * built an A-until. */
+    @Test
+    public void testCombinators() {
+        Formula a = literal("a");
+        Formula b = literal("b");
+        assertEquals(not(a), a.neg());
+        assertEquals(and(a, b), a.and(b));
+        assertEquals(or(a, b), a.or(b));
+        assertEquals(implies(a, b), a.implies(b));
+        assertEquals(follows(a, b), a.follows(b));
+        assertEquals(equiv(a, b), a.equiv(b));
+        assertEquals(until(a, b), a.U(b));
+        assertEquals(wUntil(a, b), a.W(b));
+        assertEquals(release(a, b), a.R(b));
+        assertEquals(sRelease(a, b), a.M(b));
+        assertEquals(next(a), a.X());
+        assertEquals(eventually(a), a.F());
+        assertEquals(always(a), a.G());
+        assertEquals(forall(a), a.A());
+        assertEquals(exists(a), a.E());
+        assertEquals(forall(next(a)), a.AX());
+        assertEquals(exists(next(a)), a.EX());
+        assertEquals(forall(eventually(a)), a.AF());
+        assertEquals(exists(eventually(a)), a.EF());
+        assertEquals(forall(always(a)), a.AG());
+        assertEquals(exists(always(a)), a.EG());
+        assertEquals(forall(until(a, b)), a.AU(b));
+        assertEquals(exists(until(a, b)), a.EU(b));
+        assertEquals(forall(wUntil(a, b)), a.AW(b));
+        assertEquals(exists(wUntil(a, b)), a.EW(b));
+        assertEquals(forall(release(a, b)), a.AR(b));
+        assertEquals(exists(release(a, b)), a.ER(b));
+        assertEquals(forall(sRelease(a, b)), a.AM(b));
+        assertEquals(exists(sRelease(a, b)), a.EM(b));
+    }
+
     private Formula idAtom(String label) {
         return Formula.call(name(label));
     }
