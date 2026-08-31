@@ -75,7 +75,6 @@ import nl.utwente.groove.lts.MatchResult;
 import nl.utwente.groove.lts.RecipeEvent;
 import nl.utwente.groove.lts.RecipeTransition;
 import nl.utwente.groove.lts.RuleTransition;
-import nl.utwente.groove.match.MatchBoundException;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.HTMLConverter;
@@ -461,13 +460,7 @@ public class RuleTree extends AbstractResourceTree {
             for (GraphTransition trans : state.getTransitions(Claz.ANY)) {
                 matches.add(trans.getKey());
             }
-            try {
-                matches.addAll(state.getMatches());
-            } catch (MatchBoundException exc) {
-                // the match bound was exceeded while computing the matches;
-                // the state has been flagged as an error state, so show it
-                // without its matches (see gh #784)
-            }
+            matches.addAll(SimulatorModel.getDisplayableMatches(state));
         }
         refreshMatches(state, matches);
         setEnabled(getGrammar() != null);

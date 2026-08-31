@@ -434,7 +434,7 @@ public class StateTree extends JTree implements SimulatorListener {
             }
         }
         // add the unexplored matches to the keys and to the potential recipes
-        for (var match : state.getMatches()) {
+        for (var match : SimulatorModel.getDisplayableMatches(state)) {
             var step = match.getStep();
             if (isShowInternal() || !step.isInner()) {
                 keys.add(match);

@@ -90,6 +90,8 @@ import nl.utwente.groove.util.io.FileUtils;
 public class SimulatorGuiTest {
     /** Directory containing the sample grammars used as fixtures. */
     private static final String SAMPLES = "junit/samples";
+    /** Directory containing the single-feature rule grammars. */
+    private static final String RULES = "junit/rules";
     /** Grammar every test starts on (scratch copy). */
     private static final String FIRST_GRAMMAR = "ferryman.gps";
     /** Grammar loaded on top of the first one (scratch copy). */
@@ -193,10 +195,41 @@ public class SimulatorGuiTest {
         });
     }
 
+    /**
+     * Loads the matchbound fixture grammar (whose start state exceeds its own
+     * match bound) and selects its start state, as the State panel does. This
+     * must flag the state as an error state rather than crash the Simulator
+     * with an uncaught MatchBoundException on the event dispatch thread
+     * (regression test for the gh #784 graceful halt).
+     */
+    @Test
+    void matchBoundedStateIsDisplayable() throws Exception {
+        loadGrammar(copyGrammar(RULES, "matchbound.gps"));
+        SwingUtilities.invokeAndWait(() -> assertTrue(getModel().resetGTS()));
+        GTS gts = getModel().getGTS();
+        assertNotNull(gts);
+        SwingUtilities
+            .invokeAndWait(() -> getModel().doSetStateAndMatch(gts.startState(), null));
+        // flush any pending display refreshes provoked by the selection
+        SwingUtilities.invokeAndWait(() -> {
+            // nothing: the wait itself drains the event queue
+        });
+        assertTrue(gts.startState().isError(), "start state should be flagged as error state");
+        assertTrue(gts.hasErrors(), "GTS should record the match-bound error");
+        // the fixture's afterEach asserts that no exception reached the
+        // event dispatch thread's uncaught-exception handler
+    }
+
     /** Copies a sample grammar into the scratch directory and returns the copy. */
     private Path copyGrammar(String name) throws IOException {
+        return copyGrammar(SAMPLES, name);
+    }
+
+    /** Copies a grammar from a given directory into the scratch directory
+     * and returns the copy. */
+    private Path copyGrammar(String dir, String name) throws IOException {
         Path result = tmp().resolve(name);
-        FileUtils.copyDirectory(new File(SAMPLES, name), result.toFile(), false);
+        FileUtils.copyDirectory(new File(dir, name), result.toFile(), false);
         return result;
     }
 

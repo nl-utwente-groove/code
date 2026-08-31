@@ -16,7 +16,10 @@
  */
 package nl.utwente.groove;
 
+import javax.swing.JOptionPane;
+
 import nl.utwente.groove.gui.dialog.BugReportDialog;
+import nl.utwente.groove.match.MatchBoundException;
 
 /**
  * Wrapper class for the simulator
@@ -33,8 +36,17 @@ public class Simulator {
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             @Override
             public void uncaughtException(Thread t, Throwable e) {
-                new BugReportDialog(e);
-                System.exit(1);
+                if (e instanceof MatchBoundException) {
+                    // a state exceeded the match bound on a path not guarded
+                    // upstream: this is a known condition, not a bug, so
+                    // report it and keep the Simulator running (see gh #784)
+                    JOptionPane
+                        .showMessageDialog(null, e.getMessage(), "Match bound exceeded",
+                                           JOptionPane.ERROR_MESSAGE);
+                } else {
+                    new BugReportDialog(e);
+                    System.exit(1);
+                }
             }
         });
 

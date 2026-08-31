@@ -647,17 +647,11 @@ public class SimulatorModel implements Cloneable {
         }
         // find a visible unexplored match
         if (result == null) {
-            try {
-                for (var match : state.getMatches()) {
-                    if (isVisible(match)) {
-                        result = match;
-                        break;
-                    }
+            for (var match : getDisplayableMatches(state)) {
+                if (isVisible(match)) {
+                    result = match;
+                    break;
                 }
-            } catch (MatchBoundException exc) {
-                // the match bound was exceeded while computing the matches;
-                // the state has been flagged as an error state, so continue
-                // without a selected match (see gh #784)
             }
         }
         if (result == null) {
@@ -672,6 +666,22 @@ public class SimulatorModel implements Cloneable {
             }
         }
         return result;
+    }
+
+    /**
+     * Returns the unexplored matches of a given state for display purposes:
+     * the state's matches, or an empty list if computing them exceeds the
+     * match bound. In the latter case the state has been flagged as an error
+     * state, and the display shows it without its matches rather than
+     * letting the exception escape to the event dispatch thread (see gh #784).
+     * All display code should compute state matches through this method.
+     */
+    public static List<MatchResult> getDisplayableMatches(GraphState state) {
+        try {
+            return state.getMatches();
+        } catch (MatchBoundException exc) {
+            return Collections.emptyList();
+        }
     }
 
     /** Indicates if there is an active GTS. */
