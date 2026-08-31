@@ -121,6 +121,23 @@ public class RuleApplicationTest extends TestCase {
         test("dpoErasers");
     }
 
+    /** Tests the rules in the regExprCensor grammar
+     * (dynamic censoring of composite regular expressions against the
+     * images of same- and ancestor-level erasers, gh #900). */
+    @Test
+    public void testRegExprCensor() {
+        test("regExprCensor");
+    }
+
+    /** Tests the rules in the regExprCensorIgnored grammar
+     * (the sloppy counterpart of regExprCensor: with ignoreRegExp set,
+     * regular expressions keep pure automaton semantics and a witness may
+     * be erased by the same application). */
+    @Test
+    public void testRegExprCensorIgnored() {
+        test("regExprCensorIgnored");
+    }
+
     /** Tests the rules in the spoErasers grammar
      * (multigraph SPO: non-injective eraser matching with delete-wins,
      * also across quantifier instances and for regular expressions;
