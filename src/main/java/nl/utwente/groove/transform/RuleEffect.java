@@ -42,6 +42,21 @@ import nl.utwente.groove.util.collect.FilterIterator;
 /**
  * Temporary record of the effects of a rule application.
  * Built up by a {@link RuleEvent} and then used in a {@link RuleApplication}.
+ * <p>
+ * Effects are computed in two phases. At state creation
+ * ({@code MatchApplier.createState}), a <i>partial</i> effect
+ * ({@link Fragment#NODE_CREATION} or {@link Fragment#NODE_ALL}) generates the
+ * created nodes, which must exist before the target state does because they
+ * are part of the transition identity (out-parameters can expose them). At the
+ * first derivation of the target graph, a <i>full</i> effect computes the
+ * complete delta; the created nodes generated in the first phase are then
+ * passed back in as <i>predefined</i> ({@link #isNodesPredefined()}), so that
+ * node creation is not repeated but replayed positionally. Added edges are
+ * only computed in the full effect and recorded on the transition afterwards;
+ * a re-derivation (after a state cache collapse) passes them back in as
+ * predefined as well ({@link #isEdgesPredefined()}), skipping edge creation
+ * altogether. Removals are never recorded: they derive deterministically from
+ * the anchor map and are recomputed by every full effect.
  * @author Arend Rensink
  * @version $Revision$
  */

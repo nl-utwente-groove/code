@@ -246,3 +246,33 @@ Slices:
 Deliberately kept asymmetric: eager/final vs lazy/nullable storage (the node array must
 exist at state creation for the transition label; the edge array is large and only needed
 for delta replay), and `reuseCreatedNodes` (no edge analogue needed, see table).
+
+### Slices A and C: delivered
+
+Slice A as planned: `RuleEffect(source, createdNodes, addedEdges)` (folding the old
+two-argument predefined-nodes constructor, whose only caller was
+`RuleApplication.computeEffect`), `isEdgesPredefined()` short-circuiting
+`hasAddedEdges`/`getAddedEdges`, the `recordCreatedEdges` skip in
+`BasicEvent.recordEffect`, and deletion of the `findAddedEdge` substitution from
+`RuleApplication.addEdges`. `findAddedEdge`/`consumeAddedEdge` and the ghost-edge logic
+remain in `computeMorphism` only (slice B territory). Of slice C, the constructor
+consolidation was folded into A and the lifecycle documentation added to the `RuleEffect`
+class javadoc; nothing else of C seemed worth a diff.
+
+Verification: DeterminismTest, CacheReconstructionTest, RuleApplicationTest, IsoTest,
+HostFactoryTest, StoreFactoryTest green; ExplorationTest 25/25; full fast suite 692/0/0;
+ecj null-check clean on the three touched files. `CacheReconstructionTest` is the
+targeted gate: its `parallel-pump`/`parallel-pump-spo` grammars combine multigraph mode
+with mergers, so the predefined-edges replay is exercised together with a merge map.
+`append` SPO-multi timing unchanged (2852/2801/2843 vs 2839/2814/2811 for #905 slice 3;
+expected — first derivations are untouched, the win is confined to re-derivations under
+memory pressure, which a plain run has none of).
+
+Slice B remains open: `MergeMap.mapEdge` (via `AGraphMap.createImage`) still mints fresh
+merge images per application. Consequences: merger grammars in multi mode keep falling
+back to isomorphism checking (no cross-branch sharing), and `computeMorphism` keeps the
+ghost-edge/consumed-slot substitution. A same-flavoured known gap: a
+`DefaultRuleTransition` to a pre-existing target (confluent diamond) constructs its
+morphism application without recorded added edges, so with a merge map its morphism may
+omit merge-image edges whose fresh mints are not in the target (pre-existing behaviour,
+unchanged by A).
