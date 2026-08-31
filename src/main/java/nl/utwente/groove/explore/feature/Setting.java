@@ -96,6 +96,8 @@ public record Setting(Kind kind, Object content) {
         NULL(Null.class, Null.Parser.instance()),
         /** Natural number. */
         INTEGER(Integer.class, Parser.natural),
+        /** Signed 64-bit number (a random seed). */
+        LONG(Long.class, Parser.longNumber),
         /** String value (a name or formula, resolved against the grammar when used). */
         STRING(String.class, StringParser.identity()),
         /** Exploration limit: a maximum with an optional increment. */

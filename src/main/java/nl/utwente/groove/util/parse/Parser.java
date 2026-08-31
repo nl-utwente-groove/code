@@ -34,6 +34,7 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.NoNonNull;
@@ -179,6 +180,8 @@ public interface Parser<T> {
     IntParser integer = new IntParser(true);
     /** Natural number parser. */
     IntParser natural = new IntParser(false);
+    /** 64-bit integer number parser. */
+    LongParser longNumber = new LongParser();
     /** Splitting parser based on whitespace. */
     SplitParser<String> splitter = new SplitParser<>(StringParser.identity());
     /** Boolean parser with default value {@code false}. */
@@ -399,6 +402,33 @@ public interface Parser<T> {
 
         @Override
         public String unparse(Integer value) {
+            return value.toString();
+        }
+    }
+
+    /** Parser for (signed) 64-bit integer values, with default value {@code 0}. */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    class LongParser extends AParser<Long> {
+        /** Creates the singleton {@link Parser#longNumber} instance. */
+        protected LongParser() {
+            super("64-bit integer value", 0L);
+        }
+
+        @Override
+        public Long parse(String input) throws FormatException {
+            if (input.isEmpty()) {
+                return getDefaultValue();
+            } else {
+                try {
+                    return Long.parseLong(input);
+                } catch (NumberFormatException exc) {
+                    throw new FormatException(exc.getMessage());
+                }
+            }
+        }
+
+        @Override
+        public String unparse(Long value) {
             return value.toString();
         }
     }
