@@ -254,7 +254,9 @@ public class TreeMatch implements Fixable {
                     ? 0
                     : properties.getMatchBound();
                 if (bound > 0 && resultSize > bound) {
-                    throw new MatchBoundException(getConditionName(), bound);
+                    // resultSize is exact: computeProofMatrix would have
+                    // thrown if the product had exceeded the int range
+                    throw new MatchBoundException(getConditionName(), resultSize, true, bound);
                 }
                 result = new ArrayList<>((int) resultSize);
                 Visitor<Proof,?> collector = Visitor.newCollector(result);
@@ -387,7 +389,9 @@ public class TreeMatch implements Fixable {
             i++;
         }
         if (resultSize > Integer.MAX_VALUE) {
-            throw new MatchBoundException(getConditionName());
+            // the count is exact unless the product saturated the long range
+            throw new MatchBoundException(getConditionName(), resultSize,
+                resultSize < Long.MAX_VALUE);
         }
         return resultSize;
     }

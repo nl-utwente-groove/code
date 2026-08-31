@@ -73,6 +73,8 @@ public class MatchBoundTest {
         assertTrue(exploration.isHalted());
         assertTrue(exploration.getLastMessage().contains("pickOne"));
         assertTrue(exploration.getLastMessage().contains(GrammarKey.MATCH_BOUND.getName()));
+        // collection stops at the bound, so only a lower bound is reported
+        assertTrue(exploration.getLastMessage().contains("> 10"));
         GTS gts = exploration.getGTS();
         assertTrue(gts.hasErrors());
         assertTrue(gts.startState().isError());
@@ -97,6 +99,9 @@ public class MatchBoundTest {
         Exploration exploration = explore("bipartite", 10);
         assertTrue(exploration.isHalted());
         assertTrue(exploration.getLastMessage().contains("bigForall"));
+        // the amalgamation product is computed before enumeration,
+        // so the exact count of 16 is reported
+        assertTrue(exploration.getLastMessage().contains("is 16,"));
         GTS gts = exploration.getGTS();
         assertTrue(gts.hasErrors());
         assertTrue(gts.startState().isError());
@@ -121,6 +126,8 @@ public class MatchBoundTest {
         Exploration exploration = explore("bipartite32", 0);
         assertTrue(exploration.isHalted());
         assertTrue(exploration.getLastMessage().contains("maximum"));
+        // the exact product 2^32 is reported
+        assertTrue(exploration.getLastMessage().contains("4294967296"));
         GTS gts = exploration.getGTS();
         assertTrue(gts.hasErrors());
         assertTrue(gts.startState().isError());
