@@ -120,7 +120,10 @@ public class ExportTest {
         File file = tmp.resolve("commas.aut").toFile();
         AutIO io = new AutIO();
         io.saveGraph(graph, file);
-        PlainGraph clone = io.loadGraph(Files.newInputStream(file.toPath()));
+        PlainGraph clone;
+        try (var in = Files.newInputStream(file.toPath())) {
+            clone = io.loadGraph(in);
+        }
         assertEquals(2, clone.nodeCount());
         assertEquals(List.of("\"a,b\""), labelBag(clone));
     }
