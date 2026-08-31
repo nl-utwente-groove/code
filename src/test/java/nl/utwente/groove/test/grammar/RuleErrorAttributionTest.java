@@ -144,10 +144,11 @@ public class RuleErrorAttributionTest {
                      model.getErrors().stream().count());
     }
 
-    /** Condition assembly: a regular-expression path through an erased edge. */
+    /** Condition assembly: a regular-expression path through an edge erased
+     * at a deeper quantification level. */
     @Test
     public void testAssemblerError() {
-        assertSourceError(getRuleModel("regExprErasure", "seqThroughEraser"),
+        assertSourceError(getRuleModel("regExprErasure", "seqThroughSublevelEraser"),
                           "may match a path through");
     }
 
