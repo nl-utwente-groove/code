@@ -7,8 +7,9 @@ The two design decisions were resolved by Arend 2026-07-26: (1) streams are
 re-derived per exploration with no run counter, so a fixed seed makes every
 exploration identical (Simulator "explore again" repeats the identical trace);
 (2) the seed is settable via the system property and a `-seed` Generator option.
-Still open: storing the (generated) seed in the GTS info so saved LTS files
-carry it — currently the generated seed is only logged to stdout.*
+Seed recording (gh #897) implemented 2026-08-31 on branch `record-random-seed`,
+see the notes at the bottom; still open: a seed input in the Simulator's
+exploration configuration, so a recorded seed can be fed back in the GUI.*
 
 ## The remaining nondeterministic sites
 
@@ -81,3 +82,26 @@ where they exist.
   enforced by the existing converter guards).
 - `successor=all-random` remains unsupported: it needs a hook in the inherited
   match-application order (`MatchCollector.canonicalise` territory), not a pool.
+
+## Seed recording (gh #897, 2026-08-31)
+
+- **Use tracking is draw-based**: `Randomness.newRandom` hands out a `Random`
+  subclass that bumps a global use counter on its first actual draw (override
+  of `next(int)`, sequence unchanged). Creation-based tracking was rejected:
+  `LTLStrategy` constructs its generator unconditionally and a
+  `valueOracle=random` grammar constructs its oracle whether or not a value is
+  ever drawn, so it would stamp seeds on factually deterministic runs.
+  Configuration-based detection (inspecting strategy/oracle settings) would
+  duplicate knowledge that drifts as consumers are added.
+- `Exploration.play()` snapshots the use count and, if the run drew, records
+  the master seed in the GTS `GraphInfo` properties under the new
+  `ResourceProperties.Key.RANDOM_SEED` (`$randomSeed`, a system key like
+  `$version`, so it stays out of the property editors). Stamping is per play;
+  a GTS keeps its seed once any exploration of it drew randomness. The seed is
+  JVM-constant, so repeated stamping is idempotent.
+- `GTSFragment.toPlainGraph` transfers the GTS graph properties onto the
+  exported plain graph; from there `GxlIO` already round-trips graph
+  properties as GXL graph attributes, so save and load needed no changes.
+  `.aut` and the other exporters ignore graph properties, as intended.
+- The Simulator shows the seed in the LTS status line; the value is stored in
+  decimal, exactly the form `-seed` and `-Dgroove.randomSeed` accept.
