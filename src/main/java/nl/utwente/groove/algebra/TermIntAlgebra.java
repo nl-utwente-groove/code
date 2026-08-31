@@ -179,12 +179,12 @@ public final class TermIntAlgebra extends IntAlgebra<Expression,Expression,Expre
 
     @Override
     public Expression toString(Expression arg) {
-        return Op.TO_REAL.getOperator().newTerm(arg);
+        return Op.TO_STRING.getOperator().newTerm(arg);
     }
 
     @Override
     public Expression toReal(Expression arg) {
-        return Op.TO_STRING.getOperator().newTerm(arg);
+        return Op.TO_REAL.getOperator().newTerm(arg);
     }
 
     /** Name of this algebra. */

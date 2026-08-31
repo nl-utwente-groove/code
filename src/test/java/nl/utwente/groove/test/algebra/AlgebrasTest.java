@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.test.algebra;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.HashSet;
@@ -25,6 +27,7 @@ import org.junit.Test;
 
 import nl.utwente.groove.algebra.Algebra;
 import nl.utwente.groove.algebra.AlgebraFamily;
+import nl.utwente.groove.algebra.Algebras;
 import nl.utwente.groove.algebra.Sort;
 
 /** Tests the functionality of the java algebra family. */
@@ -42,6 +45,22 @@ public class AlgebrasTest {
                 boolean freshName = names.add(algebra.getName());
                 assertTrue(freshName);
             }
+        }
+    }
+
+    /** Smoke-tests the syntax documentation maps: they must be non-empty
+     * and carry a tool tip for every syntax line. */
+    @Test
+    public void testDocMaps() {
+        assertFalse(Algebras.getOpDocMap().isEmpty());
+        for (var entry : Algebras.getOpDocMap().entrySet()) {
+            assertNotNull(entry.getKey());
+            assertNotNull(entry.getValue());
+        }
+        assertFalse(Algebras.getExprDocMap().isEmpty());
+        for (var entry : Algebras.getExprDocMap().entrySet()) {
+            assertNotNull(entry.getKey());
+            assertNotNull(entry.getValue());
         }
     }
 }
