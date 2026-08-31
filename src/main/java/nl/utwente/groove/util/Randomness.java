@@ -17,6 +17,7 @@
 package nl.utwente.groove.util;
 
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -65,7 +66,50 @@ public final class Randomness {
      * reproducibility described in the class comment.
      */
     public static Random newRandom(Purpose purpose) {
-        return new Random(deriveSeed(getMasterSeed(), purpose));
+        return new TrackedRandom(deriveSeed(getMasterSeed(), purpose));
+    }
+
+    /**
+     * Returns the number of generators (obtained through {@link #newRandom})
+     * that have actually drawn a value. An increase of this count over a
+     * stretch of the run means the master seed influenced that stretch; this
+     * distinguishes runs that actually used randomness (whose seed is worth
+     * recording) from runs that merely created a generator without drawing
+     * from it, as the LTL strategies and the random value oracle do.
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    public static long getUseCount() {
+        return useCount.get();
+    }
+
+    /** The number of generators that have drawn at least one value. */
+    private static final AtomicLong useCount = new AtomicLong();
+
+    /**
+     * Random generator that bumps {@link #useCount} once, on its first
+     * actual draw. All draw methods of {@link Random} funnel through
+     * {@link #next(int)}, and the override leaves the drawn sequence
+     * unchanged.
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    private static class TrackedRandom extends Random {
+        TrackedRandom(long seed) {
+            super(seed);
+        }
+
+        @Override
+        protected int next(int bits) {
+            if (!this.drawn) {
+                this.drawn = true;
+                useCount.incrementAndGet();
+            }
+            return super.next(bits);
+        }
+
+        /** Flag set on the first draw. */
+        private boolean drawn;
+
+        private static final long serialVersionUID = 1L;
     }
 
     /**
