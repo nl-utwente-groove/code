@@ -21,7 +21,9 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.File;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 
@@ -33,7 +35,13 @@ import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.explore.engine.FrontierStrategy;
+import nl.utwente.groove.explore.util.LTSReporter;
 import nl.utwente.groove.grammar.Grammar;
+import nl.utwente.groove.grammar.ResourceProperties;
+import nl.utwente.groove.io.graph.GxlIO;
+import nl.utwente.groove.lts.Filter;
+import nl.utwente.groove.lts.GTS;
+import nl.utwente.groove.lts.LTSLabels;
 import nl.utwente.groove.test.MasterSeedGuard;
 import nl.utwente.groove.util.RandomChooserInSequence;
 import nl.utwente.groove.util.Randomness.Purpose;
@@ -165,6 +173,66 @@ public class RandomnessTest {
         }
         assertEquals(Set.of(0, 1), picks,
                      "Twenty two-candidate choices from one generator should not all coincide");
+    }
+
+    /**
+     * Tests that the use count reflects actual draws: creating a generator
+     * does not bump it, the first draw does, and later draws from the same
+     * generator do not.
+     */
+    @Test
+    public void testUseCountTracksActualDraws() {
+        Randomness.setMasterSeed(42);
+        long before = Randomness.getUseCount();
+        Random rgen = Randomness.newRandom(Purpose.EXPLORATION);
+        assertEquals(before, Randomness.getUseCount(),
+                     "Creating a generator should not count as use");
+        rgen.nextInt();
+        assertEquals(before + 1, Randomness.getUseCount(),
+                     "The first draw should count as use");
+        rgen.nextLong();
+        rgen.nextBoolean();
+        assertEquals(before + 1, Randomness.getUseCount(),
+                     "Later draws from the same generator should not count again");
+        Randomness.newRandom(Purpose.ORACLE).nextInt();
+        assertEquals(before + 2, Randomness.getUseCount(),
+                     "A draw from a second generator should count once more");
+    }
+
+    /**
+     * Tests that an exploration records the master seed in the GTS info
+     * exactly if it actually drew randomness (gh #897).
+     */
+    @Test
+    public void testSeedRecordedOnlyForRandomisedRuns() throws Exception {
+        Grammar grammar = loadGrammar();
+        GTS randomised = ExploreTestSupport.explore(grammar, "next=random").getGTS();
+        assertEquals(Optional.of("42"), ResourceProperties.getRandomSeed(randomised),
+                     "A randomised exploration should record the master seed");
+        GTS deterministic = ExploreTestSupport.explore(grammar, "").getGTS();
+        assertTrue(ResourceProperties.getRandomSeed(deterministic).isEmpty(),
+                   "A deterministic exploration should not record a seed");
+    }
+
+    /**
+     * Tests that the recorded seed is carried into a saved LTS file and
+     * survives the GXL round trip (gh #897).
+     */
+    @Test
+    public void testSeedSavedInLtsFile() throws Exception {
+        Grammar grammar = loadGrammar();
+        var exploration = ExploreTestSupport.explore(grammar, "next=random");
+        File file = File.createTempFile("lts-seed", ".gxl");
+        try {
+            LTSReporter
+                .exportLTS(exploration.getGTS(), file.getPath(), LTSLabels.DEFAULT, Filter.NONE,
+                           exploration.getResult());
+            var loaded = GxlIO.instance().loadGraph(file);
+            assertEquals(Optional.of("42"), ResourceProperties.getRandomSeed(loaded),
+                         "The recorded seed should survive the GXL round trip");
+        } finally {
+            file.delete();
+        }
     }
 
     /** Loads the ferryman grammar. */
