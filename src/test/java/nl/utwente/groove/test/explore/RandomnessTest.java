@@ -18,6 +18,7 @@ package nl.utwente.groove.test.explore;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -35,9 +36,13 @@ import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.explore.engine.FrontierStrategy;
+import nl.utwente.groove.explore.feature.ExploreKey;
+import nl.utwente.groove.explore.feature.Seed;
 import nl.utwente.groove.explore.util.LTSReporter;
 import nl.utwente.groove.grammar.Grammar;
+import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.ResourceProperties;
+import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.io.graph.GxlIO;
 import nl.utwente.groove.lts.Filter;
 import nl.utwente.groove.lts.GTS;
@@ -233,6 +238,71 @@ public class RandomnessTest {
         } finally {
             file.delete();
         }
+    }
+
+    /**
+     * Tests the textual form of the seed exploration key: an explicit value
+     * round-trips (also when negative), and the default is the auto kind,
+     * which does not appear in the unparsed form.
+     */
+    @Test
+    public void testSeedKeyParsing() throws Exception {
+        ExploreConfig config = ExploreConfig.parse("seed=42");
+        assertEquals(Seed.VALUE, config.getKind(ExploreKey.SEED));
+        assertEquals(Long.valueOf(42), config.get(ExploreKey.SEED).content());
+        assertEquals("seed=42", config.unparse());
+        assertEquals("seed=-77", ExploreConfig.parse("seed=-77").unparse());
+        assertEquals(Seed.AUTO, new ExploreConfig().getKind(ExploreKey.SEED));
+        assertEquals("", new ExploreConfig().unparse());
+    }
+
+    /**
+     * Tests that a seed in the exploration configuration governs the run
+     * regardless of the ambient master seed, and is the seed that gets
+     * recorded in the GTS.
+     */
+    @Test
+    public void testConfigSeedReproducesRun() throws Exception {
+        Grammar grammar = loadGrammar();
+        ExploreType type
+            = ExploreTypeConverter.toExploreType(ExploreConfig.parse("next=random seed=42"));
+        Randomness.setMasterSeed(1);
+        ExploreOutcome first = ExploreOutcome.explore(grammar, type);
+        Randomness.setMasterSeed(2);
+        ExploreOutcome second = ExploreOutcome.explore(grammar, type);
+        assertEquals(first, second,
+                     "A configured seed should reproduce the run regardless of the ambient seed");
+    }
+
+    /**
+     * Tests that a configured seed also governs the unseeded random value
+     * oracle, although the oracle is created with the GTS, before the
+     * exploration configuration is realised: the oracle derives its generator
+     * lazily, on the first value drawn.
+     */
+    @Test
+    public void testConfigSeedGovernsOracle() throws Exception {
+        var grammarModel = Groove.loadGrammar("junit/rules/oracle-random");
+        var props = grammarModel.getProperties().clone();
+        // replace the fixture's explicitly seeded oracle by an unseeded one,
+        // which draws from the master-seed registry
+        props.setProperty(GrammarKey.ORACLE, "random");
+        grammarModel.setProperties(props);
+        Grammar grammar = grammarModel.toGrammar();
+        ExploreType type
+            = ExploreTypeConverter.toExploreType(ExploreConfig.parse("bound=initial seed=42"));
+        Randomness.setMasterSeed(1);
+        ExploreOutcome first = ExploreOutcome.explore(grammar, type);
+        Randomness.setMasterSeed(2);
+        ExploreOutcome second = ExploreOutcome.explore(grammar, type);
+        assertEquals(first, second,
+                     "The oracle values should follow the configured seed,"
+                         + " not the ambient master seed");
+        ExploreType otherType
+            = ExploreTypeConverter.toExploreType(ExploreConfig.parse("bound=initial seed=43"));
+        ExploreOutcome third = ExploreOutcome.explore(grammar, otherType);
+        assertNotEquals(first, third,
+                        "A different configured seed should draw different oracle values");
     }
 
     /** Loads the ferryman grammar. */

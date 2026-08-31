@@ -79,6 +79,7 @@ public class ExploreConfigTest {
         return switch (kind.contentType()) {
         case NULL -> kind.createSetting();
         case INTEGER -> kind.createSetting(3);
+        case LONG -> kind.createSetting(-4711L);
         case STRING -> kind.createSetting("someName");
         case LIMIT -> kind.createSetting(new Bound.Limit(200, 50));
         };
