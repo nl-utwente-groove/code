@@ -60,7 +60,9 @@ public enum ExploreKey implements ParsableKey<Setting> {
     COLLAPSE("collapse", "Condition under which a fresh state is considered equal to a known state",
         Collapse.GRAMMAR),
     /** Interpretation of data values. */
-    ALGEBRA("algebra", "Interpretation of data values", Algebra.GRAMMAR),;
+    ALGEBRA("algebra", "Interpretation of data values", Algebra.GRAMMAR),
+    /** Master random seed governing the randomised features. */
+    SEED("seed", "Master random seed governing the randomised features", Seed.AUTO),;
 
     private ExploreKey(String name, String explanation, Setting.Kind defaultKind) {
         this.name = name;
@@ -126,6 +128,7 @@ public enum ExploreKey implements ParsableKey<Setting> {
             switch (this) {
             case COUNT -> result.put("", Count.COUNT);
             case FRONTIER -> result.put("", Frontier.BEAM);
+            case SEED -> result.put("", Seed.VALUE);
             default -> {
                 // no additional mappings
             }

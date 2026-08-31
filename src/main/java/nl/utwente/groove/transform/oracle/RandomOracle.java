@@ -27,6 +27,7 @@ import nl.utwente.groove.grammar.UnitPar.RulePar;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.transform.RuleEvent;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Randomness;
 import nl.utwente.groove.util.Randomness.Purpose;
 import nl.utwente.groove.util.parse.FormatException;
@@ -40,13 +41,17 @@ import nl.utwente.groove.util.parse.FormatException;
 public class RandomOracle implements ValueOracle {
     /** Constructor for an optionally seeded oracle. An unseeded oracle
      * draws from the master-seed registry ({@link Purpose#ORACLE}), so its
-     * values remain reproducible via the master seed. */
+     * values remain reproducible via the master seed. The generator is
+     * derived lazily, on the first value drawn: the oracle is created with
+     * the GTS, before an exploration configuration gets the chance to set
+     * the master seed (at realisation), and the late derivation lets the
+     * configured seed govern the oracle stream as well. */
     RandomOracle(boolean hasSeed, long seed) {
         this.hasSeed = hasSeed;
         this.seed = seed;
-        this.random = hasSeed
+        this.random = Factory.lazy(() -> hasSeed
             ? new Random(seed)
-            : Randomness.newRandom(Purpose.ORACLE);
+            : Randomness.newRandom(Purpose.ORACLE));
     }
 
     /** Indicates if this random value oracle is seeded. */
@@ -62,30 +67,31 @@ public class RandomOracle implements ValueOracle {
 
     private final boolean hasSeed;
     private final long seed;
-    private final Random random;
+    private final Factory<Random> random;
 
     @Override
     public Constant getValue(HostGraph host, RuleEvent event, RulePar par) throws FormatException {
         Sort sort = par.getType().getSort();
         assert sort != null;
+        Random random = this.random.get();
         Constant result;
         switch (sort) {
         case BOOL:
-            result = this.random.nextBoolean()
+            result = random.nextBoolean()
                 ? BoolSignature.TRUE
                 : BoolSignature.FALSE;
             break;
         case INT:
-            result = Constant.instance((this.random.nextInt()));
+            result = Constant.instance((random.nextInt()));
             break;
         case REAL:
-            result = Constant.instance(this.random.nextDouble());
+            result = Constant.instance(random.nextDouble());
             break;
         case STRING:
             StringBuffer text = new StringBuffer();
-            int length = this.random.nextInt(10);
+            int length = random.nextInt(10);
             for (int i = 0; i < length; i++) {
-                text.append((char) ('0' + this.random.nextInt(36)));
+                text.append((char) ('0' + random.nextInt(36)));
             }
             result = Constant.instance(text.toString());
             break;

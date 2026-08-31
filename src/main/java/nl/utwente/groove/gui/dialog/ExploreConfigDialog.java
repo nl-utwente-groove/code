@@ -1055,6 +1055,7 @@ public class ExploreConfigDialog extends JDialog {
             case INTEGER -> this.key == ExploreKey.FRONTIER
                 ? "the maximal frontier size (at least 2)"
                 : "the number of results (at least 2)";
+            case LONG -> "a 64-bit seed value, e.g. as recorded in a saved LTS";
             case LIMIT -> "a maximum, optionally followed by +<i>inc</i>"
                 + " for iterative deepening, e.g. 200 or 200+50";
             default -> null;

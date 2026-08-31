@@ -46,6 +46,7 @@ import nl.utwente.groove.explore.feature.Goal;
 import nl.utwente.groove.explore.feature.NextState;
 import nl.utwente.groove.explore.feature.Outcome;
 import nl.utwente.groove.explore.feature.Persistence;
+import nl.utwente.groove.explore.feature.Seed;
 import nl.utwente.groove.explore.feature.Shape;
 import nl.utwente.groove.explore.feature.Successor;
 import nl.utwente.groove.explore.feature.Traversal;
@@ -58,6 +59,7 @@ import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.Randomness;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -276,6 +278,12 @@ public class ConfiguredExploreType extends ExploreType {
      */
     @Override
     public Realisation realise(Grammar grammar) throws FormatException {
+        // apply an explicit seed before the strategy is created, since the
+        // strategies derive their random generators at construction; the
+        // (lazily derived) random value oracle stream follows as well
+        if (getConfig().getKind(ExploreKey.SEED) == Seed.VALUE) {
+            Randomness.setMasterSeed((Long) getConfig().get(ExploreKey.SEED).content());
+        }
         var errors = new FormatErrorSet();
         Strategy strategy = null;
         try {
