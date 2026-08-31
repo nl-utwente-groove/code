@@ -342,6 +342,35 @@ the recorded array by content (parallel copies are interchangeable there), and c
 reproduce the pooled assignment independently since their iteration order differs from
 the effect's.
 
+### Branch verification and measurements (tip = morphism-fix commit)
+
+Gates, all green at the tip: full fast suite 706/0/0 across every surefire report
+present (2 known `GrammarsTest` worktree skips), explicitly including
+`TransitionMorphismTest`, `DeterminismTest` (2) and `CacheReconstructionTest` (3);
+ExplorationTest 25/25 with unchanged counts; ecj null-check clean on all touched files
+(the intermediate states were checked with the same battery: slice A alone, and the
+discarded label-identity draft, were each fully green as well).
+
+`append` (SPO-multi, `append-4-list-8`): counters remain bit-identical to SPO-simple
+(Events 88, Coanchor reuse 1497/38, Equal graphs 80297 / bundles 0 / certificates 2546
+/ simulation 62), states/transitions 31104/114008. Timings, three runs, same machine
+(reference = #905 slice-3 figures):
+
+| run | slice 3 (ms) | branch tip (ms) |
+|---|---|---|
+| append multi | 2839 / 2814 / 2811 (~2821) | 2712 / 2776 / 2686 (~2725) |
+| append simple | 2629 / 2603 | 2678 / 2600 / 2574 (~2617) |
+| As-and-Bs bfs:9 multi | ~1674 | 1606 / 1592 / 1610 (~1603) |
+| As-and-Bs bfs:11 multi | ~6021 | 6044 / 6104 / 6058 (~6069, wash) |
+
+The eager full effect at state creation and the pooled merge images are
+performance-neutral (the small `append`/bfs:9 gains are within same-day noise). No
+merger-heavy benchmark grammar exists to quantify slice B's iso-collapse gain; its
+correctness is carried by `CacheReconstructionTest`/`TransitionMorphismTest`
+(parallel-pump, mergers in multigraph mode).
+
+### Postscript: the morphism regression slice B caused
+
 "Deliberately unchanged" proved half wrong: the full suite caught
 `TransitionMorphismTest.testParallelPump` losing one source edge from a secondary
 transition's morphism (bisected cleanly to the slice-B commit). The replay-less
