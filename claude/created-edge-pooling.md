@@ -276,3 +276,68 @@ ghost-edge/consumed-slot substitution. A same-flavoured known gap: a
 morphism application without recorded added edges, so with a merge map its morphism may
 omit merge-image edges whose fresh mints are not in the target (pre-existing behaviour,
 unchanged by A).
+
+### Interlude: are added edges (or nodes) part of transition identity?
+
+Investigated on request; the outcome shaped the commits that follow. Within one GTS,
+(source state, event, control step) uniquely determines a transition *including* its
+created node and edge identities: each match is applied exactly once per state, and
+creation is deterministic (fresh-node list first-admissible scan + `normalise` for
+nodes, the content pool for edges) — with two caveats that do not affect per-GTS
+uniqueness (`Reuse.NONE` creation is not idempotent, so there the *recording* pins the
+identities; and `reuseCreatedNodes` inherits the parent's array, which need not equal a
+fresh first-admissible computation). So neither array adds discriminating power to
+transition identity.
+
+Created *nodes* nonetheless stay on the transition label, and hence in its equality:
+labels are interned globally across sources (`GTS.normaliseLabel`) and render
+creator-bound out-parameter values into the label text, so created nodes are observably
+part of the label, and an interned object must include in its equality everything it
+carries. Created *edges* have no such observability (parameters cannot be edge-valued);
+putting them on the label would only split label sharing across sources and force eager
+edge computation for confluent-diamond transitions. A draft that did exactly that was
+implemented, fully verified (all gates green), and then discarded on this analysis. The
+one sound home for the edge record is the target state itself — a final per-state field
+that label interning cannot touch, which is also what the delta replay actually reads
+(`StateCache.createDelta` reads the state's own fields; labels are derived from them,
+never the reverse).
+
+### Eager per-state edge recording: delivered
+
+What survived from that draft, as a commit of its own: `MatchApplier.createState`
+computes the full effect eagerly and passes the added-edge array into the
+`DefaultGraphNextState` constructor (final field, uniform for simple and multigraph
+mode); every derivation of the target graph replays it. Deleted: `setAddedEdges`, the
+recording step in `StateCache.createDelta`, and the getGraph()-before-getAddedEdges
+evaluation-order subtlety. Cost-neutral, since the full effect was previously computed
+immediately afterwards for the isomorphism check. Transitions to existing targets still
+compute only node creation, so `Fragment` survives, shrunk to
+{`NODE_CREATION`, `ALL`} (`NODE_ALL` is dead). A side effect of always computing the
+full effect at state creation: the added-node array is now always the merge-mapped
+`getCreatedNodeArray` — previously it was merge-mapped only when the control step had
+variables (`NODE_ALL`) and raw otherwise, an inconsistency that is gone.
+
+### Slice B: delivered
+
+The merge branch of `RuleEffect.getAddedEdges` no longer calls `MergeMap.mapEdge`
+(whose images come from the event-cached cross-application image cache, or are minted
+without regard for the pool). The effect resolves redirected images itself
+(`mapMergedEdge`): identity and removed-endpoint cases as before; in a non-simple graph
+the image is drawn from the pool, excluding source ∪ created edges ∪ images already
+handed out by the same run, with a run-local memo so an edge reached twice (incident to
+two merged nodes) keeps a single image while distinct redirected edges of equal content
+keep distinct parallel copies. Merge images are thereby canonical across events and
+applications — the #905 confluence property extended to merger rules.
+
+Also closed by B, a warm-cache leak: a cached image from a previous application of the
+same event could lie in the *current* source graph, in which case the old
+`!getSource().containsEdge(image)` guard silently dropped the merge-induced copy from
+the delta — wrong under multigraph pushout semantics, where a redirected edge is always
+a distinct copy. Pooled images are never in the source, so the copy is now always
+added. (Simple mode keeps the old path and semantics.)
+
+Unchanged by B, deliberately: `RuleApplication.computeMorphism`'s ghost substitution
+and `DefaultRuleTransition.adaptToTarget`. Morphisms are reconstructed rarely, consume
+the recorded array by content (parallel copies are interchangeable there), and cannot
+reproduce the pooled assignment independently since their iteration order differs from
+the effect's.
