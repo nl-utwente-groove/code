@@ -17,10 +17,6 @@
 package nl.utwente.groove.grammar.host;
 
 import java.util.Collection;
-import java.util.Set;
-
-import nl.utwente.groove.util.collect.DeltaSet;
-import nl.utwente.groove.util.collect.StackedSet;
 
 /**
  * Default implementation of a delta applier.
@@ -144,22 +140,6 @@ public class DefaultDeltaApplier implements StoredDeltaApplier {
      */
     private HostEdgeSet createEdgeSet(Collection<HostEdge> set) {
         return HostEdgeSet.newInstance(set);
-    }
-
-    /**
-     * Callback factory method for creating a new delta set.
-     */
-    protected <E extends HostElement> DeltaSet<E> createDeltaSet(Set<E> lower, Set<E> added,
-        Set<E> removed) {
-        return new DeltaSet<>(lower, added, removed);
-    }
-
-    /**
-     * Callback factory method for creating a new stacked set.
-     */
-    protected <E extends HostElement> StackedSet<E> createStackedSet(Set<? extends E> lower,
-        Set<E> added, Set<E> removed) {
-        return new StackedSet<>(lower, added, removed);
     }
 
     @Override
