@@ -620,7 +620,7 @@ public class Formula extends ATermTree<LogicOp,Formula> {
 
     /** Returns the formula for {@code E(this U arg)}. */
     public Formula EU(Formula arg) {
-        return this.U(arg).A();
+        return this.U(arg).E();
     }
 
     /** Returns the formula for {@code A(this W arg)}. */

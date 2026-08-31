@@ -215,8 +215,8 @@ public class CTLMarker {
         case 1:
             return switch (op) {
             case NEXT -> computeEX(mark(arg1));
-            // EF a -> E(false U a)
-            case EVENTUALLY -> mark(Formula.ff().EU(arg1));
+            // EF a = E(true U a)
+            case EVENTUALLY -> mark(Formula.tt().EU(arg1));
             // EG a -> !AF !a
             case ALWAYS -> mark(arg1.neg().AF().neg());
             default -> throw Exceptions.unreachable();
@@ -225,8 +225,8 @@ public class CTLMarker {
             var arg2 = property.getArg2();
             return switch (op) {
             case UNTIL -> computeEU(mark(arg1), mark(arg2));
-            // E(a W b) = !A(!b U !a)
-            case W_UNTIL -> mark(arg2.neg().AU(arg1.neg()).neg());
+            // E(a W b) = !A(!b U (!a & !b))
+            case W_UNTIL -> mark(arg2.neg().AU(arg1.neg().and(arg2.neg())).neg());
             // E(a R b) = E(b W a&b)
             case RELEASE -> mark(arg2.EW(arg1.and(arg2)));
             // E(a M b) = E(b U a&b)
@@ -245,8 +245,8 @@ public class CTLMarker {
         case 1:
             return switch (op) {
             case NEXT -> computeAX(mark(arg1));
-            // AF a -> A(false U a)
-            case EVENTUALLY -> mark(Formula.ff().AU(arg1));
+            // AF a = A(true U a)
+            case EVENTUALLY -> mark(Formula.tt().AU(arg1));
             // AG a -> !EF !a
             case ALWAYS -> mark(arg1.neg().EF().neg());
             default -> throw Exceptions.unreachable();
@@ -255,8 +255,8 @@ public class CTLMarker {
             var arg2 = property.getArg2();
             return switch (op) {
             case UNTIL -> computeAU(mark(arg1), mark(arg2));
-            // A(a W b) = !E(!b U !a)
-            case W_UNTIL -> mark(arg2.neg().EU(arg1.neg()).neg());
+            // A(a W b) = !E(!b U (!a & !b))
+            case W_UNTIL -> mark(arg2.neg().EU(arg1.neg().and(arg2.neg())).neg());
             // A(a R b) = A(b W a&b)
             case RELEASE -> mark(arg2.AW(arg1.and(arg2)));
             // A(a M b) = A(b U a&b)

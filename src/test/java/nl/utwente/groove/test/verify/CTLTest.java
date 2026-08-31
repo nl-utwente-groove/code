@@ -75,6 +75,26 @@ public class CTLTest {
         testFormula("AG p", 0);
     }
 
+    /** Tests the weak-until, release and strong-release operators.
+     * Regression test for the marking of these operators, which formerly
+     * used the naive until-duality {@code A(a W b) = !E(!b U !a)} (missing
+     * the strengthening to {@code !a&!b}) and an E-until combinator that
+     * built an A-until. Expected counts are hand-derived from the mc
+     * transition system: s0 -p-&gt; s1, s0 -p-&gt; s2, s1 -q-&gt; s0,
+     * s1 -r-&gt; s1, s2 -p-&gt; s2, s2 -q-&gt; s1, giving the propositions
+     * p={s0,s2}, q={s1,s2}, r={s1}. */
+    @Test
+    public void testMCWeakUntilRelease() {
+        setGTS("mc", "start");
+        testFormula("A(p W q)", 3);
+        testFormula("E(p W q)", 3);
+        testFormula("E(p M q)", 1);
+        testFormula("A(p M q)", 1);
+        testFormula("E(q M p)", 2);
+        testFormula("E(p R q)", 2);
+        testFormula("A(p R q)", 1);
+    }
+
     /** Test the treatment of parameters in propositions. */
     @Test
     public void testParameters() {
