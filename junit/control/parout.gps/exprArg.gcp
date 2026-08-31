@@ -1,0 +1,9 @@
+// uses control variables inside expression arguments: such variables are
+// uses just like direct in-arguments, and must be kept live up to the
+// expression that mentions them (formerly this crashed, see gh #561)
+int x;
+x := outInt();
+int y;
+y := inIntOutInt(x + 1);
+int w;
+w := inIntOutInt(y + 2);

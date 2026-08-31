@@ -1,0 +1,5 @@
+// binds z and uses it afterwards: the intermediate states remain distinct
+// per binding, but the states after the last use of z collapse (gh #561)
+node z;
+bind(out z);
+use(z);

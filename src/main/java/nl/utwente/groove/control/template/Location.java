@@ -45,8 +45,8 @@ import nl.utwente.groove.util.Factory;
  * {@link TemplateBuilder}) guarantees the following invariants relating
  * locations' control variables to the procedure's signature:
  * <ul>
- * <li>the variables of the start location are exactly the procedure's
- * in-parameters;
+ * <li>the variables of the start location are among the procedure's
+ * in-parameters (only the live ones are retained, see gh #561);
  * <li>the procedure's out-parameters are among the variables of every final
  * location.
  * </ul>

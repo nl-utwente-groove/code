@@ -1,0 +1,4 @@
+// binds z to either of the two (symmetric) nodes, but never uses it:
+// the target states should collapse into one (gh #561)
+node z;
+bind(out z);

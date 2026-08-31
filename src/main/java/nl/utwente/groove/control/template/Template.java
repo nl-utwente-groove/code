@@ -37,12 +37,15 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.control.Assignment;
 import nl.utwente.groove.control.Binding;
 import nl.utwente.groove.control.Call;
+import nl.utwente.groove.control.CtrlArg;
+import nl.utwente.groove.control.CtrlType;
 import nl.utwente.groove.control.CtrlVar;
 import nl.utwente.groove.control.Procedure;
 import nl.utwente.groove.control.graph.ControlGraph;
 import nl.utwente.groove.grammar.Action;
 import nl.utwente.groove.grammar.Callable;
 import nl.utwente.groove.grammar.Callable.Kind;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.QualName;
 
 /**
@@ -225,14 +228,19 @@ public class Template {
     }
 
     /**
-     * Computes and sets the variables of every state, based on the
-     * input parameters of their outgoing transitions and the output parameters
+     * Computes and sets the variables of every location, based on the
+     * variables used by their outgoing transitions and the output parameters
      * of the enclosing procedure, if any.
+     * A variable only becomes part of a location's variable set if it is live
+     * there, i.e., if its value may still be used at or after that location (gh #561);
+     * in addition, variable sets are kept equal along verdict transitions, since
+     * at run time all frames within a verdict-connected region share one
+     * (unmodified) call stack level.
      */
     void initVars() {
         // mapping from locations to be processed to the variable sets to be added
         Map<Location,Set<CtrlVar>> changeMap = new LinkedHashMap<>();
-        // compute the map of incoming transitions
+        // seed the variable uses
         for (Location loc : getLocations()) {
             var owner = getOwner();
             if (loc.isFinal() && owner != null) {
@@ -242,7 +250,11 @@ public class Template {
                     Switch bottom = s.getOuter();
                     Call bottomCall = bottom.getCall();
                     loc.addVars(bottomCall.getInVars().keySet());
-                    bottom.onFinish().addVars(bottomCall.getOutVars().keySet());
+                    loc.addVars(getExprVars(bottomCall));
+                    // the out-variables of the call are deliberately not added to
+                    // bottom.onFinish(): they only become variables of the target
+                    // location if they are live there, in which case the backward
+                    // propagation below adds them (gh #561)
                 }
             }
             Set<CtrlVar> varSet = loc.getVarSet();
@@ -250,41 +262,79 @@ public class Template {
                 propagate(changeMap, loc, varSet);
             }
         }
-        // propagate all variables backward to the location where they are initialised
-        while (!changeMap.isEmpty()) {
-            Iterator<Map.Entry<Location,Set<CtrlVar>>> iter = changeMap.entrySet().iterator();
-            Map.Entry<Location,Set<CtrlVar>> e = iter.next();
-            iter.remove();
-            Location loc = e.getKey();
-            if (!loc.isTrial()) {
-                continue;
-            }
-            Set<CtrlVar> newVars = e.getValue();
-            newVars.removeAll(loc.getVars());
-            if (!newVars.isEmpty()) {
-                loc.addVars(newVars);
-                propagate(changeMap, loc, newVars);
-            }
-        }
-        // propagate variables forward along verdict transitions
+        // Interleave backward propagation (carrying used variables back to the
+        // locations where they are initialised, i.e., a liveness analysis) and
+        // forward propagation (along verdict transitions, keeping variable sets
+        // within a verdict-connected region equal) until a joint fixpoint is
+        // reached. Backward propagation over a verdict link copies the full
+        // target set (see the empty out-variable sets in computeBackMap), and
+        // forward propagation copies the full source set, so at the fixpoint
+        // the variable sets on both ends of a verdict are equal; and any
+        // forward-propagated addition is itself propagated backward, so every
+        // non-out-variable of a switch target is also a source variable.
         Set<Location> forward = new LinkedHashSet<>(getLocations());
-        while (!forward.isEmpty()) {
-            Iterator<Location> iter = forward.iterator();
-            Location loc = iter.next();
-            iter.remove();
-            if (!loc.isTrial()) {
-                continue;
-            }
-            SwitchAttempt attempt = loc.getAttempt();
-            Location onFailure = attempt.onFailure();
-            if (onFailure.addVars(loc.getVarSet())) {
-                forward.add(onFailure);
-            }
-            Location onSuccess = attempt.onSuccess();
-            if (onSuccess.addVars(loc.getVarSet())) {
-                forward.add(onSuccess);
+        while (!changeMap.isEmpty() || !forward.isEmpty()) {
+            if (!changeMap.isEmpty()) {
+                Iterator<Map.Entry<Location,Set<CtrlVar>>> iter = changeMap.entrySet().iterator();
+                Map.Entry<Location,Set<CtrlVar>> e = iter.next();
+                iter.remove();
+                Location loc = e.getKey();
+                if (!loc.isTrial()) {
+                    continue;
+                }
+                Set<CtrlVar> newVars = e.getValue();
+                newVars.removeAll(loc.getVars());
+                if (!newVars.isEmpty()) {
+                    loc.addVars(newVars);
+                    propagate(changeMap, loc, newVars);
+                    forward.add(loc);
+                }
+            } else {
+                Iterator<Location> iter = forward.iterator();
+                Location loc = iter.next();
+                iter.remove();
+                if (!loc.isTrial()) {
+                    continue;
+                }
+                SwitchAttempt attempt = loc.getAttempt();
+                Location onFailure = attempt.onFailure();
+                if (onFailure.addVars(loc.getVarSet())) {
+                    forward.add(onFailure);
+                    propagate(changeMap, onFailure, onFailure.getVarSet());
+                }
+                Location onSuccess = attempt.onSuccess();
+                if (onSuccess.addVars(loc.getVarSet())) {
+                    forward.add(onSuccess);
+                    propagate(changeMap, onSuccess, onSuccess.getVarSet());
+                }
             }
         }
+    }
+
+    /** Returns the control variables occurring in expression arguments of a given call.
+     * These are uses of the variables, just like the (direct) input arguments
+     * returned by {@link Call#getInVars()}.
+     * The {@link CtrlVar}s are reconstructed from the variable names and sorts in
+     * the expressions; this relies on all control variables in a template being
+     * scoped to the template's owner (or unscoped, for the main template).
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    private Set<CtrlVar> getExprVars(Call call) {
+        Set<CtrlVar> result = new LinkedHashSet<>();
+        var owner = getOwner();
+        QualName scope = owner == null
+            ? null
+            : owner.getQualName();
+        for (CtrlArg arg : call.getArgs()) {
+            if (arg instanceof CtrlArg.Expr e) {
+                for (var entry : e.expr().getTyping().entrySet()) {
+                    result
+                        .add(new CtrlVar(scope, entry.getKey(),
+                            CtrlType.getType(entry.getValue())));
+                }
+            }
+        }
+        return result;
     }
 
     /** Propagate a change, consisting of a set of new variables added to a given

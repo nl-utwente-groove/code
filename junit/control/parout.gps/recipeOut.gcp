@@ -1,0 +1,9 @@
+// binds z through a recipe out-parameter and never uses it: the target
+// states should collapse into one, while the recipe transitions still
+// carry the actual out-parameter values as arguments (gh #561)
+recipe r(out node x) {
+	bind(out x);
+}
+
+node z;
+r(out z);

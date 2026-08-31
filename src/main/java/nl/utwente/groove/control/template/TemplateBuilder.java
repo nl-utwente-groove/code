@@ -295,7 +295,9 @@ public class TemplateBuilder {
             if (result == null) {
                 getFresh(incoming == null).add(key);
                 result = getResult().addLocation(term.getTransience());
-                result.addVars(vars);
+                // the vars are used only to distinguish term keys; the location's
+                // variables are computed by Template.initVars, which only retains
+                // variables that are live (gh #561)
                 locMap.put(key, result);
             }
             return result;
