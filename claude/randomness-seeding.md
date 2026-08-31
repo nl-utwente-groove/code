@@ -7,9 +7,8 @@ The two design decisions were resolved by Arend 2026-07-26: (1) streams are
 re-derived per exploration with no run counter, so a fixed seed makes every
 exploration identical (Simulator "explore again" repeats the identical trace);
 (2) the seed is settable via the system property and a `-seed` Generator option.
-Seed recording (gh #897) implemented 2026-08-31 on branch `record-random-seed`,
-see the notes at the bottom; still open: a seed input in the Simulator's
-exploration configuration, so a recorded seed can be fed back in the GUI.*
+Seed recording and the `seed` exploration key (gh #897) implemented 2026-08-31
+on branch `record-random-seed`, see the notes at the bottom; nothing open.*
 
 ## The remaining nondeterministic sites
 
@@ -105,3 +104,26 @@ where they exist.
   `.aut` and the other exporters ignore graph properties, as intended.
 - The Simulator shows the seed in the LTS status line; the value is stored in
   decimal, exactly the form `-seed` and `-Dgroove.randomSeed` accept.
+
+## The `seed` exploration key (gh #897 follow-up, 2026-08-31)
+
+- A recorded seed can be fed back through the exploration configuration:
+  `ExploreKey.SEED` (`seed=<long>`, default kind `auto`) with the new feature
+  enum `Seed`, content type `Setting.ContentType.LONG` and `Parser.longNumber`
+  (seeds are signed 64-bit values, so `Parser.natural` did not fit). The
+  schema, settings-resource template, help and the exploration dialog all
+  derive generically from the key, so the GUI editor came for free (plus a
+  content hint for the `LONG` type).
+- **Semantics**: `ConfiguredExploreType.realise` calls
+  `Randomness.setMasterSeed` for an explicit seed, before the strategy (and
+  its generators) is created. The master seed being session-global, the seed
+  sticks for subsequent explorations — consistent with the resolved re-seed
+  semantics (a fixed seed makes every exploration identical); `auto` means
+  "leave the master seed as it is", not "fresh per run".
+- **Oracle ordering**: the unseeded `RandomOracle` used to derive its
+  generator at construction, which happens with the GTS — *before* an
+  exploration configuration is realised. It now derives the generator lazily,
+  on the first value drawn, so the configured seed governs the oracle stream
+  as well (verified by `testConfigSeedGovernsOracle`, which flips the ambient
+  master seed between runs). An explicitly seeded oracle
+  (`valueOracle=random:<seed>`) is unaffected.
