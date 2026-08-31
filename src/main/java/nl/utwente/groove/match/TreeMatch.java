@@ -176,7 +176,7 @@ public class TreeMatch implements Fixable {
             @SuppressWarnings("unchecked")
             List<Proof>[] matrix = new List[subMatchCount];
             int[] rowSize = new int[subMatchCount];
-            int resultSize = computeProofMatrix(matrix, rowSize);
+            long resultSize = computeProofMatrix(matrix, rowSize);
             if (resultSize > 0) {
                 traverseMatrix(matrix, rowSize, visitor);
             }
@@ -246,7 +246,7 @@ public class TreeMatch implements Fixable {
             @SuppressWarnings("unchecked")
             List<Proof>[] matrix = new List[subMatchCount];
             int[] rowSize = new int[subMatchCount];
-            int resultSize = computeProofMatrix(matrix, rowSize);
+            long resultSize = computeProofMatrix(matrix, rowSize);
             if (resultSize == 0) {
                 result = Collections.emptyList();
             } else if (resultSize > MAX_RESULT_SIZE) {
@@ -257,7 +257,7 @@ public class TreeMatch implements Fixable {
                     .illegalState("More than %s matches for %s: giving up...", MAX_RESULT_SIZE,
                                   rule.getQualName());
             } else {
-                result = new ArrayList<>(resultSize);
+                result = new ArrayList<>((int) resultSize);
                 Visitor<Proof,?> collector = Visitor.newCollector(result);
                 traverseMatrix(matrix, rowSize, collector);
                 collector.dispose();
@@ -364,15 +364,20 @@ public class TreeMatch implements Fixable {
      * an array of the correct length (the number of submatches)
      * @param rowSize the number of elements per matrix row. Should
      * be initialised to an array of the correct length (the number of submatches)
-     * @return the product of the row sizes
+     * @return the product of the row sizes, saturated at {@link Long#MAX_VALUE}
+     * in case of overflow
      */
-    private int computeProofMatrix(List<Proof>[] matrix, int[] rowSize) {
-        int resultSize = 1;
+    private long computeProofMatrix(List<Proof>[] matrix, int[] rowSize) {
+        long resultSize = 1;
         int i = 0;
         for (TreeMatch subMatch : getSubMatches()) {
             List<Proof> row = subMatch.toProofSet();
             matrix[i] = row;
-            resultSize *= row.size();
+            try {
+                resultSize = Math.multiplyExact(resultSize, row.size());
+            } catch (ArithmeticException exc) {
+                resultSize = Long.MAX_VALUE;
+            }
             if (resultSize == 0) {
                 break;
             }
