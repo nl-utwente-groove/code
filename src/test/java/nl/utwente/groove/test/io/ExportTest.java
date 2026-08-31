@@ -107,17 +107,20 @@ public class ExportTest {
         assertEquals(labelBag(graph), labelBag(host));
     }
 
-    /** A label containing a comma takes the quoted {@code .aut} syntax.
-     * This pins the current (asymmetric) behaviour: the saver adds the
-     * protective quotes, but the loader retains them as part of the label,
-     * so the label comes back quoted rather than verbatim. */
+    /** Labels containing {@code .aut} metacharacters (commas, quotes,
+     * backslashes) take the quoted syntax on disk but round-trip verbatim:
+     * the saver quotes and escapes, the loader unquotes and unescapes. */
     @Test
-    public void testAutCommaLabel(@TempDir Path tmp) throws IOException {
-        PlainGraph graph = new PlainGraph("commas", GraphRole.HOST);
+    public void testAutSpecialLabels(@TempDir Path tmp) throws IOException {
+        List<String> labels = List
+            .of("a,b", "\"a\"", "\"a,b\"", "back\\slash", "quo\"te", "esc\\\",aped", "\"");
+        PlainGraph graph = new PlainGraph("specials", GraphRole.HOST);
         PlainNode n0 = graph.addNode();
         PlainNode n1 = graph.addNode();
-        graph.addEdge(n0, "a,b", n1);
-        File file = tmp.resolve("commas.aut").toFile();
+        for (String label : labels) {
+            graph.addEdge(n0, label, n1);
+        }
+        File file = tmp.resolve("specials.aut").toFile();
         AutIO io = new AutIO();
         io.saveGraph(graph, file);
         PlainGraph clone;
@@ -125,7 +128,7 @@ public class ExportTest {
             clone = io.loadGraph(in);
         }
         assertEquals(2, clone.nodeCount());
-        assertEquals(List.of("\"a,b\""), labelBag(clone));
+        assertEquals(labels.stream().sorted().collect(Collectors.toList()), labelBag(clone));
     }
 
     /** The {@code .fsm} output consists of a header, a numbered node section
