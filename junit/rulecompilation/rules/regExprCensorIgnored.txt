@@ -1,0 +1,8 @@
+== rule censorPlus
+signature: ()
+hidden: []
+anchor: [n0:A, n1:A, n0--a-->n1]
+Existential censorPlus [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:A, n1:A] edges [n0--a-->n1, n0--a+-->n1]
+  rhs: nodes [n0:A, n1:A] edges [n0--a+-->n1]

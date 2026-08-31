@@ -5,9 +5,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.rule.LabelVar;
@@ -19,8 +21,10 @@ import nl.utwente.groove.grammar.rule.Valuation;
 import nl.utwente.groove.grammar.type.TypeElement;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.graph.EdgeComparator;
+import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.match.automaton.RegAut;
 import nl.utwente.groove.match.automaton.RegAutCalculator;
+import nl.utwente.groove.match.automaton.RegAutCoverage;
 import nl.utwente.groove.match.plan.PlanSearchStrategy.Search;
 
 /**
@@ -31,11 +35,18 @@ import nl.utwente.groove.match.plan.PlanSearchStrategy.Search;
 class RegExprEdgeSearchItem extends AbstractSearchItem {
     /**
      * Constructs a new search item. The item will match according to the
-     * regular expression on the edge label.
+     * regular expression on the edge label, with witness paths avoiding the
+     * current images of a given set of censoring eraser edges (the dynamic
+     * censored re-match of gh #900).
      * @param typeGraph label store used to determine subtypes for
      * node type labels in the regular expression
+     * @param censorCandidates eraser edges whose images may not be traversed
+     * by the witness path; the item retains only the candidates whose
+     * possible image types are actually traversable by the expression, as
+     * determined positionally by {@link RegAutCoverage}
      */
-    public RegExprEdgeSearchItem(RuleEdge edge, TypeGraph typeGraph) {
+    public RegExprEdgeSearchItem(RuleEdge edge, TypeGraph typeGraph,
+                                 Set<RuleEdge> censorCandidates) {
         this.edge = edge;
         this.source = edge.source();
         this.target = edge.target();
@@ -53,6 +64,28 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
             .allVarSet();
         this.neededVars = new HashSet<>(this.allVars);
         this.neededVars.removeAll(this.boundVars);
+        this.censorEdges = computeCensorEdges(censorCandidates, label);
+    }
+
+    /**
+     * Retains, from the censor candidates, the eraser edges whose possible
+     * image types intersect the type edges traversable by the expression
+     * between its end node types. A lone node type expression is exempt:
+     * its witness is the (tracked) node itself, not an edge traversal.
+     */
+    private Set<RuleEdge> computeCensorEdges(Set<RuleEdge> censorCandidates, RuleLabel label) {
+        if (censorCandidates.isEmpty() || label.getRole() == EdgeRole.NODE_TYPE) {
+            return Collections.emptySet();
+        }
+        var coverage = new RegAutCoverage(this.labelAutomaton, this.source.getMatchingTypes(),
+            this.target.getMatchingTypes());
+        Set<RuleEdge> result = new LinkedHashSet<>();
+        for (RuleEdge candidate : censorCandidates) {
+            if (!Collections.disjoint(candidate.getMatchingTypes(), coverage.result())) {
+                result.add(candidate);
+            }
+        }
+        return result;
     }
 
     @Override
@@ -128,6 +161,15 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
         return this.boundEdges;
     }
 
+    /**
+     * Returns the censoring eraser edges, whose images must be bound before
+     * this item can run, so that the witness path can avoid them.
+     */
+    @Override
+    public Collection<RuleEdge> needsEdges() {
+        return this.censorEdges;
+    }
+
     /** This implementation returns the empty set. */
     @Override
     public Collection<? extends RuleNode> bindsNodes() {
@@ -152,6 +194,31 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
             this.prematchedVars.add(var);
             this.varIxMap.put(var, strategy.getVarIx(var));
         }
+        this.censorIxs = new int[this.censorEdges.size()];
+        int i = 0;
+        for (RuleEdge censorEdge : this.censorEdges) {
+            this.censorIxs[i] = strategy.getEdgeIx(censorEdge);
+            i++;
+        }
+    }
+
+    /**
+     * Computes the current images of the censoring eraser edges from the
+     * search. The images are guaranteed to be bound, since the censor edges
+     * are needed edges of this item.
+     */
+    Set<HostEdge> getCensored(Search search) {
+        int[] censorIxs = this.censorIxs;
+        if (censorIxs.length == 0) {
+            return Collections.emptySet();
+        }
+        Set<HostEdge> result = new HashSet<>();
+        for (int censorIx : censorIxs) {
+            HostEdge image = search.getEdge(censorIx);
+            assert image != null; // censor edges are scheduled before this item
+            result.add(image);
+        }
+        return result;
     }
 
     boolean isSingular(Search search) {
@@ -220,6 +287,10 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
     Set<LabelVar> prematchedVars;
     /** Mapping from variables to the corresponding indices in the result. */
     Map<LabelVar,Integer> varIxMap;
+    /** The eraser edges whose images the witness path must avoid. */
+    private final Set<RuleEdge> censorEdges;
+    /** The search indices of the censoring eraser edges. */
+    private int[] censorIxs;
 
     private class RegExprEdgeSingularRecord extends SingularRecord {
         /** Constructs a new record, for a given matcher. */
@@ -274,7 +345,8 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
                 targetFind = this.search.getNode(RegExprEdgeSearchItem.this.targetIx);
             }
             return RegExprEdgeSearchItem.this.labelAutomaton
-                .getMatches(this.host, sourceFind, targetFind, valuation);
+                .getMatches(this.host, sourceFind, targetFind, valuation,
+                            getCensored(this.search));
         }
 
         @Override
@@ -333,7 +405,8 @@ class RegExprEdgeSearchItem extends AbstractSearchItem {
                 valuation.put(var, image);
             }
             Set<RegAut.Result> matches = RegExprEdgeSearchItem.this.labelAutomaton
-                .getMatches(this.host, this.sourceFind, this.targetFind, valuation);
+                .getMatches(this.host, this.sourceFind, this.targetFind, valuation,
+                            getCensored(this.search));
             this.imageIter = matches.iterator();
         }
 

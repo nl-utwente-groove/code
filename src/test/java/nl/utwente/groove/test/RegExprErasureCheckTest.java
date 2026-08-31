@@ -31,10 +31,14 @@ import nl.utwente.groove.util.QualName;
 
 /**
  * Tests the static check on composite regular expressions versus erasers
- * (the ignoreRegExp grammar property): in a grammar with parallel edges,
+ * (the regExpMatching grammar property): in a grammar with parallel edges,
  * a rule is erroneous if a composite regular expression edge may match a
- * path through an edge that the rule erases, since such path witnesses are
- * untracked and thereby escape the identification condition.
+ * path through an edge that the rule erases at a quantification level that
+ * is not an ancestor-or-self of the expression's level. Erasers at an
+ * ancestor-or-self level are not errors: their images are dynamically
+ * censored by the expression's matching (gh #900), whereas for deeper or
+ * sibling levels witness destruction can be joint across quantifier
+ * instances, so there is no coherent per-match verdict.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -57,10 +61,28 @@ public class RegExprErasureCheckTest {
                    ruleModel.getErrors().toString().contains("may match a path through"));
     }
 
-    /** A sequence a.b may run through the erased b-edge. */
+    /** A sequence a.b may run through the b-edge erased at the same level;
+     * that is no longer an error, since the eraser image is dynamically
+     * censored by the expression's matching. */
     @Test
     public void testSeqThroughEraser() {
-        assertErasureError(getRuleModel("regExprErasure", "seqThroughEraser"));
+        assertFalse(getRuleModel("regExprErasure", "seqThroughEraser").hasErrors());
+    }
+
+    /** A kernel-level a* may run through an a-edge erased at a deeper
+     * (forall) level: witness destruction can be joint across the
+     * instances, so the static check still reports an error. */
+    @Test
+    public void testSeqThroughSublevelEraser() {
+        assertErasureError(getRuleModel("regExprErasure", "seqThroughSublevelEraser"));
+    }
+
+    /** An a* at one forall's sublevel may run through an a-edge erased at a
+     * sibling forall's sublevel; neither level is an ancestor of the other,
+     * so the static check still reports an error. */
+    @Test
+    public void testSeqThroughSiblingEraser() {
+        assertErasureError(getRuleModel("regExprErasure", "seqThroughSiblingEraser"));
     }
 
     /** An eraser whose edge type the expression cannot traverse is harmless. */
@@ -86,7 +108,7 @@ public class RegExprErasureCheckTest {
         assertFalse(getRuleModel("regExprErasure", "nodeEraserIncident").hasErrors());
     }
 
-    /** The ignoreRegExp property accepts the overlapping rule. */
+    /** Sloppy regular expression matching accepts the overlapping rule. */
     @Test
     public void testIgnoreRegExp() {
         assertFalse(getRuleModel("regExprErasureIgnored", "seqThroughEraser").hasErrors());

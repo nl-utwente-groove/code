@@ -22,6 +22,7 @@ import java.util.Set;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.grammar.rule.RuleLabel;
@@ -119,6 +120,39 @@ public interface RegAut extends GGraph<RegNode,RegEdge> {
      */
     Set<Result> getMatches(HostGraph graph, @Nullable HostNode startImage,
                            @Nullable HostNode endImage, @Nullable Valuation valuation);
+
+    /**
+     * Returns a relation consisting of pairs of nodes of a given graph between
+     * which there is a path matching this automaton that traverses none of a
+     * given set of censored edges. Node type tests are not affected by the
+     * censoring, as they do not traverse an edge.
+     * This default implementation delegates to
+     * {@link #getMatches(HostGraph, HostNode, HostNode, Valuation)} if the
+     * censored set is empty, and throws an exception otherwise.
+     * @param graph the graph in which the paths are sought
+     * @param startImage set of nodes in <code>graph</code> from which the
+     *        matching paths should start; if <code>null</code>, there is no
+     *        constraint
+     * @param endImage set of nodes in <code>graph</code> at which the
+     *        matching paths should end; if <code>null</code>, there is no
+     *        constraint
+     * @param valuation mapping from variables to edge labels that should be
+     *        adhered to in the matching; if <code>null</code>, there is no
+     *        constraint
+     * @param censored set of host edges that may not be traversed by the
+     *        witnessing path
+     * @throws UnsupportedOperationException if the censored set is non-empty
+     * and this implementation does not support censoring
+     */
+    default Set<Result> getMatches(HostGraph graph, @Nullable HostNode startImage,
+                                   @Nullable HostNode endImage, @Nullable Valuation valuation,
+                                   Set<HostEdge> censored) {
+        if (censored.isEmpty()) {
+            return getMatches(graph, startImage, endImage, valuation);
+        }
+        throw new UnsupportedOperationException("Censored matching is not supported by "
+            + getClass().getName());
+    }
 
     /** Type of the automaton's match results. */
     record Result(HostNode source, HostNode target) {

@@ -72,6 +72,14 @@ public abstract class AbstractSearchItem implements SearchItem {
     }
 
     /*
+     * This implementation returns the empty set.
+     */
+    @Override
+    public Collection<RuleEdge> needsEdges() {
+        return Collections.emptySet();
+    }
+
+    /*
      * The default implementation returns the empty set.
      */
     @Override

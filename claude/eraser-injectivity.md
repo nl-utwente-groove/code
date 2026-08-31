@@ -287,14 +287,18 @@ copy — multigraph clones lost all edge identity and application deltas
 silently erased nothing. Fixed by returning the key edge itself when its
 end nodes map to themselves.
 
-**Deferred (user, 2026-07-22: bring back up later): dynamic censored
-re-match.** Re-running the automaton on the host minus the erased edges
-(anchor-derived, hence deterministic) would turn the flag into a real
+**Deferred (user, 2026-07-22), resolved 2026-08-31 as gh #900: dynamic
+censored re-match.** Re-running the automaton on the host minus the erased
+edges (anchor-derived, hence deterministic) would turn the flag into a real
 strict/sloppy semantics switch. Only sound for regexprs at the same or
 deeper quantification level than the erasers, whose censoring context is
 fixed when legality is decided (cf. case C); a kernel-level regexpr vs.
 instance erasers fails because witness destruction can be joint across
-instances — no coherent per-instance legality verdict.
+instances — no coherent per-instance legality verdict. Implemented as
+*in-search* censoring (not a post-hoc re-match, which the relevance
+mechanism and cache-collapse determinism rule out) for exactly the sound
+case, with the static check retained, narrowed to the rest — see
+[regexpr-censored-match.md](regexpr-censored-match.md).
 
 ## Scoping to parallel-edge grammars (2026-07-27)
 

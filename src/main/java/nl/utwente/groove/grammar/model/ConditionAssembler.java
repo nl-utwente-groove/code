@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -177,41 +178,50 @@ class ConditionAssembler {
 
     /**
      * Checks, for grammars with parallel edges, that no composite regular
-     * expression edge can match a path through an edge that the rule erases.
-     * Composite regular expressions (those without a single host edge image)
-     * have untracked path witnesses, so the identification condition on
-     * erasers cannot be enforced for them at match time; rather than
-     * silently transforming away such witnesses, potential overlaps are
-     * reported as errors, unless the ignoreRegExp grammar property is set.
-     * The check spans the entire quantification tree in both directions,
-     * since amalgamation lets erasers at any level destroy witnesses matched
-     * at any other level. The traversable edge types of a regular expression
-     * are computed positionally, by {@link RegAutCoverage}. Eraser nodes
-     * contribute nothing: DPO semantics implies the dangling-edge condition,
-     * so node deletion can never erase unmatched edges. Negated expressions
-     * are exempt, as erasure cannot invalidate an established negative
+     * expression edge can match a path through an edge that the rule erases
+     * at a quantification level whose images the expression's matching
+     * cannot see. Composite regular expressions (those without a single host
+     * edge image) have untracked path witnesses, so the identification
+     * condition on erasers cannot be enforced for them; instead, their
+     * matching dynamically censors the images of the erasers at their own
+     * and ancestor levels (gh #900), whose censoring context is fixed when
+     * the expression's legality is decided. For erasers at any other level
+     * (deeper, or in a sibling branch), amalgamation means witness
+     * destruction can be joint across instances, so there is no coherent
+     * per-match verdict; such overlaps are reported as errors, unless the
+     * regExpMatching grammar property is set to sloppy - which switches off
+     * both the check and the dynamic censoring, retaining pure automaton
+     * semantics.
+     * The traversable edge types of a regular expression are computed
+     * positionally, by {@link RegAutCoverage}. Eraser nodes contribute
+     * nothing: DPO semantics implies the dangling-edge condition, so node
+     * deletion can never erase unmatched edges. Negated expressions are
+     * exempt, as erasure cannot invalidate an established negative
      * condition; the empty expression traverses nothing.
      */
     private void checkRegExprErasure(SortedMap<Index,LevelPattern> patternMap,
                                      FormatErrorSet errors) {
         var properties = getGrammarProperties();
-        if (!properties.getSemantics().isDPO() || properties.isIgnoreRegExp()) {
+        if (!properties.getSemantics().isDPO() || properties.getRegExpMatching().isSloppy()) {
             return;
         }
-        // collect the possibly erased edge types over all levels,
+        // collect the possibly erased edge types per level,
         // with a witnessing eraser element for error reporting
-        Map<TypeEdge,RuleElement> erasedTypes = new LinkedHashMap<>();
-        var typeGraph = getTypeGraph();
+        Map<Index,Map<TypeEdge,RuleElement>> erasedTypes = new LinkedHashMap<>();
         for (LevelPattern level : patternMap.values()) {
             if (!level.getIndex().getOperator().isQuantifier()) {
                 continue;
             }
             Set<RuleEdge> eraserEdges = new LinkedHashSet<>(level.lhs.edgeSet());
             eraserEdges.removeAll(level.rhs.edgeSet());
+            Map<TypeEdge,RuleElement> levelMap = new LinkedHashMap<>();
             for (RuleEdge eraser : eraserEdges) {
                 for (TypeEdge type : eraser.getMatchingTypes()) {
-                    erasedTypes.putIfAbsent(type, eraser);
+                    levelMap.putIfAbsent(type, eraser);
                 }
+            }
+            if (!levelMap.isEmpty()) {
+                erasedTypes.put(level.getIndex(), levelMap);
             }
         }
         if (erasedTypes.isEmpty()) {
@@ -221,29 +231,35 @@ class ConditionAssembler {
         // edge is in the LHS of exactly one level (importEraserConflicts only
         // imports edges with an edge image), so none is checked twice
         for (LevelPattern level : patternMap.values()) {
-            if (!level.getIndex().getOperator().isQuantifier()) {
+            Index myIndex = level.getIndex();
+            if (!myIndex.getOperator().isQuantifier()) {
                 continue;
             }
             for (RuleEdge edge : level.lhs.edgeSet()) {
-                RuleLabel label = edge.label();
-                if (edge.hasEdgeImage() || label.isEmpty() || label.isNeg()) {
+                var coverage = getRegExprCoverage(edge);
+                if (coverage.isEmpty()) {
                     continue;
                 }
-                // a lone node type atom is not a path: its witness is the
-                // (tracked) node itself, not an edge traversal
-                if (label.getRole() == EdgeRole.NODE_TYPE) {
-                    continue;
-                }
-                var labelAut = RegAutCalculator.instance().compute(label.getMatchExpr(), typeGraph);
-                var coverage = new RegAutCoverage(labelAut, edge.source().getMatchingTypes(),
-                    edge.target().getMatchingTypes());
-                for (var erasedEntry : erasedTypes.entrySet()) {
-                    if (coverage.result().contains(erasedEntry.getKey())) {
-                        errors
-                            .add("Regular expression %s may match a path through a %s-edge "
-                                + "erased by this rule (set the ignoreRegExp grammar property "
-                                + "to accept this)", label, erasedEntry.getKey().label(), edge,
-                                 erasedEntry.getValue());
+                boolean reported = false;
+                for (var levelEntry : erasedTypes.entrySet()) {
+                    if (levelEntry.getKey().higherThan(myIndex)) {
+                        // erasers at an ancestor-or-self level are seen and
+                        // censored by the expression's dynamic matching
+                        continue;
+                    }
+                    for (var erasedEntry : levelEntry.getValue().entrySet()) {
+                        if (coverage.contains(erasedEntry.getKey())) {
+                            errors
+                                .add("Regular expression %s may match a path through a %s-edge "
+                                    + "erased at an incomparable or deeper quantification level "
+                                    + "(set the regExpMatching grammar property to sloppy "
+                                    + "to accept this)", edge.label(),
+                                     erasedEntry.getKey().label(), edge, erasedEntry.getValue());
+                            reported = true;
+                            break;
+                        }
+                    }
+                    if (reported) {
                         break;
                     }
                 }
@@ -259,6 +275,11 @@ class ConditionAssembler {
      * conflict machinery enforces the cross-level DPO identification
      * condition. Imported ancestor erasers are additionally recorded, to
      * take part in the conflict computation as erasers.
+     * Under faithful regular expression matching (the regExpMatching
+     * property), an ancestor eraser edge is also imported if it can
+     * destroy the witness of a composite regular expression at this
+     * level, so that the expression's dynamic censoring (gh #900) sees
+     * its seeded image.
      * Must be called top-down over the level tree, before any condition
      * is built.
      */
@@ -270,6 +291,7 @@ class ConditionAssembler {
         myEraserNodes.removeAll(level.rhs.nodeSet());
         Set<RuleEdge> myEraserEdges = new LinkedHashSet<>(myEdges);
         myEraserEdges.removeAll(level.rhs.edgeSet());
+        boolean censoring = !getGrammarProperties().getRegExpMatching().isSloppy();
         // the levels from just below the currently inspected ancestor
         // down to this level, into which conflicting elements are imported
         List<LevelPattern> path = new ArrayList<>();
@@ -288,6 +310,18 @@ class ConditionAssembler {
                     if (myEdge != ancEdge && myEdge.canShareImage(ancEdge)) {
                         conflict = true;
                         break;
+                    }
+                }
+                if (!conflict && ancIsEraser && censoring && ancEdge.hasEdgeImage()) {
+                    // an ancestor eraser is also imported if its erasure can
+                    // destroy the witness of one of my regular expressions,
+                    // so that the dynamic censoring sees its image
+                    for (RuleEdge myEdge : myEdges) {
+                        if (!Collections
+                            .disjoint(ancEdge.getMatchingTypes(), getRegExprCoverage(myEdge))) {
+                            conflict = true;
+                            break;
+                        }
                     }
                 }
                 if (conflict) {
@@ -360,6 +394,38 @@ class ConditionAssembler {
     private Set<RuleNode> getAncestorEraserNodes(LevelPattern level) {
         return this.ancestorEraserNodeMap.getOrDefault(level.getIndex(), Collections.emptySet());
     }
+
+    /**
+     * Returns the type edges traversable by a given edge's label, if that
+     * label is a composite regular expression subject to dynamic censoring
+     * (gh #900); the empty set otherwise. Edges with a host edge image are
+     * covered by the match-time conflict machinery; negated expressions are
+     * immune to erasure; a lone node type expression's witness is the
+     * (tracked) node itself. The result is cached per edge.
+     */
+    private Set<TypeEdge> getRegExprCoverage(RuleEdge edge) {
+        var result = this.regExprCoverageMap.get(edge);
+        if (result == null) {
+            this.regExprCoverageMap.put(edge, result = computeRegExprCoverage(edge));
+        }
+        return result;
+    }
+
+    /** Computes the value of {@link #getRegExprCoverage(RuleEdge)}. */
+    private Set<TypeEdge> computeRegExprCoverage(RuleEdge edge) {
+        RuleLabel label = edge.label();
+        if (edge.hasEdgeImage() || label.isEmpty() || label.isNeg()
+            || label.getRole() == EdgeRole.NODE_TYPE) {
+            return Collections.emptySet();
+        }
+        var labelAut = RegAutCalculator.instance().compute(label.getMatchExpr(), getTypeGraph());
+        return new RegAutCoverage(labelAut, edge.source().getMatchingTypes(),
+            edge.target().getMatchingTypes()).result();
+    }
+
+    /** Traversable type edges per censorable regular expression edge;
+     * lazily filled cache of {@link #getRegExprCoverage(RuleEdge)}. */
+    private final Map<RuleEdge,@Nullable Set<TypeEdge>> regExprCoverageMap = new HashMap<>();
 
     /** Ancestor-level eraser edges imported by {@link #importEraserConflicts},
      * keyed by level index. */

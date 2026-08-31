@@ -299,7 +299,7 @@ public class PlanSearchEngine extends SearchEngine {
             AbstractSearchItem item = null;
             RuleEdge embargoEdge = subCondition.getEmbargoEdge();
             if (!embargoEdge.label().isEmpty()) {
-                AbstractSearchItem edgeSearchItem = createEdgeSearchItem(embargoEdge);
+                AbstractSearchItem edgeSearchItem = createEdgeSearchItem(embargoEdge, false);
                 item = createNegatedSearchItem(edgeSearchItem);
             } else {
                 // if the condition is injective, local injectivity does not need to be tested
@@ -356,7 +356,7 @@ public class PlanSearchEngine extends SearchEngine {
             }
             // then a search item per remaining edge
             for (RuleEdge edge : unmatchedEdges) {
-                AbstractSearchItem edgeItem = createEdgeSearchItem(edge);
+                AbstractSearchItem edgeItem = createEdgeSearchItem(edge, true);
                 if (edgeItem != null) {
                     result.add(edgeItem);
                     // end nodes are only matched if the item is not negated and
@@ -397,7 +397,7 @@ public class PlanSearchEngine extends SearchEngine {
         Collection<Comparator<SearchItem>> computeComparators() {
             Collection<Comparator<SearchItem>> result
                 = new TreeSet<>(new ItemComparatorComparator());
-            result.add(new NeededPartsComparator(this.boundNodes, this.boundVars));
+            result.add(new NeededPartsComparator(this.boundNodes, this.boundVars, this.boundEdges));
             result.add(new ItemTypeComparator());
             result.add(new ConnectedPartsComparator(this.boundNodes, this.boundVars));
             var pattern = this.condition.getPattern();
@@ -432,8 +432,11 @@ public class PlanSearchEngine extends SearchEngine {
 
         /**
          * Callback factory method for creating an edge search item.
+         * @param positive flag indicating that the edge occurs positively in
+         * the condition pattern; a negated occurrence (inside an edge embargo
+         * or a negated label) is immune to erasure, so it is not censored
          */
-        protected AbstractSearchItem createEdgeSearchItem(RuleEdge edge) {
+        protected AbstractSearchItem createEdgeSearchItem(RuleEdge edge, boolean positive) {
             AbstractSearchItem result = null;
             RuleLabel label = edge.label();
             RuleNode target = edge.target();
@@ -451,7 +454,7 @@ public class PlanSearchEngine extends SearchEngine {
                     var factory = this.condition.getFactory();
                     assert factory != null;
                     RuleEdge negatedEdge = factory.createEdge(source, negatedLabel, target);
-                    negatedItem = createEdgeSearchItem(negatedEdge);
+                    negatedItem = createEdgeSearchItem(negatedEdge, false);
                 }
                 result = createNegatedSearchItem(negatedItem);
                 this.boundEdges.add(edge);
@@ -472,10 +475,56 @@ public class PlanSearchEngine extends SearchEngine {
                 // expressions uniformly keep the automaton-based semantics
                 result = new ChoiceEdgeSearchItem(edge);
             } else {
-                result = new RegExprEdgeSearchItem(edge, this.typeGraph);
+                result = new RegExprEdgeSearchItem(edge, this.typeGraph, positive
+                    ? getCensorErasers()
+                    : Collections.emptySet());
             }
             return result;
         }
+
+        /**
+         * Lazily computes the eraser edges whose images censor the matching
+         * of positive composite regular expressions in this condition: under
+         * faithful DPO matching (the regExpMatching grammar property), a
+         * regular expression only holds if it is witnessed by a path avoiding
+         * the images of all eraser edges at this or an ancestor level (the
+         * dynamic censored re-match of gh #900). The set consists of the
+         * eraser edges of the condition's own rule level, including the
+         * (matched) incident edges of eraser nodes, plus the ancestor-level
+         * eraser edges imported into the condition's root; only edges with a
+         * single host edge image qualify, as only those have a deterministic
+         * image to censor. The set is empty under SPO semantics or sloppy
+         * matching, so that the automaton-based semantics is retained.
+         */
+        private Set<RuleEdge> getCensorErasers() {
+            var result = this.censorErasers;
+            if (result == null) {
+                this.censorErasers = result = computeCensorErasers();
+            }
+            return result;
+        }
+
+        /** Computes the value of {@link #getCensorErasers()}. */
+        private Set<RuleEdge> computeCensorErasers() {
+            Set<RuleEdge> result = new LinkedHashSet<>();
+            var properties = this.condition.getGrammarProperties();
+            if (properties == null || !properties.getSemantics().isDPO()
+                || properties.getRegExpMatching().isSloppy()) {
+                return result;
+            }
+            var rule = this.condition.getRule();
+            if (rule != null) {
+                result.addAll(rule.lhs().edgeSet());
+                result.removeAll(rule.rhs().edgeSet());
+            }
+            result.addAll(this.condition.getAncestorEraserEdges());
+            result.removeIf(e -> !e.hasEdgeImage());
+            return result;
+        }
+
+        /** The censoring eraser edges of the condition; lazily computed.
+         * @see #getCensorErasers() */
+        private Set<RuleEdge> censorErasers;
 
         /**
          * Callback factory method for creating a node search item.
@@ -623,9 +672,11 @@ public class PlanSearchEngine extends SearchEngine {
      * @version $Revision$
      */
     static class NeededPartsComparator implements Comparator<SearchItem> {
-        NeededPartsComparator(Set<RuleNode> boundNodes, Set<LabelVar> boundVars) {
+        NeededPartsComparator(Set<RuleNode> boundNodes, Set<LabelVar> boundVars,
+                              Set<RuleEdge> boundEdges) {
             this.boundNodes = boundNodes;
             this.boundVars = boundVars;
+            this.boundEdges = boundEdges;
         }
 
         /**
@@ -638,14 +689,17 @@ public class PlanSearchEngine extends SearchEngine {
         }
 
         /**
-         * Returns 0 if the item needs a node or variable that has not yet been
-         * matched, 1 if all needed parts have been matched.
+         * Returns 0 if the item needs a node, variable or edge that has not
+         * yet been matched, 1 if all needed parts have been matched.
          */
         private int getNeedCount(SearchItem item) {
             if (item.needsNodes().stream().anyMatch(n -> !this.boundNodes.contains(n))) {
                 return 0;
             }
             if (item.needsVars().stream().anyMatch(v -> !this.boundVars.contains(v))) {
+                return 0;
+            }
+            if (item.needsEdges().stream().anyMatch(e -> !this.boundEdges.contains(e))) {
                 return 0;
             }
             return 1;
@@ -655,6 +709,8 @@ public class PlanSearchEngine extends SearchEngine {
         private final Set<RuleNode> boundNodes;
         /** The set of currently scheduled variables. */
         private final Set<LabelVar> boundVars;
+        /** The set of currently scheduled edges. */
+        private final Set<RuleEdge> boundEdges;
     }
 
     /**

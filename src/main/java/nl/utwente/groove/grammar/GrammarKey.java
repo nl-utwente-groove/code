@@ -102,30 +102,30 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
      * newly created grammars.
      */
     SEMANTICS("semantics",
-        "<body>The transformation semantics: whether the host and rule graphs may have "
-            + "parallel edges (making them multigraphs), and whether they are transformed "
-            + "under the single-pushout (SPO) or double-pushout (DPO) approach"
+        "<body>The transformation semantics."
+            + "<p>Determines whether the host and rule graphs may have parallel edges "
+            + "(making them multigraphs), and whether they are transformed under the "
+            + "single-pushout (SPO) or double-pushout (DPO) approach"
             + DocumentedEnum.document(Semantics.class),
         Semantics.VALUE_TYPE),
     /**
-     * Flag accepting rules in which a composite regular expression may match a
-     * path through an edge that the rule erases. Default is {@code false}.
+     * Matching discipline for composite regular expressions under DPO
+     * semantics. Default is {@link RegExpMatching#FAITHFUL}.
      */
-    IGNORE_REG_EXP("ignoreRegExp",
-        "Flag accepting rules in which a composite regular expression may match a path "
-            + "through an edge that the rule erases. The matched path is not tracked, so such "
-            + "an overlap escapes the identification condition that otherwise governs erasure "
-            + "under DPO semantics. If false (the default), such rules are errors; "
-            + "only relevant if the semantics property is DPO.",
-        ValueType.BOOLEAN),
+    REG_EXP_MATCHING("regExpMatching",
+        "<body>Matching discipline for composite regular expressions, i.e., those "
+            + "not matched to a single host edge"
+            + DocumentedEnum.document(RegExpMatching.class)
+            + "<p>Only relevant if the semantics property is DPO",
+        RegExpMatching.VALUE_TYPE),
     /**
      * Dangling edge check. If <code>true</code>, all
      * matches that leave dangling edges are invalid. Default is
      * <code>false</code>.
      */
     DANGLING("checkDangling",
-        "Flag controlling if dangling edges should be forbidden rather than deleted. "
-            + "Implied (regardless of the value set here) if the semantics property is DPO.",
+        "<body>Flag controlling if dangling edges should be forbidden rather than deleted."
+            + "<p>Implied (regardless of the value set here) if the semantics property is DPO",
         ValueType.BOOLEAN),
 
     /**
@@ -150,8 +150,8 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
     RHS_AS_NAC("rhsIsNAC",
         "<body>Flag controlling if RHSs should be treated as implicit NACs: "
             + "the rule is only applicable if its created edges do not yet occur in the "
-            + "host graph. Copies in the host graph count in the same way as for "
-            + "checkCreatorEdges.",
+            + "host graph."
+            + "<p>Copies in the host graph count in the same way as for checkCreatorEdges",
         ValueType.BOOLEAN),
 
     /**
@@ -349,7 +349,9 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
             case SEMANTICS -> new Parser.EnumParser<>(Semantics.class, Semantics.SPO_MULTI,
                 "SPO-simple", "SPO-multi", "DPO");
             case COMMON_LABELS, CONTROL_LABELS -> Parser.splitter;
-            case CREATOR_EDGE, IGNORE_REG_EXP, DANGLING, RHS_AS_NAC, INJECTIVE, STORE_OUT_PARS, USE_STORED_NODE_IDS -> Parser.boolFalse;
+            case REG_EXP_MATCHING -> new Parser.EnumParser<>(RegExpMatching.class,
+                RegExpMatching.FAITHFUL);
+            case CREATOR_EDGE, DANGLING, RHS_AS_NAC, INJECTIVE, STORE_OUT_PARS, USE_STORED_NODE_IDS -> Parser.boolFalse;
             case ISOMORPHISM, LOOPS_AS_LABELS -> Parser.boolTrue;
             case USER_OPS, START_GRAPH_NAMES, CONTROL_NAMES, TYPE_NAMES, PROLOG_NAMES -> QualName
                 .listParser();
@@ -457,6 +459,10 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
      * renamed to {@link #SEMANTICS} (with new value names) within grammar
      * version 3.12. */
     static public final String PARALLEL_EDGES = "parallelEdges";
+    /** Name of deprecated boolean key for the regular expression matching
+     * discipline, replaced by the enum-valued {@link #REG_EXP_MATCHING}
+     * within grammar version 3.12. */
+    static public final String IGNORE_REG_EXP = "ignoreRegExp";
 
     /** Checks whether a value is a {@link DeltaMap} of rule names. */
     private static class RuleDeltaChecker implements GrammarChecker {

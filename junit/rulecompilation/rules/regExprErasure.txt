@@ -26,11 +26,19 @@ Existential seqBesideEraser [non-positive]
   lhs: nodes [n0:A, n1:B, n2:B] edges [n0--a.b-->n1, n2--c-->n2]
   rhs: nodes [n0:A, n1:B, n2:B] edges [n0--a.b-->n1]
 == rule seqThroughEraser
+signature: ()
+hidden: []
+anchor: [n0:A, n1:B, n0--b-->n1]
+Existential seqThroughEraser [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:A, n1:B] edges [n0--b-->n1, n0--a.b-->n1]
+  rhs: nodes [n0:A, n1:B] edges [n0--a.b-->n1]
+== rule seqThroughSiblingEraser
 errors:
-  - Regular expression a.b may match a path through a b-edge erased by this rule (set the ignoreRegExp grammar property to accept this)
+  - Regular expression a* may match a path through a a-edge erased at an incomparable or deeper quantification level (set the regExpMatching grammar property to sloppy to accept this)
 == rule seqThroughSublevelEraser
 errors:
-  - Regular expression a* may match a path through a a-edge erased by this rule (set the ignoreRegExp grammar property to accept this)
+  - Regular expression a* may match a path through a a-edge erased at an incomparable or deeper quantification level (set the regExpMatching grammar property to sloppy to accept this)
 == rule wildcardPositional
 signature: ()
 hidden: []

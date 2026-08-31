@@ -18,6 +18,7 @@ package nl.utwente.groove.match.automaton;
 
 import static nl.utwente.groove.graph.Direction.OUTGOING;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -44,8 +45,18 @@ public class Recogniser {
      * direction of search.
      */
     public Recogniser(DFA aut, HostGraph graph) {
+        this(aut, graph, Collections.emptySet());
+    }
+
+    /**
+     * Constructs a recogniser for a given automaton, on a given graph and for a given
+     * direction of search, avoiding a given set of censored edges.
+     * @param censored set of host edges that the recogniser may not traverse
+     */
+    public Recogniser(DFA aut, HostGraph graph, Set<HostEdge> censored) {
         this.aut = aut;
         this.graph = graph;
+        this.censored = censored;
         this.nextMap = new HashMap<>();
         this.reachMap = new HashMap<>();
     }
@@ -53,6 +64,11 @@ public class Recogniser {
     /** Returns the host graph on which this recogniser works. */
     public HostGraph getGraph() {
         return this.graph;
+    }
+
+    /** Returns the set of host edges that this recogniser may not traverse. */
+    public Set<HostEdge> getCensored() {
+        return this.censored;
     }
 
     /**
@@ -157,6 +173,9 @@ public class Recogniser {
                 assert succMap != null; // the label map is filled for all directions
                 if (!succMap.isEmpty()) {
                     for (HostEdge e : d.edges(this.graph, fromNode)) {
+                        if (this.censored.contains(e)) {
+                            continue;
+                        }
                         DFAState s = succMap.get(e.label());
                         if (s != null) {
                             result.add(new Tuple(d.opposite(e), s));
@@ -224,6 +243,8 @@ public class Recogniser {
 
     private final DFA aut;
     private final HostGraph graph;
+    /** The set of host edges that this recogniser may not traverse. */
+    private final Set<HostEdge> censored;
     /** Mapping from explored product states to their sets of successors. */
     private final Map<Tuple,TupleSet> nextMap;
     /** Mapping from product states to sets of reachable host nodes. */

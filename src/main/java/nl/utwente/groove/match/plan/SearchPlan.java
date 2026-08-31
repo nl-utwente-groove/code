@@ -144,11 +144,14 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
         usedNodes.addAll(e.bindsNodes());
         Set<LabelVar> usedVars = new HashSet<>(e.needsVars());
         usedVars.addAll(e.bindsVars());
+        Set<RuleEdge> usedEdges = new HashSet<>(e.needsEdges());
         for (int i = 0; i < position; i++) {
-            // set a dependency if the item at position i binds a required node or variable
+            // set a dependency if the item at position i binds a required node,
+            // variable or edge
             // NOTE: the use of the non-short-circuit logic operator '|' is
             // intentional!
-            if (usedNodes.removeAll(get(i).bindsNodes()) | usedVars.removeAll(get(i).bindsVars())) {
+            if (usedNodes.removeAll(get(i).bindsNodes()) | usedVars.removeAll(get(i).bindsVars())
+                | usedEdges.removeAll(get(i).bindsEdges())) {
                 depend = i;
             }
         }
@@ -206,6 +209,8 @@ public class SearchPlan extends ArrayList<AbstractSearchItem> {
             .format("Required node(s) %s not all bound in search plan %s", e.needsNodes(), this);
         assert areDisjoint(usedVars, e.needsVars()) : String.format(
             "Required label variable(s) %s not all bound in search plan %s", e.needsVars(), this);
+        assert usedEdges.isEmpty() : String
+            .format("Required edge(s) %s not all bound in search plan %s", e.needsEdges(), this);
         this.dependencies.add(depend);
         // transitively close the indirect dependencies
         return result;

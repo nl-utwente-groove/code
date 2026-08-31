@@ -37,6 +37,7 @@ import java.util.Set;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostGraph;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.Direction;
@@ -184,9 +185,20 @@ public class DFA {
 
     /** Returns a recogniser for this automaton, working on a given graph. */
     public Recogniser getRecogniser(HostGraph graph) {
+        return getRecogniser(graph, Collections.emptySet());
+    }
+
+    /**
+     * Returns a recogniser for this automaton, working on a given graph while
+     * avoiding a given set of censored edges. The most recently used
+     * recogniser is cached, so repeated queries for the same graph and
+     * censored set reuse the previously computed reachability information.
+     */
+    public Recogniser getRecogniser(HostGraph graph, Set<HostEdge> censored) {
         Recogniser result = this.recogniser;
-        if (result == null || result.getGraph() != graph) {
-            this.recogniser = result = new Recogniser(this, graph);
+        if (result == null || result.getGraph() != graph
+            || !result.getCensored().equals(censored)) {
+            this.recogniser = result = new Recogniser(this, graph, censored);
         }
         return result;
     }
