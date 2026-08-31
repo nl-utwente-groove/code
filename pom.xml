@@ -15,6 +15,12 @@
 		     override with -Dexcluded.test.groups= to run all tests
 		     (GUI tests additionally skip themselves when headless) -->
 		<excluded.test.groups>nl.utwente.groove.test.SlowTest,nl.utwente.groove.test.GuiTest</excluded.test.groups>
+		<!-- JVM options prepended to the Surefire argLine; empty by default,
+		     set at build time by the coverage profile's JaCoCo agent goal.
+		     Referenced as @{coverageAgent} (Surefire's late evaluation):
+		     a plain ${...} would be substituted with this empty default
+		     when the POM is loaded, before JaCoCo runs. -->
+		<coverageAgent></coverageAgent>
 	</properties>
 
 	<name>${project.groupId}:${project.artifactId}</name>
@@ -137,7 +143,7 @@
 					     one for the whole test JVM. Surefire patches the tests
 					     into module nl.utwente.groove, so java.prefs needs the
 					     add-exports to instantiate the factory reflectively. -->
-					<argLine>-Djava.util.prefs.PreferencesFactory=nl.utwente.groove.test.gui.InMemoryPreferencesFactory --add-exports=nl.utwente.groove/nl.utwente.groove.test.gui=java.prefs</argLine>
+					<argLine>@{coverageAgent} -Djava.util.prefs.PreferencesFactory=nl.utwente.groove.test.gui.InMemoryPreferencesFactory --add-exports=nl.utwente.groove/nl.utwente.groove.test.gui=java.prefs</argLine>
 					<excludes>
 						<!-- TestSuite aggregates the whole package tree as the
 						     entry point of the "GROOVE - all JUnit tests"
@@ -182,6 +188,64 @@
 	</build>
 
     <profiles>
+    	<profile>
+    		<!-- Test-coverage measurement: "mvn test -Pcoverage" runs the
+    		     suite under the JaCoCo agent and writes the report to
+    		     target/site/jacoco (HTML, CSV and XML). For the full picture
+    		     including the slow tests, add
+    		     -Dexcluded.test.groups=nl.utwente.groove.test.GuiTest.
+    		     Inert unless activated: without the profile, the
+    		     coverageAgent property expands to nothing. -->
+    		<id>coverage</id>
+    		<build>
+    			<plugins>
+    				<plugin>
+    					<groupId>org.jacoco</groupId>
+    					<artifactId>jacoco-maven-plugin</artifactId>
+    					<version>0.8.13</version>
+    					<executions>
+    						<execution>
+    							<id>coverage-prepare-agent</id>
+    							<goals>
+    								<goal>prepare-agent</goal>
+    							</goals>
+    							<!-- This configuration must stay on the execution:
+    							     at plugin level, the includes would also reach
+    							     the report goal, which reads them as ant-style
+    							     class-file paths and then matches nothing
+    							     ("Analyzed bundle with 0 classes"). -->
+    							<configuration>
+    								<propertyName>coverageAgent</propertyName>
+    								<!-- Instrument only GROOVE's own classes: they
+    								     are always release-21 byte code, whereas the
+    								     JDK's runtime classes follow the current JDK
+    								     and make JaCoCo's bundled ASM fail once the
+    								     JDK is newer than the JaCoCo release (one
+    								     stack trace per JDK class on the log, with
+    								     those classes left uninstrumented). -->
+    								<includes>
+    									<include>nl.utwente.groove.*</include>
+    								</includes>
+    							</configuration>
+    						</execution>
+    						<execution>
+    							<!-- bound to the test phase (rather than the
+    							     default verify) so that a plain
+    							     "mvn test -Pcoverage" already produces the
+    							     report; profile plugins run after the main
+    							     build's Surefire within the phase -->
+    							<id>coverage-report</id>
+    							<phase>test</phase>
+    							<goals>
+    								<goal>report</goal>
+    							</goals>
+    						</execution>
+    					</executions>
+    				</plugin>
+    			</plugins>
+    		</build>
+    	</profile>
+
     	<profile>
     		<id>maven</id>
 	<build>
