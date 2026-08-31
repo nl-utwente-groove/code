@@ -361,7 +361,7 @@ public class MatchCollector {
     private void checkMatchBound(int freshCount, Rule rule) throws MatchBoundException {
         int bound = this.matchBound;
         if (bound > 0 && this.matchCount + freshCount > bound) {
-            throw new MatchBoundException(rule.getQualName(), bound);
+            throw new MatchBoundException(rule.getQualName().toString(), bound);
         }
     }
 

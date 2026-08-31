@@ -249,11 +249,16 @@ public class TreeMatch implements Fixable {
             if (resultSize == 0) {
                 result = Collections.emptyList();
             } else {
-                var rule = getCondition().getRule();
-                assert rule != null;
-                int bound = rule.getGrammarProperties().getMatchBound();
+                var condition = getCondition();
+                var properties = condition.getGrammarProperties();
+                int bound = properties == null
+                    ? 0
+                    : properties.getMatchBound();
                 if (bound > 0 && resultSize > bound) {
-                    throw new MatchBoundException(rule.getQualName(), bound);
+                    var rule = condition.getRule();
+                    throw new MatchBoundException(rule == null
+                        ? condition.getName()
+                        : rule.getQualName().toString(), bound);
                 }
                 result = new ArrayList<>((int) Math.min(resultSize, Integer.MAX_VALUE - 8));
                 Visitor<Proof,?> collector = Visitor.newCollector(result);
