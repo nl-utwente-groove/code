@@ -201,8 +201,15 @@ public final class PointIntAlgebra extends IntAlgebra<Integer,Double,Boolean,Str
     public static final Integer singleInt = 0;
     /** Constant representing the point value of the int algebra. */
     public static final Constant singleIntConstant = Constant.instance(singleInt);
-    /** Point value of the real algebra. */
-    public static final Double singleReal = 0.0;
+    /**
+     * Representation of the point value of the real algebra.
+     * Must alias the canonical instance: {@link PointRealAlgebra#isValidValue}
+     * compares by reference, and (unlike the interned or cached values above)
+     * a literally redefined {@code Double} is a distinct box. The reference
+     * is not circular: {@link PointRealAlgebra} does not depend on this class.
+     * @see PointRealAlgebra#singleReal
+     */
+    public static final Double singleReal = PointRealAlgebra.singleReal;
     /** Singleton instance of this algebra. */
     public static final PointIntAlgebra instance = new PointIntAlgebra();
 }
