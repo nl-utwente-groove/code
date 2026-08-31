@@ -43,20 +43,20 @@ import nl.utwente.groove.util.collect.FilterIterator;
  * Temporary record of the effects of a rule application.
  * Built up by a {@link RuleEvent} and then used in a {@link RuleApplication}.
  * <p>
- * Effects are computed in two phases. At state creation
- * ({@code MatchApplier.createState}), a <i>partial</i> effect
- * ({@link Fragment#NODE_CREATION} or {@link Fragment#NODE_ALL}) generates the
- * created nodes, which must exist before the target state does because they
- * are part of the transition identity (out-parameters can expose them). At the
- * first derivation of the target graph, a <i>full</i> effect computes the
- * complete delta; the created nodes generated in the first phase are then
- * passed back in as <i>predefined</i> ({@link #isNodesPredefined()}), so that
- * node creation is not repeated but replayed positionally. Added edges are
- * only computed in the full effect and recorded on the transition afterwards;
- * a re-derivation (after a state cache collapse) passes them back in as
- * predefined as well ({@link #isEdgesPredefined()}), skipping edge creation
- * altogether. Removals are never recorded: they derive deterministically from
- * the anchor map and are recomputed by every full effect.
+ * The generating effect of a transition to a fresh target state is computed
+ * once, eagerly, at state creation ({@code MatchApplier}): the created nodes
+ * and added edges it produces are recorded on the state. The created nodes
+ * are part of the transition label (creator-bound out-parameters make them
+ * observable); the added edges are not — they are recorded only so that
+ * every subsequent derivation of the target graph reproduces the original
+ * identities. Such a derivation builds a replaying effect, with the recorded
+ * arrays passed back in as <i>predefined</i>: node creation is replayed
+ * positionally ({@link #isNodesPredefined()}), and edge creation is skipped
+ * altogether in favour of the recorded added-edge array
+ * ({@link #isEdgesPredefined()}). Transitions to already-existing target
+ * states compute only the {@link Fragment#NODE_CREATION} part of the effect.
+ * Removals are never recorded: they derive deterministically from the anchor
+ * map and are recomputed by every full effect.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -80,8 +80,20 @@ public class RuleEffect extends DefaultFixable {
     }
 
     /**
-     * Creates a full record based on a predefined set of created nodes
-     * and (optionally) a predefined set of added edges.
+     * Creates a full record based on a predefined set of created nodes.
+     * @param source host graph to which this effect refers.
+     * @param createdNodes the created nodes, in the order of the rule's coanchor
+     */
+    public RuleEffect(HostGraph source, HostNode[] createdNodes) {
+        this.source = source;
+        this.fragment = Fragment.ALL;
+        this.nodesPredefined = true;
+        this.oracle = null;
+        this.createdNodeList = Arrays.asList(createdNodes);
+    }
+
+    /**
+     * Creates a record based on predefined sets of created nodes and added edges.
      * @param source host graph to which this effect refers.
      * @param createdNodes the created nodes, in the order of the rule's coanchor
      * @param addedEdges the added edges recorded by a previous derivation of
@@ -92,20 +104,8 @@ public class RuleEffect extends DefaultFixable {
      */
     @AIGenerated("Claude Fable 5, 2026-08")
     public RuleEffect(HostGraph source, HostNode[] createdNodes, HostEdge[] addedEdges) {
-        this(source, createdNodes, Fragment.ALL);
+        this(source, createdNodes);
         this.predefinedAddedEdges = addedEdges;
-    }
-
-    /**
-     * Creates a partial record based on a predefined set of created nodes.
-     * @param source host graph to which this effect refers.
-     */
-    public RuleEffect(HostGraph source, HostNode[] createdNodes, Fragment fragment) {
-        this.source = source;
-        this.fragment = fragment;
-        this.nodesPredefined = true;
-        this.oracle = null;
-        this.createdNodeList = Arrays.asList(createdNodes);
     }
 
     /** Returns the source graph to which this effect refers. */
@@ -697,6 +697,27 @@ public class RuleEffect extends DefaultFixable {
     private HostEdgeSet addedEdges;
 
     /**
+     * Returns the added edges as an array, in the deterministic iteration
+     * order of {@link #getAddedEdges()}. Recorded in the graph transition, so
+     * that the added edge identities are part of the transition identity and
+     * can be replayed on a re-derivation.
+     * @see #getCreatedNodeArray()
+     */
+    @AIGenerated("Claude Fable 5, 2026-08")
+    final public HostEdge[] getAddedEdgeArray() {
+        assert isFixed();
+        if (!hasAddedEdges()) {
+            return EMPTY_EDGE_ARRAY;
+        }
+        List<HostEdge> edges = new ArrayList<>();
+        getAddedEdges().forEach(edges::add);
+        return edges.toArray(new HostEdge[edges.size()]);
+    }
+
+    /** Global empty array of edges. */
+    static private final HostEdge[] EMPTY_EDGE_ARRAY = {};
+
+    /**
      * Indicates if there are mergers.
      * @see #getMergeMap()
      */
@@ -737,10 +758,10 @@ public class RuleEffect extends DefaultFixable {
 
     /** Values indicating which part of the effect is recorded. */
     public static enum Fragment {
-        /** Only node creation is recorded. */
+        /** Only node creation is recorded. Used for transitions to
+         * already-existing target states, which record only their added
+         * nodes (needed for the transition label's parameter arguments). */
         NODE_CREATION,
-        /** Only node manipulation (creation, merging and deletion) is recorded. */
-        NODE_ALL,
         /** Everything is recorded. */
         ALL;
     }

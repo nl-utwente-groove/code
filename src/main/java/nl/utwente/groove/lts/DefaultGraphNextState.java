@@ -42,11 +42,13 @@ public class DefaultGraphNextState extends AbstractGraphState
      * @param frameValues nodes that are bound to the variables in the control frame
      */
     public DefaultGraphNextState(int number, AbstractGraphState source, MatchResult match,
-                                 HostNode[] addedNodes, Object[] frameValues) {
+                                 HostNode[] addedNodes, HostEdge[] addedEdges,
+                                 Object[] frameValues) {
         super(source.getCacheReference(), number);
         this.source = source;
         this.event = match.getEvent();
         this.addedNodes = addedNodes;
+        this.addedEdges = addedEdges;
         this.step = match.getStep();
         setFrame(this.step.onFinish());
         this.callStack = frameValues;
@@ -75,34 +77,22 @@ public class DefaultGraphNextState extends AbstractGraphState
 
     /**
      * Returns the edges added by this transition with respect to the source
-     * state, if they have been recorded; {@code null} otherwise.
-     * They are only recorded for non-simple (multigraph) host graphs, where
-     * a re-derivation would otherwise mint fresh, irreproducible edge
-     * identities; and even then only from the first full derivation of the
-     * target graph onwards.
+     * state. Computed eagerly at state creation (like the added nodes) and
+     * replayed by every derivation of the target graph, rather than minting
+     * fresh (in a non-simple graph, irreproducible) edge identities. Unlike
+     * the added nodes, the added edges are not part of the transition label:
+     * they are not observable (parameters cannot be edge-valued), and within
+     * a GTS they are uniquely determined by source state and event anyway.
      */
     HostEdge[] getAddedEdges() {
         return this.addedEdges;
     }
 
     /**
-     * Records the edges added by this transition with respect to the source
-     * state. Called upon the first derivation of the target graph over a
-     * non-simple host graph, so that later re-derivations (after the state
-     * cache has collapsed) reproduce the same edge identities.
+     * The identities of the edges added with respect to the source state.
+     * @see #getAddedEdges()
      */
-    void setAddedEdges(HostEdge[] addedEdges) {
-        assert this.addedEdges == null;
-        this.addedEdges = addedEdges;
-    }
-
-    /**
-     * The identities of the edges added with respect to the source state,
-     * recorded at the first derivation of the target graph; {@code null}
-     * before that, and always {@code null} in simple-graph mode, where the
-     * factory re-mints reproducibly.
-     */
-    private HostEdge[] addedEdges;
+    private final HostEdge[] addedEdges;
 
     @Override
     public Object[] getPrimeStack() {
@@ -123,8 +113,6 @@ public class DefaultGraphNextState extends AbstractGraphState
      */
     @Override
     public RuleApplication createRuleApplication() {
-        // getGraph() is evaluated before getAddedEdges(): the first
-        // derivation it triggers is what records the added edge identities
         return new RuleApplication(getEvent(), source().getGraph(), getGraph(), getAddedNodes(),
             getAddedEdges());
     }

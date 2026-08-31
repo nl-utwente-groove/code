@@ -220,12 +220,7 @@ public class RuleApplication implements DeltaApplier {
     public HostEdge[] getAddedEdgeArray() {
         HostEdge[] result = this.addedEdges;
         if (result == null) {
-            List<HostEdge> edges = new ArrayList<>();
-            RuleEffect record = getEffect();
-            if (record.hasAddedEdges()) {
-                record.getAddedEdges().forEach(edges::add);
-            }
-            result = edges.toArray(new HostEdge[edges.size()]);
+            result = getEffect().getAddedEdgeArray();
         }
         return result;
     }

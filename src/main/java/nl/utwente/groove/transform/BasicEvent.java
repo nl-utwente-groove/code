@@ -315,7 +315,7 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
             if (getAction().getCreatorNodes().length > 0) {
                 recordCreatedNodes(record);
             }
-            if (record.getFragment() != Fragment.NODE_CREATION) {
+            if (record.getFragment() == Fragment.ALL) {
                 if (getAction().getEraserNodes().length > 0) {
                     recordErasedNodes(record);
                 }
@@ -323,8 +323,6 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
                     || !getAction().getRhsMergeMap().isEmpty()) {
                     recordMergeMap(record);
                 }
-            }
-            if (record.getFragment() == Fragment.ALL) {
                 if (getAction().getEraserEdges().length > 0) {
                     recordErasedEdges(record);
                 }

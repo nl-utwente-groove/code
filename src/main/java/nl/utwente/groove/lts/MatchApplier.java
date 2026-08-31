@@ -22,6 +22,7 @@ import nl.utwente.groove.control.CallStack;
 import nl.utwente.groove.control.Valuator;
 import nl.utwente.groove.control.instance.Step;
 import nl.utwente.groove.grammar.Rule;
+import nl.utwente.groove.grammar.host.HostEdge;
 import nl.utwente.groove.grammar.host.HostNode;
 import nl.utwente.groove.transform.CompositeEvent;
 import nl.utwente.groove.transform.RuleEffect;
@@ -119,42 +120,54 @@ public class MatchApplier {
      */
     private GraphNextState createState(GraphState source,
                                        MatchResult match) throws InterruptedException {
-        @NonNull
-        HostNode[] addedNodes;
         Object[] stack;
         RuleEvent event = match.getEvent();
         Step ctrlStep = match.getStep();
-        boolean hasVars = ctrlStep.onFinish().hasVars();
-        RuleEffect effectRecord = null;
-        if (reuseCreatedNodes(source, match)) {
-            RuleTransition parentOut = match.getTransition();
-            assert parentOut != null;
-            addedNodes = parentOut.getAddedNodes();
-        } else if (event.getAction().hasNodeCreators()) {
-            // compute the frame values at the same time, if there are any
-            Fragment fragment = hasVars
-                ? Fragment.NODE_ALL
-                : Fragment.NODE_CREATION;
-            effectRecord = new RuleEffect(source.getGraph(), fragment, this.gts.getOracle());
-            event.recordEffect(effectRecord);
-            effectRecord.setFixed();
-            addedNodes = effectRecord.getCreatedNodeArray();
-        } else {
-            addedNodes = EMPTY_NODE_ARRAY;
-        }
-        if (hasVars || ctrlStep.onFinish().getNestingDepth() > 0) {
-            // only compute the effect if it has not yet been done
-            if (effectRecord == null) {
-                effectRecord = new RuleEffect(source.getGraph(), addedNodes, Fragment.NODE_ALL);
-                event.recordEffect(effectRecord);
-                effectRecord.setFixed();
-            }
+        // the full effect is computed eagerly, and the added edges recorded
+        // on the state, so that every derivation of the target graph replays
+        // the same edge identities
+        HostNode[] reusedNodes = getReusedCreatedNodes(source, match);
+        RuleEffect effectRecord = computeEffect(source, match, reusedNodes);
+        @NonNull
+        HostNode[] addedNodes = getAddedNodes(event, effectRecord, reusedNodes);
+        HostEdge[] addedEdges = effectRecord.getAddedEdgeArray();
+        if (ctrlStep.onFinish().hasVars() || ctrlStep.onFinish().getNestingDepth() > 0) {
             stack = computeTargetStack(ctrlStep, source, event, effectRecord);
         } else {
             stack = EMPTY_NODE_ARRAY;
         }
         return new DefaultGraphNextState(this.gts.getNextStateNr(), (AbstractGraphState) source,
-            match, addedNodes, stack);
+            match, addedNodes, addedEdges, stack);
+    }
+
+    /**
+     * Computes the full effect of a match on the graph of a source state.
+     * @param reusedNodes the created nodes of the parent transition, if they
+     * can be reused; see {@link #getReusedCreatedNodes(GraphState, MatchResult)}
+     * @throws InterruptedException if an oracle input was cancelled
+     */
+    private RuleEffect computeEffect(GraphState source, MatchResult match,
+                                     HostNode[] reusedNodes) throws InterruptedException {
+        RuleEffect result = reusedNodes == null
+            ? new RuleEffect(source.getGraph(), this.gts.getOracle())
+            : new RuleEffect(source.getGraph(), reusedNodes);
+        match.getEvent().recordEffect(result);
+        result.setFixed();
+        return result;
+    }
+
+    /**
+     * Extracts the added nodes of a computed effect, preferring the reused
+     * (aliased) parent transition array where available.
+     */
+    private @NonNull HostNode[] getAddedNodes(RuleEvent event, RuleEffect effect,
+                                              HostNode[] reusedNodes) {
+        if (reusedNodes != null) {
+            return reusedNodes;
+        }
+        return event.getAction().hasNodeCreators()
+            ? effect.getCreatedNodeArray()
+            : EMPTY_NODE_ARRAY;
     }
 
     /**
@@ -165,50 +178,50 @@ public class MatchApplier {
      */
     private RuleTransition createTransition(GraphState source, MatchResult match, GraphState target,
                                             boolean symmetry) throws InterruptedException {
-        HostNode[] addedNodes;
-        RuleEvent event = match.getEvent();
-        if (reuseCreatedNodes(source, match)) {
-            var parentOut = match.getTransition();
-            assert parentOut != null;
-            addedNodes = parentOut.getAddedNodes();
-        } else if (match.getAction().hasNodeCreators()) {
-            RuleEffect effect
-                = new RuleEffect(source.getGraph(), Fragment.NODE_CREATION, this.gts.getOracle());
-            event.recordEffect(effect);
-            effect.setFixed();
-            addedNodes = effect.getCreatedNodeArray();
-        } else {
-            addedNodes = EMPTY_NODE_ARRAY;
+        HostNode[] addedNodes = getReusedCreatedNodes(source, match);
+        if (addedNodes == null) {
+            if (match.getAction().hasNodeCreators()) {
+                RuleEffect effect = new RuleEffect(source.getGraph(), Fragment.NODE_CREATION,
+                    this.gts.getOracle());
+                match.getEvent().recordEffect(effect);
+                effect.setFixed();
+                addedNodes = effect.getCreatedNodeArray();
+            } else {
+                addedNodes = EMPTY_NODE_ARRAY;
+            }
         }
         return new DefaultRuleTransition(source, match, addedNodes, target, symmetry);
     }
 
     /**
-     * Indicates if the created nodes in a given match can be reused
-     * as created nodes for a new target graph.
+     * Returns the created nodes of the parent transition in a given match,
+     * if they can be reused as created nodes for a new target graph;
+     * {@code null} otherwise.
      */
-    private boolean reuseCreatedNodes(GraphState source, MatchResult match) {
+    private HostNode[] getReusedCreatedNodes(GraphState source, MatchResult match) {
         if (!match.hasTransition()) {
-            return false;
+            return null;
         }
         if (!(source instanceof GraphNextState)) {
-            return false;
+            return null;
         }
         var parentOut = match.getTransition();
         assert parentOut != null;
         HostNode[] addedNodes = parentOut.getAddedNodes();
         if (addedNodes.length == 0) {
-            return true;
+            return addedNodes;
         }
         RuleEvent sourceEvent = ((GraphNextState) source).getEvent();
         if (sourceEvent instanceof CompositeEvent) {
-            return false;
+            return null;
         }
         RuleEvent matchEvent = match.getEvent();
         if (matchEvent instanceof CompositeEvent) {
-            return false;
+            return null;
         }
-        return sourceEvent != matchEvent;
+        return sourceEvent != matchEvent
+            ? addedNodes
+            : null;
     }
 
     /** Computes the prime call stack for the target state of a given rule transition. */
