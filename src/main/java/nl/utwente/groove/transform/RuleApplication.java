@@ -365,7 +365,7 @@ public class RuleApplication implements DeltaApplier {
                         // claim its slot so a substitution cannot reuse it
                         consumeAddedEdge(replay, consumed, edgeImage);
                     }
-                } else if (replay != null && edgeImage != edge) {
+                } else if (edgeImage != edge) {
                     if (ghostEdges == null) {
                         ghostEdges = new ArrayList<>();
                     }
@@ -379,13 +379,41 @@ public class RuleApplication implements DeltaApplier {
         // otherwise hand out a slot whose identity is also mapped directly,
         // breaking injectivity of the morphism
         if (ghostEdges != null) {
-            assert mergeMap != null && replay != null && consumed != null;
-            for (HostEdge edge : ghostEdges) {
-                HostEdge ghost = mergeMap.mapEdge(edge);
-                assert ghost != null;
-                HostEdge edgeImage = findAddedEdge(replay, consumed, ghost);
-                if (getTarget().containsEdge(edgeImage)) {
+            assert mergeMap != null;
+            if (replay != null) {
+                assert consumed != null;
+                for (HostEdge edge : ghostEdges) {
+                    HostEdge ghost = mergeMap.mapEdge(edge);
+                    assert ghost != null;
+                    HostEdge edgeImage = findAddedEdge(replay, consumed, ghost);
+                    if (getTarget().containsEdge(edgeImage)) {
+                        result.putEdge(edge, edgeImage);
+                    }
+                }
+            } else {
+                // without a recorded added-edge array (a transition to an
+                // already-existing target, or a free-standing application),
+                // substitute each ghost by a content-equal target edge not
+                // yet used as an image: parallel copies are interchangeable,
+                // and the target here is the application's own derived
+                // target, which contains a copy for every redirected edge
+                Set<HostEdge> used = new HashSet<>(result.edgeMap().values());
+                for (HostEdge edge : ghostEdges) {
+                    HostEdge ghost = mergeMap.mapEdge(edge);
+                    assert ghost != null;
+                    HostEdge edgeImage = null;
+                    for (HostEdge candidate : getTarget().outEdgeSet(ghost.source())) {
+                        if (!used.contains(candidate) && candidate.label().equals(ghost.label())
+                            && candidate.target().equals(ghost.target())) {
+                            edgeImage = candidate;
+                            break;
+                        }
+                    }
+                    assert edgeImage != null : String
+                        .format("No content-equal target edge for merge image %s of %s", ghost,
+                                edge);
                     result.putEdge(edge, edgeImage);
+                    used.add(edgeImage);
                 }
             }
         }

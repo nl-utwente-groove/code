@@ -341,3 +341,15 @@ and `DefaultRuleTransition.adaptToTarget`. Morphisms are reconstructed rarely, c
 the recorded array by content (parallel copies are interchangeable there), and cannot
 reproduce the pooled assignment independently since their iteration order differs from
 the effect's.
+
+"Deliberately unchanged" proved half wrong: the full suite caught
+`TransitionMorphismTest.testParallelPump` losing one source edge from a secondary
+transition's morphism (bisected cleanly to the slice-B commit). The replay-less
+morphism path had silently depended on the merge map's shared edge-image cache: within
+one `RuleApplication`, the effect's `mapEdge` calls cached the very images `applyDelta`
+put into the derived target, so `computeMorphism`'s later `mapEdge` calls found them by
+cache hit. With the effect pooling instead of caching, the morphism's fresh mint missed
+the target and the edge was dropped — there was no recovery branch for `replay == null`.
+Fixed by collecting ghosts on that path too and substituting each by a content-equal,
+not-yet-used edge of the (derived) target, mirroring `adaptToTarget`. The state's own
+primary transitions (replay path) were unaffected throughout.
