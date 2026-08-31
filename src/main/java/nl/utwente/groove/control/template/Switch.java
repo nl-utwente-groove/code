@@ -61,7 +61,11 @@ public class Switch implements Comparable<Switch>, Relocatable {
         this.source = source;
         this.onFinish = onFinish;
         this.kind = call.getUnit().getKind();
-        this.call = call.bind(getSourceBindMap());
+        // the call is stored unbound; variables in expression arguments are only
+        // bound to source variable indices when the parameter assignment is
+        // computed (see computeAssignSource2Par), at which point the source
+        // location's variables have been fully initialised (gh #561)
+        this.call = call;
         this.transience = transienceIncr;
     }
 
@@ -151,7 +155,13 @@ public class Switch implements Comparable<Switch>, Relocatable {
                 result.put(sourceVar.toVar(), Binding.var(sourceVar.name(), e.getValue()));
             }
         }
-        return v -> result.get(v);
+        return v -> {
+            var bind = result.get(v);
+            assert bind != null : String
+                .format("Variable %s of %s is not among the source variables %s", v, this,
+                        getSource().getVars());
+            return bind;
+        };
     }
 
     /**
@@ -199,7 +209,11 @@ public class Switch implements Comparable<Switch>, Relocatable {
                                       arg, this);
                 }
             } else if (arg instanceof CtrlArg.Expr e) {
-                bind = Binding.expr(target, e.expr());
+                // bind the variables in the expression to source variable indices;
+                // this cannot be done at construction time of the switch, since
+                // the source location's variables are only complete after
+                // Template.initVars has run (gh #561)
+                bind = Binding.expr(target, e.expr().bind(getSourceBindMap()));
             } else {
                 assert arg instanceof CtrlArg.Wild;
                 bind = Binding.none(target);
