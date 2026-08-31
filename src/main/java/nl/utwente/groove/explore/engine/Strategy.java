@@ -24,6 +24,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.Status.Flag;
+import nl.utwente.groove.match.MatchBoundException;
 
 /**
  * A strategy defines an order in which the states of a graph transition system
@@ -68,8 +69,11 @@ public abstract class Strategy {
     /**
      * Plays out this strategy, until the halt condition kicks in,
      * the thread is interrupted or the strategy is exhausted.
+     * @throws MatchBoundException if the match bound was exceeded during
+     * exploration; the strategy is finished before the exception propagates,
+     * so that any enclosing strategy or exploration also halts
      */
-    final public void play() {
+    final public void play() throws MatchBoundException {
         var gts = this.gts;
         assert gts != null : "GTS not initialised";
         prepare(gts, this.startState);
@@ -81,8 +85,14 @@ public abstract class Strategy {
             }
         } catch (InterruptedException exc) {
             // exploration was interrupted by a cancelled oracle input
+        } catch (MatchBoundException exc) {
+            // the match bound was exceeded: count this as an interruption of
+            // this strategy, and propagate after cleaning up (see gh #784)
+            this.interrupted = true;
+            throw exc;
+        } finally {
+            finish();
         }
-        finish();
     }
 
     /**

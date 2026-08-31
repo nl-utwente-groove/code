@@ -23,6 +23,8 @@ import java.util.List;
 import nl.utwente.groove.explore.engine.Strategy;
 import nl.utwente.groove.explore.result.ResultCollector;
 import nl.utwente.groove.grammar.Grammar;
+import nl.utwente.groove.grammar.GrammarKey;
+import nl.utwente.groove.match.MatchBoundException;
 import nl.utwente.groove.lts.ExploreResult;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
@@ -117,6 +119,17 @@ public class Exploration {
     private boolean interrupted;
 
     /**
+     * Indicates if the most recent exploration was halted because the
+     * match bound was exceeded (see {@link GrammarKey#MATCH_BOUND}).
+     */
+    public boolean isHalted() {
+        return this.halted != null;
+    }
+
+    /** The exception that halted the most recent exploration, if any. */
+    private MatchBoundException halted;
+
+    /**
      * Executes the exploration.
      * Returns {@code this} for call chaining.
      */
@@ -131,7 +144,15 @@ public class Exploration {
         this.collector.prepare(this.gts);
         this.gts.addLTSListener(this.collector);
         this.collector.addUpdate(this.gts, this.start);
-        this.strategy.play();
+        MatchBoundException halted = null;
+        try {
+            this.strategy.play();
+        } catch (MatchBoundException exc) {
+            // the match bound was exceeded; the offending state has been
+            // flagged as an error state, so halt gracefully (see gh #784)
+            halted = exc;
+        }
+        this.halted = halted;
         this.gts.removeLTSListener(this.collector);
         this.interrupted = this.strategy.isInterrupted();
         for (ExplorationListener listener : this.listeners) {
@@ -147,9 +168,11 @@ public class Exploration {
         // store result
         this.lastResult = this.collector.getResult();
         this.lastState = this.strategy.getLastState();
-        this.lastMessage = (this.interrupted
-            ? "Exploration interrupted. "
-            : "") + this.collector.getMessage();
+        this.lastMessage = (halted != null
+            ? "Exploration halted. " + halted.getMessage() + ". "
+            : this.interrupted
+                ? "Exploration interrupted. "
+                : "") + this.collector.getMessage();
         if (!this.gts.isStoring()) {
             // the discovered states were not stored; retain the traces of
             // the result states and of the last explored state, so that the

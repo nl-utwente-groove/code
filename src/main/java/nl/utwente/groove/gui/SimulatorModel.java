@@ -52,6 +52,7 @@ import nl.utwente.groove.lts.GraphTransitionKey;
 import nl.utwente.groove.lts.MatchResult;
 import nl.utwente.groove.lts.RecipeEvent;
 import nl.utwente.groove.lts.RuleTransition;
+import nl.utwente.groove.match.MatchBoundException;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
@@ -646,11 +647,17 @@ public class SimulatorModel implements Cloneable {
         }
         // find a visible unexplored match
         if (result == null) {
-            for (var match : state.getMatches()) {
-                if (isVisible(match)) {
-                    result = match;
-                    break;
+            try {
+                for (var match : state.getMatches()) {
+                    if (isVisible(match)) {
+                        result = match;
+                        break;
+                    }
                 }
+            } catch (MatchBoundException exc) {
+                // the match bound was exceeded while computing the matches;
+                // the state has been flagged as an error state, so continue
+                // without a selected match (see gh #784)
             }
         }
         if (result == null) {

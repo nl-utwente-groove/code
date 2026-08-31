@@ -35,7 +35,6 @@ import nl.utwente.groove.grammar.rule.AnchorKey;
 import nl.utwente.groove.grammar.rule.RuleEdge;
 import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.grammar.rule.RuleToHostMap;
-import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fixable;
 import nl.utwente.groove.util.Visitor;
 
@@ -249,15 +248,14 @@ public class TreeMatch implements Fixable {
             long resultSize = computeProofMatrix(matrix, rowSize);
             if (resultSize == 0) {
                 result = Collections.emptyList();
-            } else if (resultSize > MAX_RESULT_SIZE) {
-                // TODO this is very brute-force, but it will have to do for now
+            } else {
                 var rule = getCondition().getRule();
                 assert rule != null;
-                throw Exceptions
-                    .illegalState("More than %s matches for %s: giving up...", MAX_RESULT_SIZE,
-                                  rule.getQualName());
-            } else {
-                result = new ArrayList<>((int) resultSize);
+                int bound = rule.getGrammarProperties().getMatchBound();
+                if (bound > 0 && resultSize > bound) {
+                    throw new MatchBoundException(rule.getQualName(), bound);
+                }
+                result = new ArrayList<>((int) Math.min(resultSize, Integer.MAX_VALUE - 8));
                 Visitor<Proof,?> collector = Visitor.newCollector(result);
                 traverseMatrix(matrix, rowSize, collector);
                 collector.dispose();
@@ -623,7 +621,4 @@ public class TreeMatch implements Fixable {
 
         private Visitor<Proof,R> visitor;
     }
-
-    /** Maximum number of (sub)results in a proof that GROOVE will attempt to calculate. */
-    static public final int MAX_RESULT_SIZE = 10000;
 }

@@ -111,8 +111,9 @@ public class Transformer {
     /**
      * Runs the exploration, and returns the exploration result.
      * @return The set of graph states comprising the exploration result
-     * @throws FormatException if either the grammar could not be built
-     * or the exploration is not compatible with the grammar
+     * @throws FormatException if the grammar could not be built,
+     * the exploration is not compatible with the grammar, or the
+     * exploration was halted because the match bound was exceeded
      */
     public ExploreResult explore() throws FormatException {
         Grammar grammar = getGrammarModel().toGrammar();
@@ -124,6 +125,11 @@ public class Transformer {
         exploration.play();
         for (ExplorationListener listener : getListeners()) {
             exploration.removeListener(listener);
+        }
+        if (exploration.isHalted()) {
+            // do not return a truncated state space as if it were a
+            // completed exploration (see gh #784)
+            throw new FormatException("%s", exploration.getLastMessage());
         }
         return exploration.getResult();
     }
