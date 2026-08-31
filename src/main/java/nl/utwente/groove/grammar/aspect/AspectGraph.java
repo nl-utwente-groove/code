@@ -248,7 +248,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
                 newNodeLabel.setFixed();
                 graphChanged |= newNodeLabel != oldNodeLabel;
                 String text = newNodeLabel.toString();
-                assert !text.isEmpty();
+                // the text may be empty: the loader accepts empty edge labels
+                // and turns them into node labels, and those must survive
+                // relabelling unchanged
                 result.addEdge(image, PlainLabel.parseLabel(text), image);
             }
         }
