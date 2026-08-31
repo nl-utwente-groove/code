@@ -1,0 +1,26 @@
+== rule bigForall
+signature: ()
+hidden: []
+anchor: []
+Existential bigForall [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [] edges []
+  rhs: nodes [] edges []
+  Universal bigForall[0] [non-positive]
+    root: nodes [] edges []
+    lhs: nodes [n0:Ω#] edges [n0--A-->n0]
+    Existential bigForall[0,0]
+      root: nodes [n0:Ω#] edges []
+      lhs: nodes [n0:Ω#, n1:Ω#] edges [n0--x-->n1, n1--B-->n1]
+      rhs: nodes [n0:Ω#, n1:Ω#] edges [n0--x-->n1, n0--y-->n1, n1--B-->n1]
+      Negated bigForall-[0, 0]-lhs:!(n0--y-->n1) [non-positive]
+        root: nodes [n0:Ω#, n1:Ω#] edges []
+        lhs: nodes [n0:Ω#, n1:Ω#] edges [n0--y-->n1]
+== rule pickOne
+signature: ()
+hidden: []
+anchor: [n0:Ω#, n0--live-->n0]
+Existential pickOne [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#] edges [n0--A-->n0, n0--live-->n0]
+  rhs: nodes [n0:Ω#] edges [n0--A-->n0]
