@@ -55,6 +55,7 @@ import nl.utwente.groove.explore.result.ResultCollector;
 import nl.utwente.groove.grammar.EnabledRuleParser;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.Rule;
+import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.util.AIGenerated;
@@ -132,6 +133,31 @@ public class ConfiguredExploreType extends ExploreType {
         } catch (FormatException exc) {
             throw Exceptions
                 .illegalState("Single-state exploration configuration is unrealisable: %s",
+                              exc.getMessage());
+        }
+    }
+
+    /**
+     * Returns the exhaustive exploration type for a given grammar: the
+     * grammar's saved exploration reduced to the features that determine
+     * what the state space <i>is</i> (collapse condition and algebra family),
+     * with every feature that determines how much of it gets explored
+     * (traversal restrictions, goal, count, bound, persistence) at its
+     * exhaustive default. This is the exploration behind the model checking
+     * of a full state space, which must not be cut short by a partial
+     * exploration saved with the grammar (gh #863).
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    public static ConfiguredExploreType fullExploration(GrammarModel grammar) {
+        var saved = ExploreConfig.ofGrammar(grammar);
+        var config = new ExploreConfig();
+        config.put(ExploreKey.COLLAPSE, saved.get(ExploreKey.COLLAPSE));
+        config.put(ExploreKey.ALGEBRA, saved.get(ExploreKey.ALGEBRA));
+        try {
+            return (ConfiguredExploreType) ExploreTypeConverter.toExploreType(config);
+        } catch (FormatException exc) {
+            throw Exceptions
+                .illegalState("Full exploration configuration is unrealisable: %s",
                               exc.getMessage());
         }
     }

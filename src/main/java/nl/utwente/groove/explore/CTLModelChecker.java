@@ -19,16 +19,21 @@ package nl.utwente.groove.explore;
 import static nl.utwente.groove.util.cli.Verbosity.LOW;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import org.eclipse.jdt.annotation.Nullable;
+
+import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.LTSLabels;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.cli.GrooveCmdLineParser;
 import nl.utwente.groove.util.cli.GrooveCmdLineTool;
@@ -52,7 +57,7 @@ import picocli.CommandLine.TypeConversionException;
  * @author Harmen Kastenberg
  * @version $Revision$ $Date: 2008-03-28 07:03:03 $
  */
-public class CTLModelChecker extends GrooveCmdLineTool<Object> {
+public class CTLModelChecker extends GrooveCmdLineTool<Map<Formula,Boolean>> {
     /**
      * Constructor.
      * @param args the command-line arguments for the model checker
@@ -87,38 +92,48 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
 
     /**
      * Method managing the actual work to be done.
+     * @return the model checking outcome per property, for the initial
+     * state of the model
      */
     @Override
-    protected Object run() throws Exception {
-        ctlCheck(this.genArgs == null
+    protected Map<Formula,Boolean> run() throws Exception {
+        var genArgs = this.genArgs;
+        return ctlCheck(genArgs == null
             ? null
-            : this.genArgs.get());
-        return null;
+            : genArgs.get());
     }
 
-    private void ctlCheck(String[] genArgs) throws Exception {
+    private Map<Formula,Boolean> ctlCheck(String @Nullable [] genArgs) throws Exception {
         long genStartTime = System.currentTimeMillis();
         CTLModelFacade model;
+        var modelGraph = this.modelGraph;
         if (genArgs != null) {
             emit("Generator:\t%s%n", Strings.toString(genArgs, " ", ""));
             model = generateModel(genArgs);
-        } else if (this.modelGraph == null) {
+        } else if (modelGraph == null) {
             throw new Exception(
                 "Either generator argument -g or model file name should be provided");
-        } else if (this.modelGraph.isDirectory()) {
-            emit("Rule system:\t%s%n", this.modelGraph);
-            // we have to generate the transition system
-            model = generateModel(this.modelGraph.getPath());
+        } else if (modelGraph.isDirectory()) {
+            emit("Rule system:\t%s%n", modelGraph);
+            // we have to generate the transition system, exhaustively: the
+            // exploration saved with the grammar may cover only part of the
+            // state space, which would corrupt the outcome (gh #863)
+            model = generateModel(Generator.EXPLORE_NAME, getFullExploration(modelGraph),
+                                  modelGraph.getPath());
         } else {
-            emit("Model:\t%s%n", this.modelGraph);
-            model = CTLModelFacade.newModel(Groove.loadGraph(this.modelGraph), this.ltsLabels);
+            emit("Model:\t%s%n", modelGraph);
+            model = CTLModelFacade.newModel(Groove.loadGraph(modelGraph), this.ltsLabels);
             emit("Model loaded:\t%s states%n", model.nodeSet().size());
+        }
+        var ctlProps = this.ctlProps;
+        if (ctlProps == null) {
+            ctlProps = List.of();
         }
         // check if the formulas match the model
         GTS gts = model.getGTS();
         if (gts != null) {
             var errors = new FormatErrorSet();
-            for (var formula : this.ctlProps) {
+            for (var formula : ctlProps) {
                 try {
                     formula.check(gts);
                 } catch (FormatException e) {
@@ -129,8 +144,8 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         }
         long mcStartTime = System.currentTimeMillis();
         int maxWidth = 0;
-        Map<Formula,Boolean> outcome = new HashMap<>();
-        for (Formula property : this.ctlProps) {
+        Map<Formula,Boolean> outcome = new LinkedHashMap<>();
+        for (Formula property : ctlProps) {
             emit("Formula %s: ", property.toString());
             maxWidth = Math.max(maxWidth, property.getParseString().length());
             CTLMarker marker = new CTLMarker(property, model);
@@ -140,9 +155,9 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         }
         emit("%n");
         emit(LOW, "Model checking outcome (for the initial state of the model):%n");
-        for (Formula property : this.ctlProps) {
-            emit(LOW, "    %-" + maxWidth + "s : %s%n", property.getParseString(),
-                 outcome.get(property)
+        for (var entry : outcome.entrySet()) {
+            emit(LOW, "    %-" + maxWidth + "s : %s%n", entry.getKey().getParseString(),
+                 entry.getValue()
                      ? "satisfied"
                      : "violated");
         }
@@ -150,6 +165,18 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
 
         emit("%n** Model Checking Time (ms):\t%d%n", endTime - mcStartTime);
         emit("** Total Running Time (ms):\t%d%n", endTime - genStartTime);
+        return outcome;
+    }
+
+    /**
+     * Computes the textual form of the exhaustive exploration of the grammar
+     * in a given directory (see {@link ConfiguredExploreType#fullExploration}),
+     * suitable as argument of the Generator's exploration option.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    private String getFullExploration(File grammarDir) throws IOException {
+        var grammar = Groove.loadGrammar(grammarDir.getPath());
+        return ConfiguredExploreType.fullExploration(grammar).getConfig().unparse();
     }
 
     /**
@@ -176,20 +203,22 @@ public class CTLModelChecker extends GrooveCmdLineTool<Object> {
         + "Specify the label to be used by appending flag with 'label' (single-quoted)\n"
         + "Example: -ef s'begin'f'end' specifies that the start state is labelled 'begin' and final states are labelled 'end'",
         converter = LTSLabels.Handler.class)
-    private LTSLabels ltsLabels;
+    private @Nullable LTSLabels ltsLabels;
 
     @Option(names = "-ctl", paramLabel = "prop",
         description = "Check the CTL property <prop> (multiple allowed)",
         converter = CLTFormulaHandler.class)
-    private List<Formula> ctlProps;
+    private @Nullable List<Formula> ctlProps;
     @Option(names = "-g", paramLabel = "args",
-        description = "Invoke the generator using <args> as options + arguments",
+        description = "Invoke the generator using <args> as options + arguments;\n"
+            + "the exploration is then determined by <args> (and the grammar) rather than being exhaustive",
         parameterConsumer = GeneratorHandler.class)
-    private GeneratorArgs genArgs;
+    private @Nullable GeneratorArgs genArgs;
 
     @Parameters(index = "0", arity = "0..1", paramLabel = "model",
-        description = "File name of GXL graph (CTL only) or directory of production system to be checked")
-    private File modelGraph;
+        description = "File name of GXL graph (CTL only) or directory of production system to be checked;\n"
+            + "the state space of a production system is explored exhaustively, regardless of the exploration saved with it")
+    private @Nullable File modelGraph;
 
     /**
      * Main method.
