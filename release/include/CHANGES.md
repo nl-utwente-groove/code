@@ -24,6 +24,8 @@ Upcoming release
 - The Generator's `-l` run log no longer appends the contents of a `gc.log` file
   found in the working directory (a remnant of the JDK 8 `-Xloggc` era); use
   `-Xlog:gc:file=...` to record garbage collection separately
+- Resolved gh #878: with "Show arrows on labels" enabled, subtype edges in a
+  type graph no longer show a spurious arrow symbol as their label
 
 Release 7.5.3, 3 March 2026
 -------------------------------
