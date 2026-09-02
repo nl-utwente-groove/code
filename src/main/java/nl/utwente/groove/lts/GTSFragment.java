@@ -16,9 +16,12 @@
  */
 package nl.utwente.groove.lts;
 
+import java.util.AbstractSet;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Map;
@@ -40,6 +43,8 @@ import nl.utwente.groove.graph.plain.PlainNode;
  * Fragment of a GTS, consisting of a subset of the states and transitions
  * of a given GTS.
  * A GTS fragment has a final state predicate that possibly diverges from that of the GTS itself.
+ * A fragment either holds its own (modifiable) sets of states and transitions,
+ * or is a read-only live view of all states and transitions of the GTS (see {@link #view}).
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -48,8 +53,73 @@ public class GTSFragment extends AGraph<GraphState,GraphTransition> {
     /** Constructs an (initially empty) fragment of a given GTS, with a given name.
      */
     public GTSFragment(GTS gts, String name) {
+        this(gts, name, new LinkedHashSet<>(), new LinkedHashSet<>());
+    }
+
+    /** Constructs a fragment of a given GTS, with a given name and given
+     * (possibly read-only) sets of states and transitions, which are used as is.
+     */
+    private GTSFragment(GTS gts, String name, Set<GraphState> states,
+                        Set<GraphTransition> transitions) {
         super(name, false);
         this.gts = gts;
+        this.states = states;
+        this.transitions = transitions;
+    }
+
+    /**
+     * Returns a read-only fragment consisting of all states and transitions of a given GTS,
+     * as a live view rather than a copy, so that a large GTS can be saved
+     * without spending memory on the fragment (gh #854).
+     * The node and edge sets of the view reject modification; their membership tests
+     * bypass the state set of the GTS, whose lookup goes through isomorphism checking,
+     * and instead take a state to belong to the GTS if it was created for it.
+     * @param gts the GTS to be viewed
+     * @param internal if {@code true}, internal states and transitions are included
+     */
+    static public GTSFragment view(GTS gts, boolean internal) {
+        Set<? extends GraphState> states = internal
+            ? gts.nodeSet()
+            : gts.getStates();
+        Set<GraphState> stateView = new AbstractSet<>() {
+            @Override
+            public Iterator<GraphState> iterator() {
+                return Collections.<GraphState>unmodifiableSet(states).iterator();
+            }
+
+            @Override
+            public int size() {
+                return states.size();
+            }
+
+            @Override
+            public boolean contains(@Nullable Object obj) {
+                return obj instanceof GraphState state && state.getGTS() == gts
+                    && (internal || state.isPublic());
+            }
+        };
+        Set<? extends GraphTransition> transitions = internal
+            ? gts.edgeSet()
+            : gts.getTransitions();
+        Set<GraphTransition> transitionView = new AbstractSet<>() {
+            @Override
+            public Iterator<GraphTransition> iterator() {
+                return Collections.<GraphTransition>unmodifiableSet(transitions).iterator();
+            }
+
+            @Override
+            public int size() {
+                return transitions.size();
+            }
+
+            @Override
+            public boolean contains(@Nullable Object obj) {
+                return obj instanceof GraphTransition trans && stateView.contains(trans.source())
+                    && trans.source().getTransitions(GraphTransition.Claz.ANY).contains(trans)
+                    && (internal || trans.isPublicStep());
+            }
+        };
+        return new GTSFragment(gts, gts.getName() + "-fragment", stateView, transitionView);
     }
 
     /** Constructs an (initially empty) fragment of a given GTS.
@@ -81,14 +151,14 @@ public class GTSFragment extends AGraph<GraphState,GraphTransition> {
         return this.states;
     }
 
-    private final Set<GraphState> states = new LinkedHashSet<>();
+    private final Set<GraphState> states;
 
     @Override
     public Set<GraphTransition> edgeSet() {
         return this.transitions;
     }
 
-    private final Set<GraphTransition> transitions = new LinkedHashSet<>();
+    private final Set<GraphTransition> transitions;
 
     /** Returns the start state of the GTS. */
     public GraphState startState() {
