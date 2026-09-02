@@ -26,6 +26,8 @@ Upcoming release
   `-Xlog:gc:file=...` to record garbage collection separately
 - The Labels panel of the Type display no longer shows occurrence counts, which are
   always 1 for type graph elements (gh #879)
+- Resolved gh #878: with "Show arrows on labels" enabled, subtype edges in a
+  type graph no longer show a spurious arrow symbol as their label
 
 Release 7.5.3, 3 March 2026
 -------------------------------

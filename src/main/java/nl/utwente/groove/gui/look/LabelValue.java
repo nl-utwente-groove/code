@@ -715,11 +715,18 @@ public class LabelValue implements VisualValue<MultiLabel> {
             for (AspectEdge edge : jEdge.getEdges()) {
                 // only add edges that have an unfiltered label
                 if (isVisible(jGraph, jEdge, edge)) {
+                    // a subtype edge always keeps the arrowhead on the edge itself
+                    // (see EdgeEndShapeValue), so its label is never given a
+                    // direction: otherwise the (empty) label would show as a
+                    // lone arrow when arrows are shown on labels (gh #878)
+                    Direct direct = edge.has(AspectKind.SUBTYPE)
+                        ? Direct.NONE
+                        : jEdge.getDirect(edge);
                     if (jGraph.isShowAspects()) {
-                        result.add(edge.label().toLine(), jEdge.getDirect(edge));
+                        result.add(edge.label().toLine(), direct);
                     } else {
                         for (Line line : edge.toLines(false, jEdge.getAspects())) {
-                            result.add(line, jEdge.getDirect(edge));
+                            result.add(line, direct);
                         }
                     }
                 }
