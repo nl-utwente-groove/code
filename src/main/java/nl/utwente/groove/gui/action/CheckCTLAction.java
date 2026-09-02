@@ -5,7 +5,7 @@ import java.util.List;
 
 import javax.swing.JOptionPane;
 
-import nl.utwente.groove.explore.ExploreType;
+import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.dialog.StringDialog;
@@ -35,23 +35,32 @@ public class CheckCTLAction extends SimulatorAction {
     @Override
     public void execute() {
         var choice = getCtlFormulaDialog().showDialog(getFrame());
-        if (choice != null) {
-            boolean doCheck = true;
-            // completely re-explore if the GTS has open states
-            if (getSimulatorModel().getGTS().hasOpenStates() && this.full
-                && getSimulatorModel().resetGTS()) {
-                getActions().getExploreAction().explore(ExploreType.ofGrammar(getGrammarModel()));
-                doCheck = !getSimulatorModel().getGTS().hasOpenStates();
+        if (choice == null) {
+            return;
+        }
+        var simModel = getSimulatorModel();
+        if (this.full && simModel.getGTS().hasOpenStates()) {
+            // re-explore from scratch, exhaustively: the grammar's own
+            // exploration may cover only part of the state space (gh #863)
+            var exploreType = ConfiguredExploreType.fullExploration(getGrammarModel());
+            if (!simModel.resetGTS(exploreType)) {
+                return;
             }
-            if (doCheck) {
-                try {
-                    doCheckProperty(getSimulatorModel().getExploreResult(), choice.name(),
-                                    choice.value());
-                } catch (FormatException e) {
-                    // the property has already been parsed by the dialog
-                    assert false;
-                }
+            getActions().getExploreAction().explore(exploreType);
+            if (simModel.getGTS().hasOpenStates()) {
+                // the exploration was interrupted; a partial state space
+                // would give unreliable answers
+                JOptionPane
+                    .showMessageDialog(getFrame(),
+                                       "The state space was not fully explored; the property has not been checked");
+                return;
             }
+        }
+        try {
+            doCheckProperty(simModel.getExploreResult(), choice.name(), choice.value());
+        } catch (FormatException e) {
+            // the property has already been parsed by the dialog
+            assert false;
         }
     }
 

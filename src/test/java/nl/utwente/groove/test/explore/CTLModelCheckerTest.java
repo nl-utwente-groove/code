@@ -16,13 +16,23 @@
  */
 package nl.utwente.groove.test.explore;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.io.File;
+import java.nio.file.Files;
+import java.util.List;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.junit.jupiter.api.Test;
 
 import nl.utwente.groove.explore.CTLModelChecker;
+import nl.utwente.groove.grammar.GrammarKey;
+import nl.utwente.groove.grammar.model.ResourceKind;
+import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.util.AIGenerated;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Smoke tests for the {@link CTLModelChecker} command-line tool, which had no
@@ -45,6 +55,34 @@ public class CTLModelCheckerTest {
     @Test
     public void testCheckGrammar() throws Exception {
         new CTLModelChecker("-v", "0", "-ctl", "EF exit", "-ctl", "AG false", GRAMMAR).start();
+    }
+
+    /** A grammar directory is explored exhaustively, regardless of the
+     * (partial) exploration saved with the grammar (gh #863): on the full
+     * ferryman state space, {@code AF(eat)} is violated, whereas the linear
+     * trace of the saved exploration happens to satisfy it. Passing the
+     * grammar through the generator arguments instead keeps the saved
+     * exploration in force. */
+    @Test
+    public void testSavedExplorationIgnored() throws Exception {
+        File dir = Files.createTempDirectory("ctl-model-checker-test").toFile();
+        dir.deleteOnExit();
+        SystemStore store = SystemStore
+            .newStore(new File("junit/samples/ferryman.gps"), false, true)
+            .save(new File(dir, "ferryman.gps"), true);
+        var properties = store.toGrammarModel().getProperties().clone();
+        // the fixture predates explicit start graph names, and the implicit
+        // default does not survive the version bump on saving the properties
+        properties.setActiveNames(ResourceKind.HOST, List.of(QualName.name("start")));
+        properties.setProperty(GrammarKey.EXPLORATION.getName(), "linear final 0");
+        store.putProperties(properties);
+        String grammar = store.getLocation().getPath();
+        var outcome = new CTLModelChecker("-v", "0", "-ctl", "AF(eat)", grammar).start();
+        assertNotNull(outcome);
+        assertEquals(List.of(false), List.copyOf(outcome.values()));
+        outcome = new CTLModelChecker("-v", "0", "-ctl", "AF(eat)", "-g", grammar).start();
+        assertNotNull(outcome);
+        assertEquals(List.of(true), List.copyOf(outcome.values()));
     }
 
     /** Without a model (neither a file name nor generator arguments),
