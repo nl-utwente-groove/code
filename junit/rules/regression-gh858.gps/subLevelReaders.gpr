@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph role="rule" edgeids="false" edgemode="directed" id="subLevelReaders">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="n7">
+            <attr name="layout">
+                <string>226 112 19 19</string>
+            </attr>
+        </node>
+        <node id="n4">
+            <attr name="layout">
+                <string>230 51 19 19</string>
+            </attr>
+        </node>
+        <node id="n6">
+            <attr name="layout">
+                <string>293 112 19 19</string>
+            </attr>
+        </node>
+        <node id="n5">
+            <attr name="layout">
+                <string>297 52 19 19</string>
+            </attr>
+        </node>
+        <node id="n2">
+            <attr name="layout">
+                <string>159 49 19 19</string>
+            </attr>
+        </node>
+        <node id="n3">
+            <attr name="layout">
+                <string>158 111 19 19</string>
+            </attr>
+        </node>
+        <node id="n1">
+            <attr name="layout">
+                <string>64 110 19 19</string>
+            </attr>
+        </node>
+        <node id="n0">
+            <attr name="layout">
+                <string>71 49 10 18</string>
+            </attr>
+        </node>
+        <edge from="n7" to="n7">
+            <attr name="label">
+                <string>forall:</string>
+            </attr>
+        </edge>
+        <edge from="n4" to="n4">
+            <attr name="label">
+                <string>forall:</string>
+            </attr>
+        </edge>
+        <edge from="n6" to="n6">
+            <attr name="label">
+                <string>exists=p2:</string>
+            </attr>
+        </edge>
+        <edge from="n6" to="n7">
+            <attr name="label">
+                <string>in</string>
+            </attr>
+        </edge>
+        <edge from="n5" to="n5">
+            <attr name="label">
+                <string>exists=p1:</string>
+            </attr>
+        </edge>
+        <edge from="n5" to="n4">
+            <attr name="label">
+                <string>in</string>
+            </attr>
+        </edge>
+        <edge from="n2" to="n2">
+            <attr name="label">
+                <string>type:H</string>
+            </attr>
+        </edge>
+        <edge from="n2" to="n4">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge from="n3" to="n3">
+            <attr name="label">
+                <string>type:H</string>
+            </attr>
+        </edge>
+        <edge from="n3" to="n7">
+            <attr name="label">
+                <string>at</string>
+            </attr>
+        </edge>
+        <edge from="n1" to="n1">
+            <attr name="label">
+                <string>type:H</string>
+            </attr>
+        </edge>
+        <edge from="n1" to="n3">
+            <attr name="label">
+                <string>p</string>
+            </attr>
+        </edge>
+        <edge from="n1" to="n2">
+            <attr name="label">
+                <string>use=p1:p</string>
+            </attr>
+            <attr name="layout">
+                <string>290 4 74 119 169 58 11</string>
+            </attr>
+        </edge>
+        <edge from="n0" to="n0">
+            <attr name="label">
+                <string>par:</string>
+            </attr>
+        </edge>
+        <edge from="n0" to="n0">
+            <attr name="label">
+                <string>type:H</string>
+            </attr>
+        </edge>
+        <edge from="n0" to="n2">
+            <attr name="label">
+                <string>p</string>
+            </attr>
+        </edge>
+        <edge from="n0" to="n3">
+            <attr name="label">
+                <string>use=p2:p</string>
+            </attr>
+            <attr name="layout">
+                <string>292 0 76 58 168 120 11</string>
+            </attr>
+        </edge>
+        <edge from="n0" to="n1">
+            <attr name="label">
+                <string>not:=</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>
