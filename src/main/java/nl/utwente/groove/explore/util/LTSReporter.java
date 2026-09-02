@@ -19,7 +19,6 @@ package nl.utwente.groove.explore.util;
 import java.io.File;
 import java.io.IOException;
 
-import nl.utwente.groove.graph.plain.PlainGraph;
 import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Exporters;
@@ -84,8 +83,8 @@ public class LTSReporter extends AExplorationReporter {
         case SPANNING -> lts.toFragment(false, internal);
         case RESULT -> answer.toFragment(internal);
         };
-        ExplorationReporter.time("Turn LTS fragment into plain graph");
-        PlainGraph ltsGraph = gtsFragment.toPlainGraph(labels, answer);
+        ExplorationReporter.time("Create LTS export view");
+        var ltsGraph = gtsFragment.toExportGraph(labels, answer);
         // Export GTS.
         String ltsName;
         File dir = new File(filePattern);

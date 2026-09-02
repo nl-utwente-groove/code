@@ -22,7 +22,6 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 
@@ -30,7 +29,6 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.graph.AGraph;
 import nl.utwente.groove.graph.GGraph;
 import nl.utwente.groove.graph.GraphInfo;
@@ -229,75 +227,43 @@ public class GTSFragment extends AGraph<GraphState,GraphTransition> {
      * Transforms this GTS fragment to a plain graph representation,
      * optionally including special node flags to represent start, final and
      * open states, and state identifiers.
+     * This materialises the view returned by {@link #toExportGraph(LTSLabels, ExploreResult)};
+     * to save a large LTS, use that view directly.
      * @param flags object determining what special labels will be added
      * @param answer if non-{@code null}, the result that should be saved.
      * Only used if {@code filter} equals {@link Filter#RESULT}
      */
     public PlainGraph toPlainGraph(LTSLabels flags, @Nullable ExploreResult answer) {
+        var view = toExportGraph(flags, answer);
         PlainGraph result = new PlainGraph(getName(), GraphRole.LTS, false);
         Map<GraphState,PlainNode> nodeMap = new HashMap<>();
-        for (GraphState state : nodeSet()) {
-            // don't include transient states unless forced to
-            if (state.isInner() && !flags.showRecipes()) {
-                continue;
-            }
-            if (state.isAbsent()) {
-                continue;
-            }
-            PlainNode image = result.addNode(state.getNumber());
-            nodeMap.put(state, image);
-            if (flags.showResult() && answer != null && answer.contains(state)) {
-                result.addEdge(image, flags.getResultLabel(), image);
-            }
-            if (flags.showFinal() && state.isFinal()) {
-                result.addEdge(image, flags.getFinalLabel(), image);
-            }
-            if (flags.showStart() && gts().startState().equals(state)) {
-                result.addEdge(image, flags.getStartLabel(), image);
-            }
-            if (flags.showOpen() && !state.isClosed()) {
-                result.addEdge(image, flags.getOpenLabel(), image);
-            }
-            if (flags.showNumber()) {
-                String label = flags.getNumberLabel().replaceAll("#", "" + state.getNumber());
-                result.addEdge(image, label, image);
-            }
-            if (flags.showTransience() && state.isTransient()) {
-                String label = flags
-                    .getTransienceLabel()
-                    .replaceAll("#", "" + state.getActualFrame().getTransience());
-                result.addEdge(image, label, image);
-            }
-            if (flags.showRecipes() && state.isInner()) {
-                Optional<Recipe> recipe = state.getActualFrame().getRecipe();
-                recipe.map(r -> r.getQualName()).ifPresent(n -> {
-                    String label = flags.getRecipeLabel().replaceAll("#", "" + n);
-                    result.addEdge(image, label, image);
-                });
-            }
-            for (var prop : state.getSatisfiedProps()) {
-                if (!prop.isSystem()) {
-                    result.addEdge(image, prop.getName(), image);
-                }
-            }
+        for (GraphState state : view.nodeSet()) {
+            nodeMap.put(state, result.addNode(state.getNumber()));
         }
-        for (GraphTransition transition : edgeSet()) {
-            // don't include partial transitions unless forced to
-            if (transition.isInnerStep() && !flags.showRecipes()) {
-                continue;
-            }
-            PlainNode sourceImage = nodeMap.get(transition.source());
-            PlainNode targetImage = nodeMap.get(transition.target());
-            // don't include transitions of which an end state was left out
-            if (sourceImage == null || targetImage == null) {
-                continue;
-            }
-            result.addEdge(sourceImage, transition.label().text(), targetImage);
+        for (var edge : view.edgeSet()) {
+            PlainNode sourceImage = nodeMap.get(edge.source());
+            PlainNode targetImage = nodeMap.get(edge.target());
+            assert sourceImage != null && targetImage != null;
+            result.addEdge(sourceImage, edge.label().text(), targetImage);
         }
         // carry over the exploration metadata recorded in the GTS info,
         // notably the random seed (gh #897)
         GraphInfo.transferProperties(gts(), result, null);
         return result;
+    }
 
+    /**
+     * Returns a read-only graph view of this fragment in the shape in which it is saved,
+     * optionally including special node flags to represent start, final and
+     * open states, and state identifiers.
+     * The view computes its nodes and edges on the fly and holds no copy of the fragment,
+     * so a large LTS can be saved through it without additional memory (gh #854).
+     * The fragment should not be modified while the view is in use.
+     * @param flags object determining what special labels will be added
+     * @param answer if non-{@code null}, the result that should be saved.
+     * Only used if the result filter is in force
+     */
+    public LTSExportGraph toExportGraph(LTSLabels flags, @Nullable ExploreResult answer) {
+        return new LTSExportGraph(this, flags, answer);
     }
 }
