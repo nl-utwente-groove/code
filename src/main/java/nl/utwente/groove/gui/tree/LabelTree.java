@@ -49,6 +49,7 @@ import org.jgraph.event.GraphModelListener;
 
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.Graph;
+import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.action.ActionStore;
@@ -58,6 +59,7 @@ import nl.utwente.groove.gui.jgraph.JCell;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.jgraph.JModel;
 import nl.utwente.groove.gui.menu.ShowHideMenu;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.Unicode;
@@ -425,7 +427,7 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
         if (value instanceof LabelTreeNode labelNode) {
             LabelEntry entry = labelNode.getEntry();
             var entryText = getText(entry);
-            if (COUNT_ON_LABEL) {
+            if (COUNT_ON_LABEL && isShowingCounts()) {
                 var countText
                     = NBSP + NBSP + NBSP + "[" + getFilter().getCount(entry) + Unicode.TIMES + "]";
                 entryText.append(COUNT_COLOUR_TAG.on(countText));
@@ -650,7 +652,8 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
             var result = new StringBuilder();
             // set tool tip text
             var occurrenceText = new StringBuilder();
-            if (!COUNT_ON_LABEL) {
+            boolean showCount = !COUNT_ON_LABEL && isShowingCounts();
+            if (showCount) {
                 int count = getFilter().getCount(entry);
                 occurrenceText.append(count);
                 occurrenceText.append(" occurrence");
@@ -676,7 +679,7 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
                         result.append("Select to actively include in view");
                     } else {
                         result.append(labelType);
-                        if (!COUNT_ON_LABEL) {
+                        if (showCount) {
                             result.append(HTML_LINEBREAK);
                             result.append(occurrenceText);
                         }
@@ -688,7 +691,7 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
                         result.append(labelType);
                         result.append(HTML_LINEBREAK);
                         result.append("Included in view if incident edge is actively included");
-                        if (!COUNT_ON_LABEL) {
+                        if (showCount) {
                             result.append(HTML_LINEBREAK);
                             result.append(occurrenceText);
                         }
@@ -696,7 +699,7 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
                         result.append("Unselect to actively exclude");
                     } else {
                         result.append(labelType);
-                        if (!COUNT_ON_LABEL) {
+                        if (showCount) {
                             result.append(HTML_LINEBREAK);
                             result.append(occurrenceText);
                         }
@@ -715,6 +718,15 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
     /** Labelled set of cells. */
     public record LabelledCells<G extends Graph>(Label label, Set<JCell<G>> cells) {
         // empty
+    }
+
+    /**
+     * Indicates if the occurrence counts of entries should be shown.
+     * Counts are suppressed for type graphs, where every type element occurs exactly once.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    private boolean isShowingCounts() {
+        return !getJGraph().hasGraphRole(GraphRole.TYPE);
     }
 
     /** Flag determining whether the occurrence count of entries is shown as part of the label

@@ -24,6 +24,8 @@ Upcoming release
 - The Generator's `-l` run log no longer appends the contents of a `gc.log` file
   found in the working directory (a remnant of the JDK 8 `-Xloggc` era); use
   `-Xlog:gc:file=...` to record garbage collection separately
+- The Labels panel of the Type display no longer shows occurrence counts, which are
+  always 1 for type graph elements (gh #879)
 
 Release 7.5.3, 3 March 2026
 -------------------------------
