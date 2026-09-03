@@ -28,7 +28,7 @@ import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
 import java.util.BitSet;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -53,39 +53,41 @@ public class AutIO extends GraphIO<PlainGraph> {
     protected void doSaveGraph(Graph graph, File file) throws IOException {
         // create a PrintWriter with autoflush
         try (PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(file)), true)) {
-            // collect the node numbers, to be able to number them consecutively
+            // the node numbers are used directly where they lie in the range 0..nodeCount-1;
+            // only the remaining nodes get fresh numbers, through a map, so that
+            // saving a large graph needs no per-node data (gh #854)
             int nodeCount = graph.nodeCount();
             // list marking which node numbers have been used
             BitSet nodeList = new BitSet(nodeCount);
-            // mapping from nodes to node numbers
-            Map<Node,Integer> nodeNrMap = new HashMap<>();
             // nodes that do not have a valid number (in the range 0..nodeCount-1)
-            Set<Node> restNodes = new HashSet<>();
+            Set<Node> restNodes = new LinkedHashSet<>();
             TIMING.log(Level.TRACE, "Building model for aut export");
             // iterate over the existing nodes
             for (Node node : graph.nodeSet()) {
                 int nodeNr = node.getNumber();
                 if (nodeNr >= 0 && nodeNr < nodeCount) {
                     nodeList.set(nodeNr);
-                    nodeNrMap.put(node, nodeNr);
                 } else {
                     restNodes.add(node);
                 }
             }
+            // mapping from the remaining nodes to fresh node numbers
+            Map<Node,Integer> restNodeNrMap = new HashMap<>();
             int nextNodeNr = -1;
             for (Node restNode : restNodes) {
                 do {
                     nextNodeNr++;
                 } while (nodeList.get(nextNodeNr));
-                nodeNrMap.put(restNode, nextNodeNr);
+                restNodeNrMap.put(restNode, nextNodeNr);
             }
             TIMING.log(Level.TRACE, "Starting aut export");
             int lines = 0;
-            writer.printf("des (%d, %d, %d)%n", 0, graph.edgeCount(), graph.nodeCount());
+            writer.printf("des (%d, %d, %d)%n", 0, graph.edgeCount(), nodeCount);
             for (Edge edge : graph.edgeSet()) {
                 writer
-                    .printf("(%d,%s,%d)%n", nodeNrMap.get(edge.source()),
-                            toLabelField(edge.label().text()), nodeNrMap.get(edge.target()));
+                    .printf("(%d,%s,%d)%n", nodeNr(edge.source(), nodeCount, restNodeNrMap),
+                            toLabelField(edge.label().text()),
+                            nodeNr(edge.target(), nodeCount, restNodeNrMap));
                 lines = (lines + 1) % MAX_LINES;
                 if (lines == 0) {
                     TIMING
@@ -95,6 +97,19 @@ public class AutIO extends GraphIO<PlainGraph> {
                 }
             }
         }
+    }
+
+    /** Returns the number under which a node is saved: its own number if that lies
+     * in the range {@code 0..nodeCount-1}, otherwise the fresh number assigned to it.
+     */
+    private static int nodeNr(Node node, int nodeCount, Map<Node,Integer> restNodeNrMap) {
+        int result = node.getNumber();
+        if (result < 0 || result >= nodeCount) {
+            Integer restNr = restNodeNrMap.get(node);
+            assert restNr != null;
+            result = restNr;
+        }
+        return result;
     }
 
     @Override
