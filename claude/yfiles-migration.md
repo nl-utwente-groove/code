@@ -1,152 +1,203 @@
-# yFiles migration: analysis and plan
+# yFiles migration: plan and state of work
 
-Status: analysis complete, decisions below taken 2026-09-01/02 (Arend + Claude session).
-Phase 0 (spike) is the next step. This note is the reference for all work on the
-`yworks-migration` effort; update it as phases complete or decisions change.
+Tracked as gh #909. This document is the authoritative record of the initiative —
+decisions, license constraints, completed work, residues, and next steps. It must be
+kept self-contained: sessions on other machines have no access to session memory, so
+everything needed to continue lives here or in `claude/jgraph-controller-split.md`
+(the slice-by-slice record of the decoupling refactor).
+
+**Status (2026-09-05): phase 1a (in-place decoupling) is COMPLETE.** Phase 0 (the
+yFiles rendering spike) is next, blocked only on a local path to the unpacked
+licensed yFiles distribution and its license file.
 
 ## Goal and motivation
 
 Replace JGraph 5.13 (unmaintained for ~10 years) as GROOVE's graph rendering/editing
-library with yFiles for Java (Swing), behind an architecture in which the visualization
-backend is swappable — yFiles primary, JGraph retained. Priorities, in order:
+library with yFiles for Java (Swing), current major 4.0, behind an architecture in
+which the visualization backend is swappable. Priorities, in order:
 rendering/interaction quality, automatic layout quality, escaping unmaintained code.
 The interactive editor is in scope eventually; read-only views migrate first.
+Alternatives were surveyed and re-checked: the maintained Swing graph-viz space is
+empty (JGraphX archived 2020, JUNG dead, GraphStream lacks editing, GEF is
+SWT-bound); yFiles is the only serious option short of a webview/yFiles-for-HTML
+rework.
 
-The swappable-backend requirement is driven by license risk (see below), but the
-license analysis turned it from an insurance policy into a permanent operating mode.
-
-## License analysis (yFiles SLA, signed; Academic Single Developer License)
-
-Key clauses and their consequences:
+## License constraints (yFiles SLA, signed; Academic Single Developer License)
 
 - **Redistribution only with obfuscation (§2.1c).** The yFiles jar may ship inside
-  GROOVE only after obfuscation (yGuard-style: yFiles class/member names renamed,
-  GROOVE's references rewritten). The plain jar can never be in the public repo or
-  any Maven repository. The release pipeline gains an obfuscation leg for the
-  yFiles edition; no reflection over yFiles classes anywhere.
-- **Per-developer seats (§2.2.2).** Single Developer License: only the named
-  developer (Arend) may access the jar. Co-developers cannot even possess it.
-  Therefore the yFiles backend must be an optionally-compiled unit and
-  `git clone && mvn package` must keep working without the jar. Additionally, the
-  SLA grants automated-build use only under a Project License, so CI cannot build
-  the yFiles edition — those releases build locally, unless the license is upgraded
-  to Academic Project (3 seats + build automation; upgrade suggested to yWorks).
-- **Academic restriction propagates (§2.4).** An application developed under an
-  Academic License may not be provided to commercial parties. GROOVE is Apache 2.0.
-  Consequence: **dual distribution** — the standard GROOVE release stays JGraph-based
-  and unrestricted; a separate yFiles edition (obfuscated jar bundled) is
-  non-commercial-only. Hence the JGraph backend remains genuinely maintained as the
-  backend of the primary public release, not just a compile-checked fallback.
-- **The license is perpetual (§10.4a).** Non-renewal of the Subscription loses
-  upgrades/support, not the right to use the licensed generation. The discretionary
-  risks are extra seats and the academic scope; both are mitigated by the
-  dual-backend architecture.
-- **No API re-exposure (§2.1d).** GROOVE may not expose an API giving third parties
-  access to yFiles functionality: the yFiles backend package stays unexported in
-  `module-info`, and the facade remains a GROOVE-internal seam, never a
-  general-purpose graph-viz API.
+  GROOVE only obfuscated (yGuard-style). The plain jar can never be in the public
+  repo or any Maven repository; the release pipeline gains an obfuscation leg for
+  the yFiles edition; no reflection over yFiles classes anywhere.
+- **Per-developer seats (§2.2.2), Single Developer confirmed.** Only Arend may
+  access the jar; `git clone && mvn package` must keep working without it, so the
+  yFiles backend becomes an optionally-compiled unit (multi-module restructure
+  accepted). The SLA grants automated-build use only under a Project License, so CI
+  cannot build the yFiles edition — those releases build locally, unless the
+  license is upgraded to Academic Project (3 seats + build automation; suggested to
+  yWorks, outcome open).
+- **Academic restriction propagates (§2.4).** A yFiles-enabled GROOVE distribution
+  is non-commercial-only, while GROOVE is Apache 2.0. Consequence: **dual
+  distribution** — the standard release stays JGraph-based and unrestricted, a
+  separate yFiles edition ships alongside, and **both backends stay genuinely
+  maintained** (accepted; mitigated by capability tiering: optional yFiles-only
+  features may degrade gracefully in the JGraph edition, but core
+  view/edit/select/filter/export stays at parity).
+- **The license is perpetual (§10.4a).** Non-renewal of the Subscription loses only
+  upgrades/support. Still unknown: the delivered version/generation and
+  Subscription status (check the license order, not the SLA).
+- **No API re-exposure (§2.1d).** The yFiles backend package stays unexported in
+  `module-info`; the facade remains a GROOVE-internal seam.
+- The `yFiles-for-Java-Swing-Complete-3.6.0.1-Evaluation` bundle in
+  `C:\Program Files\Java` carries 60-day evaluation terms and is NOT to be used;
+  the spike uses Arend's licensed delivery.
 
-Alternatives were re-checked: the maintained-Swing-graph-viz space is empty
-(JGraphX archived 2020, JUNG dead, GraphStream lacks editing, GEF is SWT).
-yFiles for Java (Swing), current major 4.0, is the only serious option short of a
-webview/yFiles-for-HTML rework.
+## LLM usage ground rules (yWorks ruling, 2026-09-05 — binding for all sessions)
 
-## Codebase analysis (three exploration passes, 2026-09-01)
+yWorks confirmed in writing that LLM-assisted development is permitted under these
+conditions, which every Claude session working on this initiative must observe:
 
-- **Coupling is confined to `gui/**`.** Nothing in `grammar`, `graph`, `io`, `lts`,
-  `explore`, `SimulatorModel`, or any test imports JGraph. 34 files in `gui/jgraph`
-  (~11.5k LOC), 15 files elsewhere importing `org.jgraph` (+3 fully-qualified uses),
-  51 files consuming `gui.jgraph` types — all under `gui`.
-- **A neutral layer already exists.** `gui/look` (`VisualKey`, `VisualMap`, `Look`,
-  the `VisualValue` strategies, `MultiLabel`) is a library-independent visual model.
-  Its only JGraph bridge is `VisualAttributeMap` (extends `AttributeMap`) plus ~6
-  small `GraphConstants` leak sites. Layout persistence (`graph/layout.LayoutMap`)
-  is fully neutral.
-- **Misplaced domain logic, confirming the factoring-out suspicion.** ~22% of
-  `gui/jgraph` has zero JGraph references (the concrete cell classes are pure domain
-  code); another ~2.5k LOC of domain/controller logic lives inside JGraph subclasses:
-  `JGraph` mixes the Swing component with the per-display controller (options, menus,
-  modes, layouter wiring — ~60% of 1658 lines); `LTSJGraph`/`LTSJModel` are ~95%
-  state-space semantics; `JModel` holds the element→cell index, edge-merging policy
-  and layout persistence.
-- **Three hard structural dependencies:** the port model (gratuitous — one dummy
-  port per vertex solely for JGraph's connection machinery), visibility filtering
-  implemented as `GraphLayoutCache` partiality, and the `AttributeMap` edit channel
-  (undoable changes flow through `DefaultGraphModel.edit`; JGraph-internal edits
-  flow back into `VisualMap`).
-- **The genuinely hard migration items:** editor undo (a `GraphUndoManager` subclass
-  classifies edits minor/major by inspecting JGraph edit internals; drives dirty
-  tracking and grammar refresh), clipboard (JGraph's `GraphTransferHandler`, no
-  GROOVE-owned format), export (PNG/EPS/PDF/SVG all repaint the live Swing
-  component; the Imager is not headless — it instantiates an `AspectJGraph`;
-  TikZ export is nearly neutral already), and file-format fidelity: saved `.gxl`
-  layout encodes JGraph conventions (`LineStyle` codes are `GraphConstants.STYLE_*`
-  values, label positions in PERMILLE-along-edge units). These numbers are frozen;
-  any backend translates to them.
-- **Rendering quirks with semantic weight:** HTML label metrics drive node sizes,
-  which drive perimeter points and saved layouts; adornment-aware perimeter points;
-  the GROOVE-invented MANHATTAN line style; parallel-edge fanning at paint time;
-  LTS-scale performance hacks in `JGraphLayoutCache`/`JGraphUI`.
-- **Dropping JGraph also drops JGraph Layout Pro** (11 `com.jgraph.layout.*`
-  algorithms and the reflective parameter panels in `LayoutKind`). yFiles layouts
-  replace the algorithms; the parameter UI is a rewrite (explicit code, not
-  reflection — see obfuscation above).
+1. **Arend prompts directly.** No autonomous or scheduled tasks touch yFiles; all
+   yFiles work happens in sessions Arend is driving.
+2. **Permitted LLM inputs**: yFiles demo code, official documentation (including the
+   bundled developer guide and docs.yworks.com), and GROOVE's own code. Nothing
+   else from the distribution.
+3. **No reverse engineering, ever**: no decompiling, no `javap` or class-file
+   inspection of yFiles jars, no reflective API probing. If the documentation does
+   not answer a question, stop and say so rather than probing the jar. Compiling
+   against the jar and reading ordinary compiler errors is normal licensed use.
+4. **Secrets stay with Arend**: he unpacks the password-protected distribution
+   himself (anything Claude uses enters model context, so Claude never handles the
+   password); the runtime license file is placed by Arend and referenced by path,
+   its contents never read; jars never enter the repo and are never uploaded.
 
-## Decisions taken
-
-1. Swappable backend, yFiles primary; **both backends stay maintained** (dual
-   distribution forces this). Mitigate cost by capability tiering: optional
-   yFiles-only features may degrade gracefully in the JGraph edition; core
-   view/edit/select/filter/export stays at parity.
-2. Multi-module Maven restructure acceptable (core + backend-jgraph +
-   backend-yfiles; yFiles module optional, jar outside the repo).
-3. Backend selection at startup time (flag/property), no runtime switching.
-4. Fidelity bar for existing grammars under yFiles: **positions exact, cosmetics
-   may differ**.
-5. Facade design is derived from the consumer census (~15 operations: get/set
-   displayed graph, selection get/set/listen, model-change listen, refresh, scale,
-   scroll-to, gray-out, layouter geometry read/write, paint-into-Graphics2D, mode
-   switching, undo events), not from JGraph's concepts — and is validated against
-   the yFiles viewer before being frozen.
-
-## Plan
+## Overall plan
 
 - **Phase 0 — spike** (timeboxed, throwaway, standalone project outside the repo,
-  depending on the local GROOVE artifact + the yFiles jar from a local path).
+  depending on the locally built GROOVE artifact + the yFiles jar by local path).
   Rendering-fidelity test on real `junit/samples` grammars incl. exact `LayoutMap`
   positions; yFiles hierarchic/organic layout vs Spring/Forest; LTS scale test
   (thousands of states via `Generator`). Deliverables: side-by-side renders, a
-  findings note in `claude/`, facade implications. Stop the project here if
-  rendering does not clearly beat JGraph.
-- **Phase 1 — decouple in place** (no yFiles, no behavior change, several small
-  PRs; valuable regardless of yFiles): extract the controller half of `JGraph` and
-  the LTS semantics of `LTSJGraph`/`LTSJModel` into neutral classes; kill the ~6
-  `GraphConstants` leaks (GROOVE-owned frozen constants); de-port the cell
-  interfaces; GROOVE-owned selection/model-change listener interfaces; define the
-  facade with the JGraph code as first implementation; add an architecture test
-  asserting no `org.jgraph` import outside the backend package.
-- **Phase 2 — yFiles read-only views**: `GraphTab`, `StateDisplay`, previews, then
-  the LTS display; selection sync, filtering, gray-out, match highlighting; yFiles
-  layouts writing through `LayoutMap` (with line-style/label-position translation).
-  Facade revised as needed. Multi-module restructure lands at the start of this phase.
+  findings note in `claude/`, facade implications. Stop the initiative here if
+  rendering does not clearly beat JGraph. *Fidelity bar (decided): node positions
+  exact, cosmetics may differ.*
+- **Phase 1 — decouple in place**: 1a (COMPLETE, see below) plus the facade
+  definition itself, which deliberately waits for the spike so yFiles 4.x idioms
+  (IGraph, styles, input modes) get a vote before interfaces freeze. The facade is
+  derived from the consumer census, not from JGraph concepts; an architecture test
+  (no `org.jgraph` import outside the backend package) seals the boundary.
+- **Phase 2 — yFiles read-only views** (graph tabs, state display, LTS), yFiles
+  layouts writing through the neutral `LayoutMap` (translating the frozen
+  `LineStyle` codes and PERMILLE label positions), multi-module restructure
+  (core + backend-jgraph + optional backend-yfiles), startup-time backend selection
+  (decided: no runtime switching). This phase also inverts the ownership: panels
+  construct a controller which owns a backend canvas, and the remaining delegation
+  stubs and `getGraphView()` back-references are retargeted.
 - **Phase 3 — editor**: input modes for the click-click edge gesture, in-place
-  editing with label autocompletion, GROOVE-owned undo/edit model, GROOVE-owned
-  clipboard format. Largest single chunk.
+  editing with label autocompletion, a GROOVE-owned undo/edit model (replacing the
+  GraphUndoManager minor/major machinery), a GROOVE-owned clipboard format.
 - **Phase 4 — export + Imager**: vector path via Java2D against the yFiles
-  component; TikZ via the geometry seam; Imager rebuilt on the facade (can become
-  genuinely headless).
+  component; TikZ via the geometry seam; Imager rebuilt on the facade.
 
-Sizing, honestly: phase 1 touches ~60 files over multiple PRs; phases 2–4 are a
-multi-month effort. Every phase leaves master shippable. Estimated permanent
-overhead of dual backends: 10–30% on GUI-touching work, near zero elsewhere.
+Key architectural facts from the original coupling analysis that remain relevant:
+coupling is confined to `gui/**` (model/io/lts/explore/tests are clean); the
+persisted `.gxl` layout format freezes the numeric `LineStyle` codes and
+PERMILLE-unit label positions (GROOVE owns those numbers since the look-constants
+branch; the JGraph backend documents its reliance on the coincidence); export
+currently works by repainting the Swing component; the editor's undo classifies
+JGraph edit internals; `gui/look` (`VisualKey`/`VisualMap`/`Look`) was already a
+library-neutral visual model whose only JGraph bridge is `VisualAttributeMap`.
 
-## Open items
+## Phase 1a: what was done (all merged or in the final merge stack)
 
-- Delivered yFiles version/generation and Subscription status (from the license
-  order/delivery, not the SLA).
-- Possible upgrade Academic Single Developer → Academic Project License (3 seats,
-  build automation) — query to yWorks suggested.
-- Spike start: waiting on a local path (outside any repo) to the yFiles jar(s) and
-  the runtime license key file, downloaded by Arend. Ground rules: the jar is never
-  committed, never uploaded, never decompiled; spike code is written against the
-  public API docs and demos.
+Branch sequence, in merge order (each built on the previous; details and rationale
+per slice in `claude/jgraph-controller-split.md`):
+
+1. `look-constants` — GROOVE owns the frozen persisted constants; `gui.look`
+   jgraph-free except the adapter.
+2. `jgraph-actions` — cell-edit actions out of the JGraph classes into `gui.action`.
+3. `jgraph-controller` (+rename) — `GraphViewController` extracted from `JGraph`
+   (monomorphic state and lifecycle; strangler stubs).
+4. `jgraph-controller-2` — controller hierarchy (Aspect/LTS), menus, mode chrome;
+   callers retargeted instead of stubbed.
+5. `jmodel-split` — `GraphViewModel` (displayed graph, layout map, element-to-cell
+   index, layout sync) out of `JModel`.
+6. `lts-view-semantics` — LTS display semantics (active state/transition, filter,
+   traces, result queries) into `LTSGraphViewController`.
+7. `controller-clients` — pure controller clients take the controller directly.
+8. `jgraph-deport` — cell interfaces free of `org.jgraph` (no `GraphCell`
+   inheritance, no ports); `JModel` records pending connections neutrally.
+9. `looks-decoupling` — `isShow*` predicates into the controller hierarchy
+   (+`CtrlGraphViewController`); `VisualValue` and all of `gui.look` are pure
+   controller clients.
+10. `viewcell-rename` — cell interfaces renamed `ViewCell`/`ViewVertex`/`ViewEdge`/
+    `AspectViewCell`/`LTSViewCell` (+`AspectViewCellErrors`) and moved, with the
+    controllers and `GraphViewModel`, to the new exported package
+    **`nl.utwente.groove.gui.view`** — the neutral graph-view layer.
+11. `cell-errors` — error API moved to `AspectViewCell` (was a latent CCE via an
+    unchecked cast in `AJCell`); machinery slimmed via interface defaults.
+    *Behavior note:* LTS error states now report `Severity.ERROR` from the
+    un-shadowed `ViewCell` default (the error overlay may newly appear there;
+    this restores documented intent).
+
+**The end state**: `gui.view` holds the neutral layer (`GraphViewController` +
+Aspect/LTS/Ctrl subclasses, `GraphViewModel`, the `ViewCell` interface family);
+`gui.jgraph` holds only backend code; the component classes keep their J names
+until retired. Ownership is still component→controller (the `JGraph` constructs
+its controller); phase 2 inverts it.
+
+## Decisions and conventions (binding)
+
+- **Naming principle** (Arend, 2026-09-03): naming and comments outside `gui.jgraph`
+  are free of JGraph terminology; the neutral vocabulary is "graph view". Direct
+  *type* references to `JGraph`/`JModel`/backend cells remain until the facade
+  replaces them.
+- **Cell naming** (2026-09-05): short `ViewCell`/`ViewVertex`/`ViewEdge` rather than
+  the family-consistent `GraphViewCell` — the `Graph` qualifier disambiguates
+  nothing for cells (only graph views have cells) and these are the most frequently
+  referenced GUI types; the controller/model keep the longer names where the
+  qualifier is load-bearing.
+- **Strangler pattern**: extractions leave delegating stubs where callers are many
+  (slice 1, `JModel` index accessors), and retarget callers where they are few
+  (everything since). Mixed clients (ZoomMenu, LayoutAction, ExportAction,
+  SetLineStyleMenu, the cell-edit actions, the displays) convert to controller
+  clients at the phase-2 ownership inversion, not before — passing the controller
+  now would just add `getGraphView()` detours.
+
+## Known residues (deliberate, for phase 2)
+
+- J-flavored member names on the neutral API: `getJGraph`, `getJModel`,
+  `setJModel`, `getJCell*`; plus j-cell/jgraph wording in `gui.view` javadoc.
+  They change type or disappear at ownership inversion.
+- `JModel`'s insertion machinery (`addNode`/`addEdge`/`computeJ*`/`doInsert`) is
+  backend-neutral in place (pending connections are neutral records; the single
+  port site is a localized cast in `doInsert`) but physically still in `JModel` —
+  relocation into `GraphViewModel` deferred; it would split the orchestration that
+  `LTSJModel` overrides for incremental updates.
+- Backend-named types still referenced outside the backend: `JGraphPanel`
+  (gui.display), `JGraphMode` (gui.jgraph, used by displays), `JCellEditAction`
+  family (gui.action). Renames folded into the phases that touch their seams.
+- `getColorMap`/`setLayoutable`/`refreshVisuals` stay on `JModel` (they iterate the
+  backend z-order roots).
+
+## Practical notes
+
+- **Null analysis**: the Maven build does not run it; use the `null-check` skill
+  (per-file, or `-All` for wide changes — authoritative baseline documented in the
+  skill). Every phase-1a branch was held to zero errors / zero new warnings.
+- **Stale test classes**: after interface-level changes (package moves, signature
+  changes), run `mvn clean test` — the incremental build has produced stale
+  test-class `NoSuchMethodError`s twice.
+- **Eclipse after merges**: refresh only, except `module-info`/pom changes
+  (Maven → Update Project).
+- The GUI test suite barely exercises the display layer; every branch's real
+  verification is manual Simulator use (menus, editor gestures, LTS interaction,
+  filtering, export).
+
+## Immediate next steps
+
+1. Arend: unpack the licensed yFiles delivery (not the evaluation bundle) to a
+   local path outside any repository; place the runtime license file; supply both
+   paths. Also still open: confirm delivered version/generation and Subscription
+   status; the Academic Project License upgrade question to yWorks.
+2. Claude: phase-0 spike per the plan above, observing the LLM ground rules.
+3. After the spike: facade definition + architecture test, then phase 2.
