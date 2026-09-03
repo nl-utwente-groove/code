@@ -78,13 +78,20 @@ exact, cosmetics may differ": **met**.
   Not attempted: node id/parameter adornments (`ID_ADORNMENT`, `PAR_ADORNMENT`), inner
   lines (`INNER_LINE`), error overlays, emphasis.
 
-**Edge label semantics discovered.** GROOVE's persisted label position `(ratio‰, distance)`
-is *not* relative to the source–target line: `JEdgeView.getLabelVector` anchors the label
-on the **first segment** (point 0 to point 1) of the routed edge, extended by `ratio` and
-offset perpendicularly by `distance`. For straight edges this coincides with the
-source–target line, for bent edges and loops it does not. yFiles' `FreeEdgeLabelModel`
-uses the source–target port line, so the first attempt misplaced labels on bent edges. The
-spike now computes the JGraph anchor and places the label absolutely (`FreeLabelModel`).
+**Edge label semantics, verified empirically** (`LabelCheck`, which compares the anchor
+JGraph's renderer actually computes with candidate models on every bent edge and loop of
+`car-platooning`): GROOVE's persisted label position `(ratio‰, distance)` is the **path
+model** — `ratio` is measured along the *total length of the routed polyline* and
+`distance` is the signed perpendicular offset from the segment the label falls on. This is
+JGraph 5.13's default (`EdgeView.convertRelativeLabelPositionToAbsolute`, used because
+`labelAlongEdge` is never set); the `getLabelVector` override in `JEdgeView` only feeds the
+unused label-along-edge mode and the version-1 layout conversion, and is otherwise dead.
+An earlier reading of this note claimed a "first segment" anchoring; that was wrong.
+yFiles' `EdgePathLabelModel` (`createRatioParameter(ratio, side)` with `setDistance`) is the
+same model and reproduces the JGraph placement; positive GROOVE distance corresponds to
+`EdgeSides.LEFT_OF_EDGE`, and yFiles measures `distance` to the label border rather than
+its centre, so an exact translation subtracts half the label extent. yFiles'
+`FreeEdgeLabelModel` (source–target port line) is *not* equivalent.
 
 ## Automatic layout
 
@@ -122,21 +129,20 @@ thresholds, none of which the spike enables.
 ## Facade implications
 
 1. **The looks layer already is the facade's input.** Building the yFiles graph needed
-   nothing from JGraph except what GROOVE stores in `VisualMap` plus three things the
-   JGraph *view* computes: text-fitted node size, routed loop points, and the edge label
-   anchor. The facade must own or specify these three: node sizing from label metrics
-   (yFiles reports a label's preferred size; the facade can size nodes as
-   `preferredSize + inset` itself), loop routing (compute default loop bends in the neutral
-   layer rather than leave it to the backend), and the label-anchor convention.
-2. **Persisted label positions keep JGraph's first-segment semantics.** The `.gxl` format
-   is frozen; the yFiles backend must translate `(ratio, distance)` on load (anchor
-   computation as in the spike, then either absolute placement or an
-   `EdgeSegmentLabelModel` parameter for segment 0 from the source — the latter keeps the
-   label attached to the edge during editing, but its `distance` is a model property, so one
-   model instance per label) and translate back on save (label centre projected onto the
-   first segment, as `LayoutIO.version2LabelPos` does). Alternatively the neutral format
-   could switch to a path-ratio model in a new layout version; this is a decision for the
-   facade definition.
+   nothing from JGraph except what GROOVE stores in `VisualMap` plus two things the
+   JGraph *view* computes: text-fitted node size and routed loop points. The facade must
+   own or specify these: node sizing from label metrics (yFiles reports a label's
+   preferred size; the facade can size nodes as `preferredSize + inset` itself) and loop
+   routing (compute default loop bends in the neutral layer rather than leave it to the
+   backend). The edge-label model needs specifying but not changing (item 2).
+2. **Persisted label positions already use the standard path model** (ratio along the
+   routed path, perpendicular distance), so no format change is needed for labels: the
+   facade specifies exactly that model, JGraph implements it natively and yFiles through
+   `EdgePathLabelModel` (one model instance per label, since `distance` is a model
+   property; half-extent correction on translation). What *is* JGraph-specific in the
+   persisted format is that the point list includes the end points (node centres, corrected
+   on load by `LayoutIO.correctPoints`) and that loops are routed in the view rather than
+   stored; see the phase-1b design note.
 3. **Style mapping is mechanical**: `NodeShape` → `ShapeNodeShape`, `EdgeEnd` → `ArrowType`,
    dash arrays → `DashStyle`, line width → `Pen`, `Font` style bits → `deriveFont`,
    foreground/background → paint/pen; see `YFiles.java`. Missing on the yFiles side is only
