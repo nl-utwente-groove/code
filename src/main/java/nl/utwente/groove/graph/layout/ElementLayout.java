@@ -29,9 +29,10 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 public interface ElementLayout {
     /**
      * Unit of relative (label) positions: such positions run from 0 to
-     * {@link #PERMILLE} along the length of an edge. The value must equal
-     * JGraph's {@code GraphConstants.PERMILLE}, by which the GUI interprets
-     * these positions.
+     * {@link #PERMILLE} along the length of an edge. The value is persisted
+     * in the layout information of saved graphs and must not be changed;
+     * rendering backends must interpret positions in this unit (the JGraph
+     * backend relies on it equalling {@code GraphConstants.PERMILLE}).
      */
     public static final int PERMILLE = 1000;
 

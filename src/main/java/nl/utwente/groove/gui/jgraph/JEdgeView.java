@@ -510,7 +510,7 @@ public class JEdgeView extends EdgeView {
         @Override
         protected Shape createShape() {
             Shape result;
-            if (this.lineStyle == Values.STYLE_MANHATTAN && this.view.getPointCount() > 2) {
+            if (this.lineStyle == LineStyle.MANHATTAN.getCode() && this.view.getPointCount() > 2) {
                 result = createManhattanShape();
             } else if (this.view.isLoop() && this.view.getPointCount() == 3) {
                 @SuppressWarnings({"unchecked"})

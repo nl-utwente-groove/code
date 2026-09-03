@@ -24,14 +24,11 @@ import java.awt.Color;
 import java.util.EnumMap;
 import java.util.Map;
 
-import org.jgraph.graph.GraphConstants;
-
 import nl.utwente.groove.gui.jgraph.JAttr;
 import nl.utwente.groove.util.Colors;
 import nl.utwente.groove.util.DefaultFixable;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.HTMLConverter.HTMLTag;
-import nl.utwente.groove.util.line.LineStyle;
 import nl.utwente.groove.util.parse.Severity;
 
 /** Attribute values for the nodes and edges.
@@ -231,18 +228,6 @@ public class Values {
 
     /** Grayed-out foreground color. */
     static public final Color GRAYED_OUT_COLOR = Colors.findColor("200 200 200 100");
-
-    /** Line style that always makes right edges. */
-    public static final int STYLE_MANHATTAN = 14;
-
-    static {
-        // the LineStyle codes are persisted in graph layouts and interpreted
-        // by JGraph; both sides must stay aligned with the core enum
-        assert LineStyle.ORTHOGONAL.getCode() == GraphConstants.STYLE_ORTHOGONAL;
-        assert LineStyle.SPLINE.getCode() == GraphConstants.STYLE_SPLINE;
-        assert LineStyle.BEZIER.getCode() == GraphConstants.STYLE_BEZIER;
-        assert LineStyle.MANHATTAN.getCode() == STYLE_MANHATTAN;
-    }
 
     /** Cell selection modes in trees or lists. */
     public static enum Mode {

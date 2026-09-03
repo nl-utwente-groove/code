@@ -23,10 +23,11 @@ import nl.utwente.groove.util.Exceptions;
 
 /**
  * Edge layout line styles.
- * The numeric codes are persisted in the layout information of saved graphs,
- * and (except for {@link #MANHATTAN}) coincide with the corresponding
- * {@code org.jgraph.graph.GraphConstants.STYLE_} constants by which the GUI
- * renders them; they must not be changed.
+ * The numeric codes are persisted in the layout information of saved graphs
+ * and must not be changed. Rendering backends translate them as needed; the
+ * JGraph backend relies on the codes (except for {@link #MANHATTAN}, GROOVE's
+ * own invention) coinciding with the corresponding
+ * {@code org.jgraph.graph.GraphConstants.STYLE_} constants.
  * @author Arend Rensink
  * @version $Revision$
  */

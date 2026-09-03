@@ -318,7 +318,7 @@ public class VisualAttributeMap extends AttributeMap {
             break;
         case EDGE_SOURCE_SHAPE:
             EdgeEnd sourceShape = (EdgeEnd) value;
-            value = sourceShape.getCode();
+            value = getArrowCode(sourceShape);
             // additionally set the size and fill
             super.put(GraphConstants.BEGINSIZE, sourceShape.getSize());
             super.put(GraphConstants.BEGINFILL, sourceShape.isFilled());
@@ -338,7 +338,7 @@ public class VisualAttributeMap extends AttributeMap {
             break;
         case EDGE_TARGET_SHAPE:
             EdgeEnd targetShape = (EdgeEnd) value;
-            value = targetShape.getCode();
+            value = getArrowCode(targetShape);
             // additionally set the size and fill
             super.put(GraphConstants.ENDSIZE, targetShape.getSize());
             super.put(GraphConstants.ENDFILL, targetShape.isFilled());
@@ -406,6 +406,29 @@ public class VisualAttributeMap extends AttributeMap {
     /** Returns the attribute map key corresponding to a given visual map key. */
     public static String getAttrKey(VisualKey key) {
         return visualToAttrKeyMap.get(key);
+    }
+
+    /** Returns the JGraph arrow code for a given edge end decoration. */
+    private static int getArrowCode(EdgeEnd end) {
+        return switch (end) {
+        case ARROW, UNFILLED -> GraphConstants.ARROW_CLASSIC;
+        case NONE -> GraphConstants.ARROW_NONE;
+        case SUBTYPE -> GraphConstants.ARROW_TECHNICAL;
+        case COMPOSITE -> GraphConstants.ARROW_DIAMOND;
+        case NESTING, SIMPLE -> GraphConstants.ARROW_SIMPLE;
+        };
+    }
+
+    static {
+        // the LineStyle codes are persisted in graph layouts and passed to
+        // JGraph unchanged (in both directions), so the two sides must agree;
+        // MANHATTAN is GROOVE's own and is interpreted by JEdgeView instead
+        assert LineStyle.ORTHOGONAL.getCode() == GraphConstants.STYLE_ORTHOGONAL;
+        assert LineStyle.SPLINE.getCode() == GraphConstants.STYLE_SPLINE;
+        assert LineStyle.BEZIER.getCode() == GraphConstants.STYLE_BEZIER;
+        // persisted label positions are likewise passed to JGraph unchanged:
+        // ElementLayout.PERMILLE must equal GraphConstants.PERMILLE
+        // (not assertable: ecj flags comparing two compile-time constants)
     }
 
     /** Permille fractional distance of in multiplicity label from source node. */

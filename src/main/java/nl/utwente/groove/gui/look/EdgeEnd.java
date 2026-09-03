@@ -16,62 +16,54 @@
  */
 package nl.utwente.groove.gui.look;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.jgraph.graph.GraphConstants;
-
-import nl.utwente.groove.util.Exceptions;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
  * Edge end decorations.
+ * How each decoration is drawn is up to the rendering library;
+ * this enum only fixes the intended shape, size and filling.
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public enum EdgeEnd {
     /** Filled arrow decoration. */
-    ARROW(GraphConstants.ARROW_CLASSIC),
+    ARROW,
     /** No end decoration. */
-    NONE(GraphConstants.ARROW_NONE),
+    NONE,
     /** Open (inheritance-style) arrow decoration. */
-    SUBTYPE(GraphConstants.ARROW_TECHNICAL, GraphConstants.DEFAULTDECORATIONSIZE + 5, false),
+    SUBTYPE(EdgeEnd.DEFAULT_SIZE + 5, false),
     /** Composite type edge arrow decoration. */
-    COMPOSITE(GraphConstants.ARROW_DIAMOND, 15),
+    COMPOSITE(15),
     /** Quantifier nesting arrow. */
-    NESTING(GraphConstants.ARROW_SIMPLE, GraphConstants.DEFAULTDECORATIONSIZE - 5),
+    NESTING(EdgeEnd.DEFAULT_SIZE - 5),
     /** Simple arrow decoration. */
-    SIMPLE(GraphConstants.ARROW_SIMPLE),
+    SIMPLE,
     /** Unfilled arrow decoration. */
-    UNFILLED(GraphConstants.ARROW_CLASSIC, false);
+    UNFILLED(false);
 
-    /** Creates an instance with a given edge code. */
-    private EdgeEnd(int code) {
-        this(code, GraphConstants.DEFAULTDECORATIONSIZE, true);
+    /** Creates an instance with the default size, filled. */
+    private EdgeEnd() {
+        this(DEFAULT_SIZE, true);
     }
 
-    /** Creates an instance with a given edge code and size. */
-    private EdgeEnd(int code, int size) {
-        this(code, size, true);
+    /** Creates an instance with a given size, filled. */
+    private EdgeEnd(int size) {
+        this(size, true);
     }
 
-    /** Creates an instance with a given edge code and filling. */
-    private EdgeEnd(int code, boolean filled) {
-        this(code, GraphConstants.DEFAULTDECORATIONSIZE, filled);
+    /** Creates an instance with the default size and given filling. */
+    private EdgeEnd(boolean filled) {
+        this(DEFAULT_SIZE, filled);
     }
 
-    /** Creates an instance with a given edge code, size, and filling. */
-    private EdgeEnd(int code, int size, boolean filled) {
-        this.code = code;
+    /** Creates an instance with a given size and filling. */
+    private EdgeEnd(int size, boolean filled) {
         this.size = size;
         this.filled = filled;
     }
 
-    /** Returns the JGraph integer code for this edge end decoration. */
-    public int getCode() {
-        return this.code;
-    }
-
-    /** Returns the JGraph decoration size for this edge end decoration. */
+    /** Returns the decoration size, in pixels. */
     public int getSize() {
         return this.size;
     }
@@ -81,24 +73,9 @@ public enum EdgeEnd {
         return this.filled;
     }
 
-    private final int code;
     private final int size;
     private final boolean filled;
 
-    /** Returns the unique edge end decoration for a given numerical code. */
-    public static EdgeEnd getEdgeEnd(int code) {
-        EdgeEnd result = codeMap.get(code);
-        if (result == null) {
-            throw Exceptions.illegalArg("Unknown edge style code %s", code);
-        }
-        return result;
-    }
-
-    private static Map<Integer,EdgeEnd> codeMap = new HashMap<>();
-
-    static {
-        for (EdgeEnd style : EdgeEnd.values()) {
-            codeMap.put(style.getCode(), style);
-        }
-    }
+    /** Default decoration size, in pixels. */
+    private static final int DEFAULT_SIZE = 10;
 }

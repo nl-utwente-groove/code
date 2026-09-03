@@ -29,7 +29,6 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.jgraph.graph.GraphConstants;
 import org.jgraph.util.Bezier;
 
 import nl.utwente.groove.grammar.UnitPar;
@@ -39,6 +38,7 @@ import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.layout.EdgeLayout;
+import nl.utwente.groove.graph.layout.ElementLayout;
 import nl.utwente.groove.graph.layout.LayoutMap;
 import nl.utwente.groove.graph.layout.NodeLayout;
 import nl.utwente.groove.gui.export.util.TikzStylesExtractor.Style;
@@ -235,7 +235,7 @@ public final class GraphToTikz<G extends @NonNull Graph> {
 
             // Change x to be a value between 0 and 1 indicating how far
             // along the edge the label is.
-            double x = geometry.getX() / GraphConstants.PERMILLE;
+            double x = geometry.getX() / ElementLayout.PERMILLE;
             double y = geometry.getY();
 
             // dist is the distance along the edge the label is.
