@@ -1,5 +1,5 @@
 /* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2023 University of Twente
+ * Copyright 2003--2026 University of Twente
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -11,30 +11,22 @@
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
  * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
- *
- * $Id$
  */
-package nl.utwente.groove.gui.action;
+package nl.utwente.groove.gui.view;
 
-import java.awt.event.ActionEvent;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
-import nl.utwente.groove.gui.Options;
-import nl.utwente.groove.gui.view.AspectGraphCanvas;
+import nl.utwente.groove.control.graph.ControlGraph;
+import nl.utwente.groove.util.AIGenerated;
 
 /**
- * Action to edit the label of the currently selected j-cell.
+ * Canvas showing a control graph.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class EditLabelAction extends JCellEditAction {
-    /** Constructs an instance of the action. */
-    public EditLabelAction(AspectGraphCanvas canvas) {
-        super(canvas, Options.EDIT_LABEL_ACTION);
-        putValue(ACCELERATOR_KEY, Options.RENAME_KEY);
-    }
-
+@NonNullByDefault
+@AIGenerated("Claude Fable 5.1, 2026-09")
+public interface CtrlGraphCanvas extends GraphCanvas<ControlGraph> {
     @Override
-    public void actionPerformed(ActionEvent evt) {
-        this.canvas.startEditing(this.jCell);
-    }
+    CtrlGraphViewController getController();
 }

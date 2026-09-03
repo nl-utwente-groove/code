@@ -12,6 +12,7 @@ import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
 
+import nl.utwente.groove.gui.view.AspectViewObject;
 import nl.utwente.groove.grammar.aspect.Aspect;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
@@ -265,7 +266,7 @@ public class AspectJEdge extends
     @Override
     public void saveToUserObject() {
         // collect the edge information
-        AspectJObject userObject = getUserObject();
+        AspectViewObject userObject = getUserObject();
         userObject.clear();
         userObject.addEdges(getEdges());
     }
@@ -282,7 +283,7 @@ public class AspectJEdge extends
             AspectLabel label = parser.parse(text, graph.getRole());
             if (label.has(AspectKind.REMARK)) {
                 if (hasRemark) {
-                    remarkText.append(AspectJObject.NEWLINE);
+                    remarkText.append(AspectViewObject.NEWLINE);
                 }
                 remarkText.append(label.getInnerText());
                 hasRemark = true;
@@ -319,8 +320,8 @@ public class AspectJEdge extends
     @Override
     public void setUserObject(Object value) {
         // we do need to create a new object, otherwise undos do not work
-        AspectJObject myObject = new AspectJObject();
-        if (value instanceof AspectJObject o) {
+        AspectViewObject myObject = new AspectViewObject();
+        if (value instanceof AspectViewObject o) {
             myObject.addAll(o);
         } else if (value != null) {
             myObject.load(value.toString());
@@ -330,8 +331,8 @@ public class AspectJEdge extends
 
     /** Specialises the return type. */
     @Override
-    public AspectJObject getUserObject() {
-        return (AspectJObject) super.getUserObject();
+    public AspectViewObject getUserObject() {
+        return (AspectViewObject) super.getUserObject();
     }
 
     @SuppressWarnings("unchecked")

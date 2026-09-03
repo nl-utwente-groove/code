@@ -26,16 +26,15 @@ import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.gui.Simulator;
+import nl.utwente.groove.gui.view.CtrlGraphCanvas;
 import nl.utwente.groove.gui.view.CtrlGraphViewController;
-import nl.utwente.groove.gui.layout.ForestLayouter;
-import nl.utwente.groove.gui.layout.Layouter;
 
 /**
  * This is the JGraph representation of a ControlAutomaton.
  * @author Tom Staijen
  * @version $Revision$
  */
-public class CtrlJGraph extends JGraph<@NonNull ControlGraph> {
+public class CtrlJGraph extends JGraph<@NonNull ControlGraph> implements CtrlGraphCanvas {
     /**
      * Creates a ControlJGraph given a ControlJModel
      * @param simulator the simulator that is the context of this jgraph; may be
@@ -77,11 +76,6 @@ public class CtrlJGraph extends JGraph<@NonNull ControlGraph> {
     @Override
     protected CtrlGraphViewController createController(Simulator simulator) {
         return new CtrlGraphViewController(this, simulator);
-    }
-
-    @Override
-    public Layouter getDefaultLayouter() {
-        return ForestLayouter.PROTOTYPE;
     }
 
     @Override

@@ -22,7 +22,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -47,9 +46,9 @@ import nl.utwente.groove.gui.dialog.FormulaDialog;
 import nl.utwente.groove.gui.dialog.GrooveFileChooser;
 import nl.utwente.groove.gui.view.ViewCell;
 import nl.utwente.groove.gui.view.ViewEdge;
-import nl.utwente.groove.gui.jgraph.JGraph;
+import nl.utwente.groove.gui.view.GraphCanvas;
 import nl.utwente.groove.gui.view.LTSViewCell;
-import nl.utwente.groove.gui.jgraph.LTSJGraph;
+import nl.utwente.groove.gui.view.LTSGraphCanvas;
 import nl.utwente.groove.gui.tree.LabelTree.LabelledCells;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSListener;
@@ -62,7 +61,7 @@ import nl.utwente.groove.util.io.FileType;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
- * Menu to control the visibility of nodes and edges in a jgraph.
+ * Menu to control the visibility of nodes and edges in a canvas.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -134,13 +133,13 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
     /**
      * Constructs a display control menu, which either shows or hides nodes and
      * edges based on selection or labels.
-     * @param jgraph the underlying jgraph of which the display should be
+     * @param canvas the underlying canvas of which the display should be
      *        controlled
      */
-    public ShowHideMenu(JGraph<G> jgraph) {
+    public ShowHideMenu(GraphCanvas<G> canvas) {
         super(Options.SHOW_HIDE_MENU_NAME);
         setMnemonic(MENU_MNEMONIC);
-        this.jgraph = jgraph;
+        this.canvas = canvas;
         fillOutMenu(getPopupMenu());
     }
 
@@ -151,7 +150,7 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
         menu.add(createSelectedAction(ONLY_MODE));
         menu.add(createShowRegExprAction(ONLY_MODE));
         menu.add(createContextAction(ONLY_MODE));
-        if (this.jgraph instanceof LTSJGraph) {
+        if (this.canvas instanceof LTSGraphCanvas) {
             menu.add(createTraceAction(ONLY_MODE));
         }
         menu.add(createFromFileAction(ONLY_MODE));
@@ -173,56 +172,56 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
      * Factory method for <tt>AllAction</tt>s.
      */
     protected ShowHideAction<G> createAllAction(int showMode) {
-        return new AllAction<>(this.jgraph, showMode);
+        return new AllAction<>(this.canvas, showMode);
     }
 
     /**
      * Factory method for <tt>InvertAction</tt>s.
      */
     protected ShowHideAction<G> createInvertAction(int showMode) {
-        return new InvertAction<>(this.jgraph, showMode);
+        return new InvertAction<>(this.canvas, showMode);
     }
 
     /**
      * Factory method for <tt>RegExprAction</tt>s.
      */
     protected ShowHideAction<G> createAddRegExprAction(int showMode) {
-        return new RegExprAction<>(this.jgraph, showMode);
+        return new RegExprAction<>(this.canvas, showMode);
     }
 
     /**
      * Factory method for <tt>RegExprAction</tt>s.
      */
     protected ShowHideAction<G> createShowRegExprAction(int showMode) {
-        return new RegExprAction<>(this.jgraph, showMode);
+        return new RegExprAction<>(this.canvas, showMode);
     }
 
     /**
      * Factory method for <tt>ContextAction</tt>s.
      */
     protected ShowHideAction<G> createContextAction(int showMode) {
-        return new ContextAction<>(this.jgraph, showMode);
+        return new ContextAction<>(this.canvas, showMode);
     }
 
     /**
      * Factory method for {@link ShowHideMenu.SelectedAction}s.
      */
     protected ShowHideAction<G> createSelectedAction(int showMode) {
-        return new SelectedAction<>(this.jgraph, showMode);
+        return new SelectedAction<>(this.canvas, showMode);
     }
 
     /**
      * Factory method for {@link ShowHideMenu.FromFileAction}s.
      */
     protected ShowHideAction<G> createFromFileAction(int showMode) {
-        return new FromFileAction<>(this.jgraph, showMode);
+        return new FromFileAction<>(this.canvas, showMode);
     }
 
     /**
      * Factory method for {@link ShowHideMenu.TraceAction}s.
      */
     protected ShowHideAction<@NonNull GTS> createTraceAction(int showMode) {
-        return new TraceAction((LTSJGraph) this.jgraph, showMode);
+        return new TraceAction((LTSGraphCanvas) this.canvas, showMode);
     }
 
     /**
@@ -239,12 +238,12 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
     }
 
     /** Returns the JGraph for which this menu works. */
-    JGraph<G> getJGraph() {
-        return this.jgraph;
+    GraphCanvas<G> getCanvas() {
+        return this.canvas;
     }
 
     /** The JGraph upon which this menu works. */
-    private final JGraph<G> jgraph;
+    private final GraphCanvas<G> canvas;
 
     /** Mnemonic key for the {@link AllAction} */
     private static int ALL_MNEMONIC = KeyEvent.VK_A;
@@ -277,18 +276,18 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
         extends AbstractAction {
         /**
          * Constructs a nameless action.
-         * @param jgraph the jgraph upon which this action works
+         * @param canvas the canvas upon which this action works
          * @param showMode the show mode: one of {@link #ADD_MODE},
          *        {@link #HIDE_MODE} or {@link #ONLY_MODE}
          */
-        protected ShowHideAction(JGraph<G> jgraph, int showMode, String name) {
+        protected ShowHideAction(GraphCanvas<G> canvas, int showMode, String name) {
             super(getModeName(showMode) + " " + name);
-            this.jgraph = jgraph;
+            this.canvas = canvas;
             this.showMode = showMode;
         }
 
         /**
-         * Walks over the set of jgraph roots; for every root, if this action is
+         * Walks over the set of canvas roots; for every root, if this action is
          * involved with it, show or hide it as determined by
          * <tt>isHidden(cell)</tt>.
          * @see #isInvolved
@@ -298,9 +297,7 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
         public void actionPerformed(ActionEvent e) {
             Set<ViewCell<G>> hiddenCells = new HashSet<>();
             Set<ViewCell<G>> shownCells = new HashSet<>();
-            var jModel = this.jgraph.getModel();
-            assert jModel != null;
-            for (ViewCell<G> jCell : jModel.getRoots()) {
+            for (ViewCell<G> jCell : this.canvas.getCells()) {
                 if (isHiding(jCell)) {
                     hiddenCells.add(jCell);
                 } else if (isShowing(jCell)) {
@@ -316,7 +313,7 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
                 setHidden(shownCells, false);
                 setHidden(hiddenCells, true);
             }
-            this.jgraph.repaint();
+            this.canvas.repaint();
         }
 
         /**
@@ -361,26 +358,26 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
 
         /**
          * Convenience method to changes a set of jcells to hidden or visible in
-         * the underlying jgraph.
+         * the underlying canvas.
          * @param cells the jcells to be changed
          * @param hidden <tt>true</tt> if the cells are to be changed to hidden
          */
         protected final void setHidden(Set<ViewCell<G>> cells, boolean hidden) {
-            this.jgraph.changeGrayedOut(cells, hidden);
+            this.canvas.setGrayedOut(cells, hidden);
         }
 
         /**
-         * Indicates whether a given jgraph cell is involved in this show/hide
+         * Indicates whether a given canvas cell is involved in this show/hide
          * action.
-         * @param jCell the jgraph cell for which the involvement is to be
+         * @param jCell the canvas cell for which the involvement is to be
          *        decided
          * @return <tt>true</tt> if <tt>cell</tt> should be shown/hidden by this
          *         action
          */
         abstract protected boolean isInvolved(ViewCell<G> jCell);
 
-        /** The jgraph upon which this menu works. */
-        protected final JGraph<G> jgraph;
+        /** The canvas upon which this menu works. */
+        protected final GraphCanvas<G> canvas;
 
         /**
          * The show mode of this action.
@@ -396,12 +393,12 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
         /**
          * Constructs an instance of the action for a given j-graph, either for
          * showing or for hiding.
-         * @param jgraph the underlying j-graph
+         * @param canvas the underlying j-graph
          * @param showMode one of {@link #ADD_MODE}, {@link #HIDE_MODE} or
          *        {@link #ONLY_MODE}
          */
-        protected AllAction(JGraph<G> jgraph, int showMode) {
-            super(jgraph, showMode, ALL_ACTION_NAME);
+        protected AllAction(GraphCanvas<G> canvas, int showMode) {
+            super(canvas, showMode, ALL_ACTION_NAME);
             putValue(MNEMONIC_KEY, ALL_MNEMONIC);
         }
 
@@ -422,12 +419,12 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
         /**
          * Constructs an instance of the action for a given j-graph, either for
          * showing or for hiding.
-         * @param jgraph the underlying j-graph
+         * @param canvas the underlying j-graph
          * @param showMode one of {@link #ADD_MODE}, {@link #HIDE_MODE} or
          *        {@link #ONLY_MODE}
          */
-        protected InvertAction(JGraph<G> jgraph, int showMode) {
-            super(jgraph, showMode, INVERT_ACTION_NAME);
+        protected InvertAction(GraphCanvas<G> canvas, int showMode) {
+            super(canvas, showMode, INVERT_ACTION_NAME);
         }
 
         /**
@@ -448,12 +445,12 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
         /**
          * Constructs an instance of the action for a given j-graph, either for
          * showing or for hiding.
-         * @param jgraph the underlying j-graph
+         * @param canvas the underlying j-graph
          * @param showMode one of {@link #ADD_MODE} or
          *        {@link #ONLY_MODE}
          */
-        protected ContextAction(JGraph<G> jgraph, int showMode) {
-            super(jgraph, showMode, CONTEXT_ACTION_NAME);
+        protected ContextAction(GraphCanvas<G> canvas, int showMode) {
+            super(canvas, showMode, CONTEXT_ACTION_NAME);
             assert showMode != HIDE_MODE : "Hiding not defined for context";
             putValue(MNEMONIC_KEY, CONTEXT_MNEMONIC);
         }
@@ -467,11 +464,10 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
                 assert sourceVertex != null; // model has been initialised by now
                 ViewCell<G> targetVertex = edge.getTargetVertex();
                 assert targetVertex != null; // model has been initialised by now
-                Object[] selectedCellArray = this.jgraph.getSelectionCells();
-                if (selectedCellArray.length == 0) {
+                var selectedCells = this.canvas.getSelection();
+                if (selectedCells.isEmpty()) {
                     result = !sourceVertex.isGrayedOut() || !targetVertex.isGrayedOut();
                 } else {
-                    Set<Object> selectedCells = new HashSet<>(Arrays.asList(selectedCellArray));
                     result = selectedCells.contains(sourceVertex)
                         || selectedCells.contains(targetVertex);
                 }
@@ -487,13 +483,13 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
         /**
          * Creates a <tt>LabelAction</tt> that tests for an explicitly given
          * label.
-         * @param jgraph the jgraph upon which this action works
+         * @param canvas the canvas upon which this action works
          * @param showMode the show mode for this action
          * @param entry the label on which this action should test
          */
-        protected LabelAction(JGraph<G> jgraph, int showMode,
+        protected LabelAction(GraphCanvas<G> canvas, int showMode,
                               LabelledCells<G> entry) throws IllegalArgumentException {
-            super(jgraph, showMode, "");
+            super(canvas, showMode, "");
             var key = entry.label();
             putValue(NAME, key.toString().isEmpty()
                 ? Options.EMPTY_LABEL_TEXT
@@ -524,18 +520,18 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
         /**
          * Constructs an instance of the action for a given j-graph, either for
          * showing or for hiding.
-         * @param jgraph the underlying j-graph
+         * @param canvas the underlying j-graph
          * @param showMode one of {@link #ADD_MODE}, {@link #HIDE_MODE} or
          *        {@link #ONLY_MODE}
          */
-        protected RegExprAction(JGraph<G> jgraph, int showMode) {
-            super(jgraph, showMode, REGEXPR_ACTION_NAME);
+        protected RegExprAction(GraphCanvas<G> canvas, int showMode) {
+            super(canvas, showMode, REGEXPR_ACTION_NAME);
             putValue(MNEMONIC_KEY, REG_EXPR_MNEMONIC);
         }
 
         @Override
         public void actionPerformed(ActionEvent evt) {
-            Graph graph = this.jgraph.getGraph();
+            Graph graph = this.canvas.getGraph();
             String exprText = exprDialog.showDialog(null);
             if (exprText != null) {
                 try {
@@ -607,12 +603,12 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
         /**
          * Constructs an instance of the action for a given j-graph, either for
          * showing or for hiding.
-         * @param jgraph the underlying j-graph
+         * @param canvas the underlying j-graph
          * @param showMode one of {@link #ADD_MODE}, {@link #HIDE_MODE} or
          *        {@link #ONLY_MODE}
          */
-        public SelectedAction(JGraph<G> jgraph, int showMode) {
-            super(jgraph, showMode, SELECTED_ACTION_NAME);
+        public SelectedAction(GraphCanvas<G> canvas, int showMode) {
+            super(canvas, showMode, SELECTED_ACTION_NAME);
             putValue(MNEMONIC_KEY, EMPHASIZED_MNEMONIC);
         }
 
@@ -622,7 +618,7 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
          */
         @Override
         protected boolean isInvolved(ViewCell<G> jCell) {
-            return this.jgraph.getSelectionModel().isCellSelected(jCell);
+            return this.canvas.getSelection().contains(jCell);
         }
     }
 
@@ -634,19 +630,19 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
     static protected class FromFileAction<G extends @NonNull Graph> extends ShowHideAction<G> {
         /**
          * Constructs an instance of the action for a given j-graph.
-         * @param jgraph the underlying j-graph
+         * @param canvas the underlying j-graph
          * @param showMode one of {@link #ADD_MODE}, {@link #HIDE_MODE} or
          *        {@link #ONLY_MODE}
          */
-        public FromFileAction(JGraph<G> jgraph, int showMode) {
-            super(jgraph, showMode, FILE_ACTION_NAME);
+        public FromFileAction(GraphCanvas<G> canvas, int showMode) {
+            super(canvas, showMode, FILE_ACTION_NAME);
             putValue(MNEMONIC_KEY, FILE_MNEMONIC);
         }
 
         @Override
         public void actionPerformed(ActionEvent evt) {
             GrooveFileChooser fileChooser = GrooveFileChooser.getInstance(FileType.TEXT);
-            int result = fileChooser.showOpenDialog(this.jgraph);
+            int result = fileChooser.showOpenDialog(this.canvas.getComponent());
             if (result == JFileChooser.APPROVE_OPTION) {
                 File labelsFile = fileChooser.getSelectedFile();
                 assert labelsFile != null; // a file has been selected on approve
@@ -693,24 +689,24 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
     static protected class TraceAction extends ShowHideAction<@NonNull GTS> {
         /**
          * Constructs an instance of the action for a given j-graph.
-         * @param jgraph the underlying j-graph
+         * @param canvas the underlying j-graph
          * @param showMode one of {@link #ADD_MODE}, {@link #HIDE_MODE} or
          *        {@link #ONLY_MODE}
          */
-        public TraceAction(LTSJGraph jgraph, int showMode) {
-            super(jgraph, showMode, TRACE_ACTION_NAME);
+        public TraceAction(LTSGraphCanvas canvas, int showMode) {
+            super(canvas, showMode, TRACE_ACTION_NAME);
             putValue(MNEMONIC_KEY, TRACE_MNEMONIC);
         }
 
         @Override
         public void actionPerformed(ActionEvent evt) {
-            LTSJGraph jGraph = (LTSJGraph) this.jgraph;
-            var activeState = jGraph.getController().getActiveState();
+            LTSGraphCanvas ltsCanvas = (LTSGraphCanvas) this.canvas;
+            var activeState = ltsCanvas.getController().getActiveState();
             Set<GraphState> states = activeState == null
                 ? Collections.emptySet()
                 : Collections.singleton(activeState);
-            this.trace = jGraph.getController().findTraces(states);
-            if (jGraph.getModel() != null) {
+            this.trace = ltsCanvas.getController().findTraces(states);
+            if (ltsCanvas.getViewModel() != null) {
                 super.actionPerformed(evt);
             }
         }
@@ -761,7 +757,7 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
 
         /**
          * This action builds the menu on-the-fly. It iterates ove the roots of
-         * the jgraph, adding a <tt>LabelAction</tt> for every label of every
+         * the canvas, adding a <tt>LabelAction</tt> for every label of every
          * jcell thus found.
          */
         @Override
@@ -769,8 +765,11 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
             if (isIncluded) {
                 // now (re-)fill the menu
                 removeAll();
-                for (var entry : getJGraph().getLabelTree().getLabels()) {
-                    add(new LabelAction<>(getJGraph(), this.showMode, entry));
+                var labelTree = getCanvas().getController().getLabelTree();
+                if (labelTree != null) {
+                    for (var entry : labelTree.getLabels()) {
+                        add(new LabelAction<>(getCanvas(), this.showMode, entry));
+                    }
                 }
             }
             super.menuSelectionChanged(isIncluded);

@@ -324,7 +324,7 @@ public class StateDisplay extends Display implements SimulatorListener {
                     elements.add(aspectMap.getEdge(edge));
                 }
             }
-            getJGraph().setSelectionCells(elements);
+            getJGraph().selectElements(elements);
         }
     }
 
@@ -365,7 +365,7 @@ public class StateDisplay extends Display implements SimulatorListener {
             // all cells repainted, even though everything but the
             // edge colour seems to be OK even without doing this
             // Grayed-out selected elements should remain selected
-            getJGraph().refreshAllCells(false);
+            getJGraph().refreshAll(false);
         }
         updateStatus();
         activateListening();
@@ -838,7 +838,7 @@ public class StateDisplay extends Display implements SimulatorListener {
     public void doRepeat() {
         var jGraph = getJGraph();
         if (jGraph != null) {
-            jGraph.scrollToNextSelectedRoot();
+            jGraph.scrollToNextSelected();
         }
     }
 

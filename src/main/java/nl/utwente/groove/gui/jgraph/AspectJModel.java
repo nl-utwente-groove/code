@@ -389,7 +389,7 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
                 jCell = jEdge;
             }
             if (jCell != null) {
-                jCell.setJModel(this);
+                ((AJCell<?,?,?>) jCell).setJModel(this);
                 jCell.initialise();
             }
         }

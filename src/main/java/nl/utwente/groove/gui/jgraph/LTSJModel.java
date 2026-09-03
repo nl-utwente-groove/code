@@ -105,7 +105,7 @@ final public class LTSJModel extends JModel<@NonNull GTS> implements GTSListener
             if (isExploring()) {
                 this.changedCells.add(jCell);
             } else {
-                getJGraph().refreshCells(Collections.singleton(jCell), false);
+                getJGraph().refresh(Collections.singleton(jCell), false);
             }
         }
     }
@@ -312,7 +312,7 @@ final public class LTSJModel extends JModel<@NonNull GTS> implements GTSListener
                     addElements(this.addedNodes, this.addedEdges, false);
                 }
                 if (!this.changedCells.isEmpty()) {
-                    getJGraph().refreshCells(this.changedCells, true);
+                    getJGraph().refresh(this.changedCells, true);
                 }
             }
         }

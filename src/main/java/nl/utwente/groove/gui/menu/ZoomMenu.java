@@ -28,7 +28,7 @@ import javax.swing.JMenu;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 
-import nl.utwente.groove.gui.jgraph.JGraph;
+import nl.utwente.groove.gui.view.GraphCanvas;
 
 /**
  * Menu for zoomin in/out on a jgraph.
@@ -43,9 +43,9 @@ public class ZoomMenu extends JMenu {
      * Constructs a standard zoom menu with default name.
      * @see #ZOOM_MENU_NAME
      */
-    public ZoomMenu(JGraph<?> jgraph) {
+    public ZoomMenu(GraphCanvas<?> canvas) {
         super(ZOOM_MENU_NAME);
-        this.jgraph = jgraph;
+        this.canvas = canvas;
         add(this.zoomToFitAction);
         add(this.zoomInAction);
         add(this.zoomOutAction);
@@ -61,7 +61,7 @@ public class ZoomMenu extends JMenu {
     private void registerAction(Action action, int keyCode) {
         action.putValue(Action.ACCELERATOR_KEY,
             KeyStroke.getKeyStroke(keyCode, ActionEvent.CTRL_MASK));
-        this.jgraph.addAccelerator(action);
+        this.canvas.addAccelerator(action);
     }
 
     /**
@@ -93,19 +93,19 @@ public class ZoomMenu extends JMenu {
     protected final Action zoomToFitAction = new AbstractAction("Zoom to fit") {
         @Override
         public void actionPerformed(ActionEvent evt) {
-            Component component = ZoomMenu.this.jgraph.getParent();
+            Component component = ZoomMenu.this.canvas.getComponent().getParent();
             while (component != null && !(component instanceof JViewport)) {
                 component = component.getParent();
             }
-            if (component != null) {
+            Rectangle2D graphBounds = ZoomMenu.this.canvas.getGraphBounds();
+            if (component != null && graphBounds != null) {
                 final JViewport viewport = (JViewport) component;
-                Rectangle2D graphBounds = ZoomMenu.this.jgraph.getGraphBounds();
                 Dimension viewportBounds = viewport.getExtentSize();
                 double scale =
                     Math.min(viewportBounds.width / graphBounds.getWidth(), viewportBounds.height
                         / graphBounds.getHeight());
-                ZoomMenu.this.jgraph.setScale(Math.min(scale, 1.0));
-                ZoomMenu.this.jgraph.scrollRectToVisible(graphBounds.getBounds());
+                ZoomMenu.this.canvas.setScale(Math.min(scale, 1.0));
+                ZoomMenu.this.canvas.scrollTo(graphBounds);
                 setActionsEnabled();
             }
         }
@@ -115,7 +115,7 @@ public class ZoomMenu extends JMenu {
     protected final Action zoomInAction = new AbstractAction("Zoom in") {
         @Override
         public void actionPerformed(ActionEvent evt) {
-            ZoomMenu.this.jgraph.changeScale(1);
+            ZoomMenu.this.canvas.changeScale(1);
             setActionsEnabled();
         }
     };
@@ -124,7 +124,7 @@ public class ZoomMenu extends JMenu {
     protected final Action zoomOutAction = new AbstractAction("Zoom out") {
         @Override
         public void actionPerformed(ActionEvent evt) {
-            ZoomMenu.this.jgraph.changeScale(-1);
+            ZoomMenu.this.canvas.changeScale(-1);
             setActionsEnabled();
         }
     };
@@ -133,13 +133,13 @@ public class ZoomMenu extends JMenu {
     protected final Action resetZoomAction = new AbstractAction("Reset zoom") {
         @Override
         public void actionPerformed(ActionEvent evt) {
-            ZoomMenu.this.jgraph.setScale(1.0);
+            ZoomMenu.this.canvas.setScale(1.0);
             setActionsEnabled();
         }
     };
 
     /** The component for which zooming is to be done. */
-    final JGraph<?> jgraph;
+    final GraphCanvas<?> canvas;
 
     /** Mnemonic key for the menu. */
     private static final int MENU_MNEMONIC = KeyEvent.VK_Z;

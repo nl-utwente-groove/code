@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.gui.layout;
 
-import nl.utwente.groove.gui.jgraph.JGraph;
+import nl.utwente.groove.gui.view.GraphCanvas;
 
 /**
  * Interface for classes that can layout a <tt>JGraph</tt> in some fashion.
@@ -26,10 +26,10 @@ import nl.utwente.groove.gui.jgraph.JGraph;
 public interface Layouter {
     /**
      * Factory method for layouters of this class.
-     * @param jgraph The underlying jgraph for the layouter
+     * @param canvas The canvas for the layouter
      * @return a new layouter
      */
-    public abstract Layouter newInstance(JGraph<?> jgraph);
+    public abstract Layouter newInstance(GraphCanvas<?> canvas);
 
     /**
      * Returns the name of this layouter.

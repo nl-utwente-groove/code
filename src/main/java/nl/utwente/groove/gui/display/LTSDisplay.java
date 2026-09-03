@@ -21,8 +21,8 @@ import static nl.utwente.groove.gui.SimulatorModel.Change.GTS;
 import static nl.utwente.groove.gui.SimulatorModel.Change.MATCH;
 import static nl.utwente.groove.gui.SimulatorModel.Change.STATE;
 import static nl.utwente.groove.gui.SimulatorModel.Change.TRACE;
-import static nl.utwente.groove.gui.jgraph.JGraphMode.PAN_MODE;
-import static nl.utwente.groove.gui.jgraph.JGraphMode.SELECT_MODE;
+import static nl.utwente.groove.gui.view.GraphViewMode.PAN_MODE;
+import static nl.utwente.groove.gui.view.GraphViewMode.SELECT_MODE;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -66,7 +66,7 @@ import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.gui.SimulatorModel.Change;
 import nl.utwente.groove.gui.jgraph.JAttr;
 import nl.utwente.groove.gui.view.ViewCell;
-import nl.utwente.groove.gui.jgraph.JGraphMode;
+import nl.utwente.groove.gui.view.GraphViewMode;
 import nl.utwente.groove.gui.jgraph.LTSJEdge;
 import nl.utwente.groove.gui.jgraph.LTSJGraph;
 import nl.utwente.groove.gui.jgraph.LTSJModel;
@@ -156,8 +156,8 @@ public class LTSDisplay extends Display implements SimulatorListener {
         result.add(getActions().getBackAction());
         result.add(getActions().getForwardAction());
         result.addSeparator();
-        result.add(getJGraph().getController().getModeButton(JGraphMode.SELECT_MODE));
-        result.add(getJGraph().getController().getModeButton(JGraphMode.PAN_MODE));
+        result.add(getJGraph().getController().getModeButton(GraphViewMode.SELECT_MODE));
+        result.add(getJGraph().getController().getModeButton(GraphViewMode.PAN_MODE));
         result.addSeparator();
         result.add(getFilterPanel());
         result.add(getBoundSpinnerPanel());
@@ -255,7 +255,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
                             if (getJModel().reloadGraph()) {
                                 getJGraph().getController().refreshFiltering();
                                 getJGraph().getController().refreshActive();
-                                getJGraph().refreshAllCells(true);
+                                getJGraph().refreshAll(true);
                                 getJGraph().doLayout(false);
                                 getJGraph().getController().scrollToActive();
                             }
@@ -532,7 +532,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
                     if (getJGraph().getController().setFilter(getFilter())) {
                         getJGraph().getController().refreshFiltering();
                         getJGraph().getController().refreshActive();
-                        getJGraph().refreshAllCells(false);
+                        getJGraph().refreshAll(false);
                     }
                 }
                 getJGraph().doLayout(isNew);
@@ -573,7 +573,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
         if (getJGraph().getController().setFilter(getFilter())) {
             boolean layout = getJGraph().getController().refreshFiltering();
             layout |= getJGraph().getController().refreshActive();
-            getJGraph().refreshAllCells(false);
+            getJGraph().refreshAll(false);
             if (layout) {
                 getJGraph().doLayout(false);
             }
@@ -607,7 +607,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
     public void doRepeat() {
         var jGraph = getJGraph();
         if (jGraph != null) {
-            jGraph.scrollToNextSelectedRoot();
+            jGraph.scrollToNextSelected();
         }
     }
 

@@ -16,8 +16,8 @@
  */
 package nl.utwente.groove.gui.display;
 
-import static nl.utwente.groove.gui.jgraph.JGraphMode.EDIT_MODE;
-import static nl.utwente.groove.gui.jgraph.JGraphMode.PREVIEW_MODE;
+import static nl.utwente.groove.gui.view.GraphViewMode.EDIT_MODE;
+import static nl.utwente.groove.gui.view.GraphViewMode.PREVIEW_MODE;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -85,7 +85,7 @@ import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.AspectJModel;
 import nl.utwente.groove.gui.jgraph.JAttr;
 import nl.utwente.groove.gui.jgraph.JGraph;
-import nl.utwente.groove.gui.jgraph.JGraphMode;
+import nl.utwente.groove.gui.view.GraphViewMode;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.tree.TypeTree;
 import nl.utwente.groove.io.store.EditType;
@@ -153,7 +153,7 @@ final public class GraphEditorTab extends ResourceTab
         return arg -> {
             var entry = (ErrorEntry) arg.getNewValue();
             if (entry != null) {
-                getJGraph().setSelectionCells(entry.getElements());
+                getJGraph().selectElements(entry.getElements());
             }
         };
     }
@@ -405,7 +405,7 @@ final public class GraphEditorTab extends ResourceTab
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         assert evt.getPropertyName().equals(JGraph.JGRAPH_MODE_PROPERTY);
-        JGraphMode mode = getJGraph().getMode();
+        GraphViewMode mode = getJGraph().getMode();
         if (mode == PREVIEW_MODE || evt.getOldValue() == PREVIEW_MODE) {
             this.refreshing = true;
             if (mode == PREVIEW_MODE) {
@@ -414,7 +414,7 @@ final public class GraphEditorTab extends ResourceTab
                 exitPreview();
             }
             getJGraph().setEditable(mode != PREVIEW_MODE);
-            getJGraph().refreshAllCells(true);
+            getJGraph().refreshAll(true);
             getJGraph().refresh();
             this.refreshing = false;
             updateHistoryButtons();
@@ -466,7 +466,7 @@ final public class GraphEditorTab extends ResourceTab
     public void dispose() {
         super.dispose();
         // unregister listeners
-        getJGraph().removeJGraphModeListener(this);
+        getJGraph().removeGraphViewModeListener(this);
         getSnapToGridAction().removeSnapListener(this);
         getJGraph().removeListeners();
     }
@@ -485,7 +485,7 @@ final public class GraphEditorTab extends ResourceTab
                 getCutAction().setEnabled(selected);
             }
         });
-        getJGraph().addJGraphModeListener(this);
+        getJGraph().addGraphViewModeListener(this);
         getJGraph().addGraphSelectionListener(getSimulator().getActions().getSelectColorAction());
         getSnapToGridAction().addSnapListener(this);
     }

@@ -43,10 +43,8 @@ import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.gui.action.ActionStore;
 import nl.utwente.groove.gui.action.ExportAction;
 import nl.utwente.groove.gui.action.LayoutAction;
-import nl.utwente.groove.gui.jgraph.JGraph;
-import nl.utwente.groove.gui.jgraph.JGraph.RefreshListener;
-import nl.utwente.groove.gui.jgraph.JGraphMode;
 import nl.utwente.groove.gui.layout.Layouter;
+import nl.utwente.groove.gui.layout.SpringLayouter;
 import nl.utwente.groove.gui.menu.MyJMenu;
 import nl.utwente.groove.gui.menu.SetLayoutMenu;
 import nl.utwente.groove.gui.menu.ShowHideMenu;
@@ -56,39 +54,40 @@ import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Pair;
 
 /**
- * Display controller associated with a single {@link JGraph}.
+ * Display controller associated with a single {@link GraphCanvas}.
  * Holds the library-independent controller state of a graph display —
  * simulator wiring, display-option machinery, layouter management,
  * the export/layout action caches, label-tree association and tooltip
- * registration — that was historically bundled into the {@link JGraph}
+ * registration — that was historically bundled into the rendering
  * component class itself.
  * <p>
- * In this phase the component owns the controller and keeps delegating
- * stubs; the controller talks back to the component only through its
- * public API. See {@code claude/jgraph-controller-split.md}.
+ * In this phase the canvas owns the controller and keeps delegating
+ * stubs; the controller talks to the canvas only through the
+ * {@link GraphCanvas} interface. See {@code claude/jgraph-controller-split.md}
+ * and {@code claude/view-facade.md}.
  * @author Arend Rensink
  * @version $Revision$
  */
 @NonNullByDefault
 public class GraphViewController<G extends Graph> {
     /**
-     * Constructs a controller for a given {@link JGraph}.
-     * @param graphView the graph-view component that this controller belongs to
+     * Constructs a controller for a given canvas.
+     * @param canvas the canvas that this controller belongs to
      * @param simulator simulator to which the display belongs; may be {@code null}
      */
-    public GraphViewController(JGraph<G> graphView, @Nullable Simulator simulator) {
-        this.graphView = graphView;
+    public GraphViewController(GraphCanvas<G> canvas, @Nullable Simulator simulator) {
+        this.canvas = canvas;
         this.simulator = simulator;
         this.options = Options.instance();
     }
 
-    /** Returns the graph-view component that this controller belongs to. */
-    public JGraph<G> getGraphView() {
-        return this.graphView;
+    /** Returns the canvas that this controller belongs to. */
+    public GraphCanvas<G> getCanvas() {
+        return this.canvas;
     }
 
-    /** The graph-view component that this controller belongs to. */
-    private final JGraph<G> graphView;
+    /** The canvas that this controller belongs to. */
+    private final GraphCanvas<G> canvas;
 
     /** Returns the (possibly {@code null}) simulator associated with the display. */
     protected @Nullable Simulator getSimulator() {
@@ -145,14 +144,14 @@ public class GraphViewController<G extends Graph> {
     /**
      * Adds a refresh listener to the menu item of an option
      * with a given name.
-     * @see JGraph#getRefreshListener
+     * @see GraphCanvas#getRefreshListener
      */
     public void addOptionListener(String option) {
         JMenuItem optionItem = getOptions().getItem(option);
         if (optionItem == null) {
             throw Exceptions.illegalArg("Unknown option: %s", option);
         }
-        RefreshListener listener = getGraphView().getRefreshListener(option);
+        OptionRefreshListener listener = getCanvas().getRefreshListener(option);
         if (listener != null) {
             optionItem.addItemListener(listener);
             optionItem.addPropertyChangeListener(listener);
@@ -161,7 +160,8 @@ public class GraphViewController<G extends Graph> {
     }
 
     /** The option listeners registered by this controller. */
-    private final List<Pair<JMenuItem,RefreshListener>> optionListeners = new LinkedList<>();
+    private final List<Pair<JMenuItem,OptionRefreshListener>> optionListeners
+        = new LinkedList<>();
 
     /**
      * Removes the listeners registered by this controller,
@@ -172,7 +172,7 @@ public class GraphViewController<G extends Graph> {
         if (actions != null) {
             actions.removeRefreshable(getExportAction());
         }
-        for (Pair<JMenuItem,RefreshListener> record : this.optionListeners) {
+        for (Pair<JMenuItem,OptionRefreshListener> record : this.optionListeners) {
             record.one().removeItemListener(record.two());
             record.one().removePropertyChangeListener(record.two());
         }
@@ -219,12 +219,12 @@ public class GraphViewController<G extends Graph> {
 
     /** Returns the role of the graphs displayed in the graph view. */
     public GraphRole getGraphRole() {
-        return getGraphView().getGraphRole();
+        return getCanvas().getGraphRole();
     }
 
     /** Convenience method to retrieve the displayed graph, if any. */
     public @Nullable G getGraph() {
-        return getGraphView().getGraph();
+        return getCanvas().getGraph();
     }
 
     /**
@@ -234,7 +234,7 @@ public class GraphViewController<G extends Graph> {
     public Layouter getLayouter() {
         var result = this.layouter;
         if (result == null) {
-            result = getGraphView().getDefaultLayouter().newInstance(getGraphView());
+            result = getDefaultLayouter().newInstance(getCanvas());
             assert result != null; // newInstance never returns null
             this.layouter = result;
         }
@@ -249,12 +249,12 @@ public class GraphViewController<G extends Graph> {
      * @see #getLayouter()
      */
     public void setLayouter(Layouter prototypeLayouter) {
-        this.layouter = prototypeLayouter.newInstance(getGraphView());
+        this.layouter = prototypeLayouter.newInstance(getCanvas());
     }
 
-    /** Returns the default layouter of the graph view. */
+    /** Returns the default (prototype) layouter of the graph view. */
     public Layouter getDefaultLayouter() {
-        return getGraphView().getDefaultLayouter();
+        return SpringLayouter.PROTOTYPE;
     }
 
     /** The currently selected prototype layouter. */
@@ -270,11 +270,9 @@ public class GraphViewController<G extends Graph> {
      * @return the layouter that has been used
      */
     public Layouter doLayout(boolean complete) {
-        var model = getGraphView().getModel();
-        assert model != null;
         Layouter result;
         if (complete) {
-            model.setLayoutable(true);
+            getCanvas().getNonNullViewModel().setLayoutable(true);
             result = getLayouter();
         } else {
             result = getLayouter().getIncremental();
@@ -287,7 +285,7 @@ public class GraphViewController<G extends Graph> {
     public ExportAction getExportAction() {
         var result = this.exportAction;
         if (result == null) {
-            this.exportAction = result = new ExportAction(getGraphView());
+            this.exportAction = result = new ExportAction(getCanvas());
         }
         result.refresh();
         return result;
@@ -300,8 +298,8 @@ public class GraphViewController<G extends Graph> {
     public LayoutAction getLayoutAction() {
         var result = this.layoutAction;
         if (result == null) {
-            this.layoutAction = result = new LayoutAction(getGraphView());
-            getGraphView().addAccelerator(result);
+            this.layoutAction = result = new LayoutAction(getCanvas());
+            getCanvas().addAccelerator(result);
         }
         return result;
     }
@@ -350,9 +348,9 @@ public class GraphViewController<G extends Graph> {
      */
     public void setToolTipEnabled(boolean enabled) {
         if (enabled) {
-            ToolTipManager.sharedInstance().registerComponent(getGraphView());
+            ToolTipManager.sharedInstance().registerComponent(getCanvas().getComponent());
         } else {
-            ToolTipManager.sharedInstance().unregisterComponent(getGraphView());
+            ToolTipManager.sharedInstance().unregisterComponent(getCanvas().getComponent());
         }
         this.toolTipEnabled = enabled;
     }
@@ -388,17 +386,17 @@ public class GraphViewController<G extends Graph> {
      */
     public JMenu createDisplayMenu() {
         JMenu result = new JMenu("Display");
-        Object[] cells = getGraphView().getSelectionCells();
+        var cells = getCanvas().getSelection();
         boolean itemAdded = false;
         var actions = getActions();
-        if (cells != null && cells.length > 0 && actions != null) {
+        if (!cells.isEmpty() && actions != null) {
             result.add(actions.getFindReplaceAction());
             result.add(actions.getSelectColorAction());
             itemAdded = true;
         }
         var labelTree = getLabelTree();
-        if (labelTree != null && cells != null && cells.length > 0) {
-            Action filterAction = labelTree.createFilterAction(cells);
+        if (labelTree != null && !cells.isEmpty()) {
+            Action filterAction = labelTree.createFilterAction(cells.toArray());
             if (filterAction != null) {
                 result.add(filterAction);
                 itemAdded = true;
@@ -407,8 +405,8 @@ public class GraphViewController<G extends Graph> {
         if (itemAdded) {
             result.addSeparator();
         }
-        result.add(getModeAction(JGraphMode.SELECT_MODE));
-        result.add(getModeAction(JGraphMode.PAN_MODE));
+        result.add(getModeAction(GraphViewMode.SELECT_MODE));
+        result.add(getModeAction(GraphViewMode.PAN_MODE));
         result.add(createShowHideMenu());
         result.add(createZoomMenu());
         return result;
@@ -453,14 +451,14 @@ public class GraphViewController<G extends Graph> {
      * Creates and returns a fresh zoom menu for the graph view.
      */
     public ZoomMenu createZoomMenu() {
-        return new ZoomMenu(getGraphView());
+        return new ZoomMenu(getCanvas());
     }
 
     /**
      * Creates and returns a fresh show/hide menu for the graph view.
      */
     public ShowHideMenu<G> createShowHideMenu() {
-        return new ShowHideMenu<>(getGraphView());
+        return new ShowHideMenu<>(getCanvas());
     }
 
     private Action getShowLayoutDialogAction() {
@@ -471,23 +469,23 @@ public class GraphViewController<G extends Graph> {
 
     /**
      * Lazily creates and returns an action setting the mode of the graph view.
-     * The actual setting is done by a call to {@link JGraph#setMode}.
+     * The actual setting is done by a call to {@link GraphCanvas#setMode}.
      */
-    public Action getModeAction(JGraphMode mode) {
+    public Action getModeAction(GraphViewMode mode) {
         var modeActionMap = this.modeActionMap;
         if (modeActionMap == null) {
-            this.modeActionMap = modeActionMap = new EnumMap<>(JGraphMode.class);
-            for (final JGraphMode any : JGraphMode.values()) {
+            this.modeActionMap = modeActionMap = new EnumMap<>(GraphViewMode.class);
+            for (final GraphViewMode any : GraphViewMode.values()) {
                 Action action = new AbstractAction(any.getName(), any.getIcon()) {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        getGraphView().setMode(any);
+                        getCanvas().setMode(any);
                     }
                 };
 
                 if (any.getAcceleratorKey() != null) {
                     action.putValue(Action.ACCELERATOR_KEY, any.getAcceleratorKey());
-                    getGraphView().addAccelerator(action);
+                    getCanvas().addAccelerator(action);
                 }
                 modeActionMap.put(any, action);
             }
@@ -497,39 +495,39 @@ public class GraphViewController<G extends Graph> {
         return result;
     }
 
-    private @Nullable Map<JGraphMode,Action> modeActionMap;
+    private @Nullable Map<GraphViewMode,Action> modeActionMap;
 
     /**
      * Lazily creates and returns a button wrapping
-     * {@link #getModeAction(JGraphMode)}.
+     * {@link #getModeAction(GraphViewMode)}.
      */
-    public JToggleButton getModeButton(JGraphMode mode) {
+    public JToggleButton getModeButton(GraphViewMode mode) {
         var result = getModeButtonMap().get(mode);
         assert result != null; // the button map is filled for all modes
         return result;
     }
 
-    private Map<JGraphMode,JToggleButton> getModeButtonMap() {
+    private Map<GraphViewMode,JToggleButton> getModeButtonMap() {
         var result = this.modeButtonMap;
         if (result == null) {
-            this.modeButtonMap = result = new EnumMap<>(JGraphMode.class);
+            this.modeButtonMap = result = new EnumMap<>(GraphViewMode.class);
             ButtonGroup modeButtonGroup = new ButtonGroup();
-            for (JGraphMode any : JGraphMode.values()) {
+            for (GraphViewMode any : GraphViewMode.values()) {
                 JToggleButton button = new JToggleButton(getModeAction(any));
                 Options.setLAF(button);
                 button.setToolTipText(any.getName());
-                button.setEnabled(getGraphView().isEnabled());
+                button.setEnabled(getCanvas().isEnabled());
                 result.put(any, button);
                 modeButtonGroup.add(button);
             }
-            var editButton = result.get(JGraphMode.EDIT_MODE);
+            var editButton = result.get(GraphViewMode.EDIT_MODE);
             assert editButton != null; // the button map is filled for all modes
             editButton.setSelected(true);
         }
         return result;
     }
 
-    private @Nullable Map<JGraphMode,JToggleButton> modeButtonMap;
+    private @Nullable Map<GraphViewMode,JToggleButton> modeButtonMap;
 
     /** Enables or disables all mode buttons of the graph view. */
     public void setModeButtonsEnabled(boolean enabled) {

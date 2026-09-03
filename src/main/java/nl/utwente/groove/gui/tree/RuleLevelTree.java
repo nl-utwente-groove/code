@@ -310,7 +310,7 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
         public void setSelected(boolean selected) {
             this.selected = selected;
             Set<AspectViewCell> changes = updateVisibleCells(Collections.singleton(this));
-            getJGraph().refreshCells(changes, false);
+            getJGraph().refresh(changes, false);
         }
 
         @Override

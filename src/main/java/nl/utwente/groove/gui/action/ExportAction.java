@@ -20,8 +20,10 @@ import nl.utwente.groove.gui.display.GraphTab;
 import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.gui.display.ResourceTab;
 import nl.utwente.groove.gui.export.JGraphExportable;
-import nl.utwente.groove.gui.jgraph.AspectJGraph;
+
 import nl.utwente.groove.gui.jgraph.JGraph;
+import nl.utwente.groove.gui.view.AspectGraphCanvas;
+import nl.utwente.groove.gui.view.GraphCanvas;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Exporter;
 import nl.utwente.groove.io.external.Exporters;
@@ -49,13 +51,14 @@ public class ExportAction extends SimulatorAction {
     }
 
     /** Constructs an instance of the action. */
-    public ExportAction(JGraph<?> jGraph) {
+    public ExportAction(GraphCanvas<?> canvas) {
         // fill in a generic name, as the JGraph may not yet hold a graph.
-        super(jGraph.getActions().getSimulator(), Options.EXPORT_ACTION_NAME, Icons.EXPORT_ICON);
+        super(getSimulator(canvas), Options.EXPORT_ACTION_NAME, Icons.EXPORT_ICON);
         putValue(ACCELERATOR_KEY, Options.EXPORT_KEY);
         this.display = null;
         this.displayKind = null;
-        this.jGraph = jGraph;
+        // the export path still needs the backend component (until the export seam is neutral)
+        this.jGraph = (JGraph<?>) canvas;
         this.isGraph = true;
     }
 
@@ -137,7 +140,7 @@ public class ExportAction extends SimulatorAction {
             Graph graph = jGraph.getGraph();
             assert graph != null;
             GraphRole role = graph.getRole();
-            boolean isState = jGraph instanceof AspectJGraph ag && ag.isForState();
+            boolean isState = jGraph instanceof AspectGraphCanvas ag && ag.isForState();
             type = isState
                 ? "State"
                 : role.getDescription();
@@ -158,6 +161,13 @@ public class ExportAction extends SimulatorAction {
             return null;
         }
         return getGrammarModel().getResource(this.displayKind.getResource(), tab.getQualName());
+    }
+
+    /** Returns the simulator of a canvas, which must exist for the action to be created. */
+    private static Simulator getSimulator(GraphCanvas<?> canvas) {
+        var actions = canvas.getController().getActions();
+        assert actions != null; // the export action is only created with a simulator present
+        return actions.getSimulator();
     }
 
     // Get active graph if any

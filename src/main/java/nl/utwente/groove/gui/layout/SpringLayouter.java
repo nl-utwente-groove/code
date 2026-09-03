@@ -24,6 +24,7 @@ import java.util.Map;
 
 import nl.utwente.groove.gui.view.ViewEdge;
 import nl.utwente.groove.gui.jgraph.JGraph;
+import nl.utwente.groove.gui.view.GraphCanvas;
 
 /**
  * Action to set up the standard touchgraph layout algorithm on a given
@@ -50,7 +51,9 @@ public class SpringLayouter extends AbstractLayouter {
     }
 
     @Override
-    public Layouter newInstance(JGraph<?> jgraph) {
+    public Layouter newInstance(GraphCanvas<?> canvas) {
+        // the layouters still work on the backend component (until the layout seam is neutral)
+        JGraph<?> jgraph = (JGraph<?>) canvas;
         return new SpringLayouter(getName(), jgraph, this.rigidity);
     }
 

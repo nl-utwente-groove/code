@@ -20,7 +20,7 @@ import java.awt.event.ActionEvent;
 
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.view.AspectViewCell;
-import nl.utwente.groove.gui.jgraph.AspectJGraph;
+import nl.utwente.groove.gui.view.AspectGraphCanvas;
 import nl.utwente.groove.gui.look.VisualKey;
 
 /**
@@ -31,8 +31,8 @@ import nl.utwente.groove.gui.look.VisualKey;
  */
 public class ResetLabelPositionAction extends JCellEditAction {
     /** Constructs an instance of the action. */
-    public ResetLabelPositionAction(AspectJGraph jGraph) {
-        super(jGraph, Options.RESET_LABEL_POSITION_ACTION, false);
+    public ResetLabelPositionAction(AspectGraphCanvas canvas) {
+        super(canvas, Options.RESET_LABEL_POSITION_ACTION, false);
     }
 
     /** Resets the label positions of the selected cells. */

@@ -495,7 +495,7 @@ public class Simulator implements SimulatorListener {
                         jGraph = ((GraphTab) resourceTab).getJGraph();
                     }
                     // select the error cell and switch to the panel
-                    jGraph.setSelectionCells(entry.getElements());
+                    jGraph.selectElements(entry.getElements());
                     resourceTab.setPropertyKey(entry.getPropertyKey());
                 } else if (entry instanceof ErrorEntry errorEntry) {
                     var numbers = errorEntry.getError().getNumbers();

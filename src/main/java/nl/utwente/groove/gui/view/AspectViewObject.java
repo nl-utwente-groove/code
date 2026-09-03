@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.gui.jgraph;
+package nl.utwente.groove.gui.view;
 
 import static nl.utwente.groove.grammar.aspect.AspectKind.REMARK;
 
@@ -34,7 +34,7 @@ import nl.utwente.groove.util.line.Line;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class AspectJObject extends ArrayList<String> {
+public class AspectViewObject extends ArrayList<String> {
     /**
      * Converts the user object to an editable string, in which the individual
      * labels are separated by newlines
@@ -114,8 +114,8 @@ public class AspectJObject extends ArrayList<String> {
     }
 
     @Override
-    public AspectJObject clone() {
-        return (AspectJObject) super.clone();
+    public AspectViewObject clone() {
+        return (AspectViewObject) super.clone();
     }
 
     /** The default label separator. */

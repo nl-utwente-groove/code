@@ -26,54 +26,55 @@ import java.util.List;
 import javax.swing.AbstractAction;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.jgraph.event.GraphSelectionEvent;
-import org.jgraph.event.GraphSelectionListener;
 
 import nl.utwente.groove.grammar.aspect.AspectGraph;
-import nl.utwente.groove.gui.view.AspectViewCell;
-import nl.utwente.groove.gui.jgraph.AspectJGraph;
-import nl.utwente.groove.gui.view.ViewCell;
-import nl.utwente.groove.gui.view.ViewVertex;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
+import nl.utwente.groove.gui.view.AspectGraphCanvas;
+import nl.utwente.groove.gui.view.AspectViewCell;
+import nl.utwente.groove.gui.view.GraphCanvas;
+import nl.utwente.groove.gui.view.GraphCanvasListener;
+import nl.utwente.groove.gui.view.ViewCell;
+import nl.utwente.groove.gui.view.ViewVertex;
 
 /**
  * Abstract class for j-cell edit actions, working on the selected cells of
- * a given {@link AspectJGraph}.
+ * a given {@link AspectGraphCanvas}.
  * @author Arend Rensink
  * @version $Revision$
  */
-public abstract class JCellEditAction extends AbstractAction implements GraphSelectionListener {
+public abstract class JCellEditAction extends AbstractAction
+    implements GraphCanvasListener<@NonNull AspectGraph> {
     /**
      * Constructs an edit action that is enabled for all j-cells.
-     * @param jGraph the j-graph on which this action works
+     * @param canvas the canvas on which this action works
      * @param name the name of the action
      */
-    protected JCellEditAction(AspectJGraph jGraph, String name) {
+    protected JCellEditAction(AspectGraphCanvas canvas, String name) {
         super(name);
-        this.jGraph = jGraph;
+        this.canvas = canvas;
         this.allCells = true;
         this.vertexOnly = true;
         this.jCells = new ArrayList<>();
         refresh();
-        jGraph.addGraphSelectionListener(this);
+        canvas.addCanvasListener(this);
     }
 
     /**
      * Constructs an edit action that is enabled for only j-vertices or
      * j-edges.
-     * @param jGraph the j-graph on which this action works
+     * @param canvas the canvas on which this action works
      * @param name the name of the action
      * @param vertexOnly <tt>true</tt> if the action is for j-vertices only
      */
-    protected JCellEditAction(AspectJGraph jGraph, String name, boolean vertexOnly) {
+    protected JCellEditAction(AspectGraphCanvas canvas, String name, boolean vertexOnly) {
         super(name);
-        this.jGraph = jGraph;
+        this.canvas = canvas;
         this.allCells = false;
         this.vertexOnly = vertexOnly;
         this.jCells = new ArrayList<>();
         refresh();
-        jGraph.addGraphSelectionListener(this);
+        canvas.addCanvasListener(this);
     }
 
     /**
@@ -81,14 +82,14 @@ public abstract class JCellEditAction extends AbstractAction implements GraphSel
      * the type of the cell disagrees with the expected type.
      */
     @Override
-    public void valueChanged(GraphSelectionEvent e) {
+    public void selectionChanged(GraphCanvas<@NonNull AspectGraph> canvas) {
         refresh();
     }
 
     private void refresh() {
         this.jCell = null;
         this.jCells.clear();
-        for (Object cell : this.jGraph.getSelectionCells()) {
+        for (var cell : this.canvas.getSelection()) {
             AspectViewCell jCell = (AspectViewCell) cell;
             if (this.allCells || this.vertexOnly == (jCell instanceof ViewVertex)) {
                 this.jCell = jCell;
@@ -114,9 +115,7 @@ public abstract class JCellEditAction extends AbstractAction implements GraphSel
 
     /** Convenience method to invoke an edit of a set of visual attributes. */
     protected void edit(ViewCell<@NonNull AspectGraph> jCell, VisualMap newVisuals) {
-        this.jGraph
-            .getNonNullModel()
-            .edit(Collections.singletonMap(jCell, newVisuals.getAttributes()), null, null, null);
+        this.canvas.edit(Collections.singletonMap(jCell, newVisuals));
     }
 
     /**
@@ -188,8 +187,8 @@ public abstract class JCellEditAction extends AbstractAction implements GraphSel
         return new Point(Math.max(x, 0), Math.max(y, 0));
     }
 
-    /** The j-graph on which this action works. */
-    protected final AspectJGraph jGraph;
+    /** The canvas on which this action works. */
+    protected final AspectGraphCanvas canvas;
     /**
      * Switch indication that the action is enabled for all types of
      * j-cells.
