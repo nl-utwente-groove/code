@@ -24,9 +24,9 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.io.external.format.AutPorter;
-import nl.utwente.groove.io.external.format.LTS2ControlExporter;
-import nl.utwente.groove.io.external.format.ListenerExporter;
+import nl.utwente.groove.io.external.format.LTS2ControlWriter;
 import nl.utwente.groove.io.external.format.NativeResourcePorter;
+import nl.utwente.groove.io.external.format.WriterExporter;
 import nl.utwente.groove.io.external.format.ecore.EcorePorter;
 import nl.utwente.groove.io.graph.DotListener;
 import nl.utwente.groove.io.graph.FsmListener;
@@ -95,10 +95,10 @@ public class Exporters {
         result.add(NativeResourcePorter.getInstance());
         result.add(EcorePorter.instance());
         result.add(AutPorter.instance());
-        result.add(ListenerExporter.instance(FsmListener::new));
-        result.add(ListenerExporter.instance(DotListener::new));
-        result.add(ListenerExporter.instance(GxlListener::new));
-        result.add(LTS2ControlExporter.instance());
+        result.add(WriterExporter.instance(FsmListener::new));
+        result.add(WriterExporter.instance(DotListener::new));
+        result.add(WriterExporter.instance(GxlListener::new));
+        result.add(WriterExporter.instance(LTS2ControlWriter::new));
         return result;
     }
 }

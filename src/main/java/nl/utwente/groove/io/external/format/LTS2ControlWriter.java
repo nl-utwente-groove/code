@@ -16,17 +16,20 @@
  */
 package nl.utwente.groove.io.external.format;
 
+import java.io.IOException;
 import java.lang.reflect.Array;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.EdgeRole;
-import nl.utwente.groove.io.external.AbstractExporter;
-import nl.utwente.groove.io.external.Exportable;
-import nl.utwente.groove.io.external.PortException;
+import nl.utwente.groove.graph.Graph;
+import nl.utwente.groove.graph.Node;
+import nl.utwente.groove.io.graph.GraphWriter;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSFragment;
 import nl.utwente.groove.lts.GraphState;
@@ -34,68 +37,77 @@ import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.util.io.FileType;
 
 /**
- * Class that exports an LTS to a control program that enforces precisely the transitions in that LTS.
+ * Writer that exports an LTS to a control program that enforces precisely the transitions in that LTS.
+ * Accepts a {@link GTS} (exported without its internal states and transitions)
+ * or a {@link GTSFragment}.
  * @author Arend Rensink
  * @version $Revision$
  */
 @NonNullByDefault
-public class LTS2ControlExporter extends AbstractExporter.Writer {
-    /**
-     * Constructor for the singleton instance.
-     */
-    private LTS2ControlExporter() {
-        super(ExportKind.GRAPH);
-        register(FileType.CONTROL);
+public class LTS2ControlWriter extends GraphWriter {
+    /** Constructs a writer for a single export. */
+    public LTS2ControlWriter() {
+        super(FileType.CONTROL);
     }
 
     @Override
-    public boolean exports(Exportable exportable) {
-        var graph = exportable.graph();
-        return super.exports(exportable) && (graph instanceof GTS || graph instanceof GTSFragment);
+    public boolean accepts(Graph graph) {
+        return graph instanceof GTS || graph instanceof GTSFragment;
     }
 
     @Override
-    protected void initialise(Exportable exportable, FileType fileType) throws PortException {
-        var graph = exportable.graph();
-        if (graph instanceof GTS gts) {
-            this.gts = gts.toFragment(true, false);
+    protected String getIndentUnit() {
+        return "  ";
+    }
+
+    /** The node and edge collections are ignored: the LTS itself determines what is exported. */
+    @Override
+    protected void doWrite(Graph graph, Collection<? extends Node> nodes,
+                           Collection<? extends Edge> edges) throws IOException {
+        GTSFragment gts;
+        if (graph instanceof GTS g) {
+            gts = g.toFragment(true, false);
         } else if (graph instanceof GTSFragment fragment) {
-            this.gts = fragment;
+            gts = fragment;
         } else {
-            throw new PortException("Cannot export %s to %s: not an LTS", exportable.qualName(),
-                fileType);
+            throw new IllegalArgumentException("Cannot export %s to a control program: not an LTS"
+                .formatted(graph.getName()));
         }
+        this.gts = gts;
+        this.covered.clear();
+        this.depth = 0;
+        var start = gts.startState();
+        this.covered.add(start);
+        emitState(start);
     }
 
-    /** Returns the LTS fragment set by {@link #initialise(Exportable, FileType)}. */
+    /** Returns the LTS fragment set by {@link #doWrite}. */
     private GTSFragment getGts() {
         var result = this.gts;
         assert result != null : "LTS not initialised";
         return result;
     }
 
-    /** The LTS to be exported; only set from {@link #initialise(Exportable, FileType)} on. */
+    /** The LTS to be exported; only set from {@link #doWrite} on. */
     private @Nullable GTSFragment gts;
 
-    @Override
-    protected void execute() throws PortException {
-        this.covered.clear();
-        var start = getGts().startState();
-        this.covered.add(start);
-        emit(start);
-    }
+    /** The current indentation depth. */
+    private int depth;
+
+    /** The set of currently covered states. */
+    private final Set<GraphState> covered = new HashSet<>();
 
     /** Recursively emits the properties that hold in this states, followed by the choice of outgoing transitions. */
-    private void emit(GraphState state) {
+    private void emitState(GraphState state) throws IOException {
         assert this.covered.contains(state);
         var gts = getGts();
-        emit("// state " + state);
-        state
-            .getTransitions()
-            .stream()
-            .filter(t -> t.getRole() == EdgeRole.FLAG)
-            .filter(t -> !t.label().getAction().getRole().isConstraint())
-            .forEach(this::emitTransition);
+        emit(this.depth, "// state " + state);
+        for (var trans : state.getTransitions()) {
+            if (trans.getRole() == EdgeRole.FLAG
+                && !trans.label().getAction().getRole().isConstraint()) {
+                emitTransition(trans);
+            }
+        }
         var outs = state
             .getTransitions()
             .stream()
@@ -104,38 +116,38 @@ public class LTS2ControlExporter extends AbstractExporter.Writer {
             .toList();
         if (outs.isEmpty()) {
             if (gts.isFinal(state)) {
-                emit("// final state");
+                emit(this.depth, "// final state");
             } else {
-                emit("// deadlocked state");
-                emit("halt");
+                emit(this.depth, "// deadlocked state");
+                emit(this.depth, "halt");
             }
         } else if (outs.size() == 1 && !gts.isFinal(state)) {
             var out = outs.get(0);
             emitTransition(out);
-            emit(out.target());
+            emitState(out.target());
         } else {
             boolean first = true;
             for (var out : outs) {
                 if (first) {
-                    emit("choice {");
+                    emit(this.depth, "choice {");
                     first = false;
                 } else {
-                    emit("} or {");
+                    emit(this.depth, "} or {");
                 }
-                increaseIndent();
+                this.depth++;
                 emitTransition(out);
-                emit(out.target());
-                decreaseIndent();
+                emitState(out.target());
+                this.depth--;
             }
             if (gts.isFinal(state)) {
-                emit("} or { // final state");
+                emit(this.depth, "} or { // final state");
             }
-            emit("}");
+            emit(this.depth, "}");
         }
     }
 
     /** Emits a transition label with out-parameters adjusted to don't-care. */
-    private void emitTransition(GraphTransition trans) {
+    private void emitTransition(GraphTransition trans) throws IOException {
         // out-parameters must be don't care
         var args = clone(trans.getArguments());
         var sig = trans.getAction().getSignature();
@@ -144,7 +156,7 @@ public class LTS2ControlExporter extends AbstractExporter.Writer {
                 args[i] = null;
             }
         }
-        emit(trans.getAction().toLabelString(args, false) + ";");
+        emit(this.depth, trans.getAction().toLabelString(args, false) + ";");
     }
 
     /** Clones and returns a given array. */
@@ -156,15 +168,4 @@ public class LTS2ControlExporter extends AbstractExporter.Writer {
         System.arraycopy(array, 0, result, 0, array.length);
         return result;
     }
-
-    /** The set of currently covered states. */
-    private final Set<GraphState> covered = new HashSet<>();
-
-    /** Returns the singleton instance of this class. */
-    static public LTS2ControlExporter instance() {
-        return INSTANCE;
-    }
-
-    /** The singleton instance of this class. */
-    static private LTS2ControlExporter INSTANCE = new LTS2ControlExporter();
 }

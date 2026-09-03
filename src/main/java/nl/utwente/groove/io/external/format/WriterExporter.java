@@ -32,26 +32,33 @@ import nl.utwente.groove.io.external.AbstractExporter;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Exporter;
 import nl.utwente.groove.io.external.PortException;
-import nl.utwente.groove.io.graph.GraphExportListener;
+import nl.utwente.groove.io.graph.GraphWriter;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.util.io.FileType;
 
 /**
- * Class that implements saving graphs using a {@link GraphExportListener}.
- * Every export creates a fresh listener, since listeners hold per-write state.
+ * Exporter that saves graphs through a {@link GraphWriter}.
+ * Every export creates a fresh writer, since writers hold per-write state;
+ * the exporter accepts exactly the graphs that its writers accept.
  *
  * @author Arend Rensink
  */
 @NonNullByDefault
-public class ListenerExporter extends AbstractExporter {
-    private ListenerExporter(Supplier<? extends GraphExportListener> factory) {
+public class WriterExporter extends AbstractExporter {
+    private WriterExporter(Supplier<? extends GraphWriter> factory) {
         super(Exporter.ExportKind.GRAPH);
         register(factory.get().getFileType());
         this.factory = factory;
     }
 
-    /** Factory for the listeners doing the actual writing. */
-    private final Supplier<? extends GraphExportListener> factory;
+    /** Factory for the writers doing the actual work. */
+    private final Supplier<? extends GraphWriter> factory;
+
+    @Override
+    public boolean exports(Exportable exportable) {
+        var graph = exportable.graph();
+        return super.exports(exportable) && graph != null && this.factory.get().accepts(graph);
+    }
 
     @Override
     public void doExport(Exportable exportable, File file, FileType fileType) throws PortException {
@@ -76,8 +83,8 @@ public class ListenerExporter extends AbstractExporter {
         }
     }
 
-    /** Creates and returns an exporter for the listeners produced by a given factory. */
-    static public ListenerExporter instance(Supplier<? extends GraphExportListener> factory) {
-        return new ListenerExporter(factory);
+    /** Creates and returns an exporter for the writers produced by a given factory. */
+    static public WriterExporter instance(Supplier<? extends GraphWriter> factory) {
+        return new WriterExporter(factory);
     }
 }

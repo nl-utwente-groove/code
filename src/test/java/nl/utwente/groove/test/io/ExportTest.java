@@ -47,8 +47,7 @@ import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Exporters;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.io.external.format.AutPorter;
-import nl.utwente.groove.io.external.format.LTS2ControlExporter;
-import nl.utwente.groove.io.external.format.ListenerExporter;
+import nl.utwente.groove.io.external.format.WriterExporter;
 import nl.utwente.groove.io.graph.AutIO;
 import nl.utwente.groove.io.graph.GxlIO;
 import nl.utwente.groove.io.store.SystemStore;
@@ -78,21 +77,22 @@ public class ExportTest {
     @Test
     public void testRegistry() {
         assertSame(AutPorter.instance(), Exporters.getExporter(FileType.AUT));
-        assertTrue(Exporters.getExporter(FileType.FSM) instanceof ListenerExporter);
-        assertTrue(Exporters.getExporter(FileType.DOT) instanceof ListenerExporter);
-        // a graph outside the grammar is exported to .gxl by the listener exporter,
+        assertTrue(Exporters.getExporter(FileType.FSM) instanceof WriterExporter);
+        assertTrue(Exporters.getExporter(FileType.DOT) instanceof WriterExporter);
+        // a graph outside the grammar is exported to .gxl by the writer exporter,
         // not by the native resource porter, which handles the grammar extensions
         assertTrue(Exporters
-            .getExporter(FileType.GXL, Exportable.graph(createGraph())) instanceof ListenerExporter);
+            .getExporter(FileType.GXL, Exportable.graph(createGraph())) instanceof WriterExporter);
         assertEquals(null, Exporters.getExporter(null));
-        GTS gts = explore();
-        assertSame(LTS2ControlExporter.instance(),
-                   Exporters.getExporter(FileType.CONTROL, Exportable.graph(gts)));
+        GTS gts = explore(GRAMMAR);
+        var controlExporter = Exporters.getExporter(FileType.CONTROL, Exportable.graph(gts));
+        assertTrue(controlExporter instanceof WriterExporter);
         // the control exporter only takes (fragments of) LTSs
-        assertTrue(LTS2ControlExporter.instance().exports(Exportable.graph(gts)));
-        assertFalse(LTS2ControlExporter.instance().exports(Exportable.graph(createGraph())));
-        assertTrue(LTS2ControlExporter.instance().getFileTypes(Exportable.graph(createGraph()))
-            .isEmpty());
+        assertNotNull(controlExporter);
+        assertFalse(controlExporter.exports(Exportable.graph(createGraph())));
+        assertTrue(controlExporter.getFileTypes(Exportable.graph(createGraph())).isEmpty());
+        assertEquals(null,
+                     Exporters.getExporter(FileType.CONTROL, Exportable.graph(createGraph())));
     }
 
     /** A graph exported to {@code .aut} and imported back preserves the node
@@ -184,23 +184,43 @@ public class ExportTest {
      * valid and calls only existing rules. */
     @Test
     public void testLts2ControlRoundTrip(@TempDir Path tmp) throws PortException, IOException {
-        GTS gts = explore();
+        GTS gts = explore(GRAMMAR);
         File file = tmp.resolve("enforce.gcp").toFile();
-        LTS2ControlExporter.instance().doExport(Exportable.graph(gts), file, FileType.CONTROL);
-        List<String> lines = Files.readAllLines(file.toPath());
+        List<String> lines = exportControl(gts, file);
         assertTrue(lines.stream().anyMatch(l -> l.trim().startsWith("// state")));
         assertTrue(lines.stream().anyMatch(l -> l.trim().endsWith(";")));
-        // copy the grammar and drop the exported program in as a new control program
-        Path copy = tmp.resolve("control.gps");
+        GTS reGts = reExplore(GRAMMAR, file, tmp);
+        // the program drives a genuine exploration; note that it may
+        // overapproximate the original LTS, since a control program
+        // cannot distinguish two matches of the same rule (the choice
+        // branches of this export both start with the same rule call)
+        assertTrue(reGts.nodeCount() > 1);
+    }
+
+    /** Exports an LTS to a control program file through the registry,
+     * and returns the lines of the file. */
+    private List<String> exportControl(GTS gts, File file) throws PortException, IOException {
+        var exportable = Exportable.graph(gts);
+        var exporter = Exporters.getExporter(FileType.CONTROL, exportable);
+        assertNotNull(exporter);
+        exporter.doExport(exportable, file, FileType.CONTROL);
+        return Files.readAllLines(file.toPath());
+    }
+
+    /** Copies a grammar, drops a given control program in as "enforce",
+     * and returns the GTS explored under that program from the start graph "start".
+     * Fails if the program does not compile against the grammar. */
+    private GTS reExplore(String grammar, File program, Path tmp) throws IOException {
+        Path copy = tmp.resolve("copy.gps");
         Files.createDirectory(copy);
-        File[] files = new File(GRAMMAR).listFiles();
+        File[] files = new File(grammar).listFiles();
         assert files != null; // checked-in fixture directory
         for (File f : files) {
             if (f.isFile()) {
                 Files.copy(f.toPath(), copy.resolve(f.getName()));
             }
         }
-        Files.copy(file.toPath(), copy.resolve("enforce.gcp"));
+        Files.copy(program.toPath(), copy.resolve("enforce.gcp"));
         try {
             GrammarModel copyModel = SystemStore.newGrammar(copy.toFile());
             copyModel.setLocalActiveNames(ResourceKind.CONTROL, QualName.name("enforce"));
@@ -208,13 +228,10 @@ public class ExportTest {
             GTS reGts = new GTS(copyModel.toGrammar());
             Exploration exploration = Exploration.explore(reGts);
             assertFalse(exploration.isInterrupted());
-            // the program drives a genuine exploration; note that it may
-            // overapproximate the original LTS, since a control program
-            // cannot distinguish two matches of the same rule (the choice
-            // branches of this export both start with the same rule call)
-            assertTrue(reGts.nodeCount() > 1);
+            return reGts;
         } catch (FormatException exc) {
             fail("Exported control program does not compile: " + exc);
+            throw new IllegalStateException(); // unreachable
         }
     }
 
@@ -247,11 +264,11 @@ public class ExportTest {
         return SystemStore.newGrammar(new File(GRAMMAR));
     }
 
-    /** Explores the fixture grammar with its default control program and
-     * start graph, and returns the resulting GTS. */
-    private GTS explore() {
+    /** Explores a fixture grammar with its control program "control" and
+     * start graph "start", and returns the resulting GTS. */
+    private GTS explore(String grammar) {
         try {
-            GrammarModel model = loadGrammar();
+            GrammarModel model = SystemStore.newGrammar(new File(grammar));
             model.setLocalActiveNames(ResourceKind.CONTROL, QualName.name("control"));
             model.setLocalActiveNames(ResourceKind.HOST, QualName.name("start"));
             GTS gts = new GTS(model.toGrammar());
