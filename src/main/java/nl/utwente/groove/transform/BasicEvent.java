@@ -52,6 +52,7 @@ import nl.utwente.groove.match.Proof;
 import nl.utwente.groove.match.TreeMatch;
 import nl.utwente.groove.transform.RuleEffect.Fragment;
 import nl.utwente.groove.util.Strings;
+import nl.utwente.groove.util.Visitor;
 import nl.utwente.groove.util.cache.CacheReference;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -187,9 +188,13 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
 
     @Override
     protected Proof extractProof(TreeMatch match) {
-        // this is a simple event, so there are no subrules;
-        // the match consists only of the pattern map
-        return new Proof(getAction().getCondition(), match.getPatternMap());
+        // this is a simple event, so there are no subrules and the pattern map
+        // determines the event; but the proof should nevertheless include the
+        // (non-modifying) sub-level matches, so take the first complete proof
+        // rather than just the pattern map (gh #858)
+        Proof result = match.traverseProofs(Visitor.<Proof>newFinder(null));
+        assert result != null;
+        return result;
     }
 
     @Override

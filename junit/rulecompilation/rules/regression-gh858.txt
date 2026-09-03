@@ -1,0 +1,23 @@
+== rule subLevelReaders
+signature: ()
+hidden: [n0:Ω#]
+anchor: [n0:Ω#]
+Existential subLevelReaders [non-positive]
+  root: nodes [] edges []
+  lhs: nodes [n0:Ω#, n1:Ω#] edges [n0--H-->n0, n1--H-->n1]
+  rhs: nodes [n0:Ω#, n1:Ω#] edges [n0--H-->n0, n1--H-->n1]
+  Negated subLevelReaders-[]-lhs:!(n0--=-->n1) [non-positive]
+    root: nodes [n0:Ω#, n1:Ω#] edges []
+    lhs: nodes [n0:Ω#, n1:Ω#] edges [n0--=-->n1]
+  Universal subLevelReaders[0] [non-positive]
+    root: nodes [n0:Ω#, n1:Ω#] edges []
+    lhs: nodes [n0:Ω#, n1:Ω#, n2:Ω#] edges [n0--p-->n2, n2--H-->n2]
+    Existential subLevelReaders-p1
+      root: nodes [n1:Ω#, n2:Ω#] edges []
+      lhs: nodes [n1:Ω#, n2:Ω#] edges [n1--p-->n2]
+  Universal subLevelReaders[1] [non-positive]
+    root: nodes [n0:Ω#, n1:Ω#] edges []
+    lhs: nodes [n0:Ω#, n1:Ω#, n3:Ω#] edges [n1--p-->n3, n3--H-->n3]
+    Existential subLevelReaders-p2
+      root: nodes [n0:Ω#, n3:Ω#] edges []
+      lhs: nodes [n0:Ω#, n3:Ω#] edges [n0--p-->n3]

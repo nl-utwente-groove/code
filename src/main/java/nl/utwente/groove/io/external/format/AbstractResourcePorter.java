@@ -34,7 +34,6 @@ import nl.utwente.groove.grammar.aspect.GraphConverter;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.grammar.model.TextBasedModel;
-import nl.utwente.groove.graph.plain.PlainGraph;
 import nl.utwente.groove.io.external.AbstractExporter;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Imported;
@@ -190,12 +189,12 @@ public class AbstractResourcePorter extends AbstractExporter implements Importer
         var graph = exportable.graph();
         if (graph != null && resourceKind == null) {
             // this is a graph outside the grammar, such as an LTS;
-            // it is saved as a plain graph
-            var plainGraph = graph.getRole().inGrammar()
+            // it is saved as is, without an intermediate copy (gh #854)
+            var savedGraph = graph.getRole().inGrammar()
                 ? GraphConverter.toAspect(graph).toPlainGraph()
-                : PlainGraph.instance(graph);
+                : graph;
             try {
-                GxlIO.instance().saveGraph(plainGraph, file);
+                GxlIO.instance().saveGraph(savedGraph, file);
             } catch (IOException e) {
                 throw new PortException(e);
             }

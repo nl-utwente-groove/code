@@ -951,20 +951,19 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     /**
      * Creates a GTS fragment, consisting of all states (optionally including internal ones),
      * and either all or just spanning transitions (optionally including internal ones).
+     * A complete fragment is a read-only live view of this GTS rather than a copy
+     * (see {@link GTSFragment#view}).
      * @param complete if {@code true}, all transitions are included, otherwise only the spanning ones
      * @param internal if {@code true}, internal states and transitions are included
      */
     public GTSFragment toFragment(boolean complete, boolean internal) {
         GTSFragment result;
-        var states = internal
-            ? nodeSet()
-            : getStates();
-        var transitions = internal
-            ? edgeSet()
-            : getTransitions();
         if (complete) {
-            result = new GTSFragment(this, states, transitions);
+            result = GTSFragment.view(this, internal);
         } else {
+            var states = internal
+                ? nodeSet()
+                : getStates();
             result = new GTSFragment(this, states, Collections.emptySet());
             result.complete(internal);
         }

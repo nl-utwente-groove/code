@@ -16,13 +16,15 @@
  */
 package nl.utwente.groove.lts;
 
+import java.util.AbstractSet;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 
@@ -30,7 +32,6 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.graph.AGraph;
 import nl.utwente.groove.graph.GGraph;
 import nl.utwente.groove.graph.GraphInfo;
@@ -42,6 +43,8 @@ import nl.utwente.groove.graph.plain.PlainNode;
  * Fragment of a GTS, consisting of a subset of the states and transitions
  * of a given GTS.
  * A GTS fragment has a final state predicate that possibly diverges from that of the GTS itself.
+ * A fragment either holds its own (modifiable) sets of states and transitions,
+ * or is a read-only live view of all states and transitions of the GTS (see {@link #view}).
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -50,8 +53,73 @@ public class GTSFragment extends AGraph<GraphState,GraphTransition> {
     /** Constructs an (initially empty) fragment of a given GTS, with a given name.
      */
     public GTSFragment(GTS gts, String name) {
+        this(gts, name, new LinkedHashSet<>(), new LinkedHashSet<>());
+    }
+
+    /** Constructs a fragment of a given GTS, with a given name and given
+     * (possibly read-only) sets of states and transitions, which are used as is.
+     */
+    private GTSFragment(GTS gts, String name, Set<GraphState> states,
+                        Set<GraphTransition> transitions) {
         super(name, false);
         this.gts = gts;
+        this.states = states;
+        this.transitions = transitions;
+    }
+
+    /**
+     * Returns a read-only fragment consisting of all states and transitions of a given GTS,
+     * as a live view rather than a copy, so that a large GTS can be saved
+     * without spending memory on the fragment (gh #854).
+     * The node and edge sets of the view reject modification; their membership tests
+     * bypass the state set of the GTS, whose lookup goes through isomorphism checking,
+     * and instead take a state to belong to the GTS if it was created for it.
+     * @param gts the GTS to be viewed
+     * @param internal if {@code true}, internal states and transitions are included
+     */
+    static public GTSFragment view(GTS gts, boolean internal) {
+        Set<? extends GraphState> states = internal
+            ? gts.nodeSet()
+            : gts.getStates();
+        Set<GraphState> stateView = new AbstractSet<>() {
+            @Override
+            public Iterator<GraphState> iterator() {
+                return Collections.<GraphState>unmodifiableSet(states).iterator();
+            }
+
+            @Override
+            public int size() {
+                return states.size();
+            }
+
+            @Override
+            public boolean contains(@Nullable Object obj) {
+                return obj instanceof GraphState state && state.getGTS() == gts
+                    && (internal || state.isPublic());
+            }
+        };
+        Set<? extends GraphTransition> transitions = internal
+            ? gts.edgeSet()
+            : gts.getTransitions();
+        Set<GraphTransition> transitionView = new AbstractSet<>() {
+            @Override
+            public Iterator<GraphTransition> iterator() {
+                return Collections.<GraphTransition>unmodifiableSet(transitions).iterator();
+            }
+
+            @Override
+            public int size() {
+                return transitions.size();
+            }
+
+            @Override
+            public boolean contains(@Nullable Object obj) {
+                return obj instanceof GraphTransition trans && stateView.contains(trans.source())
+                    && trans.source().getTransitions(GraphTransition.Claz.ANY).contains(trans)
+                    && (internal || trans.isPublicStep());
+            }
+        };
+        return new GTSFragment(gts, gts.getName() + "-fragment", stateView, transitionView);
     }
 
     /** Constructs an (initially empty) fragment of a given GTS.
@@ -83,14 +151,14 @@ public class GTSFragment extends AGraph<GraphState,GraphTransition> {
         return this.states;
     }
 
-    private final Set<GraphState> states = new LinkedHashSet<>();
+    private final Set<GraphState> states;
 
     @Override
     public Set<GraphTransition> edgeSet() {
         return this.transitions;
     }
 
-    private final Set<GraphTransition> transitions = new LinkedHashSet<>();
+    private final Set<GraphTransition> transitions;
 
     /** Returns the start state of the GTS. */
     public GraphState startState() {
@@ -229,75 +297,43 @@ public class GTSFragment extends AGraph<GraphState,GraphTransition> {
      * Transforms this GTS fragment to a plain graph representation,
      * optionally including special node flags to represent start, final and
      * open states, and state identifiers.
+     * This materialises the view returned by {@link #toExportGraph(LTSLabels, ExploreResult)};
+     * to save a large LTS, use that view directly.
      * @param flags object determining what special labels will be added
      * @param answer if non-{@code null}, the result that should be saved.
      * Only used if {@code filter} equals {@link Filter#RESULT}
      */
     public PlainGraph toPlainGraph(LTSLabels flags, @Nullable ExploreResult answer) {
+        var view = toExportGraph(flags, answer);
         PlainGraph result = new PlainGraph(getName(), GraphRole.LTS, false);
         Map<GraphState,PlainNode> nodeMap = new HashMap<>();
-        for (GraphState state : nodeSet()) {
-            // don't include transient states unless forced to
-            if (state.isInner() && !flags.showRecipes()) {
-                continue;
-            }
-            if (state.isAbsent()) {
-                continue;
-            }
-            PlainNode image = result.addNode(state.getNumber());
-            nodeMap.put(state, image);
-            if (flags.showResult() && answer != null && answer.contains(state)) {
-                result.addEdge(image, flags.getResultLabel(), image);
-            }
-            if (flags.showFinal() && state.isFinal()) {
-                result.addEdge(image, flags.getFinalLabel(), image);
-            }
-            if (flags.showStart() && gts().startState().equals(state)) {
-                result.addEdge(image, flags.getStartLabel(), image);
-            }
-            if (flags.showOpen() && !state.isClosed()) {
-                result.addEdge(image, flags.getOpenLabel(), image);
-            }
-            if (flags.showNumber()) {
-                String label = flags.getNumberLabel().replaceAll("#", "" + state.getNumber());
-                result.addEdge(image, label, image);
-            }
-            if (flags.showTransience() && state.isTransient()) {
-                String label = flags
-                    .getTransienceLabel()
-                    .replaceAll("#", "" + state.getActualFrame().getTransience());
-                result.addEdge(image, label, image);
-            }
-            if (flags.showRecipes() && state.isInner()) {
-                Optional<Recipe> recipe = state.getActualFrame().getRecipe();
-                recipe.map(r -> r.getQualName()).ifPresent(n -> {
-                    String label = flags.getRecipeLabel().replaceAll("#", "" + n);
-                    result.addEdge(image, label, image);
-                });
-            }
-            for (var prop : state.getSatisfiedProps()) {
-                if (!prop.isSystem()) {
-                    result.addEdge(image, prop.getName(), image);
-                }
-            }
+        for (GraphState state : view.nodeSet()) {
+            nodeMap.put(state, result.addNode(state.getNumber()));
         }
-        for (GraphTransition transition : edgeSet()) {
-            // don't include partial transitions unless forced to
-            if (transition.isInnerStep() && !flags.showRecipes()) {
-                continue;
-            }
-            PlainNode sourceImage = nodeMap.get(transition.source());
-            PlainNode targetImage = nodeMap.get(transition.target());
-            // don't include transitions of which an end state was left out
-            if (sourceImage == null || targetImage == null) {
-                continue;
-            }
-            result.addEdge(sourceImage, transition.label().text(), targetImage);
+        for (var edge : view.edgeSet()) {
+            PlainNode sourceImage = nodeMap.get(edge.source());
+            PlainNode targetImage = nodeMap.get(edge.target());
+            assert sourceImage != null && targetImage != null;
+            result.addEdge(sourceImage, edge.label().text(), targetImage);
         }
         // carry over the exploration metadata recorded in the GTS info,
         // notably the random seed (gh #897)
         GraphInfo.transferProperties(gts(), result, null);
         return result;
+    }
 
+    /**
+     * Returns a read-only graph view of this fragment in the shape in which it is saved,
+     * optionally including special node flags to represent start, final and
+     * open states, and state identifiers.
+     * The view computes its nodes and edges on the fly and holds no copy of the fragment,
+     * so a large LTS can be saved through it without additional memory (gh #854).
+     * The fragment should not be modified while the view is in use.
+     * @param flags object determining what special labels will be added
+     * @param answer if non-{@code null}, the result that should be saved.
+     * Only used if the result filter is in force
+     */
+    public LTSExportGraph toExportGraph(LTSLabels flags, @Nullable ExploreResult answer) {
+        return new LTSExportGraph(this, flags, answer);
     }
 }

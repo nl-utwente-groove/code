@@ -701,13 +701,26 @@ public class SimulatorModel implements Cloneable {
      * @see #setGTS(GTS)
      */
     public final boolean resetGTS() {
+        return resetGTS(getExploreType());
+    }
+
+    /**
+     * Creates a fresh GTS from the grammar model, with the per-GTS features
+     * of a given exploration type applied, and sets it using {@link #setGTS(GTS)}.
+     * If the currently stored grammar has errors, sets the GTS to {@code null} instead.
+     * @param exploreType the exploration type whose per-GTS features
+     * (collapse mode, algebra family, persistence) the fresh GTS gets
+     * @return {@code true} if the stored GTS was changed as a result of this call
+     * @see #setGTS(GTS)
+     */
+    public final boolean resetGTS(ExploreType exploreType) {
         try {
             Grammar grammar = getGrammar().toGrammar();
             GTS gts = new GTS(grammar);
-            // apply the per-GTS features of the current exploration while
+            // apply the per-GTS features of the exploration while
             // the GTS is still fresh (before the record and start state are
             // built below and by the GUI)
-            getExploreType().prepareGTS(gts);
+            exploreType.prepareGTS(gts);
             gts.getRecord().setRandomAccess(true);
             return setGTS(gts);
         } catch (FormatException e) {
