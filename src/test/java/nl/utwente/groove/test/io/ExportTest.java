@@ -71,6 +71,8 @@ import nl.utwente.groove.util.parse.FormatException;
 public class ExportTest {
     /** Location of the fixture grammar. */
     static private final String GRAMMAR = "junit/samples/control.gps";
+    /** Location of a fixture grammar whose rules have parameters and special transition labels. */
+    static private final String LABEL_GRAMMAR = "junit/samples/attributes-label.gps";
 
     /** The headless registry resolves the expected exporter per file type,
      * taking the exportable's content into account. */
@@ -195,6 +197,28 @@ public class ExportTest {
         // cannot distinguish two matches of the same rule (the choice
         // branches of this export both start with the same rule call)
         assertTrue(reGts.nodeCount() > 1);
+    }
+
+    /** The rule calls of an exported program use the rule names, not the
+     * special transition labels of the rules, and node arguments (which a
+     * control program cannot refer to) become don't-care arguments, so that
+     * the program compiles against the grammar it was derived from (gh #861). */
+    @Test
+    public void testLts2ControlSpecialLabels(@TempDir Path tmp) throws PortException, IOException {
+        GTS gts = explore(LABEL_GRAMMAR);
+        File file = tmp.resolve("enforce.gcp").toFile();
+        List<String> calls = exportControl(gts, file)
+            .stream()
+            .map(String::trim)
+            .filter(l -> l.endsWith(";"))
+            .toList();
+        assertFalse(calls.isEmpty());
+        // the fixture's special labels are "grav %s" and "sc(%s,%s)"
+        assertTrue(calls.stream().noneMatch(l -> l.startsWith("grav") || l.startsWith("sc(")),
+                   calls.toString());
+        assertTrue(calls.stream().anyMatch(l -> l.startsWith("set_gravity(")), calls.toString());
+        assertTrue(calls.stream().anyMatch(l -> l.startsWith("add_score(_,")), calls.toString());
+        assertTrue(reExplore(LABEL_GRAMMAR, file, tmp).nodeCount() > 1);
     }
 
     /** Exports an LTS to a control program file through the registry,

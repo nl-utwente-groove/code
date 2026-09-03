@@ -25,6 +25,7 @@ import java.util.Set;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.grammar.host.ValueNode;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Graph;
@@ -146,13 +147,15 @@ public class LTS2ControlWriter extends GraphWriter {
         }
     }
 
-    /** Emits a transition label with out-parameters adjusted to don't-care. */
+    /** Emits a transition as a call of its action by name, with the arguments
+     * that a control program cannot express as don't-care: the out-parameters,
+     * and the in-parameters that are bound to host nodes rather than values (gh #861).
+     */
     private void emitTransition(GraphTransition trans) throws IOException {
-        // out-parameters must be don't care
         var args = clone(trans.getArguments());
         var sig = trans.getAction().getSignature();
         for (int i = 0; i < sig.size(); i++) {
-            if (sig.getPar(i).isOutOnly()) {
+            if (sig.getPar(i).isOutOnly() || !(args[i] instanceof ValueNode)) {
                 args[i] = null;
             }
         }
