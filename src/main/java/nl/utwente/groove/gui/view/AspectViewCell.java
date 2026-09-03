@@ -49,6 +49,11 @@ public interface AspectViewCell extends ViewCell<@NonNull AspectGraph> {
     void setUserObject(Object value);
 
     /**
+     * Returns the errors in this cell.
+     */
+    AspectViewCellErrors getErrors();
+
+    /**
      * Sets the user object with information from the cell's wrapped
      * nodes and edges.
      */

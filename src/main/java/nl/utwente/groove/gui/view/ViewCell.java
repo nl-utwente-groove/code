@@ -95,10 +95,13 @@ public interface ViewCell<G extends @NonNull Graph> extends Serializable {
     }
 
     /**
-     * Indicates if there are errors in this ViewCell;
-     * i.e., if {@link #getErrors()} would return a non-empty object.
+     * Indicates if there are errors in this cell.
+     * This implementation returns {@code false}; to be overridden by
+     * cell types that can carry errors.
      */
-    boolean hasErrors();
+    default boolean hasErrors() {
+        return false;
+    }
 
     /**
      * Returns the maximum severity of the diagnostics in this ViewCell,
@@ -112,11 +115,6 @@ public interface ViewCell<G extends @NonNull Graph> extends Serializable {
             ? Severity.ERROR
             : null;
     }
-
-    /**
-     * Returns the errors in this jCell.
-     */
-    AspectViewCellErrors getErrors();
 
     /**
      * Adds an edge to those wrapped by this ViewCell.

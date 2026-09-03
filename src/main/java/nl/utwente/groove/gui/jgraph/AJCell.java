@@ -36,10 +36,7 @@ import nl.utwente.groove.gui.look.Look;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualKey.Nature;
 import nl.utwente.groove.gui.look.VisualMap;
-import nl.utwente.groove.util.parse.Severity;
-import nl.utwente.groove.gui.view.AspectViewCellErrors;
 import nl.utwente.groove.gui.view.ViewCell;
-import nl.utwente.groove.gui.view.AspectViewCell;
 
 /**
  * Abstract ViewCell implementation, providing some of the basic functionality.
@@ -117,7 +114,6 @@ public abstract class AJCell<G extends @NonNull Graph,JG extends JGraph<G>,JM ex
         this.staleKeys = EnumSet.copyOf(this.staleKeys);
         this.staleKeys.addAll(Arrays.asList(VisualKey.refreshables()));
         this.looksChanged = true;
-        this.errors = null;
     }
 
     @Override
@@ -261,34 +257,6 @@ public abstract class AJCell<G extends @NonNull Graph,JG extends JGraph<G>,JM ex
 
     /** The set of (refreshable) visual keys to be refreshed. */
     private Set<VisualKey> staleKeys;
-
-    @Override
-    public boolean hasErrors() {
-        boolean result = false;
-        if (this.errors != null) {
-            result = !this.errors.isEmpty();
-        }
-        return result;
-    }
-
-    @Override
-    public Severity getErrorSeverity() {
-        var errors = this.errors;
-        return errors == null
-            ? null
-            : errors.getSeverity();
-    }
-
-    @Override
-    public AspectViewCellErrors getErrors() {
-        if (this.errors == null) {
-            this.errors = new AspectViewCellErrors((AspectViewCell) this);
-        }
-        return this.errors;
-    }
-
-    /** Object containing this cell's errors, if any. */
-    private AspectViewCellErrors errors;
 
     @Override
     public AttributeMap getAttributes() {

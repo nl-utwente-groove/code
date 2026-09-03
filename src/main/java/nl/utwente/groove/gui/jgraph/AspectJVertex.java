@@ -38,7 +38,9 @@ import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.parse.FormatError;
+import nl.utwente.groove.util.parse.Severity;
 import nl.utwente.groove.gui.view.AspectViewCell;
+import nl.utwente.groove.gui.view.AspectViewCellErrors;
 
 /**
  * Specialized j-vertex for rule graphs, with its own tool tip text.
@@ -78,6 +80,7 @@ public class AspectJVertex extends
     @Override
     public void initialise() {
         super.initialise();
+        this.errors = null;
         AspectNode node = getNode();
         getAspects().putAll(node.getAspects());
         var data = node.getKind(Category.SORT);
@@ -405,4 +408,32 @@ public class AspectJVertex extends
     public static AspectJVertex newInstance(GraphRole graphRole) {
         return new AspectJVertex(graphRole);
     }
+
+    @Override
+    public boolean hasErrors() {
+        boolean result = false;
+        if (this.errors != null) {
+            result = !this.errors.isEmpty();
+        }
+        return result;
+    }
+
+    @Override
+    public Severity getErrorSeverity() {
+        var errors = this.errors;
+        return errors == null
+            ? null
+            : errors.getSeverity();
+    }
+
+    @Override
+    public AspectViewCellErrors getErrors() {
+        if (this.errors == null) {
+            this.errors = new AspectViewCellErrors(this);
+        }
+        return this.errors;
+    }
+
+    /** Object containing this cell's errors, if any. */
+    private AspectViewCellErrors errors;
 }

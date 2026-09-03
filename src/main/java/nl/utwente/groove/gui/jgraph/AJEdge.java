@@ -43,6 +43,7 @@ import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.parse.FormatError;
+import nl.utwente.groove.gui.view.AspectViewCell;
 import nl.utwente.groove.gui.view.ViewEdge;
 import nl.utwente.groove.gui.view.ViewVertex;
 
@@ -310,10 +311,10 @@ abstract public class AJEdge<@NonNull G extends Graph,JG extends JGraph<G>,JM ex
             result.append(" to ");
             result.append(HTMLConverter.ITALIC_TAG.on(targetIdentity));
         }
-        if (hasErrors()) {
+        if (this instanceof AspectViewCell aspectCell && hasErrors()) {
             HTMLConverter.HTMLTag errorTag
                 = HTMLConverter.createColorTag(Values.ERROR_NORMAL_FOREGROUND);
-            for (FormatError error : getErrors()) {
+            for (FormatError error : aspectCell.getErrors()) {
                 result.append(HTMLConverter.HTML_LINEBREAK);
                 result.append(errorTag.on(error));
             }
