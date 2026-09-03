@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.DefaultGraphCell;
 
@@ -36,6 +37,8 @@ import nl.utwente.groove.gui.look.Look;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualKey.Nature;
 import nl.utwente.groove.gui.look.VisualMap;
+import nl.utwente.groove.gui.view.GraphCanvas;
+import nl.utwente.groove.gui.view.GraphViewModel;
 import nl.utwente.groove.gui.view.ViewCell;
 
 /**
@@ -55,9 +58,14 @@ public abstract class AJCell<G extends @NonNull Graph,JG extends JGraph<G>,JM ex
         this.visuals = new VisualMap();
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    public JG getJGraph() {
+    public @Nullable GraphCanvas<G> getCanvas() {
+        return getJGraph();
+    }
+
+    /** Returns the backend component on which this cell is displayed, if any. */
+    @SuppressWarnings("unchecked")
+    public @Nullable JG getJGraph() {
         // if this is called early, maybe there is no JModel yet
         return getJModel() == null
             ? null
@@ -65,13 +73,17 @@ public abstract class AJCell<G extends @NonNull Graph,JG extends JGraph<G>,JM ex
     }
 
     /** Sets a new JModel for this cell. */
-    @Override
     @SuppressWarnings("unchecked")
-    public void setJModel(JModel<G> jModel) {
+    public void setJModel(JModel<?> jModel) {
         this.jModel = (JM) jModel;
     }
 
     @Override
+    public GraphViewModel<G> getViewModel() {
+        return getJModel().getViewModel();
+    }
+
+    /** Returns the backend model to which this cell belongs. */
     public JM getJModel() {
         return this.jModel;
     }

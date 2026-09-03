@@ -84,9 +84,7 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
 
     /** Refreshes all refreshable visual keys in all cells of this model. */
     public void refreshVisuals() {
-        for (ViewCell<G> jCell : getRoots()) {
-            jCell.setStale(VisualKey.refreshables());
-        }
+        getViewModel().refreshVisuals();
     }
 
     /** Returns the size of the graph, as a sum of the number of nodes and edges. */
@@ -268,27 +266,14 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
      * @param layoutable the new value for {@link ViewVertex#setLayoutable(boolean)}
      */
     public void setLayoutable(boolean layoutable) {
-        for (ViewCell<G> jCell : getRoots()) {
-            if (jCell instanceof ViewVertex) {
-                ((ViewVertex<?>) jCell).setLayoutable(layoutable);
-            }
-        }
+        getViewModel().setLayoutable(layoutable);
     }
 
     /** Retrieves a mapping from graph nodes to foreground colours
      * as stored in the corresponding {@link ViewVertex} attributes.
      */
     public Map<Node,Color> getColorMap() {
-        Map<Node,Color> result = new HashMap<>();
-        for (ViewCell<G> jCell : getRoots()) {
-            if (jCell instanceof ViewVertex) {
-                Color foreground = jCell.getVisuals().getForeground();
-                if (foreground != null) {
-                    result.put(((ViewVertex<G>) jCell).getNode(), foreground);
-                }
-            }
-        }
-        return result;
+        return getViewModel().getColorMap();
     }
 
     @Override
@@ -475,7 +460,7 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
      */
     protected ViewEdge<G> createJEdge(Edge edge) {
         ViewEdge<G> result = getJGraph().getFactory().newJEdge(edge);
-        result.setJModel(this);
+        ((AJCell<?,?,?>) result).setJModel(this);
         result.initialise();
         if (edge != null) {
             result.addEdge(edge);
@@ -488,7 +473,7 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
      */
     final protected ViewVertex<G> createJVertex(Node node) {
         ViewVertex<G> result = getJGraph().getFactory().newJVertex(node);
-        result.setJModel(this);
+        ((AJCell<?,?,?>) result).setJModel(this);
         result.setNode(node);
         result.initialise();
         return result;

@@ -22,7 +22,7 @@ import java.util.List;
 
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.view.AspectViewCell;
-import nl.utwente.groove.gui.jgraph.AspectJGraph;
+import nl.utwente.groove.gui.view.AspectGraphCanvas;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
 
@@ -33,8 +33,8 @@ import nl.utwente.groove.gui.look.VisualMap;
  */
 public class AddPointAction extends JCellEditAction {
     /** Constructs an instance of the action. */
-    public AddPointAction(AspectJGraph jGraph) {
-        super(jGraph, Options.ADD_POINT_ACTION, false);
+    public AddPointAction(AspectGraphCanvas canvas) {
+        super(canvas, Options.ADD_POINT_ACTION, false);
         putValue(ACCELERATOR_KEY, Options.ADD_POINT_KEY);
     }
 

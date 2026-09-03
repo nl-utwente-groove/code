@@ -35,6 +35,7 @@ import org.jgraph.graph.VertexView;
 import nl.utwente.groove.gui.view.ViewCell;
 import nl.utwente.groove.gui.view.ViewEdge;
 import nl.utwente.groove.gui.jgraph.JGraph;
+import nl.utwente.groove.gui.view.GraphCanvas;
 import nl.utwente.groove.gui.jgraph.JModel;
 import nl.utwente.groove.gui.view.ViewVertex;
 import nl.utwente.groove.gui.jgraph.JVertexView;
@@ -49,7 +50,7 @@ abstract public class AbstractLayouter implements Layouter {
     /**
      * Constructor to create a dummy, prototype layout action. Proper layout
      * actions are created using <tt>newInstance(MyJGraph)</tt>
-     * @see #newInstance(JGraph)
+     * @see #newInstance(GraphCanvas)
      */
     protected AbstractLayouter(String name) {
         this(name, null);
@@ -58,7 +59,7 @@ abstract public class AbstractLayouter implements Layouter {
     /**
      * Constructor to create a dummy, prototype layout action. Proper layout
      * actions are created using <tt>newInstance(MyJGraph)</tt>
-     * @see #newInstance(JGraph)
+     * @see #newInstance(GraphCanvas)
      */
     protected AbstractLayouter(String name, JGraph<?> jgraph) {
         this.name = name;

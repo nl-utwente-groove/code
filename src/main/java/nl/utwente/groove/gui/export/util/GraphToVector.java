@@ -37,7 +37,9 @@ public abstract class GraphToVector {
     /** Paints a given jGraph in a {@link Graphics} object. */
     protected void toGraphics(JGraph<?> graph, Graphics2D graphics) {
         Rectangle2D bounds = graph.getGraphBounds();
-
+        if (bounds == null) {
+            return;
+        }
         graphics.translate(-bounds.getMinX(), -bounds.getMinY());
         double scale = graph.getScale();
         graphics.scale(1.0 / scale, 1.0 / scale);

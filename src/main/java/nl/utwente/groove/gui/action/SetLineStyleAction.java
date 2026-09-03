@@ -22,7 +22,7 @@ import java.util.List;
 
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.view.AspectViewCell;
-import nl.utwente.groove.gui.jgraph.AspectJGraph;
+import nl.utwente.groove.gui.view.AspectGraphCanvas;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
 import nl.utwente.groove.util.line.LineStyle;
@@ -34,8 +34,8 @@ import nl.utwente.groove.util.line.LineStyle;
  */
 public class SetLineStyleAction extends JCellEditAction {
     /** Constructs an instance of the action, for a given line style. */
-    public SetLineStyleAction(AspectJGraph jGraph, LineStyle lineStyle) {
-        super(jGraph, lineStyle.getName(), false);
+    public SetLineStyleAction(AspectGraphCanvas canvas, LineStyle lineStyle) {
+        super(canvas, lineStyle.getName(), false);
         putValue(ACCELERATOR_KEY, Options.getLineStyleKey(lineStyle));
         this.lineStyle = lineStyle;
     }

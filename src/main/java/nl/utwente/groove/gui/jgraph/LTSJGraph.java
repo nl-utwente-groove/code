@@ -28,20 +28,18 @@ import static nl.utwente.groove.gui.Options.SHOW_SYSTEM_STATE_PROPERTIES_OPTION;
 
 import java.awt.geom.Dimension2D;
 import java.io.Serializable;
-
-import javax.swing.SwingUtilities;
+import java.util.Collection;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.jgraph.graph.GraphModel;
 
 import nl.utwente.groove.graph.Edge;
-import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.gui.Simulator;
+import nl.utwente.groove.gui.view.LTSGraphCanvas;
 import nl.utwente.groove.gui.view.LTSGraphViewController;
-import nl.utwente.groove.gui.layout.ForestLayouter;
-import nl.utwente.groove.gui.layout.Layouter;
+import nl.utwente.groove.gui.view.OptionRefreshListener;
 import nl.utwente.groove.lts.Filter;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
@@ -55,7 +53,7 @@ import nl.utwente.groove.gui.view.ViewVertex;
  * an instance, setupPopupMenu() should be called after all global final
  * variables have been set.
  */
-public class LTSJGraph extends JGraph<@NonNull GTS> implements Serializable {
+public class LTSJGraph extends JGraph<@NonNull GTS> implements LTSGraphCanvas, Serializable {
     /** Constructs an instance of the j-graph for a given simulator. */
     public LTSJGraph(Simulator simulator) {
         super(simulator);
@@ -78,9 +76,9 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements Serializable {
     }
 
     @Override
-    public RefreshListener getRefreshListener(String option) {
+    public OptionRefreshListener getRefreshListener(String option) {
         return switch (option) {
-        case SHOW_RECIPE_STEPS_OPTION -> new RefreshListener(this) {
+        case SHOW_RECIPE_STEPS_OPTION -> new OptionRefreshListener(this) {
             @Override
             protected void doRefresh() {
                 GTS gts = getGraph();
@@ -89,7 +87,7 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements Serializable {
                 }
             }
         };
-        case SHOW_ABSENT_STATES_OPTION -> new RefreshListener(this) {
+        case SHOW_ABSENT_STATES_OPTION -> new OptionRefreshListener(this) {
             @Override
             protected void doRefresh() {
                 GTS gts = getGraph();
@@ -98,7 +96,7 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements Serializable {
                 }
             }
         };
-        case SHOW_SYSTEM_STATE_PROPERTIES_OPTION -> new RefreshListener(this) {
+        case SHOW_SYSTEM_STATE_PROPERTIES_OPTION -> new OptionRefreshListener(this) {
             @Override
             protected void doRefresh() {
                 reloadJModel();
@@ -122,7 +120,7 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements Serializable {
         if (controller.getFilter() != Filter.NONE) {
             controller.refreshFiltering();
         }
-        refreshAllCells(true);
+        refreshAll(true);
         controller.refreshActive();
         doLayout(true);
         controller.scrollToActive();
@@ -136,9 +134,8 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements Serializable {
     @Override
     public void setModel(GraphModel model) {
         // reset the active state and transition
-        var controller = getController();
-        if (controller != null) { // may be null during construction
-            controller.resetActive();
+        if (hasController()) { // not the case during construction
+            getController().resetActive();
         }
         super.setModel(model);
     }
@@ -166,19 +163,21 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements Serializable {
         return new LTSGraphViewController(this, simulator);
     }
 
-    /**
-     * Scrolls the view to a given node or edge of the underlying graph model.
-     */
-    public void scrollTo(Element nodeOrEdge) {
-        final var cell = getNonNullModel().getJCell(nodeOrEdge);
-        if (cell != null) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    scrollCellToVisible(cell);
-                }
-            });
-        }
+    @Override
+    public int setStateBound(int bound) {
+        return getNonNullModel().setStateBound(bound);
+    }
+
+    @Override
+    public int getStateBound() {
+        return getNonNullModel().getStateBound();
+    }
+
+    @Override
+    public boolean addElements(Collection<? extends GraphState> states,
+                               Collection<? extends GraphTransition> transitions,
+                               boolean replace) {
+        return getNonNullModel().addElements(states, transitions, replace);
     }
 
     @Override
@@ -200,11 +199,6 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements Serializable {
     }
 
     private final Matrix<Dimension2D> sizeMatrix = new Matrix<>();
-
-    @Override
-    public Layouter getDefaultLayouter() {
-        return ForestLayouter.PROTOTYPE;
-    }
 
     @Override
     protected JGraphFactory<@NonNull GTS> createFactory() {

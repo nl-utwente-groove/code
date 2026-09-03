@@ -817,7 +817,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     public void doRepeat() {
         var tab = getSelectedTab();
         if (tab instanceof GraphTab graphTab) {
-            graphTab.getJGraph().scrollToNextSelectedRoot();
+            graphTab.getJGraph().scrollToNextSelected();
         }
     }
 

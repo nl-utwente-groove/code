@@ -7,10 +7,13 @@ everything needed to continue lives here or in `claude/jgraph-controller-split.m
 (the slice-by-slice record of the decoupling refactor).
 
 **Status (2026-09-03): phase 1a (in-place decoupling) is COMPLETE; phase 0 (the
-yFiles rendering spike) is DONE**, findings in `claude/yfiles-spike-findings.md`
-(fidelity bar met, yFiles layouts beat Spring/Forest, 8240-state LTS lays out in
-16 s organic / 44 s hierarchic). Awaiting Arend's go/no-go and interaction check;
-then phase 1b (facade definition).
+yFiles rendering spike) is DONE** (findings in `claude/yfiles-spike-findings.md`:
+fidelity bar met, yFiles layouts beat Spring/Forest, 8240-state LTS lays out in
+16 s organic / 44 s hierarchic; go given by Arend). **Phase 1b (facade definition)
+is IN PROGRESS** on branch `view-facade`: slice 1 (the `GraphCanvas` interface
+family, `JGraph` implementing it, controllers and pure clients retargeted, the
+architecture test with its allowlist) is done; design record and slicing in
+`claude/view-facade.md`.
 
 ## Goal and motivation
 

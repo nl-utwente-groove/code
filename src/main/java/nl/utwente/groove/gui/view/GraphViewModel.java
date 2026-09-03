@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.gui.view;
 
+import java.awt.Color;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,13 +33,13 @@ import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.layout.LayoutMap;
-import nl.utwente.groove.gui.jgraph.JModel;
+import nl.utwente.groove.gui.look.VisualKey;
 
 /**
  * Library-independent content model of a graph view:
  * the displayed graph, its layout map, and the mapping from
  * graph elements to the cells that display them.
- * Owned by the (backend-specific) {@link JModel}, which keeps
+ * Owned by the backend-specific model, which keeps
  * delegating accessors; see {@code claude/jgraph-controller-split.md}.
  * @author Arend Rensink
  * @version $Revision$
@@ -194,6 +196,43 @@ public class GraphViewModel<G extends Graph> {
     /** Returns the set of graph nodes currently represented in this view model. */
     public Set<Node> getNodes() {
         return this.nodeJCellMap.keySet();
+    }
+
+    /**
+     * Returns all cells of this view model: the vertices followed by the edges.
+     * No further order is guaranteed.
+     */
+    public Collection<? extends ViewCell<G>> getCells() {
+        var result = new ArrayList<ViewCell<G>>(size());
+        result.addAll(this.nodeJCellMap.values());
+        result.addAll(this.edgeJCellMap.values());
+        return result;
+    }
+
+    /** Sets the layoutable status of all vertices. */
+    public void setLayoutable(boolean layoutable) {
+        for (var vertex : this.nodeJCellMap.values()) {
+            vertex.setLayoutable(layoutable);
+        }
+    }
+
+    /** Marks all refreshable visuals of all cells as stale. */
+    public void refreshVisuals() {
+        for (var cell : getCells()) {
+            cell.setStale(VisualKey.refreshables());
+        }
+    }
+
+    /** Returns a map from nodes to the foreground colours of their vertices. */
+    public Map<Node,Color> getColorMap() {
+        Map<Node,Color> result = new HashMap<>();
+        for (var entry : this.nodeJCellMap.entrySet()) {
+            Color foreground = entry.getValue().getVisuals().getForeground();
+            if (foreground != null) {
+                result.put(entry.getKey(), foreground);
+            }
+        }
+        return result;
     }
 
     /** Returns the number of graph nodes currently represented in this view model. */

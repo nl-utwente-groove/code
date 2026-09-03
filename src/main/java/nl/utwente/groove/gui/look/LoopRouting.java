@@ -59,7 +59,7 @@ final class LoopRouting implements Routing {
             // first refresh the source view, otherwise the view bounds
             // might be out of date
             sourceView.refresh(cache, cache, true);
-            JGraph<?> jGraph = jEdge.getJGraph();
+            JGraph<?> jGraph = (JGraph<?>) jEdge.getCanvas();
             assert jGraph != null; // guaranteed by now
             jGraph.updateAutoSize(sourceView);
             Rectangle2D sourceBounds = sourceView.getBounds();
@@ -89,7 +89,7 @@ final class LoopRouting implements Routing {
         if (!edgeView.isLoop()) {
             return false;
         }
-        JGraph<?> jGraph = ((ViewEdge<?>) edgeView.getCell()).getJGraph();
+        JGraph<?> jGraph = (JGraph<?>) ((ViewEdge<?>) edgeView.getCell()).getCanvas();
         assert jGraph != null; // known by now
         if (jGraph.isLayouting()) {
             return false;

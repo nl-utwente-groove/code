@@ -28,11 +28,10 @@ import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.EdgeComparator;
-import nl.utwente.groove.gui.jgraph.AspectJObject;
 import nl.utwente.groove.util.parse.Severity;
 
 /**
- * Instantiation of a {@link ViewCell} with an {@link AspectJObject}
+ * Instantiation of a {@link ViewCell} with an {@link AspectViewObject}
  * that stores the (editable) string representation of the node/edge label.
  * @author Arend Rensink
  * @version $Revision$
@@ -45,7 +44,7 @@ public interface AspectViewCell extends ViewCell<@NonNull AspectGraph> {
     Aspect.Map getAspects();
 
     /** Returns the user object of this cell, with the given type. */
-    AspectJObject getUserObject();
+    AspectViewObject getUserObject();
 
     /** Sets the user object to a given value. */
     void setUserObject(Object value);

@@ -38,7 +38,6 @@ import nl.utwente.groove.gui.action.JCellEditAction;
 import nl.utwente.groove.gui.action.RemovePointAction;
 import nl.utwente.groove.gui.action.ResetLabelPositionAction;
 import nl.utwente.groove.gui.action.SetLineStyleAction;
-import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.menu.MyJMenu;
 import nl.utwente.groove.gui.menu.SetLineStyleMenu;
 import nl.utwente.groove.gui.tree.RuleLevelTree;
@@ -55,17 +54,17 @@ import nl.utwente.groove.util.line.LineStyle;
 public class AspectGraphViewController extends GraphViewController<AspectGraph> {
     /**
      * Constructs a controller for a given graph-view component.
-     * @param graphView the graph-view component that this controller belongs to
+     * @param canvas the canvas that this controller belongs to
      * @param simulator simulator to which the display belongs; may be {@code null}
      */
-    public AspectGraphViewController(AspectJGraph graphView, @Nullable Simulator simulator) {
-        super(graphView, simulator);
+    public AspectGraphViewController(AspectGraphCanvas canvas, @Nullable Simulator simulator) {
+        super(canvas, simulator);
     }
 
     /* Specialises the return type. */
     @Override
-    public AspectJGraph getGraphView() {
-        return (AspectJGraph) super.getGraphView();
+    public AspectGraphCanvas getCanvas() {
+        return (AspectGraphCanvas) super.getCanvas();
     }
 
     @Override
@@ -73,7 +72,7 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
         MyJMenu result = new MyJMenu("Popup");
         var actions = getActions();
         assert actions != null; // the popup menu is only built with a simulator present
-        switch (getGraphView().getGraphRole()) {
+        switch (getCanvas().getGraphRole()) {
         case HOST:
             result.add(actions.getApplyMatchAction());
             result.addSeparator();
@@ -82,11 +81,11 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
             // do nothing
         }
         Action editAction;
-        if (getGraphView().isForState()) {
+        if (getCanvas().isForState()) {
             editAction = actions.getEditStateAction();
         } else {
             editAction
-                = actions.getEditAction(ResourceKind.toResource(getGraphView().getGraphRole()));
+                = actions.getEditAction(ResourceKind.toResource(getCanvas().getGraphRole()));
         }
         result.add(editAction);
         result.addSubmenu(createEditMenu(atPoint));
@@ -100,10 +99,10 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
         MyJMenu result = new MyJMenu();
         var actions = getActions();
         if (actions != null) {
-            if (getGraphView().isForState()) {
+            if (getCanvas().isForState()) {
                 result.add(actions.getSaveStateAction());
             } else {
-                ResourceKind resource = ResourceKind.toResource(getGraphView().getGraphRole());
+                ResourceKind resource = ResourceKind.toResource(getCanvas().getGraphRole());
                 result.add(actions.getSaveAction(resource));
                 result.add(actions.getSaveAsAction(resource));
             }
@@ -118,7 +117,7 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
      */
     public JMenu createEditMenu(@Nullable Point atPoint) {
         JMenu result = new JMenu("Edit");
-        if (getGraphView().hasActiveEditor()) {
+        if (getCanvas().hasActiveEditor()) {
             result.add(getEditLabelAction());
             result.add(getAddPointAction(atPoint));
             result.add(getRemovePointAction(atPoint));
@@ -134,8 +133,8 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
     public AddPointAction getAddPointAction(@Nullable Point atPoint) {
         var result = this.addPointAction;
         if (result == null) {
-            this.addPointAction = result = new AddPointAction(getGraphView());
-            getGraphView().addAccelerator(result);
+            this.addPointAction = result = new AddPointAction(getCanvas());
+            getCanvas().addAccelerator(result);
         }
         result.setLocation(atPoint);
         return result;
@@ -150,8 +149,8 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
     public JCellEditAction getEditLabelAction() {
         var result = this.editLabelAction;
         if (result == null) {
-            this.editLabelAction = result = new EditLabelAction(getGraphView());
-            getGraphView().addAccelerator(result);
+            this.editLabelAction = result = new EditLabelAction(getCanvas());
+            getCanvas().addAccelerator(result);
         }
         return result;
     }
@@ -165,8 +164,8 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
     public RemovePointAction getRemovePointAction(@Nullable Point atPoint) {
         var result = this.removePointAction;
         if (result == null) {
-            this.removePointAction = result = new RemovePointAction(getGraphView());
-            getGraphView().addAccelerator(result);
+            this.removePointAction = result = new RemovePointAction(getCanvas());
+            getCanvas().addAccelerator(result);
         }
         result.setLocation(atPoint);
         return result;
@@ -182,7 +181,7 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
     public JCellEditAction getResetLabelPositionAction() {
         var result = this.resetLabelPositionAction;
         if (result == null) {
-            this.resetLabelPositionAction = result = new ResetLabelPositionAction(getGraphView());
+            this.resetLabelPositionAction = result = new ResetLabelPositionAction(getCanvas());
         }
         return result;
     }
@@ -197,9 +196,9 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
     public JCellEditAction getSetLineStyleAction(LineStyle lineStyle) {
         var result = this.setLineStyleActionMap.get(lineStyle);
         if (result == null) {
-            result = new SetLineStyleAction(getGraphView(), lineStyle);
+            result = new SetLineStyleAction(getCanvas(), lineStyle);
             this.setLineStyleActionMap.put(lineStyle, result);
-            getGraphView().addAccelerator(result);
+            getCanvas().addAccelerator(result);
         }
         return result;
     }
@@ -212,7 +211,7 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
      * Creates and returns a fresh line style menu for the graph view.
      */
     public JMenu createLineStyleMenu() {
-        return new SetLineStyleMenu(getGraphView());
+        return new SetLineStyleMenu(getCanvas());
     }
 
     /**
@@ -234,14 +233,14 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
      * This is certainly the case if the view is being edited.
      */
     public final boolean isShowValueNodes() {
-        return getGraphView().hasActiveEditor() || getOptionValue(Options.SHOW_VALUE_NODES_OPTION);
+        return getCanvas().hasActiveEditor() || getOptionValue(Options.SHOW_VALUE_NODES_OPTION);
     }
 
     /** Sets a level tree for this graph view. */
     public void setLevelTree(@Nullable RuleLevelTree levelTree) {
         assert levelTree == null
-            || getGraphView().getGraphRole() == GraphRole.RULE
-                && !getGraphView().hasActiveEditor();
+            || getCanvas().getGraphRole() == GraphRole.RULE
+                && !getCanvas().hasActiveEditor();
         this.levelTree = levelTree;
     }
 

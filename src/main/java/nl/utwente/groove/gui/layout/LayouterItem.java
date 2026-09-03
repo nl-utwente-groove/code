@@ -26,6 +26,7 @@ import com.jgraph.layout.JGraphFacade;
 import com.jgraph.layout.JGraphLayout;
 
 import nl.utwente.groove.gui.jgraph.JGraph;
+import nl.utwente.groove.gui.view.GraphCanvas;
 
 /** Class representing elements of the layout menu. */
 public class LayouterItem implements Layouter {
@@ -58,7 +59,9 @@ public class LayouterItem implements Layouter {
     }
 
     @Override
-    public Layouter newInstance(JGraph<?> jGraph) {
+    public Layouter newInstance(GraphCanvas<?> canvas) {
+        // the layouters still work on the backend component (until the layout seam is neutral)
+        JGraph<?> jGraph = (JGraph<?>) canvas;
         return new LayouterItem(this.kind, jGraph, new JGraphFacade(jGraph));
     }
 

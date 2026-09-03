@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.gui.display;
 
-import static nl.utwente.groove.gui.jgraph.JGraphMode.PAN_MODE;
+import static nl.utwente.groove.gui.view.GraphViewMode.PAN_MODE;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -71,7 +71,7 @@ public class JGraphPanel<G extends Graph> extends JPanel {
 
     /** Callback method that adds the required listeners to this panel. */
     private void installListeners() {
-        getJGraph().addJGraphModeListener(new PropertyChangeListener() {
+        getJGraph().addGraphViewModeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 getScrollPane().setWheelScrollingEnabled(evt.getNewValue() != PAN_MODE);

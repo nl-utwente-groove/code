@@ -31,8 +31,6 @@ import nl.utwente.groove.gui.look.Look;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
 import nl.utwente.groove.util.parse.Severity;
-import nl.utwente.groove.gui.jgraph.JGraph;
-import nl.utwente.groove.gui.jgraph.JModel;
 
 /**
  * Cell of a graph view, wrapping one or more underlying graph elements.
@@ -40,14 +38,12 @@ import nl.utwente.groove.gui.jgraph.JModel;
  * @version $Revision$
  */
 public interface ViewCell<G extends @NonNull Graph> extends Serializable {
-    /** Returns the fixed jGraph on which this jCell is displayed.
-     * @return the parent graph of this cell; may be {@code null} if
+    /** Returns the canvas on which this cell is displayed.
+     * @return the canvas of this cell; may be {@code null} if
      * the cell has not yet been fully initialised
      */
-    public @Nullable JGraph<G> getJGraph();
+    public @Nullable GraphCanvas<G> getCanvas();
 
-    /** Sets a new JModel for this cell. */
-    public void setJModel(JModel<G> jModel);
 
     /**
      * Resets all internal structures to their initial values.
@@ -55,8 +51,8 @@ public interface ViewCell<G extends @NonNull Graph> extends Serializable {
      */
     public void initialise();
 
-    /** Returns the fixed jModel to which this jCell belongs. */
-    public JModel<G> getJModel();
+    /** Returns the content model to which this cell belongs. */
+    public GraphViewModel<G> getViewModel();
 
     /** Returns the end nodes (for an edge) or the incident edges (for a vertex). */
     public Iterator<? extends ViewCell<G>> getContext();

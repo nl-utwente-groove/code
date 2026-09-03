@@ -18,37 +18,40 @@ package nl.utwente.groove.gui.menu;
 
 import javax.swing.JMenu;
 
-import org.jgraph.event.GraphSelectionEvent;
-import org.jgraph.event.GraphSelectionListener;
+import org.eclipse.jdt.annotation.NonNull;
 
+import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.gui.Options;
-import nl.utwente.groove.gui.jgraph.AspectJGraph;
+import nl.utwente.groove.gui.view.AspectGraphCanvas;
+import nl.utwente.groove.gui.view.GraphCanvas;
+import nl.utwente.groove.gui.view.GraphCanvasListener;
 import nl.utwente.groove.gui.view.ViewEdge;
 import nl.utwente.groove.util.line.LineStyle;
 
 /**
- * Menu offering a choice of line style setting actions.
+ * Menu to set the line style of the selected edge.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class SetLineStyleMenu extends JMenu implements GraphSelectionListener {
-    /** Constructs an instance of the menu, for a given j-graph. */
-    public SetLineStyleMenu(AspectJGraph jGraph) {
+public class SetLineStyleMenu extends JMenu implements GraphCanvasListener<@NonNull AspectGraph> {
+    /**
+     * Constructs a menu for a given canvas.
+     */
+    public SetLineStyleMenu(AspectGraphCanvas canvas) {
         super(Options.SET_LINE_STYLE_MENU);
-        this.jGraph = jGraph;
-        valueChanged(null);
-        jGraph.addGraphSelectionListener(this);
+        this.canvas = canvas;
+        selectionChanged(canvas);
+        canvas.addCanvasListener(this);
         // initialise the line style menu
         for (LineStyle lineStyle : LineStyle.values()) {
-            add(jGraph.getController().getSetLineStyleAction(lineStyle));
+            add(canvas.getController().getSetLineStyleAction(lineStyle));
         }
     }
 
     @Override
-    public void valueChanged(GraphSelectionEvent e) {
-        this.setEnabled(this.jGraph.getSelectionCell() instanceof ViewEdge);
+    public void selectionChanged(GraphCanvas<@NonNull AspectGraph> canvas) {
+        this.setEnabled(this.canvas.getSelectedCell() instanceof ViewEdge);
     }
 
-    /** The j-graph on which this menu works. */
-    private final AspectJGraph jGraph;
+    private final AspectGraphCanvas canvas;
 }

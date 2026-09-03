@@ -708,7 +708,7 @@ public class JEdgeView extends EdgeView {
                 result = this.jLabelSize = new Dimension();
             } else if (lines != this.jLabelLines || foreground != this.jLabelColor) {
                 // no, the text or colour have changed; reload the jLabel component
-                JGraph<?> jGraph = view.getCell().getJGraph();
+                JGraph<?> jGraph = (JGraph<?>) view.getCell().getCanvas();
                 assert jGraph != null; // guaranteed by now
                 Point2D start = null;
                 Point2D end = null;

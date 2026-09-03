@@ -39,6 +39,7 @@ import nl.utwente.groove.graph.EdgeComparator;
 import nl.utwente.groove.graph.NodeComparator;
 import nl.utwente.groove.gui.view.ViewEdge;
 import nl.utwente.groove.gui.jgraph.JGraph;
+import nl.utwente.groove.gui.view.GraphCanvas;
 import nl.utwente.groove.gui.view.ViewVertex;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.util.Pair;
@@ -65,7 +66,9 @@ public class ForestLayouter extends AbstractLayouter {
     }
 
     @Override
-    public Layouter newInstance(JGraph<?> jgraph) {
+    public Layouter newInstance(GraphCanvas<?> canvas) {
+        // the layouters still work on the backend component (until the layout seam is neutral)
+        JGraph<?> jgraph = (JGraph<?>) canvas;
         return new ForestLayouter(getName(), jgraph);
     }
 

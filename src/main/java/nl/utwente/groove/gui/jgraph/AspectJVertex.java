@@ -14,6 +14,8 @@ import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
 
+import nl.utwente.groove.gui.view.AspectViewObject;
+import nl.utwente.groove.gui.view.GraphViewMode;
 import nl.utwente.groove.grammar.aspect.Aspect;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectElement;
@@ -281,7 +283,7 @@ public class AspectJVertex extends
     /** Indicates if this vertex is in fact a nodified edge. */
     public boolean isNodeEdge() {
         JGraph<?> jGraph = getJGraph();
-        return jGraph != null && jGraph.getMode() != JGraphMode.EDIT_MODE
+        return jGraph != null && jGraph.getMode() != GraphViewMode.EDIT_MODE
             && getEdgeLabelPattern() != null;
     }
 
@@ -314,7 +316,7 @@ public class AspectJVertex extends
     @Override
     public void saveToUserObject() {
         // collect the node and edge information
-        AspectJObject userObject = getUserObject();
+        AspectViewObject userObject = getUserObject();
         userObject.clear();
         userObject.addLabels(getNode().getNodeLabels());
         userObject.addEdges(getEdges());
@@ -345,7 +347,7 @@ public class AspectJVertex extends
         for (AspectLabel label : edgeLabels) {
             if (label.has(REMARK)) {
                 if (hasRemark) {
-                    remarkText.append(AspectJObject.NEWLINE);
+                    remarkText.append(AspectViewObject.NEWLINE);
                 }
                 remarkText.append(label.getInnerText());
                 hasRemark = true;
@@ -378,8 +380,8 @@ public class AspectJVertex extends
     @Override
     public void setUserObject(Object value) {
         // we do need to create a new object, otherwise undos do not work
-        AspectJObject myObject = new AspectJObject();
-        if (value instanceof AspectJObject o) {
+        AspectViewObject myObject = new AspectViewObject();
+        if (value instanceof AspectViewObject o) {
             myObject.addAll(o);
         } else if (value != null) {
             myObject.load(value.toString());
@@ -389,8 +391,8 @@ public class AspectJVertex extends
 
     /** Specialises the return type. */
     @Override
-    public AspectJObject getUserObject() {
-        return (AspectJObject) super.getUserObject();
+    public AspectViewObject getUserObject() {
+        return (AspectViewObject) super.getUserObject();
     }
 
     @SuppressWarnings("unchecked")

@@ -19,8 +19,8 @@ package nl.utwente.groove.gui.jgraph;
 import static java.awt.event.MouseEvent.BUTTON1;
 import static java.awt.event.MouseEvent.BUTTON3;
 import static nl.utwente.groove.gui.jgraph.JAttr.EXTRA_BORDER_SPACE;
-import static nl.utwente.groove.gui.jgraph.JGraphMode.EDIT_MODE;
-import static nl.utwente.groove.gui.jgraph.JGraphMode.PAN_MODE;
+import static nl.utwente.groove.gui.view.GraphViewMode.EDIT_MODE;
+import static nl.utwente.groove.gui.view.GraphViewMode.PAN_MODE;
 import static nl.utwente.groove.gui.jgraph.JGraphUI.DragMode.EDGE;
 import static nl.utwente.groove.gui.jgraph.JGraphUI.DragMode.MOVE;
 import static nl.utwente.groove.gui.jgraph.JGraphUI.DragMode.PAN;
@@ -56,6 +56,7 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.jgraph.graph.CellView;
 import org.jgraph.plaf.basic.BasicGraphUI;
 
+import nl.utwente.groove.gui.view.GraphViewMode;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.util.Exceptions;
@@ -70,7 +71,7 @@ public class JGraphUI<G extends @NonNull Graph> extends BasicGraphUI {
         return (JGraph<G>) this.graph;
     }
 
-    private JGraphMode getJGraphMode() {
+    private GraphViewMode getGraphViewMode() {
         return getJGraph().getMode();
     }
 
@@ -198,7 +199,7 @@ public class JGraphUI<G extends @NonNull Graph> extends BasicGraphUI {
                 return;
             }
             boolean addEdge = false;
-            if (getJGraphMode() == EDIT_MODE && e.getButton() == BUTTON1) {
+            if (getGraphViewMode() == EDIT_MODE && e.getButton() == BUTTON1) {
                 // this is an editing-related event
                 AspectJGraph jGraph = (AspectJGraph) getJGraph();
                 if (isEdgeAdding() && e.getClickCount() == 1) {
@@ -270,11 +271,11 @@ public class JGraphUI<G extends @NonNull Graph> extends BasicGraphUI {
             DragMode newDragMode;
             ViewCell<G> jVertex = getJVertexAt(e.getPoint());
             ViewCell<G> jEdge = getJEdgeAt(e.getPoint());
-            if (getJGraphMode() == PAN_MODE && e.getButton() == BUTTON1) {
+            if (getGraphViewMode() == PAN_MODE && e.getButton() == BUTTON1) {
                 newDragMode = PAN;
             } else if (jVertex != null || jEdge != null) {
                 // either start adding an edge, or move
-                if (getJGraphMode() == EDIT_MODE && e.getButton() == BUTTON1
+                if (getGraphViewMode() == EDIT_MODE && e.getButton() == BUTTON1
                     && !ADD_EDGE_BY_CLICK) {
                     if (jEdge != null) {
                         newDragMode = MOVE;
@@ -430,7 +431,7 @@ public class JGraphUI<G extends @NonNull Graph> extends BasicGraphUI {
         @SuppressWarnings("unchecked")
         private void completeSelect(MouseEvent evt) {
             Rectangle bounds = this.selectHandler.getBounds();
-            if (getJGraphMode() == PAN_MODE) {
+            if (getGraphViewMode() == PAN_MODE) {
                 getJGraph().zoomTo(bounds);
             } else {
                 // adapt the bound to the scale

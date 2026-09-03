@@ -18,8 +18,8 @@ package nl.utwente.groove.gui.jgraph;
 
 import static nl.utwente.groove.gui.Options.SHOW_ASPECTS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_VALUE_NODES_OPTION;
-import static nl.utwente.groove.gui.jgraph.JGraphMode.EDIT_MODE;
-import static nl.utwente.groove.gui.jgraph.JGraphMode.PREVIEW_MODE;
+import static nl.utwente.groove.gui.view.GraphViewMode.EDIT_MODE;
+import static nl.utwente.groove.gui.view.GraphViewMode.PREVIEW_MODE;
 
 import java.awt.event.ItemEvent;
 import java.awt.geom.Point2D;
@@ -39,6 +39,7 @@ import org.jgraph.graph.DefaultPort;
 import org.jgraph.graph.GraphModel;
 import org.jgraph.graph.PortView;
 
+import nl.utwente.groove.gui.view.GraphViewMode;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectNode;
@@ -49,15 +50,17 @@ import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
+import nl.utwente.groove.gui.view.AspectGraphCanvas;
 import nl.utwente.groove.gui.view.AspectGraphViewController;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.view.AspectViewCell;
+import nl.utwente.groove.gui.view.OptionRefreshListener;
 
 /**
  * Extension of {@link JGraph} for {@link AspectGraph}s.
  */
-public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
+public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements AspectGraphCanvas {
     /**
      * Creates a new instance, for a given graph role.
      * A flag determines whether the graph is editable.
@@ -146,7 +149,7 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
 
     /* Makes sure the JGraph is rebuilt rather than just refreshed, if necessary. */
     @Override
-    public RefreshListener getRefreshListener(String option) {
+    public OptionRefreshListener getRefreshListener(String option) {
         if (option.equals(Options.SHOW_BIDIRECTIONAL_EDGES_OPTION)) {
             return new RebuildListener();
         } else {
@@ -155,6 +158,7 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
     }
 
     /** Indicates that the JModel has an editor enabled. */
+    @Override
     public boolean hasActiveEditor() {
         return this.editing && getMode() != PREVIEW_MODE;
     }
@@ -167,6 +171,7 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
     /**
      * Indicates if the graph being displayed is a graph state.
      */
+    @Override
     public boolean isForState() {
         return this.forState;
     }
@@ -272,7 +277,7 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
     }
 
     @Override
-    protected JGraphMode getDefaultMode() {
+    public GraphViewMode getDefaultMode() {
         return this.editing
             ? EDIT_MODE
             : super.getDefaultMode();
@@ -281,7 +286,8 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
     /**
      * Selects the cells corresponding to a given collection of graph elements.
      */
-    public void setSelectionCells(Collection<Element> elems) {
+    @Override
+    public void selectElements(Collection<? extends Element> elems) {
         var model = getNonNullModel();
         var errorCells = new HashSet<AspectViewCell>();
         for (var elem : elems) {
@@ -333,7 +339,7 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
      * Special listener for the show bidirectional edges option, for which a
      * refresh is not enough, but a rebuild is required.
      */
-    private class RebuildListener extends RefreshListener {
+    private class RebuildListener extends OptionRefreshListener {
         RebuildListener() {
             super(AspectJGraph.this);
         }

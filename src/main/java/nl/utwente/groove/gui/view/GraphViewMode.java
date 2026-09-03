@@ -1,4 +1,4 @@
-package nl.utwente.groove.gui.jgraph;
+package nl.utwente.groove.gui.view;
 
 import java.awt.Cursor;
 
@@ -9,7 +9,7 @@ import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
 
 /** Manipulation and viewing mode of a JGraph. */
-public enum JGraphMode {
+public enum GraphViewMode {
     /** Selection and possibly label edit mode. */
     SELECT_MODE(Options.SELECT_MODE_NAME, Options.SELECT_MODE_KEY,
             Icons.SELECT_ICON),
@@ -22,7 +22,7 @@ public enum JGraphMode {
     PREVIEW_MODE(Options.PREVIEW_MODE_NAME, Options.PREVIEW_MODE_KEY,
             Icons.PREVIEW_ICON);
 
-    private JGraphMode(String text, KeyStroke acceleratorKey, ImageIcon icon,
+    private GraphViewMode(String text, KeyStroke acceleratorKey, ImageIcon icon,
             Cursor moveCursor, Cursor dragCursor) {
         this.text = text;
         this.acceleratorKey = acceleratorKey;
@@ -31,7 +31,7 @@ public enum JGraphMode {
         this.dragCursor = dragCursor;
     }
 
-    private JGraphMode(String text, KeyStroke acceleratorKey, ImageIcon icon) {
+    private GraphViewMode(String text, KeyStroke acceleratorKey, ImageIcon icon) {
         this(text, acceleratorKey, icon, Cursor.getDefaultCursor(),
             Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
     }
