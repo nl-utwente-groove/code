@@ -171,7 +171,7 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
 
     /* Makes sure the JGraph is rebuilt rather than just refreshed, if necessary. */
     @Override
-    protected RefreshListener getRefreshListener(String option) {
+    public RefreshListener getRefreshListener(String option) {
         if (option.equals(Options.SHOW_BIDIRECTIONAL_EDGES_OPTION)) {
             return new RebuildListener();
         } else {
@@ -537,6 +537,10 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
      * refresh is not enough, but a rebuild is required.
      */
     private class RebuildListener extends RefreshListener {
+        RebuildListener() {
+            super(AspectJGraph.this);
+        }
+
         @Override
         public void itemStateChanged(ItemEvent e) {
             if (isEnabled()) {

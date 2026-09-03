@@ -65,7 +65,6 @@ import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import javax.swing.JToggleButton;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
@@ -90,7 +89,6 @@ import org.jgraph.graph.PortView;
 import org.jgraph.plaf.GraphUI;
 import org.jgraph.plaf.basic.BasicGraphUI;
 
-import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphRole;
@@ -101,6 +99,7 @@ import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.gui.action.ActionStore;
 import nl.utwente.groove.gui.action.ExportAction;
 import nl.utwente.groove.gui.action.LayoutAction;
+import nl.utwente.groove.gui.display.JGraphController;
 import nl.utwente.groove.gui.layout.Layouter;
 import nl.utwente.groove.gui.layout.SpringLayouter;
 import nl.utwente.groove.gui.look.MultiLabel;
@@ -112,9 +111,7 @@ import nl.utwente.groove.gui.menu.ShowHideMenu;
 import nl.utwente.groove.gui.menu.ZoomMenu;
 import nl.utwente.groove.gui.tree.LabelTree;
 import nl.utwente.groove.lts.GTS;
-import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
-import nl.utwente.groove.util.Pair;
 
 /**
  * Enhanced j-graph, dedicated to j-models.
@@ -128,8 +125,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
      */
     protected JGraph(Simulator simulator) {
         super((JModel<G>) null);
-        this.simulator = simulator;
-        this.options = Options.instance();
+        this.controller = new JGraphController<>(this, simulator);
         // make sure the layout cache has been created
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
         setMarqueeHandler(createMarqueeHandler());
@@ -166,14 +162,16 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
         removeMouseListener(getMouseListener());
         removeKeyListener(getCancelEditListener());
         getSelectionModel().removeGraphSelectionListener(getGraphSelectionListener());
-        getActions().removeRefreshable(getExportAction());
-        for (Pair<JMenuItem,RefreshListener> record : this.optionListeners) {
-            record.one().removeItemListener(record.two());
-            record.one().removePropertyChangeListener(record.two());
-        }
-        this.optionListeners.clear();
-        this.exportAction = null;
+        getController().removeListeners();
     }
+
+    /** Returns the display controller associated with this {@link JGraph}. */
+    public JGraphController<G> getController() {
+        return this.controller;
+    }
+
+    /** The display controller associated with this {@link JGraph}. */
+    private final JGraphController<G> controller;
 
     /** Returns the graph role of the graphs expected for this JGraph. */
     public GraphRole getGraphRole() {
@@ -187,7 +185,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
 
     /** Returns the object holding the display options for this {@link JGraph}. */
     public final Options getOptions() {
-        return this.options;
+        return getController().getOptions();
     }
 
     /**
@@ -196,7 +194,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
      * @param option the name of the option
      */
     public boolean getOptionValue(String option) {
-        return getOptions().getItem(option).isEnabled() && getOptions().isSelected(option);
+        return getController().getOptionValue(option);
     }
 
     /**
@@ -205,28 +203,17 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
      * @see #getRefreshListener
      */
     public void addOptionListener(String option) {
-        JMenuItem optionItem = getOptions().getItem(option);
-        if (optionItem == null) {
-            throw Exceptions.illegalArg("Unknown option: %s", option);
-        }
-        RefreshListener listener = getRefreshListener(option);
-        if (listener != null) {
-            optionItem.addItemListener(listener);
-            optionItem.addPropertyChangeListener(listener);
-            this.optionListeners.add(Pair.newPair(optionItem, listener));
-        }
+        getController().addOptionListener(option);
     }
-
-    private final List<Pair<JMenuItem,RefreshListener>> optionListeners = new LinkedList<>();
 
     /**
      * Returns the refresh listener for a given option.
      * @return the refresh listener, or {@code null} if this JGraph doesn't
      * not need refreshing for a given option.
      */
-    protected RefreshListener getRefreshListener(String option) {
+    public RefreshListener getRefreshListener(String option) {
         if (this.refreshListener == null) {
-            this.refreshListener = new RefreshListener();
+            this.refreshListener = new RefreshListener(this);
         }
         return this.refreshListener;
     }
@@ -252,7 +239,8 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
      * Indicates whether self-edges should be shown as node labels.
      */
     public boolean isShowLoopsAsNodeLabels() {
-        return getProperties() == null || getProperties().isShowLoopsAsLabels();
+        var properties = getController().getProperties();
+        return properties == null || properties.isShowLoopsAsLabels();
     }
 
     /**
@@ -270,33 +258,14 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
         return getOptionValue(Options.SHOW_BIDIRECTIONAL_EDGES_OPTION);
     }
 
-    /** Returns the (possibly {@code null}) simulator associated with this JGraph. */
-    private Simulator getSimulator() {
-        return this.simulator;
-    }
-
     /** Convenience method to retrieve the state of the simulator, if any. */
     final public SimulatorModel getSimulatorModel() {
-        return getSimulator() == null
-            ? null
-            : getSimulator().getModel();
+        return getController().getSimulatorModel();
     }
 
     /** Convenience method to retrieve the state of the simulator, if any. */
     final public ActionStore getActions() {
-        return getSimulator() == null
-            ? null
-            : getSimulator().getActions();
-    }
-
-    /**
-     * The properties of the grammar to which the displayed graph belongs.
-     * May return {@code null} if the simulator is not set.
-     */
-    private GrammarProperties getProperties() {
-        return getSimulatorModel() == null
-            ? null
-            : getSimulatorModel().getGrammar().getProperties();
+        return getController().getActions();
     }
 
     /*
@@ -893,10 +862,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
      * @see #setLayouter(Layouter)
      */
     public Layouter getLayouter() {
-        if (this.layouter == null) {
-            this.layouter = getDefaultLayouter().newInstance(this);
-        }
-        return this.layouter;
+        return getController().getLayouter();
     }
 
     /** Prototype factory method to create a layouter for this JGraph. */
@@ -912,7 +878,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
      * @see #getLayouter()
      */
     public void setLayouter(Layouter prototypeLayouter) {
-        this.layouter = prototypeLayouter.newInstance(this);
+        getController().setLayouter(prototypeLayouter);
     }
 
     /**
@@ -925,17 +891,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
      * @return the layouter that has been used
      */
     public Layouter doLayout(boolean complete) {
-        var model = getModel();
-        assert model != null;
-        Layouter result = null;
-        if (complete) {
-            model.setLayoutable(true);
-            result = getLayouter();
-        } else {
-            result = getLayouter().getIncremental();
-        }
-        result.start();
-        return result;
+        return getController().doLayout(complete);
     }
 
     /** Adds a listener to {@link #setMode(JGraphMode)} calls. */
@@ -995,7 +951,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
      *         tip manager
      */
     public boolean getToolTipEnabled() {
-        return this.toolTipEnabled;
+        return getController().getToolTipEnabled();
     }
 
     /**
@@ -1009,12 +965,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
      * @see ToolTipManager#unregisterComponent(javax.swing.JComponent)
      */
     public void setToolTipEnabled(boolean enabled) {
-        if (enabled) {
-            ToolTipManager.sharedInstance().registerComponent(this);
-        } else {
-            ToolTipManager.sharedInstance().unregisterComponent(this);
-        }
-        this.toolTipEnabled = enabled;
+        getController().setToolTipEnabled(enabled);
     }
 
     /**
@@ -1022,7 +973,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
      * Note: this method is called from the label tree constructor.
      */
     public void setLabelTree(LabelTree<G> labelTree) {
-        this.labelTree = labelTree;
+        getController().setLabelTree(labelTree);
     }
 
     /**
@@ -1030,7 +981,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
      * @return the associated label tree, or {@code null} if there is none
      */
     public LabelTree<G> getLabelTree() {
-        return this.labelTree;
+        return getController().getLabelTree();
     }
 
     /**
@@ -1115,20 +1066,12 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
 
     /** Returns the action to export this JGraph in various formats. */
     public ExportAction getExportAction() {
-        if (this.exportAction == null) {
-            this.exportAction = new ExportAction(this);
-        }
-        this.exportAction.refresh();
-        return this.exportAction;
+        return getController().getExportAction();
     }
 
     /** Returns the action to layout this JGraph. */
     public LayoutAction getLayoutAction() {
-        if (this.layoutAction == null) {
-            this.layoutAction = new LayoutAction(this);
-            addAccelerator(this.layoutAction);
-        }
-        return this.layoutAction;
+        return getController().getLayoutAction();
     }
 
     @Override
@@ -1481,38 +1424,10 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
     /** Flag indicating if the JGraph is being layouted. */
     private boolean layouting;
 
-    /** Simulator tool to which this JGraph belongs. */
-    private final Simulator simulator;
-    /** The options object with which this {@link JGraph} was constructed. */
-    private final Options options;
     /** The manipulation mode of the JGraph. */
     private JGraphMode mode;
     /** Flag indicating that a model refresh is being executed. */
     private boolean modelRefreshing;
-
-    /**
-     * The label list associated with this jgraph.
-     */
-    private LabelTree<G> labelTree;
-
-    /**
-     * The currently selected prototype layouter.
-     */
-    private Layouter layouter;
-
-    /**
-     * The permanent ExportAction associated with this j-graph.
-     */
-    private ExportAction exportAction;
-    /**
-     * The permanent layout action associated with this jGraph.
-     */
-    private LayoutAction layoutAction;
-    /**
-     * Flag to indicate whether this jgraph is currently registered with the
-     * {@link ToolTipManager}.
-     */
-    private boolean toolTipEnabled;
 
     /** The factor by which the zoom is adapted. */
     public static final float ZOOM_FACTOR = 1.4f;
@@ -1613,13 +1528,18 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
     }
 
     /**
-     * Listener that causes all cells of this JGraph to be refreshed
+     * Listener that causes all cells of a JGraph to be refreshed
      * on activation.
      */
-    protected class RefreshListener implements ItemListener, PropertyChangeListener {
+    public static class RefreshListener implements ItemListener, PropertyChangeListener {
+        /** Constructs a listener for a given JGraph. */
+        public RefreshListener(JGraph<?> jGraph) {
+            this.jGraph = jGraph;
+        }
+
         @Override
         public void itemStateChanged(ItemEvent e) {
-            if (isEnabled()) {
+            if (this.jGraph.isEnabled()) {
                 doRefresh();
             }
         }
@@ -1627,18 +1547,21 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(AccessibleState.ENABLED.toDisplayString())
-                && isEnabled()) {
+                && this.jGraph.isEnabled()) {
                 doRefresh();
             }
         }
 
         /** Callback option to refresh as this listener demands. */
         protected void doRefresh() {
-            var model = getModel();
+            var model = this.jGraph.getModel();
             assert model != null;
             model.refreshVisuals();
-            refreshAllCells(true);
+            this.jGraph.refreshAllCells(true);
         }
+
+        /** The JGraph to be refreshed. */
+        protected final JGraph<?> jGraph;
     }
 
     /** Interface for obtaining display attributes for graph elements. */

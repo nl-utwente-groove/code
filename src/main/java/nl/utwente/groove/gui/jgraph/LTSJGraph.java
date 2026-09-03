@@ -96,9 +96,9 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements Serializable {
     }
 
     @Override
-    protected RefreshListener getRefreshListener(String option) {
+    public RefreshListener getRefreshListener(String option) {
         return switch (option) {
-        case SHOW_RECIPE_STEPS_OPTION -> new RefreshListener() {
+        case SHOW_RECIPE_STEPS_OPTION -> new RefreshListener(this) {
             @Override
             protected void doRefresh() {
                 GTS gts = getGraph();
@@ -107,7 +107,7 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements Serializable {
                 }
             }
         };
-        case SHOW_ABSENT_STATES_OPTION -> new RefreshListener() {
+        case SHOW_ABSENT_STATES_OPTION -> new RefreshListener(this) {
             @Override
             protected void doRefresh() {
                 GTS gts = getGraph();
@@ -116,7 +116,7 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements Serializable {
                 }
             }
         };
-        case SHOW_SYSTEM_STATE_PROPERTIES_OPTION -> new RefreshListener() {
+        case SHOW_SYSTEM_STATE_PROPERTIES_OPTION -> new RefreshListener(this) {
             @Override
             protected void doRefresh() {
                 reloadJModel();
