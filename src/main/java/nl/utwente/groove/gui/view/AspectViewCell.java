@@ -20,6 +20,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.aspect.Aspect;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
@@ -28,6 +29,7 @@ import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.EdgeComparator;
 import nl.utwente.groove.gui.jgraph.AspectJObject;
+import nl.utwente.groove.util.parse.Severity;
 
 /**
  * Instantiation of a {@link ViewCell} with an {@link AspectJObject}
@@ -52,6 +54,16 @@ public interface AspectViewCell extends ViewCell<@NonNull AspectGraph> {
      * Returns the errors in this cell.
      */
     AspectViewCellErrors getErrors();
+
+    @Override
+    default boolean hasErrors() {
+        return !getErrors().isEmpty();
+    }
+
+    @Override
+    default @Nullable Severity getErrorSeverity() {
+        return getErrors().getSeverity();
+    }
 
     /**
      * Sets the user object with information from the cell's wrapped
