@@ -102,7 +102,7 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
     public AttributeMap getAttributes(Object node) {
         AttributeMap result;
         if (node instanceof JCell) {
-            result = ((JCell<?>) node).getAttributes();
+            result = ((JCell<?>) node).getVisuals().getAttributes();
         } else {
             result = super.getAttributes(node);
         }
@@ -393,7 +393,7 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
             this.addedJEdges.add(jEdge);
             JVertex<G> targetJVertex = getJCellForNode(edge.target());
             assert targetJVertex != null : "No vertex for target node of " + edge;
-            this.connections.connect(result, sourceJVertex.getPort(), targetJVertex.getPort());
+            this.connections.add(new PendingConnection<>(jEdge, sourceJVertex, targetJVertex));
             addFreshJEdge(sourceJVertex, jEdge);
             addFreshJEdge(targetJVertex, jEdge);
         }
@@ -499,7 +499,7 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
         this.addedJEdges.clear();
         this.addedJVertices.clear();
         this.freshJEdges.clear();
-        this.connections = new ConnectionSet();
+        this.connections.clear();
     }
 
     /**
@@ -521,7 +521,13 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
         Object[] removedCells = replace
             ? getRoots().toArray()
             : null;
-        createEdit(addedCells, removedCells, null, this.connections, getParentMap(), null)
+        ConnectionSet connections = new ConnectionSet();
+        for (PendingConnection<G> c : this.connections) {
+            connections
+                .connect(c.jEdge(), ((AJVertex<?,?,?,?>) c.source()).getPort(),
+                         ((AJVertex<?,?,?,?>) c.target()).getPort());
+        }
+        createEdit(addedCells, removedCells, null, connections, getParentMap(), null)
             .execute();
         List<JEdge<G>> edges = new ArrayList<>();
         for (Object jCell : addedCells) {
@@ -595,10 +601,15 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
      */
     protected final List<JVertex<G>> addedJVertices = new ArrayList<>();
     /**
-     * Set of GraphModel connections. Used in the process of constructing a
-     * GraphJModel.
+     * Pending connections between newly created edge cells and their end
+     * vertices, in backend-neutral form; converted to a ConnectionSet upon
+     * insertion.
      */
-    protected ConnectionSet connections;
+    private final List<PendingConnection<G>> connections = new ArrayList<>();
+
+    /** Backend-neutral record of a pending edge connection. */
+    private record PendingConnection<G extends @NonNull Graph>(JEdge<G> jEdge, JVertex<G> source,
+        JVertex<G> target) {}
 
     /** See {@link #setVetoFireGraphChanged(boolean)}. */
     private boolean vetoFireGraphChanged;

@@ -602,7 +602,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
      */
     @Override
     public PortView getPortViewAt(double x, double y) {
-        JVertex<?> vertex = (JVertex<?>) getFirstCellForLocation(x, y, true, false);
+        AJVertex<?,?,?,?> vertex = (AJVertex<?,?,?,?>) getFirstCellForLocation(x, y, true, false);
         if (vertex != null) {
             return (PortView) getGraphLayoutCache().getMapping(vertex.getPort(), false);
         } else {

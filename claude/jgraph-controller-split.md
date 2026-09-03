@@ -69,6 +69,25 @@ sliced:
    `getColorMap`/`setLayoutable`/`refreshVisuals` (which iterate the backend
    z-order roots) stay on `JModel` until then.
 
+   **De-port follow-up** (done): `JCell` no longer extends `GraphCell` and
+   `JVertex` lost `getPort()`, making the entire cell interface hierarchy free of
+   `org.jgraph` types; incident-edge access goes through the already-neutral
+   `getContext()`. `JModel` records pending edge connections as neutral
+   (edge, source, target) records and converts them to a `ConnectionSet` (via
+   `AJVertex` casts, the single remaining port site on the load path) only in
+   `doInsert`. Physically relocating the insertion algorithm into
+   `GraphViewModel` is thereby *decoupled* from de-porting and is deferred to the
+   phase-2 model work: the algorithm is now backend-neutral in place, and moving
+   it early would split the orchestration (`addElements`/`addNodes`/`addEdges`,
+   overridden by `LTSJModel`) from its parts for no current gain.
+
+4. **Slice 4: looks decoupling** (queued). Move the polymorphic `isShow*`
+   predicates into the controller hierarchy (requires a small
+   `CtrlGraphViewController` for `CtrlJGraph`'s constant overrides), then flip
+   `VisualValue.get(JGraph, JCell)` and the `gui.look` value classes to take the
+   `GraphViewController` — making the whole looks layer a pure controller client,
+   per the general principle.
+
 ## Consequences accepted
 
 - `getRefreshListener` (and its overrides) widen from protected to public: the

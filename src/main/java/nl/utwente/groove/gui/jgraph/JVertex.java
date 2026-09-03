@@ -19,7 +19,6 @@ package nl.utwente.groove.gui.jgraph;
 import java.util.Iterator;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.jgraph.graph.DefaultPort;
 
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Node;
@@ -44,11 +43,6 @@ public interface JVertex<G extends @NonNull Graph> extends JCell<G> {
      * Returns the graph node wrapped by this {@link JVertex}.
      */
     public @NonNull Node getNode();
-
-    /**
-     * Returns this graph node's one and only port.
-     */
-    public DefaultPort getPort();
 
     /**
      * The cloned object is equal to this one after a reset.

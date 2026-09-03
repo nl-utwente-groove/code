@@ -124,9 +124,9 @@ public class ForestLayouter extends AbstractLayouter {
             // calculate the incoming edge count and (deterministic) outgoing edge map
             Set<JEdge<?>> outEdges = new TreeSet<>(edgeComparator);
             // iterate over the incident edges
-            Iterator<?> edgeIter = key.getPort().edges();
+            Iterator<? extends JEdge<?>> edgeIter = key.getContext();
             while (edgeIter.hasNext()) {
-                JEdge<?> edge = (JEdge<?>) edgeIter.next();
+                JEdge<?> edge = edgeIter.next();
                 if (!edge.getVisuals().isVisible()) {
                     continue;
                 }

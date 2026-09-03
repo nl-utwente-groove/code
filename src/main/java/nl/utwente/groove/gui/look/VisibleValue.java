@@ -19,7 +19,6 @@ package nl.utwente.groove.gui.look;
 import static nl.utwente.groove.grammar.aspect.AspectKind.REMARK;
 
 import java.util.Iterator;
-import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
 
@@ -137,12 +136,15 @@ public class VisibleValue implements VisualValue<Boolean> {
             return false;
         }
         // we are now sure that the underlying node has a data type;
-        @SuppressWarnings({"cast", "unchecked"})
-        var edges = (Set<AspectJEdge>) jVertex.getPort().getEdges();
         // any non-source-label of an incoming edge makes the node visible
-        return edges
-            .stream()
-            .anyMatch(e -> e.getTargetVertex() == jVertex && (e.isLoop() || !e.isSourceLabel()));
+        var edgeIter = jVertex.getContext();
+        while (edgeIter.hasNext()) {
+            var e = edgeIter.next();
+            if (e.getTargetVertex() == jVertex && (e.isLoop() || !e.isSourceLabel())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean getAspectEdgeValue(AspectJGraph jGraph, AspectJEdge jEdge) {

@@ -94,7 +94,6 @@ public abstract class AJVertex<G extends @NonNull Graph,JG extends JGraph<G>,JM 
     /**
      * Returns this graph node's one and only port.
      */
-    @Override
     public DefaultPort getPort() {
         DefaultPort result = null;
         for (Object child : getChildren()) {

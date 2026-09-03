@@ -23,7 +23,6 @@ import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
-import org.jgraph.graph.GraphCell;
 
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
@@ -34,11 +33,11 @@ import nl.utwente.groove.gui.look.VisualMap;
 import nl.utwente.groove.util.parse.Severity;
 
 /**
- * Extension of a graph cell that recognises that cells have underlying edges.
+ * Cell of a graph view, wrapping one or more underlying graph elements.
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface JCell<G extends @NonNull Graph> extends GraphCell, Serializable {
+public interface JCell<G extends @NonNull Graph> extends Serializable {
     /** Returns the fixed jGraph on which this jCell is displayed.
      * @return the parent graph of this cell; may be {@code null} if
      * the cell has not yet been fully initialised
