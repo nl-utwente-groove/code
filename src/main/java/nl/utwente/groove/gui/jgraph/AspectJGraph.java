@@ -22,30 +22,23 @@ import static nl.utwente.groove.gui.jgraph.JGraphMode.EDIT_MODE;
 import static nl.utwente.groove.gui.jgraph.JGraphMode.PREVIEW_MODE;
 
 import java.awt.Point;
-import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.geom.Point2D;
 import java.beans.PropertyChangeEvent;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import javax.accessibility.AccessibleState;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.jgraph.event.GraphModelEvent;
 import org.jgraph.event.GraphModelListener;
-import org.jgraph.event.GraphSelectionEvent;
-import org.jgraph.event.GraphSelectionListener;
 import org.jgraph.graph.ConnectionSet;
 import org.jgraph.graph.DefaultPort;
 import org.jgraph.graph.GraphModel;
@@ -62,10 +55,16 @@ import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
+import nl.utwente.groove.gui.action.AddPointAction;
+import nl.utwente.groove.gui.action.EditLabelAction;
+import nl.utwente.groove.gui.action.JCellEditAction;
+import nl.utwente.groove.gui.action.RemovePointAction;
+import nl.utwente.groove.gui.action.ResetLabelPositionAction;
+import nl.utwente.groove.gui.action.SetLineStyleAction;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.look.VisualKey;
-import nl.utwente.groove.gui.look.VisualMap;
 import nl.utwente.groove.gui.menu.MyJMenu;
+import nl.utwente.groove.gui.menu.SetLineStyleMenu;
 import nl.utwente.groove.gui.tree.RuleLevelTree;
 import nl.utwente.groove.util.line.LineStyle;
 
@@ -292,19 +291,6 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
         super.setEditable(editable);
     }
 
-    /** Convenience method to invoke an edit of a single visual attribute. */
-    void edit(JCell<@NonNull AspectGraph> jCell, VisualKey key, Object value) {
-        VisualMap newVisuals = new VisualMap();
-        newVisuals.put(key, value);
-        edit(jCell, newVisuals);
-    }
-
-    /** Convenience method to invoke an edit of a set of visual attributes. */
-    void edit(JCell<@NonNull AspectGraph> jCell, VisualMap newVisuals) {
-        getNonNullModel()
-            .edit(Collections.singletonMap(jCell, newVisuals.getAttributes()), null, null, null);
-    }
-
     /**
      * Adds a j-vertex to the j-graph, and positions it at a given point. The
      * point is in screen coordinates
@@ -443,156 +429,11 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
     private GrammarModel grammar;
 
     /**
-     * Abstract class for j-cell edit actions.
-     */
-    public abstract class JCellEditAction extends AbstractAction implements GraphSelectionListener {
-        /**
-         * Constructs an edit action that is enabled for all j-cells.
-         * @param name the name of the action
-         */
-        protected JCellEditAction(String name) {
-            super(name);
-            this.allCells = true;
-            this.vertexOnly = true;
-            this.jCells = new ArrayList<>();
-            refresh();
-            addGraphSelectionListener(this);
-        }
-
-        /**
-         * Constructs an edit action that is enabled for only j-vertices or
-         * j-edges.
-         * @param name the name of the action
-         * @param vertexOnly <tt>true</tt> if the action is for j-vertices only
-         */
-        protected JCellEditAction(String name, boolean vertexOnly) {
-            super(name);
-            this.allCells = false;
-            this.vertexOnly = vertexOnly;
-            this.jCells = new ArrayList<>();
-            refresh();
-            addGraphSelectionListener(this);
-        }
-
-        /**
-         * Sets the j-cell to the first selected cell. Disables the action if
-         * the type of the cell disagrees with the expected type.
-         */
-        @Override
-        public void valueChanged(GraphSelectionEvent e) {
-            refresh();
-        }
-
-        private void refresh() {
-            this.jCell = null;
-            this.jCells.clear();
-            for (Object cell : AspectJGraph.this.getSelectionCells()) {
-                AspectJCell jCell = (AspectJCell) cell;
-                if (this.allCells || this.vertexOnly == (jCell instanceof JVertex)) {
-                    this.jCell = jCell;
-                    this.jCells.add(jCell);
-                }
-            }
-            this.setEnabled(this.jCell != null);
-        }
-
-        /**
-         * Sets the location attribute of this action.
-         */
-        public void setLocation(Point2D location) {
-            this.location = location;
-        }
-
-        /**
-         * Adds a point at a given location to the underlying j-edge. The point is
-         * added between those two existing (adjacent) edge points for which the sum
-         * of the distances to the specified location is minimal. If the location is
-         * <tt>null</tt>,{@link #createPointBetween} is invoked instead. Does not
-         * update the view; this is to be done by the client.
-         * @param location the location at which the new point should appear; if
-         *        <tt>null</tt>, a point is added at random
-         * @return a copy of the points of the underlying j-edge with a point added
-         */
-        protected List<Point2D> addPointAt(List<Point2D> points, Point2D location) {
-            List<Point2D> result = new LinkedList<>(points);
-            if (location == null) {
-                result.add(1, createPointBetween(result.get(0), result.get(1)));
-            } else {
-                int closestIndex = getClosestIndex(result, location);
-                assert closestIndex > 0;
-                result.add(closestIndex, (Point) location.clone());
-            }
-            return result;
-        }
-
-        /**
-         * Returns the positive index in a non-empty list of points of that
-         * point which is closest to a given location.
-         * @param location the location to which distances are measured.
-         * @param points the list in which the index is sought
-         * @return the index of the point (from position 1) closest to the location
-         */
-        protected int getClosestIndex(List<Point2D> points, Point2D location) {
-            int result = 0;
-            double closestDistance = Double.MAX_VALUE;
-            for (int i = 1; i < points.size(); i++) {
-                double distance
-                    = location.distance(points.get(i - 1)) + location.distance(points.get(i));
-                if (distance < closestDistance) {
-                    result = i;
-                    closestDistance = distance;
-                }
-            }
-            return result;
-        }
-
-        /**
-         * Creates an returns a point halfway two given points, with a random effect
-         * @param p1 the first boundary point
-         * @param p2 the first boundary point
-         * @return new point on the perpendicular of the line between <tt>p1</tt>
-         *         and <tt>p2</tt>
-         */
-        private Point createPointBetween(Point2D p1, Point2D p2) {
-            double distance = p1.distance(p2);
-            int midX = (int) (p1.getX() + p2.getX()) / 2;
-            int midY = (int) (p1.getY() + p2.getY()) / 2;
-            // int offset = (int) (5 + distance / 2 + 20 * Math.random());
-            int x, y;
-            if (distance == 0) {
-                x = midX + 20;
-                y = midY + 20;
-            } else {
-                int offset = (int) (5 + distance / 4);
-                double xDelta = p1.getX() - p2.getX();
-                double yDelta = p1.getY() - p2.getY();
-                x = midX + (int) (offset * yDelta / distance);
-                y = midY - (int) (offset * xDelta / distance);
-            }
-            return new Point(Math.max(x, 0), Math.max(y, 0));
-        }
-
-        /**
-         * Switch indication that the action is enabled for all types of
-         * j-cells.
-         */
-        protected final boolean allCells;
-        /** Switch indication that the action is enabled for all j-vertices. */
-        protected final boolean vertexOnly;
-        /** The first currently selected j-cell of the right type. */
-        protected AspectJCell jCell;
-        /** List list of currently selected j-cells of the right type. */
-        protected final List<AspectJCell> jCells;
-        /** The currently set point location. */
-        protected Point2D location;
-    }
-
-    /**
      * Initialises and returns an action to add a point to the currently selected j-edge.
      */
     public AddPointAction getAddPointAction(Point atPoint) {
         if (this.addPointAction == null) {
-            this.addPointAction = new AddPointAction();
+            this.addPointAction = new AddPointAction(this);
             addAccelerator(this.addPointAction);
         }
         this.addPointAction.setLocation(atPoint);
@@ -603,39 +444,11 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
     private AddPointAction addPointAction;
 
     /**
-     * Action to add an intermediate point to a JEdge.
-     */
-    public class AddPointAction extends JCellEditAction {
-        /** Constructs an instance of the action. */
-        AddPointAction() {
-            super(Options.ADD_POINT_ACTION, false);
-            putValue(ACCELERATOR_KEY, Options.ADD_POINT_KEY);
-        }
-
-        @Override
-        public boolean isEnabled() {
-            return this.jCells.size() == 1;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent evt) {
-            execute(this.jCell);
-        }
-
-        /** Executes the action. */
-        public void execute(AspectJCell jCell) {
-            VisualMap visuals = jCell.getVisuals();
-            List<Point2D> points = addPointAt(visuals.getPoints(), this.location);
-            edit(jCell, VisualKey.POINTS, points);
-        }
-    }
-
-    /**
      * @return an action to edit the currently selected j-cell label.
      */
     public JCellEditAction getEditLabelAction() {
         if (this.editLabelAction == null) {
-            this.editLabelAction = new EditLabelAction();
+            this.editLabelAction = new EditLabelAction(this);
             addAccelerator(this.editLabelAction);
         }
         return this.editLabelAction;
@@ -647,27 +460,11 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
     private EditLabelAction editLabelAction;
 
     /**
-     * Action to edit the label of the currently selected j-cell.
-     */
-    private class EditLabelAction extends JCellEditAction {
-        /** Constructs an instance of the action. */
-        EditLabelAction() {
-            super(Options.EDIT_LABEL_ACTION);
-            putValue(ACCELERATOR_KEY, Options.RENAME_KEY);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent evt) {
-            startEditingAtCell(this.jCell);
-        }
-    }
-
-    /**
      * Initialises and returns an action to remove a point from the currently selected j-edge.
      */
     public RemovePointAction getRemovePointAction(Point atPoint) {
         if (this.removePointAction == null) {
-            this.removePointAction = new RemovePointAction();
+            this.removePointAction = new RemovePointAction(this);
             addAccelerator(this.removePointAction);
         }
         this.removePointAction.setLocation(atPoint);
@@ -680,67 +477,12 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
     private RemovePointAction removePointAction;
 
     /**
-     * Action to remove a point from the currently selected j-edge.
-     */
-    public class RemovePointAction extends JCellEditAction {
-        /** Constructs an instance of the action. */
-        RemovePointAction() {
-            super(Options.REMOVE_POINT_ACTION, false);
-            putValue(ACCELERATOR_KEY, Options.REMOVE_POINT_KEY);
-        }
-
-        @Override
-        public boolean isEnabled() {
-            return this.jCells.size() == 1;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent evt) {
-            execute(this.jCell);
-        }
-
-        /**
-         * Removes an intermediate point from a given j-edge, controlled by a given
-         * location. The point removed is either the second point (if the location
-         * is <tt>null</tt>) or the one closest to the location.
-         * @param jEdge the j-edge to be modified
-         */
-        public void execute(AspectJCell jEdge) {
-            VisualMap visuals = jEdge.getVisuals();
-            List<Point2D> points = visuals.getPoints();
-            edit(jEdge, VisualKey.POINTS, removePointAt(points, this.location));
-        }
-
-        /**
-         * Removes the intermediate point from a list of points that is closest
-         * to a given location. Has no effect if the list had only two points to
-         * start with, or if it is a loop. If
-         * the location is <tt>null</tt>, the point at index 1 is removed
-         * @param location the location at which the point to be removed is sought;
-         *        if <tt>null</tt>, the first available point is removed
-         * @return a copy of the points, possibly with a
-         *         point removed
-         */
-        private List<Point2D> removePointAt(List<Point2D> points, Point2D location) {
-            LinkedList<Point2D> result = new LinkedList<>(points);
-            if (result.size() > 2
-                && (!result.getFirst().equals(result.getLast()) || result.size() > 3)) {
-                int ix = location == null
-                    ? 1
-                    : getClosestIndex(points, location);
-                result.remove(ix);
-            }
-            return result;
-        }
-    }
-
-    /**
      * @return an action to reset the label position of the currently selected
      *         j-edge.
      */
     public JCellEditAction getResetLabelPositionAction() {
         if (this.resetLabelPositionAction == null) {
-            this.resetLabelPositionAction = new ResetLabelPositionAction();
+            this.resetLabelPositionAction = new ResetLabelPositionAction(this);
         }
         return this.resetLabelPositionAction;
     }
@@ -751,103 +493,24 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
     private ResetLabelPositionAction resetLabelPositionAction;
 
     /**
-     * Action set the label of the currently selected j-cell to its default
-     * position.
-     */
-    private class ResetLabelPositionAction extends JCellEditAction {
-        /** Constructs an instance of the action. */
-        ResetLabelPositionAction() {
-            super(Options.RESET_LABEL_POSITION_ACTION, false);
-        }
-
-        /** Resets the label positions of the selected cells. */
-        @Override
-        public void actionPerformed(ActionEvent evt) {
-            for (AspectJCell jCell : this.jCells) {
-                execute(jCell);
-            }
-        }
-
-        /**
-         * Resets the label position of a given a given j-edge to the default
-         * position.
-         * @param jEdge the j-edge to be modified
-         */
-        public void execute(AspectJCell jEdge) {
-            edit(jEdge, VisualKey.LABEL_POS, VisualKey.LABEL_POS.getDefaultValue());
-        }
-    }
-
-    /**
      * @param lineStyle the lineStyle for which to get the set-action
      * @return an action to set the line style of the currently selected j-edge.
      */
     public JCellEditAction getSetLineStyleAction(LineStyle lineStyle) {
         JCellEditAction result = this.setLineStyleActionMap.get(lineStyle);
         if (result == null) {
-            this.setLineStyleActionMap.put(lineStyle, result = new SetLineStyleAction(lineStyle));
+            this.setLineStyleActionMap
+                .put(lineStyle, result = new SetLineStyleAction(this, lineStyle));
             addAccelerator(result);
         }
         return result;
     }
 
     /**
-     * Action to set the line style of the currently selected j-edge.
-     */
-    private class SetLineStyleAction extends JCellEditAction {
-        /** Constructs an instance of the action, for a given line style. */
-        SetLineStyleAction(LineStyle lineStyle) {
-            super(lineStyle.getName(), false);
-            putValue(ACCELERATOR_KEY, Options.getLineStyleKey(lineStyle));
-            this.lineStyle = lineStyle;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent evt) {
-            VisualMap newVisuals = new VisualMap();
-            for (AspectJCell jCell : this.jCells) {
-                VisualMap visuals = jCell.getVisuals();
-                newVisuals.setLineStyle(this.lineStyle);
-                List<Point2D> points = visuals.getPoints();
-                if (points.size() == 2) {
-                    points = addPointAt(points, this.location);
-                    newVisuals.put(VisualKey.POINTS, points);
-                }
-                edit(jCell, newVisuals);
-            }
-        }
-
-        /** The line style set by this action instance. */
-        protected final LineStyle lineStyle;
-    }
-
-    /**
      * Creates and returns a fresh line style menu for this j-graph.
      */
     public JMenu createLineStyleMenu() {
-        JMenu result = new SetLineStyleMenu();
-        return result;
-    }
-
-    /**
-     * Menu offering a choice of line style setting actions.
-     */
-    private class SetLineStyleMenu extends JMenu implements GraphSelectionListener {
-        /** Constructs an instance of the action. */
-        SetLineStyleMenu() {
-            super(Options.SET_LINE_STYLE_MENU);
-            valueChanged(null);
-            addGraphSelectionListener(this);
-            // initialise the line style menu
-            for (LineStyle lineStyle : LineStyle.values()) {
-                add(getSetLineStyleAction(lineStyle));
-            }
-        }
-
-        @Override
-        public void valueChanged(GraphSelectionEvent e) {
-            this.setEnabled(getSelectionCell() instanceof JEdge);
-        }
+        return new SetLineStyleMenu(this);
     }
 
     private GraphModelListener getRefreshGraphListener() {

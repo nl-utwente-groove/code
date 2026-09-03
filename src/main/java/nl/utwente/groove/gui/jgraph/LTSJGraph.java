@@ -28,7 +28,6 @@ import static nl.utwente.groove.gui.Options.SHOW_SYSTEM_STATE_PROPERTIES_OPTION;
 import static nl.utwente.groove.gui.jgraph.JGraphMode.SELECT_MODE;
 
 import java.awt.Point;
-import java.awt.event.ActionEvent;
 import java.awt.geom.Dimension2D;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -37,7 +36,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.SwingUtilities;
@@ -51,6 +49,7 @@ import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
+import nl.utwente.groove.gui.action.ScrollToActiveAction;
 import nl.utwente.groove.gui.layout.ForestLayouter;
 import nl.utwente.groove.gui.layout.Layouter;
 import nl.utwente.groove.gui.menu.ModelCheckingMenu;
@@ -628,34 +627,7 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements Serializable {
     /**
      * Action to scroll the JGraph to the current state or derivation.
      */
-    private final ScrollToActiveAction scrollToActiveAction = new ScrollToActiveAction();
-
-    /**
-     * Action to scroll the LTS display to a (previously set) node or edge.
-     * @see #scrollTo(Element)
-     */
-    public class ScrollToActiveAction extends AbstractAction {
-        @Override
-        public void actionPerformed(ActionEvent evt) {
-            scrollToActive();
-        }
-
-        /**
-         * Adapts the name of the action so that it reflects that the element to
-         * scroll to is a given transition.
-         */
-        public void setTransition(GraphTransition edge) {
-            putValue(Action.NAME, Options.SCROLL_TO_ACTION_NAME + " transition");
-        }
-
-        /**
-         * Adapts the name of the action so that it reflects that the element to
-         * scroll to is a given state.
-         */
-        public void setState(GraphState node) {
-            putValue(Action.NAME, Options.SCROLL_TO_ACTION_NAME + " state");
-        }
-    }
+    private final ScrollToActiveAction scrollToActiveAction = new ScrollToActiveAction(this);
 
     @Override
     protected JGraphFactory<@NonNull GTS> createFactory() {
