@@ -33,12 +33,12 @@ import java.util.Set;
 
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.Edge.Routing;
+import org.jgraph.graph.GraphConstants;
 
+import nl.utwente.groove.graph.layout.ElementLayout;
 import nl.utwente.groove.gui.look.VisualKey.Nature;
 import nl.utwente.groove.util.Fonts;
 import nl.utwente.groove.util.line.LineStyle;
-
-import org.jgraph.graph.GraphConstants;
 
 /**
  * Attribute map associated with a {@link VisualMap}.
@@ -55,8 +55,7 @@ public class VisualAttributeMap extends AttributeMap {
         super.put(GraphConstants.ROUTING, edgeRouting);
         this.visuals = visuals;
         this.changedKeys = EnumSet.noneOf(VisualKey.class);
-        setStale(visuals.getMap()
-            .keySet());
+        setStale(visuals.getMap().keySet());
     }
 
     /**
@@ -344,8 +343,7 @@ public class VisualAttributeMap extends AttributeMap {
             super.put(GraphConstants.ENDFILL, targetShape.isFilled());
             break;
         case FONT:
-            value = Fonts.getLabelFont()
-                .deriveFont((Integer) value);
+            value = Fonts.getLabelFont().deriveFont((Integer) value);
             break;
         case COLOR:
         case FOREGROUND:
@@ -426,9 +424,10 @@ public class VisualAttributeMap extends AttributeMap {
         assert LineStyle.ORTHOGONAL.getCode() == GraphConstants.STYLE_ORTHOGONAL;
         assert LineStyle.SPLINE.getCode() == GraphConstants.STYLE_SPLINE;
         assert LineStyle.BEZIER.getCode() == GraphConstants.STYLE_BEZIER;
-        // persisted label positions are likewise passed to JGraph unchanged:
-        // ElementLayout.PERMILLE must equal GraphConstants.PERMILLE
-        // (not assertable: ecj flags comparing two compile-time constants)
+        // persisted label positions are likewise passed through unchanged;
+        // the local defeats constant folding, which ecj would otherwise flag
+        int permille = ElementLayout.PERMILLE;
+        assert permille == GraphConstants.PERMILLE;
     }
 
     /** Permille fractional distance of in multiplicity label from source node. */
@@ -437,8 +436,8 @@ public class VisualAttributeMap extends AttributeMap {
     private static final double OUT_MULT_DIST = GraphConstants.PERMILLE * 10 / 100;
     /** x-position of multiplicity labels. */
     private static final double MULT_X = -11;
-    private static final Point2D[] EXTRA_LABEL_POSITIONS =
-        {new Point2D.Double(IN_MULT_DIST, MULT_X), new Point2D.Double(OUT_MULT_DIST, MULT_X)};
+    private static final Point2D[] EXTRA_LABEL_POSITIONS
+        = {new Point2D.Double(IN_MULT_DIST, MULT_X), new Point2D.Double(OUT_MULT_DIST, MULT_X)};
 
     private final static Map<Object,VisualKey> attrToVisualKeyMap;
     private final static Map<VisualKey,String> visualToAttrKeyMap;
