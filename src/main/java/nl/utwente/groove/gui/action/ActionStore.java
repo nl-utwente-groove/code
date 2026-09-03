@@ -34,7 +34,7 @@ import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.display.StateDisplay;
 
 /**
- * Program that applies a production system to an initial graph.
+ * Collection of all Simulator-wide GUI actions.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -299,8 +299,7 @@ public class ActionStore implements SimulatorListener {
         // lazily create the action
         CheckLTLAction result = this.checkLTLMap.get(kind);
         if (result == null) {
-            this.checkLTLMap
-                .put(kind, result = new CheckLTLAction(this.simulator, kind, name));
+            this.checkLTLMap.put(kind, result = new CheckLTLAction(this.simulator, kind, name));
         }
 
         return result;
