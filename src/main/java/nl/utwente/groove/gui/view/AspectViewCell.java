@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.gui.jgraph;
+package nl.utwente.groove.gui.view;
 
 import java.util.Comparator;
 import java.util.Iterator;
@@ -27,16 +27,17 @@ import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.EdgeComparator;
+import nl.utwente.groove.gui.jgraph.AspectJObject;
 
 /**
- * Instantiation of a {@link JCell} with an {@link AspectJObject}
+ * Instantiation of a {@link ViewCell} with an {@link AspectJObject}
  * that stores the (editable) string representation of the node/edge label.
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface AspectJCell extends JCell<@NonNull AspectGraph> {
+public interface AspectViewCell extends ViewCell<@NonNull AspectGraph> {
     @Override
-    public Iterator<? extends AspectJCell> getContext();
+    public Iterator<? extends AspectViewCell> getContext();
 
     /** Returns the aspect kind of the element wrapped in this cell. */
     Aspect.Map getAspects();
@@ -70,7 +71,7 @@ public interface AspectJCell extends JCell<@NonNull AspectGraph> {
         return Boolean.compare(r2, r1);
     };
 
-    /** Comparator for the edges wrapped in an aspect JCell:
+    /** Comparator for the edges wrapped in an aspect ViewCell:
      * remark edges are ordered strictly first, all other edges are ordered
      * as by {@link EdgeComparator}.
      */

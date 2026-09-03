@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.gui.display;
+package nl.utwente.groove.gui.view;
 
 import java.awt.Point;
 import java.util.ArrayList;
@@ -33,9 +33,7 @@ import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.action.ScrollToActiveAction;
-import nl.utwente.groove.gui.jgraph.JCell;
 import nl.utwente.groove.gui.jgraph.JGraphMode;
-import nl.utwente.groove.gui.jgraph.LTSJCell;
 import nl.utwente.groove.gui.jgraph.LTSJEdge;
 import nl.utwente.groove.gui.jgraph.LTSJGraph;
 import nl.utwente.groove.gui.jgraph.LTSJVertex;
@@ -267,19 +265,19 @@ public class LTSGraphViewController extends GraphViewController<GTS> {
     public boolean setActive(@Nullable GraphState activeState,
                              @Nullable GraphTransition activeTrans) {
         boolean result = false;
-        List<JCell<GTS>> activeCells = new ArrayList<>();
-        List<JCell<GTS>> changedCells = new ArrayList<>();
+        List<ViewCell<GTS>> activeCells = new ArrayList<>();
+        List<ViewCell<GTS>> changedCells = new ArrayList<>();
         GraphTransition oldActiveTrans = getActiveTransition();
         this.activeTransition = activeTrans;
         if (oldActiveTrans != null) {
-            for (LTSJCell jCell : getTransitionCells(oldActiveTrans)) {
+            for (LTSViewCell jCell : getTransitionCells(oldActiveTrans)) {
                 if (jCell.setActive(false)) {
                     changedCells.add(jCell);
                 }
             }
         }
         if (activeTrans != null) {
-            for (LTSJCell jCell : getTransitionCells(activeTrans)) {
+            for (LTSViewCell jCell : getTransitionCells(activeTrans)) {
                 if (jCell.getVisuals().isVisible()) {
                     activeCells.add(jCell);
                 }
@@ -354,11 +352,11 @@ public class LTSGraphViewController extends GraphViewController<GTS> {
      * This is necessary after reloading the LTS.
      */
     public void reactivate() {
-        List<JCell<GTS>> activeCells = new ArrayList<>();
+        List<ViewCell<GTS>> activeCells = new ArrayList<>();
         GraphState activeState = getActiveState();
         var model = getGraphView().getNonNullModel();
         if (activeState != null) {
-            LTSJCell activeCell = (LTSJCell) model.getJCellForNode(activeState);
+            LTSViewCell activeCell = (LTSViewCell) model.getJCellForNode(activeState);
             if (activeCell != null) {
                 activeCell.setActive(true);
                 activeCells.add(activeCell);
@@ -366,7 +364,7 @@ public class LTSGraphViewController extends GraphViewController<GTS> {
         }
         GraphTransition activeTrans = getActiveTransition();
         if (activeTrans != null) {
-            LTSJCell activeCell = (LTSJCell) model.getJCellForEdge(activeTrans);
+            LTSViewCell activeCell = (LTSViewCell) model.getJCellForEdge(activeTrans);
             if (activeCell != null) {
                 activeCell.setActive(true);
                 activeCells.add(activeCell);
@@ -379,20 +377,20 @@ public class LTSGraphViewController extends GraphViewController<GTS> {
     }
 
     /** Collects all cells for a given transition and its subtransitions. */
-    private Collection<LTSJCell> getTransitionCells(GraphTransition trans) {
+    private Collection<LTSViewCell> getTransitionCells(GraphTransition trans) {
         var model = getGraphView().getNonNullModel();
-        Collection<LTSJCell> result = new ArrayList<>();
-        LTSJCell jCell = (LTSJCell) model.getJCellForEdge(trans);
+        Collection<LTSViewCell> result = new ArrayList<>();
+        LTSViewCell jCell = (LTSViewCell) model.getJCellForEdge(trans);
         if (jCell != null) {
             result.add(jCell);
         }
         if (trans instanceof RecipeTransition) {
             for (RuleTransition subTrans : ((RecipeTransition) trans).getSteps()) {
-                jCell = (LTSJCell) model.getJCellForEdge(subTrans);
+                jCell = (LTSViewCell) model.getJCellForEdge(subTrans);
                 if (jCell != null) {
                     result.add(jCell);
                 }
-                jCell = (LTSJCell) model.getJCellForNode(subTrans.source());
+                jCell = (LTSViewCell) model.getJCellForNode(subTrans.source());
                 if (jCell != null) {
                     result.add(jCell);
                 }

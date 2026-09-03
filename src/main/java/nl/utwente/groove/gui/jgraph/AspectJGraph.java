@@ -49,9 +49,10 @@ import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
-import nl.utwente.groove.gui.display.AspectGraphViewController;
+import nl.utwente.groove.gui.view.AspectGraphViewController;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.look.VisualKey;
+import nl.utwente.groove.gui.view.AspectViewCell;
 
 /**
  * Extension of {@link JGraph} for {@link AspectGraph}s.
@@ -246,8 +247,8 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
         AspectJEdge newEdge = (AspectJEdge) model.createJEdge(null);
         // add a single, empty label so the edge will be displayed
         newEdge.getUserObject().add("");
-        // to make sure there is at least one graph edge wrapped by this JEdge,
-        // we add a dummy edge label to the JEdge's user object
+        // to make sure there is at least one graph edge wrapped by this ViewEdge,
+        // we add a dummy edge label to the ViewEdge's user object
         Object[] insert = {newEdge};
         // define connections between edge and nodes, if any
         ConnectionSet cs = new ConnectionSet();
@@ -282,7 +283,7 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
      */
     public void setSelectionCells(Collection<Element> elems) {
         var model = getNonNullModel();
-        var errorCells = new HashSet<AspectJCell>();
+        var errorCells = new HashSet<AspectViewCell>();
         for (var elem : elems) {
             var errorCell = model.getJCell(elem);
             if (errorCell == null && elem instanceof Edge e) {

@@ -32,17 +32,19 @@ import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.util.HTMLConverter;
+import nl.utwente.groove.gui.view.ViewEdge;
+import nl.utwente.groove.gui.view.ViewVertex;
 
 /**
- * Generic abstract JCell subclass implementing the {@link JVertex} interface.
- * @param <G> the graph type for which the JVertex is intended
+ * Generic abstract ViewCell subclass implementing the {@link ViewVertex} interface.
+ * @param <G> the graph type for which the ViewVertex is intended
  * @author Arend Rensink
  * @version $Revision$
  */
-public abstract class AJVertex<G extends @NonNull Graph,JG extends JGraph<G>,JM extends JModel<G>,JE extends JEdge<G>>
-    extends AJCell<G,JG,JM> implements JVertex<G> {
+public abstract class AJVertex<G extends @NonNull Graph,JG extends JGraph<G>,JM extends JModel<G>,JE extends ViewEdge<G>>
+    extends AJCell<G,JG,JM> implements ViewVertex<G> {
     /**
-     * Constructs a fresh, uninitialised JVertex.
+     * Constructs a fresh, uninitialised ViewVertex.
      * Call {@link #setJModel(JModel)} and {@link #setNode(Node)}
      * to initialise.
      */
@@ -57,7 +59,7 @@ public abstract class AJVertex<G extends @NonNull Graph,JG extends JGraph<G>,JM 
     }
 
     /**
-     * Sets a new node in this JVertex, and resets all other structures
+     * Sets a new node in this ViewVertex, and resets all other structures
      * to their initial values.
      */
     @Override
@@ -109,7 +111,7 @@ public abstract class AJVertex<G extends @NonNull Graph,JG extends JGraph<G>,JM 
      * The cloned object is equal to this one after a reset.
      */
     @Override
-    public JVertex<G> clone() {
+    public ViewVertex<G> clone() {
         @SuppressWarnings("unchecked")
         AJVertex<G,JG,JM,JE> clone = (AJVertex<G,JG,JM,JE>) super.clone();
         clone.initialise();

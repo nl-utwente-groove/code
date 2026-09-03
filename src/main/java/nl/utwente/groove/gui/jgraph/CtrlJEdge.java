@@ -13,7 +13,7 @@ import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.Strings;
 
 /**
- * JEdge class that describes the underlying edge as a graph transition.
+ * ViewEdge class that describes the underlying edge as a graph transition.
  * @author Tom Staijen
  * @version $Revision$
  */

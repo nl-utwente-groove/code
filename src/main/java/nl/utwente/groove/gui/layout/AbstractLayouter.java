@@ -32,11 +32,11 @@ import org.jgraph.graph.CellView;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.VertexView;
 
-import nl.utwente.groove.gui.jgraph.JCell;
-import nl.utwente.groove.gui.jgraph.JEdge;
+import nl.utwente.groove.gui.view.ViewCell;
+import nl.utwente.groove.gui.view.ViewEdge;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.jgraph.JModel;
-import nl.utwente.groove.gui.jgraph.JVertex;
+import nl.utwente.groove.gui.view.ViewVertex;
 import nl.utwente.groove.gui.jgraph.JVertexView;
 import nl.utwente.groove.gui.look.VisualMap;
 
@@ -92,7 +92,7 @@ abstract public class AbstractLayouter implements Layouter {
         // edge points are cleared when layout is stored back into view
         //        this.jGraph.clearAllEdgePoints();
         // copy the old layout map
-        Map<JVertex<?>,LayoutNode> oldLayoutMap =
+        Map<ViewVertex<?>,LayoutNode> oldLayoutMap =
             new LinkedHashMap<>(this.layoutMap);
         // clear the transient information
         this.layoutMap.clear();
@@ -104,7 +104,7 @@ abstract public class AbstractLayouter implements Layouter {
                 continue;
             }
             JVertexView vertexView = (JVertexView) cellView;
-            JVertex<?> jVertex = vertexView.getCell();
+            ViewVertex<?> jVertex = vertexView.getCell();
             if (jVertex.isGrayedOut() || !jVertex.getVisuals().isVisible()) {
                 continue;
             }
@@ -133,10 +133,10 @@ abstract public class AbstractLayouter implements Layouter {
      * the node bounds and edge points.
      */
     protected void finish() {
-        final Map<JCell<?>,AttributeMap> change = new HashMap<>();
+        final Map<ViewCell<?>,AttributeMap> change = new HashMap<>();
         for (LayoutNode layout : this.layoutMap.values()) {
             VisualMap visuals = new VisualMap();
-            JVertex<?> jVertex = layout.getVertex();
+            ViewVertex<?> jVertex = layout.getVertex();
             // store the bounds back into the model
             double x = layout.getCenterX();
             double y = layout.getCenterY();
@@ -152,10 +152,10 @@ abstract public class AbstractLayouter implements Layouter {
         // clear edge points
         // not calling JGraph.clearAllEdgePoints to avoid generating a separate edit
         for (Object root : getJGraph().getRoots()) {
-            if (!(root instanceof JEdge)) {
+            if (!(root instanceof ViewEdge)) {
                 continue;
             }
-            JEdge<?> jEdge = (JEdge<?>) root;
+            ViewEdge<?> jEdge = (ViewEdge<?>) root;
             // only clear edge points for edges with relayouted source or target
             if (this.immovableMap.containsKey(jEdge.getSourceVertex())
                 && this.immovableMap.containsKey(jEdge.getTargetVertex())) {
@@ -216,7 +216,7 @@ abstract public class AbstractLayouter implements Layouter {
     /**
      * Map from graph nodes to layoutables.
      */
-    protected final Map<JVertex<?>,LayoutNode> layoutMap =
+    protected final Map<ViewVertex<?>,LayoutNode> layoutMap =
         new LinkedHashMap<>();
 
     /**
@@ -224,7 +224,7 @@ abstract public class AbstractLayouter implements Layouter {
      * to a point representing the shift between the position determined for them at the
      * last layout action, and their position at the start of the current layout action.
      */
-    protected final Map<JVertex<?>,Point2D> immovableMap = new HashMap<>();
+    protected final Map<ViewVertex<?>,Point2D> immovableMap = new HashMap<>();
 
     @Override
     public Layouter getIncremental() {
@@ -288,8 +288,8 @@ abstract public class AbstractLayouter implements Layouter {
         }
 
         /** Returns the vertex for which this is the layout node. */
-        public JVertex<?> getVertex() {
-            return (JVertex<?>) this.view.getCell();
+        public ViewVertex<?> getVertex() {
+            return (ViewVertex<?>) this.view.getCell();
         }
 
         @Override

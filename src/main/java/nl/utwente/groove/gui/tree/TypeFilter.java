@@ -36,7 +36,7 @@ import nl.utwente.groove.grammar.type.TypeKey;
 import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
-import nl.utwente.groove.gui.jgraph.JCell;
+import nl.utwente.groove.gui.view.ViewCell;
 import nl.utwente.groove.gui.tree.TypeFilter.TypeEntry;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.line.Line;
@@ -44,7 +44,7 @@ import nl.utwente.groove.util.line.Line;
 /**
  * Class that maintains a set of filtered entries
  * (either edge labels or type elements) as well as an inverse
- * mapping of those labels to {@link JCell}s bearing
+ * mapping of those labels to {@link ViewCell}s bearing
  * the entries.
  * @author Arend Rensink
  * @version $Revision$
@@ -72,8 +72,8 @@ class TypeFilter extends LabelFilter<AspectGraph,TypeEntry> {
     }
 
     @Override
-    protected Set<JCell<AspectGraph>> setSelection(LabelEntry entry, boolean selected) {
-        Set<JCell<AspectGraph>> result = new HashSet<>();
+    protected Set<ViewCell<AspectGraph>> setSelection(LabelEntry entry, boolean selected) {
+        Set<ViewCell<AspectGraph>> result = new HashSet<>();
         var superResult = super.setSelection(entry, selected);
         TypeEntry te = (TypeEntry) entry;
         if (selected) {

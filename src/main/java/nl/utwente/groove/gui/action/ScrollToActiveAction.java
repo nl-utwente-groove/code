@@ -22,7 +22,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 
 import nl.utwente.groove.gui.Options;
-import nl.utwente.groove.gui.display.LTSGraphViewController;
+import nl.utwente.groove.gui.view.LTSGraphViewController;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 

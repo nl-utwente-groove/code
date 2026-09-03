@@ -55,7 +55,7 @@ import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.action.ActionStore;
 import nl.utwente.groove.gui.display.DismissDelayer;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
-import nl.utwente.groove.gui.jgraph.JCell;
+import nl.utwente.groove.gui.view.ViewCell;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.jgraph.JModel;
 import nl.utwente.groove.gui.menu.ShowHideMenu;
@@ -98,7 +98,7 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
 
         getFilter().addObserver(evt -> {
             LabelTree.this.repaint();
-            getJGraph().refreshCells((Set<JCell<G>>) evt.getNewValue(), false);
+            getJGraph().refreshCells((Set<ViewCell<G>>) evt.getNewValue(), false);
         });
         addMouseListener(new MyMouseListener());
     }
@@ -179,7 +179,7 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
      * maintained by this label tree.
      */
     public Collection<LabelledCells<G>> getLabels() {
-        TreeMap<LabelEntry,Set<JCell<G>>> treeMap = new TreeMap<>();
+        TreeMap<LabelEntry,Set<ViewCell<G>>> treeMap = new TreeMap<>();
         for (LabelEntry entry : getFilter().getEntries()) {
             treeMap.put(entry, getFilter().getJCells(entry));
         }
@@ -235,7 +235,7 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
      * Reloads the filter from the model.
      */
     void updateFilter() {
-        for (JCell<G> cell : getNonNullJModel().getRoots()) {
+        for (ViewCell<G> cell : getNonNullJModel().getRoots()) {
             getFilter().addJCell(cell);
         }
     }
@@ -317,10 +317,10 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
         if (addedArray != null) {
             for (Object element : addedArray) {
                 // the cell may be a port, so we have to check for
-                // JCell-hood
-                if (element instanceof JCell) {
+                // ViewCell-hood
+                if (element instanceof ViewCell) {
                     @SuppressWarnings("unchecked")
-                    JCell<G> jCell = (JCell<G>) element;
+                    ViewCell<G> jCell = (ViewCell<G>) element;
                     result |= getFilter().addJCell(jCell);
                 }
                 changeMap.remove(element);
@@ -328,9 +328,9 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
         }
         for (Object changeEntry : changeMap.entrySet()) {
             Object element = ((Map.Entry<?,?>) changeEntry).getKey();
-            if (element instanceof JCell) {
+            if (element instanceof ViewCell) {
                 @SuppressWarnings("unchecked")
-                JCell<G> jCell = (JCell<G>) element;
+                ViewCell<G> jCell = (ViewCell<G>) element;
                 result |= getFilter().modifyJCell(jCell);
             }
         }
@@ -339,10 +339,10 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
         if (removedArray != null) {
             for (Object element : removedArray) {
                 // the cell may be a port, so we have to check for
-                // JCell-hood
-                if (element instanceof JCell) {
+                // ViewCell-hood
+                if (element instanceof ViewCell) {
                     @SuppressWarnings("unchecked")
-                    JCell<G> jCell = (JCell<G>) element;
+                    ViewCell<G> jCell = (ViewCell<G>) element;
                     result |= getFilter().removeJCell(jCell);
                 }
             }
@@ -356,14 +356,14 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
      */
     @Override
     public void valueChanged(@Nullable TreeSelectionEvent e) {
-        Set<JCell<?>> emphSet = new HashSet<>();
+        Set<ViewCell<?>> emphSet = new HashSet<>();
         TreePath[] selectionPaths = getSelectionPaths();
         if (selectionPaths != null) {
             for (TreePath selectedPath : selectionPaths) {
                 Object treeNode = selectedPath.getLastPathComponent();
                 if (treeNode instanceof LabelTree.LabelTreeNode) {
                     LabelEntry entry = ((LabelTreeNode) treeNode).getEntry();
-                    Set<JCell<G>> occurrences = getFilter().getJCells(entry);
+                    Set<ViewCell<G>> occurrences = getFilter().getJCells(entry);
                     //if (occurrences != null) {
                     emphSet.addAll(occurrences);
                     //}
@@ -464,7 +464,7 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
     /** Indicates if a given jCell is entirely filtered.
      * @return {@code true} if the jCell is currently visible
      */
-    public boolean isIncluded(JCell<G> jCell) {
+    public boolean isIncluded(ViewCell<G> jCell) {
         synchroniseModel();
         return getFilter().isIncluded(jCell);
     }
@@ -592,7 +592,7 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
             this.entries = new ArrayList<>();
             for (Object cell : cells) {
                 @SuppressWarnings("unchecked")
-                JCell<G> jCell = (JCell<G>) cell;
+                ViewCell<G> jCell = (ViewCell<G>) cell;
                 this.entries.addAll(getFilter().getEntries(jCell));
             }
         }
@@ -716,7 +716,7 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
     }
 
     /** Labelled set of cells. */
-    public record LabelledCells<G extends Graph>(Label label, Set<JCell<G>> cells) {
+    public record LabelledCells<G extends Graph>(Label label, Set<ViewCell<G>> cells) {
         // empty
     }
 

@@ -23,8 +23,8 @@ import org.eclipse.jdt.annotation.NonNull;
 import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.gui.jgraph.AspectJEdge;
-import nl.utwente.groove.gui.jgraph.JCell;
-import nl.utwente.groove.gui.display.GraphViewController;
+import nl.utwente.groove.gui.view.ViewCell;
+import nl.utwente.groove.gui.view.GraphViewController;
 
 /**
  * Creates a refresher for the edge source or target shape.
@@ -38,7 +38,7 @@ public class EdgeEndShapeValue implements VisualValue<EdgeEnd> {
     }
 
     @Override
-    public <G extends @NonNull Graph> EdgeEnd get(GraphViewController<G> controller, JCell<G> cell) {
+    public <G extends @NonNull Graph> EdgeEnd get(GraphViewController<G> controller, ViewCell<G> cell) {
         // first see what the looks have to say
         VisualMap looksMap = Look.getVisualsFor(cell.getLooks());
         EdgeEnd result = this.source

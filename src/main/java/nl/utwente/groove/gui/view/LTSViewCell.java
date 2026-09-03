@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.gui.jgraph;
+package nl.utwente.groove.gui.view;
 
 import java.io.Serializable;
 
@@ -23,11 +23,11 @@ import org.eclipse.jdt.annotation.NonNull;
 import nl.utwente.groove.lts.GTS;
 
 /**
- * Supertype of {@link LTSJVertex} and {@link LTSJEdge}.
+ * Supertype of {@link nl.utwente.groove.gui.jgraph.LTSJVertex} and {@link nl.utwente.groove.gui.jgraph.LTSJEdge}.
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface LTSJCell extends JCell<@NonNull GTS>, Serializable {
+public interface LTSViewCell extends ViewCell<@NonNull GTS>, Serializable {
     /**
      * Sets this cell to active. This will result in
      * special display attributes.

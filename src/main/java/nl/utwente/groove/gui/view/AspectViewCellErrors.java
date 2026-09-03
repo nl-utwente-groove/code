@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.gui.jgraph;
+package nl.utwente.groove.gui.view;
 
 import java.util.Iterator;
 
@@ -25,20 +25,21 @@ import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.Severity;
 
 /**
- * Object holding the errors for a given {@link AspectJCell}.
+ * Object holding the errors for a given {@link AspectViewCell}.
  * These consist of the aspect errors and the extra errors.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class AspectJCellErrors implements Iterable<FormatError> {
-    AspectJCellErrors(AspectJCell jCell) {
+public class AspectViewCellErrors implements Iterable<FormatError> {
+    /** Constructs an initially empty error object for a given cell. */
+    public AspectViewCellErrors(AspectViewCell jCell) {
         this.jCell = jCell;
     }
 
     /** Adds a format error to either the aspect errors or the extra errors.
      * @param aspect if {@code true}, adds to the aspect errors, else to the extra errors.
      */
-    void addError(FormatError error, boolean aspect) {
+    public void addError(FormatError error, boolean aspect) {
         getErrors(aspect, true).add(error);
         this.jCell.setStale(VisualKey.ERROR);
     }
@@ -46,7 +47,7 @@ public class AspectJCellErrors implements Iterable<FormatError> {
     /** Adds a collection of format errors to either the aspect errors or the extra errors.
      * @param aspect if {@code true}, adds to the aspect errors, else to the extra errors.
      */
-    void addErrors(FormatErrorSet errors, boolean aspect) {
+    public void addErrors(FormatErrorSet errors, boolean aspect) {
         if (!errors.isEmpty()) {
             getErrors(aspect, true).addAll(errors);
             this.jCell.setStale(VisualKey.ERROR);
@@ -54,7 +55,7 @@ public class AspectJCellErrors implements Iterable<FormatError> {
     }
 
     /** Clears either the aspect errors or the extra errors. */
-    void clear() {
+    public void clear() {
         this.aspectErrors = FormatErrorSet.EMPTY;
         this.extraErrors = FormatErrorSet.EMPTY;
         this.jCell.setStale(VisualKey.ERROR);
@@ -104,8 +105,8 @@ public class AspectJCellErrors implements Iterable<FormatError> {
         return result;
     }
 
-    /** The JCell of which this is the error set. */
-    private final AspectJCell jCell;
+    /** The ViewCell of which this is the error set. */
+    private final AspectViewCell jCell;
     /** Initially empty set of aspect errors. */
     private FormatErrorSet aspectErrors = FormatErrorSet.EMPTY;
     /** Initially empty set of extra errors. */

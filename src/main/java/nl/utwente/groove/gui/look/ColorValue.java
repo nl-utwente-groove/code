@@ -26,7 +26,7 @@ import nl.utwente.groove.gui.jgraph.AspectJEdge;
 import nl.utwente.groove.gui.jgraph.AspectJVertex;
 
 /**
- * Refresher for the controlled colour value of a JCell.
+ * Refresher for the controlled colour value of a ViewCell.
  * @author Arend Rensink
  * @version $Revision$
  */

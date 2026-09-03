@@ -24,7 +24,7 @@ import java.util.List;
 import org.jgraph.graph.Edge;
 import org.jgraph.graph.Edge.Routing;
 
-import nl.utwente.groove.gui.jgraph.JEdge;
+import nl.utwente.groove.gui.view.ViewEdge;
 import nl.utwente.groove.gui.jgraph.JGraph;
 
 import org.jgraph.graph.EdgeView;
@@ -52,7 +52,7 @@ final class LoopRouting implements Routing {
     public List<?> route(GraphLayoutCache cache, EdgeView edgeView) {
         List<Point2D> result = null;
         if (isRoutable(edgeView)) {
-            JEdge<?> jEdge = (JEdge<?>) edgeView.getCell();
+            ViewEdge<?> jEdge = (ViewEdge<?>) edgeView.getCell();
             // find out the source bounds
             VertexView sourceView = (VertexView) edgeView.getSource()
                 .getParentView();
@@ -89,7 +89,7 @@ final class LoopRouting implements Routing {
         if (!edgeView.isLoop()) {
             return false;
         }
-        JGraph<?> jGraph = ((JEdge<?>) edgeView.getCell()).getJGraph();
+        JGraph<?> jGraph = ((ViewEdge<?>) edgeView.getCell()).getJGraph();
         assert jGraph != null; // known by now
         if (jGraph.isLayouting()) {
             return false;

@@ -22,7 +22,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import nl.utwente.groove.gui.Options;
-import nl.utwente.groove.gui.jgraph.AspectJCell;
+import nl.utwente.groove.gui.view.AspectViewCell;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
@@ -55,7 +55,7 @@ public class RemovePointAction extends JCellEditAction {
      * is <tt>null</tt>) or the one closest to the location.
      * @param jEdge the j-edge to be modified
      */
-    public void execute(AspectJCell jEdge) {
+    public void execute(AspectViewCell jEdge) {
         VisualMap visuals = jEdge.getVisuals();
         List<Point2D> points = visuals.getPoints();
         edit(jEdge, VisualKey.POINTS, removePointAt(points, this.location));

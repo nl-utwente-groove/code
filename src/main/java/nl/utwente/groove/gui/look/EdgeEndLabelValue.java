@@ -42,7 +42,7 @@ public class EdgeEndLabelValue extends AspectValue<String> {
     protected String getForJEdge(AspectJEdge jEdge) {
         String result = null;
         AspectEdge edge = jEdge.getEdge();
-        // the edge could be null, if we're in the process of adding a JEdge
+        // the edge could be null, if we're in the process of adding a ViewEdge
         if (edge != null && edge.hasGraphRole(GraphRole.TYPE)) {
             Multiplicity mult = this.source
                 ? edge.getOutMult()

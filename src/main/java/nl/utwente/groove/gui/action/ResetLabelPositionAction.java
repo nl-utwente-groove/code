@@ -19,7 +19,7 @@ package nl.utwente.groove.gui.action;
 import java.awt.event.ActionEvent;
 
 import nl.utwente.groove.gui.Options;
-import nl.utwente.groove.gui.jgraph.AspectJCell;
+import nl.utwente.groove.gui.view.AspectViewCell;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.look.VisualKey;
 
@@ -38,7 +38,7 @@ public class ResetLabelPositionAction extends JCellEditAction {
     /** Resets the label positions of the selected cells. */
     @Override
     public void actionPerformed(ActionEvent evt) {
-        for (AspectJCell jCell : this.jCells) {
+        for (AspectViewCell jCell : this.jCells) {
             execute(jCell);
         }
     }
@@ -48,7 +48,7 @@ public class ResetLabelPositionAction extends JCellEditAction {
      * position.
      * @param jEdge the j-edge to be modified
      */
-    public void execute(AspectJCell jEdge) {
+    public void execute(AspectViewCell jEdge) {
         edit(jEdge, VisualKey.LABEL_POS, VisualKey.LABEL_POS.getDefaultValue());
     }
 }

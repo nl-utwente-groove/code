@@ -47,10 +47,13 @@ import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.layout.EdgeLayout;
 import nl.utwente.groove.graph.layout.LayoutMap;
 import nl.utwente.groove.graph.layout.NodeLayout;
-import nl.utwente.groove.gui.display.GraphViewModel;
+import nl.utwente.groove.gui.view.GraphViewModel;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
 import nl.utwente.groove.util.collect.NestedIterator;
+import nl.utwente.groove.gui.view.ViewCell;
+import nl.utwente.groove.gui.view.ViewEdge;
+import nl.utwente.groove.gui.view.ViewVertex;
 
 /**
  * Implements JGraph's GraphModel interface on top of a GROOVE graph.
@@ -72,16 +75,16 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
         return this.jGraph;
     }
 
-    /** Specialises the type to a list of {@link JCell}s. */
+    /** Specialises the type to a list of {@link ViewCell}s. */
     @Override
     @SuppressWarnings("unchecked")
-    public List<? extends JCell<G>> getRoots() {
+    public List<? extends ViewCell<G>> getRoots() {
         return super.getRoots();
     }
 
     /** Refreshes all refreshable visual keys in all cells of this model. */
     public void refreshVisuals() {
-        for (JCell<G> jCell : getRoots()) {
+        for (ViewCell<G> jCell : getRoots()) {
             jCell.setStale(VisualKey.refreshables());
         }
     }
@@ -94,15 +97,15 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
     /**
      * Sends a set of cells to the back (in the z-order) without posting an edit.
      */
-    void toBackSilent(Collection<? extends JCell<G>> jCells) {
+    void toBackSilent(Collection<? extends ViewCell<G>> jCells) {
         createLayerEdit(jCells.toArray(), GraphModelLayerEdit.BACK).execute();
     }
 
     @Override
     public AttributeMap getAttributes(Object node) {
         AttributeMap result;
-        if (node instanceof JCell) {
-            result = ((JCell<?>) node).getVisuals().getAttributes();
+        if (node instanceof ViewCell) {
+            result = ((ViewCell<?>) node).getVisuals().getAttributes();
         } else {
             result = super.getAttributes(node);
         }
@@ -146,8 +149,8 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
     /**
      * Changes the underlying graph to the one passed in as a parameter.
      * Note that this should only be done as part of an action that also
-     * changes the {@link JCell}s of the {@link JModel}, as well as the
-     * mapping from graph elements to {@link JCell}s.
+     * changes the {@link ViewCell}s of the {@link JModel}, as well as the
+     * mapping from graph elements to {@link ViewCell}s.
      */
     void setGraph(G graph) {
         getViewModel().setGraph(graph);
@@ -211,33 +214,33 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
         getViewModel().reset(graph);
     }
 
-    /** Returns the set of {@link JCell}s associated with a given collection
+    /** Returns the set of {@link ViewCell}s associated with a given collection
      * of graph elements.
      */
-    public Set<JCell<?>> getJCells(Collection<? extends Element> elements) {
+    public Set<ViewCell<?>> getJCells(Collection<? extends Element> elements) {
         return getViewModel().getJCells(elements);
     }
 
     /**
-     * Returns the {@link JCell} associated with a given graph element. The
-     * result is a {@link JVertex} for which the graph element is the
-     * underlying node or self-edge, or a {@link JEdge} for which the graph
+     * Returns the {@link ViewCell} associated with a given graph element. The
+     * result is a {@link ViewVertex} for which the graph element is the
+     * underlying node or self-edge, or a {@link ViewEdge} for which the graph
      * element is an underlying edge.
      * @param elem the graph element for which the jcell is requested
      * @return the jcell associated with <tt>elem</tt>
      */
-    public JCell<G> getJCell(Element elem) {
+    public ViewCell<G> getJCell(Element elem) {
         return getViewModel().getJCell(elem);
     }
 
     /**
-     * Returns the <tt>JNode</tt> or <tt>JEdge</tt> associated with a given
+     * Returns the <tt>JNode</tt> or <tt>ViewEdge</tt> associated with a given
      * edge. The method returns a <tt>JNode</tt> if and only if <tt>edge</tt> is
      * a self-edge and <tt>showNodeIdentities</tt> does not hold.
      * @param edge the graph edge we're interested in
-     * @return the <tt>JNode</tt> or <tt>JEdge</tt> modelling <tt>edge</tt>
+     * @return the <tt>JNode</tt> or <tt>ViewEdge</tt> modelling <tt>edge</tt>
      */
-    public JCell<G> getJCellForEdge(Edge edge) {
+    public ViewCell<G> getJCellForEdge(Edge edge) {
         return getViewModel().getJCellForEdge(edge);
     }
 
@@ -246,7 +249,7 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
      * @param node the graph node we're interested in
      * @return the JNode modelling node (if node is known)
      */
-    public JVertex<G> getJCellForNode(Node node) {
+    public ViewVertex<G> getJCellForNode(Node node) {
         return getViewModel().getJCellForNode(node);
     }
 
@@ -256,32 +259,32 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
     }
 
     /** Stores the layout from the JModel back into the graph. */
-    public void synchroniseLayout(JCell<G> jCell) {
+    public void synchroniseLayout(ViewCell<G> jCell) {
         getViewModel().synchroniseLayout(jCell);
     }
 
     /**
      * Sets the layoutability of all cells.
-     * @param layoutable the new value for {@link JVertex#setLayoutable(boolean)}
+     * @param layoutable the new value for {@link ViewVertex#setLayoutable(boolean)}
      */
     public void setLayoutable(boolean layoutable) {
-        for (JCell<G> jCell : getRoots()) {
-            if (jCell instanceof JVertex) {
-                ((JVertex<?>) jCell).setLayoutable(layoutable);
+        for (ViewCell<G> jCell : getRoots()) {
+            if (jCell instanceof ViewVertex) {
+                ((ViewVertex<?>) jCell).setLayoutable(layoutable);
             }
         }
     }
 
     /** Retrieves a mapping from graph nodes to foreground colours
-     * as stored in the corresponding {@link JVertex} attributes.
+     * as stored in the corresponding {@link ViewVertex} attributes.
      */
     public Map<Node,Color> getColorMap() {
         Map<Node,Color> result = new HashMap<>();
-        for (JCell<G> jCell : getRoots()) {
-            if (jCell instanceof JVertex) {
+        for (ViewCell<G> jCell : getRoots()) {
+            if (jCell instanceof ViewVertex) {
                 Color foreground = jCell.getVisuals().getForeground();
                 if (foreground != null) {
-                    result.put(((JVertex<G>) jCell).getNode(), foreground);
+                    result.put(((ViewVertex<G>) jCell).getNode(), foreground);
                 }
             }
         }
@@ -294,9 +297,9 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
             // if we're loading, the layout is actually taken from the graph
             // so no synchronisation is necessary
             for (Object jCell : edit.getChanged()) {
-                if (jCell instanceof JCell) {
+                if (jCell instanceof ViewCell) {
                     @SuppressWarnings("unchecked")
-                    JCell<G> graphJCell = (JCell<G>) jCell;
+                    ViewCell<G> graphJCell = (ViewCell<G>) jCell;
                     synchroniseLayout(graphJCell);
                 }
             }
@@ -344,11 +347,11 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
      * Creates a j-cell corresponding to a given node in the graph. Adds the
      * j-cell to {@link #addedJVertices}, and updates the element-to-cell map.
      */
-    protected JVertex<G> addNode(Node node) {
-        JVertex<G> jVertex = computeJVertex(node);
+    protected ViewVertex<G> addNode(Node node) {
+        ViewVertex<G> jVertex = computeJVertex(node);
         // we add nodes in front of the list to get them in front of the display
         this.addedJVertices.add(jVertex);
-        JVertex<G> oldNode = getViewModel().putNode(node, jVertex);
+        ViewVertex<G> oldNode = getViewModel().putNode(node, jVertex);
         assert oldNode == null;
         return jVertex;
     }
@@ -359,10 +362,10 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
      * existing j-edge, if the edge can be represented by it. Otherwise, it will
      * be a new j-edge.
      */
-    protected JCell<G> addEdge(Edge edge) {
-        JCell<G> result = getViewModel().getJCellForEdge(edge);
+    protected ViewCell<G> addEdge(Edge edge) {
+        ViewCell<G> result = getViewModel().getJCellForEdge(edge);
         // check if edge was processed earlier
-        JVertex<G> sourceJVertex = getJCellForNode(edge.source());
+        ViewVertex<G> sourceJVertex = getJCellForNode(edge.source());
         assert sourceJVertex != null : "No vertex for source node of " + edge;
         if (result == null) {
             // try to add the edge as vertex label to its source vertex
@@ -373,10 +376,10 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
             }
         }
         if (result == null) {
-            // try to add the edge to an existing JEdge
-            Iterator<? extends JEdge<G>> edgeIter = getJEdges(sourceJVertex);
+            // try to add the edge to an existing ViewEdge
+            Iterator<? extends ViewEdge<G>> edgeIter = getJEdges(sourceJVertex);
             while (edgeIter.hasNext()) {
-                JEdge<G> jEdge = edgeIter.next();
+                ViewEdge<G> jEdge = edgeIter.next();
                 if (jEdge.isCompatible(edge)) {
                     // yes, the edge could be added here; we're done
                     jEdge.addEdge(edge);
@@ -386,12 +389,12 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
             }
         }
         if (result == null) {
-            // none of the above: so create a new JEdge
-            JEdge<G> jEdge;
+            // none of the above: so create a new ViewEdge
+            ViewEdge<G> jEdge;
             result = jEdge = computeJEdge(edge);
             // put the edge at the end to make sure it goes to the back
             this.addedJEdges.add(jEdge);
-            JVertex<G> targetJVertex = getJCellForNode(edge.target());
+            ViewVertex<G> targetJVertex = getJCellForNode(edge.target());
             assert targetJVertex != null : "No vertex for target node of " + edge;
             this.connections.add(new PendingConnection<>(jEdge, sourceJVertex, targetJVertex));
             addFreshJEdge(sourceJVertex, jEdge);
@@ -403,12 +406,12 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
 
     /**
      * Retrieves the known incident JEdges of a given JVetex,
-     * either from the explicitly stored JEdges (if the JVertex is fresh)
-     * or from the stored context of the JVertex.
+     * either from the explicitly stored JEdges (if the ViewVertex is fresh)
+     * or from the stored context of the ViewVertex.
      */
-    private Iterator<? extends JEdge<G>> getJEdges(JVertex<G> jVertex) {
-        Iterator<? extends JEdge<G>> result;
-        Set<JEdge<G>> outJEdges = this.freshJEdges.get(jVertex);
+    private Iterator<? extends ViewEdge<G>> getJEdges(ViewVertex<G> jVertex) {
+        Iterator<? extends ViewEdge<G>> result;
+        Set<ViewEdge<G>> outJEdges = this.freshJEdges.get(jVertex);
         if (outJEdges == null) {
             result = jVertex.getContext();
         } else {
@@ -418,10 +421,10 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
     }
 
     /**
-     * Adds a given JEdge to the fresh incident edges of a JVertex.
+     * Adds a given ViewEdge to the fresh incident edges of a ViewVertex.
      */
-    private void addFreshJEdge(JVertex<G> jVertex, JEdge<G> jEdge) {
-        Set<JEdge<G>> jEdges = this.freshJEdges.get(jVertex);
+    private void addFreshJEdge(ViewVertex<G> jVertex, ViewEdge<G> jEdge) {
+        Set<ViewEdge<G>> jEdges = this.freshJEdges.get(jVertex);
         if (jEdges == null) {
             this.freshJEdges.put(jVertex, jEdges = new HashSet<>());
         }
@@ -433,8 +436,8 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
      * layout information from the layout map stored in this model.
      * @param edge graph edge for which a corresponding j-edge is to be created
      */
-    protected JEdge<G> computeJEdge(Edge edge) {
-        JEdge<G> result = createJEdge(edge);
+    protected ViewEdge<G> computeJEdge(Edge edge) {
+        ViewEdge<G> result = createJEdge(edge);
         EdgeLayout layout = getLayoutMap().getLayout(edge);
         if (layout != null) {
             result.putVisuals(VisualMap.newInstance(layout));
@@ -449,8 +452,8 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
      * @param node graph node for which a corresponding j-vertex is to be
      *        created
      */
-    final protected JVertex<G> computeJVertex(Node node) {
-        JVertex<G> result = createJVertex(node);
+    final protected ViewVertex<G> computeJVertex(Node node) {
+        ViewVertex<G> result = createJVertex(node);
         NodeLayout layout = getLayoutMap().getLayout(node);
         if (layout != null) {
             result.putVisuals(VisualMap.newInstance(layout));
@@ -466,12 +469,12 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
 
     /**
      * Factory method for JEdges.
-     * @param edge graph edge for which a corresponding JEdge is to be created;
+     * @param edge graph edge for which a corresponding ViewEdge is to be created;
      * may be {@code null} if there is initially no edge
      * @return a fresh JEedge wrapping <tt>edge</tt>, initialised on this model
      */
-    protected JEdge<G> createJEdge(Edge edge) {
-        JEdge<G> result = getJGraph().getFactory().newJEdge(edge);
+    protected ViewEdge<G> createJEdge(Edge edge) {
+        ViewEdge<G> result = getJGraph().getFactory().newJEdge(edge);
         result.setJModel(this);
         result.initialise();
         if (edge != null) {
@@ -483,8 +486,8 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
     /**
      * Factory method for JVertices initialised on this JModel.
      */
-    final protected JVertex<G> createJVertex(Node node) {
-        JVertex<G> result = getJGraph().getFactory().newJVertex(node);
+    final protected ViewVertex<G> createJVertex(Node node) {
+        ViewVertex<G> result = getJGraph().getFactory().newJVertex(node);
         result.setJModel(this);
         result.setNode(node);
         result.initialise();
@@ -511,7 +514,7 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
     protected void doInsert(boolean replace) {
         int vertexCount = this.addedJVertices.size();
         int edgeCount = this.addedJEdges.size();
-        Object[] addedCells = new JCell<?>[vertexCount + edgeCount];
+        Object[] addedCells = new ViewCell<?>[vertexCount + edgeCount];
         for (int i = 0; i < edgeCount; i++) {
             addedCells[i] = this.addedJEdges.get(i);
         }
@@ -529,10 +532,10 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
         }
         createEdit(addedCells, removedCells, null, connections, getParentMap(), null)
             .execute();
-        List<JEdge<G>> edges = new ArrayList<>();
+        List<ViewEdge<G>> edges = new ArrayList<>();
         for (Object jCell : addedCells) {
-            if (jCell instanceof JEdge) {
-                edges.add((JEdge<G>) jCell);
+            if (jCell instanceof ViewEdge) {
+                edges.add((ViewEdge<G>) jCell);
             }
         }
     }
@@ -554,8 +557,8 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
     protected int randomCoordinate() {
         Rectangle2D bounds = new Rectangle();
         for (Object cell : getJGraph().getSelectionCells()) {
-            if (cell instanceof JVertex) {
-                bounds.add(((JVertex<G>) cell).getVisuals().getNodePos());
+            if (cell instanceof ViewVertex) {
+                bounds.add(((ViewVertex<G>) cell).getVisuals().getNodePos());
             }
         }
         return 25 + randomGenerator.nextInt(getViewModel().size() * 5 + 1);
@@ -589,17 +592,17 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
      * Mapping from jVertices to incident jEdges.
      * Used in the process of constructing a GraphJModel.
      */
-    protected final Map<JVertex<G>,Set<JEdge<G>>> freshJEdges = new HashMap<>();
+    protected final Map<ViewVertex<G>,Set<ViewEdge<G>>> freshJEdges = new HashMap<>();
     /**
      * Set of added jEdges. Used in the process of constructing a
      * GraphJModel.
      */
-    protected final List<JEdge<G>> addedJEdges = new ArrayList<>();
+    protected final List<ViewEdge<G>> addedJEdges = new ArrayList<>();
     /**
      * Set of added jVertices. Used in the process of constructing a
      * GraphJModel.
      */
-    protected final List<JVertex<G>> addedJVertices = new ArrayList<>();
+    protected final List<ViewVertex<G>> addedJVertices = new ArrayList<>();
     /**
      * Pending connections between newly created edge cells and their end
      * vertices, in backend-neutral form; converted to a ConnectionSet upon
@@ -608,8 +611,8 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
     private final List<PendingConnection<G>> connections = new ArrayList<>();
 
     /** Backend-neutral record of a pending edge connection. */
-    private record PendingConnection<G extends @NonNull Graph>(JEdge<G> jEdge, JVertex<G> source,
-        JVertex<G> target) {}
+    private record PendingConnection<G extends @NonNull Graph>(ViewEdge<G> jEdge, ViewVertex<G> source,
+        ViewVertex<G> target) {}
 
     /** See {@link #setVetoFireGraphChanged(boolean)}. */
     private boolean vetoFireGraphChanged;

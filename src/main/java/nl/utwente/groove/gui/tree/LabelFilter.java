@@ -29,8 +29,8 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Label;
-import nl.utwente.groove.gui.jgraph.JCell;
-import nl.utwente.groove.gui.jgraph.JVertex;
+import nl.utwente.groove.gui.view.ViewCell;
+import nl.utwente.groove.gui.view.ViewVertex;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.util.Counter;
 import nl.utwente.groove.util.Observable;
@@ -38,7 +38,7 @@ import nl.utwente.groove.util.Observable;
 /**
  * Class that maintains a set of filtered entries
  * (either edge labels or type elements) as well as an inverse
- * mapping of those labels to {@link JCell}s bearing
+ * mapping of those labels to {@link ViewCell}s bearing
  * the entries.
  * @author Arend Rensink
  * @version $Revision$
@@ -46,7 +46,7 @@ import nl.utwente.groove.util.Observable;
 @NonNullByDefault
 abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observable {
     /** Returns the filter entries on a given jCell. */
-    public Set<E> getEntries(JCell<G> jCell) {
+    public Set<E> getEntries(ViewCell<G> jCell) {
         Set<E> result = this.jCellEntryMap.get(jCell);
         if (result == null) {
             addJCell(jCell);
@@ -57,7 +57,7 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
     }
 
     /** Computes the filter entries for a given jCell. */
-    private Set<E> computeEntries(JCell<G> jCell) {
+    private Set<E> computeEntries(ViewCell<G> jCell) {
         Set<E> result = new HashSet<>();
         for (Label key : jCell.getKeys()) {
             result.add(getEntry(key));
@@ -66,10 +66,10 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
     }
 
     /**
-     * Adds a {@link JCell} and all corresponding entries to the filter.
+     * Adds a {@link ViewCell} and all corresponding entries to the filter.
      * @return {@code true} if any entries were added
      */
-    public boolean addJCell(JCell<G> jCell) {
+    public boolean addJCell(ViewCell<G> jCell) {
         boolean result = false;
         if (this.jCellEntryMap.containsKey(jCell)) {
             // a known cell; modify rather than add
@@ -89,10 +89,10 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
     }
 
     /**
-     * Removes a {@link JCell} from the inverse mapping.
+     * Removes a {@link ViewCell} from the inverse mapping.
      * @return {@code true} if any entries were removed
      */
-    public boolean removeJCell(JCell<G> jCell) {
+    public boolean removeJCell(ViewCell<G> jCell) {
         boolean result = false;
         Set<E> jCellEntries = this.jCellEntryMap.remove(jCell);
         if (jCellEntries != null) {
@@ -106,10 +106,10 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
     }
 
     /**
-     * Modifies the inverse mapping for a given {@link JCell}.
+     * Modifies the inverse mapping for a given {@link ViewCell}.
      * @return {@code true} if any entries were added or removed
      */
-    public boolean modifyJCell(JCell<G> jCell) {
+    public boolean modifyJCell(ViewCell<G> jCell) {
         boolean result = false;
         // it may happen that the cell is already removed,
         // for instance when the filter has been reinitialised in the course
@@ -138,8 +138,8 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
         return result;
     }
 
-    /** Returns the set of {@link JCell}s for a given entry. */
-    public Set<JCell<G>> getJCells(LabelEntry entry) {
+    /** Returns the set of {@link ViewCell}s for a given entry. */
+    public Set<ViewCell<G>> getJCells(LabelEntry entry) {
         var data = this.entryDataMap.get(entry);
         assert data != null; // every entry is registered upon creation
         return data.jCells();
@@ -152,7 +152,7 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
         return data.count().value();
     }
 
-    /** Indicates if there is at least one {@link JCell} with a given entry. */
+    /** Indicates if there is at least one {@link ViewCell} with a given entry. */
     public boolean hasJCells(LabelEntry entry) {
         return !getJCells(entry).isEmpty();
     }
@@ -182,16 +182,16 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
             .formatted(entry, old);
     }
 
-    /** Mapping from entries to {@link JCell}s with that entry. */
+    /** Mapping from entries to {@link ViewCell}s with that entry. */
     private final Map<E,EntryData> entryDataMap = new HashMap<>();
     /** Inverse mapping of {@link #entryDataMap}. */
-    private final Map<JCell<G>,@Nullable Set<E>> jCellEntryMap = new HashMap<>();
+    private final Map<ViewCell<G>,@Nullable Set<E>> jCellEntryMap = new HashMap<>();
 
     /** Convenience method to return the JCells for a given label.
      * @see #getEntry(Label)
      * @see #getJCells(LabelEntry)
      */
-    public Set<JCell<G>> getJCells(Label label) {
+    public Set<ViewCell<G>> getJCells(Label label) {
         return getJCells(getEntry(label));
     }
 
@@ -205,19 +205,19 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
 
     /**
      * Sets the selection status of a given label, and notifies
-     * the observers of the changed {@link JCell}s.
+     * the observers of the changed {@link ViewCell}s.
      */
     public void setSelected(LabelEntry entry, boolean selected) {
-        Set<JCell<G>> changedCells = setSelection(entry, selected);
+        Set<ViewCell<G>> changedCells = setSelection(entry, selected);
         notifyIfNonempty(changedCells);
     }
 
     /**
      * Sets the selection status of a given set of labels, and notifies
-     * the observers of the changed {@link JCell}s.
+     * the observers of the changed {@link ViewCell}s.
      */
     public void setSelected(Collection<LabelEntry> entries, boolean selected) {
-        Set<JCell<G>> changedCells = new HashSet<>();
+        Set<ViewCell<G>> changedCells = new HashSet<>();
         for (LabelEntry entry : entries) {
             changedCells.addAll(setSelection(entry, selected));
         }
@@ -226,19 +226,19 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
 
     /**
      * Flips the selection status of a given label, and notifies
-     * the observers of the changed {@link JCell}s.
+     * the observers of the changed {@link ViewCell}s.
      */
     public void changeSelected(LabelEntry entry) {
-        Set<JCell<G>> changedCells = setSelection(entry, !entry.isSelected());
+        Set<ViewCell<G>> changedCells = setSelection(entry, !entry.isSelected());
         notifyIfNonempty(changedCells);
     }
 
     /**
      * Flips the selection status of a given set of labels, and notifies
-     * the observers of the changed {@link JCell}s.
+     * the observers of the changed {@link ViewCell}s.
      */
     public void changeSelected(Collection<LabelEntry> entries) {
-        Set<JCell<G>> changedCells = new HashSet<>();
+        Set<ViewCell<G>> changedCells = new HashSet<>();
         for (LabelEntry entry : entries) {
             changedCells.addAll(setSelection(entry, !entry.isSelected()));
         }
@@ -247,10 +247,10 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
 
     /**
      * Sets the selection status of a given entry, and
-     * returns the set of {@link JCell}s for which this results in a change.
+     * returns the set of {@link ViewCell}s for which this results in a change.
      */
-    protected Set<JCell<G>> setSelection(LabelEntry entry, boolean selected) {
-        Set<JCell<G>> result = Collections.<JCell<G>>emptySet();
+    protected Set<ViewCell<G>> setSelection(LabelEntry entry, boolean selected) {
+        Set<ViewCell<G>> result = Collections.<ViewCell<G>>emptySet();
         var data = this.entryDataMap.get(entry);
         assert data != null : String.format("Label %s unknown in map %s", entry, this.entryDataMap);
         if (entry.setSelected(selected)) {
@@ -263,12 +263,12 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
      * Notifies the observers of a set of changed cells,
      * if the set is not {@code null} and not empty.
      */
-    private void notifyIfNonempty(@Nullable Set<JCell<G>> changedCells) {
+    private void notifyIfNonempty(@Nullable Set<ViewCell<G>> changedCells) {
         if (changedCells != null && !changedCells.isEmpty()) {
             // stale the visibility of the affected cells
-            for (JCell<G> jCell : changedCells) {
+            for (ViewCell<G> jCell : changedCells) {
                 jCell.setStale(AFFECTED_KEYS);
-                Iterator<? extends JCell<G>> iter = jCell.getContext();
+                Iterator<? extends ViewCell<G>> iter = jCell.getContext();
                 while (iter.hasNext()) {
                     iter.next().setStale(AFFECTED_KEYS);
                 }
@@ -285,12 +285,12 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
      * @param jCell the jCell for which the test is performed
      * @return {@code true} if {@code jCell} is visible
      */
-    public boolean isIncluded(JCell<G> jCell) {
+    public boolean isIncluded(ViewCell<G> jCell) {
         boolean activeShow = false;
         boolean activeHide = false;
         boolean passiveHide = false;
         boolean anyEntry = false;
-        boolean isNode = jCell instanceof JVertex;
+        boolean isNode = jCell instanceof ViewVertex;
         for (var entry : getEntries(jCell)) {
             anyEntry = true;
             if (entry.isPassive()) {
@@ -331,11 +331,11 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
         private final LabelEntry entry;
 
         /** Returns the set of cells in this data object. */
-        Set<JCell<G>> jCells() {
+        Set<ViewCell<G>> jCells() {
             return this.jCells;
         }
 
-        private final Set<JCell<G>> jCells;
+        private final Set<ViewCell<G>> jCells;
 
         /** Returns the number of cells with this entry's label as primary key. */
         Counter count() {
@@ -347,7 +347,7 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
         /** Updates the record by adding a given cell.
          * @return {@code true} if the data was change by the operation
          */
-        boolean add(JCell<G> jCell) {
+        boolean add(ViewCell<G> jCell) {
             boolean result = this.jCells.add(jCell);
             if (result && jCell.getLabels().stream().anyMatch(this.entry::matches)) {
                 this.count.increase();
@@ -358,7 +358,7 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
         /** Updates the record by removing a given cell.
          * @return {@code true} if the data was change by the operation
          */
-        boolean remove(JCell<G> jCell) {
+        boolean remove(ViewCell<G> jCell) {
             boolean result = this.jCells.remove(jCell);
             if (result && jCell.getLabels().stream().anyMatch(this.entry::matches)) {
                 this.count.decrease();

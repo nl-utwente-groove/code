@@ -32,6 +32,8 @@ import nl.utwente.groove.lts.GTSListener;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.lts.Status.Flag;
+import nl.utwente.groove.gui.view.ViewCell;
+import nl.utwente.groove.gui.view.LTSViewCell;
 
 /**
  * Graph model adding a concept of active state and transition, with special
@@ -113,7 +115,7 @@ final public class LTSJModel extends JModel<@NonNull GTS> implements GTSListener
      * @return the cell that was changed as a consequence to the state change;
      * {@code null} if there was no change.
      */
-    private JCell<@NonNull GTS> registerChange(GraphState explored, int change) {
+    private ViewCell<@NonNull GTS> registerChange(GraphState explored, int change) {
         var jCell = getJCellForNode(explored);
         if (jCell != null) {
             if (Flag.CLOSED.test(change)) {
@@ -252,7 +254,7 @@ final public class LTSJModel extends JModel<@NonNull GTS> implements GTSListener
             return false;
         }
         // make visible if the transition is already there
-        LTSJCell jCell = (LTSJCell) getJCellForEdge(trans);
+        LTSViewCell jCell = (LTSViewCell) getJCellForEdge(trans);
         if (jCell != null) {
             return jCell.setVisibleFlag(true);
         }
@@ -322,7 +324,7 @@ final public class LTSJModel extends JModel<@NonNull GTS> implements GTSListener
     /** Set of edges added during the last exploration. */
     private final List<Edge> addedEdges = new ArrayList<>();
     /** Set of JCells with status changes during the last exploration. */
-    private final List<JCell<@NonNull GTS>> changedCells = new ArrayList<>();
+    private final List<ViewCell<@NonNull GTS>> changedCells = new ArrayList<>();
 
     /** Default name of an LTS model. */
     static public final String DEFAULT_LTS_NAME = "lts";

@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.gui.jgraph;
+package nl.utwente.groove.gui.view;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -31,13 +31,15 @@ import nl.utwente.groove.gui.look.Look;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
 import nl.utwente.groove.util.parse.Severity;
+import nl.utwente.groove.gui.jgraph.JGraph;
+import nl.utwente.groove.gui.jgraph.JModel;
 
 /**
  * Cell of a graph view, wrapping one or more underlying graph elements.
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface JCell<G extends @NonNull Graph> extends Serializable {
+public interface ViewCell<G extends @NonNull Graph> extends Serializable {
     /** Returns the fixed jGraph on which this jCell is displayed.
      * @return the parent graph of this cell; may be {@code null} if
      * the cell has not yet been fully initialised
@@ -57,7 +59,7 @@ public interface JCell<G extends @NonNull Graph> extends Serializable {
     public JModel<G> getJModel();
 
     /** Returns the end nodes (for an edge) or the incident edges (for a vertex). */
-    public Iterator<? extends JCell<G>> getContext();
+    public Iterator<? extends ViewCell<G>> getContext();
 
     /**
      * Returns the set of keys to be associated with this cell in a label
@@ -73,7 +75,7 @@ public interface JCell<G extends @NonNull Graph> extends Serializable {
     }
 
     /**
-     * Returns the label tree key for a given graph edge wrapped by this JCell.
+     * Returns the label tree key for a given graph edge wrapped by this ViewCell.
      * @return the key for {@code edge}; if {@code null}, the edge
      * has no corresponding key
      */
@@ -93,13 +95,13 @@ public interface JCell<G extends @NonNull Graph> extends Serializable {
     }
 
     /**
-     * Indicates if there are errors in this JCell;
+     * Indicates if there are errors in this ViewCell;
      * i.e., if {@link #getErrors()} would return a non-empty object.
      */
     boolean hasErrors();
 
     /**
-     * Returns the maximum severity of the diagnostics in this JCell,
+     * Returns the maximum severity of the diagnostics in this ViewCell,
      * or {@code null} if there are none.
      * This implementation derives the severity from {@link #hasErrors()},
      * which is appropriate for cells whose error condition is not
@@ -114,21 +116,21 @@ public interface JCell<G extends @NonNull Graph> extends Serializable {
     /**
      * Returns the errors in this jCell.
      */
-    AspectJCellErrors getErrors();
+    AspectViewCellErrors getErrors();
 
     /**
-     * Adds an edge to those wrapped by this JCell.
+     * Adds an edge to those wrapped by this ViewCell.
      * Should only be called with edges for which {@link #isCompatible(Edge)} holds;
      * this is not tested by the method.
      * @param edge the edge to be added
      */
     void addEdge(Edge edge);
 
-    /** Tests if a given edge can be added to this JCell. */
+    /** Tests if a given edge can be added to this ViewCell. */
     boolean isCompatible(Edge edge);
 
     /**
-     * Returns the set of graph edges wrapped in this JCell.
+     * Returns the set of graph edges wrapped in this ViewCell.
      */
     public Set<? extends Edge> getEdges();
 
@@ -137,7 +139,7 @@ public interface JCell<G extends @NonNull Graph> extends Serializable {
      */
     public abstract String getToolTipText();
 
-    /** Returns the looks of this JCell. */
+    /** Returns the looks of this ViewCell. */
     public Set<Look> getLooks();
 
     /** Sets or resets a look value. */
@@ -160,14 +162,14 @@ public interface JCell<G extends @NonNull Graph> extends Serializable {
     public void putVisual(VisualKey key, Object value);
 
     /**
-     * Returns the visual aspects of this JCell.
+     * Returns the visual aspects of this ViewCell.
      * These are derived from the looks, together with the
      * layout information and text label(s) of the cell.
      */
     public VisualMap getVisuals();
 
     /**
-     * Returns the layout-related visual aspects of this JCell.
+     * Returns the layout-related visual aspects of this ViewCell.
      * Use this method in preference to {@link #getVisuals()} if it is too
      * early to refresh the non-layout visuals.
      */

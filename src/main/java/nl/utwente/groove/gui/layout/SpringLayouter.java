@@ -22,7 +22,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import nl.utwente.groove.gui.jgraph.JEdge;
+import nl.utwente.groove.gui.view.ViewEdge;
 import nl.utwente.groove.gui.jgraph.JGraph;
 
 /**
@@ -99,10 +99,10 @@ public class SpringLayouter extends AbstractLayouter {
         List<LayoutNode> edgeSourceList = new LinkedList<>();
         List<LayoutNode> edgeTargetList = new LinkedList<>();
         for (Object jCell : getJGraph().getRoots()) {
-            if (!(jCell instanceof JEdge)) {
+            if (!(jCell instanceof ViewEdge)) {
                 continue;
             }
-            JEdge<?> jEdge = (JEdge<?>) jCell;
+            ViewEdge<?> jEdge = (ViewEdge<?>) jCell;
             if (!jEdge.getVisuals().isVisible()) {
                 continue;
             }

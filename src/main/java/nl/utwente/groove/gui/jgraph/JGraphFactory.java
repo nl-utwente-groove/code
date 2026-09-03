@@ -21,6 +21,8 @@ import org.eclipse.jdt.annotation.NonNull;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Node;
+import nl.utwente.groove.gui.view.ViewEdge;
+import nl.utwente.groove.gui.view.ViewVertex;
 
 /**
  * Factory for {@link JGraph}.
@@ -39,21 +41,21 @@ abstract public class JGraphFactory<G extends @NonNull Graph> {
     }
 
     /**
-     * Creates a fresh, uninitialised instance of a JVertex.
-     * The JVertex is initialised with {@link JVertex#setNode(Node)}.
+     * Creates a fresh, uninitialised instance of a ViewVertex.
+     * The ViewVertex is initialised with {@link ViewVertex#setNode(Node)}.
      * The result needs to be provided a JModel before it can be used.
      * @param node a (non-{@code null}) node,
-     * used to determine the type of JVertex needed
+     * used to determine the type of ViewVertex needed
      */
-    abstract public JVertex<G> newJVertex(Node node);
+    abstract public ViewVertex<G> newJVertex(Node node);
 
     /**
-     * Creates a fresh, initialised instance of a JEdge.
+     * Creates a fresh, initialised instance of a ViewEdge.
      * The result needs to provided a JModel before it can be used.
      * @param edge a (possibly {@code null}) edge,
-     * used to determine the type of JEdge needed
+     * used to determine the type of ViewEdge needed
      */
-    abstract public JEdge<G> newJEdge(Edge edge);
+    abstract public ViewEdge<G> newJEdge(Edge edge);
 
     /** Constructs a new JModel suitable for the JGraph of this factory. */
     public JModel<G> newModel() {

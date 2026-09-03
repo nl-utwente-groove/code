@@ -61,6 +61,7 @@ import nl.utwente.groove.util.ChangeCount;
 import nl.utwente.groove.util.ChangeCount.Derived;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatError;
+import nl.utwente.groove.gui.view.AspectViewCell;
 
 /**
  * Implements jgraph's GraphModel interface on top of a {@link ResourceModel}. This is
@@ -101,11 +102,11 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
         return (AspectJGraph) super.getJGraph();
     }
 
-    /** Specialises the type to a list of {@link JCell}s. */
+    /** Specialises the type to a list of {@link nl.utwente.groove.gui.view.ViewCell}s. */
     @Override
     @SuppressWarnings("unchecked")
-    public List<? extends AspectJCell> getRoots() {
-        return (List<? extends AspectJCell>) super.getRoots();
+    public List<? extends AspectViewCell> getRoots() {
+        return (List<? extends AspectViewCell>) super.getRoots();
     }
 
     /** Sets a grammar model, with respect to which typing is resolved. */
@@ -123,14 +124,14 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
     private GrammarModel grammar;
 
     @Override
-    public AspectJCell getJCell(Element elem) {
-        return (AspectJCell) super.getJCell(elem);
+    public AspectViewCell getJCell(Element elem) {
+        return (AspectViewCell) super.getJCell(elem);
     }
 
     /** Specialises the return type. */
     @Override
-    public AspectJCell getJCellForEdge(Edge edge) {
-        return (AspectJCell) super.getJCellForEdge(edge);
+    public AspectViewCell getJCellForEdge(Edge edge) {
+        return (AspectViewCell) super.getJCellForEdge(edge);
     }
 
     /** Specialises the return type. */
@@ -146,7 +147,7 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
         // signal that graph is modified twice, to ensure
         // that all resources get synced properly
         super.loadGraph(graph);
-        for (AspectJCell root : getRoots()) {
+        for (AspectViewCell root : getRoots()) {
             root.saveToUserObject();
         }
         this.properties = ResourceProperties.getProperties(graph);
@@ -181,11 +182,11 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
         }
         GraphRole role = getNonNullGraph().getRole();
         Map<AspectNode,AspectJVertex> nodeJVertexMap = new HashMap<>();
-        Map<AspectEdge,AspectJCell> edgeJCellMap = new HashMap<>();
+        Map<AspectEdge,AspectViewCell> edgeJCellMap = new HashMap<>();
         AspectGraph graph
             = new AspectGraph(getName(), role, !getGrammar().getProperties().getSemantics().isMulti());
         graph.setTypeSortMap(getGrammar().getTypeModel().getTypeSortMap());
-        for (AspectJCell jCell : getRoots()) {
+        for (AspectViewCell jCell : getRoots()) {
             if (jCell instanceof AspectJVertex jVertex) {
                 jVertex.loadFromUserObject(graph);
                 graph.addNode(jVertex.getNode());
@@ -196,7 +197,7 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
                 }
             }
         }
-        for (AspectJCell jCell : getRoots()) {
+        for (AspectViewCell jCell : getRoots()) {
             if (jCell instanceof AspectJEdge jEdge) {
                 jEdge.loadFromUserObject(graph);
                 for (AspectEdge edge : jEdge.getEdges()) {
@@ -210,7 +211,7 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
         }
         // collect the layout information
         LayoutMap layoutMap = new LayoutMap();
-        for (AspectJCell jCell : getRoots()) {
+        for (AspectViewCell jCell : getRoots()) {
             if (jCell instanceof AspectJVertex jVertex) {
                 layoutMap.putNode(jVertex.getNode(), jVertex.getLayoutVisuals().toNodeLayout());
             } else {
@@ -248,12 +249,12 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
         if (getGrammar() == null) {
             return;
         }
-        for (AspectJCell jCell : getRoots()) {
+        for (AspectViewCell jCell : getRoots()) {
             jCell.getErrors().clear();
         }
         for (FormatError error : getResourceModel().getErrors()) {
             for (Element errorObject : error.getContext(Element.class)) {
-                AspectJCell errorCell = getJCell(errorObject);
+                AspectViewCell errorCell = getJCell(errorObject);
                 if (errorCell == null && errorObject instanceof Edge e) {
                     errorCell = getJCell(e.source());
                 }
@@ -317,7 +318,7 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
      */
     @Override
     public boolean acceptsSource(Object edge, Object port) {
-        return port != null;// && port != ((JEdge) edge).getTarget();
+        return port != null;// && port != ((ViewEdge) edge).getTarget();
     }
 
     /**
@@ -379,7 +380,7 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
         // however, all auxiliary structures need to be cleared
         List<AspectJVertex> newJVertices = new ArrayList<>();
         for (Object cell : result.values()) {
-            AspectJCell jCell = null;
+            AspectViewCell jCell = null;
             if (cell instanceof AspectJVertex jVertex) {
                 jVertex.setNode(createAspectNode());
                 newJVertices.add(jVertex);

@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.gui.display;
+package nl.utwente.groove.gui.view;
 
 import java.awt.Point;
 import java.awt.event.ActionEvent;

@@ -22,7 +22,7 @@ import nl.utwente.groove.gui.jgraph.AspectJEdge;
 import nl.utwente.groove.gui.jgraph.AspectJVertex;
 
 /**
- * Strategy for computing the internal identity adornment for a given JVertex
+ * Strategy for computing the internal identity adornment for a given ViewVertex
  * @author Arend Rensink
  * @version $Revision$
  */

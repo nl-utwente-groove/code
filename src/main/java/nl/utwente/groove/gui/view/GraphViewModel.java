@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.gui.display;
+package nl.utwente.groove.gui.view;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -31,10 +31,7 @@ import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.layout.LayoutMap;
-import nl.utwente.groove.gui.jgraph.JCell;
-import nl.utwente.groove.gui.jgraph.JEdge;
 import nl.utwente.groove.gui.jgraph.JModel;
-import nl.utwente.groove.gui.jgraph.JVertex;
 
 /**
  * Library-independent content model of a graph view:
@@ -108,36 +105,36 @@ public class GraphViewModel<G extends Graph> {
     private @Nullable LayoutMap layoutMap;
 
     /** Stores the layout of a given cell back into the layout map of the graph. */
-    public void synchroniseLayout(JCell<G> jCell) {
+    public void synchroniseLayout(ViewCell<G> jCell) {
         LayoutMap layoutMap = getLayoutMap();
         assert layoutMap == GraphInfo.getLayoutMap(getGraph());
-        if (jCell instanceof JEdge) {
+        if (jCell instanceof ViewEdge) {
             for (Edge edge : jCell.getEdges()) {
                 layoutMap.putEdge(edge, jCell.getVisuals().toEdgeLayout());
             }
-        } else if (jCell instanceof JVertex) {
-            layoutMap.putNode(((JVertex<G>) jCell).getNode(), jCell.getVisuals().toNodeLayout());
+        } else if (jCell instanceof ViewVertex) {
+            layoutMap.putNode(((ViewVertex<G>) jCell).getNode(), jCell.getVisuals().toNodeLayout());
         }
     }
 
     /** Returns the set of cells associated with a given collection
      * of graph elements.
      */
-    public Set<@Nullable JCell<?>> getJCells(Collection<? extends Element> elements) {
-        var result = new HashSet<@Nullable JCell<?>>();
+    public Set<@Nullable ViewCell<?>> getJCells(Collection<? extends Element> elements) {
+        var result = new HashSet<@Nullable ViewCell<?>>();
         elements.stream().map(this::getJCell).forEach(result::add);
         return result;
     }
 
     /**
      * Returns the cell associated with a given graph element. The
-     * result is a {@link JVertex} for which the graph element is the
-     * underlying node or self-edge, or a {@link JEdge} for which the graph
+     * result is a {@link ViewVertex} for which the graph element is the
+     * underlying node or self-edge, or a {@link ViewEdge} for which the graph
      * element is an underlying edge.
      * @param elem the graph element for which the cell is requested
      * @return the cell associated with <tt>elem</tt>
      */
-    public @Nullable JCell<G> getJCell(Element elem) {
+    public @Nullable ViewCell<G> getJCell(Element elem) {
         if (elem instanceof Node) {
             return getJCellForNode((Node) elem);
         } else {
@@ -152,7 +149,7 @@ public class GraphViewModel<G extends Graph> {
      * @param edge the graph edge we're interested in
      * @return the cell displaying <tt>edge</tt>
      */
-    public @Nullable JCell<G> getJCellForEdge(Edge edge) {
+    public @Nullable ViewCell<G> getJCellForEdge(Edge edge) {
         return this.edgeJCellMap.get(edge);
     }
 
@@ -161,7 +158,7 @@ public class GraphViewModel<G extends Graph> {
      * @param node the graph node we're interested in
      * @return the cell displaying <tt>node</tt> (if the node is known)
      */
-    public @Nullable JVertex<G> getJCellForNode(Node node) {
+    public @Nullable ViewVertex<G> getJCellForNode(Node node) {
         return this.nodeJCellMap.get(node);
     }
 
@@ -169,7 +166,7 @@ public class GraphViewModel<G extends Graph> {
      * Inserts a node-to-cell entry into the element-to-cell mapping.
      * @return the previous cell associated with the node, if any
      */
-    public @Nullable JVertex<G> putNode(Node node, JVertex<G> jVertex) {
+    public @Nullable ViewVertex<G> putNode(Node node, ViewVertex<G> jVertex) {
         return this.nodeJCellMap.put(node, jVertex);
     }
 
@@ -177,7 +174,7 @@ public class GraphViewModel<G extends Graph> {
      * Inserts an edge-to-cell entry into the element-to-cell mapping.
      * @return the previous cell associated with the edge, if any
      */
-    public @Nullable JCell<G> putEdge(Edge edge, JCell<G> jCell) {
+    public @Nullable ViewCell<G> putEdge(Edge edge, ViewCell<G> jCell) {
         return this.edgeJCellMap.put(edge, jCell);
     }
 
@@ -186,8 +183,8 @@ public class GraphViewModel<G extends Graph> {
      * Used when the cells are the primary data from which the graph
      * is (re)constructed, as in the editor.
      */
-    public void setJCellMaps(Map<? extends Node,? extends JVertex<G>> nodeJCellMap,
-                             Map<? extends Edge,? extends JCell<G>> edgeJCellMap) {
+    public void setJCellMaps(Map<? extends Node,? extends ViewVertex<G>> nodeJCellMap,
+                             Map<? extends Edge,? extends ViewCell<G>> edgeJCellMap) {
         this.nodeJCellMap.clear();
         this.nodeJCellMap.putAll(nodeJCellMap);
         this.edgeJCellMap.clear();
@@ -212,9 +209,9 @@ public class GraphViewModel<G extends Graph> {
     /**
      * Map from graph nodes to the cells displaying them.
      */
-    private final Map<Node,JVertex<G>> nodeJCellMap = new HashMap<>();
+    private final Map<Node,ViewVertex<G>> nodeJCellMap = new HashMap<>();
     /**
      * Map from graph edges to the cells displaying them.
      */
-    private final Map<Edge,JCell<G>> edgeJCellMap = new HashMap<>();
+    private final Map<Edge,ViewCell<G>> edgeJCellMap = new HashMap<>();
 }

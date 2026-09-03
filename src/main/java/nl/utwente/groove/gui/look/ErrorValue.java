@@ -19,13 +19,13 @@ package nl.utwente.groove.gui.look;
 import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.graph.Graph;
-import nl.utwente.groove.gui.jgraph.AspectJCell;
-import nl.utwente.groove.gui.jgraph.JCell;
-import nl.utwente.groove.gui.display.GraphViewController;
+import nl.utwente.groove.gui.view.AspectViewCell;
+import nl.utwente.groove.gui.view.ViewCell;
+import nl.utwente.groove.gui.view.GraphViewController;
 import nl.utwente.groove.util.parse.Severity;
 
 /**
- * Refresher for the {@link VisualKey#ERROR} value of a {@link AspectJCell}:
+ * Refresher for the {@link VisualKey#ERROR} value of a {@link AspectViewCell}:
  * the maximum severity of the cell's diagnostics, or {@code null} if there
  * are none.
  * @author Arend Rensink
@@ -33,7 +33,7 @@ import nl.utwente.groove.util.parse.Severity;
  */
 public class ErrorValue implements VisualValue<Severity> {
     @Override
-    public <G extends @NonNull Graph> Severity get(GraphViewController<G> controller, JCell<G> cell) {
+    public <G extends @NonNull Graph> Severity get(GraphViewController<G> controller, ViewCell<G> cell) {
         return cell.getErrorSeverity();
     }
 }

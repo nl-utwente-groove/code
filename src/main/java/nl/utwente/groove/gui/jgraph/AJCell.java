@@ -37,14 +37,17 @@ import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualKey.Nature;
 import nl.utwente.groove.gui.look.VisualMap;
 import nl.utwente.groove.util.parse.Severity;
+import nl.utwente.groove.gui.view.AspectViewCellErrors;
+import nl.utwente.groove.gui.view.ViewCell;
+import nl.utwente.groove.gui.view.AspectViewCell;
 
 /**
- * Abstract JCell implementation, providing some of the basic functionality.
+ * Abstract ViewCell implementation, providing some of the basic functionality.
  * @author Arend Rensink
  * @version $Revision$
  */
 public abstract class AJCell<G extends @NonNull Graph,JG extends JGraph<G>,JM extends JModel<G>>
-    extends DefaultGraphCell implements JCell<G> {
+    extends DefaultGraphCell implements ViewCell<G> {
     /**
      * Constructs a new, uninitialised cell.
      * Call {@link #setJModel(JModel)} to initialise to a given model.
@@ -143,7 +146,7 @@ public abstract class AJCell<G extends @NonNull Graph,JG extends JGraph<G>,JM ex
         return this.edges;
     }
 
-    /** Set of graph edges wrapped by this JCell. */
+    /** Set of graph edges wrapped by this ViewCell. */
     private Set<Edge> edges;
 
     /** Sets or resets a transient look value. */
@@ -170,13 +173,13 @@ public abstract class AJCell<G extends @NonNull Graph,JG extends JGraph<G>,JM ex
         return this.looks;
     }
 
-    /** The looks of this JCell. */
+    /** The looks of this ViewCell. */
     private Set<Look> looks;
 
     /** Flag indicating that {@link #looks} has changed. */
     private boolean looksChanged;
 
-    /** Creator method for the (fixed) structural looks of this JCell. */
+    /** Creator method for the (fixed) structural looks of this ViewCell. */
     protected Set<Look> getStructuralLooks() {
         return EnumSet.of(Look.BASIC);
     }
@@ -240,7 +243,7 @@ public abstract class AJCell<G extends @NonNull Graph,JG extends JGraph<G>,JM ex
         });
     }
 
-    /** The visual aspects of this JVertex. */
+    /** The visual aspects of this ViewVertex. */
     private VisualMap visuals;
 
     @Override
@@ -277,15 +280,15 @@ public abstract class AJCell<G extends @NonNull Graph,JG extends JGraph<G>,JM ex
     }
 
     @Override
-    public AspectJCellErrors getErrors() {
+    public AspectViewCellErrors getErrors() {
         if (this.errors == null) {
-            this.errors = new AspectJCellErrors((AspectJCell) this);
+            this.errors = new AspectViewCellErrors((AspectViewCell) this);
         }
         return this.errors;
     }
 
     /** Object containing this cell's errors, if any. */
-    private AspectJCellErrors errors;
+    private AspectViewCellErrors errors;
 
     @Override
     public AttributeMap getAttributes() {

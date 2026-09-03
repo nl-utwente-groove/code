@@ -33,15 +33,16 @@ import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.parse.FormatError;
+import nl.utwente.groove.gui.view.AspectViewCell;
 
 /**
  * Specialized j-edge for rule graphs, with its own tool tip text.
  */
 public class AspectJEdge extends
-    AJEdge<@NonNull AspectGraph,AspectJGraph,AspectJModel,AspectJVertex> implements AspectJCell {
+    AJEdge<@NonNull AspectGraph,AspectJGraph,AspectJModel,AspectJVertex> implements AspectViewCell {
     /**
      * Creates an uninitialised instance.
-     * @param graphRole graph role for which this JEdge is intended
+     * @param graphRole graph role for which this ViewEdge is intended
      */
     private AspectJEdge(GraphRole graphRole) {
         setUserObject(null);
@@ -211,7 +212,7 @@ public class AspectJEdge extends
     }
 
     /**
-     * Indicates if this JEdge should be shown
+     * Indicates if this ViewEdge should be shown
      * instead as part of the source node label.
      * This is true if this is an attribute edge to a "pure" value node,
      * and value nodes are not shown.
@@ -295,7 +296,7 @@ public class AspectJEdge extends
         setStale(VisualKey.refreshables());
     }
 
-    /** Adds an edge with a given label between this JEdge's source and target
+    /** Adds an edge with a given label between this ViewEdge's source and target
      * node, and the inverse edge if {@code bidirectional} is {@code true}.
      */
     private void addEdges(AspectLabel label, boolean bidirectional) {

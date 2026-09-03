@@ -26,7 +26,7 @@ import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.gui.Simulator;
-import nl.utwente.groove.gui.display.CtrlGraphViewController;
+import nl.utwente.groove.gui.view.CtrlGraphViewController;
 import nl.utwente.groove.gui.layout.ForestLayouter;
 import nl.utwente.groove.gui.layout.Layouter;
 

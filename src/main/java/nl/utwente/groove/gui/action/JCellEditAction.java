@@ -30,10 +30,10 @@ import org.jgraph.event.GraphSelectionEvent;
 import org.jgraph.event.GraphSelectionListener;
 
 import nl.utwente.groove.grammar.aspect.AspectGraph;
-import nl.utwente.groove.gui.jgraph.AspectJCell;
+import nl.utwente.groove.gui.view.AspectViewCell;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
-import nl.utwente.groove.gui.jgraph.JCell;
-import nl.utwente.groove.gui.jgraph.JVertex;
+import nl.utwente.groove.gui.view.ViewCell;
+import nl.utwente.groove.gui.view.ViewVertex;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
 
@@ -89,8 +89,8 @@ public abstract class JCellEditAction extends AbstractAction implements GraphSel
         this.jCell = null;
         this.jCells.clear();
         for (Object cell : this.jGraph.getSelectionCells()) {
-            AspectJCell jCell = (AspectJCell) cell;
-            if (this.allCells || this.vertexOnly == (jCell instanceof JVertex)) {
+            AspectViewCell jCell = (AspectViewCell) cell;
+            if (this.allCells || this.vertexOnly == (jCell instanceof ViewVertex)) {
                 this.jCell = jCell;
                 this.jCells.add(jCell);
             }
@@ -106,14 +106,14 @@ public abstract class JCellEditAction extends AbstractAction implements GraphSel
     }
 
     /** Convenience method to invoke an edit of a single visual attribute. */
-    protected void edit(JCell<@NonNull AspectGraph> jCell, VisualKey key, Object value) {
+    protected void edit(ViewCell<@NonNull AspectGraph> jCell, VisualKey key, Object value) {
         VisualMap newVisuals = new VisualMap();
         newVisuals.put(key, value);
         edit(jCell, newVisuals);
     }
 
     /** Convenience method to invoke an edit of a set of visual attributes. */
-    protected void edit(JCell<@NonNull AspectGraph> jCell, VisualMap newVisuals) {
+    protected void edit(ViewCell<@NonNull AspectGraph> jCell, VisualMap newVisuals) {
         this.jGraph
             .getNonNullModel()
             .edit(Collections.singletonMap(jCell, newVisuals.getAttributes()), null, null, null);
@@ -198,9 +198,9 @@ public abstract class JCellEditAction extends AbstractAction implements GraphSel
     /** Switch indication that the action is enabled for all j-vertices. */
     protected final boolean vertexOnly;
     /** The first currently selected j-cell of the right type. */
-    protected AspectJCell jCell;
+    protected AspectViewCell jCell;
     /** List list of currently selected j-cells of the right type. */
-    protected final List<AspectJCell> jCells;
+    protected final List<AspectViewCell> jCells;
     /** The currently set point location. */
     protected Point2D location;
 }

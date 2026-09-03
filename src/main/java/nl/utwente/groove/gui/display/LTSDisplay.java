@@ -65,7 +65,7 @@ import nl.utwente.groove.gui.SimulatorListener;
 import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.gui.SimulatorModel.Change;
 import nl.utwente.groove.gui.jgraph.JAttr;
-import nl.utwente.groove.gui.jgraph.JCell;
+import nl.utwente.groove.gui.view.ViewCell;
 import nl.utwente.groove.gui.jgraph.JGraphMode;
 import nl.utwente.groove.gui.jgraph.LTSJEdge;
 import nl.utwente.groove.gui.jgraph.LTSJGraph;
@@ -313,7 +313,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
         if (getJModel() == null || counterExamples.isEmpty()) {
             return;
         }
-        Set<JCell<@NonNull GTS>> jCells = new HashSet<>();
+        Set<ViewCell<@NonNull GTS>> jCells = new HashSet<>();
         Iterator<GraphState> stateIter = counterExamples.iterator();
         GraphState current = stateIter.next();
         while (current != null) {
@@ -347,7 +347,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
         if (getJModel() == null) {
             return;
         }
-        Set<JCell<@NonNull GTS>> jCells = new HashSet<>();
+        Set<ViewCell<@NonNull GTS>> jCells = new HashSet<>();
         for (GraphState state : result.getStates()) {
             var jCell = getJModel().getJCellForNode(state);
             if (jCell != null) {

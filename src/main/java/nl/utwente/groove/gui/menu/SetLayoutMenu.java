@@ -27,7 +27,7 @@ import javax.swing.JMenuItem;
 
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.action.LayoutAction;
-import nl.utwente.groove.gui.display.GraphViewController;
+import nl.utwente.groove.gui.view.GraphViewController;
 import nl.utwente.groove.gui.layout.ForestLayouter;
 import nl.utwente.groove.gui.layout.LayoutKind;
 import nl.utwente.groove.gui.layout.Layouter;

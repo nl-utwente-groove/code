@@ -43,15 +43,17 @@ import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.parse.FormatError;
+import nl.utwente.groove.gui.view.ViewEdge;
+import nl.utwente.groove.gui.view.ViewVertex;
 
 /**
- * Generic abstract JCell subclass implementing the {@link JEdge} interface.
- * @param <G> the graph type for which the JCell is intended
+ * Generic abstract ViewCell subclass implementing the {@link ViewEdge} interface.
+ * @param <G> the graph type for which the ViewCell is intended
  * @author Arend Rensink
  * @version $Revision$
  */
-abstract public class AJEdge<@NonNull G extends Graph,JG extends JGraph<G>,JM extends JModel<G>,JV extends JVertex<G>>
-    extends AJCell<G,JG,JM> implements org.jgraph.graph.Edge, JEdge<G> {
+abstract public class AJEdge<@NonNull G extends Graph,JG extends JGraph<G>,JM extends JModel<G>,JV extends ViewVertex<G>>
+    extends AJCell<G,JG,JM> implements org.jgraph.graph.Edge, ViewEdge<G> {
     /**
      * Constructs an uninitialised model edge.
      */
@@ -70,7 +72,7 @@ abstract public class AJEdge<@NonNull G extends Graph,JG extends JGraph<G>,JM ex
      * The cloned object is equal to this one after a reset.
      */
     @Override
-    public JEdge<G> clone() {
+    public ViewEdge<G> clone() {
         @SuppressWarnings("unchecked")
         AJEdge<G,JG,JM,JV> clone = (AJEdge<G,JG,JM,JV>) super.clone();
         clone.initialise();
@@ -173,7 +175,7 @@ abstract public class AJEdge<@NonNull G extends Graph,JG extends JGraph<G>,JM ex
         }
     }
 
-    /** Tests if a new edge is compatible with those already wrapped by this JEdge. */
+    /** Tests if a new edge is compatible with those already wrapped by this ViewEdge. */
     @Override
     public boolean isCompatible(Edge edge) {
         //        if (!isLayoutCompatible(edge)) {
@@ -191,7 +193,7 @@ abstract public class AJEdge<@NonNull G extends Graph,JG extends JGraph<G>,JM ex
     }
 
     /** Tests if the layout data of a graph edge is compatible with
-     * that of this JEdge, so that the edge can be added.
+     * that of this ViewEdge, so that the edge can be added.
      */
     protected boolean isLayoutCompatible(Edge edge) {
         EdgeLayout edgeLayout = getLayout(edge);
@@ -236,11 +238,11 @@ abstract public class AJEdge<@NonNull G extends Graph,JG extends JGraph<G>,JM ex
 
     /**
      * Determines the direction corresponding to a given edge
-     * wrapped into this JEdge, to be displayed on the JEdge label.
-     * This is {@link Direct#NONE} if {@link nl.utwente.groove.gui.display.GraphViewController#isShowArrowsOnLabels()}
+     * wrapped into this ViewEdge, to be displayed on the ViewEdge label.
+     * This is {@link Direct#NONE} if {@link nl.utwente.groove.gui.view.GraphViewController#isShowArrowsOnLabels()}
      * is {@code false}, otherwise {@link Direct#BIDIRECTIONAL} if the edge
      * look is {@link Look#BIDIRECTIONAL}; otherwise it is determined
-     * by the relative direction of the edge with respect to this JEdge.
+     * by the relative direction of the edge with respect to this ViewEdge.
      * @param edge the edge of which the direction should be returned; if {@code null},
      * it is assumed to be a forward edge
      */

@@ -27,17 +27,17 @@ import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphRole;
-import nl.utwente.groove.gui.jgraph.AspectJCell;
+import nl.utwente.groove.gui.view.AspectViewCell;
 import nl.utwente.groove.gui.jgraph.AspectJEdge;
-import nl.utwente.groove.gui.display.AspectGraphViewController;
+import nl.utwente.groove.gui.view.AspectGraphViewController;
 import nl.utwente.groove.gui.jgraph.AspectJVertex;
-import nl.utwente.groove.gui.jgraph.JCell;
-import nl.utwente.groove.gui.jgraph.JEdge;
-import nl.utwente.groove.gui.display.GraphViewController;
-import nl.utwente.groove.gui.jgraph.JVertex;
-import nl.utwente.groove.gui.jgraph.LTSJCell;
+import nl.utwente.groove.gui.view.ViewCell;
+import nl.utwente.groove.gui.view.ViewEdge;
+import nl.utwente.groove.gui.view.GraphViewController;
+import nl.utwente.groove.gui.view.ViewVertex;
+import nl.utwente.groove.gui.view.LTSViewCell;
 import nl.utwente.groove.gui.jgraph.LTSJEdge;
-import nl.utwente.groove.gui.display.LTSGraphViewController;
+import nl.utwente.groove.gui.view.LTSGraphViewController;
 import nl.utwente.groove.gui.jgraph.LTSJVertex;
 import nl.utwente.groove.gui.tree.LabelTree;
 import nl.utwente.groove.gui.tree.RuleLevelTree;
@@ -51,36 +51,36 @@ import nl.utwente.groove.lts.GraphTransition;
  */
 public class VisibleValue implements VisualValue<Boolean> {
     @Override
-    public <G extends @NonNull Graph> Boolean get(GraphViewController<G> controller, JCell<G> cell) {
+    public <G extends @NonNull Graph> Boolean get(GraphViewController<G> controller, ViewCell<G> cell) {
         boolean result = true;
-        boolean isVertex = cell instanceof JVertex;
+        boolean isVertex = cell instanceof ViewVertex;
         assert controller != null; // should be the case by the time this method gets called
-        if (cell instanceof AspectJCell) {
+        if (cell instanceof AspectViewCell) {
             result = isVertex
                 ? getAspectVertexValue((AspectGraphViewController) controller, (AspectJVertex) cell)
                 : getAspectEdgeValue((AspectGraphViewController) controller, (AspectJEdge) cell);
-        } else if (cell instanceof LTSJCell) {
+        } else if (cell instanceof LTSViewCell) {
             result = isVertex
                 ? getLTSVertexValue((LTSGraphViewController) controller, (LTSJVertex) cell)
                 : getLTSEdgeValue((LTSGraphViewController) controller, (LTSJEdge) cell);
-        } else if (cell instanceof JVertex) {
+        } else if (cell instanceof ViewVertex) {
             result = isVertex
-                ? getBasicVertexValue(controller, (JVertex<G>) cell)
-                : getBasicEdgeValue(controller, (JEdge<G>) cell);
+                ? getBasicVertexValue(controller, (ViewVertex<G>) cell)
+                : getBasicEdgeValue(controller, (ViewEdge<G>) cell);
         }
         return result;
     }
 
     private <G extends @NonNull Graph> boolean getBasicVertexValue(GraphViewController<G> controller,
-                                                                   JVertex<G> jVertex) {
+                                                                   ViewVertex<G> jVertex) {
         LabelTree<G> labelTree = controller.getLabelTree();
         return labelTree == null || labelTree.isIncluded(jVertex);
     }
 
-    private <G extends @NonNull Graph> boolean getBasicEdgeValue(GraphViewController<G> controller, JEdge<G> jEdge) {
+    private <G extends @NonNull Graph> boolean getBasicEdgeValue(GraphViewController<G> controller, ViewEdge<G> jEdge) {
         boolean result = true;
-        JVertex<?> source = jEdge.getSourceVertex();
-        JVertex<?> target = jEdge.getTargetVertex();
+        ViewVertex<?> source = jEdge.getSourceVertex();
+        ViewVertex<?> target = jEdge.getTargetVertex();
         if (source == null || !source.getVisuals().isVisible()) {
             return false;
         }
@@ -196,13 +196,13 @@ public class VisibleValue implements VisualValue<Boolean> {
      * This is to determine the visibility of the node.
      */
     private <G extends @NonNull Graph> boolean hasVisibleIncidentEdge(@NonNull GraphViewController<G> controller,
-                                                                      JVertex<G> jVertex) {
+                                                                      ViewVertex<G> jVertex) {
         boolean result = false;
         LabelTree<G> labelTree = controller.getLabelTree();
         if (labelTree == null) {
             result = true;
         } else {
-            Iterator<? extends JEdge<G>> iter = jVertex.getContext();
+            Iterator<? extends ViewEdge<G>> iter = jVertex.getContext();
             while (iter.hasNext()) {
                 if (labelTree.isIncluded(iter.next())) {
                     result = true;

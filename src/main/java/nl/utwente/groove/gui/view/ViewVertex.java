@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.gui.jgraph;
+package nl.utwente.groove.gui.view;
 
 import java.util.Iterator;
 
@@ -28,26 +28,26 @@ import nl.utwente.groove.graph.Node;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface JVertex<G extends @NonNull Graph> extends JCell<G> {
+public interface ViewVertex<G extends @NonNull Graph> extends ViewCell<G> {
     /** Returns the set of incident JEdges. */
     @Override
-    public Iterator<? extends JEdge<G>> getContext();
+    public Iterator<? extends ViewEdge<G>> getContext();
 
     /**
-     * Sets a new node in this JVertex, and resets all other structures
+     * Sets a new node in this ViewVertex, and resets all other structures
      * to their initial values.
      */
     public void setNode(Node node);
 
     /**
-     * Returns the graph node wrapped by this {@link JVertex}.
+     * Returns the graph node wrapped by this {@link ViewVertex}.
      */
     public @NonNull Node getNode();
 
     /**
      * The cloned object is equal to this one after a reset.
      */
-    public JVertex<G> clone();
+    public ViewVertex<G> clone();
 
     /** Returns the number with which this vertex was initialised. */
     public int getNumber();

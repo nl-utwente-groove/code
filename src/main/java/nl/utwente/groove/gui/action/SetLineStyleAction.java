@@ -21,7 +21,7 @@ import java.awt.geom.Point2D;
 import java.util.List;
 
 import nl.utwente.groove.gui.Options;
-import nl.utwente.groove.gui.jgraph.AspectJCell;
+import nl.utwente.groove.gui.view.AspectViewCell;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
@@ -43,7 +43,7 @@ public class SetLineStyleAction extends JCellEditAction {
     @Override
     public void actionPerformed(ActionEvent evt) {
         VisualMap newVisuals = new VisualMap();
-        for (AspectJCell jCell : this.jCells) {
+        for (AspectViewCell jCell : this.jCells) {
             VisualMap visuals = jCell.getVisuals();
             newVisuals.setLineStyle(this.lineStyle);
             List<Point2D> points = visuals.getPoints();

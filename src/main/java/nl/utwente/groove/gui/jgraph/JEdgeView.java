@@ -59,6 +59,8 @@ import nl.utwente.groove.util.collect.Matrix;
 import nl.utwente.groove.util.line.HTMLLineFormat;
 import nl.utwente.groove.util.line.LineStyle;
 import nl.utwente.groove.util.line.MatrixFormat;
+import nl.utwente.groove.gui.view.ViewEdge;
+import nl.utwente.groove.gui.view.ViewVertex;
 
 /**
  * An edge view that uses the <tt>getText()</tt> of the underlying edge as a
@@ -75,7 +77,7 @@ public class JEdgeView extends EdgeView {
     /**
      * Constructs an edge view for a given jEdge.
      */
-    public JEdgeView(JEdge<?> jEdge, JGraph<?> jGraph) {
+    public JEdgeView(ViewEdge<?> jEdge, JGraph<?> jGraph) {
         super(jEdge);
     }
 
@@ -114,12 +116,12 @@ public class JEdgeView extends EdgeView {
     }
 
     /** Convenience method to retrieve the source vertex. */
-    private JVertex<?> getSourceVertex() {
+    private ViewVertex<?> getSourceVertex() {
         return getCell().getSourceVertex();
     }
 
     /** Convenience method to retrieve the target vertex. */
-    private JVertex<?> getTargetVertex() {
+    private ViewVertex<?> getTargetVertex() {
         return getCell().getTargetVertex();
     }
 
@@ -145,8 +147,8 @@ public class JEdgeView extends EdgeView {
      * Specialises the return type.
      */
     @Override
-    public JEdge<?> getCell() {
-        return (JEdge<?>) super.getCell();
+    public ViewEdge<?> getCell() {
+        return (ViewEdge<?>) super.getCell();
     }
 
     /**
@@ -246,9 +248,9 @@ public class JEdgeView extends EdgeView {
         // flag indicating that this edge has been encountered
         boolean found = false;
         // determine the rank within the incoming/outgoing edges
-        Iterator<? extends JEdge<?>> iter = getSourceVertex().getContext();
+        Iterator<? extends ViewEdge<?>> iter = getSourceVertex().getContext();
         while (iter.hasNext()) {
-            JEdge<?> edge = iter.next();
+            ViewEdge<?> edge = iter.next();
             // determine if this is a parallel edge
             if (edge.getVisuals().getPoints().size() > 2) {
                 continue;
@@ -756,7 +758,7 @@ public class JEdgeView extends EdgeView {
         @Override
         public Dimension getLabelSize(EdgeView view, String label) {
             Dimension result = null;
-            JEdge<?> edge = view instanceof JEdgeView
+            ViewEdge<?> edge = view instanceof JEdgeView
                 ? ((JEdgeView) view).getCell()
                 : null;
             if (edge == null) {

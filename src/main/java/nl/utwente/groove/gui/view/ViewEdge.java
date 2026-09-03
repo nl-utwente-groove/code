@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.gui.jgraph;
+package nl.utwente.groove.gui.view;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -30,11 +30,11 @@ import nl.utwente.groove.gui.look.MultiLabel.Direct;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface JEdge<G extends @NonNull Graph> extends JCell<G> {
+public interface ViewEdge<G extends @NonNull Graph> extends ViewCell<G> {
     /**
      * The cloned object is equal to this one after a reset.
      */
-    public abstract JEdge<G> clone();
+    public abstract ViewEdge<G> clone();
 
     /**
      * Returns the j-vertex that is the parent of the source port of this
@@ -42,7 +42,7 @@ public interface JEdge<G extends @NonNull Graph> extends JCell<G> {
      * @return the source vertex; may be {@code null} if the model has not
      * yet been fully initialised
      */
-    abstract public @Nullable JVertex<G> getSourceVertex();
+    abstract public @Nullable ViewVertex<G> getSourceVertex();
 
     /**
      * Returns the j-vertex that is the parent of the target port of this
@@ -50,7 +50,7 @@ public interface JEdge<G extends @NonNull Graph> extends JCell<G> {
      * @return the target vertex; may be {@code null} if the model has not
      * yet been fully initialised
      */
-    abstract public @Nullable JVertex<G> getTargetVertex();
+    abstract public @Nullable ViewVertex<G> getTargetVertex();
 
     /**
      * Returns the common source of the underlying graph edges.
@@ -72,11 +72,11 @@ public interface JEdge<G extends @NonNull Graph> extends JCell<G> {
 
     /**
      * Determines the direction corresponding to a given edge
-     * wrapped into this JEdge, to be displayed on the JEdge label.
-     * This is {@link Direct#NONE} if {@link nl.utwente.groove.gui.display.GraphViewController#isShowArrowsOnLabels()}
+     * wrapped into this ViewEdge, to be displayed on the ViewEdge label.
+     * This is {@link Direct#NONE} if {@link nl.utwente.groove.gui.view.GraphViewController#isShowArrowsOnLabels()}
      * is {@code false}, otherwise {@link Direct#BIDIRECTIONAL} if the edge
      * look is {@link Look#BIDIRECTIONAL}; otherwise it is determined
-     * by the relative direction of the edge with respect to this JEdge.
+     * by the relative direction of the edge with respect to this ViewEdge.
      * @param edge the edge of which the direction should be returned; if {@code null},
      * it is assumed to be a forward edge
      */

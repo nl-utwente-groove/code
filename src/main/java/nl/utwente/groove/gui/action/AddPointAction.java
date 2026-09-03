@@ -21,13 +21,13 @@ import java.awt.geom.Point2D;
 import java.util.List;
 
 import nl.utwente.groove.gui.Options;
-import nl.utwente.groove.gui.jgraph.AspectJCell;
+import nl.utwente.groove.gui.view.AspectViewCell;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
 
 /**
- * Action to add an intermediate point to a JEdge.
+ * Action to add an intermediate point to a ViewEdge.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -49,7 +49,7 @@ public class AddPointAction extends JCellEditAction {
     }
 
     /** Executes the action. */
-    public void execute(AspectJCell jCell) {
+    public void execute(AspectViewCell jCell) {
         VisualMap visuals = jCell.getVisuals();
         List<Point2D> points = addPointAt(visuals.getPoints(), this.location);
         edit(jCell, VisualKey.POINTS, points);

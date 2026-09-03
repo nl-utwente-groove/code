@@ -38,7 +38,7 @@ import nl.utwente.groove.grammar.aspect.AspectElement;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.model.RuleModel;
 import nl.utwente.groove.grammar.model.RuleModel.Index;
-import nl.utwente.groove.gui.jgraph.AspectJCell;
+import nl.utwente.groove.gui.view.AspectViewCell;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.AspectJModel;
 import nl.utwente.groove.gui.look.VisualKey;
@@ -83,7 +83,7 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
                 this.rule = (RuleModel) jModel.getResourceModel();
             }
             boolean enabled = updateTree();
-            for (Set<AspectJCell> levelCells : this.levelCellMap.values()) {
+            for (Set<AspectViewCell> levelCells : this.levelCellMap.values()) {
                 this.allCellSet.addAll(levelCells);
             }
             updateVisibleCells(this.levelNodeMap.values());
@@ -92,7 +92,7 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
     }
 
     /** Indicates if a given aspect cell is in the set of visible cells. */
-    public boolean isVisible(AspectJCell jCell) {
+    public boolean isVisible(AspectViewCell jCell) {
         synchroniseJModel();
         return !this.allCellSet.contains(jCell) || this.selectedSet.contains(jCell);
     }
@@ -104,12 +104,12 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
     @Override
     public void valueChanged(TreeSelectionEvent e) {
         synchroniseJModel();
-        Set<AspectJCell> emphSet = new HashSet<>();
+        Set<AspectViewCell> emphSet = new HashSet<>();
         TreePath[] selectionPaths = getSelectionPaths();
         if (selectionPaths != null) {
             for (TreePath selectedPath : selectionPaths) {
                 Index index = ((LevelNode) selectedPath.getLastPathComponent()).getIndex();
-                Set<AspectJCell> levelCells = this.levelCellMap.get(index);
+                Set<AspectViewCell> levelCells = this.levelCellMap.get(index);
                 assert levelCells != null; // every level node in the tree has its cells computed
                 emphSet.addAll(levelCells);
             }
@@ -152,11 +152,11 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
                 this.levelNodeMap.put(index, levelNode);
                 AspectJModel jModel = getJGraph().getModel();
                 assert jModel != null;
-                Set<AspectJCell> levelCells = new HashSet<>();
+                Set<AspectViewCell> levelCells = new HashSet<>();
                 // add all cells for this level according to the rule level tree
                 for (AspectElement elem : levelEntry.getValue()) {
                     // this is an element from the normalised source, about which the AspectJModel is unaware
-                    AspectJCell jCell = jModel.getJCell(elem.denormalise());
+                    AspectViewCell jCell = jModel.getJCell(elem.denormalise());
                     if (jCell != null) {
                         levelCells.add(jCell);
                     }
@@ -165,14 +165,14 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
                 // note that we go through the indices in an ordered fashion
                 // so the parent has already been computed
                 if (!index.isTopLevel()) {
-                    Set<AspectJCell> parentCells = this.levelCellMap.get(index.getParent());
+                    Set<AspectViewCell> parentCells = this.levelCellMap.get(index.getParent());
                     assert parentCells != null; // the parent index was processed earlier
                     levelCells.removeAll(parentCells);
                 }
                 // also add the nesting nodes and edges
                 AspectNode ruleLevelNode = index.getLevelNode();
                 if (ruleLevelNode != null) {
-                    AspectJCell jCell = jModel.getJCell(ruleLevelNode.denormalise());
+                    AspectViewCell jCell = jModel.getJCell(ruleLevelNode.denormalise());
                     if (jCell != null) {
                         levelCells.add(jCell);
                     }
@@ -199,11 +199,11 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
      * level nodes.
      * @return the set of changed cells
      */
-    private Set<AspectJCell> updateVisibleCells(Collection<LevelNode> changedNodes) {
-        Set<AspectJCell> selecteds = new HashSet<>();
-        Set<AspectJCell> unselecteds = new HashSet<>();
+    private Set<AspectViewCell> updateVisibleCells(Collection<LevelNode> changedNodes) {
+        Set<AspectViewCell> selecteds = new HashSet<>();
+        Set<AspectViewCell> unselecteds = new HashSet<>();
         for (LevelNode node : changedNodes) {
-            Set<AspectJCell> levelCells = this.levelCellMap.get(node.getIndex());
+            Set<AspectViewCell> levelCells = this.levelCellMap.get(node.getIndex());
             assert levelCells != null; // every level node in the tree has its cells computed
             if (node.isSelected()) {
                 selecteds.addAll(levelCells);
@@ -214,13 +214,13 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
         this.selectedSet.removeAll(unselecteds);
         this.selectedSet.addAll(selecteds);
         // Collect the changed cells
-        Set<AspectJCell> result = new HashSet<>(selecteds.size() + unselecteds.size());
+        Set<AspectViewCell> result = new HashSet<>(selecteds.size() + unselecteds.size());
         result.addAll(selecteds);
         result.addAll(unselecteds);
         // now refresh the changed cells
-        for (AspectJCell jCell : result) {
+        for (AspectViewCell jCell : result) {
             jCell.setStale(VisualKey.VISIBLE);
-            Iterator<? extends AspectJCell> iter = jCell.getContext();
+            Iterator<? extends AspectViewCell> iter = jCell.getContext();
             while (iter.hasNext()) {
                 iter.next().setStale(VisualKey.VISIBLE);
             }
@@ -253,13 +253,13 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
      */
     private AspectJModel jModel;
     /** Set of all rule elements. */
-    private final Set<AspectJCell> allCellSet = new HashSet<>();
+    private final Set<AspectViewCell> allCellSet = new HashSet<>();
     /** Set of rule elements that are visible according to the currently selected
      * level nodes.
      */
-    private final Set<AspectJCell> selectedSet = new HashSet<>();
+    private final Set<AspectViewCell> selectedSet = new HashSet<>();
     /** Mapping from level indices to jCells. */
-    private final Map<Index,Set<AspectJCell>> levelCellMap = new TreeMap<>();
+    private final Map<Index,Set<AspectViewCell>> levelCellMap = new TreeMap<>();
 
     private class LevelNode extends TreeNode {
         /** Creates an instance for a given level index. */
@@ -309,7 +309,7 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
         @Override
         public void setSelected(boolean selected) {
             this.selected = selected;
-            Set<AspectJCell> changes = updateVisibleCells(Collections.singleton(this));
+            Set<AspectViewCell> changes = updateVisibleCells(Collections.singleton(this));
             getJGraph().refreshCells(changes, false);
         }
 

@@ -21,6 +21,7 @@ module nl.utwente.groove {
     exports nl.utwente.groove.gui.list;
     exports nl.utwente.groove.gui.look;
     exports nl.utwente.groove.gui.tree;
+    exports nl.utwente.groove.gui.view;
     exports nl.utwente.groove.algebra.syntax;
     exports nl.utwente.groove.explore;
     exports nl.utwente.groove.util.line;

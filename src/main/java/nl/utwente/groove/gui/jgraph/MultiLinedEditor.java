@@ -53,6 +53,7 @@ import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fonts;
+import nl.utwente.groove.gui.view.AspectViewCell;
 
 /**
  * Multiline jcell editor, essentially taken from
@@ -96,12 +97,12 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
         implements GraphCellEditor, CaretListener {
         /**
          * Initialises the editor component with the edit string of the user
-         * object of <tt>value</tt> (which is required to be a {@link JCell}).
+         * object of <tt>value</tt> (which is required to be a {@link nl.utwente.groove.gui.view.ViewCell}).
          */
         @Override
         public Component getGraphCellEditorComponent(org.jgraph.JGraph graph, Object value,
                                                      boolean isSelected) {
-            AspectJCell jCell = (AspectJCell) value;
+            AspectViewCell jCell = (AspectViewCell) value;
             // fill the set of labels for autocompletion
             this.labels.clear();
             this.labels.addAll(prefixes);
@@ -125,7 +126,7 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
                 font = font.deriveFont((float) (font.getSize() * scale));
             }
             result.setFont(font);
-            String editString = ((AspectJCell) value).getUserObject().toEditString();
+            String editString = ((AspectViewCell) value).getUserObject().toEditString();
             result.setText(editString);
             result.selectAll();
             return result;

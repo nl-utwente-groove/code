@@ -36,7 +36,7 @@ import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.display.GraphTab;
 import nl.utwente.groove.gui.display.JGraphPanel;
 import nl.utwente.groove.gui.display.ResourceDisplay;
-import nl.utwente.groove.gui.jgraph.JCell;
+import nl.utwente.groove.gui.view.ViewCell;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.tree.LabelTree;
 import nl.utwente.groove.gui.tree.TypeTree.TypeTreeNode;
@@ -102,7 +102,7 @@ public class FindReplaceAction extends SimulatorAction
         this.oldLabel = null;
         Object[] selection = ((JGraph<?>) e.getSource()).getSelectionCells();
         if (selection != null && selection.length > 0) {
-            Collection<? extends Label> selectedEntries = ((JCell<?>) selection[0]).getKeys();
+            Collection<? extends Label> selectedEntries = ((ViewCell<?>) selection[0]).getKeys();
             if (selectedEntries.size() > 0) {
                 Label selectedEntry = selectedEntries.iterator().next();
                 if (selectedEntry instanceof TypeElement te) {

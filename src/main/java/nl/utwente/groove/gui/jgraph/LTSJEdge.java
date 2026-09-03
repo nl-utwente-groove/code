@@ -15,14 +15,15 @@ import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.lts.RuleTransition;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.Strings;
+import nl.utwente.groove.gui.view.LTSViewCell;
 
 /**
- * JEdge class that describes the underlying edge as a graph transition.
+ * ViewEdge class that describes the underlying edge as a graph transition.
  * @author Arend Rensink
  * @version $Revision$
  */
 public class LTSJEdge extends AJEdge<@NonNull GTS,LTSJGraph,LTSJModel,LTSJVertex>
-    implements LTSJCell {
+    implements LTSViewCell {
     /**
      * Constructs an uninitialised instance.
      * Call {@link #setJModel(JModel)} to initialise.

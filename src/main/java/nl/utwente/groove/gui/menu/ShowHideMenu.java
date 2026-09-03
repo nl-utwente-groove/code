@@ -45,10 +45,10 @@ import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.dialog.FormulaDialog;
 import nl.utwente.groove.gui.dialog.GrooveFileChooser;
-import nl.utwente.groove.gui.jgraph.JCell;
-import nl.utwente.groove.gui.jgraph.JEdge;
+import nl.utwente.groove.gui.view.ViewCell;
+import nl.utwente.groove.gui.view.ViewEdge;
 import nl.utwente.groove.gui.jgraph.JGraph;
-import nl.utwente.groove.gui.jgraph.LTSJCell;
+import nl.utwente.groove.gui.view.LTSViewCell;
 import nl.utwente.groove.gui.jgraph.LTSJGraph;
 import nl.utwente.groove.gui.tree.LabelTree.LabelledCells;
 import nl.utwente.groove.lts.GTS;
@@ -265,7 +265,7 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
      * Abstract class that supports showing and hiding actions based on two
      * criteria:
      * <ul>
-     * <li>A method {@link nl.utwente.groove.gui.menu.ShowHideMenu.ShowHideAction#isInvolved(JCell)} to signal that a
+     * <li>A method {@link nl.utwente.groove.gui.menu.ShowHideMenu.ShowHideAction#isInvolved(ViewCell)} to signal that a
      * certain cell is involved in the attempt to show or hide it;
      * <li>A show mode, which can be {@link #ADD_MODE} (the involved cells are
      * set to visible), {@link #HIDE_MODE} (the involved cells are hidden) or
@@ -296,11 +296,11 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
          */
         @Override
         public void actionPerformed(ActionEvent e) {
-            Set<JCell<G>> hiddenCells = new HashSet<>();
-            Set<JCell<G>> shownCells = new HashSet<>();
+            Set<ViewCell<G>> hiddenCells = new HashSet<>();
+            Set<ViewCell<G>> shownCells = new HashSet<>();
             var jModel = this.jgraph.getModel();
             assert jModel != null;
-            for (JCell<G> jCell : jModel.getRoots()) {
+            for (ViewCell<G> jCell : jModel.getRoots()) {
                 if (isHiding(jCell)) {
                     hiddenCells.add(jCell);
                 } else if (isShowing(jCell)) {
@@ -329,16 +329,16 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
         /**
          * Indicates whether (according to this action) a given cell should be
          * hidden. This is the case if the cell is involved (according to
-         * {@link #isInvolved(JCell)}) and the show mode of this action is
+         * {@link #isInvolved(ViewCell)}) and the show mode of this action is
          * {@link #HIDE_MODE}, or it is not involved and the show mode is
          * {@link #ONLY_MODE}.
          * @param jCell the cell for which the indication is given
          * @return <tt>true</tt> if (according to this action) <tt>cell</tt>
          *         should be hidden
-         * @see #isInvolved(JCell)
+         * @see #isInvolved(ViewCell)
          * @see #getShowMode()
          */
-        protected boolean isHiding(JCell<G> jCell) {
+        protected boolean isHiding(ViewCell<G> jCell) {
             boolean involved = isInvolved(jCell);
             return (involved && getShowMode() == HIDE_MODE)
                 || (!involved && getShowMode() == ONLY_MODE);
@@ -347,15 +347,15 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
         /**
          * Indicates whether (according to this action) a given cell should be
          * hidden. This is the case if the cell is involved (according to
-         * {@link #isInvolved(JCell)}) and the show mode of this action is
+         * {@link #isInvolved(ViewCell)}) and the show mode of this action is
          * {@link #ADD_MODE} or {@link #ONLY_MODE}.
          * @param jCell the cell for which the indication is given
          * @return <tt>true</tt> if (according to this action) <tt>cell</tt>
          *         should be hidden
-         * @see #isInvolved(JCell)
+         * @see #isInvolved(ViewCell)
          * @see #getShowMode()
          */
-        protected boolean isShowing(JCell<G> jCell) {
+        protected boolean isShowing(ViewCell<G> jCell) {
             return isInvolved(jCell) && getShowMode() != HIDE_MODE;
         }
 
@@ -365,7 +365,7 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
          * @param cells the jcells to be changed
          * @param hidden <tt>true</tt> if the cells are to be changed to hidden
          */
-        protected final void setHidden(Set<JCell<G>> cells, boolean hidden) {
+        protected final void setHidden(Set<ViewCell<G>> cells, boolean hidden) {
             this.jgraph.changeGrayedOut(cells, hidden);
         }
 
@@ -377,7 +377,7 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
          * @return <tt>true</tt> if <tt>cell</tt> should be shown/hidden by this
          *         action
          */
-        abstract protected boolean isInvolved(JCell<G> jCell);
+        abstract protected boolean isInvolved(ViewCell<G> jCell);
 
         /** The jgraph upon which this menu works. */
         protected final JGraph<G> jgraph;
@@ -410,7 +410,7 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
          * @return <tt>true</tt> always
          */
         @Override
-        protected boolean isInvolved(JCell<G> cell) {
+        protected boolean isInvolved(ViewCell<G> cell) {
             return true;
         }
     }
@@ -435,7 +435,7 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
          * @return <tt>true</tt> always
          */
         @Override
-        protected boolean isInvolved(JCell<G> cell) {
+        protected boolean isInvolved(ViewCell<G> cell) {
             return !cell.isGrayedOut();
         }
     }
@@ -459,13 +459,13 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
         }
 
         @Override
-        protected boolean isInvolved(JCell<G> cell) {
+        protected boolean isInvolved(ViewCell<G> cell) {
             boolean result = false;
-            if (cell instanceof JEdge) {
-                JEdge<G> edge = (JEdge<G>) cell;
-                JCell<G> sourceVertex = edge.getSourceVertex();
+            if (cell instanceof ViewEdge) {
+                ViewEdge<G> edge = (ViewEdge<G>) cell;
+                ViewCell<G> sourceVertex = edge.getSourceVertex();
                 assert sourceVertex != null; // model has been initialised by now
-                JCell<G> targetVertex = edge.getTargetVertex();
+                ViewCell<G> targetVertex = edge.getTargetVertex();
                 assert targetVertex != null; // model has been initialised by now
                 Object[] selectedCellArray = this.jgraph.getSelectionCells();
                 if (selectedCellArray.length == 0) {
@@ -506,14 +506,14 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
          * label of this action equals the inclusion condition of this action.
          */
         @Override
-        protected boolean isInvolved(JCell<G> cell) {
+        protected boolean isInvolved(ViewCell<G> cell) {
             return this.cells.contains(cell);
         }
 
         /**
          * The label on which this action selects.
          */
-        private final Set<JCell<G>> cells;
+        private final Set<ViewCell<G>> cells;
     }
 
     /**
@@ -564,7 +564,7 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
         }
 
         @Override
-        protected boolean isInvolved(JCell<G> cell) {
+        protected boolean isInvolved(ViewCell<G> cell) {
             Set<? extends Edge> edgesInCell = cell.getEdges();
             boolean edgeFound = false;
             Iterator<? extends Edge> edgeInCellIter = edgesInCell.iterator();
@@ -621,7 +621,7 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
          * model.
          */
         @Override
-        protected boolean isInvolved(JCell<G> jCell) {
+        protected boolean isInvolved(ViewCell<G> jCell) {
             return this.jgraph.getSelectionModel().isCellSelected(jCell);
         }
     }
@@ -672,7 +672,7 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
          * labels read from the file.
          */
         @Override
-        protected boolean isInvolved(JCell<G> jCell) {
+        protected boolean isInvolved(ViewCell<G> jCell) {
             boolean result = false;
             for (Label label : jCell.getKeys()) {
                 result = this.labels.contains(label.text());
@@ -716,9 +716,9 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
         }
 
         @Override
-        protected boolean isInvolved(JCell<@NonNull GTS> jCell) {
+        protected boolean isInvolved(ViewCell<@NonNull GTS> jCell) {
             boolean result = false;
-            if (jCell instanceof LTSJCell ltsJCell) {
+            if (jCell instanceof LTSViewCell ltsJCell) {
                 for (var t : ltsJCell.getEdges()) {
                     result = this.trace.contains(t);
                     if (result) {

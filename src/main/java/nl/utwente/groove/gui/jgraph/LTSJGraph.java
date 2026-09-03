@@ -39,7 +39,7 @@ import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.gui.Simulator;
-import nl.utwente.groove.gui.display.LTSGraphViewController;
+import nl.utwente.groove.gui.view.LTSGraphViewController;
 import nl.utwente.groove.gui.layout.ForestLayouter;
 import nl.utwente.groove.gui.layout.Layouter;
 import nl.utwente.groove.lts.Filter;
@@ -48,6 +48,7 @@ import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.util.collect.Matrix;
 import nl.utwente.groove.util.line.MatrixFormat;
+import nl.utwente.groove.gui.view.ViewVertex;
 
 /**
  * Implementation of MyJGraph that provides the proper popup menu. To construct
@@ -184,7 +185,7 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements Serializable {
     Dimension2D computePreferredSize(JVertexView view) {
         Dimension2D result;
         if (FAST_SIZE) {
-            JVertex<?> vertex = view.getCell();
+            ViewVertex<?> vertex = view.getCell();
             var label = vertex.getVisuals().getLabel();
             var matrix = label.toBuilder(MatrixFormat.instance());
             result = this.sizeMatrix.lookup(matrix.getWidth(), matrix.getHeight());

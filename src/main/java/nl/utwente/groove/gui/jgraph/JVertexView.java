@@ -61,6 +61,7 @@ import nl.utwente.groove.util.Fonts;
 import nl.utwente.groove.util.NodeShape;
 import nl.utwente.groove.util.line.HTMLLineFormat;
 import nl.utwente.groove.util.line.LineStyle;
+import nl.utwente.groove.gui.view.ViewVertex;
 
 /**
  * A multi-lined vertex view that caches the label text. The functionality for
@@ -75,7 +76,7 @@ public class JVertexView extends VertexView {
      * @param jNode the node underlying the view
      * @param jGraph the graph on which the node is to be displayed
      */
-    public JVertexView(JVertex<?> jNode, JGraph<?> jGraph) {
+    public JVertexView(ViewVertex<?> jNode, JGraph<?> jGraph) {
         super(jNode);
         this.jGraph = jGraph;
     }
@@ -96,8 +97,8 @@ public class JVertexView extends VertexView {
      * Specialises the return type.
      */
     @Override
-    public @NonNull JVertex<?> getCell() {
-        return (JVertex<?>) super.getCell();
+    public @NonNull ViewVertex<?> getCell() {
+        return (ViewVertex<?>) super.getCell();
     }
 
     /** Returns the visual attributes map of the viewed cell. */
@@ -896,7 +897,7 @@ public class JVertexView extends VertexView {
         /** The vertex view that is currently installed. */
         private JVertexView view;
         /** The vertex that is currently installed. */
-        private JVertex<?> cell;
+        private ViewVertex<?> cell;
         /** The visual map of the vertex that is currently installed. */
         private VisualMap visuals;
         /** Indicates if the cell is a nodified edge. */

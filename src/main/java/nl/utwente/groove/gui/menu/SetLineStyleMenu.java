@@ -23,7 +23,7 @@ import org.jgraph.event.GraphSelectionListener;
 
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
-import nl.utwente.groove.gui.jgraph.JEdge;
+import nl.utwente.groove.gui.view.ViewEdge;
 import nl.utwente.groove.util.line.LineStyle;
 
 /**
@@ -46,7 +46,7 @@ public class SetLineStyleMenu extends JMenu implements GraphSelectionListener {
 
     @Override
     public void valueChanged(GraphSelectionEvent e) {
-        this.setEnabled(this.jGraph.getSelectionCell() instanceof JEdge);
+        this.setEnabled(this.jGraph.getSelectionCell() instanceof ViewEdge);
     }
 
     /** The j-graph on which this menu works. */

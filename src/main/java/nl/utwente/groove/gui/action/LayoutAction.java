@@ -23,7 +23,7 @@ import javax.swing.AbstractAction;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.jgraph.JGraph;
-import nl.utwente.groove.gui.jgraph.JVertex;
+import nl.utwente.groove.gui.view.ViewVertex;
 import nl.utwente.groove.gui.layout.Layouter;
 
 /**
@@ -57,8 +57,8 @@ public class LayoutAction extends AbstractAction {
         assert jModel != null;
         jModel.setLayoutable(selection.length == 0);
         for (Object jCell : selection) {
-            if (jCell instanceof JVertex) {
-                ((JVertex<?>) jCell).setLayoutable(true);
+            if (jCell instanceof ViewVertex) {
+                ((ViewVertex<?>) jCell).setLayoutable(true);
             }
         }
         getLayouter().start();

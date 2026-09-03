@@ -38,17 +38,18 @@ import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.parse.FormatError;
+import nl.utwente.groove.gui.view.AspectViewCell;
 
 /**
  * Specialized j-vertex for rule graphs, with its own tool tip text.
  */
 public class AspectJVertex extends
-    AJVertex<@NonNull AspectGraph,AspectJGraph,AspectJModel,AspectJEdge> implements AspectJCell {
+    AJVertex<@NonNull AspectGraph,AspectJGraph,AspectJModel,AspectJEdge> implements AspectViewCell {
     /**
-     * Creates a fresh, uninitialised JVertex.
+     * Creates a fresh, uninitialised ViewVertex.
      * Call {@link #setJModel} and {@link #setNode(Node)}
      * to initialise.
-     * @param graphRole graph role for which this JEdge is intended
+     * @param graphRole graph role for which this ViewEdge is intended
      */
     private AspectJVertex(GraphRole graphRole) {
         setUserObject(null);
@@ -109,7 +110,7 @@ public class AspectJVertex extends
      * Collects a set of edges that under the current
      * display settings are also to be shown on this label.
      * These are obtained from the outgoing JEdges that
-     * have this JVertex as their source label and for which
+     * have this ViewVertex as their source label and for which
      * {@link AspectJEdge#isSourceLabel()} holds.
      */
     public Set<AspectEdge> getExtraSelfEdges() {

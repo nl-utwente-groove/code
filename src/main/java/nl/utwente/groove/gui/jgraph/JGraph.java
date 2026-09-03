@@ -92,7 +92,7 @@ import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.gui.action.ActionStore;
 import nl.utwente.groove.gui.action.ExportAction;
 import nl.utwente.groove.gui.action.LayoutAction;
-import nl.utwente.groove.gui.display.GraphViewController;
+import nl.utwente.groove.gui.view.GraphViewController;
 import nl.utwente.groove.gui.layout.Layouter;
 import nl.utwente.groove.gui.layout.SpringLayouter;
 import nl.utwente.groove.gui.look.MultiLabel;
@@ -101,6 +101,9 @@ import nl.utwente.groove.gui.look.VisualMap;
 import nl.utwente.groove.gui.tree.LabelTree;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.util.Factory;
+import nl.utwente.groove.gui.view.ViewCell;
+import nl.utwente.groove.gui.view.ViewEdge;
+import nl.utwente.groove.gui.view.ViewVertex;
 
 /**
  * Enhanced j-graph, dedicated to j-models.
@@ -240,8 +243,8 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
         String result = null;
         if (value instanceof String) {
             result = (String) value;
-        } else if (value instanceof JVertex) {
-            MultiLabel label = ((JVertex<?>) value).getVisuals().getLabel();
+        } else if (value instanceof ViewVertex) {
+            MultiLabel label = ((ViewVertex<?>) value).getVisuals().getLabel();
             result = label.toString();
         } else if (value instanceof JEdgeView) {
             MultiLabel label = ((JEdgeView) value).getCell().getVisuals().getLabel();
@@ -258,7 +261,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
      */
     @Override
     public String getToolTipText(MouseEvent evt) {
-        JCell<?> jCell = getFirstCellForLocation(evt.getX(), evt.getY());
+        ViewCell<?> jCell = getFirstCellForLocation(evt.getX(), evt.getY());
         if (jCell != null && jCell.getVisuals().isVisible()) {
             return jCell.getToolTipText();
         } else {
@@ -270,11 +273,11 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
      * Overrides the super method to make sure hidden cells are never editable.
      * If the specified cell is hidden (according to the underlying model),
      * returns false; otherwise, passes on the query to super.
-     * @see JCell#isGrayedOut()
+     * @see ViewCell#isGrayedOut()
      */
     @Override
     public boolean isCellEditable(Object cell) {
-        return !(cell instanceof JCell && ((JCell<?>) cell).isGrayedOut())
+        return !(cell instanceof ViewCell && ((ViewCell<?>) cell).isGrayedOut())
             && super.isCellEditable(cell);
     }
 
@@ -403,24 +406,24 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
     /** Refreshes the visibility and view of a given set of JCells.
      * @param unselectGrayedOut if {@code true}, unselect all grayed-out cells.
      */
-    public void refreshCells(Collection<? extends JCell<G>> jCellSet, boolean unselectGrayedOut) {
+    public void refreshCells(Collection<? extends ViewCell<G>> jCellSet, boolean unselectGrayedOut) {
         if (!jCellSet.isEmpty()) {
             JGraphLayoutCache cache = getGraphLayoutCache();
-            Collection<JCell<G>> visibleCells = new HashSet<>(jCellSet.size());
-            Collection<JCell<G>> hiddenCells = new HashSet<>(jCellSet.size());
-            for (JCell<G> jCell : jCellSet) {
+            Collection<ViewCell<G>> visibleCells = new HashSet<>(jCellSet.size());
+            Collection<ViewCell<G>> hiddenCells = new HashSet<>(jCellSet.size());
+            for (ViewCell<G> jCell : jCellSet) {
                 CellView jView = cache.getMapping(jCell, false);
                 boolean wasVisible = jView != null;
                 boolean isVisible = jCell.getVisuals().isVisible();
-                Collection<JCell<G>> changeCells = wasVisible
+                Collection<ViewCell<G>> changeCells = wasVisible
                     ? hiddenCells
                     : visibleCells;
                 if (isVisible != wasVisible) {
                     changeCells.add(jCell);
                     // test context for visibility
-                    Iterator<? extends JCell<G>> iter = jCell.getContext();
+                    Iterator<? extends ViewCell<G>> iter = jCell.getContext();
                     while (iter.hasNext()) {
-                        JCell<G> c = iter.next();
+                        ViewCell<G> c = iter.next();
                         if (c.getVisuals().isVisible() != wasVisible) {
                             changeCells.add(c);
                         }
@@ -436,7 +439,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
             if (unselectGrayedOut) {
                 // unselect all hidden and grayed-out cells
                 var unselectedCells = new HashSet<>(hiddenCells);
-                visibleCells.stream().filter(JCell::isGrayedOut).forEach(unselectedCells::add);
+                visibleCells.stream().filter(ViewCell::isGrayedOut).forEach(unselectedCells::add);
                 getSelectionModel().removeSelectionCells(unselectedCells.toArray());
             }
             // make sure refreshed cells are not selected
@@ -467,29 +470,29 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
      * Changes the grayed-out status of a given set of jgraph cells.
      * @param jCells the cells whose hiding status is to be changed
      * @param grayedOut the new grayed-out status of the cell
-     * @see JCell#isGrayedOut()
+     * @see ViewCell#isGrayedOut()
      */
-    public void changeGrayedOut(Set<JCell<G>> jCells, boolean grayedOut) {
+    public void changeGrayedOut(Set<ViewCell<G>> jCells, boolean grayedOut) {
         var model = getModel();
         assert model != null;
-        Set<JCell<G>> changedJCells = new HashSet<>();
-        for (JCell<G> jCell : jCells) {
+        Set<ViewCell<G>> changedJCells = new HashSet<>();
+        for (ViewCell<G> jCell : jCells) {
             if (jCell.setGrayedOut(grayedOut)) {
                 changedJCells.add(jCell);
-                if (grayedOut && jCell instanceof JVertex) {
+                if (grayedOut && jCell instanceof ViewVertex) {
                     // also gray out incident edges
-                    Iterator<? extends JCell<G>> iter = jCell.getContext();
+                    Iterator<? extends ViewCell<G>> iter = jCell.getContext();
                     while (iter.hasNext()) {
-                        JCell<G> c = iter.next();
+                        ViewCell<G> c = iter.next();
                         if (c.setGrayedOut(true)) {
                             changedJCells.add(c);
                         }
                     }
-                } else if (!grayedOut && jCell instanceof JEdge) {
+                } else if (!grayedOut && jCell instanceof ViewEdge) {
                     // also revive end nodes
-                    Iterator<? extends JCell<G>> iter = jCell.getContext();
+                    Iterator<? extends ViewCell<G>> iter = jCell.getContext();
                     while (iter.hasNext()) {
-                        JCell<G> c = iter.next();
+                        ViewCell<G> c = iter.next();
                         if (c.setGrayedOut(false)) {
                             changedJCells.add(c);
                         }
@@ -522,24 +525,24 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
      * @param edge <tt>true</tt> if we are not interested in vertices
      * @return the topmost visible cell at a given point
      */
-    protected JCell<G> getFirstCellForLocation(double x, double y, boolean vertex, boolean edge) {
+    protected ViewCell<G> getFirstCellForLocation(double x, double y, boolean vertex, boolean edge) {
         x /= this.scale;
         y /= this.scale;
-        JCell<G> result = null;
+        ViewCell<G> result = null;
         Rectangle xyArea = new Rectangle((int) (x - 2), (int) (y - 2), 4, 4);
         // iterate over the roots and query the visible ones
         CellView[] viewRoots = this.graphLayoutCache.getRoots();
         for (int i = viewRoots.length - 1; result == null && i >= 0; i--) {
             CellView jCellView = viewRoots[i];
-            if (!(jCellView.getCell() instanceof JCell)) {
+            if (!(jCellView.getCell() instanceof ViewCell)) {
                 continue;
             }
             @SuppressWarnings("unchecked")
-            JCell<G> jCell = (JCell<G>) jCellView.getCell();
+            ViewCell<G> jCell = (ViewCell<G>) jCellView.getCell();
             boolean typeCorrect = vertex
-                ? jCell instanceof JVertex
+                ? jCell instanceof ViewVertex
                 : edge
-                    ? jCell instanceof JEdge
+                    ? jCell instanceof ViewEdge
                     : true;
             if (typeCorrect && !jCell.isGrayedOut()) {
                 // now see if this jCell is sufficiently close to the point
@@ -556,7 +559,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
      * cells.
      */
     @Override
-    public JCell<G> getFirstCellForLocation(double x, double y) {
+    public ViewCell<G> getFirstCellForLocation(double x, double y) {
         return getFirstCellForLocation(x, y, false, false);
     }
 
@@ -1176,9 +1179,9 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
     public void clearAllEdgePoints() {
         var model = getModel();
         assert model != null;
-        Map<JCell<G>,AttributeMap> change = new HashMap<>();
-        for (JCell<G> jCell : model.getRoots()) {
-            if (jCell instanceof JEdge) {
+        Map<ViewCell<G>,AttributeMap> change = new HashMap<>();
+        for (ViewCell<G> jCell : model.getRoots()) {
+            if (jCell instanceof ViewEdge) {
                 VisualMap visuals = jCell.getVisuals();
                 List<Point2D> points = visuals.getPoints();
                 // don't make the change directly in the cell,
@@ -1314,7 +1317,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
             for (int i = 0; i < cells.length; i++) {
                 Object c = cells[i];
                 boolean selected = e.isAddedCell(i);
-                if (c instanceof JCell<?> jCell) {
+                if (c instanceof ViewCell<?> jCell) {
                     jCell.putVisual(VisualKey.EMPHASIS, selected);
                 }
                 if (selected && (selectedCell == null || isCellInView(viewBounds, c))) {

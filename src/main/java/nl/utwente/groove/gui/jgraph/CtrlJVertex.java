@@ -10,7 +10,7 @@ import nl.utwente.groove.control.graph.ControlNode;
 import nl.utwente.groove.gui.look.Look;
 
 /**
- * JVertex class that describes the underlying node as a graph state.
+ * ViewVertex class that describes the underlying node as a graph state.
  * @author Tom Staijen
  * @version $Revision$
  */

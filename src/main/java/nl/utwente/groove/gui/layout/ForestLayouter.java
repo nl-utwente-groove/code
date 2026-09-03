@@ -37,9 +37,9 @@ import nl.utwente.groove.control.graph.ControlNode;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.EdgeComparator;
 import nl.utwente.groove.graph.NodeComparator;
-import nl.utwente.groove.gui.jgraph.JEdge;
+import nl.utwente.groove.gui.view.ViewEdge;
 import nl.utwente.groove.gui.jgraph.JGraph;
-import nl.utwente.groove.gui.jgraph.JVertex;
+import nl.utwente.groove.gui.view.ViewVertex;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.util.Pair;
 
@@ -93,13 +93,13 @@ public class ForestLayouter extends AbstractLayouter {
     private Forest computeForest(Forest oldForest) {
         BranchMap oldBranchMap = oldForest.two();
         // Collect the layout nodes whose position in the forest should remain fixed
-        Set<JVertex<?>> fixed = new HashSet<>();
+        Set<ViewVertex<?>> fixed = new HashSet<>();
         fixed.retainAll(oldBranchMap.keySet());
         // clear the indegree- and branch maps
         Map<Integer,Set<LayoutNode>> inDegreeMap = new TreeMap<>();
         BranchMap branchMap = new BranchMap();
         // compose the branch map
-        for (JVertex<?> key : this.layoutMap.keySet()) {
+        for (ViewVertex<?> key : this.layoutMap.keySet()) {
             assert key.getVisuals().isVisible();
             // add the layoutable to the leaves and the branch map
             Set<LayoutNode> branchSet = new LinkedHashSet<>();
@@ -108,7 +108,7 @@ public class ForestLayouter extends AbstractLayouter {
             Set<LayoutNode> oldBranchSet = oldBranchMap.get(key);
             if (oldBranchSet != null) {
                 for (LayoutNode oldChild : oldBranchSet) {
-                    JVertex<?> jVertex = oldChild.getVertex();
+                    ViewVertex<?> jVertex = oldChild.getVertex();
                     if (this.immovableMap.containsKey(jVertex)) {
                         branchSet.add(this.layoutMap.get(jVertex));
                         fixed.add(jVertex);
@@ -117,16 +117,16 @@ public class ForestLayouter extends AbstractLayouter {
             }
         }
         // count the incoming edges and add outgoing edges to the branch map
-        for (Map.Entry<JVertex<?>,LayoutNode> layoutEntry : this.layoutMap.entrySet()) {
-            JVertex<?> key = layoutEntry.getKey();
+        for (Map.Entry<ViewVertex<?>,LayoutNode> layoutEntry : this.layoutMap.entrySet()) {
+            ViewVertex<?> key = layoutEntry.getKey();
             // Initialise the incoming edge count
             int inEdgeCount = 0;
             // calculate the incoming edge count and (deterministic) outgoing edge map
-            Set<JEdge<?>> outEdges = new TreeSet<>(edgeComparator);
+            Set<ViewEdge<?>> outEdges = new TreeSet<>(edgeComparator);
             // iterate over the incident edges
-            Iterator<? extends JEdge<?>> edgeIter = key.getContext();
+            Iterator<? extends ViewEdge<?>> edgeIter = key.getContext();
             while (edgeIter.hasNext()) {
-                JEdge<?> edge = edgeIter.next();
+                ViewEdge<?> edge = edgeIter.next();
                 if (!edge.getVisuals().isVisible()) {
                     continue;
                 }
@@ -134,7 +134,7 @@ public class ForestLayouter extends AbstractLayouter {
                     continue;
                 }
                 // the edge source is a node for sure
-                JVertex<?> sourceVertex = edge.getSourceVertex();
+                ViewVertex<?> sourceVertex = edge.getSourceVertex();
                 // the edge target may be a point only
                 if (sourceVertex != null && sourceVertex.equals(key)) {
                     if (!fixed.contains(edge.getTargetVertex())) {
@@ -149,8 +149,8 @@ public class ForestLayouter extends AbstractLayouter {
             }
             Set<LayoutNode> branchSet = branchMap.get(key);
             assert branchSet != null; // the branch map was filled for every layout map key
-            for (JEdge<?> edge : outEdges) {
-                JVertex<?> targetVertex = edge.getTargetVertex();
+            for (ViewEdge<?> edge : outEdges) {
+                ViewVertex<?> targetVertex = edge.getTargetVertex();
                 branchSet.add(this.layoutMap.get(targetVertex));
             }
             // add the cell to the count map
@@ -163,7 +163,7 @@ public class ForestLayouter extends AbstractLayouter {
         Set<LayoutNode> remaining = new LinkedHashSet<>();
         // Transfer immovable old roots
         for (LayoutNode oldRoot : oldForest.one()) {
-            JVertex<?> oldVertex = oldRoot.getVertex();
+            ViewVertex<?> oldVertex = oldRoot.getVertex();
             if (this.immovableMap.containsKey(oldVertex)) {
                 remaining.add(this.layoutMap.get(oldVertex));
             }
@@ -172,7 +172,7 @@ public class ForestLayouter extends AbstractLayouter {
         Collection<?> suggestedRoots = getSuggestedRoots();
         if (suggestedRoots != null) {
             for (Object root : getSuggestedRoots()) {
-                if (!(root instanceof JVertex)) {
+                if (!(root instanceof ViewVertex)) {
                     continue;
                 }
                 LayoutNode layoutable = ForestLayouter.this.layoutMap.get(root);
@@ -332,9 +332,9 @@ public class ForestLayouter extends AbstractLayouter {
         }
     }
 
-    private final static Comparator<JEdge<?>> edgeComparator = new Comparator<>() {
+    private final static Comparator<ViewEdge<?>> edgeComparator = new Comparator<>() {
         @Override
-        public int compare(JEdge<?> o1, JEdge<?> o2) {
+        public int compare(ViewEdge<?> o1, ViewEdge<?> o2) {
             int result = nodeComp.compare(o1.getTargetNode(), o2.getTargetNode());
             if (result != 0) {
                 return result;
@@ -364,7 +364,7 @@ public class ForestLayouter extends AbstractLayouter {
     /** The vertical space between levels, excluding the node height. */
     static public final int VERTICAL_SPACE = 40;
 
-    private static class BranchMap extends LinkedHashMap<JVertex<?>,Set<LayoutNode>> {
+    private static class BranchMap extends LinkedHashMap<ViewVertex<?>,Set<LayoutNode>> {
         //
     }
 

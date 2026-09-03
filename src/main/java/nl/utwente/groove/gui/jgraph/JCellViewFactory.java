@@ -18,6 +18,8 @@ package nl.utwente.groove.gui.jgraph;
 
 import org.jgraph.graph.DefaultCellViewFactory;
 import org.jgraph.graph.VertexView;
+import nl.utwente.groove.gui.view.ViewEdge;
+import nl.utwente.groove.gui.view.ViewVertex;
 
 /**
  * Implementation of a cell view factory that returns {@link JVertexView} en
@@ -37,14 +39,14 @@ public class JCellViewFactory extends DefaultCellViewFactory {
 
     /**
      * This implementation creates {@link JVertexView} if the cell to be viewed
-     * is a {@link JVertex}. Otherwise, the method delegates to the super
+     * is a {@link ViewVertex}. Otherwise, the method delegates to the super
      * class.
      */
     @Override
     protected VertexView createVertexView(Object cell) {
-        if (cell instanceof JVertex) {
+        if (cell instanceof ViewVertex) {
             JVertexView result =
-                new JVertexView((JVertex<?>) cell, this.jGraph);
+                new JVertexView((ViewVertex<?>) cell, this.jGraph);
             // the following is apparently necessary
             // to initialise the autosize correctly
             result.refresh(this.jGraph.getGraphLayoutCache(),
@@ -58,12 +60,12 @@ public class JCellViewFactory extends DefaultCellViewFactory {
 
     /**
      * This implementation creates {@link JEdgeView} if the cell to be viewed is
-     * a {@link JEdge}. Otherwise, the method delegates to the super class.
+     * a {@link ViewEdge}. Otherwise, the method delegates to the super class.
      */
     @Override
     protected JEdgeView createEdgeView(Object edge) {
-        assert edge instanceof JEdge;
-        return new JEdgeView((JEdge<?>) edge, this.jGraph);
+        assert edge instanceof ViewEdge;
+        return new JEdgeView((ViewEdge<?>) edge, this.jGraph);
     }
 
     /** Basic getter method. */

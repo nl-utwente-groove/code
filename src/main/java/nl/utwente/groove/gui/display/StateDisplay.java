@@ -63,7 +63,7 @@ import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.SimulatorListener;
 import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.gui.SimulatorModel.Change;
-import nl.utwente.groove.gui.jgraph.AspectJCell;
+import nl.utwente.groove.gui.view.AspectViewCell;
 import nl.utwente.groove.gui.jgraph.AspectJEdge;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.AspectJModel;
@@ -390,7 +390,7 @@ public class StateDisplay extends Display implements SimulatorListener {
         AspectJModel jModel = getJGraph().getModel();
         assert jModel != null;
         HostToAspectMap aspectMap = getAspectMap(getSimulatorModel().getState());
-        Set<AspectJCell> emphElems = new HashSet<>();
+        Set<AspectViewCell> emphElems = new HashSet<>();
         match
             .getNodeValues()
             .stream()
@@ -571,13 +571,13 @@ public class StateDisplay extends Display implements SimulatorListener {
             stateVertex.setLayoutable(false);
         }
         for (AspectEdge edge : startGraph.edgeSet()) {
-            AspectJCell stateEdge
+            AspectViewCell stateEdge
                 = result.getJCellForEdge(stateMap.getEdge(startGraphMap.getEdge(edge)));
             // nesting edges and merged data edges are not in the state
             if (stateEdge == null) {
                 continue;
             }
-            AspectJCell graphEdge = startJModel.getJCellForEdge(edge);
+            AspectViewCell graphEdge = startJModel.getJCellForEdge(edge);
             if (stateEdge instanceof AspectJEdge && graphEdge instanceof AspectJEdge graphJEdge) {
                 stateEdge.putVisuals(new Attributes(graphJEdge).toVisuals());
                 stateEdge.setGrayedOut(graphJEdge.isGrayedOut());
@@ -621,7 +621,7 @@ public class StateDisplay extends Display implements SimulatorListener {
         // compute target edge attributes
         for (Map.Entry<HostEdge,? extends AspectEdge> entry : aspectMap.edgeMap().entrySet()) {
             AspectEdge aspectEdge = entry.getValue();
-            AspectJCell jCell = model.getJCellForEdge(aspectEdge);
+            AspectViewCell jCell = model.getJCellForEdge(aspectEdge);
             if (jCell instanceof AspectJEdge) {
                 result.edgeMap.put(entry.getKey(), new Attributes((AspectJEdge) jCell));
             }
@@ -713,7 +713,7 @@ public class StateDisplay extends Display implements SimulatorListener {
         for (Map.Entry<HostEdge,Attributes> e : map.edgeMap.entrySet()) {
             AspectEdge aspectEdge = aspectMap.getEdge(e.getKey());
             assert aspectEdge != null : "Target element " + e.getKey() + " unknown";
-            AspectJCell jCell = result.getJCellForEdge(aspectEdge);
+            AspectViewCell jCell = result.getJCellForEdge(aspectEdge);
             if (jCell instanceof AspectJVertex) {
                 continue;
             }
