@@ -16,15 +16,11 @@
  */
 package nl.utwente.groove.io.external;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.util.io.FileType;
 
@@ -76,72 +72,5 @@ public abstract class AbstractExporter implements Exporter {
         } else {
             return Collections.emptySet();
         }
-    }
-
-    /** Subclass of AbstractExporter containing functionality to write to a PrintWriter. */
-    static public abstract class Writer extends AbstractExporter {
-        /**
-         * Invokes the super constructor.
-         */
-        protected Writer(ExportKind exportKind) {
-            super(exportKind);
-        }
-
-        /** Prototypical implementation that first calls
-         * #initialise(Exportable,FileType), then opens a PrintWriter on the file
-         * and finally calls doExport(
-         */
-        @Override
-        public void doExport(Exportable exportable, File file,
-                             FileType fileType) throws PortException {
-            initialise(exportable, fileType);
-            try (PrintWriter writer = new PrintWriter(file)) {
-                this.writer = writer;
-                execute();
-            } catch (FileNotFoundException e) {
-                throw new PortException(e);
-            }
-        }
-
-        /** Callback method from {@link #doExport(Exportable, File, FileType)} to initialise exporting a given exportable.
-         * @throws PortException if this exporter is not compatible with the exportable
-         */
-        protected abstract void initialise(Exportable exportable,
-                                           FileType fileType) throws PortException;
-
-        /** Callback method from {@link #doExport(Exportable, File, FileType)} to
-         * do the actual export, based on the initialised values.
-         * In particular, the writer has been opened and should be filled by calls
-         * to {@link #emit(String)}.
-         */
-        protected abstract void execute() throws PortException;
-
-        /** Writes a line to the export file. */
-        public void emit(String line) {
-            var writer = this.writer;
-            assert writer != null : "Writer not opened";
-            writer.println(this.indent + line);
-        }
-
-        /** Adds an step to the space indentation prefixed to every {@link #emit(String)} line. */
-        public void increaseIndent() {
-            this.indent.append(INDENT_STEP);
-        }
-
-        /** Removes a step from the space indentation prefixed to every {@link #emit(String)} line. */
-        public void decreaseIndent() {
-            this.indent.delete(0, INDENT_STEP.length());
-        }
-
-        /** Indentation prefixed to every {@link #emit(String)} line. */
-        private final StringBuffer indent = new StringBuffer("");
-
-        /** Increase to the indent upon invocation of {@link #increaseIndent()}. */
-        static private final String INDENT_STEP = "  ";
-
-        /** The writer to which {@link #emit(String)} sends its output;
-         * only set while {@link #doExport(Exportable, File, FileType)} is in progress.
-         */
-        private @Nullable PrintWriter writer;
     }
 }

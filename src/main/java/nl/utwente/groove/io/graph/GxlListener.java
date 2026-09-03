@@ -20,7 +20,6 @@ import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -44,9 +43,10 @@ import nl.utwente.groove.graph.layout.LayoutMap;
 import nl.utwente.groove.graph.layout.NodeLayout;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Version;
+import nl.utwente.groove.util.io.FileType;
 
 /**
- * Streaming writer for the GXL format used by {@link GxlIO}.
+ * Listener class for the GXL format used by {@link GxlIO}.
  * The document is written element by element while the graph is being
  * iterated, without first building an in-memory document, so that saving a
  * large graph (notably an LTS) needs no memory beyond the graph itself (gh #854).
@@ -58,30 +58,29 @@ import nl.utwente.groove.util.Version;
  */
 @NonNullByDefault
 @AIGenerated("Claude Fable 5.1, 2026-09")
-class GxlWriter {
-    /** Writes a graph as a GXL document to a given writer, which is left open. */
-    static void write(Graph graph, Writer out) throws IOException {
-        new GxlWriter(out, !graph.isSimple()).writeDocument(graph);
+public class GxlListener extends GraphExportListener {
+    /** Constructs a listener for a single write. */
+    public GxlListener() {
+        super(FileType.GXL);
     }
 
-    private GxlWriter(Writer out, boolean edgeIds) {
-        this.out = out;
-        this.edgeIds = edgeIds;
-    }
-
-    private final Writer out;
     /** Flag indicating that edges are given identities.
      * Non-simple graphs have edges with identities beyond source/label/target,
      * which is exactly what the GXL edgeids flag declares.
      */
-    private final boolean edgeIds;
+    private boolean edgeIds;
     /** Number of the next edge identity, if {@link #edgeIds} is set. */
     private int edgeNr;
+    /** The layout map of the graph being written, if any. */
+    private @Nullable LayoutMap layoutMap;
 
-    private void writeDocument(Graph graph) throws IOException {
-        line(0, "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>");
-        line(0, "<gxl xmlns=\"http://www.gupro.de/GXL/gxl-1.0.dtd\">");
-        line(1, "<graph role=\"" + attr(graph.getRole().toString()) + "\" edgeids=\""
+    @Override
+    protected void enterGraph(Graph graph) throws IOException {
+        this.edgeIds = !graph.isSimple();
+        this.layoutMap = GraphInfo.getLayoutMap(graph);
+        emit(0, "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>");
+        emit(0, "<gxl xmlns=\"http://www.gupro.de/GXL/gxl-1.0.dtd\">");
+        emit(1, "<graph role=\"" + attr(graph.getRole().toString()) + "\" edgeids=\""
             + this.edgeIds + "\" edgemode=\"directed\" id=\"" + attr(graph.getName()) + "\">");
         // add the graph info
         if (graph.hasInfo()) {
@@ -95,52 +94,58 @@ class GxlWriter {
                 writeAttr(2, ResourceProperties.Key.VERSION.getName(), Version.GXL_VERSION);
             }
         }
-        // get the layout map
-        @Nullable
-        LayoutMap layoutMap = GraphInfo.getLayoutMap(graph);
-        for (Node node : graph.nodeSet()) {
-            List<Attr> attrs = new ArrayList<>();
-            // store the layout
-            NodeLayout layout = layoutMap == null
-                ? null
-                : layoutMap.getLayout(node);
-            if (layout != null) {
-                attrs.add(new Attr(GxlIO.LAYOUT_ATTR_NAME, toString(layout)));
-            }
-            // add attributes of XML nodes
-            if (node instanceof AttrNode an) {
-                addAttrs(attrs, an.getAttributes());
-            }
-            // give the element an id based on the node number
-            writeElement(2, "node", "id=\"n" + node.getNumber() + "\"", attrs);
-            // add appropriate edges for value nodes
-            if (node instanceof ValueNode vn) {
-                writeEdge(node, vn.toString(), node, List.of());
-            }
+    }
+
+    @Override
+    protected void visitNode(Node node) throws IOException {
+        List<Attr> attrs = new ArrayList<>();
+        // store the layout
+        var layoutMap = this.layoutMap;
+        NodeLayout layout = layoutMap == null
+            ? null
+            : layoutMap.getLayout(node);
+        if (layout != null) {
+            attrs.add(new Attr(GxlIO.LAYOUT_ATTR_NAME, toString(layout)));
         }
-        // add the edges
-        for (Edge edge : graph.edgeSet()) {
-            String prefixedLabel = edge.label().text();
-            if (edge.label() instanceof TypeLabel) {
-                prefixedLabel = edge.getRole().getPrefix() + prefixedLabel;
-            }
-            if (edge instanceof TypeEdge te && te.isAbstract()) {
-                prefixedLabel = GxlIO.ABSTRACT_PREFIX + prefixedLabel;
-            }
-            List<Attr> attrs = new ArrayList<>();
-            // store the layout
-            EdgeLayout layout = layoutMap == null
-                ? null
-                : layoutMap.getLayout(edge);
-            if (layout != null) {
-                attrs.add(new Attr(GxlIO.LAYOUT_ATTR_NAME, toString(layout)));
-            }
-            // add attributes of XML edges
-            if (edge instanceof AttrEdge ae) {
-                addAttrs(attrs, ae.getAttributes());
-            }
-            writeEdge(edge.source(), prefixedLabel, edge.target(), attrs);
+        // add attributes of XML nodes
+        if (node instanceof AttrNode an) {
+            addAttrs(attrs, an.getAttributes());
         }
+        // give the element an id based on the node number
+        writeElement(2, "node", "id=\"n" + node.getNumber() + "\"", attrs);
+        // add appropriate edges for value nodes
+        if (node instanceof ValueNode vn) {
+            writeEdge(node, vn.toString(), node, List.of());
+        }
+    }
+
+    @Override
+    protected void visitEdge(Edge edge) throws IOException {
+        String prefixedLabel = edge.label().text();
+        if (edge.label() instanceof TypeLabel) {
+            prefixedLabel = edge.getRole().getPrefix() + prefixedLabel;
+        }
+        if (edge instanceof TypeEdge te && te.isAbstract()) {
+            prefixedLabel = GxlIO.ABSTRACT_PREFIX + prefixedLabel;
+        }
+        List<Attr> attrs = new ArrayList<>();
+        // store the layout
+        var layoutMap = this.layoutMap;
+        EdgeLayout layout = layoutMap == null
+            ? null
+            : layoutMap.getLayout(edge);
+        if (layout != null) {
+            attrs.add(new Attr(GxlIO.LAYOUT_ATTR_NAME, toString(layout)));
+        }
+        // add attributes of XML edges
+        if (edge instanceof AttrEdge ae) {
+            addAttrs(attrs, ae.getAttributes());
+        }
+        writeEdge(edge.source(), prefixedLabel, edge.target(), attrs);
+    }
+
+    @Override
+    protected void exitGraph(Graph graph) throws IOException {
         // add node tuples if appropriate
         if (graph instanceof AttrGraph ag) {
             int count = 0;
@@ -150,14 +155,14 @@ class GxlWriter {
                 count++;
                 var nodes = tuple.getNodes();
                 if (nodes.isEmpty()) {
-                    line(2, "<rel " + head + "/>");
+                    emit(2, "<rel " + head + "/>");
                 } else {
-                    line(2, "<rel " + head + ">");
+                    emit(2, "<rel " + head + ">");
                     // For each equivalence class, create a relation end.
                     for (AttrNode node : nodes) {
-                        line(3, "<relend id=\"" + attr(node.toString()) + "\"/>");
+                        emit(3, "<relend id=\"" + attr(node.toString()) + "\"/>");
                     }
-                    line(2, "</rel>");
+                    emit(2, "</rel>");
                 }
             }
         }
@@ -171,8 +176,8 @@ class GxlWriter {
                 }
             }
         }
-        line(1, "</graph>");
-        line(0, "</gxl>");
+        emit(1, "</graph>");
+        emit(0, "</gxl>");
     }
 
     /** Writes an edge element with a given label attribute, followed by further attributes.
@@ -198,30 +203,21 @@ class GxlWriter {
     private void writeElement(int depth, String name, String head,
                               List<Attr> attrs) throws IOException {
         if (attrs.isEmpty()) {
-            line(depth, "<" + name + " " + head + "/>");
+            emit(depth, "<" + name + " " + head + "/>");
         } else {
-            line(depth, "<" + name + " " + head + ">");
+            emit(depth, "<" + name + " " + head + ">");
             for (Attr attr : attrs) {
                 writeAttr(depth + 1, attr.key(), attr.value());
             }
-            line(depth, "</" + name + ">");
+            emit(depth, "</" + name + ">");
         }
     }
 
     /** Writes a single key-value pair as a GXL string attribute. */
     private void writeAttr(int depth, String key, String value) throws IOException {
-        line(depth, "<attr name=\"" + attr(key) + "\">");
-        line(depth + 1, "<string>" + text(value) + "</string>");
-        line(depth, "</attr>");
-    }
-
-    /** Writes an indented line. */
-    private void line(int depth, String content) throws IOException {
-        for (int i = 0; i < depth; i++) {
-            this.out.write(INDENT);
-        }
-        this.out.write(content);
-        this.out.write('\n');
+        emit(depth, "<attr name=\"" + attr(key) + "\">");
+        emit(depth + 1, "<string>" + text(value) + "</string>");
+        emit(depth, "</attr>");
     }
 
     /** Adds the entries of an attribute map to a list of attributes. */
@@ -319,7 +315,4 @@ class GxlWriter {
     private record Attr(String key, String value) {
         // no additional functionality
     }
-
-    /** Indentation unit. */
-    private static final String INDENT = "    ";
 }

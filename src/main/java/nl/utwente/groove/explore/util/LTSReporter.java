@@ -19,7 +19,6 @@ package nl.utwente.groove.explore.util;
 import java.io.File;
 import java.io.IOException;
 
-import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Exporters;
 import nl.utwente.groove.io.external.PortException;
@@ -96,9 +95,13 @@ public class LTSReporter extends AExplorationReporter {
         }
         ltsName = ltsName.replace(PLACEHOLDER, lts.getGrammar().getId());
         File outFile = new File(dir, ltsName);
+        // the default format is GXL
+        if (!FileType.hasAnyExtension(outFile)) {
+            outFile = FileType.GXL.addExtension(outFile);
+        }
         var fileType = FileType.getType(outFile);
-        // the LTS is offered as a plain graph, or as a GTS fragment if no
-        // exporter for the file type can deal with a plain graph
+        // the LTS is offered as a graph view, or as a GTS fragment if no
+        // exporter for the file type can deal with a graph
         var exportable = Exportable.graph(ltsGraph);
         var exporter = Exporters.getExporter(fileType, exportable);
         if (exporter == null) {
@@ -106,19 +109,15 @@ public class LTSReporter extends AExplorationReporter {
             exporter = Exporters.getExporter(fileType, exportable);
         }
         if (exporter == null) {
-            if (!FileType.hasAnyExtension(outFile)) {
-                outFile = FileType.GXL.addExtension(outFile);
-            }
-            Groove.saveGraph(ltsGraph, outFile);
-        } else {
-            // an exporter is only found for a non-null file type
-            assert fileType != null;
-            try {
-                ExplorationReporter.time("Do export");
-                exporter.doExport(exportable, outFile, fileType);
-            } catch (PortException e1) {
-                throw new IOException(e1);
-            }
+            throw new IOException("No exporter found for LTS file '%s'".formatted(outFile));
+        }
+        // an exporter is only found for a non-null file type
+        assert fileType != null;
+        try {
+            ExplorationReporter.time("Do export");
+            exporter.doExport(exportable, outFile, fileType);
+        } catch (PortException e1) {
+            throw new IOException(e1);
         }
         return outFile;
     }

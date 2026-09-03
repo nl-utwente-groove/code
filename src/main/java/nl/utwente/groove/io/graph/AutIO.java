@@ -17,29 +17,18 @@
 package nl.utwente.groove.io.graph;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
-import java.util.BitSet;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Set;
 
-import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphRole;
-import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.plain.PlainGraph;
 import nl.utwente.groove.graph.plain.PlainNode;
 import nl.utwente.groove.util.AIGenerated;
-import nl.utwente.groove.util.Log;
 import nl.utwente.groove.util.io.FileType;
 
 /**
@@ -49,67 +38,10 @@ import nl.utwente.groove.util.io.FileType;
  * @version $Revision$
  */
 public class AutIO extends GraphIO<PlainGraph> {
+    /** Saves a graph to a file, streaming it through an {@link AutListener}. */
     @Override
     protected void doSaveGraph(Graph graph, File file) throws IOException {
-        // create a PrintWriter with autoflush
-        try (PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(file)), true)) {
-            // the node numbers are used directly where they lie in the range 0..nodeCount-1;
-            // only the remaining nodes get fresh numbers, through a map, so that
-            // saving a large graph needs no per-node data (gh #854)
-            int nodeCount = graph.nodeCount();
-            // list marking which node numbers have been used
-            BitSet nodeList = new BitSet(nodeCount);
-            // nodes that do not have a valid number (in the range 0..nodeCount-1)
-            Set<Node> restNodes = new LinkedHashSet<>();
-            TIMING.log(Level.TRACE, "Building model for aut export");
-            // iterate over the existing nodes
-            for (Node node : graph.nodeSet()) {
-                int nodeNr = node.getNumber();
-                if (nodeNr >= 0 && nodeNr < nodeCount) {
-                    nodeList.set(nodeNr);
-                } else {
-                    restNodes.add(node);
-                }
-            }
-            // mapping from the remaining nodes to fresh node numbers
-            Map<Node,Integer> restNodeNrMap = new HashMap<>();
-            int nextNodeNr = -1;
-            for (Node restNode : restNodes) {
-                do {
-                    nextNodeNr++;
-                } while (nodeList.get(nextNodeNr));
-                restNodeNrMap.put(restNode, nextNodeNr);
-            }
-            TIMING.log(Level.TRACE, "Starting aut export");
-            int lines = 0;
-            writer.printf("des (%d, %d, %d)%n", 0, graph.edgeCount(), nodeCount);
-            for (Edge edge : graph.edgeSet()) {
-                writer
-                    .printf("(%d,%s,%d)%n", nodeNr(edge.source(), nodeCount, restNodeNrMap),
-                            toLabelField(edge.label().text()),
-                            nodeNr(edge.target(), nodeCount, restNodeNrMap));
-                lines = (lines + 1) % MAX_LINES;
-                if (lines == 0) {
-                    TIMING
-                        .log(Level.TRACE,
-                             "Flushing after writing %s lines to aut".formatted(MAX_LINES));
-                    writer.flush();
-                }
-            }
-        }
-    }
-
-    /** Returns the number under which a node is saved: its own number if that lies
-     * in the range {@code 0..nodeCount-1}, otherwise the fresh number assigned to it.
-     */
-    private static int nodeNr(Node node, int nodeCount, Map<Node,Integer> restNodeNrMap) {
-        int result = node.getNumber();
-        if (result < 0 || result >= nodeCount) {
-            Integer restNr = restNodeNrMap.get(node);
-            assert restNr != null;
-            result = restNr;
-        }
-        return result;
+        new AutListener().write(graph, file);
     }
 
     @Override
@@ -198,7 +130,7 @@ public class AutIO extends GraphIO<PlainGraph> {
      * @see #parseLabelField(String)
      */
     @AIGenerated("Claude Fable 5, 2026-08")
-    static private String toLabelField(String text) {
+    static String toLabelField(String text) {
         String result = text;
         if (text.indexOf(',') >= 0 || text.indexOf('"') >= 0) {
             result = '"' + text.replace("\\", "\\\\").replace("\"", "\\\"") + '"';
@@ -228,9 +160,4 @@ public class AutIO extends GraphIO<PlainGraph> {
         return result;
     }
 
-    static private final int MAX_LINES = 100000;
-
-    /** Timing diagnostics, on the same channel as the exploration reporters
-     * (enable with {@code -log trace:explore.timing}). */
-    static private final Logger TIMING = Log.getLogger("explore.timing");
 }
