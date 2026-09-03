@@ -25,11 +25,11 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.io.external.format.AutPorter;
 import nl.utwente.groove.io.external.format.FsmExporter;
-import nl.utwente.groove.io.external.format.GraphExportListener.DotListener;
 import nl.utwente.groove.io.external.format.LTS2ControlExporter;
 import nl.utwente.groove.io.external.format.ListenerExporter;
 import nl.utwente.groove.io.external.format.NativeResourcePorter;
 import nl.utwente.groove.io.external.format.ecore.EcorePorter;
+import nl.utwente.groove.io.graph.DotListener;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.io.FileType;
 
@@ -95,7 +95,7 @@ public class Exporters {
         result.add(EcorePorter.instance());
         result.add(AutPorter.instance());
         result.add(FsmExporter.getInstance());
-        result.add(ListenerExporter.instance(DotListener.instance()));
+        result.add(ListenerExporter.instance(DotListener::new));
         result.add(LTS2ControlExporter.instance());
         return result;
     }
