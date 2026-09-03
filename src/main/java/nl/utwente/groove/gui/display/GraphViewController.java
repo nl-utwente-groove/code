@@ -36,6 +36,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.graph.Graph;
+import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.SimulatorModel;
@@ -177,6 +178,53 @@ public class GraphViewController<G extends Graph> {
         }
         this.optionListeners.clear();
         this.exportAction = null;
+    }
+
+    /**
+     * Indicates whether node identities should be shown on node labels.
+     */
+    public boolean isShowNodeIdentities() {
+        return getOptionValue(Options.SHOW_INTERNAL_NODE_IDS_OPTION);
+    }
+
+    /**
+     * Indicates whether anchors should be shown in the rule and lts views.
+     */
+    public boolean isShowAnchors() {
+        return getOptionValue(Options.SHOW_ANCHORS_OPTION);
+    }
+
+    /**
+     * Indicates whether self-edges should be shown as node labels.
+     */
+    public boolean isShowLoopsAsNodeLabels() {
+        var properties = getProperties();
+        return properties == null || properties.isShowLoopsAsLabels();
+    }
+
+    /**
+     * Indicates whether arrow heads should be shown on labels, rather than
+     * on edges.
+     */
+    public boolean isShowArrowsOnLabels() {
+        return getOptionValue(Options.SHOW_ARROWS_ON_LABELS_OPTION);
+    }
+
+    /**
+     * Indicates whether a single edge cell may stand for edges in two directions.
+     */
+    public boolean isShowBidirectionalEdges() {
+        return getOptionValue(Options.SHOW_BIDIRECTIONAL_EDGES_OPTION);
+    }
+
+    /** Returns the role of the graphs displayed in the graph view. */
+    public GraphRole getGraphRole() {
+        return getGraphView().getGraphRole();
+    }
+
+    /** Convenience method to retrieve the displayed graph, if any. */
+    public @Nullable G getGraph() {
+        return getGraphView().getGraph();
     }
 
     /**

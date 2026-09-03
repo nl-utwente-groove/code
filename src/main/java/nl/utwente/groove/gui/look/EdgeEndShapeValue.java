@@ -24,7 +24,7 @@ import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.gui.jgraph.AspectJEdge;
 import nl.utwente.groove.gui.jgraph.JCell;
-import nl.utwente.groove.gui.jgraph.JGraph;
+import nl.utwente.groove.gui.display.GraphViewController;
 
 /**
  * Creates a refresher for the edge source or target shape.
@@ -38,7 +38,7 @@ public class EdgeEndShapeValue implements VisualValue<EdgeEnd> {
     }
 
     @Override
-    public <G extends @NonNull Graph> EdgeEnd get(JGraph<G> jGraph, JCell<G> cell) {
+    public <G extends @NonNull Graph> EdgeEnd get(GraphViewController<G> controller, JCell<G> cell) {
         // first see what the looks have to say
         VisualMap looksMap = Look.getVisualsFor(cell.getLooks());
         EdgeEnd result = this.source
@@ -47,7 +47,7 @@ public class EdgeEndShapeValue implements VisualValue<EdgeEnd> {
         Set<Look> looks = cell.getLooks();
         if (looks.contains(Look.NO_ARROW)) {
             result = EdgeEnd.NONE;
-        } else if (jGraph.isShowArrowsOnLabels()) {
+        } else if (controller.isShowArrowsOnLabels()) {
             // only show some arrows
             boolean show = false;
             if (cell instanceof AspectJEdge jEdge) {

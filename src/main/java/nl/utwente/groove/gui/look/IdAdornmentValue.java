@@ -32,8 +32,9 @@ public class IdAdornmentValue extends AspectValue<String> {
         String result = null;
         var jGraph = jVertex.getJGraph();
         assert jGraph != null;
-        if (jGraph.isShowNodeIdentities()) {
-            var role = jGraph.getGraphRole();
+        var controller = jGraph.getController();
+        if (controller.isShowNodeIdentities()) {
+            var role = controller.getGraphRole();
             var node = jVertex.getNode();
             if (role == GraphRole.RULE && (!node.hasId() || !node.has(Category.SORT))
                 || role == GraphRole.HOST && !node.hasValue()) {

@@ -43,7 +43,7 @@ class LTSFilter extends LabelFilter<GTS,LTSEntry> {
     protected LTSEntry getEntry(Label key) {
         LTSEntry result = this.labelEntryMap.get(key);
         if (result == null) {
-            result = new LTSEntry(key, () -> this.jGraph.isShowSystemProperties());
+            result = new LTSEntry(key, () -> this.jGraph.getController().isShowSystemProperties());
             // normalise the new entry
             var normal = this.normalMap.get(result);
             if (normal != null) {

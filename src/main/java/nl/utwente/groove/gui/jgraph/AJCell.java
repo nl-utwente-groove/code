@@ -233,7 +233,9 @@ public abstract class AJCell<G extends @NonNull Graph,JG extends JGraph<G>,JM ex
     private void refreshVisual(VisualKey key) {
         key.getRefresher().ifPresent(r -> {
             if (this.staleKeys.remove(key)) {
-                this.visuals.put(key, r.get(getJGraph(), this));
+                var jGraph = getJGraph();
+                assert jGraph != null; // the cell is initialised by the time visuals are refreshed
+                this.visuals.put(key, r.get(jGraph.getController(), this));
             }
         });
     }

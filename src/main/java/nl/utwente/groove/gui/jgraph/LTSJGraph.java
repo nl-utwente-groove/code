@@ -38,7 +38,6 @@ import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Node;
-import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.display.LTSGraphViewController;
 import nl.utwente.groove.gui.layout.ForestLayouter;
@@ -164,41 +163,6 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements Serializable {
     @Override
     protected LTSGraphViewController createController(Simulator simulator) {
         return new LTSGraphViewController(this, simulator);
-    }
-
-    /** Indicates if state identities should be shown on states. */
-    public boolean isShowStateIdentities() {
-        return getOptionValue(Options.SHOW_STATE_IDS_OPTION);
-    }
-
-    /** Indicates if state status should be shown on states. */
-    public boolean isShowStateStatus() {
-        return getOptionValue(Options.SHOW_STATE_STATUS_OPTION);
-    }
-
-    /** Indicates if control state info should be shown on states. */
-    public boolean isShowControlStates() {
-        return getOptionValue(Options.SHOW_CONTROL_STATE_OPTION);
-    }
-
-    /** Indicates if system properties should be shown on states. */
-    public boolean isShowSystemProperties() {
-        return getOptionValue(Options.SHOW_SYSTEM_STATE_PROPERTIES_OPTION);
-    }
-
-    /** Indicates if invariants should be shown on states. */
-    public boolean isShowInvariants() {
-        return getOptionValue(Options.SHOW_INVARIANTS_OPTION);
-    }
-
-    /** Indicates if absent states should be shown. */
-    public boolean isShowAbsentStates() {
-        return getOptionValue(Options.SHOW_ABSENT_STATES_OPTION);
-    }
-
-    /** Indicates if in-recipe states and transitions should be shown. */
-    public boolean isShowRecipeSteps() {
-        return getOptionValue(Options.SHOW_RECIPE_STEPS_OPTION);
     }
 
     /**

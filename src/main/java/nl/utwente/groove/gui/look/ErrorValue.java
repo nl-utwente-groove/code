@@ -21,7 +21,7 @@ import org.eclipse.jdt.annotation.NonNull;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.gui.jgraph.AspectJCell;
 import nl.utwente.groove.gui.jgraph.JCell;
-import nl.utwente.groove.gui.jgraph.JGraph;
+import nl.utwente.groove.gui.display.GraphViewController;
 import nl.utwente.groove.util.parse.Severity;
 
 /**
@@ -33,7 +33,7 @@ import nl.utwente.groove.util.parse.Severity;
  */
 public class ErrorValue implements VisualValue<Severity> {
     @Override
-    public <G extends @NonNull Graph> Severity get(JGraph<G> jGraph, JCell<G> cell) {
+    public <G extends @NonNull Graph> Severity get(GraphViewController<G> controller, JCell<G> cell) {
         return cell.getErrorSeverity();
     }
 }

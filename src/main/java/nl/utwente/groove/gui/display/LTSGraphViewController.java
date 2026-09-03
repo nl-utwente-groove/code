@@ -30,6 +30,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.graph.Element;
+import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.action.ScrollToActiveAction;
 import nl.utwente.groove.gui.jgraph.JCell;
@@ -160,10 +161,44 @@ public class LTSGraphViewController extends GraphViewController<GTS> {
      */
     private final ScrollToActiveAction scrollToActiveAction = new ScrollToActiveAction(this);
 
+    /** Indicates if state identities should be shown on states. */
+    public boolean isShowStateIdentities() {
+        return getOptionValue(Options.SHOW_STATE_IDS_OPTION);
+    }
+
+    /** Indicates if state status should be shown on states. */
+    public boolean isShowStateStatus() {
+        return getOptionValue(Options.SHOW_STATE_STATUS_OPTION);
+    }
+
+    /** Indicates if control state info should be shown on states. */
+    public boolean isShowControlStates() {
+        return getOptionValue(Options.SHOW_CONTROL_STATE_OPTION);
+    }
+
+    /** Indicates if system properties should be shown on states. */
+    public boolean isShowSystemProperties() {
+        return getOptionValue(Options.SHOW_SYSTEM_STATE_PROPERTIES_OPTION);
+    }
+
+    /** Indicates if invariants should be shown on states. */
+    public boolean isShowInvariants() {
+        return getOptionValue(Options.SHOW_INVARIANTS_OPTION);
+    }
+
+    /** Indicates if absent states should be shown. */
+    public boolean isShowAbsentStates() {
+        return getOptionValue(Options.SHOW_ABSENT_STATES_OPTION);
+    }
+
+    /** Indicates if in-recipe states and transitions should be shown. */
+    public boolean isShowRecipeSteps() {
+        return getOptionValue(Options.SHOW_RECIPE_STEPS_OPTION);
+    }
+
     /** Returns the class of transitions that is currently being shown in the LTS. */
     public Claz getTransitionClass() {
-        return Claz
-            .getClass(getGraphView().isShowRecipeSteps(), getGraphView().isShowAbsentStates());
+        return Claz.getClass(isShowRecipeSteps(), isShowAbsentStates());
     }
 
     /** Scrolls the graph view to the active transition or state. */
@@ -416,13 +451,13 @@ public class LTSGraphViewController extends GraphViewController<GTS> {
         GTSFragment fragment;
         var exploreResult = getResult();
         if (getFilter() == Filter.RESULT && exploreResult != null && !exploreResult.isEmpty()) {
-            fragment = exploreResult.toFragment(getGraphView().isShowRecipeSteps());
+            fragment = exploreResult.toFragment(isShowRecipeSteps());
         } else {
             var model = getGraphView().getNonNullModel();
             fragment = model
                 .getViewModel()
                 .getNonNullGraph()
-                .toFragment(getFilter() == Filter.NONE, getGraphView().isShowRecipeSteps());
+                .toFragment(getFilter() == Filter.NONE, isShowRecipeSteps());
         }
         // first make the vertices (in)visible,
         // as otherwise they may prevent the edges from becoming visible

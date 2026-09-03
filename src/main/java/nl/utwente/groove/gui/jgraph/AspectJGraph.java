@@ -52,7 +52,6 @@ import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.display.AspectGraphViewController;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.look.VisualKey;
-import nl.utwente.groove.gui.tree.RuleLevelTree;
 
 /**
  * Extension of {@link JGraph} for {@link AspectGraph}s.
@@ -144,28 +143,6 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
         return result;
     }
 
-    /**
-     * Indicates whether aspect prefixes should be shown for nodes and edges.
-     */
-    public final boolean isShowAspects() {
-        return getOptionValue(Options.SHOW_ASPECTS_OPTION);
-    }
-
-    /**
-     * Indicates whether aspect prefixes should be shown for nodes and edges.
-     */
-    public final boolean isShowUserIds() {
-        return getOptionValue(Options.SHOW_USER_NODE_IDS_OPTION);
-    }
-
-    /**
-     * Indicates whether data nodes should be shown in the JGraph.
-     * This is certainly the case if this model is editable.
-     */
-    public final boolean isShowValueNodes() {
-        return hasActiveEditor() || getOptionValue(Options.SHOW_VALUE_NODES_OPTION);
-    }
-
     /* Makes sure the JGraph is rebuilt rather than just refreshed, if necessary. */
     @Override
     public RefreshListener getRefreshListener(String option) {
@@ -175,23 +152,6 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
             return super.getRefreshListener(option);
         }
     }
-
-    /** Sets a level tree for this JGraph. */
-    public void setLevelTree(RuleLevelTree levelTree) {
-        assert levelTree == null || getGraphRole() == GraphRole.RULE && !hasActiveEditor();
-        this.levelTree = levelTree;
-    }
-
-    /**
-     * Lazily creates and returns the rule level tree associated
-     * with this JGraph, if any.
-     */
-    public RuleLevelTree getLevelTree() {
-        return this.levelTree;
-    }
-
-    /** The JTree of rule levels, if any. */
-    private RuleLevelTree levelTree;
 
     /** Indicates that the JModel has an editor enabled. */
     public boolean hasActiveEditor() {

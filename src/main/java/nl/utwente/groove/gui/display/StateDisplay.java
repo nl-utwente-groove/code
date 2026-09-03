@@ -458,7 +458,7 @@ public class StateDisplay extends Display implements SimulatorListener {
                         ? "; "
                         : " (");
                 brackets = true;
-                if (getJGraph().isShowAnchors()) {
+                if (getJGraph().getController().isShowAnchors()) {
                     result.append(String.format("with match '%s'", match.getEvent()));
                 } else {
                     result

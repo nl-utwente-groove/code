@@ -81,7 +81,7 @@ sliced:
    it early would split the orchestration (`addElements`/`addNodes`/`addEdges`,
    overridden by `LTSJModel`) from its parts for no current gain.
 
-4. **Slice 4: looks decoupling** (queued). Move the polymorphic `isShow*`
+4. **Slice 4: looks decoupling** (done). Move the polymorphic `isShow*`
    predicates into the controller hierarchy (requires a small
    `CtrlGraphViewController` for `CtrlJGraph`'s constant overrides), then flip
    `VisualValue.get(JGraph, JCell)` and the `gui.look` value classes to take the

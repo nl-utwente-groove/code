@@ -113,7 +113,7 @@ public class LTSJEdge extends AJEdge<@NonNull GTS,LTSJGraph,LTSJModel,LTSJVertex
             String description;
             JGraph<?> jGraph = getJGraph();
             assert jGraph != null; // guaranteed by now
-            if (jGraph.isShowAnchors()) {
+            if (jGraph.getController().isShowAnchors()) {
                 description = trans.getEvent().toString();
             } else {
                 description = trans.getEvent().getAction().getQualName().toString();

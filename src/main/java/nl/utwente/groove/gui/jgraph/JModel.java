@@ -328,7 +328,7 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
      * enable this behaviour.
      */
     public boolean isMergeBidirectionalEdges() {
-        return getJGraph().isShowBidirectionalEdges();
+        return getJGraph().getController().isShowBidirectionalEdges();
     }
 
     /**
@@ -337,7 +337,7 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
      * enable this behaviour.
      */
     public boolean isMergeAllEdges() {
-        return getJGraph().isShowArrowsOnLabels();
+        return getJGraph().getController().isShowArrowsOnLabels();
     }
 
     /**

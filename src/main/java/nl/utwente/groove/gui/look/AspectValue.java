@@ -22,7 +22,7 @@ import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.gui.jgraph.AspectJEdge;
 import nl.utwente.groove.gui.jgraph.AspectJVertex;
 import nl.utwente.groove.gui.jgraph.JCell;
-import nl.utwente.groove.gui.jgraph.JGraph;
+import nl.utwente.groove.gui.display.GraphViewController;
 
 /**
  * Visual value strategy that delegates its task to
@@ -32,7 +32,7 @@ import nl.utwente.groove.gui.jgraph.JGraph;
  */
 public abstract class AspectValue<T> implements VisualValue<T> {
     @Override
-    public <G extends @NonNull Graph> T get(JGraph<G> jGraph, JCell<G> cell) {
+    public <G extends @NonNull Graph> T get(GraphViewController<G> controller, JCell<G> cell) {
         if (cell instanceof AspectJVertex v) {
             return getForJVertex(v);
         }

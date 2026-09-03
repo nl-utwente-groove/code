@@ -710,7 +710,7 @@ public class JEdgeView extends EdgeView {
                 assert jGraph != null; // guaranteed by now
                 Point2D start = null;
                 Point2D end = null;
-                if (jGraph.isShowArrowsOnLabels()) {
+                if (jGraph.getController().isShowArrowsOnLabels()) {
                     start = view.getPoint(0);
                     end = view.getPoint(view.getPointCount() - 1);
                 }

@@ -29,6 +29,8 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
+import nl.utwente.groove.graph.GraphRole;
+import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.action.AddPointAction;
 import nl.utwente.groove.gui.action.EditLabelAction;
@@ -39,6 +41,7 @@ import nl.utwente.groove.gui.action.SetLineStyleAction;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.menu.MyJMenu;
 import nl.utwente.groove.gui.menu.SetLineStyleMenu;
+import nl.utwente.groove.gui.tree.RuleLevelTree;
 import nl.utwente.groove.util.line.LineStyle;
 
 /**
@@ -211,6 +214,46 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
     public JMenu createLineStyleMenu() {
         return new SetLineStyleMenu(getGraphView());
     }
+
+    /**
+     * Indicates whether aspect prefixes should be shown for nodes and edges.
+     */
+    public final boolean isShowAspects() {
+        return getOptionValue(Options.SHOW_ASPECTS_OPTION);
+    }
+
+    /**
+     * Indicates whether user node identities should be shown for nodes and edges.
+     */
+    public final boolean isShowUserIds() {
+        return getOptionValue(Options.SHOW_USER_NODE_IDS_OPTION);
+    }
+
+    /**
+     * Indicates whether data nodes should be shown in the graph view.
+     * This is certainly the case if the view is being edited.
+     */
+    public final boolean isShowValueNodes() {
+        return getGraphView().hasActiveEditor() || getOptionValue(Options.SHOW_VALUE_NODES_OPTION);
+    }
+
+    /** Sets a level tree for this graph view. */
+    public void setLevelTree(@Nullable RuleLevelTree levelTree) {
+        assert levelTree == null
+            || getGraphView().getGraphRole() == GraphRole.RULE
+                && !getGraphView().hasActiveEditor();
+        this.levelTree = levelTree;
+    }
+
+    /**
+     * Returns the rule level tree associated with this graph view, if any.
+     */
+    public @Nullable RuleLevelTree getLevelTree() {
+        return this.levelTree;
+    }
+
+    /** The tree of rule levels, if any. */
+    private @Nullable RuleLevelTree levelTree;
 
     /** Returns the grammar that has manually been set for this graph view. */
     public @Nullable GrammarModel getGrammar() {

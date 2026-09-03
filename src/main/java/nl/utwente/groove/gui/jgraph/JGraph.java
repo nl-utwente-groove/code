@@ -218,43 +218,6 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
     /** Change listener that refreshes the JGraph cells when activated. */
     private RefreshListener refreshListener;
 
-    /**
-     * Indicates whether node identities should be shown on node labels.
-     */
-    public boolean isShowNodeIdentities() {
-        return getOptionValue(SHOW_INTERNAL_NODE_IDS_OPTION);
-    }
-
-    /**
-     * Indicates whether anchors should be shown in the rule and lts views.
-     */
-    public boolean isShowAnchors() {
-        return getOptionValue(SHOW_ANCHORS_OPTION);
-    }
-
-    /**
-     * Indicates whether self-edges should be shown as node labels.
-     */
-    public boolean isShowLoopsAsNodeLabels() {
-        var properties = getController().getProperties();
-        return properties == null || properties.isShowLoopsAsLabels();
-    }
-
-    /**
-     * Indicates whether arrow head should be shown on labels, rather than
-     * on edges.
-     */
-    public boolean isShowArrowsOnLabels() {
-        return getOptionValue(SHOW_ARROWS_ON_LABELS_OPTION);
-    }
-
-    /**
-     * Indicates whether a single JEdge may stand for edges in two directions.
-     */
-    public boolean isShowBidirectionalEdges() {
-        return getOptionValue(Options.SHOW_BIDIRECTIONAL_EDGES_OPTION);
-    }
-
     /** Convenience method to retrieve the state of the simulator, if any. */
     final public SimulatorModel getSimulatorModel() {
         return getController().getSimulatorModel();

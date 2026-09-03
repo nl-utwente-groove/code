@@ -73,7 +73,7 @@ public interface JEdge<G extends @NonNull Graph> extends JCell<G> {
     /**
      * Determines the direction corresponding to a given edge
      * wrapped into this JEdge, to be displayed on the JEdge label.
-     * This is {@link Direct#NONE} if {@link JGraph#isShowArrowsOnLabels()}
+     * This is {@link Direct#NONE} if {@link nl.utwente.groove.gui.display.GraphViewController#isShowArrowsOnLabels()}
      * is {@code false}, otherwise {@link Direct#BIDIRECTIONAL} if the edge
      * look is {@link Look#BIDIRECTIONAL}; otherwise it is determined
      * by the relative direction of the edge with respect to this JEdge.

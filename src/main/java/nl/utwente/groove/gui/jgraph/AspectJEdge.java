@@ -218,7 +218,7 @@ public class AspectJEdge extends
      */
     public boolean isSourceLabel() {
         AspectJGraph graph = getJGraph();
-        if (graph != null && graph.isShowValueNodes()) {
+        if (graph != null && graph.getController().isShowValueNodes()) {
             return false;
         }
         if (getSourceNode().hasSort()) {

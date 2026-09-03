@@ -20,8 +20,8 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.graph.Graph;
+import nl.utwente.groove.gui.display.GraphViewController;
 import nl.utwente.groove.gui.jgraph.JCell;
-import nl.utwente.groove.gui.jgraph.JGraph;
 
 /**
  * Strategy to compute a new value for a refreshable {@link VisualKey}.
@@ -30,7 +30,8 @@ import nl.utwente.groove.gui.jgraph.JGraph;
  */
 public interface VisualValue<T> {
     /** Computes and returns a new value for the relevant key.
-     * @param jGraph the (non-{@code null}) jGraph for the cell.
+     * @param controller the (non-{@code null}) graph-view controller for the cell.
      */
-    public <G extends @NonNull Graph> @Nullable T get(JGraph<G> jGraph, JCell<G> cell);
+    public <G extends @NonNull Graph> @Nullable T get(GraphViewController<G> controller,
+                                                      JCell<G> cell);
 }

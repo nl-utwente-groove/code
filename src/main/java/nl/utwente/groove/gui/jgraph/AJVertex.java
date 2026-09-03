@@ -126,7 +126,7 @@ public abstract class AJVertex<G extends @NonNull Graph,JG extends JGraph<G>,JM 
         }
         JGraph<?> jGraph = getJGraph();
         assert jGraph != null; // should be by the time this method is called
-        return jGraph.isShowLoopsAsNodeLabels() && edge.source() == edge.target()
+        return jGraph.getController().isShowLoopsAsNodeLabels() && edge.source() == edge.target()
             && edge.source() == getNode();
     }
 

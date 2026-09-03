@@ -198,10 +198,10 @@ final public class LTSJModel extends JModel<@NonNull GTS> implements GTSListener
 
     /** Tests if a given graph state is acceptable for addition to the LTS panel. */
     private boolean isAcceptState(GraphState state) {
-        if (state.isInner() && !getJGraph().isShowRecipeSteps()) {
+        if (state.isInner() && !getJGraph().getController().isShowRecipeSteps()) {
             return false;
         }
-        if (state.isAbsent() && !getJGraph().isShowAbsentStates()) {
+        if (state.isAbsent() && !getJGraph().getController().isShowAbsentStates()) {
             return false;
         }
         return true;

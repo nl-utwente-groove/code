@@ -20,7 +20,7 @@ import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.gui.jgraph.JCell;
-import nl.utwente.groove.gui.jgraph.JGraph;
+import nl.utwente.groove.gui.display.GraphViewController;
 
 /**
  * Refresher that always returns the same value.
@@ -34,7 +34,7 @@ public class ConstantValue<T> implements VisualValue<T> {
     }
 
     @Override
-    public <G extends @NonNull Graph> T get(JGraph<G> jGraph, JCell<G> cell) {
+    public <G extends @NonNull Graph> T get(GraphViewController<G> controller, JCell<G> cell) {
         return this.value;
     }
 

@@ -53,16 +53,16 @@ import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.gui.jgraph.AspectJEdge;
-import nl.utwente.groove.gui.jgraph.AspectJGraph;
+import nl.utwente.groove.gui.display.AspectGraphViewController;
 import nl.utwente.groove.gui.jgraph.AspectJVertex;
-import nl.utwente.groove.gui.jgraph.CtrlJGraph;
+import nl.utwente.groove.gui.display.CtrlGraphViewController;
 import nl.utwente.groove.gui.jgraph.CtrlJVertex;
 import nl.utwente.groove.gui.jgraph.JCell;
 import nl.utwente.groove.gui.jgraph.JEdge;
-import nl.utwente.groove.gui.jgraph.JGraph;
+import nl.utwente.groove.gui.display.GraphViewController;
 import nl.utwente.groove.gui.jgraph.JVertex;
 import nl.utwente.groove.gui.jgraph.LTSJEdge;
-import nl.utwente.groove.gui.jgraph.LTSJGraph;
+import nl.utwente.groove.gui.display.LTSGraphViewController;
 import nl.utwente.groove.gui.jgraph.LTSJVertex;
 import nl.utwente.groove.gui.look.MultiLabel.Direct;
 import nl.utwente.groove.gui.tree.LabelTree;
@@ -85,39 +85,39 @@ import nl.utwente.groove.util.parse.FormatException;
  */
 public class LabelValue implements VisualValue<MultiLabel> {
     @Override
-    public <G extends @NonNull Graph> MultiLabel get(JGraph<G> jGraph, JCell<G> cell) {
+    public <G extends @NonNull Graph> MultiLabel get(GraphViewController<G> controller, JCell<G> cell) {
         MultiLabel result = null;
         if (cell instanceof JVertex) {
-            result = getJVertexLabel(jGraph, (JVertex<G>) cell);
+            result = getJVertexLabel(controller, (JVertex<G>) cell);
         } else if (cell instanceof JEdge) {
-            result = getJEdgeLabel(jGraph, (JEdge<G>) cell);
+            result = getJEdgeLabel(controller, (JEdge<G>) cell);
         }
         return result;
     }
 
     /** Returns a list of lines together making up the label text of a vertex.
-     * @param jGraph the (non-{@code null}) {@link JGraph} of the {@link JVertex}
+     * @param controller the (non-{@code null}) graph-view controller of the {@link JVertex}
      */
-    protected <G extends @NonNull Graph> MultiLabel getJVertexLabel(JGraph<G> jGraph,
+    protected <G extends @NonNull Graph> MultiLabel getJVertexLabel(GraphViewController<G> controller,
                                                                     JVertex<G> jVertex) {
-        return switch (jGraph.getGraphRole()) {
-        case HOST -> getHostNodeLabel((AspectJGraph) jGraph, (AspectJVertex) jVertex);
-        case RULE -> getRuleNodeLabel((AspectJGraph) jGraph, (AspectJVertex) jVertex);
-        case TYPE -> getTypeNodeLabel((AspectJGraph) jGraph, (AspectJVertex) jVertex);
-        case LTS -> getLTSJVertexLabel((LTSJGraph) jGraph, (LTSJVertex) jVertex);
-        case CTRL -> getCtrlJVertexLabel((CtrlJGraph) jGraph, (CtrlJVertex) jVertex);
-        default -> getBasicVertexLabel(jGraph, jVertex);
+        return switch (controller.getGraphRole()) {
+        case HOST -> getHostNodeLabel((AspectGraphViewController) controller, (AspectJVertex) jVertex);
+        case RULE -> getRuleNodeLabel((AspectGraphViewController) controller, (AspectJVertex) jVertex);
+        case TYPE -> getTypeNodeLabel((AspectGraphViewController) controller, (AspectJVertex) jVertex);
+        case LTS -> getLTSJVertexLabel((LTSGraphViewController) controller, (LTSJVertex) jVertex);
+        case CTRL -> getCtrlJVertexLabel((CtrlGraphViewController) controller, (CtrlJVertex) jVertex);
+        default -> getBasicVertexLabel(controller, jVertex);
         };
     }
 
     /** This implementation adds the data edges to the super result.
-     * @param jGraph the (non-{@code null}) {@link JGraph} of the {@link JVertex}
+     * @param controller the (non-{@code null}) graph-view controller of the {@link JVertex}
      */
-    private <G extends @NonNull Graph> MultiLabel getBasicVertexLabel(JGraph<G> jGraph,
+    private <G extends @NonNull Graph> MultiLabel getBasicVertexLabel(GraphViewController<G> controller,
                                                                       JVertex<G> jVertex) {
         MultiLabel result = new MultiLabel();
         // only add edges that have an unfiltered label
-        addEdgeLabels(jGraph, jVertex, result);
+        addEdgeLabels(controller, jVertex, result);
         return result;
     }
 
@@ -133,18 +133,18 @@ public class LabelValue implements VisualValue<MultiLabel> {
      * <li> Pure attribute edges not stored as self-edges, if data nodes are not shown
      * </ul>
      * Node: self-edges displayed as node labels may be filtered
-     * @param jGraph the (non-{@code null}) {@link JGraph} of the {@link JVertex}
+     * @param controller the (non-{@code null}) graph-view controller of the {@link JVertex}
      */
-    private MultiLabel getHostNodeLabel(AspectJGraph jGraph, AspectJVertex jVertex) {
+    private MultiLabel getHostNodeLabel(AspectGraphViewController controller, AspectJVertex jVertex) {
         AspectNode node = jVertex.getNode();
         node.testFixed(true);
         MultiLabel result = new MultiLabel(false);
         if (!jVertex.getLooks().contains(Look.NODIFIED)) {
             // the following used to include hasError() as a disjunct
-            if (jGraph.isShowAspects()) {
+            if (controller.isShowAspects()) {
                 result.add(jVertex.getUserObject().toLines());
             } else {
-                Line idLine = jGraph.isShowUserIds()
+                Line idLine = controller.isShowUserIds()
                     ? getUserIdLine(node)
                     : null;
                 // show data constants correctly
@@ -155,7 +155,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 }
                 // show the visible self-edges
                 for (AspectEdge edge : jVertex.getEdges()) {
-                    if (isVisible(jGraph, jVertex, edge)) {
+                    if (isVisible(controller, jVertex, edge)) {
                         if (edge.has(REMARK)) {
                             edge.toLines(true, jVertex.getAspects()).forEach(result::add);
                             continue;
@@ -184,7 +184,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 }
             }
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
-                if (isVisible(jGraph, jVertex, edge)) {
+                if (isVisible(controller, jVertex, edge)) {
                     edge.toLines(true, jVertex.getAspects()).forEach(result::add);
                 }
             }
@@ -216,16 +216,16 @@ public class LabelValue implements VisualValue<MultiLabel> {
     }
 
     /** Recomputes the set of node lines for this aspect node.
-     * @param jGraph the (non-{@code null}) {@link JGraph} of the {@link JVertex}
+     * @param controller the (non-{@code null}) graph-view controller of the {@link JVertex}
      */
-    private MultiLabel getTypeNodeLabel(AspectJGraph jGraph, AspectJVertex jVertex) {
+    private MultiLabel getTypeNodeLabel(AspectGraphViewController controller, AspectJVertex jVertex) {
         AspectNode node = jVertex.getNode();
         node.testFixed(true);
         MultiLabel result = new MultiLabel();
-        if (jGraph.isShowAspects()) {
+        if (controller.isShowAspects()) {
             result.add(jVertex.getUserObject().toLines());
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
-                if (isVisible(jGraph, jVertex, edge)) {
+                if (isVisible(controller, jVertex, edge)) {
                     Line line = edge.label().toLine();
                     // check for primitive type edges
                     var sortKind = edge.target().getKind(Category.SORT);
@@ -246,7 +246,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
             }
             // show the visible self-edges
             for (AspectEdge edge : jVertex.getEdges()) {
-                if (isVisible(jGraph, jVertex, edge)) {
+                if (isVisible(controller, jVertex, edge)) {
                     if (edge.has(REMARK)) {
                         edge.toLines(true, jVertex.getAspects()).forEach(result::add);
                         continue;
@@ -259,7 +259,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 }
             }
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
-                if (isVisible(jGraph, jVertex, edge)) {
+                if (isVisible(controller, jVertex, edge)) {
                     edge.toLines(true, jVertex.getAspects()).forEach(result::add);
                 }
             }
@@ -275,16 +275,16 @@ public class LabelValue implements VisualValue<MultiLabel> {
     }
 
     /** Recomputes the set of node lines for this aspect node.
-     * @param jGraph the (non-{@code null}) {@link JGraph} of the {@link JVertex}     */
-    private MultiLabel getRuleNodeLabel(AspectJGraph jGraph, AspectJVertex jVertex) {
+     * @param controller the (non-{@code null}) graph-view controller of the {@link JVertex}     */
+    private MultiLabel getRuleNodeLabel(AspectGraphViewController controller, AspectJVertex jVertex) {
         AspectNode node = jVertex.getNode();
         node.testFixed(true);
         MultiLabel result = new MultiLabel();
         // the following used to include hasError() as a disjunct
-        if (jGraph.isShowAspects() || jVertex.getNode().hasErrors()) {
+        if (controller.isShowAspects() || jVertex.getNode().hasErrors()) {
             result.add(jVertex.getUserObject().toLines());
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
-                if (isVisible(jGraph, jVertex, edge)) {
+                if (isVisible(controller, jVertex, edge)) {
                     Line line = edge.label().toLine();
                     // check for assignment edges
                     var sortContent = edge.target().get(Category.SORT, Aspect::getContentString);
@@ -313,7 +313,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
             }
             // show the visible self-edges
             for (AspectEdge edge : jVertex.getEdges()) {
-                if (isVisible(jGraph, jVertex, edge)) {
+                if (isVisible(controller, jVertex, edge)) {
                     if (edge.has(REMARK)) {
                         edge.toLines(true, jVertex.getAspects()).forEach(result::add);
                         continue;
@@ -339,7 +339,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                 result.add(idLine);
             }
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
-                if (isVisible(jGraph, jVertex, edge)) {
+                if (isVisible(controller, jVertex, edge)) {
                     edge.toLines(true, jVertex.getAspects()).forEach(result::add);
                 }
             }
@@ -364,7 +364,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
         }
         var jGraph = jVertex.getJGraph();
         if (jVertex.getJModel().getTypeGraph().isImplicit() && jGraph != null
-            && jGraph.getGraphRole() != GraphRole.TYPE) {
+            && jGraph.getController().getGraphRole() != GraphRole.TYPE) {
             return false;
         }
         if (edge.getRole() != EdgeRole.BINARY) {
@@ -399,19 +399,19 @@ public class LabelValue implements VisualValue<MultiLabel> {
     }
 
     /** This implementation adds the data edges to the super result.
-     * @param jGraph the (non-{@code null}) {@link JGraph} of the {@link JVertex}
+     * @param controller the (non-{@code null}) graph-view controller of the {@link JVertex}
      */
-    private MultiLabel getLTSJVertexLabel(LTSJGraph jGraph, LTSJVertex jVertex) {
+    private MultiLabel getLTSJVertexLabel(LTSGraphViewController controller, LTSJVertex jVertex) {
         MultiLabel result = new MultiLabel();
         // show the node identity if required
         Line idLine = null;
-        if (jGraph.isShowStateIdentities()) {
+        if (controller.isShowStateIdentities()) {
             GraphState state = jVertex.getNode();
             StringBuilder id = new StringBuilder(state.toString());
             idLine = formatUserId(id.toString());
         }
-        if (jGraph.isShowStateStatus()) {
-            Line statusLine = getStatus(jGraph, jVertex.getNode());
+        if (controller.isShowStateStatus()) {
+            Line statusLine = getStatus(controller, jVertex.getNode());
             if (idLine == null) {
                 idLine = statusLine;
             } else {
@@ -423,7 +423,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
         }
         GraphState state = jVertex.getNode();
         boolean hasControl = false;
-        if (jGraph.isShowControlStates()) {
+        if (controller.isShowControlStates()) {
             Frame frame = state.getPrimeFrame();
             //if (frame.isDead()) {
             //    frame = frame.getPred();
@@ -447,8 +447,9 @@ public class LabelValue implements VisualValue<MultiLabel> {
         }
         MultiLabel transLabels = new MultiLabel();
         // add state properties
-        var labelTree = jGraph.getLabelTree();
-        var gts = jGraph.getGraph();
+        var labelTree = controller.getLabelTree();
+        assert labelTree != null; // the LTS display always has a label tree
+        var gts = controller.getGraph();
         assert gts != null;
         gts
             .getSatisfiedProps(state)
@@ -458,14 +459,14 @@ public class LabelValue implements VisualValue<MultiLabel> {
             .map(Label::toLine)
             .forEach(transLabels::add);
         // only add edges that have an unfiltered label
-        boolean isShowAnchors = jGraph.isShowAnchors();
-        boolean isShowInvariants = jGraph.isShowInvariants();
+        boolean isShowAnchors = controller.isShowAnchors();
+        boolean isShowInvariants = controller.isShowInvariants();
         for (Edge edge : jVertex.getEdges()) {
             GraphTransition trans = (GraphTransition) edge;
             if (trans.getAction().getRole() == Role.INVARIANT && !isShowInvariants) {
                 continue;
             }
-            if (isVisible(jGraph, jVertex, edge)) {
+            if (isVisible(controller, jVertex, edge)) {
                 Line line;
                 if (isShowAnchors) {
                     line = Line.atom(((GraphTransition) edge).text(isShowAnchors));
@@ -494,11 +495,11 @@ public class LabelValue implements VisualValue<MultiLabel> {
     }
 
     /** Returns the status line for a given state.
-     * @param jGraph the (non-{@code null}) {@link JGraph} of the {@link JVertex}
+     * @param controller the (non-{@code null}) graph-view controller of the {@link JVertex}
      */
-    private Line getStatus(LTSJGraph jGraph, GraphState state) {
+    private Line getStatus(LTSGraphViewController controller, GraphState state) {
         Line result;
-        if (isResult(jGraph, state)) {
+        if (isResult(controller, state)) {
             result = this.resultLine;
         } else if (state instanceof StartGraphState && !state.isError() && !state.isFinal()) {
             result = this.startLine;
@@ -525,8 +526,8 @@ public class LabelValue implements VisualValue<MultiLabel> {
         return result;
     }
 
-    private boolean isResult(LTSJGraph jGraph, GraphState state) {
-        return jGraph.getController().isResult(state);
+    private boolean isResult(LTSGraphViewController controller, GraphState state) {
+        return controller.isResult(state);
     }
 
     /** Returns the status line for a given status flag. */
@@ -613,9 +614,9 @@ public class LabelValue implements VisualValue<MultiLabel> {
 
     /**
      * Appends the bound variables to the lines, if this list is not empty
-     * @param jGraph the (non-{@code null}) {@link JGraph} of the {@link JVertex}
+     * @param controller the (non-{@code null}) graph-view controller of the {@link JVertex}
      */
-    private MultiLabel getCtrlJVertexLabel(CtrlJGraph jGraph, CtrlJVertex jVertex) {
+    private MultiLabel getCtrlJVertexLabel(CtrlGraphViewController controller, CtrlJVertex jVertex) {
         MultiLabel result = new MultiLabel();
         result.add(formatUserId(jVertex.getNode().toString()));
         Position<?,?> state = jVertex.getNode().getPosition();
@@ -648,39 +649,39 @@ public class LabelValue implements VisualValue<MultiLabel> {
             result.add(line);
         }
         // add self-edges
-        addEdgeLabels(jGraph, jVertex, result);
+        addEdgeLabels(controller, jVertex, result);
         return result;
     }
 
     /** Returns a list of lines together making up the label text of a jEdge.
-     * @param jGraph the (non-{@code null}) {@link JGraph} of the {@link JVertex}
+     * @param controller the (non-{@code null}) graph-view controller of the {@link JVertex}
      */
-    protected <G extends @NonNull Graph> MultiLabel getJEdgeLabel(JGraph<G> jGraph,
+    protected <G extends @NonNull Graph> MultiLabel getJEdgeLabel(GraphViewController<G> controller,
                                                                   JEdge<G> jEdge) {
-        return switch (jGraph.getGraphRole()) {
-        case HOST, RULE, TYPE -> getAspectJEdgeLabel((AspectJGraph) jGraph, (AspectJEdge) jEdge);
-        case LTS -> getLTSJEdgeLabel((LTSJGraph) jGraph, (LTSJEdge) jEdge);
-        default -> getBasicJEdgeLabel(jGraph, jEdge);
+        return switch (controller.getGraphRole()) {
+        case HOST, RULE, TYPE -> getAspectJEdgeLabel((AspectGraphViewController) controller, (AspectJEdge) jEdge);
+        case LTS -> getLTSJEdgeLabel((LTSGraphViewController) controller, (LTSJEdge) jEdge);
+        default -> getBasicJEdgeLabel(controller, jEdge);
         };
     }
 
-    private MultiLabel getBasicJEdgeLabel(JGraph<?> jGraph, JEdge<?> jEdge) {
+    private MultiLabel getBasicJEdgeLabel(GraphViewController<?> controller, JEdge<?> jEdge) {
         MultiLabel result = new MultiLabel();
-        addEdgeLabels(jGraph, jEdge, result);
+        addEdgeLabels(controller, jEdge, result);
         return result;
     }
 
     /**
      * Adds the labels of all edges of a given cell to a multi-label.
-     * @param jGraph the (non-{@code null}) {@link JGraph} of the {@link JCell}
+     * @param controller the (non-{@code null}) graph-view controller of the {@link JCell}
      * @param jCell the cell from which the edges are added
      * @param result the resulting multi-label; modified by this call
      */
-    private void addEdgeLabels(JGraph<?> jGraph, JCell<?> jCell, MultiLabel result) {
+    private void addEdgeLabels(GraphViewController<?> controller, JCell<?> jCell, MultiLabel result) {
         boolean onVertex = jCell instanceof JVertex;
         for (Edge edge : jCell.getEdges()) {
             // only add edges that have an unfiltered label
-            if (isVisible(jGraph, jCell, edge)) {
+            if (isVisible(controller, jCell, edge)) {
                 Direct dir = onVertex
                     ? Direct.NONE
                     : ((JEdge<?>) jCell).getDirect(edge);
@@ -693,7 +694,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
         }
     }
 
-    private MultiLabel getAspectJEdgeLabel(AspectJGraph jGraph, AspectJEdge jEdge) {
+    private MultiLabel getAspectJEdgeLabel(AspectGraphViewController controller, AspectJEdge jEdge) {
         MultiLabel result = new MultiLabel();
         // if both source and target nodes are nodified,
         // test for source node first
@@ -714,7 +715,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
         } else if (!jEdge.isNodeEdgeOut()) {
             for (AspectEdge edge : jEdge.getEdges()) {
                 // only add edges that have an unfiltered label
-                if (isVisible(jGraph, jEdge, edge)) {
+                if (isVisible(controller, jEdge, edge)) {
                     // a subtype edge always keeps the arrowhead on the edge itself
                     // (see EdgeEndShapeValue), so its label is never given a
                     // direction: otherwise the (empty) label would show as a
@@ -722,7 +723,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
                     Direct direct = edge.has(AspectKind.SUBTYPE)
                         ? Direct.NONE
                         : jEdge.getDirect(edge);
-                    if (jGraph.isShowAspects()) {
+                    if (controller.isShowAspects()) {
                         result.add(edge.label().toLine(), direct);
                     } else {
                         for (Line line : edge.toLines(false, jEdge.getAspects())) {
@@ -736,14 +737,14 @@ public class LabelValue implements VisualValue<MultiLabel> {
     }
 
     /** Computes the multi-line label for a given LSTJEdge.
-     * @param jGraph the (non-{@code null}) {@link JGraph} of the {@link JVertex}
+     * @param controller the (non-{@code null}) graph-view controller of the {@link JVertex}
      */
-    private MultiLabel getLTSJEdgeLabel(LTSJGraph jGraph, LTSJEdge jEdge) {
+    private MultiLabel getLTSJEdgeLabel(LTSGraphViewController controller, LTSJEdge jEdge) {
         MultiLabel result = new MultiLabel();
-        boolean isShowAnchors = jGraph.isShowAnchors();
+        boolean isShowAnchors = controller.isShowAnchors();
         for (Edge edge : jEdge.getEdges()) {
             // only add edges that have an unfiltered label
-            if (isVisible(jGraph, jEdge, edge)) {
+            if (isVisible(controller, jEdge, edge)) {
                 GraphTransition trans = (GraphTransition) edge;
                 Line line = Line.atom(trans.text(isShowAnchors));
                 result.add(line, jEdge.getDirect(edge));
@@ -787,11 +788,11 @@ public class LabelValue implements VisualValue<MultiLabel> {
 
     /**
      * Tests if a given edge is currently being filtered.
-     * @param jGraph the (non-{@code null}) {@link JGraph} of the {@link JVertex}
+     * @param controller the (non-{@code null}) graph-view controller of the {@link JVertex}
      */
-    private boolean isVisible(JGraph<?> jGraph, JCell<?> jCell, Edge edge) {
+    private boolean isVisible(GraphViewController<?> controller, JCell<?> jCell, Edge edge) {
         boolean result = true;
-        LabelTree<?> labelTree = jGraph.getLabelTree();
+        LabelTree<?> labelTree = controller.getLabelTree();
         if (edge != null && labelTree != null) {
             Label key = jCell.getKey(edge);
             result = key == null || labelTree.isIncluded(key);

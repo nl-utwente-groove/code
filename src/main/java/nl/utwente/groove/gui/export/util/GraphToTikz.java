@@ -884,7 +884,7 @@ public final class GraphToTikz<G extends @NonNull Graph> {
             MultiLabel lines = edge.getVisuals().getLabel();
             List<Point2D> points = edge.getVisuals().getPoints();
             StringBuilder text;
-            if (this.jGraph.isShowArrowsOnLabels()) {
+            if (this.jGraph.getController().isShowArrowsOnLabels()) {
                 Point2D start = points.get(0);
                 Point2D end = points.get(points.size() - 1);
                 text = lines.toString(TeXLineFormat.instance(), start, end);
