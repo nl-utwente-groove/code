@@ -526,7 +526,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
     }
 
     private boolean isResult(LTSJGraph jGraph, GraphState state) {
-        return jGraph.isResult(state);
+        return jGraph.getController().isResult(state);
     }
 
     /** Returns the status line for a given status flag. */

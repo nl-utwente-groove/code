@@ -150,7 +150,7 @@ public class LTSJEdge extends AJEdge<@NonNull GTS,LTSJGraph,LTSJModel,LTSJVertex
     boolean isResult() {
         LTSJGraph jGraph = getJGraph();
         assert jGraph != null; // guaranteed by now
-        return getEdges().stream().anyMatch(jGraph::isResult);
+        return getEdges().stream().anyMatch(jGraph.getController()::isResult);
     }
 
     @Override

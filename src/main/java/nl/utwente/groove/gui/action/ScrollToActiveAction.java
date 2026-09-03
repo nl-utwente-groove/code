@@ -41,7 +41,7 @@ public class ScrollToActiveAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent evt) {
-        this.jGraph.scrollToActive();
+        this.jGraph.getController().scrollToActive();
     }
 
     /**

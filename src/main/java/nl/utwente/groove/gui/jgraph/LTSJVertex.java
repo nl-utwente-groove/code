@@ -90,7 +90,7 @@ public class LTSJVertex extends AJVertex<@NonNull GTS,LTSJGraph,LTSJModel,LTSJEd
         LTSJGraph jGraph = getJGraph();
         assert jGraph != null; // guaranteed by now
         if (this.outCount < 0) {
-            this.outCount = getNode().getTransitions(jGraph.getTransitionClass()).size();
+            this.outCount = getNode().getTransitions(jGraph.getController().getTransitionClass()).size();
         }
         return this.outCount;
     }
@@ -170,7 +170,7 @@ public class LTSJVertex extends AJVertex<@NonNull GTS,LTSJGraph,LTSJModel,LTSJEd
     public boolean isResult() {
         LTSJGraph jGraph = getJGraph();
         assert jGraph != null; // guaranteed by now
-        return jGraph.isResult(getNode());
+        return jGraph.getController().isResult(getNode());
     }
 
     @Override

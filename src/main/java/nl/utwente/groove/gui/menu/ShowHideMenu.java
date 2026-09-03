@@ -53,6 +53,7 @@ import nl.utwente.groove.gui.jgraph.LTSJGraph;
 import nl.utwente.groove.gui.tree.LabelTree.LabelledCells;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSListener;
+import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.match.automaton.NodeRelation;
 import nl.utwente.groove.match.automaton.RelationCalculator;
@@ -704,7 +705,11 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
         @Override
         public void actionPerformed(ActionEvent evt) {
             LTSJGraph jGraph = (LTSJGraph) this.jgraph;
-            this.trace = jGraph.findTraces(Collections.singleton(jGraph.getActiveState()));
+            var activeState = jGraph.getController().getActiveState();
+            Set<GraphState> states = activeState == null
+                ? Collections.emptySet()
+                : Collections.singleton(activeState);
+            this.trace = jGraph.getController().findTraces(states);
             if (jGraph.getModel() != null) {
                 super.actionPerformed(evt);
             }

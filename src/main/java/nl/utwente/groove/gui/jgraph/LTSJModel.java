@@ -92,7 +92,7 @@ final public class LTSJModel extends JModel<@NonNull GTS> implements GTSListener
             // layout should occur after the transition has been added
             // otherwise the forest will not be computed correctly
             getJGraph().doLayout(false);
-            getJGraph().scrollToActive();
+            getJGraph().getController().scrollToActive();
         }
     }
 
@@ -148,7 +148,7 @@ final public class LTSJModel extends JModel<@NonNull GTS> implements GTSListener
         if (gts != oldGTS) {
             gts.addLTSListener(this);
         }
-        getJGraph().reactivate();
+        getJGraph().getController().reactivate();
     }
 
     /**
@@ -215,14 +215,14 @@ final public class LTSJModel extends JModel<@NonNull GTS> implements GTSListener
             for (Node node : getViewModel().getNodes()) {
                 GraphState state = (GraphState) node;
                 for (GraphTransition trans : state
-                    .getTransitions(getJGraph().getTransitionClass())) {
+                    .getTransitions(getJGraph().getController().getTransitionClass())) {
                     result |= addTransition(trans);
                 }
             }
         } else {
             for (Edge edge : edgeSet) {
                 GraphTransition trans = (GraphTransition) edge;
-                if (getJGraph().getTransitionClass().admits(trans)) {
+                if (getJGraph().getController().getTransitionClass().admits(trans)) {
                     result |= addTransition((GraphTransition) edge);
                 }
             }
@@ -232,7 +232,7 @@ final public class LTSJModel extends JModel<@NonNull GTS> implements GTSListener
 
     /** Tests if a given graph transition is acceptable for addition to the LTS panel. */
     private boolean isAcceptTransition(GraphTransition trans) {
-        return getJGraph().getTransitionClass().admits(trans);
+        return getJGraph().getController().getTransitionClass().admits(trans);
     }
 
     /**

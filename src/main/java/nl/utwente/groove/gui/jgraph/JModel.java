@@ -172,8 +172,8 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
      * @param replace if {@code true}, all existing jCells are removed
      * @return {@code true} if the jModel was changed
      */
-    protected boolean addElements(Collection<? extends Node> nodeSet,
-                                  Collection<? extends Edge> edgeSet, boolean replace) {
+    public boolean addElements(Collection<? extends Node> nodeSet,
+                               Collection<? extends Edge> edgeSet, boolean replace) {
         boolean result = replace;
         setLoading(true);
         prepareInsert();

@@ -210,7 +210,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
             if (resultSelected) {
                 chooser.setSelectedIndex(Filter.NONE.ordinal());
             }
-            getJGraph().setFilter(Filter.NONE);
+            getJGraph().getController().setFilter(Filter.NONE);
             this.filterListening = true;
         }
     }
@@ -253,11 +253,11 @@ public class LTSDisplay extends Display implements SimulatorListener {
                         int oldBound = getJModel().setStateBound(newBound);
                         if (oldBound != newBound) {
                             if (getJModel().reloadGraph()) {
-                                getJGraph().refreshFiltering();
-                                getJGraph().refreshActive();
+                                getJGraph().getController().refreshFiltering();
+                                getJGraph().getController().refreshActive();
                                 getJGraph().refreshAllCells(true);
                                 getJGraph().doLayout(false);
-                                getJGraph().scrollToActive();
+                                getJGraph().getController().scrollToActive();
                             }
                             refreshBackground();
                         }
@@ -323,7 +323,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
                 : null;
             if (next != null && showTransitions) {
                 for (GraphTransition trans : current
-                    .getTransitions(getJGraph().getTransitionClass())) {
+                    .getTransitions(getJGraph().getController().getTransitionClass())) {
                     if (trans.target() == next) {
                         jCells.add(getJModel().getJCellForEdge(trans));
                         break;
@@ -504,7 +504,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
                 boolean isNew = gts != oldModel.getGTS();
                 if (isNew) {
                     ltsModel = (LTSJModel) getJGraph().newModel();
-                    getJGraph().setFilter(getFilter());
+                    getJGraph().getController().setFilter(getFilter());
                     ltsModel.setStateBound(getStateBound());
                     ltsModel.loadGraph(gts);
                     getJGraph().setModel(ltsModel);
@@ -515,7 +515,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
                 }
                 GraphState state = source.getState();
                 GraphTransition transition = source.getTransition();
-                getJGraph().setActive(state, transition);
+                getJGraph().getController().setActive(state, transition);
                 setFilterResultItem(source.hasExploreResult());
                 var lastExploreType = source.getLastExploreType();
                 if (changes.contains(GTS) && source.hasExploreResult()
@@ -529,15 +529,15 @@ public class LTSDisplay extends Display implements SimulatorListener {
                     this.filterListening = false;
                     getFilterChooser().setSelectedItem(Filter.RESULT);
                     this.filterListening = true;
-                    if (getJGraph().setFilter(getFilter())) {
-                        getJGraph().refreshFiltering();
-                        getJGraph().refreshActive();
+                    if (getJGraph().getController().setFilter(getFilter())) {
+                        getJGraph().getController().refreshFiltering();
+                        getJGraph().getController().refreshActive();
                         getJGraph().refreshAllCells(false);
                     }
                 }
                 getJGraph().doLayout(isNew);
                 setEnabled(true);
-                getJGraph().scrollToActive();
+                getJGraph().getController().scrollToActive();
                 updateStatus(gts);
             }
             if (gts != oldModel.getGTS()) {
@@ -558,10 +558,10 @@ public class LTSDisplay extends Display implements SimulatorListener {
                 var internal = state != null && state.isInner();
                 getJGraph().setBackground(JAttr.getStateBackground(error, internal));
                 GraphTransition transition = source.getTransition();
-                if (getJGraph().setActive(state, transition)) {
+                if (getJGraph().getController().setActive(state, transition)) {
                     getJGraph().doLayout(false);
                 }
-                getJGraph().scrollToActive();
+                getJGraph().getController().scrollToActive();
             }
         }
     }
@@ -570,15 +570,15 @@ public class LTSDisplay extends Display implements SimulatorListener {
      * Toggles the filtering of the LTS display.
      */
     public void doFilterLTS() {
-        if (getJGraph().setFilter(getFilter())) {
-            boolean layout = getJGraph().refreshFiltering();
-            layout |= getJGraph().refreshActive();
+        if (getJGraph().getController().setFilter(getFilter())) {
+            boolean layout = getJGraph().getController().refreshFiltering();
+            layout |= getJGraph().getController().refreshActive();
             getJGraph().refreshAllCells(false);
             if (layout) {
                 getJGraph().doLayout(false);
             }
             setEnabled(true);
-            getJGraph().scrollToActive();
+            getJGraph().getController().scrollToActive();
         }
     }
 
@@ -592,7 +592,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
      * filtered or incompletely displayed.
      */
     public void refreshBackground() {
-        Color background = getJGraph().isComplete()
+        Color background = getJGraph().getController().isComplete()
             ? JAttr.STATE_BACKGROUND
             : JAttr.FILTER_BACKGROUND;
         getGraphPanel().setEnabledBackground(background);
