@@ -116,7 +116,7 @@ public class SubtypeLabelArrowTest {
         GrammarModel grammar = Groove.loadGrammar(GRAMMAR);
         TypeModel typeModel = grammar.getTypeModel(QualName.parse(TYPE_GRAPH));
         AspectJGraph jGraph = new AspectJGraph(null, DisplayKind.TYPE, false);
-        jGraph.setGrammar(grammar);
+        jGraph.getController().setGrammar(grammar);
         AspectJModel result = jGraph.newModel();
         result.loadGraph(typeModel.getSource());
         jGraph.setModel(result);

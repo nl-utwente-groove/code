@@ -212,7 +212,7 @@ final public class LTSJModel extends JModel<@NonNull GTS> implements GTSListener
     protected boolean addEdges(Collection<? extends Edge> edgeSet) {
         boolean result = false;
         if (edgeSet == null) {
-            for (Node node : this.nodeJCellMap.keySet()) {
+            for (Node node : getViewModel().getNodes()) {
                 GraphState state = (GraphState) node;
                 for (GraphTransition trans : state
                     .getTransitions(getJGraph().getTransitionClass())) {

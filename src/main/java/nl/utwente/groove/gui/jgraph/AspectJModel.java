@@ -226,10 +226,7 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
         GraphInfo.setLayoutMap(graph, layoutMap);
         ResourceProperties.setProperties(graph, getProperties());
         graph.setFixed();
-        this.nodeJCellMap.clear();
-        this.nodeJCellMap.putAll(nodeJVertexMap);
-        this.edgeJCellMap.clear();
-        this.edgeJCellMap.putAll(edgeJCellMap);
+        getViewModel().setJCellMaps(nodeJVertexMap, edgeJCellMap);
         setGraph(graph);
         if (GUI_DEBUG) {
             System.out.printf("Graph resynchronised with model %s%n", getName());

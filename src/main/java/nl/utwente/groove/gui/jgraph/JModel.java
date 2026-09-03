@@ -45,9 +45,9 @@ import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.layout.EdgeLayout;
-import nl.utwente.groove.graph.layout.ElementLayout;
 import nl.utwente.groove.graph.layout.LayoutMap;
 import nl.utwente.groove.graph.layout.NodeLayout;
+import nl.utwente.groove.gui.display.GraphViewModel;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
 import nl.utwente.groove.util.collect.NestedIterator;
@@ -88,7 +88,7 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
 
     /** Returns the size of the graph, as a sum of the number of nodes and edges. */
     public int size() {
-        return this.nodeJCellMap.size() + this.edgeJCellMap.size();
+        return getViewModel().size();
     }
 
     /**
@@ -125,7 +125,7 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
      * Returns the underlying Graph of this GraphModel.
      */
     public @Nullable G getGraph() {
-        return this.graph;
+        return getViewModel().getGraph();
     }
 
     /** Convenience method to retrieve the underlying graph as a non-{@code null} object. */
@@ -140,7 +140,7 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
      * This is retrieved from {@link GraphInfo#getLayoutMap(Graph)}.
      */
     public LayoutMap getLayoutMap() {
-        return this.layoutMap;
+        return getViewModel().getLayoutMap();
     }
 
     /**
@@ -150,8 +150,7 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
      * mapping from graph elements to {@link JCell}s.
      */
     void setGraph(G graph) {
-        this.graph = graph;
-        this.layoutMap = GraphInfo.getLayoutMap(graph);
+        getViewModel().setGraph(graph);
     }
 
     /**
@@ -209,22 +208,14 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
      * Prepare the object fields for loading a new graph.
      */
     protected void prepareLoad(G graph) {
-        this.graph = graph;
-        this.layoutMap = GraphInfo.getLayoutMap(graph);
-        if (this.layoutMap == null) {
-            this.layoutMap = graph.getInfo().getLayoutMap();
-        }
-        this.nodeJCellMap.clear();
-        this.edgeJCellMap.clear();
+        getViewModel().reset(graph);
     }
 
     /** Returns the set of {@link JCell}s associated with a given collection
      * of graph elements.
      */
     public Set<JCell<?>> getJCells(Collection<? extends Element> elements) {
-        var result = new HashSet<JCell<?>>();
-        elements.stream().map(this::getJCell).forEach(result::add);
-        return result;
+        return getViewModel().getJCells(elements);
     }
 
     /**
@@ -236,11 +227,7 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
      * @return the jcell associated with <tt>elem</tt>
      */
     public JCell<G> getJCell(Element elem) {
-        if (elem instanceof Node) {
-            return getJCellForNode((Node) elem);
-        } else {
-            return getJCellForEdge((Edge) elem);
-        }
+        return getViewModel().getJCell(elem);
     }
 
     /**
@@ -251,7 +238,7 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
      * @return the <tt>JNode</tt> or <tt>JEdge</tt> modelling <tt>edge</tt>
      */
     public JCell<G> getJCellForEdge(Edge edge) {
-        return this.edgeJCellMap.get(edge);
+        return getViewModel().getJCellForEdge(edge);
     }
 
     /**
@@ -260,25 +247,17 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
      * @return the JNode modelling node (if node is known)
      */
     public JVertex<G> getJCellForNode(Node node) {
-        return this.nodeJCellMap.get(node);
+        return getViewModel().getJCellForNode(node);
     }
 
     /** Returns the number of graph nodes currently represented in this {@link JModel}. */
     public int nodeCount() {
-        return this.nodeJCellMap.size();
+        return getViewModel().nodeCount();
     }
 
     /** Stores the layout from the JModel back into the graph. */
     public void synchroniseLayout(JCell<G> jCell) {
-        LayoutMap layoutMap = getLayoutMap();
-        assert layoutMap == GraphInfo.getLayoutMap(getGraph());
-        if (jCell instanceof JEdge) {
-            for (Edge edge : jCell.getEdges()) {
-                layoutMap.putEdge(edge, jCell.getVisuals().toEdgeLayout());
-            }
-        } else if (jCell instanceof JVertex) {
-            layoutMap.putNode(((JVertex<G>) jCell).getNode(), jCell.getVisuals().toNodeLayout());
-        }
+        getViewModel().synchroniseLayout(jCell);
     }
 
     /**
@@ -363,13 +342,13 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
 
     /**
      * Creates a j-cell corresponding to a given node in the graph. Adds the
-     * j-cell to {@link #addedJEdges}, and updates {@link #nodeJCellMap}.
+     * j-cell to {@link #addedJVertices}, and updates the element-to-cell map.
      */
     protected JVertex<G> addNode(Node node) {
         JVertex<G> jVertex = computeJVertex(node);
         // we add nodes in front of the list to get them in front of the display
         this.addedJVertices.add(jVertex);
-        JVertex<G> oldNode = this.nodeJCellMap.put(node, jVertex);
+        JVertex<G> oldNode = getViewModel().putNode(node, jVertex);
         assert oldNode == null;
         return jVertex;
     }
@@ -381,7 +360,7 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
      * be a new j-edge.
      */
     protected JCell<G> addEdge(Edge edge) {
-        JCell<G> result = this.edgeJCellMap.get(edge);
+        JCell<G> result = getViewModel().getJCellForEdge(edge);
         // check if edge was processed earlier
         JVertex<G> sourceJVertex = getJCellForNode(edge.source());
         assert sourceJVertex != null : "No vertex for source node of " + edge;
@@ -418,7 +397,7 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
             addFreshJEdge(sourceJVertex, jEdge);
             addFreshJEdge(targetJVertex, jEdge);
         }
-        this.edgeJCellMap.put(edge, result);
+        getViewModel().putEdge(edge, result);
         return result;
     }
 
@@ -573,23 +552,19 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
                 bounds.add(((JVertex<G>) cell).getVisuals().getNodePos());
             }
         }
-        return 25 + randomGenerator
-            .nextInt((this.nodeJCellMap.size() + this.edgeJCellMap.size()) * 5 + 1);
+        return 25 + randomGenerator.nextInt(getViewModel().size() * 5 + 1);
     }
 
     /** The JGraph to which this model belongs. */
     private final JGraph<G> jGraph;
-    /**
-     * The underlying Graph of this GraphModel.
-     * @invariant graph != null
-     */
-    private @Nullable G graph;
-    /**
-     * The layout map for the underlying graph. It maps {@link Element}s to
-     * {@link ElementLayout}s. This is set to an empty map if the graph is not a
-     * layed out graph.
-     */
-    private LayoutMap layoutMap;
+
+    /** Returns the library-independent content model of the graph view. */
+    public GraphViewModel<G> getViewModel() {
+        return this.viewModel;
+    }
+
+    /** The library-independent content model of the graph view. */
+    private final GraphViewModel<G> viewModel = new GraphViewModel<>();
 
     /** Changes the loading status of the JGraph. */
     private void setLoading(boolean loading) {
@@ -603,14 +578,6 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
 
     /** Flag that indicates we're in the process of loading a graph. */
     private boolean loading;
-    /**
-     * Map from graph nodes to JGraph cells.
-     */
-    protected Map<Node,JVertex<G>> nodeJCellMap = new HashMap<>();
-    /**
-     * Map from graph edges to JGraph cells.
-     */
-    protected Map<Edge,JCell<G>> edgeJCellMap = new HashMap<>();
 
     /**
      * Mapping from jVertices to incident jEdges.

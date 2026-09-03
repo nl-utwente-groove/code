@@ -52,8 +52,22 @@ sliced:
    *state* (`setMode`/`getMode`/`getDefaultMode` and the mode property events) stays
    on the component: it is interaction state read continuously by the UI delegate,
    and Swing property-change events belong to the component. **Done.**
-3. **Slice 3: `JModel` policy.** Edge-merging policy, layout persistence, the color
-   map — the model-side counterpart, analysed separately when slice 2 is done.
+3. **Slice 3: `JModel` content model** (first half done). Analysis showed the
+   insertion machinery (`addNode`/`addEdge`/`computeJ*`/`prepareInsert`/`doInsert`)
+   is heavily entangled with subclass behavior — `LTSJModel` drives it incrementally
+   per GTS event with filtering overrides, `AspectJModel.syncGraph` rewrites the
+   element-to-cell maps wholesale — and with the port model (the one
+   `ConnectionSet.connect` call). So slice 3 covers only the cleanly separable
+   content state: the new `gui.display.GraphViewModel<G>` holds the displayed
+   graph, its layout map, and the element-to-cell index, plus layout
+   synchronisation; `JModel` owns one and keeps delegating accessors (many
+   external callers), `AspectJModel.syncGraph` uses a bulk `setJCellMaps`, and
+   `LTSJModel` iterates `getNodes()`. The insertion algorithm plus its
+   `ConnectionSet` use moves in a later step, naturally combined with de-porting
+   the cell interfaces (shared work: pending edge connections become neutral
+   (edge, source, target) records instead of port pairs). Merging predicates,
+   `getColorMap`/`setLayoutable`/`refreshVisuals` (which iterate the backend
+   z-order roots) stay on `JModel` until then.
 
 ## Consequences accepted
 
