@@ -47,9 +47,10 @@ import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Exporters;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.io.external.format.AutPorter;
-import nl.utwente.groove.io.external.format.FsmExporter;
 import nl.utwente.groove.io.external.format.LTS2ControlExporter;
+import nl.utwente.groove.io.external.format.ListenerExporter;
 import nl.utwente.groove.io.graph.AutIO;
+import nl.utwente.groove.io.graph.GxlIO;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.util.AIGenerated;
@@ -77,7 +78,12 @@ public class ExportTest {
     @Test
     public void testRegistry() {
         assertSame(AutPorter.instance(), Exporters.getExporter(FileType.AUT));
-        assertSame(FsmExporter.getInstance(), Exporters.getExporter(FileType.FSM));
+        assertTrue(Exporters.getExporter(FileType.FSM) instanceof ListenerExporter);
+        assertTrue(Exporters.getExporter(FileType.DOT) instanceof ListenerExporter);
+        // a graph outside the grammar is exported to .gxl by the listener exporter,
+        // not by the native resource porter, which handles the grammar extensions
+        assertTrue(Exporters
+            .getExporter(FileType.GXL, Exportable.graph(createGraph())) instanceof ListenerExporter);
         assertEquals(null, Exporters.getExporter(null));
         GTS gts = explore();
         assertSame(LTS2ControlExporter.instance(),
@@ -137,7 +143,9 @@ public class ExportTest {
     public void testFsmExport(@TempDir Path tmp) throws PortException, IOException {
         PlainGraph graph = createGraph();
         File file = tmp.resolve("sample.fsm").toFile();
-        FsmExporter.getInstance().doExport(Exportable.graph(graph), file, FileType.FSM);
+        var exporter = Exporters.getExporter(FileType.FSM);
+        assertNotNull(exporter);
+        exporter.doExport(Exportable.graph(graph), file, FileType.FSM);
         List<String> lines = Files.readAllLines(file.toPath());
         assertEquals("NodeNumber(0)", lines.get(0));
         assertEquals("---", lines.get(1));
@@ -152,8 +160,22 @@ public class ExportTest {
         var controlModel = loadGrammar().getResource(ResourceKind.CONTROL, QualName.name("control"));
         assertNotNull(controlModel);
         var noGraph = Exportable.resource(controlModel);
-        assertThrows(PortException.class,
-                     () -> FsmExporter.getInstance().doExport(noGraph, file, FileType.FSM));
+        assertThrows(PortException.class, () -> exporter.doExport(noGraph, file, FileType.FSM));
+    }
+
+    /** A graph exported to {@code .gxl} through the registry loads back with the
+     * same node count and edge label multiset. */
+    @Test
+    public void testGxlRoundTrip(@TempDir Path tmp) throws PortException, IOException {
+        PlainGraph graph = createGraph();
+        File file = tmp.resolve("sample.gxl").toFile();
+        var exportable = Exportable.graph(graph);
+        var exporter = Exporters.getExporter(FileType.GXL, exportable);
+        assertNotNull(exporter);
+        exporter.doExport(exportable, file, FileType.GXL);
+        var clone = GxlIO.instance().loadGraph(file);
+        assertEquals(graph.nodeCount(), clone.nodeCount());
+        assertEquals(labelBag(graph), labelBag(clone));
     }
 
     /** An explored GTS exported to a control program yields a program that,
