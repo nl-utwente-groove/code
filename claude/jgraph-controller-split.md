@@ -88,6 +88,28 @@ sliced:
    `GraphViewController` — making the whole looks layer a pure controller client,
    per the general principle.
 
+## Completion (2026-09-05)
+
+Beyond the slices above, phase 1a concluded with: the LTS display semantics
+(active state/transition, filter/refreshFiltering, traces, result queries,
+isComplete, scrollToActive, getTransitionClass) moving from `LTSJGraph` into
+`LTSGraphViewController` (branch lts-view-semantics; `JModel.addElements` widened
+public for the controller's incremental `addToModel`; `LTSJGraph.setModel` guards
+the construction window in which the controller does not yet exist, because the
+`org.jgraph.JGraph` constructor calls `setModel`); pure controller clients
+(`SetLayoutMenu`, `ScrollToActiveAction`) taking the controller directly (branch
+controller-clients); and the capstone rename+move (branch viewcell-rename): the
+cell interfaces became `ViewCell`/`ViewVertex`/`ViewEdge`/`AspectViewCell`/
+`LTSViewCell` (+`AspectViewCellErrors`) in the new exported package
+`nl.utwente.groove.gui.view`, joined by the controller hierarchy and
+`GraphViewModel`. A review finding then moved the error API from `ViewCell` to
+`AspectViewCell` (branch cell-errors): the base-interface `getErrors()` had hidden
+an unchecked `(AspectViewCell) this` cast in `AJCell`; since no class can be a
+supertype of exactly {AspectJVertex, AspectJEdge} (the hierarchy splits vertex/edge
+before role — the original reason the machinery sat in `AJCell`), the resolution is
+interface default methods on `AspectViewCell` plus an eager final field per class.
+State of work, residues and next steps: see `claude/yfiles-migration.md`.
+
 ## Consequences accepted
 
 - `getRefreshListener` (and its overrides) widen from protected to public: the
