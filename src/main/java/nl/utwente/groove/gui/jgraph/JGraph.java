@@ -99,7 +99,7 @@ import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.gui.action.ActionStore;
 import nl.utwente.groove.gui.action.ExportAction;
 import nl.utwente.groove.gui.action.LayoutAction;
-import nl.utwente.groove.gui.display.JGraphController;
+import nl.utwente.groove.gui.display.GraphViewController;
 import nl.utwente.groove.gui.layout.Layouter;
 import nl.utwente.groove.gui.layout.SpringLayouter;
 import nl.utwente.groove.gui.look.MultiLabel;
@@ -125,7 +125,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
      */
     protected JGraph(Simulator simulator) {
         super((JModel<G>) null);
-        this.controller = new JGraphController<>(this, simulator);
+        this.controller = new GraphViewController<>(this, simulator);
         // make sure the layout cache has been created
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
         setMarqueeHandler(createMarqueeHandler());
@@ -166,12 +166,12 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
     }
 
     /** Returns the display controller associated with this {@link JGraph}. */
-    public JGraphController<G> getController() {
+    public GraphViewController<G> getController() {
         return this.controller;
     }
 
     /** The display controller associated with this {@link JGraph}. */
-    private final JGraphController<G> controller;
+    private final GraphViewController<G> controller;
 
     /** Returns the graph role of the graphs expected for this JGraph. */
     public GraphRole getGraphRole() {

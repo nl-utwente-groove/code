@@ -55,25 +55,25 @@ import nl.utwente.groove.util.Pair;
  * @version $Revision$
  */
 @NonNullByDefault
-public class JGraphController<G extends Graph> {
+public class GraphViewController<G extends Graph> {
     /**
      * Constructs a controller for a given {@link JGraph}.
-     * @param jGraph the graph component that this controller belongs to
+     * @param graphView the graph-view component that this controller belongs to
      * @param simulator simulator to which the display belongs; may be {@code null}
      */
-    public JGraphController(JGraph<G> jGraph, @Nullable Simulator simulator) {
-        this.jGraph = jGraph;
+    public GraphViewController(JGraph<G> graphView, @Nullable Simulator simulator) {
+        this.graphView = graphView;
         this.simulator = simulator;
         this.options = Options.instance();
     }
 
-    /** Returns the graph component that this controller belongs to. */
-    public JGraph<G> getJGraph() {
-        return this.jGraph;
+    /** Returns the graph-view component that this controller belongs to. */
+    public JGraph<G> getGraphView() {
+        return this.graphView;
     }
 
-    /** The graph component that this controller belongs to. */
-    private final JGraph<G> jGraph;
+    /** The graph-view component that this controller belongs to. */
+    private final JGraph<G> graphView;
 
     /** Returns the (possibly {@code null}) simulator associated with the display. */
     private @Nullable Simulator getSimulator() {
@@ -137,7 +137,7 @@ public class JGraphController<G extends Graph> {
         if (optionItem == null) {
             throw Exceptions.illegalArg("Unknown option: %s", option);
         }
-        RefreshListener listener = getJGraph().getRefreshListener(option);
+        RefreshListener listener = getGraphView().getRefreshListener(option);
         if (listener != null) {
             optionItem.addItemListener(listener);
             optionItem.addPropertyChangeListener(listener);
@@ -172,7 +172,7 @@ public class JGraphController<G extends Graph> {
     public Layouter getLayouter() {
         var result = this.layouter;
         if (result == null) {
-            result = getJGraph().getDefaultLayouter().newInstance(getJGraph());
+            result = getGraphView().getDefaultLayouter().newInstance(getGraphView());
             assert result != null; // newInstance never returns null
             this.layouter = result;
         }
@@ -187,7 +187,7 @@ public class JGraphController<G extends Graph> {
      * @see #getLayouter()
      */
     public void setLayouter(Layouter prototypeLayouter) {
-        this.layouter = prototypeLayouter.newInstance(getJGraph());
+        this.layouter = prototypeLayouter.newInstance(getGraphView());
     }
 
     /** The currently selected prototype layouter. */
@@ -203,7 +203,7 @@ public class JGraphController<G extends Graph> {
      * @return the layouter that has been used
      */
     public Layouter doLayout(boolean complete) {
-        var model = getJGraph().getModel();
+        var model = getGraphView().getModel();
         assert model != null;
         Layouter result;
         if (complete) {
@@ -220,7 +220,7 @@ public class JGraphController<G extends Graph> {
     public ExportAction getExportAction() {
         var result = this.exportAction;
         if (result == null) {
-            this.exportAction = result = new ExportAction(getJGraph());
+            this.exportAction = result = new ExportAction(getGraphView());
         }
         result.refresh();
         return result;
@@ -233,8 +233,8 @@ public class JGraphController<G extends Graph> {
     public LayoutAction getLayoutAction() {
         var result = this.layoutAction;
         if (result == null) {
-            this.layoutAction = result = new LayoutAction(getJGraph());
-            getJGraph().addAccelerator(result);
+            this.layoutAction = result = new LayoutAction(getGraphView());
+            getGraphView().addAccelerator(result);
         }
         return result;
     }
@@ -283,9 +283,9 @@ public class JGraphController<G extends Graph> {
      */
     public void setToolTipEnabled(boolean enabled) {
         if (enabled) {
-            ToolTipManager.sharedInstance().registerComponent(getJGraph());
+            ToolTipManager.sharedInstance().registerComponent(getGraphView());
         } else {
-            ToolTipManager.sharedInstance().unregisterComponent(getJGraph());
+            ToolTipManager.sharedInstance().unregisterComponent(getGraphView());
         }
         this.toolTipEnabled = enabled;
     }

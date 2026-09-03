@@ -10,8 +10,12 @@ backend canvas.
 
 ## Shape of the extraction
 
-New class `nl.utwente.groove.gui.display.JGraphController<G>`, created eagerly by the
-`JGraph` constructor, 1:1 with the component. In phase 1 the *component owns the
+New class `nl.utwente.groove.gui.display.GraphViewController<G>`, created eagerly by
+the `JGraph` constructor, 1:1 with the component. **Naming principle** (Arend,
+2026-09-03): naming and comments outside the `gui.jgraph` package must be free of
+JGraph terminology — neutral vocabulary ("graph view", "graph-view component")
+describes the concepts; direct *type* references to `JGraph` remain until the facade
+replaces the type. This principle applies to all future extractions. In phase 1 the *component owns the
 controller* and keeps thin delegating stubs, so the ~100 external call sites do not
 churn; phase 2 inverts the ownership (panels construct a controller which owns a
 canvas) and retargets callers. The controller talks back to the component only through
@@ -37,7 +41,7 @@ sliced:
    outer instance, which does not survive the move; the four anonymous subclass uses
    pass `this`).
 2. **Slice 2: controller hierarchy + menus + mode machinery.** Introduces
-   `AspectJGraphController` etc., moves `createPopupMenu`/`createDisplayMenu`/… and
+   per-role controller subclasses (e.g. `AspectGraphViewController`), moves `createPopupMenu`/`createDisplayMenu`/… and
    the mode action/button machinery, plus `AspectJGraph`'s grammar field and cell-edit
    action caches (left behind by the jgraph-actions branch).
 3. **Slice 3: `JModel` policy.** Edge-merging policy, layout persistence, the color
