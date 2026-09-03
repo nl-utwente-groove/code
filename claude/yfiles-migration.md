@@ -6,9 +6,11 @@ kept self-contained: sessions on other machines have no access to session memory
 everything needed to continue lives here or in `claude/jgraph-controller-split.md`
 (the slice-by-slice record of the decoupling refactor).
 
-**Status (2026-09-05): phase 1a (in-place decoupling) is COMPLETE.** Phase 0 (the
-yFiles rendering spike) is next, blocked only on a local path to the unpacked
-licensed yFiles distribution and its license file.
+**Status (2026-09-03): phase 1a (in-place decoupling) is COMPLETE; phase 0 (the
+yFiles rendering spike) is DONE**, findings in `claude/yfiles-spike-findings.md`
+(fidelity bar met, yFiles layouts beat Spring/Forest, 8240-state LTS lays out in
+16 s organic / 44 s hierarchic). Awaiting Arend's go/no-go and interaction check;
+then phase 1b (facade definition).
 
 ## Goal and motivation
 
@@ -195,9 +197,12 @@ its controller); phase 2 inverts it.
 
 ## Immediate next steps
 
-1. Arend: unpack the licensed yFiles delivery (not the evaluation bundle) to a
-   local path outside any repository; place the runtime license file; supply both
-   paths. Also still open: confirm delivered version/generation and Subscription
-   status; the Academic Project License upgrade question to yWorks.
-2. Claude: phase-0 spike per the plan above, observing the LLM ground rules.
-3. After the spike: facade definition + architecture test, then phase 2.
+1. Arend: judge the spike output (`C:\Groove\yfiles-spike\out`, HTML indexes) and the
+   interactive LTS viewer (`LtsScale ... -show`); decide go/no-go. Still open: the
+   Subscription status and the Academic Project License upgrade question to yWorks.
+   The delivered library is yFiles for Java (Swing) 3.6.0.1 (the plan's "4.0" was
+   wrong); the license file at `C:\Groove\yfiles` is auto-loaded from the classpath
+   root and shows no evaluation watermark.
+2. After go: facade definition + architecture test (phase 1b), taking the three
+   view-computed items from the findings note (node sizing, loop routing, edge-label
+   anchor convention) as first-class facade responsibilities; then phase 2.
