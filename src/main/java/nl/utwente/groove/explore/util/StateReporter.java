@@ -19,8 +19,6 @@ package nl.utwente.groove.explore.util;
 import java.io.File;
 import java.io.IOException;
 
-import nl.utwente.groove.grammar.aspect.GraphConverter;
-import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Exporters;
 import nl.utwente.groove.io.external.PortException;
@@ -70,22 +68,22 @@ public class StateReporter extends AExplorationReporter {
     public static File exportState(GraphState state, String pattern) throws IOException {
         String stateFilename = pattern.replace(PLACEHOLDER, "" + state.getNumber());
         File stateFile = new File(stateFilename);
+        // the default format is the native state format
+        if (!FileType.hasAnyExtension(stateFile)) {
+            stateFile = FileType.STATE.addExtension(stateFile);
+        }
         var fileType = FileType.getType(stateFile);
         var exportable = Exportable.graph(state.getGraph());
         var exporter = Exporters.getExporter(fileType, exportable);
-        if (exporter != null) {
-            // an exporter is only found for a non-null file type
-            assert fileType != null;
-            try {
-                exporter.doExport(exportable, stateFile, fileType);
-            } catch (PortException e1) {
-                throw new IOException(e1);
-            }
-        } else {
-            if (!FileType.hasAnyExtension(stateFile)) {
-                stateFile = FileType.STATE.addExtension(stateFile);
-            }
-            Groove.saveGraph(GraphConverter.toAspect(state.getGraph()), stateFile);
+        if (exporter == null) {
+            throw new IOException("No exporter found for state file '%s'".formatted(stateFile));
+        }
+        // an exporter is only found for a non-null file type
+        assert fileType != null;
+        try {
+            exporter.doExport(exportable, stateFile, fileType);
+        } catch (PortException e1) {
+            throw new IOException(e1);
         }
         return stateFile;
     }
