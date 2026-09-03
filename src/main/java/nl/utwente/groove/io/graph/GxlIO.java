@@ -26,9 +26,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -64,7 +61,7 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Class to convert graphs to GXL format and back.
  * Loading is implemented using JAXB data binding; saving streams the
- * document through a {@link GxlWriter}, without building it in memory.
+ * document through a {@link GxlListener}, without building it in memory.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -97,13 +94,11 @@ public class GxlIO extends GraphIO<AttrGraph> {
     }
 
     /**
-     * Saves a graph to a file, streaming the GXL document through a {@link GxlWriter}.
+     * Saves a graph to a file, streaming the GXL document through a {@link GxlListener}.
      */
     @Override
     protected void doSaveGraph(Graph graph, File file) throws IOException {
-        try (Writer out = Files.newBufferedWriter(file.toPath(), StandardCharsets.UTF_8)) {
-            GxlWriter.write(graph, out);
-        }
+        new GxlListener().write(graph, file);
     }
 
     @Override
