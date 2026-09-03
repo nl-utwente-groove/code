@@ -652,7 +652,7 @@ public class Simulator implements SimulatorListener {
         if (panel != null) {
             JGraph<?> jGraph = panel.getJGraph();
             if (jGraph instanceof AspectJGraph) {
-                menu.addSubmenu(((AspectJGraph) jGraph).createEditMenu(null));
+                menu.addSubmenu(((AspectJGraph) jGraph).getController().createEditMenu(null));
             }
         }
 
@@ -688,8 +688,8 @@ public class Simulator implements SimulatorListener {
         JGraphPanel<?> panel = getDisplaysPanel().getGraphPanel();
         if (panel != null) {
             JGraph<?> jGraph = panel.getJGraph();
-            menu.add(jGraph.createShowHideMenu());
-            menu.add(jGraph.createZoomMenu());
+            menu.add(jGraph.getController().createShowHideMenu());
+            menu.add(jGraph.getController().createZoomMenu());
         }
         menu.addSubmenu(createOptionsMenu());
     }

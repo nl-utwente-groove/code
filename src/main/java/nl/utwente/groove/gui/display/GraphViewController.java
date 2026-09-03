@@ -16,10 +16,19 @@
  */
 package nl.utwente.groove.gui.display;
 
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ButtonGroup;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JToggleButton;
 import javax.swing.ToolTipManager;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -35,7 +44,12 @@ import nl.utwente.groove.gui.action.ExportAction;
 import nl.utwente.groove.gui.action.LayoutAction;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.jgraph.JGraph.RefreshListener;
+import nl.utwente.groove.gui.jgraph.JGraphMode;
 import nl.utwente.groove.gui.layout.Layouter;
+import nl.utwente.groove.gui.menu.MyJMenu;
+import nl.utwente.groove.gui.menu.SetLayoutMenu;
+import nl.utwente.groove.gui.menu.ShowHideMenu;
+import nl.utwente.groove.gui.menu.ZoomMenu;
 import nl.utwente.groove.gui.tree.LabelTree;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Pair;
@@ -76,7 +90,7 @@ public class GraphViewController<G extends Graph> {
     private final JGraph<G> graphView;
 
     /** Returns the (possibly {@code null}) simulator associated with the display. */
-    private @Nullable Simulator getSimulator() {
+    protected @Nullable Simulator getSimulator() {
         return this.simulator;
     }
 
@@ -295,4 +309,179 @@ public class GraphViewController<G extends Graph> {
      * with the {@link ToolTipManager}.
      */
     private boolean toolTipEnabled;
+
+    /**
+     * Lazily creates and returns the popup menu for the graph view, activated
+     * for a given point.
+     * @param atPoint the point at which the menu is to be activated
+     */
+    public JMenu createPopupMenu(@Nullable Point atPoint) {
+        MyJMenu result = new MyJMenu("Popup");
+        result.addSubmenu(createExportMenu());
+        result.addSubmenu(createDisplayMenu());
+        result.addSubmenu(getLayoutMenu());
+        return result;
+    }
+
+    /** Returns a menu consisting of the export action of the graph view. */
+    public JMenu createExportMenu() {
+        JMenu result = new JMenu("Export");
+        result.add(getExportAction());
+        return result;
+    }
+
+    /**
+     * Returns a menu consisting of all the display menu items of the graph view.
+     */
+    public JMenu createDisplayMenu() {
+        JMenu result = new JMenu("Display");
+        Object[] cells = getGraphView().getSelectionCells();
+        boolean itemAdded = false;
+        var actions = getActions();
+        if (cells != null && cells.length > 0 && actions != null) {
+            result.add(actions.getFindReplaceAction());
+            result.add(actions.getSelectColorAction());
+            itemAdded = true;
+        }
+        var labelTree = getLabelTree();
+        if (labelTree != null && cells != null && cells.length > 0) {
+            Action filterAction = labelTree.createFilterAction(cells);
+            if (filterAction != null) {
+                result.add(filterAction);
+                itemAdded = true;
+            }
+        }
+        if (itemAdded) {
+            result.addSeparator();
+        }
+        result.add(getModeAction(JGraphMode.SELECT_MODE));
+        result.add(getModeAction(JGraphMode.PAN_MODE));
+        result.add(createShowHideMenu());
+        result.add(createZoomMenu());
+        return result;
+    }
+
+    /**
+     * Returns a menu consisting of the menu items from the layouter
+     * setting menu of the graph view.
+     */
+    public SetLayoutMenu getSetLayoutMenu() {
+        var result = this.setLayoutMenu;
+        if (result == null) {
+            this.setLayoutMenu = result = createSetLayoutMenu();
+        }
+        return result;
+    }
+
+    /** Creates and returns a fresh layout setting menu for the graph view. */
+    public SetLayoutMenu createSetLayoutMenu() {
+        return new SetLayoutMenu(getGraphView());
+    }
+
+    /**
+     * A standard layouter setting menu for the graph view.
+     */
+    private @Nullable SetLayoutMenu setLayoutMenu;
+
+    /**
+     * Returns a layout menu for the graph view.
+     * The items added are the current layout action and a layouter setting
+     * sub-menu.
+     */
+    public JMenu getLayoutMenu() {
+        JMenu result = new JMenu("Layout");
+        result.add(getSetLayoutMenu().getCurrentLayoutItem());
+        result.add(getSetLayoutMenu());
+        result.add(getShowLayoutDialogAction());
+        return result;
+    }
+
+    /**
+     * Creates and returns a fresh zoom menu for the graph view.
+     */
+    public ZoomMenu createZoomMenu() {
+        return new ZoomMenu(getGraphView());
+    }
+
+    /**
+     * Creates and returns a fresh show/hide menu for the graph view.
+     */
+    public ShowHideMenu<G> createShowHideMenu() {
+        return new ShowHideMenu<>(getGraphView());
+    }
+
+    private Action getShowLayoutDialogAction() {
+        var actions = getActions();
+        assert actions != null; // the layout menu is only built with a simulator present
+        return actions.getLayoutDialogAction();
+    }
+
+    /**
+     * Lazily creates and returns an action setting the mode of the graph view.
+     * The actual setting is done by a call to {@link JGraph#setMode}.
+     */
+    public Action getModeAction(JGraphMode mode) {
+        var modeActionMap = this.modeActionMap;
+        if (modeActionMap == null) {
+            this.modeActionMap = modeActionMap = new EnumMap<>(JGraphMode.class);
+            for (final JGraphMode any : JGraphMode.values()) {
+                Action action = new AbstractAction(any.getName(), any.getIcon()) {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        getGraphView().setMode(any);
+                    }
+                };
+
+                if (any.getAcceleratorKey() != null) {
+                    action.putValue(Action.ACCELERATOR_KEY, any.getAcceleratorKey());
+                    getGraphView().addAccelerator(action);
+                }
+                modeActionMap.put(any, action);
+            }
+        }
+        var result = modeActionMap.get(mode);
+        assert result != null; // the action map is filled for all modes
+        return result;
+    }
+
+    private @Nullable Map<JGraphMode,Action> modeActionMap;
+
+    /**
+     * Lazily creates and returns a button wrapping
+     * {@link #getModeAction(JGraphMode)}.
+     */
+    public JToggleButton getModeButton(JGraphMode mode) {
+        var result = getModeButtonMap().get(mode);
+        assert result != null; // the button map is filled for all modes
+        return result;
+    }
+
+    private Map<JGraphMode,JToggleButton> getModeButtonMap() {
+        var result = this.modeButtonMap;
+        if (result == null) {
+            this.modeButtonMap = result = new EnumMap<>(JGraphMode.class);
+            ButtonGroup modeButtonGroup = new ButtonGroup();
+            for (JGraphMode any : JGraphMode.values()) {
+                JToggleButton button = new JToggleButton(getModeAction(any));
+                Options.setLAF(button);
+                button.setToolTipText(any.getName());
+                button.setEnabled(getGraphView().isEnabled());
+                result.put(any, button);
+                modeButtonGroup.add(button);
+            }
+            var editButton = result.get(JGraphMode.EDIT_MODE);
+            assert editButton != null; // the button map is filled for all modes
+            editButton.setSelected(true);
+        }
+        return result;
+    }
+
+    private @Nullable Map<JGraphMode,JToggleButton> modeButtonMap;
+
+    /** Enables or disables all mode buttons of the graph view. */
+    public void setModeButtonsEnabled(boolean enabled) {
+        for (JToggleButton button : getModeButtonMap().values()) {
+            button.setEnabled(enabled);
+        }
+    }
 }

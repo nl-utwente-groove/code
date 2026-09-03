@@ -162,8 +162,8 @@ final public class GraphEditorTab extends ResourceTab
     protected JToolBar createToolBar() {
         JToolBar result = super.createToolBar();
         result.addSeparator();
-        result.add(getJGraph().getModeButton(EDIT_MODE));
-        result.add(getJGraph().getModeButton(PREVIEW_MODE));
+        result.add(getJGraph().getController().getModeButton(EDIT_MODE));
+        result.add(getJGraph().getController().getModeButton(PREVIEW_MODE));
         result.addSeparator();
         result.add(getUndoAction());
         result.add(getRedoAction());

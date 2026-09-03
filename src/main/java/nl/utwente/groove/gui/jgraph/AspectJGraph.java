@@ -21,20 +21,15 @@ import static nl.utwente.groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import static nl.utwente.groove.gui.jgraph.JGraphMode.EDIT_MODE;
 import static nl.utwente.groove.gui.jgraph.JGraphMode.PREVIEW_MODE;
 
-import java.awt.Point;
 import java.awt.event.ItemEvent;
 import java.awt.geom.Point2D;
 import java.beans.PropertyChangeEvent;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 import javax.accessibility.AccessibleState;
-import javax.swing.Action;
-import javax.swing.JMenu;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.jgraph.event.GraphModelEvent;
@@ -48,25 +43,16 @@ import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.model.GrammarModel;
-import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
-import nl.utwente.groove.gui.action.AddPointAction;
-import nl.utwente.groove.gui.action.EditLabelAction;
-import nl.utwente.groove.gui.action.JCellEditAction;
-import nl.utwente.groove.gui.action.RemovePointAction;
-import nl.utwente.groove.gui.action.ResetLabelPositionAction;
-import nl.utwente.groove.gui.action.SetLineStyleAction;
+import nl.utwente.groove.gui.display.AspectGraphViewController;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.look.VisualKey;
-import nl.utwente.groove.gui.menu.MyJMenu;
-import nl.utwente.groove.gui.menu.SetLineStyleMenu;
 import nl.utwente.groove.gui.tree.RuleLevelTree;
-import nl.utwente.groove.util.line.LineStyle;
 
 /**
  * Extension of {@link JGraph} for {@link AspectGraph}s.
@@ -135,10 +121,21 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
         return (AspectJModel) super.getNonNullModel();
     }
 
+    /* Specialises the return type. */
+    @Override
+    public AspectGraphViewController getController() {
+        return (AspectGraphViewController) super.getController();
+    }
+
+    @Override
+    protected AspectGraphViewController createController(Simulator simulator) {
+        return new AspectGraphViewController(this, simulator);
+    }
+
     @Override
     public AspectJModel newModel() {
         AspectJModel result = (AspectJModel) super.newModel();
-        GrammarModel grammar = getGrammar();
+        GrammarModel grammar = getController().getGrammar();
         if (grammar == null) {
             assert getSimulatorModel() != null : "Can't create AspectJGraphs without grammar model";
             grammar = getSimulatorModel().getGrammar();
@@ -226,62 +223,6 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
 
     /** The role for which this {@link JGraph} will display graphs. */
     private final GraphRole graphRole;
-
-    @Override
-    public JMenu createPopupMenu(Point atPoint) {
-        MyJMenu result = new MyJMenu("Popup");
-        switch (getGraphRole()) {
-        case HOST:
-            result.add(getActions().getApplyMatchAction());
-            result.addSeparator();
-            break;
-        default:
-            // do nothing
-        }
-        Action editAction;
-        if (isForState()) {
-            editAction = getActions().getEditStateAction();
-        } else {
-            editAction = getActions().getEditAction(ResourceKind.toResource(getGraphRole()));
-        }
-        result.add(editAction);
-        result.addSubmenu(createEditMenu(atPoint));
-        result.addSubmenu(super.createPopupMenu(atPoint));
-        return result;
-    }
-
-    @Override
-    public JMenu createExportMenu() {
-        // add a save graph action as the first action
-        MyJMenu result = new MyJMenu();
-        if (getActions() != null) {
-            if (isForState()) {
-                result.add(getActions().getSaveStateAction());
-            } else {
-                ResourceKind resource = ResourceKind.toResource(getGraphRole());
-                result.add(getActions().getSaveAction(resource));
-                result.add(getActions().getSaveAsAction(resource));
-            }
-        }
-        result.addMenuItems(super.createExportMenu());
-        return result;
-    }
-
-    /**
-     * Returns a menu containing all known editing actions.
-     * @param atPoint point at which the popup menu will appear
-     */
-    public JMenu createEditMenu(Point atPoint) {
-        JMenu result = new JMenu("Edit");
-        if (hasActiveEditor()) {
-            result.add(getEditLabelAction());
-            result.add(getAddPointAction(atPoint));
-            result.add(getRemovePointAction(atPoint));
-            result.add(getResetLabelPositionAction());
-            result.add(createLineStyleMenu());
-        }
-        return result;
-    }
 
     @Override
     public void setEditable(boolean editable) {
@@ -408,111 +349,6 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
      * label
      */
     private final boolean startEditingNewEdge = true;
-    /** Map from line style names to corresponding actions. */
-    private final Map<LineStyle,JCellEditAction> setLineStyleActionMap
-        = new EnumMap<>(LineStyle.class);
-
-    /** Returns the grammar that has manually been set for this JGraph. */
-    public GrammarModel getGrammar() {
-        return this.grammar;
-    }
-
-    /** Manually sets a new grammar in this JGraph.
-     * This should only be done if there is no underlying simulator.
-     * @param grammar the grammar to be used.
-     */
-    public void setGrammar(GrammarModel grammar) {
-        assert getSimulatorModel() == null;
-        this.grammar = grammar;
-    }
-
-    private GrammarModel grammar;
-
-    /**
-     * Initialises and returns an action to add a point to the currently selected j-edge.
-     */
-    public AddPointAction getAddPointAction(Point atPoint) {
-        if (this.addPointAction == null) {
-            this.addPointAction = new AddPointAction(this);
-            addAccelerator(this.addPointAction);
-        }
-        this.addPointAction.setLocation(atPoint);
-        return this.addPointAction;
-    }
-
-    /** The permanent AddPointAction associated with this j-graph. */
-    private AddPointAction addPointAction;
-
-    /**
-     * @return an action to edit the currently selected j-cell label.
-     */
-    public JCellEditAction getEditLabelAction() {
-        if (this.editLabelAction == null) {
-            this.editLabelAction = new EditLabelAction(this);
-            addAccelerator(this.editLabelAction);
-        }
-        return this.editLabelAction;
-    }
-
-    /**
-     * The permanent EditLabelAction associated with this j-graph.
-     */
-    private EditLabelAction editLabelAction;
-
-    /**
-     * Initialises and returns an action to remove a point from the currently selected j-edge.
-     */
-    public RemovePointAction getRemovePointAction(Point atPoint) {
-        if (this.removePointAction == null) {
-            this.removePointAction = new RemovePointAction(this);
-            addAccelerator(this.removePointAction);
-        }
-        this.removePointAction.setLocation(atPoint);
-        return this.removePointAction;
-    }
-
-    /**
-     * The permanent RemovePointAction associated with this j-graph.
-     */
-    private RemovePointAction removePointAction;
-
-    /**
-     * @return an action to reset the label position of the currently selected
-     *         j-edge.
-     */
-    public JCellEditAction getResetLabelPositionAction() {
-        if (this.resetLabelPositionAction == null) {
-            this.resetLabelPositionAction = new ResetLabelPositionAction(this);
-        }
-        return this.resetLabelPositionAction;
-    }
-
-    /**
-     * The permanent ResetLabelPositionAction associated with this j-graph.
-     */
-    private ResetLabelPositionAction resetLabelPositionAction;
-
-    /**
-     * @param lineStyle the lineStyle for which to get the set-action
-     * @return an action to set the line style of the currently selected j-edge.
-     */
-    public JCellEditAction getSetLineStyleAction(LineStyle lineStyle) {
-        JCellEditAction result = this.setLineStyleActionMap.get(lineStyle);
-        if (result == null) {
-            this.setLineStyleActionMap
-                .put(lineStyle, result = new SetLineStyleAction(this, lineStyle));
-            addAccelerator(result);
-        }
-        return result;
-    }
-
-    /**
-     * Creates and returns a fresh line style menu for this j-graph.
-     */
-    public JMenu createLineStyleMenu() {
-        return new SetLineStyleMenu(this);
-    }
-
     private GraphModelListener getRefreshGraphListener() {
         if (this.refreshListener == null) {
             this.refreshListener = new RefreshGraphListener();

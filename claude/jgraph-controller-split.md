@@ -41,9 +41,17 @@ sliced:
    outer instance, which does not survive the move; the four anonymous subclass uses
    pass `this`).
 2. **Slice 2: controller hierarchy + menus + mode machinery.** Introduces
-   per-role controller subclasses (e.g. `AspectGraphViewController`), moves `createPopupMenu`/`createDisplayMenu`/… and
-   the mode action/button machinery, plus `AspectJGraph`'s grammar field and cell-edit
-   action caches (left behind by the jgraph-actions branch).
+   the per-role controller subclasses `AspectGraphViewController` and
+   `LTSGraphViewController` (created through the polymorphic factory
+   `JGraph.createController`, with covariant `getController` overrides), and moves all
+   menu construction, the mode action/button machinery, `AspectJGraph`'s grammar field
+   and cell-edit action caches, and `LTSJGraph`'s explore/goto/checker menus and
+   scroll-to-active action. Unlike slice 1, the moved methods left no delegating
+   stubs: their external callers were few (~15 lines across 9 files) and were
+   retargeted to `getController()`, genuinely shrinking the component API. Mode
+   *state* (`setMode`/`getMode`/`getDefaultMode` and the mode property events) stays
+   on the component: it is interaction state read continuously by the UI delegate,
+   and Swing property-change events belong to the component. **Done.**
 3. **Slice 3: `JModel` policy.** Edge-merging policy, layout persistence, the color
    map — the model-side counterpart, analysed separately when slice 2 is done.
 

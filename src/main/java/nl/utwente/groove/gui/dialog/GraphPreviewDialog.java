@@ -126,7 +126,7 @@ public class GraphPreviewDialog<G extends @NonNull Graph> extends JDialog {
                     = DisplayKind.toDisplay(ResourceKind.toResource(this.graph.getRole()));
                 AspectJGraph aspectJGraph = new AspectJGraph(this.simulator, kind, false);
                 if (this.simulator == null) {
-                    aspectJGraph.setGrammar(this.grammar);
+                    aspectJGraph.getController().setGrammar(this.grammar);
                 }
                 jGraph = aspectJGraph;
             } else {

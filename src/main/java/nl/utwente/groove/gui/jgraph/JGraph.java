@@ -22,7 +22,6 @@ import static nl.utwente.groove.gui.Options.SHOW_BIDIRECTIONAL_EDGES_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_INTERNAL_NODE_IDS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_USER_NODE_IDS_OPTION;
 import static nl.utwente.groove.gui.jgraph.JGraphMode.EDIT_MODE;
-import static nl.utwente.groove.gui.jgraph.JGraphMode.PAN_MODE;
 import static nl.utwente.groove.gui.jgraph.JGraphMode.SELECT_MODE;
 
 import java.awt.Color;
@@ -30,7 +29,6 @@ import java.awt.Component;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
@@ -46,7 +44,6 @@ import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -57,15 +54,11 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import javax.accessibility.AccessibleState;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
-import javax.swing.ButtonGroup;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JToggleButton;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -105,10 +98,6 @@ import nl.utwente.groove.gui.layout.SpringLayouter;
 import nl.utwente.groove.gui.look.MultiLabel;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
-import nl.utwente.groove.gui.menu.MyJMenu;
-import nl.utwente.groove.gui.menu.SetLayoutMenu;
-import nl.utwente.groove.gui.menu.ShowHideMenu;
-import nl.utwente.groove.gui.menu.ZoomMenu;
 import nl.utwente.groove.gui.tree.LabelTree;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.util.Factory;
@@ -125,7 +114,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
      */
     protected JGraph(Simulator simulator) {
         super((JModel<G>) null);
-        this.controller = new GraphViewController<>(this, simulator);
+        this.controller = createController(simulator);
         // make sure the layout cache has been created
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
         setMarqueeHandler(createMarqueeHandler());
@@ -172,6 +161,14 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
 
     /** The display controller associated with this {@link JGraph}. */
     private final GraphViewController<G> controller;
+
+    /**
+     * Callback factory method for the display controller.
+     * Called from the constructor, so it must not depend on subclass state.
+     */
+    protected GraphViewController<G> createController(Simulator simulator) {
+        return new GraphViewController<>(this, simulator);
+    }
 
     /** Returns the graph role of the graphs expected for this JGraph. */
     public GraphRole getGraphRole() {
@@ -654,7 +651,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
             setEnabled(newJModel != null);
             if (newJModel != null && getActions() != null) {
                 // create the popup menu to create and activate the actions therein
-                createPopupMenu(null);
+                getController().createPopupMenu(null);
             }
         }
     }
@@ -734,10 +731,8 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
             if (getLabelTree() != null) {
                 getLabelTree().setEnabled(enabled);
             }
-            for (JToggleButton button : getModeButtonMap().values()) {
-                button.setEnabled(enabled);
-            }
-            getModeButton(getDefaultMode()).setSelected(true);
+            getController().setModeButtonsEnabled(enabled);
+            getController().getModeButton(getDefaultMode()).setSelected(true);
             // retrieve the layout action to get its key accelerator working
             getLayoutAction();
             super.setEnabled(enabled);
@@ -921,7 +916,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
                 clearSelection();
             }
             stopEditing();
-            getModeButton(mode).setSelected(true);
+            getController().getModeButton(mode).setSelected(true);
             setCursor(mode.getCursor());
             // fire change only if there was a previous value
             firePropertyChange(JGRAPH_MODE_PROPERTY, oldMode, mode);
@@ -1133,7 +1128,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
         if (isPopupMenuEvent(evt) && getActions() != null) {
             getUI().cancelEdgeAdding();
             Point atPoint = evt.getPoint();
-            createPopupMenu(atPoint).getPopupMenu().show(this, atPoint.x, atPoint.y);
+            getController().createPopupMenu(atPoint).getPopupMenu().show(this, atPoint.x, atPoint.y);
         }
     }
 
@@ -1146,108 +1141,6 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
      */
     protected boolean isPopupMenuEvent(MouseEvent evt) {
         return evt.isPopupTrigger() && !evt.isControlDown();
-    }
-
-    /**
-     * Lazily creates and returns the popup menu for this j-graph, activated for
-     * a given point of the j-graph.
-     * @param atPoint the point at which the menu is to be activated
-     */
-    public JMenu createPopupMenu(Point atPoint) {
-        MyJMenu result = new MyJMenu("Popup");
-        result.addSubmenu(createExportMenu());
-        result.addSubmenu(createDisplayMenu());
-        result.addSubmenu(getLayoutMenu());
-        return result;
-    }
-
-    /** Returns a menu consisting of the export action of this JGraph. */
-    public JMenu createExportMenu() {
-        JMenu result = new JMenu("Export");
-        result.add(getExportAction());
-        return result;
-    }
-
-    /**
-     * Returns a menu consisting of all the display menu items of this jgraph.
-     */
-    public JMenu createDisplayMenu() {
-        JMenu result = new JMenu("Display");
-        Object[] cells = getSelectionCells();
-        boolean itemAdded = false;
-        if (cells != null && cells.length > 0 && getActions() != null) {
-            result.add(getActions().getFindReplaceAction());
-            result.add(getActions().getSelectColorAction());
-            itemAdded = true;
-        }
-        LabelTree<G> labelTree = getLabelTree();
-        if (labelTree != null && cells != null && cells.length > 0) {
-            Action filterAction = labelTree.createFilterAction(cells);
-            if (filterAction != null) {
-                result.add(filterAction);
-                itemAdded = true;
-            }
-        }
-        if (itemAdded) {
-            result.addSeparator();
-        }
-        result.add(getModeAction(SELECT_MODE));
-        result.add(getModeAction(PAN_MODE));
-        result.add(createShowHideMenu());
-        result.add(createZoomMenu());
-        return result;
-    }
-
-    /**
-     * Returns a menu consisting of the menu items from the layouter
-     * setting menu of this JGraph.
-     */
-    public SetLayoutMenu getSetLayoutMenu() {
-        if (this.setLayoutMenu == null) {
-            this.setLayoutMenu = createSetLayoutMenu();
-        }
-        return this.setLayoutMenu;
-    }
-
-    /** Creates and returns a fresh layout setting menu upon this JGraph. */
-    public SetLayoutMenu createSetLayoutMenu() {
-        return new SetLayoutMenu(this);
-    }
-
-    /**
-     * A standard layouter setting menu over this JGraph.
-     */
-    private SetLayoutMenu setLayoutMenu;
-
-    /**
-     * Returns a layout menu for this jgraph.
-     * The items added are the current layout action and a layouter setting
-     * sub-menu.
-     */
-    public JMenu getLayoutMenu() {
-        JMenu result = new JMenu("Layout");
-        result.add(getSetLayoutMenu().getCurrentLayoutItem());
-        result.add(getSetLayoutMenu());
-        result.add(getShowLayoutDialogAction());
-        return result;
-    }
-
-    /**
-     * Creates and returns a fresh zoom menu upon this jgraph.
-     */
-    public ZoomMenu createZoomMenu() {
-        return new ZoomMenu(this);
-    }
-
-    /**
-     * Creates and returns a fresh show/hide menu upon this jgraph.
-     */
-    public ShowHideMenu<G> createShowHideMenu() {
-        return new ShowHideMenu<>(this);
-    }
-
-    private Action getShowLayoutDialogAction() {
-        return this.getActions().getLayoutDialogAction();
     }
 
     /**
@@ -1267,62 +1160,6 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
             im.put(actionKey, actionName);
         }
     }
-
-    /**
-     * Lazily creates and returns an action setting the mode of this
-     * JGraph. The actual setting is done by a call to {@link #setMode(JGraphMode)}.
-     */
-    public Action getModeAction(JGraphMode mode) {
-        if (this.modeActionMap == null) {
-            this.modeActionMap = new EnumMap<>(JGraphMode.class);
-            for (final JGraphMode any : JGraphMode.values()) {
-                Action action = new AbstractAction(any.getName(), any.getIcon()) {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        setMode(any);
-                    }
-                };
-
-                if (any.getAcceleratorKey() != null) {
-                    action.putValue(Action.ACCELERATOR_KEY, any.getAcceleratorKey());
-                    addAccelerator(action);
-                }
-                this.modeActionMap.put(any, action);
-            }
-        }
-        return this.modeActionMap.get(mode);
-    }
-
-    private Map<JGraphMode,Action> modeActionMap;
-
-    /**
-     * Lazily creates and returns a button wrapping
-     * {@link #getModeAction(JGraphMode)}.
-     */
-    public JToggleButton getModeButton(JGraphMode mode) {
-        return getModeButtonMap().get(mode);
-    }
-
-    private Map<JGraphMode,JToggleButton> getModeButtonMap() {
-        if (this.modeButtonMap == null) {
-            this.modeButtonMap = new EnumMap<>(JGraphMode.class);
-            ButtonGroup modeButtonGroup = new ButtonGroup();
-            for (JGraphMode any : JGraphMode.values()) {
-                JToggleButton button = new JToggleButton(getModeAction(any));
-                Options.setLAF(button);
-                button.setToolTipText(any.getName());
-                button.setEnabled(isEnabled());
-                this.modeButtonMap.put(any, button);
-                modeButtonGroup.add(button);
-            }
-            var editButton = this.modeButtonMap.get(EDIT_MODE);
-            assert editButton != null; // the button map is filled for all modes
-            editButton.setSelected(true);
-        }
-        return this.modeButtonMap;
-    }
-
-    private Map<JGraphMode,JToggleButton> modeButtonMap;
 
     @Override
     public void startEditingAtCell(Object cell) {

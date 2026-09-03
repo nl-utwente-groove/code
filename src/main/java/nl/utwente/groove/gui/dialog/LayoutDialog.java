@@ -131,7 +131,7 @@ public class LayoutDialog extends JDialog implements ActionListener, WindowFocus
     }
 
     private SetLayoutMenu getLayoutMenu() {
-        return getJGraph() == null ? null : getJGraph().getSetLayoutMenu();
+        return getJGraph() == null ? null : getJGraph().getController().getSetLayoutMenu();
     }
 
     private void refreshJGraph() {

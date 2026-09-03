@@ -40,7 +40,7 @@ public class SetLineStyleMenu extends JMenu implements GraphSelectionListener {
         jGraph.addGraphSelectionListener(this);
         // initialise the line style menu
         for (LineStyle lineStyle : LineStyle.values()) {
-            add(jGraph.getSetLineStyleAction(lineStyle));
+            add(jGraph.getController().getSetLineStyleAction(lineStyle));
         }
     }
 

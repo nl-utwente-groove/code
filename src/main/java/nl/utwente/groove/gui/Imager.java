@@ -289,7 +289,9 @@ public class Imager extends GrooveCmdLineTool<Object> {
             DisplayKind displayKind
                 = DisplayKind.toDisplay(ResourceKind.toResource(aspectGraph.getRole()));
             AspectJGraph jGraph = new AspectJGraph(null, displayKind, false);
-            jGraph.setGrammar(resourceModel.getGrammar());
+            var grammar = resourceModel.getGrammar();
+            assert grammar != null; // the resource model was created from a grammar
+            jGraph.getController().setGrammar(grammar);
             AspectJModel model = jGraph.newModel();
             model.loadGraph(aspectGraph);
             jGraph.setModel(model);

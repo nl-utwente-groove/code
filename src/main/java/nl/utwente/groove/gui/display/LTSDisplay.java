@@ -156,8 +156,8 @@ public class LTSDisplay extends Display implements SimulatorListener {
         result.add(getActions().getBackAction());
         result.add(getActions().getForwardAction());
         result.addSeparator();
-        result.add(getJGraph().getModeButton(JGraphMode.SELECT_MODE));
-        result.add(getJGraph().getModeButton(JGraphMode.PAN_MODE));
+        result.add(getJGraph().getController().getModeButton(JGraphMode.SELECT_MODE));
+        result.add(getJGraph().getController().getModeButton(JGraphMode.PAN_MODE));
         result.addSeparator();
         result.add(getFilterPanel());
         result.add(getBoundSpinnerPanel());
@@ -782,10 +782,10 @@ public class LTSDisplay extends Display implements SimulatorListener {
         @Override
         public void setEnabled(boolean enabled) {
             super.setEnabled(enabled);
-            getJGraph().getModeAction(SELECT_MODE).setEnabled(enabled);
-            getJGraph().getModeAction(PAN_MODE).setEnabled(enabled);
+            getJGraph().getController().getModeAction(SELECT_MODE).setEnabled(enabled);
+            getJGraph().getController().getModeAction(PAN_MODE).setEnabled(enabled);
             if (enabled) {
-                getJGraph().getModeButton(SELECT_MODE).doClick();
+                getJGraph().getController().getModeButton(SELECT_MODE).doClick();
             }
             LTSDisplay.this.setEnabled(enabled);
         }

@@ -25,9 +25,7 @@ import static nl.utwente.groove.gui.Options.SHOW_RECIPE_STEPS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_STATE_STATUS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_SYSTEM_STATE_PROPERTIES_OPTION;
-import static nl.utwente.groove.gui.jgraph.JGraphMode.SELECT_MODE;
 
-import java.awt.Point;
 import java.awt.geom.Dimension2D;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -36,8 +34,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.Action;
-import javax.swing.JMenu;
 import javax.swing.SwingUtilities;
 
 import org.eclipse.jdt.annotation.NonNull;
@@ -49,11 +45,9 @@ import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
-import nl.utwente.groove.gui.action.ScrollToActiveAction;
+import nl.utwente.groove.gui.display.LTSGraphViewController;
 import nl.utwente.groove.gui.layout.ForestLayouter;
 import nl.utwente.groove.gui.layout.Layouter;
-import nl.utwente.groove.gui.menu.ModelCheckingMenu;
-import nl.utwente.groove.gui.menu.MyJMenu;
 import nl.utwente.groove.lts.ExploreResult;
 import nl.utwente.groove.lts.Filter;
 import nl.utwente.groove.lts.GTS;
@@ -76,7 +70,6 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements Serializable {
     /** Constructs an instance of the j-graph for a given simulator. */
     public LTSJGraph(Simulator simulator) {
         super(simulator);
-        this.simulator = simulator;
         // turn off double buffering to improve performance
         setDoubleBuffered(false);
     }
@@ -170,6 +163,17 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements Serializable {
         return (LTSJModel) super.getNonNullModel();
     }
 
+    /* Specialises the return type. */
+    @Override
+    public LTSGraphViewController getController() {
+        return (LTSGraphViewController) super.getController();
+    }
+
+    @Override
+    protected LTSGraphViewController createController(Simulator simulator) {
+        return new LTSGraphViewController(this, simulator);
+    }
+
     /** Indicates if state identities should be shown on states. */
     public boolean isShowStateIdentities() {
         return getOptionValue(Options.SHOW_STATE_IDS_OPTION);
@@ -235,67 +239,6 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements Serializable {
             });
         }
     }
-
-    /**
-     * This implementation adds actions to move to different states within the
-     * LTS, to apply the current transition and to explore the LTS, and
-     * subsequently invokes the super implementation.
-     */
-    @Override
-    public JMenu createPopupMenu(Point atPoint) {
-        MyJMenu result = new MyJMenu("Popup");
-        if (getMode() == SELECT_MODE) {
-            result.addSubmenu(createExploreMenu());
-            result.addSubmenu(createGotoMenu());
-            result.addSubmenu(super.createPopupMenu(atPoint));
-        } else {
-            result.addSubmenu(createGotoMenu());
-            result.addSubmenu(createShowHideMenu());
-            result.addSubmenu(createZoomMenu());
-        }
-        return result;
-    }
-
-    @Override
-    public JMenu createExportMenu() {
-        MyJMenu result = new MyJMenu();
-        result.add(getActions().getSaveLTSAsAction());
-        result.add(getActions().getSaveStateAction());
-        result.addMenuItems(super.createExportMenu());
-        return result;
-    }
-
-    /** Creates a state exploration sub-menu. */
-    public JMenu createExploreMenu() {
-        JMenu result = new JMenu("Explore");
-        result.add(getActions().getExplorationDialogAction());
-        result.add(getActions().getApplyMatchAction());
-        result.add(getActions().getExploreAction());
-        result.addSeparator();
-        result.add(getCheckerMenu());
-        return result;
-    }
-
-    /** Creates a traversal sub-menu. */
-    public JMenu createGotoMenu() {
-        JMenu result = new JMenu("Go To");
-        result.add(getActions().getGotoStartStateAction());
-        result.add(getActions().getGotoFinalStateAction());
-        result.add(getScrollToActiveAction());
-        return result;
-    }
-
-    /**
-     * Lazily creates and returns the model-checking menu.
-     */
-    private JMenu getCheckerMenu() {
-        if (this.checkerMenu == null) {
-            this.checkerMenu = new ModelCheckingMenu(this.simulator);
-        }
-        return this.checkerMenu;
-    }
-
-    private JMenu checkerMenu;
 
     /**
      * Returns the active transition of the LTS, if any. The active transition
@@ -569,10 +512,6 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements Serializable {
 
     private Filter filter = Filter.NONE;
 
-    /**
-     * The simulator to which this j-graph is associated.
-     */
-    private final Simulator simulator;
 
     /** Indicates if there are no states not added or invisible due to node bound or filter. */
     public boolean isComplete() {
@@ -613,21 +552,6 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements Serializable {
     public Layouter getDefaultLayouter() {
         return ForestLayouter.PROTOTYPE;
     }
-
-    /** Initialises and returns the action to scroll to the active state or transition. */
-    private Action getScrollToActiveAction() {
-        if (getActiveTransition() == null) {
-            this.scrollToActiveAction.setState(getActiveState());
-        } else {
-            this.scrollToActiveAction.setTransition(getActiveTransition());
-        }
-        return this.scrollToActiveAction;
-    }
-
-    /**
-     * Action to scroll the JGraph to the current state or derivation.
-     */
-    private final ScrollToActiveAction scrollToActiveAction = new ScrollToActiveAction(this);
 
     @Override
     protected JGraphFactory<@NonNull GTS> createFactory() {

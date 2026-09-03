@@ -208,9 +208,9 @@ public class JGraphUI<G extends @NonNull Graph> extends BasicGraphUI {
                     if (selectedCell instanceof JEdge) {
                         AspectJEdge selectedEdge = (AspectJEdge) selectedCell;
                         if (selectedCell == jEdge) {
-                            jGraph.getRemovePointAction(e.getPoint()).execute(selectedEdge);
+                            jGraph.getController().getRemovePointAction(e.getPoint()).execute(selectedEdge);
                         } else {
-                            jGraph.getAddPointAction(e.getPoint()).execute(selectedEdge);
+                            jGraph.getController().getAddPointAction(e.getPoint()).execute(selectedEdge);
                         }
                     }
                 } else if (getJCellAt(e.getPoint()) != null) {
