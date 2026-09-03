@@ -203,6 +203,7 @@ its controller); phase 2 inverts it.
    The delivered library is yFiles for Java (Swing) 3.6.0.1 (the plan's "4.0" was
    wrong); the license file at `C:\Groove\yfiles` is auto-loaded from the classpath
    root and shows no evaluation watermark.
-2. After go: facade definition + architecture test (phase 1b), taking the three
-   view-computed items from the findings note (node sizing, loop routing, edge-label
-   anchor convention) as first-class facade responsibilities; then phase 2.
+2. Go given 2026-09-03. Phase 1b (branch `view-facade`): facade definition +
+   architecture test, taking the view-computed items from the findings note (node
+   sizing, loop routing) as first-class facade responsibilities and specifying the
+   edge-label path model; then phase 2.
