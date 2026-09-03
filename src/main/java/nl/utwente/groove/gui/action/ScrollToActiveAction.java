@@ -21,27 +21,26 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 
-import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.gui.Options;
-import nl.utwente.groove.gui.jgraph.LTSJGraph;
+import nl.utwente.groove.gui.display.LTSGraphViewController;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 
 /**
  * Action to scroll the LTS display to a (previously set) node or edge.
- * @see LTSJGraph#scrollTo(Element)
+ * @see LTSGraphViewController#scrollToActive()
  * @author Arend Rensink
  * @version $Revision$
  */
 public class ScrollToActiveAction extends AbstractAction {
     /** Constructs an instance of the action. */
-    public ScrollToActiveAction(LTSJGraph jGraph) {
-        this.jGraph = jGraph;
+    public ScrollToActiveAction(LTSGraphViewController controller) {
+        this.controller = controller;
     }
 
     @Override
     public void actionPerformed(ActionEvent evt) {
-        this.jGraph.getController().scrollToActive();
+        this.controller.scrollToActive();
     }
 
     /**
@@ -60,6 +59,6 @@ public class ScrollToActiveAction extends AbstractAction {
         putValue(Action.NAME, Options.SCROLL_TO_ACTION_NAME + " state");
     }
 
-    /** The j-graph on which this action works. */
-    private final LTSJGraph jGraph;
+    /** The graph-view controller on which this action works. */
+    private final LTSGraphViewController controller;
 }

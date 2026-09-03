@@ -27,7 +27,7 @@ import javax.swing.JMenuItem;
 
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.action.LayoutAction;
-import nl.utwente.groove.gui.jgraph.JGraph;
+import nl.utwente.groove.gui.display.GraphViewController;
 import nl.utwente.groove.gui.layout.ForestLayouter;
 import nl.utwente.groove.gui.layout.LayoutKind;
 import nl.utwente.groove.gui.layout.Layouter;
@@ -42,13 +42,13 @@ import nl.utwente.groove.gui.layout.SpringLayouter;
 public class SetLayoutMenu extends JMenu {
     /**
      * Constructs a layout menu and initialises it with a given layout action.
-     * The initial layout action is set on the JGraph.
-     * @param jGraph the JGraph upon which the actions in this menu should work
+     * The initial layout action is set on the graph view.
+     * @param controller the graph-view controller upon which the actions in this menu should work
      * @param initialLayout the initial (only) layout action in the menu
      */
-    public SetLayoutMenu(JGraph<?> jGraph, Layouter initialLayout) {
+    public SetLayoutMenu(GraphViewController<?> controller, Layouter initialLayout) {
         super(Options.SET_LAYOUT_MENU_NAME);
-        this.jGraph = jGraph;
+        this.controller = controller;
         addLayoutItem(SpringLayouter.PROTOTYPE);
         addLayoutItem(ForestLayouter.PROTOTYPE);
         this.addSeparator();
@@ -60,10 +60,10 @@ public class SetLayoutMenu extends JMenu {
 
     /**
      * Constructs a layout menu initially set to {@link ForestLayouter}.
-     * @param jGraph the JGraph upon which the actions in this menu should work
+     * @param controller the graph-view controller upon which the actions in this menu should work
      */
-    public SetLayoutMenu(JGraph<?> jGraph) {
-        this(jGraph, jGraph.getDefaultLayouter());
+    public SetLayoutMenu(GraphViewController<?> controller) {
+        this(controller, controller.getDefaultLayouter());
     }
 
     /** Returns the layout item describing the currently selected layout action. */
@@ -91,8 +91,8 @@ public class SetLayoutMenu extends JMenu {
      * @param prototypeLayout the new layout action
      */
     public LayoutAction selectLayoutAction(Layouter prototypeLayout) {
-        this.jGraph.setLayouter(prototypeLayout);
-        LayoutAction result = this.jGraph.getLayoutAction();
+        this.controller.setLayouter(prototypeLayout);
+        LayoutAction result = this.controller.getLayoutAction();
         this.layoutItem.setAction(result);
         for (int i = 0; i < getMenuComponentCount(); i++) {
             Component item = getMenuComponent(i);
@@ -113,8 +113,8 @@ public class SetLayoutMenu extends JMenu {
         return new LayoutItem(prototypeLayout);
     }
 
-    /** The j-graph to be laid out. */
-    private final JGraph<?> jGraph;
+    /** The controller of the graph view to be laid out. */
+    private final GraphViewController<?> controller;
 
     /** Menu item whose label reflects the currently selected layouter. */
     private final JMenuItem layoutItem = new JMenuItem() {

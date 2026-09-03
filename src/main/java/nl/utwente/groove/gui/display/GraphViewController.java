@@ -204,6 +204,11 @@ public class GraphViewController<G extends Graph> {
         this.layouter = prototypeLayouter.newInstance(getGraphView());
     }
 
+    /** Returns the default layouter of the graph view. */
+    public Layouter getDefaultLayouter() {
+        return getGraphView().getDefaultLayouter();
+    }
+
     /** The currently selected prototype layouter. */
     private @Nullable Layouter layouter;
 
@@ -375,7 +380,7 @@ public class GraphViewController<G extends Graph> {
 
     /** Creates and returns a fresh layout setting menu for the graph view. */
     public SetLayoutMenu createSetLayoutMenu() {
-        return new SetLayoutMenu(getGraphView());
+        return new SetLayoutMenu(this);
     }
 
     /**

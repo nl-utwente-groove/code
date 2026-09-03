@@ -158,8 +158,7 @@ public class LTSGraphViewController extends GraphViewController<GTS> {
     /**
      * Action to scroll the graph view to the current state or derivation.
      */
-    private final ScrollToActiveAction scrollToActiveAction
-        = new ScrollToActiveAction(getGraphView());
+    private final ScrollToActiveAction scrollToActiveAction = new ScrollToActiveAction(this);
 
     /** Returns the class of transitions that is currently being shown in the LTS. */
     public Claz getTransitionClass() {
