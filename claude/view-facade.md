@@ -240,6 +240,26 @@ interface: `refreshCells`→`refresh`, `refreshAllCells`→`refreshAll`,
 `AspectJGraph.setSelectionCells(Collection<Element>)`→`selectElements`.
 `ArchitectureTest` seals the boundary with an allowlist of 47 files tagged by slice/phase.
 
+**Slice 2 done (2026-09-04, branch `looks-decoupling`, two commits).** (a) Neutral
+role-specific cell interfaces `AspectViewVertex`/`AspectViewEdge`, `LTSViewVertex`/
+`LTSViewEdge`, `CtrlViewVertex`, implemented by the backend cells and consumed by the look
+value classes; the type graph and resource model of the shown graph come from
+`AspectGraphCanvas`; the GUI palette and the hatch paint moved from `JAttr` to
+`gui.look.Values` (state-panel colours renamed `ERROR_STATE_BACKGROUND`/
+`INTERNAL_STATE_BACKGROUND`, since `Values.ERROR_BACKGROUND` already named the error-cell
+colour); the two `paintComponent` overrides in the displays became a declarative
+`GraphCanvas.Overlay` (`NONE`/`HATCHED`, Arend's choice over the `Graphics2D` hook; the
+`TypeTree` hatch in `StateDisplay` stays a Swing override, it is not a canvas).
+(b) `VisualAttributeMap` is a backend class (`gui.jgraph`) bound to a cell's `VisualMap`
+through the new `VisualMap.Listener`; `VisualMap` no longer knows about attribute maps, and
+`VisualAttributeMap.toAttributes` gives detached maps for edits. `LoopRouting` (the JGraph
+`Edge.Routing`) is a backend adapter over the neutral `gui.view.LoopRouter`, which
+implements the decided default: control point 35 px beyond the node on the first side in
+the order right, top, left, bottom that no incident edge or loop occupies. Node sizing was
+*not* moved: the contract that the backend supplies `NODE_SIZE`/`TEXT_SIZE` under the
+staleness protocol is documented on `GraphCanvas`, and moving the sizing policy adds
+nothing until a second backend exists. The allowlist is down to 32 files.
+
 Surprises: `JGraph.getController()` is genuinely null while the `org.jgraph.JGraph`
 constructor runs (it calls `setModel`), but the interface declares it non-null, so
 `LTSJGraph.setModel` now asks `hasController()` instead of null-checking. ecj 3.42 reports

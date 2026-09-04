@@ -103,7 +103,7 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
     public AttributeMap getAttributes(Object node) {
         AttributeMap result;
         if (node instanceof ViewCell) {
-            result = ((ViewCell<?>) node).getVisuals().getAttributes();
+            result = ((AJCell<?,?,?>) node).getAttributes();
         } else {
             result = super.getAttributes(node);
         }

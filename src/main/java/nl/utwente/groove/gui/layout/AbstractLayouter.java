@@ -35,6 +35,7 @@ import org.jgraph.graph.VertexView;
 import nl.utwente.groove.gui.view.ViewCell;
 import nl.utwente.groove.gui.view.ViewEdge;
 import nl.utwente.groove.gui.jgraph.JGraph;
+import nl.utwente.groove.gui.jgraph.VisualAttributeMap;
 import nl.utwente.groove.gui.view.GraphCanvas;
 import nl.utwente.groove.gui.jgraph.JModel;
 import nl.utwente.groove.gui.view.ViewVertex;
@@ -148,7 +149,7 @@ abstract public class AbstractLayouter implements Layouter {
             }
             visuals.setNodePos(new Point2D.Double(x, y));
             jVertex.setLayoutable(false);
-            change.put(jVertex, visuals.getAttributes());
+            change.put(jVertex, VisualAttributeMap.toAttributes(visuals));
         }
         // clear edge points
         // not calling JGraph.clearAllEdgePoints to avoid generating a separate edit
