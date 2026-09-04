@@ -29,7 +29,6 @@ import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.action.LayoutAction;
 import nl.utwente.groove.gui.view.GraphViewController;
 import nl.utwente.groove.gui.layout.ForestLayouter;
-import nl.utwente.groove.gui.layout.LayoutKind;
 import nl.utwente.groove.gui.layout.Layouter;
 import nl.utwente.groove.gui.layout.SpringLayouter;
 
@@ -52,8 +51,8 @@ public class SetLayoutMenu extends JMenu {
         addLayoutItem(SpringLayouter.PROTOTYPE);
         addLayoutItem(ForestLayouter.PROTOTYPE);
         this.addSeparator();
-        for (LayoutKind kind : LayoutKind.values()) {
-            addLayoutItem(LayoutKind.getLayouterItemProto(kind));
+        for (Layouter prototype : controller.getCanvas().getBackendLayouters()) {
+            addLayoutItem(prototype);
         }
         selectLayoutAction(initialLayout);
     }

@@ -53,12 +53,6 @@ public class ArchitectureTest {
      * with the migration step that removes them; paths relative to the source roots.
      */
     private static final Map<String,String> ALLOWED = new TreeMap<>(Map.ofEntries(
-        // phase 1b, slice 4: layouters
-        Map.entry("nl/utwente/groove/gui/layout/AbstractLayouter.java", "1b-4"),
-        Map.entry("nl/utwente/groove/gui/layout/ForestLayouter.java", "1b-4"),
-        Map.entry("nl/utwente/groove/gui/layout/LayoutKind.java", "1b-4"),
-        Map.entry("nl/utwente/groove/gui/layout/LayouterItem.java", "1b-4"),
-        Map.entry("nl/utwente/groove/gui/layout/SpringLayouter.java", "1b-4"),
         // phase 1b, slice 5: export seam
         Map.entry("nl/utwente/groove/gui/action/ExportAction.java", "1b-5"),
         Map.entry("nl/utwente/groove/gui/export/JGraphExportable.java", "1b-5"),
@@ -77,6 +71,7 @@ public class ArchitectureTest {
         Map.entry("nl/utwente/groove/gui/display/JGraphPanel.java", "2"),
         Map.entry("nl/utwente/groove/gui/display/LTSDisplay.java", "2"),
         Map.entry("nl/utwente/groove/gui/display/StateDisplay.java", "2"),
+        Map.entry("nl/utwente/groove/test/LayouterTest.java", "2"),
         Map.entry("nl/utwente/groove/test/SubtypeLabelArrowTest.java", "2"),
         // phase 3: the editor's own undo and edit model
         Map.entry("nl/utwente/groove/gui/display/GraphEditorTab.java", "3")));

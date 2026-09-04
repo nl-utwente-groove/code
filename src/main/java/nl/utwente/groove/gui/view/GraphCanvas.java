@@ -34,6 +34,7 @@ import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.gui.Options;
+import nl.utwente.groove.gui.layout.Layouter;
 import nl.utwente.groove.gui.look.VisualKey.Nature;
 import nl.utwente.groove.gui.look.VisualMap;
 import nl.utwente.groove.util.AIGenerated;
@@ -203,6 +204,12 @@ public interface GraphCanvas<G extends Graph> {
 
     /** Indicates if an automatic layout is in progress. */
     boolean isLayouting();
+
+    /**
+     * Returns the prototype layouters contributed by the rendering backend,
+     * in addition to the backend-independent ones.
+     */
+    List<Layouter> getBackendLayouters();
 
     /**
      * Returns the text-fitted preferred size of a given vertex, according to the

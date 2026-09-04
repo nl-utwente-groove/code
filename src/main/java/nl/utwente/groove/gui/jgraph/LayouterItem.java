@@ -14,49 +14,57 @@
  *
  * $Id$
  */
-package nl.utwente.groove.gui.layout;
+package nl.utwente.groove.gui.jgraph;
 
 import java.util.Map;
 
 import javax.swing.JPanel;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import com.jgraph.layout.JGraphFacade;
 import com.jgraph.layout.JGraphLayout;
 
 import nl.utwente.groove.graph.Graph;
-import nl.utwente.groove.gui.jgraph.JGraph;
+import nl.utwente.groove.gui.layout.Layouter;
+import nl.utwente.groove.gui.layout.SpringLayouter;
 import nl.utwente.groove.gui.view.GraphCanvas;
 import nl.utwente.groove.gui.view.GraphCanvasListener;
 import nl.utwente.groove.gui.view.GraphViewModel;
 
-/** Class representing elements of the layout menu. */
+/**
+ * Layouter wrapping one of the layout algorithms of the JGraph layout library;
+ * the JGraph backend's contribution to the layout palette.
+ */
+@NonNullByDefault
 public class LayouterItem implements Layouter {
 
     private final LayoutKind kind;
-    private final JGraph<?> jGraph;
-    private JGraphFacade facade;
-    private final JPanel panel;
+    private final @Nullable JGraph<?> jGraph;
+    private @Nullable JGraphFacade facade;
+    private final @Nullable JPanel panel;
 
     /** Builds a prototype instance based on the given layout kind. */
-    public LayouterItem(LayoutKind kind) {
+    LayouterItem(LayoutKind kind) {
         this(kind, null, null);
     }
 
-    private LayouterItem(LayoutKind kind, final JGraph<?> jGraph, JGraphFacade facade) {
+    private LayouterItem(LayoutKind kind, @Nullable JGraph<?> jGraph,
+                         @Nullable JGraphFacade facade) {
         this.kind = kind;
         this.jGraph = jGraph;
         this.facade = facade;
-        this.panel = jGraph == null ? null : LayoutKind.createLayoutPanel(this);
+        this.panel = jGraph == null
+            ? null
+            : LayoutKind.createLayoutPanel(this);
         if (jGraph != null) {
             installModelListener(jGraph);
         }
     }
 
     /** Adds the listener that renews the facade on model changes; generic to capture the graph type. */
-    private <H extends @NonNull Graph> void installModelListener(JGraph<H> jGraph) {
+    private <H extends Graph> void installModelListener(JGraph<H> jGraph) {
         jGraph.addCanvasListener(new GraphCanvasListener<H>() {
             @Override
             public void viewModelChanged(GraphCanvas<H> canvas,
@@ -71,7 +79,7 @@ public class LayouterItem implements Layouter {
 
     @Override
     public Layouter newInstance(GraphCanvas<?> canvas) {
-        // the layouters still work on the backend component (until the layout seam is neutral)
+        // the JGraph layouts work on the backend component
         JGraph<?> jGraph = (JGraph<?>) canvas;
         return new LayouterItem(this.kind, jGraph, new JGraphFacade(jGraph));
     }
@@ -83,10 +91,15 @@ public class LayouterItem implements Layouter {
 
     @Override
     public void start() {
-        if (this.facade != null) {
-            prepareLayouting();
-            run();
-            finishLayouting();
+        var jGraph = this.jGraph;
+        var facade = this.facade;
+        if (jGraph != null && facade != null) {
+            jGraph.setLayouting(true);
+            jGraph.clearAllEdgePoints();
+            getLayout().run(facade);
+            Map<?,?> nested = facade.createNestedMap(true, false);
+            jGraph.getGraphLayoutCache().edit(nested);
+            jGraph.setLayouting(false);
         }
     }
 
@@ -95,33 +108,21 @@ public class LayouterItem implements Layouter {
         return this.kind.getLayout();
     }
 
-    /** Basic getter method. */
-    public JPanel getPanel() {
+    @Override
+    public @Nullable JPanel getSettingsPanel() {
         return this.panel;
-    }
-
-    private void prepareLayouting() {
-        this.jGraph.setLayouting(true);
-        this.jGraph.clearAllEdgePoints();
-    }
-
-    private void run() {
-        getLayout().run(this.facade);
-        Map<?,?> nested = this.facade.createNestedMap(true, false);
-        this.jGraph.getGraphLayoutCache().edit(nested);
-    }
-
-    private void finishLayouting() {
-        this.jGraph.setLayouting(false);
     }
 
     @Override
     public Layouter getIncremental() {
-        if (this.incremental == null) {
-            this.incremental = SpringLayouter.PROTOTYPE.newInstance(this.jGraph);
+        var result = this.incremental;
+        if (result == null) {
+            var jGraph = this.jGraph;
+            assert jGraph != null; // only canvas-bound instances are asked for an incremental
+            this.incremental = result = SpringLayouter.PROTOTYPE.newInstance(jGraph);
         }
-        return this.incremental;
+        return result;
     }
 
-    private Layouter incremental;
+    private @Nullable Layouter incremental;
 }

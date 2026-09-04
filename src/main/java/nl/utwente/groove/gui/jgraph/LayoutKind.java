@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.gui.layout;
+package nl.utwente.groove.gui.jgraph;
 
 import java.awt.BorderLayout;
 import java.awt.Font;
@@ -25,7 +25,9 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
@@ -52,6 +54,8 @@ import com.jgraph.layout.simple.SimpleGridLayout;
 import com.jgraph.layout.tree.JGraphCompactTreeLayout;
 import com.jgraph.layout.tree.JGraphRadialTreeLayout;
 import com.jgraph.layout.tree.JGraphTreeLayout;
+
+import nl.utwente.groove.gui.layout.Layouter;
 
 /** Enumeration of possible JGraph layout algorithms. */
 public enum LayoutKind {
@@ -109,6 +113,15 @@ public enum LayoutKind {
     }
 
     private static Map<LayoutKind,LayouterItem> map = new HashMap<>();
+
+    /** Returns the prototype layouters of all kinds, in declaration order. */
+    public static List<Layouter> getPrototypes() {
+        List<Layouter> result = new ArrayList<>();
+        for (LayoutKind kind : values()) {
+            result.add(getLayouterItemProto(kind));
+        }
+        return result;
+    }
 
     /** Creates the panel with the options of the given layouter. */
     public static JPanel createLayoutPanel(LayouterItem item) {
