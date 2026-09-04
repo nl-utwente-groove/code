@@ -1441,6 +1441,12 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
         return this.layouting;
     }
 
+    /* The JGraph backend contributes the layouts of the JGraph layout library. */
+    @Override
+    public List<Layouter> getBackendLayouters() {
+        return LayoutKind.getPrototypes();
+    }
+
     /** Flag indicating if the JGraph is being layouted. */
     private boolean layouting;
 

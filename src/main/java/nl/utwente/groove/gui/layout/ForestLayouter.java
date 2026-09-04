@@ -17,7 +17,6 @@
 package nl.utwente.groove.gui.layout;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -32,23 +31,25 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.control.graph.ControlGraph;
 import nl.utwente.groove.control.graph.ControlNode;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.EdgeComparator;
 import nl.utwente.groove.graph.NodeComparator;
-import nl.utwente.groove.gui.view.ViewEdge;
-import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.view.GraphCanvas;
+import nl.utwente.groove.gui.view.ViewEdge;
 import nl.utwente.groove.gui.view.ViewVertex;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.util.Pair;
 
 /**
- * Layout action for JGraphs that creates a top-to-bottom forest layout.
+ * Layout action for graph canvases that creates a top-to-bottom forest layout.
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public class ForestLayouter extends AbstractLayouter {
     /**
      * Constructs a factory instance of this layouter.
@@ -58,18 +59,15 @@ public class ForestLayouter extends AbstractLayouter {
     }
 
     /**
-     * Constructs a layouter for a given j-graph.
+     * Constructs a layouter for a given canvas.
      */
-    protected ForestLayouter(String name, JGraph<?> jgraph) {
-        super(name, jgraph);
-        // setEnabled(true);
+    protected ForestLayouter(String name, GraphCanvas<?> canvas) {
+        super(name, canvas);
     }
 
     @Override
     public Layouter newInstance(GraphCanvas<?> canvas) {
-        // the layouters still work on the backend component (until the layout seam is neutral)
-        JGraph<?> jgraph = (JGraph<?>) canvas;
-        return new ForestLayouter(getName(), jgraph);
+        return new ForestLayouter(getName(), canvas);
     }
 
     /**
@@ -78,7 +76,7 @@ public class ForestLayouter extends AbstractLayouter {
      */
     @Override
     public void start() {
-        synchronized (getJGraph()) {
+        synchronized (getCanvas()) {
             prepare(true);
             this.forest = computeForest(this.forest);
             this.forest.prune();
@@ -113,7 +111,9 @@ public class ForestLayouter extends AbstractLayouter {
                 for (LayoutNode oldChild : oldBranchSet) {
                     ViewVertex<?> jVertex = oldChild.getVertex();
                     if (this.immovableMap.containsKey(jVertex)) {
-                        branchSet.add(this.layoutMap.get(jVertex));
+                        var layoutNode = this.layoutMap.get(jVertex);
+                        assert layoutNode != null; // the immovables are a subset of the layout map
+                        branchSet.add(layoutNode);
                         fixed.add(jVertex);
                     }
                 }
@@ -153,8 +153,10 @@ public class ForestLayouter extends AbstractLayouter {
             Set<LayoutNode> branchSet = branchMap.get(key);
             assert branchSet != null; // the branch map was filled for every layout map key
             for (ViewEdge<?> edge : outEdges) {
-                ViewVertex<?> targetVertex = edge.getTargetVertex();
-                branchSet.add(this.layoutMap.get(targetVertex));
+                LayoutNode target = this.layoutMap.get(edge.getTargetVertex());
+                if (target != null) {
+                    branchSet.add(target);
+                }
             }
             // add the cell to the count map
             Set<LayoutNode> inDegreeSet = inDegreeMap.get(inEdgeCount);
@@ -168,20 +170,19 @@ public class ForestLayouter extends AbstractLayouter {
         for (LayoutNode oldRoot : oldForest.one()) {
             ViewVertex<?> oldVertex = oldRoot.getVertex();
             if (this.immovableMap.containsKey(oldVertex)) {
-                remaining.add(this.layoutMap.get(oldVertex));
+                var layoutNode = this.layoutMap.get(oldVertex);
+                assert layoutNode != null; // the immovables are a subset of the layout map
+                remaining.add(layoutNode);
             }
         }
-        // Transfer the suggested roots (if any) from j-cells to layoutables
-        Collection<?> suggestedRoots = getSuggestedRoots();
-        if (suggestedRoots != null) {
-            for (Object root : getSuggestedRoots()) {
-                if (!(root instanceof ViewVertex)) {
-                    continue;
-                }
-                LayoutNode layoutable = ForestLayouter.this.layoutMap.get(root);
-                if (layoutable != null) {
-                    remaining.add(layoutable);
-                }
+        // Transfer the suggested roots (if any) from cells to layoutables
+        for (Object root : getSuggestedRoots()) {
+            if (!(root instanceof ViewVertex)) {
+                continue;
+            }
+            LayoutNode layoutable = ForestLayouter.this.layoutMap.get(root);
+            if (layoutable != null) {
+                remaining.add(layoutable);
             }
         }
         for (Set<LayoutNode> next : inDegreeMap.values()) {
@@ -191,25 +192,29 @@ public class ForestLayouter extends AbstractLayouter {
     }
 
     /**
-     * Callback method to determine a set of j-cells that are to be used as
-     * roots in the forest layout. A return value of <tt>null</tt> means no
-     * suggestions. The current implementation returns the list of selected
-     * cells of the underlying {@link JGraph}.
+     * Callback method to determine a set of cells that are to be used as
+     * roots in the forest layout. The current implementation returns the start
+     * state or node for LTSs and control graphs, and the list of selected
+     * cells of the underlying canvas otherwise.
      */
     protected Collection<?> getSuggestedRoots() {
         Collection<?> result;
-        @SuppressWarnings("rawtypes")
-        JGraph jGraph = getJGraph();
-        var jModel = jGraph.getModel();
-        assert jModel != null;
-        var graph = jModel.getGraph();
+        var canvas = getCanvas();
+        var viewModel = canvas.getNonNullViewModel();
+        var graph = viewModel.getNonNullGraph();
         if (graph instanceof GTS lts) {
-            result = Collections.singleton(jModel.getJCellForNode(lts.startState()));
+            var start = viewModel.getJCellForNode(lts.startState());
+            result = start == null
+                ? Collections.emptyList()
+                : Collections.singleton(start);
         } else if (graph instanceof ControlGraph ctrl) {
-            ControlNode start = ctrl.getStart();
-            result = Collections.singleton(jModel.getJCellForNode(start));
+            ControlNode startNode = ctrl.getStart();
+            var start = viewModel.getJCellForNode(startNode);
+            result = start == null
+                ? Collections.emptyList()
+                : Collections.singleton(start);
         } else {
-            result = Arrays.asList(jGraph.getSelectionCells());
+            result = canvas.getSelection();
         }
         return result;
     }
@@ -383,7 +388,9 @@ public class ForestLayouter extends AbstractLayouter {
 
         /** Returns the branches of a given layout node. */
         public Set<LayoutNode> getBranches(LayoutNode parent) {
-            return two().get(parent.getVertex());
+            var result = two().get(parent.getVertex());
+            assert result != null; // every layout node has a branch set
+            return result;
         }
 
         /**

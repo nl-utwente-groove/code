@@ -22,16 +22,20 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import nl.utwente.groove.gui.view.ViewEdge;
-import nl.utwente.groove.gui.jgraph.JGraph;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.gui.view.GraphCanvas;
+import nl.utwente.groove.gui.view.ViewCell;
+import nl.utwente.groove.gui.view.ViewEdge;
 
 /**
  * Action to set up the standard touchgraph layout algorithm on a given
- * MyJGraph. Adapted from <tt>jgraph.com.pad.Touch</tt>
+ * graph canvas. Adapted from <tt>jgraph.com.pad.Touch</tt>
  * @author Gaudenz Alder and Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public class SpringLayouter extends AbstractLayouter {
     /** Constructs a template spring layouter. */
     private SpringLayouter() {
@@ -39,22 +43,20 @@ public class SpringLayouter extends AbstractLayouter {
     }
 
     /**
-     * Constructs a new, named layout action on a given graph, with given layout
+     * Constructs a new, named layout action on a given canvas, with given layout
      * rigidity.
      * @param name name of this layout action
-     * @param jgraph graph to be layed out
+     * @param canvas canvas to be layed out
      * @param rigidity the initial rigidity of the layout action. A higher value
      *        means nodes are pulled closer together.
      */
-    private SpringLayouter(String name, JGraph<?> jgraph, float rigidity) {
-        super(name, jgraph);
+    private SpringLayouter(String name, GraphCanvas<?> canvas, float rigidity) {
+        super(name, canvas);
     }
 
     @Override
     public Layouter newInstance(GraphCanvas<?> canvas) {
-        // the layouters still work on the backend component (until the layout seam is neutral)
-        JGraph<?> jgraph = (JGraph<?>) canvas;
-        return new SpringLayouter(getName(), jgraph, this.rigidity);
+        return new SpringLayouter(getName(), canvas, this.rigidity);
     }
 
     /**
@@ -89,8 +91,9 @@ public class SpringLayouter extends AbstractLayouter {
         for (LayoutNode layoutable : this.layoutMap.values()) {
             this.layoutables[layoutableIndex] = layoutable;
             if (!this.immovableMap.containsKey(layoutable.getVertex())) {
-                this.deltas[layoutableIndex] = new Point2D.Float(100, 100);
-                this.deltaMap.put(layoutable, this.deltas[layoutableIndex]);
+                var delta = new Point2D.Float(100, 100);
+                this.deltas[layoutableIndex] = delta;
+                this.deltaMap.put(layoutable, delta);
             }
             double p2X = layoutable.getX() + layoutable.getWidth() / 2;
             double p2Y = layoutable.getY() + layoutable.getHeight() / 2;
@@ -98,25 +101,23 @@ public class SpringLayouter extends AbstractLayouter {
             layoutableIndex++;
         }
         // initialise the edge fragment arrays
-        // Object[] graphEdges = jgraph.getEdges(jgraph.getRoots());
         List<LayoutNode> edgeSourceList = new LinkedList<>();
         List<LayoutNode> edgeTargetList = new LinkedList<>();
-        for (Object jCell : getJGraph().getRoots()) {
-            if (!(jCell instanceof ViewEdge)) {
+        for (ViewCell<?> cell : getCanvas().getCells()) {
+            if (!(cell instanceof ViewEdge<?> edge)) {
                 continue;
             }
-            ViewEdge<?> jEdge = (ViewEdge<?>) jCell;
-            if (!jEdge.getVisuals().isVisible()) {
+            if (!edge.getVisuals().isVisible()) {
                 continue;
             }
-            if (jEdge.isGrayedOut()) {
+            if (edge.isGrayedOut()) {
                 continue;
             }
-            LayoutNode source = this.layoutMap.get(jEdge.getSourceVertex());
+            LayoutNode source = this.layoutMap.get(edge.getSourceVertex());
             if (source == null) {
                 continue;
             }
-            LayoutNode target = this.layoutMap.get(jEdge.getTargetVertex());
+            LayoutNode target = this.layoutMap.get(edge.getTargetVertex());
             if (target == null) {
                 continue;
             }
@@ -275,7 +276,7 @@ public class SpringLayouter extends AbstractLayouter {
         shiftDelta(this.deltaMap.get(key), dx, dy);
     }
 
-    private void shiftDelta(Point2D.Float delta, double dx, double dy) {
+    private void shiftDelta(Point2D.@Nullable Float delta, double dx, double dy) {
         if (delta != null) {
             delta.x += dx;
             delta.y += dy;
@@ -286,20 +287,20 @@ public class SpringLayouter extends AbstractLayouter {
      * An array of layoutables, corresponding to the keys in
      * LayoutAction#toLayoutableMap.
      */
-    private LayoutNode[] layoutables;
+    private LayoutNode[] layoutables = new LayoutNode[0];
 
     /**
      * More precise positions for the elements of layoutables.
      * @invariant <tt>positions.length == layoutables.length</tt>
      */
-    private Point2D.Double[] positions;
+    private Point2D.Double[] positions = new Point2D.Double[0];
 
     /**
      * Collective move info for the layoutables. The array contains null where a
      * layoutable is actually unmovable.
      * @invariant <tt>deltas.length == layoutables.length</tt>
      */
-    private Point2D.Float[] deltas;
+    private Point2D.@Nullable Float[] deltas = new Point2D.Float[0];
 
     /**
      * A map from layoutables to deltas. The entries are all the pairs
@@ -313,7 +314,7 @@ public class SpringLayouter extends AbstractLayouter {
      * Transient value; only used while layout is running.
      * @invariant <tt>edgeFragmentSources: (Rectangle \cup Point)^*</tt>
      */
-    private LayoutNode[] edgeSources;
+    private LayoutNode[] edgeSources = new LayoutNode[0];
 
     /**
      * Target midpoints or vertices of the edge fragments in this graph.
@@ -321,7 +322,7 @@ public class SpringLayouter extends AbstractLayouter {
      * @invariant <tt>edgeFragmentTargets: (Rectangle \cup Point)^*</tt> and
      *            <tt>edgeFragmentSources.length == edgeFragmentTargets.length</tt>
      */
-    private LayoutNode[] edgeTargets;
+    private LayoutNode[] edgeTargets = new LayoutNode[0];
 
     double damper = 1.0; // A low damper value causes the graph to move
     // slowly

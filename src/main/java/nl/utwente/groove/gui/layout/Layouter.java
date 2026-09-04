@@ -16,13 +16,19 @@
  */
 package nl.utwente.groove.gui.layout;
 
+import javax.swing.JComponent;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.gui.view.GraphCanvas;
 
 /**
- * Interface for classes that can layout a <tt>JGraph</tt> in some fashion.
+ * Interface for classes that can lay out a graph canvas in some fashion.
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public interface Layouter {
     /**
      * Factory method for layouters of this class.
@@ -37,9 +43,9 @@ public interface Layouter {
     public String getName();
 
     /**
-     * Lays out the <tt>jgraph</tt>, optionally taking existing layout
+     * Lays out the canvas, optionally taking existing layout
      * information into account. Existing layout information is kept for the
-     * jgraph cells marked unmoveable, if the specific layouter is able to do
+     * cells marked unmoveable, if the specific layouter is able to do
      * so. After layouting, all cells are marked moveable. If an implementor
      * does layouting in parallel, the <tt>stop()</tt> method should make sure
      * that the layout thread stops, and the <tt>start()</tt> itself shouls
@@ -52,4 +58,13 @@ public interface Layouter {
      * incremental layouts.
      */
     public Layouter getIncremental();
+
+    /**
+     * Returns a panel through which the parameters of this layouter can be set,
+     * if it has any; {@code null} otherwise (the default).
+     * Only canvas-bound instances (created by {@link #newInstance}) have a panel.
+     */
+    default @Nullable JComponent getSettingsPanel() {
+        return null;
+    }
 }
