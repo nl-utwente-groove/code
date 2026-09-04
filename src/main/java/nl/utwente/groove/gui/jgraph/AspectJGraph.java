@@ -263,7 +263,7 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements Aspect
         // define the edge to be inserted
         AspectJEdge newEdge = (AspectJEdge) model.createJEdge(null);
         // add a single, empty label so the edge will be displayed
-        newEdge.getUserObject().add("");
+        newEdge.getEditableLabels().add("");
         // to make sure there is at least one graph edge wrapped by this ViewEdge,
         // we add a dummy edge label to the ViewEdge's user object
         Object[] insert = {newEdge};

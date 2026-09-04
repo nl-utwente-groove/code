@@ -148,7 +148,7 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
         // that all resources get synced properly
         super.loadGraph(graph);
         for (AspectViewCell root : getRoots()) {
-            root.saveToUserObject();
+            root.refreshEditableLabels();
         }
         this.properties = ResourceProperties.getProperties(graph);
         setLoading(false);
@@ -188,7 +188,7 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
         graph.setTypeSortMap(getGrammar().getTypeModel().getTypeSortMap());
         for (AspectViewCell jCell : getRoots()) {
             if (jCell instanceof AspectJVertex jVertex) {
-                jVertex.loadFromUserObject(graph);
+                jVertex.applyEditableLabels(graph);
                 graph.addNode(jVertex.getNode());
                 nodeJVertexMap.put(jVertex.getNode(), jVertex);
                 for (AspectEdge edge : jVertex.getEdges()) {
@@ -199,7 +199,7 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
         }
         for (AspectViewCell jCell : getRoots()) {
             if (jCell instanceof AspectJEdge jEdge) {
-                jEdge.loadFromUserObject(graph);
+                jEdge.applyEditableLabels(graph);
                 for (AspectEdge edge : jEdge.getEdges()) {
                     edgeJCellMap.put(edge, jEdge);
                     graph.addEdgeContext(edge);

@@ -143,7 +143,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
         if (!jVertex.getLooks().contains(Look.NODIFIED)) {
             // the following used to include hasError() as a disjunct
             if (controller.isShowAspects()) {
-                result.add(jVertex.getUserObject().toLines());
+                result.add(jVertex.getEditableLabels().toLines());
             } else {
                 Line idLine = controller.isShowUserIds()
                     ? getUserIdLine(node)
@@ -224,7 +224,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
         node.testFixed(true);
         MultiLabel result = new MultiLabel();
         if (controller.isShowAspects()) {
-            result.add(jVertex.getUserObject().toLines());
+            result.add(jVertex.getEditableLabels().toLines());
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
                 if (isVisible(controller, jVertex, edge)) {
                     Line line = edge.label().toLine();
@@ -283,7 +283,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
         MultiLabel result = new MultiLabel();
         // the following used to include hasError() as a disjunct
         if (controller.isShowAspects() || jVertex.getNode().hasErrors()) {
-            result.add(jVertex.getUserObject().toLines());
+            result.add(jVertex.getEditableLabels().toLines());
             for (AspectEdge edge : jVertex.getExtraSelfEdges()) {
                 if (isVisible(controller, jVertex, edge)) {
                     Line line = edge.label().toLine();

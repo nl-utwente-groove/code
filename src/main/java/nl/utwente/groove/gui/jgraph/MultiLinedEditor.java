@@ -126,7 +126,7 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
                 font = font.deriveFont((float) (font.getSize() * scale));
             }
             result.setFont(font);
-            String editString = ((AspectViewCell) value).getUserObject().toEditString();
+            String editString = ((AspectViewCell) value).getEditableLabels().toEditString();
             result.setText(editString);
             result.selectAll();
             return result;
