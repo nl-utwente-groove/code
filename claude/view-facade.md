@@ -202,7 +202,8 @@ architecture test.
    The algorithms are not unified across backends (Arend, 2026-09-04).
 5. **Export seam.** `RasterExporter`/`GraphToVector`/`GraphToEPS/PDF/SVG` use `toImage`/
    `paintGraph`/`getGraphBounds`; `GraphToTikz` drops `org.jgraph.util.Bezier` for its own
-   curve code; `JGraphExportable` stops using the Swing component name.
+   curve code (`InterpolatingBezier`); `JGraphExportable` becomes `CanvasExportable` and stops
+   using the Swing component name.
 
 Residues handed on: `GraphEditorTab`'s `GraphUndoManager`/`GraphModelChange`/`ConnectionSet`
 use (phase 3, the editor's own undo model); `JGraphPanel` and the `getJGraph()` accessors on
@@ -338,3 +339,21 @@ from the canvas — a cell's visuals are legitimately computed for models that a
 for the trees. The reproducing `DetachedCellVisualsTest` also exposed a pre-facade latent
 assertion in the option refresh listener (a model-less canvas registered on the display
 options); it now skips canvases without a model.
+
+**Slice 5 done (2026-09-05, branch `export-seam`).** The export path works on the canvas
+interface: `CanvasExportable` (the former `JGraphExportable`) wraps a `GraphCanvas` and takes
+its name from the shown graph rather than the Swing component name; `ExportKind.JGRAPH` is
+`CANVAS`; `CanvasExporters` (the former `JGraphExporters`) registers the raster, vector and
+TikZ exporters; `RasterExporter` uses `toImage`, the vector writers (`GraphToVector`,
+EPS/PDF/SVG) use `paintGraph`/`getGraphBounds`/`getGraph`, and `GraphToTikz` reads the view
+model, the controller and the `AspectViewVertex` role interface. `org.jgraph.util.Bezier` is
+replaced by the neutral `gui.view.InterpolatingBezier`, an independent implementation of
+the same interpolation (quadratic end segments, cubic middle segments, tangent at an
+interior point parallel to the chord of its neighbours, control points at half the projected
+neighbour distance) with the control-point layout the TikZ writer already expected; it keeps
+double precision where JGraph truncated to integers, so TikZ coordinates of Bezier edges may
+differ in the third decimal. `ExportAction` holds a `GraphCanvas`; `Imager` sizes the
+component through `getComponent()`. `ImagerTest` (slow category) covers PNG, PDF, SVG and
+TikZ export of the ferryman graphs; `InterpolatingBezierTest` pins the curve contract. The
+allowlist is down to 11 files, all phase 2 (canvas construction and the display/tab
+accessors) or phase 3 (`GraphEditorTab`): **phase 1b is complete**.

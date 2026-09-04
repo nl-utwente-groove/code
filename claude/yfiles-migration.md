@@ -10,17 +10,20 @@ everything needed to continue lives here or in `claude/jgraph-controller-split.m
 yFiles rendering spike) is DONE** (findings in `claude/yfiles-spike-findings.md`:
 fidelity bar met, yFiles layouts beat Spring/Forest, 8240-state LTS lays out in
 16 s organic / 44 s hierarchic; go given by Arend). **Phase 1b (facade definition)
-is IN PROGRESS**: slice 1 (branch `view-facade`: the `GraphCanvas` interface family,
-`JGraph` implementing it, controllers and pure clients retargeted, the architecture
-test with its allowlist) and slice 2 (branch `looks-decoupling`, on top of it: neutral
-role cell interfaces, palette and hatch overlay, attribute-map and loop-routing welds
-into the backend, editable labels as a dedicated cell field) and slice 3 (branch
-`neutral-listeners`, on top of that: all `org.jgraph` listeners and JGraph property
-changes outside the backend replaced by `GraphCanvasListener`, with a structured
-`CellChange` and a `graphChanged` event) and slice 4 (branch `layouter-seam`, on top of
-that: GROOVE's layouters work on the canvas interface, the JGraph layout library is a
-backend contribution behind `getBackendLayouters()`) are done and awaiting review; slice 5
-(export seam) remains. Design record and slicing in `claude/view-facade.md`.
+is COMPLETE** (2026-09-05): slice 1 (the `GraphCanvas` interface family, `JGraph`
+implementing it, controllers and pure clients retargeted, the architecture test with its
+allowlist), slice 2 (neutral role cell interfaces, palette and hatch overlay,
+attribute-map and loop-routing welds into the backend, editable labels as a dedicated
+cell field), slice 3 (all `org.jgraph` listeners and JGraph property changes outside the
+backend replaced by `GraphCanvasListener`, with a structured `CellChange` and a
+`graphChanged` event), slice 4 (GROOVE's layouters work on the canvas interface, the
+JGraph layout library is a backend contribution behind `getBackendLayouters()`) and
+slice 5 (the export path works on the canvas: `CanvasExportable`, `toImage`/`paintGraph`,
+an own `InterpolatingBezier` for TikZ). Slices 1–4 are merged into `yworks-migration`
+(rebased on master); slice 5 is on branch `export-seam` awaiting review. The architecture
+allowlist holds 11 files, all tagged for phase 2 (canvas construction, the display/tab
+accessors) or phase 3 (`GraphEditorTab`). Design record and slicing in
+`claude/view-facade.md`. Next: phase 2.
 
 ## Goal and motivation
 
