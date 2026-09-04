@@ -54,6 +54,7 @@ import nl.utwente.groove.grammar.ResourceProperties;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.io.store.EditType;
 import nl.utwente.groove.io.store.SystemStore;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.ChangeCount;
 import nl.utwente.groove.util.ChangeCount.Tracker;
 import nl.utwente.groove.util.Exceptions;
@@ -273,6 +274,23 @@ public class GrammarModel implements PropertyChangeListener {
     /** Removes the locally set active names of a given resource kind. */
     public void resetLocalActiveNames(ResourceKind kind) {
         this.localActiveNamesMap.remove(kind);
+    }
+
+    /**
+     * Prepares the stored properties for resaving the grammar under the current
+     * grammar version: stamps the current versions and, if the active start graph
+     * is only implied (pre-3.2 grammars without a {@code startGraph} key get the
+     * graph named {@code start} as a local override, see the constructor), makes
+     * it explicit. Without that, a resaved grammar has no start graph at all.
+     * The properties object is modified in place; the resource models are not
+     * resynchronised, as the effective active names do not change.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    public void upgradeProperties() {
+        if (getLocalActiveNames(HOST) != null) {
+            getProperties().setActiveNames(HOST, new ArrayList<>(getActiveNames(HOST)));
+        }
+        getProperties().setCurrentVersionProperties();
     }
 
     /**
