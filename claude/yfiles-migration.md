@@ -10,10 +10,13 @@ everything needed to continue lives here or in `claude/jgraph-controller-split.m
 yFiles rendering spike) is DONE** (findings in `claude/yfiles-spike-findings.md`:
 fidelity bar met, yFiles layouts beat Spring/Forest, 8240-state LTS lays out in
 16 s organic / 44 s hierarchic; go given by Arend). **Phase 1b (facade definition)
-is IN PROGRESS** on branch `view-facade`: slice 1 (the `GraphCanvas` interface
-family, `JGraph` implementing it, controllers and pure clients retargeted, the
-architecture test with its allowlist) is done; design record and slicing in
-`claude/view-facade.md`.
+is IN PROGRESS**: slice 1 (branch `view-facade`: the `GraphCanvas` interface family,
+`JGraph` implementing it, controllers and pure clients retargeted, the architecture
+test with its allowlist) and slice 2 (branch `looks-decoupling`, on top of it: neutral
+role cell interfaces, palette and hatch overlay, attribute-map and loop-routing welds
+into the backend, editable labels as a dedicated cell field) are done and awaiting
+review; slices 3–5 (neutral listeners, layouters, export seam) remain. Design record
+and slicing in `claude/view-facade.md`.
 
 ## Goal and motivation
 
