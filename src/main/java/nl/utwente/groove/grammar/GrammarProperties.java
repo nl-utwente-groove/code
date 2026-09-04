@@ -33,6 +33,7 @@ import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.ThreeValued;
 import nl.utwente.groove.util.Version;
 import nl.utwente.groove.util.collect.DeltaMap;
+import nl.utwente.groove.util.collect.DeltaMap.Delta;
 import nl.utwente.groove.util.parse.FormatChecker;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
@@ -820,6 +821,36 @@ public class GrammarProperties extends Properties {
             }
             // false (or an unparsable value) equals the faithful default,
             // so there is nothing to preserve
+        }
+        // translate the legacy disabledRules key, which was replaced by the
+        // delta-map-valued ruleEnabling within grammar version 3.11 (GROOVE
+        // 7.4.0); not version-gated, since both keys were written under the
+        // same version stamp. Before the legacy key was removed, the two
+        // briefly coexisted with ruleEnabling entries taking precedence, so
+        // a rule already in the delta map keeps its entry
+        String disabledRules = getProperty(GrammarKey.DISABLED_RULES);
+        if (disabledRules != null) {
+            result = result.clone();
+            result.remove(GrammarKey.DISABLED_RULES);
+            var ruleEnabling = new DeltaMap<>(result.getRuleEnabling());
+            boolean changed = false;
+            for (String name : disabledRules.trim().split("\\s+")) {
+                if (name.isEmpty()) {
+                    continue;
+                }
+                try {
+                    QualName ruleName = QualName.parser().parse(name);
+                    if (ruleEnabling.get(ruleName) == null) {
+                        ruleEnabling.set(ruleName, Delta.REMOVE);
+                        changed = true;
+                    }
+                } catch (FormatException exc) {
+                    // not a rule name; there is nothing to preserve
+                }
+            }
+            if (changed) {
+                result.setRuleEnabling(ruleEnabling);
+            }
         }
         // pre-3.12 grammars predate the semantics key, whose default is
         // SPO-multi; they must keep the simple-graph semantics they were

@@ -482,6 +482,11 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
      * within grammar version 3.12. */
     static public final String IGNORE_REG_EXP = "ignoreRegExp";
 
+    /** Name of deprecated key for the space-separated list of disabled rule
+     * names, replaced by the delta-map-valued {@link #RULE_ENABLING} within
+     * grammar version 3.11 (GROOVE 7.4.0). */
+    static public final String DISABLED_RULES = "disabledRules";
+
     /** Checks whether a value is a {@link DeltaMap} of rule names. */
     private static class RuleDeltaChecker implements GrammarChecker {
         @Override
