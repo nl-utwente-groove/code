@@ -17,8 +17,10 @@ role cell interfaces, palette and hatch overlay, attribute-map and loop-routing 
 into the backend, editable labels as a dedicated cell field) and slice 3 (branch
 `neutral-listeners`, on top of that: all `org.jgraph` listeners and JGraph property
 changes outside the backend replaced by `GraphCanvasListener`, with a structured
-`CellChange` and a `graphChanged` event) are done and awaiting review; slices 4–5
-(layouters, export seam) remain. Design record and slicing in `claude/view-facade.md`.
+`CellChange` and a `graphChanged` event) and slice 4 (branch `layouter-seam`, on top of
+that: GROOVE's layouters work on the canvas interface, the JGraph layout library is a
+backend contribution behind `getBackendLayouters()`) are done and awaiting review; slice 5
+(export seam) remains. Design record and slicing in `claude/view-facade.md`.
 
 ## Goal and motivation
 

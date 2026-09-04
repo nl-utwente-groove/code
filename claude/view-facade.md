@@ -196,9 +196,10 @@ architecture test.
    the property-change users switch to `GraphCanvasListener`; `TypeTree` and `LabelTree` stop
    reading `GraphModelChange`.
 4. **Layouters.** `Layouter.newInstance(GraphCanvas)`; `AbstractLayouter` works on `ViewVertex`
-   visuals (`NODE_POS`/`NODE_SIZE`) and commits through the edit funnel; backend-provided layouts
-   (`LayouterItem`/`JGraphFacade`) become a backend contribution behind a small
-   `getBackendLayouters()` hook so the yFiles backend can contribute its own.
+   visuals (`NODE_POS` plus the canvas' preferred size) and commits through the edit funnel;
+   backend-provided layouts (`LayouterItem`/`JGraphFacade`) become a backend contribution
+   behind a small `getBackendLayouters()` hook so the yFiles backend can contribute its own.
+   The algorithms are not unified across backends (Arend, 2026-09-04).
 5. **Export seam.** `RasterExporter`/`GraphToVector`/`GraphToEPS/PDF/SVG` use `toImage`/
    `paintGraph`/`getGraphBounds`; `GraphToTikz` drops `org.jgraph.util.Bezier` for its own
    curve code; `JGraphExportable` stops using the Swing component name.
@@ -306,3 +307,20 @@ triple; what remains in them is canvas construction (`new AspectJGraph(…)` etc
 are re-tagged to phase 2 in the allowlist, which is down to 23 files. Incidental fix:
 `AspectJGraph.removeListeners` used to *add* the colour action as selection listener before
 removing it once, leaving it registered.
+
+**Slice 4 done (2026-09-04, branch `layouter-seam`).** Decision (Arend): the layout
+algorithms themselves are not unified; each backend contributes its own palette. So the
+seam has two sides. (a) GROOVE's own layouters are backend-independent: `AbstractLayouter`
+takes a `GraphCanvas`, reads a vertex's bounds as the `NODE_POS` centre plus the canvas'
+`getPreferredSize` (the rendered size, which JGraph keeps under the confusingly named
+`TEXT_SIZE`; `NODE_SIZE` is the inscription only), iterates `getCells()`, and commits node
+positions and cleared edge points through the edit funnel; `SpringLayouter` and
+`ForestLayouter` no longer name a backend type (`ForestLayouter.getSuggestedRoots` uses the
+view model and the canvas selection). (b) The JGraph layout library's algorithms are a
+backend contribution: `LayoutKind` and `LayouterItem` moved to `gui.jgraph`, and
+`GraphCanvas.getBackendLayouters()` hands out their prototypes; `SetLayoutMenu` appends them
+after Spring and Forest, and `LayoutDialog` refills its combo box from the focused canvas
+(so a yFiles canvas will show a different list). `Layouter.getSettingsPanel()` (default
+`null`) replaces `LayouterItem.getPanel()` for the dialog. `LayouterTest` runs both
+GROOVE layouters headlessly through the controller and checks positions, flags and edge
+points. The allowlist is down to 19 files.
