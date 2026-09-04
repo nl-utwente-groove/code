@@ -14,9 +14,11 @@ is IN PROGRESS**: slice 1 (branch `view-facade`: the `GraphCanvas` interface fam
 `JGraph` implementing it, controllers and pure clients retargeted, the architecture
 test with its allowlist) and slice 2 (branch `looks-decoupling`, on top of it: neutral
 role cell interfaces, palette and hatch overlay, attribute-map and loop-routing welds
-into the backend, editable labels as a dedicated cell field) are done and awaiting
-review; slices 3–5 (neutral listeners, layouters, export seam) remain. Design record
-and slicing in `claude/view-facade.md`.
+into the backend, editable labels as a dedicated cell field) and slice 3 (branch
+`neutral-listeners`, on top of that: all `org.jgraph` listeners and JGraph property
+changes outside the backend replaced by `GraphCanvasListener`, with a structured
+`CellChange` and a `graphChanged` event) are done and awaiting review; slices 4–5
+(layouters, export seam) remain. Design record and slicing in `claude/view-facade.md`.
 
 ## Goal and motivation
 
