@@ -25,14 +25,14 @@ import java.io.IOException;
 import org.apache.fop.svg.PDFDocumentGraphics2D;
 import org.apache.xmlgraphics.java2d.GraphicContext;
 
-import nl.utwente.groove.gui.jgraph.JGraph;
+import nl.utwente.groove.gui.view.GraphCanvas;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.util.Fonts;
 
-/** Class offering the functionality to save a JGraph to PDF format. */
+/** Class offering the functionality to save a graph canvas to PDF format. */
 public class GraphToPDF extends GraphToVector {
     @Override
-    public void renderGraph(JGraph<?> graph, File file) throws PortException {
+    public void renderGraph(GraphCanvas<?> graph, File file) throws PortException {
         // Get graph bounds. If not available, do nothing (probably empty graph)
         Rectangle2D bounds = graph.getGraphBounds();
         if (bounds == null) {

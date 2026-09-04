@@ -1,27 +1,25 @@
-/* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2023 University of Twente
+/*
+ * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2023
+ * University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
- * language governing permissions and limitations under the License.
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  *
  * $Id$
  */
 package nl.utwente.groove.gui.export.util;
 
-import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.geom.Rectangle2D;
 import java.io.File;
 
-import nl.utwente.groove.gui.jgraph.JGraph;
+import nl.utwente.groove.gui.view.GraphCanvas;
 import nl.utwente.groove.io.external.PortException;
 
 /**
@@ -30,34 +28,11 @@ import nl.utwente.groove.io.external.PortException;
  * @version $Revision$
  */
 public abstract class GraphToVector {
-    /** Saves a given jGraph to a file according to this vector format. */
-    public abstract void renderGraph(JGraph<?> graph, File file)
-        throws PortException;
+    /** Saves the graph shown on a given canvas to a file according to this vector format. */
+    public abstract void renderGraph(GraphCanvas<?> canvas, File file) throws PortException;
 
-    /** Paints a given jGraph in a {@link Graphics} object. */
-    protected void toGraphics(JGraph<?> graph, Graphics2D graphics) {
-        Rectangle2D bounds = graph.getGraphBounds();
-        if (bounds == null) {
-            return;
-        }
-        graphics.translate(-bounds.getMinX(), -bounds.getMinY());
-        double scale = graph.getScale();
-        graphics.scale(1.0 / scale, 1.0 / scale);
-
-        graph.toScreen(bounds);
-
-        Object[] selection = graph.getSelectionCells();
-        boolean gridVisible = graph.isGridVisible();
-        boolean dBuf = graph.isDoubleBuffered();
-        graph.setGridVisible(false);
-        graph.clearSelection();
-        // Turn off double buffering, otherwise everything gets rasterized
-        graph.setDoubleBuffered(false);
-
-        graph.paint(graphics);
-
-        graph.setDoubleBuffered(dBuf);
-        graph.setSelectionCells(selection);
-        graph.setGridVisible(gridVisible);
+    /** Paints the graph shown on a given canvas in a {@link Graphics2D} object. */
+    protected void toGraphics(GraphCanvas<?> canvas, Graphics2D graphics) {
+        canvas.paintGraph(graphics);
     }
 }

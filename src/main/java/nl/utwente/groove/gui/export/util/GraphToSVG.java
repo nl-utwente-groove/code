@@ -25,13 +25,13 @@ import org.apache.batik.dom.GenericDOMImplementation;
 import org.apache.batik.svggen.SVGGraphics2D;
 import org.w3c.dom.DOMImplementation;
 
-import nl.utwente.groove.gui.jgraph.JGraph;
+import nl.utwente.groove.gui.view.GraphCanvas;
 import nl.utwente.groove.io.external.PortException;
 
-/** Class offering the functionality to save a JGraph to EPS format. */
+/** Class offering the functionality to save a graph canvas to SVG format. */
 public class GraphToSVG extends GraphToVector {
     @Override
-    public void renderGraph(JGraph<?> graph, File file) throws PortException {
+    public void renderGraph(GraphCanvas<?> graph, File file) throws PortException {
         // Get graph bounds. If not available, do nothing (probably empty graph)
         Rectangle2D bounds = graph.getGraphBounds();
         if (bounds == null) {
@@ -44,9 +44,9 @@ public class GraphToSVG extends GraphToVector {
 
             // Create an instance of org.w3c.dom.Document.
             String svgNS = "http://www.w3.org/2000/svg";
-            var model = graph.getModel();
-            assert model != null;
-            var document = domImpl.createDocument(svgNS, model.getName(), null);
+            var shownGraph = graph.getGraph();
+            assert shownGraph != null; // the bounds are non-null, so a graph is shown
+            var document = domImpl.createDocument(svgNS, shownGraph.getName(), null);
 
             var svgDocumentElement = document.getDocumentElement();
             svgDocumentElement.setAttribute("height", String.valueOf(bounds.getHeight()));

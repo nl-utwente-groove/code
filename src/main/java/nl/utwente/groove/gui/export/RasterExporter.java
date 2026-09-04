@@ -1,16 +1,16 @@
-/* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2023 University of Twente
+/*
+ * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2023
+ * University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
- * either express or implied. See the License for the specific
- * language governing permissions and limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  *
  * $Id$
  */
@@ -26,7 +26,6 @@ import javax.imageio.ImageIO;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
-import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.io.external.AbstractExporter;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Exporter;
@@ -42,7 +41,7 @@ import nl.utwente.groove.util.io.FileType;
 @NonNullByDefault
 public class RasterExporter extends AbstractExporter {
     private RasterExporter() {
-        super(Exporter.ExportKind.JGRAPH);
+        super(Exporter.ExportKind.CANVAS);
         addFormat(FileType.PNG, "png");
         addFormat(FileType.JPG, "jpg");
     }
@@ -56,18 +55,17 @@ public class RasterExporter extends AbstractExporter {
 
     @Override
     public boolean exports(Exportable exportable) {
-        return exportable instanceof JGraphExportable;
+        return exportable instanceof CanvasExportable;
     }
 
     @Override
     public void doExport(Exportable exportable, File file, FileType fileType) throws PortException {
-        if (!(exportable instanceof JGraphExportable jExportable)) {
+        if (!(exportable instanceof CanvasExportable canvasExportable)) {
             throw new PortException(String
                 .format("'%s' does not contain a rasterable image and hence cannot be exported to %s",
                         exportable.qualName(), fileType.getExtension()));
         }
-        JGraph<?> jGraph = jExportable.jGraph();
-        BufferedImage image = jGraph.toImage();
+        BufferedImage image = canvasExportable.canvas().toImage();
         if (image == null) {
             throw new PortException("Cannot export blank image");
         }

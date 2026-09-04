@@ -46,24 +46,24 @@ public final class TikzExporter extends AbstractExporter {
     }
 
     private TikzExporter() {
-        super(Exporter.ExportKind.JGRAPH);
+        super(Exporter.ExportKind.CANVAS);
         register(FileType.TIKZ);
     }
 
     @Override
     public boolean exports(Exportable exportable) {
-        return exportable instanceof JGraphExportable;
+        return exportable instanceof CanvasExportable;
     }
 
     @Override
     public void doExport(Exportable exportable, File file, FileType fileType) throws PortException {
-        if (!(exportable instanceof JGraphExportable jExportable)) {
+        if (!(exportable instanceof CanvasExportable canvasExportable)) {
             throw new PortException(String
                 .format("'%s' does not contain a rendered graph and hence cannot be exported to %s",
                         exportable.qualName(), fileType.getExtension()));
         }
         try (PrintWriter writer = new PrintWriter(new FileWriter(file))) {
-            GraphToTikz.export(jExportable.jGraph(), writer);
+            GraphToTikz.export(canvasExportable.canvas(), writer);
         } catch (IOException e) {
             throw new PortException(e);
         }

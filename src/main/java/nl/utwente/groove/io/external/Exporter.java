@@ -76,8 +76,8 @@ public interface Exporter {
     enum ExportKind {
         /** Instances of {@link Graph}. */
         GRAPH,
-        /** Rendered graphs, wrapped by the GUI-side subclass of {@link Exportable}. */
-        JGRAPH,
+        /** Graphs rendered on a canvas, wrapped by the GUI-side subclass of {@link Exportable}. */
+        CANVAS,
         /** Instances of {@link ResourceModel}. */
         RESOURCE;
     }
