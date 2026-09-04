@@ -456,16 +456,6 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
         super.fireGraphChanged(source, edit);
     }
 
-    /** Indicates if the model is currently executing {@link #loadGraph(AspectGraph)}. */
-    @Override
-    final public boolean isLoading() {
-        return this.loading;
-    }
-
-    private void setLoading(boolean loading) {
-        this.loading = loading;
-    }
-
     /**
      * Creates a new aspect node, with a fresh node number and
      * the graph role taken from the editor.
@@ -535,10 +525,6 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
     private ResourceProperties properties;
     /** The set of used node numbers. */
     private Set<Integer> usedNrs;
-    /** Flag indicating that we are loading a new aspect graph,
-     * so we don't have to parse it.
-     */
-    private boolean loading;
 
     /** Role names (for the tool tips). */
     static final Map<AspectKind,String> ROLE_NAMES = new EnumMap<>(AspectKind.class);
