@@ -28,8 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jgraph.graph.AttributeMap;
-
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.graph.layout.EdgeLayout;
@@ -42,28 +40,21 @@ import nl.utwente.groove.util.parse.Severity;
 
 /**
  * Map of visual attributes to corresponding values.
- * The map maintains a JGraph-style attribute map, which is kept in sync.
+ * Changes are reported to an optional {@link Listener}, through which a backend keeps
+ * its own rendering attributes in sync.
  */
 public class VisualMap extends DefaultFixable {
     /** Constructs a new, empty attribute map. */
     public VisualMap() {
         this.map = new EnumMap<>(VisualKey.class);
-        this.attrMap = new VisualAttributeMap(this);
-    }
-
-    /** Adds an the value for a controlled (i.e., non-derived) key to the map. */
-    public void put(VisualKey key, Object value) {
-        assert key.getNature() != Nature.DERIVED;
-        put(key, value, true);
     }
 
     /**
-     * Adds an attribute to the map, and on request set the corresponding
-     * key in the attribute map to stale.
-     * @param refresh if {@code true}, the key value should be marked as changed
-     * in the attribute map
+     * Adds the value for a controlled (i.e., non-derived) key to the map,
+     * notifying the listener if the value changed.
      */
-    void put(VisualKey key, Object value, boolean refresh) {
+    public void put(VisualKey key, Object value) {
+        assert key.getNature() != Nature.DERIVED;
         testFixed(false);
         Object oldValue = this.map.get(key);
         boolean change;
@@ -75,17 +66,26 @@ public class VisualMap extends DefaultFixable {
         if (change) {
             key.test(value);
             this.map.put(key, value);
-            if (refresh) {
-                this.attrMap.setStale(key);
-            }
+            notifyChanged(key);
         }
+    }
+
+    /**
+     * Adds the value for a derived key to the map, notifying the listener.
+     * Only the looks may set derived values.
+     */
+    void putDerived(VisualKey key, Object value) {
+        testFixed(false);
+        key.test(value);
+        this.map.put(key, value);
+        notifyChanged(key);
     }
 
     /** Copies all attributes from another map to this one. */
     public void putAll(VisualMap other) {
         testFixed(false);
         this.map.putAll(other.map);
-        this.attrMap.setStale(other.map.keySet());
+        notifyChanged(other.map.keySet());
     }
 
     /**
@@ -103,7 +103,7 @@ public class VisualMap extends DefaultFixable {
                     this.map.put(key, newValue);
                 }
             }
-            this.attrMap.setStale(key);
+            notifyChanged(key);
         }
     }
 
@@ -133,7 +133,7 @@ public class VisualMap extends DefaultFixable {
                 }
             }
         }
-        this.attrMap.setStale(staleKeys);
+        notifyChanged(staleKeys);
     }
 
     /**
@@ -154,7 +154,7 @@ public class VisualMap extends DefaultFixable {
     /** Clears all values from the map. */
     public void clear() {
         testFixed(false);
-        this.attrMap.setStale(this.map.keySet());
+        notifyChanged(this.map.keySet());
         this.map.clear();
     }
 
@@ -168,20 +168,11 @@ public class VisualMap extends DefaultFixable {
         return this.map.containsKey(key);
     }
 
-    /** Removes a given key from the map. */
+    /** Removes a given key from the map, notifying the listener. */
     public void remove(VisualKey key) {
-        remove(key, true);
-    }
-
-    /** Removes a given key from the map, notifying the dependent map
-     * if required.
-     */
-    void remove(VisualKey key, boolean refresh) {
         testFixed(false);
         this.map.remove(key);
-        if (refresh) {
-            this.attrMap.setStale(key);
-        }
+        notifyChanged(key);
     }
 
     /**
@@ -658,14 +649,40 @@ public class VisualMap extends DefaultFixable {
         put(VisualKey.VISIBLE, newValue);
     }
 
-    /** Returns the inner map. */
-    Map<VisualKey,Object> getMap() {
-        return this.map;
+    /**
+     * Sets the (single) listener to be notified of changes to this map;
+     * {@code null} removes the listener. Backends use this to keep their own
+     * rendering attributes in step with the visuals.
+     */
+    public void setListener(@Nullable Listener listener) {
+        this.listener = listener;
     }
 
-    /** Converts this visual map into a JGraph-style attribute map. */
-    public AttributeMap getAttributes() {
-        return this.attrMap;
+    /** Notifies the listener, if any, of a change to a given key. */
+    private void notifyChanged(VisualKey key) {
+        var listener = this.listener;
+        if (listener != null) {
+            listener.changed(key);
+        }
+    }
+
+    /** Notifies the listener, if any, of changes to a given set of keys. */
+    private void notifyChanged(Set<VisualKey> keys) {
+        var listener = this.listener;
+        if (listener != null) {
+            for (VisualKey key : keys) {
+                listener.changed(key);
+            }
+        }
+    }
+
+    /** The listener of changes to this map, if any. */
+    private @Nullable Listener listener;
+
+    /** Listener for changes to the values of a visual map. */
+    public interface Listener {
+        /** Signals that the value of a given key changed (or was removed). */
+        void changed(VisualKey key);
     }
 
     @Override
@@ -674,7 +691,6 @@ public class VisualMap extends DefaultFixable {
     }
 
     private final Map<VisualKey,Object> map;
-    private final VisualAttributeMap attrMap;
 
     /**
      * Converts a colour dimension to a value that is whitewashed by

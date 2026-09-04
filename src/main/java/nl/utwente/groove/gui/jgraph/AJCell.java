@@ -118,6 +118,7 @@ public abstract class AJCell<G extends @NonNull Graph,JG extends JGraph<G>,JM ex
         }
         VisualMap oldVisuals = this.visuals;
         this.visuals = new VisualMap();
+        this.attributes = null;
         if (oldVisuals != null) {
             this.visuals.putAll(oldVisuals);
         }
@@ -270,10 +271,19 @@ public abstract class AJCell<G extends @NonNull Graph,JG extends JGraph<G>,JM ex
     /** The set of (refreshable) visual keys to be refreshed. */
     private Set<VisualKey> staleKeys;
 
+    /* Returns the JGraph attributes derived from (and kept in step with) the visuals. */
     @Override
     public AttributeMap getAttributes() {
-        return getVisuals().getAttributes();
+        var visuals = getVisuals();
+        var result = this.attributes;
+        if (result == null) {
+            this.attributes = result = new VisualAttributeMap(visuals);
+        }
+        return result;
     }
+
+    /** The JGraph attribute map bound to {@link #visuals}; recreated when the visuals are. */
+    private VisualAttributeMap attributes;
 
     /** Returns a label-sorted set of edges. */
     protected <E extends Edge> Set<E> createEdgeSet() {

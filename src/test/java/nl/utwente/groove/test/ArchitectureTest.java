@@ -53,10 +53,6 @@ public class ArchitectureTest {
      * with the migration step that removes them; paths relative to the source roots.
      */
     private static final Map<String,String> ALLOWED = new TreeMap<>(Map.ofEntries(
-        // phase 1b, slice 2: looks decoupling
-        Map.entry("nl/utwente/groove/gui/look/LoopRouting.java", "1b-2"),
-        Map.entry("nl/utwente/groove/gui/look/VisualAttributeMap.java", "1b-2"),
-        Map.entry("nl/utwente/groove/gui/look/VisualMap.java", "1b-2"),
         // phase 1b, slice 3: neutral listeners
         Map.entry("nl/utwente/groove/gui/action/FindReplaceAction.java", "1b-3"),
         Map.entry("nl/utwente/groove/gui/action/SelectColorAction.java", "1b-3"),

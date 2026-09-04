@@ -676,7 +676,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
     public void edit(Map<? extends ViewCell<G>,VisualMap> changes) {
         Map<ViewCell<G>,AttributeMap> attributes = new HashMap<>();
         for (var entry : changes.entrySet()) {
-            attributes.put(entry.getKey(), entry.getValue().getAttributes());
+            attributes.put(entry.getKey(), VisualAttributeMap.toAttributes(entry.getValue()));
         }
         getNonNullModel().edit(attributes, null, null, null);
     }

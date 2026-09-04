@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.gui.look;
+package nl.utwente.groove.gui.jgraph;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -36,7 +36,10 @@ import org.jgraph.graph.Edge.Routing;
 import org.jgraph.graph.GraphConstants;
 
 import nl.utwente.groove.graph.layout.ElementLayout;
+import nl.utwente.groove.gui.look.EdgeEnd;
+import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualKey.Nature;
+import nl.utwente.groove.gui.look.VisualMap;
 import nl.utwente.groove.util.Fonts;
 import nl.utwente.groove.util.line.LineStyle;
 
@@ -45,9 +48,17 @@ import nl.utwente.groove.util.line.LineStyle;
  * Changes in this map are propagated back to the VisualMap,
  * if they correspond to controlled {@link VisualKey}s.
  */
-public class VisualAttributeMap extends AttributeMap {
-    @SuppressWarnings("unchecked")
+public class VisualAttributeMap extends AttributeMap implements VisualMap.Listener {
+    /**
+     * Constructs an attribute map for a given visual map, and registers it as the
+     * listener of that map so that it stays in step with subsequent changes.
+     */
     VisualAttributeMap(VisualMap visuals) {
+        this(visuals, true);
+    }
+
+    @SuppressWarnings("unchecked")
+    private VisualAttributeMap(VisualMap visuals, boolean bind) {
         super.put(GraphConstants.GROUPOPAQUE, true);
         super.put(GraphConstants.AUTOSIZE, true);
         super.put(GraphConstants.EDITABLE, true);
@@ -55,7 +66,28 @@ public class VisualAttributeMap extends AttributeMap {
         super.put(GraphConstants.ROUTING, edgeRouting);
         this.visuals = visuals;
         this.changedKeys = EnumSet.noneOf(VisualKey.class);
-        setStale(visuals.getMap().keySet());
+        setStale(visuals.keySet());
+        if (bind) {
+            visuals.setListener(this);
+        }
+    }
+
+    /**
+     * Converts a visual map to a detached JGraph attribute map, holding only the
+     * attributes corresponding to the keys in the visual map. The visual map is
+     * left untouched (in particular, its listener is not replaced).
+     */
+    public static AttributeMap toAttributes(VisualMap visuals) {
+        return (AttributeMap) new VisualAttributeMap(visuals, false).clone();
+    }
+
+    /*
+     * Notifies the attribute map that a visual key change has occurred,
+     * which may require refreshing the attribute map.
+     */
+    @Override
+    public void changed(VisualKey key) {
+        setStale(key);
     }
 
     /**
@@ -63,7 +95,7 @@ public class VisualAttributeMap extends AttributeMap {
      * which may require refreshing the attribute map;
      * @param key the key whose value has changed in the visual map
      */
-    void setStale(VisualKey key) {
+    private void setStale(VisualKey key) {
         // only react to key changes that have a corresponding
         // attribute
         if (getAttrKey(key) != null) {
@@ -76,7 +108,7 @@ public class VisualAttributeMap extends AttributeMap {
      * which may require refreshing the attribute map;
      * @param keys the keys whose values have changed in the visual map
      */
-    void setStale(Set<VisualKey> keys) {
+    private void setStale(Set<VisualKey> keys) {
         if (!keys.isEmpty()) {
             for (VisualKey key : keys) {
                 setStale(key);
@@ -186,7 +218,7 @@ public class VisualAttributeMap extends AttributeMap {
                     return super.get(key);
                 }
                 vValue = vValues[0];
-                this.visuals.put(VisualKey.EDGE_TARGET_LABEL, vValues[1], false);
+                this.visuals.put(VisualKey.EDGE_TARGET_LABEL, vValues[1]);
                 break;
             case EDGE_SOURCE_POS:
                 vValues = asPair(value);
@@ -194,7 +226,7 @@ public class VisualAttributeMap extends AttributeMap {
                     return super.get(key);
                 }
                 vValue = vValues[0];
-                this.visuals.put(VisualKey.EDGE_TARGET_POS, vValues[1], false);
+                this.visuals.put(VisualKey.EDGE_TARGET_POS, vValues[1]);
                 break;
             case EDGE_TARGET_LABEL:
                 vValues = asPair(value);
@@ -202,7 +234,7 @@ public class VisualAttributeMap extends AttributeMap {
                     return super.get(key);
                 }
                 vValue = vValues[1];
-                this.visuals.put(VisualKey.EDGE_SOURCE_LABEL, vValues[0], false);
+                this.visuals.put(VisualKey.EDGE_SOURCE_LABEL, vValues[0]);
                 break;
             case EDGE_TARGET_POS:
                 vValues = asPair(value);
@@ -210,7 +242,7 @@ public class VisualAttributeMap extends AttributeMap {
                     return super.get(key);
                 }
                 vValue = vValues[1];
-                this.visuals.put(VisualKey.EDGE_SOURCE_POS, vValues[0], false);
+                this.visuals.put(VisualKey.EDGE_SOURCE_POS, vValues[0]);
                 break;
             case LINE_STYLE:
                 vValue = LineStyle.getStyle((Integer) value);
@@ -222,7 +254,7 @@ public class VisualAttributeMap extends AttributeMap {
             default:
                 vValue = value;
             }
-            this.visuals.put(vKey, vValue, false);
+            this.visuals.put(vKey, vValue);
             result = super.put(key, value);
         } else {
             result = super.get(key);
@@ -255,21 +287,21 @@ public class VisualAttributeMap extends AttributeMap {
             // also remove supplementary keys
             switch (vKey) {
             case EDGE_SOURCE_LABEL:
-                this.visuals.remove(VisualKey.EDGE_TARGET_LABEL, false);
+                this.visuals.remove(VisualKey.EDGE_TARGET_LABEL);
                 break;
             case EDGE_SOURCE_POS:
-                this.visuals.remove(VisualKey.EDGE_TARGET_POS, false);
+                this.visuals.remove(VisualKey.EDGE_TARGET_POS);
                 break;
             case EDGE_TARGET_LABEL:
-                this.visuals.remove(VisualKey.EDGE_SOURCE_LABEL, false);
+                this.visuals.remove(VisualKey.EDGE_SOURCE_LABEL);
                 break;
             case EDGE_TARGET_POS:
-                this.visuals.remove(VisualKey.EDGE_SOURCE_POS, false);
+                this.visuals.remove(VisualKey.EDGE_SOURCE_POS);
                 break;
             default:
                 // nothing to be done
             }
-            this.visuals.remove(vKey, false);
+            this.visuals.remove(vKey);
         }
         return super.remove(key);
     }

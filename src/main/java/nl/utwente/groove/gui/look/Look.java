@@ -233,7 +233,7 @@ public enum Look {
             boolean isStart = (map.getBackground() == Values.START_BACKGROUND);
             super.apply(map);
             if (isStart) {
-                map.put(VisualKey.BACKGROUND, Values.START_OPEN_BACKGROUND, false);
+                map.putDerived(VisualKey.BACKGROUND, Values.START_OPEN_BACKGROUND);
             }
         }
     },
@@ -297,9 +297,9 @@ public enum Look {
             boolean isStart = (map.getForeground() == Values.START_FOREGROUND);
             super.apply(map);
             if (inRecipe) {
-                map.put(VisualKey.FOREGROUND, Values.ACTIVE_RECIPE_COLOR, false);
+                map.putDerived(VisualKey.FOREGROUND, Values.ACTIVE_RECIPE_COLOR);
             } else if (isStart) {
-                map.put(VisualKey.FOREGROUND, Values.ACTIVE_START_COLOR, false);
+                map.putDerived(VisualKey.FOREGROUND, Values.ACTIVE_START_COLOR);
             }
         }
     },
@@ -351,7 +351,7 @@ public enum Look {
     /** Adds a derived or refreshable key-value pair to the attribute map of this look. */
     void add(VisualKey key, Object value) {
         assert key.getNature() == Nature.DERIVED || key.getNature() == Nature.REFRESHABLE;
-        this.visuals.put(key, value, false);
+        this.visuals.putDerived(key, value);
     }
 
     /** Returns the attribute map associated with this look. */

@@ -14,27 +14,26 @@
  *
  * $Id$
  */
-package nl.utwente.groove.gui.look;
+package nl.utwente.groove.gui.jgraph;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.jgraph.graph.Edge;
 import org.jgraph.graph.Edge.Routing;
-
-import nl.utwente.groove.gui.view.ViewEdge;
-import nl.utwente.groove.gui.jgraph.JGraph;
-
 import org.jgraph.graph.EdgeView;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphLayoutCache;
 import org.jgraph.graph.VertexView;
 
+import nl.utwente.groove.gui.look.VisualMap;
+import nl.utwente.groove.gui.view.LoopRouter;
+import nl.utwente.groove.gui.view.ViewEdge;
+
 /**
- * Edge routing class that only touches loops with fewer than two
- * intermediate control points.
+ * JGraph edge routing that gives loops without bends of their own the default points
+ * computed by the neutral {@link LoopRouter}, and stores them in the cell's visuals.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -54,8 +53,7 @@ final class LoopRouting implements Routing {
         if (isRoutable(edgeView)) {
             ViewEdge<?> jEdge = (ViewEdge<?>) edgeView.getCell();
             // find out the source bounds
-            VertexView sourceView = (VertexView) edgeView.getSource()
-                .getParentView();
+            VertexView sourceView = (VertexView) edgeView.getSource().getParentView();
             // first refresh the source view, otherwise the view bounds
             // might be out of date
             sourceView.refresh(cache, cache, true);
@@ -63,18 +61,8 @@ final class LoopRouting implements Routing {
             assert jGraph != null; // guaranteed by now
             jGraph.updateAutoSize(sourceView);
             Rectangle2D sourceBounds = sourceView.getBounds();
+            result = LoopRouter.route(jEdge, sourceBounds);
             VisualMap visuals = jEdge.getVisuals();
-            Point2D startPoint = edgeView.getPoint(0);
-            Point2D midPoint = edgeView.getPoint(1);
-            if (startPoint.equals(midPoint) || sourceBounds.contains(midPoint)) {
-                // modify end point so it lies outside node bounds
-                midPoint.setLocation(sourceBounds.getMaxX() + DEFAULT_LOOP_SIZE, midPoint.getY());
-            }
-            Point2D endPoint = edgeView.getPoint(edgeView.getPointCount() - 1);
-            result = new ArrayList<>(3);
-            result.add(startPoint);
-            result.add(midPoint);
-            result.add(endPoint);
             visuals.setPoints(result);
             GraphConstants.setPoints(edgeView.getAllAttributes(), result);
         }
@@ -96,7 +84,4 @@ final class LoopRouting implements Routing {
         }
         return edgeView.getPointCount() <= 2;
     }
-
-    /** Distance of the loop's control point from the node bound's right edge. */
-    private static final int DEFAULT_LOOP_SIZE = 35;
 }
