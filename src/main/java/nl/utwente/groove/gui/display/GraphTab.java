@@ -32,7 +32,6 @@ import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.AspectJModel;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.jgraph.JModel;
-import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.tree.RuleLevelTree;
 import nl.utwente.groove.gui.tree.TypeTree;
 import nl.utwente.groove.util.QualName;

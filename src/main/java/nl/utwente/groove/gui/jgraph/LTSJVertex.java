@@ -82,6 +82,7 @@ public class LTSJVertex extends AJVertex<@NonNull GTS,LTSJGraph,LTSJModel,LTSJEd
     private boolean visibleFlag;
 
     /** Indicates that all outgoing transitions of this node are also visible. */
+    @Override
     public boolean isAllOutVisible() {
         return getNode().isFull() && getOutCount() == getOutVisibleCount();
     }
@@ -182,6 +183,7 @@ public class LTSJVertex extends AJVertex<@NonNull GTS,LTSJGraph,LTSJModel,LTSJEd
     /**
      * @return true if the state is a start state.
      */
+    @Override
     public boolean isStart() {
         GTS gts = getNode().getGTS();
         return gts.startState().equals(getNode());
@@ -190,6 +192,7 @@ public class LTSJVertex extends AJVertex<@NonNull GTS,LTSJGraph,LTSJModel,LTSJEd
     /**
      * Returns {@code true} if the state is closed.
      */
+    @Override
     public boolean isClosed() {
         return getNode().isClosed();
     }
@@ -197,6 +200,7 @@ public class LTSJVertex extends AJVertex<@NonNull GTS,LTSJGraph,LTSJModel,LTSJEd
     /**
      * @return true if the state is final.
      */
+    @Override
     public boolean isFinal() {
         return getNode().isFinal();
     }

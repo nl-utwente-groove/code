@@ -40,7 +40,6 @@ import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.parse.FormatError;
-import nl.utwente.groove.gui.view.AspectViewCell;
 import nl.utwente.groove.gui.view.AspectViewCellErrors;
 import nl.utwente.groove.gui.view.AspectViewVertex;
 
@@ -118,6 +117,7 @@ public class AspectJVertex extends
      * have this ViewVertex as their source label and for which
      * {@link AspectJEdge#isSourceLabel()} holds.
      */
+    @Override
     public Set<AspectEdge> getExtraSelfEdges() {
         Set<AspectEdge> result = createEdgeSet();
         // add all outgoing JEdges that are source labels
@@ -282,6 +282,7 @@ public class AspectJVertex extends
     }
 
     /** Indicates if this vertex is in fact a nodified edge. */
+    @Override
     public boolean isNodeEdge() {
         JGraph<?> jGraph = getJGraph();
         return jGraph != null && jGraph.getMode() != GraphViewMode.EDIT_MODE
@@ -292,6 +293,7 @@ public class AspectJVertex extends
      * Returns the (possibly {@code null}) edge label pattern, if
      * this node is a nodified edge.
      */
+    @Override
     public LabelPattern getEdgeLabelPattern() {
         LabelPattern result = null;
         if (getNode().getGraphRole() == GraphRole.HOST) {
@@ -307,6 +309,7 @@ public class AspectJVertex extends
      * Retrieves the node type corresponding to the node type label.
      * The node type may be {@code null} if the graph has typing errors.
      */
+    @Override
     public TypeNode getNodeType() {
         TypeModelMap typeMap = getTypeMap();
         return typeMap == null

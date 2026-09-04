@@ -34,7 +34,6 @@ import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.parse.FormatError;
-import nl.utwente.groove.gui.view.AspectViewCell;
 import nl.utwente.groove.gui.view.AspectViewCellErrors;
 import nl.utwente.groove.gui.view.AspectViewEdge;
 
@@ -71,12 +70,14 @@ public class AspectJEdge extends
     }
 
     /** Indicates if this is the incoming part of a nodified edge. */
+    @Override
     public boolean isNodeEdgeIn() {
         AspectJVertex target = getTargetVertex();
         return target != null && target.isNodeEdge();
     }
 
     /** Indicates if this is the incoming pars of a nodified edge. */
+    @Override
     public boolean isNodeEdgeOut() {
         AspectJVertex source = getSourceVertex();
         return source != null && source.isNodeEdge();
@@ -221,6 +222,7 @@ public class AspectJEdge extends
      * This is true if this is an attribute edge to a "pure" value node,
      * and value nodes are not shown.
      */
+    @Override
     public boolean isSourceLabel() {
         AspectJGraph graph = getJGraph();
         if (graph != null && graph.getController().isShowValueNodes()) {

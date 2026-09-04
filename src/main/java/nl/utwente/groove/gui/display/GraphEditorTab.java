@@ -86,7 +86,6 @@ import nl.utwente.groove.gui.jgraph.AspectJModel;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.view.GraphViewMode;
-import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.tree.TypeTree;
 import nl.utwente.groove.io.store.EditType;
 import nl.utwente.groove.util.AIGenerated;
