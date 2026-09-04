@@ -26,6 +26,8 @@ import nl.utwente.groove.grammar.aspect.Aspect;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectKind;
+import nl.utwente.groove.grammar.model.GraphBasedModel;
+import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.EdgeComparator;
 import nl.utwente.groove.util.parse.Severity;
@@ -42,6 +44,16 @@ public interface AspectViewCell extends ViewCell<@NonNull AspectGraph> {
 
     /** Returns the aspect kind of the element wrapped in this cell. */
     Aspect.Map getAspects();
+
+    /**
+     * Returns the resource model of the graph this cell is part of.
+     * Available as soon as the cell has a content model, whether or not
+     * that model is shown on a canvas.
+     */
+    GraphBasedModel<?> getResourceModel();
+
+    /** Returns the type graph against which this cell's elements are typed. */
+    TypeGraph getTypeGraph();
 
     /**
      * Returns the editable labels of this cell: the texts of its node labels and

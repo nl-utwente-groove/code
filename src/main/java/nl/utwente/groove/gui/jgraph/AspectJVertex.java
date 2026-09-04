@@ -24,7 +24,9 @@ import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.aspect.AspectLabel;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.aspect.AspectParser;
+import nl.utwente.groove.grammar.model.GraphBasedModel;
 import nl.utwente.groove.grammar.model.GraphBasedModel.TypeModelMap;
+import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.rule.OperatorNode;
 import nl.utwente.groove.grammar.rule.VariableNode;
 import nl.utwente.groove.grammar.type.LabelPattern;
@@ -264,7 +266,17 @@ public class AspectJVertex extends
     }
 
     private TypeModelMap getTypeMap() {
-        return getJModel().getResourceModel().getTypeMap();
+        return getResourceModel().getTypeMap();
+    }
+
+    @Override
+    public GraphBasedModel<?> getResourceModel() {
+        return getJModel().getResourceModel();
+    }
+
+    @Override
+    public TypeGraph getTypeGraph() {
+        return getJModel().getTypeGraph();
     }
 
     @Override

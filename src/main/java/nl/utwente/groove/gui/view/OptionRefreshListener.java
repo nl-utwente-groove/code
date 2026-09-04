@@ -51,10 +51,13 @@ public class OptionRefreshListener implements ItemListener, PropertyChangeListen
         }
     }
 
-    /** Callback method invoked when the option changed. */
+    /** Callback method invoked when the option changed; does nothing if the canvas has no model. */
     protected void doRefresh() {
-        this.canvas.getNonNullViewModel().refreshVisuals();
-        this.canvas.refreshAll(true);
+        var viewModel = this.canvas.getViewModel();
+        if (viewModel != null) {
+            viewModel.refreshVisuals();
+            this.canvas.refreshAll(true);
+        }
     }
 
     /** Returns the canvas refreshed by this listener. */
