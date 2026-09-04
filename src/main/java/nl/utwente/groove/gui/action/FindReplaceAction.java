@@ -1,16 +1,16 @@
-/* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2023 University of Twente
+/*
+ * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2023
+ * University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
- * either express or implied. See the License for the specific
- * language governing permissions and limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  *
  * $Id$
  */
@@ -24,9 +24,10 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreePath;
 
-import org.jgraph.event.GraphSelectionEvent;
-import org.jgraph.event.GraphSelectionListener;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.type.TypeElement;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.Label;
@@ -34,19 +35,20 @@ import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.display.GraphTab;
-import nl.utwente.groove.gui.display.JGraphPanel;
 import nl.utwente.groove.gui.display.ResourceDisplay;
-import nl.utwente.groove.gui.view.ViewCell;
-import nl.utwente.groove.gui.jgraph.JGraph;
+import nl.utwente.groove.gui.list.SearchResult;
 import nl.utwente.groove.gui.tree.LabelTree;
 import nl.utwente.groove.gui.tree.TypeTree.TypeTreeNode;
-import nl.utwente.groove.gui.list.SearchResult;
+import nl.utwente.groove.gui.view.AspectGraphCanvas;
+import nl.utwente.groove.gui.view.GraphCanvas;
+import nl.utwente.groove.gui.view.GraphCanvasListener;
 
 /**
  * Action for changing one label into another throughout the grammar.
  */
+@NonNullByDefault
 public class FindReplaceAction extends SimulatorAction
-    implements GraphSelectionListener, TreeSelectionListener {
+    implements GraphCanvasListener<AspectGraph>, TreeSelectionListener {
     /** Constructs an instance of the action, for a given simulator. */
     public FindReplaceAction(Simulator simulator) {
         super(simulator, Options.FIND_REPLACE_ACTION_NAME, Icons.SEARCH_ICON);
@@ -57,13 +59,15 @@ public class FindReplaceAction extends SimulatorAction
     }
 
     /**
-     * Adds this action as a listener to the {@link JGraph} and {@link LabelTree}
-     * of a given {@link JGraphPanel}.
+     * Adds this action as a listener to the graph canvas and {@link LabelTree}
+     * of a given {@link ResourceDisplay}.
      */
     private void addAsListener(ResourceDisplay display) {
-        JGraph<?> jGraph = ((GraphTab) display.getMainTab()).getJGraph();
-        jGraph.addGraphSelectionListener(this);
-        jGraph.getLabelTree().addTreeSelectionListener(this);
+        AspectGraphCanvas canvas = ((GraphTab) display.getMainTab()).getJGraph();
+        canvas.addCanvasListener(this);
+        var labelTree = canvas.getController().getLabelTree();
+        assert labelTree != null; // the graph tab installs the label tree with the canvas
+        labelTree.addTreeSelectionListener(this);
     }
 
     @Override
@@ -96,13 +100,13 @@ public class FindReplaceAction extends SimulatorAction
         }
     }
 
-    /** Sets {@link #oldLabel} based on the {@link JGraph} selection. */
+    /** Sets {@link #oldLabel} based on the canvas selection. */
     @Override
-    public void valueChanged(GraphSelectionEvent e) {
+    public void selectionChanged(GraphCanvas<AspectGraph> canvas) {
         this.oldLabel = null;
-        Object[] selection = ((JGraph<?>) e.getSource()).getSelectionCells();
-        if (selection != null && selection.length > 0) {
-            Collection<? extends Label> selectedEntries = ((ViewCell<?>) selection[0]).getKeys();
+        var selection = canvas.getSelection();
+        if (!selection.isEmpty()) {
+            Collection<? extends Label> selectedEntries = selection.get(0).getKeys();
             if (selectedEntries.size() > 0) {
                 Label selectedEntry = selectedEntries.iterator().next();
                 if (selectedEntry instanceof TypeElement te) {
@@ -113,17 +117,19 @@ public class FindReplaceAction extends SimulatorAction
     }
 
     @Override
-    public void valueChanged(TreeSelectionEvent e) {
+    public void valueChanged(@Nullable TreeSelectionEvent e) {
         this.oldLabel = null;
-        TreePath[] selection = ((LabelTree<?>) e.getSource()).getSelectionPaths();
-        if (selection != null && selection.length > 0) {
-            Object treeNode = selection[0].getLastPathComponent();
-            if (treeNode instanceof TypeTreeNode en) {
-                this.oldLabel = en.getEntry().getContent().label();
+        if (e != null) {
+            TreePath[] selection = ((LabelTree<?>) e.getSource()).getSelectionPaths();
+            if (selection != null && selection.length > 0) {
+                Object treeNode = selection[0].getLastPathComponent();
+                if (treeNode instanceof TypeTreeNode en) {
+                    this.oldLabel = en.getEntry().getContent().label();
+                }
             }
         }
     }
 
     /** The label to be replaced; may be {@code null}. */
-    private TypeLabel oldLabel;
+    private @Nullable TypeLabel oldLabel;
 }

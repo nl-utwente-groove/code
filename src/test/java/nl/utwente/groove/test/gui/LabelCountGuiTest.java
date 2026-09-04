@@ -122,9 +122,9 @@ public class LabelCountGuiTest {
     }
 
     /** Recursively searches a component tree for the label tree whose
-     * JGraph has a given graph role. */
+     * canvas has a given graph role. */
     private @Nullable TypeTree findLabelTree(Component comp, GraphRole role) {
-        if (comp instanceof TypeTree result && result.getJGraph().hasGraphRole(role)) {
+        if (comp instanceof TypeTree result && result.getCanvas().hasGraphRole(role)) {
             return result;
         }
         if (comp instanceof Container container) {

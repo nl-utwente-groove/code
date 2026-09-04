@@ -1,16 +1,16 @@
-/* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2023 University of Twente
+/*
+ * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2023
+ * University of Twente
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
- * either express or implied. See the License for the specific
- * language governing permissions and limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  *
  * $Id$
  */
@@ -31,56 +31,60 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreePath;
 
-import org.jgraph.event.GraphSelectionEvent;
-import org.jgraph.event.GraphSelectionListener;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.aspect.AspectElement;
+import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.model.RuleModel;
 import nl.utwente.groove.grammar.model.RuleModel.Index;
-import nl.utwente.groove.gui.view.AspectViewCell;
-import nl.utwente.groove.gui.jgraph.AspectJGraph;
-import nl.utwente.groove.gui.jgraph.AspectJModel;
 import nl.utwente.groove.gui.look.VisualKey;
+import nl.utwente.groove.gui.view.AspectGraphCanvas;
+import nl.utwente.groove.gui.view.AspectViewCell;
+import nl.utwente.groove.gui.view.GraphCanvas;
+import nl.utwente.groove.gui.view.GraphCanvasListener;
+import nl.utwente.groove.gui.view.GraphViewModel;
 
 /**
  * Checkbox tree controlling the visibility of rule levels.
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener {
-    /** Creates a new tree, for a given rule model. */
-    public RuleLevelTree(AspectJGraph jGraph) {
-        this.jGraph = jGraph;
+    /** Creates a new tree, for a given rule canvas. */
+    public RuleLevelTree(AspectGraphCanvas canvas) {
+        this.canvas = canvas;
         setLargeModel(true);
-        setEnabled(jGraph.isEnabled());
+        setEnabled(canvas.isEnabled());
         setShowsRootHandles(false);
         getUI().setCollapsedIcon(null);
         getUI().setExpandedIcon(null);
         addMouseListener(new MyMouseListener());
         // deselect the level tree whenever the graph
         // selection changes
-        jGraph.addGraphSelectionListener(new GraphSelectionListener() {
+        canvas.addCanvasListener(new GraphCanvasListener<AspectGraph>() {
             @Override
-            public void valueChanged(GraphSelectionEvent e) {
+            public void selectionChanged(GraphCanvas<AspectGraph> canvas) {
                 clearSelection();
             }
         });
     }
 
     /**
-     * Replaces the jmodel on which this level tree is based with the
-     * (supposedly new) model in the associated jgraph. Gets the rule
-     * model from the jmodel.
+     * Replaces the view model on which this level tree is based with the
+     * (supposedly new) model in the associated canvas. Gets the rule
+     * model from the canvas.
      */
-    private void synchroniseJModel() {
-        AspectJModel jModel = getJGraph().getModel();
-        if (jModel != this.jModel) {
-            this.jModel = jModel;
-            if (jModel == null) {
+    private void synchroniseViewModel() {
+        var viewModel = getCanvas().getViewModel();
+        if (viewModel != this.viewModel) {
+            this.viewModel = viewModel;
+            if (viewModel == null) {
                 this.rule = null;
             } else {
-                this.rule = (RuleModel) jModel.getResourceModel();
+                this.rule = (RuleModel) getCanvas().getResourceModel();
             }
             boolean enabled = updateTree();
             for (Set<AspectViewCell> levelCells : this.levelCellMap.values()) {
@@ -93,17 +97,17 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
 
     /** Indicates if a given aspect cell is in the set of visible cells. */
     public boolean isVisible(AspectViewCell jCell) {
-        synchroniseJModel();
+        synchroniseViewModel();
         return !this.allCellSet.contains(jCell) || this.selectedSet.contains(jCell);
     }
 
     /**
-     * Emphasises/deemphasises cells in the associated jmodel, based on the list
+     * Emphasises/deemphasises cells in the associated canvas, based on the list
      * selection.
      */
     @Override
-    public void valueChanged(TreeSelectionEvent e) {
-        synchroniseJModel();
+    public void valueChanged(@Nullable TreeSelectionEvent e) {
+        synchroniseViewModel();
         Set<AspectViewCell> emphSet = new HashSet<>();
         TreePath[] selectionPaths = getSelectionPaths();
         if (selectionPaths != null) {
@@ -115,7 +119,7 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
             }
         }
         emphSet.retainAll(this.selectedSet);
-        getJGraph().setSelectionCells(emphSet.toArray());
+        getCanvas().select(emphSet);
     }
 
     /**
@@ -130,12 +134,15 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
         // clear the list
         getTopNode().removeAllChildren();
         Set<LevelNode> newNodes = new HashSet<>();
-        Map<Index,Set<AspectElement>> levelTree = this.rule == null
+        var rule = this.rule;
+        Map<Index,Set<AspectElement>> levelTree = rule == null
             ? null
-            : this.rule.getLevelTree();
+            : rule.getLevelTree();
         boolean enabled = levelTree != null && levelTree.size() > 1;
         if (enabled) {
-            assert levelTree != null; // guaranteed by enabled
+            assert levelTree != null && rule != null; // guaranteed by enabled
+            var viewModel = this.viewModel;
+            assert viewModel != null; // the rule was taken from a non-null model
             for (Map.Entry<Index,Set<AspectElement>> levelEntry : levelTree.entrySet()) {
                 Index index = levelEntry.getKey();
                 if (!index.isTopLevel() && index.getLevelNode() == null) {
@@ -150,13 +157,11 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
                     parentNode.add(levelNode);
                 }
                 this.levelNodeMap.put(index, levelNode);
-                AspectJModel jModel = getJGraph().getModel();
-                assert jModel != null;
                 Set<AspectViewCell> levelCells = new HashSet<>();
                 // add all cells for this level according to the rule level tree
                 for (AspectElement elem : levelEntry.getValue()) {
-                    // this is an element from the normalised source, about which the AspectJModel is unaware
-                    AspectViewCell jCell = jModel.getJCell(elem.denormalise());
+                    // this is an element from the normalised source, about which the view model is unaware
+                    var jCell = (AspectViewCell) viewModel.getJCell(elem.denormalise());
                     if (jCell != null) {
                         levelCells.add(jCell);
                     }
@@ -172,12 +177,12 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
                 // also add the nesting nodes and edges
                 AspectNode ruleLevelNode = index.getLevelNode();
                 if (ruleLevelNode != null) {
-                    AspectViewCell jCell = jModel.getJCell(ruleLevelNode.denormalise());
+                    var jCell = (AspectViewCell) viewModel.getJCell(ruleLevelNode.denormalise());
                     if (jCell != null) {
                         levelCells.add(jCell);
                     }
-                    for (AspectElement edge : this.rule.getSource().edgeSet(ruleLevelNode)) {
-                        jCell = jModel.getJCell(edge.denormalise());
+                    for (AspectElement edge : rule.getSource().edgeSet(ruleLevelNode)) {
+                        jCell = (AspectViewCell) viewModel.getJCell(edge.denormalise());
                         if (jCell != null) {
                             levelCells.add(jCell);
                         }
@@ -230,28 +235,28 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
 
     /** Prevents nodes from being collapsed. */
     @Override
-    protected void setExpandedState(TreePath path, boolean state) {
+    protected void setExpandedState(@Nullable TreePath path, boolean state) {
         // Ignore all collapse requests; collapse events will not be fired
         if (state) {
             super.setExpandedState(path, state);
         }
     }
 
-    private AspectJGraph getJGraph() {
-        return this.jGraph;
+    private AspectGraphCanvas getCanvas() {
+        return this.canvas;
     }
 
-    /** The JGraph permanently associated with this {@link JTree}. */
-    private final AspectJGraph jGraph;
+    /** The canvas permanently associated with this {@link JTree}. */
+    private final AspectGraphCanvas canvas;
     /** Rule of which this tree shows the levels. */
-    private RuleModel rule;
+    private @Nullable RuleModel rule;
     /** Mapping from level indices to level tree nodes. */
     private final Map<Index,LevelNode> levelNodeMap = new TreeMap<>();
     /**
      * Model for which {@link #levelNodeMap} {@link #levelCellMap} and
      * {@link #selectedSet} are currently computed.
      */
-    private AspectJModel jModel;
+    private @Nullable GraphViewModel<AspectGraph> viewModel;
     /** Set of all rule elements. */
     private final Set<AspectViewCell> allCellSet = new HashSet<>();
     /** Set of rule elements that are visible according to the currently selected
@@ -276,24 +281,26 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
         }
 
         public String getName() {
-            if (this.name == null) {
-                StringBuilder result = new StringBuilder(this.index.getOperator().getSymbol());
+            var result = this.name;
+            if (result == null) {
+                StringBuilder builder = new StringBuilder(this.index.getOperator().getSymbol());
                 String levelName = null;
-                if (this.index.getLevelNode() != null) {
-                    levelName = this.index.getLevelNode().getId();
+                var levelNode = this.index.getLevelNode();
+                if (levelNode != null) {
+                    levelName = levelNode.getId();
                 }
                 if (levelName == null) {
                     for (int level : this.index.getIntArray()) {
-                        result.append('.');
-                        result.append(level);
+                        builder.append('.');
+                        builder.append(level);
                     }
                 } else {
-                    result.append('.');
-                    result.append(levelName);
+                    builder.append('.');
+                    builder.append(levelName);
                 }
-                this.name = result.toString();
+                this.name = result = builder.toString();
             }
-            return this.name;
+            return result;
         }
 
         @Override
@@ -310,7 +317,7 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
         public void setSelected(boolean selected) {
             this.selected = selected;
             Set<AspectViewCell> changes = updateVisibleCells(Collections.singleton(this));
-            getJGraph().refresh(changes, false);
+            getCanvas().refresh(changes, false);
         }
 
         @Override
@@ -319,7 +326,7 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
         }
 
         /** The name of this level node. */
-        private String name;
+        private @Nullable String name;
         /** The level index permanently associated with this level node. */
         private final Index index;
         /** Flag indicating if this node is currently selected. */
@@ -329,8 +336,8 @@ public class RuleLevelTree extends CheckboxTree implements TreeSelectionListener
     /** Class to deal with mouse events over the label list. */
     private class MyMouseListener extends MouseAdapter {
         @Override
-        public void mouseClicked(MouseEvent e) {
-            if (e.getClickCount() == 2) {
+        public void mouseClicked(@Nullable MouseEvent e) {
+            if (e != null && e.getClickCount() == 2) {
                 TreePath path = getPathForLocation(e.getPoint().x, e.getPoint().y);
                 if (path != null) {
                     LevelNode levelNode = (LevelNode) path.getLastPathComponent();

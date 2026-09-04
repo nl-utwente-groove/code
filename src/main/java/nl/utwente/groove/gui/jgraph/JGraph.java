@@ -38,7 +38,6 @@ import java.awt.geom.Dimension2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -94,6 +93,7 @@ import nl.utwente.groove.gui.action.ActionStore;
 import nl.utwente.groove.gui.action.ExportAction;
 import nl.utwente.groove.gui.action.LayoutAction;
 import nl.utwente.groove.gui.view.GraphCanvas;
+import nl.utwente.groove.gui.view.CellChange;
 import nl.utwente.groove.gui.view.GraphCanvasListener;
 import nl.utwente.groove.gui.view.GraphViewController;
 import nl.utwente.groove.gui.view.GraphViewModel;
@@ -1061,20 +1061,9 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
         return getController().doLayout(complete);
     }
 
-    /** Adds a listener to {@link #setMode(GraphViewMode)} calls. */
-    public void addGraphViewModeListener(PropertyChangeListener listener) {
-        addPropertyChangeListener(JGRAPH_MODE_PROPERTY, listener);
-    }
-
-    /** Removes a listener to {@link #setMode(GraphViewMode)} calls. */
-    public void removeGraphViewModeListener(PropertyChangeListener listener) {
-        removePropertyChangeListener(JGRAPH_MODE_PROPERTY, listener);
-    }
-
     /**
      * Sets the JGraph mode to a new value.
-     * Fires a property change event for {@link #JGRAPH_MODE_PROPERTY} if the
-     * mode was changed.
+     * Notifies the canvas listeners if the mode was changed.
      * @return {@code true} if the JGraph mode was changed as a result
      * of this call
      */
@@ -1092,7 +1081,6 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
             getController().getModeButton(mode).setSelected(true);
             setCursor(mode.getCursor());
             // fire change only if there was a previous value
-            firePropertyChange(JGRAPH_MODE_PROPERTY, oldMode, mode);
             if (oldMode != null) {
                 for (var listener : this.canvasListeners) {
                     listener.modeChanged(this, oldMode, mode);
@@ -1349,7 +1337,6 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
 
     @Override
     public void startEditingAtCell(Object cell) {
-        firePropertyChange(CELL_EDIT_PROPERTY, null, cell);
         if (cell instanceof ViewCell) {
             @SuppressWarnings("unchecked")
             ViewCell<G> viewCell = (ViewCell<G>) cell;
@@ -1469,10 +1456,6 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
      * Property name of the JGraph mode.
      * Values are of type {@link GraphRole}.
      */
-    static public final String JGRAPH_MODE_PROPERTY = "GraphViewMode";
-    /** Property name for the pseudo-property that signals a cell edit has started. */
-    static public final String CELL_EDIT_PROPERTY = "editedCell";
-
     /** Listener class that cancels the edge adding mode on various occasions. */
     private final class CancelEditListener extends KeyAdapter implements GraphModelListener {
         @Override
@@ -1576,17 +1559,45 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
             if (JGraph.this.canvasListeners.isEmpty()) {
                 return;
             }
-            List<ViewCell<G>> cells = new ArrayList<>();
-            for (Object cell : e.getChange().getChanged()) {
-                if (cell instanceof ViewCell) {
-                    @SuppressWarnings("unchecked")
-                    ViewCell<G> viewCell = (ViewCell<G>) cell;
-                    cells.add(viewCell);
+            var jChange = e.getChange();
+            List<ViewCell<G>> inserted = toViewCells(jChange.getInserted());
+            List<ViewCell<G>> removed = toViewCells(jChange.getRemoved());
+            // JGraph's changed cells include the inserted and removed ones
+            Set<Object> structural = new HashSet<>(inserted);
+            structural.addAll(removed);
+            List<ViewCell<G>> modified = new ArrayList<>();
+            for (ViewCell<G> cell : toViewCells(jChange.getChanged())) {
+                if (!structural.contains(cell)) {
+                    modified.add(cell);
                 }
             }
+            var change = new CellChange<>(inserted, modified, removed);
             for (var listener : JGraph.this.canvasListeners) {
-                listener.cellsChanged(JGraph.this, cells);
+                listener.cellsChanged(JGraph.this, change);
             }
+        }
+
+        /** Collects the view cells from a (possibly {@code null}) array of JGraph cells;
+         * the array may also contain ports, which are skipped. */
+        private List<ViewCell<G>> toViewCells(Object @Nullable [] cells) {
+            List<ViewCell<G>> result = new ArrayList<>();
+            if (cells != null) {
+                for (Object cell : cells) {
+                    if (cell instanceof ViewCell) {
+                        @SuppressWarnings("unchecked")
+                        ViewCell<G> viewCell = (ViewCell<G>) cell;
+                        result.add(viewCell);
+                    }
+                }
+            }
+            return result;
+        }
+    }
+
+    /** Notifies the canvas listeners that the shown graph was rebuilt or reloaded. */
+    protected void notifyGraphChanged() {
+        for (var listener : this.canvasListeners) {
+            listener.graphChanged(this);
         }
     }
 

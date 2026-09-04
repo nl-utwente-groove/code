@@ -24,6 +24,7 @@ import static nl.utwente.groove.gui.view.GraphViewMode.PREVIEW_MODE;
 import java.awt.event.ItemEvent;
 import java.awt.geom.Point2D;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -88,7 +89,7 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements Aspect
         super.installListeners();
         var actions = getActions();
         if (actions != null) {
-            addGraphSelectionListener(actions.getSelectColorAction());
+            addCanvasListener(actions.getSelectColorAction());
         }
         addOptionListener(SHOW_ASPECTS_OPTION);
         addOptionListener(SHOW_VALUE_NODES_OPTION);
@@ -99,22 +100,26 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements Aspect
         super.removeListeners();
         var actions = getActions();
         if (actions != null) {
-            addGraphSelectionListener(actions.getSelectColorAction());
+            removeCanvasListener(actions.getSelectColorAction());
         }
-        removeGraphSelectionListener(getActions().getSelectColorAction());
     }
 
     @Override
     public void setModel(GraphModel model) {
-        GraphModel oldModel = getModel();
+        AspectJModel oldModel = getModel();
         if (oldModel != null) {
             oldModel.removeGraphModelListener(getRefreshGraphListener());
+            oldModel.removeGraphChangeListener(this.graphChangeListener);
         }
         super.setModel(model);
-        if (model != null) {
-            model.addGraphModelListener(getRefreshGraphListener());
+        if (model instanceof AspectJModel newModel) {
+            newModel.addGraphModelListener(getRefreshGraphListener());
+            newModel.addGraphChangeListener(this.graphChangeListener);
         }
     }
+
+    /** Forwards the graph rebuilds of the current model to the canvas listeners. */
+    private final PropertyChangeListener graphChangeListener = evt -> notifyGraphChanged();
 
     @Override
     public AspectJModel getModel() {

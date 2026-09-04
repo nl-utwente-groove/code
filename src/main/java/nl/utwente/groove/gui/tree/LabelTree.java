@@ -25,9 +25,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -44,8 +42,6 @@ import javax.swing.tree.TreePath;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.jgraph.event.GraphModelEvent;
-import org.jgraph.event.GraphModelListener;
 
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.graph.Graph;
@@ -54,11 +50,13 @@ import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.action.ActionStore;
 import nl.utwente.groove.gui.display.DismissDelayer;
-import nl.utwente.groove.gui.jgraph.AspectJGraph;
-import nl.utwente.groove.gui.view.ViewCell;
-import nl.utwente.groove.gui.jgraph.JGraph;
-import nl.utwente.groove.gui.jgraph.JModel;
 import nl.utwente.groove.gui.menu.ShowHideMenu;
+import nl.utwente.groove.gui.view.AspectGraphCanvas;
+import nl.utwente.groove.gui.view.CellChange;
+import nl.utwente.groove.gui.view.GraphCanvas;
+import nl.utwente.groove.gui.view.GraphCanvasListener;
+import nl.utwente.groove.gui.view.GraphViewModel;
+import nl.utwente.groove.gui.view.ViewCell;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.Strings;
@@ -72,45 +70,42 @@ import nl.utwente.groove.util.Unicode;
  */
 @NonNullByDefault
 abstract public class LabelTree<G extends Graph> extends CheckboxTree
-    implements GraphModelListener, TreeSelectionListener {
+    implements GraphCanvasListener<G>, TreeSelectionListener {
     /**
-     * Constructs a label list associated with a given jgraph. A further
+     * Constructs a label list associated with a given graph canvas. A further
      * parameter indicates if the label tree should support subtypes.
-     * @param jGraph the jgraph with which this list is to be associated
+     * @param canvas the canvas with which this list is to be associated
      * @param filtering if {@code true}, the panel has checkboxes to filter labels
      */
-    LabelTree(JGraph<G> jGraph, boolean filtering) {
-        this.jGraph = jGraph;
+    LabelTree(GraphCanvas<G> canvas, boolean filtering) {
+        this.canvas = canvas;
         this.filtering = filtering;
         // make sure tool tips get displayed
         ToolTipManager.sharedInstance().registerComponent(this);
-        setEnabled(jGraph.isEnabled());
+        setEnabled(canvas.isEnabled());
         setLargeModel(true);
         installListeners();
     }
 
     @SuppressWarnings("unchecked")
     void installListeners() {
-        getJGraph()
-            .addPropertyChangeListener(org.jgraph.JGraph.GRAPH_MODEL_PROPERTY,
-                                       evt -> updateModel());
-        getJGraph().addGraphSelectionListener(evt -> clearSelection());
-
+        getCanvas().addCanvasListener(this);
         getFilter().addObserver(evt -> {
             LabelTree.this.repaint();
-            getJGraph().refresh((Set<ViewCell<G>>) evt.getNewValue(), false);
+            getCanvas().refresh((Set<ViewCell<G>>) evt.getNewValue(), false);
         });
         addMouseListener(new MyMouseListener());
     }
 
-    /** Adds this tree as listener to a given (non-{@code null}) JModel. */
-    void installJModelListeners(JModel<G> jModel) {
-        jModel.addGraphModelListener(this);
+    @Override
+    public void viewModelChanged(GraphCanvas<G> canvas, @Nullable GraphViewModel<G> oldModel,
+                                 @Nullable GraphViewModel<G> newModel) {
+        updateModel();
     }
 
-    /** Removes this tree as listener to a given (non-{@code null}) JModel. */
-    void removeJModelListeners(JModel<G> jModel) {
-        jModel.removeGraphModelListener(this);
+    @Override
+    public void selectionChanged(GraphCanvas<G> canvas) {
+        clearSelection();
     }
 
     @Override
@@ -131,37 +126,37 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
     }
 
     /**
-     * Returns the jgraph with which this label list is associated.
+     * Returns the graph canvas with which this label list is associated.
      */
-    public JGraph<G> getJGraph() {
-        return this.jGraph;
+    public GraphCanvas<G> getCanvas() {
+        return this.canvas;
     }
 
     /**
-     * The JGraph permanently associated with this label list.
+     * The graph canvas permanently associated with this label list.
      */
-    private final JGraph<G> jGraph;
+    private final GraphCanvas<G> canvas;
 
     /**
-     * Returns the jModel with which this label list is associated.
+     * Returns the view model with which this label list is associated.
      */
-    public @Nullable JModel<G> getJModel() {
-        return this.jModel;
+    public @Nullable GraphViewModel<G> getViewModel() {
+        return this.viewModel;
     }
 
     /**
-     * Returns the jModel with which this label list is associated.
+     * Returns the view model with which this label list is associated.
      */
-    public JModel<G> getNonNullJModel() {
-        var result = getJModel();
+    public GraphViewModel<G> getNonNullViewModel() {
+        var result = getViewModel();
         assert result != null;
         return result;
     }
 
     /**
-     * The {@link JModel} currently being viewed by this label list.
+     * The view model currently being viewed by this label list.
      */
-    private @Nullable JModel<G> jModel;
+    private @Nullable GraphViewModel<G> viewModel;
 
     /** Returns the label filter associated with this label tree. */
     abstract LabelFilter<G,?> getFilter();
@@ -200,28 +195,24 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
         }
     }
 
-    /** Tests if the model underlying this label tree is stale w.r.t. the JGraph. */
+    /** Tests if the model underlying this label tree is stale w.r.t. the canvas. */
     boolean isModelStale() {
-        return this.jModel != getJGraph().getModel();
+        return this.viewModel != getCanvas().getViewModel();
     }
 
     /**
-     * Replaces the jmodel on which this label list is based with the
-     * (supposedly new) model in the associated jgraph. Gets the labels from the
+     * Replaces the view model on which this label list is based with the
+     * (supposedly new) model in the associated canvas. Gets the labels from the
      * model and adds them to this label list.
      */
     public void updateModel() {
-        if (this.jModel != null) {
-            removeJModelListeners(this.jModel);
-        }
-        this.jModel = getJGraph().getModel();
+        this.viewModel = getCanvas().getViewModel();
         clearFilter();
-        if (this.jModel != null) {
-            installJModelListeners(this.jModel);
+        if (this.viewModel != null) {
             updateFilter();
         }
         updateTree();
-        setEnabled(this.jModel != null);
+        setEnabled(this.viewModel != null);
     }
 
     /**
@@ -235,7 +226,7 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
      * Reloads the filter from the model.
      */
     void updateFilter() {
-        for (ViewCell<G> cell : getNonNullJModel().getRoots()) {
+        for (ViewCell<G> cell : getNonNullViewModel().getCells()) {
             getFilter().addJCell(cell);
         }
     }
@@ -290,62 +281,30 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
     abstract Collection<? extends TreeNode> fillTree();
 
     /**
-     * Updates the label list according to the change event.
+     * Updates the label list according to the cell change.
      */
     @Override
-    public void graphChanged(@Nullable GraphModelEvent evt) {
-        boolean changed = evt != null && processEdit(evt.getChange());
-        if (changed) {
+    public void cellsChanged(GraphCanvas<G> canvas, CellChange<G> change) {
+        if (processEdit(change)) {
             updateTree();
         }
     }
 
     /**
-     * Records the changes imposed by a graph change.
+     * Records the changes imposed by a cell change.
      */
-    private boolean processEdit(GraphModelEvent.GraphModelChange change) {
+    private boolean processEdit(CellChange<G> change) {
         boolean result = false;
-        // insertions double as changes, so we do insertions first
-        // and remove them from the change map
-        Map<Object,Object> changeMap = new HashMap<>();
-        Map<?,?> storedChange = change.getAttributes();
-        if (storedChange != null) {
-            changeMap.putAll(storedChange);
-        }
         // added cells mean added labels
-        Object[] addedArray = change.getInserted();
-        if (addedArray != null) {
-            for (Object element : addedArray) {
-                // the cell may be a port, so we have to check for
-                // ViewCell-hood
-                if (element instanceof ViewCell) {
-                    @SuppressWarnings("unchecked")
-                    ViewCell<G> jCell = (ViewCell<G>) element;
-                    result |= getFilter().addJCell(jCell);
-                }
-                changeMap.remove(element);
-            }
+        for (ViewCell<G> jCell : change.inserted()) {
+            result |= getFilter().addJCell(jCell);
         }
-        for (Object changeEntry : changeMap.entrySet()) {
-            Object element = ((Map.Entry<?,?>) changeEntry).getKey();
-            if (element instanceof ViewCell) {
-                @SuppressWarnings("unchecked")
-                ViewCell<G> jCell = (ViewCell<G>) element;
-                result |= getFilter().modifyJCell(jCell);
-            }
+        for (ViewCell<G> jCell : change.modified()) {
+            result |= getFilter().modifyJCell(jCell);
         }
         // removed cells mean removed labels
-        Object[] removedArray = change.getRemoved();
-        if (removedArray != null) {
-            for (Object element : removedArray) {
-                // the cell may be a port, so we have to check for
-                // ViewCell-hood
-                if (element instanceof ViewCell) {
-                    @SuppressWarnings("unchecked")
-                    ViewCell<G> jCell = (ViewCell<G>) element;
-                    result |= getFilter().removeJCell(jCell);
-                }
-            }
+        for (ViewCell<G> jCell : change.removed()) {
+            result |= getFilter().removeJCell(jCell);
         }
         return result;
     }
@@ -356,7 +315,7 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
      */
     @Override
     public void valueChanged(@Nullable TreeSelectionEvent e) {
-        Set<ViewCell<?>> emphSet = new HashSet<>();
+        Set<ViewCell<G>> emphSet = new HashSet<>();
         TreePath[] selectionPaths = getSelectionPaths();
         if (selectionPaths != null) {
             for (TreePath selectedPath : selectionPaths) {
@@ -370,7 +329,7 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
                 }
             }
         }
-        this.jGraph.setSelectionCells(emphSet.toArray());
+        getCanvas().select(emphSet);
     }
 
     /**
@@ -387,10 +346,11 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
     /** Adds menu items for colouring and find/replace actions. */
     private void addActionItems(JPopupMenu result) {
         TreePath[] selectedValues = getSelectionPaths();
-        ActionStore actions = getJGraph().getActions();
+        ActionStore actions = getCanvas().getController().getActions();
         if (selectedValues != null && selectedValues.length == 1 && actions != null) {
             result.add(actions.getFindReplaceAction());
-            if (getJGraph() instanceof AspectJGraph && actions.getSelectColorAction().isEnabled()) {
+            if (getCanvas() instanceof AspectGraphCanvas
+                && actions.getSelectColorAction().isEnabled()) {
                 result.add(actions.getSelectColorAction());
             }
             result.addSeparator();
@@ -411,7 +371,7 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
     private void addShowHideItems(JPopupMenu result) {
         // add the show/hide menu
         @SuppressWarnings({"unchecked", "rawtypes"})
-        JPopupMenu restMenu = new ShowHideMenu(this.jGraph).getPopupMenu();
+        JPopupMenu restMenu = new ShowHideMenu(this.canvas).getPopupMenu();
         while (restMenu.getComponentCount() > 0) {
             result.add(restMenu.getComponent(0));
         }
@@ -726,7 +686,7 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
      */
     @AIGenerated("Claude Fable 5.1, 2026-09")
     private boolean isShowingCounts() {
-        return !getJGraph().hasGraphRole(GraphRole.TYPE);
+        return !getCanvas().hasGraphRole(GraphRole.TYPE);
     }
 
     /** Flag determining whether the occurrence count of entries is shown as part of the label
