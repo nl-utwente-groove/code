@@ -31,7 +31,6 @@ import nl.utwente.groove.gui.display.JGraphPanel;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.CtrlJGraph;
 import nl.utwente.groove.gui.jgraph.JGraph;
-import nl.utwente.groove.gui.jgraph.JModel;
 import nl.utwente.groove.gui.jgraph.PlainJGraph;
 
 /**
@@ -139,10 +138,8 @@ public class GraphPreviewDialog<G extends @NonNull Graph> extends JDialog {
         if (jGraph == null) {
             jGraph = PlainJGraph.newInstance(this.simulator);
         }
-        JModel<G> model = jGraph.newModel();
-        model.loadGraph((G) shownGraph);
-        jGraph.setModel(model);
-        jGraph.doLayout(false);
+        jGraph.showGraph(shownGraph);
+        jGraph.getController().doLayout(false);
         return jGraph;
     }
 

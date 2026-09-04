@@ -41,8 +41,6 @@ import javax.swing.JSplitPane;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
 
-import org.jgraph.event.GraphSelectionEvent;
-import org.jgraph.event.GraphSelectionListener;
 
 import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectElement;
@@ -69,7 +67,12 @@ import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.AspectJModel;
 import nl.utwente.groove.gui.jgraph.AspectJVertex;
 import nl.utwente.groove.gui.look.Values;
+import org.eclipse.jdt.annotation.NonNull;
+
+import nl.utwente.groove.gui.view.GraphCanvas;
 import nl.utwente.groove.gui.view.GraphCanvas.Overlay;
+import nl.utwente.groove.gui.view.GraphCanvasListener;
+import nl.utwente.groove.gui.view.ViewCell;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.list.ErrorEntry;
 import nl.utwente.groove.gui.list.ErrorListPanel;
@@ -139,19 +142,15 @@ public class StateDisplay extends Display implements SimulatorListener {
 
     @Override
     protected void installListeners() {
-        this.graphSelectionListener = new GraphSelectionListener() {
+        this.canvasListener = new GraphCanvasListener<>() {
             @Override
-            public void valueChanged(GraphSelectionEvent e) {
-                if (StateDisplay.this.matchSelected) {
-                    // change only if cells were removed from the selection
-                    boolean removed = false;
-                    Object[] cells = e.getCells();
-                    for (int i = 0; !removed && i < cells.length; i++) {
-                        removed = !e.isAddedCell(i);
-                    }
-                    if (removed) {
-                        clearSelectedMatch(false);
-                    }
+            public void selectionChanged(GraphCanvas<@NonNull AspectGraph> canvas) {
+                var selection = canvas.getSelection();
+                // change only if cells were removed from the selection
+                boolean removed = !selection.containsAll(StateDisplay.this.lastSelection);
+                StateDisplay.this.lastSelection = new HashSet<>(selection);
+                if (StateDisplay.this.matchSelected && removed) {
+                    clearSelectedMatch(false);
                 }
             }
         };
@@ -168,7 +167,8 @@ public class StateDisplay extends Display implements SimulatorListener {
         }
         // make sure that removals from the selection model
         // also deselect the match
-        getJGraph().addGraphSelectionListener(this.graphSelectionListener);
+        this.lastSelection = new HashSet<>(getJGraph().getSelection());
+        getJGraph().addCanvasListener(this.canvasListener);
         this.listening = true;
     }
 
@@ -178,7 +178,7 @@ public class StateDisplay extends Display implements SimulatorListener {
     private boolean suspendListening() {
         boolean result = this.listening;
         if (result) {
-            getJGraph().removeGraphSelectionListener(this.graphSelectionListener);
+            getJGraph().removeCanvasListener(this.canvasListener);
             this.listening = false;
         }
         return result;
@@ -826,7 +826,9 @@ public class StateDisplay extends Display implements SimulatorListener {
 
     /** Flag indicating that the listeners are activated. */
     private boolean listening;
-    private GraphSelectionListener graphSelectionListener;
+    private GraphCanvasListener<@NonNull AspectGraph> canvasListener;
+    /** The canvas selection at the last selection event, to detect deselected cells. */
+    private Set<ViewCell<@NonNull AspectGraph>> lastSelection = new HashSet<>();
     /** Flag indicating if there is any match selected. */
     private boolean matchSelected;
 

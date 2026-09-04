@@ -22,7 +22,6 @@ import static nl.utwente.groove.util.HTMLConverter.STRONG_TAG;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -44,7 +43,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.jgraph.event.GraphModelEvent;
 
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.type.TypeEdge;
@@ -56,11 +54,10 @@ import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.action.CollapseAllAction;
-import nl.utwente.groove.gui.jgraph.AspectJGraph;
-import nl.utwente.groove.gui.jgraph.AspectJModel;
-import nl.utwente.groove.gui.jgraph.JModel;
 import nl.utwente.groove.gui.tree.TypeFilter.TypeEntry;
-import nl.utwente.groove.util.Factory;
+import nl.utwente.groove.gui.view.AspectGraphCanvas;
+import nl.utwente.groove.gui.view.CellChange;
+import nl.utwente.groove.gui.view.GraphCanvas;
 import nl.utwente.groove.util.HTMLConverter;
 
 /**
@@ -72,33 +69,25 @@ import nl.utwente.groove.util.HTMLConverter;
 @NonNullByDefault
 public class TypeTree extends LabelTree<AspectGraph> {
     /**
-     * Constructs a label list associated with a given jgraph. A further
+     * Constructs a label list associated with a given graph canvas. A further
      * parameter indicates if the label tree should support subtypes.
-     * @param jGraph the jgraph with which this list is to be associated
+     * @param canvas the canvas with which this list is to be associated
      * @param filtering if {@code true}, the panel has checkboxes to filter labels
      */
-    public TypeTree(AspectJGraph jGraph, boolean filtering) {
-        super(jGraph, filtering);
+    public TypeTree(AspectGraphCanvas canvas, boolean filtering) {
+        super(canvas, filtering);
     }
 
     @Override
-    void installJModelListeners(JModel<AspectGraph> jModel) {
-        super.installJModelListeners(jModel);
-        ((AspectJModel) jModel).addGraphChangeListener(getJModelChangeListener());
+    public AspectGraphCanvas getCanvas() {
+        return (AspectGraphCanvas) super.getCanvas();
     }
 
+    /** Rebuilds the tree whenever the graph shown on the canvas was rebuilt. */
     @Override
-    void removeJModelListeners(JModel<AspectGraph> jModel) {
-        super.removeJModelListeners(jModel);
-        ((AspectJModel) jModel).removeGraphChangeListener(getJModelChangeListener());
+    public void graphChanged(GraphCanvas<AspectGraph> canvas) {
+        updateModel();
     }
-
-    private PropertyChangeListener getJModelChangeListener() {
-        return this.jModelChangeListener.get();
-    }
-
-    private Factory<PropertyChangeListener> jModelChangeListener
-        = Factory.lazy(() -> evt -> updateModel());
 
     /** Creates a tool bar for the label tree. */
     public JToolBar createToolBar() {
@@ -223,13 +212,12 @@ public class TypeTree extends LabelTree<AspectGraph> {
     private @Nullable JButton collapseAllButton;
 
     /**
-     * Convenience method to return the type graph in the jModel.
+     * Convenience method to return the type graph of the canvas, if it has a model.
      */
     private @Nullable TypeGraph getTypeGraph() {
-        var jModel = (AspectJModel) getJModel();
-        return jModel == null
+        return getViewModel() == null
             ? null
-            : jModel.getTypeGraph();
+            : getCanvas().getTypeGraph();
     }
 
     @Override
@@ -253,14 +241,14 @@ public class TypeTree extends LabelTree<AspectGraph> {
     }
 
     /**
-     * Updates the label list according to the change event.
+     * Updates the label list according to the cell change.
      */
     @Override
-    public void graphChanged(@Nullable GraphModelEvent e) {
-        if (isModelStale() || getNonNullJModel().isLoading()) {
+    public void cellsChanged(GraphCanvas<AspectGraph> canvas, CellChange<AspectGraph> change) {
+        if (isModelStale() || getNonNullViewModel().isLoading()) {
             updateModel();
         } else {
-            super.graphChanged(e);
+            super.cellsChanged(canvas, change);
         }
     }
 

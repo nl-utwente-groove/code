@@ -16,17 +16,21 @@
  */
 package nl.utwente.groove.gui.layout;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.Map;
 
 import javax.swing.JPanel;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+
 import com.jgraph.layout.JGraphFacade;
 import com.jgraph.layout.JGraphLayout;
 
+import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.view.GraphCanvas;
+import nl.utwente.groove.gui.view.GraphCanvasListener;
+import nl.utwente.groove.gui.view.GraphViewModel;
 
 /** Class representing elements of the layout menu. */
 public class LayouterItem implements Layouter {
@@ -47,15 +51,22 @@ public class LayouterItem implements Layouter {
         this.facade = facade;
         this.panel = jGraph == null ? null : LayoutKind.createLayoutPanel(this);
         if (jGraph != null) {
-            jGraph.addPropertyChangeListener(org.jgraph.JGraph.GRAPH_MODEL_PROPERTY,
-                new PropertyChangeListener() {
-                    @Override
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        LayouterItem.this.facade =
-                                jGraph.getModel() == null ? null : new JGraphFacade(jGraph);
-                    }
-                });
+            installModelListener(jGraph);
         }
+    }
+
+    /** Adds the listener that renews the facade on model changes; generic to capture the graph type. */
+    private <H extends @NonNull Graph> void installModelListener(JGraph<H> jGraph) {
+        jGraph.addCanvasListener(new GraphCanvasListener<H>() {
+            @Override
+            public void viewModelChanged(GraphCanvas<H> canvas,
+                                         @Nullable GraphViewModel<H> oldModel,
+                                         @Nullable GraphViewModel<H> newModel) {
+                LayouterItem.this.facade = newModel == null
+                    ? null
+                    : new JGraphFacade(jGraph);
+            }
+        });
     }
 
     @Override

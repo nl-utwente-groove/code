@@ -88,12 +88,12 @@ import nl.utwente.groove.gui.display.JGraphPanel;
 import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.gui.display.TextTab;
 import nl.utwente.groove.gui.export.JGraphExporters;
-import nl.utwente.groove.gui.jgraph.AspectJGraph;
-import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.list.ErrorEntry;
 import nl.utwente.groove.gui.list.ListTabbedPane;
 import nl.utwente.groove.gui.menu.ModelCheckingMenu;
 import nl.utwente.groove.gui.menu.MyJMenu;
+import nl.utwente.groove.gui.view.AspectGraphCanvas;
+import nl.utwente.groove.gui.view.GraphCanvas;
 import nl.utwente.groove.gui.prolog.GuiPredicates;
 import nl.utwente.groove.lts.GraphNextState;
 import nl.utwente.groove.lts.GraphState;
@@ -488,14 +488,14 @@ public class Simulator implements SimulatorListener {
             var resourceTab = resourceDisplay.getSelectedTab();
             if (resourceTab != null) {
                 if (resource.isGraphBased()) {
-                    AspectJGraph jGraph;
+                    AspectGraphCanvas canvas;
                     if (resourceTab.isEditor()) {
-                        jGraph = ((GraphEditorTab) resourceTab).getJGraph();
+                        canvas = ((GraphEditorTab) resourceTab).getJGraph();
                     } else {
-                        jGraph = ((GraphTab) resourceTab).getJGraph();
+                        canvas = ((GraphTab) resourceTab).getJGraph();
                     }
                     // select the error cell and switch to the panel
-                    jGraph.selectElements(entry.getElements());
+                    canvas.selectElements(entry.getElements());
                     resourceTab.setPropertyKey(entry.getPropertyKey());
                 } else if (entry instanceof ErrorEntry errorEntry) {
                     var numbers = errorEntry.getError().getNumbers();
@@ -650,9 +650,8 @@ public class Simulator implements SimulatorListener {
         // add graph edit menu when appropriate
         JGraphPanel<?> panel = getDisplaysPanel().getGraphPanel();
         if (panel != null) {
-            JGraph<?> jGraph = panel.getJGraph();
-            if (jGraph instanceof AspectJGraph) {
-                menu.addSubmenu(((AspectJGraph) jGraph).getController().createEditMenu(null));
+            if (panel.getJGraph() instanceof AspectGraphCanvas canvas) {
+                menu.addSubmenu(canvas.getController().createEditMenu(null));
             }
         }
 
@@ -687,9 +686,9 @@ public class Simulator implements SimulatorListener {
     private void fillDisplayMenu(MyJMenu menu) {
         JGraphPanel<?> panel = getDisplaysPanel().getGraphPanel();
         if (panel != null) {
-            JGraph<?> jGraph = panel.getJGraph();
-            menu.add(jGraph.getController().createShowHideMenu());
-            menu.add(jGraph.getController().createZoomMenu());
+            GraphCanvas<?> canvas = panel.getJGraph();
+            menu.add(canvas.getController().createShowHideMenu());
+            menu.add(canvas.getController().createZoomMenu());
         }
         menu.addSubmenu(createOptionsMenu());
     }

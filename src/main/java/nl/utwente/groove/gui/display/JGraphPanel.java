@@ -21,17 +21,21 @@ import static nl.utwente.groove.gui.view.GraphViewMode.PAN_MODE;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.Objects;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.gui.jgraph.JGraph;
-import nl.utwente.groove.gui.jgraph.JModel;
+import nl.utwente.groove.gui.view.GraphCanvas;
+import nl.utwente.groove.gui.view.GraphCanvasListener;
+import nl.utwente.groove.gui.view.GraphViewMode;
+import nl.utwente.groove.gui.view.GraphViewModel;
 
 /**
  * A panel that combines a {@link nl.utwente.groove.gui.jgraph.JGraph}and (optionally) a
@@ -71,21 +75,25 @@ public class JGraphPanel<G extends Graph> extends JPanel {
 
     /** Callback method that adds the required listeners to this panel. */
     private void installListeners() {
-        getJGraph().addGraphViewModeListener(new PropertyChangeListener() {
+        installCanvasListener(getJGraph());
+    }
+
+    /** Adds the listener that tracks the canvas mode and model; generic to capture the graph type. */
+    private <H extends @NonNull Graph> void installCanvasListener(GraphCanvas<H> canvas) {
+        canvas.addCanvasListener(new GraphCanvasListener<H>() {
             @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                getScrollPane().setWheelScrollingEnabled(evt.getNewValue() != PAN_MODE);
+            public void modeChanged(GraphCanvas<H> canvas, GraphViewMode oldMode,
+                                    GraphViewMode newMode) {
+                getScrollPane().setWheelScrollingEnabled(newMode != PAN_MODE);
+            }
+
+            @Override
+            public void viewModelChanged(GraphCanvas<H> canvas,
+                                         @Nullable GraphViewModel<H> oldModel,
+                                         @Nullable GraphViewModel<H> newModel) {
+                setEnabled(newModel != null);
             }
         });
-        getJGraph()
-            .addPropertyChangeListener(org.jgraph.JGraph.GRAPH_MODEL_PROPERTY,
-                                       new PropertyChangeListener() {
-                                           @Override
-                                           public void propertyChange(PropertyChangeEvent evt) {
-                                               JModel<?> jModel = (JModel<?>) evt.getNewValue();
-                                               setEnabled(jModel != null);
-                                           }
-                                       });
     }
 
     /**

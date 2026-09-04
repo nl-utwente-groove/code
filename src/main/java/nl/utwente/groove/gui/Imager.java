@@ -67,7 +67,6 @@ import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.export.JGraphExportable;
 import nl.utwente.groove.gui.export.JGraphExporters;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
-import nl.utwente.groove.gui.jgraph.AspectJModel;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Exporter;
 import nl.utwente.groove.io.external.Exporters;
@@ -292,9 +291,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
             var grammar = resourceModel.getGrammar();
             assert grammar != null; // the resource model was created from a grammar
             jGraph.getController().setGrammar(grammar);
-            AspectJModel model = jGraph.newModel();
-            model.loadGraph(aspectGraph);
-            jGraph.setModel(model);
+            jGraph.showGraph(aspectGraph);
             // Ugly hack to prevent clipping of the image. We set the
             // jGraph size to twice its normal size. This does not
             // affect the final size of the exported figure, hence

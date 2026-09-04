@@ -23,7 +23,6 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.Map;
@@ -57,8 +56,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.jgraph.event.GraphModelEvent;
 import org.jgraph.event.GraphModelEvent.GraphModelChange;
 import org.jgraph.event.GraphModelListener;
-import org.jgraph.event.GraphSelectionEvent;
-import org.jgraph.event.GraphSelectionListener;
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.ConnectionSet;
 import org.jgraph.graph.GraphConstants;
@@ -80,12 +77,14 @@ import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.action.SnapToGridAction;
 import nl.utwente.groove.gui.dialog.PropertiesTable;
-import nl.utwente.groove.gui.jgraph.AspectJEdge;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.AspectJModel;
 import nl.utwente.groove.gui.look.Values;
-import nl.utwente.groove.gui.jgraph.JGraph;
+import nl.utwente.groove.gui.view.GraphCanvas;
+import nl.utwente.groove.gui.view.GraphCanvasListener;
 import nl.utwente.groove.gui.view.GraphViewMode;
+import nl.utwente.groove.gui.view.ViewCell;
+import nl.utwente.groove.gui.view.ViewEdge;
 import nl.utwente.groove.gui.tree.TypeTree;
 import nl.utwente.groove.io.store.EditType;
 import nl.utwente.groove.util.AIGenerated;
@@ -98,7 +97,7 @@ import nl.utwente.groove.gui.list.ErrorEntry;
  * @version $Revision$
  */
 final public class GraphEditorTab extends ResourceTab
-    implements GraphModelListener, PropertyChangeListener {
+    implements GraphModelListener, GraphCanvasListener<@NonNull AspectGraph> {
     /**
      * Constructs a new tab instance.
      * @param parent the component on which this panel is placed
@@ -397,15 +396,11 @@ final public class GraphEditorTab extends ResourceTab
         }
     }
 
-    /**
-     * We listen to the
-     * {@link JGraph#JGRAPH_MODE_PROPERTY}.
-     */
+    /** Enters or exits the preview when the canvas mode changes to or from preview mode. */
     @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        assert evt.getPropertyName().equals(JGraph.JGRAPH_MODE_PROPERTY);
-        GraphViewMode mode = getJGraph().getMode();
-        if (mode == PREVIEW_MODE || evt.getOldValue() == PREVIEW_MODE) {
+    public void modeChanged(GraphCanvas<@NonNull AspectGraph> canvas, GraphViewMode oldMode,
+                            GraphViewMode mode) {
+        if (mode == PREVIEW_MODE || oldMode == PREVIEW_MODE) {
             this.refreshing = true;
             if (mode == PREVIEW_MODE) {
                 enterPreview();
@@ -465,7 +460,7 @@ final public class GraphEditorTab extends ResourceTab
     public void dispose() {
         super.dispose();
         // unregister listeners
-        getJGraph().removeGraphViewModeListener(this);
+        getJGraph().removeCanvasListener(this);
         getSnapToGridAction().removeSnapListener(this);
         getJGraph().removeListeners();
     }
@@ -474,18 +469,18 @@ final public class GraphEditorTab extends ResourceTab
     private void initListeners() {
         getJGraph().setToolTipEnabled(true);
         // Update ToolBar based on Selection Changes
-        getJGraph().getSelectionModel().addGraphSelectionListener(new GraphSelectionListener() {
+        getJGraph().addCanvasListener(new GraphCanvasListener<@NonNull AspectGraph>() {
             @Override
-            public void valueChanged(GraphSelectionEvent e) {
+            public void selectionChanged(GraphCanvas<@NonNull AspectGraph> canvas) {
                 // Update Button States based on Current Selection
-                boolean selected = !getJGraph().isSelectionEmpty();
+                boolean selected = !canvas.isSelectionEmpty();
                 getDeleteAction().setEnabled(selected);
                 getCopyAction().setEnabled(selected);
                 getCutAction().setEnabled(selected);
             }
         });
-        getJGraph().addGraphViewModeListener(this);
-        getJGraph().addGraphSelectionListener(getSimulator().getActions().getSelectColorAction());
+        getJGraph().addCanvasListener(this);
+        getJGraph().addCanvasListener(getSimulator().getActions().getSelectColorAction());
         getSnapToGridAction().addSnapListener(this);
     }
 
@@ -648,15 +643,14 @@ final public class GraphEditorTab extends ResourceTab
         JPanel result = new TitledPanel("Label syntax help", tabbedPane, null, false);
         // add a listener that switches the syntax help between nodes and edges
         // when a cell edit is started in the JGraph
-        getJGraph().addPropertyChangeListener(new PropertyChangeListener() {
+        getJGraph().addCanvasListener(new GraphCanvasListener<@NonNull AspectGraph>() {
             @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName() == JGraph.CELL_EDIT_PROPERTY) {
-                    int index = evt.getNewValue() instanceof AspectJEdge
-                        ? edgeTabIndex
-                        : nodeTabIndex;
-                    tabbedPane.setSelectedIndex(index);
-                }
+            public void editingStarted(GraphCanvas<@NonNull AspectGraph> canvas,
+                                       ViewCell<@NonNull AspectGraph> cell) {
+                int index = cell instanceof ViewEdge
+                    ? edgeTabIndex
+                    : nodeTabIndex;
+                tabbedPane.setSelectedIndex(index);
             }
         });
         return result;

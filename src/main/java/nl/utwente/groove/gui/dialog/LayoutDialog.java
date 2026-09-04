@@ -31,10 +31,10 @@ import javax.swing.SwingConstants;
 
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.display.DisplayKind;
-import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.layout.LayoutKind;
 import nl.utwente.groove.gui.layout.LayouterItem;
 import nl.utwente.groove.gui.menu.SetLayoutMenu;
+import nl.utwente.groove.gui.view.GraphCanvas;
 
 /**
  * @author Eduardo Zambon
@@ -56,7 +56,7 @@ public class LayoutDialog extends JDialog implements ActionListener, WindowFocus
     private final LayouterItem protoLayouterItems[];
     private final JComboBox<String> layoutBox;
     private final JPanel panel;
-    private JGraph<?> jGraph;
+    private GraphCanvas<?> canvas;
 
     private LayoutDialog(Simulator simulator) {
         super(simulator.getFrame());
@@ -83,7 +83,7 @@ public class LayoutDialog extends JDialog implements ActionListener, WindowFocus
 
     @Override
     public void windowGainedFocus(WindowEvent e) {
-        this.refreshJGraph();
+        this.refreshCanvas();
         this.refreshPanel(this.layoutBox.getSelectedIndex());
     }
 
@@ -110,11 +110,11 @@ public class LayoutDialog extends JDialog implements ActionListener, WindowFocus
     }
 
     private void refreshPanel(LayouterItem item) {
-        if (getJGraph() != null) {
+        if (getCanvas() != null) {
             getLayoutMenu()
                 .selectLayoutAction(item)
                 .actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "layout"));
-            LayouterItem layouterItem = (LayouterItem) getJGraph().getLayouter();
+            LayouterItem layouterItem = (LayouterItem) getCanvas().getController().getLayouter();
             replacePanel(layouterItem.getPanel());
         }
     }
@@ -131,18 +131,18 @@ public class LayoutDialog extends JDialog implements ActionListener, WindowFocus
     }
 
     private SetLayoutMenu getLayoutMenu() {
-        return getJGraph() == null ? null : getJGraph().getController().getSetLayoutMenu();
+        return getCanvas() == null ? null : getCanvas().getController().getSetLayoutMenu();
     }
 
-    private void refreshJGraph() {
+    private void refreshCanvas() {
         DisplayKind display = this.simulator.getModel().getDisplay();
         if (display.isGraphBased()) {
-            this.jGraph = this.simulator.getDisplaysPanel().getGraphPanel().getJGraph();
+            this.canvas = this.simulator.getDisplaysPanel().getGraphPanel().getJGraph();
         }
     }
 
-    private JGraph<?> getJGraph() {
-        return this.jGraph;
+    private GraphCanvas<?> getCanvas() {
+        return this.canvas;
     }
 
 }

@@ -53,18 +53,6 @@ public class ArchitectureTest {
      * with the migration step that removes them; paths relative to the source roots.
      */
     private static final Map<String,String> ALLOWED = new TreeMap<>(Map.ofEntries(
-        // phase 1b, slice 3: neutral listeners
-        Map.entry("nl/utwente/groove/gui/action/FindReplaceAction.java", "1b-3"),
-        Map.entry("nl/utwente/groove/gui/action/SelectColorAction.java", "1b-3"),
-        Map.entry("nl/utwente/groove/gui/tree/LabelTree.java", "1b-3"),
-        Map.entry("nl/utwente/groove/gui/tree/LTSTree.java", "1b-3"),
-        Map.entry("nl/utwente/groove/gui/tree/RuleLevelTree.java", "1b-3"),
-        Map.entry("nl/utwente/groove/gui/tree/TypeTree.java", "1b-3"),
-        Map.entry("nl/utwente/groove/gui/tree/LTSFilter.java", "1b-3"),
-        Map.entry("nl/utwente/groove/gui/dialog/GraphPreviewDialog.java", "1b-3"),
-        Map.entry("nl/utwente/groove/gui/dialog/LayoutDialog.java", "1b-3"),
-        Map.entry("nl/utwente/groove/gui/Imager.java", "1b-3"),
-        Map.entry("nl/utwente/groove/gui/Simulator.java", "1b-3"),
         // phase 1b, slice 4: layouters
         Map.entry("nl/utwente/groove/gui/layout/AbstractLayouter.java", "1b-4"),
         Map.entry("nl/utwente/groove/gui/layout/ForestLayouter.java", "1b-4"),
@@ -80,9 +68,12 @@ public class ArchitectureTest {
         Map.entry("nl/utwente/groove/gui/export/util/GraphToSVG.java", "1b-5"),
         Map.entry("nl/utwente/groove/gui/export/util/GraphToTikz.java", "1b-5"),
         Map.entry("nl/utwente/groove/gui/export/util/GraphToVector.java", "1b-5"),
-        // phase 2: ownership inversion and per-role view models
+        // phase 2: ownership inversion and per-role view models;
+        // GraphPreviewDialog and Imager construct canvases (Imager also exports them, slice 5)
         Map.entry("nl/utwente/groove/gui/action/ExploreAction.java", "2"),
+        Map.entry("nl/utwente/groove/gui/dialog/GraphPreviewDialog.java", "2"),
         Map.entry("nl/utwente/groove/gui/display/GraphTab.java", "2"),
+        Map.entry("nl/utwente/groove/gui/Imager.java", "2"),
         Map.entry("nl/utwente/groove/gui/display/JGraphPanel.java", "2"),
         Map.entry("nl/utwente/groove/gui/display/LTSDisplay.java", "2"),
         Map.entry("nl/utwente/groove/gui/display/StateDisplay.java", "2"),
