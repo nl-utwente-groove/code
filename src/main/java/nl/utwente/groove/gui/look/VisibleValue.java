@@ -28,17 +28,17 @@ import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.gui.view.AspectViewCell;
-import nl.utwente.groove.gui.jgraph.AspectJEdge;
+import nl.utwente.groove.gui.view.AspectViewEdge;
 import nl.utwente.groove.gui.view.AspectGraphViewController;
-import nl.utwente.groove.gui.jgraph.AspectJVertex;
+import nl.utwente.groove.gui.view.AspectViewVertex;
 import nl.utwente.groove.gui.view.ViewCell;
 import nl.utwente.groove.gui.view.ViewEdge;
 import nl.utwente.groove.gui.view.GraphViewController;
 import nl.utwente.groove.gui.view.ViewVertex;
 import nl.utwente.groove.gui.view.LTSViewCell;
-import nl.utwente.groove.gui.jgraph.LTSJEdge;
+import nl.utwente.groove.gui.view.LTSViewEdge;
 import nl.utwente.groove.gui.view.LTSGraphViewController;
-import nl.utwente.groove.gui.jgraph.LTSJVertex;
+import nl.utwente.groove.gui.view.LTSViewVertex;
 import nl.utwente.groove.gui.tree.LabelTree;
 import nl.utwente.groove.gui.tree.RuleLevelTree;
 import nl.utwente.groove.lts.GraphState;
@@ -57,12 +57,12 @@ public class VisibleValue implements VisualValue<Boolean> {
         assert controller != null; // should be the case by the time this method gets called
         if (cell instanceof AspectViewCell) {
             result = isVertex
-                ? getAspectVertexValue((AspectGraphViewController) controller, (AspectJVertex) cell)
-                : getAspectEdgeValue((AspectGraphViewController) controller, (AspectJEdge) cell);
+                ? getAspectVertexValue((AspectGraphViewController) controller, (AspectViewVertex) cell)
+                : getAspectEdgeValue((AspectGraphViewController) controller, (AspectViewEdge) cell);
         } else if (cell instanceof LTSViewCell) {
             result = isVertex
-                ? getLTSVertexValue((LTSGraphViewController) controller, (LTSJVertex) cell)
-                : getLTSEdgeValue((LTSGraphViewController) controller, (LTSJEdge) cell);
+                ? getLTSVertexValue((LTSGraphViewController) controller, (LTSViewVertex) cell)
+                : getLTSEdgeValue((LTSGraphViewController) controller, (LTSViewEdge) cell);
         } else if (cell instanceof ViewVertex) {
             result = isVertex
                 ? getBasicVertexValue(controller, (ViewVertex<G>) cell)
@@ -94,7 +94,7 @@ public class VisibleValue implements VisualValue<Boolean> {
         return result;
     }
 
-    private boolean getAspectVertexValue(AspectGraphViewController controller, AspectJVertex jVertex) {
+    private boolean getAspectVertexValue(AspectGraphViewController controller, AspectViewVertex jVertex) {
         AspectNode node = jVertex.getNode();
         // remark nodes are always visible
         if (node.has(REMARK)) {
@@ -147,7 +147,7 @@ public class VisibleValue implements VisualValue<Boolean> {
         return false;
     }
 
-    private boolean getAspectEdgeValue(AspectGraphViewController controller, AspectJEdge jEdge) {
+    private boolean getAspectEdgeValue(AspectGraphViewController controller, AspectViewEdge jEdge) {
         // anything explicitly filtered by the level tree is not visible
         RuleLevelTree levelTree = controller.getLevelTree();
         if (levelTree != null && !levelTree.isVisible(jEdge)) {
@@ -156,7 +156,7 @@ public class VisibleValue implements VisualValue<Boolean> {
         return getBasicEdgeValue(controller, jEdge);
     }
 
-    private boolean getLTSVertexValue(LTSGraphViewController controller, LTSJVertex jVertex) {
+    private boolean getLTSVertexValue(LTSGraphViewController controller, LTSViewVertex jVertex) {
         GraphState state = jVertex.getNode();
         if (!jVertex.hasVisibleFlag()) {
             return false;
@@ -176,7 +176,7 @@ public class VisibleValue implements VisualValue<Boolean> {
         return false;
     }
 
-    private boolean getLTSEdgeValue(LTSGraphViewController controller, LTSJEdge jEdge) {
+    private boolean getLTSEdgeValue(LTSGraphViewController controller, LTSViewEdge jEdge) {
         GraphTransition trans = jEdge.getEdge();
         if (!jEdge.hasVisibleFlag()) {
             return false;

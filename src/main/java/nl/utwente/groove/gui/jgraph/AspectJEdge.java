@@ -36,12 +36,13 @@ import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.gui.view.AspectViewCell;
 import nl.utwente.groove.gui.view.AspectViewCellErrors;
+import nl.utwente.groove.gui.view.AspectViewEdge;
 
 /**
  * Specialized j-edge for rule graphs, with its own tool tip text.
  */
 public class AspectJEdge extends
-    AJEdge<@NonNull AspectGraph,AspectJGraph,AspectJModel,AspectJVertex> implements AspectViewCell {
+    AJEdge<@NonNull AspectGraph,AspectJGraph,AspectJModel,AspectJVertex> implements AspectViewEdge {
     /**
      * Creates an uninitialised instance.
      * @param graphRole graph role for which this ViewEdge is intended

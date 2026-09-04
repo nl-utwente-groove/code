@@ -14,30 +14,24 @@
  */
 package nl.utwente.groove.gui.view;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
+import java.util.Set;
 
-import nl.utwente.groove.grammar.aspect.AspectGraph;
-import nl.utwente.groove.grammar.model.GraphBasedModel;
-import nl.utwente.groove.grammar.type.TypeGraph;
+import org.eclipse.jdt.annotation.NonNull;
+
+import nl.utwente.groove.lts.GTS;
+import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.util.AIGenerated;
 
 /**
- * Canvas showing an aspect graph (a host graph, rule, type graph or state).
+ * Edge cell of a transition system view, wrapping one or more transitions.
  * @author Arend Rensink
  * @version $Revision$
  */
-@NonNullByDefault
 @AIGenerated("Claude Fable 5.1, 2026-09")
-public interface AspectGraphCanvas extends GraphCanvas<AspectGraph> {
+public interface LTSViewEdge extends LTSViewCell, ViewEdge<@NonNull GTS> {
     @Override
-    AspectGraphViewController getController();
+    GraphTransition getEdge();
 
-    /** Indicates if this canvas shows a state of a transition system rather than a resource. */
-    boolean isForState();
-
-    /** Returns the resource model of the graph currently shown. */
-    GraphBasedModel<?> getResourceModel();
-
-    /** Returns the type graph against which the graph currently shown is typed. */
-    TypeGraph getTypeGraph();
+    @Override
+    Set<? extends GraphTransition> getEdges();
 }

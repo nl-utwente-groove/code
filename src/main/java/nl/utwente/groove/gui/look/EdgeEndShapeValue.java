@@ -22,7 +22,7 @@ import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.graph.Graph;
-import nl.utwente.groove.gui.jgraph.AspectJEdge;
+import nl.utwente.groove.gui.view.AspectViewEdge;
 import nl.utwente.groove.gui.view.ViewCell;
 import nl.utwente.groove.gui.view.GraphViewController;
 
@@ -50,7 +50,7 @@ public class EdgeEndShapeValue implements VisualValue<EdgeEnd> {
         } else if (controller.isShowArrowsOnLabels()) {
             // only show some arrows
             boolean show = false;
-            if (cell instanceof AspectJEdge jEdge) {
+            if (cell instanceof AspectViewEdge jEdge) {
                 show |= jEdge.getAspects().has(AspectKind.SUBTYPE);
                 show |= this.source && jEdge.getAspects().has(AspectKind.COMPOSITE);
                 show |= jEdge.isNodeEdgeOut();

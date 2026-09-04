@@ -83,7 +83,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-import nl.utwente.groove.gui.jgraph.JAttr;
+import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.look.EdgeEnd;
 import nl.utwente.groove.gui.look.Look;
 import nl.utwente.groove.gui.look.Values;
@@ -523,7 +523,7 @@ public final class TikzStylesExtractor {
                 break;
             case OVAL:
                 styles.add(new StyleDuo(SHAPE_KEY, RECTANGLE_VAL));
-                styles.add(new StyleDuo(ROUNDED_CORNERS_KEY, JAttr.STRONG_ARC_SIZE / 5 + "pt"));
+                styles.add(new StyleDuo(ROUNDED_CORNERS_KEY, Values.STRONG_ARC_SIZE / 5 + "pt"));
                 break;
             case RECTANGLE:
                 styles.add(new StyleDuo(SHAPE_KEY, RECTANGLE_VAL));
@@ -531,7 +531,7 @@ public final class TikzStylesExtractor {
                 break;
             case ROUNDED:
                 styles.add(new StyleDuo(SHAPE_KEY, RECTANGLE_VAL));
-                styles.add(new StyleDuo(ROUNDED_CORNERS_KEY, JAttr.NORMAL_ARC_SIZE / 5 + "pt"));
+                styles.add(new StyleDuo(ROUNDED_CORNERS_KEY, Values.NORMAL_ARC_SIZE / 5 + "pt"));
                 break;
             default:
                 throw Exceptions

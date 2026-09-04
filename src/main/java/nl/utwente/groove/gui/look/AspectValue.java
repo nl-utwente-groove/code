@@ -19,8 +19,8 @@ package nl.utwente.groove.gui.look;
 import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.graph.Graph;
-import nl.utwente.groove.gui.jgraph.AspectJEdge;
-import nl.utwente.groove.gui.jgraph.AspectJVertex;
+import nl.utwente.groove.gui.view.AspectViewEdge;
+import nl.utwente.groove.gui.view.AspectViewVertex;
 import nl.utwente.groove.gui.view.ViewCell;
 import nl.utwente.groove.gui.view.GraphViewController;
 
@@ -33,18 +33,18 @@ import nl.utwente.groove.gui.view.GraphViewController;
 public abstract class AspectValue<T> implements VisualValue<T> {
     @Override
     public <G extends @NonNull Graph> T get(GraphViewController<G> controller, ViewCell<G> cell) {
-        if (cell instanceof AspectJVertex v) {
+        if (cell instanceof AspectViewVertex v) {
             return getForJVertex(v);
         }
-        if (cell instanceof AspectJEdge e) {
+        if (cell instanceof AspectViewEdge e) {
             return getForJEdge(e);
         }
         return null;
     }
 
-    /** Delegate method to retrieve the visual value from an {@link AspectJVertex}. */
-    abstract protected T getForJVertex(AspectJVertex jVertex);
+    /** Delegate method to retrieve the visual value from an {@link AspectViewVertex}. */
+    abstract protected T getForJVertex(AspectViewVertex jVertex);
 
-    /** Delegate method to retrieve the visual value from an {@link AspectJEdge}. */
-    abstract protected T getForJEdge(AspectJEdge jEdge);
+    /** Delegate method to retrieve the visual value from an {@link AspectViewEdge}. */
+    abstract protected T getForJEdge(AspectViewEdge jEdge);
 }

@@ -696,8 +696,8 @@ public class JVertexView extends VertexView {
                 }
                 break;
             case OVAL:
-                result.left += JAttr.STRONG_ARC_SIZE / 6;
-                result.right += JAttr.STRONG_ARC_SIZE / 6;
+                result.left += Values.STRONG_ARC_SIZE / 6;
+                result.right += Values.STRONG_ARC_SIZE / 6;
                 break;
             default:
                 // no adjustments
@@ -732,11 +732,11 @@ public class JVertexView extends VertexView {
             case RECTANGLE:
                 return new Rectangle2D.Double(x, y, width, height);
             case ROUNDED:
-                return new RoundRectangle2D.Double(x, y, width, height, JAttr.NORMAL_ARC_SIZE,
-                    JAttr.NORMAL_ARC_SIZE);
+                return new RoundRectangle2D.Double(x, y, width, height, Values.NORMAL_ARC_SIZE,
+                    Values.NORMAL_ARC_SIZE);
             case OVAL:
-                return new RoundRectangle2D.Double(x, y, width, height, JAttr.STRONG_ARC_SIZE,
-                    JAttr.STRONG_ARC_SIZE);
+                return new RoundRectangle2D.Double(x, y, width, height, Values.STRONG_ARC_SIZE,
+                    Values.STRONG_ARC_SIZE);
             default:
                 assert false;
                 return null;

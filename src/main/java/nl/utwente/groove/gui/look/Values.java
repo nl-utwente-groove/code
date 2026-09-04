@@ -21,10 +21,17 @@ import static nl.utwente.groove.gui.look.Values.Mode.NONE;
 import static nl.utwente.groove.gui.look.Values.Mode.SELECTED;
 
 import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Paint;
+import java.awt.Rectangle;
+import java.awt.TexturePaint;
+import java.awt.image.BufferedImage;
 import java.util.EnumMap;
 import java.util.Map;
 
-import nl.utwente.groove.gui.jgraph.JAttr;
+import javax.swing.JComponent;
+
 import nl.utwente.groove.util.Colors;
 import nl.utwente.groove.util.DefaultFixable;
 import nl.utwente.groove.util.HTMLConverter;
@@ -37,6 +44,52 @@ import nl.utwente.groove.util.parse.Severity;
  * @version $Revision$
  */
 public class Values {
+    /** Background colour of an active (editable) graph tab. */
+    public static final Color ACTIVE_BACKGROUND = Color.WHITE;
+    /** Background colour of an inactive graph tab. */
+    public static final Color INACTIVE_BACKGROUND = new Color(245, 245, 245);
+    /** Background colour of the editor. */
+    public static final Color EDITOR_BACKGROUND = new Color(255, 255, 230);
+    /** Background colour of a state display. */
+    public static final Color STATE_BACKGROUND = new Color(242, 250, 254);
+    /** Background colour of a state display showing an error state. */
+    public static final Color ERROR_STATE_BACKGROUND = new Color(255, 242, 242);
+    /** Background colour of a state display showing an internal (transient) state. */
+    public static final Color INTERNAL_STATE_BACKGROUND = new Color(250, 245, 250);
+    /** Background colour of a filtered transition system display. */
+    public static final Color FILTER_BACKGROUND = new Color(230, 230, 255);
+    /** Arc size of normally rounded node corners. */
+    public static final int NORMAL_ARC_SIZE = 5;
+    /** Arc size of strongly rounded node corners. */
+    public static final int STRONG_ARC_SIZE = 20;
+
+    /** Returns the state display background colour for a given state status. */
+    public static Color getStateBackground(boolean error, boolean internal) {
+        return error
+            ? ERROR_STATE_BACKGROUND
+            : internal
+                ? INTERNAL_STATE_BACKGROUND
+                : STATE_BACKGROUND;
+    }
+
+    /** Paints a hatch pattern over the whole area of a component. */
+    public static void paintHatch(JComponent component, Graphics g) {
+        var g2 = (Graphics2D) g;
+        g2.setPaint(createHatchPaint());
+        g2.fill(new Rectangle(0, 0, component.getWidth(), component.getHeight()));
+    }
+
+    /** Creates a translucent diagonal hatch paint. */
+    public static Paint createHatchPaint() {
+        int size = 30;
+        BufferedImage bi = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = bi.createGraphics();
+        g2.setPaint(new Color(0, 0, 0, 20));
+        g2.drawLine(0, 0, size, size);
+        Rectangle r = new Rectangle(0, 0, size, size);
+        return new TexturePaint(bi, r);
+    }
+
     /** Dash pattern of absent graphs and transitions. */
     public static final float[] ABSENT_DASH = {3.0f, 3.0f};
     /** Dash pattern of abstract type nodes and edges. */
@@ -81,7 +134,7 @@ public class Values {
     /** Background colour of error states. */
     public static final Color ERROR_BACKGROUND = Color.RED;
     /** Foreground colour of the start state. */
-    public static final Color START_FOREGROUND = JAttr.STATE_BACKGROUND;
+    public static final Color START_FOREGROUND = STATE_BACKGROUND;
     /** Background colour of the start state. */
     public static final Color START_BACKGROUND = Color.BLACK;
     /** Background colour of the start state while it is still open. */

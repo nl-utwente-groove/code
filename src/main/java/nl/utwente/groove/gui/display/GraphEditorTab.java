@@ -83,7 +83,7 @@ import nl.utwente.groove.gui.dialog.PropertiesTable;
 import nl.utwente.groove.gui.jgraph.AspectJEdge;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.AspectJModel;
-import nl.utwente.groove.gui.jgraph.JAttr;
+import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.view.GraphViewMode;
 import nl.utwente.groove.gui.look.Values;
@@ -506,7 +506,7 @@ final public class GraphEditorTab extends ResourceTab
         JGraphPanel<?> result = this.editArea;
         if (result == null) {
             result = this.editArea = new JGraphPanel<>(getJGraph());
-            result.setEnabledBackground(JAttr.EDITOR_BACKGROUND);
+            result.setEnabledBackground(Values.EDITOR_BACKGROUND);
             result.initialise();
             result.setEnabled(true);
         }
@@ -549,7 +549,7 @@ final public class GraphEditorTab extends ResourceTab
             this.labelPanel = result = new TitledPanel(Options.LABEL_PANE_TITLE, labelTree,
                 labelTree.createToolBar(), true);
             result.setTitled(false);
-            result.setEnabledBackground(JAttr.EDITOR_BACKGROUND);
+            result.setEnabledBackground(Values.EDITOR_BACKGROUND);
         }
         return result;
     }
@@ -573,7 +573,7 @@ final public class GraphEditorTab extends ResourceTab
         if (result == null) {
             final var panel = new PropertiesTable(ResourceProperties.Key.class, true);
             panel.setName("Properties");
-            panel.setBackground(JAttr.EDITOR_BACKGROUND);
+            panel.setBackground(Values.EDITOR_BACKGROUND);
             panel.setProperties(ResourceProperties.getProperties(getGraph()));
             // add the listener after initialising the properties, to avoid needless refreshes
             panel.getModel().addTableModelListener(e -> {
@@ -670,7 +670,7 @@ final public class GraphEditorTab extends ResourceTab
     private JComponent createSyntaxList(Collection<String> data) {
         final JList<String> list = new JList<>();
         list.setCellRenderer(new SyntaxCellRenderer());
-        list.setBackground(JAttr.EDITOR_BACKGROUND);
+        list.setBackground(Values.EDITOR_BACKGROUND);
         list.setListData(data.toArray(new String[data.size()]));
         list.addMouseListener(new DismissDelayer(list));
         list.setSelectionModel(new DefaultListSelectionModel() {

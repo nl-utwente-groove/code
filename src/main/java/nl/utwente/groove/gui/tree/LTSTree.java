@@ -34,7 +34,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.graph.Label;
-import nl.utwente.groove.gui.jgraph.JAttr;
+import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.jgraph.LTSJGraph;
 import nl.utwente.groove.gui.tree.LTSEntry.Type;
 import nl.utwente.groove.lts.GTS;
@@ -139,7 +139,7 @@ public class LTSTree extends LabelTree<GTS> {
     protected void paintComponent(@Nullable Graphics g) {
         super.paintComponent(g);
         if (getJGraph().getSimulatorModel().hasAbsentState()) {
-            JAttr.paintHatch(this, g);
+            Values.paintHatch(this, g);
         }
     }
 

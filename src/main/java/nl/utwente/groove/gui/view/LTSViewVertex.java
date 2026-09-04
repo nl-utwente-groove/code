@@ -14,30 +14,31 @@
  */
 package nl.utwente.groove.gui.view;
 
-import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.NonNull;
 
-import nl.utwente.groove.grammar.aspect.AspectGraph;
-import nl.utwente.groove.grammar.model.GraphBasedModel;
-import nl.utwente.groove.grammar.type.TypeGraph;
+import nl.utwente.groove.lts.GTS;
+import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.util.AIGenerated;
 
 /**
- * Canvas showing an aspect graph (a host graph, rule, type graph or state).
+ * Vertex cell of a transition system view, wrapping a state.
  * @author Arend Rensink
  * @version $Revision$
  */
-@NonNullByDefault
 @AIGenerated("Claude Fable 5.1, 2026-09")
-public interface AspectGraphCanvas extends GraphCanvas<AspectGraph> {
+public interface LTSViewVertex extends LTSViewCell, ViewVertex<@NonNull GTS> {
     @Override
-    AspectGraphViewController getController();
+    GraphState getNode();
 
-    /** Indicates if this canvas shows a state of a transition system rather than a resource. */
-    boolean isForState();
+    /** Indicates if all outgoing transitions of the state are visible. */
+    boolean isAllOutVisible();
 
-    /** Returns the resource model of the graph currently shown. */
-    GraphBasedModel<?> getResourceModel();
+    /** Indicates if the state is the start state. */
+    boolean isStart();
 
-    /** Returns the type graph against which the graph currently shown is typed. */
-    TypeGraph getTypeGraph();
+    /** Indicates if the state is closed. */
+    boolean isClosed();
+
+    /** Indicates if the state is final. */
+    boolean isFinal();
 }

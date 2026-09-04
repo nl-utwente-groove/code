@@ -22,8 +22,8 @@ import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.graph.GraphRole;
-import nl.utwente.groove.gui.jgraph.AspectJEdge;
-import nl.utwente.groove.gui.jgraph.AspectJVertex;
+import nl.utwente.groove.gui.view.AspectViewEdge;
+import nl.utwente.groove.gui.view.AspectViewVertex;
 
 /**
  * Refresher for the controlled colour value of a ViewCell.
@@ -32,7 +32,7 @@ import nl.utwente.groove.gui.jgraph.AspectJVertex;
  */
 public class ColorValue extends AspectValue<Color> {
     @Override
-    protected Color getForJVertex(AspectJVertex jVertex) {
+    protected Color getForJVertex(AspectViewVertex jVertex) {
         Color result = null;
         AspectNode node = jVertex.getNode();
         if (node.getGraphRole() != GraphRole.RULE) {
@@ -49,7 +49,7 @@ public class ColorValue extends AspectValue<Color> {
     }
 
     @Override
-    protected Color getForJEdge(AspectJEdge jEdge) {
+    protected Color getForJEdge(AspectViewEdge jEdge) {
         Color result = null;
         var edge = jEdge.getEdge();
         if (edge != null) {
@@ -57,7 +57,7 @@ public class ColorValue extends AspectValue<Color> {
             AspectNode node = edge.has(AspectKind.SUBTYPE)
                 ? edge.target()
                 : edge.source();
-            AspectJVertex jNode = jEdge.getJModel().getJCellForNode(node);
+            var jNode = (AspectViewVertex) jEdge.getViewModel().getJCellForNode(node);
             if (jNode != null) {
                 result = getForJVertex(jNode);
             }
