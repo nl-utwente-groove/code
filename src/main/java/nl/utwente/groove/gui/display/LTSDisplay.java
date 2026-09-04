@@ -27,7 +27,6 @@ import static nl.utwente.groove.gui.view.GraphViewMode.SELECT_MODE;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -64,7 +63,8 @@ import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.SimulatorListener;
 import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.gui.SimulatorModel.Change;
-import nl.utwente.groove.gui.jgraph.JAttr;
+import nl.utwente.groove.gui.look.Values;
+import nl.utwente.groove.gui.view.GraphCanvas.Overlay;
 import nl.utwente.groove.gui.view.ViewCell;
 import nl.utwente.groove.gui.view.GraphViewMode;
 import nl.utwente.groove.gui.jgraph.LTSJEdge;
@@ -132,7 +132,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
     protected JComponent createInfoPanel() {
         var labelTree = getLabelTree();
         final TitledPanel result = new TitledPanel("LTS labels", labelTree, null, true);
-        result.setEnabledBackground(JAttr.STATE_BACKGROUND);
+        result.setEnabledBackground(Values.STATE_BACKGROUND);
         getJGraph().addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
@@ -451,15 +451,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
     public LTSJGraph getJGraph() {
         LTSJGraph result = this.jGraph;
         if (result == null) {
-            result = this.jGraph = new LTSJGraph(getSimulator()) {
-                @Override
-                protected void paintComponent(Graphics g) {
-                    super.paintComponent(g);
-                    if (getSimulatorModel().hasAbsentState()) {
-                        JAttr.paintHatch(this, g);
-                    }
-                }
-            };
+            result = this.jGraph = new LTSJGraph(getSimulator());
             result.setLabelTree(getLabelTree());
             //result.addProgressObserver(new ProgressObserver());
         }
@@ -486,6 +478,9 @@ public class LTSDisplay extends Display implements SimulatorListener {
 
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel, Set<Change> changes) {
+        getJGraph().setOverlay(source.hasAbsentState()
+            ? Overlay.HATCHED
+            : Overlay.NONE);
         if (changes.contains(GTS) || changes.contains(GRAMMAR) || changes.contains(TRACE)) {
             GTS gts = source.getGTS();
             if (gts == null) {
@@ -556,7 +551,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
                 GraphState state = source.getState();
                 var error = state != null && state.isError();
                 var internal = state != null && state.isInner();
-                getJGraph().setBackground(JAttr.getStateBackground(error, internal));
+                getJGraph().setBackground(Values.getStateBackground(error, internal));
                 GraphTransition transition = source.getTransition();
                 if (getJGraph().getController().setActive(state, transition)) {
                     getJGraph().doLayout(false);
@@ -593,8 +588,8 @@ public class LTSDisplay extends Display implements SimulatorListener {
      */
     public void refreshBackground() {
         Color background = getJGraph().getController().isComplete()
-            ? JAttr.STATE_BACKGROUND
-            : JAttr.FILTER_BACKGROUND;
+            ? Values.STATE_BACKGROUND
+            : Values.FILTER_BACKGROUND;
         getGraphPanel().setEnabledBackground(background);
         ((NumberEditor) getBoundSpinner().getEditor())
             .getTextField()
@@ -776,7 +771,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
         public LTSGraphPanel(LTSJGraph jGraph) {
             super(jGraph);
             getJGraph().setToolTipEnabled(true);
-            setEnabledBackground(JAttr.STATE_BACKGROUND);
+            setEnabledBackground(Values.STATE_BACKGROUND);
         }
 
         @Override

@@ -54,25 +54,14 @@ public class ArchitectureTest {
      */
     private static final Map<String,String> ALLOWED = new TreeMap<>(Map.ofEntries(
         // phase 1b, slice 2: looks decoupling
-        Map.entry("nl/utwente/groove/gui/look/AspectValue.java", "1b-2"),
-        Map.entry("nl/utwente/groove/gui/look/ColorValue.java", "1b-2"),
-        Map.entry("nl/utwente/groove/gui/look/EdgeEndLabelValue.java", "1b-2"),
-        Map.entry("nl/utwente/groove/gui/look/EdgeEndShapeValue.java", "1b-2"),
-        Map.entry("nl/utwente/groove/gui/look/IdAdornmentValue.java", "1b-2"),
-        Map.entry("nl/utwente/groove/gui/look/LabelValue.java", "1b-2"),
         Map.entry("nl/utwente/groove/gui/look/LoopRouting.java", "1b-2"),
-        Map.entry("nl/utwente/groove/gui/look/ParAdornmentValue.java", "1b-2"),
-        Map.entry("nl/utwente/groove/gui/look/Values.java", "1b-2"),
-        Map.entry("nl/utwente/groove/gui/look/VisibleValue.java", "1b-2"),
         Map.entry("nl/utwente/groove/gui/look/VisualAttributeMap.java", "1b-2"),
         Map.entry("nl/utwente/groove/gui/look/VisualMap.java", "1b-2"),
-        Map.entry("nl/utwente/groove/gui/tree/LTSTree.java", "1b-2"),
-        Map.entry("nl/utwente/groove/gui/tree/StateTree.java", "1b-2"),
-        Map.entry("nl/utwente/groove/gui/export/util/TikzStylesExtractor.java", "1b-2"),
         // phase 1b, slice 3: neutral listeners
         Map.entry("nl/utwente/groove/gui/action/FindReplaceAction.java", "1b-3"),
         Map.entry("nl/utwente/groove/gui/action/SelectColorAction.java", "1b-3"),
         Map.entry("nl/utwente/groove/gui/tree/LabelTree.java", "1b-3"),
+        Map.entry("nl/utwente/groove/gui/tree/LTSTree.java", "1b-3"),
         Map.entry("nl/utwente/groove/gui/tree/RuleLevelTree.java", "1b-3"),
         Map.entry("nl/utwente/groove/gui/tree/TypeTree.java", "1b-3"),
         Map.entry("nl/utwente/groove/gui/tree/LTSFilter.java", "1b-3"),

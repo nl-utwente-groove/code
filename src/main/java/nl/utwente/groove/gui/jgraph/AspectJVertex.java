@@ -42,12 +42,13 @@ import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.gui.view.AspectViewCell;
 import nl.utwente.groove.gui.view.AspectViewCellErrors;
+import nl.utwente.groove.gui.view.AspectViewVertex;
 
 /**
  * Specialized j-vertex for rule graphs, with its own tool tip text.
  */
 public class AspectJVertex extends
-    AJVertex<@NonNull AspectGraph,AspectJGraph,AspectJModel,AspectJEdge> implements AspectViewCell {
+    AJVertex<@NonNull AspectGraph,AspectJGraph,AspectJModel,AspectJEdge> implements AspectViewVertex {
     /**
      * Creates a fresh, uninitialised ViewVertex.
      * Call {@link #setJModel} and {@link #setNode(Node)}

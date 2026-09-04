@@ -69,7 +69,7 @@ import nl.utwente.groove.gui.SimulatorModel.Change;
 import nl.utwente.groove.gui.action.ActionStore;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.display.ResourceDisplay;
-import nl.utwente.groove.gui.jgraph.JAttr;
+import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
@@ -212,7 +212,7 @@ public class StateTree extends JTree implements SimulatorListener {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         if (getSimulatorModel().hasAbsentState()) {
-            JAttr.paintHatch(this, g);
+            Values.paintHatch(this, g);
         }
     }
 
@@ -240,7 +240,7 @@ public class StateTree extends JTree implements SimulatorListener {
     public void setEnabled(boolean enabled) {
         if (enabled != isEnabled()) {
             setBackground(enabled
-                ? JAttr.STATE_BACKGROUND
+                ? Values.STATE_BACKGROUND
                 : null);
         }
         super.setEnabled(enabled);
@@ -287,7 +287,7 @@ public class StateTree extends JTree implements SimulatorListener {
             var state = source.getState();
             var error = state != null && state.isError();
             var internal = state != null && state.isInner();
-            setBackground(JAttr.getStateBackground(error, internal));
+            setBackground(Values.getStateBackground(error, internal));
             getSelectionListener().selectSiblings();
             activateListening();
         }

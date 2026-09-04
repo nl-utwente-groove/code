@@ -68,7 +68,8 @@ import nl.utwente.groove.gui.jgraph.AspectJEdge;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.AspectJModel;
 import nl.utwente.groove.gui.jgraph.AspectJVertex;
-import nl.utwente.groove.gui.jgraph.JAttr;
+import nl.utwente.groove.gui.look.Values;
+import nl.utwente.groove.gui.view.GraphCanvas.Overlay;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.list.ErrorEntry;
 import nl.utwente.groove.gui.list.ErrorListPanel;
@@ -132,7 +133,7 @@ public class StateDisplay extends Display implements SimulatorListener {
         TypeTree labelTree = getLabelTree();
         TitledPanel result
             = new TitledPanel(Options.LABEL_PANE_TITLE, labelTree, labelTree.createToolBar(), true);
-        result.setEnabledBackground(JAttr.STATE_BACKGROUND);
+        result.setEnabledBackground(Values.STATE_BACKGROUND);
         return result;
     }
 
@@ -235,7 +236,7 @@ public class StateDisplay extends Display implements SimulatorListener {
             };
             result.initialise();
             result.setBorder(null);
-            result.setEnabledBackground(JAttr.STATE_BACKGROUND);
+            result.setEnabledBackground(Values.STATE_BACKGROUND);
             result.getJGraph().setToolTipEnabled(true);
         }
         return result;
@@ -260,15 +261,7 @@ public class StateDisplay extends Display implements SimulatorListener {
     final public AspectJGraph getJGraph() {
         AspectJGraph result = this.jGraph;
         if (result == null) {
-            result = this.jGraph = new AspectJGraph(getSimulator(), getKind(), false) {
-                @Override
-                protected void paintComponent(Graphics g) {
-                    super.paintComponent(g);
-                    if (getSimulatorModel().hasAbsentState()) {
-                        JAttr.paintHatch(this, g);
-                    }
-                }
-            };
+            result = this.jGraph = new AspectJGraph(getSimulator(), getKind(), false);
             result.setLabelTree(getLabelTree());
         }
         return result;
@@ -286,7 +279,7 @@ public class StateDisplay extends Display implements SimulatorListener {
                 protected void paintComponent(Graphics g) {
                     super.paintComponent(g);
                     if (getSimulatorModel().hasAbsentState()) {
-                        JAttr.paintHatch(this, g);
+                        Values.paintHatch(this, g);
                     }
                 }
             };
@@ -333,6 +326,9 @@ public class StateDisplay extends Display implements SimulatorListener {
         if (!suspendListening()) {
             return;
         }
+        getJGraph().setOverlay(source.hasAbsentState()
+            ? Overlay.HATCHED
+            : Overlay.NONE);
         // check if layout should be transferred
         GraphTransition oldTtrans = oldModel.getTransition();
         boolean transferLayout = oldTtrans != null && oldTtrans != source.getTransition()
@@ -497,7 +493,7 @@ public class StateDisplay extends Display implements SimulatorListener {
             getErrorPanel().clearEntries();
             getDisplayPanel().remove(getErrorPanel());
         }
-        Color background = JAttr.getStateBackground(error, internal);
+        Color background = Values.getStateBackground(error, internal);
         getGraphPanel().setEnabledBackground(background);
         getLabelTree().setBackground(background);
     }

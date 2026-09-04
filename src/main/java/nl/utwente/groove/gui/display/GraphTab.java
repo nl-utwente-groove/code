@@ -30,7 +30,7 @@ import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.dialog.PropertiesTable;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.AspectJModel;
-import nl.utwente.groove.gui.jgraph.JAttr;
+import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.jgraph.JModel;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.tree.RuleLevelTree;
@@ -279,8 +279,8 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
         var resource = getResource();
         if (resource != null) {
             Color background = getResource().isActive()
-                ? JAttr.ACTIVE_BACKGROUND
-                : JAttr.INACTIVE_BACKGROUND;
+                ? Values.ACTIVE_BACKGROUND
+                : Values.INACTIVE_BACKGROUND;
             getEditArea().setEnabledBackground(background);
             getLabelTree().setBackground(background);
             var levelTree = getLevelTree();

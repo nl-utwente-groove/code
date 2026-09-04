@@ -20,19 +20,14 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.MultipleGradientPaint.CycleMethod;
 import java.awt.Paint;
 import java.awt.RadialGradientPaint;
 import java.awt.Rectangle;
 import java.awt.Stroke;
-import java.awt.TexturePaint;
-import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.swing.JComponent;
 
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.util.Fonts;
@@ -56,35 +51,8 @@ public class JAttr {
      */
     public static final int INNER_LINE_WIDTH = 2;
 
-    /** Default background for active resources. */
-    public static final Color ACTIVE_BACKGROUND = Color.WHITE;
-
-    /** Default background for inactive resources. */
-    public static final Color INACTIVE_BACKGROUND = new Color(245, 245, 245);
-
-    /** Default background for editor panels. */
-    public static final Color EDITOR_BACKGROUND = new Color(255, 255, 230);
-
-    /** Default background for state panels. */
-    public static final Color STATE_BACKGROUND = new Color(242, 250, 254);
-
-    /** Error background for panels. */
-    public static final Color ERROR_BACKGROUND = new Color(255, 242, 242);
-
-    /** Background for internal panels. */
-    public static final Color INTERNAL_BACKGROUND = new Color(250, 245, 250);
-
     /** Fully transparent colour. */
     public static final Color TRANSPARENT = new Color(0, 0, 0, 0);
-
-    /** Default background for LTS with filtering. */
-    public static final Color FILTER_BACKGROUND = new Color(230, 230, 255);
-
-    /** The size of the rounded corners for rounded-rectangle vertices. */
-    public static final int NORMAL_ARC_SIZE = 5;
-
-    /** The size of the rounded corners for strongly rounded-rectangle vertices. */
-    public static final int STRONG_ARC_SIZE = 20;
 
     /**
      * The standard bounds used for nodes.
@@ -137,33 +105,6 @@ public class JAttr {
                 dash, 1.0f);
         }
         return result;
-    }
-
-    /** Paints a hatch pattern over a given component. */
-    public static void paintHatch(JComponent component, Graphics g) {
-        var g2 = (Graphics2D) g;
-        g2.setPaint(createHatchPaint());
-        g2.fill(new Rectangle(0, 0, component.getWidth(), component.getHeight()));
-    }
-
-    /** Creates a hatch pattern in transparent black. */
-    public static Paint createHatchPaint() {
-        int size = 30;
-        BufferedImage bi = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g2 = bi.createGraphics();
-        g2.setPaint(new Color(0, 0, 0, 20));
-        g2.drawLine(0, 0, size, size);
-        Rectangle r = new Rectangle(0, 0, size, size);
-        return new TexturePaint(bi, r);
-    }
-
-    /** Returns the background colour, depending on the error and transient status of a state. */
-    public static Color getStateBackground(boolean error, boolean internal) {
-        return error
-            ? ERROR_BACKGROUND
-            : internal
-                ? INTERNAL_BACKGROUND
-                : STATE_BACKGROUND;
     }
 
     /**

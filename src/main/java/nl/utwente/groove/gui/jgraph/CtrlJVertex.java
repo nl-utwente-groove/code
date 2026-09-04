@@ -5,6 +5,8 @@ import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
 
+import nl.utwente.groove.gui.view.CtrlViewVertex;
+
 import nl.utwente.groove.control.graph.ControlGraph;
 import nl.utwente.groove.control.graph.ControlNode;
 import nl.utwente.groove.gui.look.Look;
@@ -15,7 +17,8 @@ import nl.utwente.groove.gui.look.Look;
  * @version $Revision$
  */
 public class CtrlJVertex
-    extends AJVertex<@NonNull ControlGraph,CtrlJGraph,JModel<@NonNull ControlGraph>,CtrlJEdge> {
+    extends AJVertex<@NonNull ControlGraph,CtrlJGraph,JModel<@NonNull ControlGraph>,CtrlJEdge>
+    implements CtrlViewVertex {
     /**
      * Creates a new instance.
      * Call {@link #setJModel} and {@link #setNode(nl.utwente.groove.graph.Node)}

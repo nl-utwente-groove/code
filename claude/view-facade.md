@@ -209,6 +209,14 @@ view-model split).
   `setBackgroundPainter` hook or a boolean `setHatched` — the hook is chosen here because the
   two existing overrides paint different things.
 
+## Follow-ups noted during the work
+
+- **Cell user objects** (Arend, 2026-09-04): `AspectViewCell.getUserObject()`/`setUserObject(Object)`
+  expose JGraph's `DefaultGraphCell` user object, which GROOVE uses to carry the editable
+  label text (`AspectViewObject`). A very old change, never reverted; the text belongs in a
+  dedicated, backend-independent field of the cell. To be done as its own small step after
+  the loop-routing commit of slice 2.
+
 ## State of work
 
 **Slice 1 done (2026-09-03, branch `view-facade`).** Interfaces `GraphCanvas`,

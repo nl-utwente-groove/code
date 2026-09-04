@@ -15,7 +15,7 @@ import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.lts.RuleTransition;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.Strings;
-import nl.utwente.groove.gui.view.LTSViewCell;
+import nl.utwente.groove.gui.view.LTSViewEdge;
 
 /**
  * ViewEdge class that describes the underlying edge as a graph transition.
@@ -23,7 +23,7 @@ import nl.utwente.groove.gui.view.LTSViewCell;
  * @version $Revision$
  */
 public class LTSJEdge extends AJEdge<@NonNull GTS,LTSJGraph,LTSJModel,LTSJVertex>
-    implements LTSViewCell {
+    implements LTSViewEdge {
     /**
      * Constructs an uninitialised instance.
      * Call {@link #setJModel(JModel)} to initialise.

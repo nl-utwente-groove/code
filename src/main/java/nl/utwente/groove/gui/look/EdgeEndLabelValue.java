@@ -19,8 +19,8 @@ package nl.utwente.groove.gui.look;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.type.Multiplicity;
 import nl.utwente.groove.graph.GraphRole;
-import nl.utwente.groove.gui.jgraph.AspectJEdge;
-import nl.utwente.groove.gui.jgraph.AspectJVertex;
+import nl.utwente.groove.gui.view.AspectViewEdge;
+import nl.utwente.groove.gui.view.AspectViewVertex;
 
 /**
  * Value of the edge source or target label (typically the outgoing/incoming multiplicity).
@@ -34,12 +34,12 @@ public class EdgeEndLabelValue extends AspectValue<String> {
     }
 
     @Override
-    protected String getForJVertex(AspectJVertex jVertex) {
+    protected String getForJVertex(AspectViewVertex jVertex) {
         return null;
     }
 
     @Override
-    protected String getForJEdge(AspectJEdge jEdge) {
+    protected String getForJEdge(AspectViewEdge jEdge) {
         String result = null;
         AspectEdge edge = jEdge.getEdge();
         // the edge could be null, if we're in the process of adding a ViewEdge

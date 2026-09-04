@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
 
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -255,11 +254,19 @@ public interface GraphCanvas<G extends Graph> {
     /** Sets the background colour; {@code null} for the default. */
     void setBackground(@Nullable Color background);
 
-    /**
-     * Sets a painter that decorates the background after the canvas has painted it
-     * (used for hatched overlays); {@code null} removes the decoration.
-     */
-    void setBackgroundPainter(@Nullable Consumer<Graphics2D> painter);
+    /** Sets the overlay drawn over the canvas. */
+    void setOverlay(Overlay overlay);
+
+    /** Returns the overlay drawn over the canvas. */
+    Overlay getOverlay();
+
+    /** Decorations a canvas may draw over its content, to signal the state of that content. */
+    enum Overlay {
+        /** No decoration. */
+        NONE,
+        /** A hatch pattern, signalling that the content is absent or stale. */
+        HATCHED;
+    }
 
     /** Registers the accelerator key of an action on the canvas. */
     void addAccelerator(Action action);

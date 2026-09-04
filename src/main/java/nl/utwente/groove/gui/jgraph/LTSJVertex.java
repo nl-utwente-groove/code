@@ -19,7 +19,7 @@ import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.StartGraphState;
 import nl.utwente.groove.lts.StateProperty;
 import nl.utwente.groove.util.HTMLConverter;
-import nl.utwente.groove.gui.view.LTSViewCell;
+import nl.utwente.groove.gui.view.LTSViewVertex;
 
 /**
  * ViewVertex class that describes the underlying node as a graph state.
@@ -27,7 +27,7 @@ import nl.utwente.groove.gui.view.LTSViewCell;
  * @version $Revision$
  */
 public class LTSJVertex extends AJVertex<@NonNull GTS,LTSJGraph,LTSJModel,LTSJEdge>
-    implements LTSViewCell {
+    implements LTSViewVertex {
     /**
      * Creates a new, uninitialised instance.
      * Call {@link #setJModel(JModel)} and {@link #setNode(Node)} to initialise.

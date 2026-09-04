@@ -51,7 +51,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import javax.swing.Action;
@@ -103,6 +102,7 @@ import nl.utwente.groove.gui.layout.Layouter;
 import nl.utwente.groove.gui.look.MultiLabel;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
+import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.tree.LabelTree;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.util.Factory;
@@ -711,20 +711,26 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
     }
 
     @Override
-    public void setBackgroundPainter(@Nullable Consumer<@NonNull Graphics2D> painter) {
-        this.backgroundPainter = painter;
-        repaint();
+    public void setOverlay(Overlay overlay) {
+        if (overlay != this.overlay) {
+            this.overlay = overlay;
+            repaint();
+        }
     }
 
-    /** Decoration painted over the background, if any. */
-    private @Nullable Consumer<@NonNull Graphics2D> backgroundPainter;
+    @Override
+    public Overlay getOverlay() {
+        return this.overlay;
+    }
+
+    /** The overlay drawn over the content. */
+    private Overlay overlay = Overlay.NONE;
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        var painter = this.backgroundPainter;
-        if (painter != null) {
-            painter.accept((Graphics2D) g);
+        if (this.overlay == Overlay.HATCHED) {
+            Values.paintHatch(this, g);
         }
     }
 

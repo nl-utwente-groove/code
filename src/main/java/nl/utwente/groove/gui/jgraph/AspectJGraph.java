@@ -52,6 +52,8 @@ import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.view.AspectGraphCanvas;
 import nl.utwente.groove.gui.view.AspectGraphViewController;
+import nl.utwente.groove.grammar.model.GraphBasedModel;
+import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.view.AspectViewCell;
@@ -133,6 +135,16 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements Aspect
     @Override
     protected AspectGraphViewController createController(Simulator simulator) {
         return new AspectGraphViewController(this, simulator);
+    }
+
+    @Override
+    public GraphBasedModel<?> getResourceModel() {
+        return getNonNullModel().getResourceModel();
+    }
+
+    @Override
+    public TypeGraph getTypeGraph() {
+        return getNonNullModel().getTypeGraph();
     }
 
     @Override
