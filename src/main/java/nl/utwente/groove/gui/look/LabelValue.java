@@ -53,7 +53,6 @@ import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.gui.view.AspectViewEdge;
-import nl.utwente.groove.gui.view.AspectGraphCanvas;
 import nl.utwente.groove.gui.view.AspectGraphViewController;
 import nl.utwente.groove.gui.view.AspectViewVertex;
 import nl.utwente.groove.gui.view.CtrlGraphViewController;
@@ -363,8 +362,8 @@ public class LabelValue implements VisualValue<MultiLabel> {
         if (edge.hasErrors()) {
             return false;
         }
-        var canvas = (AspectGraphCanvas) jVertex.getCanvas();
-        if (canvas != null && canvas.getTypeGraph().isImplicit()
+        var canvas = jVertex.getCanvas();
+        if (jVertex.getTypeGraph().isImplicit() && canvas != null
             && canvas.getGraphRole() != GraphRole.TYPE) {
             return false;
         }
@@ -704,11 +703,9 @@ public class LabelValue implements VisualValue<MultiLabel> {
             assert targetVertex != null; // model has been initialised by now
             LabelPattern pattern = targetVertex.getEdgeLabelPattern();
             assert pattern != null; // the target is a nodified edge, so it has a pattern
-            var canvas = (AspectGraphCanvas) jEdge.getCanvas();
-            assert canvas != null; // the label is only computed for displayed cells
             @SuppressWarnings({"unchecked", "rawtypes"})
             GraphBasedModel<HostGraph> resourceModel
-                = (GraphBasedModel) canvas.getResourceModel();
+                = (GraphBasedModel) jEdge.getResourceModel();
             try {
                 HostNode target = (HostNode) resourceModel.getMap().getNode(jEdge.getTargetNode());
                 String label = pattern.getLabel(resourceModel.toResource(), target);

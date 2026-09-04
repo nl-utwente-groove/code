@@ -71,6 +71,7 @@ public class ArchitectureTest {
         Map.entry("nl/utwente/groove/gui/display/JGraphPanel.java", "2"),
         Map.entry("nl/utwente/groove/gui/display/LTSDisplay.java", "2"),
         Map.entry("nl/utwente/groove/gui/display/StateDisplay.java", "2"),
+        Map.entry("nl/utwente/groove/test/DetachedCellVisualsTest.java", "2"),
         Map.entry("nl/utwente/groove/test/LayouterTest.java", "2"),
         Map.entry("nl/utwente/groove/test/SubtypeLabelArrowTest.java", "2"),
         // phase 3: the editor's own undo and edit model
