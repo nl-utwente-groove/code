@@ -261,7 +261,9 @@ interface: `refreshCells`→`refresh`, `refreshAllCells`→`refreshAll`,
 role-specific cell interfaces `AspectViewVertex`/`AspectViewEdge`, `LTSViewVertex`/
 `LTSViewEdge`, `CtrlViewVertex`, implemented by the backend cells and consumed by the look
 value classes; the type graph and resource model of the shown graph come from
-`AspectGraphCanvas`; the GUI palette and the hatch paint moved from `JAttr` to
+`AspectGraphCanvas` (for the trees) and, since the fix after slice 4, from the cell itself
+(`AspectViewCell.getTypeGraph`/`getResourceModel`, for the looks: a cell's visuals are
+computed before its model is shown, see below); the GUI palette and the hatch paint moved from `JAttr` to
 `gui.look.Values` (state-panel colours renamed `ERROR_STATE_BACKGROUND`/
 `INTERNAL_STATE_BACKGROUND`, since `Values.ERROR_BACKGROUND` already named the error-cell
 colour); the two `paintComponent` overrides in the displays became a declarative
@@ -324,3 +326,15 @@ after Spring and Forest, and `LayoutDialog` refills its combo box from the focus
 `null`) replaces `LayouterItem.getPanel()` for the dialog. `LayouterTest` runs both
 GROOVE layouters headlessly through the controller and checks positions, flags and edge
 points. The allowlist is down to 19 files.
+
+**Fix on top of slice 4 (2026-09-04, same branch).** Arend's first Simulator run of the
+stack (loading a grammar on `neutral-listeners`) hit a `NullPointerException` in
+`AspectJGraph.getTypeGraph`: `StateDisplay` builds the start state's model and copies the
+start graph's cell visuals *before* setting the model on the component, and slice 2 had made
+the looks ask the canvas for the type graph and resource model. Lesson for the facade:
+anything the content model knows must be reachable from the cell or the model, not only
+from the canvas — a cell's visuals are legitimately computed for models that are not shown.
+`AspectViewCell` now has `getTypeGraph()`/`getResourceModel()`; the canvas methods remain
+for the trees. The reproducing `DetachedCellVisualsTest` also exposed a pre-facade latent
+assertion in the option refresh listener (a model-less canvas registered on the display
+options); it now skips canvases without a model.
