@@ -29,7 +29,6 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.jgraph.util.Bezier;
 
 import nl.utwente.groove.grammar.UnitPar;
 import nl.utwente.groove.grammar.aspect.AspectKind.Category;
@@ -42,14 +41,15 @@ import nl.utwente.groove.graph.layout.ElementLayout;
 import nl.utwente.groove.graph.layout.LayoutMap;
 import nl.utwente.groove.graph.layout.NodeLayout;
 import nl.utwente.groove.gui.export.util.TikzStylesExtractor.Style;
-import nl.utwente.groove.gui.jgraph.AspectJVertex;
-import nl.utwente.groove.gui.view.ViewCell;
-import nl.utwente.groove.gui.view.ViewEdge;
-import nl.utwente.groove.gui.jgraph.JGraph;
-import nl.utwente.groove.gui.jgraph.JModel;
-import nl.utwente.groove.gui.view.ViewVertex;
 import nl.utwente.groove.gui.look.Look;
 import nl.utwente.groove.gui.look.MultiLabel;
+import nl.utwente.groove.gui.view.AspectViewVertex;
+import nl.utwente.groove.gui.view.GraphCanvas;
+import nl.utwente.groove.gui.view.GraphViewModel;
+import nl.utwente.groove.gui.view.InterpolatingBezier;
+import nl.utwente.groove.gui.view.ViewCell;
+import nl.utwente.groove.gui.view.ViewEdge;
+import nl.utwente.groove.gui.view.ViewVertex;
 import nl.utwente.groove.util.Exceptions;
 
 /**
@@ -62,11 +62,11 @@ public final class GraphToTikz<G extends @NonNull Graph> {
     // Object fields
     // ------------------------------------------------------------------------
 
-    /** The jGraph to be output. */
-    private final JGraph<G> jGraph;
-    /** The underlying model for jGraph. */
-    private final JModel<G> model;
-    /** The underlying Groove graph connected to the jGraph. */
+    /** The canvas to be output. */
+    private final GraphCanvas<G> canvas;
+    /** The content model of the canvas. */
+    private final GraphViewModel<G> model;
+    /** The underlying Groove graph shown on the canvas. */
     private final Graph graph;
     /** The layout map of the graph. */
     private final LayoutMap layoutMap;
@@ -80,12 +80,12 @@ public final class GraphToTikz<G extends @NonNull Graph> {
 
     /**
      * The constructor is private. To perform the conversion just call the
-     * static method {@link #convert(JGraph)}.
+     * static method {@link #convert(GraphCanvas)}.
      */
-    private GraphToTikz(JGraph<G> jGraph) {
-        this.jGraph = jGraph;
-        this.model = this.jGraph.getModel();
-        this.graph = this.model.getGraph();
+    private GraphToTikz(GraphCanvas<G> canvas) {
+        this.canvas = canvas;
+        this.model = canvas.getNonNullViewModel();
+        this.graph = this.model.getNonNullGraph();
         this.layoutMap = GraphInfo.getLayoutMap(this.graph);
         this.result = new StringBuilder();
     }
@@ -94,18 +94,18 @@ public final class GraphToTikz<G extends @NonNull Graph> {
     // Static methods
     // ------------------------------------------------------------------------
 
-    /** Writes a graph in LaTeX <code>Tikz</code> format to a print writer. */
-    public static void export(JGraph<?> graph, PrintWriter writer) {
-        writer.print(GraphToTikz.convert(graph));
+    /** Writes the graph shown on a canvas in LaTeX <code>Tikz</code> format to a print writer. */
+    public static void export(GraphCanvas<?> canvas, PrintWriter writer) {
+        writer.print(GraphToTikz.convert(canvas));
     }
 
     /**
-     * Converts a graph to a Tikz representation.
-     * @param jGraph the graph to be converted.
+     * Converts the graph shown on a canvas to a Tikz representation.
+     * @param canvas the canvas showing the graph to be converted.
      * @return a string with the Tikz encoding of the graph.
      */
-    public static <G extends @NonNull Graph> String convert(JGraph<G> jGraph) {
-        return new GraphToTikz<>(jGraph).doConvert();
+    public static <G extends @NonNull Graph> String convert(GraphCanvas<G> canvas) {
+        return new GraphToTikz<>(canvas).doConvert();
     }
 
     // BEGIN
@@ -287,11 +287,11 @@ public final class GraphToTikz<G extends @NonNull Graph> {
     }
 
     private static boolean isNodifiedEdge(ViewVertex<?> node) {
-        return node instanceof AspectJVertex v && v.isNodeEdge();
+        return node instanceof AspectViewVertex v && v.isNodeEdge();
     }
 
     private static boolean hasParameter(ViewVertex<?> node) {
-        return node instanceof AspectJVertex v
+        return node instanceof AspectViewVertex v
             ? v.getNode().has(Category.PARAM)
             : false;
     }
@@ -301,7 +301,7 @@ public final class GraphToTikz<G extends @NonNull Graph> {
     }
 
     private static boolean isProductNode(ViewVertex<?> node) {
-        return (node instanceof AspectJVertex v) && v.getNode().has(PRODUCT);
+        return (node instanceof AspectViewVertex v) && v.getNode().has(PRODUCT);
     }
 
     // ------------------------------------------------------------------------
@@ -403,11 +403,11 @@ public final class GraphToTikz<G extends @NonNull Graph> {
 
         // Add small parameter node, if needed.
         if (hasParameter(node)) {
-            appendParameterNode((AspectJVertex) node);
+            appendParameterNode((AspectViewVertex) node);
         }
     }
 
-    private void appendParameterNode(AspectJVertex node) {
+    private void appendParameterNode(AspectViewVertex node) {
         String nodeId = node.getNode().toString();
         var param = node.getNode().get(Category.PARAM);
         assert param != null;
@@ -709,10 +709,9 @@ public final class GraphToTikz<G extends @NonNull Graph> {
         List<Point2D> points = layout.getPoints();
 
         // Compute the bezier line.
-        Bezier bezier = new Bezier(points.toArray(new Point2D[points.size()]));
-        Point2D[] bPoints = bezier.getPoints();
+        List<Point2D> bPoints = InterpolatingBezier.controlPoints(points);
 
-        if (bPoints == null) {
+        if (bPoints.isEmpty()) {
             // The edge is with a bezier style but it does not have any bezier
             // points, just use standard layout.
             appendDefaultLayout(edge);
@@ -729,7 +728,7 @@ public final class GraphToTikz<G extends @NonNull Graph> {
             appendNode(srcVertex);
             int i = 1; // Index for edge points.
             int j = 0; // Index for bezier points. Always j = i - 1;
-            while (j < bPoints.length - 1) {
+            while (j < bPoints.size() - 1) {
                 append(BEGIN_CONTROLS);
                 if (isLoop) {
                     // Drawing a loop edge is a special case, for the first and
@@ -741,7 +740,7 @@ public final class GraphToTikz<G extends @NonNull Graph> {
                         appendPoint(points, i - 1);
                     } else {
                         // Not a special case, just use a bezier point.
-                        appendPoint(bPoints[j]);
+                        appendPoint(bPoints.get(j));
                     }
                     append(AND);
                     if (i == 1) {
@@ -749,13 +748,13 @@ public final class GraphToTikz<G extends @NonNull Graph> {
                         appendPoint(points, i);
                     } else {
                         // Not a special case, just use a bezier point.
-                        appendPoint(bPoints[j + 1]);
+                        appendPoint(bPoints.get(j + 1));
                     }
                 } else {
                     // The edge is not a loop, just use the bezier points.
-                    appendPoint(bPoints[j]);
+                    appendPoint(bPoints.get(j));
                     append(AND);
-                    appendPoint(bPoints[j + 1]);
+                    appendPoint(bPoints.get(j + 1));
                 }
                 append(END_CONTROLS);
                 // Use the edge intermediate point as the next coordinate.
@@ -774,23 +773,23 @@ public final class GraphToTikz<G extends @NonNull Graph> {
             // The first part of the curve is quadratic.
             appendNode(srcVertex);
             append(BEGIN_CONTROLS);
-            appendPoint(bPoints[0]);
+            appendPoint(bPoints.get(0));
             append(END_CONTROLS);
             appendPoint(points, 1);
 
             // The middle part of the curve is cubic.
             for (int i = 2; i < points.size() - 1; i++) {
                 append(BEGIN_CONTROLS);
-                appendPoint(bPoints[2 * i - 3]);
+                appendPoint(bPoints.get(2 * i - 3));
                 append(AND);
-                appendPoint(bPoints[2 * i - 2]);
+                appendPoint(bPoints.get(2 * i - 2));
                 append(END_CONTROLS);
                 appendPoint(points, i);
             }
 
             // The last part of the curve is again quadratic.
             append(BEGIN_CONTROLS);
-            appendPoint(bPoints[bPoints.length - 1]);
+            appendPoint(bPoints.get(bPoints.size() - 1));
             append(END_CONTROLS);
             appendNode(tgtVertex);
         }
@@ -884,7 +883,7 @@ public final class GraphToTikz<G extends @NonNull Graph> {
             MultiLabel lines = edge.getVisuals().getLabel();
             List<Point2D> points = edge.getVisuals().getPoints();
             StringBuilder text;
-            if (this.jGraph.getController().isShowArrowsOnLabels()) {
+            if (this.canvas.getController().isShowArrowsOnLabels()) {
                 Point2D start = points.get(0);
                 Point2D end = points.get(points.size() - 1);
                 text = lines.toString(TeXLineFormat.instance(), start, end);

@@ -24,13 +24,13 @@ import java.io.IOException;
 import org.apache.xmlgraphics.java2d.GraphicContext;
 import org.apache.xmlgraphics.java2d.ps.EPSDocumentGraphics2D;
 
-import nl.utwente.groove.gui.jgraph.JGraph;
+import nl.utwente.groove.gui.view.GraphCanvas;
 import nl.utwente.groove.io.external.PortException;
 
-/** Class offering the functionality to save a JGraph to EPS format. */
+/** Class offering the functionality to save a graph canvas to EPS format. */
 public class GraphToEPS extends GraphToVector {
     @Override
-    public void renderGraph(JGraph<?> graph, File file) throws PortException {
+    public void renderGraph(GraphCanvas<?> graph, File file) throws PortException {
         // Get graph bounds. If not available, do nothing (probably empty graph)
         Rectangle2D bounds = graph.getGraphBounds();
         if (bounds == null) {

@@ -53,17 +53,8 @@ public class ArchitectureTest {
      * with the migration step that removes them; paths relative to the source roots.
      */
     private static final Map<String,String> ALLOWED = new TreeMap<>(Map.ofEntries(
-        // phase 1b, slice 5: export seam
-        Map.entry("nl/utwente/groove/gui/action/ExportAction.java", "1b-5"),
-        Map.entry("nl/utwente/groove/gui/export/JGraphExportable.java", "1b-5"),
-        Map.entry("nl/utwente/groove/gui/export/RasterExporter.java", "1b-5"),
-        Map.entry("nl/utwente/groove/gui/export/util/GraphToEPS.java", "1b-5"),
-        Map.entry("nl/utwente/groove/gui/export/util/GraphToPDF.java", "1b-5"),
-        Map.entry("nl/utwente/groove/gui/export/util/GraphToSVG.java", "1b-5"),
-        Map.entry("nl/utwente/groove/gui/export/util/GraphToTikz.java", "1b-5"),
-        Map.entry("nl/utwente/groove/gui/export/util/GraphToVector.java", "1b-5"),
         // phase 2: ownership inversion and per-role view models;
-        // GraphPreviewDialog and Imager construct canvases (Imager also exports them, slice 5)
+        // GraphPreviewDialog and Imager construct canvases
         Map.entry("nl/utwente/groove/gui/action/ExploreAction.java", "2"),
         Map.entry("nl/utwente/groove/gui/dialog/GraphPreviewDialog.java", "2"),
         Map.entry("nl/utwente/groove/gui/display/GraphTab.java", "2"),

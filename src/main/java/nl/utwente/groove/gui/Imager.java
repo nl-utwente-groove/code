@@ -64,8 +64,8 @@ import nl.utwente.groove.grammar.model.GraphBasedModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.dialog.GrooveFileChooser;
 import nl.utwente.groove.gui.display.DisplayKind;
-import nl.utwente.groove.gui.export.JGraphExportable;
-import nl.utwente.groove.gui.export.JGraphExporters;
+import nl.utwente.groove.gui.export.CanvasExportable;
+import nl.utwente.groove.gui.export.CanvasExporters;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Exporter;
@@ -109,8 +109,8 @@ public class Imager extends GrooveCmdLineTool<Object> {
         super("Imager", args);
         // force the LAF to be set
         Options.initLookAndFeel();
-        // the imager exports by rendering, so it needs the JGraph-based exporters
-        JGraphExporters.register();
+        // the imager exports by rendering, so it needs the canvas-based exporters
+        CanvasExporters.register();
         if (gui) {
             if (args.length > 0) {
                 throw Exceptions
@@ -281,7 +281,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
         Exportable result = switch (outFormats) {
         case GRAPH -> Exportable.graph(aspectGraph);
         case RESOURCE -> Exportable.resource(resourceModel);
-        case JGRAPH -> {
+        case CANVAS -> {
             Options options = Options.instance();
             options.getItem(Options.SHOW_VALUE_NODES_OPTION).setSelected(isEditorView());
             options.getItem(Options.SHOW_ASPECTS_OPTION).setSelected(isEditorView());
@@ -293,13 +293,14 @@ public class Imager extends GrooveCmdLineTool<Object> {
             jGraph.getController().setGrammar(grammar);
             jGraph.showGraph(aspectGraph);
             // Ugly hack to prevent clipping of the image. We set the
-            // jGraph size to twice its normal size. This does not
+            // component size to twice its normal size. This does not
             // affect the final size of the exported figure, hence
             // it can be considered harmless... ;P
-            Dimension oldPrefSize = jGraph.getPreferredSize();
+            var component = jGraph.getComponent();
+            Dimension oldPrefSize = component.getPreferredSize();
             Dimension newPrefSize = new Dimension(oldPrefSize.width * 2, oldPrefSize.height * 2);
-            jGraph.setSize(newPrefSize);
-            yield JGraphExportable.instance(jGraph);
+            component.setSize(newPrefSize);
+            yield CanvasExportable.instance(jGraph);
         }
         };
         return result;

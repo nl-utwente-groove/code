@@ -87,7 +87,7 @@ import nl.utwente.groove.gui.display.GraphTab;
 import nl.utwente.groove.gui.display.JGraphPanel;
 import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.gui.display.TextTab;
-import nl.utwente.groove.gui.export.JGraphExporters;
+import nl.utwente.groove.gui.export.CanvasExporters;
 import nl.utwente.groove.gui.list.ErrorEntry;
 import nl.utwente.groove.gui.list.ListTabbedPane;
 import nl.utwente.groove.gui.menu.ModelCheckingMenu;
@@ -124,8 +124,8 @@ public class Simulator implements SimulatorListener {
         }
         instantiated = true;
         // the simulator can export by rendering, so it contributes
-        // the JGraph-based exporters to the exporter registry
-        JGraphExporters.register();
+        // the canvas-based exporters to the exporter registry
+        CanvasExporters.register();
         // contribute the GUI-bound prolog predicates (show_graph)
         GuiPredicates.register();
         // contribute the (UI-bound) dialog value oracle
