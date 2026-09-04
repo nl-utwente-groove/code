@@ -40,12 +40,14 @@ import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.collect.DeltaMap.Delta;
 import nl.utwente.groove.util.parse.FormatException;
+import nl.utwente.groove.util.parse.Severity;
 
 /**
  * Tests that disabled rules do not block grammar building, whether they are
  * disabled through the current {@code ruleEnabling} property or through the
  * legacy {@code disabledRules} property of grammars saved before GROOVE 7.4.0
- * (gh #908). The tests work on a copy of the
+ * (gh #908), and that unknown rule names in the enabling property are
+ * reported as warnings rather than errors. The tests work on a copy of the
  * {@code compileErrors} fixture, all of whose rules are deliberately broken,
  * in a temporary directory with a rewritten properties file.
  * @author Arend Rensink
@@ -92,6 +94,22 @@ public class DisabledRulesTest {
         assertTrue(grammar.getErrors().toString().contains(enabled),
                    "Errors do not mention '" + enabled + "': " + grammar.getErrors());
         assertThrows(FormatException.class, grammar::toGrammar);
+    }
+
+    /** An unknown rule name in the enabling property is a warning: the
+     * grammar builds and retains the diagnostic. */
+    @Test
+    public void testUnknownRuleNameWarns(@TempDir Path tmp) throws Exception {
+        List<String> rules = getRuleNames();
+        GrammarModel grammar
+            = load(tmp, "disabledRules=" + String.join(" ", rules) + " nonexistent");
+        assertFalse(grammar.hasErrors(), "Unexpected errors: " + grammar.getErrors());
+        grammar.toGrammar();
+        var warnings = grammar.getErrors().filter(Severity.WARNING);
+        assertEquals(1, warnings.get().size(), "Unexpected diagnostics: " + grammar.getErrors());
+        String warning = warnings.iterator().next().toString();
+        assertTrue(warning.contains("nonexistent"), warning);
+        assertTrue(warning.startsWith("Warning in property key"), warning);
     }
 
     /** Returns the names of the rules in the fixture grammar. */

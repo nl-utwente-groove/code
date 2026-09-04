@@ -681,8 +681,19 @@ public class GrammarProperties extends Properties {
 
     /**
      * Checks if the stored properties are valid in a given grammar.
+     * @throws FormatException if {@link #getErrors(GrammarModel)} has blocking errors
      */
     public void check(GrammarModel grammar) throws FormatException {
+        getErrors(grammar).throwException();
+    }
+
+    /**
+     * Returns the diagnostics of the stored properties in a given grammar.
+     * A non-empty result need not block the grammar: entries of severity
+     * below {@link nl.utwente.groove.util.parse.Severity#ERROR} are
+     * warnings the grammar model retains, see {@link #check(GrammarModel)}.
+     */
+    public FormatErrorSet getErrors(GrammarModel grammar) {
         FormatErrorSet errors = new FormatErrorSet();
         for (GrammarKey key : GrammarKey.values()) {
             try {
@@ -692,7 +703,11 @@ public class GrammarProperties extends Properties {
                         ? ""
                         : property);
                 for (FormatError error : key.check(grammar, result)) {
-                    errors.add("Error in property key '%s': %s", key.getKeyPhrase(), error, key);
+                    // the nested diagnostic's severity carries over to the
+                    // wrapping error (see FormatError), so the text names it
+                    errors
+                        .add("%s in property key '%s': %s", error.getSeverity().getCapText(),
+                             key.getKeyPhrase(), error, key);
                 }
             } catch (FormatException exc) {
                 errors
@@ -700,7 +715,7 @@ public class GrammarProperties extends Properties {
                          key);
             }
         }
-        errors.throwException();
+        return errors;
     }
 
     /** Tests if the grammar properties specify any remove policies. */

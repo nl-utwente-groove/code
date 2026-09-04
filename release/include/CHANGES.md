@@ -32,7 +32,8 @@ Upcoming release
   property silently lost their disabled rules on loading, since the property had
   been replaced by `ruleEnabling` without conversion; errors in the wrongly
   re-enabled rules then blocked the grammar. The legacy property is now converted
-  on loading
+  on loading. Unknown rule names in `ruleEnabling` are reported as warnings
+  instead of errors, since the property is a filter over the existing rules
 
 Release 7.5.3, 3 March 2026
 -------------------------------

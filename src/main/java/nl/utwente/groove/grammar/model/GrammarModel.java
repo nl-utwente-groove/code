@@ -576,12 +576,12 @@ public class GrammarModel implements PropertyChangeListener {
         } catch (FormatException e) {
             errors.addAll(e.getErrors());
         }
-        // set properties
-        try {
-            getProperties().check(this);
+        // set properties; their non-blocking diagnostics are kept with
+        // the other errors, so that they reach the grammar model
+        var propertyErrors = getProperties().getErrors(this);
+        errors.addAll(propertyErrors);
+        if (!propertyErrors.hasErrors()) {
             result.setProperties(getProperties());
-        } catch (FormatException e) {
-            errors.addAll(e.getErrors());
         }
         // set start graph
         try {
