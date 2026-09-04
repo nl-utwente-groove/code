@@ -51,6 +51,7 @@ public class DetachedCellVisualsTest {
     void visualsOfDetachedModelCells() throws IOException {
         GrammarModel grammar = Groove.loadGrammar(GRAMMAR);
         AspectGraph startGraph = grammar.getStartGraphModel().getSource();
+        assert startGraph != null; // the fixture grammar has a start graph
         AspectJGraph jGraph = new AspectJGraph(null, DisplayKind.STATE, false);
         jGraph.getController().setGrammar(grammar);
         AspectJModel model = jGraph.newModel();
