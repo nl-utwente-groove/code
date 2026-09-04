@@ -212,10 +212,15 @@ view-model split).
 ## Follow-ups noted during the work
 
 - **Cell user objects** (Arend, 2026-09-04): `AspectViewCell.getUserObject()`/`setUserObject(Object)`
-  expose JGraph's `DefaultGraphCell` user object, which GROOVE uses to carry the editable
-  label text (`AspectViewObject`). A very old change, never reverted; the text belongs in a
-  dedicated, backend-independent field of the cell. To be done as its own small step after
-  the loop-routing commit of slice 2.
+  exposed JGraph's `DefaultGraphCell` user object, which GROOVE used to carry the editable
+  label text. A very old change, never reverted; the text belongs in a dedicated,
+  backend-independent field of the cell. **Done** (third commit of slice 2): the neutral
+  interface has `EditableLabels getEditableLabels()`, `setEditableLabels`,
+  `refreshEditableLabels` (elements → labels) and `applyEditableLabels(graph)` (labels →
+  elements); the backend cells keep the labels in a field of their own and override
+  `getUserObject`/`setUserObject` only as the adapter for JGraph's editing protocol
+  (`DefaultGraphModel.valueForCellChanged` writes the in-place editor's text through
+  `setUserObject`). Cloning now copies the labels instead of sharing them.
 
 ## State of work
 

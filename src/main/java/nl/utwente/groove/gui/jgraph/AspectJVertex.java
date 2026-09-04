@@ -14,7 +14,7 @@ import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
 
-import nl.utwente.groove.gui.view.AspectViewObject;
+import nl.utwente.groove.gui.view.EditableLabels;
 import nl.utwente.groove.gui.view.GraphViewMode;
 import nl.utwente.groove.grammar.aspect.Aspect;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
@@ -42,6 +42,7 @@ import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.gui.view.AspectViewCellErrors;
 import nl.utwente.groove.gui.view.AspectViewVertex;
+import nl.utwente.groove.gui.view.ViewVertex;
 
 /**
  * Specialized j-vertex for rule graphs, with its own tool tip text.
@@ -55,7 +56,6 @@ public class AspectJVertex extends
      * @param graphRole graph role for which this ViewEdge is intended
      */
     private AspectJVertex(GraphRole graphRole) {
-        setUserObject(null);
         this.aspects = new Aspect.Map(true, graphRole);
     }
 
@@ -318,20 +318,20 @@ public class AspectJVertex extends
     }
 
     @Override
-    public void saveToUserObject() {
+    public void refreshEditableLabels() {
         // collect the node and edge information
-        AspectViewObject userObject = getUserObject();
-        userObject.clear();
-        userObject.addLabels(getNode().getNodeLabels());
-        userObject.addEdges(getEdges());
+        var labels = getEditableLabels();
+        labels.clear();
+        labels.addLabels(getNode().getNodeLabels());
+        labels.addEdges(getEdges());
     }
 
     @Override
-    public void loadFromUserObject(AspectGraph graph) {
+    public void applyEditableLabels(AspectGraph graph) {
         AspectNode node = new AspectNode(getNode().getNumber(), graph);
         AspectParser parser = AspectParser.getInstance();
         List<AspectLabel> edgeLabels = new ArrayList<>();
-        for (String text : getUserObject()) {
+        for (String text : getEditableLabels()) {
             AspectLabel label = parser.parse(text, graph.getRole());
             if (label.isNodeOnly()) {
                 node.addLabel(label);
@@ -351,7 +351,7 @@ public class AspectJVertex extends
         for (AspectLabel label : edgeLabels) {
             if (label.has(REMARK)) {
                 if (hasRemark) {
-                    remarkText.append(AspectViewObject.NEWLINE);
+                    remarkText.append(EditableLabels.NEWLINE);
                 }
                 remarkText.append(label.getInnerText());
                 hasRemark = true;
@@ -377,26 +377,49 @@ public class AspectJVertex extends
         // attributes will be refreshed upon the call to setNodeFixed()
     }
 
-    /**
-     * Creates a new used object, and initialises it from a given value.
-     * If the value is a collection or a string, loads the user object from it.
+    @Override
+    public EditableLabels getEditableLabels() {
+        return this.labels;
+    }
+
+    @Override
+    public void setEditableLabels(EditableLabels labels) {
+        // a fresh object is needed, otherwise undo does not work
+        this.labels = new EditableLabels(labels);
+    }
+
+    /** The editable labels of this cell. */
+    private EditableLabels labels = new EditableLabels();
+
+    /*
+     * JGraph applies edited cell values through the user object
+     * (DefaultGraphModel.valueForCellChanged); redirected to the editable labels.
+     * A string value is the text of the in-place editor.
      */
     @Override
     public void setUserObject(Object value) {
-        // we do need to create a new object, otherwise undos do not work
-        AspectViewObject myObject = new AspectViewObject();
-        if (value instanceof AspectViewObject o) {
-            myObject.addAll(o);
-        } else if (value != null) {
-            myObject.load(value.toString());
+        if (value instanceof EditableLabels o) {
+            setEditableLabels(o);
+        } else {
+            var labels = new EditableLabels();
+            if (value != null) {
+                labels.load(value.toString());
+            }
+            this.labels = labels;
         }
-        super.setUserObject(myObject);
     }
 
-    /** Specialises the return type. */
+    /* JGraph reads the cell value through the user object; see setUserObject. */
     @Override
-    public AspectViewObject getUserObject() {
-        return (AspectViewObject) super.getUserObject();
+    public EditableLabels getUserObject() {
+        return this.labels;
+    }
+
+    @Override
+    public ViewVertex<@NonNull AspectGraph> clone() {
+        AspectJVertex result = (AspectJVertex) super.clone();
+        result.labels = new EditableLabels(this.labels);
+        return result;
     }
 
     @SuppressWarnings("unchecked")

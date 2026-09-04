@@ -31,8 +31,8 @@ import nl.utwente.groove.graph.EdgeComparator;
 import nl.utwente.groove.util.parse.Severity;
 
 /**
- * Instantiation of a {@link ViewCell} with an {@link AspectViewObject}
- * that stores the (editable) string representation of the node/edge label.
+ * Instantiation of a {@link ViewCell} carrying {@link EditableLabels},
+ * the editable string representation of the node/edge labels.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -43,11 +43,17 @@ public interface AspectViewCell extends ViewCell<@NonNull AspectGraph> {
     /** Returns the aspect kind of the element wrapped in this cell. */
     Aspect.Map getAspects();
 
-    /** Returns the user object of this cell, with the given type. */
-    AspectViewObject getUserObject();
+    /**
+     * Returns the editable labels of this cell: the texts of its node labels and
+     * wrapped edges, as shown and changed by the in-place editor.
+     */
+    EditableLabels getEditableLabels();
 
-    /** Sets the user object to a given value. */
-    void setUserObject(Object value);
+    /**
+     * Sets the editable labels of this cell to a copy of the given labels.
+     * The cell's own elements are not affected until {@link #applyEditableLabels}.
+     */
+    void setEditableLabels(EditableLabels labels);
 
     /**
      * Returns the errors in this cell.
@@ -65,15 +71,15 @@ public interface AspectViewCell extends ViewCell<@NonNull AspectGraph> {
     }
 
     /**
-     * Sets the user object with information from the cell's wrapped
+     * Recomputes the editable labels from the cell's wrapped
      * nodes and edges.
      */
-    void saveToUserObject();
+    void refreshEditableLabels();
 
     /**
-     * Resets the cell's nodes and edges from the user object.
+     * Resets the cell's nodes and edges from the editable labels.
      */
-    void loadFromUserObject(AspectGraph graph);
+    void applyEditableLabels(AspectGraph graph);
 
     /** Separator between level name and edge label. */
     static final char LEVEL_NAME_SEPARATOR = '@';

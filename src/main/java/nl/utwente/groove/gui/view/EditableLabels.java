@@ -29,14 +29,24 @@ import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.line.Line;
 
 /**
- * Content object that is a collection of strings, and can be reloaded from an
- * object of collection.
+ * The editable labels of an aspect graph cell: a list of label texts, one per node label
+ * or wrapped edge, which the in-place editor shows as newline-separated text.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class AspectViewObject extends ArrayList<String> {
+public class EditableLabels extends ArrayList<String> {
+    /** Constructs an empty list of labels. */
+    public EditableLabels() {
+        // empty
+    }
+
+    /** Constructs a copy of a given list of labels. */
+    public EditableLabels(EditableLabels other) {
+        super(other);
+    }
+
     /**
-     * Converts the user object to an editable string, in which the individual
+     * Converts the labels to an editable string, in which the individual
      * labels are separated by newlines
      */
     public String toEditString() {
@@ -56,12 +66,12 @@ public class AspectViewObject extends ArrayList<String> {
     }
 
     /**
-     * Loads the user object collection from a given string value. This
+     * Loads the labels from a given string value. This
      * implementation splits the value using newlines, and trims the
      * individual labels. This means that
      * edit separators behave as the lowest-priority operators, lower even than
      * bracketing or quoting.
-     * @param value the value from which to load the user object; may not be
+     * @param value the value from which to load the labels; may not be
      *        <tt>null</tt>
      */
     public void load(String value) {
@@ -77,9 +87,9 @@ public class AspectViewObject extends ArrayList<String> {
     }
 
     /**
-     * Loads the user object collection from a given label set.
+     * Loads the labels from a given label set.
      *
-     * @param labelSet the label set from which to load the user object
+     * @param labelSet the label set from which to load the labels
      */
     public void addLabels(Collection<AspectLabel> labelSet) {
         for (AspectLabel label : labelSet) {
@@ -88,9 +98,9 @@ public class AspectViewObject extends ArrayList<String> {
     }
 
     /**
-     * Loads the user object collection from a given edge set.
+     * Loads the labels from a given edge set.
      *
-     * @param edgeSet the edge set from which to load the user object
+     * @param edgeSet the edge set from which to load the labels
      */
     public void addEdges(Collection<AspectEdge> edgeSet) {
         for (AspectEdge edge : edgeSet) {
@@ -99,8 +109,8 @@ public class AspectViewObject extends ArrayList<String> {
     }
 
     /**
-     * Adds the label of a given edge to the user object.
-     * @param edge the edge from which to load the user object
+     * Adds the label of a given edge to the labels.
+     * @param edge the edge from which to load the labels
      */
     private void addEdge(AspectEdge edge) {
         if (edge.has(REMARK)) {
@@ -114,8 +124,8 @@ public class AspectViewObject extends ArrayList<String> {
     }
 
     @Override
-    public AspectViewObject clone() {
-        return (AspectViewObject) super.clone();
+    public EditableLabels clone() {
+        return (EditableLabels) super.clone();
     }
 
     /** The default label separator. */
