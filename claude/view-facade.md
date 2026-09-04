@@ -101,11 +101,22 @@ Replaces `org.jgraph.event.GraphSelectionListener`, `GraphModelListener`, the
 
 ```
 void viewModelChanged(GraphCanvas<G> canvas, @Nullable GraphViewModel<G> old, @Nullable GraphViewModel<G> now)
-void cellsChanged(GraphCanvas<G> canvas, Collection<? extends ViewCell<G>> cells)   // visuals or structure
+void cellsChanged(GraphCanvas<G> canvas, CellChange<G> change)   // inserted / modified / removed cells
+void graphChanged(GraphCanvas<G> canvas)                         // shown graph rebuilt from the cells (editable canvases)
 void selectionChanged(GraphCanvas<G> canvas)
 void modeChanged(GraphCanvas<G> canvas, GraphViewMode old, GraphViewMode now)
-void editingStarted(GraphCanvas<G> canvas, ViewCell<G> cell)                        // in-place editor
+void editingStarted(GraphCanvas<G> canvas, ViewCell<G> cell)     // in-place editor
 ```
+
+`CellChange<G>` is a record of three disjoint lists (`inserted`, `modified`, `removed`);
+the label trees need the distinction to maintain their filters, and JGraph's single
+"changed" set (inserted ∪ removed ∪ attribute-changed) was the idiom being replaced. The
+`graphChanged` event is the neutral form of `AspectJModel`'s graph-modification counter
+(fired after `syncGraph` rebuilds the aspect graph from an edit, and after a reload of an
+attached model); the type tree rebuilds itself on it. Listeners are registered once on the
+canvas, never per content model: the backend re-adapts its model listeners in `setModel`.
+Change events fired while `GraphViewModel.isLoading()` holds reflect a (re)load rather than
+an edit; the flag lives on the view model, set by the backend with nesting.
 
 ### `GraphViewMode`
 
@@ -270,3 +281,28 @@ constructor runs (it calls `setModel`), but the interface declares it non-null, 
 `LTSJGraph.setModel` now asks `hasController()` instead of null-checking. ecj 3.42 reports
 the `@AIGenerated` import of a *generic* interface as unused when the annotation follows
 `@NonNullByDefault`; placing it first avoids the false positive.
+
+**Slice 3 done (2026-09-04, branch `neutral-listeners`).** Every `org.jgraph` selection
+and model listener outside the backend, and every user of the `GRAPH_MODEL_PROPERTY`/
+`JGRAPH_MODE_PROPERTY`/`CELL_EDIT_PROPERTY` property changes, is a `GraphCanvasListener`
+now: `LabelTree` (and so `TypeTree`, `LTSTree`), `RuleLevelTree`, `FindReplaceAction`,
+`SelectColorAction`, `StateDisplay`, `GraphEditorTab` (mode, selection, cell-edit start;
+its `GraphModelListener` for the undo model stays, phase 3), `JGraphPanel` and
+`LayouterItem`. The two JGraph-specific property names and `addGraphViewModeListener` are
+gone from `JGraph`. `cellsChanged` carries a `CellChange` (see the listener section) and
+`graphChanged` replaces `AspectJModel.addGraphChangeListener` for the type tree (the
+model's counter still exists for the model's own error reloading; `AspectJGraph.setModel`
+forwards it). The loading flag moved from the two backend models (each had its own) to
+`GraphViewModel.isLoading()`, set with nesting so that `AspectJModel.loadGraph`'s wider
+phase survives `JModel.addElements`' inner one. `StateDisplay` no longer gets per-cell
+added/removed flags from the selection event; it remembers the last selection and compares.
+The trees and filters take canvases (`LabelTree(GraphCanvas)`, `TypeTree`/
+`RuleLevelTree(AspectGraphCanvas)`, `LTSTree`/`LTSFilter(LTSGraphCanvas)`), and their
+`getJGraph`/`getJModel` accessors became `getCanvas`/`getViewModel`. `Simulator` and
+`LayoutDialog` needed only retyping to the canvas interfaces (the tab and panel accessors
+still *return* backend types, phase 2, but callers no longer name them). `Imager` and
+`GraphPreviewDialog` use `showGraph` instead of the `newModel`/`loadGraph`/`setModel`
+triple; what remains in them is canvas construction (`new AspectJGraph(…)` etc.), so they
+are re-tagged to phase 2 in the allowlist, which is down to 23 files. Incidental fix:
+`AspectJGraph.removeListeners` used to *add* the colour action as selection listener before
+removing it once, leaving it registered.
