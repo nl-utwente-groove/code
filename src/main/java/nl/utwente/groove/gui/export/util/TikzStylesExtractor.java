@@ -86,7 +86,6 @@ import java.util.Set;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.look.EdgeEnd;
 import nl.utwente.groove.gui.look.Look;
-import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
 import nl.utwente.groove.util.Exceptions;

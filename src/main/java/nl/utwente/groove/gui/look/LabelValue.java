@@ -703,6 +703,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
             AspectViewVertex targetVertex = jEdge.getTargetVertex();
             assert targetVertex != null; // model has been initialised by now
             LabelPattern pattern = targetVertex.getEdgeLabelPattern();
+            assert pattern != null; // the target is a nodified edge, so it has a pattern
             var canvas = (AspectGraphCanvas) jEdge.getCanvas();
             assert canvas != null; // the label is only computed for displayed cells
             @SuppressWarnings({"unchecked", "rawtypes"})
