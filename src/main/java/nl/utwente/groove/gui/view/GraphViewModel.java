@@ -235,6 +235,23 @@ public class GraphViewModel<G extends Graph> {
         return result;
     }
 
+    /**
+     * Indicates if this model is in the process of being loaded from a graph.
+     * Change events arriving while this holds reflect the loading, not user edits,
+     * and should be ignored by listeners that track edits.
+     */
+    public boolean isLoading() {
+        return this.loading;
+    }
+
+    /** Sets the loading status; see {@link #isLoading()}. */
+    public void setLoading(boolean loading) {
+        this.loading = loading;
+    }
+
+    /** Flag indicating that the model is being loaded from a graph. */
+    private boolean loading;
+
     /** Returns the number of graph nodes currently represented in this view model. */
     public int nodeCount() {
         return this.nodeJCellMap.size();

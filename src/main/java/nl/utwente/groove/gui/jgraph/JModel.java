@@ -176,6 +176,7 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
     public boolean addElements(Collection<? extends Node> nodeSet,
                                Collection<? extends Edge> edgeSet, boolean replace) {
         boolean result = replace;
+        boolean wasLoading = isLoading();
         setLoading(true);
         prepareInsert();
         result |= addNodes(nodeSet);
@@ -183,7 +184,7 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
         if (result) {
             doInsert(replace);
         }
-        setLoading(false);
+        setLoading(wasLoading);
         return result;
     }
 
@@ -560,18 +561,17 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
     /** The library-independent content model of the graph view. */
     private final GraphViewModel<G> viewModel = new GraphViewModel<>();
 
-    /** Changes the loading status of the JGraph. */
-    private void setLoading(boolean loading) {
-        this.loading = loading;
+    /** Changes the loading status of the view model.
+     * Callers restore the previous status afterwards, so that loading phases nest.
+     */
+    protected void setLoading(boolean loading) {
+        getViewModel().setLoading(loading);
     }
 
     /** Indicates if the JModel is currently in the process of loading a graph. */
     public boolean isLoading() {
-        return this.loading;
+        return getViewModel().isLoading();
     }
-
-    /** Flag that indicates we're in the process of loading a graph. */
-    private boolean loading;
 
     /**
      * Mapping from jVertices to incident jEdges.
