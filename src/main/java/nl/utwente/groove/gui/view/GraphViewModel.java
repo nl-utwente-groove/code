@@ -89,13 +89,6 @@ public class GraphViewModel<G extends Graph> {
         return this.graph;
     }
 
-    /** Convenience method to retrieve the underlying graph as a non-{@code null} object. */
-    public G getNonNullGraph() {
-        var result = getGraph();
-        assert result != null;
-        return result;
-    }
-
     /** Returns the name of the underlying graph, if any. */
     public @Nullable String getName() {
         var graph = getGraph();

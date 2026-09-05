@@ -127,11 +127,6 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
         return getViewModel().getGraph();
     }
 
-    /** Convenience method to retrieve the underlying graph as a non-{@code null} object. */
-    protected @NonNull G getNonNullGraph() {
-        return getViewModel().getNonNullGraph();
-    }
-
     /**
      * Returns the (non-{@code null}) layout map of the graph.
      * This is retrieved from {@link GraphInfo#getLayoutMap(Graph)}.

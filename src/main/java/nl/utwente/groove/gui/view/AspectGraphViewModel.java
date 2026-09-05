@@ -96,9 +96,16 @@ public class AspectGraphViewModel extends GraphViewModel<AspectGraph> {
     }
 
     /** Returns the grammar set for this model; fails if there is none. */
-    public GrammarModel getNonNullGrammar() {
+    private GrammarModel getNonNullGrammar() {
         var result = getGrammar();
         assert result != null; // set right after construction
+        return result;
+    }
+
+    /** Returns the graph of this model; fails if there is none. */
+    private AspectGraph getNonNullGraph() {
+        var result = getGraph();
+        assert result != null; // loaded right after construction, before any content is used
         return result;
     }
 
