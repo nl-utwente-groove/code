@@ -32,8 +32,7 @@ import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.gui.display.DisplayKind;
-import nl.utwente.groove.gui.jgraph.AspectJGraph;
-import nl.utwente.groove.gui.jgraph.AspectJModel;
+import nl.utwente.groove.gui.view.AspectGraphViewController;
 import nl.utwente.groove.gui.tree.TypeTree;
 import nl.utwente.groove.gui.tree.TypeTree.TypeTreeNode;
 import nl.utwente.groove.io.Groove;
@@ -48,7 +47,7 @@ import nl.utwente.groove.util.QualName;
  * graph's edge set. In a typed grammar the edge types are grouped under their
  * source node type, after its subtypes.
  * <p>
- * The graphs are rendered into a headless {@link AspectJGraph}, the way the
+ * The graphs are rendered into a headless canvas of the JGraph backend, the way the
  * {@code Imager} does it, and the label tree is built from that.
  * @author Arend Rensink
  * @version $Revision$
@@ -109,11 +108,12 @@ public class LabelTreeOrderTest {
     /** Loads a graph into a headless JGraph of a given display kind and
      * returns the label tree built for it. */
     private TypeTree buildTree(GrammarModel grammar, DisplayKind kind, AspectGraph graph) {
-        AspectJGraph jGraph = new AspectJGraph(null, kind, false);
-        jGraph.getController().setGrammar(grammar);
-        AspectJModel model = jGraph.newModel();
+        var controller = new AspectGraphViewController(null, kind, false);
+        controller.setGrammar(grammar);
+        var jGraph = controller.getCanvas();
+        var model = jGraph.newViewModel();
         model.loadGraph(graph);
-        jGraph.setModel(model);
+        jGraph.setViewModel(model);
         TypeTree result = new TypeTree(jGraph, true);
         result.synchroniseModel();
         return result;
