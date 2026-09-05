@@ -16,14 +16,11 @@
  */
 package nl.utwente.groove.gui.jgraph;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -41,7 +38,7 @@ import org.jgraph.graph.DefaultPort;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.ParentMap;
 
-import nl.utwente.groove.grammar.aspect.AspectEdge;
+import nl.utwente.groove.grammar.ResourceProperties;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.grammar.aspect.AspectNode;
@@ -51,21 +48,16 @@ import nl.utwente.groove.grammar.model.ResourceModel;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Element;
-import nl.utwente.groove.graph.GraphInfo;
-import nl.utwente.groove.grammar.ResourceProperties;
-import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Node;
-import nl.utwente.groove.graph.layout.EdgeLayout;
-import nl.utwente.groove.graph.layout.LayoutMap;
-import nl.utwente.groove.util.ChangeCount;
-import nl.utwente.groove.util.ChangeCount.Derived;
-import nl.utwente.groove.util.QualName;
-import nl.utwente.groove.util.parse.FormatError;
+import nl.utwente.groove.gui.view.AspectGraphViewModel;
 import nl.utwente.groove.gui.view.AspectViewCell;
+import nl.utwente.groove.util.QualName;
 
 /**
  * Implements jgraph's GraphModel interface on top of a {@link ResourceModel}. This is
- * used to visualise rules and attributed graphs.
+ * used to visualise rules and attributed graphs: the backend adapter of an
+ * {@link AspectGraphViewModel}, adding JGraph's clipboard and connection semantics
+ * and the detection of structural edits.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -76,25 +68,16 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
      */
     AspectJModel(AspectJGraph jGraph) {
         super(jGraph);
-        this.graphModCount = new ChangeCount();
-        this.resource = new Derived<>(this.graphModCount) {
-            @Override
-            protected GraphBasedModel<?> computeValue() {
-                return getGrammar().createGraphModel(getGraph());
-            }
-        };
-        this.typeGraph = new Derived<>(this.graphModCount) {
-            @Override
-            protected TypeGraph computeValue() {
-                return getResourceModel().getTypeGraph();
-            }
-        };
-        addGraphChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                loadViewErrors();
-            }
-        });
+    }
+
+    @Override
+    protected AspectGraphViewModel createViewModel() {
+        return new AspectGraphViewModel(getJGraph().getController(), this);
+    }
+
+    @Override
+    public AspectGraphViewModel getViewModel() {
+        return (AspectGraphViewModel) super.getViewModel();
     }
 
     @Override
@@ -111,48 +94,29 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
 
     /** Sets a grammar model, with respect to which typing is resolved. */
     public void setGrammar(GrammarModel grammar) {
-        assert (this.grammar == null || this.grammar == grammar) && grammar != null;
-        this.grammar = grammar;
+        getViewModel().setGrammar(grammar);
     }
 
     /** Returns the (possibly {@code null}) grammar set for this model. */
     GrammarModel getGrammar() {
-        return this.grammar;
+        return getViewModel().getGrammar();
     }
-
-    /** The associated system properties. */
-    private GrammarModel grammar;
 
     @Override
     public AspectViewCell getJCell(Element elem) {
-        return (AspectViewCell) super.getJCell(elem);
+        return getViewModel().getJCell(elem);
     }
 
     /** Specialises the return type. */
     @Override
     public AspectViewCell getJCellForEdge(Edge edge) {
-        return (AspectViewCell) super.getJCellForEdge(edge);
+        return getViewModel().getJCellForEdge(edge);
     }
 
     /** Specialises the return type. */
     @Override
     public AspectJVertex getJCellForNode(Node node) {
-        return (AspectJVertex) super.getJCellForNode(node);
-    }
-
-    @Override
-    public void loadGraph(AspectGraph graph) {
-        setLoading(true);
-        setGraphDirty();
-        // signal that graph is modified twice, to ensure
-        // that all resources get synced properly
-        super.loadGraph(graph);
-        for (AspectViewCell root : getRoots()) {
-            root.refreshEditableLabels();
-        }
-        this.properties = ResourceProperties.getProperties(graph);
-        setLoading(false);
-        setGraphModified();
+        return (AspectJVertex) getViewModel().getJCellForNode(node);
     }
 
     /**
@@ -164,7 +128,7 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
         if (getGrammar() != null) {
             result.setGrammar(getGrammar());
         }
-        result.beingEdited = this.beingEdited;
+        result.setBeingEdited(getViewModel().isBeingEdited());
         result.loadGraph(graph);
         return result;
     }
@@ -177,140 +141,39 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
      * notified.
      */
     public void syncGraph() {
-        if (isLoading()) {
-            return;
-        }
-        GraphRole role = getNonNullGraph().getRole();
-        Map<AspectNode,AspectJVertex> nodeJVertexMap = new HashMap<>();
-        Map<AspectEdge,AspectViewCell> edgeJCellMap = new HashMap<>();
-        AspectGraph graph
-            = new AspectGraph(getName(), role, !getGrammar().getProperties().getSemantics().isMulti());
-        graph.setTypeSortMap(getGrammar().getTypeModel().getTypeSortMap());
-        for (AspectViewCell jCell : getRoots()) {
-            if (jCell instanceof AspectJVertex jVertex) {
-                jVertex.applyEditableLabels(graph);
-                graph.addNode(jVertex.getNode());
-                nodeJVertexMap.put(jVertex.getNode(), jVertex);
-                for (AspectEdge edge : jVertex.getEdges()) {
-                    edgeJCellMap.put(edge, jVertex);
-                    graph.addEdgeContext(edge);
-                }
-            }
-        }
-        for (AspectViewCell jCell : getRoots()) {
-            if (jCell instanceof AspectJEdge jEdge) {
-                jEdge.applyEditableLabels(graph);
-                for (AspectEdge edge : jEdge.getEdges()) {
-                    edgeJCellMap.put(edge, jEdge);
-                    graph.addEdgeContext(edge);
-                }
-            }
-        }
-        for (AspectJVertex jVertex : nodeJVertexMap.values()) {
-            jVertex.setNodeFixed();
-        }
-        // collect the layout information
-        LayoutMap layoutMap = new LayoutMap();
-        for (AspectViewCell jCell : getRoots()) {
-            if (jCell instanceof AspectJVertex jVertex) {
-                layoutMap.putNode(jVertex.getNode(), jVertex.getLayoutVisuals().toNodeLayout());
-            } else {
-                AspectJEdge jEdge = (AspectJEdge) jCell;
-                EdgeLayout layout = jEdge.getLayoutVisuals().toEdgeLayout();
-                if (!layout.isDefault()) {
-                    for (AspectEdge edge : jEdge.getEdges()) {
-                        layoutMap.putEdge(edge, layout);
-                    }
-                }
-            }
-        }
-        GraphInfo.setLayoutMap(graph, layoutMap);
-        ResourceProperties.setProperties(graph, getProperties());
-        graph.setFixed();
-        getViewModel().setJCellMaps(nodeJVertexMap, edgeJCellMap);
-        setGraph(graph);
-        if (GUI_DEBUG) {
-            System.out.printf("Graph resynchronised with model %s%n", getName());
-            printStackTrace(System.out, false);
-        }
-    }
-
-    @Override
-    void setGraph(AspectGraph graph) {
-        super.setGraph(graph);
-        setGraphModified();
-    }
-
-    /**
-     * Sets the extra-error flags of all the cells, based
-     * on the errors in the view.
-     */
-    private void loadViewErrors() {
-        if (getGrammar() == null) {
-            return;
-        }
-        for (AspectViewCell jCell : getRoots()) {
-            jCell.getErrors().clear();
-        }
-        for (FormatError error : getResourceModel().getErrors()) {
-            for (Element errorObject : error.getContext(Element.class)) {
-                AspectViewCell errorCell = getJCell(errorObject);
-                if (errorCell == null && errorObject instanceof Edge e) {
-                    errorCell = getJCell(e.source());
-                }
-                if (errorCell != null) {
-                    errorCell.getErrors().addError(error, true);
-                }
-            }
-        }
+        getViewModel().syncGraph();
     }
 
     /** Returns an up-to-date resource model for the graph being edited here. */
     public GraphBasedModel<?> getResourceModel() {
-        return this.resource.getValue();
+        return getViewModel().getResourceModel();
     }
 
     /** Returns the type graph associated with this jModel, if any. */
     public TypeGraph getTypeGraph() {
-        return this.typeGraph.getValue();
+        return getViewModel().getTypeGraph();
     }
 
     /** Returns the name of this aspect model as a qualified name. */
     public QualName getQualName() {
-        return QualName.parse(getName());
+        return getViewModel().getQualName();
     }
 
     /** Changes the name of the model (and the underlying graph). */
     public void setQualName(QualName name) {
-        setGraph(getNonNullGraph().rename(name));
+        getViewModel().setQualName(name);
     }
 
     /**
      * Returns the properties associated with this j-model.
      */
     public final ResourceProperties getProperties() {
-        if (this.properties == null) {
-            this.properties = new ResourceProperties();
-        }
-        return this.properties;
+        return getViewModel().getProperties();
     }
 
-    /**
-     * Enable bidirectional edges to be merged, if the aspect graph is a host
-     * graph, and the grammar property is set to true.
-     */
-    @Override
-    public boolean isMergeBidirectionalEdges() {
-        if (this.beingEdited || getNonNullGraph().getRole() != GraphRole.HOST) {
-            return false;
-        } else {
-            return super.isMergeBidirectionalEdges();
-        }
-    }
-
-    /** Change the {@link #beingEdited} flag. */
+    /** Change the being-edited flag of the view model. */
     public void setBeingEdited(boolean flag) {
-        this.beingEdited = flag;
+        getViewModel().setBeingEdited(flag);
     }
 
     /**
@@ -375,7 +238,7 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
     public Map<?,?> cloneCells(Object[] cells) {
         Map<?,?> result = super.cloneCells(cells);
         // assign new node numbers to the JVertices
-        collectNodeNrs();
+        getViewModel().startNodeNumbering();
         // we reuse the JCells to keep their connection and user object intact;
         // however, all auxiliary structures need to be cleared
         List<AspectJVertex> newJVertices = new ArrayList<>();
@@ -396,7 +259,7 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
         for (AspectJVertex jVertex : newJVertices) {
             jVertex.setNodeFixed();
         }
-        resetNodeNrs();
+        getViewModel().stopNodeNumbering();
         return result;
     }
 
@@ -405,7 +268,7 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
      * @see AspectJModel#setGraphModified()
      */
     public void setGraphDirty() {
-        this.graphModCount.increaseSilent();
+        getViewModel().setGraphDirty();
     }
 
     /**
@@ -413,15 +276,15 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
      * been modified.
      */
     public void setGraphModified() {
-        this.graphModCount.increase();
+        getViewModel().setGraphModified();
     }
 
     /**
      * We override this method to ensure that the aspect graph
      * remains in sync with any changes made to the JModel, <i>before</i>
      * the listeners are notified of the changes.
-     * If a relevant change was made, {@link #syncGraph()}
-     * is invoked.
+     * If a relevant change was made, the view model's
+     * {@link AspectGraphViewModel#syncGraph()} is invoked.
      */
     @Override
     protected void fireGraphChanged(Object source, GraphModelChange edit) {
@@ -461,70 +324,18 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
      * the graph role taken from the editor.
      */
     AspectNode createAspectNode() {
-        return new AspectNode(createNewNodeNr(), getGraph());
-    }
-
-    /** Initialises the set {@link #usedNrs} with the currently used node numbers. */
-    private boolean collectNodeNrs() {
-        boolean result = this.usedNrs == null;
-        if (result) {
-            this.usedNrs = new HashSet<>();
-            for (Object root : getRoots()) {
-                if (root instanceof AspectJVertex v) {
-                    this.usedNrs.add(v.getNumber());
-                }
-            }
-        }
-        return result;
-    }
-
-    /** Resets the set of used node numbers to {@code null}. */
-    private void resetNodeNrs() {
-        this.usedNrs = null;
-    }
-
-    /**
-     * Returns the first non-negative number that is not used as a node number
-     * in this model.
-     */
-    private int createNewNodeNr() {
-        int result = 0;
-        boolean collect = collectNodeNrs();
-        // search for an unused node number
-        while (this.usedNrs.contains(result)) {
-            result++;
-        }
-        if (collect) {
-            resetNodeNrs();
-        } else {
-            this.usedNrs.add(result);
-        }
-        return result;
+        return getViewModel().createAspectNode();
     }
 
     /** Adds a listener to graph modifications. */
     public void addGraphChangeListener(PropertyChangeListener listener) {
-        this.graphModCount.addObserver(listener);
+        getViewModel().addGraphChangeListener(listener);
     }
 
     /** Removes a listener to graph modifications. */
     public void removeGraphChangeListener(PropertyChangeListener listener) {
-        this.graphModCount.deleteObserver(listener);
+        getViewModel().removeGraphChangeListener(listener);
     }
-
-    /** Counter of the modifications to the graph. */
-    private final ChangeCount graphModCount;
-    /** The resource model of the graph being edited. */
-    private final Derived<GraphBasedModel<?>> resource;
-    /** The type graph of the graph being edited. */
-    private final Derived<TypeGraph> typeGraph;
-    /** Flag to indicate if the graph is being edited or not. */
-    private boolean beingEdited = false;
-
-    /** Properties map of the graph being displayed or edited. */
-    private ResourceProperties properties;
-    /** The set of used node numbers. */
-    private Set<Integer> usedNrs;
 
     /** Role names (for the tool tips). */
     static final Map<AspectKind,String> ROLE_NAMES = new EnumMap<>(AspectKind.class);

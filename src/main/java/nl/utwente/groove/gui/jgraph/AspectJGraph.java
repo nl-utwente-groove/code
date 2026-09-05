@@ -225,7 +225,7 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements Aspect
         stopEditing();
         Point2D atPoint = fromScreen(snap(screenPoint));
         // define the j-cell to be inserted
-        AspectJVertex jVertex = (AspectJVertex) model.createJVertex(model.createAspectNode());
+        AspectJVertex jVertex = (AspectJVertex) model.newVertex(model.createAspectNode());
         jVertex.setNodeFixed();
         jVertex.putVisual(VisualKey.NODE_POS, atPoint);
         // add the cell to the jGraph
@@ -266,7 +266,7 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements Aspect
         DefaultPort fromPort = (DefaultPort) fromPortView.getCell();
         DefaultPort toPort = (DefaultPort) toPortView.getCell();
         // define the edge to be inserted
-        AspectJEdge newEdge = (AspectJEdge) model.createJEdge(null);
+        AspectJEdge newEdge = (AspectJEdge) model.newEdge(null);
         // add a single, empty label so the edge will be displayed
         newEdge.getEditableLabels().add("");
         // to make sure there is at least one graph edge wrapped by this ViewEdge,
