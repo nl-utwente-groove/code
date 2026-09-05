@@ -86,6 +86,9 @@ module nl.utwente.groove {
     uses nl.utwente.groove.grammar.model.ResourceValidator;
     provides nl.utwente.groove.grammar.model.ResourceValidator
         with nl.utwente.groove.prolog.PrologValidator;
+    uses nl.utwente.groove.gui.view.GraphBackend;
+    provides nl.utwente.groove.gui.view.GraphBackend
+        with nl.utwente.groove.gui.jgraph.JGraphBackend;
 
     requires antlr.complete;
     requires antlrworks;

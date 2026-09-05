@@ -25,8 +25,8 @@ an own `InterpolatingBezier` for TikZ). Slices 1–4 are merged into `yworks-mig
 `claude/phase-2-model-and-ownership.md`; slice 1 (the view-model split: `CellStore`,
 insertion machinery and role subclasses `AspectGraphViewModel`/`LTSGraphViewModel` in
 `gui.view`, the JGraph models reduced to adapters) is merged into `yworks-migration`;
-slice 2 (the ownership inversion: `GraphBackend` factory selected by the system property
-`groove.gui.backend`, controller-owned canvases, neutral `GraphPanel`,
+slice 2 (the ownership inversion: `GraphBackend` factory discovered by `ServiceLoader`,
+controller-owned canvases, neutral `GraphPanel`,
 `newViewModel`/`setViewModel` on the canvas) is on branch `ownership-inversion`. The
 architecture allowlist holds one file, `GraphEditorTab` (phase 3).
 
