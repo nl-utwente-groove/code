@@ -20,13 +20,15 @@ backend replaced by `GraphCanvasListener`, with a structured `CellChange` and a
 JGraph layout library is a backend contribution behind `getBackendLayouters()`) and
 slice 5 (the export path works on the canvas: `CanvasExportable`, `toImage`/`paintGraph`,
 an own `InterpolatingBezier` for TikZ). Slices 1–4 are merged into `yworks-migration`
-(rebased on master); slice 5 is on branch `export-seam` awaiting review. The architecture
-allowlist holds 11 files, all tagged for phase 2 (canvas construction, the display/tab
-accessors) or phase 3 (`GraphEditorTab`). Design record and slicing in
+(rebased on master); slice 5 is merged too. Design record and slicing in
 `claude/view-facade.md`. **Phase 2 is IN PROGRESS**: design in
 `claude/phase-2-model-and-ownership.md`; slice 1 (the view-model split: `CellStore`,
 insertion machinery and role subclasses `AspectGraphViewModel`/`LTSGraphViewModel` in
-`gui.view`, the JGraph models reduced to adapters) on branch `view-model-split`.
+`gui.view`, the JGraph models reduced to adapters) is merged into `yworks-migration`;
+slice 2 (the ownership inversion: `GraphBackend` factory selected by the system property
+`groove.gui.backend`, controller-owned canvases, neutral `GraphPanel`,
+`newViewModel`/`setViewModel` on the canvas) is on branch `ownership-inversion`. The
+architecture allowlist holds one file, `GraphEditorTab` (phase 3).
 
 ## Goal and motivation
 
