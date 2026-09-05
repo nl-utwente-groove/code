@@ -15,8 +15,7 @@ import nl.utwente.groove.gui.dialog.GrooveFileChooser;
 import nl.utwente.groove.gui.dialog.SaveDialog;
 import nl.utwente.groove.gui.display.Display;
 import nl.utwente.groove.gui.display.DisplayKind;
-import nl.utwente.groove.gui.display.GraphEditorTab;
-import nl.utwente.groove.gui.display.GraphTab;
+import nl.utwente.groove.gui.display.GraphDisplay;
 import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.gui.display.ResourceTab;
 import nl.utwente.groove.gui.export.CanvasExportable;
@@ -176,11 +175,9 @@ public class ExportAction extends SimulatorAction {
             case RULE:
             case TYPE:
                 ResourceTab selectedTab = ((ResourceDisplay) this.display).getSelectedTab();
-                return selectedTab == null
-                    ? null
-                    : selectedTab instanceof GraphTab gt
-                        ? gt.getCanvas()
-                        : ((GraphEditorTab) selectedTab).getJGraph();
+                return selectedTab instanceof GraphDisplay<?> graphDisplay
+                    ? graphDisplay.getCanvas()
+                    : null;
             case STATE:
                 return getStateDisplay().getCanvas();
             case LTS:

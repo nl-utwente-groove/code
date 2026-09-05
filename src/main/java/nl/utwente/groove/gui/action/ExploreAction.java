@@ -104,6 +104,7 @@ public class ExploreAction extends SimulatorAction {
         if (ltsJModel == null) {
             if (simModel.resetGTS()) {
                 ltsJModel = getLtsDisplay().getViewModel();
+                assert ltsJModel != null; // the LTS display shows the GTS created by the reset
             } else {
                 return null;
             }
