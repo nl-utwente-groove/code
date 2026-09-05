@@ -24,6 +24,14 @@ mvn test -Dtest=AlgebraTest                    # run a single test class
 
 **Slow tests are excluded by default**: `ExplorationTest` (full state-space exploration), `ImagerTest` and `IOTest` (image rendering / I/O round-trips), and `test/performance` carry the `nl.utwente.groove.test.SlowTest` category, which Surefire excludes via the `excluded.test.groups` pom property. Override with `-Dexcluded.test.groups=` to run everything.
 
+**GUI tests are excluded by default too**: the Jemmy-driven Swing tests in `test/gui` carry the `nl.utwente.groove.test.GuiTest` category, listed next to `SlowTest` in `excluded.test.groups`. **Before handing over a series of commits that touches `gui/`** — including the `view`, `jgraph`, `display`, `tree` and `action` subpackages, not just visibly Swing-shaped classes — run them and report the per-class counts:
+
+```
+mvn -q test -Dexcluded.test.groups= -Dtest='*GuiTest' -DfailIfNoSpecifiedTests=false > gui.log 2>&1
+```
+
+Results land in `target/surefire-reports/*GuiTest.txt`; `-q` prints nothing on success, so exit 0 is the pass signal. The run needs a display (headless runs skip the classes by assumption), so CI cannot substitute for it. The gate is not hypothetical: the view-model split (750e8215f) broke all ten GUI tests and sat on master unnoticed for two days. Since the suite shares one Simulator per JVM, a failure that wedges the shared `SimulatorModel` also makes unrelated tests in the same JVM flaky, so the damage is not confined to the GUI classes.
+
 **Keep build output out of the model context**: a `PreToolUse` hook (`.claude/hooks/pretool-guard.ps1`, wired up in `.claude/settings.json`) denies `mvn` test/package/install/verify runs that are neither quiet nor redirected. Run `mvn -q <goals> > <log> 2>&1` and grep the log; test-failure details land in `target/surefire-reports`. The same hook blocks `git commit` on `master` and turns `git push` / `gh pr create` into a user confirmation prompt.
 
 ### Eclipse
