@@ -17,6 +17,7 @@
 package nl.utwente.groove.gui.view;
 
 import java.beans.PropertyChangeListener;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -28,6 +29,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.grammar.ResourceProperties;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
+import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.GraphBasedModel;
@@ -287,6 +289,30 @@ public class AspectGraphViewModel extends GraphViewModel<AspectGraph> {
     /** Indicates if the graph of this model is being edited. */
     public boolean isBeingEdited() {
         return this.beingEdited;
+    }
+
+    /** Role names, for the tool tips of the cells. */
+    public static final Map<AspectKind,String> ROLE_NAMES = new EnumMap<>(AspectKind.class);
+    /** Role descriptions, for the tool tips of the cells. */
+    public static final Map<AspectKind,String> ROLE_DESCRIPTIONS
+        = new EnumMap<>(AspectKind.class);
+
+    static {
+        ROLE_NAMES.put(AspectKind.EMBARGO, "Embargo");
+        ROLE_NAMES.put(AspectKind.READER, "Reader");
+        ROLE_NAMES.put(AspectKind.CREATOR, "Creator");
+        ROLE_NAMES.put(AspectKind.ADDER, "Adder");
+        ROLE_NAMES.put(AspectKind.ERASER, "Eraser");
+        ROLE_NAMES.put(AspectKind.REMARK, "Remark");
+        ROLE_DESCRIPTIONS
+            .put(AspectKind.EMBARGO, "Must be absent from a graph for this rule to apply");
+        ROLE_DESCRIPTIONS.put(AspectKind.READER, "Must be matched for this rule to apply");
+        ROLE_DESCRIPTIONS.put(AspectKind.CREATOR, "Will be created by applying this rule");
+        ROLE_DESCRIPTIONS
+            .put(AspectKind.ADDER,
+                 "Must be absent from a graph for this rule to apply, and will be created when applying this rule");
+        ROLE_DESCRIPTIONS.put(AspectKind.ERASER, "Will be deleted by applying this rule");
+        ROLE_DESCRIPTIONS.put(AspectKind.REMARK, "Has no effect on the execution of the rule");
     }
 
     /**

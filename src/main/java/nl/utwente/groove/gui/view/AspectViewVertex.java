@@ -17,7 +17,7 @@ package nl.utwente.groove.gui.view;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.aspect.AspectEdge;
@@ -33,7 +33,8 @@ import nl.utwente.groove.util.AIGenerated;
  * @version $Revision$
  */
 @AIGenerated("Claude Fable 5.1, 2026-09")
-public interface AspectViewVertex extends AspectViewCell, ViewVertex<@NonNull AspectGraph> {
+@NonNullByDefault
+public interface AspectViewVertex extends AspectViewCell, ViewVertex<AspectGraph> {
     @Override
     AspectNode getNode();
 

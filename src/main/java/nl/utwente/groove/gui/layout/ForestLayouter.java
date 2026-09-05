@@ -349,7 +349,10 @@ public class ForestLayouter extends AbstractLayouter {
             if (result != 0) {
                 return result;
             }
-            result = edgeComp.compare(o1.getEdge(), o2.getEdge());
+            var e1 = o1.getEdge();
+            var e2 = o2.getEdge();
+            assert e1 != null && e2 != null; // the compared edge cells wrap edges
+            result = edgeComp.compare(e1, e2);
             return result;
         }
     };

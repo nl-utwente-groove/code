@@ -14,7 +14,7 @@
  */
 package nl.utwente.groove.gui.view;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
@@ -26,7 +26,8 @@ import nl.utwente.groove.util.AIGenerated;
  * @version $Revision$
  */
 @AIGenerated("Claude Fable 5.1, 2026-09")
-public interface LTSViewVertex extends LTSViewCell, ViewVertex<@NonNull GTS> {
+@NonNullByDefault
+public interface LTSViewVertex extends LTSViewCell, ViewVertex<GTS> {
     @Override
     GraphState getNode();
 

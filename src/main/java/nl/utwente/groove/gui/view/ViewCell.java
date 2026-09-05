@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.graph.Edge;
@@ -37,7 +37,8 @@ import nl.utwente.groove.util.parse.Severity;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface ViewCell<G extends @NonNull Graph> extends Serializable {
+@NonNullByDefault
+public interface ViewCell<G extends Graph> extends Serializable {
     /** Returns the canvas on which this cell is displayed.
      * @return the canvas of this cell; may be {@code null} if
      * the cell has not yet been fully initialised

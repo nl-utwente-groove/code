@@ -16,7 +16,8 @@ package nl.utwente.groove.gui.view;
 
 import java.util.Set;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphTransition;
@@ -28,8 +29,10 @@ import nl.utwente.groove.util.AIGenerated;
  * @version $Revision$
  */
 @AIGenerated("Claude Fable 5.1, 2026-09")
-public interface LTSViewEdge extends LTSViewCell, ViewEdge<@NonNull GTS> {
+@NonNullByDefault
+public interface LTSViewEdge extends LTSViewCell, ViewEdge<GTS> {
     @Override
+    @Nullable
     GraphTransition getEdge();
 
     @Override

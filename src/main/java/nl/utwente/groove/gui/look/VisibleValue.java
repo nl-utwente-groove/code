@@ -178,6 +178,7 @@ public class VisibleValue implements VisualValue<Boolean> {
 
     private boolean getLTSEdgeValue(LTSGraphViewController controller, LTSViewEdge jEdge) {
         GraphTransition trans = jEdge.getEdge();
+        assert trans != null; // an LTS edge cell wraps at least one transition
         if (!jEdge.hasVisibleFlag()) {
             return false;
         }

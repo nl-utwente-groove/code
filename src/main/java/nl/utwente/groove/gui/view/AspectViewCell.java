@@ -19,7 +19,7 @@ package nl.utwente.groove.gui.view;
 import java.util.Comparator;
 import java.util.Iterator;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.aspect.Aspect;
@@ -38,7 +38,8 @@ import nl.utwente.groove.util.parse.Severity;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface AspectViewCell extends ViewCell<@NonNull AspectGraph> {
+@NonNullByDefault
+public interface AspectViewCell extends ViewCell<AspectGraph> {
     @Override
     public Iterator<? extends AspectViewCell> getContext();
 

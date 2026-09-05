@@ -100,7 +100,9 @@ public class SubtypeLabelArrowTest {
                     assertEquals(EdgeEnd.SUBTYPE, visuals.getEdgeTargetShape());
                     seenSubtype = true;
                 } else {
-                    String label = jEdge.getEdge().getInnerText();
+                    var edge = jEdge.getEdge();
+                    assert edge != null; // a labelled edge cell wraps an edge
+                    String label = edge.getInnerText();
                     assertTrue(text.startsWith(label), "label text lost: " + text);
                     assertNotEquals(label, text, "no arrow on label " + label);
                     seenLabelled = true;

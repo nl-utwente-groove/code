@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.gui.view;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.graph.Edge;
@@ -30,7 +30,8 @@ import nl.utwente.groove.gui.look.MultiLabel.Direct;
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface ViewEdge<G extends @NonNull Graph> extends ViewCell<G> {
+@NonNullByDefault
+public interface ViewEdge<G extends Graph> extends ViewCell<G> {
     /**
      * The cloned object is equal to this one after a reset.
      */
@@ -68,7 +69,7 @@ public interface ViewEdge<G extends @NonNull Graph> extends ViewCell<G> {
     /**
      * Returns the first edge from the set of underlying edges.
      */
-    public abstract Edge getEdge();
+    public abstract @Nullable Edge getEdge();
 
     /**
      * Determines the direction corresponding to a given edge
@@ -80,5 +81,5 @@ public interface ViewEdge<G extends @NonNull Graph> extends ViewCell<G> {
      * @param edge the edge of which the direction should be returned; if {@code null},
      * it is assumed to be a forward edge
      */
-    public abstract Direct getDirect(Edge edge);
+    public abstract Direct getDirect(@Nullable Edge edge);
 }

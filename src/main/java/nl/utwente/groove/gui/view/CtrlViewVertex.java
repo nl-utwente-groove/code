@@ -14,7 +14,7 @@
  */
 package nl.utwente.groove.gui.view;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.control.graph.ControlGraph;
 import nl.utwente.groove.control.graph.ControlNode;
@@ -26,7 +26,8 @@ import nl.utwente.groove.util.AIGenerated;
  * @version $Revision$
  */
 @AIGenerated("Claude Fable 5.1, 2026-09")
-public interface CtrlViewVertex extends ViewVertex<@NonNull ControlGraph> {
+@NonNullByDefault
+public interface CtrlViewVertex extends ViewVertex<ControlGraph> {
     @Override
     ControlNode getNode();
 }
