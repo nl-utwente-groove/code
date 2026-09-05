@@ -18,6 +18,9 @@ package nl.utwente.groove.gui.view;
 
 import java.lang.System.Logger;
 import java.lang.System.Logger.Level;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
@@ -56,15 +59,33 @@ public interface GraphBackend {
     GraphCanvas<Graph> newPlainCanvas(PlainGraphViewController controller);
 
     /**
+     * Returns the name of this backend: a short lower-case key, stable across
+     * releases, by which the backend is ranked (see {@link #RANKING}) and,
+     * eventually, chosen by the user.
+     */
+    String getName();
+
+    /**
      * Returns the backend selected for this run.
      * The backends available are discovered once through the {@link ServiceLoader};
-     * the first that can be instantiated is used, a provider that fails is logged
-     * and skipped. There is no runtime switching.
+     * a provider that fails to instantiate is logged and skipped. Among the available
+     * backends the one ranking first in {@link #RANKING} is selected; backends not
+     * in the ranking come last, in discovery order. There is no runtime switching.
      * @throws IllegalStateException if no backend is available
      */
     static GraphBackend instance() {
         return Instance.INSTANCE;
     }
+
+    /** Name of the JGraph backend, the one every distribution has. */
+    String JGRAPH = "jgraph";
+    /** Name of the yFiles backend, present only in the yFiles edition. */
+    String YFILES = "yfiles";
+    /**
+     * Backend names in order of preference: the yFiles backend is the target of the
+     * migration, so it is used whenever it is available.
+     */
+    List<String> RANKING = List.of(YFILES, JGRAPH);
 
     /** Lazy holder of the selected backend instance. */
     final class Instance {
@@ -78,18 +99,35 @@ public interface GraphBackend {
         static final GraphBackend INSTANCE = create();
 
         private static GraphBackend create() {
+            List<GraphBackend> available = new ArrayList<>();
             for (var provider : ServiceLoader.load(GraphBackend.class).stream().toList()) {
                 try {
-                    var result = provider.get();
-                    LOGGER.log(Level.DEBUG, "Graph backend: {0}", result.getClass().getName());
-                    return result;
+                    available.add(provider.get());
                 } catch (ServiceConfigurationError exc) {
                     LOGGER
                         .log(Level.WARNING, "Graph backend {0} unavailable: {1}",
                              provider.type().getName(), exc);
                 }
             }
-            throw Exceptions.illegalState("No graph backend available");
+            if (available.isEmpty()) {
+                throw Exceptions.illegalState("No graph backend available");
+            }
+            var result = available
+                .stream()
+                .min(Comparator.comparingInt(Instance::rank))
+                .orElseThrow();
+            LOGGER
+                .log(Level.DEBUG, "Graph backend: {0} (available: {1})", result.getName(),
+                     available.stream().map(GraphBackend::getName).toList());
+            return result;
+        }
+
+        /** Returns the position of a backend in the ranking; unranked backends come last. */
+        private static int rank(GraphBackend backend) {
+            int result = RANKING.indexOf(backend.getName());
+            return result < 0
+                ? RANKING.size()
+                : result;
         }
     }
 }

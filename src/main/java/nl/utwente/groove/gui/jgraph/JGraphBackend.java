@@ -63,4 +63,9 @@ public class JGraphBackend implements GraphBackend {
     public GraphCanvas<Graph> newPlainCanvas(PlainGraphViewController controller) {
         return new PlainJGraph(controller);
     }
+
+    @Override
+    public String getName() {
+        return JGRAPH;
+    }
 }
