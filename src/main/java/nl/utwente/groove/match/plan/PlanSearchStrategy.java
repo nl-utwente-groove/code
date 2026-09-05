@@ -158,7 +158,7 @@ public class PlanSearchStrategy implements SearchStrategy, Fixable {
      * Callback factory method for an auxiliary {@link Search} object.
      */
     private Search createSearch() {
-        testFixed(true);
+        assert isFixed();
         return new Search();
     }
 

@@ -415,7 +415,7 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
      * this is not a product node.
      */
     public List<AspectNode> getArgNodes() {
-        testFixed(true);
+        assert isFixed();
         return this.argNodes;
     }
 

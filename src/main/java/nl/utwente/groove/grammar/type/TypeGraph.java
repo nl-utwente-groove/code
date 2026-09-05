@@ -500,7 +500,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
         if (isImplicit()) {
             return false;
         }
-        testFixed(true);
+        assert isFixed();
         Set<TypeNode> allSubtypes = getSubtypes(supertype);
         if (allSubtypes.size() == 1) {
             return false;
@@ -516,7 +516,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
         if (isImplicit()) {
             return false;
         }
-        testFixed(true);
+        assert isFixed();
         return getSubtypes(supertype).contains(subtype);
     }
 
@@ -529,7 +529,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
      */
     public RuleGraphMorphism analyzeRule(RuleGraph source,
                                          RuleGraphMorphism parentTyping) throws FormatException {
-        testFixed(true);
+        assert isFixed();
         RuleFactory ruleFactory = parentTyping.getFactory();
         RuleGraphMorphism result = new RuleGraphMorphism(ruleFactory);
         FormatErrorSet errors = new FormatErrorSet();
@@ -924,7 +924,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
      * @throws FormatException if the rule graph contains type errors
      */
     public HostGraphMorphism analyzeHost(HostGraph source) throws FormatException {
-        testFixed(true);
+        assert isFixed();
         // reuse the source's host factory if it is based on this type graph's factory,
         // so that the typed image lives in the same node namespace as the source
         HostFactory sourceFactory = source.getFactory();

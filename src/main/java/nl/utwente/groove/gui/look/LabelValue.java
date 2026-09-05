@@ -137,7 +137,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
      */
     private MultiLabel getHostNodeLabel(AspectGraphViewController controller, AspectJVertex jVertex) {
         AspectNode node = jVertex.getNode();
-        node.testFixed(true);
+        assert node.isFixed();
         MultiLabel result = new MultiLabel(false);
         if (!jVertex.getLooks().contains(Look.NODIFIED)) {
             // the following used to include hasError() as a disjunct
@@ -220,7 +220,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
      */
     private MultiLabel getTypeNodeLabel(AspectGraphViewController controller, AspectJVertex jVertex) {
         AspectNode node = jVertex.getNode();
-        node.testFixed(true);
+        assert node.isFixed();
         MultiLabel result = new MultiLabel();
         if (controller.isShowAspects()) {
             result.add(jVertex.getUserObject().toLines());
@@ -278,7 +278,7 @@ public class LabelValue implements VisualValue<MultiLabel> {
      * @param controller the (non-{@code null}) graph-view controller of the {@link ViewVertex}     */
     private MultiLabel getRuleNodeLabel(AspectGraphViewController controller, AspectJVertex jVertex) {
         AspectNode node = jVertex.getNode();
-        node.testFixed(true);
+        assert node.isFixed();
         MultiLabel result = new MultiLabel();
         // the following used to include hasError() as a disjunct
         if (controller.isShowAspects() || jVertex.getNode().hasErrors()) {

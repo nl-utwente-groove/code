@@ -100,7 +100,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
      */
     public GTS(Grammar grammar) {
         super(grammar.getName() + "-gts", false);
-        grammar.testFixed(true);
+        assert grammar.isFixed();
         this.grammar = grammar;
         ValueOracle oracle;
         try {

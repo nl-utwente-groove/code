@@ -650,7 +650,7 @@ public class Rule implements Action, Fixable {
 
     /** Computes the array of nodes isolated in the left hand side. */
     private RuleNode[] computeIsolatedNodes() {
-        testFixed(true);
+        assert isFixed();
         Set<RuleNode> result = new HashSet<>();
         for (RuleNode node : lhs().nodeSet()) {
             if (lhs().edgeSet(node).isEmpty()) {
@@ -1084,7 +1084,7 @@ public class Rule implements Action, Fixable {
      * Computes the value of {@link #eraserEdges}.
      */
     private RuleEdge[] computeEraserEdges() {
-        testFixed(true);
+        assert isFixed();
         Set<RuleEdge> result = new LinkedHashSet<>(lhs().edgeSet());
         result.removeAll(rhs().edgeSet());
         // also remove the incident edges of the lhs-only nodes

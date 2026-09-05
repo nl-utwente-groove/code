@@ -279,7 +279,7 @@ public class Condition implements Fixable {
             throw Exceptions
                 .unsupportedOp("%s conditions cannot have subconditions", condition.getOp());
         }
-        condition.testFixed(true);
+        assert condition.isFixed();
         testMutable();
         if (this.typeGraph != null) {
             condition.setTypeGraph(this.typeGraph);
@@ -481,7 +481,7 @@ public class Condition implements Fixable {
         if (result && !this.fixing) {
             this.fixing = true;
             for (Condition subCondition : getSubConditions()) {
-                subCondition.testFixed(true);
+                assert subCondition.isFixed();
             }
             this.fixed = true;
             var pattern = getPattern();

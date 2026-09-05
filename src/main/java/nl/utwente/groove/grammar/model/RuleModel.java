@@ -80,7 +80,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
         super(grammar, graph);
         addDependencies(PROPERTIES, GROOVY);
         assert grammar != null;
-        graph.testFixed(true);
+        assert graph.isFixed();
     }
 
     @Override
@@ -376,7 +376,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
          * @return the parent index, or {@code null} if this is the top level
          */
         public Index getParent() {
-            testFixed(true);
+            assert isFixed();
             return this.parent;
         }
 
@@ -445,7 +445,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
          * after {@link Index#setParent(Index,int)}.
          */
         public int[] getIntArray() {
-            testFixed(true);
+            assert isFixed();
             int[] result = new int[this.index.size()];
             for (int i = 0; i < this.index.size(); i++) {
                 result[i] = this.index.get(i);
@@ -458,7 +458,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
          * {@link Index#setParent(Index,int)}.
          */
         public boolean isTopLevel() {
-            testFixed(true);
+            assert isFixed();
             return this.parent == null;
         }
 
@@ -479,7 +479,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
          * This implies that nodes on this level may be matched multiple times.
          */
         public boolean isUniversal() {
-            testFixed(true);
+            assert isFixed();
             boolean result = this.operator == Op.FORALL;
             if (!result && !isTopLevel()) {
                 result = getParent().isUniversal();
