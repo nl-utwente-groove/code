@@ -110,7 +110,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
      * in this type graph
      */
     public Map<TypeNode,TypeNode> add(TypeGraph other) throws FormatException {
-        testFixed(false);
+        testMutable();
         Set<TypeNode> newNodes = new HashSet<>();
         Set<TypeEdge> newEdges = new HashSet<>();
         Map<TypeNode,TypeNode> otherToThis = new HashMap<>();
@@ -219,7 +219,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
      *         or if the new subtype relation creates a cycle.
      */
     public void addInheritance(TypeNode subtype, TypeNode supertype) throws FormatException {
-        testFixed(false);
+        testMutable();
         if (supertype.label().isSort()) {
             throw new FormatException("Data type '%s' cannot be supertype", supertype);
         }

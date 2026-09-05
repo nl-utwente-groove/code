@@ -280,7 +280,7 @@ public class Condition implements Fixable {
                 .unsupportedOp("%s conditions cannot have subconditions", condition.getOp());
         }
         condition.testFixed(true);
-        testFixed(false);
+        testMutable();
         if (this.typeGraph != null) {
             condition.setTypeGraph(this.typeGraph);
         }
@@ -310,7 +310,7 @@ public class Condition implements Fixable {
      * levels.
      */
     public void addAncestorEraserEdges(Collection<RuleEdge> edges) {
-        testFixed(false);
+        testMutable();
         this.ancestorEraserEdges.addAll(edges);
     }
 

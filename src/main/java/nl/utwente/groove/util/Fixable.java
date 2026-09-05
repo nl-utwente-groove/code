@@ -42,6 +42,30 @@ public interface Fixable {
     boolean isFixed();
 
     /**
+     * Tests that this object is still modifiable, i.e., that {@link #setFixed()}
+     * has not been called yet.
+     * <p>
+     * This is the guard to put at the start of every mutator. Modifying an
+     * object after it has been fixed is a <i>caller</i> error against a
+     * published contract, and the resulting corruption tends to surface far
+     * from its cause, so this throws rather than asserting and hence also
+     * holds when assertions are disabled.
+     * <p>
+     * The read-side counterpart is deliberately <em>not</em> a method:
+     * reading a value before it has been established is an implementation
+     * error, for which {@code assert isFixed()} (or an asserting accessor)
+     * is the better instrument. It costs nothing at runtime, and unlike a
+     * method call it lets the null analysis conclude that a late-initialised
+     * field is non-{@code null}.
+     * @throws IllegalStateException if this object is already fixed
+     */
+    default void testMutable() {
+        if (isFixed()) {
+            throw Exceptions.illegalState("Operation not allowed: object is already fixed");
+        }
+    }
+
+    /**
      * Test the fixedness of this object. Throws an exception if the fixedness
      * does not correspond to a given value.
      * @param fixed if <code>true</code>, the object is expected to be fixed;
@@ -49,7 +73,12 @@ public interface Fixable {
      * @throws IllegalStateException if the fixedness of the object does not
      *         equal <code>fixed</code>, i.e., if
      *         <code>isFixed() != fixed</code>.
+     * @deprecated The boolean argument is a compile-time constant at every
+     *             call site, and the two cases are unrelated: use
+     *             {@link #testMutable()} to guard a mutator, and
+     *             {@code assert isFixed()} to guard a read.
      */
+    @Deprecated
     default void testFixed(boolean fixed) {
         if (fixed != isFixed()) {
             throw Exceptions.illegalState("Expected fixed = %b", fixed);

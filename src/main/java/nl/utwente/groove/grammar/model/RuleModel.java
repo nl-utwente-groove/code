@@ -354,7 +354,7 @@ public class RuleModel extends GraphBasedModel<Rule> implements Comparable<RuleM
          * @param parent the parent of this level.
          */
         public void setParent(Index parent, int nr) {
-            testFixed(false);
+            testMutable();
             assert this.parent == null && parent.isFixed();
             this.parent = parent;
             this.index = new ArrayList<>(parent.index.size() + 1);

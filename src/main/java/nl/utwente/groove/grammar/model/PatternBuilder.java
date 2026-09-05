@@ -580,19 +580,19 @@ class PatternBuilder {
 
             @Override
             public boolean add(RuleElement e) {
-                testFixed(false);
+                testMutable();
                 return super.add(e);
             }
 
             @Override
             public boolean remove(Object o) {
-                testFixed(false);
+                testMutable();
                 return super.remove(o);
             }
 
             @Override
             public void clear() {
-                testFixed(false);
+                testMutable();
                 super.clear();
             }
 

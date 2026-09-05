@@ -284,7 +284,7 @@ public abstract class Properties implements Fixable {
      */
     public @Nullable String setProperty(String keyword,
                                         String value) throws IllegalArgumentException {
-        testFixed(false);
+        testMutable();
         assert keyword != null;
         String oldValue;
         Optional<? extends Key> key = getKey(keyword);

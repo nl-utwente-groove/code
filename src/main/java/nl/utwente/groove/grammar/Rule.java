@@ -170,7 +170,7 @@ public class Rule implements Action, Fixable {
      * @param level nesting level of this rule within the condition tree
      */
     public void setParent(Rule parent, int[] level) {
-        testFixed(false);
+        testMutable();
         var coRoot = getCoRoot();
         assert coRoot != null : String
             .format("Sub-rule at level %s must have a non-trivial co-root map",
@@ -203,7 +203,7 @@ public class Rule implements Action, Fixable {
      * Sets the rule properties from a resource property map.
      */
     public void setProperties(ResourceProperties properties) {
-        testFixed(false);
+        testMutable();
         try {
             this.priority = properties.parseProperty(Key.PRIORITY).value(ValueType.INTEGER);
             this.transitionLabel
