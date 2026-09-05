@@ -37,6 +37,12 @@ public interface AspectViewVertex extends AspectViewCell, ViewVertex<@NonNull As
     @Override
     AspectNode getNode();
 
+    /**
+     * Fixes the node of this vertex after the graph was rebuilt from the cells,
+     * and takes over any errors the node then reports.
+     */
+    void setNodeFixed();
+
     @Override
     Set<AspectEdge> getEdges();
 

@@ -16,35 +16,31 @@
  */
 package nl.utwente.groove.gui.jgraph;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
 import org.eclipse.jdt.annotation.NonNull;
 
-import nl.utwente.groove.graph.Edge;
-import nl.utwente.groove.graph.Node;
-import nl.utwente.groove.gui.look.Look;
-import nl.utwente.groove.gui.look.VisualKey;
+import nl.utwente.groove.gui.view.LTSGraphViewModel;
 import nl.utwente.groove.lts.GTS;
-import nl.utwente.groove.lts.GTSListener;
-import nl.utwente.groove.lts.GraphState;
-import nl.utwente.groove.lts.GraphTransition;
-import nl.utwente.groove.lts.Status.Flag;
-import nl.utwente.groove.gui.view.ViewCell;
-import nl.utwente.groove.gui.view.LTSViewCell;
 
 /**
  * Graph model adding a concept of active state and transition, with special
- * visual characteristics.
+ * visual characteristics: the backend adapter of an {@link LTSGraphViewModel}.
  * @author Arend Rensink
  * @version $Revision$
  */
-final public class LTSJModel extends JModel<@NonNull GTS> implements GTSListener {
+final public class LTSJModel extends JModel<@NonNull GTS> {
     /** Creates a new model from a given LTS and set of display options. */
     LTSJModel(LTSJGraph jGraph) {
         super(jGraph);
+    }
+
+    @Override
+    protected LTSGraphViewModel createViewModel() {
+        return new LTSGraphViewModel(getJGraph().getController(), this);
+    }
+
+    @Override
+    public LTSGraphViewModel getViewModel() {
+        return (LTSGraphViewModel) super.getViewModel();
     }
 
     /* Specialises the return type. */
@@ -54,217 +50,11 @@ final public class LTSJModel extends JModel<@NonNull GTS> implements GTSListener
     }
 
     /**
-     * If the super call returns <code>null</code>, use
-     * {@link #DEFAULT_LTS_NAME}.
-     */
-    @Override
-    public String getName() {
-        String result = super.getName();
-        if (result == null) {
-            result = DEFAULT_LTS_NAME;
-        }
-        return result;
-    }
-
-    @Override
-    public synchronized void addUpdate(GTS gts, GraphState state) {
-        if (isExploring()) {
-            this.addedNodes.add(state);
-        } else if (isAcceptState(state)) {
-            prepareInsert();
-            // add a corresponding GraphCell to the GraphModel
-            addNode(state);
-            doInsert(false);
-        }
-    }
-
-    @Override
-    public synchronized void addUpdate(GTS gts, GraphTransition transition) {
-        if (isExploring()) {
-            this.addedEdges.add(transition);
-        } else if (isAcceptTransition(transition)) {
-            prepareInsert();
-            // note that (as per GraphListener contract)
-            // source and target Nodes (if any) have already been added
-            var edgeJCell = addEdge(transition);
-            doInsert(false);
-            var stateJCell = getJCellForNode(transition.target());
-            stateJCell.setStale(VisualKey.VISIBLE);
-            edgeJCell.setStale(VisualKey.VISIBLE);
-            // layout should occur after the transition has been added
-            // otherwise the forest will not be computed correctly
-            getJGraph().doLayout(false);
-            getJGraph().getController().scrollToActive();
-        }
-    }
-
-    @Override
-    public void statusUpdate(GTS lts, GraphState explored, int change) {
-        var jCell = registerChange(explored, change);
-        if (jCell != null) {
-            if (isExploring()) {
-                this.changedCells.add(jCell);
-            } else {
-                getJGraph().refresh(Collections.singleton(jCell), false);
-            }
-        }
-    }
-
-    /**
-     * Registers a status change in a previously explored state.
-     * @return the cell that was changed as a consequence to the state change;
-     * {@code null} if there was no change.
-     */
-    private ViewCell<@NonNull GTS> registerChange(GraphState explored, int change) {
-        var jCell = getJCellForNode(explored);
-        if (jCell != null) {
-            if (Flag.CLOSED.test(change)) {
-                jCell.setLook(Look.OPEN, false);
-            }
-            if (Flag.FULL.test(change)) {
-                jCell.setLook(Look.RECIPE, explored.isInner());
-                jCell.setLook(Look.TRANSIENT, explored.isTransient());
-                jCell.setLook(Look.FINAL, explored.isFinal());
-                if (explored.isAbsent()) {
-                    var iter = jCell.getContext();
-                    while (iter.hasNext()) {
-                        iter.next().setLook(Look.ABSENT, true);
-                    }
-                    jCell.setLook(Look.ABSENT, true);
-                }
-            }
-            jCell.setStale(VisualKey.refreshables());
-        }
-        return jCell;
-    }
-
-    @Override
-    public void loadGraph(GTS gts) {
-        GTS oldGTS = getGraph();
-        // temporarily remove the model as a graph listener
-        if (oldGTS != null && gts != oldGTS) {
-            oldGTS.removeLTSListener(this);
-        }
-        prepareLoad(gts);
-        addElements(gts.nodeSet(), null, true);
-        if (gts != oldGTS) {
-            gts.addLTSListener(this);
-        }
-        getJGraph().getController().reactivate();
-    }
-
-    /**
      * Possibly extends the jModel with additional states from the underlying GTS.
      * This can be more efficient than reloading, e.g., if the state bound has increased.
      */
     public boolean reloadGraph() {
-        boolean result = false;
-        var lts = getGraph();
-        if (lts != null) {
-            int nodeCount = nodeCount();
-            int bound = getStateBound();
-            if (bound > nodeCount && nodeCount < lts.nodeCount()) {
-                result = addElements(lts.nodeSet(), lts.edgeSet(), false);
-            } else if (bound < nodeCount) {
-                loadGraph(lts);
-                result = true;
-            }
-        }
-        return result;
-    }
-
-    /* Overridden to ensure that the node rendering limit is used. */
-    @Override
-    protected boolean addNodes(Collection<? extends Node> nodeSet) {
-        boolean result = false;
-        int nodeCount = nodeCount();
-        for (Node node : nodeSet) {
-            GraphState state = (GraphState) node;
-            if (!isAcceptState(state)) {
-                continue;
-            }
-            LTSJVertex jVertex = (LTSJVertex) getJCellForNode(node);
-            if (jVertex != null) {
-                result |= jVertex.setVisibleFlag(true);
-                continue;
-            }
-            addNode(node);
-            result = true;
-            nodeCount++;
-            if (nodeCount > getStateBound()) {
-                break;
-            }
-        }
-        return result;
-    }
-
-    /** Tests if a given graph state is acceptable for addition to the LTS panel. */
-    private boolean isAcceptState(GraphState state) {
-        if (state.isInner() && !getJGraph().getController().isShowRecipeSteps()) {
-            return false;
-        }
-        if (state.isAbsent() && !getJGraph().getController().isShowAbsentStates()) {
-            return false;
-        }
-        return true;
-    }
-
-    /* Overridden to ensure that the node rendering limit is observed. */
-    @Override
-    protected boolean addEdges(Collection<? extends Edge> edgeSet) {
-        boolean result = false;
-        if (edgeSet == null) {
-            for (Node node : getViewModel().getNodes()) {
-                GraphState state = (GraphState) node;
-                for (GraphTransition trans : state
-                    .getTransitions(getJGraph().getController().getTransitionClass())) {
-                    result |= addTransition(trans);
-                }
-            }
-        } else {
-            for (Edge edge : edgeSet) {
-                GraphTransition trans = (GraphTransition) edge;
-                if (getJGraph().getController().getTransitionClass().admits(trans)) {
-                    result |= addTransition((GraphTransition) edge);
-                }
-            }
-        }
-        return result;
-    }
-
-    /** Tests if a given graph transition is acceptable for addition to the LTS panel. */
-    private boolean isAcceptTransition(GraphTransition trans) {
-        return getJGraph().getController().getTransitionClass().admits(trans);
-    }
-
-    /**
-     * Adds a given transition to the jModel, if its properties allow this,
-     * its source and target are in the model, and
-     * it is not in the model already.
-     * @return {@code true} if the transition was indeed added
-     */
-    private boolean addTransition(GraphTransition trans) {
-        GraphState source = trans.source();
-        GraphState target = trans.target();
-        if (!isVisible(source)) {
-            return false;
-        }
-        // Only add the edges for which we know the target exists.
-        if (!trans.isLoop() && !isVisible(target)) {
-            return false;
-        }
-        // make visible if the transition is already there
-        LTSViewCell jCell = (LTSViewCell) getJCellForEdge(trans);
-        if (jCell != null) {
-            return jCell.setVisibleFlag(true);
-        }
-        addEdge(trans);
-        return true;
-    }
-
-    private boolean isVisible(GraphState state) {
-        LTSJVertex jVertex = (LTSJVertex) getJCellForNode(state);
-        return jVertex != null && jVertex.hasVisibleFlag();
+        return getViewModel().reloadGraph();
     }
 
     /**
@@ -272,18 +62,13 @@ final public class LTSJModel extends JModel<@NonNull GTS> implements GTSListener
      * @return the previous bound
      */
     public int setStateBound(int bound) {
-        int result = this.stateBound;
-        this.stateBound = bound;
-        return result;
+        return getViewModel().setStateBound(bound);
     }
 
     /** Returns the maximum state number to be displayed. */
     public int getStateBound() {
-        return this.stateBound;
+        return getViewModel().getStateBound();
     }
-
-    /** The maximum state number to be added. */
-    private int stateBound;
 
     /**
      * Indicates if the model is set to exploring mode.
@@ -291,7 +76,7 @@ final public class LTSJModel extends JModel<@NonNull GTS> implements GTSListener
      * passed on to the GUI.
      */
     public boolean isExploring() {
-        return this.exploring;
+        return getViewModel().isExploring();
     }
 
     /**
@@ -300,32 +85,9 @@ final public class LTSJModel extends JModel<@NonNull GTS> implements GTSListener
      * are pushed to the GUI.
      */
     public void setExploring(boolean exploring) {
-        boolean changed = (this.exploring != exploring);
-        if (changed) {
-            this.exploring = exploring;
-            if (exploring) {
-                this.addedNodes.clear();
-                this.addedEdges.clear();
-                this.changedCells.clear();
-            } else {
-                if (!this.addedNodes.isEmpty() || !this.addedEdges.isEmpty()) {
-                    addElements(this.addedNodes, this.addedEdges, false);
-                }
-                if (!this.changedCells.isEmpty()) {
-                    getJGraph().refresh(this.changedCells, true);
-                }
-            }
-        }
+        getViewModel().setExploring(exploring);
     }
 
-    private boolean exploring;
-    /** Set of nodes added during the last exploration. */
-    private final List<Node> addedNodes = new ArrayList<>();
-    /** Set of edges added during the last exploration. */
-    private final List<Edge> addedEdges = new ArrayList<>();
-    /** Set of JCells with status changes during the last exploration. */
-    private final List<ViewCell<@NonNull GTS>> changedCells = new ArrayList<>();
-
     /** Default name of an LTS model. */
-    static public final String DEFAULT_LTS_NAME = "lts";
+    static public final String DEFAULT_LTS_NAME = LTSGraphViewModel.DEFAULT_LTS_NAME;
 }

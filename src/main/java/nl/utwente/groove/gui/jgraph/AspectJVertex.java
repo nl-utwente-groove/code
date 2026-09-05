@@ -133,7 +133,8 @@ public class AspectJVertex extends
         return result;
     }
 
-    void setNodeFixed() {
+    @Override
+    public void setNodeFixed() {
         getNode().setFixed();
         if (getNode().hasErrors()) {
             getErrors().addErrors(getNode().getErrors(), true);
