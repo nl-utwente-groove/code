@@ -21,6 +21,29 @@ yFiles is a commercial library under an Academic Single Developer License (detai
   a yFiles edition ships alongside.
 - The backend package `nl.utwente.groove.gui.yfiles` must never re-expose the yFiles API.
 
+## What it needs from GROOVE
+
+At compile time, the neutral seams of the main project: the `GraphBackend` service
+interface, the canvas, controller, view-model and cell interfaces of `gui.view`, the look
+layer (`gui.look`), the graph types and the layout map. Nothing from `gui.jgraph`. At run
+time the direction reverses: the main project does not depend on this unit, the Simulator
+discovers it on the class path through `ServiceLoader`.
+
+The dependency is on the GROOVE artifact `nl.utwente.groove:groove`, at the version given
+by the `revision` property of this pom, whose default is kept equal to the `revision` of
+the main pom (both are updated when the version is bumped, see the release checklist).
+
+- **In Eclipse** no artifact is involved: with equal versions, m2e resolves the dependency
+  from the open `groove` project (workspace resolution, on by default), so changes to the
+  main project are visible immediately. Import this directory as an existing Maven
+  project next to the main one.
+- **On the command line** the dependency is the installed artifact in `~/.m2`, and a stale
+  artifact would silently compile and test this backend against an old core. The pom
+  therefore installs the GROOVE artifact from the repository root (tests and javadoc
+  skipped) at the start of every build; pass `-Dgroove.install.skip=true` to skip that
+  when the artifact is known to be current. The Eclipse launch
+  `GROOVE - build local maven artefact` installs it too, with tests and javadoc.
+
 ## Building
 
 1. Install the yFiles library into the local Maven repository, once, from the `lib`
@@ -33,17 +56,12 @@ yFiles is a commercial library under an Academic Single Developer License (detai
    the property in an active profile of `~/.m2/settings.xml`; the default is
    `~/yfiles-license`.
 
-3. Install the GROOVE artifact from the repository root, then build this project with the
-   same version. As for the release reactor, the version is handed over explicitly (the
-   `revision` property of the main pom):
+3. Build this project from the repository root:
 
-       mvn -q install -DskipTests -Dmaven.javadoc.skip=true
-       mvn -q -f yfiles/pom.xml -Drevision=<revision> package
+       mvn -q -f yfiles/pom.xml package
 
-   In PowerShell the revision can be read from the main pom with
-   `$rev = mvn -q help:evaluate -D"expression=revision" -DforceStdout`.
-
-In Eclipse, import this directory as an existing Maven project next to the main one.
+   This installs the GROOVE artifact first (see above). Scripts building a release may
+   pass `-Drevision=<version>` as the release reactor does.
 
 ## Contents
 

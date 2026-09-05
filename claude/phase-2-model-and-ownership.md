@@ -194,10 +194,16 @@ couplings, fixture literals, per-module test categories, resources, javadoc, too
 Arend has put on hold behind a package restructuring; the yFiles slice should not pull that
 in. What the license constraints actually require is only that the yFiles backend is an
 optionally compiled unit. So `yfiles/` is a **separate Maven project inside the repository**,
-on the pattern of `release/`: artifact `groove-yfiles`, depending on the installed
-`nl.utwente.groove:groove` artifact (version handed over with `-Drevision`, as for the
-release reactor; the future aggregator removes both handoffs) and on
-`com.yworks.yfiles:yfiles-for-java-swing` from the developer's local repository. The runtime
+on the pattern of `release/`: artifact `groove-yfiles`, depending on the
+`nl.utwente.groove:groove` artifact and on `com.yworks.yfiles:yfiles-for-java-swing` from
+the developer's local repository. The version of the core dependency is the pom's own
+`revision` property, whose default is kept equal to the main pom's (release checklist), so
+that in Eclipse m2e's workspace resolution binds the dependency to the open `groove`
+project (no artifact, changes visible at once) and on the command line the installed
+artifact is found; `-Drevision` remains for release scripts. Against a stale installed
+artifact, the guard is that a command-line build of the unit first installs the core from
+the repository root (tests and javadoc skipped; `-Dgroove.install.skip=true` opts out); an
+m2e lifecycle mapping keeps that step out of Eclipse. The runtime
 license file is copied to the class-path root from a directory named by the property
 `yfiles.license.dir`, so it never enters the repository. The unit runs on the class path
 without `module-info`: the yFiles documentation does not state the jar's module name, and the

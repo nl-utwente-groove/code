@@ -6,14 +6,18 @@
 
 	<!-- The yFiles graph-visualisation backend of GROOVE (gh #909): an optionally
 	     compiled unit, deliberately NOT a module of the main reactor. It depends on
-	     the installed GROOVE artifact and on the licensed yFiles library, which is
-	     available only from a developer's local Maven repository; the main build
+	     the GROOVE artifact and on the licensed yFiles library, which is available
+	     only from a developer's local Maven repository; the main build
 	     (git clone && mvn package) never needs it. See README.md in this directory. -->
 
 	<properties>
-		<!-- the GROOVE version, handed over from the main pom's revision property
-		     as for the release reactor: mvn -Drevision=x.y.z ... -->
-		<revision>0.0.0-SNAPSHOT</revision>
+		<!-- the GROOVE version this backend is built against. The default MUST equal
+		     the revision property of the main pom: with equal versions, Eclipse
+		     resolves the dependency from the open groove project (m2e workspace
+		     resolution) and a command-line build finds the installed artifact.
+		     Update both when bumping the version (release checklist); scripts may
+		     override with -Drevision. -->
+		<revision>7.5.4-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.release>21</maven.compiler.release>
 		<yfiles.version>3.6.0.1</yfiles.version>
@@ -22,6 +26,12 @@
 		     loads from the root of the class path; set it in your settings.xml or
 		     with -D. The file never enters the repository. -->
 		<yfiles.license.dir>${user.home}/yfiles-license</yfiles.license.dir>
+		<!-- A command-line build first installs the GROOVE artifact from the
+		     repository root, so that this backend is never compiled or tested
+		     against a stale core. Pass -Dgroove.install.skip=true to skip that
+		     (e.g. when the artifact was just installed). Eclipse skips it always
+		     and compiles against the open groove project instead. -->
+		<groove.install.skip>false</groove.install.skip>
 	</properties>
 
 	<name>${project.groupId}:${project.artifactId}</name>
@@ -50,6 +60,65 @@
 	</dependencies>
 
 	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>3.5.0</version>
+				<executions>
+					<execution>
+						<!-- the freshness guard: install the GROOVE artifact from the
+						     repository root before anything of this project is compiled -->
+						<id>install-groove</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<skip>${groove.install.skip}</skip>
+							<executable>mvn</executable>
+							<workingDirectory>${project.basedir}/..</workingDirectory>
+							<arguments>
+								<argument>-q</argument>
+								<argument>install</argument>
+								<argument>-DskipTests</argument>
+								<argument>-Dmaven.javadoc.skip=true</argument>
+							</arguments>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<!-- tells m2e to leave the freshness guard alone: in Eclipse the
+					     groove project itself is on the build path -->
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.codehaus.mojo</groupId>
+										<artifactId>exec-maven-plugin</artifactId>
+										<versionRange>[3.0.0,)</versionRange>
+										<goals>
+											<goal>exec</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 		<resources>
 			<resource>
 				<directory>src/main/resources</directory>
