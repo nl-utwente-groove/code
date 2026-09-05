@@ -36,8 +36,7 @@ import org.junit.jupiter.api.Test;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.gui.display.DisplayKind;
-import nl.utwente.groove.gui.jgraph.AspectJGraph;
-import nl.utwente.groove.gui.jgraph.AspectJModel;
+import nl.utwente.groove.gui.view.AspectGraphViewController;
 import nl.utwente.groove.gui.tree.CheckboxTree;
 import nl.utwente.groove.gui.tree.TypeTree;
 import nl.utwente.groove.io.Groove;
@@ -53,7 +52,7 @@ import nl.utwente.groove.util.AIGenerated;
  * foreground on the ordinary background; the renderer must paint the
  * selection background of the look-and-feel itself.
  * <p>
- * The graph is rendered into a headless {@link AspectJGraph}, the way the
+ * The graph is rendered into a headless canvas of the JGraph backend, the way the
  * {@code Imager} does it, and only the renderer components are inspected.
  * @author Arend Rensink
  * @version $Revision$
@@ -143,11 +142,12 @@ public class CheckboxTreeSelectionTest {
         GrammarModel grammar = Groove.loadGrammar(GRAMMAR);
         AspectGraph graph = grammar.getStartGraphModel().getSource();
         assert graph != null; // the grammar has a single start graph
-        AspectJGraph jGraph = new AspectJGraph(null, DisplayKind.HOST, false);
-        jGraph.getController().setGrammar(grammar);
-        AspectJModel model = jGraph.newModel();
+        var controller = new AspectGraphViewController(null, DisplayKind.HOST, false);
+        controller.setGrammar(grammar);
+        var jGraph = controller.getCanvas();
+        var model = jGraph.newViewModel();
         model.loadGraph(graph);
-        jGraph.setModel(model);
+        jGraph.setViewModel(model);
         TypeTree result = new TypeTree(jGraph, true);
         result.synchroniseModel();
         assertTrue(result.getTopNode().getChildCount() > 0, "label tree is empty");
