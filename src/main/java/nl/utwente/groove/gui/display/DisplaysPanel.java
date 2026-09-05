@@ -329,10 +329,10 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
 
     /**
      * Returns the currently selected graph view component, if that is a
-     * {@link JGraphPanel}. Returns {@code null} otherwise.
+     * {@link GraphPanel}. Returns {@code null} otherwise.
      */
-    public JGraphPanel<?> getGraphPanel() {
-        JGraphPanel<?> result = null;
+    public GraphPanel<?> getGraphPanel() {
+        GraphPanel<?> result = null;
         Display display = getSelectedDisplay();
         if (display.getResourceKind() != null) {
             Component selectedComponent
@@ -341,7 +341,7 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
                 result = get.getEditArea();
             } else if (selectedComponent instanceof GraphTab gt) {
                 result = gt.getEditArea();
-            } else if (selectedComponent instanceof JGraphPanel<?> jgp) {
+            } else if (selectedComponent instanceof GraphPanel<?> jgp) {
                 result = jgp;
             }
         } else if (display.getKind() == DisplayKind.LTS) {

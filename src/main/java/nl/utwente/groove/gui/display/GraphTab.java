@@ -81,10 +81,10 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     }
 
     @Override
-    public JGraphPanel<AspectGraph> getEditArea() {
-        JGraphPanel<AspectGraph> result = this.editArea;
+    public GraphPanel<AspectGraph> getEditArea() {
+        GraphPanel<AspectGraph> result = this.editArea;
         if (result == null) {
-            this.editArea = result = new JGraphPanel<>(getJGraph());
+            this.editArea = result = new GraphPanel<>(getJGraph());
             result.setFocusable(false);
             result.setEnabled(false);
             result.initialise();
@@ -93,7 +93,7 @@ final public class GraphTab extends ResourceTab implements UndoableEditListener 
     }
 
     /** Graph panel of this tab. */
-    private JGraphPanel<AspectGraph> editArea;
+    private GraphPanel<AspectGraph> editArea;
 
     @Override
     public boolean isDirty() {

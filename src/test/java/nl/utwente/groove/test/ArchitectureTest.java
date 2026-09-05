@@ -59,7 +59,6 @@ public class ArchitectureTest {
         Map.entry("nl/utwente/groove/gui/dialog/GraphPreviewDialog.java", "2"),
         Map.entry("nl/utwente/groove/gui/display/GraphTab.java", "2"),
         Map.entry("nl/utwente/groove/gui/Imager.java", "2"),
-        Map.entry("nl/utwente/groove/gui/display/JGraphPanel.java", "2"),
         Map.entry("nl/utwente/groove/gui/display/LTSDisplay.java", "2"),
         Map.entry("nl/utwente/groove/gui/display/StateDisplay.java", "2"),
         Map.entry("nl/utwente/groove/test/DetachedCellVisualsTest.java", "2"),

@@ -27,45 +27,41 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.graph.Graph;
-import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.view.GraphCanvas;
 import nl.utwente.groove.gui.view.GraphCanvasListener;
 import nl.utwente.groove.gui.view.GraphViewMode;
 import nl.utwente.groove.gui.view.GraphViewModel;
 
 /**
- * A panel that combines a {@link nl.utwente.groove.gui.jgraph.JGraph}and (optionally) a
- * {@link nl.utwente.groove.gui.tree.LabelTree}.
- *
+ * A panel that wraps a {@link GraphCanvas} in a scroll pane, with a status bar
+ * underneath. The panel enables and disables the canvas together with itself,
+ * and follows the canvas' view mode and model changes through a canvas listener.
  * @author Arend Rensink, updated by Carel van Leeuwen
  * @version $Revision$
  */
-public class JGraphPanel<G extends Graph> extends JPanel {
+@NonNullByDefault
+public class GraphPanel<G extends Graph> extends JPanel {
     /**
-     * Constructs a view upon a given jgraph, possibly with a status bar.
-     *
-     * @param jGraph the jgraph on which this panel is a view
+     * Constructs a panel for a given canvas.
+     * Call {@link #initialise()} to build the panel.
      */
-    public JGraphPanel(JGraph<? extends G> jGraph) {
+    public GraphPanel(GraphCanvas<? extends G> canvas) {
         super(false);
         setFocusable(false);
         setFocusCycleRoot(true);
-        // right now we always want label panels; keep this option
-        this.jGraph = jGraph;
+        this.canvas = canvas;
     }
 
     /**
-     * Initialises the GUI.
-     * Should be called immediately after the constructor.
+     * Builds the panel: a main pane containing the canvas and a status bar.
+     * Separated from the constructor so that subclasses can complete
+     * their own construction first.
      */
     public void initialise() {
-        // a JGraphPanel consists of an optional tool bar,
-        // a main pane containing the graph, label tree and (possibly)
-        // error panel, and an optional status bar.
         setLayout(new BorderLayout());
         add(getScrollPane(), BorderLayout.CENTER);
         add(getStatusBar(), BorderLayout.SOUTH);
@@ -73,13 +69,11 @@ public class JGraphPanel<G extends Graph> extends JPanel {
         setEnabled(false);
     }
 
-    /** Callback method that adds the required listeners to this panel. */
     private void installListeners() {
-        installCanvasListener(getJGraph());
+        installCanvasListener(getCanvas());
     }
 
-    /** Adds the listener that tracks the canvas mode and model; generic to capture the graph type. */
-    private <H extends @NonNull Graph> void installCanvasListener(GraphCanvas<H> canvas) {
+    private <H extends Graph> void installCanvasListener(GraphCanvas<H> canvas) {
         canvas.addCanvasListener(new GraphCanvasListener<H>() {
             @Override
             public void modeChanged(GraphCanvas<H> canvas, GraphViewMode oldMode,
@@ -96,14 +90,10 @@ public class JGraphPanel<G extends Graph> extends JPanel {
         });
     }
 
-    /**
-     * Lazily creates and returns the scroll pane within which the {@link JGraph}
-     * is displayed.
-     */
     private JScrollPane getScrollPane() {
         JScrollPane result = this.scrollPane;
         if (result == null) {
-            result = this.scrollPane = new JScrollPane(getJGraph());
+            result = this.scrollPane = new JScrollPane(getCanvas().getComponent());
             result.getVerticalScrollBar().setUnitIncrement(10);
             result.setDoubleBuffered(false);
             result.setPreferredSize(new Dimension(500, 400));
@@ -111,12 +101,9 @@ public class JGraphPanel<G extends Graph> extends JPanel {
         return result;
     }
 
-    /**
-     * The scroll pane in which the JGraph is displayed.
-     */
-    private JScrollPane scrollPane;
+    private @Nullable JScrollPane scrollPane;
 
-    /** Lazily creates and returns the status bar component of the panel. */
+    /** Returns the status bar of this panel, creating it lazily. */
     public JPanel getStatusBar() {
         JPanel result = this.statusBar;
         if (result == null) {
@@ -128,17 +115,13 @@ public class JGraphPanel<G extends Graph> extends JPanel {
         return result;
     }
 
-    /** Tests if the status bar has been initialised. */
     private boolean hasStatusBar() {
         return this.statusBar != null;
     }
 
-    /**
-     * Panel for showing status messages
-     */
-    private JPanel statusBar;
+    private @Nullable JPanel statusBar;
 
-    /** Lazily creates and returns the status bar component of the panel. */
+    /** Returns the label on the status bar, creating it lazily. */
     public JLabel getStatusLabel() {
         JLabel result = this.statusLabel;
         if (result == null) {
@@ -148,31 +131,23 @@ public class JGraphPanel<G extends Graph> extends JPanel {
         return result;
     }
 
-    /**
-     * Panel for showing status messages
-     */
-    private JLabel statusLabel;
+    private @Nullable JLabel statusLabel;
 
-    /**
-     * Returns the underlying {@link JGraph}.
-     */
-    public JGraph<? extends G> getJGraph() {
-        return this.jGraph;
+    /** Returns the canvas shown on this panel. */
+    public GraphCanvas<? extends G> getCanvas() {
+        return this.canvas;
     }
 
-    /**
-     * The {@link JGraph}on which this panel provides a view.
-     */
-    private final JGraph<? extends G> jGraph;
+    private final GraphCanvas<? extends G> canvas;
 
     /**
-     * Delegates the method to the content pane and to super.
-     * Also sets the background appropriately.
-     * @see #getEnabledBackground()
+     * In addition to delegating the method to the canvas and to
+     * <tt>super</tt>, sets the canvas background to <tt>null</tt> when disabled
+     * and back to the enabled background when enabled.
      */
     @Override
     public void setEnabled(boolean enabled) {
-        this.jGraph.setEnabled(enabled);
+        this.canvas.setEnabled(enabled);
         getScrollPane().getHorizontalScrollBar().setEnabled(enabled);
         getScrollPane().getVerticalScrollBar().setEnabled(enabled);
         if (hasStatusBar()) {
@@ -182,35 +157,27 @@ public class JGraphPanel<G extends Graph> extends JPanel {
         Color background = enabled
             ? getEnabledBackground()
             : null;
-        getJGraph().setBackground(background);
+        getCanvas().setBackground(background);
     }
 
-    /** Callback method to return the background colour in case the panel is enabled.
-     * This is {@link Color#WHITE} by default, but may be changed by a call to
-     * #setEnabledBackgound.
-     * The background colour for an enabled panel; non-{@code null}
-     */
+    /** Returns the background colour of the canvas when enabled. */
     protected Color getEnabledBackground() {
         return this.enabledBackground;
     }
 
-    /** Sets the background colour for an enabled panel. */
+    /** Sets the background colour of the canvas when enabled. */
     protected void setEnabledBackground(Color enabledBackground) {
         // only do something when it actually changes the background colour
         if (!Objects.equals(enabledBackground, this.enabledBackground)) {
             this.enabledBackground = enabledBackground;
             if (isEnabled()) {
-                getJGraph().setBackground(enabledBackground);
+                getCanvas().setBackground(enabledBackground);
             }
         }
     }
 
-    /** The background colour in case the panel is enabled. */
     private Color enabledBackground = Color.WHITE;
 
-    /**
-     * The minimum width of the label pane. If the label list is empty, the
-     * preferred width is set to the minimum width.
-     */
+    /** Minimum width of the label pane. */
     public final static int MINIMUM_LABEL_PANE_WIDTH = 100;
 }

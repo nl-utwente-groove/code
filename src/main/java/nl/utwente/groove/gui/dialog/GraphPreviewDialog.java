@@ -27,11 +27,12 @@ import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.display.DisplayKind;
-import nl.utwente.groove.gui.display.JGraphPanel;
+import nl.utwente.groove.gui.display.GraphPanel;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.CtrlJGraph;
 import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.jgraph.PlainJGraph;
+import nl.utwente.groove.gui.view.GraphCanvas;
 
 /**
  * Dialog showing an given graph in the most appropriate
@@ -211,15 +212,15 @@ public class GraphPreviewDialog<G extends @NonNull Graph> extends JDialog {
     private static final boolean TIMER = true;
 
     /** A panel showing a JGraph, with functionality te retrieve the rendering options. */
-    public static class GraphPreviewPanel extends JGraphPanel<Graph> {
+    public static class GraphPreviewPanel extends GraphPanel<Graph> {
         /** Creates a panel for a given JGraph. */
-        public GraphPreviewPanel(JGraph<? extends Graph> jGraph) {
-            super(jGraph);
+        public GraphPreviewPanel(GraphCanvas<? extends Graph> canvas) {
+            super(canvas);
         }
 
         /** Returns the options object used in rendering the JGraph. */
         public Options getOptions() {
-            return getJGraph().getOptions();
+            return getCanvas().getOptions();
         }
     }
 }

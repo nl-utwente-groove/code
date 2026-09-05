@@ -140,7 +140,7 @@ public class LayoutDialog extends JDialog implements ActionListener, WindowFocus
     private void refreshCanvas() {
         DisplayKind display = this.simulator.getModel().getDisplay();
         if (display.isGraphBased()) {
-            this.canvas = this.simulator.getDisplaysPanel().getGraphPanel().getJGraph();
+            this.canvas = this.simulator.getDisplaysPanel().getGraphPanel().getCanvas();
             List<Layouter> prototypes = this.canvas.getBackendLayouters();
             if (!prototypes.equals(this.protoLayouters)) {
                 // refill the box without triggering the selection action
