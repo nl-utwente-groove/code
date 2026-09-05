@@ -65,23 +65,4 @@ public interface Fixable {
         }
     }
 
-    /**
-     * Test the fixedness of this object. Throws an exception if the fixedness
-     * does not correspond to a given value.
-     * @param fixed if <code>true</code>, the object is expected to be fixed;
-     *        otherwise, it is expected to be unfixed.
-     * @throws IllegalStateException if the fixedness of the object does not
-     *         equal <code>fixed</code>, i.e., if
-     *         <code>isFixed() != fixed</code>.
-     * @deprecated The boolean argument is a compile-time constant at every
-     *             call site, and the two cases are unrelated: use
-     *             {@link #testMutable()} to guard a mutator, and
-     *             {@code assert isFixed()} to guard a read.
-     */
-    @Deprecated
-    default void testFixed(boolean fixed) {
-        if (fixed != isFixed()) {
-            throw Exceptions.illegalState("Expected fixed = %b", fixed);
-        }
-    }
 }

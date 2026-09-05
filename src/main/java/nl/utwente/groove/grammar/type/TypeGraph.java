@@ -19,6 +19,7 @@ package nl.utwente.groove.grammar.type;
 import static nl.utwente.groove.graph.EdgeRole.FLAG;
 import static nl.utwente.groove.graph.EdgeRole.NODE_TYPE;
 import static nl.utwente.groove.graph.GraphRole.TYPE;
+import static nl.utwente.groove.util.Factory.lazy;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Supplier;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -1200,21 +1202,24 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
 
     /** Returns the set of all type labels occurring in the type graph. */
     public Set<TypeLabel> getLabels() {
-        testFixed(true);
-        if (this.labels == null) {
-            this.labels = new HashSet<>();
-            for (TypeNode node : nodeSet()) {
-                this.labels.add(node.label());
-            }
-            for (TypeEdge edge : edgeSet()) {
-                this.labels.add(edge.label());
-            }
+        return this.labels.get();
+    }
+
+    /** Computes the value of {@link #labels}. */
+    private Set<TypeLabel> computeLabels() {
+        assert isFixed();
+        Set<TypeLabel> result = new HashSet<>();
+        for (TypeNode node : nodeSet()) {
+            result.add(node.label());
         }
-        return this.labels;
+        for (TypeEdge edge : edgeSet()) {
+            result.add(edge.label());
+        }
+        return result;
     }
 
     /** Set of all labels occurring in the type graph. */
-    private Set<TypeLabel> labels;
+    private final Supplier<Set<TypeLabel>> labels = lazy(this::computeLabels);
 
     /** Returns an unmodifiable view on the mapping from node type labels to direct supertypes. */
     public Map<TypeNode,Set<TypeNode>> getDirectSupertypeMap() {

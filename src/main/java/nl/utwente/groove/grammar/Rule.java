@@ -187,8 +187,8 @@ public class Rule implements Action, Fixable {
     public Rule getParent() {
         var result = this.parent;
         if (result == null) {
-            testFixed(true);
-            this.parent = result = this;
+            assert isFixed();
+            result = this;
         }
         return result;
     }
@@ -1045,7 +1045,7 @@ public class Rule implements Action, Fixable {
      * Computes the LHS nodes on this rule level that are not mapped to the RHS.
      */
     private DefaultRuleNode[] computeEraserNodes() {
-        //testFixed(true);
+        assert isFixed();
         Set<RuleNode> result = new LinkedHashSet<>(lhs().nodeSet());
         result.removeAll(rhs().nodeSet());
         return result.toArray(new DefaultRuleNode[result.size()]);
@@ -1258,15 +1258,17 @@ public class Rule implements Action, Fixable {
      * @see #isFixed()
      */
     public Prover getProver() {
-        testFixed(true);
-        var result = this.prover;
-        if (result == null) {
-            this.prover = result = new Prover(this);
-        }
-        return result;
+        return this.prover.get();
     }
 
-    private @Nullable Prover prover;
+    /** Computes the value of {@link #prover}. */
+    private Prover computeProver() {
+        assert isFixed();
+        return new Prover(this);
+    }
+
+    /** The prover for this rule. */
+    private final Supplier<Prover> prover = lazy(this::computeProver);
 
     /** Returns the current anchor factory for all rules. */
     public static AnchorFactory getAnchorFactory() {
