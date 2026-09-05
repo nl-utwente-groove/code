@@ -82,8 +82,7 @@ import nl.utwente.groove.gui.display.Display;
 import nl.utwente.groove.gui.display.Display.ListPanel;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.display.DisplaysPanel;
-import nl.utwente.groove.gui.display.GraphEditorTab;
-import nl.utwente.groove.gui.display.GraphTab;
+import nl.utwente.groove.gui.display.GraphDisplay;
 import nl.utwente.groove.gui.display.GraphPanel;
 import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.gui.display.TextTab;
@@ -487,15 +486,9 @@ public class Simulator implements SimulatorListener {
             getModel().doSelectSet(resource, names);
             var resourceTab = resourceDisplay.getSelectedTab();
             if (resourceTab != null) {
-                if (resource.isGraphBased()) {
-                    AspectGraphCanvas canvas;
-                    if (resourceTab.isEditor()) {
-                        canvas = ((GraphEditorTab) resourceTab).getJGraph();
-                    } else {
-                        canvas = ((GraphTab) resourceTab).getCanvas();
-                    }
+                if (resourceTab instanceof GraphDisplay<?> graphDisplay) {
                     // select the error cell and switch to the panel
-                    canvas.selectElements(entry.getElements());
+                    graphDisplay.getCanvas().selectElements(entry.getElements());
                     resourceTab.setPropertyKey(entry.getPropertyKey());
                 } else if (entry instanceof ErrorEntry errorEntry) {
                     var numbers = errorEntry.getError().getNumbers();

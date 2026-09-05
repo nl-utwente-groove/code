@@ -102,7 +102,8 @@ import nl.utwente.groove.util.parse.FormatError;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-02-05 13:28:06 $
  */
-public class StateDisplay extends Display implements SimulatorListener {
+public class StateDisplay extends Display
+    implements SimulatorListener, GraphDisplay<@NonNull AspectGraph> {
     /** Creates a LTS panel for a given simulator. */
     public StateDisplay(Simulator simulator) {
         super(simulator, DisplayKind.STATE);
@@ -225,6 +226,7 @@ public class StateDisplay extends Display implements SimulatorListener {
     }
 
     /** Returns component on which the state graph is displayed. */
+    @Override
     public GraphPanel<@NonNull AspectGraph> getGraphPanel() {
         GraphPanel<@NonNull AspectGraph> result = this.stateGraphPanel;
         if (result == null) {
@@ -259,11 +261,13 @@ public class StateDisplay extends Display implements SimulatorListener {
     private ErrorListPanel errorPanel;
 
     /** Returns the canvas of the state display, created by its controller on first request. */
+    @Override
     final public AspectGraphCanvas getCanvas() {
         return getController().getCanvas();
     }
 
     /** Returns the controller of the state graph view, creating it on first request. */
+    @Override
     final public AspectGraphViewController getController() {
         AspectGraphViewController result = this.controller;
         if (result == null) {
@@ -472,7 +476,7 @@ public class StateDisplay extends Display implements SimulatorListener {
                         ? "; "
                         : " (");
                 brackets = true;
-                if (getCanvas().getController().isShowAnchors()) {
+                if (getController().isShowAnchors()) {
                     result.append(String.format("with match '%s'", match.getEvent()));
                 } else {
                     result
@@ -498,7 +502,7 @@ public class StateDisplay extends Display implements SimulatorListener {
         } else {
             AspectGraphViewModel model = getAspectGraphViewModel(state);
             getCanvas().setViewModel(model);
-            getCanvas().getController().doLayout(false);
+            getController().doLayout(false);
             error = state.isError();
             internal = state.isInner();
         }
@@ -857,10 +861,7 @@ public class StateDisplay extends Display implements SimulatorListener {
 
     @Override
     public void doRepeat() {
-        var jGraph = getCanvas();
-        if (jGraph != null) {
-            jGraph.scrollToNextSelected();
-        }
+        getCanvas().scrollToNextSelected();
     }
 
     /** Temporary record of graph element attributes. */

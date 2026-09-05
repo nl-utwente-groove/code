@@ -92,7 +92,8 @@ import nl.utwente.groove.util.parse.FormatErrorSet;
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-02-05 13:28:06 $
  */
-public class LTSDisplay extends Display implements SimulatorListener {
+public class LTSDisplay extends Display
+    implements SimulatorListener, GraphDisplay<@NonNull GTS> {
     /** Creates a LTS panel for a given simulator. */
     public LTSDisplay(Simulator simulator) {
         super(simulator, DisplayKind.LTS);
@@ -157,8 +158,8 @@ public class LTSDisplay extends Display implements SimulatorListener {
         result.add(getActions().getBackAction());
         result.add(getActions().getForwardAction());
         result.addSeparator();
-        result.add(getCanvas().getController().getModeButton(GraphViewMode.SELECT_MODE));
-        result.add(getCanvas().getController().getModeButton(GraphViewMode.PAN_MODE));
+        result.add(getController().getModeButton(GraphViewMode.SELECT_MODE));
+        result.add(getController().getModeButton(GraphViewMode.PAN_MODE));
         result.addSeparator();
         result.add(getFilterPanel());
         result.add(getBoundSpinnerPanel());
@@ -211,7 +212,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
             if (resultSelected) {
                 chooser.setSelectedIndex(Filter.NONE.ordinal());
             }
-            getCanvas().getController().setFilter(Filter.NONE);
+            getController().setFilter(Filter.NONE);
             this.filterListening = true;
         }
     }
@@ -249,16 +250,17 @@ public class LTSDisplay extends Display implements SimulatorListener {
             this.boundSpinner.addChangeListener(new ChangeListener() {
                 @Override
                 public void stateChanged(ChangeEvent e) {
-                    if (getViewModel() != null) {
+                    var viewModel = getViewModel();
+                    if (viewModel != null) {
                         int newBound = getStateBound();
-                        int oldBound = getViewModel().setStateBound(newBound);
+                        int oldBound = viewModel.setStateBound(newBound);
                         if (oldBound != newBound) {
-                            if (getViewModel().reloadGraph()) {
-                                getCanvas().getController().refreshFiltering();
-                                getCanvas().getController().refreshActive();
+                            if (viewModel.reloadGraph()) {
+                                getController().refreshFiltering();
+                                getController().refreshActive();
                                 getCanvas().refreshAll(true);
-                                getCanvas().getController().doLayout(false);
-                                getCanvas().getController().scrollToActive();
+                                getController().doLayout(false);
+                                getController().scrollToActive();
                             }
                             refreshBackground();
                         }
@@ -311,22 +313,23 @@ public class LTSDisplay extends Display implements SimulatorListener {
      * should also be highlighted.
      */
     public void emphasiseStates(Collection<GraphState> counterExamples, boolean showTransitions) {
-        if (getViewModel() == null || counterExamples.isEmpty()) {
+        var viewModel = getViewModel();
+        if (viewModel == null || counterExamples.isEmpty()) {
             return;
         }
         Set<ViewCell<@NonNull GTS>> jCells = new HashSet<>();
         Iterator<GraphState> stateIter = counterExamples.iterator();
         GraphState current = stateIter.next();
         while (current != null) {
-            jCells.add(getViewModel().getJCellForNode(current));
+            jCells.add(viewModel.getJCellForNode(current));
             GraphState next = stateIter.hasNext()
                 ? stateIter.next()
                 : null;
             if (next != null && showTransitions) {
                 for (GraphTransition trans : current
-                    .getTransitions(getCanvas().getController().getTransitionClass())) {
+                    .getTransitions(getController().getTransitionClass())) {
                     if (trans.target() == next) {
-                        jCells.add(getViewModel().getJCellForEdge(trans));
+                        jCells.add(viewModel.getJCellForEdge(trans));
                         break;
                     }
                 }
@@ -345,18 +348,19 @@ public class LTSDisplay extends Display implements SimulatorListener {
      */
     @AIGenerated("Claude Fable 5, 2026-08")
     public void emphasiseResult(ExploreResult result) {
-        if (getViewModel() == null) {
+        var viewModel = getViewModel();
+        if (viewModel == null) {
             return;
         }
         Set<ViewCell<@NonNull GTS>> jCells = new HashSet<>();
         for (GraphState state : result.getStates()) {
-            var jCell = getViewModel().getJCellForNode(state);
+            var jCell = viewModel.getJCellForNode(state);
             if (jCell != null) {
                 jCells.add(jCell);
             }
         }
         for (GraphTransition trans : result.getTransitions()) {
-            var jCell = getViewModel().getJCellForEdge(trans);
+            var jCell = viewModel.getJCellForEdge(trans);
             if (jCell != null) {
                 jCells.add(jCell);
             }
@@ -382,6 +386,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
     private JSplitPane mainPanel;
 
     /** Returns the LTS graph panel on this display. */
+    @Override
     public LTSGraphPanel getGraphPanel() {
         LTSGraphPanel result = this.graphPanel;
         if (result == null) {
@@ -429,9 +434,10 @@ public class LTSDisplay extends Display implements SimulatorListener {
      */
     final private void updateErrors() {
         FormatErrorSet errors;
-        GTS gts = getViewModel() == null
+        var viewModel = getViewModel();
+        GTS gts = viewModel == null
             ? null
-            : getViewModel().getGraph();
+            : viewModel.getGraph();
         if (gts == null) {
             errors = new FormatErrorSet();
         } else {
@@ -449,11 +455,13 @@ public class LTSDisplay extends Display implements SimulatorListener {
     }
 
     /** Returns the LTS canvas, created by its controller on first request. */
+    @Override
     public LTSGraphCanvas getCanvas() {
         return getController().getCanvas();
     }
 
     /** Returns the controller of the LTS graph view, creating it on first request. */
+    @Override
     public LTSGraphViewController getController() {
         LTSGraphViewController result = this.controller;
         if (result == null) {
@@ -467,6 +475,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
     private LTSGraphViewController controller;
 
     /** Returns the view model currently shown on the LTS canvas, if any. */
+    @Override
     public LTSGraphViewModel getViewModel() {
         return getCanvas().getViewModel();
     }
@@ -505,18 +514,19 @@ public class LTSDisplay extends Display implements SimulatorListener {
                 boolean isNew = gts != oldModel.getGTS();
                 if (isNew) {
                     ltsModel = getCanvas().newViewModel();
-                    getCanvas().getController().setFilter(getFilter());
+                    getController().setFilter(getFilter());
                     ltsModel.setStateBound(getStateBound());
                     ltsModel.loadGraph(gts);
                     getCanvas().setViewModel(ltsModel);
                 } else {
                     ltsModel = getViewModel();
+                    assert ltsModel != null; // the GTS was shown before, so its model exists
                     ltsModel.loadGraph(gts);
                     //ltsModel.refreshVisuals();
                 }
                 GraphState state = source.getState();
                 GraphTransition transition = source.getTransition();
-                getCanvas().getController().setActive(state, transition);
+                getController().setActive(state, transition);
                 setFilterResultItem(source.hasExploreResult());
                 var lastExploreType = source.getLastExploreType();
                 if (changes.contains(GTS) && source.hasExploreResult()
@@ -530,15 +540,15 @@ public class LTSDisplay extends Display implements SimulatorListener {
                     this.filterListening = false;
                     getFilterChooser().setSelectedItem(Filter.RESULT);
                     this.filterListening = true;
-                    if (getCanvas().getController().setFilter(getFilter())) {
-                        getCanvas().getController().refreshFiltering();
-                        getCanvas().getController().refreshActive();
+                    if (getController().setFilter(getFilter())) {
+                        getController().refreshFiltering();
+                        getController().refreshActive();
                         getCanvas().refreshAll(false);
                     }
                 }
-                getCanvas().getController().doLayout(isNew);
+                getController().doLayout(isNew);
                 setEnabled(true);
-                getCanvas().getController().scrollToActive();
+                getController().scrollToActive();
                 updateStatus(gts);
             }
             if (gts != oldModel.getGTS()) {
@@ -559,10 +569,10 @@ public class LTSDisplay extends Display implements SimulatorListener {
                 var internal = state != null && state.isInner();
                 getCanvas().setBackground(Values.getStateBackground(error, internal));
                 GraphTransition transition = source.getTransition();
-                if (getCanvas().getController().setActive(state, transition)) {
-                    getCanvas().getController().doLayout(false);
+                if (getController().setActive(state, transition)) {
+                    getController().doLayout(false);
                 }
-                getCanvas().getController().scrollToActive();
+                getController().scrollToActive();
             }
         }
     }
@@ -571,15 +581,15 @@ public class LTSDisplay extends Display implements SimulatorListener {
      * Toggles the filtering of the LTS display.
      */
     public void doFilterLTS() {
-        if (getCanvas().getController().setFilter(getFilter())) {
-            boolean layout = getCanvas().getController().refreshFiltering();
-            layout |= getCanvas().getController().refreshActive();
+        if (getController().setFilter(getFilter())) {
+            boolean layout = getController().refreshFiltering();
+            layout |= getController().refreshActive();
             getCanvas().refreshAll(false);
             if (layout) {
-                getCanvas().getController().doLayout(false);
+                getController().doLayout(false);
             }
             setEnabled(true);
-            getCanvas().getController().scrollToActive();
+            getController().scrollToActive();
         }
     }
 
@@ -593,7 +603,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
      * filtered or incompletely displayed.
      */
     public void refreshBackground() {
-        Color background = getCanvas().getController().isComplete()
+        Color background = getController().isComplete()
             ? Values.STATE_BACKGROUND
             : Values.FILTER_BACKGROUND;
         getGraphPanel().setEnabledBackground(background);
@@ -606,10 +616,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
 
     @Override
     public void doRepeat() {
-        var jGraph = getCanvas();
-        if (jGraph != null) {
-            jGraph.scrollToNextSelected();
-        }
+        getCanvas().scrollToNextSelected();
     }
 
     /** Returns an LTS display for a given simulator. */
@@ -783,10 +790,10 @@ public class LTSDisplay extends Display implements SimulatorListener {
         @Override
         public void setEnabled(boolean enabled) {
             super.setEnabled(enabled);
-            getCanvas().getController().getModeAction(SELECT_MODE).setEnabled(enabled);
-            getCanvas().getController().getModeAction(PAN_MODE).setEnabled(enabled);
+            getController().getModeAction(SELECT_MODE).setEnabled(enabled);
+            getController().getModeAction(PAN_MODE).setEnabled(enabled);
             if (enabled) {
-                getCanvas().getController().getModeButton(SELECT_MODE).doClick();
+                getController().getModeButton(SELECT_MODE).doClick();
             }
             LTSDisplay.this.setEnabled(enabled);
         }

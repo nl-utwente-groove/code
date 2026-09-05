@@ -176,4 +176,10 @@ canvas listener's `cellsChanged`, skipping changes while the model is loading, w
 same condition the undo listener achieved by being registered only after loading. The
 architecture allowlist holds only `GraphEditorTab` (phase 3). Not done: the tests still
 name the display kinds, and `GraphEditorTab` casts the controller's canvas to `AspectJGraph`
-for its undo manager.
+for its undo manager. On Arend's review: the four graph-showing components (`StateDisplay`,
+`LTSDisplay`, `GraphTab`, `GraphEditorTab`) implement `GraphDisplay<G>` in `gui.display`,
+with `getController()` and `getGraphPanel()` as the primitives and `getCanvas()`/
+`getViewModel()` as defaults through the controller; the components specialise the return
+types to their role. That replaced the `getCanvas().getController()` round trips the rename
+had left, and the `instanceof` chains over the four classes in `DisplaysPanel`,
+`ExportAction` and `Simulator`.

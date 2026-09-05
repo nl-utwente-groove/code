@@ -80,6 +80,7 @@ import nl.utwente.groove.gui.dialog.PropertiesTable;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.AspectJModel;
 import nl.utwente.groove.gui.look.Values;
+import nl.utwente.groove.gui.view.AspectGraphCanvas;
 import nl.utwente.groove.gui.view.AspectGraphViewController;
 import nl.utwente.groove.gui.view.GraphCanvas;
 import nl.utwente.groove.gui.view.GraphCanvasListener;
@@ -97,8 +98,8 @@ import nl.utwente.groove.gui.list.ErrorEntry;
  * @author Arend Rensink
  * @version $Revision$
  */
-final public class GraphEditorTab extends ResourceTab
-    implements GraphModelListener, GraphCanvasListener<@NonNull AspectGraph> {
+final public class GraphEditorTab extends ResourceTab implements GraphModelListener,
+    GraphCanvasListener<@NonNull AspectGraph>, GraphDisplay<@NonNull AspectGraph> {
     /**
      * Constructs a new tab instance.
      * @param parent the component on which this panel is placed
@@ -161,8 +162,8 @@ final public class GraphEditorTab extends ResourceTab
     protected JToolBar createToolBar() {
         JToolBar result = super.createToolBar();
         result.addSeparator();
-        result.add(getJGraph().getController().getModeButton(EDIT_MODE));
-        result.add(getJGraph().getController().getModeButton(PREVIEW_MODE));
+        result.add(getController().getModeButton(EDIT_MODE));
+        result.add(getController().getModeButton(PREVIEW_MODE));
         result.addSeparator();
         result.add(getUndoAction());
         result.add(getRedoAction());
@@ -348,20 +349,32 @@ final public class GraphEditorTab extends ResourceTab
         setClean();
     }
 
-    /** Returns the jgraph component of this editor. */
-    public @NonNull AspectJGraph getJGraph() {
-        AspectJGraph result = this.jgraph;
+    @Override
+    public @NonNull AspectGraphViewController getController() {
+        AspectGraphViewController result = this.controller;
         if (result == null) {
-            var controller
+            result = this.controller
                 = new AspectGraphViewController(getSimulator(), getDisplay().getKind(), true);
-            result = this.jgraph = (AspectJGraph) controller.getCanvas();
-            result.getController().setLabelTree(getLabelTree());
+            result.setLabelTree(getLabelTree());
         }
         return result;
     }
 
-    /** The jgraph instance used in this editor. */
-    private AspectJGraph jgraph;
+    /** The controller of this editor's graph view. */
+    private AspectGraphViewController controller;
+
+    @Override
+    public @NonNull AspectGraphCanvas getCanvas() {
+        return getController().getCanvas();
+    }
+
+    /**
+     * Returns the canvas of this editor as a JGraph.
+     * The editor's undo manager still works on JGraph's edit objects (phase 3).
+     */
+    public @NonNull AspectJGraph getJGraph() {
+        return (AspectJGraph) getCanvas();
+    }
 
     /**
      * @return the j-model currently being edited, or <tt>null</tt> if no editor
@@ -499,10 +512,10 @@ final public class GraphEditorTab extends ResourceTab
     }
 
     @Override
-    protected GraphPanel<?> getEditArea() {
-        GraphPanel<?> result = this.editArea;
+    protected GraphPanel<@NonNull AspectGraph> getEditArea() {
+        GraphPanel<@NonNull AspectGraph> result = this.editArea;
         if (result == null) {
-            result = this.editArea = new GraphPanel<>(getJGraph());
+            result = this.editArea = new GraphPanel<>(getCanvas());
             result.setEnabledBackground(Values.EDITOR_BACKGROUND);
             result.initialise();
             result.setEnabled(true);
@@ -510,8 +523,13 @@ final public class GraphEditorTab extends ResourceTab
         return result;
     }
 
-    /** The jgraph panel used in this editor. */
+    /** The graph panel used in this editor. */
     private GraphPanel<@NonNull AspectGraph> editArea;
+
+    @Override
+    public GraphPanel<@NonNull AspectGraph> getGraphPanel() {
+        return getEditArea();
+    }
 
     @Override
     protected JTabbedPane getUpperInfoPanel() {
@@ -797,7 +815,7 @@ final public class GraphEditorTab extends ResourceTab
 
     /** Sets the property whether all inserted cells are automatically selected. */
     private void setSelectInsertedCells(boolean select) {
-        this.jgraph.getGraphLayoutCache().setSelectsAllInsertedCells(select);
+        getJGraph().getGraphLayoutCache().setSelectsAllInsertedCells(select);
     }
 
     /** Mapping from syntax documentation items to corresponding tool tips. */

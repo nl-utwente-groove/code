@@ -62,7 +62,7 @@ public class ApplyMatchAction extends SimulatorAction {
             trans = state.applyMatch(match);
         }
         GraphState target = trans.target();
-        if (target.isPublic() || getLtsDisplay().getCanvas().getController().isShowRecipeSteps()) {
+        if (target.isPublic() || getLtsDisplay().getController().isShowRecipeSteps()) {
             getSimulatorModel().doSetStateAndMatch(target, trans);
         } else if (target.isInner()) {
             Exploration e = getActions()

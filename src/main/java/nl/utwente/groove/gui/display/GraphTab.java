@@ -37,7 +37,7 @@ import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.gui.list.ErrorEntry;
 
 /** Display tab component showing a graph-based resource. */
-final public class GraphTab extends ResourceTab {
+final public class GraphTab extends ResourceTab implements GraphDisplay<@NonNull AspectGraph> {
     /**
      * Constructs the instance of this tab for a given simulator and
      * resource kind.
@@ -120,6 +120,11 @@ final public class GraphTab extends ResourceTab {
 
     /** Graph panel of this tab. */
     private GraphPanel<@NonNull AspectGraph> editArea;
+
+    @Override
+    public GraphPanel<@NonNull AspectGraph> getGraphPanel() {
+        return getEditArea();
+    }
 
     @Override
     public boolean isDirty() {
@@ -345,11 +350,13 @@ final public class GraphTab extends ResourceTab {
     }
 
     /** Returns the canvas of this tab, created by its controller on first request. */
+    @Override
     public final @NonNull AspectGraphCanvas getCanvas() {
         return getController().getCanvas();
     }
 
     /** Returns the controller of this tab's graph view, creating it on first request. */
+    @Override
     public final @NonNull AspectGraphViewController getController() {
         AspectGraphViewController result = this.controller;
         if (result == null) {
@@ -365,6 +372,7 @@ final public class GraphTab extends ResourceTab {
     private AspectGraphViewController controller;
 
     /** Returns the view model currently shown on the canvas, if any. */
+    @Override
     public final @Nullable AspectGraphViewModel getViewModel() {
         return getCanvas().getViewModel();
     }
