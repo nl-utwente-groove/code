@@ -16,19 +16,27 @@
  */
 package nl.utwente.groove.gui.view;
 
-import java.util.Map;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+import java.util.ServiceConfigurationError;
+import java.util.ServiceLoader;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.Log;
 
 /**
  * Factory for the canvases of one graph-visualisation backend.
  * A controller obtains its canvas from the backend selected at start-up,
  * see {@link #instance()}; the canvas attaches itself to the controller
  * during construction (see {@link GraphViewController#attachCanvas}).
+ * <p>
+ * Backends are services: each backend module declares its implementation
+ * with {@code provides} (and in {@code META-INF/services}, for the class path),
+ * so what is on the module path is what is available.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -49,24 +57,14 @@ public interface GraphBackend {
 
     /**
      * Returns the backend selected for this run.
-     * The selection is read once from the system property {@link #PROPERTY},
-     * whose value is one of the keys of {@link #BACKENDS}; the default is
-     * {@link #JGRAPH}. There is no runtime switching.
+     * The backends available are discovered once through the {@link ServiceLoader};
+     * the first that can be instantiated is used, a provider that fails is logged
+     * and skipped. There is no runtime switching.
+     * @throws IllegalStateException if no backend is available
      */
     static GraphBackend instance() {
         return Instance.INSTANCE;
     }
-
-    /** System property selecting the backend; see {@link #instance()}. */
-    String PROPERTY = "groove.gui.backend";
-    /** Key of the JGraph backend, the default. */
-    String JGRAPH = "jgraph";
-    /**
-     * Map from backend keys to the names of the implementing classes.
-     * Held as names rather than as classes so that this package does not depend
-     * on any backend package.
-     */
-    Map<String,String> BACKENDS = Map.of(JGRAPH, "nl.utwente.groove.gui.jgraph.JGraphBackend");
 
     /** Lazy holder of the selected backend instance. */
     final class Instance {
@@ -74,27 +72,24 @@ public interface GraphBackend {
             // not to be instantiated
         }
 
+        /** Declared before {@link #INSTANCE}, whose initialisation logs. */
+        private static final Logger LOGGER = Log.getLogger("gui.backend");
+
         static final GraphBackend INSTANCE = create();
 
         private static GraphBackend create() {
-            String key = System.getProperty(PROPERTY);
-            if (key == null) {
-                key = JGRAPH;
+            for (var provider : ServiceLoader.load(GraphBackend.class).stream().toList()) {
+                try {
+                    var result = provider.get();
+                    LOGGER.log(Level.DEBUG, "Graph backend: {0}", result.getClass().getName());
+                    return result;
+                } catch (ServiceConfigurationError exc) {
+                    LOGGER
+                        .log(Level.WARNING, "Graph backend {0} unavailable: {1}",
+                             provider.type().getName(), exc);
+                }
             }
-            String className = BACKENDS.get(key);
-            if (className == null) {
-                throw Exceptions
-                    .illegalArg("Unknown graph backend '%s' in system property %s; known: %s",
-                                key, PROPERTY, BACKENDS.keySet());
-            }
-            try {
-                var instance = Class.forName(className).getDeclaredConstructor().newInstance();
-                return (GraphBackend) instance;
-            } catch (ReflectiveOperationException | ClassCastException exc) {
-                throw Exceptions
-                    .illegalState("Cannot instantiate graph backend '%s' (%s): %s", key,
-                                  className, exc);
-            }
+            throw Exceptions.illegalState("No graph backend available");
         }
     }
 }

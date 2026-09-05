@@ -146,14 +146,19 @@ is never a meaningful object. Callers outside the model assert locally with thei
 asserting accessors for graph and grammar stay as private helpers. Slice 2 makes the graph a
 constructor argument, after which `getGraph()` is `@NonNull` and the helpers go. The canvas
 is different: an empty canvas is a real state, so `getViewModel()` stays `@Nullable` there and
-`getNonNullViewModel()` is up for the same review in slice 2.
+`getNonNullViewModel()` is up for the same review in the next slice.
 
 **Slice 2 done (2026-09-05, branch `ownership-inversion`).** `GraphBackend` (neutral) is the
 canvas factory with one method per role; `GraphBackend.instance()` selects the backend once,
-from the system property `groove.gui.backend` (default `jgraph`), and instantiates the
-implementing class reflectively by name, so `gui.view` never imports a backend package
-(slice 3 can replace the name map by a `ServiceLoader`). `JGraphBackend` is the JGraph
-implementation. `GraphViewController` is abstract, constructed with just the simulator, and
+by `ServiceLoader` discovery: what is on the module path (or, for the installed application,
+the class path via `META-INF/services`) is what is available, so a distribution without the
+yFiles module has one backend and nothing to configure, and `gui.view` never names a backend.
+A provider that fails to instantiate is logged and skipped, so a licensing failure of the
+yFiles backend falls back to JGraph instead of refusing to start. Arend rejected the first
+version, a JVM property: the choice is not a launch parameter, and availability decides
+before preference does. When a second backend exists (slice 4), a persisted user preference
+chooses among the discovered ones, applied at the next start, with yFiles the default when
+present. `JGraphBackend` is the JGraph implementation. `GraphViewController` is abstract, constructed with just the simulator, and
 creates its canvas on first `getCanvas()` through the abstract `createCanvas(backend)`; the
 canvas attaches itself in its constructor (`attachCanvas`), so listener installation during
 construction can already ask the controller for its canvas, and a canvas that fails to attach
