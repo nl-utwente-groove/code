@@ -29,8 +29,10 @@ slice 2 (the ownership inversion: `GraphBackend` factory discovered by `ServiceL
 controller-owned canvases, neutral `GraphPanel`,
 `newViewModel`/`setViewModel` on the canvas) is merged; slice 3 (the optional yFiles unit
 `yfiles/`, a separate Maven project on the `release/` pattern providing `YFilesBackend` as a
-service, with `GraphBackend` ranking yFiles first when present) is on branch
-`backend-module`. The architecture allowlist holds one file, `GraphEditorTab` (phase 3).
+service, with `GraphBackend` ranking yFiles first when present) is merged; slice 4 (the
+yFiles canvas) is in progress on branch `yfiles-canvas`, starting with neutral cell classes
+in `gui.view.cell` that both backends show through items of their own (decision B in the
+phase-2 note). The architecture allowlist holds one file, `GraphEditorTab` (phase 3).
 
 ## Goal and motivation
 

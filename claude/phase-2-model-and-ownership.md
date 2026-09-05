@@ -52,8 +52,10 @@ Two inversions make this possible:
        Collection<? extends ViewCell<G>> getCells();   // the z-ordered cells, authoritative
    }
    ```
-   The backend cell classes stay (`AJCell` and role subclasses); the neutral cell interfaces
-   are their contract. `getCells()` comes from the store because the element-to-cell maps
+   ~~The backend cell classes stay (`AJCell` and role subclasses); the neutral cell interfaces
+   are their contract.~~ *Superseded in slice 4: the cells are neutral classes
+   (`gui.view.cell`), the backends show them through items of their own, see below.*
+   `getCells()` comes from the store because the element-to-cell maps
    are not authoritative in the editor: a canvas-side insert (a new node, a paste) exists as
    a cell before `syncGraph` rebuilds the maps from the cells.
 2. **Direction.** Today `JModel` owns its `GraphViewModel`; afterwards the view model is the
@@ -214,3 +216,45 @@ provider refuses to create them and the unit is on no launch's class path.
 discovered backends, so presence of the unit selects it; the persisted user preference is
 still slice 4. Not done: Eclipse project files and JDT null-analysis settings for the new
 project, and the null-check skill covers only the main tree.
+
+**Slice 4 plan (2026-09-05).** The role cells (`AspectJVertex`, `AspectJEdge`, the LTS and
+control cells) turned out to contain no JGraph at all, only their base classes did: the
+`DefaultGraphCell` superclass, the ports carrying the edge structure, and the attribute map
+derived from the visuals. Single inheritance kept a yFiles canvas from reusing them. Two
+options were put to Arend: (A) neutral cell classes with the JGraph cells delegating to them
+(sixty forwarding methods per role, two objects per cell, a back-link for structure);
+(B) the neutral cells are the only cells, own their structure, and both backends show them
+through items of their own. **Decision B** (Arend, 2026-09-05). Sub-slices: 4a neutral
+cells; 4b a yFiles canvas for aspect graphs, read-only, on the spike's style mapping;
+4c LTS and control canvases; 4d yFiles layouts through the backend layouter palette.
+
+**Slice 4a done (branch `yfiles-canvas`).** `gui.view.cell` holds `AViewCell`,
+`AViewVertex`, `AViewEdge` and the role cells `AspectVertexCell`, `AspectEdgeCell`,
+`LTSVertexCell`, `LTSEdgeCell`, `CtrlVertexCell`, `CtrlEdgeCell`, `PlainVertexCell`,
+`PlainEdgeCell`: the old logic with the JGraph accessors replaced. A cell belongs to a view
+model (`setViewModel` rebinds a pasted cell), reaches its controller through it, and carries
+the backend item that shows it (`getItem`/`setItem`). Structure is neutral: a vertex owns
+its context (incident edge cells, insertion-ordered), an edge its end vertices;
+`AViewEdge.setSource`/`setTarget` register the edge with the vertices. The view model creates
+the cells (`newVertex`/`newEdge`, through the abstract `createVertexCell`/`createEdgeCell` of
+the role models; `CtrlGraphViewModel` and `PlainGraphViewModel` exist for that), so
+`CellStore` lost its factory methods and keeps `insertCells` and `getCells`. Annotating the
+neutral classes required annotating the cell interfaces, which made three genuinely nullable
+members explicit (`getEdge()`, `getNodeIdString()`, the `getDirect` argument).
+
+On the JGraph side the cells are wrappers: `JCell` (abstract, `DefaultGraphCell`), `JVertex`
+(with the port) and `JEdge` (implementing JGraph's `Edge`); each holds its neutral cell and is
+its item. The wrapper derives the attribute map from the cell's visuals, rebuilt when the
+cell is re-initialised with a fresh visual map; it forwards JGraph's user object, through
+which an in-place edit arrives (`DefaultGraphModel.valueForCellChanged` calls
+`setUserObject`), to the editable labels of an aspect cell; and `JEdge.setSource`/`setTarget`
+mirror every JGraph connection on the neutral edge, so the neutral structure follows edits,
+removal (JGraph disconnects removed edges through its connection set) and undo (which
+reconnects the same way). Cloning a wrapper clones its cell (`AspectJModel.cloneCells` then
+rebinds and renumbers as before). `JModel` creates the wrappers in `insertCells`, keeps them
+as roots, and unwraps in `getCells()`; `JGraph` unwraps at its 29 cell-identity sites
+(`JCell.of` and `JCell.items` are the two directions) and creates the view model of a model
+through `createViewModel(store)`, which replaced the `JGraphFactory` and the per-canvas
+factories. The views (`JVertexView`, `JEdgeView`) keep `getCell()` for the JGraph item and
+gained `getViewCell()`. The old cell classes and `JGraphFactory` are deleted; the backend
+package is 1300 lines lighter and holds no cell logic any more.
