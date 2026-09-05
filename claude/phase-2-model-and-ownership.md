@@ -147,3 +147,28 @@ asserting accessors for graph and grammar stay as private helpers. Slice 2 makes
 constructor argument, after which `getGraph()` is `@NonNull` and the helpers go. The canvas
 is different: an empty canvas is a real state, so `getViewModel()` stays `@Nullable` there and
 `getNonNullViewModel()` is up for the same review in slice 2.
+
+**Slice 2 done (2026-09-05, branch `ownership-inversion`).** `GraphBackend` (neutral) is the
+canvas factory with one method per role; `GraphBackend.instance()` selects the backend once,
+from the system property `groove.gui.backend` (default `jgraph`), and instantiates the
+implementing class reflectively by name, so `gui.view` never imports a backend package
+(slice 3 can replace the name map by a `ServiceLoader`). `JGraphBackend` is the JGraph
+implementation. `GraphViewController` is abstract, constructed with just the simulator, and
+creates its canvas on first `getCanvas()` through the abstract `createCanvas(backend)`; the
+canvas attaches itself in its constructor (`attachCanvas`), so listener installation during
+construction can already ask the controller for its canvas, and a canvas that fails to attach
+is an `IllegalStateException`. The role configuration moved to the controllers:
+`AspectGraphViewController(simulator, DisplayKind, editing)` holds the graph role, the
+for-state flag and the editing flag; `getGraphRole()` is a controller method and the canvas
+default delegates to it; `isForState()` left the canvas interface. `PlainGraphViewController`
+serves the preview dialog's fallback. View models are created by the canvas
+(`newViewModel()`, role-covariant) and shown with `setViewModel()`, whose JGraph
+implementation sets the model's `CellStore` (the `JModel` adapter) as the JGraph model, so the
+`newModel()`/`setModel()` idiom of the displays became `newViewModel()`/`setViewModel()`
+without a backend type. `JGraphPanel` became the neutral `GraphPanel`. `GraphTab` no longer
+listens to JGraph's undoable edits to store layout changes; it stores the graph on the
+canvas listener's `cellsChanged`, skipping changes while the model is loading, which is the
+same condition the undo listener achieved by being registered only after loading. The
+architecture allowlist holds only `GraphEditorTab` (phase 3). Not done: the tests still
+name the display kinds, and `GraphEditorTab` casts the controller's canvas to `AspectJGraph`
+for its undo manager.
