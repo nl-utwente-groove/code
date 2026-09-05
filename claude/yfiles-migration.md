@@ -27,8 +27,10 @@ insertion machinery and role subclasses `AspectGraphViewModel`/`LTSGraphViewMode
 `gui.view`, the JGraph models reduced to adapters) is merged into `yworks-migration`;
 slice 2 (the ownership inversion: `GraphBackend` factory discovered by `ServiceLoader`,
 controller-owned canvases, neutral `GraphPanel`,
-`newViewModel`/`setViewModel` on the canvas) is on branch `ownership-inversion`. The
-architecture allowlist holds one file, `GraphEditorTab` (phase 3).
+`newViewModel`/`setViewModel` on the canvas) is merged; slice 3 (the optional yFiles unit
+`yfiles/`, a separate Maven project on the `release/` pattern providing `YFilesBackend` as a
+service, with `GraphBackend` ranking yFiles first when present) is on branch
+`backend-module`. The architecture allowlist holds one file, `GraphEditorTab` (phase 3).
 
 ## Goal and motivation
 

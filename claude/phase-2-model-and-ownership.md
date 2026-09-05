@@ -183,3 +183,28 @@ with `getController()` and `getGraphPanel()` as the primitives and `getCanvas()`
 types to their role. That replaced the `getCanvas().getController()` round trips the rename
 had left, and the `instanceof` chains over the four classes in `DisplaysPanel`,
 `ExportAction` and `Simulator`.
+
+**Slice 3 done (2026-09-05, branch `backend-module`), narrower than planned.** The plan
+said core + `backend-jgraph` + optional `backend-yfiles`; two facts changed that. The JGraph
+backend cannot leave the core module while `GraphEditorTab` needs JGraph's undo objects
+(phase 3), so a `backend-jgraph` module has nothing to be separate from yet. And turning the
+repository into a Maven reactor with a root aggregator is the phase-5 work of the module
+split (gh #887), with seven recorded build-side work items (flatten plugin, release-reactor
+couplings, fixture literals, per-module test categories, resources, javadoc, tooling) that
+Arend has put on hold behind a package restructuring; the yFiles slice should not pull that
+in. What the license constraints actually require is only that the yFiles backend is an
+optionally compiled unit. So `yfiles/` is a **separate Maven project inside the repository**,
+on the pattern of `release/`: artifact `groove-yfiles`, depending on the installed
+`nl.utwente.groove:groove` artifact (version handed over with `-Drevision`, as for the
+release reactor; the future aggregator removes both handoffs) and on
+`com.yworks.yfiles:yfiles-for-java-swing` from the developer's local repository. The runtime
+license file is copied to the class-path root from a directory named by the property
+`yfiles.license.dir`, so it never enters the repository. The unit runs on the class path
+without `module-info`: the yFiles documentation does not state the jar's module name, and the
+installed application runs from the class path anyway. It provides `YFilesBackend` as a
+`GraphBackend` service (`META-INF/services`); the canvases are slice 4, until then the
+provider refuses to create them and the unit is on no launch's class path.
+`GraphBackend` gained `getName()` and a fixed `RANKING` (yFiles before JGraph) among the
+discovered backends, so presence of the unit selects it; the persisted user preference is
+still slice 4. Not done: Eclipse project files and JDT null-analysis settings for the new
+project, and the null-check skill covers only the main tree.

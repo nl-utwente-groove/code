@@ -1,0 +1,67 @@
+<project xmlns="https://maven.apache.org/POM/4.0.0" xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>nl.utwente.groove</groupId>
+	<artifactId>groove-yfiles</artifactId>
+	<version>${revision}</version>
+
+	<!-- The yFiles graph-visualisation backend of GROOVE (gh #909): an optionally
+	     compiled unit, deliberately NOT a module of the main reactor. It depends on
+	     the installed GROOVE artifact and on the licensed yFiles library, which is
+	     available only from a developer's local Maven repository; the main build
+	     (git clone && mvn package) never needs it. See README.md in this directory. -->
+
+	<properties>
+		<!-- the GROOVE version, handed over from the main pom's revision property
+		     as for the release reactor: mvn -Drevision=x.y.z ... -->
+		<revision>0.0.0-SNAPSHOT</revision>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven.compiler.release>21</maven.compiler.release>
+		<yfiles.version>3.6.0.1</yfiles.version>
+		<junit.version>5.14.4</junit.version>
+		<!-- directory holding the yFiles runtime license file, which the library
+		     loads from the root of the class path; set it in your settings.xml or
+		     with -D. The file never enters the repository. -->
+		<yfiles.license.dir>${user.home}/yfiles-license</yfiles.license.dir>
+	</properties>
+
+	<name>${project.groupId}:${project.artifactId}</name>
+	<description>
+		GROOVE: yFiles graph-visualisation backend (optional, licensed).
+	</description>
+
+	<dependencies>
+		<dependency>
+			<groupId>nl.utwente.groove</groupId>
+			<artifactId>groove</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		<dependency>
+			<!-- installed locally from the licensed distribution, see README.md -->
+			<groupId>com.yworks.yfiles</groupId>
+			<artifactId>yfiles-for-java-swing</artifactId>
+			<version>${yfiles.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+			<resource>
+				<!-- the license file is copied to the root of the class path;
+				     a missing directory is silently skipped -->
+				<directory>${yfiles.license.dir}</directory>
+				<includes>
+					<include>*.xml</include>
+				</includes>
+			</resource>
+		</resources>
+	</build>
+</project>
