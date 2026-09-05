@@ -376,16 +376,18 @@ public abstract class Properties implements Fixable {
 
     @Override
     public boolean setFixed() {
-        return this.fixable.setFixed();
+        boolean result = !this.fixed;
+        this.fixed = true;
+        return result;
     }
 
     @Override
     public boolean isFixed() {
-        return this.fixable.isFixed();
+        return this.fixed;
     }
 
-    /** Object to delegate the fixable functionality. */
-    private final DefaultFixable fixable = new DefaultFixable();
+    /** Flag indicating whether these properties have been fixed. */
+    private boolean fixed;
 
     /** HTML-formatted colour specification for the {@link Colors#INFO_COLOR} colour. */
     static public final String HTML_INFO_COLOR
