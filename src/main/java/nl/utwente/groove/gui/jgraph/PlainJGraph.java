@@ -21,7 +21,7 @@ import org.eclipse.jdt.annotation.NonNull;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Node;
-import nl.utwente.groove.gui.Simulator;
+import nl.utwente.groove.gui.view.PlainGraphViewController;
 
 /**
  * Plain JGraph implementation, not specialised for any particular graph kind.
@@ -29,13 +29,9 @@ import nl.utwente.groove.gui.Simulator;
  * @version $Revision$
  */
 public class PlainJGraph extends JGraph<@NonNull Graph> {
-    /**
-     * Private constructor.
-     * @param simulator the simulator to which the {@link JGraph} belongs;
-     * may be {@code null}.
-     */
-    private PlainJGraph(Simulator simulator) {
-        super(simulator);
+    /** Constructs an instance as the canvas of a given controller. */
+    public PlainJGraph(PlainGraphViewController controller) {
+        super(controller);
     }
 
     @Override
@@ -51,15 +47,6 @@ public class PlainJGraph extends JGraph<@NonNull Graph> {
                 return new PlainJVertex();
             }
         };
-    }
-
-    /**
-     * Creates a new instance, based on a given simulator.
-     * @param simulator the simulator to which the {@link JGraph} belongs;
-     * may be {@code null}.
-     */
-    public static PlainJGraph newInstance(Simulator simulator) {
-        return new PlainJGraph(simulator);
     }
 
     private class PlainJEdge

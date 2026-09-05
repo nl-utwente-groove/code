@@ -68,10 +68,10 @@ import nl.utwente.groove.gui.view.GraphCanvas.Overlay;
 import nl.utwente.groove.gui.view.ViewCell;
 import nl.utwente.groove.gui.view.GraphViewMode;
 import nl.utwente.groove.gui.view.LTSGraphCanvas;
-import nl.utwente.groove.gui.jgraph.LTSJEdge;
-import nl.utwente.groove.gui.jgraph.LTSJGraph;
-import nl.utwente.groove.gui.jgraph.LTSJModel;
-import nl.utwente.groove.gui.jgraph.LTSJVertex;
+import nl.utwente.groove.gui.view.LTSGraphViewController;
+import nl.utwente.groove.gui.view.LTSGraphViewModel;
+import nl.utwente.groove.gui.view.LTSViewEdge;
+import nl.utwente.groove.gui.view.LTSViewVertex;
 import nl.utwente.groove.gui.list.ErrorEntry;
 import nl.utwente.groove.gui.list.ErrorListPanel;
 import nl.utwente.groove.gui.tree.LTSTree;
@@ -110,7 +110,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
 
     @Override
     protected void installListeners() {
-        getJGraph().addMouseListener(new MyMouseListener());
+        getCanvas().getComponent().addMouseListener(new MyMouseListener());
         getSimulatorModel().addListener(this, GRAMMAR, GTS, TRACE, STATE, MATCH);
     }
 
@@ -134,7 +134,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
         var labelTree = getLabelTree();
         final TitledPanel result = new TitledPanel("LTS labels", labelTree, null, true);
         result.setEnabledBackground(Values.STATE_BACKGROUND);
-        getJGraph().addPropertyChangeListener(new PropertyChangeListener() {
+        getCanvas().getComponent().addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals("background") && evt.getNewValue() != null) {
@@ -157,8 +157,8 @@ public class LTSDisplay extends Display implements SimulatorListener {
         result.add(getActions().getBackAction());
         result.add(getActions().getForwardAction());
         result.addSeparator();
-        result.add(getJGraph().getController().getModeButton(GraphViewMode.SELECT_MODE));
-        result.add(getJGraph().getController().getModeButton(GraphViewMode.PAN_MODE));
+        result.add(getCanvas().getController().getModeButton(GraphViewMode.SELECT_MODE));
+        result.add(getCanvas().getController().getModeButton(GraphViewMode.PAN_MODE));
         result.addSeparator();
         result.add(getFilterPanel());
         result.add(getBoundSpinnerPanel());
@@ -211,7 +211,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
             if (resultSelected) {
                 chooser.setSelectedIndex(Filter.NONE.ordinal());
             }
-            getJGraph().getController().setFilter(Filter.NONE);
+            getCanvas().getController().setFilter(Filter.NONE);
             this.filterListening = true;
         }
     }
@@ -249,16 +249,16 @@ public class LTSDisplay extends Display implements SimulatorListener {
             this.boundSpinner.addChangeListener(new ChangeListener() {
                 @Override
                 public void stateChanged(ChangeEvent e) {
-                    if (getJModel() != null) {
+                    if (getViewModel() != null) {
                         int newBound = getStateBound();
-                        int oldBound = getJModel().setStateBound(newBound);
+                        int oldBound = getViewModel().setStateBound(newBound);
                         if (oldBound != newBound) {
-                            if (getJModel().reloadGraph()) {
-                                getJGraph().getController().refreshFiltering();
-                                getJGraph().getController().refreshActive();
-                                getJGraph().refreshAll(true);
-                                getJGraph().doLayout(false);
-                                getJGraph().getController().scrollToActive();
+                            if (getViewModel().reloadGraph()) {
+                                getCanvas().getController().refreshFiltering();
+                                getCanvas().getController().refreshActive();
+                                getCanvas().refreshAll(true);
+                                getCanvas().getController().doLayout(false);
+                                getCanvas().getController().scrollToActive();
                             }
                             refreshBackground();
                         }
@@ -311,29 +311,29 @@ public class LTSDisplay extends Display implements SimulatorListener {
      * should also be highlighted.
      */
     public void emphasiseStates(Collection<GraphState> counterExamples, boolean showTransitions) {
-        if (getJModel() == null || counterExamples.isEmpty()) {
+        if (getViewModel() == null || counterExamples.isEmpty()) {
             return;
         }
         Set<ViewCell<@NonNull GTS>> jCells = new HashSet<>();
         Iterator<GraphState> stateIter = counterExamples.iterator();
         GraphState current = stateIter.next();
         while (current != null) {
-            jCells.add(getJModel().getJCellForNode(current));
+            jCells.add(getViewModel().getJCellForNode(current));
             GraphState next = stateIter.hasNext()
                 ? stateIter.next()
                 : null;
             if (next != null && showTransitions) {
                 for (GraphTransition trans : current
-                    .getTransitions(getJGraph().getController().getTransitionClass())) {
+                    .getTransitions(getCanvas().getController().getTransitionClass())) {
                     if (trans.target() == next) {
-                        jCells.add(getJModel().getJCellForEdge(trans));
+                        jCells.add(getViewModel().getJCellForEdge(trans));
                         break;
                     }
                 }
             }
             current = next;
         }
-        getJGraph().setSelectionCells(jCells.toArray());
+        getCanvas().select(jCells);
     }
 
     /**
@@ -345,23 +345,23 @@ public class LTSDisplay extends Display implements SimulatorListener {
      */
     @AIGenerated("Claude Fable 5, 2026-08")
     public void emphasiseResult(ExploreResult result) {
-        if (getJModel() == null) {
+        if (getViewModel() == null) {
             return;
         }
         Set<ViewCell<@NonNull GTS>> jCells = new HashSet<>();
         for (GraphState state : result.getStates()) {
-            var jCell = getJModel().getJCellForNode(state);
+            var jCell = getViewModel().getJCellForNode(state);
             if (jCell != null) {
                 jCells.add(jCell);
             }
         }
         for (GraphTransition trans : result.getTransitions()) {
-            var jCell = getJModel().getJCellForEdge(trans);
+            var jCell = getViewModel().getJCellForEdge(trans);
             if (jCell != null) {
                 jCells.add(jCell);
             }
         }
-        getJGraph().setSelectionCells(jCells.toArray());
+        getCanvas().select(jCells);
     }
 
     /** Creates a panel consisting of the error panel and the status bar. */
@@ -385,7 +385,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
     public LTSGraphPanel getGraphPanel() {
         LTSGraphPanel result = this.graphPanel;
         if (result == null) {
-            result = this.graphPanel = new LTSGraphPanel(getJGraph());
+            result = this.graphPanel = new LTSGraphPanel(getCanvas());
             result.initialise();
         }
         return result;
@@ -429,9 +429,9 @@ public class LTSDisplay extends Display implements SimulatorListener {
      */
     final private void updateErrors() {
         FormatErrorSet errors;
-        GTS gts = getJModel() == null
+        GTS gts = getViewModel() == null
             ? null
-            : getJModel().getGraph();
+            : getViewModel().getGraph();
         if (gts == null) {
             errors = new FormatErrorSet();
         } else {
@@ -448,28 +448,33 @@ public class LTSDisplay extends Display implements SimulatorListener {
         }
     }
 
-    /** Returns the LTS' JGraph. */
-    public LTSJGraph getJGraph() {
-        LTSJGraph result = this.jGraph;
+    /** Returns the LTS canvas, created by its controller on first request. */
+    public LTSGraphCanvas getCanvas() {
+        return getController().getCanvas();
+    }
+
+    /** Returns the controller of the LTS graph view, creating it on first request. */
+    public LTSGraphViewController getController() {
+        LTSGraphViewController result = this.controller;
         if (result == null) {
-            result = this.jGraph = new LTSJGraph(getSimulator());
+            result = this.controller = new LTSGraphViewController(getSimulator());
             result.setLabelTree(getLabelTree());
-            //result.addProgressObserver(new ProgressObserver());
         }
         return result;
     }
 
-    private LTSJGraph jGraph;
+    /** The controller of the LTS graph view. */
+    private LTSGraphViewController controller;
 
-    /** Returns the model of the LTS' JGraph. */
-    public LTSJModel getJModel() {
-        return getJGraph().getModel();
+    /** Returns the view model currently shown on the LTS canvas, if any. */
+    public LTSGraphViewModel getViewModel() {
+        return getCanvas().getViewModel();
     }
 
     private LTSTree getLabelTree() {
         var result = this.labelTree;
         if (result == null) {
-            result = this.labelTree = new LTSTree(getJGraph());
+            result = this.labelTree = new LTSTree(getCanvas());
         }
         return result;
     }
@@ -479,13 +484,13 @@ public class LTSDisplay extends Display implements SimulatorListener {
 
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel, Set<Change> changes) {
-        getJGraph().setOverlay(source.hasAbsentState()
+        getCanvas().setOverlay(source.hasAbsentState()
             ? Overlay.HATCHED
             : Overlay.NONE);
         if (changes.contains(GTS) || changes.contains(GRAMMAR) || changes.contains(TRACE)) {
             GTS gts = source.getGTS();
             if (gts == null) {
-                getJGraph().setModel(null);
+                getCanvas().setViewModel(null);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -496,22 +501,22 @@ public class LTSDisplay extends Display implements SimulatorListener {
                     }
                 });
             } else {
-                LTSJModel ltsModel;
+                LTSGraphViewModel ltsModel;
                 boolean isNew = gts != oldModel.getGTS();
                 if (isNew) {
-                    ltsModel = (LTSJModel) getJGraph().newModel();
-                    getJGraph().getController().setFilter(getFilter());
+                    ltsModel = getCanvas().newViewModel();
+                    getCanvas().getController().setFilter(getFilter());
                     ltsModel.setStateBound(getStateBound());
                     ltsModel.loadGraph(gts);
-                    getJGraph().setModel(ltsModel);
+                    getCanvas().setViewModel(ltsModel);
                 } else {
-                    ltsModel = getJModel();
+                    ltsModel = getViewModel();
                     ltsModel.loadGraph(gts);
                     //ltsModel.refreshVisuals();
                 }
                 GraphState state = source.getState();
                 GraphTransition transition = source.getTransition();
-                getJGraph().getController().setActive(state, transition);
+                getCanvas().getController().setActive(state, transition);
                 setFilterResultItem(source.hasExploreResult());
                 var lastExploreType = source.getLastExploreType();
                 if (changes.contains(GTS) && source.hasExploreResult()
@@ -525,15 +530,15 @@ public class LTSDisplay extends Display implements SimulatorListener {
                     this.filterListening = false;
                     getFilterChooser().setSelectedItem(Filter.RESULT);
                     this.filterListening = true;
-                    if (getJGraph().getController().setFilter(getFilter())) {
-                        getJGraph().getController().refreshFiltering();
-                        getJGraph().getController().refreshActive();
-                        getJGraph().refreshAll(false);
+                    if (getCanvas().getController().setFilter(getFilter())) {
+                        getCanvas().getController().refreshFiltering();
+                        getCanvas().getController().refreshActive();
+                        getCanvas().refreshAll(false);
                     }
                 }
-                getJGraph().doLayout(isNew);
+                getCanvas().getController().doLayout(isNew);
                 setEnabled(true);
-                getJGraph().getController().scrollToActive();
+                getCanvas().getController().scrollToActive();
                 updateStatus(gts);
             }
             if (gts != oldModel.getGTS()) {
@@ -548,16 +553,16 @@ public class LTSDisplay extends Display implements SimulatorListener {
             updateErrors();
         }
         if (changes.contains(STATE) || changes.contains(MATCH)) {
-            if (getJModel() != null) {
+            if (getViewModel() != null) {
                 GraphState state = source.getState();
                 var error = state != null && state.isError();
                 var internal = state != null && state.isInner();
-                getJGraph().setBackground(Values.getStateBackground(error, internal));
+                getCanvas().setBackground(Values.getStateBackground(error, internal));
                 GraphTransition transition = source.getTransition();
-                if (getJGraph().getController().setActive(state, transition)) {
-                    getJGraph().doLayout(false);
+                if (getCanvas().getController().setActive(state, transition)) {
+                    getCanvas().getController().doLayout(false);
                 }
-                getJGraph().getController().scrollToActive();
+                getCanvas().getController().scrollToActive();
             }
         }
     }
@@ -566,15 +571,15 @@ public class LTSDisplay extends Display implements SimulatorListener {
      * Toggles the filtering of the LTS display.
      */
     public void doFilterLTS() {
-        if (getJGraph().getController().setFilter(getFilter())) {
-            boolean layout = getJGraph().getController().refreshFiltering();
-            layout |= getJGraph().getController().refreshActive();
-            getJGraph().refreshAll(false);
+        if (getCanvas().getController().setFilter(getFilter())) {
+            boolean layout = getCanvas().getController().refreshFiltering();
+            layout |= getCanvas().getController().refreshActive();
+            getCanvas().refreshAll(false);
             if (layout) {
-                getJGraph().doLayout(false);
+                getCanvas().getController().doLayout(false);
             }
             setEnabled(true);
-            getJGraph().getController().scrollToActive();
+            getCanvas().getController().scrollToActive();
         }
     }
 
@@ -588,7 +593,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
      * filtered or incompletely displayed.
      */
     public void refreshBackground() {
-        Color background = getJGraph().getController().isComplete()
+        Color background = getCanvas().getController().isComplete()
             ? Values.STATE_BACKGROUND
             : Values.FILTER_BACKGROUND;
         getGraphPanel().setEnabledBackground(background);
@@ -601,7 +606,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
 
     @Override
     public void doRepeat() {
-        var jGraph = getJGraph();
+        var jGraph = getCanvas();
         if (jGraph != null) {
             jGraph.scrollToNextSelected();
         }
@@ -733,23 +738,23 @@ public class LTSDisplay extends Display implements SimulatorListener {
 
         @Override
         public void mouseClicked(MouseEvent evt) {
-            if (getJGraph().getMode() == SELECT_MODE && evt.getButton() == MouseEvent.BUTTON1) {
+            if (getCanvas().getMode() == SELECT_MODE && evt.getButton() == MouseEvent.BUTTON1) {
                 if (!isEnabled() && getActions().getStartSimulationAction().isEnabled()) {
                     getActions().getStartSimulationAction().execute();
                 } else {
                     // scale from screen to model
                     java.awt.Point loc = evt.getPoint();
                     // find cell in model coordinates
-                    var cell = getJGraph().getFirstCellForLocation(loc.x, loc.y);
+                    var cell = getCanvas().getCellAt(loc.x, loc.y);
                     var ctrl = (evt.getModifiersEx() & InputEvent.CTRL_DOWN_MASK) != 0;
-                    if (cell instanceof LTSJEdge) {
-                        GraphTransition trans = ((LTSJEdge) cell).getEdge();
+                    if (cell instanceof LTSViewEdge) {
+                        GraphTransition trans = ((LTSViewEdge) cell).getEdge();
                         getSimulatorModel().setTransition(trans);
                         if (ctrl) {
                             getSimulatorModel().setDisplay(DisplayKind.STATE);
                         }
-                    } else if (cell instanceof LTSJVertex) {
-                        GraphState node = ((LTSJVertex) cell).getNode();
+                    } else if (cell instanceof LTSViewVertex) {
+                        GraphState node = ((LTSViewVertex) cell).getNode();
                         getSimulatorModel().setState(node);
                         if (evt.getClickCount() == 2) {
                             getActions().getExploreAction().doExploreState();
@@ -767,7 +772,7 @@ public class LTSDisplay extends Display implements SimulatorListener {
      * @author Arend Rensink
      * @version $Revision$
      */
-    public class LTSGraphPanel extends GraphPanel<GTS> {
+    public class LTSGraphPanel extends GraphPanel<@NonNull GTS> {
         /** Creates a LTS panel for a given simulator. */
         public LTSGraphPanel(LTSGraphCanvas canvas) {
             super(canvas);

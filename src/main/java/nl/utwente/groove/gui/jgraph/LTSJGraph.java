@@ -31,14 +31,14 @@ import java.io.Serializable;
 import java.util.Collection;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 import org.jgraph.graph.GraphModel;
 
 import nl.utwente.groove.graph.Edge;
-import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Node;
-import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.view.LTSGraphCanvas;
 import nl.utwente.groove.gui.view.LTSGraphViewController;
+import nl.utwente.groove.gui.view.LTSGraphViewModel;
 import nl.utwente.groove.gui.view.OptionRefreshListener;
 import nl.utwente.groove.lts.Filter;
 import nl.utwente.groove.lts.GTS;
@@ -54,9 +54,9 @@ import nl.utwente.groove.gui.view.ViewVertex;
  * variables have been set.
  */
 public class LTSJGraph extends JGraph<@NonNull GTS> implements LTSGraphCanvas, Serializable {
-    /** Constructs an instance of the j-graph for a given simulator. */
-    public LTSJGraph(Simulator simulator) {
-        super(simulator);
+    /** Constructs an instance of the j-graph as the canvas of a given controller. */
+    public LTSJGraph(LTSGraphViewController controller) {
+        super(controller);
         // turn off double buffering to improve performance
         setDoubleBuffered(false);
     }
@@ -127,11 +127,6 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements LTSGraphCanvas, S
     }
 
     @Override
-    public GraphRole getGraphRole() {
-        return GraphRole.LTS;
-    }
-
-    @Override
     public void setModel(GraphModel model) {
         // reset the active state and transition
         if (hasController()) { // not the case during construction
@@ -159,8 +154,16 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements LTSGraphCanvas, S
     }
 
     @Override
-    protected LTSGraphViewController createController(Simulator simulator) {
-        return new LTSGraphViewController(this, simulator);
+    public @Nullable LTSGraphViewModel getViewModel() {
+        var model = getModel();
+        return model == null
+            ? null
+            : model.getViewModel();
+    }
+
+    @Override
+    public LTSGraphViewModel newViewModel() {
+        return ((LTSJModel) newModel()).getViewModel();
     }
 
     @Override

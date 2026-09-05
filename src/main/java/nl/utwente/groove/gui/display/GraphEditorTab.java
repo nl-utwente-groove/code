@@ -80,6 +80,7 @@ import nl.utwente.groove.gui.dialog.PropertiesTable;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.AspectJModel;
 import nl.utwente.groove.gui.look.Values;
+import nl.utwente.groove.gui.view.AspectGraphViewController;
 import nl.utwente.groove.gui.view.GraphCanvas;
 import nl.utwente.groove.gui.view.GraphCanvasListener;
 import nl.utwente.groove.gui.view.GraphViewMode;
@@ -351,8 +352,10 @@ final public class GraphEditorTab extends ResourceTab
     public @NonNull AspectJGraph getJGraph() {
         AspectJGraph result = this.jgraph;
         if (result == null) {
-            result = this.jgraph = new AspectJGraph(getSimulator(), getDisplay().getKind(), true);
-            result.setLabelTree(getLabelTree());
+            var controller
+                = new AspectGraphViewController(getSimulator(), getDisplay().getKind(), true);
+            result = this.jgraph = (AspectJGraph) controller.getCanvas();
+            result.getController().setLabelTree(getLabelTree());
         }
         return result;
     }
@@ -508,7 +511,7 @@ final public class GraphEditorTab extends ResourceTab
     }
 
     /** The jgraph panel used in this editor. */
-    private GraphPanel<AspectGraph> editArea;
+    private GraphPanel<@NonNull AspectGraph> editArea;
 
     @Override
     protected JTabbedPane getUpperInfoPanel() {

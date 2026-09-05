@@ -17,6 +17,7 @@ package nl.utwente.groove.gui.view;
 import java.util.Collection;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
@@ -35,6 +36,13 @@ import nl.utwente.groove.util.AIGenerated;
 public interface LTSGraphCanvas extends GraphCanvas<GTS> {
     @Override
     LTSGraphViewController getController();
+
+    @Override
+    @Nullable
+    LTSGraphViewModel getViewModel();
+
+    @Override
+    LTSGraphViewModel newViewModel();
 
     /**
      * Sets the maximum number of states to be shown.

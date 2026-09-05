@@ -33,6 +33,7 @@ import java.util.List;
 import javax.accessibility.AccessibleState;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 import org.jgraph.event.GraphModelEvent;
 import org.jgraph.event.GraphModelListener;
 import org.jgraph.graph.ConnectionSet;
@@ -47,15 +48,13 @@ import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Element;
-import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.gui.Options;
-import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.view.AspectGraphCanvas;
 import nl.utwente.groove.gui.view.AspectGraphViewController;
+import nl.utwente.groove.gui.view.AspectGraphViewModel;
 import nl.utwente.groove.grammar.model.GraphBasedModel;
 import nl.utwente.groove.grammar.type.TypeGraph;
-import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.view.AspectViewCell;
 import nl.utwente.groove.gui.view.OptionRefreshListener;
@@ -65,18 +64,12 @@ import nl.utwente.groove.gui.view.OptionRefreshListener;
  */
 public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements AspectGraphCanvas {
     /**
-     * Creates a new instance, for a given graph role.
-     * A flag determines whether the graph is editable.
-     * @param kind display kind on which this JGraph will be showing
-     * @param editing if {@code true}, the graph is editable
+     * Creates a new instance as the canvas of a given controller,
+     * which determines the graph role and whether the graph is editable.
      */
-    public AspectJGraph(Simulator simulator, DisplayKind kind, boolean editing) {
-        super(simulator);
-        this.editing = editing;
-        this.forState = kind == DisplayKind.STATE;
-        this.graphRole = this.forState
-            ? GraphRole.HOST
-            : kind.getGraphRole();
+    public AspectJGraph(AspectGraphViewController controller) {
+        super(controller);
+        boolean editing = controller.isEditing();
         setEditable(editing);
         getGraphLayoutCache().setSelectsLocalInsertedCells(editing);
         setCloneable(editing);
@@ -138,8 +131,21 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements Aspect
     }
 
     @Override
-    protected AspectGraphViewController createController(Simulator simulator) {
-        return new AspectGraphViewController(this, simulator);
+    public @Nullable AspectGraphViewModel getViewModel() {
+        var model = getModel();
+        return model == null
+            ? null
+            : model.getViewModel();
+    }
+
+    @Override
+    public AspectGraphViewModel newViewModel() {
+        return newModel().getViewModel();
+    }
+
+    @Override
+    public AspectGraphViewModel showGraph(AspectGraph graph) {
+        return (AspectGraphViewModel) super.showGraph(graph);
     }
 
     @Override
@@ -177,35 +183,8 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements Aspect
     /** Indicates that the JModel has an editor enabled. */
     @Override
     public boolean hasActiveEditor() {
-        return this.editing && getMode() != PREVIEW_MODE;
+        return getController().isEditing() && getMode() != PREVIEW_MODE;
     }
-
-    /**
-     * The (possibly {@code null}) editor with which this j-graph is associated.
-     */
-    private final boolean editing;
-
-    /**
-     * Indicates if the graph being displayed is a graph state.
-     */
-    @Override
-    public boolean isForState() {
-        return this.forState;
-    }
-
-    /** The kind of graphs being displayed. */
-    private final boolean forState;
-
-    /**
-     * Returns the role of the graph being displayed.
-     */
-    @Override
-    public GraphRole getGraphRole() {
-        return this.graphRole;
-    }
-
-    /** The role for which this {@link JGraph} will display graphs. */
-    private final GraphRole graphRole;
 
     @Override
     public void setEditable(boolean editable) {
@@ -295,7 +274,7 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements Aspect
 
     @Override
     public GraphViewMode getDefaultMode() {
-        return this.editing
+        return getController().isEditing()
             ? EDIT_MODE
             : super.getDefaultMode();
     }

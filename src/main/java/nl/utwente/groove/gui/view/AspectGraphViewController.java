@@ -32,6 +32,7 @@ import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
+import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.action.AddPointAction;
 import nl.utwente.groove.gui.action.EditLabelAction;
 import nl.utwente.groove.gui.action.JCellEditAction;
@@ -53,12 +54,25 @@ import nl.utwente.groove.util.line.LineStyle;
 @NonNullByDefault
 public class AspectGraphViewController extends GraphViewController<AspectGraph> {
     /**
-     * Constructs a controller for a given graph-view component.
-     * @param canvas the canvas that this controller belongs to
+     * Constructs a controller for graph views of a given display kind.
      * @param simulator simulator to which the display belongs; may be {@code null}
+     * @param kind display kind on which the graphs will be shown; determines the
+     * graph role, and whether the graphs are graph states
+     * @param editing if {@code true}, the graphs are editable
      */
-    public AspectGraphViewController(AspectGraphCanvas canvas, @Nullable Simulator simulator) {
-        super(canvas, simulator);
+    public AspectGraphViewController(@Nullable Simulator simulator, DisplayKind kind,
+                                     boolean editing) {
+        super(simulator);
+        this.forState = kind == DisplayKind.STATE;
+        this.graphRole = this.forState
+            ? GraphRole.HOST
+            : kind.getGraphRole();
+        this.editing = editing;
+    }
+
+    @Override
+    protected AspectGraphCanvas createCanvas(GraphBackend backend) {
+        return backend.newAspectCanvas(this);
     }
 
     /* Specialises the return type. */
@@ -67,12 +81,36 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
         return (AspectGraphCanvas) super.getCanvas();
     }
 
+    /** Indicates if the graphs being displayed are graph states. */
+    public boolean isForState() {
+        return this.forState;
+    }
+
+    /** Flag indicating that the graphs being displayed are graph states. */
+    private final boolean forState;
+
+    @Override
+    public GraphRole getGraphRole() {
+        return this.graphRole;
+    }
+
+    /** The role of the graphs being displayed. */
+    private final GraphRole graphRole;
+
+    /** Indicates if the graph view is an editor. */
+    public boolean isEditing() {
+        return this.editing;
+    }
+
+    /** Flag indicating that the graph view is an editor. */
+    private final boolean editing;
+
     @Override
     public JMenu createPopupMenu(@Nullable Point atPoint) {
         MyJMenu result = new MyJMenu("Popup");
         var actions = getActions();
         assert actions != null; // the popup menu is only built with a simulator present
-        switch (getCanvas().getGraphRole()) {
+        switch (getGraphRole()) {
         case HOST:
             result.add(actions.getApplyMatchAction());
             result.addSeparator();
@@ -81,11 +119,11 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
             // do nothing
         }
         Action editAction;
-        if (getCanvas().isForState()) {
+        if (isForState()) {
             editAction = actions.getEditStateAction();
         } else {
             editAction
-                = actions.getEditAction(ResourceKind.toResource(getCanvas().getGraphRole()));
+                = actions.getEditAction(ResourceKind.toResource(getGraphRole()));
         }
         result.add(editAction);
         result.addSubmenu(createEditMenu(atPoint));
@@ -99,10 +137,10 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
         MyJMenu result = new MyJMenu();
         var actions = getActions();
         if (actions != null) {
-            if (getCanvas().isForState()) {
+            if (isForState()) {
                 result.add(actions.getSaveStateAction());
             } else {
-                ResourceKind resource = ResourceKind.toResource(getCanvas().getGraphRole());
+                ResourceKind resource = ResourceKind.toResource(getGraphRole());
                 result.add(actions.getSaveAction(resource));
                 result.add(actions.getSaveAsAction(resource));
             }
@@ -239,7 +277,7 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
     /** Sets a level tree for this graph view. */
     public void setLevelTree(@Nullable RuleLevelTree levelTree) {
         assert levelTree == null
-            || getCanvas().getGraphRole() == GraphRole.RULE
+            || getGraphRole() == GraphRole.RULE
                 && !getCanvas().hasActiveEditor();
         this.levelTree = levelTree;
     }

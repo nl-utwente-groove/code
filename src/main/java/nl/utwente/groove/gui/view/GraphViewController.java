@@ -61,33 +61,58 @@ import nl.utwente.groove.util.Pair;
  * registration — that was historically bundled into the rendering
  * component class itself.
  * <p>
- * In this phase the canvas owns the controller and keeps delegating
- * stubs; the controller talks to the canvas only through the
- * {@link GraphCanvas} interface. See {@code claude/jgraph-controller-split.md}
- * and {@code claude/view-facade.md}.
+ * The controller owns its canvas, which it obtains from the {@link GraphBackend}
+ * selected at start-up on first request; it talks to the canvas only through the
+ * {@link GraphCanvas} interface. See {@code claude/view-facade.md} and
+ * {@code claude/phase-2-model-and-ownership.md}.
  * @author Arend Rensink
  * @version $Revision$
  */
 @NonNullByDefault
-public class GraphViewController<G extends Graph> {
+public abstract class GraphViewController<G extends Graph> {
     /**
-     * Constructs a controller for a given canvas.
-     * @param canvas the canvas that this controller belongs to
+     * Constructs a controller.
      * @param simulator simulator to which the display belongs; may be {@code null}
      */
-    public GraphViewController(GraphCanvas<G> canvas, @Nullable Simulator simulator) {
-        this.canvas = canvas;
+    public GraphViewController(@Nullable Simulator simulator) {
         this.simulator = simulator;
         this.options = Options.instance();
     }
 
-    /** Returns the canvas that this controller belongs to. */
+    /**
+     * Returns the canvas of this controller, creating it through the
+     * selected {@link GraphBackend} on first request.
+     */
     public GraphCanvas<G> getCanvas() {
-        return this.canvas;
+        var result = this.canvas;
+        if (result == null) {
+            result = createCanvas(GraphBackend.instance());
+            if (result != this.canvas) {
+                throw Exceptions
+                    .illegalState("Canvas %s did not attach itself to its controller", result);
+            }
+        }
+        return result;
     }
 
-    /** The canvas that this controller belongs to. */
-    private final GraphCanvas<G> canvas;
+    /**
+     * Attaches a canvas to this controller.
+     * Called by the canvas from its constructor, before it does anything that
+     * may ask the controller for its canvas, so that no second canvas is created.
+     * @throws IllegalStateException if a canvas was attached before
+     */
+    public void attachCanvas(GraphCanvas<G> canvas) {
+        if (this.canvas != null) {
+            throw Exceptions.illegalState("Controller already has a canvas");
+        }
+        this.canvas = canvas;
+    }
+
+    /** Callback factory method creating the canvas of this controller through a backend. */
+    protected abstract GraphCanvas<G> createCanvas(GraphBackend backend);
+
+    /** The canvas of this controller; {@code null} until created or attached. */
+    private @Nullable GraphCanvas<G> canvas;
 
     /** Returns the (possibly {@code null}) simulator associated with the display. */
     protected @Nullable Simulator getSimulator() {
@@ -217,9 +242,12 @@ public class GraphViewController<G extends Graph> {
         return getOptionValue(Options.SHOW_BIDIRECTIONAL_EDGES_OPTION);
     }
 
-    /** Returns the role of the graphs displayed in the graph view. */
+    /**
+     * Returns the role of the graphs displayed in the graph view.
+     * This implementation returns {@link GraphRole#NONE}; role controllers override it.
+     */
     public GraphRole getGraphRole() {
-        return getCanvas().getGraphRole();
+        return GraphRole.NONE;
     }
 
     /** Convenience method to retrieve the displayed graph, if any. */

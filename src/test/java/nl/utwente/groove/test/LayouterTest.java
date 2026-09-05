@@ -31,10 +31,11 @@ import org.junit.jupiter.api.Test;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.gui.display.DisplayKind;
-import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.layout.ForestLayouter;
 import nl.utwente.groove.gui.layout.Layouter;
 import nl.utwente.groove.gui.layout.SpringLayouter;
+import nl.utwente.groove.gui.view.AspectGraphCanvas;
+import nl.utwente.groove.gui.view.AspectGraphViewController;
 import nl.utwente.groove.gui.view.ViewEdge;
 import nl.utwente.groove.gui.view.ViewVertex;
 import nl.utwente.groove.io.Groove;
@@ -45,7 +46,7 @@ import nl.utwente.groove.util.QualName;
  * Checks that the backend-independent layouters, working through the canvas
  * interface only, still produce a layout: every vertex gets a position of its
  * own, vertices end up unmarked for layout, and the intermediate edge points
- * are cleared. The graph is shown on a headless {@link AspectJGraph}, the way
+ * are cleared. The graph is shown on a headless {@link AspectGraphCanvas}, the way
  * the {@code Imager} does it.
  * @author Arend Rensink
  * @version $Revision$
@@ -70,7 +71,7 @@ public class LayouterTest {
 
     /** Runs a complete layout with a given prototype layouter and checks the result. */
     private void checkLayout(Layouter prototype) throws IOException {
-        AspectJGraph canvas = loadTypeGraph();
+        AspectGraphCanvas canvas = loadTypeGraph();
         var controller = canvas.getController();
         controller.setLayouter(prototype);
         assertEquals(prototype.getName(), controller.getLayouter().getName());
@@ -93,11 +94,12 @@ public class LayouterTest {
     }
 
     /** Loads the fixture type graph into a headless type-graph canvas. */
-    private AspectJGraph loadTypeGraph() throws IOException {
+    private AspectGraphCanvas loadTypeGraph() throws IOException {
         GrammarModel grammar = Groove.loadGrammar(GRAMMAR);
         AspectGraph typeGraph = grammar.getTypeModel(QualName.parse(TYPE_GRAPH)).getSource();
-        AspectJGraph result = new AspectJGraph(null, DisplayKind.TYPE, false);
-        result.getController().setGrammar(grammar);
+        var controller = new AspectGraphViewController(null, DisplayKind.TYPE, false);
+        controller.setGrammar(grammar);
+        AspectGraphCanvas result = controller.getCanvas();
         result.showGraph(typeGraph);
         return result;
     }

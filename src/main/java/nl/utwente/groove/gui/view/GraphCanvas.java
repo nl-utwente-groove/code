@@ -79,8 +79,10 @@ public interface GraphCanvas<G extends Graph> {
             : model.getGraph();
     }
 
-    /** Returns the role of the graphs shown on this canvas. */
-    GraphRole getGraphRole();
+    /** Returns the role of the graphs shown on this canvas; taken from the controller. */
+    default GraphRole getGraphRole() {
+        return getController().getGraphRole();
+    }
 
     /** Tests if the graphs shown on this canvas have a given role. */
     default boolean hasGraphRole(GraphRole role) {
@@ -97,6 +99,18 @@ public interface GraphCanvas<G extends Graph> {
      * @return the content model created for the graph
      */
     GraphViewModel<G> showGraph(G graph);
+
+    /**
+     * Creates a fresh, empty view model for this canvas, backed by a cell store of
+     * this backend. The model is not shown; use {@link #setViewModel} for that.
+     */
+    GraphViewModel<G> newViewModel();
+
+    /**
+     * Shows a given view model, or clears the canvas if the model is {@code null}.
+     * The model must have been created by {@link #newViewModel()} of this canvas.
+     */
+    void setViewModel(@Nullable GraphViewModel<G> model);
 
     /**
      * Indicates that the canvas is in the process of refreshing its content model;

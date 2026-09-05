@@ -31,6 +31,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.gui.Options;
+import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.action.ScrollToActiveAction;
 import nl.utwente.groove.gui.layout.ForestLayouter;
@@ -57,18 +58,27 @@ import nl.utwente.groove.lts.RuleTransition;
 @NonNullByDefault
 public class LTSGraphViewController extends GraphViewController<GTS> {
     /**
-     * Constructs a controller for a given graph-view component.
-     * @param canvas the canvas that this controller belongs to
+     * Constructs a controller.
      * @param simulator simulator to which the display belongs; may be {@code null}
      */
-    public LTSGraphViewController(LTSGraphCanvas canvas, @Nullable Simulator simulator) {
-        super(canvas, simulator);
+    public LTSGraphViewController(@Nullable Simulator simulator) {
+        super(simulator);
+    }
+
+    @Override
+    protected LTSGraphCanvas createCanvas(GraphBackend backend) {
+        return backend.newLTSCanvas(this);
     }
 
     /* Specialises the return type. */
     @Override
     public LTSGraphCanvas getCanvas() {
         return (LTSGraphCanvas) super.getCanvas();
+    }
+
+    @Override
+    public GraphRole getGraphRole() {
+        return GraphRole.LTS;
     }
 
     /* The LTS is laid out as a forest by default. */

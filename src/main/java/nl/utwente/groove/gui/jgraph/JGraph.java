@@ -84,10 +84,8 @@ import nl.utwente.groove.gui.view.GraphViewMode;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.Graph;
-import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.gui.Options;
-import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.gui.action.ActionStore;
 import nl.utwente.groove.gui.action.ExportAction;
@@ -118,12 +116,15 @@ import nl.utwente.groove.gui.view.ViewVertex;
 abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
     implements GraphCanvas<G> {
     /**
-     * Constructs a JGraph for a given simulator.
-     * @param simulator simulator to which the JGraph belongs; may be {@code null}
+     * Constructs a JGraph as the canvas of a given controller.
+     * The JGraph attaches itself to the controller before installing its listeners,
+     * as those ask the controller for its canvas.
+     * @param controller the controller of this canvas
      */
-    protected JGraph(Simulator simulator) {
+    protected JGraph(GraphViewController<G> controller) {
         super((JModel<G>) null);
-        this.controller = createController(simulator);
+        this.controller = controller;
+        controller.attachCanvas(this);
         // make sure the layout cache has been created
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
         setMarqueeHandler(createMarqueeHandler());
@@ -200,20 +201,6 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
 
     /** The display controller associated with this {@link JGraph}. */
     private final GraphViewController<G> controller;
-
-    /**
-     * Callback factory method for the display controller.
-     * Called from the constructor, so it must not depend on subclass state.
-     */
-    protected GraphViewController<G> createController(Simulator simulator) {
-        return new GraphViewController<>(this, simulator);
-    }
-
-    /** Returns the graph role of the graphs expected for this JGraph. */
-    @Override
-    public GraphRole getGraphRole() {
-        return GraphRole.NONE;
-    }
 
     /** Returns the object holding the display options for this {@link JGraph}. */
     @Override
@@ -629,6 +616,26 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
         model.loadGraph(graph);
         setModel(model);
         return model.getViewModel();
+    }
+
+    @Override
+    public GraphViewModel<G> newViewModel() {
+        return newModel().getViewModel();
+    }
+
+    /*
+     * The view model's cell store is the JModel adapter created by this JGraph's
+     * factory, so that is what gets set as the JGraph model.
+     */
+    @Override
+    public void setViewModel(@Nullable GraphViewModel<G> model) {
+        if (model == null) {
+            setModel(null);
+        } else {
+            var store = model.getStore();
+            assert store instanceof JModel : "View model not created by this backend";
+            setModel((JModel<?>) store);
+        }
     }
 
     @Override

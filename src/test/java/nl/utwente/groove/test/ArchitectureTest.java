@@ -53,17 +53,6 @@ public class ArchitectureTest {
      * with the migration step that removes them; paths relative to the source roots.
      */
     private static final Map<String,String> ALLOWED = new TreeMap<>(Map.ofEntries(
-        // phase 2: ownership inversion and per-role view models;
-        // GraphPreviewDialog and Imager construct canvases
-        Map.entry("nl/utwente/groove/gui/action/ExploreAction.java", "2"),
-        Map.entry("nl/utwente/groove/gui/dialog/GraphPreviewDialog.java", "2"),
-        Map.entry("nl/utwente/groove/gui/display/GraphTab.java", "2"),
-        Map.entry("nl/utwente/groove/gui/Imager.java", "2"),
-        Map.entry("nl/utwente/groove/gui/display/LTSDisplay.java", "2"),
-        Map.entry("nl/utwente/groove/gui/display/StateDisplay.java", "2"),
-        Map.entry("nl/utwente/groove/test/DetachedCellVisualsTest.java", "2"),
-        Map.entry("nl/utwente/groove/test/LayouterTest.java", "2"),
-        Map.entry("nl/utwente/groove/test/SubtypeLabelArrowTest.java", "2"),
         // phase 3: the editor's own undo and edit model
         Map.entry("nl/utwente/groove/gui/display/GraphEditorTab.java", "3")));
 
