@@ -20,6 +20,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.control.graph.ControlGraph;
+import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.layout.ForestLayouter;
 import nl.utwente.groove.gui.layout.Layouter;
@@ -32,18 +33,27 @@ import nl.utwente.groove.gui.layout.Layouter;
 @NonNullByDefault
 public class CtrlGraphViewController extends GraphViewController<ControlGraph> {
     /**
-     * Constructs a controller for a given canvas.
-     * @param canvas the canvas that this controller belongs to
+     * Constructs a controller.
      * @param simulator simulator to which the display belongs; may be {@code null}
      */
-    public CtrlGraphViewController(CtrlGraphCanvas canvas, @Nullable Simulator simulator) {
-        super(canvas, simulator);
+    public CtrlGraphViewController(@Nullable Simulator simulator) {
+        super(simulator);
+    }
+
+    @Override
+    protected CtrlGraphCanvas createCanvas(GraphBackend backend) {
+        return backend.newCtrlCanvas(this);
     }
 
     /* Specialises the return type. */
     @Override
     public CtrlGraphCanvas getCanvas() {
         return (CtrlGraphCanvas) super.getCanvas();
+    }
+
+    @Override
+    public GraphRole getGraphRole() {
+        return GraphRole.CTRL;
     }
 
     /* Node identities are always shown in control graphs. */

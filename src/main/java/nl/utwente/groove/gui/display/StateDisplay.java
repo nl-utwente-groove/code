@@ -62,18 +62,19 @@ import nl.utwente.groove.gui.SimulatorListener;
 import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.gui.SimulatorModel.Change;
 import nl.utwente.groove.gui.view.AspectViewCell;
-import nl.utwente.groove.gui.jgraph.AspectJEdge;
-import nl.utwente.groove.gui.jgraph.AspectJGraph;
-import nl.utwente.groove.gui.jgraph.AspectJModel;
-import nl.utwente.groove.gui.jgraph.AspectJVertex;
+import nl.utwente.groove.gui.view.AspectGraphCanvas;
+import nl.utwente.groove.gui.view.AspectGraphViewController;
+import nl.utwente.groove.gui.view.AspectGraphViewModel;
+import nl.utwente.groove.gui.view.AspectViewEdge;
+import nl.utwente.groove.gui.view.AspectViewVertex;
 import nl.utwente.groove.gui.look.Values;
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.gui.view.GraphCanvas;
 import nl.utwente.groove.gui.view.GraphCanvas.Overlay;
 import nl.utwente.groove.gui.view.GraphCanvasListener;
 import nl.utwente.groove.gui.view.ViewCell;
-import nl.utwente.groove.gui.jgraph.JGraph;
 import nl.utwente.groove.gui.list.ErrorEntry;
 import nl.utwente.groove.gui.list.ErrorListPanel;
 import nl.utwente.groove.gui.look.VisualKey;
@@ -167,8 +168,8 @@ public class StateDisplay extends Display implements SimulatorListener {
         }
         // make sure that removals from the selection model
         // also deselect the match
-        this.lastSelection = new HashSet<>(getJGraph().getSelection());
-        getJGraph().addCanvasListener(this.canvasListener);
+        this.lastSelection = new HashSet<>(getCanvas().getSelection());
+        getCanvas().addCanvasListener(this.canvasListener);
         this.listening = true;
     }
 
@@ -178,7 +179,7 @@ public class StateDisplay extends Display implements SimulatorListener {
     private boolean suspendListening() {
         boolean result = this.listening;
         if (result) {
-            getJGraph().removeCanvasListener(this.canvasListener);
+            getCanvas().removeCanvasListener(this.canvasListener);
             this.listening = false;
         }
         return result;
@@ -218,16 +219,16 @@ public class StateDisplay extends Display implements SimulatorListener {
 
     /** Returns the currently displayed state graph. */
     public AspectGraph getStateGraph() {
-        var jModel = getJGraph().getModel();
+        var jModel = getCanvas().getViewModel();
         assert jModel != null;
         return jModel.getGraph();
     }
 
     /** Returns component on which the state graph is displayed. */
-    public GraphPanel<AspectGraph> getGraphPanel() {
-        GraphPanel<AspectGraph> result = this.stateGraphPanel;
+    public GraphPanel<@NonNull AspectGraph> getGraphPanel() {
+        GraphPanel<@NonNull AspectGraph> result = this.stateGraphPanel;
         if (result == null) {
-            result = this.stateGraphPanel = new GraphPanel<>(getJGraph()) {
+            result = this.stateGraphPanel = new GraphPanel<>(getCanvas()) {
                 @Override
                 public void setEnabled(boolean enabled) {
                     super.setEnabled(enabled);
@@ -242,8 +243,8 @@ public class StateDisplay extends Display implements SimulatorListener {
         return result;
     }
 
-    /** JGraph panel on this display. */
-    private GraphPanel<AspectGraph> stateGraphPanel;
+    /** Graph panel on this display. */
+    private GraphPanel<@NonNull AspectGraph> stateGraphPanel;
 
     /** Gets the error panel, creating it (lazily) if necessary. */
     private ErrorListPanel getErrorPanel() {
@@ -257,24 +258,29 @@ public class StateDisplay extends Display implements SimulatorListener {
     /** List of state errors, only shown if there are any errors in the current state. */
     private ErrorListPanel errorPanel;
 
-    /** Returns the JGraph component of the state display. */
-    final public AspectJGraph getJGraph() {
-        AspectJGraph result = this.jGraph;
+    /** Returns the canvas of the state display, created by its controller on first request. */
+    final public AspectGraphCanvas getCanvas() {
+        return getController().getCanvas();
+    }
+
+    /** Returns the controller of the state graph view, creating it on first request. */
+    final public AspectGraphViewController getController() {
+        AspectGraphViewController result = this.controller;
         if (result == null) {
-            result = this.jGraph = new AspectJGraph(getSimulator(), getKind(), false);
+            result = this.controller = new AspectGraphViewController(getSimulator(), getKind(), false);
             result.setLabelTree(getLabelTree());
         }
         return result;
     }
 
-    /** JGraph showing the current state. */
-    private AspectJGraph jGraph;
+    /** The controller of the state graph view. */
+    private AspectGraphViewController controller;
 
     /** Lazily creates and returns the label tree for the display. */
     private TypeTree getLabelTree() {
         TypeTree result = this.labelTree;
         if (result == null) {
-            result = this.labelTree = new TypeTree(getJGraph(), true) {
+            result = this.labelTree = new TypeTree(getCanvas(), true) {
                 @Override
                 protected void paintComponent(Graphics g) {
                     super.paintComponent(g);
@@ -300,10 +306,10 @@ public class StateDisplay extends Display implements SimulatorListener {
         };
     }
 
-    /** Selects the elements of a given error in the {@link JGraph}. */
+    /** Selects the elements of a given error on the canvas. */
     void selectError(FormatError error) {
         if (error == null) {
-            getJGraph().clearSelection();
+            getCanvas().clearSelection();
         } else {
             // the error elements may be host elements rather than aspect elements
             List<Element> elements = new ArrayList<>();
@@ -317,7 +323,7 @@ public class StateDisplay extends Display implements SimulatorListener {
                     elements.add(aspectMap.getEdge(edge));
                 }
             }
-            getJGraph().selectElements(elements);
+            getCanvas().selectElements(elements);
         }
     }
 
@@ -326,7 +332,7 @@ public class StateDisplay extends Display implements SimulatorListener {
         if (!suspendListening()) {
             return;
         }
-        getJGraph().setOverlay(source.hasAbsentState()
+        getCanvas().setOverlay(source.hasAbsentState()
             ? Overlay.HATCHED
             : Overlay.NONE);
         // check if layout should be transferred
@@ -361,7 +367,7 @@ public class StateDisplay extends Display implements SimulatorListener {
             // all cells repainted, even though everything but the
             // edge colour seems to be OK even without doing this
             // Grayed-out selected elements should remain selected
-            getJGraph().refreshAll(false);
+            getCanvas().refreshAll(false);
         }
         updateStatus();
         activateListening();
@@ -369,7 +375,7 @@ public class StateDisplay extends Display implements SimulatorListener {
 
     private void startSimulation(GTS gts) {
         // clear the states from the aspect and model maps
-        this.stateToJModel.clear();
+        this.stateToViewModel.clear();
         this.stateToAspectMap.clear();
         // only change the displayed model if we are currently displaying a
         // state
@@ -383,24 +389,36 @@ public class StateDisplay extends Display implements SimulatorListener {
     private void selectMatch(Proof match) {
         assert match != null : "Match update should not be called with empty match";
         displayState(getSimulatorModel().getState());
-        AspectJModel jModel = getJGraph().getModel();
+        AspectGraphViewModel jModel = getCanvas().getViewModel();
         assert jModel != null;
         HostToAspectMap aspectMap = getAspectMap(getSimulatorModel().getState());
         Set<AspectViewCell> emphElems = new HashSet<>();
         match
             .getNodeValues()
             .stream()
-            .map(n -> jModel.getJCellForNode(aspectMap.getNode(n)))
+            .map(n -> getCell(jModel, aspectMap.getNode(n)))
             .filter(c -> c != null)
             .forEach(c -> emphElems.add(c));
         match
             .getEdgeValues()
             .stream()
-            .map(e -> jModel.getJCellForEdge(aspectMap.getEdge(e)))
+            .map(e -> getCell(jModel, aspectMap.getEdge(e)))
             .filter(c -> c != null)
             .forEach(c -> emphElems.add(c));
-        getJGraph().setSelectionCells(emphElems.toArray());
+        getCanvas().select(emphElems);
         this.matchSelected = true;
+    }
+
+    /**
+     * Returns the cell of a given aspect element in a given model, or {@code null}
+     * if the element is {@code null} (because it was not in the aspect map) or
+     * has no cell.
+     */
+    private static @Nullable AspectViewCell getCell(AspectGraphViewModel model,
+                                                    @Nullable AspectElement elem) {
+        return elem == null
+            ? null
+            : model.getJCell(elem);
     }
 
     /** Updates the display status bar. */
@@ -454,7 +472,7 @@ public class StateDisplay extends Display implements SimulatorListener {
                         ? "; "
                         : " (");
                 brackets = true;
-                if (getJGraph().getController().isShowAnchors()) {
+                if (getCanvas().getController().isShowAnchors()) {
                     result.append(String.format("with match '%s'", match.getEvent()));
                 } else {
                     result
@@ -476,11 +494,11 @@ public class StateDisplay extends Display implements SimulatorListener {
         boolean error = false;
         boolean internal = false;
         if (state == null) {
-            getJGraph().setModel(null);
+            getCanvas().setViewModel(null);
         } else {
-            AspectJModel model = getAspectJModel(state);
-            getJGraph().setModel(model);
-            getJGraph().doLayout(false);
+            AspectGraphViewModel model = getAspectGraphViewModel(state);
+            getCanvas().setViewModel(model);
+            getCanvas().getController().doLayout(false);
             error = state.isError();
             internal = state.isInner();
         }
@@ -510,7 +528,7 @@ public class StateDisplay extends Display implements SimulatorListener {
         if (result) {
             this.matchSelected = false;
             if (clear) {
-                getJGraph().clearSelection();
+                getCanvas().clearSelection();
             }
             getSimulatorModel().setMatch(getSimulatorModel().getState(), null);
             updateStatus();
@@ -520,11 +538,11 @@ public class StateDisplay extends Display implements SimulatorListener {
 
     /**
      * Returns a graph model for a given state graph. The graph model is
-     * retrieved from {@link #stateToJModel}; if there is no image for the requested
+     * retrieved from {@link #stateToViewModel}; if there is no image for the requested
      * state then one is created.
      */
-    private AspectJModel getAspectJModel(GraphState state) {
-        AspectJModel result = this.stateToJModel.get(state);
+    private AspectGraphViewModel getAspectGraphViewModel(GraphState state) {
+        AspectGraphViewModel result = this.stateToViewModel.get(state);
         if (result == null) {
             if (state instanceof GraphNextState ns) {
                 result = createNextStateJModel(ns);
@@ -533,30 +551,33 @@ public class StateDisplay extends Display implements SimulatorListener {
                 result = createStartStateJModel((StartGraphState) state);
             }
             assert result != null;
-            this.stateToJModel.put(state, result);
+            this.stateToViewModel.put(state, result);
         }
         return result;
     }
 
     /** Copies layout from the host model of the start graph. */
-    private AspectJModel createStartStateJModel(StartGraphState state) {
+    private AspectGraphViewModel createStartStateJModel(StartGraphState state) {
         HostToAspectMap stateMap = getAspectMap(state);
-        var result = createAspectJModel(stateMap.getAspectGraph());
+        var result = createAspectGraphViewModel(stateMap.getAspectGraph());
         var startHostModel = getGrammar().getStartGraphModel();
         AspectGraph startGraph = startHostModel.getSource();
         assert startGraph != null;
         HostModelMap startGraphMap = startHostModel.getMap();
         // the AspectGraph in result does not equal startGraph, we have to convert
-        var startJModel = createAspectJModel(startGraph);
+        var startJModel = createAspectGraphViewModel(startGraph);
         for (AspectNode node : startGraph.nodeSet()) {
-            AspectJVertex stateVertex
-                = result.getJCellForNode(stateMap.getNode(startGraphMap.getNode(node)));
+            var stateNode = stateMap.getNode(startGraphMap.getNode(node));
+            AspectViewVertex stateVertex = stateNode == null
+                ? null
+                : result.getJCellForNode(stateNode);
             // nesting nodes are not in the state;
             // data nodes may have been merged
             if (stateVertex == null) {
                 continue;
             }
-            AspectJVertex graphVertex = startJModel.getJCellForNode(node);
+            AspectViewVertex graphVertex = startJModel.getJCellForNode(node);
+            assert graphVertex != null; // the start graph model has a cell for each of its nodes
             // copy only the layout attributes: the start graph map may be
             // non-injective (shared node IDs, see gh #780), in which case the
             // state cell combines several start graph cells and must keep
@@ -567,14 +588,16 @@ public class StateDisplay extends Display implements SimulatorListener {
             stateVertex.setLayoutable(false);
         }
         for (AspectEdge edge : startGraph.edgeSet()) {
-            AspectViewCell stateEdge
-                = result.getJCellForEdge(stateMap.getEdge(startGraphMap.getEdge(edge)));
+            var stateAspectEdge = stateMap.getEdge(startGraphMap.getEdge(edge));
+            AspectViewCell stateEdge = stateAspectEdge == null
+                ? null
+                : result.getJCellForEdge(stateAspectEdge);
             // nesting edges and merged data edges are not in the state
             if (stateEdge == null) {
                 continue;
             }
             AspectViewCell graphEdge = startJModel.getJCellForEdge(edge);
-            if (stateEdge instanceof AspectJEdge && graphEdge instanceof AspectJEdge graphJEdge) {
+            if (stateEdge instanceof AspectViewEdge && graphEdge instanceof AspectViewEdge graphJEdge) {
                 stateEdge.putVisuals(new Attributes(graphJEdge).toVisuals());
                 stateEdge.setGrayedOut(graphJEdge.isGrayedOut());
             }
@@ -583,16 +606,16 @@ public class StateDisplay extends Display implements SimulatorListener {
         return result;
     }
 
-    private AspectJModel createNextStateJModel(GraphNextState state) {
-        var result = createAspectJModel(getAspectMap(state).getAspectGraph());
+    private AspectGraphViewModel createNextStateJModel(GraphNextState state) {
+        var result = createAspectGraphViewModel(getAspectMap(state).getAspectGraph());
         Stack<GraphTransition> stack = new Stack<>();
         GraphState source = state;
         do {
             GraphTransition trans = ((GraphNextState) source).getInTransition();
             stack.push(trans);
             source = trans.source();
-        } while (source instanceof GraphNextState && !this.stateToJModel.containsKey(source));
-        AspectJModel model = getAspectJModel(source);
+        } while (source instanceof GraphNextState && !this.stateToViewModel.containsKey(source));
+        AspectGraphViewModel model = getAspectGraphViewModel(source);
         AttributesMap map = extractAttributes(model, getAspectMap(source));
         while (!stack.isEmpty()) {
             GraphTransition trans = stack.pop();
@@ -606,11 +629,11 @@ public class StateDisplay extends Display implements SimulatorListener {
      * Returns a map from host graph elements to layout attributes,
      * extracted from a given aspect model under a host-to-aspect map.
      */
-    private AttributesMap extractAttributes(AspectJModel model, HostToAspectMap aspectMap) {
+    private AttributesMap extractAttributes(AspectGraphViewModel model, HostToAspectMap aspectMap) {
         AttributesMap result = new AttributesMap();
         for (Map.Entry<HostNode,? extends AspectNode> entry : aspectMap.nodeMap().entrySet()) {
             AspectNode aspectNode = entry.getValue();
-            AspectJVertex jCell = model.getJCellForNode(aspectNode);
+            AspectViewVertex jCell = model.getJCellForNode(aspectNode);
             assert jCell != null : "Source element " + aspectNode + " unknown";
             result.nodeMap.put(entry.getKey(), new Attributes(jCell));
         }
@@ -618,8 +641,8 @@ public class StateDisplay extends Display implements SimulatorListener {
         for (Map.Entry<HostEdge,? extends AspectEdge> entry : aspectMap.edgeMap().entrySet()) {
             AspectEdge aspectEdge = entry.getValue();
             AspectViewCell jCell = model.getJCellForEdge(aspectEdge);
-            if (jCell instanceof AspectJEdge) {
-                result.edgeMap.put(entry.getKey(), new Attributes((AspectJEdge) jCell));
+            if (jCell instanceof AspectViewEdge) {
+                result.edgeMap.put(entry.getKey(), new Attributes((AspectViewEdge) jCell));
             }
         }
         return result;
@@ -678,7 +701,7 @@ public class StateDisplay extends Display implements SimulatorListener {
     }
 
     /** Stores the computed attributes into an aspect model. */
-    private void applyAttributes(AttributesMap map, AspectJModel result,
+    private void applyAttributes(AttributesMap map, AspectGraphViewModel result,
                                  HostToAspectMap aspectMap) {
         // initially set all cells to layoutable,
         // (which is partially undone later)
@@ -687,7 +710,7 @@ public class StateDisplay extends Display implements SimulatorListener {
         for (Map.Entry<HostNode,Attributes> e : map.nodeMap.entrySet()) {
             AspectNode aspectNode = aspectMap.getNode(e.getKey());
             assert aspectNode != null : "Target element " + e.getKey() + " unknown";
-            AspectJVertex jCell = result.getJCellForNode(aspectNode);
+            AspectViewVertex jCell = result.getJCellForNode(aspectNode);
             assert jCell != null : "Target element " + aspectNode + " unknown";
             Attributes attrs = e.getValue();
             jCell.putVisuals(attrs.toVisuals());
@@ -696,9 +719,9 @@ public class StateDisplay extends Display implements SimulatorListener {
             result.synchroniseLayout(jCell);
             if (attrs.color != null) {
                 // also colour all outgoing edges
-                Iterator<? extends AspectJEdge> iter = jCell.getContext();
+                Iterator<? extends AspectViewEdge> iter = jCell.getContext();
                 while (iter.hasNext()) {
-                    AspectJEdge jEdge = iter.next();
+                    AspectViewEdge jEdge = iter.next();
                     if (jEdge.getSourceVertex() == jCell) {
                         jEdge.putVisual(VisualKey.COLOR, attrs.color);
                     }
@@ -710,7 +733,7 @@ public class StateDisplay extends Display implements SimulatorListener {
             AspectEdge aspectEdge = aspectMap.getEdge(e.getKey());
             assert aspectEdge != null : "Target element " + e.getKey() + " unknown";
             AspectViewCell jCell = result.getJCellForEdge(aspectEdge);
-            if (jCell instanceof AspectJVertex) {
+            if (jCell instanceof AspectViewVertex) {
                 continue;
             }
             assert jCell != null : "Target element " + aspectEdge + " unknown";
@@ -723,10 +746,10 @@ public class StateDisplay extends Display implements SimulatorListener {
 
     /** Transfers colours and layout from the source to the target of a given transition. */
     private void transferLayout(GraphTransition trans) {
-        AttributesMap map = extractAttributes(this.stateToJModel.get(trans.source()),
+        AttributesMap map = extractAttributes(this.stateToViewModel.get(trans.source()),
                                               getAspectMap(trans.source()));
         map = transferAttributes(map, trans);
-        applyAttributes(map, this.stateToJModel.get(trans.target()), getAspectMap(trans.target()));
+        applyAttributes(map, this.stateToViewModel.get(trans.target()), getAspectMap(trans.target()));
     }
 
     /**
@@ -783,8 +806,8 @@ public class StateDisplay extends Display implements SimulatorListener {
     }
 
     /** Creates a j-model for a given aspect graph. */
-    private AspectJModel createAspectJModel(AspectGraph graph) {
-        AspectJModel result = getJGraph().newModel();
+    private AspectGraphViewModel createAspectGraphViewModel(AspectGraph graph) {
+        AspectGraphViewModel result = getCanvas().newViewModel();
         result.loadGraph(graph);
         return result;
     }
@@ -818,7 +841,7 @@ public class StateDisplay extends Display implements SimulatorListener {
     /**
      * Mapping from graphs to the corresponding graph models.
      */
-    private final Map<GraphState,AspectJModel> stateToJModel = new WeakHashMap<>();
+    private final Map<GraphState,AspectGraphViewModel> stateToViewModel = new WeakHashMap<>();
     /**
      * Mapping from graphs to the corresponding graph models.
      */
@@ -834,7 +857,7 @@ public class StateDisplay extends Display implements SimulatorListener {
 
     @Override
     public void doRepeat() {
-        var jGraph = getJGraph();
+        var jGraph = getCanvas();
         if (jGraph != null) {
             jGraph.scrollToNextSelected();
         }
@@ -842,7 +865,7 @@ public class StateDisplay extends Display implements SimulatorListener {
 
     /** Temporary record of graph element attributes. */
     private static class Attributes {
-        Attributes(AspectJVertex jVertex) {
+        Attributes(AspectViewVertex jVertex) {
             VisualMap visuals = jVertex.getVisuals();
             this.pos = visuals.getNodePos();
             this.grayedOut = jVertex.isGrayedOut();
@@ -861,7 +884,7 @@ public class StateDisplay extends Display implements SimulatorListener {
             this.lineStyle = LineStyle.DEFAULT_VALUE;
         }
 
-        Attributes(AspectJEdge jEdge) {
+        Attributes(AspectViewEdge jEdge) {
             VisualMap visuals = jEdge.getVisuals();
             this.pos = null;
             this.grayedOut = jEdge.isGrayedOut();

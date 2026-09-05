@@ -15,6 +15,7 @@
 package nl.utwente.groove.gui.view;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GraphBasedModel;
@@ -32,8 +33,15 @@ public interface AspectGraphCanvas extends GraphCanvas<AspectGraph> {
     @Override
     AspectGraphViewController getController();
 
-    /** Indicates if this canvas shows a state of a transition system rather than a resource. */
-    boolean isForState();
+    @Override
+    @Nullable
+    AspectGraphViewModel getViewModel();
+
+    @Override
+    AspectGraphViewModel newViewModel();
+
+    @Override
+    AspectGraphViewModel showGraph(AspectGraph graph);
 
     /** Returns the resource model of the graph currently shown. */
     GraphBasedModel<?> getResourceModel();

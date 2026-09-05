@@ -137,7 +137,7 @@ public class ExportAction extends SimulatorAction {
             Graph graph = canvas.getGraph();
             assert graph != null;
             GraphRole role = graph.getRole();
-            boolean isState = canvas instanceof AspectGraphCanvas ag && ag.isForState();
+            boolean isState = canvas instanceof AspectGraphCanvas ag && ag.getController().isForState();
             type = isState
                 ? "State"
                 : role.getDescription();
@@ -179,12 +179,12 @@ public class ExportAction extends SimulatorAction {
                 return selectedTab == null
                     ? null
                     : selectedTab instanceof GraphTab gt
-                        ? gt.getJGraph()
+                        ? gt.getCanvas()
                         : ((GraphEditorTab) selectedTab).getJGraph();
             case STATE:
-                return getStateDisplay().getJGraph();
+                return getStateDisplay().getCanvas();
             case LTS:
-                return getLtsDisplay().getJGraph();
+                return getLtsDisplay().getCanvas();
             default:
                 throw Exceptions.unreachable();
             }

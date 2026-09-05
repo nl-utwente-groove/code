@@ -23,9 +23,7 @@ import nl.utwente.groove.control.graph.ControlGraph;
 import nl.utwente.groove.control.graph.ControlNode;
 import nl.utwente.groove.control.template.Template;
 import nl.utwente.groove.graph.Edge;
-import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Node;
-import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.view.CtrlGraphCanvas;
 import nl.utwente.groove.gui.view.CtrlGraphViewController;
 
@@ -37,21 +35,15 @@ import nl.utwente.groove.gui.view.CtrlGraphViewController;
 public class CtrlJGraph extends JGraph<@NonNull ControlGraph> implements CtrlGraphCanvas {
     /**
      * Creates a ControlJGraph given a ControlJModel
-     * @param simulator the simulator that is the context of this jgraph; may be
-     *        <code>null</code>.
+     * @param controller the controller of this canvas
      */
-    public CtrlJGraph(Simulator simulator) {
-        super(simulator);
+    public CtrlJGraph(CtrlGraphViewController controller) {
+        super(controller);
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
         setConnectable(false);
         setDisconnectable(false);
         setEnabled(true);
         setToolTipEnabled(true);
-    }
-
-    @Override
-    public GraphRole getGraphRole() {
-        return GraphRole.CTRL;
     }
 
     /** Creates a new model based on a given control automaton. */
@@ -71,11 +63,6 @@ public class CtrlJGraph extends JGraph<@NonNull ControlGraph> implements CtrlGra
     @Override
     public CtrlGraphViewController getController() {
         return (CtrlGraphViewController) super.getController();
-    }
-
-    @Override
-    protected CtrlGraphViewController createController(Simulator simulator) {
-        return new CtrlGraphViewController(this, simulator);
     }
 
     @Override

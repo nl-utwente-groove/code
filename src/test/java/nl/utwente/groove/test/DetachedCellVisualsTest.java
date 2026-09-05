@@ -27,8 +27,8 @@ import org.junit.jupiter.api.Test;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.gui.display.DisplayKind;
-import nl.utwente.groove.gui.jgraph.AspectJGraph;
-import nl.utwente.groove.gui.jgraph.AspectJModel;
+import nl.utwente.groove.gui.view.AspectGraphViewController;
+import nl.utwente.groove.gui.view.AspectGraphViewModel;
 import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.util.AIGenerated;
 
@@ -52,13 +52,13 @@ public class DetachedCellVisualsTest {
         GrammarModel grammar = Groove.loadGrammar(GRAMMAR);
         AspectGraph startGraph = grammar.getStartGraphModel().getSource();
         assert startGraph != null; // the fixture grammar has a start graph
-        AspectJGraph jGraph = new AspectJGraph(null, DisplayKind.STATE, false);
-        jGraph.getController().setGrammar(grammar);
-        AspectJModel model = jGraph.newModel();
+        var controller = new AspectGraphViewController(null, DisplayKind.STATE, false);
+        controller.setGrammar(grammar);
+        AspectGraphViewModel model = controller.getCanvas().newViewModel();
         model.loadGraph(startGraph);
-        // the model is deliberately not set on the graph component
+        // the model is deliberately not set on the canvas
         int count = 0;
-        for (var cell : model.getRoots()) {
+        for (var cell : model.getCells()) {
             assertNotNull(cell.getVisuals().getLabel(), "no label for " + cell);
             count++;
         }

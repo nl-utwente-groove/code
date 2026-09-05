@@ -28,11 +28,10 @@ import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.display.GraphPanel;
-import nl.utwente.groove.gui.jgraph.AspectJGraph;
-import nl.utwente.groove.gui.jgraph.CtrlJGraph;
-import nl.utwente.groove.gui.jgraph.JGraph;
-import nl.utwente.groove.gui.jgraph.PlainJGraph;
+import nl.utwente.groove.gui.view.AspectGraphViewController;
+import nl.utwente.groove.gui.view.CtrlGraphViewController;
 import nl.utwente.groove.gui.view.GraphCanvas;
+import nl.utwente.groove.gui.view.PlainGraphViewController;
 
 /**
  * Dialog showing an given graph in the most appropriate
@@ -73,7 +72,7 @@ public class GraphPreviewDialog<G extends @NonNull Graph> extends JDialog {
     /** Returns the main panel shown on this dialog. */
     public GraphPreviewPanel getContent() {
         if (this.contentPanel == null) {
-            this.contentPanel = new GraphPreviewPanel(getJGraph());
+            this.contentPanel = new GraphPreviewPanel(getCanvas());
             this.contentPanel.initialise();
             this.contentPanel.setEnabled(true);
             // make any dialog in which this panel is embedded resizable
@@ -96,25 +95,28 @@ public class GraphPreviewDialog<G extends @NonNull Graph> extends JDialog {
 
     private GraphPreviewPanel contentPanel;
 
-    /** Returns the JGraph shown on this dialog. */
-    private JGraph<G> getJGraph() {
-        if (this.jGraph == null) {
-            this.jGraph = createJGraph();
+    /** Returns the canvas shown on this dialog. */
+    private GraphCanvas<G> getCanvas() {
+        if (this.canvas == null) {
+            this.canvas = createCanvas();
         }
-        return this.jGraph;
+        return this.canvas;
     }
 
-    /** Returns the proper jGraph for the graph set in the constructor. */
+    /**
+     * Creates the proper canvas for the graph set in the constructor,
+     * through a controller of the role of the graph.
+     */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    protected JGraph<G> createJGraph() {
-        JGraph jGraph;
+    protected GraphCanvas<G> createCanvas() {
+        GraphCanvas canvas;
         Graph shownGraph = this.graph;
         switch (this.graph.getRole()) {
         case CTRL:
             if (shownGraph instanceof ControlGraph) {
-                jGraph = new CtrlJGraph(this.simulator);
+                canvas = new CtrlGraphViewController(this.simulator).getCanvas();
             } else {
-                jGraph = null;
+                canvas = null;
             }
             break;
         case HOST:
@@ -124,27 +126,27 @@ public class GraphPreviewDialog<G extends @NonNull Graph> extends JDialog {
                 shownGraph = GraphConverter.toAspect(this.graph);
                 DisplayKind kind
                     = DisplayKind.toDisplay(ResourceKind.toResource(this.graph.getRole()));
-                AspectJGraph aspectJGraph = new AspectJGraph(this.simulator, kind, false);
+                var controller = new AspectGraphViewController(this.simulator, kind, false);
                 if (this.simulator == null) {
-                    aspectJGraph.getController().setGrammar(this.grammar);
+                    controller.setGrammar(this.grammar);
                 }
-                jGraph = aspectJGraph;
+                canvas = controller.getCanvas();
             } else {
-                jGraph = null;
+                canvas = null;
             }
             break;
         default:
-            jGraph = null;
+            canvas = null;
         }
-        if (jGraph == null) {
-            jGraph = PlainJGraph.newInstance(this.simulator);
+        if (canvas == null) {
+            canvas = new PlainGraphViewController(this.simulator).getCanvas();
         }
-        jGraph.showGraph(shownGraph);
-        jGraph.getController().doLayout(false);
-        return jGraph;
+        canvas.showGraph(shownGraph);
+        canvas.getController().doLayout(false);
+        return canvas;
     }
 
-    private JGraph<G> jGraph;
+    private GraphCanvas<G> canvas;
     /** The graph to be displayed in the dialog. */
     protected final G graph;
     /** The simulator reference, may be null. */
@@ -211,14 +213,14 @@ public class GraphPreviewDialog<G extends @NonNull Graph> extends JDialog {
 
     private static final boolean TIMER = true;
 
-    /** A panel showing a JGraph, with functionality te retrieve the rendering options. */
-    public static class GraphPreviewPanel extends GraphPanel<Graph> {
-        /** Creates a panel for a given JGraph. */
+    /** A panel showing a graph canvas, with functionality to retrieve the rendering options. */
+    public static class GraphPreviewPanel extends GraphPanel<@NonNull Graph> {
+        /** Creates a panel for a given canvas. */
         public GraphPreviewPanel(GraphCanvas<? extends Graph> canvas) {
             super(canvas);
         }
 
-        /** Returns the options object used in rendering the JGraph. */
+        /** Returns the options object used in rendering the canvas. */
         public Options getOptions() {
             return getCanvas().getOptions();
         }

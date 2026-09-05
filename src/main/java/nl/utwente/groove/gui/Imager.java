@@ -66,7 +66,7 @@ import nl.utwente.groove.gui.dialog.GrooveFileChooser;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.export.CanvasExportable;
 import nl.utwente.groove.gui.export.CanvasExporters;
-import nl.utwente.groove.gui.jgraph.AspectJGraph;
+import nl.utwente.groove.gui.view.AspectGraphViewController;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Exporter;
 import nl.utwente.groove.io.external.Exporters;
@@ -287,20 +287,21 @@ public class Imager extends GrooveCmdLineTool<Object> {
             options.getItem(Options.SHOW_ASPECTS_OPTION).setSelected(isEditorView());
             DisplayKind displayKind
                 = DisplayKind.toDisplay(ResourceKind.toResource(aspectGraph.getRole()));
-            AspectJGraph jGraph = new AspectJGraph(null, displayKind, false);
+            var controller = new AspectGraphViewController(null, displayKind, false);
             var grammar = resourceModel.getGrammar();
             assert grammar != null; // the resource model was created from a grammar
-            jGraph.getController().setGrammar(grammar);
-            jGraph.showGraph(aspectGraph);
+            controller.setGrammar(grammar);
+            var canvas = controller.getCanvas();
+            canvas.showGraph(aspectGraph);
             // Ugly hack to prevent clipping of the image. We set the
             // component size to twice its normal size. This does not
             // affect the final size of the exported figure, hence
             // it can be considered harmless... ;P
-            var component = jGraph.getComponent();
+            var component = canvas.getComponent();
             Dimension oldPrefSize = component.getPreferredSize();
             Dimension newPrefSize = new Dimension(oldPrefSize.width * 2, oldPrefSize.height * 2);
             component.setSize(newPrefSize);
-            yield CanvasExportable.instance(jGraph);
+            yield CanvasExportable.instance(canvas);
         }
         };
         return result;

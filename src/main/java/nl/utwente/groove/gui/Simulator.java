@@ -492,7 +492,7 @@ public class Simulator implements SimulatorListener {
                     if (resourceTab.isEditor()) {
                         canvas = ((GraphEditorTab) resourceTab).getJGraph();
                     } else {
-                        canvas = ((GraphTab) resourceTab).getJGraph();
+                        canvas = ((GraphTab) resourceTab).getCanvas();
                     }
                     // select the error cell and switch to the panel
                     canvas.selectElements(entry.getElements());

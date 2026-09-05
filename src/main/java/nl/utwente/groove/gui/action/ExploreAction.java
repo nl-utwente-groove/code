@@ -33,7 +33,7 @@ import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.gui.dialog.ExploreWarningDialog;
 import nl.utwente.groove.gui.display.DisplayKind;
-import nl.utwente.groove.gui.jgraph.LTSJModel;
+import nl.utwente.groove.gui.view.LTSGraphViewModel;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSChangeListener;
 import nl.utwente.groove.lts.GraphState;
@@ -100,10 +100,10 @@ public class ExploreAction extends SimulatorAction {
     public Exploration explore(GraphState state, ExploreType exploreType) {
         Exploration result = null;
         SimulatorModel simModel = getSimulatorModel();
-        LTSJModel ltsJModel = getLtsDisplay().getJModel();
+        LTSGraphViewModel ltsJModel = getLtsDisplay().getViewModel();
         if (ltsJModel == null) {
             if (simModel.resetGTS()) {
-                ltsJModel = getLtsDisplay().getJModel();
+                ltsJModel = getLtsDisplay().getViewModel();
             } else {
                 return null;
             }
