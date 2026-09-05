@@ -71,6 +71,7 @@ public class LabelTreeOrderTest {
     void untypedHostGraphOrder() throws IOException {
         GrammarModel grammar = Groove.loadGrammar(UNTYPED_GRAMMAR);
         AspectGraph graph = grammar.getStartGraphModel().getSource();
+        assert graph != null; // the grammar has a single start graph
         TypeTree tree = buildTree(grammar, DisplayKind.HOST, graph);
         List<TypeTreeNode> rows = children(tree.getTopNode());
         for (var row : rows) {

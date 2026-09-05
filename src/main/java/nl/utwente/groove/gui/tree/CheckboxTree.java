@@ -20,6 +20,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Rectangle;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
@@ -30,6 +32,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTree;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.TreeSelectionEvent;
@@ -73,6 +76,19 @@ public class CheckboxTree extends JTree {
         // set selection mode
         //setSelectionModel(new MySelectionModel());
         getSelectionModel().setSelectionMode(TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
+        // the selection colours depend on focus ownership (see CellRenderer),
+        // but the BasicTreeUI only repaints the lead selection row on focus changes
+        addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                repaint();
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                repaint();
+            }
+        });
     }
 
     @Override
@@ -226,8 +242,19 @@ public class CheckboxTree extends JTree {
             JComponent result;
             this.jLabel
                 .getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-            Color background = this.tree.getColor(tree.isEnabled());
-            this.jLabel.setOpaque(!sel);
+            // The look-and-feel may leave the painting of the selection background
+            // to the tree UI rather than to the renderer (FlatLaf does so, by setting
+            // Tree.rendererFillBackground to false). Since this tree installs its own
+            // BasicTreeUI, which paints no selection, the renderer has to do it in all cases.
+            Color background;
+            if (sel) {
+                boolean focused = tree.isFocusOwner();
+                background = getSelectionBackground(focused);
+                this.jLabel.setForeground(getSelectionForeground(focused));
+            } else {
+                background = this.tree.getColor(tree.isEnabled());
+            }
+            this.jLabel.setOpaque(true);
             this.jLabel.setBackground(background);
             this.labelNode = value instanceof TreeNode
                 ? (TreeNode) value
@@ -235,6 +262,7 @@ public class CheckboxTree extends JTree {
             if (this.labelNode != null && this.labelNode.hasCheckbox()) {
                 this.checkbox.setSelected(this.labelNode.isSelected());
                 this.checkbox.setPassive(this.labelNode.isPassive());
+                setOpaque(sel);
                 setBackground(background);
                 // re-add the label (it gets detached if used as a stand-alone
                 // renderer)
@@ -245,6 +273,32 @@ public class CheckboxTree extends JTree {
             }
             this.initialising = false;
             return result;
+        }
+
+        /**
+         * Returns the selection background colour of the look-and-feel,
+         * depending on whether the tree has the focus.
+         */
+        private Color getSelectionBackground(boolean focused) {
+            Color result = focused
+                ? null
+                : UIManager.getColor("Tree.selectionInactiveBackground");
+            return result == null
+                ? this.jLabel.getBackgroundSelectionColor()
+                : result;
+        }
+
+        /**
+         * Returns the selection foreground colour of the look-and-feel,
+         * depending on whether the tree has the focus.
+         */
+        private Color getSelectionForeground(boolean focused) {
+            Color result = focused
+                ? null
+                : UIManager.getColor("Tree.selectionInactiveForeground");
+            return result == null
+                ? this.jLabel.getTextSelectionColor()
+                : result;
         }
 
         /** Returns the label node last rendered. */
