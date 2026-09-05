@@ -137,3 +137,13 @@ everything else, so the eleven remaining client files compile unchanged; the vie
 is created by `createViewModel()` in the `JModel` constructor with the canvas' controller.
 Nothing in `gui.view` names a backend type. Not moved: `cloneWithNewGraph` (it needs a new
 backend model; goes with the ownership inversion).
+
+**Asserting accessors (decided 2026-09-05).** `GraphViewModel` has no public
+`getNonNullGraph()`: the graph is `@Nullable` only between construction and the first
+`loadGraph`, which every construction path performs at once, so a view model without a graph
+is never a meaningful object. Callers outside the model assert locally with their own reason
+(the exporter, the forest layouter, the LTS filter); inside `AspectGraphViewModel` the
+asserting accessors for graph and grammar stay as private helpers. Slice 2 makes the graph a
+constructor argument, after which `getGraph()` is `@NonNull` and the helpers go. The canvas
+is different: an empty canvas is a real state, so `getViewModel()` stays `@Nullable` there and
+`getNonNullViewModel()` is up for the same review in slice 2.

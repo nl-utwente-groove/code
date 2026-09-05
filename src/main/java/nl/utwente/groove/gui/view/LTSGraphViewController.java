@@ -455,10 +455,9 @@ public class LTSGraphViewController extends GraphViewController<GTS> {
         if (getFilter() == Filter.RESULT && exploreResult != null && !exploreResult.isEmpty()) {
             fragment = exploreResult.toFragment(isShowRecipeSteps());
         } else {
-            fragment = getCanvas()
-                .getNonNullViewModel()
-                .getNonNullGraph()
-                .toFragment(getFilter() == Filter.NONE, isShowRecipeSteps());
+            var lts = getCanvas().getNonNullViewModel().getGraph();
+            assert lts != null; // filtering is invoked only while an LTS is shown
+            fragment = lts.toFragment(getFilter() == Filter.NONE, isShowRecipeSteps());
         }
         var cells = getCanvas().getCells();
         // first make the vertices (in)visible,

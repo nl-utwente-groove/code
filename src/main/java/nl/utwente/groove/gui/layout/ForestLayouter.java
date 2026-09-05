@@ -32,11 +32,13 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.control.graph.ControlGraph;
 import nl.utwente.groove.control.graph.ControlNode;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.EdgeComparator;
+import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.NodeComparator;
 import nl.utwente.groove.gui.view.GraphCanvas;
 import nl.utwente.groove.gui.view.ViewEdge;
@@ -201,7 +203,8 @@ public class ForestLayouter extends AbstractLayouter {
         Collection<?> result;
         var canvas = getCanvas();
         var viewModel = canvas.getNonNullViewModel();
-        var graph = viewModel.getNonNullGraph();
+        @Nullable Graph graph = viewModel.getGraph();
+        assert graph != null; // a layout is requested only for a loaded graph
         if (graph instanceof GTS lts) {
             var start = viewModel.getJCellForNode(lts.startState());
             result = start == null

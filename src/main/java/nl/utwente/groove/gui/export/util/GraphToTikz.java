@@ -85,7 +85,9 @@ public final class GraphToTikz<G extends @NonNull Graph> {
     private GraphToTikz(GraphCanvas<G> canvas) {
         this.canvas = canvas;
         this.model = canvas.getNonNullViewModel();
-        this.graph = this.model.getNonNullGraph();
+        var graph = this.model.getGraph();
+        assert graph != null; // a canvas is exported only while it shows a graph
+        this.graph = graph;
         this.layoutMap = GraphInfo.getLayoutMap(this.graph);
         this.result = new StringBuilder();
     }
