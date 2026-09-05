@@ -95,7 +95,7 @@ public class GraphInfo extends DefaultFixable {
      * @see #getProperties()
      */
     public void setProperties(Properties properties) {
-        testFixed(false);
+        testMutable();
         this.data.put(PROPERTIES_KEY, properties);
     }
 

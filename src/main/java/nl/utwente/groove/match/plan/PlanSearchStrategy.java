@@ -39,6 +39,7 @@ import nl.utwente.groove.match.SearchEngine;
 import nl.utwente.groove.match.SearchStrategy;
 import nl.utwente.groove.match.TreeMatch;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.Fixable;
 import nl.utwente.groove.util.Reporter;
 import nl.utwente.groove.util.Visitor;
 
@@ -48,7 +49,7 @@ import nl.utwente.groove.util.Visitor;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class PlanSearchStrategy implements SearchStrategy {
+public class PlanSearchStrategy implements SearchStrategy, Fixable {
     /**
      * Constructs a strategy from a given list of search items. A flag controls
      * if solutions should be injective.
@@ -157,7 +158,7 @@ public class PlanSearchStrategy implements SearchStrategy {
      * Callback factory method for an auxiliary {@link Search} object.
      */
     private Search createSearch() {
-        testFixed(true);
+        assert isFixed();
         return new Search();
     }
 
@@ -197,7 +198,7 @@ public class PlanSearchStrategy implements SearchStrategy {
     int getNodeIx(RuleNode node) {
         Integer result = this.nodeIxMap.get(node);
         if (result == null) {
-            testFixed(false);
+            testMutable();
             this.nodeIxMap.put(node, result = this.nodeIxMap.size());
         }
         return result;
@@ -212,7 +213,7 @@ public class PlanSearchStrategy implements SearchStrategy {
     int getEdgeIx(RuleEdge edge) {
         Integer value = this.edgeIxMap.get(edge);
         if (value == null) {
-            testFixed(false);
+            testMutable();
             this.edgeIxMap.put(edge, value = this.edgeIxMap.size());
         }
         return value;
@@ -227,7 +228,7 @@ public class PlanSearchStrategy implements SearchStrategy {
     int getVarIx(LabelVar var) {
         Integer value = this.varIxMap.get(var);
         if (value == null) {
-            testFixed(false);
+            testMutable();
             this.varIxMap.put(var, value = this.varIxMap.size());
         }
         return value;
@@ -242,7 +243,7 @@ public class PlanSearchStrategy implements SearchStrategy {
     int getCondIx(Condition cond) {
         Integer value = this.condIxMap.get(cond);
         if (value == null) {
-            testFixed(false);
+            testMutable();
             this.condIxMap.put(cond, value = this.condIxMap.size());
         }
         return value;
@@ -252,8 +253,10 @@ public class PlanSearchStrategy implements SearchStrategy {
      * Indicates that the strategy is now fixed, meaning that it has been
      * completely constructed.
      */
-    public void setFixed() {
-        if (!this.fixed) {
+    @Override
+    public boolean setFixed() {
+        boolean result = !this.fixed;
+        if (result) {
             for (SearchItem item : this.plan) {
                 item.activate(this);
             }
@@ -292,20 +295,19 @@ public class PlanSearchStrategy implements SearchStrategy {
             }
             this.fixed = true;
         }
+        return result;
     }
 
-    /**
-     * Method that tests the fixedness of the search plan and throws an
-     * exception if it is not as expected.
-     * @param fixed indication whether or not the plan is expected to be
-     *        currently fixed
-     */
-    private void testFixed(boolean fixed) {
-        if (this.fixed != fixed) {
-            throw Exceptions
-                .illegalState("Search plan is %s fixed", fixed
-                    ? "not yet"
-                    : "");
+    @Override
+    public boolean isFixed() {
+        return this.fixed;
+    }
+
+    /** Overridden to phrase the error message in terms of the search plan. */
+    @Override
+    public void testMutable() {
+        if (isFixed()) {
+            throw Exceptions.illegalState("Search plan is already fixed");
         }
     }
 

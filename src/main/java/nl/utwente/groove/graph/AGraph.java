@@ -26,13 +26,9 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.graph.iso.CertificateStrategy;
 import nl.utwente.groove.graph.iso.PartitionRefiner;
-import nl.utwente.groove.util.DefaultFixable;
 import nl.utwente.groove.util.Dispenser;
-import nl.utwente.groove.util.Exceptions;
-import nl.utwente.groove.util.Fixable;
 import nl.utwente.groove.util.Reporter;
 import nl.utwente.groove.util.cache.AbstractCacheHolder;
-import nl.utwente.groove.util.parse.FormatException;
 
 /**
  * Partial implementation of a graph.
@@ -151,17 +147,13 @@ public abstract class AGraph<N extends Node,E extends GEdge<N>>
 
     @Override
     public boolean isFixed() {
-        return this.fixable.isFixed();
+        return this.fixed;
     }
 
     @Override
     public boolean setFixed() {
-        boolean result = false;
-        try {
-            result = this.fixable.setFixed();
-        } catch (FormatException exc) {
-            throw Exceptions.unreachable();
-        }
+        boolean result = !this.fixed;
+        this.fixed = true;
         if (result) {
             if (hasInfo()) {
                 getInfo().setFixed();
@@ -176,7 +168,8 @@ public abstract class AGraph<N extends Node,E extends GEdge<N>>
         return result;
     }
 
-    private final Fixable fixable = new DefaultFixable();
+    /** Flag indicating whether this graph has been fixed. */
+    private boolean fixed;
 
     /** Calls {@link #toString(Graph)}. */
     @Override

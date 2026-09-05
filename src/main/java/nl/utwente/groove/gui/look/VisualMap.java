@@ -64,7 +64,7 @@ public class VisualMap extends DefaultFixable {
      * in the attribute map
      */
     void put(VisualKey key, Object value, boolean refresh) {
-        testFixed(false);
+        testMutable();
         Object oldValue = this.map.get(key);
         boolean change;
         if (oldValue == null) {
@@ -83,7 +83,7 @@ public class VisualMap extends DefaultFixable {
 
     /** Copies all attributes from another map to this one. */
     public void putAll(VisualMap other) {
-        testFixed(false);
+        testMutable();
         this.map.putAll(other.map);
         this.attrMap.setStale(other.map.keySet());
     }
@@ -93,7 +93,7 @@ public class VisualMap extends DefaultFixable {
      * from another map to this one.
      */
     public void putNonDerived(VisualMap other) {
-        testFixed(false);
+        testMutable();
         for (VisualKey key : VisualKey.values()) {
             if (key.getNature() != Nature.DERIVED) {
                 Object newValue = other.map.get(key);
@@ -112,7 +112,7 @@ public class VisualMap extends DefaultFixable {
      * based on a set of looks.
      */
     public void setLooks(Set<Look> looks) {
-        testFixed(false);
+        testMutable();
         VisualMap newValues = Look.getVisualsFor(looks);
         Set<VisualKey> staleKeys = EnumSet.noneOf(VisualKey.class);
         for (VisualKey key : VisualKey.deriveds()) {
@@ -153,7 +153,7 @@ public class VisualMap extends DefaultFixable {
 
     /** Clears all values from the map. */
     public void clear() {
-        testFixed(false);
+        testMutable();
         this.attrMap.setStale(this.map.keySet());
         this.map.clear();
     }
@@ -177,7 +177,7 @@ public class VisualMap extends DefaultFixable {
      * if required.
      */
     void remove(VisualKey key, boolean refresh) {
-        testFixed(false);
+        testMutable();
         this.map.remove(key);
         if (refresh) {
             this.attrMap.setStale(key);

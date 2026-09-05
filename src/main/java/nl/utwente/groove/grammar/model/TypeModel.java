@@ -57,7 +57,7 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
      */
     public TypeModel(GrammarModel grammar, AspectGraph source) {
         super(grammar, source);
-        source.testFixed(true);
+        assert source.isFixed();
     }
 
     @Override

@@ -38,7 +38,6 @@ import nl.utwente.groove.control.template.Switch;
 import nl.utwente.groove.control.template.SwitchAttempt;
 import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.grammar.Recipe;
-import nl.utwente.groove.util.DefaultFixable;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Fixable;
@@ -575,15 +574,18 @@ public class Frame implements Position<Frame,Step>, Fixable {
 
     @Override
     public boolean setFixed() {
-        return this.fixable.setFixed();
+        boolean result = !this.fixed;
+        this.fixed = true;
+        return result;
     }
 
     @Override
     public boolean isFixed() {
-        return this.fixable.isFixed();
+        return this.fixed;
     }
 
-    private final DefaultFixable fixable = new DefaultFixable();
+    /** Flag indicating whether this frame has been fixed. */
+    private boolean fixed;
 
     private final static boolean RICH_LABELS = true;
     private final static boolean VERY_RICH_LABELS = false;

@@ -102,7 +102,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
      * @see #isSimple()
      */
     public void setSimple(boolean simple) {
-        testFixed(false);
+        testMutable();
         this.simple = simple;
     }
 
@@ -190,7 +190,7 @@ public class AttrGraph extends NodeSetEdgeSetGraph<AttrNode,AttrEdge> {
 
     /** Sets the role of this graph. */
     public void setRole(GraphRole role) {
-        testFixed(false);
+        testMutable();
         this.role = role;
     }
 

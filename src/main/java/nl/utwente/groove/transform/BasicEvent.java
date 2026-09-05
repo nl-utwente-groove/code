@@ -75,7 +75,7 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
         super(reference, rule);
         assert anchorMap != null : String
             .format("Can't produce event for %s with null anchor map", rule.getQualName());
-        rule.testFixed(true);
+        assert rule.isFixed();
         this.anchorImages = computeAnchorImage(anchorMap);
         this.hostFactory = anchorMap.getFactory();
         if (reuse == NONE) {

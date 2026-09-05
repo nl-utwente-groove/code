@@ -19,6 +19,7 @@ package nl.utwente.groove.grammar.type;
 import static nl.utwente.groove.graph.EdgeRole.FLAG;
 import static nl.utwente.groove.graph.EdgeRole.NODE_TYPE;
 import static nl.utwente.groove.graph.GraphRole.TYPE;
+import static nl.utwente.groove.util.Factory.lazy;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Supplier;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -110,7 +112,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
      * in this type graph
      */
     public Map<TypeNode,TypeNode> add(TypeGraph other) throws FormatException {
-        testFixed(false);
+        testMutable();
         Set<TypeNode> newNodes = new HashSet<>();
         Set<TypeEdge> newEdges = new HashSet<>();
         Map<TypeNode,TypeNode> otherToThis = new HashMap<>();
@@ -219,7 +221,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
      *         or if the new subtype relation creates a cycle.
      */
     public void addInheritance(TypeNode subtype, TypeNode supertype) throws FormatException {
-        testFixed(false);
+        testMutable();
         if (supertype.label().isSort()) {
             throw new FormatException("Data type '%s' cannot be supertype", supertype);
         }
@@ -500,7 +502,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
         if (isImplicit()) {
             return false;
         }
-        testFixed(true);
+        assert isFixed();
         Set<TypeNode> allSubtypes = getSubtypes(supertype);
         if (allSubtypes.size() == 1) {
             return false;
@@ -516,7 +518,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
         if (isImplicit()) {
             return false;
         }
-        testFixed(true);
+        assert isFixed();
         return getSubtypes(supertype).contains(subtype);
     }
 
@@ -529,7 +531,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
      */
     public RuleGraphMorphism analyzeRule(RuleGraph source,
                                          RuleGraphMorphism parentTyping) throws FormatException {
-        testFixed(true);
+        assert isFixed();
         RuleFactory ruleFactory = parentTyping.getFactory();
         RuleGraphMorphism result = new RuleGraphMorphism(ruleFactory);
         FormatErrorSet errors = new FormatErrorSet();
@@ -924,7 +926,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
      * @throws FormatException if the rule graph contains type errors
      */
     public HostGraphMorphism analyzeHost(HostGraph source) throws FormatException {
-        testFixed(true);
+        assert isFixed();
         // reuse the source's host factory if it is based on this type graph's factory,
         // so that the typed image lives in the same node namespace as the source
         HostFactory sourceFactory = source.getFactory();
@@ -1200,21 +1202,24 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
 
     /** Returns the set of all type labels occurring in the type graph. */
     public Set<TypeLabel> getLabels() {
-        testFixed(true);
-        if (this.labels == null) {
-            this.labels = new HashSet<>();
-            for (TypeNode node : nodeSet()) {
-                this.labels.add(node.label());
-            }
-            for (TypeEdge edge : edgeSet()) {
-                this.labels.add(edge.label());
-            }
+        return this.labels.get();
+    }
+
+    /** Computes the value of {@link #labels}. */
+    private Set<TypeLabel> computeLabels() {
+        assert isFixed();
+        Set<TypeLabel> result = new HashSet<>();
+        for (TypeNode node : nodeSet()) {
+            result.add(node.label());
         }
-        return this.labels;
+        for (TypeEdge edge : edgeSet()) {
+            result.add(edge.label());
+        }
+        return result;
     }
 
     /** Set of all labels occurring in the type graph. */
-    private Set<TypeLabel> labels;
+    private final Supplier<Set<TypeLabel>> labels = lazy(this::computeLabels);
 
     /** Returns an unmodifiable view on the mapping from node type labels to direct supertypes. */
     public Map<TypeNode,Set<TypeNode>> getDirectSupertypeMap() {

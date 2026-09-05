@@ -254,7 +254,7 @@ public class Values {
     public static class ColorSet extends DefaultFixable {
         /** Adds the foreground and background colours for a given selection mode. */
         public void putColors(Mode mode, Color foreground, Color background) {
-            testFixed(false);
+            testMutable();
             Color oldFore = this.foreColors.put(mode, foreground);
             assert oldFore == null;
             Color oldBack = this.backColors.put(mode, background);
