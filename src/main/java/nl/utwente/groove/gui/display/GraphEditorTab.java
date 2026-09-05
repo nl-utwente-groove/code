@@ -191,7 +191,7 @@ final public class GraphEditorTab extends ResourceTab
         // ensure the JGraph gets focus as soon as the graph panel
         // is clicked anywhere
         // for reasons not clear to me, mouse listeners do not work on
-        // the level of the JGraphPanel
+        // the level of the GraphPanel
         toolBar.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -496,10 +496,10 @@ final public class GraphEditorTab extends ResourceTab
     }
 
     @Override
-    protected JGraphPanel<?> getEditArea() {
-        JGraphPanel<?> result = this.editArea;
+    protected GraphPanel<?> getEditArea() {
+        GraphPanel<?> result = this.editArea;
         if (result == null) {
-            result = this.editArea = new JGraphPanel<>(getJGraph());
+            result = this.editArea = new GraphPanel<>(getJGraph());
             result.setEnabledBackground(Values.EDITOR_BACKGROUND);
             result.initialise();
             result.setEnabled(true);
@@ -508,7 +508,7 @@ final public class GraphEditorTab extends ResourceTab
     }
 
     /** The jgraph panel used in this editor. */
-    private JGraphPanel<AspectGraph> editArea;
+    private GraphPanel<AspectGraph> editArea;
 
     @Override
     protected JTabbedPane getUpperInfoPanel() {

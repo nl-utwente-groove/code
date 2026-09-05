@@ -84,7 +84,7 @@ import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.display.DisplaysPanel;
 import nl.utwente.groove.gui.display.GraphEditorTab;
 import nl.utwente.groove.gui.display.GraphTab;
-import nl.utwente.groove.gui.display.JGraphPanel;
+import nl.utwente.groove.gui.display.GraphPanel;
 import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.gui.display.TextTab;
 import nl.utwente.groove.gui.export.CanvasExporters;
@@ -648,9 +648,9 @@ public class Simulator implements SimulatorListener {
         menu.add(this.actions.getEditRulePropertiesAction());
 
         // add graph edit menu when appropriate
-        JGraphPanel<?> panel = getDisplaysPanel().getGraphPanel();
+        GraphPanel<?> panel = getDisplaysPanel().getGraphPanel();
         if (panel != null) {
-            if (panel.getJGraph() instanceof AspectGraphCanvas canvas) {
+            if (panel.getCanvas() instanceof AspectGraphCanvas canvas) {
                 menu.addSubmenu(canvas.getController().createEditMenu(null));
             }
         }
@@ -684,9 +684,9 @@ public class Simulator implements SimulatorListener {
      * Fills the show menu with items (upon refresh).
      */
     private void fillDisplayMenu(MyJMenu menu) {
-        JGraphPanel<?> panel = getDisplaysPanel().getGraphPanel();
+        GraphPanel<?> panel = getDisplaysPanel().getGraphPanel();
         if (panel != null) {
-            GraphCanvas<?> canvas = panel.getJGraph();
+            GraphCanvas<?> canvas = panel.getCanvas();
             menu.add(canvas.getController().createShowHideMenu());
             menu.add(canvas.getController().createZoomMenu());
         }

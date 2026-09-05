@@ -224,10 +224,10 @@ public class StateDisplay extends Display implements SimulatorListener {
     }
 
     /** Returns component on which the state graph is displayed. */
-    public JGraphPanel<AspectGraph> getGraphPanel() {
-        JGraphPanel<AspectGraph> result = this.stateGraphPanel;
+    public GraphPanel<AspectGraph> getGraphPanel() {
+        GraphPanel<AspectGraph> result = this.stateGraphPanel;
         if (result == null) {
-            result = this.stateGraphPanel = new JGraphPanel<>(getJGraph()) {
+            result = this.stateGraphPanel = new GraphPanel<>(getJGraph()) {
                 @Override
                 public void setEnabled(boolean enabled) {
                     super.setEnabled(enabled);
@@ -237,13 +237,13 @@ public class StateDisplay extends Display implements SimulatorListener {
             result.initialise();
             result.setBorder(null);
             result.setEnabledBackground(Values.STATE_BACKGROUND);
-            result.getJGraph().setToolTipEnabled(true);
+            result.getCanvas().setToolTipEnabled(true);
         }
         return result;
     }
 
     /** JGraph panel on this display. */
-    private JGraphPanel<AspectGraph> stateGraphPanel;
+    private GraphPanel<AspectGraph> stateGraphPanel;
 
     /** Gets the error panel, creating it (lazily) if necessary. */
     private ErrorListPanel getErrorPanel() {

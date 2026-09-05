@@ -67,6 +67,7 @@ import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.view.GraphCanvas.Overlay;
 import nl.utwente.groove.gui.view.ViewCell;
 import nl.utwente.groove.gui.view.GraphViewMode;
+import nl.utwente.groove.gui.view.LTSGraphCanvas;
 import nl.utwente.groove.gui.jgraph.LTSJEdge;
 import nl.utwente.groove.gui.jgraph.LTSJGraph;
 import nl.utwente.groove.gui.jgraph.LTSJModel;
@@ -766,21 +767,21 @@ public class LTSDisplay extends Display implements SimulatorListener {
      * @author Arend Rensink
      * @version $Revision$
      */
-    public class LTSGraphPanel extends JGraphPanel<GTS> {
+    public class LTSGraphPanel extends GraphPanel<GTS> {
         /** Creates a LTS panel for a given simulator. */
-        public LTSGraphPanel(LTSJGraph jGraph) {
-            super(jGraph);
-            getJGraph().setToolTipEnabled(true);
+        public LTSGraphPanel(LTSGraphCanvas canvas) {
+            super(canvas);
+            getCanvas().setToolTipEnabled(true);
             setEnabledBackground(Values.STATE_BACKGROUND);
         }
 
         @Override
         public void setEnabled(boolean enabled) {
             super.setEnabled(enabled);
-            getJGraph().getController().getModeAction(SELECT_MODE).setEnabled(enabled);
-            getJGraph().getController().getModeAction(PAN_MODE).setEnabled(enabled);
+            getCanvas().getController().getModeAction(SELECT_MODE).setEnabled(enabled);
+            getCanvas().getController().getModeAction(PAN_MODE).setEnabled(enabled);
             if (enabled) {
-                getJGraph().getController().getModeButton(SELECT_MODE).doClick();
+                getCanvas().getController().getModeButton(SELECT_MODE).doClick();
             }
             LTSDisplay.this.setEnabled(enabled);
         }
