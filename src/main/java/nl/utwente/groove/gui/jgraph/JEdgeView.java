@@ -77,7 +77,7 @@ public class JEdgeView extends EdgeView {
     /**
      * Constructs an edge view for a given jEdge.
      */
-    public JEdgeView(ViewEdge<?> jEdge, JGraph<?> jGraph) {
+    public JEdgeView(JEdge<?> jEdge, JGraph<?> jGraph) {
         super(jEdge);
     }
 
@@ -117,12 +117,12 @@ public class JEdgeView extends EdgeView {
 
     /** Convenience method to retrieve the source vertex. */
     private ViewVertex<?> getSourceVertex() {
-        return getCell().getSourceVertex();
+        return getViewCell().getSourceVertex();
     }
 
     /** Convenience method to retrieve the target vertex. */
     private ViewVertex<?> getTargetVertex() {
-        return getCell().getTargetVertex();
+        return getViewCell().getTargetVertex();
     }
 
     @Override
@@ -147,8 +147,13 @@ public class JEdgeView extends EdgeView {
      * Specialises the return type.
      */
     @Override
-    public ViewEdge<?> getCell() {
-        return (ViewEdge<?>) super.getCell();
+    public JEdge<?> getCell() {
+        return (JEdge<?>) super.getCell();
+    }
+
+    /** Returns the edge cell shown by this view. */
+    public ViewEdge<?> getViewCell() {
+        return getCell().getViewCell();
     }
 
     /**
@@ -237,7 +242,7 @@ public class JEdgeView extends EdgeView {
         if (getPointCount() > 2) {
             return 0;
         }
-        if (getCell().isLoop()) {
+        if (getViewCell().isLoop()) {
             return 0;
         }
         // the total number of incoming and outgoing parallel edges
@@ -255,7 +260,7 @@ public class JEdgeView extends EdgeView {
             if (edge.getVisuals().getPoints().size() > 2) {
                 continue;
             }
-            found |= edge == getCell();
+            found |= edge == getViewCell();
             if (edge.getTargetVertex() == getTargetVertex()) {
                 // edge is outgoing
                 outCount++;
@@ -321,7 +326,7 @@ public class JEdgeView extends EdgeView {
     public Point2D getLabelVector() {
         Point2D p0 = getPoint(0);
         Point2D p1 = getPoint(1);
-        if (getCell().getVisuals().getLineStyle() == LineStyle.MANHATTAN
+        if (getViewCell().getVisuals().getLineStyle() == LineStyle.MANHATTAN
             && p1.getX() != p0.getX()) {
             p1 = new Point2D.Double(p1.getX(), p0.getY());
         }
@@ -430,7 +435,7 @@ public class JEdgeView extends EdgeView {
                 .format("This renderer is only meant for %s", JEdgeView.class);
 
             JEdgeView view = this.jView = (JEdgeView) v;
-            VisualMap visuals = view.getCell().getVisuals();
+            VisualMap visuals = view.getViewCell().getVisuals();
             this.line2color = visuals.getInnerLine();
             this.twoLines = this.line2color != null;
             this.errorOverlay = Values.getSeverityOverlay(visuals.getErrorSeverity());
@@ -703,12 +708,12 @@ public class JEdgeView extends EdgeView {
             Dimension result = this.jLabelSize;
             Color foreground = getForeground();
             // see if we can use the previously stored value
-            MultiLabel lines = view.getCell().getVisuals().getLabel();
+            MultiLabel lines = view.getViewCell().getVisuals().getLabel();
             if (lines.isEmpty()) {
                 result = this.jLabelSize = new Dimension();
             } else if (lines != this.jLabelLines || foreground != this.jLabelColor) {
                 // no, the text or colour have changed; reload the jLabel component
-                JGraph<?> jGraph = (JGraph<?>) view.getCell().getCanvas();
+                JGraph<?> jGraph = (JGraph<?>) view.getViewCell().getCanvas();
                 assert jGraph != null; // guaranteed by now
                 Point2D start = null;
                 Point2D end = null;
@@ -759,7 +764,7 @@ public class JEdgeView extends EdgeView {
         public Dimension getLabelSize(EdgeView view, String label) {
             Dimension result = null;
             ViewEdge<?> edge = view instanceof JEdgeView
-                ? ((JEdgeView) view).getCell()
+                ? ((JEdgeView) view).getViewCell()
                 : null;
             if (edge == null) {
                 result = computeLabelSize(view, label);

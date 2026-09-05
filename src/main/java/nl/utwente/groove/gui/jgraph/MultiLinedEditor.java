@@ -102,7 +102,7 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
         @Override
         public Component getGraphCellEditorComponent(org.jgraph.JGraph graph, Object value,
                                                      boolean isSelected) {
-            AspectViewCell jCell = (AspectViewCell) value;
+            AspectViewCell jCell = (AspectViewCell) ((JCell<?>) value).getViewCell();
             // fill the set of labels for autocompletion
             this.labels.clear();
             this.labels.addAll(prefixes);
@@ -126,7 +126,7 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
                 font = font.deriveFont((float) (font.getSize() * scale));
             }
             result.setFont(font);
-            String editString = ((AspectViewCell) value).getEditableLabels().toEditString();
+            String editString = jCell.getEditableLabels().toEditString();
             result.setText(editString);
             result.selectAll();
             return result;

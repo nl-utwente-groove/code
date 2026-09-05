@@ -41,6 +41,8 @@ import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.layout.EdgeLayout;
 import nl.utwente.groove.graph.layout.LayoutMap;
+import nl.utwente.groove.gui.view.cell.AspectEdgeCell;
+import nl.utwente.groove.gui.view.cell.AspectVertexCell;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.ChangeCount;
 import nl.utwente.groove.util.ChangeCount.Derived;
@@ -84,6 +86,27 @@ public class AspectGraphViewModel extends GraphViewModel<AspectGraph> {
     @Override
     public AspectGraphViewController getController() {
         return (AspectGraphViewController) super.getController();
+    }
+
+    @Override
+    public AspectVertexCell newVertex(Node node) {
+        return (AspectVertexCell) super.newVertex(node);
+    }
+
+    @Override
+    public AspectEdgeCell newEdge(@Nullable Edge edge) {
+        return (AspectEdgeCell) super.newEdge(edge);
+    }
+
+    @Override
+    protected AspectVertexCell createVertexCell(Node node) {
+        assert node instanceof AspectNode;
+        return new AspectVertexCell(this);
+    }
+
+    @Override
+    protected AspectEdgeCell createEdgeCell() {
+        return new AspectEdgeCell(this);
     }
 
     /** Sets a grammar model, with respect to which typing is resolved. */

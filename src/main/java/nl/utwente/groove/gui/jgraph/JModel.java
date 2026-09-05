@@ -18,6 +18,7 @@
 package nl.utwente.groove.gui.jgraph;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -42,28 +43,27 @@ import nl.utwente.groove.gui.view.GraphViewModel;
 import nl.utwente.groove.gui.view.ViewCell;
 import nl.utwente.groove.gui.view.ViewEdge;
 import nl.utwente.groove.gui.view.ViewVertex;
+import nl.utwente.groove.gui.view.cell.AViewCell;
+import nl.utwente.groove.gui.view.cell.AViewEdge;
+import nl.utwente.groove.gui.view.cell.AViewVertex;
 
 /**
  * Implements JGraph's GraphModel interface on top of a GROOVE graph:
- * the backend adapter of a {@link GraphViewModel}, whose cells it stores as its roots
- * and whose structural changes it commits as JGraph edits.
- * The content operations delegate to the view model.
+ * the backend adapter of a {@link GraphViewModel}, whose cells it shows through
+ * {@link JCell} items kept as its roots, and whose structural changes it commits
+ * as JGraph edits. The content operations delegate to the view model.
  * @author Arend Rensink
  * @version $Revision$
  */
 abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
     implements CellStore<G> {
     /**
-     * Creates a new model for a given JGraph, together with its view model.
+     * Creates a new model for a given JGraph, together with its view model,
+     * which the JGraph creates for this model as its cell store.
      */
     protected JModel(JGraph<G> jGraph) {
         this.jGraph = jGraph;
-        this.viewModel = createViewModel();
-    }
-
-    /** Callback factory method for the view model of this backend model. */
-    protected GraphViewModel<G> createViewModel() {
-        return new GraphViewModel<>(getJGraph().getController(), this);
+        this.viewModel = jGraph.createViewModel(this);
     }
 
     /** Returns the JGraph in which this model belongs. */
@@ -71,16 +71,21 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
         return this.jGraph;
     }
 
-    /** Specialises the type to a list of {@link ViewCell}s. */
+    /** Specialises the type to a list of {@link JCell}s. */
     @Override
     @SuppressWarnings("unchecked")
-    public List<? extends ViewCell<G>> getRoots() {
+    public List<? extends JCell<G>> getRoots() {
         return super.getRoots();
     }
 
+    /* The cells shown by the roots, in z-order. */
     @Override
     public Collection<? extends ViewCell<G>> getCells() {
-        return getRoots();
+        List<AViewCell<G>> result = new ArrayList<>();
+        for (var root : getRoots()) {
+            result.add(root.getViewCell());
+        }
+        return result;
     }
 
     /** Refreshes all refreshable visual keys in all cells of this model. */
@@ -97,14 +102,14 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
      * Sends a set of cells to the back (in the z-order) without posting an edit.
      */
     void toBackSilent(Collection<? extends ViewCell<G>> jCells) {
-        createLayerEdit(jCells.toArray(), GraphModelLayerEdit.BACK).execute();
+        createLayerEdit(JCell.items(jCells), GraphModelLayerEdit.BACK).execute();
     }
 
     @Override
     public AttributeMap getAttributes(Object node) {
         AttributeMap result;
-        if (node instanceof ViewCell) {
-            result = ((AJCell<?,?,?>) node).getAttributes();
+        if (node instanceof JCell<?> jCell) {
+            result = jCell.getAttributes();
         } else {
             result = super.getAttributes(node);
         }
@@ -138,8 +143,8 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
     /**
      * Changes the underlying graph to the one passed in as a parameter.
      * Note that this should only be done as part of an action that also
-     * changes the {@link ViewCell}s of the {@link JModel}, as well as the
-     * mapping from graph elements to {@link ViewCell}s.
+     * changes the cells of the {@link JModel}, as well as the
+     * mapping from graph elements to cells.
      */
     void setGraph(G graph) {
         getViewModel().setGraph(graph);
@@ -157,7 +162,7 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
      * @param nodeSet the set of nodes to be added; non-{@code null}
      * @param edgeSet the set of edges to be added; if{@code null},
      * the incident edges of {@code nodeSet} are used
-     * @param replace if {@code true}, all existing jCells are removed
+     * @param replace if {@code true}, all existing cells are removed
      * @return {@code true} if the jModel was changed
      */
     public boolean addElements(Collection<? extends Node> nodeSet,
@@ -165,7 +170,7 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
         return getViewModel().addElements(nodeSet, edgeSet, replace);
     }
 
-    /** Returns the set of {@link ViewCell}s associated with a given collection
+    /** Returns the set of cells associated with a given collection
      * of graph elements.
      */
     public Set<ViewCell<?>> getJCells(Collection<? extends Element> elements) {
@@ -173,32 +178,32 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
     }
 
     /**
-     * Returns the {@link ViewCell} associated with a given graph element. The
+     * Returns the cell associated with a given graph element. The
      * result is a {@link ViewVertex} for which the graph element is the
      * underlying node or self-edge, or a {@link ViewEdge} for which the graph
      * element is an underlying edge.
-     * @param elem the graph element for which the jcell is requested
-     * @return the jcell associated with <tt>elem</tt>
+     * @param elem the graph element for which the cell is requested
+     * @return the cell associated with <tt>elem</tt>
      */
     public ViewCell<G> getJCell(Element elem) {
         return getViewModel().getJCell(elem);
     }
 
     /**
-     * Returns the <tt>JNode</tt> or <tt>ViewEdge</tt> associated with a given
-     * edge. The method returns a <tt>JNode</tt> if and only if <tt>edge</tt> is
+     * Returns the vertex or edge cell associated with a given
+     * edge. The method returns a vertex cell if and only if <tt>edge</tt> is
      * a self-edge and <tt>showNodeIdentities</tt> does not hold.
      * @param edge the graph edge we're interested in
-     * @return the <tt>JNode</tt> or <tt>ViewEdge</tt> modelling <tt>edge</tt>
+     * @return the cell modelling <tt>edge</tt>
      */
     public ViewCell<G> getJCellForEdge(Edge edge) {
         return getViewModel().getJCellForEdge(edge);
     }
 
     /**
-     * Returns the JNode associated with a given node.
+     * Returns the vertex cell associated with a given node.
      * @param node the graph node we're interested in
-     * @return the JNode modelling node (if node is known)
+     * @return the vertex cell modelling node (if node is known)
      */
     public ViewVertex<G> getJCellForNode(Node node) {
         return getViewModel().getJCellForNode(node);
@@ -214,31 +219,30 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
         getViewModel().synchroniseLayout(jCell);
     }
 
-    /**
-     * Sets the layoutability of all cells.
-     * @param layoutable the new value for {@link ViewVertex#setLayoutable(boolean)}
-     */
+    /** Sets the layoutable status of all vertices. */
     public void setLayoutable(boolean layoutable) {
         getViewModel().setLayoutable(layoutable);
     }
 
-    /** Retrieves a mapping from graph nodes to foreground colours
-     * as stored in the corresponding {@link ViewVertex} attributes.
-     */
+    /** Returns a map from nodes to colours, as stored in the layout map. */
     public Map<Node,Color> getColorMap() {
         return getViewModel().getColorMap();
     }
 
+    /**
+     * Overrides the method to synchronise the layout of changed cells back into
+     * the graph, and to allow the change notification to be vetoed.
+     */
     @Override
     protected void fireGraphChanged(Object source, GraphModelChange edit) {
         if (!isLoading()) {
             // if we're loading, the layout is actually taken from the graph
             // so no synchronisation is necessary
             for (Object jCell : edit.getChanged()) {
-                if (jCell instanceof ViewCell) {
+                if (jCell instanceof JCell<?> item) {
                     @SuppressWarnings("unchecked")
-                    ViewCell<G> graphJCell = (ViewCell<G>) jCell;
-                    synchroniseLayout(graphJCell);
+                    ViewCell<G> viewCell = (ViewCell<G>) item.getViewCell();
+                    synchroniseLayout(viewCell);
                 }
             }
         }
@@ -247,33 +251,26 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
         }
     }
 
-    /**
-     * Callback method that may prevent {@link #fireGraphChanged(Object, GraphModelChange)}
-     * from propagating its event. This can be done in preparation to layouting,
-     * to avoid flickers.
-     */
+    /** Indicates if graph change notifications are currently vetoed. */
     protected boolean vetoFireGraphChanged() {
         return this.vetoFireGraphChanged;
     }
 
-    /** Sets or retracts the veto for the {@link #fireGraphChanged(Object, GraphModelChange)}
-     * event.
-     */
+    /** Sets or resets the veto on graph change notifications. */
     protected void setVetoFireGraphChanged(boolean veto) {
         this.vetoFireGraphChanged = veto;
     }
 
     /**
      * Returns whether or not equally named bidirectional edges should be
-     * merged (i.e. mapped to the same GraphJEdge).
+     * merged (i.e. mapped to the same edge cell).
      */
     public boolean isMergeBidirectionalEdges() {
         return getViewModel().isMergeBidirectionalEdges();
     }
 
     /**
-     * Returns whether all edges should be
-     * merged (i.e. mapped to the same GraphJEdge).
+     * Returns whether all edges should be merged (i.e. mapped to the same edge cell).
      */
     public boolean isMergeAllEdges() {
         return getViewModel().isMergeAllEdges();
@@ -281,41 +278,23 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
 
     // ---------- the cell store ----------
 
-    /* Creates a JGraph vertex cell through the factory, bound to this model. */
-    @Override
-    public ViewVertex<G> newVertex(Node node) {
-        ViewVertex<G> result = getJGraph().getFactory().newJVertex(node);
-        ((AJCell<?,?,?>) result).setJModel(this);
-        result.setNode(node);
-        result.initialise();
-        return result;
-    }
-
-    /* Creates a JGraph edge cell through the factory, bound to this model. */
-    @Override
-    public ViewEdge<G> newEdge(@Nullable Edge edge) {
-        ViewEdge<G> result = getJGraph().getFactory().newJEdge(edge);
-        ((AJCell<?,?,?>) result).setJModel(this);
-        result.initialise();
-        if (edge != null) {
-            result.addEdge(edge);
-        }
-        return result;
-    }
-
-    /* Commits the insertion as one JGraph edit; the edges go first so they end up at the back. */
+    /**
+     * Commits the insertion as one JGraph edit, creating the JGraph items of the
+     * inserted cells; the edges go first so they end up at the back.
+     */
+    @SuppressWarnings("unchecked")
     @Override
     public void insertCells(List<? extends ViewVertex<G>> vertices,
                             List<? extends ViewEdge<G>> edges, List<Connection<G>> connections,
                             boolean replace) {
         int vertexCount = vertices.size();
         int edgeCount = edges.size();
-        Object[] addedCells = new ViewCell<?>[vertexCount + edgeCount];
+        Object[] addedCells = new JCell<?>[vertexCount + edgeCount];
         for (int i = 0; i < edgeCount; i++) {
-            addedCells[i] = edges.get(i);
+            addedCells[i] = new JEdge<>((AViewEdge<G>) edges.get(i));
         }
         for (int i = 0; i < vertexCount; i++) {
-            addedCells[edgeCount + i] = vertices.get(i);
+            addedCells[edgeCount + i] = new JVertex<>((AViewVertex<G>) vertices.get(i));
         }
         Object[] removedCells = replace
             ? getRoots().toArray()
@@ -323,44 +302,43 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
         ConnectionSet connectionSet = new ConnectionSet();
         for (Connection<G> c : connections) {
             connectionSet
-                .connect(c.edge(), ((AJVertex<?,?,?,?>) c.source()).getPort(),
-                         ((AJVertex<?,?,?,?>) c.target()).getPort());
+                .connect(JCell.of(c.edge()), vertexItem(c.source()).getPort(),
+                         vertexItem(c.target()).getPort());
         }
         createEdit(addedCells, removedCells, null, connectionSet, getParentMap(), null)
             .execute();
     }
 
-    /**
-     * Returns the parent map for hierarchical graphs, default to null.
-     * To be overriden in derived classes.
-     */
+    /** Returns the JGraph item of a given vertex cell. */
+    private JVertex<G> vertexItem(ViewVertex<G> vertex) {
+        return (JVertex<G>) JCell.of(vertex);
+    }
+
+    /** Callback method to return the parent map for insertions; {@code null} by default. */
     protected ParentMap getParentMap() {
         return null;
     }
 
-    /** The JGraph to which this model belongs. */
     private final JGraph<G> jGraph;
 
-    /** Returns the library-independent content model of the graph view. */
+    /** Returns the view model this JGraph model is the adapter of. */
     public GraphViewModel<G> getViewModel() {
         return this.viewModel;
     }
 
-    /** The library-independent content model of the graph view. */
+    /** The view model this JGraph model is the adapter of. */
     private final GraphViewModel<G> viewModel;
 
-    /** Changes the loading status of the view model.
-     * Callers restore the previous status afterwards, so that loading phases nest.
-     */
+    /** Sets the loading flag of the view model. */
     protected void setLoading(boolean loading) {
         getViewModel().setLoading(loading);
     }
 
-    /** Indicates if the JModel is currently in the process of loading a graph. */
+    /** Indicates if the view model is being loaded. */
     public boolean isLoading() {
         return getViewModel().isLoading();
     }
 
-    /** See {@link #setVetoFireGraphChanged(boolean)}. */
+    /** Flag indicating that graph change notifications are vetoed. */
     private boolean vetoFireGraphChanged;
 }

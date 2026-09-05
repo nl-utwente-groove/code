@@ -51,7 +51,7 @@ final class LoopRouting implements Routing {
     public List<?> route(GraphLayoutCache cache, EdgeView edgeView) {
         List<Point2D> result = null;
         if (isRoutable(edgeView)) {
-            ViewEdge<?> jEdge = (ViewEdge<?>) edgeView.getCell();
+            ViewEdge<?> jEdge = ((JEdge<?>) edgeView.getCell()).getViewCell();
             // find out the source bounds
             VertexView sourceView = (VertexView) edgeView.getSource().getParentView();
             // first refresh the source view, otherwise the view bounds
@@ -77,7 +77,7 @@ final class LoopRouting implements Routing {
         if (!edgeView.isLoop()) {
             return false;
         }
-        JGraph<?> jGraph = (JGraph<?>) ((ViewEdge<?>) edgeView.getCell()).getCanvas();
+        JGraph<?> jGraph = (JGraph<?>) ((JEdge<?>) edgeView.getCell()).getViewCell().getCanvas();
         assert jGraph != null; // known by now
         if (jGraph.isLayouting()) {
             return false;

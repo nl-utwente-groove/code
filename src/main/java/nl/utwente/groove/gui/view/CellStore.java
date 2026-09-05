@@ -20,17 +20,15 @@ import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
-import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.util.AIGenerated;
 
 /**
- * The backend's store of the cells of a {@link GraphViewModel}: it creates cells
- * bound to itself, commits structural changes computed by the view model, and
- * holds the authoritative, z-ordered collection of cells.
+ * The backend's store of the cells of a {@link GraphViewModel}: it commits
+ * structural changes computed by the view model, creating its own items for the
+ * cells, and holds the authoritative, z-ordered collection of cells.
+ * The cells themselves are created by the view model.
  * @param <G> the type of graph displayed
  * @author Arend Rensink
  * @version $Revision$
@@ -38,15 +36,6 @@ import nl.utwente.groove.util.AIGenerated;
 @AIGenerated("Claude Fable 5.1, 2026-09")
 @NonNullByDefault
 public interface CellStore<G extends Graph> {
-    /** Creates a fresh, initialised vertex cell for a given node, bound to this store. */
-    ViewVertex<G> newVertex(Node node);
-
-    /**
-     * Creates a fresh, initialised edge cell, bound to this store.
-     * @param edge the initial edge of the cell; {@code null} if there is none yet
-     */
-    ViewEdge<G> newEdge(@Nullable Edge edge);
-
     /**
      * Commits a structural change as one edit: inserts the given vertices and edges
      * (connected as described) and, if so requested, removes all cells that were there before.

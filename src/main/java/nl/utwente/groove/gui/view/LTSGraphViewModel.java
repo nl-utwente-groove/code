@@ -29,6 +29,8 @@ import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.gui.look.Look;
 import nl.utwente.groove.gui.look.VisualKey;
+import nl.utwente.groove.gui.view.cell.LTSEdgeCell;
+import nl.utwente.groove.gui.view.cell.LTSVertexCell;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSListener;
 import nl.utwente.groove.lts.GraphState;
@@ -54,6 +56,17 @@ public class LTSGraphViewModel extends GraphViewModel<GTS> implements GTSListene
     @Override
     public LTSGraphViewController getController() {
         return (LTSGraphViewController) super.getController();
+    }
+
+    @Override
+    protected LTSVertexCell createVertexCell(Node node) {
+        assert node instanceof GraphState;
+        return new LTSVertexCell(this);
+    }
+
+    @Override
+    protected LTSEdgeCell createEdgeCell() {
+        return new LTSEdgeCell(this);
     }
 
     /**

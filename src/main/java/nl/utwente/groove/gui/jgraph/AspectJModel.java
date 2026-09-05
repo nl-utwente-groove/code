@@ -20,7 +20,6 @@ import java.beans.PropertyChangeListener;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -40,39 +39,31 @@ import org.jgraph.graph.ParentMap;
 
 import nl.utwente.groove.grammar.ResourceProperties;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
-import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.GraphBasedModel;
-import nl.utwente.groove.grammar.model.ResourceModel;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.gui.view.AspectGraphViewModel;
 import nl.utwente.groove.gui.view.AspectViewCell;
+import nl.utwente.groove.gui.view.AspectViewVertex;
+import nl.utwente.groove.gui.view.cell.AspectEdgeCell;
+import nl.utwente.groove.gui.view.cell.AspectVertexCell;
 import nl.utwente.groove.util.QualName;
 
 /**
- * Implements jgraph's GraphModel interface on top of a {@link ResourceModel}. This is
- * used to visualise rules and attributed graphs: the backend adapter of an
- * {@link AspectGraphViewModel}, adding JGraph's clipboard and connection semantics
- * and the detection of structural edits.
+ * JGraph model adapter of an {@link AspectGraphViewModel}: keeps the JGraph
+ * edit semantics (insertion, removal, cloning, connection acceptance) and asks
+ * the view model to rebuild the graph after a structural edit.
  * @author Arend Rensink
  * @version $Revision$
  */
 final public class AspectJModel extends JModel<@NonNull AspectGraph> {
-    /**
-     * Creates an new model, initially without a graph or grammar loaded.
-     * Call {@link #setGrammar(GrammarModel)} to complete construction.
-     */
+    /** Creates a new model for a given aspect JGraph. */
     AspectJModel(AspectJGraph jGraph) {
         super(jGraph);
-    }
-
-    @Override
-    protected AspectGraphViewModel createViewModel() {
-        return new AspectGraphViewModel(getJGraph().getController(), this);
     }
 
     @Override
@@ -80,16 +71,10 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
         return (AspectGraphViewModel) super.getViewModel();
     }
 
+    /* Specialises the return type. */
     @Override
     public AspectJGraph getJGraph() {
         return (AspectJGraph) super.getJGraph();
-    }
-
-    /** Specialises the type to a list of {@link nl.utwente.groove.gui.view.ViewCell}s. */
-    @Override
-    @SuppressWarnings("unchecked")
-    public List<? extends AspectViewCell> getRoots() {
-        return (List<? extends AspectViewCell>) super.getRoots();
     }
 
     /** Sets a grammar model, with respect to which typing is resolved. */
@@ -107,21 +92,19 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
         return getViewModel().getJCell(elem);
     }
 
-    /** Specialises the return type. */
     @Override
     public AspectViewCell getJCellForEdge(Edge edge) {
         return getViewModel().getJCellForEdge(edge);
     }
 
-    /** Specialises the return type. */
     @Override
-    public AspectJVertex getJCellForNode(Node node) {
-        return (AspectJVertex) getViewModel().getJCellForNode(node);
+    public AspectViewVertex getJCellForNode(Node node) {
+        return getViewModel().getJCellForNode(node);
     }
 
     /**
-     * Clones this model, and initialises the new model with the given
-     * argument graph.
+     * Creates a new model with the same grammar and editing status as this one,
+     * loaded with a given graph.
      */
     public AspectJModel cloneWithNewGraph(AspectGraph graph) {
         AspectJModel result = getJGraph().newModel();
@@ -133,28 +116,22 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
         return result;
     }
 
-    /**
-     * Reconstructs the aspect graph on the basis of the current
-     * content of the JModel.
-     * This method should be called immediately after the changes to
-     * the JModel have been made, but before any graph listeners are
-     * notified.
-     */
+    /** Reconstructs the aspect graph on the basis of the current cells. */
     public void syncGraph() {
         getViewModel().syncGraph();
     }
 
-    /** Returns an up-to-date resource model for the graph being edited here. */
+    /** Returns the resource model of the graph shown. */
     public GraphBasedModel<?> getResourceModel() {
         return getViewModel().getResourceModel();
     }
 
-    /** Returns the type graph associated with this jModel, if any. */
+    /** Returns the type graph against which the graph shown is typed. */
     public TypeGraph getTypeGraph() {
         return getViewModel().getTypeGraph();
     }
 
-    /** Returns the name of this aspect model as a qualified name. */
+    /** Returns the name of the graph shown as a qualified name. */
     public QualName getQualName() {
         return getViewModel().getQualName();
     }
@@ -164,50 +141,43 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
         getViewModel().setQualName(name);
     }
 
-    /**
-     * Returns the properties associated with this j-model.
-     */
+    /** Returns the properties associated with this model. */
     public final ResourceProperties getProperties() {
         return getViewModel().getProperties();
     }
 
-    /** Change the being-edited flag of the view model. */
+    /** Sets or resets the flag that the graph of this model is being edited. */
     public void setBeingEdited(boolean flag) {
         getViewModel().setBeingEdited(flag);
     }
 
-    /**
-     * New source is only acceptable if not <tt>null</tt>.
-     */
     @Override
     public boolean acceptsSource(Object edge, Object port) {
         return port != null;// && port != ((ViewEdge) edge).getTarget();
     }
 
-    /**
-     * Overrides the method so also incident edges of removed nodes are removed.
-     */
+    /* Removes the incident edges of removed vertices as well. */
     @SuppressWarnings("unchecked")
     @Override
     public void remove(Object[] roots) {
         List<Object> removables = new LinkedList<>(Arrays.asList(roots));
         for (Object element : roots) {
-            if (element instanceof AspectJVertex cell) {
+            if (element instanceof JVertex<?> cell) {
                 removables.addAll(cell.getPort().getEdges());
             }
         }
         super.remove(removables.toArray());
     }
 
+    /* Only inserts edges whose source and target ports are connected. */
     @SuppressWarnings("rawtypes")
     @Override
     public void insert(Object[] roots, Map attributes, ConnectionSet cs, ParentMap pm,
                        UndoableEdit[] edits) {
         Set<Object> insertables = new LinkedHashSet<>();
-        // only copy edges whose source and target ports are connected
         for (Object root : roots) {
             boolean insert = true;
-            if (root instanceof AspectJEdge jEdge) {
+            if (root instanceof JEdge<?> jEdge) {
                 DefaultPort sourcePort = (DefaultPort) cs.getPort(jEdge, true);
                 DefaultPort targetPort = (DefaultPort) cs.getPort(jEdge, false);
                 insert = sourcePort != null && targetPort != null;
@@ -234,58 +204,46 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
         super.insert(insertables.toArray(), attributes, cs, pm, edits);
     }
 
+    /*
+     * The clones are bound to this model and their vertices get fresh node
+     * numbers; the clones of the view cells are made by the JGraph cells.
+     */
     @Override
     public Map<?,?> cloneCells(Object[] cells) {
         Map<?,?> result = super.cloneCells(cells);
-        // assign new node numbers to the JVertices
+        // assign new node numbers to the vertices
         getViewModel().startNodeNumbering();
-        // we reuse the JCells to keep their connection and user object intact;
-        // however, all auxiliary structures need to be cleared
-        List<AspectJVertex> newJVertices = new ArrayList<>();
+        List<AspectVertexCell> newVertices = new ArrayList<>();
         for (Object cell : result.values()) {
-            AspectViewCell jCell = null;
-            if (cell instanceof AspectJVertex jVertex) {
-                jVertex.setNode(createAspectNode());
-                newJVertices.add(jVertex);
-                jCell = jVertex;
-            } else if (cell instanceof AspectJEdge jEdge) {
-                jCell = jEdge;
-            }
-            if (jCell != null) {
-                ((AJCell<?,?,?>) jCell).setJModel(this);
-                jCell.initialise();
+            if (cell instanceof JVertex<?> jVertex
+                && jVertex.getViewCell() instanceof AspectVertexCell vertex) {
+                vertex.setViewModel(getViewModel());
+                vertex.setNode(createAspectNode());
+                vertex.initialise();
+                newVertices.add(vertex);
+            } else if (cell instanceof JEdge<?> jEdge
+                && jEdge.getViewCell() instanceof AspectEdgeCell edge) {
+                edge.setViewModel(getViewModel());
+                edge.initialise();
             }
         }
-        for (AspectJVertex jVertex : newJVertices) {
-            jVertex.setNodeFixed();
+        for (AspectVertexCell vertex : newVertices) {
+            vertex.setNodeFixed();
         }
         getViewModel().stopNodeNumbering();
         return result;
     }
 
-    /**
-     * Notifies the model (but not the listeners) that the underlying graph has changed.
-     * @see AspectJModel#setGraphModified()
-     */
+    /** Flags the graph as dirty, so it is rebuilt on the next request. */
     public void setGraphDirty() {
         getViewModel().setGraphDirty();
     }
 
-    /**
-     * Notifies the model and all listeners that the underlying graph has
-     * been modified.
-     */
+    /** Signals a modification of the graph to the graph change listeners. */
     public void setGraphModified() {
         getViewModel().setGraphModified();
     }
 
-    /**
-     * We override this method to ensure that the aspect graph
-     * remains in sync with any changes made to the JModel, <i>before</i>
-     * the listeners are notified of the changes.
-     * If a relevant change was made, the view model's
-     * {@link AspectGraphViewModel#syncGraph()} is invoked.
-     */
     @Override
     protected void fireGraphChanged(Object source, GraphModelChange edit) {
         // synchronise the graph to match the edits,
@@ -337,11 +295,6 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
         getViewModel().removeGraphChangeListener(listener);
     }
 
-    /** Role names (for the tool tips). */
-    static final Map<AspectKind,String> ROLE_NAMES = new EnumMap<>(AspectKind.class);
-    /** Role descriptions (for the tool tips). */
-    static final Map<AspectKind,String> ROLE_DESCRIPTIONS = new EnumMap<>(AspectKind.class);
-
     static private final boolean GUI_DEBUG = false;
 
     /** Prints the own-code part of the stack trace to the given output.
@@ -357,24 +310,5 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
                 out.printf("  %s%n", stackTrace[myCode]);
             }
         }
-    }
-
-    static {
-        ROLE_NAMES.put(AspectKind.EMBARGO, "Embargo");
-        ROLE_NAMES.put(AspectKind.READER, "Reader");
-        ROLE_NAMES.put(AspectKind.CREATOR, "Creator");
-        ROLE_NAMES.put(AspectKind.ADDER, "Adder");
-        ROLE_NAMES.put(AspectKind.ERASER, "Eraser");
-        ROLE_NAMES.put(AspectKind.REMARK, "Remark");
-
-        ROLE_DESCRIPTIONS
-            .put(AspectKind.EMBARGO, "Must be absent from a graph for this rule to apply");
-        ROLE_DESCRIPTIONS.put(AspectKind.READER, "Must be matched for this rule to apply");
-        ROLE_DESCRIPTIONS.put(AspectKind.CREATOR, "Will be created by applying this rule");
-        ROLE_DESCRIPTIONS
-            .put(AspectKind.ADDER,
-                 "Must be absent from a graph for this rule to apply, and will be created when applying this rule");
-        ROLE_DESCRIPTIONS.put(AspectKind.ERASER, "Will be deleted by applying this rule");
-        ROLE_DESCRIPTIONS.put(AspectKind.REMARK, "Has no effect on the execution of the rule");
     }
 }

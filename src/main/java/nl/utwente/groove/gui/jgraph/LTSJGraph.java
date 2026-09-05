@@ -34,8 +34,7 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.jgraph.graph.GraphModel;
 
-import nl.utwente.groove.graph.Edge;
-import nl.utwente.groove.graph.Node;
+import nl.utwente.groove.gui.view.CellStore;
 import nl.utwente.groove.gui.view.LTSGraphCanvas;
 import nl.utwente.groove.gui.view.LTSGraphViewController;
 import nl.utwente.groove.gui.view.LTSGraphViewModel;
@@ -46,7 +45,6 @@ import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.util.collect.Matrix;
 import nl.utwente.groove.util.line.MatrixFormat;
-import nl.utwente.groove.gui.view.ViewVertex;
 
 /**
  * Implementation of MyJGraph that provides the proper popup menu. To construct
@@ -163,7 +161,7 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements LTSGraphCanvas, S
 
     @Override
     public LTSGraphViewModel newViewModel() {
-        return ((LTSJModel) newModel()).getViewModel();
+        return newModel().getViewModel();
     }
 
     @Override
@@ -187,7 +185,7 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements LTSGraphCanvas, S
     Dimension2D computePreferredSize(JVertexView view) {
         Dimension2D result;
         if (FAST_SIZE) {
-            ViewVertex<?> vertex = view.getCell();
+            var vertex = view.getViewCell();
             var label = vertex.getVisuals().getLabel();
             var matrix = label.toBuilder(MatrixFormat.instance());
             result = this.sizeMatrix.lookup(matrix.getWidth(), matrix.getHeight());
@@ -203,36 +201,16 @@ public class LTSJGraph extends JGraph<@NonNull GTS> implements LTSGraphCanvas, S
 
     private final Matrix<Dimension2D> sizeMatrix = new Matrix<>();
 
-    @Override
-    protected JGraphFactory<@NonNull GTS> createFactory() {
-        return new MyFactory();
-    }
-
-    private class MyFactory extends JGraphFactory<@NonNull GTS> {
-        public MyFactory() {
-            super(LTSJGraph.this);
-        }
-
-        /* The node is expected to be a non-null GraphState. */
-        @Override
-        public LTSJVertex newJVertex(Node node) {
-            assert node instanceof GraphState;
-            return LTSJVertex.newInstance();
-        }
-
-        /* The edge is expected to be a non-null GraphTransition. */
-        @Override
-        public LTSJEdge newJEdge(Edge edge) {
-            assert edge instanceof GraphTransition;
-            return LTSJEdge.newInstance();
-        }
-
-        @Override
-        public LTSJModel newModel() {
-            return new LTSJModel((LTSJGraph) getJGraph());
-        }
-    }
-
     /** Flag indicating if the label size computation should be fast and sloppy. */
     static private final boolean FAST_SIZE = false;
+
+    @Override
+    public LTSJModel newModel() {
+        return new LTSJModel(this);
+    }
+
+    @Override
+    LTSGraphViewModel createViewModel(CellStore<@NonNull GTS> store) {
+        return new LTSGraphViewModel(getController(), store);
+    }
 }

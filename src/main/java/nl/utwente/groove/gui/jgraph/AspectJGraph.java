@@ -42,17 +42,18 @@ import org.jgraph.graph.GraphModel;
 import org.jgraph.graph.PortView;
 
 import nl.utwente.groove.gui.view.GraphViewMode;
-import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
-import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Element;
-import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.view.AspectGraphCanvas;
 import nl.utwente.groove.gui.view.AspectGraphViewController;
 import nl.utwente.groove.gui.view.AspectGraphViewModel;
+import nl.utwente.groove.gui.view.AspectViewEdge;
+import nl.utwente.groove.gui.view.CellStore;
+import nl.utwente.groove.gui.view.cell.AspectEdgeCell;
+import nl.utwente.groove.gui.view.cell.AspectVertexCell;
 import nl.utwente.groove.grammar.model.GraphBasedModel;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.gui.look.VisualKey;
@@ -159,8 +160,13 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements Aspect
     }
 
     @Override
+    AspectGraphViewModel createViewModel(CellStore<@NonNull AspectGraph> store) {
+        return new AspectGraphViewModel(getController(), store);
+    }
+
+    @Override
     public AspectJModel newModel() {
-        AspectJModel result = (AspectJModel) super.newModel();
+        AspectJModel result = new AspectJModel(this);
         GrammarModel grammar = getController().getGrammar();
         if (grammar == null) {
             assert getSimulatorModel() != null : "Can't create AspectJGraphs without grammar model";
@@ -204,10 +210,12 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements Aspect
         stopEditing();
         Point2D atPoint = fromScreen(snap(screenPoint));
         // define the j-cell to be inserted
-        AspectJVertex jVertex = (AspectJVertex) model.newVertex(model.createAspectNode());
-        jVertex.setNodeFixed();
-        jVertex.putVisual(VisualKey.NODE_POS, atPoint);
+        var viewModel = model.getViewModel();
+        AspectVertexCell vertex = viewModel.newVertex(viewModel.createAspectNode());
+        vertex.setNodeFixed();
+        vertex.putVisual(VisualKey.NODE_POS, atPoint);
         // add the cell to the jGraph
+        var jVertex = new JVertex<>(vertex);
         Object[] insert = {jVertex};
         model.insert(insert, null, null, null, null);
         setSelectionCell(jVertex);
@@ -245,11 +253,12 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements Aspect
         DefaultPort fromPort = (DefaultPort) fromPortView.getCell();
         DefaultPort toPort = (DefaultPort) toPortView.getCell();
         // define the edge to be inserted
-        AspectJEdge newEdge = (AspectJEdge) model.newEdge(null);
+        AspectEdgeCell edge = model.getViewModel().newEdge(null);
         // add a single, empty label so the edge will be displayed
-        newEdge.getEditableLabels().add("");
+        edge.getEditableLabels().add("");
         // to make sure there is at least one graph edge wrapped by this ViewEdge,
         // we add a dummy edge label to the ViewEdge's user object
+        var newEdge = new JEdge<>(edge);
         Object[] insert = {newEdge};
         // define connections between edge and nodes, if any
         ConnectionSet cs = new ConnectionSet();
@@ -262,7 +271,7 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements Aspect
         } else {
             points = Arrays.asList(from, to);
         }
-        newEdge.putVisual(VisualKey.POINTS, points);
+        edge.putVisual(VisualKey.POINTS, points);
         // add the cell to the jGraph
         model.insert(insert, null, cs, null, null);
         setSelectionCell(newEdge);
@@ -290,7 +299,7 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements Aspect
             var errorCell = model.getJCell(elem);
             if (errorCell == null && elem instanceof Edge e) {
                 errorCell = model.getJCell(e.source());
-            } else if (errorCell instanceof AspectJEdge e && e.isSourceLabel()) {
+            } else if (errorCell instanceof AspectViewEdge e && e.isSourceLabel()) {
                 errorCell = e.getSourceVertex();
             }
             if (errorCell != null) {
@@ -298,7 +307,7 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements Aspect
             }
         }
         if (!errorCells.isEmpty()) {
-            setSelectionCells(errorCells.toArray());
+            setSelectionCells(JCell.items(errorCells));
         }
     }
 
@@ -368,36 +377,4 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements Aspect
         }
     }
 
-    @Override
-    protected JGraphFactory<@NonNull AspectGraph> createFactory() {
-        return new MyFactory();
-    }
-
-    private class MyFactory extends JGraphFactory<@NonNull AspectGraph> {
-        public MyFactory() {
-            super(AspectJGraph.this);
-        }
-
-        @Override
-        public AspectJGraph getJGraph() {
-            return (AspectJGraph) super.getJGraph();
-        }
-
-        @Override
-        public AspectJVertex newJVertex(Node node) {
-            assert node instanceof AspectNode;
-            return AspectJVertex.newInstance(getJGraph().getGraphRole());
-        }
-
-        @Override
-        public AspectJEdge newJEdge(Edge edge) {
-            assert edge == null || edge instanceof AspectEdge;
-            return AspectJEdge.newInstance(getJGraph().getGraphRole());
-        }
-
-        @Override
-        public AspectJModel newModel() {
-            return new AspectJModel(getJGraph());
-        }
-    }
 }

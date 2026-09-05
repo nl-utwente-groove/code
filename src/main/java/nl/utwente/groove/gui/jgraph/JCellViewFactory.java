@@ -1,56 +1,43 @@
 /*
  * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2023
  * University of Twente
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- * 
+ *
  * $Id$
  */
 package nl.utwente.groove.gui.jgraph;
 
 import org.jgraph.graph.DefaultCellViewFactory;
 import org.jgraph.graph.VertexView;
-import nl.utwente.groove.gui.view.ViewEdge;
-import nl.utwente.groove.gui.view.ViewVertex;
 
 /**
- * Implementation of a cell view factory that returns {@link JVertexView} en
- * {@link JEdgeView} -objects. For this purpose, the graph on which the views
- * are to be displayed is stored in the factory.
+ * Cell view factory creating GROOVE's own views for the JGraph cells.
  * @author Arend Rensink
  * @version $Revision$
  */
 public class JCellViewFactory extends DefaultCellViewFactory {
-    /**
-     * Constructs a factory for creating views upon a particular {@link JGraph}.
-     * @param jGraph the graph on which the views are to be displayed.
-     */
+    /** Constructs a factory for a given JGraph. */
     public JCellViewFactory(JGraph<?> jGraph) {
         this.jGraph = jGraph;
     }
 
-    /**
-     * This implementation creates {@link JVertexView} if the cell to be viewed
-     * is a {@link ViewVertex}. Otherwise, the method delegates to the super
-     * class.
-     */
     @Override
     protected VertexView createVertexView(Object cell) {
-        if (cell instanceof ViewVertex) {
-            JVertexView result =
-                new JVertexView((ViewVertex<?>) cell, this.jGraph);
+        if (cell instanceof JVertex<?> vertex) {
+            JVertexView result = new JVertexView(vertex, this.jGraph);
             // the following is apparently necessary
             // to initialise the autosize correctly
-            result.refresh(this.jGraph.getGraphLayoutCache(),
-                this.jGraph.getGraphLayoutCache(), false);
+            result.refresh(this.jGraph.getGraphLayoutCache(), this.jGraph.getGraphLayoutCache(),
+                           false);
             this.jGraph.updateAutoSize(result);
             return result;
         } else {
@@ -58,23 +45,16 @@ public class JCellViewFactory extends DefaultCellViewFactory {
         }
     }
 
-    /**
-     * This implementation creates {@link JEdgeView} if the cell to be viewed is
-     * a {@link ViewEdge}. Otherwise, the method delegates to the super class.
-     */
     @Override
     protected JEdgeView createEdgeView(Object edge) {
-        assert edge instanceof ViewEdge;
-        return new JEdgeView((ViewEdge<?>) edge, this.jGraph);
+        assert edge instanceof JEdge;
+        return new JEdgeView((JEdge<?>) edge, this.jGraph);
     }
 
-    /** Basic getter method. */
+    /** Returns the JGraph this factory belongs to. */
     public JGraph<?> getJGraph() {
         return this.jGraph;
     }
 
-    /**
-     * The underlying graph on which all views are to be displayed.
-     */
     private final JGraph<?> jGraph;
 }

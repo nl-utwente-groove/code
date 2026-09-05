@@ -22,20 +22,14 @@ import nl.utwente.groove.gui.view.LTSGraphViewModel;
 import nl.utwente.groove.lts.GTS;
 
 /**
- * Graph model adding a concept of active state and transition, with special
- * visual characteristics: the backend adapter of an {@link LTSGraphViewModel}.
+ * JGraph model adapter of an {@link LTSGraphViewModel}.
  * @author Arend Rensink
  * @version $Revision$
  */
 final public class LTSJModel extends JModel<@NonNull GTS> {
-    /** Creates a new model from a given LTS and set of display options. */
+    /** Creates a new model for a given LTS JGraph. */
     LTSJModel(LTSJGraph jGraph) {
         super(jGraph);
-    }
-
-    @Override
-    protected LTSGraphViewModel createViewModel() {
-        return new LTSGraphViewModel(getJGraph().getController(), this);
     }
 
     @Override
@@ -50,7 +44,7 @@ final public class LTSJModel extends JModel<@NonNull GTS> {
     }
 
     /**
-     * Possibly extends the jModel with additional states from the underlying GTS.
+     * Possibly extends the model with additional states from the underlying GTS.
      * This can be more efficient than reloading, e.g., if the state bound has increased.
      */
     public boolean reloadGraph() {
@@ -70,20 +64,12 @@ final public class LTSJModel extends JModel<@NonNull GTS> {
         return getViewModel().getStateBound();
     }
 
-    /**
-     * Indicates if the model is set to exploring mode.
-     * In exploring mode, changes to the GTS are registered but not
-     * passed on to the GUI.
-     */
+    /** Indicates if the model is set to exploring mode. */
     public boolean isExploring() {
         return getViewModel().isExploring();
     }
 
-    /**
-     * Sets or resets the exploring mode.
-     * When exploring is set to {@code false}, all registered changes
-     * are pushed to the GUI.
-     */
+    /** Sets or resets the exploring mode. */
     public void setExploring(boolean exploring) {
         getViewModel().setExploring(exploring);
     }

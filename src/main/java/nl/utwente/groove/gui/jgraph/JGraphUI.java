@@ -60,8 +60,8 @@ import nl.utwente.groove.gui.view.GraphViewMode;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.gui.view.AspectViewEdge;
 import nl.utwente.groove.gui.view.ViewCell;
-import nl.utwente.groove.gui.view.ViewEdge;
 import nl.utwente.groove.gui.view.ViewVertex;
 
 /** Adapted UI for JGraphs. */
@@ -209,9 +209,9 @@ public class JGraphUI<G extends @NonNull Graph> extends BasicGraphUI {
                     // add or remove an edge point
                     ViewCell<G> jEdge = getJEdgeAt(e.getPoint());
                     Object selectedCell = getJGraph().getSelectionCell();
-                    if (selectedCell instanceof ViewEdge) {
-                        AspectJEdge selectedEdge = (AspectJEdge) selectedCell;
-                        if (selectedCell == jEdge) {
+                    if (selectedCell instanceof JEdge<?> selectedItem
+                        && selectedItem.getViewCell() instanceof AspectViewEdge selectedEdge) {
+                        if (selectedEdge == jEdge) {
                             jGraph.getController().getRemovePointAction(e.getPoint()).execute(selectedEdge);
                         } else {
                             jGraph.getController().getAddPointAction(e.getPoint()).execute(selectedEdge);
@@ -440,8 +440,9 @@ public class JGraphUI<G extends @NonNull Graph> extends BasicGraphUI {
                 ArrayList<ViewCell<G>> list = new ArrayList<>();
                 CellView[] views = getJGraph().getGraphLayoutCache().getRoots();
                 for (int i = 0; i < views.length; i++) {
-                    if (bounds.contains(views[i].getBounds())) {
-                        list.add((ViewCell<G>) views[i].getCell());
+                    if (bounds.contains(views[i].getBounds())
+                        && views[i].getCell() instanceof JCell<?> item) {
+                        list.add((ViewCell<G>) item.getViewCell());
                     }
                 }
                 selectCellsForEvent(list, evt);
@@ -822,7 +823,9 @@ public class JGraphUI<G extends @NonNull Graph> extends BasicGraphUI {
          */
         private JVertexView vertexAt(Point2D p) {
             ViewCell<?> jCell = this.canvas.getFirstCellForLocation(p.getX(), p.getY(), true, false);
-            return (JVertexView) this.canvas.getGraphLayoutCache().getMapping(jCell, false);
+            return jCell == null
+                ? null
+                : (JVertexView) this.canvas.getGraphLayoutCache().getMapping(JCell.of(jCell), false);
         }
 
         /** the canvas where the rubber band will be drawn onto */

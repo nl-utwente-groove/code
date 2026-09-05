@@ -18,14 +18,12 @@ package nl.utwente.groove.gui.jgraph;
 
 import org.eclipse.jdt.annotation.NonNull;
 
-import nl.utwente.groove.control.graph.ControlEdge;
 import nl.utwente.groove.control.graph.ControlGraph;
-import nl.utwente.groove.control.graph.ControlNode;
 import nl.utwente.groove.control.template.Template;
-import nl.utwente.groove.graph.Edge;
-import nl.utwente.groove.graph.Node;
+import nl.utwente.groove.gui.view.CellStore;
 import nl.utwente.groove.gui.view.CtrlGraphCanvas;
 import nl.utwente.groove.gui.view.CtrlGraphViewController;
+import nl.utwente.groove.gui.view.CtrlGraphViewModel;
 
 /**
  * This is the JGraph representation of a ControlAutomaton.
@@ -66,25 +64,7 @@ public class CtrlJGraph extends JGraph<@NonNull ControlGraph> implements CtrlGra
     }
 
     @Override
-    protected JGraphFactory<@NonNull ControlGraph> createFactory() {
-        return new MyFactory();
-    }
-
-    private class MyFactory extends JGraphFactory<@NonNull ControlGraph> {
-        public MyFactory() {
-            super(CtrlJGraph.this);
-        }
-
-        @Override
-        public CtrlJVertex newJVertex(Node node) {
-            assert node instanceof ControlNode;
-            return CtrlJVertex.newInstance();
-        }
-
-        @Override
-        public CtrlJEdge newJEdge(Edge edge) {
-            assert edge instanceof ControlEdge;
-            return CtrlJEdge.newInstance();
-        }
+    CtrlGraphViewModel createViewModel(CellStore<@NonNull ControlGraph> store) {
+        return new CtrlGraphViewModel(getController(), store);
     }
 }

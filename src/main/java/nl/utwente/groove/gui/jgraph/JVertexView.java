@@ -76,7 +76,7 @@ public class JVertexView extends VertexView {
      * @param jNode the node underlying the view
      * @param jGraph the graph on which the node is to be displayed
      */
-    public JVertexView(ViewVertex<?> jNode, JGraph<?> jGraph) {
+    public JVertexView(JVertex<?> jNode, JGraph<?> jGraph) {
         super(jNode);
         this.jGraph = jGraph;
     }
@@ -87,7 +87,7 @@ public class JVertexView extends VertexView {
     @Override
     public Rectangle2D getBounds() {
         var result = super.getBounds();
-        if (getCell().isStale(VisualKey.NODE_SIZE)) {
+        if (getViewCell().isStale(VisualKey.NODE_SIZE)) {
             this.jGraph.setToPreferredSize(this, result);
         }
         return result;
@@ -97,13 +97,18 @@ public class JVertexView extends VertexView {
      * Specialises the return type.
      */
     @Override
-    public @NonNull ViewVertex<?> getCell() {
-        return (ViewVertex<?>) super.getCell();
+    public @NonNull JVertex<?> getCell() {
+        return (JVertex<?>) super.getCell();
+    }
+
+    /** Returns the vertex cell shown by this view. */
+    public @NonNull ViewVertex<?> getViewCell() {
+        return getCell().getViewCell();
     }
 
     /** Returns the visual attributes map of the viewed cell. */
     public VisualMap getCellVisuals() {
-        return getCell().getVisuals();
+        return getViewCell().getVisuals();
     }
 
     /*
@@ -160,7 +165,7 @@ public class JVertexView extends VertexView {
         double cy = bounds.getCenterY();
         // in manhattan line style, we shift the target point so it is
         // in horizontal or vertical reach of the node
-        VisualMap edgeVisuals = ((JEdgeView) edge).getCell().getVisuals();
+        VisualMap edgeVisuals = ((JEdgeView) edge).getViewCell().getVisuals();
         if (edgeVisuals.getLineStyle() == LineStyle.MANHATTAN
             && edgeVisuals.getPoints().size() > 2) {
             if ((qx < left || qx > right) && (qy < top || qy > bottom)) {
@@ -360,7 +365,7 @@ public class JVertexView extends VertexView {
             assert view instanceof JVertexView : String
                 .format("This renderer is only meant for %s", JVertexView.class);
             var jView = this.view = (JVertexView) view;
-            this.cell = this.view.getCell();
+            this.cell = this.view.getViewCell();
             VisualMap visuals = this.visuals = jView.getCellVisuals();
             this.parAdornment = visuals.getParAdornment();
             if (this.parAdornment == null) {

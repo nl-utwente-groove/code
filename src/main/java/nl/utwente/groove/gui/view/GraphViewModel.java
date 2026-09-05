@@ -42,6 +42,8 @@ import nl.utwente.groove.graph.layout.NodeLayout;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
 import nl.utwente.groove.gui.view.CellStore.Connection;
+import nl.utwente.groove.gui.view.cell.AViewEdge;
+import nl.utwente.groove.gui.view.cell.AViewVertex;
 import nl.utwente.groove.util.collect.NestedIterator;
 
 /**
@@ -54,7 +56,7 @@ import nl.utwente.groove.util.collect.NestedIterator;
  * @version $Revision$
  */
 @NonNullByDefault
-public class GraphViewModel<G extends Graph> {
+public abstract class GraphViewModel<G extends Graph> {
     /**
      * Constructs a view model for a given controller, with a given backend cell store.
      */
@@ -444,7 +446,7 @@ public class GraphViewModel<G extends Graph> {
      * @param edge graph edge for which a corresponding cell is to be created
      */
     protected ViewEdge<G> computeEdge(Edge edge) {
-        ViewEdge<G> result = getStore().newEdge(edge);
+        ViewEdge<G> result = newEdge(edge);
         EdgeLayout layout = getLayoutMap().getLayout(edge);
         if (layout != null) {
             result.putVisuals(VisualMap.newInstance(layout));
@@ -459,7 +461,7 @@ public class GraphViewModel<G extends Graph> {
      * @param node graph node for which a corresponding cell is to be created
      */
     final protected ViewVertex<G> computeVertex(Node node) {
-        ViewVertex<G> result = getStore().newVertex(node);
+        ViewVertex<G> result = newVertex(node);
         NodeLayout layout = getLayoutMap().getLayout(node);
         if (layout != null) {
             result.putVisuals(VisualMap.newInstance(layout));
@@ -472,6 +474,33 @@ public class GraphViewModel<G extends Graph> {
         }
         return result;
     }
+
+    /** Creates a fresh, initialised vertex cell for a given node, not yet in the store. */
+    public AViewVertex<G> newVertex(Node node) {
+        var result = createVertexCell(node);
+        result.setNode(node);
+        result.initialise();
+        return result;
+    }
+
+    /**
+     * Creates a fresh, initialised edge cell, not yet in the store.
+     * @param edge the initial edge of the cell; {@code null} if there is none yet
+     */
+    public AViewEdge<G> newEdge(@Nullable Edge edge) {
+        var result = createEdgeCell();
+        result.initialise();
+        if (edge != null) {
+            result.addEdge(edge);
+        }
+        return result;
+    }
+
+    /** Callback factory method for a vertex cell of the role of this model, for a given node. */
+    protected abstract AViewVertex<G> createVertexCell(Node node);
+
+    /** Callback factory method for an edge cell of the role of this model. */
+    protected abstract AViewEdge<G> createEdgeCell();
 
     /**
      * Sets the transient variables (pending cells and connections) to fresh

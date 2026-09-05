@@ -23,7 +23,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import nl.utwente.groove.lts.GTS;
 
 /**
- * Supertype of {@link nl.utwente.groove.gui.jgraph.LTSJVertex} and {@link nl.utwente.groove.gui.jgraph.LTSJEdge}.
+ * Supertype of {@link nl.utwente.groove.gui.view.cell.LTSVertexCell} and {@link nl.utwente.groove.gui.view.cell.LTSEdgeCell}.
  * @author Arend Rensink
  * @version $Revision$
  */
