@@ -97,7 +97,6 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
      */
     public AspectEdge(AspectNode source, AspectLabel label, AspectNode target) {
         super(source, label, target);
-        assert label.isFixed();
         this.graph = source.getGraph();
         this.aspects = new Aspect.Map(false, this.graph.getRole());
         if (!label.hasErrors() && label.isNodeOnly()) {

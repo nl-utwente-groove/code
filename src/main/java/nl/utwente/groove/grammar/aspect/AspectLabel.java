@@ -18,7 +18,6 @@ package nl.utwente.groove.grammar.aspect;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -32,33 +31,50 @@ import nl.utwente.groove.graph.ALabel;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Label;
-import nl.utwente.groove.util.DefaultFixable;
-import nl.utwente.groove.util.Fixable;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.line.Line;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 
 /**
  * Label storing a set of aspect values and an inner text.
+ * <p>
+ * Instances are immutable, and are constructed through a {@link Builder}: see
+ * {@link #builder(GraphRole)} to build one from scratch, and
+ * {@link #toBuilder()} to build a variant of an existing label.
  * @author Arend Rensink
  * @version $Revision$
  */
 @NonNullByDefault
-public class AspectLabel extends ALabel implements Fixable {
+public class AspectLabel extends ALabel {
     /**
-     * Constructs an initially empty label, for a graph with a particular role.
+     * Constructs a label from a builder.
+     * This is the only constructor; all fields are set here and never change.
      */
-    public AspectLabel(GraphRole role) {
-        assert role.inGrammar();
-        this.role = role;
+    private AspectLabel(Builder builder) {
+        this.role = builder.role;
+        this.aspects = List.copyOf(builder.aspects);
+        var innerText = builder.innerText;
+        this.innerText = innerText == null
+            ? ""
+            : innerText;
+        this.edgeOnly = builder.edgeOnly;
+        this.nodeOnly = builder.nodeOnly;
+        var errors = builder.errors;
+        if (errors.isEmpty()) {
+            this.errors = FormatErrorSet.EMPTY;
+        } else {
+            errors.setFixed();
+            this.errors = errors;
+        }
     }
 
-    /** Constructs an as yet unfixed copy of a given aspect label. */
-    private AspectLabel(AspectLabel other) {
-        this.role = other.role;
-        this.aspects.addAll(other.aspects);
-        this.innerText = other.innerText;
-        this.edgeOnly = other.edgeOnly;
-        this.nodeOnly = other.nodeOnly;
+    /**
+     * Returns a builder for a variant of this label.
+     * The aspects and inner text are carried over; the errors are not, since
+     * they pertain to the parsing of the original label text.
+     */
+    public Builder toBuilder() {
+        return new Builder(this);
     }
 
     @Override
@@ -94,27 +110,8 @@ public class AspectLabel extends ALabel implements Fixable {
         return this.role;
     }
 
-    @Override
-    public boolean isFixed() {
-        return this.fixable.isFixed();
-    }
-
-    @Override
-    public boolean setFixed() {
-        boolean result = this.fixable.setFixed();
-        if (result && this.innerText == null) {
-            this.innerText = "";
-            if (this.errors.isEmpty()) {
-                this.errors = FormatErrorSet.EMPTY;
-            } else {
-                this.errors.setFixed();
-            }
-            hashCode();
-        }
-        return result;
-    }
-
-    private final DefaultFixable fixable = new DefaultFixable();
+    /** The graph role for which this label is intended to be used. */
+    private final GraphRole role;
 
     /**
      * Reconstructs the original plain label text from the list of aspect
@@ -122,15 +119,12 @@ public class AspectLabel extends ALabel implements Fixable {
      */
     @Override
     public String toParsableString() {
-        //setFixed();
         StringBuffer result = new StringBuffer();
         for (Aspect value : this.aspects) {
             result.append(value.toString());
         }
         // append the label text, if any
-        if (this.innerText != null) {
-            result.append(getInnerText());
-        }
+        result.append(getInnerText());
         return result.toString();
     }
 
@@ -151,48 +145,14 @@ public class AspectLabel extends ALabel implements Fixable {
     }
 
     /**
-     * Adds an aspect value to the label.
-     * Adds an error if the value is not consistent with the graph role.
-     * Consistency with existing aspects is not tested.
-     * @param aspect the value to be added
-     */
-    public void addAspect(Aspect aspect) {
-        testFixed(false);
-        this.aspects.add(aspect);
-        boolean notForNode = !aspect.isForNode(getGraphRole());
-        boolean notForEdge = !aspect.isForEdge(getGraphRole());
-        if (notForNode) {
-            if (notForEdge) {
-                addError("Aspect '%s' not allowed in %s", aspect, roleDescription.get(this.role),
-                         this.role);
-            } else {
-                this.edgeOnly = aspect;
-            }
-        } else if (notForEdge) {
-            this.nodeOnly = aspect;
-        }
-        if (this.nodeOnly != null && this.edgeOnly != null) {
-            addError("Conflicting aspects '%s' and '%s'", this.nodeOnly, this.edgeOnly);
-        }
-    }
-
-    /** Returns an as yet unfixed clone of this label. */
-    @Override
-    public AspectLabel clone() {
-        return new AspectLabel(this);
-    }
-
-    /**
      * Returns an aspect label obtained from this one by changing all
      * occurrences of a certain label into another.
      * @param oldLabel the label to be changed
      * @param newLabel the new value for {@code oldLabel}
-     * @return a clone of this object with changed labels, or this object
+     * @return a variant of this object with changed labels, or this object
      *         if {@code oldLabel} did not occur
      */
     public AspectLabel relabel(TypeLabel oldLabel, TypeLabel newLabel, SortMap typing) {
-        assert isFixed();
-        AspectLabel result = this;
         boolean isNew = false;
         List<Aspect> newAspects = new ArrayList<>();
         for (Aspect aspect : getAspects()) {
@@ -200,31 +160,37 @@ public class AspectLabel extends ALabel implements Fixable {
             isNew |= newAspect != aspect;
             newAspects.add(newAspect);
         }
-        if (isNew) {
-            result = new AspectLabel(getGraphRole());
-            for (Aspect newAspect : newAspects) {
-                result.addAspect(newAspect);
-            }
-            result.setFixed();
+        if (!isNew) {
+            return this;
         }
-        return result;
+        // note that the inner text is deliberately not carried over:
+        // relabelling the inner text is the caller's responsibility
+        Builder result = builder(getGraphRole());
+        for (Aspect newAspect : newAspects) {
+            result.addAspect(newAspect);
+        }
+        return result.build();
+    }
+
+    /**
+     * Returns a copy of this label minus any {@link AspectKind#LITERAL}
+     * aspect.
+     */
+    public AspectLabel unwrap() {
+        return toBuilder().removeAspects(a -> a.getKind() == AspectKind.LITERAL).build();
     }
 
     /** Tests if the aspects and text of this object equal those of another. */
     @Override
     public boolean equals(@Nullable Object obj) {
-        return this == obj || obj instanceof AspectLabel label && equalsAspects(label)
-            && equalsText((AspectLabel) obj);
+        return this == obj
+            || obj instanceof AspectLabel label && equalsAspects(label) && equalsText(label);
     }
 
     /** Computes a hash code value. */
     @Override
     protected int computeHashCode() {
-        int result = this.aspects.hashCode();
-        if (this.innerText != null) {
-            result += this.innerText.hashCode();
-        }
-        return result;
+        return this.aspects.hashCode() + this.innerText.hashCode();
     }
 
     /** Indicates if the aspects in this map equal those in another map. */
@@ -236,11 +202,7 @@ public class AspectLabel extends ALabel implements Fixable {
      * Indicates if the {@link #innerText} of this map equals that of another.
      */
     private boolean equalsText(AspectLabel other) {
-        var inner = this.innerText;
-        boolean result = inner == null
-            ? other.innerText == null
-            : inner.equals(other.innerText);
-        return result;
+        return this.innerText.equals(other.innerText);
     }
 
     /** Returns the list of aspects in this label. */
@@ -249,7 +211,7 @@ public class AspectLabel extends ALabel implements Fixable {
     }
 
     /** The mapping from aspects to (declared or inferred) aspect values. */
-    private final List<Aspect> aspects = new ArrayList<>();
+    private final List<Aspect> aspects;
 
     /** Tests if this label contains an aspect of a given kind. */
     public boolean has(AspectKind kind) {
@@ -269,7 +231,7 @@ public class AspectLabel extends ALabel implements Fixable {
      * suited for nodes, or the label text is non-empty.
      */
     public final boolean isEdgeOnly() {
-        return this.edgeOnly != null || this.innerText != null && this.innerText.length() > 0;
+        return this.edgeOnly != null || this.innerText.length() > 0;
     }
 
     /**
@@ -278,8 +240,7 @@ public class AspectLabel extends ALabel implements Fixable {
      * for edges, or if the label text is empty and the label is not edge-only.
      */
     public final boolean isNodeOnly() {
-        return this.nodeOnly != null
-            || this.edgeOnly == null && this.innerText != null && this.innerText.length() == 0;
+        return this.nodeOnly != null || this.edgeOnly == null && this.innerText.length() == 0;
     }
 
     /** Returns an aspect of this label that makes it suitable for edges only.
@@ -297,77 +258,38 @@ public class AspectLabel extends ALabel implements Fixable {
     }
 
     /** Edge-only aspect value in this label, if any. */
-    private @Nullable Aspect edgeOnly;
+    private final @Nullable Aspect edgeOnly;
 
     /** Node-only aspect value in this label, if any. */
-    private @Nullable Aspect nodeOnly;
-
-    /**
-     * Sets the label text to a non-{@code null} value.
-     * This fixes the label, so that no aspect values can be added any more.
-     */
-    public void setInnerText(String text) {
-        testFixed(false);
-        this.innerText = text;
-        if (text.length() > 0 && this.nodeOnly != null) {
-            addError("Aspect %s cannot have label text %s", this.nodeOnly, text);
-        }
-        setFixed();
-    }
+    private final @Nullable Aspect nodeOnly;
 
     /**
      * Returns the label text of this aspect label.
-     * Calling this method fixes the label.
-     * Guaranteed to be non-{@code null}.
+     * Guaranteed to be non-{@code null}; empty if no text was set.
      */
     public String getInnerText() {
-        setFixed();
-        var result = this.innerText;
-        assert result != null;
-        return result;
+        return this.innerText;
     }
 
-    /** Label text; may be {@code null} if the associated element is a node. */
-    private @Nullable String innerText;
-
-    /** The graph role for which this label is intended to be used. */
-    private final GraphRole role;
-
-    /** Adds an error to the errors of this label. */
-    void addError(String message, Object... args) {
-        testFixed(false);
-        this.errors.add(message, args);
-    }
+    /** Label text; empty if the associated element is a node. */
+    private final String innerText;
 
     /** Indicates if there are any blocking errors in this label. */
     public boolean hasErrors() {
-        testFixed(true);
         return this.errors.hasErrors();
     }
 
     /** Returns the (possibly empty) list of errors in this label. */
     public FormatErrorSet getErrors() {
-        testFixed(true);
         return this.errors;
     }
 
     /** List of errors detected while building this label. */
-    private FormatErrorSet errors = new FormatErrorSet();
+    private final FormatErrorSet errors;
 
-    /**
-     * Returns a fixed copy of this label minus any {@link AspectKind#LITERAL}
-     * aspect.
-     */
-    public AspectLabel unwrap() {
-        AspectLabel result = new AspectLabel(this);
-        Iterator<Aspect> aspects = result.getAspects().iterator();
-        while (aspects.hasNext()) {
-            if (aspects.next().getKind() == AspectKind.LITERAL) {
-                aspects.remove();
-            }
-        }
-        result.setFixed();
-        return result;
+    /** Returns a builder for a label of a given graph role. */
+    public static Builder builder(GraphRole role) {
+        return new Builder(role);
     }
 
     /** The set of all allowed nesting labels. */
@@ -376,5 +298,115 @@ public class AspectLabel extends ALabel implements Fixable {
         roleDescription.put(GraphRole.HOST, "host graph");
         roleDescription.put(GraphRole.TYPE, "type graph");
         roleDescription.put(GraphRole.RULE, "rule graph");
+    }
+
+    /**
+     * Builder for {@link AspectLabel}s.
+     * Collects aspects, inner text and errors, and assembles them into an
+     * immutable label on {@link #build()}. A builder may be built more than
+     * once; each call yields an independent label.
+     * @author Arend Rensink
+     * @version $Revision$
+     */
+    @AIGenerated("Claude Opus 5, 2026-09")
+    public static class Builder {
+        /** Creates a builder for an initially empty label of a given graph role. */
+        private Builder(GraphRole role) {
+            assert role.inGrammar();
+            this.role = role;
+        }
+
+        /**
+         * Creates a builder seeded with the content of an existing label.
+         * The errors of the original are not carried over.
+         */
+        private Builder(AspectLabel label) {
+            this.role = label.role;
+            this.aspects.addAll(label.aspects);
+            this.innerText = label.innerText;
+            this.edgeOnly = label.edgeOnly;
+            this.nodeOnly = label.nodeOnly;
+        }
+
+        /**
+         * Adds an aspect value to the label under construction.
+         * Adds an error if the value is not consistent with the graph role.
+         * Consistency with existing aspects is not tested.
+         * @param aspect the value to be added
+         */
+        public Builder addAspect(Aspect aspect) {
+            this.aspects.add(aspect);
+            boolean notForNode = !aspect.isForNode(this.role);
+            boolean notForEdge = !aspect.isForEdge(this.role);
+            if (notForNode) {
+                if (notForEdge) {
+                    addError("Aspect '%s' not allowed in %s", aspect,
+                             roleDescription.get(this.role), this.role);
+                } else {
+                    this.edgeOnly = aspect;
+                }
+            } else if (notForEdge) {
+                this.nodeOnly = aspect;
+            }
+            if (this.nodeOnly != null && this.edgeOnly != null) {
+                addError("Conflicting aspects '%s' and '%s'", this.nodeOnly, this.edgeOnly);
+            }
+            return this;
+        }
+
+        /**
+         * Removes all aspects satisfying a given predicate.
+         * The edge-only and node-only aspects are not recomputed.
+         */
+        public Builder removeAspects(Predicate<Aspect> test) {
+            this.aspects.removeIf(test);
+            return this;
+        }
+
+        /** The aspects collected so far. */
+        private final List<Aspect> aspects = new ArrayList<>();
+
+        /** Sets the label text to a non-{@code null} value. */
+        public Builder setInnerText(String text) {
+            this.innerText = text;
+            if (text.length() > 0 && this.nodeOnly != null) {
+                addError("Aspect %s cannot have label text %s", this.nodeOnly, text);
+            }
+            return this;
+        }
+
+        /**
+         * Label text; {@code null} if not set, in which case the built label
+         * gets an empty inner text.
+         */
+        private @Nullable String innerText;
+
+        /** Adds an error to the errors of the label under construction. */
+        Builder addError(String message, Object... args) {
+            this.errors.add(message, args);
+            return this;
+        }
+
+        /** Errors detected while building the label. */
+        private final FormatErrorSet errors = new FormatErrorSet();
+
+        /** Edge-only aspect value seen so far, if any. */
+        private @Nullable Aspect edgeOnly;
+
+        /** Node-only aspect value seen so far, if any. */
+        private @Nullable Aspect nodeOnly;
+
+        /** Returns the graph role for which the label is intended. */
+        public GraphRole getGraphRole() {
+            return this.role;
+        }
+
+        /** The graph role for which the label is intended. */
+        private final GraphRole role;
+
+        /** Assembles the collected content into an immutable aspect label. */
+        public AspectLabel build() {
+            return new AspectLabel(this);
+        }
     }
 }
