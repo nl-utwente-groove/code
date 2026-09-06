@@ -23,6 +23,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.util.Objects;
 
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -63,10 +64,20 @@ public class GraphPanel<G extends Graph> extends JPanel {
      */
     public void initialise() {
         setLayout(new BorderLayout());
-        add(getScrollPane(), BorderLayout.CENTER);
+        add(getViewComponent(), BorderLayout.CENTER);
         add(getStatusBar(), BorderLayout.SOUTH);
         installListeners();
         setEnabled(false);
+    }
+
+    /**
+     * Returns the component showing the canvas: the canvas component itself if
+     * it scrolls its own content, or a scroll pane around it otherwise.
+     */
+    private JComponent getViewComponent() {
+        return getCanvas().hasOwnScrolling()
+            ? getCanvas().getComponent()
+            : getScrollPane();
     }
 
     private void installListeners() {
@@ -78,7 +89,10 @@ public class GraphPanel<G extends Graph> extends JPanel {
             @Override
             public void modeChanged(GraphCanvas<H> canvas, GraphViewMode oldMode,
                                     GraphViewMode newMode) {
-                getScrollPane().setWheelScrollingEnabled(newMode != PAN_MODE);
+                var scrollPane = GraphPanel.this.scrollPane;
+                if (scrollPane != null) {
+                    scrollPane.setWheelScrollingEnabled(newMode != PAN_MODE);
+                }
             }
 
             @Override
@@ -148,8 +162,11 @@ public class GraphPanel<G extends Graph> extends JPanel {
     @Override
     public void setEnabled(boolean enabled) {
         this.canvas.setEnabled(enabled);
-        getScrollPane().getHorizontalScrollBar().setEnabled(enabled);
-        getScrollPane().getVerticalScrollBar().setEnabled(enabled);
+        var scrollPane = this.scrollPane;
+        if (scrollPane != null) {
+            scrollPane.getHorizontalScrollBar().setEnabled(enabled);
+            scrollPane.getVerticalScrollBar().setEnabled(enabled);
+        }
         if (hasStatusBar()) {
             getStatusBar().setEnabled(enabled);
         }

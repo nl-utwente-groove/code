@@ -266,6 +266,16 @@ public interface GraphCanvas<G extends Graph> {
     /** Returns the Swing component that renders the canvas. */
     JComponent getComponent();
 
+    /**
+     * Indicates if the component scrolls its own content (zoomable viewport, own
+     * scroll bars), in which case it must be placed in a container directly.
+     * If {@code false}, the component shows its whole content at the current scale
+     * and expects to be wrapped in a scroll pane.
+     */
+    default boolean hasOwnScrolling() {
+        return false;
+    }
+
     /** Indicates if the canvas is enabled. */
     boolean isEnabled();
 
