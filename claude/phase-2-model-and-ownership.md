@@ -258,3 +258,15 @@ through `createViewModel(store)`, which replaced the `JGraphFactory` and the per
 factories. The views (`JVertexView`, `JEdgeView`) keep `getCell()` for the JGraph item and
 gained `getViewCell()`. The old cell classes and `JGraphFactory` are deleted; the backend
 package is 1300 lines lighter and holds no cell logic any more.
+
+**Review findings on 4a (2026-09-06).** Arend's click-through found the UI still handing
+neutral cells to JGraph's selection model and to `startEditingAtCell` (single-click selection
+invisible, double-click editing dead, an NPE on the missing root handle); fixed by mapping
+through `JCell.of`/`JCell.items` at the seven sites in `JGraphUI`. The undo symptoms he saw
+(phantom undo steps, redo restoring an edge but not its label) are older than the branch: the
+selection listener showed selected cells through `GraphLayoutCache.setVisible`, which posts
+an undoable layout-cache edit even for visible cells, and the redo of such an edit
+re-selects (the cache selects inserted cells in editing mode) and truncates the redo history.
+The listener now shows hidden cells only; `EditorUndoTest` replays add-edge, select,
+label-edit, undo, undo, redo, redo headless. Lesson for the yFiles canvas: selection must
+never enter the model's edit history.

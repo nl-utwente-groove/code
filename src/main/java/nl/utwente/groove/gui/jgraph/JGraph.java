@@ -1498,7 +1498,18 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
             Object[] selectedCells = getSelectionCells();
             if (selectedCells.length > 0) {
                 getSelectionModel().removeGraphSelectionListener(this);
-                getGraphLayoutCache().setVisible(selectedCells, true);
+                // show the selected cells that the layout cache hides; showing cells
+                // that are already visible would post a spurious undoable edit
+                var cache = getGraphLayoutCache();
+                List<Object> hiddenCells = new ArrayList<>();
+                for (Object cell : selectedCells) {
+                    if (cache.getMapping(cell, false) == null) {
+                        hiddenCells.add(cell);
+                    }
+                }
+                if (!hiddenCells.isEmpty()) {
+                    cache.setVisible(hiddenCells.toArray(), true);
+                }
                 // reorder the roots so the selected cells come last
                 var model = getModel();
                 assert model != null;
