@@ -26,7 +26,6 @@ import java.util.Map;
 
 import nl.utwente.groove.gui.jgraph.JAttr;
 import nl.utwente.groove.util.Colors;
-import nl.utwente.groove.util.DefaultFixable;
 import nl.utwente.groove.util.HTMLConverter;
 import nl.utwente.groove.util.HTMLConverter.HTMLTag;
 import nl.utwente.groove.util.parse.Severity;
@@ -110,12 +109,10 @@ public class Values {
     /** Text colour used for non-selected items in lists. */
     static public final Color NORMAL_FOREGROUND = Color.BLACK;
     /** Text display colours to be used in normal display mode. */
-    static public final Values.ColorSet NORMAL_COLORS = new Values.ColorSet();
-    static {
-        NORMAL_COLORS.putColors(FOCUSED, FOCUS_FOREGROUND, FOCUS_BACKGROUND);
-        NORMAL_COLORS.putColors(SELECTED, SELECT_FOREGROUND, SELECT_BACKGROUND);
-        NORMAL_COLORS.putColors(NONE, NORMAL_FOREGROUND, NORMAL_BACKGROUND);
-    }
+    static public final Values.ColorSet NORMAL_COLORS = new Values.ColorSet( //
+        FOCUS_FOREGROUND, FOCUS_BACKGROUND, //
+        SELECT_FOREGROUND, SELECT_BACKGROUND, //
+        NORMAL_FOREGROUND, NORMAL_BACKGROUND);
 
     /** Opaque colour used for indicating errors in graphs.
      * Chosen so it resembles {@link Colors#ERROR_COLOR} on a white background
@@ -134,12 +131,10 @@ public class Values {
     /** Text colour used for non-selected, non-focused error items in lists. */
     static public final Color ERROR_NORMAL_FOREGROUND = Color.RED;
     /** Text display colours to be used in error mode. */
-    static public final Values.ColorSet ERROR_COLORS = new Values.ColorSet();
-    static {
-        ERROR_COLORS.putColors(FOCUSED, ERROR_FOCUS_FOREGROUND, ERROR_FOCUS_BACKGROUND);
-        ERROR_COLORS.putColors(SELECTED, ERROR_SELECT_FOREGROUND, ERROR_SELECT_BACKGROUND);
-        ERROR_COLORS.putColors(NONE, ERROR_NORMAL_FOREGROUND, ERROR_NORMAL_BACKGROUND);
-    }
+    static public final Values.ColorSet ERROR_COLORS = new Values.ColorSet( //
+        ERROR_FOCUS_FOREGROUND, ERROR_FOCUS_BACKGROUND, //
+        ERROR_SELECT_FOREGROUND, ERROR_SELECT_BACKGROUND, //
+        ERROR_NORMAL_FOREGROUND, ERROR_NORMAL_BACKGROUND);
 
     /** Colour used for indicating warnings. */
     static public final Color WARNING_COLOR = new Color(190, 110, 0);
@@ -189,12 +184,10 @@ public class Values {
     /** Text colour used for non-selected, non-focused warning items in lists. */
     static public final Color WARNING_NORMAL_FOREGROUND = WARNING_COLOR;
     /** Text display colours to be used in warning mode. */
-    static public final Values.ColorSet WARNING_COLORS = new Values.ColorSet();
-    static {
-        WARNING_COLORS.putColors(FOCUSED, WARNING_FOCUS_FOREGROUND, WARNING_FOCUS_BACKGROUND);
-        WARNING_COLORS.putColors(SELECTED, WARNING_SELECT_FOREGROUND, WARNING_SELECT_BACKGROUND);
-        WARNING_COLORS.putColors(NONE, WARNING_NORMAL_FOREGROUND, WARNING_NORMAL_BACKGROUND);
-    }
+    static public final Values.ColorSet WARNING_COLORS = new Values.ColorSet( //
+        WARNING_FOCUS_FOREGROUND, WARNING_FOCUS_BACKGROUND, //
+        WARNING_SELECT_FOREGROUND, WARNING_SELECT_BACKGROUND, //
+        WARNING_NORMAL_FOREGROUND, WARNING_NORMAL_BACKGROUND);
 
     /** Colour used for indicating information in graphs. */
     static public final Color INFO_COLOR = new Color(0, 102, 255, 40);
@@ -211,20 +204,16 @@ public class Values {
     /** Text colour used for non-selected, non-focused info items in lists. */
     static public final Color INFO_NORMAL_FOREGROUND = Colors.INFO_COLOR;
     /** Text display colours to be used in info mode. */
-    static public final Values.ColorSet INFO_COLORS = new Values.ColorSet();
-    static {
-        INFO_COLORS.putColors(FOCUSED, INFO_FOCUS_FOREGROUND, INFO_FOCUS_BACKGROUND);
-        INFO_COLORS.putColors(SELECTED, INFO_SELECT_FOREGROUND, INFO_SELECT_BACKGROUND);
-        INFO_COLORS.putColors(NONE, INFO_NORMAL_FOREGROUND, INFO_NORMAL_BACKGROUND);
-    }
+    static public final Values.ColorSet INFO_COLORS = new Values.ColorSet( //
+        INFO_FOCUS_FOREGROUND, INFO_FOCUS_BACKGROUND, //
+        INFO_SELECT_FOREGROUND, INFO_SELECT_BACKGROUND, //
+        INFO_NORMAL_FOREGROUND, INFO_NORMAL_BACKGROUND);
 
     /** Text display colours to be used for transient states. */
-    static public final Values.ColorSet RECIPE_COLORS = new Values.ColorSet();
-    static {
-        RECIPE_COLORS.putColors(FOCUSED, Color.WHITE, RECIPE_COLOR.darker());
-        RECIPE_COLORS.putColors(SELECTED, RECIPE_COLOR.darker(), SELECT_BACKGROUND);
-        RECIPE_COLORS.putColors(NONE, RECIPE_COLOR, NORMAL_BACKGROUND);
-    }
+    static public final Values.ColorSet RECIPE_COLORS = new Values.ColorSet( //
+        Color.WHITE, RECIPE_COLOR.darker(), //
+        RECIPE_COLOR.darker(), SELECT_BACKGROUND, //
+        RECIPE_COLOR, NORMAL_BACKGROUND);
 
     /** Grayed-out foreground color. */
     static public final Color GRAYED_OUT_COLOR = Colors.findColor("200 200 200 100");
@@ -251,17 +240,20 @@ public class Values {
     }
 
     /** Set of colours per selection mode. */
-    public static class ColorSet extends DefaultFixable {
-        /** Adds the foreground and background colours for a given selection mode. */
-        public void putColors(Mode mode, Color foreground, Color background) {
-            testMutable();
-            Color oldFore = this.foreColors.put(mode, foreground);
-            assert oldFore == null;
-            Color oldBack = this.backColors.put(mode, background);
-            assert oldBack == null;
-            if (this.foreColors.size() == Mode.values().length) {
-                setFixed();
-            }
+    public static class ColorSet {
+        /**
+         * Constructs a colour set from the foreground and background colours
+         * of the three selection modes, in the order {@link Mode#FOCUSED},
+         * {@link Mode#SELECTED}, {@link Mode#NONE}.
+         */
+        public ColorSet(Color focusFore, Color focusBack, Color selectFore, Color selectBack,
+                        Color normalFore, Color normalBack) {
+            this.foreColors.put(FOCUSED, focusFore);
+            this.backColors.put(FOCUSED, focusBack);
+            this.foreColors.put(SELECTED, selectFore);
+            this.backColors.put(SELECTED, selectBack);
+            this.foreColors.put(NONE, normalFore);
+            this.backColors.put(NONE, normalBack);
         }
 
         /**
