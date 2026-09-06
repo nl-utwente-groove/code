@@ -8,10 +8,10 @@ other fixables are candidates for the same treatment, and whether a
 
 Answers, up front: **one** class is a clean builder candidate
 (`Grammar`), one more is a real but larger job (the `ATermTree`
-family), and no, a `Buildable` interface is not worth having. The
-larger yield lies elsewhere — four classes have a fixing phase with no
-extent at all, and there the phase should be deleted rather than
-replaced.
+family), and yes — a `Buildable` interface is worth having, on the
+*product* side, with a nested `Builder`. The larger yield lies
+elsewhere though: four classes have a fixing phase with no extent at
+all, and there the phase should be deleted rather than replaced.
 
 ## The criterion
 
@@ -109,10 +109,14 @@ mutators. And `clone()` exists to get back to the mutable phase
 `AspectLabel`.
 
 The wrinkles: `setFixed()` performs the arity check and error
-propagation, which moves into `build()`; and `setParseString` is called
-after the arguments are added, so the parse string becomes a `build()`
-argument. This is also the one conversion that genuinely needs a
-builder *interface* — see below.
+propagation, which moves into `build()`; the parse string is computed
+from `previousToken.end()` *after* the arguments are parsed, so it
+becomes a fluent setter on the builder rather than a constructor
+argument; and `FormulaParser:218,232` clone-then-refix an existing
+tree, which is what `toBuilder()` is for. `ATermTreeParser<O,X>` is
+generic over tree types and uses `createTree(op)` + `addArg` as its
+build protocol today, so it is also the conversion that most needs the
+shared builder interface below.
 
 ### `grammar.aspect.Aspect.Map`
 
@@ -161,38 +165,87 @@ called by `TemplateBuilder` **after** the procedure is fixed, and has
 no guard at all. That is deliberate late binding of a
 procedure↔template cycle, not a build phase — no builder applies.
 
-## On a `Buildable` interface
+## The `Buildable` interface
 
-Recommended against. The decisive evidence is `Fixable` itself: across
-the whole source tree it is used as a *type* exactly once
-(`Grammar:96`, `assert action instanceof Fixable fix …`). Its value is
-as shared vocabulary plus one default method, `testMutable()`. A
-`Buildable<T>` would have zero type uses and no default behaviour to
-carry: builders are used at their concrete type, immediately, at one
-call site each.
+Worth having, as the counterpart to `Fixable`: the two are the answers
+to the same design question, and it is more coherent to have both named
+than one named interface and one unwritten convention.
 
-It would also be strained from birth. `AspectLabel.Builder.build()` is
-total; a `Grammar.Builder.build()` must throw `FormatException`; a
-term-tree builder's terminator needs the parse string as an argument.
-A common supertype would either be uselessly general or force `throws
-FormatException` on every implementor. And the one existing
-builder-shaped hierarchy, `util.line.LineFormat.Builder`, is not a
-product builder at all but a `StringBuilder`-shaped accumulator with
-`getResult()` — a universal interface either excludes it or is bent to
-fit it.
+It goes on the **product**, with the builder as a nested interface:
 
-There is one place where the instinct is right. `ATermTreeParser<O,X>`
-is generic over tree types and uses `createTree(op)` + `addArg` as its
-build protocol; making the trees immutable forces that protocol into an
-explicit interface. But that is a *domain* interface in
-`algebra/syntax`, parameterised over `O` and `X` — not a universal
-`util.Buildable`.
+```java
+@NonNullByDefault
+public interface Buildable<B extends Buildable<B>> {
+    /** Returns a builder initialised with the content of this object. */
+    Builder<B> toBuilder();
 
-What to establish instead is a convention, next to the `Fixable` guard
-convention in `claude/CLAUDE.md`: a nested `public static class
-Builder`, fluent mutators returning the builder, a terminator named
-`build()`, and the three gates above as the test for whether to reach
-for one at all.
+    /** Builder for a {@link Buildable} of type {@code B}. */
+    interface Builder<B extends Buildable<B>> {
+        /**
+         * Builds the object. May be invoked more than once: the builder
+         * stays usable, and the result shares no mutable state with it.
+         */
+        B build() throws FormatException;
+    }
+}
+```
+
+so that `AspectLabel implements Buildable<AspectLabel>` and
+`AspectLabel.Builder implements Buildable.Builder<AspectLabel>`.
+
+Four points that the shape settles, each of which sank an earlier
+draft of this section:
+
+- **Product side, not builder side.** `-able` is passive: the class
+  that *is built* carries the interface, exactly as the class that *is
+  fixed* carries `Fixable`. Putting it on the builder would have made
+  the name read backwards, and naming the interface `Builder` instead
+  is worse still — a nested `public static class Builder` shadows a
+  top-level one inside its own enclosing class, so every declaration
+  would need the fully qualified name. Nesting `Builder` inside
+  `Buildable` sidesteps that: the reference is qualified already.
+- **Generic, not covariant narrowing.** Narrowing would work, but it
+  makes every implementor write an override purely to recover its own
+  return type, and gives nothing to a generic consumer if one ever
+  appears. One type parameter buys both.
+- **`throws FormatException` belongs in the interface.**
+  `Grammar.Builder.build()` must throw it, so the interface has to
+  declare it or `Grammar` cannot implement the interface at all.
+  Builders whose build is total — `AspectLabel.Builder` — narrow the
+  clause away in the override, and their callers never see it. This is
+  the mechanism, not an obstacle.
+- **`toBuilder()` is required, not optional.** An interface method that
+  some implementors satisfy by throwing `UnsupportedOperationException`
+  is the `Cloneable` shape: a marker plus a contract the interface does
+  not really carry. Requiring it is what makes `Buildable` a real
+  interface rather than a marker, and the cost is negligible — of the
+  realistic products, `AspectLabel` already has `toBuilder()` and uses
+  it twice (`AspectGraph:274` and `AspectLabel:180`), and the
+  `ATermTree` family needs precisely that to replace the
+  clone-then-refix in `FormulaParser`. Only `Grammar` would not call
+  its own, and writing it is a few field copies.
+
+Recursive generics are noisy, but the codebase already reads that way
+(`ATermTree<O,T extends ATermTree<O,T>>`,
+`LineFormat<R extends LineFormat.Builder<R>>`), so it will not look
+foreign.
+
+Note that `util.line.LineFormat.Builder` is *not* an instance of this
+pattern and should not implement the interface: it is a
+`StringBuilder`-shaped accumulator with `getResult()`, not a builder of
+an immutable product.
+
+**Sequencing constraint.** The interface must be `@NonNullByDefault`,
+and the house rule is that the annotation is consistent across an
+inheritance web — so every implementor has to be annotated too.
+`AspectLabel` already is; `Grammar` is not, and would be annotated as
+part of its conversion. So `Buildable` should land *with* the `Grammar`
+conversion rather than as a standalone commit, with `AspectLabel`
+retrofitted in the same branch.
+
+The three gates above belong in the interface javadoc, as the test for
+whether to reach for a builder at all — the role that `testMutable()`'s
+javadoc plays for `Fixable`.
 
 ## Defects found in passing
 
@@ -219,9 +272,11 @@ for one at all.
    each, no design risk.
 2. The inverted `setFixed()` returns and the missing/decorative guards —
    a single tidy-up commit.
-3. `Grammar` → `Grammar.Builder`, on its own branch.
-4. The `ATermTree` family, with its domain builder interface, if and
-   when the parser is touched for other reasons.
+3. `Grammar` → `Grammar.Builder`, on its own branch, introducing
+   `util.Buildable` in the same branch and retrofitting `AspectLabel`
+   onto it.
+4. The `ATermTree` family, if and when the parser is touched for other
+   reasons.
 
 `RuleModel.Index` and `Aspect.Map` are recorded but not recommended on
 their own; both are worth doing only alongside work that is already in
