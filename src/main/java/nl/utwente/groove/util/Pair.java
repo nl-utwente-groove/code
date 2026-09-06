@@ -17,11 +17,11 @@
 package nl.utwente.groove.util;
 
 /**
- * Implements a generic pair of values.
+ * Implements a generic immutable pair of values.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class Pair<T,U> implements Fixable {
+public class Pair<T,U> {
     /** Constructs a pair with given first and second fields. */
     public Pair(final T one, final U two) {
         this.one = one;
@@ -40,38 +40,6 @@ public class Pair<T,U> implements Fixable {
      */
     public U two() {
         return this.two;
-    }
-
-    /** Changes the first value of the pair. */
-    public T setOne(T one) {
-        assert !isFixed() : "Can't set a value after the pair is fixed.";
-        T result = this.one;
-        this.one = one;
-        return result;
-    }
-
-    /** Changes the second value of the pair. */
-    public U setTwo(U two) {
-        assert !isFixed() : "Can't set a value after the pair is fixed.";
-        U result = this.two;
-        this.two = two;
-        return result;
-    }
-
-    @Override
-    public boolean setFixed() {
-        boolean result = !isFixed();
-        if (result) {
-            // the pair is fixed by computing the hash code.
-            hashCode();
-        }
-        return result;
-    }
-
-    @Override
-    public boolean isFixed() {
-        // the pair is fixed as soon as the hash code is computed.
-        return this.hashCode != 0;
     }
 
     /**
@@ -138,10 +106,10 @@ public class Pair<T,U> implements Fixable {
         return new Pair<>(one, two);
     }
 
-    /** The precomputed hash code. The pair is fixed iff this value is not 0. */
+    /** The lazily computed hash code; 0 means "not yet computed". */
     private int hashCode;
     /** The first value of the pair. */
-    private T one;
+    private final T one;
     /** The second value of the pair. */
-    private U two;
+    private final U two;
 }

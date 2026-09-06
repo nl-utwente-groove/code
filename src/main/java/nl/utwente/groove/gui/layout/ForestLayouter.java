@@ -77,8 +77,7 @@ public class ForestLayouter extends AbstractLayouter {
     public void start() {
         synchronized (getJGraph()) {
             prepare(true);
-            this.forest = computeForest(this.forest);
-            this.forest.prune();
+            this.forest = computeForest(this.forest).prune();
             layout(this.forest.one(), 0);
             // shift the graph to the right to make it less cramped and to
             // make some room for long labels
@@ -384,10 +383,11 @@ public class ForestLayouter extends AbstractLayouter {
         }
 
         /**
-         * Prunes the forest by making sure that every node is either
+         * Returns a copy of this forest in which every node is either
          * a root, or a child of exactly one parent.
+         * Note that this consumes the root collection of this forest.
          */
-        public void prune() {
+        public Forest prune() {
             Collection<LayoutNode> remaining = one();
             // Add real roots one by one
             List<LayoutNode> roots = new ArrayList<>();
@@ -413,7 +413,7 @@ public class ForestLayouter extends AbstractLayouter {
                     remaining.removeAll(branches);
                 }
             }
-            setOne(roots);
+            return new Forest(roots, two());
         }
 
     }
