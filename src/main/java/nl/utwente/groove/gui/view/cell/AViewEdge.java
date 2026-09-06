@@ -39,6 +39,7 @@ import nl.utwente.groove.graph.layout.EdgeLayout;
 import nl.utwente.groove.gui.look.Look;
 import nl.utwente.groove.gui.look.MultiLabel.Direct;
 import nl.utwente.groove.gui.look.Values;
+import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.view.AspectViewCell;
 import nl.utwente.groove.gui.view.GraphViewModel;
 import nl.utwente.groove.gui.view.ViewEdge;
@@ -100,6 +101,8 @@ public abstract class AViewEdge<G extends Graph> extends AViewCell<G> implements
         if (vertex != null) {
             vertex.addContextEdge(this);
         }
+        // the visibility of the edge depends on that of its ends
+        setStale(VisualKey.VISIBLE);
     }
 
     /**
@@ -116,6 +119,7 @@ public abstract class AViewEdge<G extends Graph> extends AViewCell<G> implements
         if (vertex != null) {
             vertex.addContextEdge(this);
         }
+        setStale(VisualKey.VISIBLE);
     }
 
     /** The source vertex cell; {@code null} while unconnected. */

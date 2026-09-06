@@ -33,6 +33,7 @@ import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.Node;
+import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.view.GraphViewModel;
 import nl.utwente.groove.gui.view.ViewVertex;
 import nl.utwente.groove.util.HTMLConverter;
@@ -62,14 +63,19 @@ public abstract class AViewVertex<G extends Graph> extends AViewCell<G>
         return this.context.size();
     }
 
-    /** Registers an incident edge cell; called when the edge is connected to this vertex. */
+    /**
+     * Registers an incident edge cell; called when the edge is connected to this vertex.
+     * The visibility of the vertex may depend on its context, so it becomes stale.
+     */
     void addContextEdge(AViewEdge<G> edge) {
         this.context.add(edge);
+        setStale(VisualKey.VISIBLE);
     }
 
     /** Unregisters an incident edge cell; called when the edge is disconnected. */
     void removeContextEdge(AViewEdge<G> edge) {
         this.context.remove(edge);
+        setStale(VisualKey.VISIBLE);
     }
 
     /** The incident edge cells, in order of connection. */
