@@ -23,7 +23,6 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -38,7 +37,6 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -71,7 +69,6 @@ import nl.utwente.groove.grammar.model.NamedResourceModel;
 import nl.utwente.groove.grammar.rule.RegExpr;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.grammar.ResourceProperties;
-import nl.utwente.groove.grammar.ResourceProperties.Key;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
@@ -80,26 +77,22 @@ import nl.utwente.groove.gui.dialog.PropertiesTable;
 import nl.utwente.groove.gui.jgraph.AspectJGraph;
 import nl.utwente.groove.gui.jgraph.AspectJModel;
 import nl.utwente.groove.gui.look.Values;
-import nl.utwente.groove.gui.view.AspectGraphCanvas;
-import nl.utwente.groove.gui.view.AspectGraphViewController;
 import nl.utwente.groove.gui.view.GraphCanvas;
 import nl.utwente.groove.gui.view.GraphCanvasListener;
 import nl.utwente.groove.gui.view.GraphViewMode;
 import nl.utwente.groove.gui.view.ViewCell;
 import nl.utwente.groove.gui.view.ViewEdge;
-import nl.utwente.groove.gui.tree.TypeTree;
 import nl.utwente.groove.io.store.EditType;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.QualName;
-import nl.utwente.groove.gui.list.ErrorEntry;
 
 /**
  * Dialog wrapping a graph editor, such that no file operations are possible.
  * @author Arend Rensink
  * @version $Revision$
  */
-final public class GraphEditorTab extends ResourceTab implements GraphModelListener,
-    GraphCanvasListener<@NonNull AspectGraph>, GraphDisplay<@NonNull AspectGraph> {
+final public class GraphEditorTab extends AspectTab
+    implements GraphModelListener, GraphCanvasListener<@NonNull AspectGraph> {
     /**
      * Constructs a new tab instance.
      * @param parent the component on which this panel is placed
@@ -144,18 +137,11 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
     }
 
     /** Returns the graph being edited. */
-    public AspectGraph getGraph() {
-        return getNonNullJModel().getGraph();
-    }
-
     @Override
-    protected PropertyChangeListener createErrorListener() {
-        return arg -> {
-            var entry = (ErrorEntry) arg.getNewValue();
-            if (entry != null) {
-                getJGraph().selectElements(entry.getElements());
-            }
-        };
+    public @NonNull AspectGraph getGraph() {
+        var result = getNonNullJModel().getGraph();
+        assert result != null; // the edit model always holds a graph
+        return result;
     }
 
     @Override
@@ -252,23 +238,6 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
         updateDirty();
     }
 
-    @Override
-    protected void updateDirty() {
-        updatePropertiesNotable();
-        super.updateDirty();
-    }
-
-    /**
-     * Adapt the properties header according to the notability of the properties
-     */
-    private void updatePropertiesNotable() {
-        boolean notableProperties = ResourceProperties.getProperties(getGraph()).isNotable();
-        this.propertiesHeader
-            .setForeground(notableProperties
-                ? Values.INFO_NORMAL_FOREGROUND
-                : Values.NORMAL_FOREGROUND);
-    }
-
     /**
      * Returns the current modified status of the underlying jgraph.
      * @see #setDirty(boolean)
@@ -311,31 +280,22 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
     }
 
     /**
-     * Changes the graph to be displayed, as well as the graph properties
-     * and the status.
+     * Loads the properties of a new graph into the properties table.
      * @param newGraph the new graph to be displayed
      * @param updatePropertiesPanel if {@code true}, the change did not originate
      * from the properties table, so the table has to be refreshed as well
      */
     private void loadProperties(AspectGraph newGraph, boolean updatePropertiesPanel) {
         if (updatePropertiesPanel) {
-            // get the table first as creating it sets listenToPropertiesPanel to true
-            PropertiesTable panel = getPropertiesPanel();
-            this.listenToPropertiesPanel = false;
-            var properties = ResourceProperties.getProperties(newGraph);
-            panel.setProperties(properties);
-            panel.setCheckerMap(properties.getCheckers(newGraph));
-            this.listenToPropertiesPanel = true;
+            loadProperties(ResourceProperties.getProperties(newGraph), newGraph);
         }
     }
 
+    /* Passes the edited properties on to the graph. */
     @Override
-    public void setPropertyKey(Key propertyKey) {
-        var upperInfoPanel = getUpperInfoPanel();
-        if (upperInfoPanel != null && propertyKey != null) {
-            upperInfoPanel.setSelectedComponent(getPropertiesScrollPanel());
-            getPropertiesPanel().setSelected(propertyKey);
-        }
+    protected void propertiesEdited(PropertiesTable panel) {
+        changeProperties(panel.getProperties().entrySet().stream(), false);
+        setDirty(false);
     }
 
     @Override
@@ -347,25 +307,6 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
     protected void saveResource() {
         getSaveAction().doSaveGraph(getGraph(), isDirtMinor());
         setClean();
-    }
-
-    @Override
-    public @NonNull AspectGraphViewController getController() {
-        AspectGraphViewController result = this.controller;
-        if (result == null) {
-            result = this.controller
-                = new AspectGraphViewController(getSimulator(), getDisplay().getKind(), true);
-            result.setLabelTree(getLabelTree());
-        }
-        return result;
-    }
-
-    /** The controller of this editor's graph view. */
-    private AspectGraphViewController controller;
-
-    @Override
-    public @NonNull AspectGraphCanvas getCanvas() {
-        return getController().getCanvas();
     }
 
     /**
@@ -510,120 +451,6 @@ final public class GraphEditorTab extends ResourceTab implements GraphModelListe
         }
         return this.undoManager;
     }
-
-    @Override
-    protected GraphPanel<@NonNull AspectGraph> getEditArea() {
-        GraphPanel<@NonNull AspectGraph> result = this.editArea;
-        if (result == null) {
-            result = this.editArea = new GraphPanel<>(getCanvas());
-            result.setEnabledBackground(Values.EDITOR_BACKGROUND);
-            result.initialise();
-            result.setEnabled(true);
-        }
-        return result;
-    }
-
-    /** The graph panel used in this editor. */
-    private GraphPanel<@NonNull AspectGraph> editArea;
-
-    @Override
-    public GraphPanel<@NonNull AspectGraph> getGraphPanel() {
-        return getEditArea();
-    }
-
-    @Override
-    protected JTabbedPane getUpperInfoPanel() {
-        JTabbedPane result = this.upperInfoPanel;
-        if (result == null) {
-            this.upperInfoPanel = result = new JTabbedPane();
-            result.add(getLabelPanel());
-            if (getResourceKind().hasProperties()) {
-                var propertiesPanel = getPropertiesScrollPanel();
-                result.add(propertiesPanel);
-                int index = result.indexOfComponent(propertiesPanel);
-                this.propertiesHeader.setText(propertiesPanel.getName());
-                result.setTitleAt(index, null);
-                result.setTabComponentAt(index, this.propertiesHeader);
-                updatePropertiesNotable();
-                result.addChangeListener(createInfoListener(true));
-            }
-        }
-        if (getResourceKind().hasProperties()) {
-            result.setSelectedIndex(getDisplay().getInfoTabIndex(true));
-        }
-        return result;
-    }
-
-    /** Label panel of this tab. */
-    private JTabbedPane upperInfoPanel;
-
-    private TitledPanel getLabelPanel() {
-        TitledPanel result = this.labelPanel;
-        if (result == null) {
-            TypeTree labelTree = getLabelTree();
-            this.labelPanel = result = new TitledPanel(Options.LABEL_PANE_TITLE, labelTree,
-                labelTree.createToolBar(), true);
-            result.setTitled(false);
-            result.setEnabledBackground(Values.EDITOR_BACKGROUND);
-        }
-        return result;
-    }
-
-    /** Label panel of this tab. */
-    private TitledPanel labelPanel;
-
-    /** Lazily creates and returns the (non-{@code null}) label tree. */
-    private TypeTree getLabelTree() {
-        TypeTree result = this.labelTree;
-        if (result == null) {
-            result = this.labelTree = new TypeTree(getJGraph(), false);
-        }
-        return result;
-    }
-
-    private TypeTree labelTree;
-
-    private @NonNull PropertiesTable getPropertiesPanel() {
-        PropertiesTable result = this.propertiesPanel;
-        if (result == null) {
-            final var panel = new PropertiesTable(ResourceProperties.Key.class, true);
-            panel.setName("Properties");
-            panel.setBackground(Values.EDITOR_BACKGROUND);
-            panel.setProperties(ResourceProperties.getProperties(getGraph()));
-            // add the listener after initialising the properties, to avoid needless refreshes
-            panel.getModel().addTableModelListener(e -> {
-                if (GraphEditorTab.this.listenToPropertiesPanel) {
-                    changeProperties(panel.getProperties().entrySet().stream(), false);
-                    setDirty(false);
-                }
-            });
-            this.propertiesPanel = result = panel;
-            this.listenToPropertiesPanel = true;
-        }
-        return result;
-    }
-
-    /** Properties panel of this tab. */
-    private PropertiesTable propertiesPanel;
-
-    private @NonNull JScrollPane getPropertiesScrollPanel() {
-        var result = this.propertiesScrollPanel;
-        if (result == null) {
-            var propertiesPanel = getPropertiesPanel();
-            this.propertiesScrollPanel = result = new JScrollPane(propertiesPanel);
-            result.setName(propertiesPanel.getName());
-            result.getViewport().setBackground(propertiesPanel.getBackground());
-        }
-        return result;
-    }
-
-    private JScrollPane propertiesScrollPanel;
-
-    /** Flag indicating if table changes should be propagated to the graph properties. */
-    private boolean listenToPropertiesPanel;
-
-    /** Tab component of the properties tab in the upper info panel. */
-    private final JLabel propertiesHeader = new JLabel();
 
     @Override
     protected JComponent getLowerInfoPanel() {
