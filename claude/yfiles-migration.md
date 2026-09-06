@@ -6,7 +6,7 @@ kept self-contained: sessions on other machines have no access to session memory
 everything needed to continue lives here or in `claude/jgraph-controller-split.md`
 (the slice-by-slice record of the decoupling refactor).
 
-**Status (2026-09-03): phase 1a (in-place decoupling) is COMPLETE; phase 0 (the
+**Status (2026-09-06): phase 1a (in-place decoupling) is COMPLETE; phase 0 (the
 yFiles rendering spike) is DONE** (findings in `claude/yfiles-spike-findings.md`:
 fidelity bar met, yFiles layouts beat Spring/Forest, 8240-state LTS lays out in
 16 s organic / 44 s hierarchic; go given by Arend). **Phase 1b (facade definition)
@@ -30,9 +30,12 @@ controller-owned canvases, neutral `GraphPanel`,
 `newViewModel`/`setViewModel` on the canvas) is merged; slice 3 (the optional yFiles unit
 `yfiles/`, a separate Maven project on the `release/` pattern providing `YFilesBackend` as a
 service, with `GraphBackend` ranking yFiles first when present) is merged; slice 4 (the
-yFiles canvas) is in progress on branch `yfiles-canvas`, starting with neutral cell classes
-in `gui.view.cell` that both backends show through items of their own (decision B in the
-phase-2 note). The architecture allowlist holds one file, `AspectEditorTab` (phase 3).
+yFiles canvas) is under way: 4a (neutral cell classes in `gui.view.cell` that both backends
+show through items of their own, decision B in the phase-2 note) is merged; 4b (the
+read-only yFiles canvas for aspect graphs in the optional unit, on branch
+`yfiles-canvas-aspect`, 2026-09-06) is done and awaiting Arend's click-through; 4c (LTS and
+control canvases) and 4d (yFiles layouts) follow. The architecture allowlist holds one file,
+`AspectEditorTab` (phase 3).
 
 ## Goal and motivation
 

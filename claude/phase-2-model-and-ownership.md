@@ -276,3 +276,57 @@ transaction and every GUI test after it; `reactivate` now takes the model. Note 
 `GuiTest` classes run headless under surefire here after all, so they are part of the handover
 bar, and that surefire's `-Dtest` takes comma-separated classes (`+` matches nothing and passes
 silently).
+
+**Slice 4b done (2026-09-06, branch `yfiles-canvas-aspect`).** The read-only aspect canvas
+on yFiles: `YFilesAspectCanvas` (final) on the abstract `YFilesCanvas<G>`, its store
+`YFilesCellStore<G>`, and the rendering in `CellNodeStyle`, `CellEdgeStyleRenderer` and
+`CellStyles`, all in the optional unit. Decisions:
+
+- *Composition, not inheritance.* `GraphComponent.getGraph()` and `getSelection()` are final
+  and clash with the facade's methods of the same names, so the canvas owns an inner
+  `Viewer extends GraphComponent` (overridden only for the hatch overlay and the tooltips)
+  and hands it out as `getComponent()`. The component scrolls and zooms itself, so
+  `GraphCanvas` gained `hasOwnScrolling()` (default false) and `GraphPanel` places such a
+  component directly instead of in a scroll pane; those are the only core changes.
+- *The cell is the item's tag, the item is the cell's item.* The store keeps a master
+  `DefaultGraph` whose nodes, edges and labels are tagged with the cells (labels with a
+  `Placement` record naming the label's role and position, because yFiles label-model
+  parameters are not documented as comparable) and shows it through a `FilteredGraphWrapper`
+  whose predicates are the cells' visibility: hiding is a predicate change, not a removal, and
+  `refresh` re-reads the visuals into the geometry (`updateItem`) and re-evaluates the
+  predicates. Selection never touches the graph (the 4a lesson); the one loss against JGraph
+  is that selecting a hidden cell cannot show it.
+- *Stateless styles reading the visuals at paint time.* `updateVisual` re-reads the cell's
+  `VisualMap` on every repaint, which is fine for rule-sized graphs and is to be revisited
+  for the LTS in 4c. The JGraph rendering rules are reproduced from `JVertexView`/`JEdgeView`:
+  the 6px extra border inside the bounds, where adornments, emphasis and the error overlay
+  are painted; the insets of `computeInsets`; emphasis as line width +2 with a darkened fill
+  and a dashed selection border; loops through `LoopRouter` with the three-point
+  perpendicular shape; BEZIER through `InterpolatingBezier`; Manhattan paths; SPLINE
+  approximated by yFiles' corner smoothing. Edge label positions map JGraph's
+  `(permille, signed distance)` onto `EdgePathLabelModel`, with the distance corrected by
+  half the label height because yFiles measures to the label border.
+- *The `edit` funnel* applies the visuals, updates the items, synchronises the layout map
+  and fires `cellsChanged`; it is not undoable (phase 3).
+- *Backend delegation.* `YFilesBackend` builds the viewing aspect canvas on yFiles and takes
+  the editor's aspect canvas and the LTS, control and plain canvases from the JGraph backend
+  found as a service (no dependency on `gui.jgraph`), so a launch with the unit on the class
+  path works as a whole until 4c and phase 3 replace them.
+
+`YFilesCanvasTest` (seven headless tests on the ferryman start graph: tagged items and
+geometry, selection mirrored into emphasis with one event per change, hidden cells leaving
+the shown graph, hit testing, Spring layout through the edit funnel, image export, a detached
+model with items) passes with the licensed jar. Process note: the tests need
+`-Dyfiles.license.dir` and the licensed library at run time; the auto-mode classifier refused
+Claude's run, so Arend ran them (PowerShell needs the `-D` arguments quoted). Inputs used
+for the yFiles side, per the ground rules: the bundled developer guide and Javadoc, the demo
+sources (tutorial01 step 6, tutorial02 steps 8 and 21, viewer/graphviewer, imageexport,
+tooltips, input/popupmenu, singleselection, the SVG export), the spike, and compiler errors.
+
+Residues: the perimeter "drop" logic and adornment corrections of JGraph's
+`getPerimeterPoint` are omitted, as are the Manhattan end-point shifts; the inner line of
+double-lined edges has no arrowhead; `JAttr`'s constants are duplicated in `CellStyles`;
+`getBackendLayouters()` is empty (4d); the persisted backend preference is not done;
+right-click selection behaviour and scroll/zoom parity are unverified in the Simulator, which
+is Arend's click-through (Eclipse: import `yfiles/` as a Maven project and put it on the
+launch's class path).
