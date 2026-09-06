@@ -330,3 +330,27 @@ double-lined edges has no arrowhead; `JAttr`'s constants are duplicated in `Cell
 right-click selection behaviour and scroll/zoom parity are unverified in the Simulator, which
 is Arend's click-through (Eclipse: import `yfiles/` as a Maven project and put it on the
 launch's class path).
+
+**Review round on 4b (2026-09-06).** Arend's first click-through: no edges at all, no popup
+menu; selection, tooltips, scrolling and zooming fine. Two causes and a lesson about the
+tests. (1) The store created the yFiles edge before connecting the cell to its end vertices,
+and a `FilteredGraphWrapper` evaluates its predicate at creation, so the edge counted as
+invisible (an edge without source is); and the value stayed cached, because connecting an
+edge never marked `VISIBLE` stale (nor did a vertex's context change, on which a data node's
+visibility depends). JGraph never asked before the whole insertion had executed, which is why
+that backend never noticed. The neutral cells now mark the visibility stale on connect and
+disconnect, and the store connects all cells of an insertion before creating any item.
+(2) The popup menu was shown from a Swing mouse listener on the `GraphComponent`, which does
+not receive the events; it now goes through yFiles' popup-menu input mode, whose PopulateMenu
+event supplies the menu to fill and the queried location (the documented way), with
+`PopupMenuItems` left at NONE so that the item-specific event is never involved. The lesson:
+the headless tests looked at the master graph through the cells' items and counted nodes in
+the shown graph, never edges, and never painted. `YFilesCanvasTest` now counts the shown
+edges, checks that a filtering `TypeTree` on the controller hides nothing, and probes a pixel
+of the exported image just outside a node on the longest straight edge.
+`YFilesSimulatorTest` goes further and launches a Simulator (preferences kept in memory by a
+copy of the GUI suite's factory, installed through surefire's `argLine`): it checks the state
+display, the host tab and a rule tab (which adds the level tree) for shown cells and for a
+painted edge in both the creating and the updating paint pass, and opens the popup menu with
+a `Robot` right click. It shows a Simulator window while it runs, and it is the check to run
+when an Eclipse launch and the Maven build seem to disagree.
