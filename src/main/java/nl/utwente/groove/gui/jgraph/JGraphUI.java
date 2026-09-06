@@ -226,7 +226,7 @@ public class JGraphUI<G extends @NonNull Graph> extends BasicGraphUI {
                         addEdge
                             = jCell instanceof ViewVertex && !e.isControlDown() && !e.isShiftDown();
                     }
-                    case 2 -> jGraph.startEditingAtCell(jCell);
+                    case 2 -> jGraph.startEditingAtCell(JCell.of(jCell));
                     default -> { // nothing happens
                     }
                     }
@@ -279,7 +279,7 @@ public class JGraphUI<G extends @NonNull Graph> extends BasicGraphUI {
                     && !ADD_EDGE_BY_CLICK) {
                     if (jEdge != null) {
                         newDragMode = MOVE;
-                    } else if (getJGraph().isCellSelected(jVertex)) {
+                    } else if (getJGraph().isCellSelected(JCell.of(jVertex))) {
                         newDragMode = EDGE;
                     } else if (e.isAltDown()) {
                         newDragMode = EDGE;
@@ -320,12 +320,12 @@ public class JGraphUI<G extends @NonNull Graph> extends BasicGraphUI {
                     // we give preference to selected cells, since otherwise
                     // we will never be able to drag edge points
                     ViewCell<G> cell = getJEdgeAt(this.dragStart.getPoint());
-                    if (cell == null || !getJGraph().getSelectionModel().isCellSelected(cell)) {
+                    if (cell == null || !getJGraph().isCellSelected(JCell.of(cell))) {
                         cell = getJCellAt(this.dragStart.getPoint());
                         getJGraph().setCursor(Icons.HAND_CLOSED_CURSOR);
                     }
-                    if (!getJGraph().isCellSelected(cell)) {
-                        getJGraph().setSelectionCell(cell);
+                    if (cell != null && !getJGraph().isCellSelected(JCell.of(cell))) {
+                        getJGraph().setSelectionCell(JCell.of(cell));
                     }
                     getHandle().mousePressed(this.dragStart);
                 }
@@ -462,13 +462,13 @@ public class JGraphUI<G extends @NonNull Graph> extends BasicGraphUI {
             } else if (isToggleSelectionEvent(evt)) {
                 for (ViewCell<G> jCell : nonGrayCells) {
                     if (!jCell.isGrayedOut()) {
-                        toggleSelectionCellForEvent(jCell, evt);
+                        toggleSelectionCellForEvent(JCell.of(jCell), evt);
                     }
                 }
             } else if (isAddToSelectionEvent(evt)) {
-                getJGraph().addSelectionCells(nonGrayCells.toArray());
+                getJGraph().addSelectionCells(JCell.items(nonGrayCells));
             } else {
-                getJGraph().setSelectionCells(nonGrayCells.toArray());
+                getJGraph().setSelectionCells(JCell.items(nonGrayCells));
             }
         }
 
