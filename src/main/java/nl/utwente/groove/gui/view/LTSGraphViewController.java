@@ -362,17 +362,12 @@ public class LTSGraphViewController extends GraphViewController<GTS> {
     }
 
     /**
-     * Refreshes the active state and transition, if any.
-     * This is necessary after reloading the LTS.
+     * Refreshes the active state and transition, if any, in a given model.
+     * This is necessary after reloading the LTS. The model may be detached:
+     * the display loads a new model before showing it, so the canvas is only
+     * touched if the model is the one it shows.
      */
-    public void reactivate() {
-        var model = getCanvas().getViewModel();
-        if (model == null) {
-            // the canvas holds no model yet, so there are no cells
-            // to reactivate; this happens on the first LTS load, where the
-            // freshly loaded model is only installed after loading
-            return;
-        }
+    public void reactivate(LTSGraphViewModel model) {
         List<ViewCell<GTS>> activeCells = new ArrayList<>();
         GraphState activeState = getActiveState();
         if (activeState != null) {
@@ -390,7 +385,7 @@ public class LTSGraphViewController extends GraphViewController<GTS> {
                 activeCells.add(activeCell);
             }
         }
-        if (!activeCells.isEmpty()) {
+        if (!activeCells.isEmpty() && model == getCanvas().getViewModel()) {
             getCanvas().select(activeCells);
             getCanvas().refresh(activeCells, false);
         }

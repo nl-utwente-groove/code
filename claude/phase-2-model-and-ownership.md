@@ -264,9 +264,15 @@ neutral cells to JGraph's selection model and to `startEditingAtCell` (single-cl
 invisible, double-click editing dead, an NPE on the missing root handle); fixed by mapping
 through `JCell.of`/`JCell.items` at the seven sites in `JGraphUI`. The undo symptoms he saw
 (phantom undo steps, redo restoring an edge but not its label) are older than the branch: the
-selection listener showed selected cells through `GraphLayoutCache.setVisible`, which posts
-an undoable layout-cache edit even for visible cells, and the redo of such an edit
-re-selects (the cache selects inserted cells in editing mode) and truncates the redo history.
-The listener now shows hidden cells only; `EditorUndoTest` replays add-edge, select,
-label-edit, undo, undo, redo, redo headless. Lesson for the yFiles canvas: selection must
-never enter the model's edit history.
+selection listener showed selected cells through `GraphLayoutCache.setVisible`, which posts an
+undoable layout-cache edit even for visible cells, and the redo of such an edit re-selects (the
+cache selects inserted cells in editing mode) and truncates the redo history. The listener now
+shows hidden cells only; `EditorUndoTest` replays add-edge, select, label-edit, undo, undo,
+redo, redo headless. Lesson for the yFiles canvas: selection must never enter the model's edit
+history. The full run with the `GuiTest` category also caught a regression of slice 1:
+`LTSGraphViewController.reactivate` fetched the model from the canvas while `LTSDisplay` loads
+a new model detached, so the assertion in `getNonNullViewModel()` killed the simulator model's
+transaction and every GUI test after it; `reactivate` now takes the model. Note that the
+`GuiTest` classes run headless under surefire here after all, so they are part of the handover
+bar, and that surefire's `-Dtest` takes comma-separated classes (`+` matches nothing and passes
+silently).

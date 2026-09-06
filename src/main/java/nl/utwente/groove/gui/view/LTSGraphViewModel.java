@@ -167,7 +167,7 @@ public class LTSGraphViewModel extends GraphViewModel<GTS> implements GTSListene
         if (gts != oldGTS) {
             gts.addLTSListener(this);
         }
-        getController().reactivate();
+        getController().reactivate(this);
     }
 
     /**
