@@ -86,7 +86,7 @@ interface GraphBackend {                        // one implementation per backen
 `getViewModel()` typed by role; `GraphPreviewDialog`, `Imager` and the three headless tests
 go through the backend factory. Backend selection is a system property or preference with
 JGraph as default; no runtime switching (decided in the plan). After 2.2 the architecture
-allowlist holds only `GraphEditorTab`.
+allowlist holds only `AspectEditorTab`.
 
 ## Modules and the yFiles canvas (slices 2.3, 2.4)
 
@@ -102,7 +102,7 @@ scale measured in the spike.
 
 With edits as view-model operations, the GROOVE-owned undo model of phase 3 lives in the
 model layer: an edit is a change to the view model that both backends reflect, and undo
-replays it. `GraphEditorTab`'s `GraphUndoManager` coupling is the last thing that needs
+replays it. `AspectEditorTab`'s `GraphUndoManager` coupling is the last thing that needs
 JGraph's edit objects, and it goes when that model exists.
 
 ## Slicing
@@ -111,7 +111,7 @@ JGraph's edit objects, and it goes when that model exists.
    role subclasses of `GraphViewModel`; `JModel` and subclasses become adapters with
    delegating stubs, so the eleven remaining client files compile unchanged.
 2. **Ownership inversion**: `GraphBackend`, controller-owned canvases, neutral panel and
-   accessors, allowlist down to `GraphEditorTab`.
+   accessors, allowlist down to `AspectEditorTab`.
 3. **Modules**: core, `backend-jgraph`, optional `backend-yfiles`.
 4. **yFiles read-only canvas**: graph tabs, state display, LTS; layouts.
 
@@ -172,14 +172,14 @@ serves the preview dialog's fallback. View models are created by the canvas
 (`newViewModel()`, role-covariant) and shown with `setViewModel()`, whose JGraph
 implementation sets the model's `CellStore` (the `JModel` adapter) as the JGraph model, so the
 `newModel()`/`setModel()` idiom of the displays became `newViewModel()`/`setViewModel()`
-without a backend type. `JGraphPanel` became the neutral `GraphPanel`. `GraphTab` no longer
+without a backend type. `JGraphPanel` became the neutral `GraphPanel`. `AspectViewTab` no longer
 listens to JGraph's undoable edits to store layout changes; it stores the graph on the
 canvas listener's `cellsChanged`, skipping changes while the model is loading, which is the
 same condition the undo listener achieved by being registered only after loading. The
-architecture allowlist holds only `GraphEditorTab` (phase 3). Not done: the tests still
-name the display kinds, and `GraphEditorTab` casts the controller's canvas to `AspectJGraph`
+architecture allowlist holds only `AspectEditorTab` (phase 3). Not done: the tests still
+name the display kinds, and `AspectEditorTab` casts the controller's canvas to `AspectJGraph`
 for its undo manager. On Arend's review: the four graph-showing components (`StateDisplay`,
-`LTSDisplay`, `GraphTab`, `GraphEditorTab`) implement `GraphDisplay<G>` in `gui.display`,
+`LTSDisplay`, `AspectViewTab`, `AspectEditorTab`) implement `GraphDisplay<G>` in `gui.display`,
 with `getController()` and `getGraphPanel()` as the primitives and `getCanvas()`/
 `getViewModel()` as defaults through the controller; the components specialise the return
 types to their role. That replaced the `getCanvas().getController()` round trips the rename
@@ -188,7 +188,7 @@ had left, and the `instanceof` chains over the four classes in `DisplaysPanel`,
 
 **Slice 3 done (2026-09-05, branch `backend-module`), narrower than planned.** The plan
 said core + `backend-jgraph` + optional `backend-yfiles`; two facts changed that. The JGraph
-backend cannot leave the core module while `GraphEditorTab` needs JGraph's undo objects
+backend cannot leave the core module while `AspectEditorTab` needs JGraph's undo objects
 (phase 3), so a `backend-jgraph` module has nothing to be separate from yet. And turning the
 repository into a Maven reactor with a root aggregator is the phase-5 work of the module
 split (gh #887), with seven recorded build-side work items (flatten plugin, release-reactor

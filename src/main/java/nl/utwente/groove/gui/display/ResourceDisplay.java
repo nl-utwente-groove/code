@@ -343,7 +343,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     protected ResourceTab createMainTab() {
         ResourceKind kind = getResourceKind();
         if (kind.isGraphBased()) {
-            return new GraphTab(this);
+            return new AspectViewTab(this);
         } else {
             return new TextTab(this);
         }
@@ -385,7 +385,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
         if (kind.isGraphBased()) {
             AspectGraph graph
                 = getSimulatorModel().getGrammar().getModelGraph(getResourceKind(), name);
-            GraphEditorTab result = new GraphEditorTab(this, graph.getRole());
+            AspectEditorTab result = new AspectEditorTab(this, graph.getRole());
             result.setGraph(graph);
             return result;
         } else {
@@ -816,7 +816,7 @@ public class ResourceDisplay extends Display implements SimulatorListener {
     @Override
     public void doRepeat() {
         var tab = getSelectedTab();
-        if (tab instanceof GraphTab graphTab) {
+        if (tab instanceof AspectViewTab graphTab) {
             graphTab.getCanvas().scrollToNextSelected();
         }
     }

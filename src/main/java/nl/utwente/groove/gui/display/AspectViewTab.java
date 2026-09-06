@@ -37,12 +37,12 @@ import nl.utwente.groove.gui.view.GraphCanvasListener;
 import nl.utwente.groove.util.QualName;
 
 /** Display tab component showing a graph-based resource. */
-final public class GraphTab extends AspectTab {
+final public class AspectViewTab extends AspectTab {
     /**
      * Constructs the instance of this tab for a given simulator and
      * resource kind.
      */
-    public GraphTab(ResourceDisplay display) {
+    public AspectViewTab(ResourceDisplay display) {
         super(display);
         setFocusable(false);
         setEnabled(false);

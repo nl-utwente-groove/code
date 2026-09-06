@@ -54,7 +54,7 @@ public class ArchitectureTest {
      */
     private static final Map<String,String> ALLOWED = new TreeMap<>(Map.ofEntries(
         // phase 3: the editor's own undo and edit model
-        Map.entry("nl/utwente/groove/gui/display/GraphEditorTab.java", "3")));
+        Map.entry("nl/utwente/groove/gui/display/AspectEditorTab.java", "3")));
 
     /** Source roots to scan. */
     private static final Path[] SOURCE_ROOTS = {Path.of("src/main/java"), Path.of("src/test/java")};

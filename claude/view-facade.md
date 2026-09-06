@@ -29,7 +29,7 @@ and 2 test files reference backend types (`JGraph`, `JModel`, the `AspectJ*`/`LT
 
 Structural welds, not just calls: `gui.look.VisualAttributeMap` *extends* `org.jgraph.graph.AttributeMap`
 and `gui.look.LoopRouting` *implements* `org.jgraph.graph.Edge.Routing`; nine non-backend classes
-implement `org.jgraph.event.GraphSelectionListener`/`GraphModelListener`; `GraphEditorTab`
+implement `org.jgraph.event.GraphSelectionListener`/`GraphModelListener`; `AspectEditorTab`
 extends `org.jgraph.graph.GraphUndoManager` and reads `GraphModelChange`/`ConnectionSet`;
 `ViewCell` (the neutral cell interface) declares `getJGraph()`/`getJModel()` with backend types;
 `AbstractLayouter` works on JGraph `CellView`s and `LayouterItem` on the jgraph-layout
@@ -205,7 +205,7 @@ architecture test.
    curve code (`InterpolatingBezier`); `JGraphExportable` becomes `CanvasExportable` and stops
    using the Swing component name.
 
-Residues handed on: `GraphEditorTab`'s `GraphUndoManager`/`GraphModelChange`/`ConnectionSet`
+Residues handed on: `AspectEditorTab`'s `GraphUndoManager`/`GraphModelChange`/`ConnectionSet`
 use (phase 3, the editor's own undo model); `JGraphPanel` and the `getJGraph()` accessors on
 displays and tabs, plus the per-role `JModel` operations (phase 2, ownership inversion and
 view-model split).
@@ -290,7 +290,7 @@ the `@AIGenerated` import of a *generic* interface as unused when the annotation
 and model listener outside the backend, and every user of the `GRAPH_MODEL_PROPERTY`/
 `JGRAPH_MODE_PROPERTY`/`CELL_EDIT_PROPERTY` property changes, is a `GraphCanvasListener`
 now: `LabelTree` (and so `TypeTree`, `LTSTree`), `RuleLevelTree`, `FindReplaceAction`,
-`SelectColorAction`, `StateDisplay`, `GraphEditorTab` (mode, selection, cell-edit start;
+`SelectColorAction`, `StateDisplay`, `AspectEditorTab` (mode, selection, cell-edit start;
 its `GraphModelListener` for the undo model stays, phase 3), `JGraphPanel` and
 `LayouterItem`. The two JGraph-specific property names and `addGraphViewModeListener` are
 gone from `JGraph`. `cellsChanged` carries a `CellChange` (see the listener section) and
@@ -356,4 +356,4 @@ differ in the third decimal. `ExportAction` holds a `GraphCanvas`; `Imager` size
 component through `getComponent()`. `ImagerTest` (slow category) covers PNG, PDF, SVG and
 TikZ export of the ferryman graphs; `InterpolatingBezierTest` pins the curve contract. The
 allowlist is down to 11 files, all phase 2 (canvas construction and the display/tab
-accessors) or phase 3 (`GraphEditorTab`): **phase 1b is complete**.
+accessors) or phase 3 (`AspectEditorTab`): **phase 1b is complete**.

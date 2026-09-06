@@ -34,7 +34,7 @@ import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
-import nl.utwente.groove.gui.display.GraphTab;
+import nl.utwente.groove.gui.display.AspectViewTab;
 import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.gui.list.SearchResult;
 import nl.utwente.groove.gui.tree.LabelTree;
@@ -63,7 +63,7 @@ public class FindReplaceAction extends SimulatorAction
      * of a given {@link ResourceDisplay}.
      */
     private void addAsListener(ResourceDisplay display) {
-        AspectGraphCanvas canvas = ((GraphTab) display.getMainTab()).getCanvas();
+        AspectGraphCanvas canvas = ((AspectViewTab) display.getMainTab()).getCanvas();
         canvas.addCanvasListener(this);
         var labelTree = canvas.getController().getLabelTree();
         assert labelTree != null; // the graph tab installs the label tree with the canvas

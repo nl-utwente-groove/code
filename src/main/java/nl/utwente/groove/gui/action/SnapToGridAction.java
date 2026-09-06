@@ -6,7 +6,7 @@ import java.util.Set;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
-import nl.utwente.groove.gui.display.GraphEditorTab;
+import nl.utwente.groove.gui.display.AspectEditorTab;
 
 /**
  * Action to preview the current type graph.
@@ -20,22 +20,22 @@ public class SnapToGridAction extends SimulatorAction {
     @Override
     public void execute() {
         this.snapToGrid = !this.snapToGrid;
-        for (GraphEditorTab observer : this.observers) {
+        for (AspectEditorTab observer : this.observers) {
             observer.setSnapToGrid();
         }
     }
 
     /** 
      * Adds a graph editor tab that should be informed of a change in snap status.
-     * The action will invoke {@link GraphEditorTab#setSnapToGrid()}
+     * The action will invoke {@link AspectEditorTab#setSnapToGrid()}
      * upon execution of the action.
      */
-    public void addSnapListener(GraphEditorTab editorTab) {
+    public void addSnapListener(AspectEditorTab editorTab) {
         this.observers.add(editorTab);
     }
 
     /** Removes a listener. */
-    public void removeSnapListener(GraphEditorTab editorTab) {
+    public void removeSnapListener(AspectEditorTab editorTab) {
         this.observers.remove(editorTab);
     }
 
@@ -44,7 +44,7 @@ public class SnapToGridAction extends SimulatorAction {
         return this.snapToGrid;
     }
 
-    private final Set<GraphEditorTab> observers =
+    private final Set<AspectEditorTab> observers =
         new HashSet<>();
     private boolean snapToGrid;
 }

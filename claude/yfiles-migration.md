@@ -32,7 +32,7 @@ controller-owned canvases, neutral `GraphPanel`,
 service, with `GraphBackend` ranking yFiles first when present) is merged; slice 4 (the
 yFiles canvas) is in progress on branch `yfiles-canvas`, starting with neutral cell classes
 in `gui.view.cell` that both backends show through items of their own (decision B in the
-phase-2 note). The architecture allowlist holds one file, `GraphEditorTab` (phase 3).
+phase-2 note). The architecture allowlist holds one file, `AspectEditorTab` (phase 3).
 
 ## Goal and motivation
 

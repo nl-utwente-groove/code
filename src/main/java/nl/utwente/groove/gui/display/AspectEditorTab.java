@@ -91,14 +91,14 @@ import nl.utwente.groove.util.QualName;
  * @author Arend Rensink
  * @version $Revision$
  */
-final public class GraphEditorTab extends AspectTab
+final public class AspectEditorTab extends AspectTab
     implements GraphModelListener, GraphCanvasListener<@NonNull AspectGraph> {
     /**
      * Constructs a new tab instance.
      * @param parent the component on which this panel is placed
      * @param role the input graph for the editor
      */
-    public GraphEditorTab(ResourceDisplay parent, final GraphRole role) {
+    public AspectEditorTab(ResourceDisplay parent, final GraphRole role) {
         super(parent);
         this.role = role;
         setFocusCycleRoot(true);
@@ -447,7 +447,7 @@ final public class GraphEditorTab extends AspectTab
     private GraphUndoManager getUndoManager() {
         if (this.undoManager == null) {
             // Create a GraphUndoManager which also Updates the ToolBar
-            this.undoManager = new GraphTabUndoManager();
+            this.undoManager = new EditorUndoManager();
         }
         return this.undoManager;
     }
@@ -795,12 +795,12 @@ final public class GraphEditorTab extends AspectTab
      * @author Arend Rensink
      * @version $Revision$
      */
-    private final class GraphTabUndoManager extends GraphUndoManager {
+    private final class EditorUndoManager extends GraphUndoManager {
         @Override
         public void undoableEditHappened(UndoableEditEvent e) {
             boolean relevant = true;
             // only process edits that really changed anything
-            if (GraphEditorTab.this.refreshing || getJGraph().isModelRefreshing()) {
+            if (AspectEditorTab.this.refreshing || getJGraph().isModelRefreshing()) {
                 relevant = false;
             } else if (e.getEdit() instanceof GraphModelChange edit) {
                 Object[] inserted = edit.getInserted();
@@ -819,16 +819,16 @@ final public class GraphEditorTab extends AspectTab
 
         @Override
         public void undo() {
-            GraphEditorTab.this.dirtMinor &= isMinor(editToBeUndone());
-            GraphEditorTab.this.dirtCount--;
+            AspectEditorTab.this.dirtMinor &= isMinor(editToBeUndone());
+            AspectEditorTab.this.dirtCount--;
             super.undo();
             updateHistoryButtons();
         }
 
         @Override
         public void redo() {
-            GraphEditorTab.this.dirtMinor &= isMinor(editToBeRedone());
-            GraphEditorTab.this.dirtCount++;
+            AspectEditorTab.this.dirtMinor &= isMinor(editToBeRedone());
+            AspectEditorTab.this.dirtCount++;
             super.redo();
             updateHistoryButtons();
         }
@@ -951,7 +951,7 @@ final public class GraphEditorTab extends AspectTab
             Component result
                 = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             if (result == this) {
-                setToolTipText(GraphEditorTab.this.docMap.get(value));
+                setToolTipText(AspectEditorTab.this.docMap.get(value));
             }
             return result;
         }
