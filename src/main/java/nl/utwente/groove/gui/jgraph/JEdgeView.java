@@ -33,7 +33,6 @@ import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JLabel;
@@ -60,6 +59,7 @@ import nl.utwente.groove.util.Fonts;
 import nl.utwente.groove.util.line.HTMLLineFormat;
 import nl.utwente.groove.util.line.LineStyle;
 import nl.utwente.groove.util.line.MatrixFormat;
+import nl.utwente.groove.gui.view.ParallelEdges;
 import nl.utwente.groove.gui.view.ViewEdge;
 import nl.utwente.groove.gui.view.ViewVertex;
 
@@ -228,13 +228,8 @@ public class JEdgeView extends EdgeView {
     }
 
     /**
-     * Returns the parallel edges rank of this edge.
-     * This is the rank within the set of parallel unrouted
-     * edges. The rank is
-     * determined by the position in the edge set of this edges's source port.
-     * If this edge is routed (that is, it has explicit routing points)
-     * then its parallel rank is always 0.
-     * @return the computed parallel edges rank
+     * Returns the parallel edges rank of this edge, see {@link ParallelEdges#rank}:
+     * 0 for a routed edge, a loop, or an edge without parallels.
      */
     private int getParRank() {
         if (this.source == null || this.target == null) {
@@ -248,38 +243,7 @@ public class JEdgeView extends EdgeView {
         if (getPointCount() > 2) {
             return 0;
         }
-        if (getViewCell().isLoop()) {
-            return 0;
-        }
-        // the total number of incoming and outgoing parallel edges
-        int inCount = 0;
-        int outCount = 0;
-        // the rank calculated for this edge
-        int rank = 0;
-        // flag indicating that this edge has been encountered
-        boolean found = false;
-        // determine the rank within the incoming/outgoing edges
-        Iterator<? extends ViewEdge<?>> iter = getSourceVertex().getContext();
-        while (iter.hasNext()) {
-            ViewEdge<?> edge = iter.next();
-            // determine if this is a parallel edge
-            if (edge.getVisuals().getPoints().size() > 2) {
-                continue;
-            }
-            found |= edge == getViewCell();
-            if (edge.getTargetVertex() == getTargetVertex()) {
-                // edge is outgoing
-                outCount++;
-                if (!found) {
-                    rank++;
-                }
-            } else if (edge.getSourceVertex() == getTargetVertex()) {
-                // edge is incoming
-                inCount++;
-            }
-        }
-        // adjust so the ranks are points on an interval centered on 0 with distance 2
-        return 2 * (inCount + rank) - (inCount + outCount - 1);
+        return ParallelEdges.rank(getViewCell());
     }
 
     /** Returns the perimeter point where the end of this edge has to connect.
@@ -315,7 +279,7 @@ public class JEdgeView extends EdgeView {
                 = vertexView.getCellVisuals().getNodeShape().getRadius(bounds, offDirX, offDirY);
             // calculate actual offset
             double offset
-                = Math.signum(parRank) * Math.min(PAR_EDGES_DISTANCE * Math.abs(parRank), offMax);
+                = Math.signum(parRank) * Math.min(ParallelEdges.DISTANCE * Math.abs(parRank), offMax);
             double offX = offset * offDirX / offDist;
             double offY = offset * offDirY / offDist;
             adjustedCenter = new Point2D.Double(center.getX() + offX, center.getY() + offY);
@@ -352,8 +316,6 @@ public class JEdgeView extends EdgeView {
         }
     }
 
-    /** Preferred distance between parallel edges. */
-    private static final int PAR_EDGES_DISTANCE = 4;
 
     static {
         renderer = new MyEdgeRenderer();
