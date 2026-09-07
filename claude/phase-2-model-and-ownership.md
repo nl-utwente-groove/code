@@ -426,8 +426,10 @@ merged round-2 result, three of them changes:
 - *Label boxes.* Edge labels are opaque in the background colour of the canvas rather than
   white; the style is cached per colour, and a background change re-styles the edge labels
   of the shown model (states and disabled start graphs have coloured backgrounds).
-- *Fonts.* Not changed: Arend asks to be consulted where JGraph's choices are idiosyncratic
-  rather than to copy them. The open question is whether edge labels should honour the font
-  visual (the `REGULAR` look's italic for regular-expression edges, which JGraph ignores only
-  because its edge labels never received the visual), and if so whether a plain negation
-  such as `!moored` should count as regular.
+- *Fonts.* Arend asks to be consulted where JGraph's choices are idiosyncratic rather than to
+  copy them, and decided: edge labels honour the font visual in both backends (JGraph's edge
+  renderer now sets the label font from it, as its vertex renderer always did), and a plain
+  negation of an atom such as `!moored` no longer gets the `REGULAR` look, which is for real
+  regular expressions. A quirk left as is: an embargo edge with a regular expression comes
+  out plain, because the `EMBARGO` look, which inherits `BASIC`'s plain font and comes
+  later, overrides `REGULAR`'s italic. `RegularLookTest` pins the behaviour.

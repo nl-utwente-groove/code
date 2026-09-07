@@ -56,6 +56,7 @@ import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
 import nl.utwente.groove.util.collect.Matrix;
+import nl.utwente.groove.util.Fonts;
 import nl.utwente.groove.util.line.HTMLLineFormat;
 import nl.utwente.groove.util.line.LineStyle;
 import nl.utwente.groove.util.line.MatrixFormat;
@@ -708,10 +709,13 @@ public class JEdgeView extends EdgeView {
             Dimension result = this.jLabelSize;
             Color foreground = getForeground();
             // see if we can use the previously stored value
-            MultiLabel lines = view.getViewCell().getVisuals().getLabel();
+            VisualMap visuals = view.getViewCell().getVisuals();
+            MultiLabel lines = visuals.getLabel();
+            int fontStyle = visuals.getFont();
             if (lines.isEmpty()) {
                 result = this.jLabelSize = new Dimension();
-            } else if (lines != this.jLabelLines || foreground != this.jLabelColor) {
+            } else if (lines != this.jLabelLines || foreground != this.jLabelColor
+                || fontStyle != this.jLabelFontStyle) {
                 // no, the text or colour have changed; reload the jLabel component
                 JGraph<?> jGraph = (JGraph<?>) view.getViewCell().getCanvas();
                 assert jGraph != null; // guaranteed by now
@@ -721,7 +725,8 @@ public class JEdgeView extends EdgeView {
                     start = view.getPoint(0);
                     end = view.getPoint(view.getPointCount() - 1);
                 }
-                // set the text in the label
+                // set the font and text in the label
+                this.jLabel.setFont(Fonts.getLabelFont().deriveFont(fontStyle));
                 var text = lines.toString(HTMLLineFormat.instance(), start, end);
                 this.jLabel.setText(HTMLLineFormat.toHtml(text, foreground));
                 if (FAST_SIZE) {
@@ -740,6 +745,7 @@ public class JEdgeView extends EdgeView {
             }
             this.jLabelLines = lines;
             this.jLabelColor = foreground;
+            this.jLabelFontStyle = fontStyle;
             return result;
         }
 
@@ -802,6 +808,8 @@ public class JEdgeView extends EdgeView {
         private MultiLabel jLabelLines;
         /** Last colour set in the jLabel component. */
         private Color jLabelColor;
+        /** Last font style set in the jLabel component. */
+        private int jLabelFontStyle;
         /** Last computed preferred size of the jLabel component. */
         private Dimension jLabelSize;
     }

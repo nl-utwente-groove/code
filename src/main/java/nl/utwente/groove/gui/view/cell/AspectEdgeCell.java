@@ -183,7 +183,8 @@ public class AspectEdgeCell extends AViewEdge<AspectGraph> implements AspectView
                 || ruleLabel.isNeg(n -> n.getOperand().isEmpty())) {
                 // remove edge arrow
                 setLook(Look.NO_ARROW, true);
-            } else if (!ruleLabel.isAtom()) {
+            } else if (!ruleLabel.isAtom() && !ruleLabel.isNeg(n -> n.getOperand().isAtom())) {
+                // a negated atom counts as plain, not as a regular expression
                 setLook(Look.REGULAR, true);
             }
         }
