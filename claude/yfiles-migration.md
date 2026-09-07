@@ -41,10 +41,11 @@ read-only views. **Phase 3 (the editor) is IN PROGRESS**: design and slicing in
 `claude/phase-3-editor.md`; slices 3a (the GROOVE-owned edit model and undo history in
 `gui.view`, both backends feeding it) and 3b (the editor canvas on yFiles, gestures
 mapped onto yFiles' editor input mode; branch `editor-edit-model` off the rebased
-`yworks-migration`, 2026-09-07) are done; Arend's two review rounds on 3b are fixed on the
-same branch (see the phase-3 note; parallel edges fan out as in JGraph, through the
-neutral `gui.view.ParallelEdges`); 3c (the clipboard, including copy by Ctrl+drag)
-follows. The architecture allowlist is empty.
+`yworks-migration`, 2026-09-07) are done; Arend's three review rounds on 3b are fixed on
+the same branch line (see the phase-3 note; parallel edges fan out as in JGraph, through
+the neutral `gui.view.ParallelEdges`; labels and edge points are draggable on yFiles);
+3c (the clipboard, including copy by Ctrl+drag) follows. The architecture allowlist is
+empty.
 
 ## Goal and motivation
 

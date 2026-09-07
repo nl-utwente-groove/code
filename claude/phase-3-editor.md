@@ -326,4 +326,49 @@ editor (corners and sizes snap, not centres) are gh #915, outside the migration.
 
 Copy/paste (item 4 of the first round) is slice 3c.
 
+**Third review round** (Arend, 2026-09-07), same branch line:
+
+- *Labels could not be moved; dragging on an edge created a point and dragged it about.*
+  yFiles' `CreateBendInputMode` creates a bend on any drag over an edge; it is off now
+  (points are added by Alt-click). Labels are movable through `MoveLabelInputMode`
+  (unselected labels too); only the main label of an edge has a position handler (the
+  label decorator hides it for node labels and the multiplicity labels). A finished drag
+  is read back from the label's centre into `LABEL_POS` through the new inverse
+  `EdgeGeometry.relativePosition` (closest segment, ratio along the polyline, signed
+  offset), minus the fan-out shift of a parallel edge, and recorded as a visual edit.
+- *Edge points could not be dragged individually.* An edge's `IHandleProvider` (edge
+  decorator factory) now yields the handles of its bends, so a selected edge shows them,
+  as in JGraph; the handle mode's drag ends in the existing move recording.
+- *Labels moved wildly during a drag.* Labels are anchored to the port line by yFiles
+  between two placements; the editor now re-places the labels of the affected edges on
+  every `Dragged` event of the move, move-unselected and handle modes.
+- *Bezier with two points curved at one of them only.* Traced with a path dump: yFiles'
+  `cropPath` replaces a final curve segment by a straight line to the intersection,
+  which flattened the last quadratic piece and left a corner at the second bend. The
+  renderer now clips every path itself at the node outlines (`clipEnds` for all styles,
+  `cropPath` returns the path unchanged); yFiles' arrows sit at the path ends as before.
+- *Spline edges showed dashed corners.* The decorations (selection stroke, inner line,
+  dash shaft, overlay) were drawn along the unsmoothed path; they now follow
+  `createSmoothedPath` with the renderer's smoothing settings. The spline itself remains
+  yFiles' corner smoothing, not JGraph's interpolating spline through the points.
+- *Check mark on the current line style*: done directly rather than as an issue, in
+  `SetLineStyleMenu` (check-box items, the selected edge's style checked).
+- *Label tree: a new edge's label missing, counts not dropping to zero.* The JGraph
+  aspect canvas relays the model's graph rebuilds to the canvas listeners as
+  `graphChanged`, on which the type tree rebuilds itself; the yFiles aspect canvas never
+  did, so the tree only recounted on structural changes. It relays them now
+  (`YFilesAspectCanvas.setViewModel`). Independently, `TypeTree.cellsChanged` rebuilds
+  the tree whenever the type graph is another instance than the filter was built from
+  (`TypeFilter.isFor`). Note for the record: a label that is *new to the grammar* does not
+  enter the tree until the graph is saved, because the implicit type graph is built from
+  the saved resources and the typing deliberately swallows the unknown label in the
+  editor (`TypeGraph.analyzeHost`, "solved upon saving"); that is pre-existing behaviour,
+  unchanged. Tests on both backends use an existing label.
+
+Tests added: `EdgeGeometryTest` (inverse round trip, closest segment),
+`EditorLabelTreeTest` (JGraph editor: label gone at zero occurrences, label of a new
+edge appears), and in `YFilesEditorTest` the same tree scenario, the Bezier path keeping
+its three curve segments, and a label drag recorded as a minor edit and placed where it
+was dropped.
+
 Next: 3c, the clipboard.
