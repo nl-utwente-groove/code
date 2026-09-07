@@ -152,7 +152,9 @@ JGraph cells, which were never a stable format.
    `GraphEditorInputMode` as above, the label completion made neutral, snap to grid, the
    backend's editor fallback removed; node dragging in the viewer canvases. Simulator tests
    for the gestures through synthetic events where yFiles honours them.
-3. **3c — the clipboard**: the GROOVE transferable and the paste edit on both backends.
+3. **3c — the clipboard**: the GROOVE transferable and the paste edit on both backends;
+   copying by Ctrl+drag as well (Arend's review of 3b: copy/paste must also be invoked by
+   that gesture).
 
 Phase 4 (export and Imager on the facade) follows; the JGraph backend can then leave the
 core module.
@@ -254,8 +256,47 @@ tests of the unit pass; the core GUI tests pass.
 
 Not done in 3b: node dragging in the viewer canvases (the `MoveInputMode` is easily added
 to the viewer mode, left for a small follow-up), yFiles' orthogonal edge editing and snap
-lines beyond the grid (not GROOVE features), and the zoom-at-mouse-position question,
-which is one property of the graph component (`setCenterZoomEventRecognizer`) and a
-separate issue.
+lines beyond the grid (not GROOVE features), and zooming at the mouse position, which is
+bullet 2 of gh #882 (to be done for both backends; on yFiles one property of the graph
+component, `setCenterZoomEventRecognizer`). The snap-to-grid semantics of the JGraph
+editor (corners and sizes snap, not centres) are gh #915, outside the migration.
+
+**Review round on 3b** (Arend, 2026-09-07), fixed on the same branch:
+
+- *An edge rerouted onto its own source was not drawn until its node was dragged.* Root
+  cause in the core cell, not the canvas: `AViewEdge.isLoop` judged by the graph nodes,
+  which still name the old ends until `syncGraph` rebuilds the graph after the edit, so
+  the store routed the reconnected edge as a binary edge with coinciding ends (no bends,
+  nothing to draw). The connection now decides where there is one. Found by a headless
+  test, which stays.
+- *Rerouting lost the selection* while edge creation kept it: the store replaces the item
+  of a reconnected edge, and yFiles deselects removed items. The store re-selects the new
+  item when the old one was selected, in one selection batch.
+- *Labels of west and east loops stood at 90 degrees*: the `EdgePathLabelModel` used for
+  loops rotates labels along the segment by default; switched off, JGraph never rotates.
+- *The move cursor over edges with nothing to move*: `shouldMove` of the editor input
+  mode now denies edges without points (an edge with points is still dragged as a whole,
+  as in JGraph).
+- *End handles on every selected edge*: the `IEdgePortHandleProvider` of an edge is hidden
+  while more than one edge is selected (`hideImplementation` with a predicate on the edge
+  decorator of the master graph), and the editor requeries the handles after every
+  reported selection change (`YFilesCanvas.selectionFlushed` hook).
+- *The self-loop preview was yFiles' rectangle*, unlike the loop then created: the
+  creation mode's edge defaults now carry the cell edge style, so the preview has GROOVE's
+  pen and arrow, and at gesture start the source vertex cell goes into the dummy edge's
+  tag; the renderer routes a cell-less edge that ends on that vertex as `LoopRouter`
+  will route the loop (`route(vertex, null, bounds)`, the new overload).
+- *The Robot tests take over the mouse* while Arend works: they now run only with
+  `-Dgroove.test.robot=true` (pom property passed to surefire) and are skipped otherwise.
+
+Still open from the review: *parallel edges overlap completely* on yFiles. Options put to
+Arend (decision pending): (a) render-time fan-out as JGraph does (`JEdgeView.getParRank`
+shifts the end points of unrouted parallel edges perpendicular to the chord by
+4 px × rank; per `view-facade.md` a backend-owned rendering choice, no model data), which
+the yFiles renderer can do from the master graph's edges at the end nodes; (b) curved
+bulges per rank instead of shifted straight lines, nicer but changes label anchoring and
+hit testing; (c) yFiles' `ParallelEdgeRouter`/`EdgeRouter` — layout stages that write
+real bends, wrong for interactive editing (persisted geometry, re-run on every move),
+fine inside a layout run. Copy/paste (item 4 of the review) is slice 3c.
 
 Next: 3c, the clipboard.
