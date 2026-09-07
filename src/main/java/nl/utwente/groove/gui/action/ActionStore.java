@@ -873,6 +873,9 @@ public class ActionStore implements SimulatorListener {
         // lazily create the action
         if (this.snapToGridAction == null) {
             this.snapToGridAction = new SnapToGridAction(this.simulator);
+            // a simulator action starts disabled until the next refresh; the action
+            // is created when the first editor opens, so it must be refreshed here
+            this.snapToGridAction.refresh();
         }
         return this.snapToGridAction;
     }
