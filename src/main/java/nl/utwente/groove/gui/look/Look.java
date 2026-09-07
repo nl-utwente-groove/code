@@ -135,7 +135,7 @@ public enum Look {
             add(VisualKey.BACKGROUND, Values.EMBARGO_BACKGROUND);
             add(VisualKey.LINE_WIDTH, 5f);
             add(VisualKey.DASH, Values.EMBARGO_DASH);
-            add(VisualKey.EDGE_TARGET_SHAPE, EdgeEnd.UNFILLED);
+            add(VisualKey.EDGE_TARGET_SHAPE, EdgeEnd.ARROW);
         }
 
     },
