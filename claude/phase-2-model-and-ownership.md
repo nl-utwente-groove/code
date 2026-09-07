@@ -451,12 +451,23 @@ The slice's real finding is about input. A `GraphComponent` delegates mouse inpu
 component, so a Swing `MouseListener` on the component (the LTS display's click-to-select and
 the tabs' double-click-to-edit both use one) never hears a click on yFiles — the popup-menu
 listener of round 1 failed for the same reason. Rather than widen the facade, the canvas
-forwards yFiles' click events: the `ClickInputMode` of the viewer input mode reports clicks
-and double clicks (policy `INITIAL_SINGLE_AND_DOUBLE_CLICK`, which matches Swing's
-click-count sequence), and `forwardClick` synthesises a mouse-clicked event in the
+forwards yFiles' click events, and `forwardClick` synthesises a mouse-clicked event in the
 component's coordinates, with the modifiers and button translated, for the component's
 registered listeners. Only clicks are forwarded; presses, releases and drags stay with
-yFiles. `YFilesCanvasTest` feeds a constructed `ClickEventArgs` through it.
+yFiles. The events to forward are the viewer input mode's own `ItemClicked`,
+`ItemDoubleClicked` and `CanvasClicked`: the first version listened on the child
+`ClickInputMode`, whose events the viewer mode handles itself and which therefore never
+reached a second listener, so nothing was forwarded (Arend's first LTS click-through). The
+double-click policy `INITIAL_SINGLE_AND_DOUBLE_CLICK` matches Swing's click-count
+sequence. `YFilesCanvasTest` feeds a constructed `ClickEventArgs` through `forwardClick`;
+`YFilesSimulatorTest` clicks a state in the LTS display and control-clicks it, by
+dispatching synthetic mouse events to the graph component, whose lightweight dispatcher
+routes them to yFiles' input surface (a Robot on a shared desktop proved unreliable). The
+popup mode does not react to synthetic events, so the right-click test keeps its Robot,
+brings the frame to the front and compares a screen capture with the component's painting
+before clicking, skipping otherwise. Edge labels are painted below the nodes (the edge
+label group is placed below the node group), so that a label of an edge passing behind a
+node is hidden with the edge, as in JGraph.
 
 Tests: plain and control canvases headless (the control automaton of `recipes`), the LTS
 display after exploring ferryman in the Simulator (shown cells and a painted edge; the state
