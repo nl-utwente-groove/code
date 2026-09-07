@@ -91,4 +91,59 @@ public final class EdgeGeometry {
         return new Point2D.Double(p0.getX() + dx * factor + nx * offset,
             p0.getY() + dy * factor + ny * offset);
     }
+
+    /**
+     * Converts the point at which an edge label is centred into the relative label
+     * position, the inverse of {@link #labelPosition}: the label is related to the
+     * segment of the polyline closest to it (measured to the segment, not its line),
+     * with the distance along the edge in permille of the total length and the signed
+     * perpendicular offset from that segment.
+     * @param at the absolute label position
+     * @param points the points of the edge, at least two
+     * @return the relative label position
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    public static Point2D relativePosition(Point2D at, List<Point2D> points) {
+        int pointCount = points.size();
+        double total = 0;
+        for (int i = 1; i < pointCount; i++) {
+            total += points.get(i - 1).distance(points.get(i));
+        }
+        double bestDistance = Double.MAX_VALUE;
+        double bestAlong = 0;
+        double bestOffset = 0;
+        double before = 0;
+        for (int i = 1; i < pointCount; i++) {
+            Point2D p0 = points.get(i - 1);
+            Point2D p1 = points.get(i);
+            double dx = p1.getX() - p0.getX();
+            double dy = p1.getY() - p0.getY();
+            double segment = Math.hypot(dx, dy);
+            double factor;
+            double offset;
+            if (segment == 0) {
+                factor = 0;
+                offset = 0;
+            } else {
+                double ax = at.getX() - p0.getX();
+                double ay = at.getY() - p0.getY();
+                factor = Math.max(0, Math.min(1, (ax * dx + ay * dy) / (segment * segment)));
+                // the offset is positive to the right of the direction of travel
+                offset = (ax * -dy + ay * dx) / segment;
+            }
+            Point2D foot
+                = new Point2D.Double(p0.getX() + dx * factor, p0.getY() + dy * factor);
+            double distance = foot.distance(at);
+            if (distance < bestDistance) {
+                bestDistance = distance;
+                bestAlong = before + factor * segment;
+                bestOffset = offset;
+            }
+            before += segment;
+        }
+        double ratio = total == 0
+            ? 0
+            : bestAlong / total * ElementLayout.PERMILLE;
+        return new Point2D.Double(ratio, bestOffset);
+    }
 }
