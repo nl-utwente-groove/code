@@ -154,7 +154,7 @@ public interface GraphCanvas<G extends Graph> {
 
     /**
      * Refreshes the visibility and rendering of a given set of cells, after their visuals
-     * have changed.
+     * or labels have changed; the cells are reported to the canvas listeners as modified.
      * @param unselectGrayedOut if {@code true}, grayed-out cells are removed from the selection
      */
     void refresh(Collection<? extends ViewCell<G>> cells, boolean unselectGrayedOut);
@@ -196,8 +196,9 @@ public interface GraphCanvas<G extends Graph> {
     void startEditing(ViewCell<G> cell);
 
     /**
-     * Indicates if the canvas currently has an active in-place editor.
-     * This is always {@code false} for non-editable canvases.
+     * Indicates if the canvas is an editor whose editing is active: the canvas of an
+     * editing controller, not in preview mode. This is always {@code false} for
+     * read-only canvases; it does not say whether an in-place editor is open.
      */
     boolean hasActiveEditor();
 

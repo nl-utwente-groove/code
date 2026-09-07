@@ -41,9 +41,13 @@ import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
 import nl.utwente.groove.gui.view.AspectGraphViewController;
 import nl.utwente.groove.gui.view.AspectGraphViewModel;
+import nl.utwente.groove.gui.view.CellChange;
 import nl.utwente.groove.gui.view.CellStore.Connection;
 import nl.utwente.groove.gui.view.EditHistory;
 import nl.utwente.groove.gui.view.EditableLabels;
+import nl.utwente.groove.gui.view.GraphCanvas;
+import nl.utwente.groove.gui.view.GraphCanvasListener;
+import nl.utwente.groove.gui.view.ViewCell;
 import nl.utwente.groove.gui.view.cell.AspectEdgeCell;
 import nl.utwente.groove.gui.view.cell.AspectVertexCell;
 import nl.utwente.groove.io.Groove;
@@ -228,6 +232,30 @@ public class EditorUndoTest {
         assertEquals(nodeCount, graph.nodeCount(), "nodes after undo");
         assertEquals(edgeCount, graph.edgeCount(), "edges after undo");
         assertTrue(vertex.getContext().hasNext(), "edges reconnected after undo");
+    }
+
+    /**
+     * A label change reaches the canvas listeners as a modification of the cell: the
+     * label tree counts labels from those notifications.
+     */
+    @Test
+    void labelChangeReachesTheCanvasListeners() throws IOException {
+        AspectJGraph canvas = editorCanvas();
+        AspectGraphViewModel model = canvas.getNonNullModel().getViewModel();
+        List<AspectVertexCell> vertices = vertices(model);
+        AspectVertexCell vertex = vertices.get(0);
+        List<ViewCell<AspectGraph>> modified = new ArrayList<>();
+        canvas.addCanvasListener(new GraphCanvasListener<AspectGraph>() {
+            @Override
+            public void cellsChanged(GraphCanvas<AspectGraph> source,
+                                     CellChange<AspectGraph> change) {
+                modified.addAll(change.modified());
+            }
+        });
+        var labels = new EditableLabels();
+        labels.load(vertex.getEditableLabels().toEditString() + "\nflag:extra");
+        model.changeLabels(vertex, labels);
+        assertTrue(modified.contains(vertex), "the relabelled cell was reported as modified");
     }
 
     /** Creates an editing JGraph canvas showing the fixture's start graph. */

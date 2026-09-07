@@ -484,6 +484,11 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
                 scrollRectToVisible(toScreen(scope).getBounds());
             }
             JGraph.this.modelRefreshing = false;
+            // the refreshed cells changed: the label tree recounts them
+            var change = new CellChange<>(List.of(), new ArrayList<>(jCellSet), List.of());
+            for (var listener : this.canvasListeners) {
+                listener.cellsChanged(this, change);
+            }
         }
     }
 
