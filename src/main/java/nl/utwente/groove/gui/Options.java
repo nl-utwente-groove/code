@@ -78,6 +78,10 @@ public class Options implements Cloneable {
 
     /** Creates an initialised options object. */
     private Options() {
+        // the menu items constructed below take their colours and UI delegates
+        // from the look-and-feel active at construction time, so it has to be
+        // in place before the first of them is created
+        initLookAndFeel();
         for (ResourceKind resource : getOptionalTabs()) {
             addCheckbox(getShowTabOption(resource));
         }
