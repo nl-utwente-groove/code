@@ -198,4 +198,64 @@ add-edge-then-label through the in-place path, a move as a minor edit with the l
 following, and removal with incident edges undone; `YFilesCanvasTest` covers insertion,
 visual, label and removal edits with undo and redo on the yFiles store.
 
-Next: 3b, the yFiles editor canvas.
+**Slice 3b done (2026-09-07, branch `editor-edit-model`, on top of 3a).**
+`YFilesAspectEditorCanvas` is the editor's canvas: `YFilesCanvas` gained an overridable
+input-mode factory with the viewer's configuration split into helpers (selectable
+predicate, popup, marquee, pan) that the editor's `GraphEditorInputMode` reuses. yFiles'
+own editing operations are switched off (node creation, deletion, clipboard, undo,
+grouping, label editing) and GROOVE's gestures are mapped onto its events: a canvas
+double click inserts a vertex through the model and opens its editor; an item click on a
+vertex starts `CreateEdgeInputMode.doStartEdgeCreation` (deferred with `invokeLater` so
+the click has been handled) with the drag start disabled, self-loops on, a premature end
+anywhere (empty canvas = loop), and an `EdgeCreator` that inserts through the model and
+returns the item — the click-click gesture works natively, since the mode follows the mouse
+without a pressed button and finishes on the next press; Alt-click routes to the add/remove
+point actions with the world location; moves (selected and unselected items, bend handles)
+become one visual edit on the drag-finished events, reading positions and bends back from
+the items, which the store then finds up to date; a dragged edge end (yFiles'
+reconnection port candidates on every node) becomes a reconnection with the new points in
+the same edit, detected by comparing the cell's ends with the item's; the in-place editor
+is `TextEditorInputMode` driven directly (`setLocation`, `setEditing`, `stop`), showing the
+edit string and committing through `changeLabels` unless unchanged, with the completion
+extracted from `MultiLinedEditor` into `gui.view.LabelCompletion` (shared); the grid is a
+`GraphSnapContext` with grid constraint providers only and a `GridVisualCreator` in the
+background group. Modes: edit mode everything, selection mode moving only, preview
+nothing but selection. The backend's JGraph fallback is gone.
+
+Three findings on the way, all fixed in the canvas:
+- **Mouse input never reached the editor canvas.** Swing's lightweight dispatcher delivers
+  mouse events to the deepest component at the point that listens, and yFiles' listening
+  input surface is not always that component (the editor's render pane lay above it);
+  the viewer displays happened to register Swing listeners on the graph component, the
+  editor tab did not, so the editor got nothing, from synthetic events or from a real
+  mouse. The `Viewer` now registers empty mouse and motion listeners itself.
+- **Absurd content rectangles after layered layouts** (a flaky LTS test): yFiles crops
+  the edge paths with the node style's `getIntersection`, which delegated to GROOVE's
+  `NodeShape.getPerimeterPoint`; for some directions (axis-aligned, or from a bend on the
+  border) that returns a point off the line or non-finite, and the crop then produces a
+  path of 1e18 extent. The style now falls back on yFiles' outline intersection whenever
+  the perimeter point is not finite or not on the line; the renderer also drops bends
+  inside or on the end nodes and coinciding neighbours before curving. The store applies
+  vertex visuals before edge visuals, so labels are never placed against a transient in
+  which two end nodes coincide, and the coincidence threshold of the label placement is a
+  pixel rather than 1e-6.
+- **A gesture that ends where it started** (a click with the move-unselected mode on) posted
+  an empty visual edit; `changeVisuals` now drops unchanged keys.
+
+Tests: `YFilesEditorTest` (headless, 7): the editor canvas, added vertices with their
+editor open and the grid snapping them, the in-place editor committing into the model and
+undo, the edge creator with an edge and a loop, a finished move as a minor edit with the
+incident edges following, a dragged edge end as a reconnection. `YFilesSimulatorTest`
+gained `editorTabEditsThroughGestures`: an editor tab opened through the display, a Robot
+double click adding a vertex and a click-click adding an edge, both undone through the
+history — a Robot on a shared desktop being unreliable, the first gesture is an
+assumption; the LTS layout test now also asserts finite item and visual bounds. All 41
+tests of the unit pass; the core GUI tests pass.
+
+Not done in 3b: node dragging in the viewer canvases (the `MoveInputMode` is easily added
+to the viewer mode, left for a small follow-up), yFiles' orthogonal edge editing and snap
+lines beyond the grid (not GROOVE features), and the zoom-at-mouse-position question,
+which is one property of the graph component (`setCenterZoomEventRecognizer`) and a
+separate issue.
+
+Next: 3c, the clipboard.
