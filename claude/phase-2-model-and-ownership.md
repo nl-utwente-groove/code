@@ -403,3 +403,31 @@ the two renderings show identical text placement inside the node box under Metal
 screenshot from the Simulator (FlatLaf, possibly HiDPI) is needed. `YFilesSimulatorTest`
 now also switches grammars and collects event-thread exceptions; its right-click test
 assumes a visible desktop (a locked screen captures black and delivers no clicks).
+
+**Review round 3 on 4b (2026-09-07, branch `yfiles-canvas-look`).** Four remarks on the
+merged round-2 result, three of them changes:
+
+- *Dashes.* Dividing the pattern by the width was not enough: probing yFiles pens at
+  several widths, caps and patterns showed that they also cap every dash by half the width,
+  whatever `setEndCap` says, so the embargo look's 2-2 pattern at width 5 comes out solid.
+  A pen cannot render GROOVE's absolute patterns on thick edges. The pen of a dashed edge is
+  therefore transparent (keeping its width for hit testing) and the renderer's decoration
+  paints the shaft with the same `BasicStroke` (butt caps, absolute dashes) that draws the
+  node borders. A test samples a dashed edge of `arrive-empty` for dashes and gaps.
+- *Arrow heads.* Arend wants the embargo head filled, in both backends: the `EMBARGO` look's
+  target end is now `ARROW` (JGraph draws a 10-by-10 head on the width-5 shaft, which is
+  acceptable). yFiles' built-in arrows scale length and width together (a `TRIANGLE` at
+  scale 1 measures 12 by 7), which cannot give a head that clears a thick shaft, so
+  `CellArrow` implements `IArrow` with JGraph's geometry: length is the end's size, width is
+  at least that and at least the line width plus a 3px margin on either side; closed heads
+  stop the edge rendering at their base (`getLength`), simple heads let it run to the tip.
+  The anchor/direction contract (tip at the anchor, head extending back along the
+  direction) is the developer guide's custom-arrow section.
+- *Label boxes.* Edge labels are opaque in the background colour of the canvas rather than
+  white; the style is cached per colour, and a background change re-styles the edge labels
+  of the shown model (states and disabled start graphs have coloured backgrounds).
+- *Fonts.* Not changed: Arend asks to be consulted where JGraph's choices are idiosyncratic
+  rather than to copy them. The open question is whether edge labels should honour the font
+  visual (the `REGULAR` look's italic for regular-expression edges, which JGraph ignores only
+  because its edge labels never received the visual), and if so whether a plain negation
+  such as `!moored` should count as regular.
