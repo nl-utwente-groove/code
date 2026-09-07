@@ -244,7 +244,7 @@ Three findings on the way, all fixed in the canvas:
 - **A gesture that ends where it started** (a click with the move-unselected mode on) posted
   an empty visual edit; `changeVisuals` now drops unchanged keys.
 
-Tests: `YFilesEditorTest` (headless, 7): the editor canvas, added vertices with their
+Tests: `YFilesEditorTest` (headless, 7 at first; 11 after the review rounds): the editor canvas, added vertices with their
 editor open and the grid snapping them, the in-place editor committing into the model and
 undo, the edge creator with an edge and a loop, a finished move as a minor edit with the
 incident edges following, a dragged edge end as a reconnection. `YFilesSimulatorTest`
@@ -289,14 +289,41 @@ editor (corners and sizes snap, not centres) are gh #915, outside the migration.
 - *The Robot tests take over the mouse* while Arend works: they now run only with
   `-Dgroove.test.robot=true` (pom property passed to surefire) and are skipped otherwise.
 
-Still open from the review: *parallel edges overlap completely* on yFiles. Options put to
-Arend (decision pending): (a) render-time fan-out as JGraph does (`JEdgeView.getParRank`
-shifts the end points of unrouted parallel edges perpendicular to the chord by
-4 px × rank; per `view-facade.md` a backend-owned rendering choice, no model data), which
-the yFiles renderer can do from the master graph's edges at the end nodes; (b) curved
-bulges per rank instead of shifted straight lines, nicer but changes label anchoring and
-hit testing; (c) yFiles' `ParallelEdgeRouter`/`EdgeRouter` — layout stages that write
-real bends, wrong for interactive editing (persisted geometry, re-run on every move),
-fine inside a layout run. Copy/paste (item 4 of the review) is slice 3c.
+**Second review round** (Arend, 2026-09-07), same branch:
+
+- *Parallel edges overlapped completely on yFiles.* Arend chose the render-time fan-out as
+  JGraph does it, over curved bulges and over yFiles' `ParallelEdgeRouter` (a layout stage
+  writing real bends: wrong for interactive editing, fine inside a layout run). The rank
+  computation moved from `JEdgeView.getParRank` into the neutral `gui.view.ParallelEdges`
+  (rank among the unrouted edges between the same two vertices in either direction, and
+  the perpendicular shift, 4 px per rank unit); `JEdgeView` delegates. The yFiles renderer
+  shifts the ends of such an edge, capped by the end node's radius in the shift direction
+  so that the shifted end stays inside its node and yFiles' cropping at the outline still
+  works. The store shifts the labels with their edge and re-places the labels of the
+  sibling edges at the end nodes whenever an edge between them comes, goes, is
+  reconnected or gets or loses points (the fan-out of the siblings changes then). All
+  yFiles canvases share the renderer, so the LTS's opposite-direction pairs fan out too.
+- *End handles*: hidden as soon as anything more than one cell is selected (node plus
+  edge included), not only for a second edge.
+- *Rerouting an existing edge onto its own node had no preview*: the renderer previews an
+  edge whose item is a loop while its cell is not (the drag in progress) as the loop it
+  will become, `LoopRouter.route(vertex, cell, bounds)` on the node's vertex cell.
+- *Edge line styles were missing* from the yFiles editor's popup menu. Not a plan gap but a
+  contract mismatch: `GraphCanvas.hasActiveEditor` means "editing canvas, not in preview
+  mode" in the JGraph backend and in the controller (the edit menu, value-node display
+  and more hang on it), while the yFiles editor canvas had implemented it as "in-place
+  editor open", so the controller's edit menu (line styles, add/remove point, reset label
+  position) never appeared. The javadoc now says what it means; the yFiles editor
+  returns the JGraph answer and offers `isEditingLabel()` to the tests.
+- *Label tree counts off, updated at random moments.* A label change reached the canvas
+  through `refresh(relabelled)`, which neither backend reported to the canvas listeners,
+  so the label tree recounted only on the next structural change. Both backends' `refresh`
+  now report the refreshed cells as modified (the contract says so), and the JGraph
+  editor had the same defect since 3a, caught by the new parity test in
+  `EditorUndoTest`. Cost: a refresh of many cells (`refreshAll`, the LTS's active-path
+  refreshes) makes the label tree recompute those cells' entries; it rebuilds the tree
+  only when entries actually changed.
+
+Copy/paste (item 4 of the first round) is slice 3c.
 
 Next: 3c, the clipboard.
