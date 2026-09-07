@@ -44,9 +44,12 @@ import java.util.prefs.Preferences;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
@@ -63,6 +66,7 @@ import com.formdev.flatlaf.FlatLightLaf;
 
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.display.DismissDelayer;
+import nl.utwente.groove.gui.view.GraphBackend;
 import nl.utwente.groove.io.store.EditType;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Fonts;
@@ -105,6 +109,37 @@ public class Options implements Cloneable {
         addCheckbox(SHOW_ARROWS_ON_LABELS_OPTION);
         addCheckbox(SHOW_BIDIRECTIONAL_EDGES_OPTION);
         addBehaviour(DELETE_RESOURCE_OPTION, 2);
+        if (GraphBackend.available().size() > 1) {
+            addBackendMenu();
+        }
+    }
+
+    /**
+     * Adds a menu to choose the graph-visualisation backend among the available ones,
+     * and returns the associated (fresh) menu item. The choice is stored as a user
+     * preference and takes effect at the next start; the backend in use is initially
+     * selected.
+     * @see GraphBackend#instance()
+     */
+    private final JMenu addBackendMenu() {
+        JMenu result = new JMenu(GRAPH_BACKEND_OPTION);
+        result.setToolTipText("Takes effect at the next start of the Simulator");
+        ButtonGroup group = new ButtonGroup();
+        String current = GraphBackend.instance().getName();
+        for (GraphBackend backend : GraphBackend.available()) {
+            String name = backend.getName();
+            JRadioButtonMenuItem item = new JRadioButtonMenuItem(backend.getDisplayName());
+            item.setSelected(name.equals(current));
+            item.addItemListener(e -> {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    userPrefs.put(GRAPH_BACKEND_OPTION, name);
+                }
+            });
+            group.add(item);
+            result.add(item);
+        }
+        this.itemMap.put(GRAPH_BACKEND_OPTION, result);
+        return result;
     }
 
     /**
@@ -903,6 +938,11 @@ public class Options implements Cloneable {
     static public final String SHOW_ARROWS_ON_LABELS_OPTION = "Show arrows on labels";
     /** Always delete resources without confirmation. */
     static public final String DELETE_RESOURCE_OPTION = "Delete seletected resource?";
+    /**
+     * Graph backend option; also the user preference key under which the name of the
+     * chosen backend is stored (see {@link GraphBackend#getName()}).
+     */
+    static public final String GRAPH_BACKEND_OPTION = "Graph backend";
     /** Default value map for the boolean options. */
     static private final Map<String,Boolean> boolOptionDefaults = new HashMap<>();
     /** Default value map for the behaviour options. */

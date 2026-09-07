@@ -17,6 +17,7 @@
 package nl.utwente.groove.gui;
 
 import static nl.utwente.groove.gui.Options.DELETE_RESOURCE_OPTION;
+import static nl.utwente.groove.gui.Options.GRAPH_BACKEND_OPTION;
 import static nl.utwente.groove.gui.Options.HELP_MENU_NAME;
 import static nl.utwente.groove.gui.Options.SHOW_ABSENT_STATES_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_ANCHORS_OPTION;
@@ -728,6 +729,11 @@ public class Simulator implements SimulatorListener {
         }
         result.addSeparator();
         result.add(getOptions().getItem(DELETE_RESOURCE_OPTION));
+        // the backend choice exists only if there is a choice
+        JMenuItem backendItem = getOptions().getItem(GRAPH_BACKEND_OPTION);
+        if (backendItem != null) {
+            result.add(backendItem);
+        }
         return result;
     }
 

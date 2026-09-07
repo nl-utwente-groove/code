@@ -34,8 +34,11 @@ yFiles canvas) is under way: 4a (neutral cell classes in `gui.view.cell` that bo
 show through items of their own, decision B in the phase-2 note) is merged; 4b (the
 read-only yFiles canvas for aspect graphs in the optional unit, with three review rounds on
 rendering fidelity) is merged into `yfiles-canvas-aspect`; 4c (LTS, control and plain
-canvases, plus click forwarding to Swing listeners, branch `yfiles-canvas-lts`, 2026-09-07)
-is done and awaiting review; 4d (yFiles layouts) follows. The architecture allowlist holds one file,
+canvases, plus click forwarding to Swing listeners) is merged into `yfiles-canvas-aspect`;
+4d (the yFiles layout algorithms in the layout palette, as partial layouts when vertices
+are fixed, plus the persisted backend preference; branch `yfiles-layouts`, 2026-09-07) is
+done and awaiting review. With 4d, phase 2 is functionally complete for the read-only
+views; phase 3 (the editor on yFiles) follows. The architecture allowlist holds one file,
 `AspectEditorTab` (phase 3).
 
 ## Goal and motivation

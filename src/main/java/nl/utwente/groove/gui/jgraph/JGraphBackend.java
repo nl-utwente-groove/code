@@ -65,6 +65,11 @@ public class JGraphBackend implements GraphBackend {
     }
 
     @Override
+    public String getDisplayName() {
+        return "JGraph";
+    }
+
+    @Override
     public String getName() {
         return JGRAPH;
     }

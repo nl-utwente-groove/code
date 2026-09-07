@@ -479,3 +479,47 @@ measures its vertices; large explorations will show whether that needs the size 
 `LTSJGraph` has switched off, and the styles still re-read the visuals on every repaint.
 Next: 4d, yFiles layouts through `getBackendLayouters()`, and the persisted backend
 preference.
+
+**Slice 4d done (2026-09-07, branch `yfiles-layouts`).** `YFilesLayouter` is the yFiles
+backend's contribution to the layout palette: seven algorithms enumerated by
+`YFilesLayoutKind` (hierarchic, organic, orthogonal, tree, balloon, circular, radial;
+the tree layouts wrapped in yFiles' tree-reduction stage with straight non-tree edges),
+each layouter instance owning a configured algorithm and a `LayoutSettingsPanel` for the
+layout dialog. The panels are the non-reflective counterpart of JGraph's `LayoutKind`
+panels: the license forbids reflection over yFiles classes, so every control carries its
+setter as a lambda and re-runs the layouter on change. A layouter applies the algorithm
+to the shown yFiles graph (the filtered view, so hidden cells are not laid out and the
+nodes already have their rendered sizes) and reads the node centres and edge bends back
+into the cells through the canvas' edit funnel, from which the layout map follows and the
+items merely find themselves up to date. GROOVE's layoutable flag is honoured with
+yFiles' partial layout: when any visible vertex is not layoutable (or grayed out), the
+algorithm runs as the core of a `PartialLayout` with the layoutable vertices as affected
+nodes, grouped by connectivity, so the fixed remainder stays put; nothing runs when no
+vertex is layoutable. That makes the layouter its own incremental version (JGraph's
+`LayouterItem` falls back on Spring for that), so the LTS grows under a yFiles layout by
+placing the new states among the old ones. Bends of edges at placed nodes are cleared
+before the run, since a layout may leave a route it does not touch. Edge labels are not
+placed by the layouts and not read back; they keep their position relative to the edge
+(integrated labeling would need the label-model parameter to be converted back into
+GROOVE's relative label position, a later refinement). The layouts run synchronously on
+the event thread, as Spring and Forest do; yFiles' threaded executor with morphing
+animation is a possible later upgrade.
+
+The persisted backend preference: `GraphBackend.select(available, preferred)` chooses the
+backend named by the user preference `Options.GRAPH_BACKEND_OPTION` if it is available,
+else by the ranking; `GraphBackend.available()` lists the discovered backends. `Options`
+adds a `Graph backend` radio submenu to the Simulator's Options menu when more than one
+backend is available (a distribution with one backend has nothing to configure), with
+the backend in use selected and a tooltip saying the choice takes effect at the next
+start. Backends gained a `getDisplayName()` ("JGraph", "yFiles").
+
+Tests: `YFilesCanvasTest` checks the palette, a full hierarchic layout through the edit
+funnel (items and layout map follow, edges run between the new positions with the
+layout's bends, vertices end non-layoutable) and partial layouts of every kind (nothing
+moves without layoutable vertices, fixed vertices never move); `YFilesSimulatorTest` lays
+out the explored LTS with the hierarchic layouter and grows it by raising the state
+bound; `BackendDiscoveryTest` and the core `GraphBackendTest` (stand-in backends, since the
+architecture test forbids backend imports in the test tree) cover the selection. The
+seven layouts were also rendered to images and inspected (ferryman start graph, a rule,
+recipes): hierarchic and orthogonal are the presentable ones for GROOVE graphs; the tree
+layouts show overlapping labels on non-tree edges, as JGraph's did.
