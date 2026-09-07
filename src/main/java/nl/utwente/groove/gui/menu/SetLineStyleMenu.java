@@ -16,6 +16,10 @@
  */
 package nl.utwente.groove.gui.menu;
 
+import java.util.EnumMap;
+import java.util.Map;
+
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 
 import org.eclipse.jdt.annotation.NonNull;
@@ -29,7 +33,8 @@ import nl.utwente.groove.gui.view.ViewEdge;
 import nl.utwente.groove.util.line.LineStyle;
 
 /**
- * Menu to set the line style of the selected edge.
+ * Menu to set the line style of the selected edge; the style of the selected
+ * edge is check-marked.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -40,18 +45,29 @@ public class SetLineStyleMenu extends JMenu implements GraphCanvasListener<@NonN
     public SetLineStyleMenu(AspectGraphCanvas canvas) {
         super(Options.SET_LINE_STYLE_MENU);
         this.canvas = canvas;
-        selectionChanged(canvas);
         canvas.addCanvasListener(this);
         // initialise the line style menu
         for (LineStyle lineStyle : LineStyle.values()) {
-            add(canvas.getController().getSetLineStyleAction(lineStyle));
+            var item = new JCheckBoxMenuItem(canvas.getController().getSetLineStyleAction(lineStyle));
+            this.items.put(lineStyle, item);
+            add(item);
+        }
+        selectionChanged(canvas);
+    }
+
+    /* The menu is enabled for a selected edge, whose line style is check-marked. */
+    @Override
+    public void selectionChanged(GraphCanvas<@NonNull AspectGraph> canvas) {
+        LineStyle current = this.canvas.getSelectedCell() instanceof ViewEdge<?> edge
+            ? edge.getVisuals().getLineStyle()
+            : null;
+        setEnabled(current != null);
+        for (var entry : this.items.entrySet()) {
+            entry.getValue().setSelected(entry.getKey() == current);
         }
     }
 
-    @Override
-    public void selectionChanged(GraphCanvas<@NonNull AspectGraph> canvas) {
-        this.setEnabled(this.canvas.getSelectedCell() instanceof ViewEdge);
-    }
-
     private final AspectGraphCanvas canvas;
+    /** The menu items, one per line style. */
+    private final Map<LineStyle,JCheckBoxMenuItem> items = new EnumMap<>(LineStyle.class);
 }
