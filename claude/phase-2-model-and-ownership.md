@@ -430,6 +430,7 @@ merged round-2 result, three of them changes:
   copy them, and decided: edge labels honour the font visual in both backends (JGraph's edge
   renderer now sets the label font from it, as its vertex renderer always did), and a plain
   negation of an atom such as `!moored` no longer gets the `REGULAR` look, which is for real
-  regular expressions. A quirk left as is: an embargo edge with a regular expression comes
-  out plain, because the `EMBARGO` look, which inherits `BASIC`'s plain font and comes
-  later, overrides `REGULAR`'s italic. `RegularLookTest` pins the behaviour.
+  regular expressions. An embargo edge with a regular expression came out plain, because
+  the `EMBARGO` look inherited `BASIC`'s explicit plain font and, applied later, overrode
+  `REGULAR`'s italic; `BASIC` no longer sets the font (the key's default is plain), so the
+  italic survives in every look combination. `RegularLookTest` pins the behaviour.

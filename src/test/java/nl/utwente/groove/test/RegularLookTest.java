@@ -57,16 +57,14 @@ public class RegularLookTest {
 
     @Test
     void regularExpressionIsRegular() throws IOException {
-        // the append rule of regexpr has next* edges among plain ones
+        // the append rule of regexpr has next* edges, one of them an embargo, among plain ones
         int regular = 0;
         int plain = 0;
         for (var edge : ruleEdges("junit/samples/regexpr.gps", "append")) {
             if (edge.getLooks().contains(Look.REGULAR)) {
-                // the embargo look, which comes later, resets the font to plain
-                if (!edge.getLooks().contains(Look.EMBARGO)) {
-                    assertEquals(Font.ITALIC, edge.getVisuals().getFont(), "font of " + edge);
-                    regular++;
-                }
+                // embargo edges included: their look must not override the italic
+                assertEquals(Font.ITALIC, edge.getVisuals().getFont(), "font of " + edge);
+                regular++;
             } else {
                 assertEquals(Font.PLAIN, edge.getVisuals().getFont(), "font of " + edge);
                 plain++;

@@ -45,7 +45,9 @@ public enum Look {
             add(VisualKey.OPAQUE, true);
             add(VisualKey.NODE_SHAPE, NodeShape.ROUNDED);
             add(VisualKey.EDGE_TARGET_SHAPE, EdgeEnd.ARROW);
-            add(VisualKey.FONT, Font.PLAIN);
+            // no font: the key's default is plain, and an explicit value here would
+            // reach every look that has this one as a template, overriding REGULAR's
+            // italic on (for instance) embargo edges
         }
     },
     /** Bidirectional edge look change. */
