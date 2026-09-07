@@ -36,10 +36,12 @@ read-only yFiles canvas for aspect graphs in the optional unit, with three revie
 rendering fidelity) is merged into `yfiles-canvas-aspect`; 4c (LTS, control and plain
 canvases, plus click forwarding to Swing listeners) is merged into `yfiles-canvas-aspect`;
 4d (the yFiles layout algorithms in the layout palette, as partial layouts when vertices
-are fixed, plus the persisted backend preference; branch `yfiles-layouts`, 2026-09-07) is
-done and awaiting review. With 4d, phase 2 is functionally complete for the read-only
-views; phase 3 (the editor on yFiles) follows. The architecture allowlist holds one file,
-`AspectEditorTab` (phase 3).
+are fixed, plus the persisted backend preference) is merged: phase 2 is complete for the
+read-only views. **Phase 3 (the editor) is IN PROGRESS**: design and slicing in
+`claude/phase-3-editor.md`; slice 3a (the GROOVE-owned edit model and undo history in
+`gui.view`, both backends feeding it; branch `editor-edit-model` off the rebased
+`yworks-migration`, 2026-09-07) is done and awaiting review; 3b (the yFiles editor canvas)
+and 3c (the clipboard) follow. The architecture allowlist is empty.
 
 ## Goal and motivation
 
