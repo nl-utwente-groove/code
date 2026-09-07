@@ -209,13 +209,18 @@ public abstract class AViewEdge<G extends Graph> extends AViewCell<G> implements
         return false;
     }
 
+    /*
+     * The connection decides, where there is one: it is what the edit model
+     * maintains, while the graph nodes follow only when the graph is rebuilt after
+     * an edit, so that a reconnected edge judged by its nodes would still be what
+     * it was while its item is being routed.
+     */
     @Override
     public boolean isLoop() {
-        if (this.sourceNode == null && this.targetNode == null) {
-            // no graph edge yet: judge by the connection
-            return this.sourceVertex != null && this.sourceVertex == this.targetVertex;
+        if (this.sourceVertex != null && this.targetVertex != null) {
+            return this.sourceVertex == this.targetVertex;
         }
-        return this.sourceNode == this.targetNode;
+        return this.sourceNode != null && this.sourceNode == this.targetNode;
     }
 
     @Override

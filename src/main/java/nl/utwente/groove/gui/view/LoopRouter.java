@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.util.AIGenerated;
 
@@ -48,28 +49,42 @@ public final class LoopRouter {
      * and the node centre again
      */
     public static List<Point2D> route(ViewEdge<?> loop, Rectangle2D bounds) {
-        Set<Side> occupied = EnumSet.noneOf(Side.class);
         var vertex = loop.getSourceVertex();
+        assert vertex != null : "Loop " + loop + " has no source vertex";
+        return route(vertex, loop, bounds);
+    }
+
+    /**
+     * Computes the points of a loop on a given vertex, with no bends of its own.
+     * @param vertex the vertex of the loop
+     * @param loop the loop cell if it exists already, which then does not count as
+     * occupying a side; {@code null} for a loop about to be created on the vertex,
+     * as previewed during its creation gesture
+     * @param bounds the current bounds of the node of the loop
+     * @return the three points of the loop: the node centre, the control point,
+     * and the node centre again
+     */
+    public static List<Point2D> route(ViewVertex<?> vertex, @Nullable ViewEdge<?> loop,
+                                      Rectangle2D bounds) {
+        Set<Side> occupied = EnumSet.noneOf(Side.class);
         Point2D centre = new Point2D.Double(bounds.getCenterX(), bounds.getCenterY());
-        if (vertex != null) {
-            var context = vertex.getContext();
-            while (context.hasNext()) {
-                var edge = context.next();
-                if (edge == loop) {
-                    continue;
+        var context = vertex.getContext();
+        while (context.hasNext()) {
+            var edge = context.next();
+            if (edge == loop) {
+                continue;
+            }
+            if (edge.isLoop()) {
+                List<Point2D> points = edge.getVisuals().getPoints();
+                if (points.size() > 2) {
+                    occupied.add(Side.of(bounds, points.get(1)));
                 }
-                if (edge.isLoop()) {
-                    List<Point2D> points = edge.getVisuals().getPoints();
-                    if (points.size() > 2) {
-                        occupied.add(Side.of(bounds, points.get(1)));
-                    }
-                } else {
-                    var other = edge.getSourceVertex() == vertex
-                        ? edge.getTargetVertex()
-                        : edge.getSourceVertex();
-                    if (other != null) {
-                        occupied.add(Side.of(bounds, other.getVisuals().getNodePos()));
-                    }
+            } else {
+                var other = edge.getSourceVertex() == vertex
+                    ? edge.getTargetVertex()
+                    : edge.getSourceVertex();
+                if (other != null) {
+                    occupied.add(Side.of(bounds, other.getVisuals().getNodePos()));
                 }
             }
         }
