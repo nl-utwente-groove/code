@@ -38,10 +38,11 @@ canvases, plus click forwarding to Swing listeners) is merged into `yfiles-canva
 4d (the yFiles layout algorithms in the layout palette, as partial layouts when vertices
 are fixed, plus the persisted backend preference) is merged: phase 2 is complete for the
 read-only views. **Phase 3 (the editor) is IN PROGRESS**: design and slicing in
-`claude/phase-3-editor.md`; slice 3a (the GROOVE-owned edit model and undo history in
-`gui.view`, both backends feeding it; branch `editor-edit-model` off the rebased
-`yworks-migration`, 2026-09-07) is done and awaiting review; 3b (the yFiles editor canvas)
-and 3c (the clipboard) follow. The architecture allowlist is empty.
+`claude/phase-3-editor.md`; slices 3a (the GROOVE-owned edit model and undo history in
+`gui.view`, both backends feeding it) and 3b (the editor canvas on yFiles, gestures
+mapped onto yFiles' editor input mode; branch `editor-edit-model` off the rebased
+`yworks-migration`, 2026-09-07) are done and awaiting review; 3c (the clipboard) follows.
+The architecture allowlist is empty.
 
 ## Goal and motivation
 
