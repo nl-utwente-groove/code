@@ -354,3 +354,52 @@ display, the host tab and a rule tab (which adds the level tree) for shown cells
 painted edge in both the creating and the updating paint pass, and opens the popup menu with
 a `Robot` right click. It shows a Simulator window while it runs, and it is the check to run
 when an Eclipse launch and the Maven build seem to disagree.
+
+**Review round 2 on 4b (2026-09-07, branch `yfiles-canvas-fidelity`).** Arend's second
+click-through, with edges and popup menu working, listed rendering differences and a crash on
+switching grammars. The diagnosis was done by rendering the same rules with both backends to
+images (a throwaway probe test, not kept) and reading JGraph's sources, which are in the local
+repository as a sources jar. Findings and fixes:
+
+- *Edge label placement.* JGraph places an edge label by distributing the stored permille
+  along the whole polyline and offsetting perpendicularly; GROOVE's `JEdgeView.getLabelVector`
+  override only affects the label handle, since label transforms are off. The TikZ exporter
+  already carried a port of that computation; it is now `EdgeGeometry.labelPosition` in
+  `gui.view`, used by both. The yFiles store computes the point and expresses it relative to
+  the port line with a `FreeEdgeLabelModel` parameter (yFiles' ratio/distance convention was
+  checked to coincide with JGraph's, screen y down), so the label follows its edge; the label
+  of a loop, whose ports coincide, goes on the loop path with `EdgePathLabelModel`.
+- *Edge label look.* JGraph draws edge labels in the LAF's default label font (bold under
+  Metal, plain under FlatLaf), ignores the font visual for edges (the `REGULAR` look's italic
+  is why `!moored` came out italic on yFiles), and paints an opaque box with a one-pixel
+  margin behind them. The yFiles edge label style now does the same; node labels keep the
+  font visual.
+- *Dashes.* yFiles' `DashStyle` is in units of the pen width (the docs do not say so; the
+  embargo look's width 5 made the 2-2 pattern five times too long); the pattern is divided by
+  the width.
+- *Curves.* JGraph computes a Bezier curve from the points where the edge leaves its end
+  nodes, not from the centres, which changes the shape; the renderer now clips the end points
+  to the node outline first (through the node style's `IShapeGeometry`). And yFiles derives
+  arrows from straight segments (`GeneralPath.getTangent` "treats Bézier curves as linear"), so
+  a curve up to the end point lost its arrowhead; each curve now starts and ends with a
+  two-pixel straight piece along its tangent, which is also where JGraph takes the arrow
+  direction from (the last control point).
+- *Grammar switch crash.* The store evaluated the cells' visuals while inserting them into a
+  model not yet shown; visuals consult the canvas' label tree, which still served the previous
+  model, and for a grammar with another type graph the `TypeFilter` asserted (an NPE with
+  assertions off). JGraph never evaluates before painting, when the tree has adopted the
+  model. The store therefore leaves its items unconfigured while detached (placeholder layout,
+  no labels, filter predicates true) and configures them all on `attach`, which the canvas
+  performs *after* firing `viewModelChanged`, so the label tree has adopted the model by
+  then; visibility is invalidated at that point too. `LabelTree.isIncluded(cell)` also
+  answers true for cells of another model, as a guard.
+- *Watermark.* The academic license paints a watermark along the top of every canvas; the
+  content margins and the initial view point keep the graph 40px below it (Arend's
+  alternative, a permanent transformation between graph and canvas coordinates, was judged
+  overkill by him).
+
+Not reproduced: the slightly larger space above node labels that Arend sees. Pixel dumps of
+the two renderings show identical text placement inside the node box under Metal; a
+screenshot from the Simulator (FlatLaf, possibly HiDPI) is needed. `YFilesSimulatorTest`
+now also switches grammars and collects event-thread exceptions; its right-click test
+assumes a visible desktop (a locked screen captures black and delivers no clicks).
