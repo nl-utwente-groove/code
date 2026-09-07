@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 
@@ -254,9 +255,13 @@ public abstract class GraphViewModel<G extends Graph> {
             VisualMap oldVisuals = new VisualMap();
             VisualMap newVisuals = new VisualMap();
             for (VisualKey key : entry.getValue().keySet()) {
-                if (key.getNature() == VisualKey.Nature.CONTROLLED) {
-                    oldVisuals.put(key, current.get(key));
-                    newVisuals.put(key, entry.getValue().get(key));
+                Object oldValue = current.get(key);
+                Object newValue = entry.getValue().get(key);
+                // a gesture that ends where it started changes nothing
+                if (key.getNature() == VisualKey.Nature.CONTROLLED
+                    && !Objects.equals(oldValue, newValue)) {
+                    oldVisuals.put(key, oldValue);
+                    newVisuals.put(key, newValue);
                 }
             }
             if (!newVisuals.keySet().isEmpty()) {
