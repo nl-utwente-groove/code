@@ -37,12 +37,12 @@ import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.layout.EdgeLayout;
-import nl.utwente.groove.graph.layout.ElementLayout;
 import nl.utwente.groove.graph.layout.LayoutMap;
 import nl.utwente.groove.graph.layout.NodeLayout;
 import nl.utwente.groove.gui.export.util.TikzStylesExtractor.Style;
 import nl.utwente.groove.gui.look.Look;
 import nl.utwente.groove.gui.look.MultiLabel;
+import nl.utwente.groove.gui.view.EdgeGeometry;
 import nl.utwente.groove.gui.view.AspectViewVertex;
 import nl.utwente.groove.gui.view.GraphCanvas;
 import nl.utwente.groove.gui.view.GraphViewModel;
@@ -199,93 +199,6 @@ public final class GraphToTikz<G extends @NonNull Graph> {
             result = "";
         }
         return result;
-    }
-
-    /**
-     * Adapted from jGraph.
-     * Converts an relative label position (x is distance along edge and y is
-     * distance above/below edge vector) into an absolute coordination point.
-     * @param geometry the relative label position.
-     * @param points the list of points along the edge.
-     * @return the absolute label position.
-     */
-    private static Point2D convertRelativeLabelPositionToAbsolute(Point2D geometry,
-                                                                  List<Point2D> points) {
-
-        Point2D pt = points.get(0);
-
-        if (pt != null) {
-            double length = 0;
-            int pointCount = points.size();
-            double[] segments = new double[pointCount];
-            // Find the total length of the segments and also store the length
-            // of each segment.
-            for (int i = 1; i < pointCount; i++) {
-                Point2D tmp = points.get(i);
-
-                if (tmp != null) {
-                    double dx = pt.getX() - tmp.getX();
-                    double dy = pt.getY() - tmp.getY();
-
-                    double segment = Math.sqrt(dx * dx + dy * dy);
-
-                    segments[i - 1] = segment;
-                    length += segment;
-                    pt = tmp;
-                }
-            }
-
-            // Change x to be a value between 0 and 1 indicating how far
-            // along the edge the label is.
-            double x = geometry.getX() / ElementLayout.PERMILLE;
-            double y = geometry.getY();
-
-            // dist is the distance along the edge the label is.
-            double dist = x * length;
-            length = 0;
-
-            int index = 1;
-            double segment = segments[0];
-
-            // Find the length up to the start of the segment the label is
-            // on (length) and retrieve the length of that segment (segment).
-            while (dist > length + segment && index < pointCount - 1) {
-                length += segment;
-                segment = segments[index++];
-            }
-
-            // factor is the proportion along this segment the label lies at.
-            double factor = (dist - length) / segment;
-
-            Point2D p0 = points.get(index - 1);
-            Point2D pe = points.get(index);
-
-            if (p0 != null && pe != null) {
-                // The x and y offsets of the label from the start point
-                // of the segment.
-                double dx = pe.getX() - p0.getX();
-                double dy = pe.getY() - p0.getY();
-
-                // The normal vectors.
-                double nx = dy / segment;
-                double ny = dx / segment;
-
-                // The x position is the start x of the segment + the factor of
-                // the x offset between the start and end of the segment + the
-                // x component of the y (height) offset contributed along the
-                // normal vector.
-                x = p0.getX() + dx * factor - nx * y;
-
-                // The x position is the start y of the segment + the factor of
-                // the y offset between the start and end of the segment + the
-                // y component of the y (height) offset contributed along the
-                // normal vector.
-                y = p0.getY() + dy * factor + ny * y;
-                return new Point2D.Double(x, y);
-            }
-        }
-
-        return null;
     }
 
     private static boolean isNodifiedEdge(ViewVertex<?> node) {
@@ -904,8 +817,7 @@ public final class GraphToTikz<G extends @NonNull Graph> {
      */
     private void appendEdgeLabel(ViewEdge<G> edge, EdgeLayout layout, List<Point2D> points) {
         if (hasNonEmptyLabel(edge)) {
-            Point2D labelPos
-                = convertRelativeLabelPositionToAbsolute(layout.getLabelPosition(), points);
+            Point2D labelPos = EdgeGeometry.labelPosition(layout.getLabelPosition(), points);
             // Extra path for the label position.
             append(NODE);
             append(encloseSpace(AT_KEYWORD));

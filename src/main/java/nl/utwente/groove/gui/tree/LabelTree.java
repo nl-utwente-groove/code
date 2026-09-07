@@ -426,7 +426,9 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
      */
     public boolean isIncluded(ViewCell<G> jCell) {
         synchroniseModel();
-        return getFilter().isIncluded(jCell);
+        // a cell of a model that is not shown on the canvas is unknown to the filter
+        // (which may even belong to another type graph), and so it is not filtered
+        return jCell.getViewModel() != this.viewModel || getFilter().isIncluded(jCell);
     }
 
     /** Indicates if a given key is actively filtered.
