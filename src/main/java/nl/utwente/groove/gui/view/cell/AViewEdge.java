@@ -92,7 +92,6 @@ public abstract class AViewEdge<G extends Graph> extends AViewCell<G> implements
      * @param vertex the new source vertex, or {@code null} to disconnect
      */
     public void setSource(@Nullable AViewVertex<G> vertex) {
-        assert this.sourceVertex == null || vertex == null;
         var old = this.sourceVertex;
         if (old != null) {
             old.removeContextEdge(this);
@@ -110,7 +109,6 @@ public abstract class AViewEdge<G extends Graph> extends AViewCell<G> implements
      * @param vertex the new target vertex, or {@code null} to disconnect
      */
     public void setTarget(@Nullable AViewVertex<G> vertex) {
-        assert this.targetVertex == null || vertex == null;
         var old = this.targetVertex;
         if (old != null) {
             old.removeContextEdge(this);

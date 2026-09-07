@@ -215,12 +215,39 @@ public abstract class GraphViewModel<G extends Graph> {
     }
 
     /**
+     * Reconnects an edge to other end vertices as one edit, optionally with
+     * visual changes (the new edge points) in the same edit.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    public void reconnect(ViewEdge<G> edge, ViewVertex<G> source, ViewVertex<G> target,
+                          @Nullable Map<? extends ViewCell<G>,VisualMap> changes) {
+        var oldSource = edge.getSourceVertex();
+        var oldTarget = edge.getTargetVertex();
+        assert oldSource != null && oldTarget != null : "Reconnected edge " + edge
+            + " is not connected";
+        var edit = new GraphEdit<G>();
+        if (oldSource != source || oldTarget != target) {
+            edit.withReconnection(edge, oldSource, oldTarget, source, target);
+        }
+        if (changes != null) {
+            addVisuals(edit, changes);
+        }
+        doEdit(edit);
+    }
+
+    /**
      * Changes visuals of cells as one edit; the funnel behind
      * {@link GraphCanvas#edit}. Only controlled keys are recorded and changed.
      */
     @AIGenerated("Claude Fable 5.1, 2026-09")
     public void changeVisuals(Map<? extends ViewCell<G>,VisualMap> changes) {
         var edit = new GraphEdit<G>();
+        addVisuals(edit, changes);
+        doEdit(edit);
+    }
+
+    /** Adds visual changes to an edit, with the current values as the old ones. */
+    private void addVisuals(GraphEdit<G> edit, Map<? extends ViewCell<G>,VisualMap> changes) {
         for (var entry : changes.entrySet()) {
             ViewCell<G> cell = entry.getKey();
             VisualMap current = cell.getVisuals();
@@ -236,7 +263,6 @@ public abstract class GraphViewModel<G extends Graph> {
                 edit.withVisuals(cell, oldVisuals, newVisuals);
             }
         }
-        doEdit(edit);
     }
 
     /** Changes the editable labels of a cell as one edit. */
@@ -300,6 +326,10 @@ public abstract class GraphViewModel<G extends Graph> {
                     .insertCells(edit.getRemovedVertices(), edit.getRemovedEdges(),
                                  edit.getRemovedConnections(), false);
             }
+        }
+        for (var entry : edit.getReconnections().entrySet()) {
+            var connection = entry.getValue().get(forward);
+            store.reconnectEdge(entry.getKey(), connection.source(), connection.target());
         }
         if (!edit.getVisualChanges().isEmpty()) {
             var visuals = edit.getVisuals(forward);

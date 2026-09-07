@@ -54,6 +54,12 @@ public interface CellStore<G extends Graph> {
     void removeCells(Collection<? extends ViewCell<G>> cells);
 
     /**
+     * Reconnects an edge to other end vertices: the edge cell and its item are
+     * connected anew.
+     */
+    void reconnectEdge(ViewEdge<G> edge, ViewVertex<G> source, ViewVertex<G> target);
+
+    /**
      * Applies visual changes to cells: the cells take the given values and
      * the store brings its items up to date. Only values of
      * {@link nl.utwente.groove.gui.look.VisualKey.Nature#CONTROLLED} keys may be

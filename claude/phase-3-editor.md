@@ -184,10 +184,13 @@ during loading and refreshing, stay JGraph's own. `AspectJModel.insert` (paste, 
 the operations directly. Cells keep their identity across removal and re-insertion:
 `JModel.insertCells` reuses a cell's JGraph item (restoring the vertex port that removal
 takes along), and `removeCells` removes the descendants too, as the old delete action did.
-Two side findings: `JEdgeView.getParRank` is asked for a disconnected edge during removal
-(guarded now), and edge reconnection by dragging an edge end (`setDisconnectable`) is
-switched off, since it is not an edit of the view model; whether anyone used it is a
-question for Arend. JGraph still posts its `UndoableEdit`s, to nobody.
+Reconnecting an edge end by dragging it (JGraph's edge handle, which Arend uses) is an
+edit too: `GraphEdit` holds reconnections (old and new connection per edge), the store
+contract has `reconnectEdge`, and `JModel.edit` translates a connection set into the view
+model's `reconnect` (with the new points in the same edit); the yFiles store reconnects by
+replacing the edge item. The edge cells' `setSource`/`setTarget` now accept a replacement
+end. A side finding: `JEdgeView.getParRank` is asked for a disconnected edge during removal
+(guarded now). JGraph still posts its `UndoableEdit`s, to nobody.
 
 `AspectEditorTab` is on the history and the canvas contract only: no JGraph import is
 left, so the architecture allowlist is empty. `EditorUndoTest` (JGraph, headless) covers

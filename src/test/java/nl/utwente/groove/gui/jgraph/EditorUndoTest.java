@@ -31,6 +31,7 @@ import java.util.Map;
 import javax.swing.JScrollPane;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.jgraph.graph.ConnectionSet;
 import org.junit.jupiter.api.Test;
 
 import nl.utwente.groove.grammar.aspect.AspectGraph;
@@ -134,6 +135,58 @@ public class EditorUndoTest {
         canvas.edit(Map.of(vertex, change));
         assertEquals(after, vertex.getVisuals().getNodePos());
         assertTrue(history.canUndo());
+    }
+
+    /**
+     * Reconnecting an edge end by JGraph's own gesture (an edit with a
+     * connection set, as the edge handle posts it) is an edit of the model: the
+     * cell and the graph edge get the new end, and undo restores the old one.
+     */
+    @Test
+    void reconnectionIsAnEdit() throws IOException {
+        AspectJGraph canvas = editorCanvas();
+        AspectGraphViewModel model = canvas.getNonNullModel().getViewModel();
+        EditHistory<AspectGraph> history = model.getEditHistory();
+        assertNotNull(history);
+        // an edge between two different vertices, and a third vertex to reconnect it to
+        AspectEdgeCell edge = null;
+        for (var cell : model.getCells()) {
+            if (cell instanceof AspectEdgeCell candidate && !candidate.isLoop()) {
+                edge = candidate;
+                break;
+            }
+        }
+        assertNotNull(edge, "no binary edge cell");
+        var oldSource = edge.getSourceVertex();
+        var oldTarget = edge.getTargetVertex();
+        assertNotNull(oldSource);
+        assertNotNull(oldTarget);
+        AspectVertexCell other = null;
+        for (var vertex : vertices(model)) {
+            if (vertex != oldSource && vertex != oldTarget) {
+                other = vertex;
+                break;
+            }
+        }
+        assertNotNull(other, "no third vertex");
+        var graphEdge = edge.getEdges().iterator().next();
+        // what the edge handle does on release
+        ConnectionSet cs = new ConnectionSet();
+        cs.connect(JCell.of(edge), ((JVertex<?>) JCell.of(other)).getPort(), false);
+        canvas.getNonNullModel().edit(null, cs, null, null);
+        assertSame(other, edge.getTargetVertex(), "cell target after reconnection");
+        assertSame(oldSource, edge.getSourceVertex(), "cell source after reconnection");
+        var newGraphEdge = edge.getEdges().iterator().next();
+        assertSame(other.getNode(), newGraphEdge.target(), "graph edge target after reconnection");
+        assertEquals(graphEdge.label(), newGraphEdge.label(), "graph edge label kept");
+        assertTrue(history.canUndo());
+        assertFalse(history.isDirtMinor(), "a reconnection is a major edit");
+        history.undo();
+        assertSame(oldTarget, edge.getTargetVertex(), "cell target after undo");
+        assertSame(oldTarget.getNode(), edge.getEdges().iterator().next().target(),
+                   "graph edge target after undo");
+        history.redo();
+        assertSame(other, edge.getTargetVertex(), "cell target after redo");
     }
 
     @Test

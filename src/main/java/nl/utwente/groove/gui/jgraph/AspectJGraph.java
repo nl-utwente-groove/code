@@ -196,8 +196,7 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements Aspect
     public void setEditable(boolean editable) {
         setCloneable(editable);
         setConnectable(editable);
-        // reconnecting an edge by dragging its end is not an edit of the view model
-        setDisconnectable(false);
+        setDisconnectable(editable);
         super.setEditable(editable);
     }
 

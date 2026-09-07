@@ -56,14 +56,12 @@ public class JEdge<G extends @NonNull Graph> extends JCell<G> implements org.jgr
 
     @Override
     public void setSource(Object port) {
-        assert this.sourcePort == null || port == null;
         this.sourcePort = (DefaultPort) port;
         getViewCell().setSource(vertexOf(port));
     }
 
     @Override
     public void setTarget(Object port) {
-        assert this.targetPort == null || port == null;
         this.targetPort = (DefaultPort) port;
         getViewCell().setTarget(vertexOf(port));
     }

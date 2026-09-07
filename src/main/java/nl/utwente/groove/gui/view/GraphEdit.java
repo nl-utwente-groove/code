@@ -33,8 +33,9 @@ import nl.utwente.groove.util.AIGenerated;
 /**
  * One undoable change to the cells of a {@link GraphViewModel}: cells inserted
  * (with the connections of the inserted edges), cells removed (with the
- * connections they had, so that undo re-inserts the same cell objects), visual
- * changes and editable-label changes, each with their old and new values.
+ * connections they had, so that undo re-inserts the same cell objects), edges
+ * reconnected to other ends, visual changes and editable-label changes, each
+ * with their old and new values.
  * The edit is a value; the view model applies and reverts it, see
  * {@link GraphViewModel#apply(GraphEdit, boolean)}.
  * @param <G> the type of graph displayed
@@ -77,6 +78,23 @@ public final class GraphEdit<G extends Graph> {
      */
     public GraphEdit<G> withVisuals(ViewCell<G> cell, VisualMap oldVisuals, VisualMap newVisuals) {
         this.visualChanges.put(cell, new VisualChange(oldVisuals, newVisuals));
+        return this;
+    }
+
+    /**
+     * Adds a reconnection of an edge to this edit.
+     * @param edge the reconnected edge
+     * @param oldSource the source vertex before the change
+     * @param oldTarget the target vertex before the change
+     * @param newSource the source vertex after the change
+     * @param newTarget the target vertex after the change
+     */
+    public GraphEdit<G> withReconnection(ViewEdge<G> edge, ViewVertex<G> oldSource,
+                                         ViewVertex<G> oldTarget, ViewVertex<G> newSource,
+                                         ViewVertex<G> newTarget) {
+        this.reconnections
+            .put(edge, new Reconnection<>(new Connection<>(edge, oldSource, oldTarget),
+                new Connection<>(edge, newSource, newTarget)));
         return this;
     }
 
@@ -136,6 +154,11 @@ public final class GraphEdit<G extends Graph> {
         return Collections.unmodifiableMap(this.visualChanges);
     }
 
+    /** Returns the reconnections, per edge. */
+    public Map<ViewEdge<G>,Reconnection<G>> getReconnections() {
+        return Collections.unmodifiableMap(this.reconnections);
+    }
+
     /** Returns the editable-label changes, per cell. */
     public Map<ViewCell<G>,LabelChange> getLabelChanges() {
         return Collections.unmodifiableMap(this.labelChanges);
@@ -152,7 +175,8 @@ public final class GraphEdit<G extends Graph> {
 
     /** Indicates if this edit changes nothing. */
     public boolean isEmpty() {
-        return !isStructural() && this.visualChanges.isEmpty() && this.labelChanges.isEmpty();
+        return !isStructural() && this.visualChanges.isEmpty() && this.labelChanges.isEmpty()
+            && this.reconnections.isEmpty();
     }
 
     /** Indicates if this edit inserts or removes cells. */
@@ -166,7 +190,7 @@ public final class GraphEdit<G extends Graph> {
      * or the labels, so that the graph does not need to be rebuilt from the cells.
      */
     public boolean isMinor() {
-        return !isStructural() && this.labelChanges.isEmpty();
+        return !isStructural() && this.labelChanges.isEmpty() && this.reconnections.isEmpty();
     }
 
     /** Indicates if this edit changes visuals of a given key on any cell. */
@@ -177,10 +201,11 @@ public final class GraphEdit<G extends Graph> {
     @Override
     public String toString() {
         return String
-            .format("Edit[+%d vertices, +%d edges, -%d vertices, -%d edges, %d visual, %d label]",
+            .format("Edit[+%d vertices, +%d edges, -%d vertices, -%d edges, %d visual, %d label, %d reconnected]",
                     this.insertedVertices.size(), this.insertedEdges.size(),
                     this.removedVertices.size(), this.removedEdges.size(),
-                    this.visualChanges.size(), this.labelChanges.size());
+                    this.visualChanges.size(), this.labelChanges.size(),
+                    this.reconnections.size());
     }
 
     private final List<ViewVertex<G>> insertedVertices = new ArrayList<>();
@@ -191,6 +216,7 @@ public final class GraphEdit<G extends Graph> {
     private final List<Connection<G>> removedConnections = new ArrayList<>();
     private final Map<ViewCell<G>,VisualChange> visualChanges = new LinkedHashMap<>();
     private final Map<ViewCell<G>,LabelChange> labelChanges = new LinkedHashMap<>();
+    private final Map<ViewEdge<G>,Reconnection<G>> reconnections = new LinkedHashMap<>();
 
     /** Old and new values of the changed visual keys of one cell. */
     public record VisualChange(VisualMap oldVisuals, VisualMap newVisuals) {
@@ -199,6 +225,17 @@ public final class GraphEdit<G extends Graph> {
             return forward
                 ? newVisuals()
                 : oldVisuals();
+        }
+    }
+
+    /** Old and new connection of one edge. */
+    public record Reconnection<G extends Graph>(Connection<G> oldConnection,
+        Connection<G> newConnection) {
+        /** Returns the new connection if {@code forward} holds, else the old one. */
+        public Connection<G> get(boolean forward) {
+            return forward
+                ? newConnection()
+                : oldConnection();
         }
     }
 

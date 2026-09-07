@@ -21,6 +21,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,7 @@ import org.jgraph.event.GraphModelEvent.GraphModelChange;
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.ConnectionSet;
 import org.jgraph.graph.DefaultGraphModel;
+import org.jgraph.graph.DefaultPort;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.ParentMap;
 
@@ -335,6 +337,14 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
         super.remove(getDescendants(this, JCell.items(cells)).toArray());
     }
 
+    /* Reconnects the item as one JGraph connection edit, unrecorded. */
+    @Override
+    public void reconnectEdge(ViewEdge<G> edge, ViewVertex<G> source, ViewVertex<G> target) {
+        ConnectionSet cs = new ConnectionSet();
+        cs.connect(JCell.of(edge), vertexItem(source).getPort(), vertexItem(target).getPort());
+        super.edit(null, cs, null, null);
+    }
+
     /* Applies the visuals as one JGraph attribute edit, unrecorded. */
     @Override
     public void applyVisuals(Map<? extends ViewCell<G>,VisualMap> changes) {
@@ -347,22 +357,26 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
     }
 
     /**
-     * Routes the attribute edits of JGraph's own gestures (moving cells,
-     * dragging edge points, committing the in-place editor) through the view
-     * model, so that they are recorded like every other edit; the view model
-     * applies them through {@link #applyVisuals}. Edits with connections or
-     * parent changes, and edits during loading or refreshing, are JGraph's own.
+     * Routes the edits of JGraph's own gestures (moving cells, dragging edge
+     * points, reconnecting an edge end, committing the in-place editor) through
+     * the view model, so that they are recorded like every other edit; the view
+     * model applies them through {@link #applyVisuals} and
+     * {@link #reconnectEdge}. Edits with parent changes, and edits during
+     * loading or refreshing, are JGraph's own.
      */
     @Override
     @SuppressWarnings({"rawtypes", "unchecked"})
     public void edit(Map attributes, ConnectionSet cs, ParentMap pm, UndoableEdit[] edits) {
-        if (attributes == null || cs != null || pm != null || edits != null
+        if (attributes == null && cs == null || pm != null || edits != null
             || getViewModel().isLoading() || getJGraph().isModelRefreshing()) {
             super.edit(attributes, cs, pm, edits);
             return;
         }
         Map<ViewCell<G>,VisualMap> visuals = new LinkedHashMap<>();
-        for (var entry : ((Map<Object,Map>) attributes).entrySet()) {
+        Map<Object,Map> attributeMap = attributes == null
+            ? Map.of()
+            : attributes;
+        for (var entry : attributeMap.entrySet()) {
             if (!(entry.getKey() instanceof JCell<?> item)) {
                 continue;
             }
@@ -384,7 +398,30 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
                 visuals.put(cell, newVisuals);
             }
         }
-        if (!visuals.isEmpty()) {
+        if (cs != null && !cs.isEmpty()) {
+            // a reconnection: the edge gets its new ends, with its new points
+            var conn = (ConnectionSet.Connection) cs.connections().next();
+            var item = (JEdge<G>) conn.getEdge();
+            AViewEdge<G> edge = item.getViewCell();
+            var oldSource = edge.getSourceVertex();
+            var oldTarget = edge.getTargetVertex();
+            assert oldSource != null && oldTarget != null : "Reconnected edge " + edge
+                + " is not connected";
+            AViewVertex<G> source = oldSource;
+            AViewVertex<G> target = oldTarget;
+            for (Iterator<?> it = cs.connections(); it.hasNext();) {
+                var connection = (ConnectionSet.Connection) it.next();
+                assert connection.getEdge() == item : "Edits reconnect one edge at a time";
+                var vertex = ((JVertex<G>) ((DefaultPort) connection.getPort()).getParent())
+                    .getViewCell();
+                if (connection.isSource()) {
+                    source = vertex;
+                } else {
+                    target = vertex;
+                }
+            }
+            getViewModel().reconnect(edge, source, target, visuals);
+        } else if (!visuals.isEmpty()) {
             getViewModel().changeVisuals(visuals);
         }
     }
