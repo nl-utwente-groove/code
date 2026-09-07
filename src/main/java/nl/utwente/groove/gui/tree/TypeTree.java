@@ -243,9 +243,16 @@ public class TypeTree extends LabelTree<AspectGraph> {
     /**
      * Updates the label list according to the cell change.
      */
+    /*
+     * The tree is rebuilt when the view model or its type graph is another one:
+     * the entries belong to a type graph instance, and an implicit type graph is
+     * derived anew from the graph after every edit, so a new label appears in the
+     * tree, and a label that lost its last edge disappears from it, only by rebuilding.
+     */
     @Override
     public void cellsChanged(GraphCanvas<AspectGraph> canvas, CellChange<AspectGraph> change) {
-        if (isModelStale() || getNonNullViewModel().isLoading()) {
+        if (isModelStale() || getNonNullViewModel().isLoading()
+            || !getFilter().isFor(getTypeGraph())) {
             updateModel();
         } else {
             super.cellsChanged(canvas, change);

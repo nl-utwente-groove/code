@@ -145,6 +145,17 @@ class TypeFilter extends LabelFilter<AspectGraph,TypeEntry> {
         return update(typeGraph);
     }
 
+    /**
+     * Indicates if the entries of this filter are those of a given type graph:
+     * they were built from that very instance and are not stale. An implicit type
+     * graph is derived anew from the graph after every edit, so an editor's filter
+     * falls behind it and must be rebuilt.
+     */
+    boolean isFor(@Nullable TypeGraph typeGraph) {
+        var map = this.entryMap;
+        return !this.stale && map != null && map.typeGraph() == typeGraph;
+    }
+
     /** Flag indicating that the {@link #entryMap} might have to be refreshed. */
     private boolean stale = true;
     /** Mapping from known node type labels to corresponding node type entries. */
