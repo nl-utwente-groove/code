@@ -17,7 +17,9 @@
 package nl.utwente.groove.gui;
 
 
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -52,6 +54,8 @@ import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.plaf.ColorUIResource;
+import javax.swing.plaf.DimensionUIResource;
 
 import org.eclipse.jdt.annotation.NonNull;
 
@@ -1027,11 +1031,36 @@ public class Options implements Cloneable {
                 // go here
                 // Set the look and feel
                 UIManager.setLookAndFeel(new FlatLightLaf());
+                initTableLook();
             } catch (Exception e) {
                 throw new IllegalStateException(e);
             }
         }
     }
+
+    /** Adapts the look-and-feel defaults for tables.
+     * FlatLaf suppresses the table grid altogether; GROOVE wants the thin grey
+     * dividers back, with a header that is set off from the table body by a
+     * darker separator and a bold label.
+     */
+    static private void initTableLook() {
+        UIManager.put("Table.showHorizontalLines", true);
+        UIManager.put("Table.showVerticalLines", true);
+        // the grid lines are drawn on the last pixel row and column of each
+        // cell band, so without intercell spacing the cells cover them
+        UIManager.put("Table.intercellSpacing", new DimensionUIResource(1, 1));
+        UIManager.put("TableHeader.separatorColor", HEADER_SEPARATOR_COLOR);
+        UIManager.put("TableHeader.bottomSeparatorColor", HEADER_SEPARATOR_COLOR);
+        var headerFont = UIManager.getFont("TableHeader.font");
+        if (headerFont != null) {
+            UIManager.put("TableHeader.font", headerFont.deriveFont(Font.BOLD));
+        }
+    }
+
+    /** Colour of the separators within and below a table header.
+     * Deliberately darker than any grid colour used inside a table body.
+     */
+    static public final Color HEADER_SEPARATOR_COLOR = new ColorUIResource(150, 150, 150);
 
     /** Flag indicating if {@link #initLookAndFeel()} has already been invoked. */
     private static boolean lookAndFeelInit;
