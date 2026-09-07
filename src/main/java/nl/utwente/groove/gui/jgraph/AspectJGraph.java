@@ -36,7 +36,6 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.jgraph.event.GraphModelEvent;
 import org.jgraph.event.GraphModelListener;
-import org.jgraph.graph.ConnectionSet;
 import org.jgraph.graph.DefaultPort;
 import org.jgraph.graph.GraphModel;
 import org.jgraph.graph.PortView;
@@ -50,6 +49,7 @@ import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.view.AspectGraphCanvas;
 import nl.utwente.groove.gui.view.AspectGraphViewController;
 import nl.utwente.groove.gui.view.AspectGraphViewModel;
+import nl.utwente.groove.gui.view.CellStore.Connection;
 import nl.utwente.groove.gui.view.AspectViewEdge;
 import nl.utwente.groove.gui.view.CellStore;
 import nl.utwente.groove.gui.view.cell.AspectEdgeCell;
@@ -196,7 +196,8 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements Aspect
     public void setEditable(boolean editable) {
         setCloneable(editable);
         setConnectable(editable);
-        setDisconnectable(editable);
+        // reconnecting an edge by dragging its end is not an edit of the view model
+        setDisconnectable(false);
         super.setEditable(editable);
     }
 
@@ -214,10 +215,9 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements Aspect
         AspectVertexCell vertex = viewModel.newVertex(viewModel.createAspectNode());
         vertex.setNodeFixed();
         vertex.putVisual(VisualKey.NODE_POS, atPoint);
-        // add the cell to the jGraph
-        var jVertex = new JVertex<>(vertex);
-        Object[] insert = {jVertex};
-        model.insert(insert, null, null, null, null);
+        // add the cell through the view model, which records the edit
+        viewModel.insert(List.of(vertex), List.of(), List.of());
+        var jVertex = JCell.of(vertex);
         setSelectionCell(jVertex);
         // immediately add a label, if so indicated by startEditingNewNode
         if (this.startEditingNewNode) {
@@ -252,18 +252,12 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements Aspect
         assert fromPortView != null : "addEdge should not be called with dangling source " + from;
         DefaultPort fromPort = (DefaultPort) fromPortView.getCell();
         DefaultPort toPort = (DefaultPort) toPortView.getCell();
+        var source = ((JVertex<?>) fromPort.getParent()).getViewCell();
+        var target = ((JVertex<?>) toPort.getParent()).getViewCell();
         // define the edge to be inserted
         AspectEdgeCell edge = model.getViewModel().newEdge(null);
         // add a single, empty label so the edge will be displayed
         edge.getEditableLabels().add("");
-        // to make sure there is at least one graph edge wrapped by this ViewEdge,
-        // we add a dummy edge label to the ViewEdge's user object
-        var newEdge = new JEdge<>(edge);
-        Object[] insert = {newEdge};
-        // define connections between edge and nodes, if any
-        ConnectionSet cs = new ConnectionSet();
-        cs.connect(newEdge, fromPort, true);
-        cs.connect(newEdge, toPort, false);
         // if we're drawing a self-edge, provide some intermediate points
         List<Point2D> points;
         if (toPort == fromPort) {
@@ -272,8 +266,14 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements Aspect
             points = Arrays.asList(from, to);
         }
         edge.putVisual(VisualKey.POINTS, points);
-        // add the cell to the jGraph
-        model.insert(insert, null, cs, null, null);
+        // add the cell through the view model, which records the edit
+        model
+            .getViewModel()
+            .insert(List.of(), List.of(edge),
+                    List
+                        .of(new Connection<>(edge, (AspectVertexCell) source,
+                            (AspectVertexCell) target)));
+        var newEdge = JCell.of(edge);
         setSelectionCell(newEdge);
         // immediately add a label
         if (this.startEditingNewEdge) {

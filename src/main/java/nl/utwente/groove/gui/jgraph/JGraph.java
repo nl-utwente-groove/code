@@ -680,14 +680,17 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
         }
     }
 
+    /* Commits JGraph's in-place editor. */
     @Override
-    public void edit(Map<? extends ViewCell<G>,VisualMap> changes) {
-        Map<Object,AttributeMap> attributes = new HashMap<>();
-        for (var entry : changes.entrySet()) {
-            attributes
-                .put(JCell.of(entry.getKey()), VisualAttributeMap.toAttributes(entry.getValue()));
-        }
-        getNonNullModel().edit(attributes, null, null, null);
+    public void finishEditing() {
+        stopEditing();
+    }
+
+    /* Also shows or hides the grid. */
+    @Override
+    public void setGridEnabled(boolean enabled) {
+        super.setGridEnabled(enabled);
+        setGridVisible(enabled);
     }
 
     @Override
@@ -1384,23 +1387,20 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
     /** Clear all intermediate points from all edges. */
     @Override
     public void clearAllEdgePoints() {
-        var model = getModel();
-        assert model != null;
-        Map<Object,AttributeMap> change = new HashMap<>();
-        for (var jCell : model.getCells()) {
+        Map<ViewCell<G>,VisualMap> change = new HashMap<>();
+        for (var jCell : getCells()) {
             if (jCell instanceof ViewEdge) {
-                VisualMap visuals = jCell.getVisuals();
-                List<Point2D> points = visuals.getPoints();
+                List<Point2D> points = jCell.getVisuals().getPoints();
                 // don't make the change directly in the cell,
                 // as this messes up the undo history
-                List<Point2D> newPoints
-                    = Arrays.asList(points.get(0), points.get(points.size() - 1));
-                AttributeMap newAttributes = new AttributeMap();
-                GraphConstants.setPoints(newAttributes, newPoints);
-                change.put(JCell.of(jCell), newAttributes);
+                VisualMap newVisuals = new VisualMap();
+                newVisuals
+                    .setPoints(new ArrayList<>(Arrays
+                        .asList(points.get(0), points.get(points.size() - 1))));
+                change.put(jCell, newVisuals);
             }
         }
-        model.edit(change, null, null, null);
+        edit(change);
     }
 
     /** Sets the layouting flag to the given value. */

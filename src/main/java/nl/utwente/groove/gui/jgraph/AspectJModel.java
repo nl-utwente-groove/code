@@ -19,22 +19,15 @@ package nl.utwente.groove.gui.jgraph;
 import java.beans.PropertyChangeListener;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.swing.undo.UndoableEdit;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.jgraph.event.GraphModelEvent.GraphModelChange;
-import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.ConnectionSet;
 import org.jgraph.graph.DefaultPort;
-import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.ParentMap;
 
 import nl.utwente.groove.grammar.ResourceProperties;
@@ -156,52 +149,61 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
         return port != null;// && port != ((ViewEdge) edge).getTarget();
     }
 
-    /* Removes the incident edges of removed vertices as well. */
-    @SuppressWarnings("unchecked")
+    /*
+     * Removal by JGraph's own gestures (cut) goes through the view model, which
+     * removes the incident edges of removed vertices as well and records the
+     * edit; the view model removes through removeCells.
+     */
     @Override
     public void remove(Object[] roots) {
-        List<Object> removables = new LinkedList<>(Arrays.asList(roots));
-        for (Object element : roots) {
-            if (element instanceof JVertex<?> cell) {
-                removables.addAll(cell.getPort().getEdges());
+        List<AspectViewCell> cells = new ArrayList<>();
+        for (Object root : roots) {
+            if (root instanceof JCell<?> item) {
+                cells.add((AspectViewCell) item.getViewCell());
             }
         }
-        super.remove(removables.toArray());
+        getViewModel().remove(cells);
     }
 
-    /* Only inserts edges whose source and target ports are connected. */
-    @SuppressWarnings("rawtypes")
+    /*
+     * Insertion by JGraph's own gestures (paste, drop) goes through the view
+     * model, which records the edit and inserts through insertCells (reusing
+     * the JGraph items of the cells). Only edges whose source and target ports
+     * are connected are inserted; the attributes (the paste offset) are applied
+     * to the cells first.
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     public void insert(Object[] roots, Map attributes, ConnectionSet cs, ParentMap pm,
                        UndoableEdit[] edits) {
-        Set<Object> insertables = new LinkedHashSet<>();
+        List<AspectVertexCell> vertices = new ArrayList<>();
+        List<AspectEdgeCell> edges = new ArrayList<>();
+        List<Connection<@NonNull AspectGraph>> connections = new ArrayList<>();
         for (Object root : roots) {
-            boolean insert = true;
-            if (root instanceof JEdge<?> jEdge) {
+            if (root instanceof JVertex<?> jVertex) {
+                vertices.add((AspectVertexCell) jVertex.getViewCell());
+            } else if (root instanceof JEdge<?> jEdge && cs != null) {
                 DefaultPort sourcePort = (DefaultPort) cs.getPort(jEdge, true);
                 DefaultPort targetPort = (DefaultPort) cs.getPort(jEdge, false);
-                insert = sourcePort != null && targetPort != null;
-            }
-            if (insert) {
-                insertables.add(root);
-            } else {
-                // if the root is not copied over, remove it from the attribute map
-                // to avoid its being flagged as a changed element
-                attributes.remove(root);
-            }
-        }
-        // adjust the connection set by removing all connections for edges
-        // that were just removed
-        if (cs != null) {
-            Iterator it = cs.connections();
-            while (it.hasNext()) {
-                ConnectionSet.Connection conn = (ConnectionSet.Connection) it.next();
-                if (!insertables.contains(conn.getEdge())) {
-                    it.remove();
+                if (sourcePort != null && targetPort != null) {
+                    var edge = (AspectEdgeCell) jEdge.getViewCell();
+                    var source = ((JVertex<?>) sourcePort.getParent()).getViewCell();
+                    var target = ((JVertex<?>) targetPort.getParent()).getViewCell();
+                    edges.add(edge);
+                    connections
+                        .add(new Connection<>(edge, (AspectVertexCell) source,
+                            (AspectVertexCell) target));
                 }
             }
         }
-        super.insert(insertables.toArray(), attributes, cs, pm, edits);
+        if (attributes != null) {
+            for (var entry : ((Map<Object,Map>) attributes).entrySet()) {
+                if (entry.getKey() instanceof JCell<?> item) {
+                    item.getAttributes().applyMap(entry.getValue());
+                }
+            }
+        }
+        getViewModel().insert(vertices, edges, connections);
     }
 
     /*
@@ -244,32 +246,9 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
         getViewModel().setGraphModified();
     }
 
+    /* The graph is rebuilt from the cells by the view model, after every recorded edit. */
     @Override
     protected void fireGraphChanged(Object source, GraphModelChange edit) {
-        // synchronise the graph to match the edits,
-        // unless the model is busy loading the graph
-        if (!isLoading()) {
-            // only reload if the edit changed the graph structure
-            // (and not just the layout)
-            boolean changed = edit.getInserted() != null && edit.getInserted().length > 0
-                || edit.getRemoved() != null && edit.getRemoved().length > 0
-                || edit.getConnectionSet() != null && !edit.getConnectionSet().isEmpty();
-            // only user object changes in the attribute should trigger a reload
-            if (!changed && edit.getAttributes() != null) {
-                for (Object attrValue : ((Map<?,?>) edit.getAttributes()).values()) {
-                    // the user object changed if the attribute map contains an
-                    // entry for the VALUE key
-                    AttributeMap attrMap = (AttributeMap) attrValue;
-                    if (attrMap.containsKey(GraphConstants.VALUE)) {
-                        changed = true;
-                        break;
-                    }
-                }
-            }
-            if (changed) {
-                syncGraph();
-            }
-        }
         if (GUI_DEBUG) {
             System.out.printf("Firing graph change in %s%n", getName());
             printStackTrace(System.out, false);

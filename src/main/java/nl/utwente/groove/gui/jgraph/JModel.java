@@ -20,9 +20,13 @@ package nl.utwente.groove.gui.jgraph;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.swing.undo.UndoableEdit;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -30,6 +34,7 @@ import org.jgraph.event.GraphModelEvent.GraphModelChange;
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.ConnectionSet;
 import org.jgraph.graph.DefaultGraphModel;
+import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.ParentMap;
 
 import nl.utwente.groove.graph.Edge;
@@ -38,7 +43,9 @@ import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.layout.LayoutMap;
+import nl.utwente.groove.gui.look.VisualMap;
 import nl.utwente.groove.gui.view.CellStore;
+import nl.utwente.groove.gui.view.EditableLabels;
 import nl.utwente.groove.gui.view.GraphViewModel;
 import nl.utwente.groove.gui.view.ViewCell;
 import nl.utwente.groove.gui.view.ViewEdge;
@@ -290,11 +297,21 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
         int vertexCount = vertices.size();
         int edgeCount = edges.size();
         Object[] addedCells = new JCell<?>[vertexCount + edgeCount];
+        // cells that were shown before (and removed, by an undo) keep their items
         for (int i = 0; i < edgeCount; i++) {
-            addedCells[i] = new JEdge<>((AViewEdge<G>) edges.get(i));
+            var edge = (AViewEdge<G>) edges.get(i);
+            addedCells[i] = edge.getItem() instanceof JEdge<?> item
+                ? item
+                : new JEdge<>(edge);
         }
         for (int i = 0; i < vertexCount; i++) {
-            addedCells[edgeCount + i] = new JVertex<>((AViewVertex<G>) vertices.get(i));
+            var vertex = (AViewVertex<G>) vertices.get(i);
+            if (vertex.getItem() instanceof JVertex<?> item) {
+                item.restorePort();
+                addedCells[edgeCount + i] = item;
+            } else {
+                addedCells[edgeCount + i] = new JVertex<>(vertex);
+            }
         }
         Object[] removedCells = replace
             ? getRoots().toArray()
@@ -307,6 +324,69 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
         }
         createEdit(addedCells, removedCells, null, connectionSet, getParentMap(), null)
             .execute();
+    }
+
+    /*
+     * Removes the items (with their ports) as one JGraph edit, which
+     * disconnects the edges.
+     */
+    @Override
+    public void removeCells(Collection<? extends ViewCell<G>> cells) {
+        super.remove(getDescendants(this, JCell.items(cells)).toArray());
+    }
+
+    /* Applies the visuals as one JGraph attribute edit, unrecorded. */
+    @Override
+    public void applyVisuals(Map<? extends ViewCell<G>,VisualMap> changes) {
+        Map<Object,AttributeMap> attributes = new HashMap<>();
+        for (var entry : changes.entrySet()) {
+            attributes
+                .put(JCell.of(entry.getKey()), VisualAttributeMap.toAttributes(entry.getValue()));
+        }
+        super.edit(attributes, null, null, null);
+    }
+
+    /**
+     * Routes the attribute edits of JGraph's own gestures (moving cells,
+     * dragging edge points, committing the in-place editor) through the view
+     * model, so that they are recorded like every other edit; the view model
+     * applies them through {@link #applyVisuals}. Edits with connections or
+     * parent changes, and edits during loading or refreshing, are JGraph's own.
+     */
+    @Override
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public void edit(Map attributes, ConnectionSet cs, ParentMap pm, UndoableEdit[] edits) {
+        if (attributes == null || cs != null || pm != null || edits != null
+            || getViewModel().isLoading() || getJGraph().isModelRefreshing()) {
+            super.edit(attributes, cs, pm, edits);
+            return;
+        }
+        Map<ViewCell<G>,VisualMap> visuals = new LinkedHashMap<>();
+        for (var entry : ((Map<Object,Map>) attributes).entrySet()) {
+            if (!(entry.getKey() instanceof JCell<?> item)) {
+                continue;
+            }
+            ViewCell<G> cell = (ViewCell<G>) item.getViewCell();
+            Map attrs = entry.getValue();
+            if (attrs.containsKey(GraphConstants.VALUE)) {
+                // the in-place editor committed: a label change
+                Object value = attrs.get(GraphConstants.VALUE);
+                var labels = new EditableLabels();
+                if (value instanceof EditableLabels newLabels) {
+                    labels = newLabels;
+                } else if (value != null) {
+                    labels.load(value.toString());
+                }
+                getViewModel().changeLabels(cell, labels);
+            }
+            VisualMap newVisuals = VisualAttributeMap.toVisuals(cell.getVisuals(), attrs);
+            if (!newVisuals.keySet().isEmpty()) {
+                visuals.put(cell, newVisuals);
+            }
+        }
+        if (!visuals.isEmpty()) {
+            getViewModel().changeVisuals(visuals);
+        }
     }
 
     /** Returns the JGraph item of a given vertex cell. */

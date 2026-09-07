@@ -171,13 +171,20 @@ public interface GraphCanvas<G extends Graph> {
     // ---------- editing ----------
 
     /**
-     * Applies a set of visual changes to cells, as one undoable edit.
+     * Applies a set of visual changes to cells, as one edit of the view model:
+     * undoable if the model keeps an edit history.
      * Only values of {@link Nature#CONTROLLED} keys may be changed this way.
+     * @see GraphViewModel#changeVisuals(Map)
      */
-    void edit(Map<? extends ViewCell<G>,VisualMap> changes);
+    default void edit(Map<? extends ViewCell<G>,VisualMap> changes) {
+        getNonNullViewModel().changeVisuals(changes);
+    }
 
-    /** Removes the bend points of all edges. */
+    /** Removes the bend points of all edges, as one edit. */
     void clearAllEdgePoints();
+
+    /** Commits the in-place editor, if one is active. */
+    void finishEditing();
 
     /** Indicates if the content may be edited interactively. */
     boolean isEditable();

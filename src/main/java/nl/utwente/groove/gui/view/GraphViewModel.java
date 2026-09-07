@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -42,6 +43,7 @@ import nl.utwente.groove.graph.layout.NodeLayout;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
 import nl.utwente.groove.gui.view.CellStore.Connection;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.gui.view.cell.AViewEdge;
 import nl.utwente.groove.gui.view.cell.AViewVertex;
 import nl.utwente.groove.util.collect.NestedIterator;
@@ -142,6 +144,190 @@ public abstract class GraphViewModel<G extends Graph> {
         } else if (jCell instanceof ViewVertex) {
             layoutMap.putNode(((ViewVertex<G>) jCell).getNode(), jCell.getVisuals().toNodeLayout());
         }
+    }
+
+    // ---------- editing ----------
+
+    /**
+     * Returns the edit history of this model, if it records its edits;
+     * {@code null} for a model that is only viewed.
+     */
+    public @Nullable EditHistory<G> getEditHistory() {
+        return this.editHistory;
+    }
+
+    /**
+     * Starts recording edits: from now on, the editing operations of this
+     * model ({@link #insert}, {@link #remove}, {@link #changeVisuals},
+     * {@link #changeLabels}) are undoable through the history.
+     */
+    public EditHistory<G> enableEditHistory() {
+        var result = this.editHistory;
+        if (result == null) {
+            this.editHistory = result = new EditHistory<>(this);
+        }
+        return result;
+    }
+
+    private @Nullable EditHistory<G> editHistory;
+
+    /**
+     * Inserts fresh cells, connected as given, as one edit.
+     * The cells are created by {@link #newVertex} and {@link #newEdge}; every
+     * inserted edge must have a connection.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    public void insert(List<? extends ViewVertex<G>> vertices, List<? extends ViewEdge<G>> edges,
+                       List<Connection<G>> connections) {
+        doEdit(new GraphEdit<G>().withInserted(vertices, edges, connections));
+    }
+
+    /**
+     * Removes cells as one edit, together with the edges incident to the
+     * removed vertices.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    public void remove(Collection<? extends ViewCell<G>> cells) {
+        Set<ViewCell<G>> removed = new LinkedHashSet<>(cells);
+        for (var cell : cells) {
+            if (cell instanceof ViewVertex<G> vertex) {
+                var edges = vertex.getContext();
+                while (edges.hasNext()) {
+                    removed.add(edges.next());
+                }
+            }
+        }
+        List<ViewVertex<G>> vertices = new ArrayList<>();
+        List<ViewEdge<G>> edges = new ArrayList<>();
+        List<Connection<G>> connections = new ArrayList<>();
+        for (var cell : removed) {
+            if (cell instanceof ViewVertex<G> vertex) {
+                vertices.add(vertex);
+            } else if (cell instanceof ViewEdge<G> edge) {
+                var source = edge.getSourceVertex();
+                var target = edge.getTargetVertex();
+                assert source != null && target != null : "Removed edge " + edge + " is not connected";
+                edges.add(edge);
+                connections.add(new Connection<>(edge, source, target));
+            }
+        }
+        doEdit(new GraphEdit<G>().withRemoved(vertices, edges, connections));
+    }
+
+    /**
+     * Changes visuals of cells as one edit; the funnel behind
+     * {@link GraphCanvas#edit}. Only controlled keys are recorded and changed.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    public void changeVisuals(Map<? extends ViewCell<G>,VisualMap> changes) {
+        var edit = new GraphEdit<G>();
+        for (var entry : changes.entrySet()) {
+            ViewCell<G> cell = entry.getKey();
+            VisualMap current = cell.getVisuals();
+            VisualMap oldVisuals = new VisualMap();
+            VisualMap newVisuals = new VisualMap();
+            for (VisualKey key : entry.getValue().keySet()) {
+                if (key.getNature() == VisualKey.Nature.CONTROLLED) {
+                    oldVisuals.put(key, current.get(key));
+                    newVisuals.put(key, entry.getValue().get(key));
+                }
+            }
+            if (!newVisuals.keySet().isEmpty()) {
+                edit.withVisuals(cell, oldVisuals, newVisuals);
+            }
+        }
+        doEdit(edit);
+    }
+
+    /** Changes the editable labels of a cell as one edit. */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    public void changeLabels(ViewCell<G> cell, EditableLabels labels) {
+        var oldLabels = new EditableLabels(getLabels(cell));
+        doEdit(new GraphEdit<G>().withLabels(cell, oldLabels, new EditableLabels(labels)));
+    }
+
+    /** Returns the editable labels of a cell; only role models with editable labels support this. */
+    protected EditableLabels getLabels(ViewCell<G> cell) {
+        throw new UnsupportedOperationException("Cells of " + getClass().getSimpleName()
+            + " have no editable labels");
+    }
+
+    /** Sets the editable labels of a cell; only role models with editable labels support this. */
+    protected void setLabels(ViewCell<G> cell, EditableLabels labels) {
+        throw new UnsupportedOperationException("Cells of " + getClass().getSimpleName()
+            + " have no editable labels");
+    }
+
+    /**
+     * Applies an edit and records it in the history, if there is one and
+     * the model is not loading. Empty edits are ignored.
+     */
+    protected void doEdit(GraphEdit<G> edit) {
+        if (edit.isEmpty()) {
+            return;
+        }
+        apply(edit, true);
+        var history = this.editHistory;
+        if (history != null && !isLoading()) {
+            history.recorded(edit);
+        }
+    }
+
+    /**
+     * Applies an edit forward, or reverts it: the store inserts and removes
+     * the cells and applies the visuals, the cells take their labels, and
+     * {@link #afterEdit} lets the model react.
+     * @param forward if {@code true}, the edit is applied; otherwise reverted
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    public void apply(GraphEdit<G> edit, boolean forward) {
+        var store = getStore();
+        if (forward) {
+            if (!edit.getRemovedCells().isEmpty()) {
+                store.removeCells(edit.getRemovedCells());
+            }
+            if (!edit.getInsertedCells().isEmpty()) {
+                store
+                    .insertCells(edit.getInsertedVertices(), edit.getInsertedEdges(),
+                                 edit.getInsertedConnections(), false);
+            }
+        } else {
+            if (!edit.getInsertedCells().isEmpty()) {
+                store.removeCells(edit.getInsertedCells());
+            }
+            if (!edit.getRemovedCells().isEmpty()) {
+                store
+                    .insertCells(edit.getRemovedVertices(), edit.getRemovedEdges(),
+                                 edit.getRemovedConnections(), false);
+            }
+        }
+        if (!edit.getVisualChanges().isEmpty()) {
+            var visuals = edit.getVisuals(forward);
+            store.applyVisuals(visuals);
+            if (!isLoading()) {
+                for (var cell : visuals.keySet()) {
+                    synchroniseLayout(cell);
+                }
+            }
+        }
+        List<ViewCell<G>> relabelled = new ArrayList<>();
+        for (var entry : edit.getLabelChanges().entrySet()) {
+            setLabels(entry.getKey(), entry.getValue().get(forward));
+            relabelled.add(entry.getKey());
+        }
+        afterEdit(edit);
+        if (!relabelled.isEmpty()) {
+            // after the graph was rebuilt from the labels, which the cells show
+            getCanvas().refresh(relabelled, false);
+        }
+    }
+
+    /**
+     * Callback after an edit was applied or reverted; does nothing by default.
+     * The aspect model rebuilds its graph from the cells after non-minor edits.
+     */
+    protected void afterEdit(GraphEdit<G> edit) {
+        // empty
     }
 
     // ---------- element-to-cell maps ----------

@@ -42,6 +42,16 @@ public class JVertex<G extends @NonNull Graph> extends JCell<G> {
         return (AViewVertex<G>) super.getViewCell();
     }
 
+    /**
+     * Gives the vertex a port again after it was removed from a model, which
+     * takes the port along; for re-insertion by an undo.
+     */
+    void restorePort() {
+        if (getChildCount() == 0) {
+            add(new DefaultPort());
+        }
+    }
+
     /** Returns the port of this vertex. */
     public DefaultPort getPort() {
         DefaultPort result = null;

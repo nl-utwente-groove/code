@@ -240,6 +240,11 @@ public class JEdgeView extends EdgeView {
         if (this.source == null || this.target == null) {
             return 0;
         }
+        // the cell may be disconnected already while the view is still asked,
+        // during the removal of the edge
+        if (getSourceVertex() == null || getTargetVertex() == null) {
+            return 0;
+        }
         if (getPointCount() > 2) {
             return 0;
         }

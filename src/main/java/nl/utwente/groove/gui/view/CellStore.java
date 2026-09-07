@@ -18,10 +18,12 @@ package nl.utwente.groove.gui.view;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.graph.Graph;
+import nl.utwente.groove.gui.look.VisualMap;
 import nl.utwente.groove.util.AIGenerated;
 
 /**
@@ -42,6 +44,24 @@ public interface CellStore<G extends Graph> {
      */
     void insertCells(List<? extends ViewVertex<G>> vertices, List<? extends ViewEdge<G>> edges,
                      List<Connection<G>> connections, boolean replace);
+
+    /**
+     * Removes cells from the store, disconnecting the edges among them from
+     * their end vertices; the cells keep their identity, so that they can be
+     * inserted again (by undo). Edges incident to removed vertices must be
+     * among the removed cells.
+     */
+    void removeCells(Collection<? extends ViewCell<G>> cells);
+
+    /**
+     * Applies visual changes to cells: the cells take the given values and
+     * the store brings its items up to date. Only values of
+     * {@link nl.utwente.groove.gui.look.VisualKey.Nature#CONTROLLED} keys may be
+     * changed this way. This is the backend half of the edit funnel; the
+     * recording of the change is the view model's, see
+     * {@link GraphViewModel#changeVisuals(Map)}.
+     */
+    void applyVisuals(Map<? extends ViewCell<G>,VisualMap> changes);
 
     /** Returns all cells currently in the store, in z-order. */
     Collection<? extends ViewCell<G>> getCells();

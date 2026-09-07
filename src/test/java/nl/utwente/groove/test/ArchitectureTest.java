@@ -52,9 +52,7 @@ public class ArchitectureTest {
      * Files outside the backend that are still allowed to import backend types,
      * with the migration step that removes them; paths relative to the source roots.
      */
-    private static final Map<String,String> ALLOWED = new TreeMap<>(Map.ofEntries(
-        // phase 3: the editor's own undo and edit model
-        Map.entry("nl/utwente/groove/gui/display/AspectEditorTab.java", "3")));
+    private static final Map<String,String> ALLOWED = new TreeMap<>();
 
     /** Source roots to scan. */
     private static final Path[] SOURCE_ROOTS = {Path.of("src/main/java"), Path.of("src/test/java")};

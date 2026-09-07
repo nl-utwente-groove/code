@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.Edge.Routing;
 import org.jgraph.graph.GraphConstants;
@@ -40,6 +41,7 @@ import nl.utwente.groove.gui.look.EdgeEnd;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualKey.Nature;
 import nl.utwente.groove.gui.look.VisualMap;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Fonts;
 import nl.utwente.groove.util.line.LineStyle;
 
@@ -79,6 +81,54 @@ public class VisualAttributeMap extends AttributeMap implements VisualMap.Listen
      */
     public static AttributeMap toAttributes(VisualMap visuals) {
         return (AttributeMap) new VisualAttributeMap(visuals, false).clone();
+    }
+
+    /**
+     * Converts a JGraph attribute change into the visual change it means for a
+     * cell: the values, for the controlled visual keys the attributes stand
+     * for, that the cell would have after the change.
+     * @param current the cell's current visuals, used to resolve paired
+     * attributes (such as the extra labels standing for both end labels)
+     * @param attributes the changed JGraph attributes
+     * @return the new values of the changed controlled keys; empty if the
+     * attributes stand for no controlled key
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    public static VisualMap toVisuals(VisualMap current, Map attributes) {
+        // apply the attributes to a copy of the visuals, through the write-through map
+        VisualMap copy = new VisualMap();
+        copy.putAll(current);
+        VisualAttributeMap map = new VisualAttributeMap(copy, false);
+        Set<VisualKey> changed = EnumSet.noneOf(VisualKey.class);
+        for (var entry : ((Map<Object,Object>) attributes).entrySet()) {
+            VisualKey key = getVisualKey(entry.getKey());
+            if (key != null && key.getNature() == Nature.CONTROLLED) {
+                map.put(entry.getKey(), entry.getValue());
+                changed.add(key);
+                // the paired key changes along
+                VisualKey pair = getPairedKey(key);
+                if (pair != null) {
+                    changed.add(pair);
+                }
+            }
+        }
+        VisualMap result = new VisualMap();
+        for (VisualKey key : changed) {
+            result.put(key, copy.get(key));
+        }
+        return result;
+    }
+
+    /** Returns the visual key that shares a JGraph attribute with a given key, if any. */
+    private static @Nullable VisualKey getPairedKey(VisualKey key) {
+        return switch (key) {
+        case EDGE_SOURCE_LABEL -> VisualKey.EDGE_TARGET_LABEL;
+        case EDGE_TARGET_LABEL -> VisualKey.EDGE_SOURCE_LABEL;
+        case EDGE_SOURCE_POS -> VisualKey.EDGE_TARGET_POS;
+        case EDGE_TARGET_POS -> VisualKey.EDGE_SOURCE_POS;
+        default -> null;
+        };
     }
 
     /*

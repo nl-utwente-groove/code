@@ -304,9 +304,33 @@ public class AspectGraphViewModel extends GraphViewModel<AspectGraph> {
         }
     }
 
-    /** Change the {@link #beingEdited} flag. */
+    /**
+     * Change the {@link #beingEdited} flag; an edited model records its edits
+     * in an {@link EditHistory}.
+     */
     public void setBeingEdited(boolean flag) {
         this.beingEdited = flag;
+        if (flag) {
+            enableEditHistory();
+        }
+    }
+
+    @Override
+    protected EditableLabels getLabels(ViewCell<AspectGraph> cell) {
+        return ((AspectViewCell) cell).getEditableLabels();
+    }
+
+    @Override
+    protected void setLabels(ViewCell<AspectGraph> cell, EditableLabels labels) {
+        ((AspectViewCell) cell).setEditableLabels(labels);
+    }
+
+    /* The graph is rebuilt from the cells after every edit that is not layout only. */
+    @Override
+    protected void afterEdit(GraphEdit<AspectGraph> edit) {
+        if (!edit.isMinor()) {
+            syncGraph();
+        }
     }
 
     /** Indicates if the graph of this model is being edited. */

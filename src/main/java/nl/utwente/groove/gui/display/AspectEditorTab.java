@@ -46,18 +46,9 @@ import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
-import javax.swing.event.UndoableEditEvent;
-import javax.swing.undo.UndoableEdit;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
-import org.jgraph.event.GraphModelEvent;
-import org.jgraph.event.GraphModelEvent.GraphModelChange;
-import org.jgraph.event.GraphModelListener;
-import org.jgraph.graph.AttributeMap;
-import org.jgraph.graph.ConnectionSet;
-import org.jgraph.graph.GraphConstants;
-import org.jgraph.graph.GraphUndoManager;
 
 import nl.utwente.groove.algebra.Algebras;
 import nl.utwente.groove.algebra.UserSignature;
@@ -74,9 +65,9 @@ import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.action.SnapToGridAction;
 import nl.utwente.groove.gui.dialog.PropertiesTable;
-import nl.utwente.groove.gui.jgraph.AspectJGraph;
-import nl.utwente.groove.gui.jgraph.AspectJModel;
 import nl.utwente.groove.gui.look.Values;
+import nl.utwente.groove.gui.view.AspectGraphViewModel;
+import nl.utwente.groove.gui.view.EditHistory;
 import nl.utwente.groove.gui.view.GraphCanvas;
 import nl.utwente.groove.gui.view.GraphCanvasListener;
 import nl.utwente.groove.gui.view.GraphViewMode;
@@ -92,7 +83,7 @@ import nl.utwente.groove.util.QualName;
  * @version $Revision$
  */
 final public class AspectEditorTab extends AspectTab
-    implements GraphModelListener, GraphCanvasListener<@NonNull AspectGraph> {
+    implements GraphCanvasListener<@NonNull AspectGraph> {
     /**
      * Constructs a new tab instance.
      * @param parent the component on which this panel is placed
@@ -111,27 +102,24 @@ final public class AspectEditorTab extends AspectTab
 
     /** Sets a given graph as the model to be edited. */
     public void setGraph(AspectGraph graph) {
-        AspectJModel oldModel = getJModel();
-        if (oldModel != null) {
-            oldModel.removeUndoableEditListener(getUndoManager());
-            oldModel.removeGraphModelListener(this);
+        var oldHistory = getHistory();
+        if (oldHistory != null) {
+            oldHistory.removeListener(this.historyListener);
         }
         this.editModel = null;
         setQualName(graph.getQualName());
-        AspectJModel newModel = getJGraph().newModel();
+        AspectGraphViewModel newModel = getCanvas().newViewModel();
         newModel.setBeingEdited(true);
         AspectGraph graphClone = graph.clone();
         graphClone.setFixed();
         newModel.loadGraph(graphClone);
-        getJGraph().setModel(newModel);
+        getCanvas().setViewModel(newModel);
         loadProperties(graphClone, true);
-        newModel.addUndoableEditListener(getUndoManager());
-        newModel.addGraphModelListener(this);
+        getNonNullHistory().addListener(this.historyListener);
         setClean();
-        getUndoManager().discardAllEdits();
         updateHistoryButtons();
         updateStatus();
-        if (getJGraph().getMode() == PREVIEW_MODE) {
+        if (getCanvas().getMode() == PREVIEW_MODE) {
             enterPreview();
         }
     }
@@ -139,7 +127,7 @@ final public class AspectEditorTab extends AspectTab
     /** Returns the graph being edited. */
     @Override
     public @NonNull AspectGraph getGraph() {
-        var result = getNonNullJModel().getGraph();
+        var result = getNonNullEditModel().getGraph();
         assert result != null; // the edit model always holds a graph
         return result;
     }
@@ -172,7 +160,7 @@ final public class AspectEditorTab extends AspectTab
             if (element instanceof JButton button) {
                 Action action = button.getAction();
                 if (action != null) {
-                    getJGraph().addAccelerator(action);
+                    getCanvas().addAccelerator(action);
                 }
             }
         }
@@ -183,7 +171,7 @@ final public class AspectEditorTab extends AspectTab
         toolBar.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                getJGraph().requestFocus();
+                getCanvas().getComponent().requestFocus();
             }
         });
     }
@@ -207,8 +195,8 @@ final public class AspectEditorTab extends AspectTab
             if (!properties.equals(ResourceProperties.getProperties(getGraph()))) {
                 changeProperties(properties.entryStream(), true);
             } else {
-                getNonNullJModel().setGraphModified();
-                getJGraph().refresh();
+                getNonNullEditModel().setGraphModified();
+                getCanvas().refreshAll(false);
             }
             updateStatus();
         } else {
@@ -218,51 +206,42 @@ final public class AspectEditorTab extends AspectTab
 
     @Override
     public void setClean() {
-        this.dirtCount = 0;
-        this.dirtMinor = true;
+        getNonNullHistory().setClean();
         updateDirty();
     }
 
     /**
-     * Sets the modified status of the currently edited graph. Also updates the
-     * frame title to reflect the new modified status.
-     * @param minor {@code true} if this was a minor edit, not necessitating
-     * a refresh of all resources
-     * @see #isDirty()
+     * Adds dirt that is not an edit of the history (a change of the properties).
+     * @param minor if {@code true}, the change is minor (layout only)
      */
     public void setDirty(boolean minor) {
-        // if the dirt count was negative, this cannot be
-        // undone any more, so change to positive
-        this.dirtCount = Math.abs(this.dirtCount) + 1;
-        this.dirtMinor &= minor;
+        getNonNullHistory().markDirty(minor);
         updateDirty();
     }
 
-    /**
-     * Returns the current modified status of the underlying jgraph.
-     * @see #setDirty(boolean)
-     */
     @Override
     public boolean isDirty() {
-        return this.dirtCount != 0;
+        var history = getHistory();
+        return history != null && history.isDirty();
     }
 
-    /** Indicates if there is only minor (i.e., layout) dirt in the editor. */
+    /** Indicates if all dirt is minor (layout only), so that saving needs no grammar reload. */
     public boolean isDirtMinor() {
-        return this.dirtMinor;
+        var history = getHistory();
+        return history == null || history.isDirtMinor();
     }
 
     /** Renames the edited graph. */
     public void rename(QualName newName) {
         AspectGraph newGraph = getGraph().rename(newName);
-        getNonNullJModel().loadGraph(newGraph);
+        getNonNullEditModel().loadGraph(newGraph);
         loadProperties(newGraph, true);
         setQualName(newName);
         updateStatus();
     }
 
     /**
-     * Changes the properties of the graph in the JModel.
+     * Changes the properties of the graph being edited.
      * @param propertiesStream the new properties
      * @param updatePropertiesPanel if {@code true}, the change did not originate
      * from the properties table, so the table has to be refreshed as well
@@ -274,7 +253,7 @@ final public class AspectEditorTab extends AspectTab
         propertiesStream.forEach(e -> newProperties.setProperty(e.getKey(), e.getValue()));
         ResourceProperties.setProperties(newGraph, newProperties);
         newGraph.setFixed();
-        getNonNullJModel().loadGraph(newGraph);
+        getNonNullEditModel().loadGraph(newGraph);
         loadProperties(newGraph, updatePropertiesPanel);
         updateStatus();
     }
@@ -300,7 +279,7 @@ final public class AspectEditorTab extends AspectTab
 
     @Override
     protected NamedResourceModel<?> getResource() {
-        return getNonNullJModel().getResourceModel();
+        return getNonNullEditModel().getResourceModel();
     }
 
     @Override
@@ -310,123 +289,103 @@ final public class AspectEditorTab extends AspectTab
     }
 
     /**
-     * Returns the canvas of this editor as a JGraph.
-     * The editor's undo manager still works on JGraph's edit objects (phase 3).
+     * Returns the model being edited: the stashed edit model while a preview
+     * is on display, otherwise the canvas' model.
      */
-    public @NonNull AspectJGraph getJGraph() {
-        return (AspectJGraph) getCanvas();
-    }
-
-    /**
-     * @return the j-model currently being edited, or <tt>null</tt> if no editor
-     *         model is set. In preview mode, this is the stashed edit model,
-     *         not the preview clone being displayed.
-     */
-    public @Nullable AspectJModel getJModel() {
-        AspectJModel result = this.editModel;
+    public @Nullable AspectGraphViewModel getEditModel() {
+        AspectGraphViewModel result = this.editModel;
         if (result == null) {
-            result = getJGraph().getModel();
+            result = getViewModel();
         }
         return result;
     }
 
-    /**
-     * @return the j-model currently being edited, or <tt>null</tt> if no editor
-     *         model is set.
-     */
-    private @NonNull AspectJModel getNonNullJModel() {
-        var result = getJModel();
+    private @NonNull AspectGraphViewModel getNonNullEditModel() {
+        var result = getEditModel();
         assert result != null;
         return result;
     }
 
-    /**
-     * Refreshes the status bar and the errors, if the text on any of the cells
-     * has changed.
-     */
-    @Override
-    public void graphChanged(GraphModelEvent e) {
-        boolean changed = e.getChange().getInserted() != null || e.getChange().getRemoved() != null
-            || e.getChange().getAttributes() != null;
-        if (changed) {
-            updateStatus();
-        }
+    /** Returns the edit history of the model being edited; {@code null} if there is no model yet. */
+    private @Nullable EditHistory<@NonNull AspectGraph> getHistory() {
+        var model = getEditModel();
+        return model == null
+            ? null
+            : model.getEditHistory();
     }
+
+    private EditHistory<@NonNull AspectGraph> getNonNullHistory() {
+        var result = getHistory();
+        assert result != null; // the edit model records its edits
+        return result;
+    }
+
+    /** Listener on the edit history: refreshes the buttons and the status after every change. */
+    private final Runnable historyListener = () -> {
+        updateHistoryButtons();
+        updateStatus();
+    };
 
     /** Enters or exits the preview when the canvas mode changes to or from preview mode. */
     @Override
     public void modeChanged(GraphCanvas<@NonNull AspectGraph> canvas, GraphViewMode oldMode,
                             GraphViewMode mode) {
         if (mode == PREVIEW_MODE || oldMode == PREVIEW_MODE) {
-            this.refreshing = true;
             if (mode == PREVIEW_MODE) {
                 enterPreview();
             } else {
                 exitPreview();
             }
-            getJGraph().setEditable(mode != PREVIEW_MODE);
-            getJGraph().refreshAll(true);
-            getJGraph().refresh();
-            this.refreshing = false;
+            getCanvas().setEditable(mode != PREVIEW_MODE);
+            getCanvas().refreshAll(true);
+            getCanvas().repaint();
             updateHistoryButtons();
         }
     }
 
-    /**
-     * Replaces the displayed model by a preview clone of the edit model, after
-     * syncing the latter's graph. In the clone, opposite equal-label host graph
-     * edges are merged into bidirectional edges, which the edit model itself
-     * must suppress (see gh #336). The edit model, with its listeners and its
-     * undo history intact, is stashed in {@link #editModel} and restored by
-     * {@link #exitPreview()}.
-     */
     @AIGenerated("Claude Fable 5, 2026-08")
     private void enterPreview() {
-        AspectJModel jModel = getNonNullJModel();
-        jModel.syncGraph();
-        var graph = jModel.getGraph();
+        AspectGraphViewModel model = getNonNullEditModel();
+        model.syncGraph();
+        var graph = model.getGraph();
         assert graph != null;
-        AspectJModel previewModel = getJGraph().newModel();
+        AspectGraphViewModel previewModel = getCanvas().newViewModel();
         previewModel.loadGraph(graph);
-        this.editModel = jModel;
-        getJGraph().setModel(previewModel);
+        this.editModel = model;
+        getCanvas().setViewModel(previewModel);
     }
 
-    /**
-     * Restores the model stashed by {@link #enterPreview()}, discarding the
-     * displayed preview clone.
-     */
     @AIGenerated("Claude Fable 5, 2026-08")
     private void exitPreview() {
-        AspectJModel jModel = this.editModel;
-        if (jModel != null) {
+        AspectGraphViewModel model = this.editModel;
+        if (model != null) {
             this.editModel = null;
-            getJGraph().setModel(jModel);
+            getCanvas().setViewModel(model);
         }
     }
 
     /**
-     * The model being edited, while the JGraph displays a preview clone;
+     * The model being edited, while the canvas displays a preview clone;
      * {@code null} when not in preview mode. While this is set,
-     * {@link #getJModel()} returns it rather than the displayed clone, so that
+     * {@link #getEditModel()} returns it rather than the displayed clone, so that
      * all edits and queries keep addressing the edit model.
      */
-    private @Nullable AspectJModel editModel;
+    private @Nullable AspectGraphViewModel editModel;
 
     @Override
     public void dispose() {
         super.dispose();
         // unregister listeners
-        getJGraph().removeCanvasListener(this);
+        getCanvas().removeCanvasListener(this);
         getSnapToGridAction().removeSnapListener(this);
-        getJGraph().removeListeners();
+        getCanvas().removeListeners();
     }
 
     /** Initialises the graph selection listener and attributed graph listener. */
     private void initListeners() {
-        getJGraph().setToolTipEnabled(true);
+        getCanvas().setToolTipEnabled(true);
         // Update ToolBar based on Selection Changes
-        getJGraph().addCanvasListener(new GraphCanvasListener<@NonNull AspectGraph>() {
+        getCanvas().addCanvasListener(new GraphCanvasListener<@NonNull AspectGraph>() {
             @Override
             public void selectionChanged(GraphCanvas<@NonNull AspectGraph> canvas) {
                 // Update Button States based on Current Selection
@@ -436,20 +395,9 @@ final public class AspectEditorTab extends AspectTab
                 getCutAction().setEnabled(selected);
             }
         });
-        getJGraph().addCanvasListener(this);
-        getJGraph().addCanvasListener(getSimulator().getActions().getSelectColorAction());
+        getCanvas().addCanvasListener(this);
+        getCanvas().addCanvasListener(getSimulator().getActions().getSelectColorAction());
         getSnapToGridAction().addSnapListener(this);
-    }
-
-    /**
-     * Creates and lazily returns the undo manager for this editor.
-     */
-    private GraphUndoManager getUndoManager() {
-        if (this.undoManager == null) {
-            // Create a GraphUndoManager which also Updates the ToolBar
-            this.undoManager = new EditorUndoManager();
-        }
-        return this.undoManager;
     }
 
     @Override
@@ -491,7 +439,7 @@ final public class AspectEditorTab extends AspectTab
         JPanel result = new TitledPanel("Label syntax help", tabbedPane, null, false);
         // add a listener that switches the syntax help between nodes and edges
         // when a cell edit is started in the JGraph
-        getJGraph().addCanvasListener(new GraphCanvasListener<@NonNull AspectGraph>() {
+        getCanvas().addCanvasListener(new GraphCanvasListener<@NonNull AspectGraph>() {
             @Override
             public void editingStarted(GraphCanvas<@NonNull AspectGraph> canvas,
                                        ViewCell<@NonNull AspectGraph> cell) {
@@ -565,23 +513,20 @@ final public class AspectEditorTab extends AspectTab
         this.docMap.putAll(Algebras.getExprDocMap());
     }
 
-    /**
-     * Updates the Undo/Redo Button State based on Undo Manager. Also sets
-     * {@link #isDirty()} if no more undos are available.
-     */
     private void updateHistoryButtons() {
         // undo/redo would change the stashed edit model while the preview
         // clone is on display, so they are disabled during preview
-        boolean previewing = getJGraph().getMode() == PREVIEW_MODE;
-        getUndoAction().setEnabled(!previewing && getUndoManager().canUndo());
-        getRedoAction().setEnabled(!previewing && getUndoManager().canRedo());
+        boolean previewing = getCanvas().getMode() == PREVIEW_MODE;
+        var history = getHistory();
+        getUndoAction().setEnabled(!previewing && history != null && history.canUndo());
+        getRedoAction().setEnabled(!previewing && history != null && history.canRedo());
         updateDirty();
     }
 
     /** Sets the enabling of the transfer buttons. */
     private void updateCopyPasteButtons() {
-        boolean previewing = getJGraph().getMode() == PREVIEW_MODE;
-        boolean hasSelection = !getJGraph().isSelectionEmpty();
+        boolean previewing = getCanvas().getMode() == PREVIEW_MODE;
+        boolean hasSelection = !getCanvas().isSelectionEmpty();
         getCopyAction().setEnabled(!previewing && hasSelection);
         getCutAction().setEnabled(!previewing && hasSelection);
         getDeleteAction().setEnabled(!previewing && hasSelection);
@@ -604,8 +549,7 @@ final public class AspectEditorTab extends AspectTab
     public void setSnapToGrid() {
         boolean snap = getSnapToGridAction().getSnap();
         getSnapToGridButton().setSelected(snap);
-        getJGraph().setGridEnabled(snap);
-        getJGraph().setGridVisible(snap);
+        getCanvas().setGridEnabled(snap);
     }
 
     /**
@@ -626,23 +570,12 @@ final public class AspectEditorTab extends AspectTab
 
     /** Undoes the last registered change to the Model or the View. */
     private void undoLastEdit() {
-        setSelectInsertedCells(false);
-        getUndoManager().undo();
-        setSelectInsertedCells(true);
-        updateHistoryButtons();
+        getNonNullHistory().undo();
     }
 
     /** Redoes the latest undone change to the Model or the View. */
     private void redoLastEdit() {
-        setSelectInsertedCells(false);
-        getUndoManager().redo();
-        setSelectInsertedCells(true);
-        updateHistoryButtons();
-    }
-
-    /** Sets the property whether all inserted cells are automatically selected. */
-    private void setSelectInsertedCells(boolean select) {
-        getJGraph().getGraphLayoutCache().setSelectsAllInsertedCells(select);
+        getNonNullHistory().redo();
     }
 
     /** Mapping from syntax documentation items to corresponding tool tips. */
@@ -652,24 +585,6 @@ final public class AspectEditorTab extends AspectTab
 
     /** Button for snap to grid. */
     transient JToggleButton snapToGridButton;
-
-    /**
-     * The number of edit steps the editor state is removed
-     * from a saved graph.
-     * This can be negative, if undos happened since the last save.
-     */
-    private int dirtCount;
-
-    /** Flag indicating that there is only minor (layout) dirt in the editor. */
-    private boolean dirtMinor;
-    /** The undo manager of the editor. */
-    private transient GraphUndoManager undoManager;
-
-    /**
-     * Flag that is set to true while the preview mode switch
-     * is being executed.
-     */
-    private transient boolean refreshing;
 
     /** The role of the graph being edited. */
     private final GraphRole role;
@@ -791,77 +706,6 @@ final public class AspectEditorTab extends AspectTab
     /** Action to delete the selected elements. */
     private Action deleteAction;
 
-    /**
-     * @author Arend Rensink
-     * @version $Revision$
-     */
-    private final class EditorUndoManager extends GraphUndoManager {
-        @Override
-        public void undoableEditHappened(UndoableEditEvent e) {
-            boolean relevant = true;
-            // only process edits that really changed anything
-            if (AspectEditorTab.this.refreshing || getJGraph().isModelRefreshing()) {
-                relevant = false;
-            } else if (e.getEdit() instanceof GraphModelChange edit) {
-                Object[] inserted = edit.getInserted();
-                Object[] removed = edit.getRemoved();
-                Object[] changed = edit.getChanged();
-                relevant = inserted != null && inserted.length > 0
-                    || removed != null && removed.length > 0
-                    || changed != null && changed.length > 0;
-            }
-            if (relevant) {
-                super.undoableEditHappened(e);
-                setDirty(isMinor(e.getEdit()));
-                updateHistoryButtons();
-            }
-        }
-
-        @Override
-        public void undo() {
-            AspectEditorTab.this.dirtMinor &= isMinor(editToBeUndone());
-            AspectEditorTab.this.dirtCount--;
-            super.undo();
-            updateHistoryButtons();
-        }
-
-        @Override
-        public void redo() {
-            AspectEditorTab.this.dirtMinor &= isMinor(editToBeRedone());
-            AspectEditorTab.this.dirtCount++;
-            super.redo();
-            updateHistoryButtons();
-        }
-
-        /** Checks if a given edit event is minor, such as a layout action.
-         * A minor edit causes fewer refresh actions to to be done as a consequence.
-         */
-        private boolean isMinor(UndoableEdit e) {
-            boolean minor = true;
-            // only process edits that really changed anything
-            if (e instanceof GraphModelChange edit) {
-                Object[] inserted = edit.getInserted();
-                Object[] removed = edit.getRemoved();
-                Object[] changed = edit.getChanged();
-                ConnectionSet connections = edit.getConnectionSet();
-                minor = (connections == null || connections.isEmpty())
-                    && (inserted == null || inserted.length == 0)
-                    && (removed == null || removed.length == 0);
-                if (minor && changed != null) {
-                    for (Object in : changed) {
-                        AttributeMap attrs = (AttributeMap) edit.getAttributes().get(in);
-                        if (GraphConstants.getValue(attrs) != null) {
-                            minor = false;
-                            break;
-                        }
-                    }
-                }
-            } else {
-                minor = false;
-            }
-            return minor;
-        }
-    }
 
     /**
      * Action to delete the selected elements.
@@ -875,12 +719,8 @@ final public class AspectEditorTab extends AspectTab
 
         @Override
         public void actionPerformed(ActionEvent evt) {
-            if (!getJGraph().isSelectionEmpty()) {
-                Object[] cells = getJGraph().getSelectionCells();
-                cells = getJGraph().getDescendants(cells);
-                var jModel = getJGraph().getModel();
-                assert jModel != null;
-                jModel.remove(cells);
+            if (!getCanvas().isSelectionEmpty()) {
+                getNonNullEditModel().remove(getCanvas().getSelection());
             }
         }
     }
@@ -908,7 +748,7 @@ final public class AspectEditorTab extends AspectTab
 
         @Override
         public void actionPerformed(ActionEvent evt) {
-            getJGraph().stopEditing();
+            getCanvas().finishEditing();
         }
     }
 
@@ -929,7 +769,7 @@ final public class AspectEditorTab extends AspectTab
         @Override
         public void actionPerformed(ActionEvent evt) {
             super.actionPerformed(evt);
-            evt = new ActionEvent(getJGraph(), evt.getID(), evt.getActionCommand(),
+            evt = new ActionEvent(getCanvas().getComponent(), evt.getID(), evt.getActionCommand(),
                 evt.getModifiers());
             this.action.actionPerformed(evt);
             if (this == getCutAction() || this == getCopyAction()) {
