@@ -371,4 +371,44 @@ edge appears), and in `YFilesEditorTest` the same tree scenario, the Bezier path
 its three curve segments, and a label drag recorded as a minor edit and placed where it
 was dropped.
 
+**Fourth review round** (Arend, 2026-09-07), same branch:
+
+- *Nodes could not be dragged.* The label move mode (priority 39, before the move mode)
+  claimed a press on a node's label, whose position handler was hidden, so nothing moved.
+  `shouldMove` now denies every label but the main label of an edge, which the label
+  mode honours. Covered by a Robot test in `YFilesSimulatorTest` (`editorTabDragsAVertex`),
+  which needs a connected desktop.
+- *Arrows ended inside the node.* With the renderer cropping the path itself, yFiles' own
+  arrow room was gone: yFiles draws an arrow from the end of the path onwards over
+  `IArrow.getLength()`, so the path must stop that far before the outline. `clipEnds`
+  now cuts each end short by the arrow's length plus crop length; the Bezier tails do the
+  same at their straight pieces.
+- *Manhattan arrows never east/west; Manhattan edge selectable up to the first point only.*
+  The end points now follow JGraph's `JVertexView.getPerimeterPoint`: the inner point of
+  the line to the outline moves to the outer point's coordinate where that lies within
+  the node's extent (less a tenth), and for a Manhattan edge a diagonal outer point is
+  first pulled into horizontal reach of the source or vertical reach of the target
+  (`endPoint` in the renderer, constants `DROP_FRACTION`, `MAX_RATIO_DISTANCE`). Hence a
+  level last point enters sideways and the last horizontal move ends at the outline, so
+  the arrow points east or west. The adornment corrections of JGraph are not ported. Hit
+  testing (`getHitTestable`/`isHit`) now follows the drawn path, smoothed for splines,
+  instead of the polyline through the points.
+- *A new point not draggable at once; dragging a second point moved the first; a removed
+  point's handle stayed.* All one cause: the handles were requeried on selection changes
+  only, while a points edit recreates the bends of the edge. The editor requeries the
+  handles after every `cellsModified` too.
+- *Label tree disappearing momentarily before label entry.* Not reproducible headlessly.
+  The one structural difference found: the yFiles component is not a validate root, so
+  the in-place editor's text area being added revalidated the panels around the canvas;
+  `Viewer.isValidateRoot()` now returns true. To be confirmed by Arend.
+- *The Bezier cropping*: reported to yWorks as a question rather than a certain bug
+  (draft handed to Arend, `yfiles-cropping-report.md` in the session scratchpad): the
+  cropper docs do not promise to preserve curve segments; the observation and workaround
+  are stated.
+- *Check mark*: in the neutral `SetLineStyleMenu`, so JGraph has it too (confirmed).
+- *Headless editor tests.* The editor input mode installs three drop modes whose
+  installation creates AWT drop targets, which need a desktop; a disconnected Windows
+  session made every editor test fail. The mode's factory methods now return drop modes
+  that install nothing, so the editor canvas (and its tests) work headless.
+
 Next: 3c, the clipboard.
