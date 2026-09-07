@@ -434,3 +434,37 @@ merged round-2 result, three of them changes:
   the `EMBARGO` look inherited `BASIC`'s explicit plain font and, applied later, overrode
   `REGULAR`'s italic; `BASIC` no longer sets the font (the key's default is plain), so the
   italic survives in every look combination. `RegularLookTest` pins the behaviour.
+
+**Slice 4c done (2026-09-07, branch `yfiles-canvas-lts`).** `YFilesLTSCanvas`,
+`YFilesCtrlCanvas` and `YFilesPlainCanvas` complete the read-only roles, so `YFilesBackend`
+now delegates only the editor's aspect canvas to the JGraph backend. They are thin: the
+generic `YFilesCanvas` already covers everything the facade asks, and the role classes add
+what their JGraph counterparts add — the LTS canvas its option listeners, the model-reloading
+refresh listeners (recipe steps, absent states, system properties), the reset of the active
+state when the model changes, and the `LTSGraphCanvas` methods (state bound, incremental
+`addElements`), which go to the `LTSGraphViewModel`; the control canvas tooltips; the plain
+canvas nothing. The incremental LTS path needs no special handling: `addElements` reaches
+the store's `insertCells` with `replace` false, which configures the new items at once since
+the store is attached.
+
+The slice's real finding is about input. A `GraphComponent` delegates mouse input to a child
+component, so a Swing `MouseListener` on the component (the LTS display's click-to-select and
+the tabs' double-click-to-edit both use one) never hears a click on yFiles — the popup-menu
+listener of round 1 failed for the same reason. Rather than widen the facade, the canvas
+forwards yFiles' click events: the `ClickInputMode` of the viewer input mode reports clicks
+and double clicks (policy `INITIAL_SINGLE_AND_DOUBLE_CLICK`, which matches Swing's
+click-count sequence), and `forwardClick` synthesises a mouse-clicked event in the
+component's coordinates, with the modifiers and button translated, for the component's
+registered listeners. Only clicks are forwarded; presses, releases and drags stay with
+yFiles. `YFilesCanvasTest` feeds a constructed `ClickEventArgs` through it.
+
+Tests: plain and control canvases headless (the control automaton of `recipes`), the LTS
+display after exploring ferryman in the Simulator (shown cells and a painted edge; the state
+bound keeps the LTS partial). Not verified live: the click-to-select and double-click paths
+in the Simulator, since the session was disconnected (headless JVM) when the slice was
+finished, which also skipped the whole Simulator test class. Residue for the LTS: every
+state label is measured through the HTML label style on insertion, as the JGraph backend
+measures its vertices; large explorations will show whether that needs the size cache
+`LTSJGraph` has switched off, and the styles still re-read the visuals on every repaint.
+Next: 4d, yFiles layouts through `getBackendLayouters()`, and the persisted backend
+preference.
