@@ -578,8 +578,11 @@ Deferred in phase 2 slice 4c and again in 3b; taken up on branch `viewer-node-dr
 A `GraphViewerInputMode` has no move mode of its own, and nothing in the guide or the
 demos adds one to it; the stand-alone use of a `MoveInputMode` is documented (hit test,
 position handler, priority, then `MultiplexingInputMode.add`, the pattern of the image
-export and printing demos), so `YFilesCanvas.configureMove` adds one such mode, at the
-editor's move priority 40 (before the marquee at 50): a drag starts on a vertex that
+export and printing demos), so `YFilesCanvas.configureMove` adds one such mode, right before
+the marquee selection in priority (the viewer mode's marquee has priority 30 and its
+click mode 10, unlike the editor mode's 50 and 150 given by the guide; a first version
+took the editor's move priority 40, sat behind the marquee, and never saw a press,
+which Arend reported as dragging not working at all): a drag starts on a vertex that
 passes the selectable predicate and moves the selection if the vertex is part of it,
 else the vertex alone (the position handlers of the items combined through
 `IPositionHandler.combine`), so that one mode covers what the editor's selected and
@@ -592,7 +595,8 @@ edge end. Without an edit history the change applies directly and updates the la
 map, which the view tab persists as before. Tests: `YFilesCanvasTest
 .viewerMovesVerticesThroughTheEditFunnel` (headless: mode present and switched with
 the view mode, hit test, a recorded move landing in the visuals, the layout map and
-the incident edge) and the Robot test `YFilesSimulatorTest.viewTabDragsAVertex` on the
+the incident edge, and the gesture itself as synthetic mouse events on yFiles' input
+surface, which is what caught the priority) and the Robot test `YFilesSimulatorTest.viewTabDragsAVertex` on the
 host view tab, which needs the canvas on screen. Not documented, and therefore not
 mirrored: how the editor mode configures its two move modes, and the defaults of a bare
 `MoveInputMode`.
