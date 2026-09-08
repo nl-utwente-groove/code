@@ -50,8 +50,8 @@ on both backends, two review rounds fixed) are all on branch `editor-edit-model`
 rebased `yworks-migration`; the intermediate branches were folded into it. Accepted
 cosmetic differences of the yFiles editor: edge curves are yFiles' corner smoothing
 rather than JGraph's interpolating spline, and JGraph's arrow adornment corrections are
-not ported. Node dragging in the yFiles viewer canvases, deferred since phase 2 slice 4c, is being
-added on branch `viewer-node-dragging` (2026-09-08). Phase 4 follows: export and Imager
+not ported. Node dragging in the yFiles viewer canvases, deferred since phase 2 slice 4c, is done
+(2026-09-08, confirmed by Arend), and everything is folded into `yworks-migration`. Phase 4 follows: export and Imager
 on the facade are largely in place since phase 1b slice 5 (the exporters and `Imager`
 work on the canvas contract, the yFiles canvas implements `toImage`/`paintGraph`), so
 what remains is verifying and repairing the raster, vector and TikZ exporters and the
@@ -243,15 +243,43 @@ its controller); phase 2 inverts it.
   verification is manual Simulator use (menus, editor gestures, LTS interaction,
   filtering, export).
 
-## Immediate next steps
+## Immediate next steps (handoff for the phase-4 session, 2026-09-08)
 
-1. Arend: judge the spike output (`C:\Groove\yfiles-spike\out`, HTML indexes) and the
-   interactive LTS viewer (`LtsScale ... -show`); decide go/no-go. Still open: the
-   Subscription status and the Academic Project License upgrade question to yWorks.
-   The delivered library is yFiles for Java (Swing) 3.6.0.1 (the plan's "4.0" was
-   wrong); the license file at `C:\Groove\yfiles` is auto-loaded from the classpath
-   root and shows no evaluation watermark.
-2. Go given 2026-09-03. Phase 1b (branch `view-facade`): facade definition +
-   architecture test, taking the view-computed items from the findings note (node
-   sizing, loop routing) as first-class facade responsibilities and specifying the
-   edge-label path model; then phase 2.
+Phase 3 and the viewer node dragging are complete and folded into `yworks-migration`
+(tip b3656262b at the time of writing). Start phase 4 on a fresh branch off it.
+
+1. **Export on the yFiles backend.** The exporters already run on the canvas contract
+   (`CanvasExportable`, `CanvasExporters`, `RasterExporter` via `toImage`, the vector
+   writers via `paintGraph`/`getGraphBounds`, `GraphToTikz` from the view model), and
+   `YFilesCanvas` implements `toImage` and `paintGraph`. Run raster, EPS/PDF/SVG and
+   TikZ export from the Simulator with the yFiles backend selected and compare with
+   the JGraph output. Expected gaps: vector output of the yFiles `GraphComponent`
+   through Java2D (does `paintGraph` paint the whole graph rather than the viewport?),
+   TikZ curves (the view model holds the points; yFiles draws corner-smoothed curves
+   and JGraph the interpolating spline, so the TikZ Bezier path may not match what
+   yFiles shows), label placement.
+2. **The headless `Imager` on yFiles.** `Imager` builds canvases through the controllers;
+   check that it picks the yFiles backend when present (`GraphBackend` ranking and the
+   persisted preference), works without a display, and that `ImagerTest` (slow
+   category) passes against it, run from the yFiles unit.
+3. **Then**, each its own branch: the JGraph backend out of the core module (waits for
+   the gh #887 reactor restructure), the local-only release leg of the yFiles edition
+   (yGuard obfuscation, dual distribution, the yFiles jar's JPMS module name), the
+   license questions (Subscription status, Academic Project upgrade).
+
+Practicalities carried over: the yFiles unit is built with `mvn -q -f yfiles/pom.xml
+test > <log> 2>&1` (installs the core artifact first; `-Dgroove.install.skip=true` when
+it is current). The Robot tests in `YFilesSimulatorTest` skip unless
+`-Dgroove.test.robot=true` and the canvas is visible on screen (they did not run in
+the Claude sessions of 2026-09-08; gestures were confirmed by Arend by hand), but
+synthetic mouse events on yFiles' input surface (the child component carrying its
+mouse listeners, see `YFilesCanvasTest.drag`) do exercise the input modes headlessly.
+The `null-check` script is bound to the main module: for `yfiles/` run ecj by hand with
+the main `.settings` prefs and `lib/eea` against the unit's classpath, and diff the
+problem list against a stashed baseline. The developer guide and javadoc are JS
+bundles under `C:/Groove/yfiles/yFiles-for-Java-Swing-Complete-3.6.0.1/doc/api/assets`;
+search them by member id (for example `MoveInputMode-property-HitTestable`) with a
+script printing a window of text around the match, since regex tools choke on the
+24 MB file. Input-mode priorities differ between the viewer and the editor mode
+(viewer: click 10, marquee 30, viewport 39; editor: move 40, marquee 50): never take
+the guide's editor figures for the viewer.
