@@ -445,4 +445,34 @@ merged `editor-edit-model`:
   darkened by 8%, the selected tab in the content colour and joined to the content.
   Rendered variants were shown to Arend; the choice is his.
 
+**Sixth review round** (Arend, 2026-09-08), branch `editor-edit-model-review6` off the
+merged `editor-edit-model`:
+
+- *Tabs*: Arend chose the second variant: card tabs with separators, the selected tab
+  in the (white) component colour, no darkened tab area.
+- *Line style change adds a point.* Only the curved styles (spline, Bezier) get a bend
+  when the edge has none, since a curve without a bend is a straight line; orthogonal
+  and Manhattan make sense without points and get none. The bend goes halfway the edge
+  at a small perpendicular distance (`BEND_OFFSET`), so that it shows. The halfway
+  point is computed from the *current* vertex centres (`JCellEditAction.shownPoints`):
+  the stored end points of an edge do not follow its vertices on either backend (the
+  views compute the ends), so the stored ends are stale after a vertex move; the same
+  correction applies to the closest-segment search of Add Point. The popup location
+  is no longer passed to the line-style menu. `LineStyle.isCurved` is the neutral
+  classification.
+- *Choosing the current line style* is no edit: edges that already have the style are
+  skipped, and the change to the others is one edit rather than one per edge.
+- *Line style menu with mixed selections*: enabled when any selected cell is an edge,
+  applied to the selected edges only; the check mark shows the style the selected edges
+  share, none if they differ.
+- *Label tree blink* while a new edge has its empty label: the edge is inserted, the
+  graph syncs, the resource model reports "empty edge label not allowed", and the type
+  graph derived from the erroneous graph has no labels, so the tree is rebuilt empty
+  until the label is committed. This is gh #913 (create-and-label as one undo step)
+  seen from the tree's side. With the view-model edit history in place (slice 3a),
+  the one-step version is contained: keep the new cell out of the recorded history
+  and out of the synced graph until its first label is committed, and remove it when
+  the editor is cancelled. Not scheduled in a slice yet; Arend to decide whether it
+  goes before or after 3c.
+
 Next: 3c, the clipboard.
