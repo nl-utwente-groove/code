@@ -1512,17 +1512,36 @@ public class SimulatorModel implements Cloneable {
     /**
      * Notifies all registered listeners of the changes involved in the current
      * transaction.
+     * Every listener is notified, also if an earlier one fails: the model state
+     * has already changed when the notification starts, so a listener skipped
+     * here stays behind the model for good, with no later event to catch up on.
+     * The first failure is rethrown once all listeners have been notified, with
+     * any further ones suppressed, so that a broken listener is still reported.
      */
     private void fireUpdate() {
         Set<SimulatorListener> notified = new HashSet<>();
+        Throwable error = null;
         for (Change change : this.changes) {
             List<SimulatorListener> changeListeners = this.listeners.get(change);
             assert changeListeners != null; // the listener map is initialised for all change kinds
             for (SimulatorListener listener : new ArrayList<>(changeListeners)) {
                 if (notified.add(listener)) {
-                    listener.update(this, this.old, this.changes);
+                    try {
+                        listener.update(this, this.old, this.changes);
+                    } catch (RuntimeException | Error exc) {
+                        if (error == null) {
+                            error = exc;
+                        } else {
+                            error.addSuppressed(exc);
+                        }
+                    }
                 }
             }
+        }
+        if (error instanceof RuntimeException exc) {
+            throw exc;
+        } else if (error instanceof Error exc) {
+            throw exc;
         }
     }
 

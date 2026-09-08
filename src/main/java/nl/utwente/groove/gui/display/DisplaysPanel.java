@@ -140,11 +140,14 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
             @Override
             public void stateChanged(ChangeEvent evt) {
                 DisplaysPanel.this.changingTabs = true;
-                DisplayKind displayKind = getSelectedDisplay().getKind();
-                if (displayKind != null) {
-                    getSimulatorModel().setDisplay(displayKind);
+                try {
+                    DisplayKind displayKind = getSelectedDisplay().getKind();
+                    if (displayKind != null) {
+                        getSimulatorModel().setDisplay(displayKind);
+                    }
+                } finally {
+                    DisplaysPanel.this.changingTabs = false;
                 }
-                DisplaysPanel.this.changingTabs = false;
             }
         };
         Options options = this.simulator.getOptions();
@@ -230,7 +233,19 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
 
     @Override
     public void update(SimulatorModel source, SimulatorModel oldModel, Set<Change> changes) {
+        // the tab listener has to be off while this method changes the selected
+        // tab, and has to come back on even if a part of the update fails:
+        // without it, tab changes by the user no longer reach the model
         suspendListeners();
+        try {
+            doUpdate(source, changes);
+        } finally {
+            activateListeners();
+        }
+    }
+
+    /** Body of {@link #update}, called with the tab listener suspended. */
+    private void doUpdate(SimulatorModel source, Set<Change> changes) {
         if (changes.contains(Change.GRAMMAR)) {
             for (ResourceKind optionalTab : Options.getOptionalTabs()) {
                 showOrHideTab(optionalTab);
@@ -319,7 +334,6 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
                 }
             }
         }
-        activateListeners();
     }
 
     /** Returns the kind of tab on top of the tabbed pane. */

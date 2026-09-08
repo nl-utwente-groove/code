@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
@@ -226,5 +227,45 @@ public class SimulatorModelTest {
         model.removeListener(late);
         assertTrue(model.setState(trans.target()));
         assertEquals(7, updates.size());
+    }
+
+    /**
+     * Tests the notification contract on which the simulator panel relies:
+     * every listener is notified of a change even if another listener fails.
+     * Without that, a listener registered for an earlier change kind can keep
+     * the panel from ever seeing the display change, the change kinds being
+     * notified in enum order with {@link Change#DISPLAY} coming late.
+     */
+    @Test
+    public void testListenerFailureIsolation() {
+        SimulatorModel model = new SimulatorModel(option -> false);
+        List<String> notified = new ArrayList<>();
+        model.addListener(failing(notified, "first"), Change.DISPLAY);
+        model.addListener(recording(notified, "second"), Change.DISPLAY);
+        var error = assertThrows(IllegalStateException.class,
+                                 () -> model.setDisplay(DisplayKind.RULE));
+        assertEquals("first", error.getMessage());
+        assertEquals(List.of("first", "second"), notified);
+        assertEquals(DisplayKind.RULE, model.getDisplay());
+        // a second failure is reported alongside the first
+        model.addListener(failing(notified, "third"), Change.DISPLAY);
+        var second = assertThrows(IllegalStateException.class,
+                                  () -> model.setDisplay(DisplayKind.HOST));
+        assertEquals("first", second.getMessage());
+        assertEquals(1, second.getSuppressed().length);
+        assertEquals("third", second.getSuppressed()[0].getMessage());
+    }
+
+    /** Creates a listener that records its name. */
+    private SimulatorListener recording(List<String> notified, String name) {
+        return (source, oldModel, changes) -> notified.add(name);
+    }
+
+    /** Creates a listener that records its name and then fails. */
+    private SimulatorListener failing(List<String> notified, String name) {
+        return (source, oldModel, changes) -> {
+            notified.add(name);
+            throw new IllegalStateException(name);
+        };
     }
 }
