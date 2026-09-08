@@ -6,7 +6,7 @@ kept self-contained: sessions on other machines have no access to session memory
 everything needed to continue lives here or in `claude/jgraph-controller-split.md`
 (the slice-by-slice record of the decoupling refactor).
 
-**Status (2026-09-07): phase 1a (in-place decoupling) is COMPLETE; phase 0 (the
+**Status (2026-09-08): phase 1a (in-place decoupling) is COMPLETE; phase 0 (the
 yFiles rendering spike) is DONE** (findings in `claude/yfiles-spike-findings.md`:
 fidelity bar met, yFiles layouts beat Spring/Forest, 8240-state LTS lays out in
 16 s organic / 44 s hierarchic; go given by Arend). **Phase 1b (facade definition)
@@ -37,18 +37,29 @@ rendering fidelity) is merged into `yfiles-canvas-aspect`; 4c (LTS, control and 
 canvases, plus click forwarding to Swing listeners) is merged into `yfiles-canvas-aspect`;
 4d (the yFiles layout algorithms in the layout palette, as partial layouts when vertices
 are fixed, plus the persisted backend preference) is merged: phase 2 is complete for the
-read-only views. **Phase 3 (the editor) is IN PROGRESS**: design and slicing in
+read-only views. **Phase 3 (the editor) is COMPLETE** (2026-09-08): design and slicing in
 `claude/phase-3-editor.md`; slices 3a (the GROOVE-owned edit model and undo history in
-`gui.view`, both backends feeding it) and 3b (the editor canvas on yFiles, gestures
-mapped onto yFiles' editor input mode; branch `editor-edit-model` off the rebased
-`yworks-migration`, 2026-09-07) are done; Arend's six review rounds on 3b are fixed on
-the same branch line (see the phase-3 note; parallel edges fan out as in JGraph, through
-the neutral `gui.view.ParallelEdges`; labels and edge points are draggable on yFiles;
-straight edges between aligned nodes run vertically or horizontally on both backends);
-creating a cell and giving it its first label is one undo step, without syncing the
-unlabelled cell (gh #913, branch `editor-atomic-creation`); 3c (the clipboard as a
-cell-level `GraphFragment`, with copy by Ctrl+drag on both backends) is done on branch
-`editor-clipboard` (2026-09-08). Phase 4 follows. The architecture allowlist is empty.
+`gui.view`, both backends feeding it), 3b (the editor canvas on yFiles, gestures mapped
+onto yFiles' editor input mode, with Arend's six review rounds fixed: parallel edges fan
+out as in JGraph through the neutral `gui.view.ParallelEdges`, labels and edge points are
+draggable on yFiles, straight edges between aligned nodes run vertically or horizontally
+on both backends), gh #913 (creating a cell and giving it its first label is one undo
+step, without syncing the unlabelled cell; this also removed the label-tree blink on a
+new edge) and 3c (the clipboard as a cell-level `GraphFragment`, with copy by Ctrl+drag
+on both backends, two review rounds fixed) are all on branch `editor-edit-model` off the
+rebased `yworks-migration`; the intermediate branches were folded into it. Accepted
+cosmetic differences of the yFiles editor: edge curves are yFiles' corner smoothing
+rather than JGraph's interpolating spline, and JGraph's arrow adornment corrections are
+not ported. Node dragging in the yFiles viewer canvases, deferred since phase 2 slice 4c, is being
+added on branch `viewer-node-dragging` (2026-09-08). Phase 4 follows: export and Imager
+on the facade are largely in place since phase 1b slice 5 (the exporters and `Imager`
+work on the canvas contract, the yFiles canvas implements `toImage`/`paintGraph`), so
+what remains is verifying and repairing the raster, vector and TikZ exporters and the
+headless `Imager` on the yFiles backend, with `ImagerTest` run against it. After that:
+the JGraph backend out of the core module (blocked on the gh #887 reactor restructure),
+the local-only release leg of the yFiles edition (obfuscation, dual distribution, the
+jar's JPMS module name), and the open license questions. The architecture allowlist is
+empty.
 
 ## Goal and motivation
 

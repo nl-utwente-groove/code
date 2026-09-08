@@ -255,7 +255,8 @@ assumption; the LTS layout test now also asserts finite item and visual bounds. 
 tests of the unit pass; the core GUI tests pass.
 
 Not done in 3b: node dragging in the viewer canvases (the `MoveInputMode` is easily added
-to the viewer mode, left for a small follow-up), yFiles' orthogonal edge editing and snap
+to the viewer mode, left for a small follow-up; taken up on branch `viewer-node-dragging`
+after 3c, see the end of this note), yFiles' orthogonal edge editing and snap
 lines beyond the grid (not GROOVE features), and zooming at the mouse position, which is
 bullet 2 of gh #882 (to be done for both backends; on yFiles one property of the graph
 component, `setCenterZoomEventRecognizer`). The snap-to-grid semantics of the JGraph
@@ -472,8 +473,8 @@ merged `editor-edit-model`:
   seen from the tree's side. With the view-model edit history in place (slice 3a),
   the one-step version is contained: keep the new cell out of the recorded history
   and out of the synced graph until its first label is committed, and remove it when
-  the editor is cancelled. Not scheduled in a slice yet; Arend to decide whether it
-  goes before or after 3c.
+  the editor is cancelled. Done before 3c, see the next section; the blink is gone
+  with it.
 
 ## Creating and labelling a cell as one edit (gh #913)
 
@@ -513,7 +514,9 @@ pending; vertex and label one edit; the edge creator's pending edge and loop).
 
 ## Slice 3c: the clipboard
 
-Done on branch `editor-clipboard` (2026-09-08), off `editor-atomic-creation`. The plan
+Done 2026-09-08 (developed on branch `editor-clipboard` off `editor-atomic-creation`, both
+since folded into `editor-edit-model`; Arend's two review rounds, the drag preview and
+label refresh and the paste cascade, fixed there). The plan
 foresaw an `AspectGraph` fragment; what travels is a **`GraphFragment`** instead, at the
 level of cells: the vertices with their editable labels and centres, and the edges
 between them with labels, points, label position and line style. Reasons: a paste then
@@ -562,5 +565,36 @@ the text flavour is the label texts.
 Tests: `EditorClipboardTest` (core: fragment content, paste as one edit with fresh
 numbers and offset positions, cut and paste, empty selection) and
 `YFilesEditorTest.controlDragCopiesTheDraggedCells`.
+
+With 3c, **phase 3 is complete** (2026-09-08). Accepted as cosmetic differences of the
+yFiles editor against JGraph: edge curves are yFiles' corner smoothing rather than the
+interpolating spline, and JGraph's arrow adornment corrections are not ported. Outside
+the migration: gh #882 (zoom at the mouse, both backends), gh #915 (JGraph snap
+semantics), gh #916 (the popup actions on the menu bar).
+
+## Node dragging in the viewer canvases
+
+Deferred in phase 2 slice 4c and again in 3b; taken up on branch `viewer-node-dragging` (2026-09-08).
+A `GraphViewerInputMode` has no move mode of its own, and nothing in the guide or the
+demos adds one to it; the stand-alone use of a `MoveInputMode` is documented (hit test,
+position handler, priority, then `MultiplexingInputMode.add`, the pattern of the image
+export and printing demos), so `YFilesCanvas.configureMove` adds one such mode, at the
+editor's move priority 40 (before the marquee at 50): a drag starts on a vertex that
+passes the selectable predicate and moves the selection if the vertex is part of it,
+else the vertex alone (the position handlers of the items combined through
+`IPositionHandler.combine`), so that one mode covers what the editor's selected and
+unselected move modes do; the mode is enabled in select mode and off in pan mode. The
+drag ends as it does in the editor: `recordMove` and `followDrag` (labels following
+the dragged edges) moved from the editor canvas into the base, generic over the graph
+type, ending in the hook `applyMove`, whose default is one `edit` of the recorded
+centres and points and which the editor overrides for the reconnection of a dragged
+edge end. Without an edit history the change applies directly and updates the layout
+map, which the view tab persists as before. Tests: `YFilesCanvasTest
+.viewerMovesVerticesThroughTheEditFunnel` (headless: mode present and switched with
+the view mode, hit test, a recorded move landing in the visuals, the layout map and
+the incident edge) and the Robot test `YFilesSimulatorTest.viewTabDragsAVertex` on the
+host view tab, which needs the canvas on screen. Not documented, and therefore not
+mirrored: how the editor mode configures its two move modes, and the defaults of a bare
+`MoveInputMode`.
 
 Next: phase 4 (export and Imager on the facade).
