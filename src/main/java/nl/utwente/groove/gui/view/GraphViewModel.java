@@ -226,6 +226,7 @@ public abstract class GraphViewModel<G extends Graph> {
         this.pendingInsertion = null;
         if (pending.getInsertedEdges().isEmpty()) {
             afterEdit(pending);
+            getCanvas().refresh(pending.getInsertedCells(), false);
             recorded(pending);
         } else {
             getStore().removeCells(pending.getInsertedCells());
@@ -449,18 +450,23 @@ public abstract class GraphViewModel<G extends Graph> {
                 }
             }
         }
-        List<ViewCell<G>> relabelled = new ArrayList<>();
+        // the cells to refresh after the model reacted: the relabelled ones, and the
+        // inserted ones, whose graph elements the aspect model builds from the labels
+        // only then (the yFiles backend fixes the label text of an item at creation)
+        List<ViewCell<G>> refreshed = new ArrayList<>(forward
+            ? edit.getInsertedCells()
+            : edit.getRemovedCells());
         for (var entry : edit.getLabelChanges().entrySet()) {
             setLabels(entry.getKey(), entry.getValue().get(forward));
-            relabelled.add(entry.getKey());
+            refreshed.add(entry.getKey());
         }
         if (!complete) {
             return;
         }
         afterEdit(edit);
-        if (!relabelled.isEmpty()) {
+        if (!refreshed.isEmpty()) {
             // after the graph was rebuilt from the labels, which the cells show
-            getCanvas().refresh(relabelled, false);
+            getCanvas().refresh(refreshed, false);
         }
     }
 
