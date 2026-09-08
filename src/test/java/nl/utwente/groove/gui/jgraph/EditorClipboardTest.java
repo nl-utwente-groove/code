@@ -154,6 +154,35 @@ public class EditorClipboardTest {
         assertFalse(history.canUndo());
     }
 
+    /** Repeated pastes of the same fragment step further south-east each time. */
+    @Test
+    void repeatedPastesCascade() throws IOException {
+        AspectJGraph canvas = editorCanvas();
+        AspectGraphViewModel model = canvas.getNonNullModel().getViewModel();
+        AspectVertexCell vertex = vertices(model).get(0);
+        Point2D pos = vertex.getVisuals().getNodePos();
+        canvas.setSelectionCell(JCell.of(vertex));
+        assertTrue(GraphClipboard.copy(canvas));
+        for (int step = 1; step <= 3; step++) {
+            assertTrue(GraphClipboard.paste(canvas));
+            List<ViewCell<AspectGraph>> pasted = canvas.getSelection();
+            assertEquals(1, pasted.size(), "paste " + step);
+            Point2D pastedPos = ((AspectVertexCell) pasted.get(0)).getVisuals().getNodePos();
+            assertEquals(pos.getX() + step * GraphClipboard.PASTE_OFFSET, pastedPos.getX(), 0.01,
+                         "x of paste " + step);
+            assertEquals(pos.getY() + step * GraphClipboard.PASTE_OFFSET, pastedPos.getY(), 0.01,
+                         "y of paste " + step);
+        }
+        // a fresh copy starts the cascade anew
+        canvas.setSelectionCell(JCell.of(vertex));
+        assertTrue(GraphClipboard.copy(canvas));
+        assertTrue(GraphClipboard.paste(canvas));
+        Point2D pastedPos
+            = ((AspectVertexCell) canvas.getSelection().get(0)).getVisuals().getNodePos();
+        assertEquals(pos.getX() + GraphClipboard.PASTE_OFFSET, pastedPos.getX(), 0.01,
+                     "x after a fresh copy");
+    }
+
     @Test
     void cutRemovesTheSelectionAndKeepsItForPasting() throws IOException {
         AspectJGraph canvas = editorCanvas();

@@ -21,8 +21,6 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.List;
 
@@ -81,9 +79,9 @@ public final class GraphClipboard {
 
     /**
      * Pastes the fragment on the clipboard into a canvas, as one edit, and selects
-     * the pasted cells. The fragment is centred at the mouse pointer if that is over
-     * the canvas, and otherwise put at a small offset ({@link #PASTE_OFFSET}) from
-     * where it was copied.
+     * the pasted cells. The fragment is put a small step ({@link #PASTE_OFFSET})
+     * south-east of where it was copied; every further paste of the same fragment
+     * into the same canvas goes a step further, so that repeated pastes do not pile up.
      * @return {@code true} if the clipboard held a fragment
      */
     public static boolean paste(AspectGraphCanvas canvas) {
@@ -91,21 +89,22 @@ public final class GraphClipboard {
         if (fragment == null) {
             return false;
         }
-        Rectangle2D bounds = fragment.getBounds();
-        Point2D pointer = canvas.getPointerLocation();
-        double dx;
-        double dy;
-        if (pointer == null) {
-            dx = PASTE_OFFSET;
-            dy = PASTE_OFFSET;
-        } else {
-            dx = pointer.getX() - bounds.getCenterX();
-            dy = pointer.getY() - bounds.getCenterY();
-        }
-        var cells = canvas.getNonNullViewModel().insertFragment(fragment, dx, dy);
+        int step = fragment == lastPasted && canvas == lastPastedInto
+            ? pasteCount + 1
+            : 1;
+        lastPasted = fragment;
+        lastPastedInto = canvas;
+        pasteCount = step;
+        double offset = step * PASTE_OFFSET;
+        var cells = canvas.getNonNullViewModel().insertFragment(fragment, offset, offset);
         canvas.select(cells);
         return true;
     }
+
+    /** The fragment last pasted, the canvas it was pasted into, and how often in a row. */
+    private static @Nullable GraphFragment lastPasted;
+    private static @Nullable AspectGraphCanvas lastPastedInto;
+    private static int pasteCount;
 
     /** Indicates if the clipboard holds a graph fragment. */
     public static boolean hasFragment() {

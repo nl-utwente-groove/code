@@ -528,9 +528,12 @@ the text flavour is the label texts.
 - `GraphClipboard`: `copy`, `cut` (copy plus `remove`, one edit) and `paste` on an
   `AspectGraphCanvas`, through the system clipboard; a JVM-local clipboard headless,
   and the last fragment copied as fallback when the system clipboard refuses (Windows
-  does, in the test JVM). `paste` centres the fragment at the mouse pointer if that is
-  over the canvas, else offsets it by `PASTE_OFFSET` from the copied position, and
-  selects the pasted cells.
+  does, in the test JVM). `paste` puts the fragment `PASTE_OFFSET` south-east of the
+  copied position and selects the pasted cells; each further paste of the same fragment
+  into the same canvas steps another `PASTE_OFFSET` further (the standard cascade). A
+  first version centred the fragment at the mouse pointer: with the mouse still over the
+  copied cells, the copies landed on top of the originals and looked like no paste at
+  all, and otherwise the position followed the mouse; rejected in review.
 - `AspectGraphViewModel.insertFragment(fragment, dx, dy)`: fresh vertices with new node
   numbers and the fragment's labels, edges between them, one `insert` edit.
 - `AspectEditorTab`: the cut, copy and paste actions call the clipboard instead of
