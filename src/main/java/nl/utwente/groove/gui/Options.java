@@ -63,7 +63,6 @@ import javax.swing.plaf.DimensionUIResource;
 import org.eclipse.jdt.annotation.NonNull;
 
 import com.formdev.flatlaf.FlatLightLaf;
-import com.formdev.flatlaf.util.ColorFunctions;
 
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.display.DismissDelayer;
@@ -1102,25 +1101,18 @@ public class Options implements Cloneable {
 
     /** Adapts the look-and-feel defaults for tabbed panes.
      * FlatLaf marks the selected tab by an underline only, leaving the other tabs
-     * as bare labels; GROOVE wants the tabs told apart: the tab area is set off from
-     * the content by a darker background, the tabs are separated by lines, and the
-     * selected tab is a card in the content colour, joined to the content.
+     * as bare labels; GROOVE wants the tabs told apart: the tabs are separated by
+     * lines, and the selected tab is a card in the (lighter) component colour.
      */
     @AIGenerated("Claude Fable 5.1, 2026-09")
     static private void initTabbedPaneLook() {
         UIManager.put("TabbedPane.tabType", "card");
         UIManager.put("TabbedPane.showTabSeparators", true);
-        var background = UIManager.getColor("TabbedPane.background");
+        var background = UIManager.getColor("TextField.background");
         if (background != null) {
             UIManager.put("TabbedPane.selectedBackground", new ColorUIResource(background));
-            UIManager
-                .put("TabbedPane.background",
-                     new ColorUIResource(ColorFunctions.darken(background, TAB_AREA_DARKENING)));
         }
     }
-
-    /** Amount by which the tab area of a tabbed pane is darker than its content. */
-    static private final float TAB_AREA_DARKENING = 0.08f;
 
     /** Colour of the separators within and below a table header.
      * Deliberately darker than any grid colour used inside a table body.
