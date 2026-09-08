@@ -51,15 +51,16 @@ rebased `yworks-migration`; the intermediate branches were folded into it. Accep
 cosmetic differences of the yFiles editor: edge curves are yFiles' corner smoothing
 rather than JGraph's interpolating spline, and JGraph's arrow adornment corrections are
 not ported. Node dragging in the yFiles viewer canvases, deferred since phase 2 slice 4c, is done
-(2026-09-08, confirmed by Arend), and everything is folded into `yworks-migration`. Phase 4 follows: export and Imager
-on the facade are largely in place since phase 1b slice 5 (the exporters and `Imager`
-work on the canvas contract, the yFiles canvas implements `toImage`/`paintGraph`), so
-what remains is verifying and repairing the raster, vector and TikZ exporters and the
-headless `Imager` on the yFiles backend, with `ImagerTest` run against it. After that:
-the JGraph backend out of the core module (blocked on the gh #887 reactor restructure),
-the local-only release leg of the yFiles edition (obfuscation, dual distribution, the
-jar's JPMS module name), and the open license questions. The architecture allowlist is
-empty.
+(2026-09-08, confirmed by Arend), and everything is folded into `yworks-migration`.
+**Phase 4 (export + Imager) is COMPLETE** (2026-09-08, branch `phase-4-export`): the
+exporters and the headless `Imager` were already on the canvas contract since phase 1b
+slice 5, and verification against the JGraph output of every sample grammar (391 images)
+found one systematic defect, the placement of loop labels on yFiles, which is fixed;
+`YFilesImagerTest` runs the Imager on the yFiles backend in every format and the
+Simulator test exports the LTS. Details under "Phase 4" below. Next: the JGraph backend
+out of the core module (blocked on the gh #887 reactor restructure), the local-only
+release leg of the yFiles edition (obfuscation, dual distribution, the jar's JPMS module
+name), and the open license questions. The architecture allowlist is empty.
 
 ## Goal and motivation
 
@@ -243,29 +244,49 @@ its controller); phase 2 inverts it.
   verification is manual Simulator use (menus, editor gestures, LTS interaction,
   filtering, export).
 
-## Immediate next steps (handoff for the phase-4 session, 2026-09-08)
+## Phase 4: export and Imager on yFiles (2026-09-08, branch `phase-4-export`)
 
-Phase 3 and the viewer node dragging are complete and folded into `yworks-migration`
-(tip b3656262b at the time of writing). Start phase 4 on a fresh branch off it.
+Nothing in the export path needed a yFiles-specific port: `CanvasExportable`,
+`RasterExporter` (via `toImage`), the vector writers (via `paintGraph`/`getGraphBounds`)
+and `GraphToTikz` (from the view model) all work on the canvas contract, and
+`YFilesCanvas` exports through yFiles' `PixelImageExporter` and `exportContent` on a
+`ContextConfigurator` over the content rectangle, so the whole graph is painted, never
+the viewport. Verification: every sample grammar in `junit/samples` was rendered to PNG
+by the Imager on both backends (391 images) and compared by size and blurred pixel
+difference; the vector formats were checked on the SVG (same document size on both
+backends, whole graph) and the TikZ output is byte-identical, since it is generated
+from the view model. The Imager picks the yFiles backend by the `GraphBackend` ranking
+(the persisted preference applies as in the Simulator) and runs with
+`java.awt.headless=true` on both backends.
 
-1. **Export on the yFiles backend.** The exporters already run on the canvas contract
-   (`CanvasExportable`, `CanvasExporters`, `RasterExporter` via `toImage`, the vector
-   writers via `paintGraph`/`getGraphBounds`, `GraphToTikz` from the view model), and
-   `YFilesCanvas` implements `toImage` and `paintGraph`. Run raster, EPS/PDF/SVG and
-   TikZ export from the Simulator with the yFiles backend selected and compare with
-   the JGraph output. Expected gaps: vector output of the yFiles `GraphComponent`
-   through Java2D (does `paintGraph` paint the whole graph rather than the viewport?),
-   TikZ curves (the view model holds the points; yFiles draws corner-smoothed curves
-   and JGraph the interpolating spline, so the TikZ Bezier path may not match what
-   yFiles shows), label placement.
-2. **The headless `Imager` on yFiles.** `Imager` builds canvases through the controllers;
-   check that it picks the yFiles backend when present (`GraphBackend` ranking and the
-   persisted preference), works without a display, and that `ImagerTest` (slow
-   category) passes against it, run from the yFiles unit.
-3. **Then**, each its own branch: the JGraph backend out of the core module (waits for
-   the gh #887 reactor restructure), the local-only release leg of the yFiles edition
-   (yGuard obfuscation, dual distribution, the yFiles jar's JPMS module name), the
-   license questions (Subscription status, Academic Project upgrade).
+Findings and residues:
+
+- **Loop labels** were the one systematic difference: the yFiles store put them on the
+  loop's path at the stored permille ratio, ignoring the offset and measured along
+  yFiles' own clipped path. JGraph (label transformation off, its default) walks the
+  polyline through the stored points for every edge, which `EdgeGeometry.labelPosition`
+  already reproduced for the other edges; loops now get the same absolute point, placed
+  with a `FreeLabelModel` and re-placed by the canvas' `followDrag` during drags. Fixed.
+- **Curve shapes** differ as accepted for the editor: yFiles' corner smoothing against
+  JGraph's interpolating spline, so images of curved edges and loops differ by a few
+  pixels in extent, and the TikZ output (JGraph's spline geometry, shared by both
+  backends) does not match what yFiles shows for curved edges. Accepted, not fixed.
+- **Text rendering**: JGraph's raster output carries LCD subpixel fringes on text,
+  yFiles' is grey-antialiased. Cosmetic.
+- Grammars whose start graph is empty (`empty`, `fibonacci`, `transactions`) fail the
+  Imager with "Cannot export blank image" on both backends; pre-existing, not phase 4.
+- The main project's `ImagerTest` stays on JGraph (the yFiles unit is not on its class
+  path); `YFilesImagerTest` in the unit is its yFiles counterpart and keeps its output
+  in `yfiles/target/imager`; `YFilesSimulatorTest.ltsDisplayExportsRasterAndVector`
+  covers the LTS canvas, which the Imager does not reach.
+
+## Immediate next steps
+
+Each its own branch off `yworks-migration` once phase 4 is folded in: the JGraph backend
+out of the core module (waits for the gh #887 reactor restructure), the local-only
+release leg of the yFiles edition (yGuard obfuscation, dual distribution, the yFiles
+jar's JPMS module name), the license questions (Subscription status, Academic Project
+upgrade).
 
 Practicalities carried over: the yFiles unit is built with `mvn -q -f yfiles/pom.xml
 test > <log> 2>&1` (installs the core artifact first; `-Dgroove.install.skip=true` when
