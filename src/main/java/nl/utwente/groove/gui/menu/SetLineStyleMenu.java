@@ -16,8 +16,6 @@
  */
 package nl.utwente.groove.gui.menu;
 
-import java.awt.event.ActionEvent;
-import java.awt.geom.Point2D;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -25,7 +23,6 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.gui.Options;
@@ -44,39 +41,43 @@ import nl.utwente.groove.util.line.LineStyle;
 public class SetLineStyleMenu extends JMenu implements GraphCanvasListener<@NonNull AspectGraph> {
     /**
      * Constructs a menu for a given canvas.
-     * @param atPoint the point at which the menu is invoked, in graph coordinates;
-     * a point added by a line style change goes there. If {@code null}, the actions
-     * act at the current pointer location
      */
-    public SetLineStyleMenu(AspectGraphCanvas canvas, @Nullable Point2D atPoint) {
+    public SetLineStyleMenu(AspectGraphCanvas canvas) {
         super(Options.SET_LINE_STYLE_MENU);
         this.canvas = canvas;
         canvas.addCanvasListener(this);
         // initialise the line style menu
         for (LineStyle lineStyle : LineStyle.values()) {
-            var action = canvas.getController().getSetLineStyleAction(lineStyle);
-            var item = new JCheckBoxMenuItem(action) {
-                @Override
-                protected void fireActionPerformed(ActionEvent event) {
-                    action.setLocation(atPoint);
-                    super.fireActionPerformed(event);
-                }
-            };
+            var item = new JCheckBoxMenuItem(canvas.getController().getSetLineStyleAction(lineStyle));
             this.items.put(lineStyle, item);
             add(item);
         }
         selectionChanged(canvas);
     }
 
-    /* The menu is enabled for a selected edge, whose line style is check-marked. */
+    /*
+     * The menu is enabled if an edge is selected, whatever else is; the line style
+     * of the selected edges is check-marked if they all share it.
+     */
     @Override
     public void selectionChanged(GraphCanvas<@NonNull AspectGraph> canvas) {
-        LineStyle current = this.canvas.getSelectedCell() instanceof ViewEdge<?> edge
-            ? edge.getVisuals().getLineStyle()
-            : null;
-        setEnabled(current != null);
+        boolean edgeSelected = false;
+        LineStyle common = null;
+        boolean mixed = false;
+        for (var cell : this.canvas.getSelection()) {
+            if (cell instanceof ViewEdge<?> edge) {
+                edgeSelected = true;
+                LineStyle style = edge.getVisuals().getLineStyle();
+                if (common == null) {
+                    common = style;
+                } else if (common != style) {
+                    mixed = true;
+                }
+            }
+        }
+        setEnabled(edgeSelected);
         for (var entry : this.items.entrySet()) {
-            entry.getValue().setSelected(entry.getKey() == current);
+            entry.getValue().setSelected(!mixed && entry.getKey() == common);
         }
     }
 

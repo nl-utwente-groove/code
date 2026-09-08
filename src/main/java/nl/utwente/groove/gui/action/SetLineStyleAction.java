@@ -18,7 +18,9 @@ package nl.utwente.groove.gui.action;
 
 import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.view.AspectViewCell;
@@ -40,21 +42,29 @@ public class SetLineStyleAction extends JCellEditAction {
         this.lineStyle = lineStyle;
     }
 
+    /*
+     * The style is set on the selected edges that do not have it yet, as one edit;
+     * if all have it already, nothing happens. A curved style is given a bend to show
+     * on, if the edge has none, halfway the edge at a small distance from it.
+     */
     @Override
     public void actionPerformed(ActionEvent evt) {
-        Point2D at = takeLocation();
+        Map<AspectViewCell,VisualMap> changes = new LinkedHashMap<>();
         for (AspectViewCell jCell : this.jCells) {
-            VisualMap newVisuals = new VisualMap();
             VisualMap visuals = jCell.getVisuals();
+            if (visuals.getLineStyle() == this.lineStyle) {
+                continue;
+            }
+            VisualMap newVisuals = new VisualMap();
             newVisuals.setLineStyle(this.lineStyle);
             List<Point2D> points = visuals.getPoints();
-            if (points.size() == 2) {
-                // a bent line style needs a point to show, which goes where the
-                // style was chosen
-                points = addPointAt(points, at);
-                newVisuals.put(VisualKey.POINTS, points);
+            if (this.lineStyle.isCurved() && points.size() == 2) {
+                newVisuals.put(VisualKey.POINTS, addPointAt(jCell, null));
             }
-            edit(jCell, newVisuals);
+            changes.put(jCell, newVisuals);
+        }
+        if (!changes.isEmpty()) {
+            this.canvas.edit(changes);
         }
     }
 

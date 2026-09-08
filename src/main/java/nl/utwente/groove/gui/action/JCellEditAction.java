@@ -39,6 +39,7 @@ import nl.utwente.groove.gui.view.AspectViewCell;
 import nl.utwente.groove.gui.view.GraphCanvas;
 import nl.utwente.groove.gui.view.GraphCanvasListener;
 import nl.utwente.groove.gui.view.ViewCell;
+import nl.utwente.groove.gui.view.ViewEdge;
 import nl.utwente.groove.gui.view.ViewVertex;
 
 /**
@@ -155,17 +156,19 @@ public abstract class JCellEditAction extends AbstractAction
     }
 
     /**
-     * Adds a point at a given location to the underlying j-edge. The point is
+     * Adds a point at a given location to the points of an edge. The point is
      * added between the two existing (adjacent) edge points whose segment is
      * closest to the location. If the location is
      * <tt>null</tt>,{@link #createPointBetween} is invoked instead. Does not
      * update the view; this is to be done by the client.
+     * @param jCell the edge to which the point is added
      * @param location the location at which the new point should appear; if
      *        <tt>null</tt>, a point is added beside the first segment
-     * @return a copy of the points of the underlying j-edge with a point added
+     * @return a copy of the points of the edge (see {@link #shownPoints}) with a
+     * point added
      */
-    protected List<Point2D> addPointAt(List<Point2D> points, @Nullable Point2D location) {
-        List<Point2D> result = new LinkedList<>(points);
+    protected List<Point2D> addPointAt(AspectViewCell jCell, @Nullable Point2D location) {
+        List<Point2D> result = shownPoints(jCell);
         if (location == null) {
             result.add(1, createPointBetween(result.get(0), result.get(1)));
         } else {
@@ -178,7 +181,28 @@ public abstract class JCellEditAction extends AbstractAction
     }
 
     /**
-     * Creates an returns a point halfway two given points, with a random effect
+     * Returns the points of an edge as it is shown: the stored points, with the
+     * end points replaced by the current centres of the end vertices, which the
+     * stored end points do not follow when a vertex is moved.
+     */
+    protected static List<Point2D> shownPoints(AspectViewCell jCell) {
+        List<Point2D> result = new LinkedList<>(jCell.getVisuals().getPoints());
+        if (jCell instanceof ViewEdge<?> edge && result.size() >= 2) {
+            var source = edge.getSourceVertex();
+            if (source != null) {
+                result.set(0, source.getVisuals().getNodePos());
+            }
+            var target = edge.getTargetVertex();
+            if (target != null) {
+                result.set(result.size() - 1, target.getVisuals().getNodePos());
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Creates an returns a point halfway two given points, at a small distance
+     * from the line between them so that a bend shows.
      * @param p1 the first boundary point
      * @param p2 the first boundary point
      * @return new point on the perpendicular of the line between <tt>p1</tt>
@@ -188,13 +212,12 @@ public abstract class JCellEditAction extends AbstractAction
         double distance = p1.distance(p2);
         int midX = (int) (p1.getX() + p2.getX()) / 2;
         int midY = (int) (p1.getY() + p2.getY()) / 2;
-        // int offset = (int) (5 + distance / 2 + 20 * Math.random());
         int x, y;
         if (distance == 0) {
-            x = midX + 20;
-            y = midY + 20;
+            x = midX + BEND_OFFSET;
+            y = midY + BEND_OFFSET;
         } else {
-            int offset = (int) (5 + distance / 4);
+            int offset = BEND_OFFSET;
             double xDelta = p1.getX() - p2.getX();
             double yDelta = p1.getY() - p2.getY();
             x = midX + (int) (offset * yDelta / distance);
@@ -202,6 +225,9 @@ public abstract class JCellEditAction extends AbstractAction
         }
         return new Point(Math.max(x, 0), Math.max(y, 0));
     }
+
+    /** Distance from the edge at which a point is added beside it. */
+    private static final int BEND_OFFSET = 20;
 
     /** The canvas on which this action works. */
     protected final AspectGraphCanvas canvas;

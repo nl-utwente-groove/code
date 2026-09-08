@@ -17,8 +17,10 @@
 package nl.utwente.groove.gui.jgraph;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
@@ -36,6 +38,7 @@ import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
+import nl.utwente.groove.gui.menu.SetLineStyleMenu;
 import nl.utwente.groove.gui.view.AspectGraphViewController;
 import nl.utwente.groove.gui.view.AspectGraphViewModel;
 import nl.utwente.groove.gui.view.ParallelEdges;
@@ -106,19 +109,70 @@ public class EditPointTest {
     }
 
     @Test
-    void lineStyleChangeAddsAPointWhereChosen() throws IOException {
+    void straightLineStyleAddsNoPoint() throws IOException {
         AspectJGraph canvas = editorCanvas();
         AspectEdgeCell edge = loneEdge(canvas);
         move(canvas, edge, 100, 100, 300, 100);
         canvas.setSelectionCell(JCell.of(edge));
-        var action = canvas.getController().getSetLineStyleAction(LineStyle.MANHATTAN);
-        Point2D at = new Point2D.Double(150, 130);
-        action.setLocation(at);
-        action.actionPerformed(new ActionEvent(canvas, ActionEvent.ACTION_PERFORMED, ""));
+        setLineStyle(canvas, LineStyle.MANHATTAN);
         assertEquals(LineStyle.MANHATTAN, edge.getVisuals().getLineStyle());
+        assertEquals(2, edge.getVisuals().getPoints().size(), "a Manhattan edge needs no bend");
+    }
+
+    @Test
+    void curvedLineStyleAddsAPointBesideTheEdge() throws IOException {
+        AspectJGraph canvas = editorCanvas();
+        AspectEdgeCell edge = loneEdge(canvas);
+        move(canvas, edge, 100, 100, 300, 100);
+        canvas.setSelectionCell(JCell.of(edge));
+        setLineStyle(canvas, LineStyle.BEZIER);
+        assertEquals(LineStyle.BEZIER, edge.getVisuals().getLineStyle());
         List<Point2D> points = edge.getVisuals().getPoints();
-        assertEquals(3, points.size(), "points after the style change: " + points);
-        assertEquals(at, points.get(1));
+        assertEquals(3, points.size(), "a curve needs a bend: " + points);
+        Point2D bend = points.get(1);
+        assertEquals(200, bend.getX(), 0.01, "halfway");
+        double offset = Math.abs(bend.getY() - 100);
+        assertTrue(offset > 5 && offset < 40, "at a small distance from the edge: " + bend);
+    }
+
+    @Test
+    void currentLineStyleIsNoEdit() throws IOException {
+        AspectJGraph canvas = editorCanvas();
+        AspectEdgeCell edge = loneEdge(canvas);
+        move(canvas, edge, 100, 100, 300, 100);
+        canvas.setSelectionCell(JCell.of(edge));
+        setLineStyle(canvas, LineStyle.BEZIER);
+        var history = canvas.getNonNullModel().getViewModel().getEditHistory();
+        assertNotNull(history);
+        int[] changes = {0};
+        history.addListener(() -> changes[0]++);
+        List<Point2D> points = edge.getVisuals().getPoints();
+        setLineStyle(canvas, LineStyle.BEZIER);
+        assertEquals(0, changes[0], "choosing the current style again is no edit");
+        assertEquals(points, edge.getVisuals().getPoints());
+    }
+
+    @Test
+    void lineStyleMenuServesTheSelectedEdges() throws IOException {
+        AspectJGraph canvas = editorCanvas();
+        AspectEdgeCell edge = loneEdge(canvas);
+        var vertex = edge.getSourceVertex();
+        assertNotNull(vertex);
+        var menu = new SetLineStyleMenu(canvas);
+        canvas.setSelectionCell(JCell.of(vertex));
+        assertFalse(menu.isEnabled(), "no edge selected");
+        canvas.setSelectionCells(new Object[] {JCell.of(vertex), JCell.of(edge)});
+        assertTrue(menu.isEnabled(), "an edge selected among a vertex");
+        setLineStyle(canvas, LineStyle.MANHATTAN);
+        assertEquals(LineStyle.MANHATTAN, edge.getVisuals().getLineStyle());
+    }
+
+    /** Invokes the line style action for a style on the canvas. */
+    private static void setLineStyle(AspectJGraph canvas, LineStyle style) {
+        canvas
+            .getController()
+            .getSetLineStyleAction(style)
+            .actionPerformed(new ActionEvent(canvas, ActionEvent.ACTION_PERFORMED, ""));
     }
 
     /** Returns a lone binary edge, bent as {@link #BENT}. */

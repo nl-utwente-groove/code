@@ -161,7 +161,7 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
             result.add(getAddPointAction().createMenuItem(atPoint));
             result.add(getRemovePointAction().createMenuItem(atPoint));
             result.add(getResetLabelPositionAction());
-            result.add(createLineStyleMenu(atPoint));
+            result.add(createLineStyleMenu());
         }
         return result;
     }
@@ -246,11 +246,9 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
 
     /**
      * Creates and returns a fresh line style menu for the graph view.
-     * @param atPoint the point at which the menu is invoked, in graph coordinates;
-     * a point added by a line style change goes there
      */
-    public JMenu createLineStyleMenu(@Nullable Point2D atPoint) {
-        return new SetLineStyleMenu(getCanvas(), atPoint);
+    public JMenu createLineStyleMenu() {
+        return new SetLineStyleMenu(getCanvas());
     }
 
     /**

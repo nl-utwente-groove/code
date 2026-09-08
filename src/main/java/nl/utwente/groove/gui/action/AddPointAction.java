@@ -26,7 +26,6 @@ import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.view.AspectViewCell;
 import nl.utwente.groove.gui.view.AspectGraphCanvas;
 import nl.utwente.groove.gui.look.VisualKey;
-import nl.utwente.groove.gui.look.VisualMap;
 
 /**
  * Action to add an intermediate point to a ViewEdge.
@@ -56,8 +55,7 @@ public class AddPointAction extends JCellEditAction {
      * the point is added beside the first segment
      */
     public void execute(AspectViewCell jCell, @Nullable Point2D at) {
-        VisualMap visuals = jCell.getVisuals();
-        List<Point2D> points = addPointAt(visuals.getPoints(), at);
+        List<Point2D> points = addPointAt(jCell, at);
         edit(jCell, VisualKey.POINTS, points);
     }
 }
