@@ -475,4 +475,40 @@ merged `editor-edit-model`:
   the editor is cancelled. Not scheduled in a slice yet; Arend to decide whether it
   goes before or after 3c.
 
+## Creating and labelling a cell as one edit (gh #913)
+
+Done on branch `editor-atomic-creation` (2026-09-08), at Arend's request before slice 3c.
+The view model gains a *pending insertion* (`GraphViewModel.insertPending`): the cells are
+inserted into the store, so they are shown and selectable and the in-place editor can open
+on them, but the insertion is neither recorded in the history nor followed by a graph sync.
+The graph, the resource model and hence the errors and the derived type graph stay as they
+were, so the label tree has nothing to rebuild: the blink of an "empty edge label" error
+never arises. The insertion is *settled* in one of three ways:
+
+- `changeLabels` on a pending cell settles it together with the label change, as one
+  compound history entry (insertion, then label change): one undo step removes the labelled
+  cell. An edge given a blank label is withdrawn instead.
+- `settlePendingInsertion` without a label (the editor cancelled, or closed with the text
+  unchanged) keeps a vertex, recording its insertion as an edit of its own, and withdraws
+  an edge: an edge without a label is no edge. Withdrawal removes the cells from the store
+  without a record, since nothing was recorded.
+- Any other edit (`doEdit`), and undo or redo, settle a pending insertion first, so the
+  history never interleaves with an unsettled insertion.
+
+Without a history (a viewer) or while loading, `insertPending` is a plain `insert`.
+
+The backends call `insertPending` where they create a cell for the editor
+(`AspectJGraph.addVertex`/`addEdge` when the editor is to open; the yFiles `addVertex` and
+the edge creator), and settle it when the editor closes: on JGraph in
+`JGraphUI.completeEditing`, which both the stop and the cancel path go through, after the
+stopped editor's value has reached the model through the layout cache; on yFiles in the
+text editor's edited and cancelled listeners. If the editor does not open at all, the
+creator settles at once. The yFiles edge creator opens the editor `invokeLater`, so it
+checks that the edge is still in the model then.
+
+Tests: `EditorUndoTest` (one step for edge plus label; withdrawn on cancel, on an empty
+commit and on another edit; vertex kept; the JGraph in-place editor cancelled and
+stopped), `EditorLabelTreeTest` and `YFilesEditorTest` (tree unchanged while the edge is
+pending; vertex and label one edit; the edge creator's pending edge and loop).
+
 Next: 3c, the clipboard.
