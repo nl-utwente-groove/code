@@ -17,9 +17,11 @@
 package nl.utwente.groove.gui.view;
 
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.graph.layout.ElementLayout;
 import nl.utwente.groove.util.AIGenerated;
@@ -145,5 +147,57 @@ public final class EdgeGeometry {
             ? 0
             : bestAlong / total * ElementLayout.PERMILLE;
         return new Point2D.Double(ratio, bestOffset);
+    }
+
+    /**
+     * Fraction of a node's width or height, at either side, that an edge end keeps
+     * away from: the JGraph rule, by which an edge leaves a node straight up or sideways
+     * only towards a point that lies well within the node's extent.
+     */
+    public static final double DROP_FRACTION = 10;
+
+    /** The centres of the two end nodes of an edge, see {@link #alignedCentres}. */
+    public record Ends(Point2D source, Point2D target) {
+        // no members
+    }
+
+    /**
+     * Returns the centres of two end nodes moved onto a common vertical or horizontal
+     * line, if there is one that runs well within both nodes: their extents, less a
+     * tenth at either side (see {@link #DROP_FRACTION}), overlap on one axis, and the
+     * line runs through the middle of that overlap. A straight edge between the nodes
+     * is drawn along that line, so that stacked nodes are joined vertically and
+     * neighbours horizontally, whatever the small offset between their centres.
+     * @param source the bounds of the source node
+     * @param target the bounds of the target node
+     * @return the centres on the common line; {@code null} if the nodes are aligned
+     * on neither axis, or on both (they overlap)
+     */
+    public static @Nullable Ends alignedCentres(Rectangle2D source, Rectangle2D target) {
+        double x = reachOverlap(source.getMinX(), source.getWidth(), target.getMinX(),
+                                target.getWidth());
+        double y = reachOverlap(source.getMinY(), source.getHeight(), target.getMinY(),
+                                target.getHeight());
+        if (Double.isNaN(x) == Double.isNaN(y)) {
+            return null;
+        }
+        return Double.isNaN(y)
+            ? new Ends(new Point2D.Double(x, source.getCenterY()),
+                new Point2D.Double(x, target.getCenterY()))
+            : new Ends(new Point2D.Double(source.getCenterX(), y),
+                new Point2D.Double(target.getCenterX(), y));
+    }
+
+    /**
+     * Returns the middle of the overlap of two extents, each less a tenth at either
+     * side; {@link Double#NaN} if they do not overlap.
+     */
+    private static double reachOverlap(double min1, double size1, double min2, double size2) {
+        double low = Math.max(min1 + size1 / DROP_FRACTION, min2 + size2 / DROP_FRACTION);
+        double high = Math
+            .min(min1 + size1 - size1 / DROP_FRACTION, min2 + size2 - size2 / DROP_FRACTION);
+        return low < high
+            ? (low + high) / 2
+            : Double.NaN;
     }
 }

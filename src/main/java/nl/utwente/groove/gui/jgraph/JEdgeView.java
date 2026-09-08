@@ -59,6 +59,7 @@ import nl.utwente.groove.util.Fonts;
 import nl.utwente.groove.util.line.HTMLLineFormat;
 import nl.utwente.groove.util.line.LineStyle;
 import nl.utwente.groove.util.line.MatrixFormat;
+import nl.utwente.groove.gui.view.EdgeGeometry;
 import nl.utwente.groove.gui.view.ParallelEdges;
 import nl.utwente.groove.gui.view.ViewEdge;
 import nl.utwente.groove.gui.view.ViewVertex;
@@ -255,6 +256,22 @@ public class JEdgeView extends EdgeView {
         JVertexView vertexView = (JVertexView) vertex;
         Point2D center = getCenterPoint(vertex);
         Point2D nextPoint = getNearestPoint(source);
+        // a straight edge between aligned vertices runs vertically or horizontally
+        // between them, see EdgeGeometry.alignedCentres
+        if (getPointCount() == 2 && !isLoop() && this.source != null && this.target != null
+            && this.source.getParentView() instanceof JVertexView sourceView
+            && this.target.getParentView() instanceof JVertexView targetView) {
+            var aligned = EdgeGeometry
+                .alignedCentres(sourceView.getShapeBounds(), targetView.getShapeBounds());
+            if (aligned != null) {
+                center = source
+                    ? aligned.source()
+                    : aligned.target();
+                nextPoint = source
+                    ? aligned.target()
+                    : aligned.source();
+            }
+        }
         // adjust the centre and next point depending on the number of
         // parallel edges, as determined by the parameter rank
         Point2D adjustedCenter;

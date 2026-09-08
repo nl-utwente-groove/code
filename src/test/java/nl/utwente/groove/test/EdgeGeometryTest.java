@@ -15,8 +15,11 @@
 package nl.utwente.groove.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.List;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -63,5 +66,44 @@ public class EdgeGeometryTest {
         back = EdgeGeometry.relativePosition(new Point2D.Double(230, 50), POINTS);
         assertEquals(ElementLayout.PERMILLE, back.getX(), 0.01);
         assertEquals(0, back.getY(), 0.01);
+    }
+
+    @Test
+    void stackedNodesAreAlignedVertically() {
+        // two nodes of width 20, the upper one 13 to the right of the lower one:
+        // their extents less a tenth overlap between 15 and 18
+        Rectangle2D lower = new Rectangle2D.Double(0, 200, 20, 20);
+        Rectangle2D upper = new Rectangle2D.Double(13, 0, 20, 20);
+        var ends = EdgeGeometry.alignedCentres(lower, upper);
+        assertNotNull(ends);
+        assertEquals(16.5, ends.source().getX(), 0.01);
+        assertEquals(210, ends.source().getY(), 0.01);
+        assertEquals(16.5, ends.target().getX(), 0.01);
+        assertEquals(10, ends.target().getY(), 0.01);
+    }
+
+    @Test
+    void neighbouringNodesAreAlignedHorizontally() {
+        // a small node beside a larger one, 3 lower than its centre
+        Rectangle2D left = new Rectangle2D.Double(0, 10, 20, 20);
+        Rectangle2D right = new Rectangle2D.Double(140, 0, 32, 34);
+        var ends = EdgeGeometry.alignedCentres(left, right);
+        assertNotNull(ends);
+        // the overlap of [12, 28] and [3.4, 30.6]
+        assertEquals(20, ends.source().getY(), 0.01);
+        assertEquals(10, ends.source().getX(), 0.01);
+        assertEquals(20, ends.target().getY(), 0.01);
+        assertEquals(156, ends.target().getX(), 0.01);
+    }
+
+    @Test
+    void otherNodesAreNotAligned() {
+        Rectangle2D node = new Rectangle2D.Double(0, 0, 20, 20);
+        // diagonal
+        assertNull(EdgeGeometry.alignedCentres(node, new Rectangle2D.Double(100, 100, 20, 20)));
+        // overlapping on both axes
+        assertNull(EdgeGeometry.alignedCentres(node, new Rectangle2D.Double(5, 5, 20, 20)));
+        // overlapping only within the margin of a tenth
+        assertNull(EdgeGeometry.alignedCentres(node, new Rectangle2D.Double(17, 100, 20, 20)));
     }
 }

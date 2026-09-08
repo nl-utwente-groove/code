@@ -56,6 +56,7 @@ import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.look.MultiLabel;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
+import nl.utwente.groove.gui.view.EdgeGeometry;
 import nl.utwente.groove.util.parse.Severity;
 import nl.utwente.groove.util.Fonts;
 import nl.utwente.groove.util.NodeShape;
@@ -149,14 +150,7 @@ public class JVertexView extends VertexView {
         Point2D result = null;
         double qx = q.getX();
         double qy = q.getY();
-        // use the adornment bounds if there is an adornment, and the
-        // source lies to the northwest of it
-        Rectangle2D bounds = getBounds();
-        // revert to the actual borders by subtracting the
-        // extra border space
-        float extra = EXTRA_BORDER_SPACE - getCellVisuals().getLineWidth();
-        bounds = new Rectangle2D.Double(bounds.getMinX() + extra, bounds.getMinY() + extra,
-            bounds.getWidth() - 2 * extra, bounds.getHeight() - 2 * extra);
+        Rectangle2D bounds = getShapeBounds();
         double left = bounds.getMinX();
         double right = bounds.getMaxX();
         double top = bounds.getMinY();
@@ -330,10 +324,21 @@ public class JVertexView extends VertexView {
     }
 
     /**
-     * Fraction of the width or height that is the minimum for special perimeter
-     * point placement.
+     * Returns the bounds of the node shape: the view bounds less the extra
+     * border space around them.
      */
-    private static final double DROP_FRACTION = 10;
+    public Rectangle2D getShapeBounds() {
+        Rectangle2D bounds = getBounds();
+        float extra = EXTRA_BORDER_SPACE - getCellVisuals().getLineWidth();
+        return new Rectangle2D.Double(bounds.getMinX() + extra, bounds.getMinY() + extra,
+            bounds.getWidth() - 2 * extra, bounds.getHeight() - 2 * extra);
+    }
+
+    /**
+     * Fraction of the width or height that is the minimum for special perimeter
+     * point placement; shared with the other backend.
+     */
+    private static final double DROP_FRACTION = EdgeGeometry.DROP_FRACTION;
     /**
      * Maximal distance (horizontal or vertical) for perpendicular perimeter
      * points to be placed in ratio.
