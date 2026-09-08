@@ -235,6 +235,15 @@ its controller); phase 2 inverts it.
 - **Null analysis**: the Maven build does not run it; use the `null-check` skill
   (per-file, or `-All` for wide changes — authoritative baseline documented in the
   skill). Every phase-1a branch was held to zero errors / zero new warnings.
+  For the yFiles unit the by-hand ecj run (see the practicalities at the end) is
+  largely blind: `@NonNullByDefault` classes overriding methods of the unannotated
+  yFiles types (`AbstractNodeStyle`, `IDragHandler`, `DropInputMode`, `IVisual`,
+  `IArrow`, …) draw 63 "illegal redefinition of parameter" errors (2026-09-08
+  baseline), and ecj skips null and flow analysis for a unit with compile errors, so
+  `CellArrow`, `CellEdgeStyleRenderer`, `CellNodeStyle` and `YFilesAspectEditorCanvas`
+  are not null-checked at all. Real coverage needs external annotations for
+  `com.yworks.*` in the style of `lib/eea`; open design decision. The unit's own
+  `.settings` do not enable null analysis, so Eclipse shows none of this either.
 - **Stale test classes**: after interface-level changes (package moves, signature
   changes), run `mvn clean test` — the incremental build has produced stale
   test-class `NoSuchMethodError`s twice.
