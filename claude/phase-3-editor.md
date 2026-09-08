@@ -537,11 +537,24 @@ the text flavour is the label texts.
   wrapping Swing's `TransferHandler` actions; the paste button follows
   `GraphClipboard.hasFragment()`. JGraph's transfer handler is no longer used for the
   actions (its drag-and-drop stays untouched).
-- **Ctrl+drag** on yFiles (`YFilesAspectEditorCanvas.copyMoved`): the move modes note
-  Control at drag start; at drag end the dragged vertices are put back and the fragment
-  of them plus the edges between them is inserted at the dragged offset, one edit, the
-  copies selected. JGraph clones on Ctrl+drag natively (`setCloneable`, its
-  `cloneCells` into `AspectJModel.insert`, which records one edit).
+- **Ctrl+drag** on yFiles (`YFilesAspectEditorCanvas.configureMove`): when a move mode
+  queries its position handler with Control down, the canvas substitutes a
+  `CopyDragHandler` that wraps the mode's own handler (initialised and cancelled
+  around the drag, so that the affected items are registered as usual) and never
+  moves the items; instead it drags a `CopyDragPreview`, a translucent rendering of the
+  dragged vertices, the edges between them and their labels (their styles' visuals in a
+  translated `VisualGroup` on the input-mode group). The mode's DragFinished listener
+  then calls `copyMoved` with the preview's offset: the fragment of the vertices plus
+  the edges between them is inserted at that offset, one edit, the copies selected. A
+  first version moved the items themselves and put them back at the end, which
+  showed no preview and was rejected in review. JGraph clones on Ctrl+drag natively
+  (`setCloneable`, its `cloneCells` into `AspectJModel.insert`, which records one edit).
+- Inserted cells are refreshed on the canvas after the model reacted to the edit
+  (`GraphViewModel.apply`, and the settled pending insertion): the aspect model builds
+  the graph elements of a fresh cell from its labels only in that reaction, and the
+  yFiles store fixes the label text of an item at creation, so pasted or copied cells
+  showed up unlabelled until the next edit. JGraph reads the visuals at paint time and
+  never showed the gap.
 
 Tests: `EditorClipboardTest` (core: fragment content, paste as one edit with fresh
 numbers and offset positions, cut and paste, empty selection) and
