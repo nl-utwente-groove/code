@@ -511,4 +511,40 @@ commit and on another edit; vertex kept; the JGraph in-place editor cancelled an
 stopped), `EditorLabelTreeTest` and `YFilesEditorTest` (tree unchanged while the edge is
 pending; vertex and label one edit; the edge creator's pending edge and loop).
 
-Next: 3c, the clipboard.
+## Slice 3c: the clipboard
+
+Done on branch `editor-clipboard` (2026-09-08), off `editor-atomic-creation`. The plan
+foresaw an `AspectGraph` fragment; what travels is a **`GraphFragment`** instead, at the
+level of cells: the vertices with their editable labels and centres, and the edges
+between them with labels, points, label position and line style. Reasons: a paste then
+gives back exactly what was copied, including labels that do not parse (an aspect graph
+would drop or alter them) and the grouping of edges into cells (which the graph does
+not know); and the paste path is the editor's own creation path, labels applied on the
+sync. An aspect-graph flavour for other applications can be added on top when wanted;
+the text flavour is the label texts.
+
+- `GraphFragment.of(cells)`: vertex cells and the edge cells with both ends among them.
+- `GraphTransferable`: a JVM-local flavour for the fragment plus the string flavour.
+- `GraphClipboard`: `copy`, `cut` (copy plus `remove`, one edit) and `paste` on an
+  `AspectGraphCanvas`, through the system clipboard; a JVM-local clipboard headless,
+  and the last fragment copied as fallback when the system clipboard refuses (Windows
+  does, in the test JVM). `paste` centres the fragment at the mouse pointer if that is
+  over the canvas, else offsets it by `PASTE_OFFSET` from the copied position, and
+  selects the pasted cells.
+- `AspectGraphViewModel.insertFragment(fragment, dx, dy)`: fresh vertices with new node
+  numbers and the fragment's labels, edges between them, one `insert` edit.
+- `AspectEditorTab`: the cut, copy and paste actions call the clipboard instead of
+  wrapping Swing's `TransferHandler` actions; the paste button follows
+  `GraphClipboard.hasFragment()`. JGraph's transfer handler is no longer used for the
+  actions (its drag-and-drop stays untouched).
+- **Ctrl+drag** on yFiles (`YFilesAspectEditorCanvas.copyMoved`): the move modes note
+  Control at drag start; at drag end the dragged vertices are put back and the fragment
+  of them plus the edges between them is inserted at the dragged offset, one edit, the
+  copies selected. JGraph clones on Ctrl+drag natively (`setCloneable`, its
+  `cloneCells` into `AspectJModel.insert`, which records one edit).
+
+Tests: `EditorClipboardTest` (core: fragment content, paste as one edit with fresh
+numbers and offset positions, cut and paste, empty selection) and
+`YFilesEditorTest.controlDragCopiesTheDraggedCells`.
+
+Next: phase 4 (export and Imager on the facade).

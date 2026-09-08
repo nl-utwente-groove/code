@@ -41,11 +41,14 @@ read-only views. **Phase 3 (the editor) is IN PROGRESS**: design and slicing in
 `claude/phase-3-editor.md`; slices 3a (the GROOVE-owned edit model and undo history in
 `gui.view`, both backends feeding it) and 3b (the editor canvas on yFiles, gestures
 mapped onto yFiles' editor input mode; branch `editor-edit-model` off the rebased
-`yworks-migration`, 2026-09-07) are done; Arend's three review rounds on 3b are fixed on
+`yworks-migration`, 2026-09-07) are done; Arend's six review rounds on 3b are fixed on
 the same branch line (see the phase-3 note; parallel edges fan out as in JGraph, through
-the neutral `gui.view.ParallelEdges`; labels and edge points are draggable on yFiles);
-3c (the clipboard, including copy by Ctrl+drag) follows. The architecture allowlist is
-empty.
+the neutral `gui.view.ParallelEdges`; labels and edge points are draggable on yFiles;
+straight edges between aligned nodes run vertically or horizontally on both backends);
+creating a cell and giving it its first label is one undo step, without syncing the
+unlabelled cell (gh #913, branch `editor-atomic-creation`); 3c (the clipboard as a
+cell-level `GraphFragment`, with copy by Ctrl+drag on both backends) is done on branch
+`editor-clipboard` (2026-09-08). Phase 4 follows. The architecture allowlist is empty.
 
 ## Goal and motivation
 
