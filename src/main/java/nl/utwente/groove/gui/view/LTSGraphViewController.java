@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.gui.view;
 
-import java.awt.Point;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -93,7 +93,7 @@ public class LTSGraphViewController extends GraphViewController<GTS> {
      * subsequently invokes the super implementation.
      */
     @Override
-    public JMenu createPopupMenu(@Nullable Point atPoint) {
+    public JMenu createPopupMenu(@Nullable Point2D atPoint) {
         MyJMenu result = new MyJMenu("Popup");
         if (getCanvas().getMode() == GraphViewMode.SELECT_MODE) {
             result.addSubmenu(createExploreMenu());

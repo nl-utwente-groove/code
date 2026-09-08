@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.gui.view;
 
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
@@ -147,6 +148,29 @@ public final class EdgeGeometry {
             ? 0
             : bestAlong / total * ElementLayout.PERMILLE;
         return new Point2D.Double(ratio, bestOffset);
+    }
+
+    /**
+     * Returns the index of the segment of a polyline closest to a given point, measured
+     * to the segment itself (not to its line), as the index of the segment's end point.
+     * @param at the point
+     * @param points the points of the polyline, at least two
+     * @return the index, from 1, of the end point of the closest segment
+     */
+    public static int closestSegment(Point2D at, List<Point2D> points) {
+        int result = 1;
+        double bestDistance = Double.MAX_VALUE;
+        for (int i = 1; i < points.size(); i++) {
+            Point2D p0 = points.get(i - 1);
+            Point2D p1 = points.get(i);
+            double distance = Line2D
+                .ptSegDist(p0.getX(), p0.getY(), p1.getX(), p1.getY(), at.getX(), at.getY());
+            if (distance < bestDistance) {
+                bestDistance = distance;
+                result = i;
+            }
+        }
+        return result;
     }
 
     /**

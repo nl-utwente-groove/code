@@ -17,6 +17,7 @@
 package nl.utwente.groove.gui.action;
 
 import java.awt.Point;
+import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,10 +25,13 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.swing.AbstractAction;
+import javax.swing.JMenuItem;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.aspect.AspectGraph;
+import nl.utwente.groove.gui.view.EdgeGeometry;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
 import nl.utwente.groove.gui.view.AspectGraphCanvas;
@@ -100,10 +104,42 @@ public abstract class JCellEditAction extends AbstractAction
     }
 
     /**
-     * Sets the location attribute of this action.
+     * Sets the location at which the next invocation of the action acts, in graph
+     * coordinates; {@code null} to let it act at the pointer location.
+     * @see #takeLocation()
      */
-    public void setLocation(Point2D location) {
+    public void setLocation(@Nullable Point2D location) {
         this.location = location;
+    }
+
+    /**
+     * Returns the location at which the action is to act, in graph coordinates: the
+     * location set for this invocation (see {@link #setLocation}), if any, or else the
+     * current location of the mouse pointer over the canvas, if any. The location set
+     * is consumed: a next invocation acts at the pointer location again.
+     */
+    protected @Nullable Point2D takeLocation() {
+        Point2D result = this.location;
+        this.location = null;
+        if (result == null) {
+            result = this.canvas.getPointerLocation();
+        }
+        return result;
+    }
+
+    /**
+     * Creates a menu item for this action that passes a given location to the action
+     * when the item is activated: the location at which the menu was invoked.
+     * @param at the location, in graph coordinates; {@code null} for none
+     */
+    public JMenuItem createMenuItem(@Nullable Point2D at) {
+        return new JMenuItem(this) {
+            @Override
+            protected void fireActionPerformed(ActionEvent event) {
+                JCellEditAction.this.setLocation(at);
+                super.fireActionPerformed(event);
+            }
+        };
     }
 
     /** Convenience method to invoke an edit of a single visual attribute. */
@@ -120,43 +156,23 @@ public abstract class JCellEditAction extends AbstractAction
 
     /**
      * Adds a point at a given location to the underlying j-edge. The point is
-     * added between those two existing (adjacent) edge points for which the sum
-     * of the distances to the specified location is minimal. If the location is
+     * added between the two existing (adjacent) edge points whose segment is
+     * closest to the location. If the location is
      * <tt>null</tt>,{@link #createPointBetween} is invoked instead. Does not
      * update the view; this is to be done by the client.
      * @param location the location at which the new point should appear; if
-     *        <tt>null</tt>, a point is added at random
+     *        <tt>null</tt>, a point is added beside the first segment
      * @return a copy of the points of the underlying j-edge with a point added
      */
-    protected List<Point2D> addPointAt(List<Point2D> points, Point2D location) {
+    protected List<Point2D> addPointAt(List<Point2D> points, @Nullable Point2D location) {
         List<Point2D> result = new LinkedList<>(points);
         if (location == null) {
             result.add(1, createPointBetween(result.get(0), result.get(1)));
         } else {
-            int closestIndex = getClosestIndex(result, location);
-            assert closestIndex > 0;
-            result.add(closestIndex, (Point) location.clone());
-        }
-        return result;
-    }
-
-    /**
-     * Returns the positive index in a non-empty list of points of that
-     * point which is closest to a given location.
-     * @param location the location to which distances are measured.
-     * @param points the list in which the index is sought
-     * @return the index of the point (from position 1) closest to the location
-     */
-    protected int getClosestIndex(List<Point2D> points, Point2D location) {
-        int result = 0;
-        double closestDistance = Double.MAX_VALUE;
-        for (int i = 1; i < points.size(); i++) {
-            double distance
-                = location.distance(points.get(i - 1)) + location.distance(points.get(i));
-            if (distance < closestDistance) {
-                result = i;
-                closestDistance = distance;
-            }
+            int closestIndex = EdgeGeometry.closestSegment(location, result);
+            result
+                .add(closestIndex, new Point((int) Math.round(location.getX()),
+                    (int) Math.round(location.getY())));
         }
         return result;
     }
@@ -200,6 +216,6 @@ public abstract class JCellEditAction extends AbstractAction
     protected AspectViewCell jCell;
     /** List list of currently selected j-cells of the right type. */
     protected final List<AspectViewCell> jCells;
-    /** The currently set point location. */
-    protected Point2D location;
+    /** The location set for the next invocation, if any; see {@link #takeLocation()}. */
+    private @Nullable Point2D location;
 }

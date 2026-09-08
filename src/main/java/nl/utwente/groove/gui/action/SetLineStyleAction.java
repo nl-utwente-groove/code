@@ -42,13 +42,16 @@ public class SetLineStyleAction extends JCellEditAction {
 
     @Override
     public void actionPerformed(ActionEvent evt) {
-        VisualMap newVisuals = new VisualMap();
+        Point2D at = takeLocation();
         for (AspectViewCell jCell : this.jCells) {
+            VisualMap newVisuals = new VisualMap();
             VisualMap visuals = jCell.getVisuals();
             newVisuals.setLineStyle(this.lineStyle);
             List<Point2D> points = visuals.getPoints();
             if (points.size() == 2) {
-                points = addPointAt(points, this.location);
+                // a bent line style needs a point to show, which goes where the
+                // style was chosen
+                points = addPointAt(points, at);
                 newVisuals.put(VisualKey.POINTS, points);
             }
             edit(jCell, newVisuals);

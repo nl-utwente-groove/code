@@ -69,6 +69,17 @@ public class EdgeGeometryTest {
     }
 
     @Test
+    void closestSegmentIsMeasuredOrthogonally() {
+        // above the middle of the long first segment: closer to it than to the
+        // second segment's end points, though their summed distance is smaller
+        assertEquals(1, EdgeGeometry.closestSegment(new Point2D.Double(50, -30), POINTS));
+        assertEquals(2, EdgeGeometry.closestSegment(new Point2D.Double(110, 25), POINTS));
+        assertEquals(3, EdgeGeometry.closestSegment(new Point2D.Double(150, 60), POINTS));
+        // beyond the end: the last segment
+        assertEquals(3, EdgeGeometry.closestSegment(new Point2D.Double(300, 50), POINTS));
+    }
+
+    @Test
     void stackedNodesAreAlignedVertically() {
         // two nodes of width 20, the upper one 13 to the right of the lower one:
         // their extents less a tenth overlap between 15 and 18

@@ -17,6 +17,7 @@ package nl.utwente.groove.gui.view;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Dimension2D;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.Collection;
@@ -124,6 +125,13 @@ public interface GraphCanvas<G extends Graph> {
     /** Returns the topmost visible cell at a given position in screen coordinates. */
     @Nullable
     ViewCell<G> getCellAt(double x, double y);
+
+    /**
+     * Returns the current location of the mouse pointer in graph coordinates, if the
+     * pointer is over the canvas; {@code null} otherwise, or if there is no pointer.
+     */
+    @Nullable
+    Point2D getPointerLocation();
 
     // ---------- selection ----------
 

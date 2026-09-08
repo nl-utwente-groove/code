@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.gui.view;
 
-import java.awt.Point;
+import java.awt.geom.Point2D;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -106,7 +106,7 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
     private final boolean editing;
 
     @Override
-    public JMenu createPopupMenu(@Nullable Point atPoint) {
+    public JMenu createPopupMenu(@Nullable Point2D atPoint) {
         MyJMenu result = new MyJMenu("Popup");
         var actions = getActions();
         assert actions != null; // the popup menu is only built with a simulator present
@@ -151,16 +151,17 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
 
     /**
      * Returns a menu containing all known editing actions.
-     * @param atPoint point at which the popup menu will appear
+     * @param atPoint point at which the popup menu will appear, in graph coordinates;
+     * the point-related actions in the menu act at this point
      */
-    public JMenu createEditMenu(@Nullable Point atPoint) {
+    public JMenu createEditMenu(@Nullable Point2D atPoint) {
         JMenu result = new JMenu("Edit");
         if (getCanvas().hasActiveEditor()) {
             result.add(getEditLabelAction());
-            result.add(getAddPointAction(atPoint));
-            result.add(getRemovePointAction(atPoint));
+            result.add(getAddPointAction().createMenuItem(atPoint));
+            result.add(getRemovePointAction().createMenuItem(atPoint));
             result.add(getResetLabelPositionAction());
-            result.add(createLineStyleMenu());
+            result.add(createLineStyleMenu(atPoint));
         }
         return result;
     }
@@ -168,13 +169,12 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
     /**
      * Initialises and returns an action to add a point to the currently selected edge.
      */
-    public AddPointAction getAddPointAction(@Nullable Point atPoint) {
+    public AddPointAction getAddPointAction() {
         var result = this.addPointAction;
         if (result == null) {
             this.addPointAction = result = new AddPointAction(getCanvas());
             getCanvas().addAccelerator(result);
         }
-        result.setLocation(atPoint);
         return result;
     }
 
@@ -199,13 +199,12 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
     /**
      * Initialises and returns an action to remove a point from the currently selected edge.
      */
-    public RemovePointAction getRemovePointAction(@Nullable Point atPoint) {
+    public RemovePointAction getRemovePointAction() {
         var result = this.removePointAction;
         if (result == null) {
             this.removePointAction = result = new RemovePointAction(getCanvas());
             getCanvas().addAccelerator(result);
         }
-        result.setLocation(atPoint);
         return result;
     }
 
@@ -247,9 +246,11 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
 
     /**
      * Creates and returns a fresh line style menu for the graph view.
+     * @param atPoint the point at which the menu is invoked, in graph coordinates;
+     * a point added by a line style change goes there
      */
-    public JMenu createLineStyleMenu() {
-        return new SetLineStyleMenu(getCanvas());
+    public JMenu createLineStyleMenu(@Nullable Point2D atPoint) {
+        return new SetLineStyleMenu(getCanvas(), atPoint);
     }
 
     /**

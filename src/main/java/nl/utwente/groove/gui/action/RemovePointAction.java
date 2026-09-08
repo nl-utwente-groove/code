@@ -21,6 +21,8 @@ import java.awt.geom.Point2D;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.view.AspectViewCell;
 import nl.utwente.groove.gui.view.AspectGraphCanvas;
@@ -46,7 +48,7 @@ public class RemovePointAction extends JCellEditAction {
 
     @Override
     public void actionPerformed(ActionEvent evt) {
-        execute(this.jCell);
+        execute(this.jCell, takeLocation());
     }
 
     /**
@@ -54,30 +56,39 @@ public class RemovePointAction extends JCellEditAction {
      * location. The point removed is either the second point (if the location
      * is <tt>null</tt>) or the one closest to the location.
      * @param jEdge the j-edge to be modified
+     * @param at the location, in graph coordinates
      */
-    public void execute(AspectViewCell jEdge) {
+    public void execute(AspectViewCell jEdge, @Nullable Point2D at) {
         VisualMap visuals = jEdge.getVisuals();
         List<Point2D> points = visuals.getPoints();
-        edit(jEdge, VisualKey.POINTS, removePointAt(points, this.location));
+        edit(jEdge, VisualKey.POINTS, removePointAt(points, at));
     }
 
     /**
      * Removes the intermediate point from a list of points that is closest
      * to a given location. Has no effect if the list had only two points to
-     * start with, or if it is a loop. If
+     * start with, or if it is a loop with a single intermediate point. If
      * the location is <tt>null</tt>, the point at index 1 is removed
      * @param location the location at which the point to be removed is sought;
      *        if <tt>null</tt>, the first available point is removed
      * @return a copy of the points, possibly with a
      *         point removed
      */
-    private List<Point2D> removePointAt(List<Point2D> points, Point2D location) {
+    private List<Point2D> removePointAt(List<Point2D> points, @Nullable Point2D location) {
         LinkedList<Point2D> result = new LinkedList<>(points);
         if (result.size() > 2
             && (!result.getFirst().equals(result.getLast()) || result.size() > 3)) {
-            int ix = location == null
-                ? 1
-                : getClosestIndex(points, location);
+            int ix = 1;
+            if (location != null) {
+                double closest = Double.MAX_VALUE;
+                for (int i = 1; i < result.size() - 1; i++) {
+                    double distance = location.distance(result.get(i));
+                    if (distance < closest) {
+                        closest = distance;
+                        ix = i;
+                    }
+                }
+            }
             result.remove(ix);
         }
         return result;

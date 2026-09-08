@@ -16,6 +16,8 @@
  */
 package nl.utwente.groove.gui.menu;
 
+import java.awt.event.ActionEvent;
+import java.awt.geom.Point2D;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -23,6 +25,7 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.gui.Options;
@@ -41,14 +44,24 @@ import nl.utwente.groove.util.line.LineStyle;
 public class SetLineStyleMenu extends JMenu implements GraphCanvasListener<@NonNull AspectGraph> {
     /**
      * Constructs a menu for a given canvas.
+     * @param atPoint the point at which the menu is invoked, in graph coordinates;
+     * a point added by a line style change goes there. If {@code null}, the actions
+     * act at the current pointer location
      */
-    public SetLineStyleMenu(AspectGraphCanvas canvas) {
+    public SetLineStyleMenu(AspectGraphCanvas canvas, @Nullable Point2D atPoint) {
         super(Options.SET_LINE_STYLE_MENU);
         this.canvas = canvas;
         canvas.addCanvasListener(this);
         // initialise the line style menu
         for (LineStyle lineStyle : LineStyle.values()) {
-            var item = new JCheckBoxMenuItem(canvas.getController().getSetLineStyleAction(lineStyle));
+            var action = canvas.getController().getSetLineStyleAction(lineStyle);
+            var item = new JCheckBoxMenuItem(action) {
+                @Override
+                protected void fireActionPerformed(ActionEvent event) {
+                    action.setLocation(atPoint);
+                    super.fireActionPerformed(event);
+                }
+            };
             this.items.put(lineStyle, item);
             add(item);
         }

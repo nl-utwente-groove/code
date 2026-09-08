@@ -16,8 +16,8 @@
  */
 package nl.utwente.groove.gui.view;
 
-import java.awt.Point;
 import java.awt.event.ActionEvent;
+import java.awt.geom.Point2D;
 import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -392,9 +392,10 @@ public abstract class GraphViewController<G extends Graph> {
     /**
      * Lazily creates and returns the popup menu for the graph view, activated
      * for a given point.
-     * @param atPoint the point at which the menu is to be activated
+     * @param atPoint the point at which the menu is to be activated, in graph
+     * coordinates; {@code null} if the menu is not activated at a point
      */
-    public JMenu createPopupMenu(@Nullable Point atPoint) {
+    public JMenu createPopupMenu(@Nullable Point2D atPoint) {
         MyJMenu result = new MyJMenu("Popup");
         result.addSubmenu(createExportMenu());
         result.addSubmenu(createDisplayMenu());

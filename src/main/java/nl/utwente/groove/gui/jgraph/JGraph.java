@@ -28,6 +28,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.KeyAdapter;
@@ -1296,12 +1297,27 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
         setScale(scale);
     }
 
+    @Override
+    public @Nullable Point2D getPointerLocation() {
+        if (GraphicsEnvironment.isHeadless()) {
+            return null;
+        }
+        Point position = getMousePosition();
+        return position == null
+            ? null
+            : fromScreen(new Point2D.Double(position.x, position.y));
+    }
+
     /** Shows a popup menu if the event is a popup trigger. */
     protected void maybeShowPopup(MouseEvent evt) {
         if (isPopupMenuEvent(evt) && getActions() != null) {
             getUI().cancelEdgeAdding();
             Point atPoint = evt.getPoint();
-            getController().createPopupMenu(atPoint).getPopupMenu().show(this, atPoint.x, atPoint.y);
+            Point2D graphPoint = fromScreen(new Point2D.Double(atPoint.x, atPoint.y));
+            getController()
+                .createPopupMenu(graphPoint)
+                .getPopupMenu()
+                .show(this, atPoint.x, atPoint.y);
         }
     }
 

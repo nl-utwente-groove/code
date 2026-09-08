@@ -20,6 +20,8 @@ import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
 import java.util.List;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.view.AspectViewCell;
 import nl.utwente.groove.gui.view.AspectGraphCanvas;
@@ -45,13 +47,17 @@ public class AddPointAction extends JCellEditAction {
 
     @Override
     public void actionPerformed(ActionEvent evt) {
-        execute(this.jCell);
+        execute(this.jCell, takeLocation());
     }
 
-    /** Executes the action. */
-    public void execute(AspectViewCell jCell) {
+    /**
+     * Adds a point to a given edge at a given location; see {@link #addPointAt}.
+     * @param at the location of the new point, in graph coordinates; if {@code null},
+     * the point is added beside the first segment
+     */
+    public void execute(AspectViewCell jCell, @Nullable Point2D at) {
         VisualMap visuals = jCell.getVisuals();
-        List<Point2D> points = addPointAt(visuals.getPoints(), this.location);
+        List<Point2D> points = addPointAt(visuals.getPoints(), at);
         edit(jCell, VisualKey.POINTS, points);
     }
 }
