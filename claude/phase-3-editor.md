@@ -411,4 +411,38 @@ was dropped.
   session made every editor test fail. The mode's factory methods now return drop modes
   that install nothing, so the editor canvas (and its tests) work headless.
 
+**Fifth review round** (Arend, 2026-09-08), branch `editor-edit-model-review5` off the
+merged `editor-edit-model`:
+
+- *A "random" point on choosing a bent line style; Add Point not at the mouse.* The
+  point-editing actions (add, remove, line style) now act at a location in graph
+  coordinates that is resolved when the action fires: the location of the popup menu
+  when invoked from it (the menu items hand it to the action at that moment, so a
+  dismissed menu leaves nothing behind), else the current pointer location over the
+  canvas (`GraphCanvas.getPointerLocation`, on both backends), else a point beside the
+  first segment. The line-style actions never had a location, hence the random-looking
+  point. A new point goes into the segment closest by perpendicular distance
+  (`EdgeGeometry.closestSegment`), not between the pair with the smallest summed
+  distance, which favoured short segments; Remove Point removes the intermediate point
+  nearest to the location. Both popups now hand over graph coordinates: the JGraph popup
+  passed screen coordinates and the yFiles popup view coordinates, which agreed with
+  graph coordinates only at scale 1 without scrolling. Found in passing: the line-style
+  action shared one `VisualMap` over the selected edges, so the points added to one
+  edge were written to the next; fixed.
+- *Edges between stacked or neighbouring nodes slanted, with source and target
+  swapped.* The port of JGraph's "smart" perimeter rule moved each end to the
+  coordinate of the *other* node's centre, so a small offset between the centres gave
+  a slanted line whose ends followed the wrong node. JGraph itself masks this
+  asymmetrically: its target end is computed towards the source's perimeter point,
+  which makes the line straight at the target's height. Both backends now use one rule,
+  `EdgeGeometry.alignedCentres`: if the nodes' extents, less a tenth at either side,
+  overlap on one axis, a straight edge runs along the middle of the overlap, vertical
+  or horizontal; otherwise it runs from centre to centre, with the smart rule as
+  before. The fan-out shift of parallel edges is kept. `DROP_FRACTION` is now shared
+  from `EdgeGeometry`. Tests on both backends (`EdgeEndsTest`, `YFilesEditorTest`).
+- *FlatLaf tabs.* Unselected tabs were bare labels under an underlined selected one.
+  `Options.initTabbedPaneLook` sets card-type tabs with separators on a tab area
+  darkened by 8%, the selected tab in the content colour and joined to the content.
+  Rendered variants were shown to Arend; the choice is his.
+
 Next: 3c, the clipboard.
