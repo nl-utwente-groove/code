@@ -41,6 +41,12 @@ import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.layout.EdgeLayout;
 import nl.utwente.groove.graph.layout.LayoutMap;
+import nl.utwente.groove.gui.view.CellStore.Connection;
+import nl.utwente.groove.gui.look.VisualMap;
+import nl.utwente.groove.gui.look.VisualKey;
+import java.util.List;
+import java.util.ArrayList;
+import java.awt.geom.Point2D;
 import nl.utwente.groove.gui.view.cell.AspectEdgeCell;
 import nl.utwente.groove.gui.view.cell.AspectVertexCell;
 import nl.utwente.groove.util.AIGenerated;
@@ -360,6 +366,52 @@ public class AspectGraphViewModel extends GraphViewModel<AspectGraph> {
                  "Must be absent from a graph for this rule to apply, and will be created when applying this rule");
         ROLE_DESCRIPTIONS.put(AspectKind.ERASER, "Will be deleted by applying this rule");
         ROLE_DESCRIPTIONS.put(AspectKind.REMARK, "Has no effect on the execution of the rule");
+    }
+
+    /**
+     * Inserts the cells of a graph fragment, as one edit: fresh vertices with the
+     * fragment's labels, at the fragment's positions shifted by a given offset, and
+     * edges between them likewise. The fragment is typically the content of the
+     * clipboard, see {@link GraphClipboard}.
+     * @return the inserted cells, the vertices first
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    public List<AspectViewCell> insertFragment(GraphFragment fragment, double dx, double dy) {
+        settlePendingInsertion();
+        List<AspectVertexCell> vertices = new ArrayList<>();
+        startNodeNumbering();
+        for (var v : fragment.vertices()) {
+            AspectVertexCell vertex = newVertex(createAspectNode());
+            vertex.setNodeFixed();
+            vertex.setEditableLabels(new EditableLabels(v.labels()));
+            vertex
+                .putVisual(VisualKey.NODE_POS, new Point2D.Double(v.position().getX() + dx,
+                    v.position().getY() + dy));
+            vertices.add(vertex);
+        }
+        List<AspectEdgeCell> edges = new ArrayList<>();
+        List<Connection<AspectGraph>> connections = new ArrayList<>();
+        for (var e : fragment.edges()) {
+            AspectEdgeCell edge = newEdge(null);
+            edge.setEditableLabels(new EditableLabels(e.labels()));
+            List<Point2D> points = new ArrayList<>();
+            for (Point2D point : e.points()) {
+                points.add(new Point2D.Double(point.getX() + dx, point.getY() + dy));
+            }
+            VisualMap visuals = new VisualMap();
+            visuals.setPoints(points);
+            visuals.setLabelPos(e.labelPosition());
+            visuals.setLineStyle(e.lineStyle());
+            edge.putVisuals(visuals);
+            edges.add(edge);
+            connections
+                .add(new Connection<>(edge, vertices.get(e.source()), vertices.get(e.target())));
+        }
+        insert(vertices, edges, connections);
+        stopNodeNumbering();
+        List<AspectViewCell> result = new ArrayList<>(vertices);
+        result.addAll(edges);
+        return result;
     }
 
     /**

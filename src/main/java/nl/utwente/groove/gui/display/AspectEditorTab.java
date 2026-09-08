@@ -34,7 +34,6 @@ import javax.swing.Action;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JList;
@@ -45,7 +44,6 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import javax.swing.TransferHandler;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -69,6 +67,7 @@ import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.view.AspectGraphViewModel;
 import nl.utwente.groove.gui.view.EditHistory;
 import nl.utwente.groove.gui.view.GraphCanvas;
+import nl.utwente.groove.gui.view.GraphClipboard;
 import nl.utwente.groove.gui.view.GraphCanvasListener;
 import nl.utwente.groove.gui.view.GraphViewMode;
 import nl.utwente.groove.gui.view.ViewCell;
@@ -530,7 +529,7 @@ final public class AspectEditorTab extends AspectTab
         getCopyAction().setEnabled(!previewing && hasSelection);
         getCutAction().setEnabled(!previewing && hasSelection);
         getDeleteAction().setEnabled(!previewing && hasSelection);
-        getPasteAction().setEnabled(!previewing && clipboardFilled);
+        getPasteAction().setEnabled(!previewing && GraphClipboard.hasFragment());
     }
 
     /**
@@ -588,11 +587,6 @@ final public class AspectEditorTab extends AspectTab
 
     /** The role of the graph being edited. */
     private final GraphRole role;
-    /**
-     * Flag shared between all Editor instances indicating that
-     * the clipboard was filled by a cut or copy action.
-     */
-    private static boolean clipboardFilled;
 
     /**
      * Lazily creates and returns the action to cut graph elements in the
@@ -600,10 +594,17 @@ final public class AspectEditorTab extends AspectTab
      */
     private Action getCutAction() {
         if (this.cutAction == null) {
-            Action action = TransferHandler.getCutAction();
-            action.putValue(Action.ACCELERATOR_KEY, Options.CUT_KEY);
-            this.cutAction = new TransferAction(action, Options.CUT_KEY, Options.CUT_ACTION_NAME);
-            this.cutAction.putValue(Action.SMALL_ICON, Icons.CUT_ICON);
+            this.cutAction
+                = new ToolbarAction(Options.CUT_ACTION_NAME, Options.CUT_KEY, Icons.CUT_ICON) {
+                    @Override
+                    public void actionPerformed(ActionEvent evt) {
+                        super.actionPerformed(evt);
+                        if (GraphClipboard.cut(getCanvas())) {
+                            getPasteAction().setEnabled(true);
+                        }
+                    }
+                };
+            this.cutAction.setEnabled(false);
         }
         return this.cutAction;
     }
@@ -617,10 +618,17 @@ final public class AspectEditorTab extends AspectTab
      */
     private Action getCopyAction() {
         if (this.copyAction == null) {
-            Action action = TransferHandler.getCopyAction();
             this.copyAction
-                = new TransferAction(action, Options.COPY_KEY, Options.COPY_ACTION_NAME);
-            this.copyAction.putValue(Action.SMALL_ICON, Icons.COPY_ICON);
+                = new ToolbarAction(Options.COPY_ACTION_NAME, Options.COPY_KEY, Icons.COPY_ICON) {
+                    @Override
+                    public void actionPerformed(ActionEvent evt) {
+                        super.actionPerformed(evt);
+                        if (GraphClipboard.copy(getCanvas())) {
+                            getPasteAction().setEnabled(true);
+                        }
+                    }
+                };
+            this.copyAction.setEnabled(false);
         }
         return this.copyAction;
     }
@@ -634,11 +642,15 @@ final public class AspectEditorTab extends AspectTab
      */
     private Action getPasteAction() {
         if (this.pasteAction == null) {
-            Action action = TransferHandler.getPasteAction();
-            this.pasteAction
-                = new TransferAction(action, Options.PASTE_KEY, Options.PASTE_ACTION_NAME);
-            this.pasteAction.putValue(Action.SMALL_ICON, Icons.PASTE_ICON);
-            this.pasteAction.setEnabled(true);
+            this.pasteAction = new ToolbarAction(Options.PASTE_ACTION_NAME, Options.PASTE_KEY,
+                Icons.PASTE_ICON) {
+                @Override
+                public void actionPerformed(ActionEvent evt) {
+                    super.actionPerformed(evt);
+                    GraphClipboard.paste(getCanvas());
+                }
+            };
+            this.pasteAction.setEnabled(GraphClipboard.hasFragment());
         }
         return this.pasteAction;
     }
@@ -750,36 +762,6 @@ final public class AspectEditorTab extends AspectTab
         public void actionPerformed(ActionEvent evt) {
             getCanvas().finishEditing();
         }
-    }
-
-    /** This will change the source of the action event to graph. */
-    private class TransferAction extends ToolbarAction {
-        /**
-         * Constructs an action that redirects to another action, while setting
-         * the source of the event to the editor's j-graph.
-         */
-        public TransferAction(Action action, KeyStroke acceleratorKey, String name) {
-            super(name, acceleratorKey, (ImageIcon) action.getValue(SMALL_ICON));
-            putValue(SHORT_DESCRIPTION, name);
-            setEnabled(false);
-            this.action = action;
-        }
-
-        /** Redirects the Action event. */
-        @Override
-        public void actionPerformed(ActionEvent evt) {
-            super.actionPerformed(evt);
-            evt = new ActionEvent(getCanvas().getComponent(), evt.getID(), evt.getActionCommand(),
-                evt.getModifiers());
-            this.action.actionPerformed(evt);
-            if (this == getCutAction() || this == getCopyAction()) {
-                clipboardFilled = true;
-                getPasteAction().setEnabled(true);
-            }
-        }
-
-        /** The action that this transfer action wraps. */
-        protected Action action;
     }
 
     /** Private cell renderer class that inserts the correct tool tips. */

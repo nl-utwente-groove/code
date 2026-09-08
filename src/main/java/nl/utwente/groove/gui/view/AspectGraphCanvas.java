@@ -38,6 +38,13 @@ public interface AspectGraphCanvas extends GraphCanvas<AspectGraph> {
     AspectGraphViewModel getViewModel();
 
     @Override
+    default AspectGraphViewModel getNonNullViewModel() {
+        var result = getViewModel();
+        assert result != null;
+        return result;
+    }
+
+    @Override
     AspectGraphViewModel newViewModel();
 
     @Override
