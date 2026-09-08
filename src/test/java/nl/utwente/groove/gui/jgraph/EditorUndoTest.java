@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.awt.geom.Point2D;
 import java.io.IOException;
@@ -71,7 +72,7 @@ public class EditorUndoTest {
     private static final String GRAMMAR = "junit/samples/ferryman.gps";
 
     @Test
-    void addEdgeAndEditLabel() throws IOException {
+    void addEdgeAndEditLabelIsOneStep() throws IOException {
         AspectJGraph canvas = editorCanvas();
         AspectGraphViewModel model = canvas.getNonNullModel().getViewModel();
         EditHistory<AspectGraph> history = model.getEditHistory();
@@ -79,36 +80,137 @@ public class EditorUndoTest {
         assertFalse(history.canUndo());
         int[] changes = {0};
         history.addListener(() -> changes[0]++);
+        var graph = model.getGraph();
+        assertNotNull(graph);
+        int edgeCount = graph.edgeCount();
+        AspectEdgeCell edge = pendingEdge(canvas);
+        JEdge<AspectGraph> jEdge = (JEdge<AspectGraph>) JCell.of(edge);
+        canvas.setSelectionCell(jEdge);
+        // the edge is shown but is not part of the graph nor of the history yet
+        assertTrue(model.getCells().contains(edge), "the pending edge is shown");
+        assertTrue(model.hasPendingInsertion());
+        assertFalse(history.canUndo(), "a pending insertion is not in the history");
+        assertEquals(0, changes[0]);
+        graph = model.getGraph();
+        assertNotNull(graph);
+        assertEquals(edgeCount, graph.edgeCount(), "the graph does not have the pending edge");
+        assertTrue(model.getResourceModel().getErrors().isEmpty(),
+                   "no error for the pending edge's empty label");
+        // what completing the in-place editor does
+        canvas.getGraphLayoutCache().valueForCellChanged(jEdge, "next");
+        assertFalse(model.hasPendingInsertion());
+        assertEquals(1, changes[0], "creating and labelling the edge is one edit");
+        assertTrue(history.isDirty());
+        assertFalse(history.isDirtMinor());
+        assertState(model, edge, true, "next");
+        history.undo();
+        // the label change is reverted before the insertion
+        assertState(model, edge, false, "");
+        assertFalse(history.canUndo());
+        assertFalse(history.isDirty(), "dirt after undoing everything");
+        history.redo();
+        assertState(model, edge, true, "next");
+        assertSame(jEdge, JCell.of(edge), "the edge cell got a new item on re-insertion");
+        assertFalse(history.canRedo());
+    }
+
+    @Test
+    void unlabelledEdgeIsWithdrawn() throws IOException {
+        AspectJGraph canvas = editorCanvas();
+        AspectGraphViewModel model = canvas.getNonNullModel().getViewModel();
+        EditHistory<AspectGraph> history = model.getEditHistory();
+        assertNotNull(history);
+        int cellCount = model.getCells().size();
+        // the editor is cancelled
+        AspectEdgeCell edge = pendingEdge(canvas);
+        model.settlePendingInsertion();
+        assertFalse(model.getCells().contains(edge), "the cancelled edge is gone");
+        assertEquals(cellCount, model.getCells().size());
+        assertFalse(history.canUndo(), "nothing to undo after a cancelled edge");
+        assertFalse(history.isDirty());
+        // the editor commits an empty label
+        edge = pendingEdge(canvas);
+        canvas.getGraphLayoutCache().valueForCellChanged(JCell.of(edge), "");
+        assertFalse(model.getCells().contains(edge), "the unlabelled edge is gone");
+        assertFalse(history.canUndo());
+        // another edit settles a pending edge too, by withdrawing it
+        edge = pendingEdge(canvas);
+        AspectVertexCell vertex = vertices(model).get(0);
+        VisualMap change = new VisualMap();
+        change.setNodePos(new Point2D.Double(300, 300));
+        canvas.edit(Map.of(vertex, change));
+        assertFalse(model.getCells().contains(edge), "the pending edge is gone after another edit");
+        assertTrue(history.canUndo());
+        assertTrue(history.isDirtMinor(), "only the move is in the history");
+    }
+
+    @Test
+    void unlabelledVertexIsKept() throws IOException {
+        AspectJGraph canvas = editorCanvas();
+        AspectGraphViewModel model = canvas.getNonNullModel().getViewModel();
+        EditHistory<AspectGraph> history = model.getEditHistory();
+        assertNotNull(history);
+        var graph = model.getGraph();
+        assertNotNull(graph);
+        int nodeCount = graph.nodeCount();
+        AspectVertexCell vertex = model.newVertex(model.createAspectNode());
+        vertex.setNodeFixed();
+        vertex.putVisual(VisualKey.NODE_POS, new Point2D.Double(50, 50));
+        model.insertPending(List.of(vertex), List.of(), List.of());
+        graph = model.getGraph();
+        assertNotNull(graph);
+        assertEquals(nodeCount, graph.nodeCount(), "the graph does not have the pending vertex");
+        assertFalse(history.canUndo());
+        // the editor is cancelled: the vertex stays, as an edit of its own
+        model.settlePendingInsertion();
+        assertTrue(model.getCells().contains(vertex), "the vertex is kept");
+        graph = model.getGraph();
+        assertNotNull(graph);
+        assertEquals(nodeCount + 1, graph.nodeCount(), "the graph has the kept vertex");
+        assertTrue(history.canUndo());
+        history.undo();
+        assertFalse(model.getCells().contains(vertex));
+        assertFalse(history.canUndo());
+    }
+
+    /**
+     * Cancelling the in-place editor on the JGraph canvas withdraws the edge it was
+     * opened for; stopping it with a label records the edge with that label.
+     */
+    @Test
+    void inPlaceEditorSettlesTheNewEdge() throws IOException {
+        AspectJGraph canvas = editorCanvas();
+        AspectGraphViewModel model = canvas.getNonNullModel().getViewModel();
+        EditHistory<AspectGraph> history = model.getEditHistory();
+        assertNotNull(history);
+        AspectEdgeCell edge = pendingEdge(canvas);
+        canvas.startEditingAtCell(JCell.of(edge));
+        assumeTrue(canvas.isEditing(), "in-place editing needs a displayable canvas");
+        canvas.getUI().cancelEditing(canvas);
+        assertFalse(canvas.isEditing());
+        assertFalse(model.getCells().contains(edge), "the edge is gone after cancelling");
+        assertFalse(history.canUndo());
+        edge = pendingEdge(canvas);
+        canvas.startEditingAtCell(JCell.of(edge));
+        assertTrue(canvas.isEditing());
+        canvas.stopEditing();
+        assertFalse(model.getCells().contains(edge), "the edge is gone after an empty commit");
+        assertFalse(history.canUndo());
+    }
+
+    /** Inserts a pending edge between the first two vertices, as AspectJGraph.addEdge does. */
+    private static AspectEdgeCell pendingEdge(AspectJGraph canvas) {
+        AspectGraphViewModel model = canvas.getNonNullModel().getViewModel();
         List<AspectVertexCell> vertices = vertices(model);
-        // what AspectJGraph.addEdge does, without the mouse
         AspectEdgeCell edge = model.newEdge(null);
         edge.getEditableLabels().add("");
         edge
             .putVisual(VisualKey.POINTS,
                        List.of(new Point2D.Double(0, 0), new Point2D.Double(10, 10)));
         model
-            .insert(List.of(), List.of(edge),
-                    List.of(new Connection<>(edge, vertices.get(0), vertices.get(1))));
-        JEdge<AspectGraph> jEdge = (JEdge<AspectGraph>) JCell.of(edge);
-        canvas.setSelectionCell(jEdge);
-        // what completing the in-place editor does
-        canvas.getGraphLayoutCache().valueForCellChanged(jEdge, "next");
-        assertEquals(2, changes[0], "the selection of a visible cell posted an edit");
-        assertTrue(history.isDirty());
-        assertFalse(history.isDirtMinor());
-        assertState(model, edge, true, "next");
-        history.undo();
-        assertState(model, edge, true, "");
-        history.undo();
-        assertState(model, edge, false, "");
-        assertFalse(history.canUndo());
-        assertFalse(history.isDirty(), "dirt after undoing everything");
-        history.redo();
-        assertState(model, edge, true, "");
-        assertSame(jEdge, JCell.of(edge), "the edge cell got a new item on re-insertion");
-        history.redo();
-        assertState(model, edge, true, "next");
-        assertFalse(history.canRedo());
+            .insertPending(List.of(), List.of(edge),
+                           List.of(new Connection<>(edge, vertices.get(0), vertices.get(1))));
+        return edge;
     }
 
     @Test

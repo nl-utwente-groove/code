@@ -214,13 +214,20 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements Aspect
         AspectVertexCell vertex = viewModel.newVertex(viewModel.createAspectNode());
         vertex.setNodeFixed();
         vertex.putVisual(VisualKey.NODE_POS, atPoint);
-        // add the cell through the view model, which records the edit
-        viewModel.insert(List.of(vertex), List.of(), List.of());
         var jVertex = JCell.of(vertex);
-        setSelectionCell(jVertex);
-        // immediately add a label, if so indicated by startEditingNewNode
         if (this.startEditingNewNode) {
+            // the vertex and its first label are one edit, settled when the
+            // in-place editor closes (see JGraphUI.completeEditing)
+            viewModel.insertPending(List.of(vertex), List.of(), List.of());
+            setSelectionCell(jVertex);
             startEditingAtCell(jVertex);
+            if (!isEditing()) {
+                viewModel.settlePendingInsertion();
+            }
+        } else {
+            // add the cell through the view model, which records the edit
+            viewModel.insert(List.of(vertex), List.of(), List.of());
+            setSelectionCell(jVertex);
         }
     }
 
@@ -265,18 +272,22 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements Aspect
             points = Arrays.asList(from, to);
         }
         edge.putVisual(VisualKey.POINTS, points);
-        // add the cell through the view model, which records the edit
-        model
-            .getViewModel()
-            .insert(List.of(), List.of(edge),
-                    List
-                        .of(new Connection<>(edge, (AspectVertexCell) source,
-                            (AspectVertexCell) target)));
-        var newEdge = JCell.of(edge);
-        setSelectionCell(newEdge);
-        // immediately add a label
+        var viewModel = model.getViewModel();
+        var connections = List
+            .of(new Connection<>(edge, (AspectVertexCell) source, (AspectVertexCell) target));
         if (this.startEditingNewEdge) {
-            startEditingAtCell(newEdge);
+            // the edge and its first label are one edit, settled when the
+            // in-place editor closes (see JGraphUI.completeEditing)
+            viewModel.insertPending(List.of(), List.of(edge), connections);
+            setSelectionCell(JCell.of(edge));
+            startEditingAtCell(JCell.of(edge));
+            if (!isEditing()) {
+                viewModel.settlePendingInsertion();
+            }
+        } else {
+            // add the cell through the view model, which records the edit
+            viewModel.insert(List.of(), List.of(edge), connections);
+            setSelectionCell(JCell.of(edge));
         }
     }
 

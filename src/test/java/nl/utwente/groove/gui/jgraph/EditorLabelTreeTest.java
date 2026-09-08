@@ -14,6 +14,7 @@
  */
 package nl.utwente.groove.gui.jgraph;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -93,14 +94,17 @@ public class EditorLabelTreeTest {
         assertNotNull(target);
         model.remove(List.of(edge));
         assertFalse(labels(tree).contains(LABEL), "label without occurrences gone from the tree");
+        Set<String> before = labels(tree);
         // a new edge, labelled in the in-place editor afterwards, as the gesture does it
         AspectEdgeCell fresh = model.newEdge(null);
         fresh.getEditableLabels().add("");
         fresh
             .putVisual(VisualKey.POINTS,
                        List.of(new Point2D.Double(0, 0), new Point2D.Double(10, 10)));
-        model.insert(List.of(), List.of(fresh), List.of(new Connection<>(fresh, source, target)));
-        assertFalse(labels(tree).contains(LABEL), "label in the tree before the new edge is labelled");
+        model
+            .insertPending(List.of(), List.of(fresh),
+                           List.of(new Connection<>(fresh, source, target)));
+        assertEquals(before, labels(tree), "the tree is unchanged while the new edge is unlabelled");
         var labels = new EditableLabels();
         labels.load(LABEL);
         model.changeLabels(fresh, labels);

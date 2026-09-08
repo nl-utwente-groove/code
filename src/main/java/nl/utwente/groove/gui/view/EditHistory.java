@@ -108,8 +108,9 @@ public class EditHistory<G extends Graph> {
         return !this.redoStack.isEmpty();
     }
 
-    /** Reverts the last edit done, if any. */
+    /** Reverts the last edit done, if any; a pending insertion is settled first. */
     public void undo() {
+        this.viewModel.settlePendingInsertion();
         var edits = this.undoStack.poll();
         if (edits != null) {
             for (int i = edits.size() - 1; i >= 0; i--) {
@@ -122,8 +123,9 @@ public class EditHistory<G extends Graph> {
         }
     }
 
-    /** Applies the last edit undone again, if any. */
+    /** Applies the last edit undone again, if any; a pending insertion is settled first. */
     public void redo() {
+        this.viewModel.settlePendingInsertion();
         var edits = this.redoStack.poll();
         if (edits != null) {
             for (var edit : edits) {

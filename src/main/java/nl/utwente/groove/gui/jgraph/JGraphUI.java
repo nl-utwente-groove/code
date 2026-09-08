@@ -59,6 +59,7 @@ import org.jgraph.plaf.basic.BasicGraphUI;
 import nl.utwente.groove.gui.view.GraphViewMode;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.gui.Icons;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.gui.view.AspectViewEdge;
 import nl.utwente.groove.gui.view.ViewCell;
@@ -69,6 +70,25 @@ public class JGraphUI<G extends @NonNull Graph> extends BasicGraphUI {
     @SuppressWarnings("unchecked")
     private JGraph<G> getJGraph() {
         return (JGraph<G>) this.graph;
+    }
+
+    /*
+     * Overridden to settle a pending insertion of the view model when the in-place
+     * editor closes: a cell created for the editor is recorded with its first
+     * label, or withdrawn if the editor gave it none (an edge) or was cancelled.
+     * The value of a stopped editor reaches the model before this, through the
+     * layout cache and the model's edit.
+     */
+    @Override
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    protected void completeEditing(boolean messageStop, boolean messageCancel,
+                                   boolean messageGraph) {
+        boolean wasEditing = this.editingComponent != null;
+        super.completeEditing(messageStop, messageCancel, messageGraph);
+        var viewModel = getJGraph().getViewModel();
+        if (wasEditing && viewModel != null) {
+            viewModel.settlePendingInsertion();
+        }
     }
 
     private GraphViewMode getGraphViewMode() {

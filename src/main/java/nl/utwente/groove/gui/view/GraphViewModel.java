@@ -184,6 +184,58 @@ public abstract class GraphViewModel<G extends Graph> {
     }
 
     /**
+     * Inserts fresh cells provisionally, for a gesture that goes on to give one of
+     * them its first label in place: the cells are shown, but they are not part of
+     * the graph and the insertion is not in the history until it is <i>settled</i>.
+     * A label change of one of the cells ({@link #changeLabels}) settles it as one
+     * edit together with the insertion, so that creating and labelling a cell is one
+     * undo step; any other edit, and {@link #settlePendingInsertion} (the in-place
+     * editor closing without a label), settle it on its own: inserted vertices are
+     * kept, inserted edges are withdrawn, since an edge without a label is no edge.
+     * Without a history, this is a plain {@link #insert}.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    public void insertPending(List<? extends ViewVertex<G>> vertices,
+                              List<? extends ViewEdge<G>> edges,
+                              List<Connection<G>> connections) {
+        settlePendingInsertion();
+        if (this.editHistory == null || isLoading()) {
+            insert(vertices, edges, connections);
+            return;
+        }
+        var edit = new GraphEdit<G>().withInserted(vertices, edges, connections);
+        apply(edit, true, false);
+        this.pendingInsertion = edit;
+    }
+
+    /** Indicates if there is a pending insertion, see {@link #insertPending}. */
+    public boolean hasPendingInsertion() {
+        return this.pendingInsertion != null;
+    }
+
+    /**
+     * Settles the pending insertion, if any, without a label change: inserted
+     * vertices are kept and their insertion is recorded, inserted edges are withdrawn.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    public void settlePendingInsertion() {
+        var pending = this.pendingInsertion;
+        if (pending == null) {
+            return;
+        }
+        this.pendingInsertion = null;
+        if (pending.getInsertedEdges().isEmpty()) {
+            afterEdit(pending);
+            recorded(pending);
+        } else {
+            getStore().removeCells(pending.getInsertedCells());
+        }
+    }
+
+    /** The insertion that awaits its first label, if any; see {@link #insertPending}. */
+    private @Nullable GraphEdit<G> pendingInsertion;
+
+    /**
      * Removes cells as one edit, together with the edges incident to the
      * removed vertices.
      */
@@ -270,11 +322,48 @@ public abstract class GraphViewModel<G extends Graph> {
         }
     }
 
-    /** Changes the editable labels of a cell as one edit. */
+    /**
+     * Changes the editable labels of a cell as one edit. If the cell is one of a
+     * pending insertion (see {@link #insertPending}), the insertion is settled with
+     * the label change, as one edit; an edge that gets no label is withdrawn.
+     */
     @AIGenerated("Claude Fable 5.1, 2026-09")
     public void changeLabels(ViewCell<G> cell, EditableLabels labels) {
         var oldLabels = new EditableLabels(getLabels(cell));
-        doEdit(new GraphEdit<G>().withLabels(cell, oldLabels, new EditableLabels(labels)));
+        var newLabels = new EditableLabels(labels);
+        var labelEdit = new GraphEdit<G>().withLabels(cell, oldLabels, newLabels);
+        var pending = this.pendingInsertion;
+        if (pending == null || !pending.getInsertedCells().contains(cell)) {
+            settlePendingInsertion();
+            doEdit(labelEdit);
+            return;
+        }
+        this.pendingInsertion = null;
+        if (cell instanceof ViewEdge && isBlank(newLabels)) {
+            getStore().removeCells(pending.getInsertedCells());
+        } else if (oldLabels.toEditString().equals(newLabels.toEditString())) {
+            afterEdit(pending);
+            recorded(pending);
+        } else {
+            apply(labelEdit, true);
+            var history = this.editHistory;
+            if (history != null && !isLoading()) {
+                history.record(() -> {
+                    history.recorded(pending);
+                    history.recorded(labelEdit);
+                });
+            }
+        }
+    }
+
+    /** Indicates if editable labels are all blank. */
+    private static boolean isBlank(EditableLabels labels) {
+        for (String text : labels) {
+            if (!text.isBlank()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /** Returns the editable labels of a cell; only role models with editable labels support this. */
@@ -297,7 +386,13 @@ public abstract class GraphViewModel<G extends Graph> {
         if (edit.isEmpty()) {
             return;
         }
+        settlePendingInsertion();
         apply(edit, true);
+        recorded(edit);
+    }
+
+    /** Records an applied edit in the history, if there is one and the model is not loading. */
+    private void recorded(GraphEdit<G> edit) {
         var history = this.editHistory;
         if (history != null && !isLoading()) {
             history.recorded(edit);
@@ -312,6 +407,15 @@ public abstract class GraphViewModel<G extends Graph> {
      */
     @AIGenerated("Claude Fable 5.1, 2026-09")
     public void apply(GraphEdit<G> edit, boolean forward) {
+        apply(edit, forward, true);
+    }
+
+    /**
+     * Applies an edit forward or reverts it, see {@link #apply(GraphEdit, boolean)}.
+     * @param complete if {@code false}, the model does not react to the edit
+     * ({@link #afterEdit}): a pending insertion, see {@link #insertPending}
+     */
+    private void apply(GraphEdit<G> edit, boolean forward, boolean complete) {
         var store = getStore();
         if (forward) {
             if (!edit.getRemovedCells().isEmpty()) {
@@ -349,6 +453,9 @@ public abstract class GraphViewModel<G extends Graph> {
         for (var entry : edit.getLabelChanges().entrySet()) {
             setLabels(entry.getKey(), entry.getValue().get(forward));
             relabelled.add(entry.getKey());
+        }
+        if (!complete) {
+            return;
         }
         afterEdit(edit);
         if (!relabelled.isEmpty()) {
