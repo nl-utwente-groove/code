@@ -170,7 +170,7 @@ public class Rule implements Action, Fixable {
      * @param level nesting level of this rule within the condition tree
      */
     public void setParent(Rule parent, int[] level) {
-        testFixed(false);
+        testMutable();
         var coRoot = getCoRoot();
         assert coRoot != null : String
             .format("Sub-rule at level %s must have a non-trivial co-root map",
@@ -187,8 +187,8 @@ public class Rule implements Action, Fixable {
     public Rule getParent() {
         var result = this.parent;
         if (result == null) {
-            testFixed(true);
-            this.parent = result = this;
+            assert isFixed();
+            result = this;
         }
         return result;
     }
@@ -203,7 +203,7 @@ public class Rule implements Action, Fixable {
      * Sets the rule properties from a resource property map.
      */
     public void setProperties(ResourceProperties properties) {
-        testFixed(false);
+        testMutable();
         try {
             this.priority = properties.parseProperty(Key.PRIORITY).value(ValueType.INTEGER);
             this.transitionLabel
@@ -650,7 +650,7 @@ public class Rule implements Action, Fixable {
 
     /** Computes the array of nodes isolated in the left hand side. */
     private RuleNode[] computeIsolatedNodes() {
-        testFixed(true);
+        assert isFixed();
         Set<RuleNode> result = new HashSet<>();
         for (RuleNode node : lhs().nodeSet()) {
             if (lhs().edgeSet(node).isEmpty()) {
@@ -1045,7 +1045,7 @@ public class Rule implements Action, Fixable {
      * Computes the LHS nodes on this rule level that are not mapped to the RHS.
      */
     private DefaultRuleNode[] computeEraserNodes() {
-        //testFixed(true);
+        assert isFixed();
         Set<RuleNode> result = new LinkedHashSet<>(lhs().nodeSet());
         result.removeAll(rhs().nodeSet());
         return result.toArray(new DefaultRuleNode[result.size()]);
@@ -1084,7 +1084,7 @@ public class Rule implements Action, Fixable {
      * Computes the value of {@link #eraserEdges}.
      */
     private RuleEdge[] computeEraserEdges() {
-        testFixed(true);
+        assert isFixed();
         Set<RuleEdge> result = new LinkedHashSet<>(lhs().edgeSet());
         result.removeAll(rhs().edgeSet());
         // also remove the incident edges of the lhs-only nodes
@@ -1258,15 +1258,17 @@ public class Rule implements Action, Fixable {
      * @see #isFixed()
      */
     public Prover getProver() {
-        testFixed(true);
-        var result = this.prover;
-        if (result == null) {
-            this.prover = result = new Prover(this);
-        }
-        return result;
+        return this.prover.get();
     }
 
-    private @Nullable Prover prover;
+    /** Computes the value of {@link #prover}. */
+    private Prover computeProver() {
+        assert isFixed();
+        return new Prover(this);
+    }
+
+    /** The prover for this rule. */
+    private final Supplier<Prover> prover = lazy(this::computeProver);
 
     /** Returns the current anchor factory for all rules. */
     public static AnchorFactory getAnchorFactory() {

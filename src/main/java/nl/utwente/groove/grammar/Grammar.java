@@ -51,7 +51,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * @see QualName
  * @see Rule
  */
-public class Grammar {
+public class Grammar implements Fixable {
     /**
      * Constructs an initially empty grammar.
      */
@@ -92,7 +92,7 @@ public class Grammar {
      * @see #isFixed()
      */
     public void add(Action action) {
-        testFixed(false);
+        testMutable();
         assert action instanceof Fixable fix
             ? fix.isFixed()
             : false;
@@ -247,7 +247,7 @@ public class Grammar {
      * @param properties the new properties mapping
      */
     public void setProperties(GrammarProperties properties) {
-        testFixed(false);
+        testMutable();
         assert this.properties == null : "Grammar properties already set";
         this.properties = new GrammarProperties(properties);
     }
@@ -269,7 +269,7 @@ public class Grammar {
      * @param type the combined type graph
      */
     public final void setTypeGraph(TypeGraph type) {
-        testFixed(false);
+        testMutable();
         assert type.isFixed();
         this.typeGraph = type;
     }
@@ -299,7 +299,7 @@ public class Grammar {
      * @see #isFixed()
      */
     public void setStartGraph(HostGraph startGraph) {
-        testFixed(false);
+        testMutable();
         assert startGraph.isFixed();
         this.startGraph = startGraph;
     }
@@ -316,7 +316,7 @@ public class Grammar {
      * @see #isFixed()
      */
     public void setControl(Automaton control) {
-        testFixed(false);
+        testMutable();
         this.control = control;
     }
 
@@ -342,7 +342,7 @@ public class Grammar {
      * @see #isFixed()
      */
     public void setPrologPrograms(Map<QualName,String> prologPrograms) {
-        testFixed(false);
+        testMutable();
         this.prologPrograms = prologPrograms;
     }
 
@@ -392,6 +392,7 @@ public class Grammar {
      * in a non-fixed rule system, whereas the rule system can only be used for
      * derivations when it is fixed.
      */
+    @Override
     public final boolean isFixed() {
         assert !this.fixed || this.typeGraph != null;
         return this.fixed;
@@ -399,30 +400,23 @@ public class Grammar {
 
     /**
      * Sets the rule system to fixed.
-     * @return {@code this}, for convenient chaining of methods.
      * @throws FormatException if the rules are inconsistent with the system
      *         properties or there is some other reason why they cannot be used
      *         in derivations.
      */
-    public Grammar setFixed() throws FormatException {
+    @Override
+    public boolean setFixed() throws FormatException {
+        boolean result = !this.fixed;
         this.fixed = true;
         this.properties.setFixed();
-        return this;
+        return result;
     }
 
-    /**
-     * Tests the the fixedness of the rule system.
-     * @param value the expected fixedness
-     * @throws IllegalStateException if {@link #isFixed()} does not equal
-     *         <code>value</code>
-     */
-    public final void testFixed(boolean value) throws IllegalStateException {
-        if (isFixed() != value) {
-            if (value) {
-                throw Exceptions.illegalState("Operation not allowed: Rule system is not fixed");
-            } else {
-                throw Exceptions.illegalState("Operation not allowed: Rule system is fixed");
-            }
+    /** Overridden to phrase the error message in terms of the rule system. */
+    @Override
+    public void testMutable() {
+        if (isFixed()) {
+            throw Exceptions.illegalState("Operation not allowed: Rule system is fixed");
         }
     }
 

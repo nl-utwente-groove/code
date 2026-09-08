@@ -153,7 +153,7 @@ public class SimpleNFA extends NodeSetEdgeSetGraph<@NonNull RegNode,@NonNull Reg
      * May be {@code null} if the NFA does not contain label variables.
      */
     public DFA getDFA(Direction dir, Valuation valuation) {
-        testFixed(true);
+        assert isFixed();
         if (valuation == null) {
             valuation = Valuation.EMPTY;
         }

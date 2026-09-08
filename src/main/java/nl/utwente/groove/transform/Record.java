@@ -43,10 +43,9 @@ public class Record {
      * Constructs a derivation record from a given (fixed) graph grammar. The
      * initial (fresh) node number is set to one higher than the highest node
      * number occurring in the start graph.
-     * @throws IllegalStateException if the grammar is not fixed according to
-     *         {@link Grammar#testFixed(boolean)}.
+     * The grammar is expected to be fixed; this is asserted, not enforced.
      */
-    public Record(Grammar grammar, HostFactory hostFactory) throws IllegalStateException {
+    public Record(Grammar grammar, HostFactory hostFactory) {
         this(grammar, hostFactory, grammar.getProperties().getAlgebraFamily());
     }
 
@@ -54,14 +53,12 @@ public class Record {
      * Constructs a derivation record with an explicit algebra family,
      * overriding the family of the grammar properties. Used when the GTS
      * carries a per-GTS algebra override.
-     * @throws IllegalStateException if the grammar is not fixed according to
-     *         {@link Grammar#testFixed(boolean)}.
+     * The grammar is expected to be fixed; this is asserted, not enforced.
      */
-    public Record(Grammar grammar, HostFactory hostFactory,
-                  AlgebraFamily family) throws IllegalStateException {
+    public Record(Grammar grammar, HostFactory hostFactory, AlgebraFamily family) {
         this.grammar = grammar;
         this.hostFactory = hostFactory;
-        grammar.testFixed(true);
+        assert grammar.isFixed();
         this.checkIso = grammar.getProperties().isCheckIsomorphism();
         this.family = family;
         this.valuator = new Valuator();

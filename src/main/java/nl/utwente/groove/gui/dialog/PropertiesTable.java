@@ -75,7 +75,9 @@ public class PropertiesTable extends JTable {
         this.errorMap = new HashMap<>();
         final TableModel model = getTableModel();
         setModel(model);
-        setIntercellSpacing(new Dimension(2, -2));
+        // the grid itself comes from the look-and-feel defaults; a properties
+        // table only widens the column margin
+        setIntercellSpacing(new Dimension(2, 1));
         setDefaultRenderer(getColumnClass(PROPERTY_COLUMN), new CellRenderer());
         putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
         addMouseListener(new DismissDelayer(this));

@@ -28,6 +28,12 @@ Upcoming release
   always 1 for type graph elements (gh #879)
 - Resolved gh #878: with "Show arrows on labels" enabled, subtype edges in a
   type graph no longer show a spurious arrow symbol as their label
+- Resolved gh #908: grammars saved before GROOVE 7.4.0 with a `disabledRules`
+  property silently lost their disabled rules on loading, since the property had
+  been replaced by `ruleEnabling` without conversion; errors in the wrongly
+  re-enabled rules then blocked the grammar. The legacy property is now converted
+  on loading. Unknown rule names in `ruleEnabling` are reported as warnings
+  instead of errors, since the property is a filter over the existing rules
 
 Release 7.5.3, 3 March 2026
 -------------------------------

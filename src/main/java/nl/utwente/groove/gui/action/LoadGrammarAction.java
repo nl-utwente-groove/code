@@ -137,7 +137,7 @@ public class LoadGrammarAction extends SimulatorAction {
             }
         }
         final GrammarModel grammar = store.toGrammarModel();
-        grammar.getProperties().setCurrentVersionProperties();
+        grammar.upgradeProperties();
         getSimulatorModel().setGrammar(store);
         if (saveAfterLoading && newGrammarFile != null) {
             getActions()

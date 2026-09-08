@@ -341,32 +341,32 @@ public class TypeTree extends LabelTree<AspectGraph> {
                 // don't show the edges as dependent on the type
                 continue;
             }
-            // check duplicates due to equi-labelled edges to different targets
-            Set<LabelEntry> entries = new HashSet<>();
-            for (var edge : new TreeSet<>(typeGraph.outEdgeSet(node))) {
+            // collect the entries of the outgoing edge types, in tree order
+            var edgeEntries = new TreeSet<TypeEntry>();
+            for (var edge : typeGraph.outEdgeSet(node)) {
                 if (typeEdges.contains(edge)) {
-                    TypeEntry edgeEntry = getFilter().getEntry(edge);
-                    if (entries.add(edgeEntry)) {
-                        TypeTreeNode edgeTypeNode = new TypeTreeNode(this, edgeEntry, true);
-                        nodeTypeNode.add(edgeTypeNode);
-                        result.add(edgeTypeNode);
-                    }
+                    edgeEntries.add(getFilter().getEntry(edge));
                 }
+            }
+            for (var edgeEntry : edgeEntries) {
+                TypeTreeNode edgeTypeNode = new TypeTreeNode(this, edgeEntry, true);
+                nodeTypeNode.add(edgeTypeNode);
+                result.add(edgeTypeNode);
             }
         }
         if (typeGraph.isImplicit()) {
-            // add edge entries
-            // check duplicates due to equi-labelled edges
-            Set<LabelEntry> entries = new HashSet<>();
+            // add the edge entries directly under the top node, in tree order
+            var edgeEntries = new TreeSet<TypeEntry>();
             for (TypeEdge edge : typeEdges) {
                 TypeEntry edgeEntry = getFilter().getEntry(edge);
                 if (isShowsAllLabels() || getFilter().hasJCells(edgeEntry)) {
-                    if (entries.add(edgeEntry)) {
-                        TypeTreeNode edgeTypeNode = new TypeTreeNode(this, edgeEntry, true);
-                        topNode.add(edgeTypeNode);
-                        result.add(edgeTypeNode);
-                    }
+                    edgeEntries.add(edgeEntry);
                 }
+            }
+            for (var edgeEntry : edgeEntries) {
+                TypeTreeNode edgeTypeNode = new TypeTreeNode(this, edgeEntry, true);
+                topNode.add(edgeTypeNode);
+                result.add(edgeTypeNode);
             }
         }
         return result;

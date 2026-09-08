@@ -33,6 +33,7 @@ import nl.utwente.groove.grammar.type.TypeEdge;
 import nl.utwente.groove.grammar.type.TypeElement;
 import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.grammar.type.TypeKey;
+import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
@@ -338,24 +339,52 @@ class TypeFilter extends LabelFilter<AspectGraph,TypeEntry> {
 
         private final Set<TypeEntry> edges = new HashSet<>();
 
+        /**
+         * Orders entries as they should appear in a label tree:
+         * first by the label of the node type, respectively the source node type
+         * of an edge type, so that edge types are grouped with their source type;
+         * then node types before flags before binary edge types;
+         * then alphabetically by label text; and finally by target type label,
+         * so that the order is consistent with {@link #equals(Object)}.
+         */
         @Override
         public int compareTo(LabelEntry o) {
             TypeEntry other = (TypeEntry) o;
-            TypeElement type = getContent();
-            TypeElement otherType = other.getContent();
-            if (type instanceof TypeNode) {
-                return type.compareTo(otherType);
-            }
-            if (otherType instanceof TypeNode) {
-                return otherType.compareTo(type);
-            }
-            TypeEdge edge = (TypeEdge) type;
-            TypeEdge otherEdge = (TypeEdge) otherType;
-            int result = edge.source().label().compareTo(otherEdge.source().label());
+            int result = getSourceLabel().compareTo(other.getSourceLabel());
             if (result == 0) {
-                result = edge.label().compareTo(otherEdge.label());
+                result = getRank() - other.getRank();
+            }
+            if (result == 0 && this.content instanceof TypeEdge edge
+                && other.content instanceof TypeEdge otherEdge) {
+                result = edge.label().text().compareTo(otherEdge.label().text());
+                if (result == 0) {
+                    result = edge.target().label().compareTo(otherEdge.target().label());
+                }
             }
             return result;
+        }
+
+        /** Returns the label of the node type wrapped in this entry,
+         * or of the source node type if this entry wraps an edge type. */
+        private TypeLabel getSourceLabel() {
+            return switch (this.content) {
+            case TypeNode n -> n.label();
+            case TypeEdge e -> e.source().label();
+            };
+        }
+
+        /** Returns the rank of this entry among the entries with the same
+         * source label: node types first, then node type edges (which only
+         * occur in implicit type graphs), then flags, then binary edge types. */
+        private int getRank() {
+            return switch (this.content) {
+            case TypeNode n -> 0;
+            case TypeEdge e -> switch (e.label().getRole()) {
+            case NODE_TYPE -> 1;
+            case FLAG -> 2;
+            case BINARY -> 3;
+            };
+            };
         }
 
         @Override

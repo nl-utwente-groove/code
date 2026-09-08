@@ -352,9 +352,15 @@ public class LTSGraphViewController extends GraphViewController<GTS> {
      * This is necessary after reloading the LTS.
      */
     public void reactivate() {
+        var model = getGraphView().getModel();
+        if (model == null) {
+            // the graph view holds no model yet, so there are no cells
+            // to reactivate; this happens on the first LTS load, where the
+            // freshly loaded model is only installed after loading
+            return;
+        }
         List<ViewCell<GTS>> activeCells = new ArrayList<>();
         GraphState activeState = getActiveState();
-        var model = getGraphView().getNonNullModel();
         if (activeState != null) {
             LTSViewCell activeCell = (LTSViewCell) model.getJCellForNode(activeState);
             if (activeCell != null) {

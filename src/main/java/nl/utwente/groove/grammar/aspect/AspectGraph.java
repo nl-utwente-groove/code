@@ -245,7 +245,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             elementMap.putNode(node, image);
             for (AspectLabel oldNodeLabel : node.getNodeLabels()) {
                 AspectLabel newNodeLabel = oldNodeLabel.relabel(oldLabel, newLabel, getSortMap());
-                newNodeLabel.setFixed();
                 graphChanged |= newNodeLabel != oldNodeLabel;
                 String text = newNodeLabel.toString();
                 // the text may be empty: the loader accepts empty edge labels
@@ -270,16 +269,12 @@ public class AspectGraph extends NodeSetEdgeSetGraph<@NonNull AspectNode,@NonNul
             AspectLabel newEdgeLabel = edge.isOperator()
                 ? edgeLabel
                 : edgeLabel.relabel(oldLabel, newLabel, getSortMap());
-            // force a new object if the inner text has to change
-            if (replacement != null && newEdgeLabel == edgeLabel) {
-                newEdgeLabel = newEdgeLabel.clone();
+            // rebuilding with the replaced inner text also forces a new object
+            if (replacement != null) {
+                newEdgeLabel = newEdgeLabel.toBuilder().setInnerText(replacement).build();
             }
             if (newEdgeLabel != edgeLabel) {
                 graphChanged = true;
-                if (replacement != null) {
-                    newEdgeLabel.setInnerText(replacement);
-                }
-                newEdgeLabel.setFixed();
                 edgeLabel = newEdgeLabel;
             }
             PlainNode sourceImage = elementMap.getNode(edge.source());

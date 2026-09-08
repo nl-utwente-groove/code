@@ -40,9 +40,9 @@ public class Automaton {
         assert program.isFixed();
         this.program = program;
         this.framePool = new Pool<>();
-        Frame start = new Frame(this, program.getTemplate().getStart(), new NestedSwitch(), null);
-        start.setFixed();
-        this.start = addFrame(start);
+        this.start
+            = new Frame(this, program.getTemplate().getStart(), new NestedSwitch(), null)
+                .normalise();
     }
 
     /** Returns the (qualified) name of the automaton.
@@ -72,7 +72,6 @@ public class Automaton {
      * @return either {@code frame} or an equal copy that was already in the automaton
      */
     Frame addFrame(Frame frame) {
-        assert frame.isFixed();
         assert frame.getAut() == this;
         assert frame.getNumber() == getFramePool().size();
         return getFramePool().canonical(frame);

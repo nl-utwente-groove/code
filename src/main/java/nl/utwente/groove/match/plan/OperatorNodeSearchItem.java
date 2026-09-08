@@ -237,25 +237,36 @@ class OperatorNodeSearchItem extends AbstractSearchItem {
         @Override
         boolean find() {
             boolean result;
-            Object outcome = calculateResult();
+            HostNode targetPreMatch = this.targetPreMatch;
+            if (targetPreMatch != null
+                && OperatorNodeSearchItem.this.operation.getOperator().isIndeterminate()) {
+                // the value of this indeterminate operation was seeded,
+                // hence this is a reconstruction of the match; since a fresh
+                // invocation cannot reproduce the seeded value, the operation is
+                // not applied again and the seeded value is assumed to be correct
+                result = true;
+            } else {
+                result = findFromOutcome(calculateResult());
+            }
+            return result;
+        }
+
+        /**
+         * Installs or checks the target image, given the freshly computed
+         * outcome of the operation (possibly {@code null}).
+         */
+        private boolean findFromOutcome(Object outcome) {
+            boolean result;
             if (outcome == null) {
                 result = false;
             } else if (OperatorNodeSearchItem.this.value != null) {
                 result = OperatorNodeSearchItem.this.value.equals(outcome);
             } else if (OperatorNodeSearchItem.this.targetFound || this.targetPreMatch != null) {
                 HostNode targetFind = this.targetPreMatch;
-                if (targetFind != null
-                    && OperatorNodeSearchItem.this.operation.getOperator().isIndeterminate()) {
-                    // the value of this indeterminate operation was seeded,
-                    // hence this is a reconstruction of the match, hence we're going
-                    // to assume the seeded value is correct
-                    result = true;
-                } else {
-                    if (targetFind == null) {
-                        targetFind = this.search.getNode(OperatorNodeSearchItem.this.targetIx);
-                    }
-                    result = ((ValueNode) targetFind).getValue().equals(outcome);
+                if (targetFind == null) {
+                    targetFind = this.search.getNode(OperatorNodeSearchItem.this.targetIx);
                 }
+                result = ((ValueNode) targetFind).getValue().equals(outcome);
             } else {
                 ValueNode targetImage = this.factory
                     .createNode(OperatorNodeSearchItem.this.operation.getResultAlgebra(), outcome);

@@ -51,20 +51,21 @@ public class AspectParser {
         assert roleMap != null; // all graph roles are pre-populated
         var result = roleMap.get(text);
         if (result == null) {
-            result = new AspectLabel(role);
-            parse(text, result);
-            result.setFixed();
+            var builder = AspectLabel.builder(role);
+            parse(text, builder);
+            result = builder.build();
             roleMap.put(text, result);
         }
         return result;
     }
 
     /**
-     * Recursively parses a string into an aspect label passed in as a parameter.
+     * Recursively parses a string into an aspect label builder passed in as a
+     * parameter.
      * @param text the text to be parsed
-     * @param result the aspect label to receive the result
+     * @param result the builder to receive the result
      */
-    private void parse(String text, AspectLabel result) {
+    private void parse(String text, AspectLabel.Builder result) {
         int nextSeparator;
         String rest = text;
         var status = Status.INIT;

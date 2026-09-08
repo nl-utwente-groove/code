@@ -46,9 +46,11 @@ import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.Strings;
 import nl.utwente.groove.util.ThreeValued;
 import nl.utwente.groove.util.collect.DeltaMap;
+import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.Parser;
+import nl.utwente.groove.util.parse.Severity;
 import nl.utwente.groove.util.parse.StringParser;
 
 /** Grammar property keys. */
@@ -482,7 +484,15 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
      * within grammar version 3.12. */
     static public final String IGNORE_REG_EXP = "ignoreRegExp";
 
-    /** Checks whether a value is a {@link DeltaMap} of rule names. */
+    /** Name of deprecated key for the space-separated list of disabled rule
+     * names, replaced by the delta-map-valued {@link #RULE_ENABLING} within
+     * grammar version 3.11 (GROOVE 7.4.0). */
+    static public final String DISABLED_RULES = "disabledRules";
+
+    /** Checks whether a value is a {@link DeltaMap} of rule names.
+     * Unknown names are reported as warnings, not errors: the delta map is
+     * a filter over the existing rules rather than a constraint on them, so
+     * a stale entry (e.g. for a deleted rule) must not block the grammar. */
     private static class RuleDeltaChecker implements GrammarChecker {
         @Override
         public FormatErrorSet apply(GrammarModel grammar, Entry value) {
@@ -493,9 +503,11 @@ public enum GrammarKey implements Properties.Key, GrammarChecker {
             unknowns.removeAll(grammar.getResourceMap(ResourceKind.RULE).keySet());
             if (!unknowns.isEmpty()) {
                 result
-                    .add("Unknown rule name%s %s", unknowns.size() == 1
-                        ? ""
-                        : "s", Strings.toString(unknowns.toArray(), "'", "'", "', '", "' and '"));
+                    .add(new FormatError(Severity.WARNING, "Unknown rule name%s %s",
+                        unknowns.size() == 1
+                            ? ""
+                            : "s",
+                        Strings.toString(unknowns.toArray(), "'", "'", "', '", "' and '")));
             }
             return result;
         }

@@ -38,10 +38,8 @@ import nl.utwente.groove.control.template.Switch;
 import nl.utwente.groove.control.template.SwitchAttempt;
 import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.grammar.Recipe;
-import nl.utwente.groove.util.DefaultFixable;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
-import nl.utwente.groove.util.Fixable;
 
 /**
  * Run-time composed control location.
@@ -49,7 +47,7 @@ import nl.utwente.groove.util.Fixable;
  * @version $Revision$
  */
 @NonNullByDefault
-public class Frame implements Position<Frame,Step>, Fixable {
+public class Frame implements Position<Frame,Step> {
     /** Constructs a new frame.
      * @param ctrl the control automaton being built
      * @param loc top template location of the frame
@@ -295,7 +293,6 @@ public class Frame implements Position<Frame,Step>, Fixable {
 
     @Override
     public StepAttempt getAttempt() {
-        assert isFixed();
         return this.attempt.get();
     }
 
@@ -462,15 +459,13 @@ public class Frame implements Position<Frame,Step>, Fixable {
         return result.normalise();
     }
 
-    /** Fixes this frame and returns its canonical representative. */
+    /** Returns the canonical representative of this frame. */
     public Frame normalise() {
-        setFixed();
         return getAut().addFrame(this);
     }
 
     @Override
     public int hashCode() {
-        assert isFixed();
         final int prime = 31;
         // the prime and pred frames have already been normalised, so
         // (consistently with the identity-based comparison in equals) their
@@ -490,7 +485,6 @@ public class Frame implements Position<Frame,Step>, Fixable {
 
     @Override
     public boolean equals(@Nullable Object obj) {
-        assert isFixed();
         if (this == obj) {
             return true;
         }
@@ -572,18 +566,6 @@ public class Frame implements Position<Frame,Step>, Fixable {
         result.append(getNumber());
         return result.toString();
     }
-
-    @Override
-    public boolean setFixed() {
-        return this.fixable.setFixed();
-    }
-
-    @Override
-    public boolean isFixed() {
-        return this.fixable.isFixed();
-    }
-
-    private final DefaultFixable fixable = new DefaultFixable();
 
     private final static boolean RICH_LABELS = true;
     private final static boolean VERY_RICH_LABELS = false;

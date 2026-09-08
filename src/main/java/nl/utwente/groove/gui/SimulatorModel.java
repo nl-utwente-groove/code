@@ -1475,15 +1475,22 @@ public class SimulatorModel implements Cloneable {
      * Ends a transaction and notifies all listeners.
      * This is only allowed if there is a transaction underway,
      * by the same owner.
+     * The transaction is closed even if a listener throws during the
+     * notification: otherwise a single failing listener would leave the
+     * transaction open for good, and every later model change would fail
+     * on the {@link #start()} assertion rather than at its own cause.
      */
     private boolean finish() {
         assert this.old != null;
         boolean result = !this.changes.isEmpty();
-        if (result) {
-            fireUpdate();
+        try {
+            if (result) {
+                fireUpdate();
+            }
+        } finally {
+            this.old = null;
+            this.changes.clear();
         }
-        this.old = null;
-        this.changes.clear();
         return result;
     }
 
