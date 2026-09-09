@@ -774,7 +774,7 @@ public class StateTree extends JTree implements SimulatorListener {
     private class StateMouseListener extends MouseAdapter {
         @Override
         public void mousePressed(MouseEvent evt) {
-            TreePath path = getPathForLocation(evt.getX(), evt.getY());
+            TreePath path = TreeGestures.getMousedPath(StateTree.this, evt);
             if (path != null) {
                 if (evt.getButton() == MouseEvent.BUTTON3 && !isRowSelected(getRowForPath(path))) {
                     setSelectionPath(path);
@@ -793,7 +793,7 @@ public class StateTree extends JTree implements SimulatorListener {
             if (evt.getButton() != MouseEvent.BUTTON1) {
                 return;
             }
-            TreePath path = getPathForLocation(evt.getX(), evt.getY());
+            TreePath path = TreeGestures.getMousedPath(StateTree.this, evt);
             if (path == null) {
                 return;
             }
@@ -823,7 +823,7 @@ public class StateTree extends JTree implements SimulatorListener {
 
         private void maybeShowPopup(MouseEvent evt) {
             if (evt.isPopupTrigger()) {
-                TreePath selectedPath = getPathForLocation(evt.getX(), evt.getY());
+                TreePath selectedPath = TreeGestures.getMousedPath(StateTree.this, evt);
                 TreeNode selectedNode = selectedPath == null
                     ? null
                     : (TreeNode) selectedPath.getLastPathComponent();

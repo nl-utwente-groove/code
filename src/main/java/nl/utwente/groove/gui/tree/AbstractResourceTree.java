@@ -20,10 +20,8 @@ import static nl.utwente.groove.gui.SimulatorModel.Change.GRAMMAR;
 import static nl.utwente.groove.gui.SimulatorModel.Change.GTS;
 
 import java.awt.Color;
-import java.awt.Rectangle;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,7 +30,6 @@ import java.util.function.Supplier;
 
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
-import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -49,7 +46,6 @@ import nl.utwente.groove.gui.SimulatorModel.Change;
 import nl.utwente.groove.gui.action.ActionStore;
 import nl.utwente.groove.gui.display.DismissDelayer;
 import nl.utwente.groove.gui.display.ResourceDisplay;
-import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.QualName;
 
@@ -135,48 +131,6 @@ public abstract class AbstractResourceTree extends JTree implements SimulatorLis
 
     /** Callback factory method for the mouse listener of this resource tree. */
     abstract MouseListener createMouseListener();
-
-    /**
-     * Keeps the focus in this tree across a display switch that a mouse press
-     * on it has just triggered.
-     * The press gives the tree the focus, but through posted events; the
-     * switch hides the previous display before those are dispatched, and as
-     * that display still contains the focus owner of record, AWT transfers the
-     * focus to the next component of the cycle, in the display coming up. The
-     * request queued here comes after all of that, so the tree ends up with the
-     * focus and the entry pressed is rendered as actively selected.
-     */
-    @AIGenerated("Claude Fable 5.1, 2026-09")
-    final void keepFocus() {
-        SwingUtilities.invokeLater(this::requestFocusInWindow);
-    }
-
-    /**
-     * Returns the tree path under a mouse event, counting the whole width of a
-     * row as belonging to its entry.
-     * {@link JTree#getPathForLocation} accepts only a click on the rendered
-     * label, which is a fraction of the row: the look and feel paints the
-     * selection across the full width, and the tree's own selection handling
-     * uses the closest path, so a click beside the label does move the
-     * selection but was invisible to the listeners of this tree. On a tree
-     * whose selection cannot change -- a single resource, or a click on the
-     * entry already selected -- that made the click do nothing at all.
-     * @return the path of the row that was clicked, or {@code null} if the
-     * event was above the first or below the last row, or left of the label
-     * (where the expand control lives)
-     */
-    @AIGenerated("Claude Opus 5, 2026-09")
-    final TreePath getMousedPath(MouseEvent evt) {
-        TreePath result = getClosestPathForLocation(evt.getX(), evt.getY());
-        if (result != null) {
-            Rectangle bounds = getPathBounds(result);
-            if (bounds == null || evt.getY() < bounds.y
-                || evt.getY() >= bounds.y + bounds.height || evt.getX() < bounds.x) {
-                result = null;
-            }
-        }
-        return result;
-    }
 
     /** Returns the (lazily computed) dismiss delay mouse listener. */
     private MouseListener getDismissDelayer() {

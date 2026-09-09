@@ -167,6 +167,31 @@ public class DisplaySwitchGuiTest {
     }
 
     /**
+     * The state list switches the display like the name lists do, and shares
+     * their hit test and focus handling: a click beside the label of its
+     * (already selected) state entry brings the state display up and leaves
+     * the focus in the list.
+     */
+    @Test
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    void stateListClickBesideName() throws Exception {
+        loadGrammar(copyGrammar(GRAMMAR));
+        JTreeOperator states = tree(DisplayKind.STATE);
+        // bring the state list to the front of its lists panel, and another
+        // display than the state display to the front of the displays panel
+        SwingUtilities.invokeAndWait(() -> {
+            var listPanel = simulator().getDisplaysPanel().getDisplay(DisplayKind.STATE).getListPanel();
+            simulator().getDisplaysPanel().getUpperListsPanel().setSelectedComponent(listPanel);
+            getModel().setDisplay(DisplayKind.RULE);
+        });
+        assertTrue(states.getRowCount() > 0, "state list is empty");
+        clickBesideRow(states, 0);
+        assertEquals(DisplayKind.STATE, shown(), "after clicking beside the state entry");
+        Thread.sleep(500);
+        assertTrue(states.getSource().isFocusOwner(), "the state list has lost the focus");
+    }
+
+    /**
      * Clicks on the row of a named resource, to the right of its rendered
      * label.
      */
@@ -178,6 +203,11 @@ public class DisplaySwitchGuiTest {
             }
         }
         assertTrue(row >= 0, "no row for " + name);
+        clickBesideRow(tree, row);
+    }
+
+    /** Clicks on a given row of a tree, to the right of its rendered label. */
+    private void clickBesideRow(JTreeOperator tree, int row) {
         Rectangle bounds = tree.getRowBounds(row);
         tree.clickMouse(bounds.x + bounds.width + 20, bounds.y + bounds.height / 2, 1);
     }

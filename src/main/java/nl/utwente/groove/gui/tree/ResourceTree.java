@@ -260,7 +260,7 @@ public class ResourceTree extends AbstractResourceTree {
             DisplayKind display = DisplayKind.toDisplay(getResourceKind());
             if (selected instanceof ResourceTreeNode && display != null) {
                 getSimulatorModel().setDisplay(display);
-                keepFocus();
+                TreeGestures.keepFocus(ResourceTree.this);
             }
 
             // invoke editor, if this was a double click
@@ -293,7 +293,7 @@ public class ResourceTree extends AbstractResourceTree {
         private TreeNode getMousedNode(MouseEvent evt) {
 
             // get the TreePath that belongs to this event
-            TreePath path = getMousedPath(evt);
+            TreePath path = TreeGestures.getMousedPath(ResourceTree.this, evt);
 
             // if no TreePath, then no node was selected
             if (path == null) {

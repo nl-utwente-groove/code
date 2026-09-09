@@ -788,7 +788,7 @@ public class RuleTree extends AbstractResourceTree {
     private class MyMouseListener extends MouseAdapter {
         @Override
         public void mousePressed(MouseEvent evt) {
-            TreePath path = getMousedPath(evt);
+            TreePath path = TreeGestures.getMousedPath(RuleTree.this, evt);
             if (path != null) {
                 if (evt.getButton() == MouseEvent.BUTTON3 && !isRowSelected(getRowForPath(path))) {
                     setSelectionPath(path);
@@ -805,7 +805,7 @@ public class RuleTree extends AbstractResourceTree {
                 }
                 if (evt.getClickCount() == 1 && toDisplay != null) {
                     getSimulatorModel().setDisplay(toDisplay);
-                    keepFocus();
+                    TreeGestures.keepFocus(RuleTree.this);
                 } else if (evt.getClickCount() == 2 && toDisplay != null) {
                     if (toDisplay.hasResource()) {
                         getActions().getEditAction(toDisplay.getResource()).execute();
@@ -825,7 +825,7 @@ public class RuleTree extends AbstractResourceTree {
             if (evt.getButton() != MouseEvent.BUTTON1) {
                 return;
             }
-            TreePath path = getMousedPath(evt);
+            TreePath path = TreeGestures.getMousedPath(RuleTree.this, evt);
             if (path == null) {
                 return;
             }
@@ -841,7 +841,7 @@ public class RuleTree extends AbstractResourceTree {
 
         private void maybeShowPopup(MouseEvent evt) {
             if (evt.isPopupTrigger()) {
-                TreePath selectedPath = getMousedPath(evt);
+                TreePath selectedPath = TreeGestures.getMousedPath(RuleTree.this, evt);
                 TreeNode selectedNode = selectedPath == null
                     ? null
                     : (TreeNode) selectedPath.getLastPathComponent();
