@@ -57,10 +57,12 @@ exporters and the headless `Imager` were already on the canvas contract since ph
 slice 5, and verification against the JGraph output of every sample grammar (391 images)
 found one systematic defect, the placement of loop labels on yFiles, which is fixed;
 `YFilesImagerTest` runs the Imager on the yFiles backend in every format and the
-Simulator test exports the LTS. Details under "Phase 4" below. Next: the JGraph backend
-out of the core module (blocked on the gh #887 reactor restructure), the local-only
-release leg of the yFiles edition (obfuscation, dual distribution, the jar's JPMS module
-name), and the open license questions. The architecture allowlist is empty.
+Simulator test exports the LTS; the Imager gained a `-b` switch for the backend. Details
+under "Phase 4" below. Phase 4 is merged into `yworks-migration` (2026-09-09). **The
+final phase is the distribution of the yFiles edition**: the local-only release leg
+(yGuard obfuscation, dual distribution) and the license questions, with the backend
+module split (gh #887) as an independent decision; the handoff is in "Immediate next
+steps" at the end. The architecture allowlist is empty.
 
 ## Goal and motivation
 
@@ -291,13 +293,58 @@ Findings and residues:
   in `yfiles/target/imager`; `YFilesSimulatorTest.ltsDisplayExportsRasterAndVector`
   covers the LTS canvas, which the Imager does not reach.
 
-## Immediate next steps
+## Immediate next steps (handoff for the phase-5 session, 2026-09-09)
 
-Each its own branch off `yworks-migration` once phase 4 is folded in: the JGraph backend
-out of the core module (waits for the gh #887 reactor restructure), the local-only
-release leg of the yFiles edition (yGuard obfuscation, dual distribution, the yFiles
-jar's JPMS module name), the license questions (Subscription status, Academic Project
-upgrade).
+**State.** Phases 0–4 are complete and folded into `yworks-migration` (tip b75251b15,
+111 commits ahead of `master` and not behind it; not yet merged into `master`, not
+pushed since 8c09ac69c). The phase-4 branch is deleted and its worktree removed. The
+Simulator, the editor, the Imager and every export run on either backend; the yFiles
+unit in `yfiles/` builds and tests on this machine only (license file in
+`C:/Groove/yfiles`, jar in `~/.m2`). What remains is the final phase: **shipping the
+yFiles edition** (with the license questions it depends on), plus a decision on the
+backend module split.
+
+1. **The release leg of the yFiles edition** (`release/`, see its README; the standard
+   release is `do-all.sh`: install the core, aggregate javadoc, then the release reactor
+   builds `runnable` — a manifest-classpath jar with `../lib/` — and `assembly` — the
+   `bin` and `bin+doc` zips — and `jpackage/build-installer.sh` the installers). The
+   yFiles edition is a second distribution built locally, never in CI (§2.2.2): the
+   `groove-yfiles` jar plus the yFiles jar go into `lib/` and on the runnable jar's
+   manifest class path, the yFiles jar **obfuscated** with yGuard (§2.1c; the plain jar
+   never leaves this machine, nor enters any repository or artifact), and the runtime
+   license file at the root of the class path (the unit's pom copies it from
+   `yfiles.license.dir`). Decide and record: how the edition is named and versioned
+   (same `revision`, an artifact/zip suffix), which parts of `release/` are shared
+   (a profile or property on the release reactor rather than a copy), whether installers
+   are built for it, and where the non-commercial-only notice goes (§2.4; the edition's
+   README and the download page, next to the Apache-licensed standard release). yGuard
+   is a yWorks tool with its own documentation; its Maven/Ant integration and the
+   exclusion of the public API GROOVE calls (obfuscate the jar's internals, keep the
+   entry points the backend uses) are the technical core of this item. Since the unit
+   runs on the class path (no `module-info`, the jar's JPMS name is undocumented), the
+   runnable jar's class-path manifest is the natural vehicle; a module-path launch is
+   not needed.
+2. **The license questions**, to settle with yWorks before the first public yFiles
+   edition: the Subscription status and delivered generation (the license order, not
+   the SLA; the code is written against 3.6.0.1, the plan mentions major 4.0), the
+   Academic Project upgrade (3 seats + build automation, which would allow CI builds),
+   and confirmation that the obfuscated-jar distribution as designed in item 1 meets
+   §2.1c. Arend handles the correspondence; sessions only prepare the questions.
+3. **The backend module split** (the JGraph backend out of the core module) is *not*
+   required for the yFiles edition: the unit works on the class path next to JGraph,
+   and `GraphBackend` ranks yFiles first when both are present. It waits for the gh #887
+   reactor restructure and is a separate decision; do not block the edition on it.
+4. **Merging `yworks-migration` into `master`** is Arend's call and the natural end of
+   the initiative; before that, the GUI test suite (`*GuiTest`, needs a display) and
+   the full `mvn test -Dexcluded.test.groups=` should be run once on the tip, and
+   `release/include/CHANGES.md` needs the migration entry (both backends, the Options
+   menu choice, the Imager's `-b` switch, the yFiles-only layout algorithms).
+
+Side issues filed along the way, independent of the phases: gh #882 (mouse
+interaction), gh #915 (JGraph editor grid snapping), gh #916 (popup actions in the menu
+bar). Open technical residues: the null-analysis blind spot over the yFiles unit (see
+"Practical notes"), the Robot tests of `YFilesSimulatorTest` that need a visible canvas,
+and the accepted cosmetic differences listed under "Phase 4".
 
 Practicalities carried over: the yFiles unit is built with `mvn -q -f yfiles/pom.xml
 test > <log> 2>&1` (installs the core artifact first; `-Dgroove.install.skip=true` when
