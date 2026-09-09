@@ -16,7 +16,11 @@
  */
 package nl.utwente.groove.test;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -27,6 +31,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import nl.utwente.groove.gui.Imager;
+import nl.utwente.groove.gui.view.GraphBackend;
 import nl.utwente.groove.util.io.FileType;
 
 /**
@@ -85,12 +90,34 @@ public class ImagerTest {
         test(FileType.TIKZ);
     }
 
-    private void test(FileType type) {
+    /**
+     * A backend requested on the command line that is not on the class path (the yFiles
+     * backend is never on the class path of the main project) gives way to the default
+     * one, with a warning on standard output; the images are still made.
+     */
+    @Test
+    public void testUnavailableBackend() {
+        PrintStream out = System.out;
+        ByteArrayOutputStream captured = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(captured, true));
+        try {
+            test(FileType.PNG, "-b", GraphBackend.YFILES);
+        } finally {
+            System.setOut(out);
+        }
+        String output = captured.toString();
+        Assert.assertTrue(output, output.startsWith("Warning: "));
+        Assert.assertTrue(output, output.contains("'" + GraphBackend.JGRAPH + "'"));
+    }
+
+    private void test(FileType type, String... options) {
         new File(OUTPUT_DIR).mkdir();
         try {
-            Imager
-                .execute(new String[] {"-f", type.getExtension().substring(1), "-v", "0", TEST_DIR,
-                        OUTPUT_DIR});
+            List<String> args = new ArrayList<>();
+            args.addAll(List.of("-f", type.getExtension().substring(1), "-v", "0"));
+            args.addAll(List.of(options));
+            args.addAll(List.of(TEST_DIR, OUTPUT_DIR));
+            Imager.execute(args.toArray(new String[0]));
         } catch (Exception exc) {
             exc.printStackTrace();
             Assert.fail(exc.getMessage());

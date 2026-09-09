@@ -76,14 +76,28 @@ public interface GraphBackend {
      * Returns the backend selected for this run.
      * The backends available are discovered once through the {@link ServiceLoader};
      * a provider that fails to instantiate is logged and skipped. Among the available
-     * backends the one named by the user preference {@link Options#GRAPH_BACKEND_OPTION}
-     * is selected if it is available, otherwise the one ranking first in {@link #RANKING};
-     * backends not in the ranking come last, in discovery order. There is no runtime
-     * switching: a changed preference takes effect at the next start.
+     * backends the one requested for this run (see {@link #request}) is selected if it
+     * is available, otherwise the one named by the user preference
+     * {@link Options#GRAPH_BACKEND_OPTION} if that is available, otherwise the one
+     * ranking first in {@link #RANKING}; backends not in the ranking come last, in
+     * discovery order. There is no runtime switching: the selection is made at the
+     * first call, and a changed preference takes effect at the next start.
      * @throws IllegalStateException if no backend is available
      */
     static GraphBackend instance() {
-        return Instance.INSTANCE;
+        return Instance.Selected.INSTANCE;
+    }
+
+    /**
+     * Requests a backend by name for this run, ahead of the user preference; meant for
+     * a command-line switch. The request is honoured only if it precedes the selection,
+     * i.e. the first call of {@link #instance()}, and names an available backend;
+     * otherwise it is ignored, which the caller can detect by comparing the name of
+     * {@link #instance()} with the requested one.
+     * @param name the name of the requested backend (see {@link #getName()})
+     */
+    static void request(String name) {
+        Instance.requested = name;
     }
 
     /** Returns the backends available in this run, in discovery order. */
@@ -134,7 +148,17 @@ public interface GraphBackend {
 
         static final List<GraphBackend> AVAILABLE = discover();
 
-        static final GraphBackend INSTANCE = create();
+        /** Name of the backend requested for this run, if any; see {@link GraphBackend#request}. */
+        static @Nullable String requested;
+
+        /** Lazy holder of the selected backend, initialised on the first call of {@link GraphBackend#instance()}. */
+        static final class Selected {
+            private Selected() {
+                // not to be instantiated
+            }
+
+            static final GraphBackend INSTANCE = create();
+        }
 
         private static List<GraphBackend> discover() {
             List<GraphBackend> result = new ArrayList<>();
@@ -151,12 +175,24 @@ public interface GraphBackend {
         }
 
         private static GraphBackend create() {
+            String requested = Instance.requested;
             String preferred = Options.userPrefs.get(Options.GRAPH_BACKEND_OPTION, null);
-            var result = select(AVAILABLE, preferred);
+            GraphBackend result = null;
+            if (requested != null) {
+                for (var backend : AVAILABLE) {
+                    if (backend.getName().equals(requested)) {
+                        result = backend;
+                    }
+                }
+            }
+            if (result == null) {
+                result = select(AVAILABLE, preferred);
+            }
             LOGGER
-                .log(Level.DEBUG, "Graph backend: {0} (available: {1}, preferred: {2})",
+                .log(Level.DEBUG,
+                     "Graph backend: {0} (available: {1}, requested: {2}, preferred: {3})",
                      result.getName(), AVAILABLE.stream().map(GraphBackend::getName).toList(),
-                     preferred);
+                     requested, preferred);
             return result;
         }
 

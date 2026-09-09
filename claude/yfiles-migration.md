@@ -265,7 +265,9 @@ by the Imager on both backends (391 images) and compared by size and blurred pix
 difference; the vector formats were checked on the SVG (same document size on both
 backends, whole graph) and the TikZ output is byte-identical, since it is generated
 from the view model. The Imager picks the yFiles backend by the `GraphBackend` ranking
-(the persisted preference applies as in the Simulator) and runs with
+(the persisted preference applies as in the Simulator), or the backend named by its new
+`-b` option (`GraphBackend.request`, honoured ahead of the preference; an unavailable
+name falls back to the default with a warning on stdout), and runs with
 `java.awt.headless=true` on both backends.
 
 Findings and residues:

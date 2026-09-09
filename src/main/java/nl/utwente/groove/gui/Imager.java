@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.gui;
 
+import static nl.utwente.groove.util.cli.Verbosity.LOW;
 import static nl.utwente.groove.util.cli.Verbosity.MEDIUM;
 import static nl.utwente.groove.util.io.FileType.GRAMMAR;
 import static nl.utwente.groove.util.io.FileType.GXL;
@@ -67,11 +68,13 @@ import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.export.CanvasExportable;
 import nl.utwente.groove.gui.export.CanvasExporters;
 import nl.utwente.groove.gui.view.AspectGraphViewController;
+import nl.utwente.groove.gui.view.GraphBackend;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Exporter;
 import nl.utwente.groove.io.external.Exporters;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.io.store.SystemStore;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.cli.CmdLineException;
@@ -142,12 +145,38 @@ public class Imager extends GrooveCmdLineTool<Object> {
      */
     @Override
     protected Object run() throws Exception {
+        selectBackend();
         File inFile = getInFile();
         File outFile = getOutFile();
         makeImage(inFile, outFile == null
             ? inFile
             : outFile);
         return null;
+    }
+
+    /**
+     * Requests the graph backend named by the {@code -b} option, if any, and warns
+     * on standard output if the backend actually selected is another one: because
+     * the requested one is not available in this distribution, or because the
+     * selection was already made before this imager ran.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    private void selectBackend() {
+        String requested = this.backend;
+        if (requested == null) {
+            return;
+        }
+        GraphBackend.request(requested);
+        String selected = GraphBackend.instance().getName();
+        if (!selected.equals(requested)) {
+            List<String> available
+                = GraphBackend.available().stream().map(GraphBackend::getName).toList();
+            String reason = available.contains(requested)
+                ? "the graph backend was already selected"
+                : "graph backend '" + requested + "' is not available";
+            emit(LOW, "Warning: %s; using '%s' (available: %s)%n", reason, selected,
+                 String.join(", ", available));
+        }
     }
 
     /**
@@ -363,6 +392,13 @@ public class Imager extends GrooveCmdLineTool<Object> {
 
     @Option(names = "-e", description = "Enforces editor view export")
     private boolean editorView;
+
+    /** Name of the graph backend to render with, if specified. */
+    @Option(names = "-b", paramLabel = "backend",
+        description = "Graph backend to render with ('" + GraphBackend.JGRAPH + "' or '"
+            + GraphBackend.YFILES + "'); if it is not available, "
+            + "the default backend is used, with a warning")
+    private String backend;
 
     /**
      * Starts the imager with a list of options and file names.
