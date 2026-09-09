@@ -58,11 +58,15 @@ slice 5, and verification against the JGraph output of every sample grammar (391
 found one systematic defect, the placement of loop labels on yFiles, which is fixed;
 `YFilesImagerTest` runs the Imager on the yFiles backend in every format and the
 Simulator test exports the LTS; the Imager gained a `-b` switch for the backend. Details
-under "Phase 4" below. Phase 4 is merged into `yworks-migration` (2026-09-09). **The
-final phase is the distribution of the yFiles edition**: the local-only release leg
-(yGuard obfuscation, dual distribution) and the license questions, with the backend
-module split (gh #887) as an independent decision; the handoff is in "Immediate next
-steps" at the end. The architecture allowlist is empty.
+under "Phase 4" below. Phase 4 is merged into `yworks-migration` (2026-09-09). **Phase 5
+(the yFiles edition) is BUILT** (2026-09-09, branch `yfiles-edition`): the release
+reactor has a `yfiles` profile that obfuscates the library with yGuard and packages
+`groove-x_y_z-yfiles-bin[+doc].zip` next to the standard zips, the installer script
+builds a `GROOVE-yFiles` package from them, and the edition was verified from the zip,
+from the app image and by the unit's own tests against the obfuscated jars; see "Phase 5"
+below. What remains is on Arend's side: the license correspondence with yWorks, the
+download page, and the merge into `master` (the full and GUI suites were green on the
+tip on 2026-09-09); the backend module split (gh #887) stays an independent decision. The architecture allowlist is empty.
 
 ## Goal and motivation
 
@@ -293,64 +297,122 @@ Findings and residues:
   in `yfiles/target/imager`; `YFilesSimulatorTest.ltsDisplayExportsRasterAndVector`
   covers the LTS canvas, which the Imager does not reach.
 
-## Immediate next steps (handoff for the phase-5 session, 2026-09-09)
+## Phase 5: the yFiles edition (2026-09-09, branch `yfiles-edition`)
 
-**State.** Phases 0–4 are complete and folded into `yworks-migration` (tip b75251b15,
-111 commits ahead of `master` and not behind it; not yet merged into `master`, not
-pushed since 8c09ac69c). The phase-4 branch is deleted and its worktree removed. The
-Simulator, the editor, the Imager and every export run on either backend; the yFiles
-unit in `yfiles/` builds and tests on this machine only (license file in
-`C:/Groove/yfiles`, jar in `~/.m2`). What remains is the final phase: **shipping the
-yFiles edition** (with the license questions it depends on), plus a decision on the
-backend module split.
+**What was built.** The release reactor (`release/`, a separate Maven reactor receiving
+the version as `-Drevision`) gained a profile `yfiles`:
 
-1. **The release leg of the yFiles edition** (`release/`, see its README; the standard
-   release is `do-all.sh`: install the core, aggregate javadoc, then the release reactor
-   builds `runnable` — a manifest-classpath jar with `../lib/` — and `assembly` — the
-   `bin` and `bin+doc` zips — and `jpackage/build-installer.sh` the installers). The
-   yFiles edition is a second distribution built locally, never in CI (§2.2.2): the
-   `groove-yfiles` jar plus the yFiles jar go into `lib/` and on the runnable jar's
-   manifest class path, the yFiles jar **obfuscated** with yGuard (§2.1c; the plain jar
-   never leaves this machine, nor enters any repository or artifact), and the runtime
-   license file at the root of the class path (the unit's pom copies it from
-   `yfiles.license.dir`). Decide and record: how the edition is named and versioned
-   (same `revision`, an artifact/zip suffix), which parts of `release/` are shared
-   (a profile or property on the release reactor rather than a copy), whether installers
-   are built for it, and where the non-commercial-only notice goes (§2.4; the edition's
-   README and the download page, next to the Apache-licensed standard release). yGuard
-   is a yWorks tool with its own documentation; its Maven/Ant integration and the
-   exclusion of the public API GROOVE calls (obfuscate the jar's internals, keep the
-   entry points the backend uses) are the technical core of this item. Since the unit
-   runs on the class path (no `module-info`, the jar's JPMS name is undocumented), the
-   runnable jar's class-path manifest is the natural vehicle; a module-path launch is
-   not needed.
-2. **The license questions**, to settle with yWorks before the first public yFiles
-   edition: the Subscription status and delivered generation (the license order, not
-   the SLA; the code is written against 3.6.0.1, the plan mentions major 4.0), the
-   Academic Project upgrade (3 seats + build automation, which would allow CI builds),
-   and confirmation that the obfuscated-jar distribution as designed in item 1 meets
-   §2.1c. Arend handles the correspondence; sessions only prepare the questions.
-3. **The backend module split** (the JGraph backend out of the core module) is *not*
-   required for the yFiles edition: the unit works on the class path next to JGraph,
-   and `GraphBackend` ranks yFiles first when both are present. It waits for the gh #887
-   reactor restructure and is a separate decision; do not block the edition on it.
-4. **Merging `yworks-migration` into `master`** is Arend's call and the natural end of
-   the initiative; before that, the GUI test suite (`*GuiTest`, needs a display) and
-   the full `mvn test -Dexcluded.test.groups=` should be run once on the tip, and
-   `release/include/CHANGES.md` needs the migration entry (both backends, the Options
-   menu choice, the Imager's `-b` switch, the yFiles-only layout algorithms).
+- A module `release/yfiles` (artifact `yfiles-edition`, active only under the profile)
+  copies the `groove-yfiles` jar and the library jar from the local Maven repository
+  and runs yGuard 4.1.1 (MIT, from Central, as an Ant task through `maven-antrun-plugin`,
+  the route of the yFiles deployment demo and of the developer guide's "Obfuscation"
+  appendix) over the two as one `<inoutpair>` set: every name of the library is
+  renamed, the backend's references are rewritten, `nl.utwente.groove.**` keeps all
+  class, method and field names plus line numbers, `**/*.properties` are renamed with
+  their classes (`<adjust>`), and `com.yworks.yfiles.utils.Obfuscation` is honoured as
+  yWorks' own exclusion annotation. The outputs keep their original file names in
+  `release/yfiles/target/lib` and the mapping is in `target/yguard.log.xml.gz`. The
+  GROOVE core and its dependencies are yGuard's external class path, with JSR-305 added
+  so that the unresolved-name warnings are meaningful (zero after that). Of 6131 classes
+  in the obfuscated library 98 keep readable names: yWorks' annotated exclusions
+  (`PointD`, `RectD`, ...) and the methods GROOVE overrides.
+- The profile adds `groove-yfiles` as a dependency of the reactor, so the runnable jars'
+  manifest class paths list `../lib/groove-yfiles-x.y.z.jar` and
+  `../lib/yfiles-for-java-swing-3.6.0.1.jar`; the assembly uses `zip-yfiles.xml`
+  descriptors (the standard ones plus the module's `target/lib` and `include`
+  directories) and the final name `groove-x_y_z-yfiles-bin[+doc].zip`. The reactor
+  order is forced by a pom-type dependency of `assembly` on `yfiles-edition`, which the
+  descriptors exclude from `lib/` (the pre-existing `runnable-1.0.pom` in `lib/` leaks
+  the same way and was left alone).
+- `release/yfiles/include/YFILES-EDITION.md` is the edition's notice: what it is,
+  non-commercial use only, no extraction or reverse engineering of the library, passing
+  on only unchanged. It sits at the root of the edition's zips and is the license text
+  of its installers. **Arend must review its wording against the SLA** before a first
+  release; the download page of the website needs the same statement next to the
+  edition's artifacts (website repository, not done here).
+- `release/jpackage/build-installer.sh <version> <type> yfiles` builds the edition's
+  installer from the `-yfiles-bin` zip as `GROOVE-yFiles` (own package identifier and
+  upgrade UUID, so it installs next to the standard package), named
+  `groove-x_y_z-yfiles-<os>-<arch>.<ext>`. The bundled runtime needs `jdk.xml.dom`,
+  which the library uses and the core jar's `jdeps` analysis cannot see: the script
+  runs `jdeps` over the two edition jars as well and unions the module sets.
+- `release/do-all.sh yfiles` runs the standard steps, then installs the backend (with
+  its tests) and packages the edition with `-Pyfiles package`, without `clean` so the
+  standard zips survive in the shared `release/target`. That sequence only works
+  because the runnable module now sets `forceCreation` on the jar plugin: the jars hold
+  nothing but a manifest, and without it the plugin kept the standard build's jars,
+  whose class paths lack the edition entries — found because the app image silently
+  fell back to JGraph.
+
+**Rejected.** Keeping the library's public API readable and obfuscating only its
+internals (the handoff's phrasing): weaker than the SLA's intent and not what yWorks'
+recipe does. The `yguard-maven-plugin` 1.0.0 (on Central, wraps yGuard 5.0.0): untried,
+the antrun route is the one the demos verify. Analysing every `lib/` jar with `jdeps`
+for the standard installer too: a behaviour change outside this concern.
+
+**Verification (2026-09-09).** The standard build is byte-for-byte unaffected in
+layout (no yFiles entries). From the unzipped edition, `Imager -b yfiles` renders on
+the obfuscated stack; the same from the app image after the module fix. The unit's own
+tests run green against the obfuscated jars (65 tests: 61 pass, the 4 Robot tests skip
+by assumption) with this recipe, worth scripting if it is needed again: jar
+`yfiles/target/test-classes`, run one yGuard pass with *three* inoutpairs (library,
+backend, tests jar; same keep rules) from a scratch pom copied from
+`release/yfiles/pom.xml`, then run
+`org.junit.platform.console.ConsoleLauncher execute --scan-class-path <tests.jar>`
+with the three obfuscated jars, the external class path and
+`junit-platform-console-standalone` all on the JVM's own `-classpath` (not `-jar`: the
+launcher's child loader hides `GROOVE_VERSION` from `ClassLoader.getSystemResource`),
+with the in-memory preferences factory of the test tree. On the tip before this work
+the full suite (892 tests, corpus directories passed) and the GUI suite (10 tests) were
+green.
+
+**Not changed.** `yfiles/` itself (the license file still reaches the backend jar's
+root through the `yfiles.license.dir` resource, and yGuard copies it through, which is
+what licenses the obfuscated library at run time); CI (`release.yml` builds the
+standard release only; the edition's zips and installers are attached to the github
+release by hand); the plain library jar stays in `~/.m2` only.
+
+## Immediate next steps (2026-09-09)
+
+1. **Review of branch `yfiles-edition`** (off `phase-5-handoff`, which it contains):
+   `release/pom.xml`, `release/yfiles/*`, `release/assembly/**`, `release/runnable/pom.xml`,
+   `release/do-all.sh`, `release/jpackage/build-installer.sh`, `release/README.md`,
+   `release/include/CHANGES.md`, `yfiles/README.md`, and above all the wording of
+   `release/yfiles/include/YFILES-EDITION.md`.
+2. **The license questions for yWorks**, prepared for Arend to send: (a) the
+   Subscription status and delivered generation of the license (the code is written
+   against 3.6.0.1); (b) the Academic Project upgrade (3 seats + build automation, which
+   would allow CI builds); (c) confirmation that shipping the library obfuscated by
+   yGuard as in their deployment demo (all names renamed except their own annotated
+   exclusions and the methods GROOVE overrides), next to GROOVE's unobfuscated backend
+   jar, satisfies §2.1c; (d) whether the development license file may ship inside the
+   distribution as the runtime license (it is what the library loads), or a separate
+   deployment license is issued; (e) whether a public github release download of the
+   edition with the non-commercial notice is acceptable under §2.4, and whether the
+   notice's wording is.
+3. **Merge `yworks-migration` plus this branch into `master`**: Arend's call; the test
+   gates were run on 2026-09-09.
+4. **The website**: the download page gets the edition's zips and installers with the
+   non-commercial statement; the web manual's layout section gets the yFiles algorithms.
+5. **At the first yFiles release**: `bash release/do-all.sh yfiles`, then the installers
+   per platform by hand (`build-installer.sh x.y.z "" yfiles`; only Windows can be built
+   on this machine — macOS and Linux installers of the edition need a licensed build on
+   those platforms or stay unbuilt), attach everything to the github release, keep
+   `release/yfiles/target/yguard.log.xml.gz` with it.
+6. **The backend module split** (gh #887) remains independent and unblocked either way.
 
 Side issues filed along the way, independent of the phases: gh #882 (mouse
 interaction), gh #915 (JGraph editor grid snapping), gh #916 (popup actions in the menu
 bar). Open technical residues: the null-analysis blind spot over the yFiles unit (see
 "Practical notes"), the Robot tests of `YFilesSimulatorTest` that need a visible canvas,
-and the accepted cosmetic differences listed under "Phase 4".
+the accepted cosmetic differences listed under "Phase 4", and `jdeps` failing on the
+modular core jar under a local JDK 26 (the installer script falls back to `java.se`;
+CI runs JDK 21).
 
 Practicalities carried over: the yFiles unit is built with `mvn -q -f yfiles/pom.xml
 test > <log> 2>&1` (installs the core artifact first; `-Dgroove.install.skip=true` when
 it is current). The Robot tests in `YFilesSimulatorTest` skip unless
-`-Dgroove.test.robot=true` and the canvas is visible on screen (they did not run in
-the Claude sessions of 2026-09-08; gestures were confirmed by Arend by hand), but
+`-Dgroove.test.robot=true` and the canvas is visible on screen, but
 synthetic mouse events on yFiles' input surface (the child component carrying its
 mouse listeners, see `YFilesCanvasTest.drag`) do exercise the input modes headlessly.
 The `null-check` script is bound to the main module: for `yfiles/` run ecj by hand with
@@ -361,4 +423,7 @@ search them by member id (for example `MoveInputMode-property-HitTestable`) with
 script printing a window of text around the match, since regex tools choke on the
 24 MB file. Input-mode priorities differ between the viewer and the editor mode
 (viewer: click 10, marquee 30, viewport 39; editor: move 40, marquee 50): never take
-the guide's editor figures for the viewer.
+the guide's editor figures for the viewer. The deployment demo
+(`demos/src/deploy/obfuscation/build.xml`) and the Maven demo
+(`demos/src-maven/deploy/mavendemo/pom.xml`) are the permitted references for the
+obfuscation setup.
