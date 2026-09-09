@@ -31,6 +31,7 @@ import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.Extensions;
 import nl.utwente.groove.util.Log;
 
 /**
@@ -41,7 +42,8 @@ import nl.utwente.groove.util.Log;
  * <p>
  * Backends are services: each backend module declares its implementation
  * with {@code provides} (and in {@code META-INF/services}, for the class path),
- * so what is on the module path is what is available.
+ * so what is on the module path is what is available, plus the jars of the
+ * user-level extension directory of {@link Extensions}.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -74,8 +76,10 @@ public interface GraphBackend {
 
     /**
      * Returns the backend selected for this run.
-     * The backends available are discovered once through the {@link ServiceLoader};
-     * a provider that fails to instantiate is logged and skipped. Among the available
+     * The backends available are discovered once through the {@link ServiceLoader},
+     * on the class path and among the jars of the extension directory (see
+     * {@link Extensions}); a provider that fails to instantiate is logged and skipped,
+     * as is a second provider with the name of an earlier one. Among the available
      * backends the one requested for this run (see {@link #request}) is selected if it
      * is available, otherwise the one named by the user preference
      * {@link Options#GRAPH_BACKEND_OPTION} if that is available, otherwise the one
@@ -103,6 +107,46 @@ public interface GraphBackend {
     /** Returns the backends available in this run, in discovery order. */
     static List<GraphBackend> available() {
         return Instance.AVAILABLE;
+    }
+
+    /**
+     * Discovers the backends that a class loader provides, in discovery order:
+     * the {@link ServiceLoader} providers visible through the loader, i.e., those on the
+     * class path and module path of the loader and its ancestors. A provider that cannot
+     * be loaded or instantiated is logged and skipped, and so is a provider whose name
+     * (see {@link #getName()}) is that of a provider discovered before it, so that the
+     * same backend on the class path and in the extension directory counts once.
+     * The backends of this run are discovered once, through the loader of
+     * {@link Extensions#instance()}; see {@link #available()}.
+     * @param loader the class loader to discover providers through
+     */
+    static List<GraphBackend> discover(ClassLoader loader) {
+        List<GraphBackend> result = new ArrayList<>();
+        var providers = ServiceLoader.load(GraphBackend.class, loader).iterator();
+        // the iterator reports a provider that fails to load by throwing from next(),
+        // and then moves on to the following provider, so a loop that catches the error
+        // and continues gets all the providers that can be loaded
+        while (true) {
+            try {
+                if (!providers.hasNext()) {
+                    break;
+                }
+                GraphBackend backend = providers.next();
+                String name = backend.getName();
+                var earlier = result.stream().filter(b -> b.getName().equals(name)).findFirst();
+                if (earlier.isPresent()) {
+                    Instance.LOGGER
+                        .log(Level.WARNING, "Graph backend {0} ignored: {1} already provides ''{2}''",
+                             backend.getClass().getName(), earlier.get().getClass().getName(),
+                             name);
+                } else {
+                    result.add(backend);
+                }
+            } catch (ServiceConfigurationError exc) {
+                Instance.LOGGER.log(Level.WARNING, "Graph backend unavailable: {0}", exc);
+            }
+        }
+        return List.copyOf(result);
     }
 
     /**
@@ -146,7 +190,7 @@ public interface GraphBackend {
         /** Declared before {@link Selected}, whose initialisation logs. */
         private static final Logger LOGGER = Log.getLogger("gui.backend");
 
-        static final List<GraphBackend> AVAILABLE = discover();
+        static final List<GraphBackend> AVAILABLE = discover(Extensions.instance().getLoader());
 
         /** Name of the backend requested for this run, if any; see {@link GraphBackend#request}. */
         static @Nullable String requested;
@@ -158,20 +202,6 @@ public interface GraphBackend {
             }
 
             static final GraphBackend INSTANCE = create();
-        }
-
-        private static List<GraphBackend> discover() {
-            List<GraphBackend> result = new ArrayList<>();
-            for (var provider : ServiceLoader.load(GraphBackend.class).stream().toList()) {
-                try {
-                    result.add(provider.get());
-                } catch (ServiceConfigurationError exc) {
-                    LOGGER
-                        .log(Level.WARNING, "Graph backend {0} unavailable: {1}",
-                             provider.type().getName(), exc);
-                }
-            }
-            return List.copyOf(result);
         }
 
         private static GraphBackend create() {

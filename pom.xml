@@ -142,8 +142,11 @@
 					     the in-memory preferences factory replaces the platform
 					     one for the whole test JVM. Surefire patches the tests
 					     into module nl.utwente.groove, so java.prefs needs the
-					     add-exports to instantiate the factory reflectively. -->
-					<argLine>@{coverageAgent} -Djava.util.prefs.PreferencesFactory=nl.utwente.groove.test.gui.InMemoryPreferencesFactory --add-exports=nl.utwente.groove/nl.utwente.groove.test.gui=java.prefs</argLine>
+					     add-exports to instantiate the factory reflectively.
+					     The extension directory is pointed away from the real one
+					     (which need not exist), so that an installed add-on cannot
+					     change what the tests see. -->
+					<argLine>@{coverageAgent} -Djava.util.prefs.PreferencesFactory=nl.utwente.groove.test.gui.InMemoryPreferencesFactory --add-exports=nl.utwente.groove/nl.utwente.groove.test.gui=java.prefs -Dgroove.extensions.dir=${project.build.directory}/test-extensions</argLine>
 					<excludes>
 						<!-- TestSuite aggregates the whole package tree as the
 						     entry point of the "GROOVE - all JUnit tests"
