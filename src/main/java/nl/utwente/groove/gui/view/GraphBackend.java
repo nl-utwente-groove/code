@@ -143,7 +143,7 @@ public interface GraphBackend {
             // not to be instantiated
         }
 
-        /** Declared before {@link #INSTANCE}, whose initialisation logs. */
+        /** Declared before {@link Selected}, whose initialisation logs. */
         private static final Logger LOGGER = Log.getLogger("gui.backend");
 
         static final List<GraphBackend> AVAILABLE = discover();
