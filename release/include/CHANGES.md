@@ -14,6 +14,9 @@ Upcoming release
   directory (`%APPDATA%\GROOVE\extensions` on Windows, `~/Library/Application
   Support/GROOVE/extensions` on macOS, `~/.groove/extensions` elsewhere; overridable
   with the system property `groove.extensions.dir`) and loaded from there at start-up.
+  The Simulator offers to download and install the add-on at the first start of a
+  release (once per version), and the same is available at any time under View >
+  `yFiles add-on`, together with installation from a downloaded file and removal.
   Where both are present, the Options menu of the Simulator offers the choice
   (`Graph backend`, applied at the next start), yFiles is the default, its seven
   layout algorithms (hierarchic, organic, orthogonal, tree, balloon, circular,

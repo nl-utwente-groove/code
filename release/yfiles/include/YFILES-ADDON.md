@@ -6,7 +6,7 @@ the GROOVE tool set, built on the commercial library
 [yFiles for Java (Swing)](https://www.yworks.com/products/yfiles-for-java)
 by yWorks GmbH. It consists of this directory, which GROOVE loads from its
 extension directory at start-up: the Simulator then uses the yFiles backend by
-default (the choice is in the Options menu, under "Graph backend", and takes
+default (the choice is in the View menu, under "Graph backend", and takes
 effect at the next start), which adds yFiles' layout algorithms to the layout
 menu, and the Imager selects it with its `-b` option. The vintage JGraph-based
 backend of the standard release remains available.

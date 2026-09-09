@@ -142,7 +142,9 @@ The question is right; the installer is the wrong place to ask it. GROOVE itself
 
 ## Decision: option B, built entirely by CI, with an in-app add-on installer
 
-Taken 2026-09-09. The shape:
+Taken 2026-09-09. **Implemented the same day on branch `yfiles-extension-loader`**, one
+commit per slice of the "Implementation slices" below; what is left is listed under
+"After implementation" at the end. The shape:
 
 1. **Standard installers and zips from CI, as now**, with no yFiles bytes in them.
 2. **CI also builds the add-on**, `groove-yfiles-addon-x_y_z.zip` (the two obfuscated jars
@@ -212,16 +214,33 @@ Each independently mergeable, in this order:
 5. **Docs**: `yfiles-migration.md` (reverse the dual-distribution note), the web manual's
    installation page, the download page (one product plus the add-on and its notice).
 
-### To verify before slice 1
+### Verified before slice 1 (2026-09-09)
 
-- The library must work from a child class loader: it finds its licence file at the root
-  of the class path, which for the child loader means the root of the backend jar. Nothing
-  documented suggests a problem; a five-minute manual run settles it.
-- No JDK module beyond the bundled standard set is needed at run time: `jdeps` says none;
-  a smoke test of the Simulator with the add-on inside an installed standard app image
-  confirms it.
-- The macOS location of the extension directory (`~/Library/Application Support/GROOVE`
-  by convention, versus `~/.groove` for symmetry with Linux).
+- The library works from a child class loader: the Imager rendered the ferryman grammar
+  on the yFiles backend with the phase-5 obfuscated jars in a scratch extension directory,
+  the license file found at the root of the backend jar as before.
+- No JDK module beyond the bundled standard set is needed: the Imager launcher of a
+  standard app image (built with the reverted installer script) rendered on the add-on
+  loaded from an extension directory, without a warning.
+- The macOS location is `~/Library/Application Support/GROOVE/extensions`, the platform
+  convention; Linux and other systems use `~/.groove/extensions`, Windows
+  `%APPDATA%\GROOVE\extensions`.
+
+### After implementation
+
+- **Arend**: the private repository `nl-utwente-groove/yfiles-lib` with the plain
+  library jar (`yfiles-for-java-swing.jar`) and the runtime license file at its root, and
+  the repository secret `YFILES_LIB_TOKEN` (a fine-grained PAT with read access to that
+  repository only); then a dry run of `release.yml` on a throwaway `release-*_*_*` tag on
+  a branch, checking that the add-on zip is attached and that its backend jar carries the
+  `GROOVE-Version` attribute.
+- **Arend**: the wording of `release/yfiles/include/YFILES-ADDON.md` and of the
+  Simulator's first-run question (`gui.AddOnInstaller.confirmInstall`) against the SLA.
+- **Website**: the download page (one product plus the add-on and its notice) and the
+  installation page of the web manual; see "Docs" under the slices.
+- The first-run question uses the download; a development version (`-SNAPSHOT`) never
+  asks, since it has no release to download from, and its download action fails with a
+  clear 404 message. "Install from file..." works for any version.
 
 ## Open questions
 

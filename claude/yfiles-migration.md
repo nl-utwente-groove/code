@@ -64,9 +64,14 @@ reactor has a `yfiles` profile that obfuscates the library with yGuard and packa
 `groove-x_y_z-yfiles-bin[+doc].zip` next to the standard zips, the installer script
 builds a `GROOVE-yFiles` package from them, and the edition was verified from the zip,
 from the app image and by the unit's own tests against the obfuscated jars; see "Phase 5"
-below. What remains is on Arend's side: the license correspondence with yWorks, the
-download page, and the merge into `master` (the full and GUI suites were green on the
-tip on 2026-09-09); the backend module split (gh #887) stays an independent decision. The architecture allowlist is empty.
+below. **The edition was then reshaped into an add-on** (2026-09-09, branch
+`yfiles-extension-loader`, four commits): yWorks confirmed the licence to be a Project
+Licence, and the decision recorded in `claude/yfiles-distribution-options.md` is one
+standard distribution plus a CI-built add-on zip that GROOVE loads from a user-level
+extension directory and offers to install itself; see "Phase 5b" below. What remains is
+on Arend's side: the private repository and secret for the release workflow, the
+license correspondence with yWorks, the download page, and the merge into `master`; the
+backend module split (gh #887) stays an independent decision. The architecture allowlist is empty.
 
 ## Goal and motivation
 
@@ -89,14 +94,19 @@ rework.
 - **Per-developer seats (§2.2.2), Single Developer confirmed.** Only Arend may
   access the jar; `git clone && mvn package` must keep working without it, so the
   yFiles backend becomes an optionally-compiled unit (multi-module restructure
-  accepted). The SLA grants automated-build use only under a Project License, so CI
-  cannot build the yFiles edition — those releases build locally, unless the
-  license is upgraded to Academic Project (3 seats + build automation; suggested to
-  yWorks, outcome open).
+  accepted). The SLA grants automated-build use only under a Project License;
+  **yWorks confirmed on 2026-09-09 that the licence is a Project Licence with one
+  seat**, so the release workflow builds the add-on, taking the plain jar from a
+  private repository that only Arend and the workflow token can read (see
+  `release/README.md`). The seat is a constraint on people: only Arend develops
+  against the plain library.
 - **Academic restriction propagates (§2.4).** A yFiles-enabled GROOVE distribution
-  is non-commercial-only, while GROOVE is Apache 2.0. Consequence: **dual
-  distribution** — the standard release stays JGraph-based and unrestricted, a
-  separate yFiles edition ships alongside, and **both backends stay genuinely
+  is non-commercial-only, while GROOVE is Apache 2.0. Consequence: **one
+  distribution plus an add-on** (decided 2026-09-09, reversing the dual-distribution
+  plan under which phase 5 was first built; the analysis is in
+  `claude/yfiles-distribution-options.md`) — the standard release stays JGraph-based
+  and unrestricted, the yFiles backend ships as a separate add-on zip with its own
+  notice, loaded from the extension directory, and **both backends stay genuinely
   maintained** (accepted; mitigated by capability tiering: optional yFiles-only
   features may degrade gracefully in the JGraph edition, but core
   view/edit/select/filter/export stays at parity).
@@ -380,38 +390,80 @@ what licenses the obfuscated library at run time); CI (`release.yml` builds the
 standard release only; the edition's zips and installers are attached to the github
 release by hand); the plain library jar stays in `~/.m2` only.
 
-## Immediate next steps (2026-09-09)
+## Phase 5b: the yFiles add-on (2026-09-09, branch `yfiles-extension-loader`)
 
-0. **The shape of a release** — whether the edition stays a second full distribution, or
-   becomes an add-on, or moves into CI under an upgraded licence — is analysed in
-   `claude/yfiles-distribution-options.md`. It hinges on the Project Licence question in
-   item 2 and needs no decision before the merge.
-1. **Review of branch `yfiles-edition`** (off `phase-5-handoff`, which it contains):
-   `release/pom.xml`, `release/yfiles/*`, `release/assembly/**`, `release/runnable/pom.xml`,
-   `release/do-all.sh`, `release/jpackage/build-installer.sh`, `release/README.md`,
-   `release/include/CHANGES.md`, `yfiles/README.md`, and above all the wording of
-   `release/yfiles/include/YFILES-EDITION.md`.
-2. **The license questions for yWorks**, prepared for Arend to send: (a) the
+The edition of phase 5 was reshaped into an add-on the same day, once yWorks had
+confirmed the Project Licence; the reasoning is in `claude/yfiles-distribution-options.md`.
+Four commits, one per implementation slice of that note:
+
+1. **Extension loader** (`util.Extensions`, `GraphBackend.discover`): a user-level
+   extension directory (`%APPDATA%\GROOVE\extensions`, `~/Library/Application
+   Support/GROOVE/extensions`, `~/.groove/extensions`; property `groove.extensions.dir`)
+   whose jars, in the directory and its immediate subdirectories, go behind one
+   `URLClassLoader` with the application loader as parent; backend discovery runs the
+   `ServiceLoader` through that loader, deduplicating by backend name. A jar declaring
+   another GROOVE version in its manifest (`GROOVE-Version`) is skipped with a warning.
+   `ExtensionsTest` compiles a provider into a jar at run time with the JDK's `javac`
+   tool, because a class from the test class path would be found by the parent loader
+   and, living in the named module surefire patches the tests into, ignored by the
+   `ServiceLoader`. The surefire configurations and the Eclipse test launch point the
+   directory at an empty location under `target`.
+2. **Add-on packaging** (`release/yfiles`): the backend jar's manifest carries the GROOVE
+   version (set in `yfiles/pom.xml`, passed through by yGuard); the `yfiles` profile
+   produces `groove-x_y_z-yfiles-addon.zip` (directory `yfiles/` with the two obfuscated
+   jars and `YFILES-ADDON.md`, the rewritten notice) next to the standard zips. The
+   edition zips, descriptors, the profile's manifest-class-path dependency, the
+   installer's edition branch and the runnable module's `forceCreation` are gone.
+3. **CI** (`release.yml`): the release job checks out the private repository
+   `nl-utwente-groove/yfiles-lib` (plain jar + license file) with `YFILES_LIB_TOKEN`,
+   installs the jar, builds the backend (tests skipped on the headless runner) and
+   packages with `-Pyfiles`. Not yet exercised: the repository and secret do not exist.
+4. **In-app installer** (`gui.AddOnInstaller`, `util.AddOn`): the options part of the
+   View menu gets a `yFiles add-on` submenu (download and install, install from file,
+   remove); at the
+   first start of a release version whose add-on is absent or stale, the Simulator asks
+   once (recorded per version in the user preferences, suppressed for `-SNAPSHOT`
+   versions and by `-Dgroove.addon.prompt=false` in the test configurations) and shows
+   the license restriction. The download is `java.net.http` against the github release
+   URL of the running version; installation unpacks into a dot-prefixed staging
+   directory (hidden from the scan), verifies the version attribute and replaces the
+   add-on directory. `AddOnTest` covers the install/verify/remove path headlessly,
+   `AddOnGuiTest` drives the file installation and the removal through the menu.
+
+**Verified**: the obfuscated jars work from the child loader (Imager on the ferryman
+grammar), a stale add-on gives one warning and a JGraph fallback, and the standard app
+image's Imager renders on the add-on unzipped into an extension directory, so the
+standard runtime suffices. **Rejected**: keeping the edition installers next to the
+add-on (two products to explain, macOS gap); a single installer with a yFiles question
+(taints the installer's license, and jpackage cannot ask).
+
+## Immediate next steps (2026-09-09, after phase 5b)
+
+1. **Review of branch `yfiles-extension-loader`** (off `yworks-migration`, four commits):
+   the loader and the installer code, the release poms, and the wording of
+   `release/yfiles/include/YFILES-ADDON.md` and of the first-run question.
+2. **CI set-up by Arend**: the private repository `nl-utwente-groove/yfiles-lib` holding
+   `yfiles-for-java-swing.jar` and the runtime license file, the secret
+   `YFILES_LIB_TOKEN`, then a dry run on a throwaway release tag from a branch.
+3. **The license questions for yWorks**, prepared for Arend to send: (a) the
    Subscription status and delivered generation of the license (the code is written
-   against 3.6.0.1); (b) the Academic Project upgrade (3 seats + build automation, which
-   would allow CI builds); (c) confirmation that shipping the library obfuscated by
+   against 3.6.0.1); (b) confirmation that shipping the library obfuscated by
    yGuard as in their deployment demo (all names renamed except their own annotated
    exclusions and the methods GROOVE overrides), next to GROOVE's unobfuscated backend
-   jar, satisfies §2.1c; (d) whether the development license file may ship inside the
-   distribution as the runtime license (it is what the library loads), or a separate
-   deployment license is issued; (e) whether a public github release download of the
-   edition with the non-commercial notice is acceptable under §2.4, and whether the
-   notice's wording is.
-3. **Merge `yworks-migration` plus this branch into `master`**: Arend's call; the test
-   gates were run on 2026-09-09.
-4. **The website**: the download page gets the edition's zips and installers with the
-   non-commercial statement; the web manual's layout section gets the yFiles algorithms.
-5. **At the first yFiles release**: `bash release/do-all.sh yfiles`, then the installers
-   per platform by hand (`build-installer.sh x.y.z "" yfiles`; only Windows can be built
-   on this machine — macOS and Linux installers of the edition need a licensed build on
-   those platforms or stay unbuilt), attach everything to the github release, keep
-   `release/yfiles/target/yguard.log.xml.gz` with it.
-6. **The backend module split** (gh #887) remains independent and unblocked either way.
+   jar, satisfies §2.1c; (c) whether the development license file may ship inside the
+   add-on as the runtime license (it is what the library loads), or a separate
+   deployment license is issued; (d) whether an add-on distributed separately from
+   GROOVE, as a public github release download with the non-commercial notice, is
+   still "your application" in the sense of §2.1c and acceptable under §2.4, and
+   whether the notice's wording is.
+4. **Merge `yworks-migration` plus this branch into `master`**: Arend's call.
+5. **The website**: the download page gets the add-on next to the standard artifacts,
+   with the non-commercial statement; the web manual's installation page describes the
+   add-on and the extension directory, its layout section the yFiles algorithms.
+6. **At the first release**: nothing by hand; keep `release/yfiles/target/yguard.log.xml.gz`
+   from the workflow run (it is not attached) with the release, in case a user's stack
+   trace needs translating — or add an upload step for it.
+7. **The backend module split** (gh #887) remains independent and unblocked either way.
 
 Side issues filed along the way, independent of the phases: gh #882 (mouse
 interaction), gh #915 (JGraph editor grid snapping), gh #916 (popup actions in the menu
