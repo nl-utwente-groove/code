@@ -28,7 +28,7 @@
 	</dependencies>
 
 	<build>
-		<finalName>groove-${groove-version-underscored}${edition-suffix}-${output-suffix}</finalName>
+		<finalName>groove-${groove-version-underscored}-${output-suffix}</finalName>
 		<pluginManagement>
 			<plugins>
 				<plugin>
@@ -36,7 +36,7 @@
 					<version>3.3.0</version>
 					<configuration>
 						<descriptors>
-							<descriptor>${assembly.descriptor}</descriptor>
+							<descriptor>zip.xml</descriptor>
 						</descriptors>
 						<appendAssemblyId>false</appendAssemblyId>
 						<outputDirectory>../../target</outputDirectory>
@@ -52,44 +52,5 @@
 				</plugin>
 			</plugins>
 		</pluginManagement>
-		
-		<plugins>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<version>3.3.0</version>
-				<executions>
-					<execution>
-						<id>regex-property</id>
-						<goals>
-							<goal>regex-property</goal>
-						</goals>
-						<configuration>
-							<name>groove-version-underscored</name>
-							<value>${revision}</value>
-							<regex>\.</regex>
-							<replacement>_</replacement>
-							<failIfNoMatch>false</failIfNoMatch>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
 	</build>
-
-	<profiles>
-		<profile>
-			<id>yfiles</id>
-			<dependencies>
-				<dependency>
-					<!-- only for the reactor order: the obfuscated jars must exist
-					     before the zips are assembled -->
-					<groupId>${project.groupId}</groupId>
-					<artifactId>yfiles-edition</artifactId>
-					<version>${project.version}</version>
-					<type>pom</type>
-				</dependency>
-			</dependencies>
-		</profile>
-	</profiles>
 </project>

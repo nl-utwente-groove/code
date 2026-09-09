@@ -8,8 +8,12 @@ Upcoming release
 - The graph views of the Simulator, the editor, the Viewer and the Imager now run
   on one of two interchangeable visualisation backends (gh #909): the JGraph-based
   one of all previous releases, and a new one built on the commercial library
-  yFiles for Java (Swing). The latter is shipped only in a separate yFiles edition
-  of GROOVE, for non-commercial use (see `YFILES-EDITION.md` in that edition).
+  yFiles for Java (Swing). The latter is not part of the standard release: it comes
+  as a separate add-on (`groove-x_y_z-yfiles-addon.zip`, for non-commercial use only,
+  see `YFILES-ADDON.md` inside), which is unzipped into GROOVE's new extension
+  directory (`%APPDATA%\GROOVE\extensions` on Windows, `~/Library/Application
+  Support/GROOVE/extensions` on macOS, `~/.groove/extensions` elsewhere; overridable
+  with the system property `groove.extensions.dir`) and loaded from there at start-up.
   Where both are present, the Options menu of the Simulator offers the choice
   (`Graph backend`, applied at the next start), yFiles is the default, its seven
   layout algorithms (hierarchic, organic, orthogonal, tree, balloon, circular,

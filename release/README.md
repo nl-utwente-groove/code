@@ -9,7 +9,7 @@ The github release, as meant here, consists of two dedicated zip-files (as well 
 
 Both of these contain a top-level README.md that explains their structure and how to install the tool.
 
-In addition, the release workflow builds self-contained installers (with a bundled Java runtime, so users need no Java installation) for Windows (`.msi`), macOS (`.dmg`, both Intel and Apple silicon) and Linux (`.deb`); see the Installers section below.
+In addition, the release workflow builds self-contained installers (with a bundled Java runtime, so users need no Java installation) for Windows (`.msi`), macOS (`.dmg`, both Intel and Apple silicon) and Linux (`.deb`); see the Installers section below. A release built with the `yfiles` profile also yields the yFiles add-on, `groove-x_y_z-yfiles-addon.zip`; see the second chapter.
 
 ## Preparation
 
@@ -106,29 +106,37 @@ Unlike the contents of `include`, neither file ends up in the zips or the instal
    pleasant side effect of the suffix: the Central portal rejects `-SNAPSHOT`
    versions, so an accidental `deploy` between releases cannot publish.)
 
-# How to build the yFiles edition
+# How to build the yFiles add-on
 
-The yFiles edition is a second distribution of the same release, with the optional
-yFiles graph-visualisation backend (`yfiles/`, see its README) and the commercial
-yFiles library it runs on added to `lib/`. The yFiles license (an academic license
-held by the University of Twente) has three consequences that shape this build:
+The yFiles add-on is a small second artifact of the same release: the optional yFiles
+graph-visualisation backend (`yfiles/`, see its README) and the commercial yFiles
+library it runs on, zipped up as `groove-x_y_z-yfiles-addon.zip`. The standard zips
+and installers do not contain it; a user unzips it into GROOVE's extension directory
+(`%APPDATA%\GROOVE\extensions` on Windows, `~/Library/Application Support/GROOVE/extensions`
+on macOS, `~/.groove/extensions` elsewhere; the system property `groove.extensions.dir`
+overrides the location), from which GROOVE loads it at start-up
+(`nl.utwente.groove.util.Extensions`). The zip unpacks into a subdirectory `yfiles/`
+there, holding the two jars and the license notice. The yFiles license (an academic
+project license held by the University of Twente) has three consequences that shape
+this build:
 
 - The library may be redistributed only in obfuscated form. The release reactor
   therefore has a module `yfiles` that runs yWorks' free obfuscator yGuard over the
   library jar together with the backend jar: all names of the library are renamed
   (except the few yWorks marks as reflectively used), and the backend's references
   to them are rewritten, while the backend's own classes and members keep their
-  names since the main jar and its `ServiceLoader` registration need them. The
-  plain library jar exists only in the local Maven repository of the licensed
-  developer and must never be uploaded anywhere.
-- Only the licensed developer may build with the library, and only interactively,
-  so the edition is built locally and never in CI: the release workflow builds
-  the standard release only, and the edition's zips (and installers) are attached
-  to the github release by hand.
-- The edition may be used for non-commercial purposes only. `yfiles/include/YFILES-EDITION.md`
-  states this and is placed at the root of the edition's zips; it is also the
-  license text of the edition's installers, and the download page must say the
-  same next to the edition's artifacts.
+  names since the main jar and its `ServiceLoader` registration need them.
+- Only the licensed developer may develop against the plain library jar, which
+  therefore exists only in the local Maven repository of that developer and must
+  never be uploaded anywhere public.
+- The add-on may be used for non-commercial purposes only. `yfiles/include/YFILES-ADDON.md`
+  states this and is placed in the add-on's directory; the download page must say
+  the same next to the add-on.
+
+The add-on is built for one GROOVE version: the manifest of the backend jar records
+it (attribute `GROOVE-Version`, set by `yfiles/pom.xml` from its `revision`), and a
+GROOVE of another version skips the jar with a warning at start-up. Every release
+therefore needs its own add-on.
 
 ## Building
 
@@ -144,32 +152,34 @@ directory with the runtime license file configured, both as described in
     (from the repository root; this runs the backend's tests, which open a
     Simulator window briefly).
 
-2. Package the edition by running Maven in the release directory with the `yfiles`
+2. Package the add-on by running Maven in the release directory with the `yfiles`
    profile:
 
     `mvn clean package -Drevision=x.y.z -Pyfiles`
 
-    This produces `groove-x_y_z-yfiles-bin.zip` and `groove-x_y_z-yfiles-bin+doc.zip`
-    in `release/target`. Without `clean`, the standard zips built before stay
-    next to them. The obfuscation runs in `release/yfiles`; its name mapping is kept
-    in `release/yfiles/target/yguard.log.xml.gz` (view it with `java -jar yguard.jar <log>`
-    from the yGuard distribution) and should be kept with the release, in case a
-    stack trace from a user needs translating.
+    This produces the standard zips and, next to them, `groove-x_y_z-yfiles-addon.zip`
+    in `release/target`. The obfuscation runs in `release/yfiles`; its name mapping is
+    kept in `release/yfiles/target/yguard.log.xml.gz` (view it with
+    `java -jar yguard.jar <log>` from the yGuard distribution) and should be kept with
+    the release, in case a stack trace from a user needs translating.
 
-The script `do-all.sh yfiles` runs the standard steps and then these two.
-
-3. Installers: `bash jpackage/build-installer.sh x.y.z "" yfiles` builds the
-   edition's installer for the current platform (`app-image` as type for a local
-   try-out), named `groove-x_y_z-yfiles-<os>-<arch>.<ext>`. It installs next to
-   the standard release, as `GROOVE-yFiles`.
+The script `do-all.sh yfiles` runs the standard steps and then these two. The
+installers need nothing for the add-on: the standard ones bundle a runtime that
+suffices for it.
 
 ## Checking the result
 
-The edition's `lib` holds `groove-yfiles-x.y.z.jar` and `yfiles-for-java-swing-<v>.jar`,
-both obfuscated, and the runnable jars' manifests list them. Unzipping the edition
-and running `java -jar bin/Imager.jar -b yfiles -f png <grammar> <dir>` exercises the
-obfuscated library headlessly; the backend's own tests can be run against the
-obfuscated jars as described in `yfiles/README.md`.
+The add-on zip holds `yfiles/groove-yfiles-x.y.z.jar` and
+`yfiles/yfiles-for-java-swing-<v>.jar`, both obfuscated, and `yfiles/YFILES-ADDON.md`.
+Unzipping it into an otherwise empty directory `<ext>` and running, from an unzipped
+standard release,
+
+    java -Dgroove.extensions.dir=<ext> -jar bin/Imager.jar -b yfiles -f png <grammar> <dir>
+
+exercises the obfuscated library headlessly through the extension loader (without the
+add-on, the Imager warns that the backend is not available and renders with JGraph).
+The backend's own tests can be run against the obfuscated jars as described in
+`yfiles/README.md`.
 
 # How to build a Maven artefact
 

@@ -5,23 +5,27 @@
 		<artifactId>release</artifactId>
 		<version>1.0</version>
 	</parent>
-	<artifactId>yfiles-edition</artifactId>
+	<artifactId>yfiles-addon</artifactId>
 	<packaging>pom</packaging>
 
-	<!-- The obfuscation leg of the yFiles edition (built only under the yfiles
-	     profile of the parent). The yFiles license allows redistributing the
-	     library only in obfuscated form, so this module runs yWorks' free yGuard
-	     obfuscator over the library jar together with the groove-yfiles jar that
-	     calls it: every name under com.yworks is renamed (including the library's
-	     resource bundles), and the backend's references are rewritten to the new
-	     names while its own classes and members keep theirs, as the main jar and
-	     the ServiceLoader need them. This is the setup of the deployment demo in
-	     the yFiles distribution and of the "Obfuscation" appendix of its developer
-	     guide. The two resulting jars land in target/lib under their original
-	     names, which are the names on the runnable jars' manifest class path;
+	<!-- The yFiles add-on (built only under the yfiles profile of the parent):
+	     the yFiles backend and the yFiles library, zipped up for the user's
+	     extension directory, from which GROOVE loads them at start-up (see
+	     nl.utwente.groove.util.Extensions). The yFiles license allows
+	     redistributing the library only in obfuscated form, so this module first
+	     runs yWorks' free yGuard obfuscator over the library jar together with
+	     the groove-yfiles jar that calls it: every name under com.yworks is
+	     renamed (including the library's resource bundles), and the backend's
+	     references are rewritten to the new names while its own classes and
+	     members keep theirs, as the main jar and the ServiceLoader need them.
+	     This is the setup of the deployment demo in the yFiles distribution and
+	     of the "Obfuscation" appendix of its developer guide. The two resulting
+	     jars land in target/lib under their original names, and
 	     target/yguard.log.xml.gz records the name mapping (readable with
-	     java -jar yguard.jar [log]). The plain library jar never leaves the local
-	     Maven repository. -->
+	     java -jar yguard.jar [log]). The add-on zip then holds the two jars and
+	     the license notice of include/ in a directory yfiles/, ready to be
+	     unzipped into the extension directory. The plain library jar never
+	     leaves the local Maven repository. -->
 
 	<properties>
 		<!-- keep equal to the yfiles.version of ../../yfiles/pom.xml -->
@@ -144,6 +148,28 @@
 									</rename>
 								</yguard>
 							</target>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<!-- declared after the obfuscation, which runs first in the same phase -->
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>3.3.0</version>
+				<executions>
+					<execution>
+						<id>addon</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<descriptors>
+								<descriptor>addon.xml</descriptor>
+							</descriptors>
+							<finalName>groove-${groove-version-underscored}-yfiles-addon</finalName>
+							<appendAssemblyId>false</appendAssemblyId>
+							<outputDirectory>../target</outputDirectory>
 						</configuration>
 					</execution>
 				</executions>

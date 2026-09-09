@@ -8,10 +8,6 @@
 	<properties>
 		<revision>0.0.0-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<!-- The standard release is built with the defaults below; the yfiles
-		     profile overrides them for the yFiles edition (see README.md) -->
-		<edition-suffix></edition-suffix>
-		<assembly.descriptor>zip.xml</assembly.descriptor>
 	</properties>
 
 	<modules>
@@ -31,6 +27,30 @@
 				</plugin>
 			</plugins>
 		</pluginManagement>
+		<plugins>
+			<plugin>
+				<!-- the version with underscores, as used in the artifact names
+				     (groove-x_y_z-bin.zip, groove-x_y_z-yfiles-addon.zip) -->
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>3.3.0</version>
+				<executions>
+					<execution>
+						<id>regex-property</id>
+						<goals>
+							<goal>regex-property</goal>
+						</goals>
+						<configuration>
+							<name>groove-version-underscored</name>
+							<value>${revision}</value>
+							<regex>\.</regex>
+							<replacement>_</replacement>
+							<failIfNoMatch>false</failIfNoMatch>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
 	</build>
 
 	<dependencies>
@@ -43,29 +63,16 @@
 
 	<profiles>
 		<profile>
-			<!-- The yFiles edition: the same distribution with the yFiles backend
-			     (the groove-yfiles artifact of ../yfiles) and the yFiles library
-			     added, the library obfuscated as its license requires. Built
-			     locally only, never in CI: it needs the licensed library in the
-			     local Maven repository. Activate with -Pyfiles; the zips get a
-			     "-yfiles" infix and the extra jars come from the yfiles module. -->
+			<!-- The yFiles add-on: the yFiles backend (the groove-yfiles artifact
+			     of ../yfiles) and the yFiles library, the latter obfuscated as its
+			     license requires, zipped up for the user's extension directory
+			     (see README.md). The standard zips are not affected. Activate with
+			     -Pyfiles; it needs the licensed library in the local Maven
+			     repository. -->
 			<id>yfiles</id>
 			<modules>
 				<module>yfiles</module>
 			</modules>
-			<properties>
-				<edition-suffix>-yfiles</edition-suffix>
-				<assembly.descriptor>zip-yfiles.xml</assembly.descriptor>
-			</properties>
-			<dependencies>
-				<dependency>
-					<!-- inherited by the runnable jars, whose manifest class path
-					     thereby lists the backend and the library -->
-					<groupId>${project.groupId}</groupId>
-					<artifactId>groove-yfiles</artifactId>
-					<version>${revision}</version>
-				</dependency>
-			</dependencies>
 		</profile>
 	</profiles>
 </project>

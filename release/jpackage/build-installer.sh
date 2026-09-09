@@ -12,7 +12,7 @@
 #   windows runners)
 #
 # Usage:
-#   build-installer.sh <version> [<type> [<edition>]]
+#   build-installer.sh <version> [<type>]
 #
 #   <version>  the GROOVE version, e.g. 7.5.4; must match the -Drevision value
 #              of the release build
@@ -20,21 +20,15 @@
 #              defaults to msi (Windows), dmg (macOS) or deb (Linux).
 #              app-image produces the raw application directory without an
 #              installer, which is useful for local testing since it needs no
-#              packaging tools. Pass "" to get the default when giving an
-#              edition.
-#   <edition>  standard (the default) or yfiles: the yFiles edition is built
-#              from the -yfiles-bin zip (see README.md) into a package named
-#              GROOVE-yFiles that installs next to the standard one, with the
-#              edition's license notice as its license text.
+#              packaging tools.
 #
 # The installer is placed in release/jpackage/target/dist, named
-# groove-<version>[-yfiles]-<os>-<arch>.<ext>.
+# groove-<version>-<os>-<arch>.<ext>.
 
 set -euo pipefail
 
-VERSION=${1:?usage: build-installer.sh <version> [<type> [<edition>]]}
+VERSION=${1:?usage: build-installer.sh <version> [<type>]}
 TYPE=${2:-}
-EDITION=${3:-standard}
 
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 RELEASE_DIR=$(dirname "$SCRIPT_DIR")
@@ -59,31 +53,6 @@ if [[ -z $TYPE ]]; then
     esac
 fi
 
-# ----------------------------------------------------------------- edition
-# The two editions install side by side: distinct names, package identifiers
-# and (fixed) upgrade UUIDs, the latter making a newer MSI replace an older
-# install of the same edition only.
-case $EDITION in
-    standard)
-        EDITION_SUFFIX=
-        APP_NAME=GROOVE
-        PACKAGE_ID=nl.utwente.groove
-        UPGRADE_UUID=c8adea88-1eaa-4127-838b-7b4be5a147f3
-        DESCRIPTION="GROOVE graph transformation and verification tool"
-        ;;
-    yfiles)
-        EDITION_SUFFIX=-yfiles
-        APP_NAME=GROOVE-yFiles
-        PACKAGE_ID=nl.utwente.groove.yfiles
-        UPGRADE_UUID=6e52c35a-1ac2-4126-b428-b35a8272213d
-        DESCRIPTION="GROOVE graph transformation and verification tool, yFiles edition (non-commercial use only)"
-        ;;
-    *)
-        echo "error: unknown edition '$EDITION' (standard or yfiles)" >&2
-        exit 1
-        ;;
-esac
-
 # jpackage on Windows is a native tool: give it Windows-style paths
 native_path() {
     if [[ $OS == windows ]] && command -v cygpath > /dev/null; then
@@ -102,7 +71,7 @@ JDEPS=${JAVA_BIN}jdeps
 # jars in bin/ whose manifests put ../lib/* on the classpath, next to the
 # top-level documentation files. The whole tree becomes the app content.
 VERSION_UNDERSCORED=${VERSION//./_}
-ZIP=$RELEASE_DIR/target/groove-$VERSION_UNDERSCORED$EDITION_SUFFIX-bin.zip
+ZIP=$RELEASE_DIR/target/groove-$VERSION_UNDERSCORED-bin.zip
 if [[ ! -f $ZIP ]]; then
     echo "error: $ZIP not found; build the release first (see header of this script)" >&2
     exit 1
@@ -149,22 +118,10 @@ if [[ -z ${MODULES:-} ]]; then
     echo "warning: jdeps failed to compute the module list; falling back to java.se" >&2
     MODULES=java.se
 fi
-# The yFiles edition's jars have dependencies of their own (jdk.xml.dom, at
-# least) that the core jar's analysis cannot see
-if [[ $EDITION == yfiles ]]; then
-    edition_jars=()
-    for f in "$INPUT"/lib/groove-yfiles-*.jar "$INPUT"/lib/yfiles-for-java-swing-*.jar; do
-        edition_jars+=("$(native_path "$f")")
-    done
-    if EDITION_OUT=$("$JDEPS" --multi-release 21 --ignore-missing-deps --print-module-deps             --class-path "$(native_path "$INPUT/lib")/*" "${edition_jars[@]}" 2> /dev/null); then
-        EDITION_MODULES=$(grep -E '^[a-z][a-zA-Z0-9._]*(,[a-zA-Z0-9._]+)*$' <<< "$EDITION_OUT" | tail -1)
-    fi
-    if [[ -z ${EDITION_MODULES:-} ]]; then
-        echo "warning: jdeps failed on the edition jars; adding jdk.xml.dom only" >&2
-        EDITION_MODULES=jdk.xml.dom
-    fi
-    MODULES=$MODULES,$EDITION_MODULES
-fi
+# The yFiles add-on (see README.md) is loaded from the user's extension
+# directory into this same runtime; its jars need jdk.xml.dom, which the core
+# jar's analysis already yields, so no module is added for it here. Should
+# that change, the add-on would fail at start-up with a NoClassDefFoundError.
 MODULES=$(printf '%s\n' ${MODULES//,/ } $EXTRA_MODULES | sort -u | paste -sd, -)
 echo "bundled runtime modules: $MODULES"
 
@@ -200,14 +157,14 @@ APP_VERSION=${VERSION%%-*}
 
 args=(
     --type "$TYPE"
-    --name "$APP_NAME"
+    --name GROOVE
     --app-version "$APP_VERSION"
     --input "$(native_path "$INPUT")"
     --main-jar bin/Simulator.jar
     --add-modules "$MODULES"
     --dest "$(native_path "$DIST")"
     --vendor "University of Twente"
-    --description "$DESCRIPTION"
+    --description "GROOVE graph transformation and verification tool"
     "${add_launcher_args[@]}"
 )
 case $OS in
@@ -216,28 +173,22 @@ case $OS in
         ;;
     macos)
         args+=(--icon "$(native_path "$SCRIPT_DIR/icons/groove-G.icns")"
-            --mac-package-identifier "$PACKAGE_ID"
-            --mac-package-name "$APP_NAME")
+            --mac-package-identifier nl.utwente.groove
+            --mac-package-name GROOVE)
         ;;
     linux)
         args+=(--icon "$(native_path "$SCRIPT_DIR/icons/groove-G.png")")
         ;;
 esac
 if [[ $TYPE != app-image ]]; then
-    # the yFiles edition shows its license notice, which restricts its use
-    if [[ $EDITION == yfiles ]]; then
-        LICENSE_FILE=$INPUT/YFILES-EDITION.md
-    else
-        LICENSE_FILE=$ROOT_DIR/LICENSE.md
-    fi
-    args+=(--license-file "$(native_path "$LICENSE_FILE")"
+    args+=(--license-file "$(native_path "$ROOT_DIR/LICENSE.md")"
         --about-url "https://nl-utwente-groove.github.io")
     case $OS in
         windows)
             # the fixed upgrade UUID makes a newer MSI replace an older install
             args+=(--win-menu-group GROOVE
                 --win-per-user-install --win-dir-chooser
-                --win-upgrade-uuid "$UPGRADE_UUID")
+                --win-upgrade-uuid c8adea88-1eaa-4127-838b-7b4be5a147f3)
             ;;
         linux)
             args+=(--linux-menu-group Development)
@@ -253,7 +204,7 @@ if [[ $TYPE == app-image ]]; then
     echo "application image built in $DIST"
 else
     for f in "$DIST"/*; do
-        target=$DIST/groove-$VERSION_UNDERSCORED$EDITION_SUFFIX-$OS-$ARCH.${f##*.}
+        target=$DIST/groove-$VERSION_UNDERSCORED-$OS-$ARCH.${f##*.}
         mv "$f" "$target"
         echo "installer built: $target"
     done

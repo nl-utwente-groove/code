@@ -40,9 +40,6 @@
 			    <configuration>
 			   		<outputDirectory>${runnable.basedir}/target</outputDirectory>
 					<finalName>${project.artifactId}</finalName>
-					<!-- the jars hold only a manifest, whose class path depends on the
-					     active profiles: recreate them even if nothing seems changed -->
-					<forceCreation>true</forceCreation>
 					<archive>
 						<manifest>
 							<addClasspath>true</addClasspath>
