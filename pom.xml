@@ -145,8 +145,9 @@
 					     add-exports to instantiate the factory reflectively.
 					     The extension directory is pointed away from the real one
 					     (which need not exist), so that an installed add-on cannot
-					     change what the tests see. -->
-					<argLine>@{coverageAgent} -Djava.util.prefs.PreferencesFactory=nl.utwente.groove.test.gui.InMemoryPreferencesFactory --add-exports=nl.utwente.groove/nl.utwente.groove.test.gui=java.prefs -Dgroove.extensions.dir=${project.build.directory}/test-extensions</argLine>
+					     change what the tests see, and the Simulator's question
+					     about the yFiles add-on is suppressed. -->
+					<argLine>@{coverageAgent} -Djava.util.prefs.PreferencesFactory=nl.utwente.groove.test.gui.InMemoryPreferencesFactory --add-exports=nl.utwente.groove/nl.utwente.groove.test.gui=java.prefs -Dgroove.extensions.dir=${project.build.directory}/test-extensions -Dgroove.addon.prompt=false</argLine>
 					<excludes>
 						<!-- TestSuite aggregates the whole package tree as the
 						     entry point of the "GROOVE - all JUnit tests"

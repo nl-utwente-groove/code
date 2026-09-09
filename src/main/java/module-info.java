@@ -99,6 +99,7 @@ module nl.utwente.groove {
     requires transitive java.desktop;
     requires transitive java.prefs;
     requires java.logging;
+    requires java.net.http;
     requires java.xml;
     requires com.formdev.flatlaf;
     requires transitive jgraph;

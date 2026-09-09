@@ -100,6 +100,7 @@ import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.RuleTransitionLabel;
 import nl.utwente.groove.transform.oracle.OracleParser;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.AddOn;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.gui.list.SearchResult;
@@ -218,6 +219,8 @@ public class Simulator implements SimulatorListener {
         getFrame().pack();
         nl.utwente.groove.gui.UserSettings.applyUserSettings(this);
         getFrame().setVisible(true);
+        // the question about the yFiles add-on, once the frame is there to own it
+        SwingUtilities.invokeLater(getAddOnInstaller()::promptOnFirstRun);
     }
 
     /** Returns the store of actions for this simulator. */
@@ -734,8 +737,20 @@ public class Simulator implements SimulatorListener {
         if (backendItem != null) {
             result.add(backendItem);
         }
+        result.add(getAddOnInstaller().createMenu());
         return result;
     }
+
+    /** Returns (after lazily creating) the installer of the yFiles add-on. */
+    private AddOnInstaller getAddOnInstaller() {
+        var result = this.addOnInstaller;
+        if (result == null) {
+            this.addOnInstaller = result = new AddOnInstaller(getFrame(), AddOn.YFILES);
+        }
+        return result;
+    }
+
+    private AddOnInstaller addOnInstaller;
 
     /**
      * Creates and returns an exploration menu for the menu bar.

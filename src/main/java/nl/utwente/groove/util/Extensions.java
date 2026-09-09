@@ -43,7 +43,8 @@ import org.eclipse.jdt.annotation.Nullable;
  * the yFiles graph backend is the first such part (gh #909). The directory is the one
  * named by the system property {@link #DIR_PROPERTY} if it is set, otherwise the platform
  * default of {@link #defaultDir()}. The jars in the directory itself and in its immediate
- * subdirectories are loaded through one class loader whose parent is the application's
+ * subdirectories (except entries whose name starts with a dot, which are hidden from the
+ * scan) are loaded through one class loader whose parent is the application's
  * class loader, so that the extension classes see GROOVE and its dependencies, while
  * GROOVE itself sees the extensions only through services ({@link java.util.ServiceLoader}
  * over {@link #getLoader()}).
@@ -120,11 +121,17 @@ public final class Extensions {
         List<Path> paths = new ArrayList<>();
         try (Stream<Path> entries = Files.list(dir)) {
             for (Path entry : entries.sorted().toList()) {
+                if (isHidden(entry)) {
+                    continue;
+                }
                 if (isJar(entry)) {
                     paths.add(entry);
                 } else if (Files.isDirectory(entry)) {
                     try (Stream<Path> subEntries = Files.list(entry)) {
-                        subEntries.sorted().filter(Extensions::isJar).forEach(paths::add);
+                        subEntries
+                            .sorted()
+                            .filter(p -> !isHidden(p) && isJar(p))
+                            .forEach(paths::add);
                     }
                 }
             }
@@ -141,6 +148,11 @@ public final class Extensions {
             result.add(jar);
         }
         return List.copyOf(result);
+    }
+
+    /** Entries with a leading dot are hidden from the scan, e.g. an add-on being installed. */
+    private static boolean isHidden(Path path) {
+        return path.getFileName().toString().startsWith(".");
     }
 
     private static boolean isJar(Path path) {

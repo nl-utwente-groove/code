@@ -944,6 +944,21 @@ public class Options implements Cloneable {
      * chosen backend is stored (see {@link GraphBackend#getName()}).
      */
     static public final String GRAPH_BACKEND_OPTION = "Graph backend";
+    /** Name of the yFiles add-on submenu of the options menu (part of the View menu). */
+    static public final String YFILES_ADDON_MENU_NAME = "yFiles add-on";
+    /** Name of the action downloading and installing the yFiles add-on. */
+    static public final String DOWNLOAD_ADDON_ACTION_NAME = "Download and install...";
+    /** Name of the download action when an add-on for another version is installed. */
+    static public final String UPDATE_ADDON_ACTION_NAME = "Download and install update...";
+    /** Name of the action installing the yFiles add-on from a file. */
+    static public final String INSTALL_ADDON_FILE_ACTION_NAME = "Install from file...";
+    /** Name of the action removing the yFiles add-on. */
+    static public final String REMOVE_ADDON_ACTION_NAME = "Remove";
+    /**
+     * User preference holding the GROOVE version for which the user was last asked
+     * whether to install the yFiles add-on (see {@link AddOnInstaller}).
+     */
+    static public final String YFILES_ADDON_ASKED_OPTION = "yFiles add-on asked for version";
     /** Default value map for the boolean options. */
     static private final Map<String,Boolean> boolOptionDefaults = new HashMap<>();
     /** Default value map for the behaviour options. */
