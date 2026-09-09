@@ -21,7 +21,15 @@
 	<dependencySets>
 		<dependencySet>
 			<includes>
-				<include>nl.utwente.groove:groove</include>
+				<!-- the artifact type belongs in the pattern: the filter matches
+				     leniently, as a substring, and (with transitive filtering) also
+				     against every entry of an artifact's dependency trail, which
+				     starts with the assembling module itself
+				     (nl.utwente.groove:groove-bin:pom:1.0). Plain
+				     "nl.utwente.groove:groove" is a substring of that, so it lets
+				     through every dependency of the module, including the pom-typed
+				     ones that only order the reactor -->
+				<include>nl.utwente.groove:groove:jar</include>
 			</includes>
 			<useTransitiveFiltering>true</useTransitiveFiltering>
 			<outputDirectory>lib</outputDirectory>

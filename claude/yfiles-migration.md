@@ -321,9 +321,13 @@ the version as `-Drevision`) gained a profile `yfiles`:
   `../lib/yfiles-for-java-swing-3.6.0.1.jar`; the assembly uses `zip-yfiles.xml`
   descriptors (the standard ones plus the module's `target/lib` and `include`
   directories) and the final name `groove-x_y_z-yfiles-bin[+doc].zip`. The reactor
-  order is forced by a pom-type dependency of `assembly` on `yfiles-edition`, which the
-  descriptors exclude from `lib/` (the pre-existing `runnable-1.0.pom` in `lib/` leaks
-  the same way and was left alone).
+  order is forced by a pom-type dependency of `assembly` on `yfiles-edition`, which
+  stays out of `lib/` because the descriptors' include names the artifact type
+  (`nl.utwente.groove:groove:jar`). Without the type the filter admitted every
+  dependency of the assembling module, which is how `runnable-1.0.pom` had been landing
+  in `lib/` of the standard release all along: the assembly plugin matches an include
+  as a substring, and with transitive filtering also against the dependency trail,
+  whose first entry is the assembling module `nl.utwente.groove:groove-bin:pom:1.0`.
 - `release/yfiles/include/YFILES-EDITION.md` is the edition's notice: what it is,
   non-commercial use only, no extraction or reverse engineering of the library, passing
   on only unchanged. It sits at the root of the edition's zips and is the license text
