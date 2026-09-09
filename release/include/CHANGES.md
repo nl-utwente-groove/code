@@ -5,6 +5,16 @@ This document describes the major changes in the GROOVE tool set
 
 Upcoming release
 -------------------------------
+- The graph views of the Simulator, the editor, the Viewer and the Imager now run
+  on one of two interchangeable visualisation backends (gh #909): the JGraph-based
+  one of all previous releases, and a new one built on the commercial library
+  yFiles for Java (Swing). The latter is shipped only in a separate yFiles edition
+  of GROOVE, for non-commercial use (see `YFILES-EDITION.md` in that edition).
+  Where both are present, the Options menu of the Simulator offers the choice
+  (`Graph backend`, applied at the next start), yFiles is the default, its seven
+  layout algorithms (hierarchic, organic, orthogonal, tree, balloon, circular,
+  radial) join the layout menu, and the Imager's new `-b` option selects the
+  backend to render with
 - Removed the remote exploration strategy (`remote:host`), which sent the explored
   state space as a symbolic transition system (STS) to a remote server; command lines
   or saved explorations using `remote` now fail with an unknown-strategy error
