@@ -186,7 +186,7 @@ be updated with the change.
   only, per the one-seat constraint.
 - `release.yml` gains, before the release reactor: `actions/checkout` of that repo with a
   fine-grained PAT (or deploy key) from the secrets, the `install:install-file` step from
-  `yfiles/README.md`, and `-Dyfiles.license.dir` pointing into the checkout. Then
+  the backend's README (`groove-yfiles/README.md` in `yfiles-lib` since 2026-09-09), and `-Dyfiles.license.dir` pointing into the checkout. Then
   `-Pyfiles` on the release reactor; yGuard is a Maven plugin and needs nothing else.
 - The `yfiles` profile stays off `maven.yml`: secrets are not available to workflows run
   for pull requests from forks, and the PR build must keep working without the library, as
@@ -257,5 +257,5 @@ For yWorks:
 - `release/README.md`, the chapter on the yFiles edition.
 - `release/yfiles/pom.xml` (obfuscation), `release/jpackage/build-installer.sh` (installers),
   `release/assembly/**/zip-yfiles.xml` (edition zips), `.github/workflows/release.yml`.
-- `yfiles/README.md` for the backend unit itself; `gui/view/GraphBackend.java` for discovery
+- `groove-yfiles/README.md` in the private `yfiles-lib` repository for the backend unit itself; `gui/view/GraphBackend.java` for discovery
   and selection; `gui/Options.java` for the user preferences.
