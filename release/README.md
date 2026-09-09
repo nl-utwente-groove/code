@@ -145,7 +145,7 @@ therefore needs its own add-on.
 
 Prerequisites, once: a clone of the private repository `nl-utwente-groove/yfiles-lib`
 next to this one, and the library installed in the local Maven repository from the jar
-at its root, both as described in `groove-yfiles/README.md` there; yGuard itself comes
+in its `lib/` directory, both as described in `groove-yfiles/README.md` there; yGuard itself comes
 from Maven Central like any plugin.
 
 1. Build and install the core artifact and generate the javadoc as for the standard
@@ -176,7 +176,7 @@ suffices for it.
 The `release` job of `.github/workflows/release.yml` builds the add-on along with the
 standard zips, so that a release needs no manual step. For that it checks out the
 private repository `nl-utwente-groove/yfiles-lib` next to the code checkout. That
-repository holds two files at its root: `yfiles-for-java-swing.jar`, the plain library
+repository holds two files in its `lib/` directory: `yfiles-for-java-swing.jar`, the plain library
 jar from the `lib` directory of the licensed distribution, and the runtime license file
 (the `.xml` file that `yfiles.license.dir` points to); next to them, in
 `groove-yfiles/`, it holds the source of the backend itself, which the yFiles license

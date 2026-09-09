@@ -66,10 +66,10 @@ jobs:
       # backend depends on; the version is the backend pom's yfiles.version
       run: |
         YFILES_VERSION=$(mvn -B -q -f ../yfiles-lib/groove-yfiles/pom.xml help:evaluate -Dexpression=yfiles.version -DforceStdout)
-        mvn -B -q install:install-file -Dfile=../yfiles-lib/yfiles-for-java-swing.jar -DgroupId=com.yworks.yfiles -DartifactId=yfiles-for-java-swing -Dversion=$YFILES_VERSION -Dpackaging=jar
+        mvn -B -q install:install-file -Dfile=../yfiles-lib/lib/yfiles-for-java-swing.jar -DgroupId=com.yworks.yfiles -DartifactId=yfiles-for-java-swing -Dversion=$YFILES_VERSION -Dpackaging=jar
     - name: Build yFiles backend
       # from the private repository checked out above, against the GROOVE
-      # artifact just installed; the license directory defaults to the root of
+      # artifact just installed; the license directory defaults to the lib/ directory of
       # that checkout, where the license file is committed. The backend's tests
       # open Simulator windows and are run by the developer, not on this
       # headless runner

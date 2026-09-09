@@ -481,7 +481,7 @@ add-on (two products to explain, macOS gap); a single installer with a yFiles qu
    `YFILES_LIB_TOKEN`, then a dry run on a throwaway release tag from a branch.
 3. **The private repository**: Arend creates `nl-utwente-groove/yfiles-lib`, pushes the
    prepared clone at `C:\Groove\yfiles-lib` (main), adds the library jar and licence file
-   at its root, and imports `groove-yfiles` from it in Eclipse in place of the old nested
+   in its `lib/` directory, and imports `groove-yfiles` from it in Eclipse in place of the old nested
    project (delete the old one from the workspace first). Until then the backend is built
    from that clone.
 4. **The license questions for yWorks**, drafted as a message in

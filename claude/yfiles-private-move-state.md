@@ -25,8 +25,8 @@ State file, updated 2026-09-09 after the move. Branch `yfiles-private-move` off
 ## Next (Arend)
 
 - Create the private repository `nl-utwente-groove/yfiles-lib`, push `C:\Groove\yfiles-lib`
-  (`main`), commit `yfiles-for-java-swing.jar` and the runtime licence xml at its root
-  (the pom's resource include takes every `*.xml` at the root, so nothing else with that
+  (`main`), commit `yfiles-for-java-swing.jar` and the runtime licence xml in its `lib/` directory
+  (the pom's resource include takes every `*.xml` there, so nothing else with that
   extension may sit there), set `YFILES_LIB_TOKEN`, dry-run a release tag from a branch.
 - Eclipse: delete the old nested `groove-yfiles` project from the workspace, import
   `C:\Groove\yfiles-lib\groove-yfiles` in its place; the launch configuration moved along.
