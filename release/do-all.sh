@@ -3,7 +3,8 @@
 # - zipping up the release artifacts
 # - optionally, with the argument "yfiles", also building the yFiles add-on
 #   (see README.md; needs the licensed yFiles library in the local Maven
-#   repository and the license directory configured)
+#   repository and a clone of the private yfiles-lib repository, which holds
+#   the backend source and the runtime license file, next to this repository)
 # Run from the code repository main directory using launch/maven.sh
 
 EDITION=${1:-}
@@ -11,6 +12,11 @@ if [[ -n $EDITION && $EDITION != yfiles ]]; then
     echo "usage: do-all.sh [yfiles]" >&2
     exit 1
 fi
+
+# The clone of the private repository nl-utwente-groove/yfiles-lib, which holds
+# the yFiles backend source, the library jar and the runtime license file; it is
+# expected next to this repository. Override with YFILES_LIB=<dir>.
+YFILES_LIB=${YFILES_LIB:-../yfiles-lib}
 
 # Set the GROOVE_VERSION variable from the pom's revision property (the
 # single source of truth for the version number); the release poms form
@@ -27,7 +33,7 @@ mvn javadoc:aggregate
 
 # Build and install the yFiles backend against the artifact just installed
 if [[ $EDITION == yfiles ]]; then
-    mvn -f yfiles/pom.xml -Dgroove.install.skip=true -Drevision=$GROOVE_VERSION clean install
+    mvn -f $YFILES_LIB/groove-yfiles/pom.xml -Dgroove.install.skip=true -Drevision=$GROOVE_VERSION clean install
 fi
 
 # zip up the release artifacts

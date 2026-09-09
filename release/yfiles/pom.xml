@@ -28,7 +28,8 @@
 	     leaves the local Maven repository. -->
 
 	<properties>
-		<!-- keep equal to the yfiles.version of ../../yfiles/pom.xml -->
+		<!-- keep equal to the yfiles.version of groove-yfiles/pom.xml in the
+		     yfiles-lib repository -->
 		<yfiles.version>3.6.0.1</yfiles.version>
 		<yguard.version>4.1.1</yguard.version>
 		<yfiles.jar>yfiles-for-java-swing-${yfiles.version}.jar</yfiles.jar>
