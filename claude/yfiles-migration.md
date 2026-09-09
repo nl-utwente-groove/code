@@ -338,8 +338,12 @@ the version as `-Drevision`) gained a profile `yfiles`:
   installer from the `-yfiles-bin` zip as `GROOVE-yFiles` (own package identifier and
   upgrade UUID, so it installs next to the standard package), named
   `groove-x_y_z-yfiles-<os>-<arch>.<ext>`. The bundled runtime needs `jdk.xml.dom`,
-  which the library uses and the core jar's `jdeps` analysis cannot see: the script
-  runs `jdeps` over the two edition jars as well and unions the module sets.
+  which the library uses: the script runs `jdeps` over the two edition jars as well
+  and unions the module sets, since a library's needs need not show up in the core
+  module's own dependences. The core jar is analysed without its module descriptor,
+  because a jdeps that resolves the module graph first (JDK 26 does, JDK 21 does not)
+  fails on the automatic modules the descriptor requires; before that fix a local
+  installer build silently fell back to bundling `java.se`.
 - `release/do-all.sh yfiles` runs the standard steps, then installs the backend (with
   its tests) and packages the edition with `-Pyfiles package`, without `clean` so the
   standard zips survive in the shared `release/target`. That sequence only works
@@ -409,9 +413,7 @@ Side issues filed along the way, independent of the phases: gh #882 (mouse
 interaction), gh #915 (JGraph editor grid snapping), gh #916 (popup actions in the menu
 bar). Open technical residues: the null-analysis blind spot over the yFiles unit (see
 "Practical notes"), the Robot tests of `YFilesSimulatorTest` that need a visible canvas,
-the accepted cosmetic differences listed under "Phase 4", and `jdeps` failing on the
-modular core jar under a local JDK 26 (the installer script falls back to `java.se`;
-CI runs JDK 21).
+and the accepted cosmetic differences listed under "Phase 4".
 
 Practicalities carried over: the yFiles unit is built with `mvn -q -f yfiles/pom.xml
 test > <log> 2>&1` (installs the core artifact first; `-Dgroove.install.skip=true` when

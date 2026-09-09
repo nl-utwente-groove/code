@@ -126,8 +126,21 @@ INPUT=$WORK/input/groove-$VERSION_UNDERSCORED
 # the download of the yFiles add-on (gh #909).
 EXTRA_MODULES="java.instrument java.management java.naming java.scripting java.sql jdk.accessibility jdk.charsets jdk.crypto.ec jdk.unsupported jdk.zipfs"
 MAIN_JAR=$INPUT/lib/groove-$VERSION.jar
+# The analysis runs on the core jar's classes WITHOUT its module descriptor.
+# The core jar is a named module whose "requires" clauses name the automatic
+# modules of the class-path jars; a jdeps that resolves the module graph before
+# analysing -- JDK 26 does, JDK 21 does not -- then stops at the first of them
+# with "Module jgraph not found, required by nl.utwente.groove". That is not
+# covered by --ignore-missing-deps, which ignores dependences missing from the
+# analysis, not modules missing from the resolution, and putting lib/ on the
+# module path only moves the failure on, since the automatic module names the
+# jars derive are not consistent among themselves (commons-beanutils requires
+# org.apache.commons.logging, the jar yields commons.logging). Without the
+# descriptor there is no resolution to fail, and both JDKs give the same answer.
+CLASSES=$WORK/classes
+unzip -q "$MAIN_JAR" -x module-info.class -d "$CLASSES"
 if JDEPS_OUT=$("$JDEPS" --multi-release 21 --ignore-missing-deps --print-module-deps \
-        --class-path "$(native_path "$INPUT/lib")/*" "$(native_path "$MAIN_JAR")" 2> /dev/null); then
+        --class-path "$(native_path "$INPUT/lib")/*" "$(native_path "$CLASSES")" 2> /dev/null); then
     # jdeps may precede the module list with warnings; the list is the last
     # line that looks like comma-separated module names
     MODULES=$(grep -E '^[a-z][a-zA-Z0-9._]*(,[a-zA-Z0-9._]+)*$' <<< "$JDEPS_OUT" | tail -1)
