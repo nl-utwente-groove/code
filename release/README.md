@@ -126,9 +126,11 @@ this build:
   (except the few yWorks marks as reflectively used), and the backend's references
   to them are rewritten, while the backend's own classes and members keep their
   names since the main jar and its `ServiceLoader` registration need them.
-- Only the licensed developer may develop against the plain library jar, which
-  therefore exists only in the local Maven repository of that developer and must
-  never be uploaded anywhere public.
+- Only the licensed developer may develop against the plain library jar, and the
+  release build may use it under the project license. It therefore exists in two
+  places only: the local Maven repository of that developer, and the private
+  repository the release workflow checks out (see below). It must never be uploaded
+  anywhere public.
 - The add-on may be used for non-commercial purposes only. `yfiles/include/YFILES-ADDON.md`
   states this and is placed in the add-on's directory; the download page must say
   the same next to the add-on.
@@ -166,6 +168,31 @@ directory with the runtime license file configured, both as described in
 The script `do-all.sh yfiles` runs the standard steps and then these two. The
 installers need nothing for the add-on: the standard ones bundle a runtime that
 suffices for it.
+
+## In the release workflow
+
+The `release` job of `.github/workflows/release.yml` builds the add-on along with the
+standard zips, so that a release needs no manual step. For that it checks out the
+private repository `nl-utwente-groove/yfiles-lib`, which holds exactly two files at
+its root: `yfiles-for-java-swing.jar`, the plain library jar from the `lib` directory
+of the licensed distribution, and the runtime license file (the `.xml` file that
+`yfiles.license.dir` points to in a local build). The workflow installs the jar into
+the runner's local Maven repository under the coordinates of `yfiles/pom.xml` (whose
+`yfiles.version` it reads), builds the backend with the license directory set to the
+checkout (tests skipped: they open Simulator windows), and packages the release with
+the `yfiles` profile; the add-on zip is then attached to the github release by the
+same step as the standard zips.
+
+The checkout authenticates with the repository secret `YFILES_LIB_TOKEN`, a
+fine-grained personal access token of the licensed developer with read access to
+`yfiles-lib` only (Contents: read). Under the one-seat project license, nobody but
+that developer and this token may read the private repository. A new library version
+means a new jar and license file there, and a new `yfiles.version` in both
+`yfiles/pom.xml` and `release/yfiles/pom.xml`.
+
+The pull-request build (`maven.yml`) does not use the profile: secrets are not
+available to workflows run for pull requests from forks, and the standard build must
+keep working without the library, as it does.
 
 ## Checking the result
 
