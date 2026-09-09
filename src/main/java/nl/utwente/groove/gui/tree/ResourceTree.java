@@ -260,6 +260,7 @@ public class ResourceTree extends AbstractResourceTree {
             DisplayKind display = DisplayKind.toDisplay(getResourceKind());
             if (selected instanceof ResourceTreeNode && display != null) {
                 getSimulatorModel().setDisplay(display);
+                keepFocus();
             }
 
             // invoke editor, if this was a double click

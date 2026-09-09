@@ -142,6 +142,31 @@ public class DisplaySwitchGuiTest {
     }
 
     /**
+     * A click in a name list that brings up another display leaves the focus
+     * in the list, so that the entry clicked is rendered as actively selected.
+     * The display used to take the focus on every switch, and the tree
+     * renderer shows the active selection colours only while the list owns
+     * the focus.
+     */
+    @Test
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    void clickKeepsFocusInNameList() throws Exception {
+        loadGrammar(copyGrammar(GRAMMAR));
+        JTreeOperator rules = tree(DisplayKind.RULE);
+        JTreeOperator hosts = tree(DisplayKind.HOST);
+        // a rule is displayed, then a graph other than the selected one is chosen
+        click(rules, leaves(rules).get(0));
+        SwingUtilities.invokeAndWait(() -> getModel().setDisplay(DisplayKind.RULE));
+        List<Integer> graphs = leaves(hosts);
+        click(hosts, graphs.get(graphs.size() - 1));
+        assertEquals(DisplayKind.HOST, shown(), "after clicking the graph name");
+        // the list owns the focus right after the click; the display coming up
+        // used to take it away through queued requests, so let those settle
+        Thread.sleep(500);
+        assertTrue(hosts.getSource().isFocusOwner(), "the graph list has lost the focus");
+    }
+
+    /**
      * Clicks on the row of a named resource, to the right of its rendered
      * label.
      */

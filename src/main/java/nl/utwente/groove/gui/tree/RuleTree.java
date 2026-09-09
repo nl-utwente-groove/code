@@ -805,6 +805,7 @@ public class RuleTree extends AbstractResourceTree {
                 }
                 if (evt.getClickCount() == 1 && toDisplay != null) {
                     getSimulatorModel().setDisplay(toDisplay);
+                    keepFocus();
                 } else if (evt.getClickCount() == 2 && toDisplay != null) {
                     if (toDisplay.hasResource()) {
                         getActions().getEditAction(toDisplay.getResource()).execute();

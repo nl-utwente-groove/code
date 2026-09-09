@@ -32,6 +32,7 @@ import java.util.function.Supplier;
 
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -134,6 +135,21 @@ public abstract class AbstractResourceTree extends JTree implements SimulatorLis
 
     /** Callback factory method for the mouse listener of this resource tree. */
     abstract MouseListener createMouseListener();
+
+    /**
+     * Keeps the focus in this tree across a display switch that a mouse press
+     * on it has just triggered.
+     * The press gives the tree the focus, but through posted events; the
+     * switch hides the previous display before those are dispatched, and as
+     * that display still contains the focus owner of record, AWT transfers the
+     * focus to the next component of the cycle, in the display coming up. The
+     * request queued here comes after all of that, so the tree ends up with the
+     * focus and the entry pressed is rendered as actively selected.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    final void keepFocus() {
+        SwingUtilities.invokeLater(this::requestFocusInWindow);
+    }
 
     /**
      * Returns the tree path under a mouse event, counting the whole width of a

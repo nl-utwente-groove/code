@@ -500,7 +500,6 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
             this.lastSelected = getSelectedComponent();
             super.setSelectedIndex(index);
         }
-        getSelectedComponent().requestFocus();
     }
 
     private void setTabEnabled(int index, boolean enabled) {
