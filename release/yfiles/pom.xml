@@ -1,0 +1,153 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>nl.utwente.groove</groupId>
+		<artifactId>release</artifactId>
+		<version>1.0</version>
+	</parent>
+	<artifactId>yfiles-edition</artifactId>
+	<packaging>pom</packaging>
+
+	<!-- The obfuscation leg of the yFiles edition (built only under the yfiles
+	     profile of the parent). The yFiles license allows redistributing the
+	     library only in obfuscated form, so this module runs yWorks' free yGuard
+	     obfuscator over the library jar together with the groove-yfiles jar that
+	     calls it: every name under com.yworks is renamed (including the library's
+	     resource bundles), and the backend's references are rewritten to the new
+	     names while its own classes and members keep theirs, as the main jar and
+	     the ServiceLoader need them. This is the setup of the deployment demo in
+	     the yFiles distribution and of the "Obfuscation" appendix of its developer
+	     guide. The two resulting jars land in target/lib under their original
+	     names, which are the names on the runnable jars' manifest class path;
+	     target/yguard.log.xml.gz records the name mapping (readable with
+	     java -jar yguard.jar [log]). The plain library jar never leaves the local
+	     Maven repository. -->
+
+	<properties>
+		<!-- keep equal to the yfiles.version of ../../yfiles/pom.xml -->
+		<yfiles.version>3.6.0.1</yfiles.version>
+		<yguard.version>4.1.1</yguard.version>
+		<yfiles.jar>yfiles-for-java-swing-${yfiles.version}.jar</yfiles.jar>
+		<backend.jar>groove-yfiles-${revision}.jar</backend.jar>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<!-- the backend with, transitively, the library and the GROOVE core:
+			     the class path against which yGuard resolves external names -->
+			<groupId>${project.groupId}</groupId>
+			<artifactId>groove-yfiles</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		<dependency>
+			<!-- referenced by the library's class files (annotations, absent at run
+			     time); on the external class path only to keep yGuard's warnings
+			     about unresolved names meaningful -->
+			<groupId>com.google.code.findbugs</groupId>
+			<artifactId>jsr305</artifactId>
+			<version>3.0.2</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.8.1</version>
+				<executions>
+					<execution>
+						<!-- the two jars to obfuscate, under their repository names -->
+						<id>copy-inputs</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/in</outputDirectory>
+							<artifactItems>
+								<artifactItem>
+									<groupId>${project.groupId}</groupId>
+									<artifactId>groove-yfiles</artifactId>
+									<version>${revision}</version>
+								</artifactItem>
+								<artifactItem>
+									<groupId>com.yworks.yfiles</groupId>
+									<artifactId>yfiles-for-java-swing</artifactId>
+									<version>${yfiles.version}</version>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+					<execution>
+						<!-- everything the two jars reference but that is not itself
+						     obfuscated: the GROOVE core and its dependencies -->
+						<id>external-classpath</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>build-classpath</goal>
+						</goals>
+						<configuration>
+							<excludeArtifactIds>groove-yfiles,yfiles-for-java-swing</excludeArtifactIds>
+							<outputProperty>external.classpath</outputProperty>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>3.1.0</version>
+				<dependencies>
+					<dependency>
+						<groupId>com.yworks</groupId>
+						<artifactId>yguard</artifactId>
+						<version>${yguard.version}</version>
+					</dependency>
+				</dependencies>
+				<executions>
+					<execution>
+						<id>obfuscate</id>
+						<phase>package</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<taskdef name="yguard" classname="com.yworks.yguard.YGuardTask" classpathref="maven.plugin.classpath" />
+								<mkdir dir="${project.build.directory}/lib" />
+								<yguard>
+									<inoutpair in="${project.build.directory}/in/${yfiles.jar}" out="${project.build.directory}/lib/${yfiles.jar}" />
+									<inoutpair in="${project.build.directory}/in/${backend.jar}" out="${project.build.directory}/lib/${backend.jar}" />
+									<externalclasses path="${external.classpath}" />
+									<rename logfile="${project.build.directory}/yguard.log.xml.gz" replaceClassNameStrings="true" annotationclass="com.yworks.yfiles.utils.Obfuscation">
+										<keep>
+											<!-- the backend keeps all its names; only its references
+											     to the library are rewritten -->
+											<class classes="private" methods="private" fields="private">
+												<patternset>
+													<include name="nl.utwente.groove.**" />
+												</patternset>
+											</class>
+											<!-- and its line numbers, for readable stack traces -->
+											<attribute name="LineNumberTable,SourceFile">
+												<patternset>
+													<include name="nl.utwente.groove.**" />
+												</patternset>
+											</attribute>
+										</keep>
+										<!-- the library's resource bundles are named after their
+										     classes and must follow them -->
+										<adjust replaceName="true">
+											<include name="**/*.properties" />
+										</adjust>
+									</rename>
+								</yguard>
+							</target>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>

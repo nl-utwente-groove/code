@@ -106,6 +106,71 @@ Unlike the contents of `include`, neither file ends up in the zips or the instal
    pleasant side effect of the suffix: the Central portal rejects `-SNAPSHOT`
    versions, so an accidental `deploy` between releases cannot publish.)
 
+# How to build the yFiles edition
+
+The yFiles edition is a second distribution of the same release, with the optional
+yFiles graph-visualisation backend (`yfiles/`, see its README) and the commercial
+yFiles library it runs on added to `lib/`. The yFiles license (an academic license
+held by the University of Twente) has three consequences that shape this build:
+
+- The library may be redistributed only in obfuscated form. The release reactor
+  therefore has a module `yfiles` that runs yWorks' free obfuscator yGuard over the
+  library jar together with the backend jar: all names of the library are renamed
+  (except the few yWorks marks as reflectively used), and the backend's references
+  to them are rewritten, while the backend's own classes and members keep their
+  names since the main jar and its `ServiceLoader` registration need them. The
+  plain library jar exists only in the local Maven repository of the licensed
+  developer and must never be uploaded anywhere.
+- Only the licensed developer may build with the library, and only interactively,
+  so the edition is built locally and never in CI: the release workflow builds
+  the standard release only, and the edition's zips (and installers) are attached
+  to the github release by hand.
+- The edition may be used for non-commercial purposes only. `yfiles/include/YFILES-EDITION.md`
+  states this and is placed at the root of the edition's zips; it is also the
+  license text of the edition's installers, and the download page must say the
+  same next to the edition's artifacts.
+
+## Building
+
+Prerequisites, once: the library installed in the local Maven repository and the
+directory with the runtime license file configured, both as described in
+`yfiles/README.md`; yGuard itself comes from Maven Central like any plugin.
+
+1. Build and install the core artifact and generate the javadoc as for the standard
+   release, then build and install the backend against it:
+
+    `mvn -f yfiles/pom.xml -Dgroove.install.skip=true -Drevision=x.y.z clean install`
+
+    (from the repository root; this runs the backend's tests, which open a
+    Simulator window briefly).
+
+2. Package the edition by running Maven in the release directory with the `yfiles`
+   profile:
+
+    `mvn clean package -Drevision=x.y.z -Pyfiles`
+
+    This produces `groove-x_y_z-yfiles-bin.zip` and `groove-x_y_z-yfiles-bin+doc.zip`
+    in `release/target`. Without `clean`, the standard zips built before stay
+    next to them. The obfuscation runs in `release/yfiles`; its name mapping is kept
+    in `release/yfiles/target/yguard.log.xml.gz` (view it with `java -jar yguard.jar <log>`
+    from the yGuard distribution) and should be kept with the release, in case a
+    stack trace from a user needs translating.
+
+The script `do-all.sh yfiles` runs the standard steps and then these two.
+
+3. Installers: `bash jpackage/build-installer.sh x.y.z "" yfiles` builds the
+   edition's installer for the current platform (`app-image` as type for a local
+   try-out), named `groove-x_y_z-yfiles-<os>-<arch>.<ext>`. It installs next to
+   the standard release, as `GROOVE-yFiles`.
+
+## Checking the result
+
+The edition's `lib` holds `groove-yfiles-x.y.z.jar` and `yfiles-for-java-swing-<v>.jar`,
+both obfuscated, and the runnable jars' manifests list them. Unzipping the edition
+and running `java -jar bin/Imager.jar -b yfiles -f png <grammar> <dir>` exercises the
+obfuscated library headlessly; the backend's own tests can be run against the
+obfuscated jars as described in `yfiles/README.md`.
+
 # How to build a Maven artefact
 
 The process is quite complicated; although largely automated, many things can go wrong.

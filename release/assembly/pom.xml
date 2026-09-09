@@ -28,7 +28,7 @@
 	</dependencies>
 
 	<build>
-		<finalName>groove-${groove-version-underscored}-${output-suffix}</finalName>
+		<finalName>groove-${groove-version-underscored}${edition-suffix}-${output-suffix}</finalName>
 		<pluginManagement>
 			<plugins>
 				<plugin>
@@ -36,7 +36,7 @@
 					<version>3.3.0</version>
 					<configuration>
 						<descriptors>
-							<descriptor>zip.xml</descriptor>
+							<descriptor>${assembly.descriptor}</descriptor>
 						</descriptors>
 						<appendAssemblyId>false</appendAssemblyId>
 						<outputDirectory>../../target</outputDirectory>
@@ -76,4 +76,20 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>yfiles</id>
+			<dependencies>
+				<dependency>
+					<!-- only for the reactor order: the obfuscated jars must exist
+					     before the zips are assembled -->
+					<groupId>${project.groupId}</groupId>
+					<artifactId>yfiles-edition</artifactId>
+					<version>${project.version}</version>
+					<type>pom</type>
+				</dependency>
+			</dependencies>
+		</profile>
+	</profiles>
 </project>

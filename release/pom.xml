@@ -8,6 +8,10 @@
 	<properties>
 		<revision>0.0.0-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<!-- The standard release is built with the defaults below; the yfiles
+		     profile overrides them for the yFiles edition (see README.md) -->
+		<edition-suffix></edition-suffix>
+		<assembly.descriptor>zip.xml</assembly.descriptor>
 	</properties>
 
 	<modules>
@@ -36,4 +40,32 @@
 			<version>${revision}</version>
 		</dependency>
 	</dependencies>
+
+	<profiles>
+		<profile>
+			<!-- The yFiles edition: the same distribution with the yFiles backend
+			     (the groove-yfiles artifact of ../yfiles) and the yFiles library
+			     added, the library obfuscated as its license requires. Built
+			     locally only, never in CI: it needs the licensed library in the
+			     local Maven repository. Activate with -Pyfiles; the zips get a
+			     "-yfiles" infix and the extra jars come from the yfiles module. -->
+			<id>yfiles</id>
+			<modules>
+				<module>yfiles</module>
+			</modules>
+			<properties>
+				<edition-suffix>-yfiles</edition-suffix>
+				<assembly.descriptor>zip-yfiles.xml</assembly.descriptor>
+			</properties>
+			<dependencies>
+				<dependency>
+					<!-- inherited by the runnable jars, whose manifest class path
+					     thereby lists the backend and the library -->
+					<groupId>${project.groupId}</groupId>
+					<artifactId>groove-yfiles</artifactId>
+					<version>${revision}</version>
+				</dependency>
+			</dependencies>
+		</profile>
+	</profiles>
 </project>
