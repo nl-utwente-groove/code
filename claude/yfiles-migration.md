@@ -30,8 +30,8 @@ controller-owned canvases, neutral `GraphPanel`,
 `newViewModel`/`setViewModel` on the canvas) is merged; slice 3 (the optional yFiles unit
 `yfiles/`, a separate Maven project on the `release/` pattern providing `YFilesBackend` as a
 service, with `GraphBackend` ranking yFiles first when present) is merged, and the unit was
-moved to the private repository `nl-utwente-groove/yfiles-lib` as `groove-yfiles/` on
-2026-09-09, see "License constraints"; slice 4 (the
+moved to the private repository `nl-utwente-groove/yfiles-lib`, where it is the root
+project, on 2026-09-09, see "License constraints"; slice 4 (the
 yFiles canvas) is under way: 4a (neutral cell classes in `gui.view.cell` that both backends
 show through items of their own, decision B in the phase-2 note) is merged; 4b (the
 read-only yFiles canvas for aspect graphs in the optional unit, with three review rounds on
@@ -338,7 +338,7 @@ Findings and residues:
   Imager with "Cannot export blank image" on both backends; pre-existing, not phase 4.
 - The main project's `ImagerTest` stays on JGraph (the yFiles unit is not on its class
   path); `YFilesImagerTest` in the unit is its yFiles counterpart and keeps its output
-  in `groove-yfiles/target/imager`; `YFilesSimulatorTest.ltsDisplayExportsRasterAndVector`
+  in the unit's `target/imager`; `YFilesSimulatorTest.ltsDisplayExportsRasterAndVector`
   covers the LTS canvas, which the Imager does not reach.
 
 ## Phase 5: the yFiles edition (2026-09-09, branch `yfiles-edition`)
@@ -407,7 +407,7 @@ layout (no yFiles entries). From the unzipped edition, `Imager -b yfiles` render
 the obfuscated stack; the same from the app image after the module fix. The unit's own
 tests run green against the obfuscated jars (65 tests: 61 pass, the 4 Robot tests skip
 by assumption) with this recipe, worth scripting if it is needed again: jar
-`groove-yfiles/target/test-classes`, run one yGuard pass with *three* inoutpairs (library,
+the unit's `target/test-classes`, run one yGuard pass with *three* inoutpairs (library,
 backend, tests jar; same keep rules) from a scratch pom copied from
 `release/yfiles/pom.xml`, then run
 `org.junit.platform.console.ConsoleLauncher execute --scan-class-path <tests.jar>`
@@ -443,13 +443,13 @@ Four commits, one per implementation slice of that note:
    `ServiceLoader`. The surefire configurations and the Eclipse test launch point the
    directory at an empty location under `target`.
 2. **Add-on packaging** (`release/yfiles`): the backend jar's manifest carries the GROOVE
-   version (set in `groove-yfiles/pom.xml`, passed through by yGuard); the `yfiles` profile
+   version (set in the backend's `pom.xml`, passed through by yGuard); the `yfiles` profile
    produces `groove-x_y_z-yfiles-addon.zip` (directory `yfiles/` with the two obfuscated
    jars and `YFILES-ADDON.md`, the rewritten notice) next to the standard zips. The
    edition zips, descriptors, the profile's manifest-class-path dependency, the
    installer's edition branch and the runnable module's `forceCreation` are gone.
 3. **CI** (`release.yml`): the release job checks out the private repository
-   `nl-utwente-groove/yfiles-lib` (plain jar + license file; since 2026-09-09 also the backend source `groove-yfiles/`) with `YFILES_LIB_TOKEN`,
+   `nl-utwente-groove/yfiles-lib` (plain jar + license file in `lib/`; since 2026-09-09 also the backend source, its root project) with `YFILES_LIB_TOKEN`,
    installs the jar, builds the backend (tests skipped on the headless runner) and
    packages with `-Pyfiles`. Not yet exercised: the repository and secret do not exist.
 4. **In-app installer** (`gui.AddOnInstaller`, `util.AddOn`): the options part of the
@@ -481,8 +481,8 @@ add-on (two products to explain, macOS gap); a single installer with a yFiles qu
    `YFILES_LIB_TOKEN`, then a dry run on a throwaway release tag from a branch.
 3. **The private repository**: Arend creates `nl-utwente-groove/yfiles-lib`, pushes the
    prepared clone at `C:\Groove\yfiles-lib` (main), adds the library jar and licence file
-   in its `lib/` directory, and imports `groove-yfiles` from it in Eclipse in place of the old nested
-   project (delete the old one from the workspace first). Until then the backend is built
+   in its `lib/` directory, and imports the clone as the Eclipse project
+   `groove-yfiles` in place of the old nested project (delete the old one from the workspace first). Until then the backend is built
    from that clone.
 4. **The license questions for yWorks**, drafted as a message in
    `claude/yworks-question-2026-09.md` for Arend to send (2026-09-09). The questions,
@@ -527,12 +527,12 @@ bar). Open technical residues: the null-analysis blind spot over the yFiles unit
 and the accepted cosmetic differences listed under "Phase 4".
 
 Practicalities carried over: the yFiles unit is built from the GROOVE checkout with
-`mvn -q -f ../yfiles-lib/groove-yfiles/pom.xml test > <log> 2>&1` (installs the core
+`mvn -q -f ../yfiles-lib/pom.xml test > <log> 2>&1` (installs the core
 artifact first; `-Dgroove.install.skip=true` when it is current). The Robot tests in `YFilesSimulatorTest` skip unless
 `-Dgroove.test.robot=true` and the canvas is visible on screen, but
 synthetic mouse events on yFiles' input surface (the child component carrying its
 mouse listeners, see `YFilesCanvasTest.drag`) do exercise the input modes headlessly.
-The `null-check` script is bound to the main module: for `groove-yfiles/` run ecj by hand with
+The `null-check` script is bound to the main module: for the yFiles unit run ecj by hand with
 the main `.settings` prefs and `lib/eea` against the unit's classpath, and diff the
 problem list against a stashed baseline. The developer guide and javadoc are JS
 bundles under `C:/Groove/yfiles/yFiles-for-Java-Swing-Complete-3.6.0.1/doc/api/assets`;

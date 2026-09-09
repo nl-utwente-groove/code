@@ -17,7 +17,7 @@ Below, the _release directory_ refers to the project subdirectory (of the `code`
 
 1. Update the version and date in the GROOVE source:
 
-    - The version number is the `revision` property in the main `pom.xml`: a semantic version `x.y.z` with the optional suffix `-SNAPSHOT`. The number might already be correct (it is updated in postprocessing, see below) but the changes in this revision may necessitate the `x` or `y` values. In any case remove the `-SNAPSHOT` suffix. (The `GROOVE_VERSION` resource file is generated from this property by resource filtering; do not edit it.) The `revision` property of `groove-yfiles/pom.xml` in the private `yfiles-lib` repository (the optional yFiles backend) must be kept equal to it.
+    - The version number is the `revision` property in the main `pom.xml`: a semantic version `x.y.z` with the optional suffix `-SNAPSHOT`. The number might already be correct (it is updated in postprocessing, see below) but the changes in this revision may necessitate the `x` or `y` values. In any case remove the `-SNAPSHOT` suffix. (The `GROOVE_VERSION` resource file is generated from this property by resource filtering; do not edit it.) The `revision` property of the `pom.xml` of the private `yfiles-lib` repository (the optional yFiles backend) must be kept equal to it.
     - The remaining files in `src/main/resources/nl/utwente/groove/resource/version`:
         - `GROOVE_BUILD`: the build date, in format `YYYYMMDD`. Update to the build date.
         - [Optional] `GXL_VERSION`: the name of the version of GXL currently used for the encoding of graphs. (This will rarely change.)
@@ -109,7 +109,7 @@ Unlike the contents of `include`, neither file ends up in the zips or the instal
 # How to build the yFiles add-on
 
 The yFiles add-on is a small second artifact of the same release: the optional yFiles
-graph-visualisation backend (`groove-yfiles/` in the private repository
+graph-visualisation backend (the root project of the private repository
 `nl-utwente-groove/yfiles-lib`, see its README) and the commercial yFiles
 library it runs on, zipped up as `groove-x_y_z-yfiles-addon.zip`. The standard zips
 and installers do not contain it; a user unzips it into GROOVE's extension directory
@@ -137,7 +137,7 @@ this build:
   the same next to the add-on.
 
 The add-on is built for one GROOVE version: the manifest of the backend jar records
-it (attribute `GROOVE-Version`, set by `groove-yfiles/pom.xml` from its `revision`), and a
+it (attribute `GROOVE-Version`, set by the backend's `pom.xml` from its `revision`), and a
 GROOVE of another version skips the jar with a warning at start-up. Every release
 therefore needs its own add-on.
 
@@ -145,13 +145,13 @@ therefore needs its own add-on.
 
 Prerequisites, once: a clone of the private repository `nl-utwente-groove/yfiles-lib`
 next to this one, and the library installed in the local Maven repository from the jar
-in its `lib/` directory, both as described in `groove-yfiles/README.md` there; yGuard itself comes
+in its `lib/` directory, both as described in the `README.md` there; yGuard itself comes
 from Maven Central like any plugin.
 
 1. Build and install the core artifact and generate the javadoc as for the standard
    release, then build and install the backend against it:
 
-    `mvn -f ../yfiles-lib/groove-yfiles/pom.xml -Dgroove.install.skip=true -Drevision=x.y.z clean install`
+    `mvn -f ../yfiles-lib/pom.xml -Dgroove.install.skip=true -Drevision=x.y.z clean install`
 
     (from the repository root; this runs the backend's tests, which open a
     Simulator window briefly).
@@ -178,13 +178,13 @@ standard zips, so that a release needs no manual step. For that it checks out th
 private repository `nl-utwente-groove/yfiles-lib` next to the code checkout. That
 repository holds two files in its `lib/` directory: `yfiles-for-java-swing.jar`, the plain library
 jar from the `lib` directory of the licensed distribution, and the runtime license file
-(the `.xml` file that `yfiles.license.dir` points to); next to them, in
-`groove-yfiles/`, it holds the source of the backend itself, which the yFiles license
+(the `.xml` file that `yfiles.license.dir` points to); the rest of that repository is
+the source of the backend itself, its root project, which the yFiles license
 does not allow to be public. The workflow installs the jar into
-the runner's local Maven repository under the coordinates of
-`groove-yfiles/pom.xml` (whose `yfiles.version` it reads), builds the backend from that
-checkout (the license directory defaults to its root; tests skipped: they open
-Simulator windows), and packages the release with
+the runner's local Maven repository under the coordinates of that repository's
+`pom.xml` (whose `yfiles.version` it reads), builds the backend from that
+checkout (the license directory defaults to its `lib/` directory; tests skipped: they
+open Simulator windows), and packages the release with
 the `yfiles` profile; the add-on zip is then attached to the github release by the
 same step as the standard zips.
 
@@ -193,7 +193,7 @@ fine-grained personal access token of the licensed developer with read access to
 `yfiles-lib` only (Contents: read). Under the one-seat project license, nobody but
 that developer and this token may read the private repository. A new library version
 means a new jar and license file there, and a new `yfiles.version` in both
-`groove-yfiles/pom.xml` (in that repository) and `release/yfiles/pom.xml` (here).
+the `pom.xml` of that repository and `release/yfiles/pom.xml` (here).
 
 The pull-request build (`maven.yml`) does not use the profile: secrets are not
 available to workflows run for pull requests from forks, and the standard build must
@@ -211,7 +211,7 @@ standard release,
 exercises the obfuscated library headlessly through the extension loader (without the
 add-on, the Imager warns that the backend is not available and renders with JGraph).
 The backend's own tests can be run against the obfuscated jars as described in
-`groove-yfiles/README.md` of the `yfiles-lib` repository.
+the `README.md` of the `yfiles-lib` repository.
 
 # How to build a Maven artefact
 

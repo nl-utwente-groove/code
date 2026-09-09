@@ -33,7 +33,7 @@ mvn javadoc:aggregate
 
 # Build and install the yFiles backend against the artifact just installed
 if [[ $EDITION == yfiles ]]; then
-    mvn -f $YFILES_LIB/groove-yfiles/pom.xml -Dgroove.install.skip=true -Drevision=$GROOVE_VERSION clean install
+    mvn -f $YFILES_LIB/pom.xml -Dgroove.install.skip=true -Drevision=$GROOVE_VERSION clean install
 fi
 
 # zip up the release artifacts

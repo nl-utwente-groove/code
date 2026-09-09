@@ -12,14 +12,15 @@ State file, updated 2026-09-09 after the move. Branch `yfiles-private-move` off
    (a)-(h) plus the private-repository item.
 2. `claude/yworks-question-2026-09.md`: the message for Arend to send.
 3. The move: `yfiles/` and the Eclipse launch file are removed from the branch; every
-   reference to the unit's location now points at `../yfiles-lib/groove-yfiles/pom.xml`
+   reference to the unit's location now points at `../yfiles-lib/pom.xml`
    (`release.yml`, `release/do-all.sh` via `YFILES_LIB`, `release/README.md`, the release
    pom comments, the Claude permission patterns, the migration and options notes). The
    unit itself, with its 50-commit history (`git subtree split`), is a local git
-   repository at `C:\Groove\yfiles-lib` (branch `main`, one commit on top of the
-   history): root `README.md`, `groove-yfiles/` with the pom changed to default
-   `yfiles.license.dir` to the repository root and to find GROOVE through a new
-   `groove.dir` property (default `../../code`). `mvn -q -f C:/Groove/yfiles-lib/groove-yfiles/pom.xml
+   repository at `C:\Groove\yfiles-lib` (branch `main`, three commits on top of the
+   history): the backend project is the repository root, with one merged `README.md`,
+   and `lib/` holds the library jar and the runtime licence file. The pom defaults
+   `yfiles.license.dir` to `lib/` and finds GROOVE through a new `groove.dir` property
+   (default `../code`). `mvn -q -f C:/Groove/yfiles-lib/pom.xml
    -Dgroove.install.skip=true -DskipTests package` passes.
 
 ## Next (Arend)
@@ -29,7 +30,8 @@ State file, updated 2026-09-09 after the move. Branch `yfiles-private-move` off
   (the pom's resource include takes every `*.xml` there, so nothing else with that
   extension may sit there), set `YFILES_LIB_TOKEN`, dry-run a release tag from a branch.
 - Eclipse: delete the old nested `groove-yfiles` project from the workspace, import
-  `C:\Groove\yfiles-lib\groove-yfiles` in its place; the launch configuration moved along.
+  `C:\Groove\yfiles-lib` itself in its place (it carries the project name
+  `groove-yfiles`); the launch configuration moved along.
 - Send `claude/yworks-question-2026-09.md`; attach the notice and the first-run text.
 - Merge this branch after `yfiles-extension-loader`; `yworks-migration` and `master` keep
   `yfiles/` until then. `origin/master` and `origin/yworks-migration` remain public with

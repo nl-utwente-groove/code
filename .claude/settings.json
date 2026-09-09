@@ -26,10 +26,10 @@
       "PowerShell(gh issue view *)",
       "PowerShell(gh issue list *)",
       "mcp__ccd_session_mgmt__search_session_transcripts",
-      "Bash(mvn -q -f ../yfiles-lib/groove-yfiles/pom.xml test *)",
-      "Bash(mvn -q -f ../yfiles-lib/groove-yfiles/pom.xml compile *)",
-      "PowerShell(mvn -q -f ../yfiles-lib/groove-yfiles/pom.xml test *)",
-      "PowerShell(mvn -q -f ../yfiles-lib/groove-yfiles/pom.xml compile *)"
+      "Bash(mvn -q -f ../yfiles-lib/pom.xml test *)",
+      "Bash(mvn -q -f ../yfiles-lib/pom.xml compile *)",
+      "PowerShell(mvn -q -f ../yfiles-lib/pom.xml test *)",
+      "PowerShell(mvn -q -f ../yfiles-lib/pom.xml compile *)"
     ]
   },
   "hooks": {

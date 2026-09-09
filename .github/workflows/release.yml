@@ -39,9 +39,10 @@ jobs:
         path: 'samples'
     - name: Check out yFiles library
       # The licensed yFiles library, its runtime license file and the source of
-      # the yFiles backend (groove-yfiles/) live in a private repository (see
-      # release/README.md, "How to build the yFiles add-on"); the token is a
-      # fine-grained PAT with read access to that repository only. Only this
+      # the yFiles backend (the repository's root project) live in a private
+      # repository (see release/README.md, "How to build the yFiles add-on");
+      # the token is a fine-grained PAT with read access to that
+      # repository only. Only this
       # workflow uses the library: the ordinary build of pull requests
       # (maven.yml) never sees it.
       uses: actions/checkout@v7
@@ -65,7 +66,7 @@ jobs:
       # into the local Maven repository, under the coordinates the yFiles
       # backend depends on; the version is the backend pom's yfiles.version
       run: |
-        YFILES_VERSION=$(mvn -B -q -f ../yfiles-lib/groove-yfiles/pom.xml help:evaluate -Dexpression=yfiles.version -DforceStdout)
+        YFILES_VERSION=$(mvn -B -q -f ../yfiles-lib/pom.xml help:evaluate -Dexpression=yfiles.version -DforceStdout)
         mvn -B -q install:install-file -Dfile=../yfiles-lib/lib/yfiles-for-java-swing.jar -DgroupId=com.yworks.yfiles -DartifactId=yfiles-for-java-swing -Dversion=$YFILES_VERSION -Dpackaging=jar
     - name: Build yFiles backend
       # from the private repository checked out above, against the GROOVE
@@ -73,7 +74,7 @@ jobs:
       # that checkout, where the license file is committed. The backend's tests
       # open Simulator windows and are run by the developer, not on this
       # headless runner
-      run: mvn -B -f ../yfiles-lib/groove-yfiles/pom.xml -Dgroove.install.skip=true -Drevision=$VERSION -DskipTests clean install
+      run: mvn -B -f ../yfiles-lib/pom.xml -Dgroove.install.skip=true -Drevision=$VERSION -DskipTests clean install
     - name: Build release
       # the yfiles profile adds the add-on zip to the standard zips
       run: cd release; mvn -B -Drevision=$VERSION -Pyfiles clean package
