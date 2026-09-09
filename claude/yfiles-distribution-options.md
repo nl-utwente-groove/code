@@ -229,7 +229,7 @@ Each independently mergeable, in this order:
 ### After implementation
 
 - **Arend**: the private repository `nl-utwente-groove/yfiles-lib` with the plain
-  library jar (`yfiles-for-java-swing.jar`) and the runtime license file at its root, and
+  library jar (`yfiles-for-java-swing.jar`) and the runtime license file in its `lib/` directory (since 2026-09-09; the backend source is the repository's root project), and
   the repository secret `YFILES_LIB_TOKEN` (a fine-grained PAT with read access to that
   repository only); then a dry run of `release.yml` on a throwaway `release-*_*_*` tag on
   a branch, checking that the add-on zip is attached and that its backend jar carries the
