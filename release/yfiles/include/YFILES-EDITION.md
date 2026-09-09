@@ -7,7 +7,7 @@ library [yFiles for Java (Swing)](https://www.yworks.com/products/yfiles-for-jav
 by yWorks GmbH. The Simulator uses it by default when present (the choice is
 in the Options menu, under "Graph backend", and takes effect at the next start),
 which adds yFiles' layout algorithms to the layout menu; the Imager selects it
-with its `-b` option. The standard, JGraph-based backend is included as well.
+with its `-b` option. The vintage JGraph-based backend is included as well.
 
 License restrictions of this edition
 ------------------------------------
