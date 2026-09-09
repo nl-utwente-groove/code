@@ -788,7 +788,7 @@ public class RuleTree extends AbstractResourceTree {
     private class MyMouseListener extends MouseAdapter {
         @Override
         public void mousePressed(MouseEvent evt) {
-            TreePath path = getPathForLocation(evt.getX(), evt.getY());
+            TreePath path = getMousedPath(evt);
             if (path != null) {
                 if (evt.getButton() == MouseEvent.BUTTON3 && !isRowSelected(getRowForPath(path))) {
                     setSelectionPath(path);
@@ -824,7 +824,7 @@ public class RuleTree extends AbstractResourceTree {
             if (evt.getButton() != MouseEvent.BUTTON1) {
                 return;
             }
-            TreePath path = getPathForLocation(evt.getX(), evt.getY());
+            TreePath path = getMousedPath(evt);
             if (path == null) {
                 return;
             }
@@ -840,7 +840,7 @@ public class RuleTree extends AbstractResourceTree {
 
         private void maybeShowPopup(MouseEvent evt) {
             if (evt.isPopupTrigger()) {
-                TreePath selectedPath = getPathForLocation(evt.getX(), evt.getY());
+                TreePath selectedPath = getMousedPath(evt);
                 TreeNode selectedNode = selectedPath == null
                     ? null
                     : (TreeNode) selectedPath.getLastPathComponent();

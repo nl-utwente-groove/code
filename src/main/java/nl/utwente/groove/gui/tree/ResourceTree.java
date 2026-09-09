@@ -292,7 +292,7 @@ public class ResourceTree extends AbstractResourceTree {
         private TreeNode getMousedNode(MouseEvent evt) {
 
             // get the TreePath that belongs to this event
-            TreePath path = getPathForLocation(evt.getX(), evt.getY());
+            TreePath path = getMousedPath(evt);
 
             // if no TreePath, then no node was selected
             if (path == null) {

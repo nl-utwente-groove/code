@@ -20,7 +20,9 @@ import static nl.utwente.groove.test.gui.SimulatorFixture.getModel;
 import static nl.utwente.groove.test.gui.SimulatorFixture.loadGrammar;
 import static nl.utwente.groove.test.gui.SimulatorFixture.simulator;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.awt.Rectangle;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -51,9 +53,16 @@ import nl.utwente.groove.util.io.FileUtils;
 
 /**
  * Asserts that selecting a resource in a name list brings its display to the
- * front, also when another listener fails on the same notification. The change
+ * front: for a click anywhere on the row, and also when another listener fails
+ * on the same notification.
+ * <p>
+ * Two defects are covered. Only the rendered label counted as a click on the
+ * entry, while the look and feel paints the selection across the whole row and
+ * the tree's own selection handling accepts the whole row as well; a click
+ * beside the name therefore switched the display only in so far as it moved
+ * the selection, which it cannot do on a list of one graph. And the change
  * kinds are notified in enum order, so a listener failing on
- * {@link Change#HOST} used to keep the displays panel, which listens for the
+ * {@link Change#HOST} kept the displays panel, which listens for the
  * {@link Change#DISPLAY} that comes later, from ever seeing the switch; the
  * model recorded the new display all the same, so every further selection of a
  * graph was a no-op that left the wrong display up.
@@ -70,12 +79,14 @@ import nl.utwente.groove.util.io.FileUtils;
 @ExtendWith(SimulatorFixture.class)
 public class DisplaySwitchGuiTest {
     /** Location of the fixture grammar; it has more than one host graph. */
-    private static final String GRAMMAR = "junit/samples/leader-election.gps";
+    private static final String GRAMMAR = "leader-election";
+    /** Fixture grammar with a single host graph, as in the bug report. */
+    private static final String SINGLE_GRAPH_GRAMMAR = "ferryman";
 
     /** Clicking a rule and a graph in the name lists switches the display. */
     @Test
     void clickSwitchesDisplay() throws Exception {
-        loadGrammar(copyGrammar());
+        loadGrammar(copyGrammar(GRAMMAR));
         JTreeOperator rules = tree(DisplayKind.RULE);
         JTreeOperator hosts = tree(DisplayKind.HOST);
         for (int host : leaves(hosts)) {
@@ -88,7 +99,7 @@ public class DisplaySwitchGuiTest {
     /** A failing listener must not keep the graph display from coming up. */
     @Test
     void switchSurvivesFailingListener() throws Exception {
-        loadGrammar(copyGrammar());
+        loadGrammar(copyGrammar(GRAMMAR));
         List<QualName> graphs
             = new ArrayList<>(getModel().getGrammar().getNames(ResourceKind.HOST));
         SimulatorListener failing = (source, oldModel, changes) -> {
@@ -106,6 +117,44 @@ public class DisplaySwitchGuiTest {
         } finally {
             getModel().removeListener(failing);
         }
+    }
+
+    /**
+     * A click next to the name, on an entry that is already selected, must
+     * switch the display as well. The look and feel paints the selection
+     * across the whole row, but only the rendered label used to count as a
+     * click on the entry; with a single graph in the list the selection can
+     * never change, so such a click did nothing whatsoever.
+     */
+    @Test
+    void clickBesideNameSwitchesDisplay() throws Exception {
+        loadGrammar(copyGrammar(SINGLE_GRAPH_GRAMMAR));
+        JTreeOperator hosts = tree(DisplayKind.HOST);
+        JTreeOperator rules = tree(DisplayKind.RULE);
+        // loading the grammar selects the single graph and one of the rules,
+        // so neither click below can change a selection
+        SwingUtilities.invokeAndWait(() -> getModel().setDisplay(DisplayKind.RULE));
+        clickBesideName(hosts, getModel().getSelected(ResourceKind.HOST));
+        assertEquals(DisplayKind.HOST, shown(), "after clicking beside the graph name");
+        SwingUtilities.invokeAndWait(() -> getModel().setDisplay(DisplayKind.HOST));
+        clickBesideName(rules, getModel().getSelected(ResourceKind.RULE));
+        assertEquals(DisplayKind.RULE, shown(), "after clicking beside the rule name");
+    }
+
+    /**
+     * Clicks on the row of a named resource, to the right of its rendered
+     * label.
+     */
+    private void clickBesideName(JTreeOperator tree, QualName name) {
+        int row = -1;
+        for (int i = 0; row < 0 && i < tree.getRowCount(); i++) {
+            if (name.toString().equals(String.valueOf(tree.getPathForRow(i).getLastPathComponent()))) {
+                row = i;
+            }
+        }
+        assertTrue(row >= 0, "no row for " + name);
+        Rectangle bounds = tree.getRowBounds(row);
+        tree.clickMouse(bounds.x + bounds.width + 20, bounds.y + bounds.height / 2, 1);
     }
 
     /**
@@ -153,12 +202,12 @@ public class DisplaySwitchGuiTest {
         return new JTreeOperator((JTree) listPanel.getList());
     }
 
-    /** Copies the fixture grammar to a scratch directory. */
-    private Path copyGrammar() throws IOException {
+    /** Copies a fixture grammar to a scratch directory. */
+    private Path copyGrammar(String name) throws IOException {
         var tmp = this.tmp;
         assert tmp != null; // injected by JUnit
-        Path result = tmp.resolve("leader-election.gps");
-        FileUtils.copyDirectory(new File(GRAMMAR), result.toFile(), false);
+        Path result = tmp.resolve(name + ".gps");
+        FileUtils.copyDirectory(new File("junit/samples/" + name + ".gps"), result.toFile(), false);
         return result;
     }
 

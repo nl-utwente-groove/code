@@ -20,8 +20,10 @@ import static nl.utwente.groove.gui.SimulatorModel.Change.GRAMMAR;
 import static nl.utwente.groove.gui.SimulatorModel.Change.GTS;
 
 import java.awt.Color;
+import java.awt.Rectangle;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -131,6 +133,32 @@ public abstract class AbstractResourceTree extends JTree implements SimulatorLis
 
     /** Callback factory method for the mouse listener of this resource tree. */
     abstract MouseListener createMouseListener();
+
+    /**
+     * Returns the tree path under a mouse event, counting the whole width of a
+     * row as belonging to its entry.
+     * {@link JTree#getPathForLocation} accepts only a click on the rendered
+     * label, which is a fraction of the row: the look and feel paints the
+     * selection across the full width, and the tree's own selection handling
+     * uses the closest path, so a click beside the label does move the
+     * selection but was invisible to the listeners of this tree. On a tree
+     * whose selection cannot change -- a single resource, or a click on the
+     * entry already selected -- that made the click do nothing at all.
+     * @return the path of the row that was clicked, or {@code null} if the
+     * event was above the first or below the last row, or left of the label
+     * (where the expand control lives)
+     */
+    final TreePath getMousedPath(MouseEvent evt) {
+        TreePath result = getClosestPathForLocation(evt.getX(), evt.getY());
+        if (result != null) {
+            Rectangle bounds = getPathBounds(result);
+            if (bounds == null || evt.getY() < bounds.y
+                || evt.getY() >= bounds.y + bounds.height || evt.getX() < bounds.x) {
+                result = null;
+            }
+        }
+        return result;
+    }
 
     /** Returns the (lazily computed) dismiss delay mouse listener. */
     private MouseListener getDismissDelayer() {
