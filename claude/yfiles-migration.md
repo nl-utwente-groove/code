@@ -100,21 +100,53 @@ rework.
   private repository that only Arend and the workflow token can read (see
   `release/README.md`). The seat is a constraint on people: only Arend develops
   against the plain library.
-- **Academic restriction propagates (§2.4).** A yFiles-enabled GROOVE distribution
-  is non-commercial-only, while GROOVE is Apache 2.0. Consequence: **one
-  distribution plus an add-on** (decided 2026-09-09, reversing the dual-distribution
-  plan under which phase 5 was first built; the analysis is in
+- **Academic restriction propagates (§2.4).** The clause reads: "Any software
+  application developed under an Academic License may not be licensed in whole or
+  in part, to a third party being a commercial institution or a party that
+  commercially uses the Software." It restricts *licensing* the application, not
+  only distributing binaries, while GROOVE is Apache 2.0. Consequence for the
+  binaries: **one distribution plus an add-on** (decided 2026-09-09, reversing the
+  dual-distribution plan under which phase 5 was first built; the analysis is in
   `claude/yfiles-distribution-options.md`) — the standard release stays JGraph-based
   and unrestricted, the yFiles backend ships as a separate add-on zip with its own
   notice, loaded from the extension directory, and **both backends stay genuinely
   maintained** (accepted; mitigated by capability tiering: optional yFiles-only
   features may degrade gracefully in the JGraph edition, but core
-  view/edit/select/filter/export stays at parity).
+  view/edit/select/filter/export stays at parity). Consequence for the source
+  (seen only on re-reading the SLA on 2026-09-09): **the backend unit's source is
+  not public.** It is part of an application developed under the licence and was
+  published under Apache 2.0 in `yfiles/` from phase 2 slice 3 until the move to the
+  private repository `nl-utwente-groove/yfiles-lib` (branch `yfiles-private-move`);
+  whether the public history must be purged as well is a question to yWorks.
+- **Ownership and disclosure (§1).** The licensee "shall not use or disclose any
+  Software technology, idea, algorithm, or information" beyond what it can document
+  as "generally available for use and disclosure by the public without any charge
+  or license". API names are in the public reference (docs.yworks.com); the usage
+  patterns come from the bundled developer guide and demos, which §2.1(b) lists as
+  non-redistributable. A second reason for keeping the backend source private; API
+  names in prose (this file, `claude/yfiles-spike-findings.md`,
+  `claude/phase-2-model-and-ownership.md`) are judged to be within the public
+  reference.
+- **Obfuscation's purpose (§2.1c)** is stated: "it shall no longer be possible to use
+  the functionality of the Redistributables via their public API". Public backend
+  source next to the obfuscated jars would yield the name mapping for the API subset
+  GROOVE uses; the unobfuscated backend jar in the add-on leaks the same mapping less
+  directly. Question (b) to yWorks.
 - **The license is perpetual (§10.4a).** Non-renewal of the Subscription loses only
   upgrades/support. Still unknown: the delivered version/generation and
   Subscription status (check the license order, not the SLA).
-- **No API re-exposure (§2.1d).** The yFiles backend package stays unexported in
-  `module-info`; the facade remains a GROOVE-internal seam.
+- **No API re-exposure (§2.1d)**: applications "may not expose an API to a third
+  party that will allow them to access functionality provided by the Software". The
+  yFiles backend package stays unexported in `module-info`; the facade remains a
+  GROOVE-internal seam. The add-on jar's public classes (service provider, canvases,
+  layouter) are callable by third parties in principle; documented as internal, and
+  question (g) to yWorks.
+- **Project License (§2.2.3)** covers "different editions of the Authorized
+  Application" and "an automated build process": CI builds and the add-on shape are
+  within it.
+- Nothing else in the SLA mentions the licensee's own source code. The SLA is
+  `C:\Groove\yfiles\yFilesForJava-SLA-signable.pdf`; the Read tool refuses it (owner
+  restriction, no user password), pypdf with an empty password reads it.
 - The `yFiles-for-Java-Swing-Complete-3.6.0.1-Evaluation` bundle in
   `C:\Program Files\Java` carries 60-day evaluation terms and is NOT to be used;
   the spike uses Arend's licensed delivery.
@@ -445,17 +477,33 @@ add-on (two products to explain, macOS gap); a single installer with a yFiles qu
 2. **CI set-up by Arend**: the private repository `nl-utwente-groove/yfiles-lib` holding
    `yfiles-for-java-swing.jar` and the runtime license file, the secret
    `YFILES_LIB_TOKEN`, then a dry run on a throwaway release tag from a branch.
-3. **The license questions for yWorks**, prepared for Arend to send: (a) the
-   Subscription status and delivered generation of the license (the code is written
-   against 3.6.0.1); (b) confirmation that shipping the library obfuscated by
-   yGuard as in their deployment demo (all names renamed except their own annotated
-   exclusions and the methods GROOVE overrides), next to GROOVE's unobfuscated backend
-   jar, satisfies §2.1c; (c) whether the development license file may ship inside the
-   add-on as the runtime license (it is what the library loads), or a separate
-   deployment license is issued; (d) whether an add-on distributed separately from
-   GROOVE, as a public github release download with the non-commercial notice, is
-   still "your application" in the sense of §2.1c and acceptable under §2.4, and
-   whether the notice's wording is.
+3. **The license questions for yWorks**, drafted as a message in
+   `claude/yworks-question-2026-09.md` for Arend to send (2026-09-09). The questions,
+   sharpened after re-reading the SLA (see "License constraints"):
+   (a) the Subscription status and delivered generation of the license (the code is
+   written against 3.6.0.1);
+   (b) §2.1c: whether yGuard as in the deployment demo (all library names renamed
+   except yWorks' own annotated exclusions and the methods GROOVE overrides), shipped
+   next to GROOVE's unobfuscated backend jar, satisfies the clause, given that the
+   backend jar's references reveal the renamed names of the API subset GROOVE uses;
+   (c) whether the development license file may ship inside the add-on as the runtime
+   license (it is what the library loads), or a deployment license is issued;
+   (d) §2.1c/§2.4: whether an add-on distributed separately from GROOVE, as a public
+   github release download with the non-commercial notice, is still "your own
+   software applications" and acceptable;
+   (e) §2.4: GROOVE is Apache 2.0 and public; the backend unit calling the yFiles API
+   was public source and is being moved to a private repository. Is the rest of GROOVE
+   (no yFiles code, runs without the library) unaffected by "may not be licensed ...
+   to a commercial institution", and is the backend source acceptable in a private
+   repository readable by the licensed developer and the build automation only;
+   (f) §1/§2.1c: whether the commits that added the backend source must be purged
+   from the public history, or removal from the current branches suffices (the purge
+   procedure is estimated in `claude/yfiles-private-move-state.md`);
+   (g) §2.1d: the add-on jar necessarily has public classes (the service provider,
+   the canvases GROOVE calls); acceptable if documented as internal, or must the
+   surface be reduced;
+   (h) the wording of the notice `release/yfiles/include/YFILES-ADDON.md` and of the
+   first-run question in `gui.AddOnInstaller.confirmInstall`.
 4. **Merge `yworks-migration` plus this branch into `master`**: Arend's call.
 5. **The website**: the download page gets the add-on next to the standard artifacts,
    with the non-commercial statement; the web manual's installation page describes the
