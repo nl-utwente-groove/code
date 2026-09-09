@@ -3,8 +3,9 @@
 Companion to `yfiles-migration.md` (gh #909), whose "Phase 5" section records what was
 built. This note is about a question that phase 5 answered only provisionally: **what a
 GROOVE release consists of, now that a second, license-restricted edition exists**. It
-states the facts, the options and their consequences, and what still has to be decided.
-Written 2026-09-09, after the edition was built and verified; no decision has been taken.
+states the facts, the options and their consequences, and the decision. First written
+2026-09-09, after the edition was built and verified, as an open question; the decision below
+was taken the same day, once yWorks had confirmed the licence terms.
 
 ## Where things stand
 
@@ -41,13 +42,18 @@ JDK 26 unless noted):
 From `yfiles-migration.md` (the SLA itself is the authority):
 
 1. The library may be redistributed only obfuscated (§2.1c). Done, by the `yfiles` profile.
-2. Only the licensed developer may build with it, and automated builds need a Project
-   Licence (§2.2.2). Hence: **no CI build of anything containing yFiles today.**
+2. Only the licensed developer may build with it; automated builds need a Project Licence
+   (§2.2.2). **Confirmed by yWorks on 2026-09-09: the licence is a Project Licence with one
+   seat, so CI builds are permitted.** The seat is a constraint on people, not on machines:
+   only Arend may develop against the plain library, so wherever the plain jar lives for CI,
+   nobody but him and the workflow token may read it.
 3. A yFiles-enabled distribution is non-commercial-only (§2.4), while GROOVE is Apache 2.0.
    Hence two artefacts, whatever their shape, and a visible notice on the restricted one.
+   Note that this taints whatever *contains* the library: an installer carrying the jars as
+   an optional feature is a restricted artefact even for users who decline the feature.
 
-Constraint 2 is the one that shapes the release procedure, and it is the one that may lift:
-the Academic Project upgrade is an open question with yWorks.
+The lifting of constraint 2 is what settled the decision. The options below are kept as
+written before the answer arrived, since they record why the chosen shape is the chosen one.
 
 ## Option A — two full distributions (what is built now)
 
@@ -96,76 +102,141 @@ Mechanism, in outline:
   zips. The obfuscation itself does not change. The edition assembly descriptors, the
   `-yfiles` zips and the installer's edition branch would all go away.
 
-- **For**: one set of artefacts from CI for everyone; exactly one small thing built locally
-  per release; no macOS gap; the public installers contain no trace of yFiles, which keeps
-  the Apache-licensed artefact clean; the non-commercial notice travels with precisely the
-  files it restricts; the download page gets one product plus an optional extra.
+- **For**: one set of artefacts from CI for everyone; no macOS gap; the public installers
+  contain no trace of yFiles, which keeps the Apache-licensed artefact clean; the
+  non-commercial notice travels with precisely the files it restricts; the download page
+  gets one product plus an optional extra.
 - **Against**: users must unzip a file into a directory by hand, which is worse than an
-  installer; a new mechanism to write, test and document (expect roughly a day, including a
-  headless test that the add-on is discovered from the directory); an add-on that is not
-  updated together with GROOVE becomes a support question, which the version guard turns
-  into a clear message rather than a crash.
+  installer; a new mechanism to write, test and document; an add-on that is not updated
+  together with GROOVE becomes a support question, which the version guard turns into a
+  clear message rather than a crash.
 - **Reverses**: the "dual distribution" decision recorded under the licence constraints in
   `yfiles-migration.md`. That decision was taken before the edition existed and before it
   was known that the standard runtime already suffices.
 
-## Option C — Academic Project Licence, both editions from CI
+## Option C — both editions from CI
 
-If yWorks grants the upgrade (3 seats, build automation), CI may build the edition. The jar
-still cannot live in a public repository, so it would go into a private Maven repository
-(GitHub Packages of the organisation) reached with a token from the workflow secrets, and
-the runtime licence file likewise. The existing matrix then builds both editions on all four
-platforms and attaches eight installers to the release, with no manual step.
+With the Project Licence, CI may build the edition. The jar still cannot live in a public
+repository, so it goes into a private location reached with a token from the workflow
+secrets. The existing matrix then builds both editions on all four platforms and attaches
+eight installers to the release, with no manual step.
 
-This is the best outcome for users and the least work per release, and it makes option A the
-natural shape. It depends entirely on yWorks' answer, and on Arend's willingness to put the
-licensed jar into a private registry.
+This is the least work per release under option A's shape, and it removes A's manual step
+and macOS gap. It keeps A's other costs: eight installers, ~137 MB per platform to carry
+8.8 MB of difference, and two products to explain on the download page.
 
-## Assessment
+## Rejected: one installer that asks about yFiles
 
-The decision hinges on the Project Licence, which is already on the list of questions for
-yWorks:
+The obvious refinement of B — a single installer with a "do you want yFiles?" question that
+drops the jars into place — does not work, for two independent reasons:
 
-- **If granted**: keep option A, move the edition into CI, and the whole problem disappears.
-  Nothing in the current build is wasted.
-- **If refused**: option A costs a manual, partly impossible step at every release, and its
-  cost per release never goes away. Option B trades a one-off day of work and a slightly
-  clumsier user experience for a release procedure that is one command. I would take that
-  trade, and would then also drop the edition zips: a single add-on for both the zip and the
-  installed application is simpler to explain than two.
-- **Until the answer arrives**: option A-lite is a reasonable interim. The edition zips exist
-  and are verified; the Windows installer can be built if someone asks for it.
+- **Licence.** For the installer to copy the jars, it must contain them, and then the whole
+  installer is the restricted artefact (constraint 3 above), whether or not the user ticks
+  the box. The Apache-clean installer is precisely the one without yFiles bytes.
+- **Tooling.** jpackage installers are nearly unconfigurable: the `.dmg` is drag-and-drop
+  with no dialogs at all, the `.deb` has none either, and only the `.msi` could gain a
+  feature dialog by overriding the WiX sources through `--resource-dir`, a Windows-only and
+  fragile customisation. An installer that *downloads* at install time is not on offer.
 
-Nothing needs to be decided to merge the current work. The edition as built is the fallback
-in every branch of the decision, and options B and C are both reachable from it.
+The question is right; the installer is the wrong place to ask it. GROOVE itself can ask.
+
+## Decision: option B, built entirely by CI, with an in-app add-on installer
+
+Taken 2026-09-09. The shape:
+
+1. **Standard installers and zips from CI, as now**, with no yFiles bytes in them.
+2. **CI also builds the add-on**, `groove-yfiles-addon-x_y_z.zip` (the two obfuscated jars
+   plus `YFILES-EDITION.md`), under the `yfiles` profile, and attaches it to the release
+   next to the zips and installers. Nothing is built by hand any more.
+3. **GROOVE loads the add-on from a user-level extension directory** (option B's mechanism,
+   including the version guard).
+4. **GROOVE offers to install the add-on itself.** On the first start of a newly installed
+   release, if no add-on for the running version is present, the Simulator asks once
+   whether the user wants the yFiles backend, showing the non-commercial notice. "Yes"
+   downloads the add-on for the running version from the GitHub release, checks the
+   manifest version, unpacks it into the extension directory and asks for a restart
+   (backend selection is fixed at start-up by design, see `GraphBackend.instance()`, so
+   a restart is the honest answer rather than a hot swap). "No" records the refusal for
+   this version, and the same action stays available as *Options › Install yFiles
+   backend…*, next to the backend choice; there is also *Install from file…* for machines
+   without network access, which takes a downloaded add-on zip. A new GROOVE version whose
+   installed add-on is stale (version guard) asks again, this time phrased as an update.
+
+   The one-time question is keyed on the GROOVE version in the user preferences
+   (`Options.userPrefs`, where the backend choice already lives): shown at most once per
+   version, and never when an add-on for the running version is present.
+
+Why this and not C: C is the cheapest change to the *build* but keeps two products; B with
+an in-app installer gives one product, one small add-on, the licence notice at the exact
+moment the restricted files arrive, the same experience on all three platforms, and an
+extension loader that will be wanted for other optional parts later. The extra work over
+plain B is the download step, which is small (`java.net.http` against a fixed release URL,
+~9 MB). It also reverses the "dual distribution" note in `yfiles-migration.md`, which should
+be updated with the change.
+
+### CI design for the licensed parts
+
+- A **private repository** in the organisation (say `nl-utwente-groove/yfiles-lib`) holds
+  the plain library jar and the runtime licence file. GitHub Packages was considered and
+  dropped: a package inherits its repository's visibility, so it would need a private repo
+  anyway, and a plain checkout is simpler. Encrypted blobs in the public repo would work
+  too but put licensed bytes into a public history. Access: Arend and the workflow token
+  only, per the one-seat constraint.
+- `release.yml` gains, before the release reactor: `actions/checkout` of that repo with a
+  fine-grained PAT (or deploy key) from the secrets, the `install:install-file` step from
+  `yfiles/README.md`, and `-Dyfiles.license.dir` pointing into the checkout. Then
+  `-Pyfiles` on the release reactor; yGuard is a Maven plugin and needs nothing else.
+- The `yfiles` profile stays off `maven.yml`: secrets are not available to workflows run
+  for pull requests from forks, and the PR build must keep working without the library, as
+  it does today.
+- The add-on assembly runs in the same job as the zips, so the release job attaches it with
+  the same `release-action` step; the installer matrix is untouched.
+
+### Implementation slices
+
+Each independently mergeable, in this order:
+
+1. **Extension loader** (`GraphBackend.Instance.discover`): extension directory resolution
+   (platform default, `groove.extensions.dir` system property override), child
+   `URLClassLoader`, manifest version guard with a logged skip, headless test that a backend
+   jar in a temporary directory is discovered and a mismatched one is skipped. Preceded by
+   the class-loader smoke test below.
+2. **Add-on packaging** (`release/yfiles`): manifest entry with the GROOVE version, assembly
+   producing the add-on zip; remove the `-yfiles` zips, their descriptors and the installer's
+   edition branch; `release/README.md` accordingly.
+3. **CI**: the private repo, the secrets, the `release.yml` steps. Verified by a dry run on a
+   throwaway tag on a branch (the workflow triggers on `release-*_*_*` tags only).
+4. **In-app installer**: the first-run question, the Options actions, download, unpack,
+   restart prompt; a test of the unpack-and-verify path against a local zip (the download
+   itself is mocked or skipped headlessly).
+5. **Docs**: `yfiles-migration.md` (reverse the dual-distribution note), the web manual's
+   installation page, the download page (one product plus the add-on and its notice).
+
+### To verify before slice 1
+
+- The library must work from a child class loader: it finds its licence file at the root
+  of the class path, which for the child loader means the root of the backend jar. Nothing
+  documented suggests a problem; a five-minute manual run settles it.
+- No JDK module beyond the bundled standard set is needed at run time: `jdeps` says none;
+  a smoke test of the Simulator with the add-on inside an installed standard app image
+  confirms it.
+- The macOS location of the extension directory (`~/Library/Application Support/GROOVE`
+  by convention, versus `~/.groove` for symmetry with Linux).
 
 ## Open questions
 
-For yWorks (see the list in `yfiles-migration.md`, of which the first is the decisive one
-here):
+For yWorks:
 
-- Is the Academic Project upgrade available, and does it permit CI builds from a private
-  registry holding the plain jar?
-- Under option B, is an add-on distributed separately from GROOVE still "your application"
-  in the sense of §2.1c, given that the obfuscated library ships without the rest of the
-  tool? This changes nothing technically, but it is a different distribution shape from the
-  one the SLA describes, and worth asking about explicitly.
-
-Technical, if option B is pursued:
-
-- Does the yFiles library work from a child class loader? Nothing in its documented API
-  suggests otherwise, and the licence file it reads lives at the root of the backend jar,
-  which the child loader would find. To be verified before committing to the design.
-- Does anything in the library need a JDK module beyond the standard bundled set at
-  *run* time? Static analysis says no; a smoke test of the Simulator on an add-on inside an
-  installed standard app image would settle it.
-- Where should the extension directory live on macOS, given the sandbox conventions
-  (`~/Library/Application Support/GROOVE`)?
+- Is an add-on distributed separately from GROOVE still "your application" in the sense of
+  §2.1c, given that the obfuscated library ships without the rest of the tool? Nothing
+  changes technically, but the distribution shape differs from the one the SLA describes,
+  and it is worth asking before the add-on goes public.
 
 ## Pointers
 
 - `claude/yfiles-migration.md`, "Phase 5" and "Immediate next steps".
 - `release/README.md`, the chapter on the yFiles edition.
 - `release/yfiles/pom.xml` (obfuscation), `release/jpackage/build-installer.sh` (installers),
-  `release/assembly/**/zip-yfiles.xml` (edition zips).
-- `yfiles/README.md` for the backend unit itself.
+  `release/assembly/**/zip-yfiles.xml` (edition zips), `.github/workflows/release.yml`.
+- `yfiles/README.md` for the backend unit itself; `gui/view/GraphBackend.java` for discovery
+  and selection; `gui/Options.java` for the user preferences.
