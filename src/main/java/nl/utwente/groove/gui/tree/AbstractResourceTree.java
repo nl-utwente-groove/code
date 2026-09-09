@@ -48,6 +48,7 @@ import nl.utwente.groove.gui.SimulatorModel.Change;
 import nl.utwente.groove.gui.action.ActionStore;
 import nl.utwente.groove.gui.display.DismissDelayer;
 import nl.utwente.groove.gui.display.ResourceDisplay;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.QualName;
 
@@ -148,6 +149,7 @@ public abstract class AbstractResourceTree extends JTree implements SimulatorLis
      * event was above the first or below the last row, or left of the label
      * (where the expand control lives)
      */
+    @AIGenerated("Claude Opus 5, 2026-09")
     final TreePath getMousedPath(MouseEvent evt) {
         TreePath result = getClosestPathForLocation(evt.getX(), evt.getY());
         if (result != null) {

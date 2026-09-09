@@ -237,6 +237,7 @@ public class SimulatorModelTest {
      * notified in enum order with {@link Change#DISPLAY} coming late.
      */
     @Test
+    @AIGenerated("Claude Opus 5, 2026-09")
     public void testListenerFailureIsolation() {
         SimulatorModel model = new SimulatorModel(option -> false);
         List<String> notified = new ArrayList<>();
@@ -257,11 +258,13 @@ public class SimulatorModelTest {
     }
 
     /** Creates a listener that records its name. */
+    @AIGenerated("Claude Opus 5, 2026-09")
     private SimulatorListener recording(List<String> notified, String name) {
         return (source, oldModel, changes) -> notified.add(name);
     }
 
     /** Creates a listener that records its name and then fails. */
+    @AIGenerated("Claude Opus 5, 2026-09")
     private SimulatorListener failing(List<String> notified, String name) {
         return (source, oldModel, changes) -> {
             notified.add(name);
