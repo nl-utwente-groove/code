@@ -382,6 +382,10 @@ release by hand); the plain library jar stays in `~/.m2` only.
 
 ## Immediate next steps (2026-09-09)
 
+0. **The shape of a release** — whether the edition stays a second full distribution, or
+   becomes an add-on, or moves into CI under an upgraded licence — is analysed in
+   `claude/yfiles-distribution-options.md`. It hinges on the Project Licence question in
+   item 2 and needs no decision before the merge.
 1. **Review of branch `yfiles-edition`** (off `phase-5-handoff`, which it contains):
    `release/pom.xml`, `release/yfiles/*`, `release/assembly/**`, `release/runnable/pom.xml`,
    `release/do-all.sh`, `release/jpackage/build-installer.sh`, `release/README.md`,
