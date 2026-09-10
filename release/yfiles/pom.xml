@@ -55,6 +55,8 @@
 	</dependencies>
 
 	<build>
+		<finalName>groove-${groove-version-underscored}-yfiles-addon</finalName>
+
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -168,7 +170,6 @@
 							<descriptors>
 								<descriptor>addon.xml</descriptor>
 							</descriptors>
-							<finalName>groove-${groove-version-underscored}-yfiles-addon</finalName>
 							<appendAssemblyId>false</appendAssemblyId>
 							<outputDirectory>../target</outputDirectory>
 						</configuration>
