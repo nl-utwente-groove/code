@@ -67,7 +67,7 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
 
     /**
      * Overwriting this so that I could modify an editor container. see
-     * http://sourceforge.net/forum/forum.php?thread_id=781479&forum_id=140880
+     * {@code http://sourceforge.net/forum/forum.php?thread_id=781479&forum_id=140880}
      */
     @Override
     protected Container createContainer() {
