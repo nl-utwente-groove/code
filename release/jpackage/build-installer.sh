@@ -110,27 +110,25 @@ echo "bundled runtime modules: $MODULES"
 
 # ----------------------------------------------------------------- launchers
 # jpackage names the main launcher after the application (GROOVE), and it
-# starts the Simulator; the tools become additional launchers named after
-# themselves. The Simulator is added a second time under its own name, for
-# consistency with the other tools, but without menu entry or shortcut since
-# the main launcher already provides those. win-console gives the
-# command-line tools a console on Windows (ignored elsewhere).
+# starts the Simulator; the tools, the Simulator included, become additional
+# launchers named after themselves. The menu entries (Windows start menu,
+# Linux desktop files) hang off the tool launchers rather than the main one,
+# so the GROOVE menu group lists Simulator, Generator, ... and not a second
+# GROOVE. win-console gives the command-line tools a console on Windows
+# (ignored elsewhere).
 LAUNCHERS_DIR=$WORK/launchers
 mkdir -p "$LAUNCHERS_DIR"
 add_launcher_args=()
-make_launcher() { # <name> <console> [noshortcut]
+make_launcher() { # <name> <console>
     {
         echo "main-jar=bin/$1.jar"
         echo "win-console=$2"
-        if [[ ${3:-} == noshortcut ]]; then
-            echo "win-menu=false"
-            echo "win-shortcut=false"
-            echo "linux-shortcut=false"
-        fi
+        echo "win-menu=true"
+        echo "linux-shortcut=true"
     } > "$LAUNCHERS_DIR/$1.properties"
     add_launcher_args+=(--add-launcher "$1=$(native_path "$LAUNCHERS_DIR/$1.properties")")
 }
-make_launcher Simulator false noshortcut
+make_launcher Simulator false
 make_launcher Generator true
 make_launcher ModelChecker true
 make_launcher Imager true
@@ -171,12 +169,12 @@ if [[ $TYPE != app-image ]]; then
     case $OS in
         windows)
             # the fixed upgrade UUID makes a newer MSI replace an older install
-            args+=(--win-menu --win-menu-group GROOVE
+            args+=(--win-menu-group GROOVE
                 --win-per-user-install --win-dir-chooser
                 --win-upgrade-uuid c8adea88-1eaa-4127-838b-7b4be5a147f3)
             ;;
         linux)
-            args+=(--linux-menu-group Development --linux-shortcut)
+            args+=(--linux-menu-group Development)
             ;;
     esac
 fi
