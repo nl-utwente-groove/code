@@ -1,5 +1,13 @@
 # Dynamic censored re-match of regular expressions (gh #900)
 
+*Status (2026-09-11): merged to master on 2026-08-31 (`026b5a593`, branch
+`regexpr-censored-match` deleted); gh #900 closed 2026-08-31. Verified on
+master: `GrammarKey.REG_EXP_MATCHING` (`regExpMatching`, enum `RegExpMatching`,
+default `FAITHFUL`) with the legacy `ignoreRegExp` translation, the censored
+`RegAut.getMatches` overload, and the fixtures `junit/rules/regExprCensor.gps`,
+`regExprCensorIgnored.gps`, `regExprErasure.gps`. Nothing open — the residue
+below is accepted by design, not pending work.*
+
 Status: implemented on branch `regexpr-censored-match`, 2026-08-31. Resolves
 the deferral recorded in [eraser-injectivity.md](eraser-injectivity.md)
 ("Deferred: dynamic censored re-match"). The design verdict, with the
@@ -134,7 +142,8 @@ events with isomorphic targets need two (identical) expected graphs.
   time. Acceptable until profiling says otherwise (censoring is only
   active for rules with a coverage∩erasure intersection).
 - `MatrixAutomaton` does not support censoring (unused outside its own
-  test); the RETE engine remains exempt from all DPO machinery.
+  test); the RETE engine was retired from master on 2026-07-20 and so is
+  exempt from all DPO machinery by absence.
 - The incoherent configurations (deeper/sibling erasers) stay statically
   rejected; a per-amalgamation semantics for them was considered and
   rejected (see above), not merely postponed.

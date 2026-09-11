@@ -1,5 +1,14 @@
 # Investigation note: rare DeterminismTest flake (ferryman, transition order)
 
+*Status (2026-09-11): **resolved and merged; nothing open**. The fix
+(`MatchCollector.canonicalise`, sorting each computed match set by
+`(RuleEvent, Step)`) is on master as `70f645d64`, 2026-07-14; the strengthened
+GC-sweep collapse simulation in `DeterminismTest` as `ffeb3c716`, 2026-07-16;
+branch `canonical-match-order` was merged 2026-07-17 (`e80c0c554`) and is
+deleted. One pointer drift: `MatchCollector` now lives in
+`nl.utwente.groove.lts`, not `match`. This note is cited from the determinism
+section of `claude/CLAUDE.md`, so it stays as the reference analysis.*
+
 *Status (2026-07-16): **resolved** — mechanism confirmed, reproduced on demand, fixed by
 the canonical match order of branch `canonical-match-order`. See the Resolution section
 at the end; the sections in between are the state of knowledge of 2026-07-15.*
@@ -77,7 +86,7 @@ match order within one rule at one state.
 - The failing configuration, for completeness: full suite in one surefire JVM (shared heap
   history), so any reproduction attempt should either run the full suite or fake its heap
   state; `DeterminismTest` alone has too little GC activity even at `-Xmx40m`.
-- Related: `claude/randomness-seeding.md` (step 3 of the determinism program; this flake
+- Related: `claude/archive/randomness-seeding.md` (step 3 of the determinism program; this flake
   is a residual hole in the earlier steps, independent of intentional randomness).
 
 ## Resolution (2026-07-16)

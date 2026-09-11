@@ -1,5 +1,15 @@
 # Design note: seedable randomness in exploration
 
+*Status (2026-09-11): all of it is on master, both branches merged and deleted.
+The `util.Randomness` registry, the seeded strategies/chooser/oracle, `-seed` and
+`-Dgroove.randomSeed` came in with `explore-parametric-engine` (merged `b6d53955e`,
+2026-08-11); seed recording and the `seed` exploration key landed 2026-08-31
+(`3c8726600`…`2ac01d7b0`), closing gh #897 on 2026-08-31. Verified present:
+`util.Randomness`, `ResourceProperties.Key.RANDOM_SEED` (`$randomSeed`),
+`ExploreKey.SEED` with `explore.feature.Seed`, `Generator -seed`. Nothing open;
+one later refinement on master, `804629f84` (2026-09-04), skips re-applying
+seeded indeterminate operations during match reconstruction.*
+
 *Status (2026-07-26): implemented on branch `explore-parametric-engine` (phase 5b
 slice 1) — `util.Randomness` registry, seeded `RandomLinearStrategy` /
 `RandomChooserInSequence` / `RandomOracle`, `Generator -seed`, `RandomnessTest`.

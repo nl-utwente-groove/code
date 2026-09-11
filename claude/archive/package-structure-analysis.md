@@ -1,7 +1,19 @@
 # Package structure analysis (post-cleanup)
 
+*Status (2026-09-11): **survey, still substantially accurate; its one actionable
+recommendation is done**. `RuleModel.java` was split (see
+`rulemodel-split-plan.md`): merged to master 2026-08-18, last commit
+`5b6cf4394`, and `RuleModel.java` is now 530 lines with eight helper classes
+beside it. `SystemStore.java` was *not* split (still 1,556 lines); it did gain
+tests (`ecdc45f97`, merged `4c04391db`, 2026-08-31). The rule-system knot was
+not thinned and `LayeringTest` was not extended to subpackage level — both were
+"not recommended now" and remain so; gh #887 (module split) is still open. The
+whitelist is still at its floor of one entry. Package counts and sizes below are
+2026-08-18 figures and have drifted (notably `gui.*`, under the yFiles
+migration).*
+
 *Analysis of 2026-08-18 (Claude session), after the dependency cleanup
-(`claude/dependency-analysis.md`), the automaton split and the FormatError
+(`claude/archive/dependency-analysis.md`), the automaton split and the FormatError
 context refactoring had all landed. Method: jdeps `-verbose:package` and
 `-verbose:class` over a fresh `target/classes` (`module-info` excluded),
 plus per-package file and line counts over `src/main/java`. Raw data lived
@@ -180,7 +192,8 @@ Reference points: the median package has 8 files. The extremes:
    at its floor (one accepted entry).
 2. The worthwhile follow-ups are **file splits, not package moves**:
    `RuleModel.java` first, `SystemStore.java` second. Both are independent
-   of any dependency concern.
+   of any dependency concern. *(2026-09-11: `RuleModel` done — merged to master
+   2026-08-18, now 530 lines; `SystemStore` not done, still 1,556 lines.)*
 3. The rule-system knot can be thinned (CtrlType vocabulary down;
    `Grammar -> Automaton` inversion) if a finer module split is ever
    wanted; not before.

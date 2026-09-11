@@ -13,7 +13,7 @@ hash code or collection used by them.
 
 ## Code checklist
 
-Review the touched code against these rules (full background: `claude/determinism-ferryman-flake.md`):
+Review the touched code against these rules (full background: `claude/archive/determinism-ferryman-flake.md`):
 
 1. **No identity-based hashes** on the exploration path: hash codes must be number- or
    content-based, never `System.identityHashCode` (house pattern: `ANode.computeHashCode`).

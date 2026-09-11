@@ -1,5 +1,19 @@
 # Dependency analysis and cleanup plan
 
+*Status (2026-09-11): **complete, merged, branch deleted**. P1 landed on
+`dependency-cleanup`, merged to master 2026-08-18 (`8bafaae1d`); P2 and P3
+followed in the same programme, ending with the `automaton` split
+(`b64cddf74`, 2026-08-18) and the FormatError context refactoring
+(`cd3acb945`, 2026-08-18; see `formaterror-design.md`). Every table row below
+is done — verified in the tree: `util.QualName`, `util.cli.Verbosity`,
+`util.io`, `graph.Checker`, `control.parse.AntlrGrapher`, `match.Prover`,
+`match.Proof`, `explore.Transformer`, `lts.{ExploreResult,LTSLabels,GTSFragment}`,
+`explore.verify.CycleAcceptor`, `grammar.ResourceProperties`, no
+`nl.utwente.groove.automaton` package. `LayeringTest` guards the result and its
+whitelist is down to **one** accepted entry (`grammar.model -> io`). Still open:
+gh #887 (module split), unaffected by this work; gh #891 closed 2026-08-21.
+Follow-up survey: `package-structure-analysis.md`.*
+
 *Analysis of 2026-08-17 (Claude session, decisions by Arend). Method: jdeps
 (package- and class-level) over a fresh `target/classes` (generated ANTLR
 included, `module-info` excluded), aggregated to the 16 top-level packages;
@@ -42,6 +56,8 @@ The braced cluster is the one honest mutual dependency (a `Rule` knows its
 
 Classification: (A) misplaced class, (B) invertible coupling, (C) intrinsic.
 Status: P1 = on the `dependency-cleanup` branch, P2/P3 = later, acc = accepted.
+(All of P1, P2 and P3 have since landed on master; see the status block at the
+top. The per-row statuses below are the state at the time of writing.)
 
 ### util → domain (util must become a leaf)
 
@@ -57,7 +73,7 @@ Status: P1 = on the `dependency-cleanup` branch, P2/P3 = later, acc = accepted.
 | `util.OperatorLister` → algebra, io | main-method doc generator over `Sort.values()` | A | relocate to `algebra` | P1 |
 | `util.Properties$Entry`/`$ValueType` → grammar, algebra, explore, transform.oracle | `ValueType` enum hard-codes 8 domain classes for `isInstance` checks + named downcast accessors | B | genericize to `Class<V>`/typed `Key<V>`; accessors become `entry.value()` | done (P2 branch: `ValueType<V>` identity tokens, domain tokens as `VALUE_TYPE` constants on their types, single generic `Entry.value(token)`; full `Key<V>` remains open — key sets are enums) |
 | `util.parse.ATermTreeParser` → algebra | `Sort`/`Constant` baked into the tokenizer; `verify.FormulaParser` pays for machinery it never uses | B | extract an atom-lexer interface, algebra-backed impl in `algebra.syntax` | done (moved `ATermTree`+`ATermTreeParser` to `algebra.syntax` wholesale instead: the "machinery it never uses" claim was wrong — `FormulaParser.parseArg` creates `Constant` proposition arguments and `parseConst` checks the `STRING` sort, so both parser families want the sorted lexer, and an atom-lexer interface would have had no second implementation; only subclasses were `algebra.syntax` and `verify`, both at/above algebra) |
-| `util.parse.FormatError`(+`Set`) → grammar, graph, lts | 15-branch `instanceof` chain over domain types for error-navigation context; `Element`/`GraphMap` remapping | A/B | invert the dispatch (context types contribute to the error) or split generic vs domain error types; **largest single item**, needs its own design note | done (branch `format-error-context`, design note `claude/formaterror-design.md`: FormatError keeps one opaque context set, the chain moved to `grammar.model.ErrorLocation`, `Resource` → `grammar.model.ResourceId`, GraphMap remapping conveniences inverted onto `GraphMap`, gui adapts via `gui.list.ErrorEntry`; severity levels of gh #885 added in the same rework) |
+| `util.parse.FormatError`(+`Set`) → grammar, graph, lts | 15-branch `instanceof` chain over domain types for error-navigation context; `Element`/`GraphMap` remapping | A/B | invert the dispatch (context types contribute to the error) or split generic vs domain error types; **largest single item**, needs its own design note | done (branch `format-error-context`, design note `claude/archive/formaterror-design.md`: FormatError keeps one opaque context set, the chain moved to `grammar.model.ErrorLocation`, `Resource` → `grammar.model.ResourceId`, GraphMap remapping conveniences inverted onto `GraphMap`, gui adapts via `gui.list.ErrorEntry`; severity levels of gh #885 added in the same rework) |
 | `util.parse.SearchResult`/`SelectableListEntry` → grammar, graph | GUI list contracts (consumers: `gui.list`, `FindReplaceAction`) | A | `SelectableListEntry` → `gui.list`, `SearchResult` → `grammar.model`; blocked on `FormatError implements SelectableListEntry` | done (branch `format-error-context`; deviation: `SearchResult` went to `gui.list` — not `grammar.model`, which would have made grammar implement a gui interface — with `AspectGraph.getSearchResults` moving along as `SearchResult.collect`) |
 
 ### Low layers reaching up
@@ -132,7 +148,12 @@ prerequisites.
 
 ## Status
 
-- **P1 complete** on branch `dependency-cleanup` (this branch), 2026-08-17:
+*(2026-09-11: superseded by the block at the top of this file — P1, P2 and P3
+are all on master and the whitelist is down to one entry. What follows is the
+state as of 2026-08-17/18.)*
+
+- **P1 complete** on branch `dependency-cleanup` (merged to master 2026-08-18
+  as `8bafaae1d`), 2026-08-17:
   all moves and inversions listed as P1 above, the change-log entries for the
   public-API relocations, and `LayeringTest` (see below). Verified by
   compile, ecj null analysis, targeted schema/exporter tests, a class-path
@@ -146,7 +167,10 @@ prerequisites.
   fail the test, so the list can only shrink. Remove entries here and there
   together as P2/P3 items land.
 - P2/P3 not started; `FormatError` and the `automaton` split deserve design
-  notes before anyone touches them.
+  notes before anyone touches them. *(Both were done within the following day:
+  `automaton` dissolved in `b64cddf74`, `FormatError` in `cd3acb945` off the
+  design note `formaterror-design.md`. The whitelist shrank to its floor of one
+  entry, where it still stands.)*
 
 ### Findings from the implementation (2026-08-17)
 

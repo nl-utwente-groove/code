@@ -1,5 +1,36 @@
 # Design: the SETTINGS resource kind and the Ecore mapping schema
 
+*Status (2026-09-11): fully implemented and on master; all five steps of the
+commit plan are done. Mechanism: `0b7c8399d` (SETTINGS kind, model, registry,
+store name rule, GUI wiring) and `a9d210de1` (legacy properties-name
+reservation narrowed), 2026-07-31; `c5c1fd7c1` derived the schema from the
+leading name segment, `e738e345d` added singular-schema multiplicity checking,
+`e960d06b9`/`599f8d6f2`/`542beae48` the template, documentation panel and
+`EcoreKey`; the folder scheme was settled by `532f5e24c` → `b1914730a`
+(2026-08-05), error positions by `9ccaa4085`, GUI polish by `887992cc9` and
+`2273783d8`. Ecore client: `81bc355a0` (global keys, grammar keys retired),
+`76b3a22a2` (per-feature ordering), `be858f817` (naming overrides). Explore
+client: `3c69266b6`, `5e2aec180` (grammar-aware schemas + dependencies),
+`1d34ee457` (exploration property as reference), `2fa091b3c`/`6d4059fdb`
+(activation, error propagation), `065588cac`/`f514fc5cb` (transient exploration
+removed, dialog reworked around saved settings). Tests: `SettingsTest` and
+`junit/settings/settings-test.gps`.*
+
+*Changed since: schema registration was inverted to a `ServiceLoader` service
+(`6ea0b3477`, 2026-08-17) — `SettingsSchemas` no longer holds a hand-filled
+registry, and the two providers (`EcoreMappingSchema$Provider`,
+`explore.config.ExploreConfigSchema$Provider`) are declared in `module-info`
+and `META-INF/services`. The claim below that default-exploration resolution
+lives at the `GrammarModel` level is stale: `bfe07e431`/`fcbd95338`
+(2026-08-17) moved it into `explore`. The explore vocabulary gained a signed
+64-bit content type (`3c8726600`, 2026-08-31, gh #897), and `05aef03d5`
+(2026-09-07) kept a failing settings sync from blocking shutdown.*
+
+*Open: all four "Deliberately deferred" items are untouched and filed as gh
+#898 (metadata into the settings file, EAnnotation defaults, generic keyed
+table editor, `system.properties` as the `system` schema). Related open issue:
+gh #558.*
+
 *2026-07-31, revised 2026-08-02 and 2026-08-05. Follow-up to the Ecore porter
 (`ecore-porter-design.md`): makes the porter's representational choices
 per-element and persistent. Agreed direction: one generic settings mechanism
