@@ -1,5 +1,15 @@
 # Fixable implementors: which should become builders?
 
+*Status (2026-09-11): step 1 of the suggested order is done and on master — the tier-1
+fixing phases were deleted on 2026-09-06 (d2afb7ed9 `Frame`, d28a099b3
+`Values.ColorSet`, 51ca6ba14 `Pair` immutable and no longer `Fixable`; merged as
+34c4a3531). The `Buildable` verdict in this note was reversed the same day
+(3c764cd36), so the text above is the second draft. Nothing since: step 2 (the
+inverted `setFixed()` returns and the missing guards) is untouched — `Program.setFixed`
+still opens with `boolean result = this.fixed` — and step 3 (`Grammar.Builder` plus
+`util.Buildable`, with `AspectLabel` retrofitted) and step 4 (the `ATermTree` family)
+have not been started; there is no `Buildable` type in `src/main/java`.*
+
 Survey of all `nl.utwente.groove.util.Fixable` implementors on master
 (0493b344b), following the conversion of `AspectLabel` to a nested
 `Builder` plus an immutable label (89d1715c9). The question was which

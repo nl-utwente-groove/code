@@ -1,5 +1,51 @@
 # Plan: module split (gui first, cli second)
 
+*Status (2026-09-11): phases 1–4 are on master (see the Status (2026-08-16)
+section below, still accurate for those). **Phase 5 — the actual Maven/module
+split — has not been done and is not in progress.** `pom.xml` still has no
+`<modules>`, still builds the single artifact `nl.utwente.groove:groove`, and
+still carries jgraph, FlatLaf, RSyntaxTextArea, batik and fop as dependencies of
+that one artifact; `src/main/java/module-info.java` is still one descriptor
+exporting every `nl.utwente.groove.gui.*` package; all six root shims still sit
+together in `nl.utwente.groove`; `ImagerTest`/`SimulatorModelTest` are still in
+the single test tree. No `groove-core` exists. The `module-info` keep-or-drop
+decision is still open.*
+
+*What did happen, on branch `yworks-migration` (gh #909, 134 commits ahead of
+master and unmerged), is a different split along a different seam, and it
+invalidates parts of the phase-5 readiness assessment below:*
+
+- *The yFiles graph backend is a **separate Maven artifact in a separate
+  repository**: `groove-yfiles`, built from `nl-utwente-groove/yfiles-lib` (the
+  source left this repo in 73261ca97, 2026-09-09), depending on GROOVE rather
+  than being depended on by it. It ships as an add-on zip built by the release
+  reactor (`release/yfiles`, profile `yfiles`; 9058a64eb, e5abbf4ac), which the
+  user — or the Simulator itself (960e6e671) — unpacks into a user-level
+  extension directory.*
+- *That add-on is loaded at start-up by an **extension loader**: `util.Extensions`
+  (fca1fbb3d) scans the directory, builds a child `URLClassLoader` over the
+  accepted jars, and GROOVE sees the contents only through `ServiceLoader`
+  (`gui.view.GraphBackend`, 05821d31e; earlier the backend was an optionally
+  compiled in-tree unit, 9434c4d2f).*
+- *So the technique the plan calls for in (c) — SPI inversion — is now generalised
+  infrastructure, used three times: `GraphBackend`, `SettingsSchema.Provider`,
+  `ResourceValidator`, each declared both in `module-info` (`uses`/`provides`)
+  and in `META-INF/services` for classpath runs.*
+- *Separately, `gui.view` (view models + `GraphCanvas` facade + `GraphBackend`)
+  now separates GROOVE's view logic from JGraph, with `gui.jgraph` reduced to one
+  backend provider. That is a gui-internal boundary; it does nothing for the
+  core/gui boundary this plan is about.*
+
+*Net effect on this plan: the pieces phase 5 was expected to be hardest about —
+runtime service discovery, a second build unit with its own coordinates, a
+release reactor that assembles more than one artifact — now exist and work. The
+core/gui division of the main artifact itself is untouched. The release-reactor
+version handoff is half-fixed: `release/do-all.sh` and `.github/workflows/release.yml`
+now derive the version with `mvn help:evaluate -Dexpression=revision -DforceStdout`
+instead of re-entering it, but `-Drevision` still crosses into the separate
+release reactor and `launch/GROOVE - zip up local release.launch` still prompts
+for the version by hand. gh #887 is open; it has no comments.*
+
 *Findings and plan as of 2026-08-10 (rev 3, Claude sessions, reviewed by Arend).
 Tracked in gh #887. This document is the spec for redoing the split fresh off
 current master; do not resurrect the old working branches.*
@@ -245,8 +291,12 @@ infrastructure, resources and tests. **Code side: ready.** Beyond the import
 scan recorded above: no `Class.forName` or string literal anywhere can name a
 gui class (the only reflective loads are in `prolog.GrooveEnvironment` and
 `util.antlr.ParseTree`, neither fed gui names); there is no `ServiceLoader`
-use at all — every registry is wired by explicit gui→core calls at startup;
-the gui libraries (jgraph, FlatLaf, RSyntaxTextArea, batik, fop, osxadapter)
+use at all — every registry is wired by explicit gui→core calls at startup
+(**superseded on `yworks-migration`**: `GraphBackend`, `SettingsSchema.Provider`
+and `ResourceValidator` are now `ServiceLoader` services, the first resolved over
+the extension class loader of `util.Extensions`);
+the gui libraries (jgraph, FlatLaf, RSyntaxTextArea, batik, fop; osxadapter has
+since been dropped from the pom in favour of `java.awt.Desktop`)
 are imported only under `gui/` (plus two javadoc-string mentions elsewhere);
 `java.awt` outside gui is exactly the seven accepted data types (`Color`,
 `Font`, `FontFormatException`, `Point`, `Rectangle`, `Point2D`,
@@ -323,7 +373,9 @@ are imported only under `gui/` (plus two javadoc-string mentions elsewhere);
 - *module-info, sharpened.* Two facts push further toward dropping: the
   descriptor's 71 `exports` are all unqualified, with no `uses`/`provides` —
   it exports essentially everything, so the encapsulation it would enforce is
-  not actually being used; and keeping it makes the shim problem worse than
+  not actually being used (**the `uses`/`provides` half no longer holds since
+  `yworks-migration`: the descriptor now declares three services, duplicated in
+  `META-INF/services` because the installed app runs from the class path**); and keeping it makes the shim problem worse than
   recorded above, because renaming the shim package breaks the release stubs'
   derived main classes and every documented
   `java -cp … nl.utwente.groove.Simulator` invocation, not just internal
@@ -347,7 +399,9 @@ are imported only under `gui/` (plus two javadoc-string mentions elsewhere);
 - *The tree move is the riskiest step.* Relocating `src/` into `core/`/`gui/`
   is a commit that conflicts with every open branch and degrades blame across
   it. Do it in a quiet window with nothing in flight (currently
-  `simulator-model-decoupling` is pending — land or drop it first), and keep
+  `simulator-model-decoupling` is pending — land or drop it first; **as of
+  2026-09-11 the branch in flight is `yworks-migration`, 134 commits and the
+  whole of `gui/`**), and keep
   the pure-rename commit separate from the pom/metadata commits so git and
   Eclipse can track the renames.
 - *Silent-degradation checklist for review*: fixture tests skipping instead
@@ -374,6 +428,9 @@ Each phase is a separate branch/PR, in dependency order:
    readiness assessment above lists the build-side work items.
 
 ## Status (2026-08-16)
+
+*Still accurate for phases 1–4; for the state of phase 5 and of the work done
+since on `yworks-migration`, see the status block at the top of this document.*
 
 - Phase 1 (deletions, incl. the dead `Util.isGroovyPresent` probe) and
   phase 2 (moves plus inversion (c1): oracle registry in `OracleParser`, a

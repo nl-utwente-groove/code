@@ -1,5 +1,35 @@
 # Plan: `io` package simplification and Ecore revival
 
+*Status (2026-09-11): phases 1–3 are implemented and on master; phase 4 is not
+started. Phase 1: `f85d56128` (2026-07-26) retired `io/conceptual`, the model
+porters and `ConfigSchema.xsd` (121 files, −19154 lines) and removed
+`ResourceKind.CONFIG`; `8a5968f8a` removed the remaining dead `io` code.
+Phase 2 (all 2026-07-26): `2d874cf09` deleted `Porter`, `f98321c05` split the
+registries from their Swing drivers, `bbb1b5cf5` unified the save paths and
+decoupled `FileType`, `86b11460d` moved the rendering exporters and the Imager
+to `gui` (now `gui/export`), `c6d044d2e` moved `GrooveFileChooser`,
+`GrooveFileView` and `HTMLConverter` out of `io`. Phase 3 (2026-07-26/27):
+`168dc28a4` added the EMF dependencies (ecore/common 2.41.0, ecore.xmi 2.39.0),
+`f1fec102e` the importer and `72791044a` the exporter, with `710383fa2`,
+`128a4ac96`, `174899bf7` and `ac5888c11` as follow-ups; the code sits in
+`io/external/format/ecore` with `gui/dialog/EcoreOptionsDialog`, and
+`junit/ecore` + `EcoreTest` hold nine fixture pairs (more than the two
+planned).*
+
+*Done differently: the encoding options were **not** kept as
+`GrammarProperties` keys. `ecoreOrdering`/`ecoreUseIdentifiers` were retired a
+week later (`81bc355a0`, 2026-07-31) in favour of the new `SETTINGS` resource
+kind, which also made the choices per-element — see
+[`settings-resource-design.md`](archive/settings-resource-design.md). Later `io` restructuring went beyond this plan:
+`987ed908f` moved `FileType`/`FileUtils` to `util.io`, `3dec7b571`/`2ff08c6e6`
+dissolved `util.Groove`, and the streaming export-listener rewrite landed
+2026-09-02/03 (gh #854).*
+
+*Open: phase 4 (constraint rules) — untouched, no issue filed. Ecore follow-ups
+are tracked as gh #907 (adopt the warning severity for the silent
+approximations; open) and gh #558 (skip the options dialog when an `ecore`
+settings resource exists; open).*
+
 *Drawn up 2026-07-26 (Claude session, approved by Arend). This document records the
 plan and its rationale; each phase is a separate branch/PR.*
 
@@ -126,9 +156,11 @@ Decisions refined with Arend after Phase 1 review:
   `GraphConstants.PERMILLE`). Re-verified 2026-08-22: `nl.utwente.groove.io`
   imports nothing from `gui` or `org.jgraph`; its remaining non-core imports
   are `java.awt.geom` (layout geometry) and `javax.swing.undo` (see above).
-- `src/main/resources/nl/utwente/groove/resource/{Ecore.ecore, groove.ecore}`
+- ~~`src/main/resources/nl/utwente/groove/resource/{Ecore.ecore, groove.ecore}`
   were already orphaned before Phase 1 and are left in place; revisit in
-  Phase 3 (candidate test fixtures).
+  Phase 3 (candidate test fixtures).~~ **Deleted** on master (`dfd5da52b`,
+  2026-08-17): Phase 3 wrote its own fixtures under `junit/ecore`, so the
+  orphans had no further use.
 
 ## Phase 3 — fresh Ecore support
 
