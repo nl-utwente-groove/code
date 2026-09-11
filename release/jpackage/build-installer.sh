@@ -88,8 +88,12 @@ INPUT=$WORK/input/groove-$VERSION_UNDERSCORED
 # Compute the set of JDK modules for the bundled runtime from the static
 # dependencies of the code, then add modules that are only reached
 # reflectively (scripting/Groovy, JNDI, JDBC, instrumentation, extra
-# charsets, zip filesystems, accessibility support).
-EXTRA_MODULES="java.instrument java.management java.naming java.scripting java.sql jdk.accessibility jdk.charsets jdk.unsupported jdk.zipfs"
+# charsets, zip filesystems, accessibility support) or through service
+# loading: jdk.crypto.ec holds the elliptic-curve provider on Java 21 (merged
+# into java.base from 22, where the module remains as an empty stub), which
+# jdeps cannot see; without it TLS handshakes with github fail, and so does
+# the download of the yFiles add-on (gh #909).
+EXTRA_MODULES="java.instrument java.management java.naming java.scripting java.sql jdk.accessibility jdk.charsets jdk.crypto.ec jdk.unsupported jdk.zipfs"
 MAIN_JAR=$INPUT/lib/groove-$VERSION.jar
 if JDEPS_OUT=$("$JDEPS" --multi-release 21 --ignore-missing-deps --print-module-deps \
         --class-path "$(native_path "$INPUT/lib")/*" "$(native_path "$MAIN_JAR")" 2> /dev/null); then
