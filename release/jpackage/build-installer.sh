@@ -109,19 +109,28 @@ MODULES=$(printf '%s\n' ${MODULES//,/ } $EXTRA_MODULES | sort -u | paste -sd, -)
 echo "bundled runtime modules: $MODULES"
 
 # ----------------------------------------------------------------- launchers
-# The main launcher (named GROOVE) starts the Simulator; the other tools
-# become additional launchers. win-console gives the command-line tools a
-# console on Windows (ignored elsewhere).
+# jpackage names the main launcher after the application (GROOVE), and it
+# starts the Simulator; the tools become additional launchers named after
+# themselves. The Simulator is added a second time under its own name, for
+# consistency with the other tools, but without menu entry or shortcut since
+# the main launcher already provides those. win-console gives the
+# command-line tools a console on Windows (ignored elsewhere).
 LAUNCHERS_DIR=$WORK/launchers
 mkdir -p "$LAUNCHERS_DIR"
 add_launcher_args=()
-make_launcher() { # <name> <console>
+make_launcher() { # <name> <console> [noshortcut]
     {
         echo "main-jar=bin/$1.jar"
         echo "win-console=$2"
+        if [[ ${3:-} == noshortcut ]]; then
+            echo "win-menu=false"
+            echo "win-shortcut=false"
+            echo "linux-shortcut=false"
+        fi
     } > "$LAUNCHERS_DIR/$1.properties"
     add_launcher_args+=(--add-launcher "$1=$(native_path "$LAUNCHERS_DIR/$1.properties")")
 }
+make_launcher Simulator false noshortcut
 make_launcher Generator true
 make_launcher ModelChecker true
 make_launcher Imager true
