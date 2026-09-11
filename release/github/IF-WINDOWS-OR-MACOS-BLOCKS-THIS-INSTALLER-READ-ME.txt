@@ -1,0 +1,55 @@
+GROOVE installers: what to do if Windows or macOS blocks them
+=============================================================
+
+The GROOVE installers are not digitally signed. Windows and macOS therefore
+treat them as coming from an unknown publisher and block them the first time
+they are run. The installers are built automatically from the public source
+code at https://github.com/nl-utwente-groove/code; nothing is wrong with the
+file you downloaded.
+
+
+WINDOWS (.msi)
+--------------
+
+What you see: "Windows protected your PC", "Unknown publisher", and no way to
+run the installer.
+
+1. Close the dialog.
+2. In File Explorer, right-click the downloaded .msi file and choose
+   Properties.
+3. On the General tab, at the bottom, tick "Unblock" and click OK.
+4. Double-click the .msi again; it now installs normally.
+
+From PowerShell, steps 2 and 3 are: Unblock-File <path-to-the-msi>
+
+
+MACOS (.dmg)
+------------
+
+What you see: "Apple could not verify "GROOVE" is free of malware", or
+"GROOVE is damaged and can't be opened".
+
+1. Open the .dmg and drag GROOVE to Applications as usual.
+2. Try to open GROOVE once, and dismiss the warning with "Done" (not "Move to
+   Trash").
+3. Open System Settings > Privacy & Security, scroll down to the message about
+   GROOVE, click "Open Anyway" and confirm with your password.
+
+If macOS says the app is damaged, or no "Open Anyway" button appears, run this
+in Terminal instead, then open GROOVE normally:
+
+    xattr -dr com.apple.quarantine /Applications/GROOVE.app
+
+
+LINUX (.deb)
+------------
+
+Not affected.
+
+
+WITHOUT AN INSTALLER
+--------------------
+
+The groove-...-bin.zip archives need no installer and trigger none of these
+warnings, but they require Java 21 or newer to be installed. Unzip one and see
+the README.md inside.

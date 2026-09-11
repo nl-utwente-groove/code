@@ -21,6 +21,12 @@ jobs:
       uses: actions/checkout@v7
       with:
         path: 'code'
+    - name: Assemble release notes
+      # the note on getting past the warnings for the unsigned installers,
+      # and this release's change log; see release/README.md, "The release
+      # page". Written outside the checkout, since the build below cleans
+      # release/target; the installers job leaves the body alone
+      run: bash release/github/release-notes.sh > "$RUNNER_TEMP/release-notes.md"
     - name: Check out grammars
       uses: actions/checkout@v7
       with:
@@ -48,7 +54,10 @@ jobs:
     - name: Deploy release
       uses: ncipollo/release-action@v1.21.0
       with:
-        artifacts: "code/release/target/*.zip"
+        # the READ-ME asset carries its message in its name, for those who
+        # read nothing but the asset list
+        artifacts: "code/release/target/*.zip,code/release/github/IF-WINDOWS-OR-MACOS-BLOCKS-THIS-INSTALLER-READ-ME.txt"
+        bodyFile: "${{ runner.temp }}/release-notes.md"
         draft: false
         prerelease: false
 
