@@ -1,0 +1,10 @@
+class javax/management/monitor/CounterMonitor
+getDerivedGauge
+ ()Ljava/lang/Number;
+ ()L0java/lang/Number;
+getNotificationInfo
+ ()[Ljavax/management/MBeanNotificationInfo;
+ ()[1Ljavax/management/MBeanNotificationInfo;
+getThreshold
+ (Ljavax/management/ObjectName;)Ljava/lang/Number;
+ (Ljavax/management/ObjectName;)L0java/lang/Number;

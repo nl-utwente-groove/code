@@ -1,0 +1,4 @@
+class javax/swing/RowSorter$SortKey
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z

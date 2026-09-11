@@ -1,0 +1,19 @@
+class java/net/http/HttpRequest
+newBuilder
+ ()Ljava/net/http/HttpRequest$Builder;
+ ()L1java/net/http/HttpRequest$Builder;
+newBuilder
+ (Ljava/net/URI;)Ljava/net/http/HttpRequest$Builder;
+ (Ljava/net/URI;)L1java/net/http/HttpRequest$Builder;
+bodyPublisher
+ ()Ljava/util/Optional<Ljava/net/http/HttpRequest$BodyPublisher;>;
+ ()L1java/util/Optional<Ljava/net/http/HttpRequest$BodyPublisher;>;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+timeout
+ ()Ljava/util/Optional<Ljava/time/Duration;>;
+ ()L1java/util/Optional<Ljava/time/Duration;>;
+version
+ ()Ljava/util/Optional<Ljava/net/http/HttpClient$Version;>;
+ ()L1java/util/Optional<Ljava/net/http/HttpClient$Version;>;

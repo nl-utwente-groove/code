@@ -1,0 +1,22 @@
+class javax/management/relation/RelationService
+findAssociatedMBeans
+ (Ljavax/management/ObjectName;Ljava/lang/String;Ljava/lang/String;)Ljava/util/Map<Ljavax/management/ObjectName;Ljava/util/List<Ljava/lang/String;>;>;
+ (Ljavax/management/ObjectName;Ljava/lang/String;Ljava/lang/String;)L1java/util/Map<Ljavax/management/ObjectName;Ljava/util/List<Ljava/lang/String;>;>;
+findReferencingRelations
+ (Ljavax/management/ObjectName;Ljava/lang/String;Ljava/lang/String;)Ljava/util/Map<Ljava/lang/String;Ljava/util/List<Ljava/lang/String;>;>;
+ (Ljavax/management/ObjectName;Ljava/lang/String;Ljava/lang/String;)L1java/util/Map<Ljava/lang/String;Ljava/util/List<Ljava/lang/String;>;>;
+findRelationsOfType
+ (Ljava/lang/String;)Ljava/util/List<Ljava/lang/String;>;
+ (Ljava/lang/String;)L1java/util/List<Ljava/lang/String;>;
+getAllRelationIds
+ ()Ljava/util/List<Ljava/lang/String;>;
+ ()L1java/util/List<Ljava/lang/String;>;
+getAllRelationTypeNames
+ ()Ljava/util/List<Ljava/lang/String;>;
+ ()L1java/util/List<Ljava/lang/String;>;
+getRole
+ (Ljava/lang/String;Ljava/lang/String;)Ljava/util/List<Ljavax/management/ObjectName;>;
+ (Ljava/lang/String;Ljava/lang/String;)L1java/util/List<Ljavax/management/ObjectName;>;
+isRelationMBean
+ (Ljava/lang/String;)Ljavax/management/ObjectName;
+ (Ljava/lang/String;)L0javax/management/ObjectName;

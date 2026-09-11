@@ -1,0 +1,13 @@
+class java/util/stream/Node$OfLong
+copyInto
+ ([Ljava/lang/Long;I)V
+ ([1Ljava/lang/Long;I)V
+forEach
+ (Ljava/util/function/Consumer<-Ljava/lang/Long;>;)V
+ (L1java/util/function/Consumer<-Ljava/lang/Long;>;)V
+getShape
+ ()Ljava/util/stream/StreamShape;
+ ()L1java/util/stream/StreamShape;
+newArray
+ (I)[J
+ (I)[1J

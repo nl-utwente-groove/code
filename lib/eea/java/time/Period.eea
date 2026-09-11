@@ -1,0 +1,28 @@
+class java/time/Period
+ZERO
+ Ljava/time/Period;
+ L1java/time/Period;
+ofDays
+ (I)Ljava/time/Period;
+ (I)L1java/time/Period;
+parse
+ (Ljava/lang/CharSequence;)Ljava/time/Period;
+ (Ljava/lang/CharSequence;)L1java/time/Period;
+addTo
+ (Ljava/time/temporal/Temporal;)Ljava/time/temporal/Temporal;
+ (L1java/time/temporal/Temporal;)L1java/time/temporal/Temporal;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+get
+ (Ljava/time/temporal/TemporalUnit;)J
+ (L1java/time/temporal/TemporalUnit;)J
+getUnits
+ ()Ljava/util/List<Ljava/time/temporal/TemporalUnit;>;
+ ()L1java/util/List<L1java/time/temporal/TemporalUnit;>;
+subtractFrom
+ (Ljava/time/temporal/Temporal;)Ljava/time/temporal/Temporal;
+ (L1java/time/temporal/Temporal;)L1java/time/temporal/Temporal;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

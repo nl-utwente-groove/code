@@ -1,0 +1,7 @@
+class java/security/spec/ECPoint
+POINT_INFINITY
+ Ljava/security/spec/ECPoint;
+ L1java/security/spec/ECPoint;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z

@@ -1,0 +1,10 @@
+class javax/swing/plaf/metal/MetalSliderUI
+createUI
+ (Ljavax/swing/JComponent;)Ljavax/swing/plaf/ComponentUI;
+ (Ljavax/swing/JComponent;)L1javax/swing/plaf/ComponentUI;
+createPropertyChangeListener
+ (Ljavax/swing/JSlider;)Ljava/beans/PropertyChangeListener;
+ (Ljavax/swing/JSlider;)L1java/beans/PropertyChangeListener;
+getThumbSize
+ ()Ljava/awt/Dimension;
+ ()L1java/awt/Dimension;

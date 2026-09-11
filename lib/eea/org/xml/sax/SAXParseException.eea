@@ -1,0 +1,4 @@
+class org/xml/sax/SAXParseException
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

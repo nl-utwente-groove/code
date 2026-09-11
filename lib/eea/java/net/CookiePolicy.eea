@@ -1,0 +1,10 @@
+class java/net/CookiePolicy
+ACCEPT_ALL
+ Ljava/net/CookiePolicy;
+ L1java/net/CookiePolicy;
+ACCEPT_NONE
+ Ljava/net/CookiePolicy;
+ L1java/net/CookiePolicy;
+ACCEPT_ORIGINAL_SERVER
+ Ljava/net/CookiePolicy;
+ L1java/net/CookiePolicy;

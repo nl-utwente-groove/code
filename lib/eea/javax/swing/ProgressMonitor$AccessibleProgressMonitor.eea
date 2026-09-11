@@ -1,0 +1,49 @@
+class javax/swing/ProgressMonitor$AccessibleProgressMonitor
+getAccessibleChild
+ (I)Ljavax/accessibility/Accessible;
+ (I)L0javax/accessibility/Accessible;
+getAccessibleComponent
+ ()Ljavax/accessibility/AccessibleComponent;
+ ()L0javax/accessibility/AccessibleComponent;
+getAccessibleDescription
+ ()Ljava/lang/String;
+ ()L0java/lang/String;
+getAccessibleName
+ ()Ljava/lang/String;
+ ()L0java/lang/String;
+getAccessibleStateSet
+ ()Ljavax/accessibility/AccessibleStateSet;
+ ()L0javax/accessibility/AccessibleStateSet;
+getAccessibleText
+ ()Ljavax/accessibility/AccessibleText;
+ ()L0javax/accessibility/AccessibleText;
+getAccessibleValue
+ ()Ljavax/accessibility/AccessibleValue;
+ ()L0javax/accessibility/AccessibleValue;
+getAfterIndex
+ (II)Ljava/lang/String;
+ (II)L0java/lang/String;
+getAtIndex
+ (II)Ljava/lang/String;
+ (II)L0java/lang/String;
+getBeforeIndex
+ (II)Ljava/lang/String;
+ (II)L0java/lang/String;
+getCharacterAttribute
+ (I)Ljavax/swing/text/AttributeSet;
+ (I)L0javax/swing/text/AttributeSet;
+getCharacterBounds
+ (I)Ljava/awt/Rectangle;
+ (I)L0java/awt/Rectangle;
+getLocale
+ ()Ljava/util/Locale;
+ ()L0java/util/Locale;
+getSelectedText
+ ()Ljava/lang/String;
+ ()L0java/lang/String;
+propertyChange
+ (Ljava/beans/PropertyChangeEvent;)V
+ (L1java/beans/PropertyChangeEvent;)V
+stateChanged
+ (Ljavax/swing/event/ChangeEvent;)V
+ (L1javax/swing/event/ChangeEvent;)V

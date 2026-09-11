@@ -1,0 +1,22 @@
+class java/time/zone/ZoneRules
+of
+ (Ljava/time/ZoneOffset;)Ljava/time/zone/ZoneRules;
+ (L1java/time/ZoneOffset;)L1java/time/zone/ZoneRules;
+of
+ (Ljava/time/ZoneOffset;Ljava/time/ZoneOffset;Ljava/util/List<Ljava/time/zone/ZoneOffsetTransition;>;Ljava/util/List<Ljava/time/zone/ZoneOffsetTransition;>;Ljava/util/List<Ljava/time/zone/ZoneOffsetTransitionRule;>;)Ljava/time/zone/ZoneRules;
+ (L1java/time/ZoneOffset;Ljava/time/ZoneOffset;Ljava/util/List<Ljava/time/zone/ZoneOffsetTransition;>;Ljava/util/List<Ljava/time/zone/ZoneOffsetTransition;>;Ljava/util/List<Ljava/time/zone/ZoneOffsetTransitionRule;>;)L1java/time/zone/ZoneRules;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getTransition
+ (Ljava/time/LocalDateTime;)Ljava/time/zone/ZoneOffsetTransition;
+ (Ljava/time/LocalDateTime;)L0java/time/zone/ZoneOffsetTransition;
+nextTransition
+ (Ljava/time/Instant;)Ljava/time/zone/ZoneOffsetTransition;
+ (Ljava/time/Instant;)L0java/time/zone/ZoneOffsetTransition;
+previousTransition
+ (Ljava/time/Instant;)Ljava/time/zone/ZoneOffsetTransition;
+ (Ljava/time/Instant;)L0java/time/zone/ZoneOffsetTransition;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

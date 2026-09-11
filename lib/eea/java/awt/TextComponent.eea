@@ -1,0 +1,16 @@
+class java/awt/TextComponent
+addTextListener
+ (Ljava/awt/event/TextListener;)V
+ (L1java/awt/event/TextListener;)V
+getBackground
+ ()Ljava/awt/Color;
+ ()L0java/awt/Color;
+getInputMethodRequests
+ ()Ljava/awt/im/InputMethodRequests;
+ ()L0java/awt/im/InputMethodRequests;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+removeTextListener
+ (Ljava/awt/event/TextListener;)V
+ (L1java/awt/event/TextListener;)V

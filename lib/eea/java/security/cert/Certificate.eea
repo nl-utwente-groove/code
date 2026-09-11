@@ -1,0 +1,13 @@
+class java/security/cert/Certificate
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getEncoded
+ ()[B
+ ()[1B
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+writeReplace
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;

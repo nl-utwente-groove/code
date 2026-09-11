@@ -2,3 +2,9 @@ class java/awt/print/PageFormat
 clone
  ()Ljava/lang/Object;
  ()L1java/lang/Object;
+getMatrix
+ ()[D
+ ()[1D
+getPaper
+ ()Ljava/awt/print/Paper;
+ ()L1java/awt/print/Paper;

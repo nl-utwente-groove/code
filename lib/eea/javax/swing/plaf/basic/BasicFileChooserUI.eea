@@ -1,0 +1,31 @@
+class javax/swing/plaf/basic/BasicFileChooserUI
+createUI
+ (Ljavax/swing/JComponent;)Ljavax/swing/plaf/ComponentUI;
+ (Ljavax/swing/JComponent;)L1javax/swing/plaf/ComponentUI;
+createDoubleClickListener
+ (Ljavax/swing/JFileChooser;Ljavax/swing/JList<*>;)Ljava/awt/event/MouseListener;
+ (Ljavax/swing/JFileChooser;Ljavax/swing/JList<*>;)L1java/awt/event/MouseListener;
+createListSelectionListener
+ (Ljavax/swing/JFileChooser;)Ljavax/swing/event/ListSelectionListener;
+ (Ljavax/swing/JFileChooser;)L1javax/swing/event/ListSelectionListener;
+createPropertyChangeListener
+ (Ljavax/swing/JFileChooser;)Ljava/beans/PropertyChangeListener;
+ (Ljavax/swing/JFileChooser;)L0java/beans/PropertyChangeListener;
+getApproveButton
+ (Ljavax/swing/JFileChooser;)Ljavax/swing/JButton;
+ (Ljavax/swing/JFileChooser;)L0javax/swing/JButton;
+getApproveButtonText
+ (Ljavax/swing/JFileChooser;)Ljava/lang/String;
+ (Ljavax/swing/JFileChooser;)L0java/lang/String;
+getApproveButtonToolTipText
+ (Ljavax/swing/JFileChooser;)Ljava/lang/String;
+ (Ljavax/swing/JFileChooser;)L0java/lang/String;
+getDefaultButton
+ (Ljavax/swing/JFileChooser;)Ljavax/swing/JButton;
+ (Ljavax/swing/JFileChooser;)L0javax/swing/JButton;
+getDirectoryName
+ ()Ljava/lang/String;
+ ()L0java/lang/String;
+getFileName
+ ()Ljava/lang/String;
+ ()L0java/lang/String;

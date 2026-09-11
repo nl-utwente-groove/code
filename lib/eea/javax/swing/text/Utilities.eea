@@ -1,0 +1,4 @@
+class javax/swing/text/Utilities
+getParagraphElement
+ (Ljavax/swing/text/JTextComponent;I)Ljavax/swing/text/Element;
+ (Ljavax/swing/text/JTextComponent;I)L0javax/swing/text/Element;

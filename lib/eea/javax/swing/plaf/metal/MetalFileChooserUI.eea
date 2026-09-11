@@ -1,0 +1,46 @@
+class javax/swing/plaf/metal/MetalFileChooserUI
+createUI
+ (Ljavax/swing/JComponent;)Ljavax/swing/plaf/ComponentUI;
+ (Ljavax/swing/JComponent;)L1javax/swing/plaf/ComponentUI;
+createActionMap
+ ()Ljavax/swing/ActionMap;
+ ()L1javax/swing/ActionMap;
+createDetailsView
+ (Ljavax/swing/JFileChooser;)Ljavax/swing/JPanel;
+ (Ljavax/swing/JFileChooser;)L1javax/swing/JPanel;
+createDirectoryComboBoxModel
+ (Ljavax/swing/JFileChooser;)Ljavax/swing/plaf/metal/MetalFileChooserUI$DirectoryComboBoxModel;
+ (Ljavax/swing/JFileChooser;)L1javax/swing/plaf/metal/MetalFileChooserUI$DirectoryComboBoxModel;
+createFilterComboBoxModel
+ ()Ljavax/swing/plaf/metal/MetalFileChooserUI$FilterComboBoxModel;
+ ()L1javax/swing/plaf/metal/MetalFileChooserUI$FilterComboBoxModel;
+createFilterComboBoxRenderer
+ ()Ljavax/swing/plaf/metal/MetalFileChooserUI$FilterComboBoxRenderer;
+ ()L1javax/swing/plaf/metal/MetalFileChooserUI$FilterComboBoxRenderer;
+createList
+ (Ljavax/swing/JFileChooser;)Ljavax/swing/JPanel;
+ (Ljavax/swing/JFileChooser;)L1javax/swing/JPanel;
+createListSelectionListener
+ (Ljavax/swing/JFileChooser;)Ljavax/swing/event/ListSelectionListener;
+ (Ljavax/swing/JFileChooser;)L1javax/swing/event/ListSelectionListener;
+createPropertyChangeListener
+ (Ljavax/swing/JFileChooser;)Ljava/beans/PropertyChangeListener;
+ (Ljavax/swing/JFileChooser;)L1java/beans/PropertyChangeListener;
+getApproveButton
+ (Ljavax/swing/JFileChooser;)Ljavax/swing/JButton;
+ (Ljavax/swing/JFileChooser;)L0javax/swing/JButton;
+getDirectoryName
+ ()Ljava/lang/String;
+ ()L0java/lang/String;
+getFileName
+ ()Ljava/lang/String;
+ ()L0java/lang/String;
+getMaximumSize
+ (Ljavax/swing/JComponent;)Ljava/awt/Dimension;
+ (Ljavax/swing/JComponent;)L1java/awt/Dimension;
+getMinimumSize
+ (Ljavax/swing/JComponent;)Ljava/awt/Dimension;
+ (Ljavax/swing/JComponent;)L1java/awt/Dimension;
+getPreferredSize
+ (Ljavax/swing/JComponent;)Ljava/awt/Dimension;
+ (Ljavax/swing/JComponent;)L0java/awt/Dimension;

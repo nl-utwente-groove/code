@@ -2,6 +2,51 @@ class javax/swing/UIDefaults
 addPropertyChangeListener
  (Ljava/beans/PropertyChangeListener;)V
  (L1java/beans/PropertyChangeListener;)V
+getBorder
+ (Ljava/lang/Object;)Ljavax/swing/border/Border;
+ (Ljava/lang/Object;)L0javax/swing/border/Border;
+getBorder
+ (Ljava/lang/Object;Ljava/util/Locale;)Ljavax/swing/border/Border;
+ (Ljava/lang/Object;Ljava/util/Locale;)L0javax/swing/border/Border;
+getColor
+ (Ljava/lang/Object;)Ljava/awt/Color;
+ (Ljava/lang/Object;)L0java/awt/Color;
+getColor
+ (Ljava/lang/Object;Ljava/util/Locale;)Ljava/awt/Color;
+ (Ljava/lang/Object;Ljava/util/Locale;)L0java/awt/Color;
+getDimension
+ (Ljava/lang/Object;)Ljava/awt/Dimension;
+ (Ljava/lang/Object;)L0java/awt/Dimension;
+getDimension
+ (Ljava/lang/Object;Ljava/util/Locale;)Ljava/awt/Dimension;
+ (Ljava/lang/Object;Ljava/util/Locale;)L0java/awt/Dimension;
+getFont
+ (Ljava/lang/Object;)Ljava/awt/Font;
+ (Ljava/lang/Object;)L0java/awt/Font;
+getFont
+ (Ljava/lang/Object;Ljava/util/Locale;)Ljava/awt/Font;
+ (Ljava/lang/Object;Ljava/util/Locale;)L0java/awt/Font;
+getIcon
+ (Ljava/lang/Object;)Ljavax/swing/Icon;
+ (Ljava/lang/Object;)L0javax/swing/Icon;
+getIcon
+ (Ljava/lang/Object;Ljava/util/Locale;)Ljavax/swing/Icon;
+ (Ljava/lang/Object;Ljava/util/Locale;)L0javax/swing/Icon;
+getInsets
+ (Ljava/lang/Object;)Ljava/awt/Insets;
+ (Ljava/lang/Object;)L0java/awt/Insets;
+getInsets
+ (Ljava/lang/Object;Ljava/util/Locale;)Ljava/awt/Insets;
+ (Ljava/lang/Object;Ljava/util/Locale;)L0java/awt/Insets;
+getString
+ (Ljava/lang/Object;)Ljava/lang/String;
+ (Ljava/lang/Object;)L0java/lang/String;
+getString
+ (Ljava/lang/Object;Ljava/util/Locale;)Ljava/lang/String;
+ (Ljava/lang/Object;Ljava/util/Locale;)L0java/lang/String;
+getUIClass
+ (Ljava/lang/String;Ljava/lang/ClassLoader;)Ljava/lang/Class<+Ljavax/swing/plaf/ComponentUI;>;
+ (Ljava/lang/String;Ljava/lang/ClassLoader;)L0java/lang/Class<+Ljavax/swing/plaf/ComponentUI;>;
 removePropertyChangeListener
  (Ljava/beans/PropertyChangeListener;)V
  (L1java/beans/PropertyChangeListener;)V

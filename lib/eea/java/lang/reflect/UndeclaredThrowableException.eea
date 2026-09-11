@@ -1,0 +1,4 @@
+class java/lang/reflect/UndeclaredThrowableException
+<init>
+ (Ljava/lang/Throwable;)V
+ (L0java/lang/Throwable;)V

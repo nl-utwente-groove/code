@@ -1,0 +1,31 @@
+class java/awt/List
+addActionListener
+ (Ljava/awt/event/ActionListener;)V
+ (L1java/awt/event/ActionListener;)V
+addItemListener
+ (Ljava/awt/event/ItemListener;)V
+ (L1java/awt/event/ItemListener;)V
+getItems
+ ()[Ljava/lang/String;
+ ()[1Ljava/lang/String;
+getSelectedIndexes
+ ()[I
+ ()[1I
+getSelectedItems
+ ()[Ljava/lang/String;
+ ()[1Ljava/lang/String;
+minimumSize
+ ()Ljava/awt/Dimension;
+ ()L1java/awt/Dimension;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+preferredSize
+ ()Ljava/awt/Dimension;
+ ()L1java/awt/Dimension;
+removeActionListener
+ (Ljava/awt/event/ActionListener;)V
+ (L1java/awt/event/ActionListener;)V
+removeItemListener
+ (Ljava/awt/event/ItemListener;)V
+ (L1java/awt/event/ItemListener;)V

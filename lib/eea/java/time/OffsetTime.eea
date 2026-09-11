@@ -1,0 +1,52 @@
+class java/time/OffsetTime
+MAX
+ Ljava/time/OffsetTime;
+ L1java/time/OffsetTime;
+MIN
+ Ljava/time/OffsetTime;
+ L1java/time/OffsetTime;
+of
+ (IIIILjava/time/ZoneOffset;)Ljava/time/OffsetTime;
+ (IIIILjava/time/ZoneOffset;)L1java/time/OffsetTime;
+of
+ (Ljava/time/LocalTime;Ljava/time/ZoneOffset;)Ljava/time/OffsetTime;
+ (Ljava/time/LocalTime;Ljava/time/ZoneOffset;)L1java/time/OffsetTime;
+ofInstant
+ (Ljava/time/Instant;Ljava/time/ZoneId;)Ljava/time/OffsetTime;
+ (Ljava/time/Instant;Ljava/time/ZoneId;)L1java/time/OffsetTime;
+adjustInto
+ (Ljava/time/temporal/Temporal;)Ljava/time/temporal/Temporal;
+ (L1java/time/temporal/Temporal;)L1java/time/temporal/Temporal;
+compareTo
+ (Ljava/time/OffsetTime;)I
+ (L1java/time/OffsetTime;)I
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+get
+ (Ljava/time/temporal/TemporalField;)I
+ (L1java/time/temporal/TemporalField;)I
+getLong
+ (Ljava/time/temporal/TemporalField;)J
+ (L1java/time/temporal/TemporalField;)J
+isSupported
+ (Ljava/time/temporal/TemporalField;)Z
+ (L1java/time/temporal/TemporalField;)Z
+isSupported
+ (Ljava/time/temporal/TemporalUnit;)Z
+ (L1java/time/temporal/TemporalUnit;)Z
+query
+ <R:Ljava/lang/Object;>(Ljava/time/temporal/TemporalQuery<TR;>;)TR;
+ <R:Ljava/lang/Object;>(L1java/time/temporal/TemporalQuery<TR;>;)T0R;
+range
+ (Ljava/time/temporal/TemporalField;)Ljava/time/temporal/ValueRange;
+ (L1java/time/temporal/TemporalField;)L1java/time/temporal/ValueRange;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+until
+ (Ljava/time/temporal/Temporal;Ljava/time/temporal/TemporalUnit;)J
+ (L1java/time/temporal/Temporal;L1java/time/temporal/TemporalUnit;)J
+withOffsetSameLocal
+ (Ljava/time/ZoneOffset;)Ljava/time/OffsetTime;
+ (Ljava/time/ZoneOffset;)L1java/time/OffsetTime;

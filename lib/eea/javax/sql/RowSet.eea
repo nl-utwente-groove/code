@@ -1,0 +1,7 @@
+class javax/sql/RowSet
+addRowSetListener
+ (Ljavax/sql/RowSetListener;)V
+ (L1javax/sql/RowSetListener;)V
+removeRowSetListener
+ (Ljavax/sql/RowSetListener;)V
+ (L1javax/sql/RowSetListener;)V

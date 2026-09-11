@@ -1,0 +1,40 @@
+class java/awt/dnd/DragSource
+DefaultCopyDrop
+ Ljava/awt/Cursor;
+ L1java/awt/Cursor;
+DefaultCopyNoDrop
+ Ljava/awt/Cursor;
+ L1java/awt/Cursor;
+DefaultLinkDrop
+ Ljava/awt/Cursor;
+ L1java/awt/Cursor;
+DefaultLinkNoDrop
+ Ljava/awt/Cursor;
+ L1java/awt/Cursor;
+DefaultMoveDrop
+ Ljava/awt/Cursor;
+ L1java/awt/Cursor;
+DefaultMoveNoDrop
+ Ljava/awt/Cursor;
+ L1java/awt/Cursor;
+addDragSourceListener
+ (Ljava/awt/dnd/DragSourceListener;)V
+ (L1java/awt/dnd/DragSourceListener;)V
+addDragSourceMotionListener
+ (Ljava/awt/dnd/DragSourceMotionListener;)V
+ (L1java/awt/dnd/DragSourceMotionListener;)V
+createDefaultDragGestureRecognizer
+ (Ljava/awt/Component;ILjava/awt/dnd/DragGestureListener;)Ljava/awt/dnd/DragGestureRecognizer;
+ (Ljava/awt/Component;ILjava/awt/dnd/DragGestureListener;)L1java/awt/dnd/DragGestureRecognizer;
+createDragGestureRecognizer
+ <T:Ljava/awt/dnd/DragGestureRecognizer;>(Ljava/lang/Class<TT;>;Ljava/awt/Component;ILjava/awt/dnd/DragGestureListener;)TT;
+ <T:Ljava/awt/dnd/DragGestureRecognizer;>(Ljava/lang/Class<TT;>;Ljava/awt/Component;ILjava/awt/dnd/DragGestureListener;)T1T;
+createDragSourceContext
+ (Ljava/awt/dnd/DragGestureEvent;Ljava/awt/Cursor;Ljava/awt/Image;Ljava/awt/Point;Ljava/awt/datatransfer/Transferable;Ljava/awt/dnd/DragSourceListener;)Ljava/awt/dnd/DragSourceContext;
+ (Ljava/awt/dnd/DragGestureEvent;Ljava/awt/Cursor;Ljava/awt/Image;Ljava/awt/Point;Ljava/awt/datatransfer/Transferable;Ljava/awt/dnd/DragSourceListener;)L1java/awt/dnd/DragSourceContext;
+removeDragSourceListener
+ (Ljava/awt/dnd/DragSourceListener;)V
+ (L1java/awt/dnd/DragSourceListener;)V
+removeDragSourceMotionListener
+ (Ljava/awt/dnd/DragSourceMotionListener;)V
+ (L1java/awt/dnd/DragSourceMotionListener;)V

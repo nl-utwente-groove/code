@@ -1,0 +1,7 @@
+class javax/crypto/spec/RC2ParameterSpec
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getIV
+ ()[B
+ ()[1B

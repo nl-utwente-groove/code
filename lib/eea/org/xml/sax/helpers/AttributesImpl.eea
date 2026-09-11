@@ -1,0 +1,28 @@
+class org/xml/sax/helpers/AttributesImpl
+getLocalName
+ (I)Ljava/lang/String;
+ (I)L0java/lang/String;
+getQName
+ (I)Ljava/lang/String;
+ (I)L0java/lang/String;
+getType
+ (I)Ljava/lang/String;
+ (I)L0java/lang/String;
+getType
+ (Ljava/lang/String;)Ljava/lang/String;
+ (Ljava/lang/String;)L0java/lang/String;
+getType
+ (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+ (Ljava/lang/String;Ljava/lang/String;)L0java/lang/String;
+getURI
+ (I)Ljava/lang/String;
+ (I)L0java/lang/String;
+getValue
+ (I)Ljava/lang/String;
+ (I)L0java/lang/String;
+getValue
+ (Ljava/lang/String;)Ljava/lang/String;
+ (Ljava/lang/String;)L0java/lang/String;
+getValue
+ (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+ (Ljava/lang/String;Ljava/lang/String;)L0java/lang/String;

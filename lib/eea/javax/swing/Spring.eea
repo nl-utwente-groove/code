@@ -1,0 +1,22 @@
+class javax/swing/Spring
+constant
+ (III)Ljavax/swing/Spring;
+ (III)L1javax/swing/Spring;
+height
+ (Ljava/awt/Component;)Ljavax/swing/Spring;
+ (Ljava/awt/Component;)L1javax/swing/Spring;
+max
+ (Ljavax/swing/Spring;Ljavax/swing/Spring;)Ljavax/swing/Spring;
+ (Ljavax/swing/Spring;Ljavax/swing/Spring;)L1javax/swing/Spring;
+minus
+ (Ljavax/swing/Spring;)Ljavax/swing/Spring;
+ (Ljavax/swing/Spring;)L1javax/swing/Spring;
+scale
+ (Ljavax/swing/Spring;F)Ljavax/swing/Spring;
+ (Ljavax/swing/Spring;F)L1javax/swing/Spring;
+sum
+ (Ljavax/swing/Spring;Ljavax/swing/Spring;)Ljavax/swing/Spring;
+ (Ljavax/swing/Spring;Ljavax/swing/Spring;)L1javax/swing/Spring;
+width
+ (Ljava/awt/Component;)Ljavax/swing/Spring;
+ (Ljava/awt/Component;)L1javax/swing/Spring;

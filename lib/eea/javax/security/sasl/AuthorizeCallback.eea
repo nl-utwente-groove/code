@@ -1,0 +1,4 @@
+class javax/security/sasl/AuthorizeCallback
+getAuthorizedID
+ ()Ljava/lang/String;
+ ()L0java/lang/String;

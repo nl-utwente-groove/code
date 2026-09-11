@@ -1,0 +1,49 @@
+class javax/swing/JSpinner$AccessibleJSpinner
+getAccessibleAction
+ ()Ljavax/accessibility/AccessibleAction;
+ ()L0javax/accessibility/AccessibleAction;
+getAccessibleActionDescription
+ (I)Ljava/lang/String;
+ (I)L0java/lang/String;
+getAccessibleChild
+ (I)Ljavax/accessibility/Accessible;
+ (I)L0javax/accessibility/Accessible;
+getAccessibleText
+ ()Ljavax/accessibility/AccessibleText;
+ ()L0javax/accessibility/AccessibleText;
+getAccessibleValue
+ ()Ljavax/accessibility/AccessibleValue;
+ ()L0javax/accessibility/AccessibleValue;
+getAfterIndex
+ (II)Ljava/lang/String;
+ (II)L0java/lang/String;
+getAtIndex
+ (II)Ljava/lang/String;
+ (II)L0java/lang/String;
+getBeforeIndex
+ (II)Ljava/lang/String;
+ (II)L0java/lang/String;
+getCharacterAttribute
+ (I)Ljavax/swing/text/AttributeSet;
+ (I)L0javax/swing/text/AttributeSet;
+getCharacterBounds
+ (I)Ljava/awt/Rectangle;
+ (I)L0java/awt/Rectangle;
+getCurrentAccessibleValue
+ ()Ljava/lang/Number;
+ ()L0java/lang/Number;
+getMaximumAccessibleValue
+ ()Ljava/lang/Number;
+ ()L0java/lang/Number;
+getMinimumAccessibleValue
+ ()Ljava/lang/Number;
+ ()L0java/lang/Number;
+getSelectedText
+ ()Ljava/lang/String;
+ ()L0java/lang/String;
+getTextRange
+ (II)Ljava/lang/String;
+ (II)L0java/lang/String;
+stateChanged
+ (Ljavax/swing/event/ChangeEvent;)V
+ (L1javax/swing/event/ChangeEvent;)V

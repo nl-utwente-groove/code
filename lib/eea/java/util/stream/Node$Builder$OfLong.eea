@@ -1,0 +1,4 @@
+class java/util/stream/Node$Builder$OfLong
+build
+ ()Ljava/util/stream/Node$OfLong;
+ ()L1java/util/stream/Node$OfLong;

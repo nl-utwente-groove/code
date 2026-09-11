@@ -1,0 +1,7 @@
+class javax/management/MBeanFeatureInfo
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getDescriptor
+ ()Ljavax/management/Descriptor;
+ ()L1javax/management/Descriptor;

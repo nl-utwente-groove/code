@@ -1,0 +1,13 @@
+class java/awt/CheckboxMenuItem
+addItemListener
+ (Ljava/awt/event/ItemListener;)V
+ (L1java/awt/event/ItemListener;)V
+getSelectedObjects
+ ()[Ljava/lang/Object;
+ ()[0Ljava/lang/Object;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+removeItemListener
+ (Ljava/awt/event/ItemListener;)V
+ (L1java/awt/event/ItemListener;)V

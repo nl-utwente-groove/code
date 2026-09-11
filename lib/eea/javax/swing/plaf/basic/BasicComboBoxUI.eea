@@ -1,0 +1,43 @@
+class javax/swing/plaf/basic/BasicComboBoxUI
+createUI
+ (Ljavax/swing/JComponent;)Ljavax/swing/plaf/ComponentUI;
+ (Ljavax/swing/JComponent;)L1javax/swing/plaf/ComponentUI;
+createArrowButton
+ ()Ljavax/swing/JButton;
+ ()L1javax/swing/JButton;
+createEditor
+ ()Ljavax/swing/ComboBoxEditor;
+ ()L1javax/swing/ComboBoxEditor;
+createFocusListener
+ ()Ljava/awt/event/FocusListener;
+ ()L1java/awt/event/FocusListener;
+createItemListener
+ ()Ljava/awt/event/ItemListener;
+ ()L0java/awt/event/ItemListener;
+createKeyListener
+ ()Ljava/awt/event/KeyListener;
+ ()L1java/awt/event/KeyListener;
+createLayoutManager
+ ()Ljava/awt/LayoutManager;
+ ()L1java/awt/LayoutManager;
+createListDataListener
+ ()Ljavax/swing/event/ListDataListener;
+ ()L1javax/swing/event/ListDataListener;
+createPopup
+ ()Ljavax/swing/plaf/basic/ComboPopup;
+ ()L1javax/swing/plaf/basic/ComboPopup;
+createPropertyChangeListener
+ ()Ljava/beans/PropertyChangeListener;
+ ()L1java/beans/PropertyChangeListener;
+createRenderer
+ ()Ljavax/swing/ListCellRenderer<Ljava/lang/Object;>;
+ ()L1javax/swing/ListCellRenderer<Ljava/lang/Object;>;
+getAccessibleChild
+ (Ljavax/swing/JComponent;I)Ljavax/accessibility/Accessible;
+ (Ljavax/swing/JComponent;I)L0javax/accessibility/Accessible;
+getMinimumSize
+ (Ljavax/swing/JComponent;)Ljava/awt/Dimension;
+ (Ljavax/swing/JComponent;)L1java/awt/Dimension;
+getPreferredSize
+ (Ljavax/swing/JComponent;)Ljava/awt/Dimension;
+ (Ljavax/swing/JComponent;)L0java/awt/Dimension;

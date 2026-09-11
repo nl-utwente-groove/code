@@ -1,0 +1,13 @@
+class java/util/concurrent/ThreadPoolExecutor
+awaitTermination
+ (JLjava/util/concurrent/TimeUnit;)Z
+ (JL1java/util/concurrent/TimeUnit;)Z
+execute
+ (Ljava/lang/Runnable;)V
+ (L1java/lang/Runnable;)V
+shutdownNow
+ ()Ljava/util/List<Ljava/lang/Runnable;>;
+ ()L1java/util/List<L1java/lang/Runnable;>;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

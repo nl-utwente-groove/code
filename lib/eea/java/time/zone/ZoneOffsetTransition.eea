@@ -1,0 +1,13 @@
+class java/time/zone/ZoneOffsetTransition
+of
+ (Ljava/time/LocalDateTime;Ljava/time/ZoneOffset;Ljava/time/ZoneOffset;)Ljava/time/zone/ZoneOffsetTransition;
+ (Ljava/time/LocalDateTime;Ljava/time/ZoneOffset;Ljava/time/ZoneOffset;)L1java/time/zone/ZoneOffsetTransition;
+compareTo
+ (Ljava/time/zone/ZoneOffsetTransition;)I
+ (L1java/time/zone/ZoneOffsetTransition;)I
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

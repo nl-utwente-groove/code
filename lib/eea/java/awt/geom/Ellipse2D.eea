@@ -2,3 +2,6 @@ class java/awt/geom/Ellipse2D
 equals
  (Ljava/lang/Object;)Z
  (L0java/lang/Object;)Z
+getPathIterator
+ (Ljava/awt/geom/AffineTransform;)Ljava/awt/geom/PathIterator;
+ (Ljava/awt/geom/AffineTransform;)L1java/awt/geom/PathIterator;

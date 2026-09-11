@@ -1,0 +1,22 @@
+class javax/management/remote/rmi/RMIConnectorServer
+CREDENTIALS_FILTER_PATTERN
+ Ljava/lang/String;
+ L1java/lang/String;
+JNDI_REBIND_ATTRIBUTE
+ Ljava/lang/String;
+ L1java/lang/String;
+RMI_CLIENT_SOCKET_FACTORY_ATTRIBUTE
+ Ljava/lang/String;
+ L1java/lang/String;
+RMI_SERVER_SOCKET_FACTORY_ATTRIBUTE
+ Ljava/lang/String;
+ L1java/lang/String;
+SERIAL_FILTER_PATTERN
+ Ljava/lang/String;
+ L1java/lang/String;
+getAddress
+ ()Ljavax/management/remote/JMXServiceURL;
+ ()L0javax/management/remote/JMXServiceURL;
+toJMXConnector
+ (Ljava/util/Map<Ljava/lang/String;*>;)Ljavax/management/remote/JMXConnector;
+ (Ljava/util/Map<Ljava/lang/String;*>;)L1javax/management/remote/JMXConnector;

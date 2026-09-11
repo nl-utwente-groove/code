@@ -1,0 +1,7 @@
+class javax/swing/plaf/basic/BasicRadioButtonMenuItemUI
+createUI
+ (Ljavax/swing/JComponent;)Ljavax/swing/plaf/ComponentUI;
+ (Ljavax/swing/JComponent;)L1javax/swing/plaf/ComponentUI;
+getPropertyPrefix
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

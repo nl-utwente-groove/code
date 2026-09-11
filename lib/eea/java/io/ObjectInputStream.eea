@@ -1,0 +1,28 @@
+class java/io/ObjectInputStream
+read
+ ([BII)I
+ ([1BII)I
+readClassDescriptor
+ ()Ljava/io/ObjectStreamClass;
+ ()L1java/io/ObjectStreamClass;
+readFields
+ ()Ljava/io/ObjectInputStream$GetField;
+ ()L1java/io/ObjectInputStream$GetField;
+readFully
+ ([B)V
+ ([1B)V
+readFully
+ ([BII)V
+ ([1BII)V
+readLine
+ ()Ljava/lang/String;
+ ()L0java/lang/String;
+readObject
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+readObjectOverride
+ ()Ljava/lang/Object;
+ ()L0java/lang/Object;
+readUTF
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

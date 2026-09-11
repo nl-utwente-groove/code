@@ -1,0 +1,7 @@
+class javax/swing/plaf/metal/MetalSplitPaneUI
+createUI
+ (Ljavax/swing/JComponent;)Ljavax/swing/plaf/ComponentUI;
+ (Ljavax/swing/JComponent;)L1javax/swing/plaf/ComponentUI;
+createDefaultDivider
+ ()Ljavax/swing/plaf/basic/BasicSplitPaneDivider;
+ ()L1javax/swing/plaf/basic/BasicSplitPaneDivider;

@@ -1,0 +1,10 @@
+class javax/swing/plaf/basic/BasicTreeUI$ComponentHandler
+actionPerformed
+ (Ljava/awt/event/ActionEvent;)V
+ (L1java/awt/event/ActionEvent;)V
+componentMoved
+ (Ljava/awt/event/ComponentEvent;)V
+ (L1java/awt/event/ComponentEvent;)V
+getScrollPane
+ ()Ljavax/swing/JScrollPane;
+ ()L0javax/swing/JScrollPane;

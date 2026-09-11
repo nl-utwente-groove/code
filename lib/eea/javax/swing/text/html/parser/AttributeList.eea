@@ -1,0 +1,7 @@
+class javax/swing/text/html/parser/AttributeList
+getValues
+ ()Ljava/util/Enumeration<*>;
+ ()L0java/util/Enumeration<*>;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

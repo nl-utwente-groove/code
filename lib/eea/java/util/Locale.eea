@@ -71,6 +71,12 @@ forLanguageTag
 getDefault
  ()Ljava/util/Locale;
  ()L1java/util/Locale;
+getISOCountries
+ ()[Ljava/lang/String;
+ ()[1Ljava/lang/String;
+getISOLanguages
+ ()[Ljava/lang/String;
+ ()[1Ljava/lang/String;
 clone
  ()Ljava/lang/Object;
  ()L1java/lang/Object;
@@ -80,9 +86,15 @@ equals
 getDisplayLanguage
  ()Ljava/lang/String;
  ()L1java/lang/String;
+getExtension
+ (C)Ljava/lang/String;
+ (C)L0java/lang/String;
 getLanguage
  ()Ljava/lang/String;
  ()L1java/lang/String;
+getUnicodeLocaleType
+ (Ljava/lang/String;)Ljava/lang/String;
+ (Ljava/lang/String;)L0java/lang/String;
 toString
  ()Ljava/lang/String;
  ()L1java/lang/String;

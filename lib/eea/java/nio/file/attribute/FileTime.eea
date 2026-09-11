@@ -1,0 +1,28 @@
+class java/nio/file/attribute/FileTime
+super java/lang/Comparable
+ <Ljava/nio/file/attribute/FileTime;>
+ <L1java/nio/file/attribute/FileTime;>
+from
+ (JLjava/util/concurrent/TimeUnit;)Ljava/nio/file/attribute/FileTime;
+ (JL1java/util/concurrent/TimeUnit;)L1java/nio/file/attribute/FileTime;
+from
+ (Ljava/time/Instant;)Ljava/nio/file/attribute/FileTime;
+ (L1java/time/Instant;)L1java/nio/file/attribute/FileTime;
+fromMillis
+ (J)Ljava/nio/file/attribute/FileTime;
+ (J)L1java/nio/file/attribute/FileTime;
+compareTo
+ (Ljava/nio/file/attribute/FileTime;)I
+ (L1java/nio/file/attribute/FileTime;)I
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+to
+ (Ljava/util/concurrent/TimeUnit;)J
+ (L1java/util/concurrent/TimeUnit;)J
+toInstant
+ ()Ljava/time/Instant;
+ ()L1java/time/Instant;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

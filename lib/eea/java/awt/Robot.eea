@@ -1,0 +1,10 @@
+class java/awt/Robot
+createMultiResolutionScreenCapture
+ (Ljava/awt/Rectangle;)Ljava/awt/image/MultiResolutionImage;
+ (Ljava/awt/Rectangle;)L1java/awt/image/MultiResolutionImage;
+createScreenCapture
+ (Ljava/awt/Rectangle;)Ljava/awt/image/BufferedImage;
+ (Ljava/awt/Rectangle;)L1java/awt/image/BufferedImage;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

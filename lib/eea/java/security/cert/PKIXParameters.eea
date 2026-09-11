@@ -1,0 +1,13 @@
+class java/security/cert/PKIXParameters
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+getDate
+ ()Ljava/util/Date;
+ ()L0java/util/Date;
+getTargetCertConstraints
+ ()Ljava/security/cert/CertSelector;
+ ()L0java/security/cert/CertSelector;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

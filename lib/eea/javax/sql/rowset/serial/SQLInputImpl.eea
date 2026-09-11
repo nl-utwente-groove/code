@@ -1,0 +1,4 @@
+class javax/sql/rowset/serial/SQLInputImpl
+readObject
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;

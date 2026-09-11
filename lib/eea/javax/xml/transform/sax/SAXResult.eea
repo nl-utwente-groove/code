@@ -1,0 +1,4 @@
+class javax/xml/transform/sax/SAXResult
+FEATURE
+ Ljava/lang/String;
+ L1java/lang/String;

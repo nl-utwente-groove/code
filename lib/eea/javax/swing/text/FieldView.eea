@@ -1,0 +1,4 @@
+class javax/swing/text/FieldView
+adjustAllocation
+ (Ljava/awt/Shape;)Ljava/awt/Shape;
+ (Ljava/awt/Shape;)L0java/awt/Shape;

@@ -1,0 +1,7 @@
+class javax/lang/model/element/RecordComponentElement
+getEnclosingElement
+ ()Ljavax/lang/model/element/Element;
+ ()L0javax/lang/model/element/Element;
+getSimpleName
+ ()Ljavax/lang/model/element/Name;
+ ()L1javax/lang/model/element/Name;

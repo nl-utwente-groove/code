@@ -3,6 +3,9 @@ class javax/swing/DefaultListModel
 getElementAt
  (I)TE;
  (I)T0E;
+toArray
+ ()[Ljava/lang/Object;
+ ()[1Ljava/lang/Object;
 toString
  ()Ljava/lang/String;
  ()L1java/lang/String;

@@ -1,0 +1,4 @@
+class javax/print/event/PrintEvent
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

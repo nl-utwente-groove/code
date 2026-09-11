@@ -1,0 +1,4 @@
+class java/security/DomainLoadStoreParameter
+getProtectionParameter
+ ()Ljava/security/KeyStore$ProtectionParameter;
+ ()L0java/security/KeyStore$ProtectionParameter;

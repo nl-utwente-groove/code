@@ -1,0 +1,10 @@
+class javax/management/modelmbean/ModelMBeanNotificationInfo
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+getDescriptor
+ ()Ljavax/management/Descriptor;
+ ()L1javax/management/Descriptor;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

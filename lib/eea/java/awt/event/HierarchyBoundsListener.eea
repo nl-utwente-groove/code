@@ -1,0 +1,7 @@
+class java/awt/event/HierarchyBoundsListener
+ancestorMoved
+ (Ljava/awt/event/HierarchyEvent;)V
+ (L1java/awt/event/HierarchyEvent;)V
+ancestorResized
+ (Ljava/awt/event/HierarchyEvent;)V
+ (L1java/awt/event/HierarchyEvent;)V

@@ -1,0 +1,4 @@
+class javax/swing/text/html/ObjectView
+createComponent
+ ()Ljava/awt/Component;
+ ()L1java/awt/Component;

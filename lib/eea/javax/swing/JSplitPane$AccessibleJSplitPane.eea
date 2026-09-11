@@ -1,0 +1,4 @@
+class javax/swing/JSplitPane$AccessibleJSplitPane
+getAccessibleValue
+ ()Ljavax/accessibility/AccessibleValue;
+ ()L0javax/accessibility/AccessibleValue;

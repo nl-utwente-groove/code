@@ -36,3 +36,6 @@ of
 range
  <E:Ljava/lang/Enum<TE;>;>(TE;TE;)Ljava/util/EnumSet<TE;>;
  <E:Ljava/lang/Enum<TE;>;>(T1E;T1E;)L1java/util/EnumSet<T1E;>;
+clone
+ ()Ljava/util/EnumSet<TE;>;
+ ()L1java/util/EnumSet<TE;>;

@@ -1,0 +1,22 @@
+class javax/swing/text/html/StyleSheet
+createLargeAttributeSet
+ (Ljavax/swing/text/AttributeSet;)Ljavax/swing/text/MutableAttributeSet;
+ (Ljavax/swing/text/AttributeSet;)L1javax/swing/text/MutableAttributeSet;
+createSmallAttributeSet
+ (Ljavax/swing/text/AttributeSet;)Ljavax/swing/text/StyleContext$SmallAttributeSet;
+ (Ljavax/swing/text/AttributeSet;)L1javax/swing/text/StyleContext$SmallAttributeSet;
+getBoxPainter
+ (Ljavax/swing/text/AttributeSet;)Ljavax/swing/text/html/StyleSheet$BoxPainter;
+ (Ljavax/swing/text/AttributeSet;)L1javax/swing/text/html/StyleSheet$BoxPainter;
+getListPainter
+ (Ljavax/swing/text/AttributeSet;)Ljavax/swing/text/html/StyleSheet$ListPainter;
+ (Ljavax/swing/text/AttributeSet;)L1javax/swing/text/html/StyleSheet$ListPainter;
+getRule
+ (Ljava/lang/String;)Ljavax/swing/text/Style;
+ (Ljava/lang/String;)L0javax/swing/text/Style;
+getStyleSheets
+ ()[Ljavax/swing/text/html/StyleSheet;
+ ()[0Ljavax/swing/text/html/StyleSheet;
+getViewAttributes
+ (Ljavax/swing/text/View;)Ljavax/swing/text/AttributeSet;
+ (Ljavax/swing/text/View;)L1javax/swing/text/AttributeSet;

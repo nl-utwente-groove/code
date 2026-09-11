@@ -1,0 +1,22 @@
+class javax/sound/sampled/AudioFileFormat$Type
+AIFC
+ Ljavax/sound/sampled/AudioFileFormat$Type;
+ L1javax/sound/sampled/AudioFileFormat$Type;
+AIFF
+ Ljavax/sound/sampled/AudioFileFormat$Type;
+ L1javax/sound/sampled/AudioFileFormat$Type;
+AU
+ Ljavax/sound/sampled/AudioFileFormat$Type;
+ L1javax/sound/sampled/AudioFileFormat$Type;
+SND
+ Ljavax/sound/sampled/AudioFileFormat$Type;
+ L1javax/sound/sampled/AudioFileFormat$Type;
+WAVE
+ Ljavax/sound/sampled/AudioFileFormat$Type;
+ L1javax/sound/sampled/AudioFileFormat$Type;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

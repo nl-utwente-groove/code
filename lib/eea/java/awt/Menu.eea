@@ -1,0 +1,4 @@
+class java/awt/Menu
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

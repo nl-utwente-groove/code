@@ -81,6 +81,9 @@ removeLast
 removeLastOccurrence
  (Ljava/lang/Object;)Z
  (L0java/lang/Object;)Z
+reversed
+ ()Ljava/util/LinkedList<TE;>;
+ ()L1java/util/LinkedList<TE;>;
 spliterator
  ()Ljava/util/Spliterator<TE;>;
  ()L1java/util/Spliterator<TE;>;

@@ -1,0 +1,7 @@
+class javax/swing/text/FlowView
+calculateMinorAxisRequirements
+ (ILjavax/swing/SizeRequirements;)Ljavax/swing/SizeRequirements;
+ (ILjavax/swing/SizeRequirements;)L1javax/swing/SizeRequirements;
+createRow
+ ()Ljavax/swing/text/View;
+ ()L1javax/swing/text/View;

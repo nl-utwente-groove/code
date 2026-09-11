@@ -5,15 +5,27 @@ DEFAULT_KEYMAP
 FOCUS_ACCELERATOR_KEY
  Ljava/lang/String;
  L1java/lang/String;
+addKeymap
+ (Ljava/lang/String;Ljavax/swing/text/Keymap;)Ljavax/swing/text/Keymap;
+ (Ljava/lang/String;Ljavax/swing/text/Keymap;)L1javax/swing/text/Keymap;
 addCaretListener
  (Ljavax/swing/event/CaretListener;)V
  (L1javax/swing/event/CaretListener;)V
 addInputMethodListener
  (Ljava/awt/event/InputMethodListener;)V
  (L1java/awt/event/InputMethodListener;)V
+getInputMethodRequests
+ ()Ljava/awt/im/InputMethodRequests;
+ ()L0java/awt/im/InputMethodRequests;
+getText
+ ()Ljava/lang/String;
+ ()L0java/lang/String;
 getToolTipText
  (Ljava/awt/event/MouseEvent;)Ljava/lang/String;
  (L1java/awt/event/MouseEvent;)Ljava/lang/String;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
 removeCaretListener
  (Ljavax/swing/event/CaretListener;)V
  (L1javax/swing/event/CaretListener;)V

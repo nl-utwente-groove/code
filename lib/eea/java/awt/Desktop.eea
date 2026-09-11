@@ -1,4 +1,7 @@
 class java/awt/Desktop
+getDesktop
+ ()Ljava/awt/Desktop;
+ ()L1java/awt/Desktop;
 addAppEventListener
  (Ljava/awt/desktop/SystemEventListener;)V
  (L1java/awt/desktop/SystemEventListener;)V

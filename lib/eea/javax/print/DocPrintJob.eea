@@ -1,0 +1,10 @@
+class javax/print/DocPrintJob
+addPrintJobListener
+ (Ljavax/print/event/PrintJobListener;)V
+ (L1javax/print/event/PrintJobListener;)V
+removePrintJobAttributeListener
+ (Ljavax/print/event/PrintJobAttributeListener;)V
+ (L1javax/print/event/PrintJobAttributeListener;)V
+removePrintJobListener
+ (Ljavax/print/event/PrintJobListener;)V
+ (L1javax/print/event/PrintJobListener;)V

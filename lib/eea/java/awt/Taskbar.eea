@@ -1,0 +1,4 @@
+class java/awt/Taskbar
+getTaskbar
+ ()Ljava/awt/Taskbar;
+ ()L1java/awt/Taskbar;

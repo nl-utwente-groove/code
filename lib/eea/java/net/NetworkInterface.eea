@@ -1,0 +1,10 @@
+class java/net/NetworkInterface
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getHardwareAddress
+ ()[B
+ ()[0B
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

@@ -1,0 +1,4 @@
+class javax/net/ssl/SSLEngineResult
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

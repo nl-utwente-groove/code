@@ -1,0 +1,7 @@
+class java/text/MessageFormat$Field
+ARGUMENT
+ Ljava/text/MessageFormat$Field;
+ L1java/text/MessageFormat$Field;
+readResolve
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;

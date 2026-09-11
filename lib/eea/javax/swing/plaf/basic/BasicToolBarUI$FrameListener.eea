@@ -1,0 +1,4 @@
+class javax/swing/plaf/basic/BasicToolBarUI$FrameListener
+windowClosing
+ (Ljava/awt/event/WindowEvent;)V
+ (L1java/awt/event/WindowEvent;)V

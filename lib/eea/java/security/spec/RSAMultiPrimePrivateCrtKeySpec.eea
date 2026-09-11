@@ -1,0 +1,4 @@
+class java/security/spec/RSAMultiPrimePrivateCrtKeySpec
+getOtherPrimeInfo
+ ()[Ljava/security/spec/RSAOtherPrimeInfo;
+ ()[0Ljava/security/spec/RSAOtherPrimeInfo;

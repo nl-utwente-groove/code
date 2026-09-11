@@ -1,0 +1,4 @@
+class java/beans/XMLEncoder
+writeObject
+ (Ljava/lang/Object;)V
+ (L1java/lang/Object;)V

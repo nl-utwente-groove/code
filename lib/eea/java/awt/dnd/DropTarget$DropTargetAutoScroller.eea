@@ -1,0 +1,4 @@
+class java/awt/dnd/DropTarget$DropTargetAutoScroller
+actionPerformed
+ (Ljava/awt/event/ActionEvent;)V
+ (L1java/awt/event/ActionEvent;)V

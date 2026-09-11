@@ -1,0 +1,31 @@
+class javax/swing/plaf/basic/BasicTextUI
+create
+ (Ljavax/swing/text/Element;)Ljavax/swing/text/View;
+ (Ljavax/swing/text/Element;)L0javax/swing/text/View;
+create
+ (Ljavax/swing/text/Element;II)Ljavax/swing/text/View;
+ (Ljavax/swing/text/Element;II)L0javax/swing/text/View;
+createCaret
+ ()Ljavax/swing/text/Caret;
+ ()L1javax/swing/text/Caret;
+createHighlighter
+ ()Ljavax/swing/text/Highlighter;
+ ()L1javax/swing/text/Highlighter;
+createKeymap
+ ()Ljavax/swing/text/Keymap;
+ ()L1javax/swing/text/Keymap;
+getMaximumSize
+ (Ljavax/swing/JComponent;)Ljava/awt/Dimension;
+ (Ljavax/swing/JComponent;)L1java/awt/Dimension;
+getMinimumSize
+ (Ljavax/swing/JComponent;)Ljava/awt/Dimension;
+ (Ljavax/swing/JComponent;)L1java/awt/Dimension;
+getPreferredSize
+ (Ljavax/swing/JComponent;)Ljava/awt/Dimension;
+ (Ljavax/swing/JComponent;)L0java/awt/Dimension;
+getToolTipText
+ (Ljavax/swing/text/JTextComponent;Ljava/awt/Point;)Ljava/lang/String;
+ (Ljavax/swing/text/JTextComponent;Ljava/awt/Point;)L0java/lang/String;
+getVisibleEditorRect
+ ()Ljava/awt/Rectangle;
+ ()L0java/awt/Rectangle;

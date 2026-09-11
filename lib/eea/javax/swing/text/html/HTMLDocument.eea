@@ -1,0 +1,19 @@
+class javax/swing/text/html/HTMLDocument
+AdditionalComments
+ Ljava/lang/String;
+ L1java/lang/String;
+createBranchElement
+ (Ljavax/swing/text/Element;Ljavax/swing/text/AttributeSet;)Ljavax/swing/text/Element;
+ (Ljavax/swing/text/Element;Ljavax/swing/text/AttributeSet;)L1javax/swing/text/Element;
+createDefaultRoot
+ ()Ljavax/swing/text/AbstractDocument$AbstractElement;
+ ()L1javax/swing/text/AbstractDocument$AbstractElement;
+createLeafElement
+ (Ljavax/swing/text/Element;Ljavax/swing/text/AttributeSet;II)Ljavax/swing/text/Element;
+ (Ljavax/swing/text/Element;Ljavax/swing/text/AttributeSet;II)L1javax/swing/text/Element;
+getIterator
+ (Ljavax/swing/text/html/HTML$Tag;)Ljavax/swing/text/html/HTMLDocument$Iterator;
+ (Ljavax/swing/text/html/HTML$Tag;)L0javax/swing/text/html/HTMLDocument$Iterator;
+getReader
+ (I)Ljavax/swing/text/html/HTMLEditorKit$ParserCallback;
+ (I)L1javax/swing/text/html/HTMLEditorKit$ParserCallback;

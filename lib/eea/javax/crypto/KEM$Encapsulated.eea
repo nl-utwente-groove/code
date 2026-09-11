@@ -1,0 +1,7 @@
+class javax/crypto/KEM$Encapsulated
+encapsulation
+ ()[B
+ ()[1B
+params
+ ()[B
+ ()[1B

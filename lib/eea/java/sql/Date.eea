@@ -1,0 +1,7 @@
+class java/sql/Date
+toInstant
+ ()Ljava/time/Instant;
+ ()L1java/time/Instant;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

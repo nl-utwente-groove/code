@@ -1,0 +1,13 @@
+class javax/swing/ImageIcon$AccessibleImageIcon
+getAccessibleChild
+ (I)Ljavax/accessibility/Accessible;
+ (I)L0javax/accessibility/Accessible;
+getAccessibleParent
+ ()Ljavax/accessibility/Accessible;
+ ()L0javax/accessibility/Accessible;
+getAccessibleStateSet
+ ()Ljavax/accessibility/AccessibleStateSet;
+ ()L0javax/accessibility/AccessibleStateSet;
+getLocale
+ ()Ljava/util/Locale;
+ ()L0java/util/Locale;

@@ -1,4 +1,7 @@
 class javax/swing/JSpinner$DefaultEditor
+getSpinner
+ ()Ljavax/swing/JSpinner;
+ ()L0javax/swing/JSpinner;
 propertyChange
  (Ljava/beans/PropertyChangeEvent;)V
  (L1java/beans/PropertyChangeEvent;)V

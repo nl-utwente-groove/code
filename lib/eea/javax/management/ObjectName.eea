@@ -1,0 +1,34 @@
+class javax/management/ObjectName
+WILDCARD
+ Ljavax/management/ObjectName;
+ L1javax/management/ObjectName;
+getInstance
+ (Ljava/lang/String;)Ljavax/management/ObjectName;
+ (Ljava/lang/String;)L1javax/management/ObjectName;
+getInstance
+ (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljavax/management/ObjectName;
+ (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)L1javax/management/ObjectName;
+getInstance
+ (Ljava/lang/String;Ljava/util/Hashtable<Ljava/lang/String;Ljava/lang/String;>;)Ljavax/management/ObjectName;
+ (Ljava/lang/String;Ljava/util/Hashtable<Ljava/lang/String;Ljava/lang/String;>;)L1javax/management/ObjectName;
+quote
+ (Ljava/lang/String;)Ljava/lang/String;
+ (Ljava/lang/String;)L1java/lang/String;
+unquote
+ (Ljava/lang/String;)Ljava/lang/String;
+ (Ljava/lang/String;)L1java/lang/String;
+compareTo
+ (Ljavax/management/ObjectName;)I
+ (L1javax/management/ObjectName;)I
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getKeyPropertyList
+ ()Ljava/util/Hashtable<Ljava/lang/String;Ljava/lang/String;>;
+ ()L1java/util/Hashtable<Ljava/lang/String;Ljava/lang/String;>;
+getKeyPropertyListString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

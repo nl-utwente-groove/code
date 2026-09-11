@@ -1,0 +1,4 @@
+class java/awt/image/DataBufferFloat
+getBankData
+ ()[[F
+ ()[1[F

@@ -1,0 +1,4 @@
+class javax/swing/plaf/metal/MetalComboBoxButton
+getMinimumSize
+ ()Ljava/awt/Dimension;
+ ()L1java/awt/Dimension;

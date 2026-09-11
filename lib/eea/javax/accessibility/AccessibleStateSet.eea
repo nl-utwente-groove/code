@@ -1,0 +1,7 @@
+class javax/accessibility/AccessibleStateSet
+toArray
+ ()[Ljavax/accessibility/AccessibleState;
+ ()[1Ljavax/accessibility/AccessibleState;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

@@ -1,0 +1,10 @@
+class javax/swing/colorchooser/AbstractColorChooserPanel
+TRANSPARENCY_ENABLED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+getColorFromModel
+ ()Ljava/awt/Color;
+ ()L0java/awt/Color;
+getColorSelectionModel
+ ()Ljavax/swing/colorchooser/ColorSelectionModel;
+ ()L0javax/swing/colorchooser/ColorSelectionModel;

@@ -1,0 +1,4 @@
+class java/awt/CheckboxGroup
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

@@ -1,0 +1,7 @@
+class java/awt/MediaTracker
+getErrorsAny
+ ()[Ljava/lang/Object;
+ ()[0Ljava/lang/Object;
+getErrorsID
+ (I)[Ljava/lang/Object;
+ (I)[0Ljava/lang/Object;

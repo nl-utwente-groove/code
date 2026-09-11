@@ -1,0 +1,7 @@
+class java/security/cert/PKIXRevocationChecker
+clone
+ ()Ljava/security/cert/PKIXRevocationChecker;
+ ()L1java/security/cert/PKIXRevocationChecker;
+getOcspResponses
+ ()Ljava/util/Map<Ljava/security/cert/X509Certificate;[B>;
+ ()L1java/util/Map<Ljava/security/cert/X509Certificate;[B>;

@@ -1,0 +1,7 @@
+class javax/smartcardio/CardPermission
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getActions
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

@@ -1,0 +1,7 @@
+class java/awt/datatransfer/Clipboard
+addFlavorListener
+ (Ljava/awt/datatransfer/FlavorListener;)V
+ (L1java/awt/datatransfer/FlavorListener;)V
+removeFlavorListener
+ (Ljava/awt/datatransfer/FlavorListener;)V
+ (L1java/awt/datatransfer/FlavorListener;)V

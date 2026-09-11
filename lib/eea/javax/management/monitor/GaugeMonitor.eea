@@ -1,0 +1,7 @@
+class javax/management/monitor/GaugeMonitor
+getDerivedGauge
+ ()Ljava/lang/Number;
+ ()L0java/lang/Number;
+getNotificationInfo
+ ()[Ljavax/management/MBeanNotificationInfo;
+ ()[1Ljavax/management/MBeanNotificationInfo;

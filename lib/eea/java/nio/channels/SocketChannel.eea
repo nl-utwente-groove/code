@@ -1,0 +1,19 @@
+class java/nio/channels/SocketChannel
+read
+ (Ljava/nio/ByteBuffer;)I
+ (L1java/nio/ByteBuffer;)I
+read
+ ([Ljava/nio/ByteBuffer;)J
+ ([1Ljava/nio/ByteBuffer;)J
+read
+ ([Ljava/nio/ByteBuffer;II)J
+ ([1Ljava/nio/ByteBuffer;II)J
+write
+ (Ljava/nio/ByteBuffer;)I
+ (L1java/nio/ByteBuffer;)I
+write
+ ([Ljava/nio/ByteBuffer;)J
+ ([1Ljava/nio/ByteBuffer;)J
+write
+ ([Ljava/nio/ByteBuffer;II)J
+ ([1Ljava/nio/ByteBuffer;II)J

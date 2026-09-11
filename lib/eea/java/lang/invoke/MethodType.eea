@@ -1,0 +1,31 @@
+class java/lang/invoke/MethodType
+methodType
+ (Ljava/lang/Class<*>;)Ljava/lang/invoke/MethodType;
+ (L1java/lang/Class<*>;)L1java/lang/invoke/MethodType;
+methodType
+ (Ljava/lang/Class<*>;Ljava/lang/Class<*>;)Ljava/lang/invoke/MethodType;
+ (L1java/lang/Class<*>;L1java/lang/Class<*>;)L1java/lang/invoke/MethodType;
+methodType
+ (Ljava/lang/Class<*>;Ljava/lang/Class<*>;[Ljava/lang/Class<*>;)Ljava/lang/invoke/MethodType;
+ (L1java/lang/Class<*>;L1java/lang/Class<*>;[1L1java/lang/Class<*>;)L1java/lang/invoke/MethodType;
+methodType
+ (Ljava/lang/Class<*>;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/MethodType;
+ (L1java/lang/Class<*>;L1java/lang/invoke/MethodType;)L1java/lang/invoke/MethodType;
+methodType
+ (Ljava/lang/Class<*>;Ljava/util/List<Ljava/lang/Class<*>;>;)Ljava/lang/invoke/MethodType;
+ (L1java/lang/Class<*>;L1java/util/List<L1java/lang/Class<*>;>;)L1java/lang/invoke/MethodType;
+methodType
+ (Ljava/lang/Class<*>;[Ljava/lang/Class<*>;)Ljava/lang/invoke/MethodType;
+ (L1java/lang/Class<*>;[1L1java/lang/Class<*>;)L1java/lang/invoke/MethodType;
+describeConstable
+ ()Ljava/util/Optional<Ljava/lang/constant/MethodTypeDesc;>;
+ ()L1java/util/Optional<Ljava/lang/constant/MethodTypeDesc;>;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+parameterArray
+ ()[Ljava/lang/Class<*>;
+ ()[1Ljava/lang/Class<*>;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

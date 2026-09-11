@@ -1,0 +1,34 @@
+class javax/swing/JTree$AccessibleJTree
+getAccessibleAt
+ (Ljava/awt/Point;)Ljavax/accessibility/Accessible;
+ (Ljava/awt/Point;)L0javax/accessibility/Accessible;
+getAccessibleChild
+ (I)Ljavax/accessibility/Accessible;
+ (I)L0javax/accessibility/Accessible;
+getAccessibleSelection
+ ()Ljavax/accessibility/AccessibleSelection;
+ ()L0javax/accessibility/AccessibleSelection;
+getAccessibleSelection
+ (I)Ljavax/accessibility/Accessible;
+ (I)L0javax/accessibility/Accessible;
+treeCollapsed
+ (Ljavax/swing/event/TreeExpansionEvent;)V
+ (L1javax/swing/event/TreeExpansionEvent;)V
+treeExpanded
+ (Ljavax/swing/event/TreeExpansionEvent;)V
+ (L1javax/swing/event/TreeExpansionEvent;)V
+treeNodesChanged
+ (Ljavax/swing/event/TreeModelEvent;)V
+ (L1javax/swing/event/TreeModelEvent;)V
+treeNodesInserted
+ (Ljavax/swing/event/TreeModelEvent;)V
+ (L1javax/swing/event/TreeModelEvent;)V
+treeNodesRemoved
+ (Ljavax/swing/event/TreeModelEvent;)V
+ (L1javax/swing/event/TreeModelEvent;)V
+treeStructureChanged
+ (Ljavax/swing/event/TreeModelEvent;)V
+ (L1javax/swing/event/TreeModelEvent;)V
+valueChanged
+ (Ljavax/swing/event/TreeSelectionEvent;)V
+ (L1javax/swing/event/TreeSelectionEvent;)V

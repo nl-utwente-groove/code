@@ -1,0 +1,10 @@
+class javax/swing/text/html/HTMLEditorKit$LinkController
+mouseClicked
+ (Ljava/awt/event/MouseEvent;)V
+ (L1java/awt/event/MouseEvent;)V
+mouseDragged
+ (Ljava/awt/event/MouseEvent;)V
+ (L1java/awt/event/MouseEvent;)V
+mouseMoved
+ (Ljava/awt/event/MouseEvent;)V
+ (L1java/awt/event/MouseEvent;)V

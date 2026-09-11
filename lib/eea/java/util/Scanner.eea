@@ -1,4 +1,10 @@
 class java/util/Scanner
+findInLine
+ (Ljava/util/regex/Pattern;)Ljava/lang/String;
+ (Ljava/util/regex/Pattern;)L0java/lang/String;
+findWithinHorizon
+ (Ljava/util/regex/Pattern;I)Ljava/lang/String;
+ (Ljava/util/regex/Pattern;I)L0java/lang/String;
 toString
  ()Ljava/lang/String;
  ()L1java/lang/String;

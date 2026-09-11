@@ -1,0 +1,4 @@
+class javax/swing/plaf/metal/DefaultMetalTheme
+getName
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

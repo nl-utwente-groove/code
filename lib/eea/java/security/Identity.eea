@@ -1,0 +1,16 @@
+class java/security/Identity
+certificates
+ ()[Ljava/security/Certificate;
+ ()[1Ljava/security/Certificate;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getName
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+toString
+ (Z)Ljava/lang/String;
+ (Z)L1java/lang/String;

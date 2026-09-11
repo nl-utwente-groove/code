@@ -1,0 +1,10 @@
+class java/io/ObjectOutput
+write
+ ([B)V
+ ([1B)V
+write
+ ([BII)V
+ ([1BII)V
+writeObject
+ (Ljava/lang/Object;)V
+ (L1java/lang/Object;)V

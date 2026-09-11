@@ -1,0 +1,19 @@
+class java/awt/GraphicsConfiguration
+createCompatibleImage
+ (II)Ljava/awt/image/BufferedImage;
+ (II)L1java/awt/image/BufferedImage;
+createCompatibleImage
+ (III)Ljava/awt/image/BufferedImage;
+ (III)L1java/awt/image/BufferedImage;
+createCompatibleVolatileImage
+ (II)Ljava/awt/image/VolatileImage;
+ (II)L1java/awt/image/VolatileImage;
+createCompatibleVolatileImage
+ (III)Ljava/awt/image/VolatileImage;
+ (III)L1java/awt/image/VolatileImage;
+createCompatibleVolatileImage
+ (IILjava/awt/ImageCapabilities;)Ljava/awt/image/VolatileImage;
+ (IILjava/awt/ImageCapabilities;)L1java/awt/image/VolatileImage;
+createCompatibleVolatileImage
+ (IILjava/awt/ImageCapabilities;I)Ljava/awt/image/VolatileImage;
+ (IILjava/awt/ImageCapabilities;I)L1java/awt/image/VolatileImage;

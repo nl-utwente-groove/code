@@ -1,0 +1,4 @@
+class javax/naming/ldap/ExtendedRequest
+createExtendedResponse
+ (Ljava/lang/String;[BII)Ljavax/naming/ldap/ExtendedResponse;
+ (Ljava/lang/String;[BII)L1javax/naming/ldap/ExtendedResponse;

@@ -1,0 +1,28 @@
+class javax/management/JMX
+DEFAULT_VALUE_FIELD
+ Ljava/lang/String;
+ L1java/lang/String;
+IMMUTABLE_INFO_FIELD
+ Ljava/lang/String;
+ L1java/lang/String;
+INTERFACE_CLASS_NAME_FIELD
+ Ljava/lang/String;
+ L1java/lang/String;
+LEGAL_VALUES_FIELD
+ Ljava/lang/String;
+ L1java/lang/String;
+MAX_VALUE_FIELD
+ Ljava/lang/String;
+ L1java/lang/String;
+MIN_VALUE_FIELD
+ Ljava/lang/String;
+ L1java/lang/String;
+MXBEAN_FIELD
+ Ljava/lang/String;
+ L1java/lang/String;
+OPEN_TYPE_FIELD
+ Ljava/lang/String;
+ L1java/lang/String;
+ORIGINAL_TYPE_FIELD
+ Ljava/lang/String;
+ L1java/lang/String;

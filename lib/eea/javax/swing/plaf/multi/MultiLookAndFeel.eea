@@ -1,0 +1,19 @@
+class javax/swing/plaf/multi/MultiLookAndFeel
+createUIs
+ (Ljavax/swing/plaf/ComponentUI;Ljava/util/Vector<Ljavax/swing/plaf/ComponentUI;>;Ljavax/swing/JComponent;)Ljavax/swing/plaf/ComponentUI;
+ (Ljavax/swing/plaf/ComponentUI;Ljava/util/Vector<Ljavax/swing/plaf/ComponentUI;>;Ljavax/swing/JComponent;)L0javax/swing/plaf/ComponentUI;
+uisToArray
+ (Ljava/util/Vector<+Ljavax/swing/plaf/ComponentUI;>;)[Ljavax/swing/plaf/ComponentUI;
+ (Ljava/util/Vector<+Ljavax/swing/plaf/ComponentUI;>;)[0Ljavax/swing/plaf/ComponentUI;
+getDefaults
+ ()Ljavax/swing/UIDefaults;
+ ()L0javax/swing/UIDefaults;
+getDescription
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+getID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+getName
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

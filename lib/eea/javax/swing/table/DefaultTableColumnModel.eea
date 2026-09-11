@@ -1,0 +1,16 @@
+class javax/swing/table/DefaultTableColumnModel
+addColumnModelListener
+ (Ljavax/swing/event/TableColumnModelListener;)V
+ (L1javax/swing/event/TableColumnModelListener;)V
+createSelectionModel
+ ()Ljavax/swing/ListSelectionModel;
+ ()L1javax/swing/ListSelectionModel;
+propertyChange
+ (Ljava/beans/PropertyChangeEvent;)V
+ (L1java/beans/PropertyChangeEvent;)V
+removeColumnModelListener
+ (Ljavax/swing/event/TableColumnModelListener;)V
+ (L1javax/swing/event/TableColumnModelListener;)V
+valueChanged
+ (Ljavax/swing/event/ListSelectionEvent;)V
+ (L1javax/swing/event/ListSelectionEvent;)V

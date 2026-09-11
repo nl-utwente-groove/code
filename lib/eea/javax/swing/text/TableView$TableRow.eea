@@ -1,0 +1,7 @@
+class javax/swing/text/TableView$TableRow
+calculateMajorAxisRequirements
+ (ILjavax/swing/SizeRequirements;)Ljavax/swing/SizeRequirements;
+ (ILjavax/swing/SizeRequirements;)L1javax/swing/SizeRequirements;
+getViewAtPosition
+ (ILjava/awt/Rectangle;)Ljavax/swing/text/View;
+ (ILjava/awt/Rectangle;)L0javax/swing/text/View;

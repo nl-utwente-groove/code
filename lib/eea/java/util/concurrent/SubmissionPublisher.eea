@@ -1,0 +1,11 @@
+class java/util/concurrent/SubmissionPublisher
+ <T:Ljava/lang/Object;>
+consume
+ (Ljava/util/function/Consumer<-TT;>;)Ljava/util/concurrent/CompletableFuture<Ljava/lang/Void;>;
+ (Ljava/util/function/Consumer<-TT;>;)L1java/util/concurrent/CompletableFuture<Ljava/lang/Void;>;
+getSubscribers
+ ()Ljava/util/List<Ljava/util/concurrent/Flow$Subscriber<-TT;>;>;
+ ()L1java/util/List<Ljava/util/concurrent/Flow$Subscriber<-TT;>;>;
+subscribe
+ (Ljava/util/concurrent/Flow$Subscriber<-TT;>;)V
+ (L1java/util/concurrent/Flow$Subscriber<-TT;>;)V

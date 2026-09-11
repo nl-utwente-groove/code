@@ -1,0 +1,10 @@
+class java/awt/MenuItem$AccessibleAWTMenuItem
+getAccessibleAction
+ ()Ljavax/accessibility/AccessibleAction;
+ ()L0javax/accessibility/AccessibleAction;
+getAccessibleActionDescription
+ (I)Ljava/lang/String;
+ (I)L0java/lang/String;
+getAccessibleValue
+ ()Ljavax/accessibility/AccessibleValue;
+ ()L0javax/accessibility/AccessibleValue;

@@ -1,0 +1,23 @@
+class java/time/chrono/ChronoLocalDateTime
+ <D::Ljava/time/chrono/ChronoLocalDate;>
+adjustInto
+ (Ljava/time/temporal/Temporal;)Ljava/time/temporal/Temporal;
+ (L1java/time/temporal/Temporal;)L1java/time/temporal/Temporal;
+compareTo
+ (Ljava/time/chrono/ChronoLocalDateTime<*>;)I
+ (L1java/time/chrono/ChronoLocalDateTime<*>;)I
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+isSupported
+ (Ljava/time/temporal/TemporalField;)Z
+ (L1java/time/temporal/TemporalField;)Z
+isSupported
+ (Ljava/time/temporal/TemporalUnit;)Z
+ (L1java/time/temporal/TemporalUnit;)Z
+query
+ <R:Ljava/lang/Object;>(Ljava/time/temporal/TemporalQuery<TR;>;)TR;
+ <R:Ljava/lang/Object;>(L1java/time/temporal/TemporalQuery<TR;>;)T0R;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

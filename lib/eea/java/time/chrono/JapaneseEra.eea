@@ -1,0 +1,22 @@
+class java/time/chrono/JapaneseEra
+HEISEI
+ Ljava/time/chrono/JapaneseEra;
+ L1java/time/chrono/JapaneseEra;
+MEIJI
+ Ljava/time/chrono/JapaneseEra;
+ L1java/time/chrono/JapaneseEra;
+REIWA
+ Ljava/time/chrono/JapaneseEra;
+ L1java/time/chrono/JapaneseEra;
+SHOWA
+ Ljava/time/chrono/JapaneseEra;
+ L1java/time/chrono/JapaneseEra;
+TAISHO
+ Ljava/time/chrono/JapaneseEra;
+ L1java/time/chrono/JapaneseEra;
+range
+ (Ljava/time/temporal/TemporalField;)Ljava/time/temporal/ValueRange;
+ (L1java/time/temporal/TemporalField;)L1java/time/temporal/ValueRange;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

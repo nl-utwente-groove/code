@@ -1,4 +1,7 @@
 class java/util/stream/DoubleStream
+builder
+ ()Ljava/util/stream/DoubleStream$Builder;
+ ()L1java/util/stream/DoubleStream$Builder;
 of
  (D)Ljava/util/stream/DoubleStream;
  (D)L1java/util/stream/DoubleStream;

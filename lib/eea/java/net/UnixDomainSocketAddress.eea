@@ -1,0 +1,10 @@
+class java/net/UnixDomainSocketAddress
+of
+ (Ljava/nio/file/Path;)Ljava/net/UnixDomainSocketAddress;
+ (Ljava/nio/file/Path;)L1java/net/UnixDomainSocketAddress;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

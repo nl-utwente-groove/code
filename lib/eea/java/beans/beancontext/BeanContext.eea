@@ -1,0 +1,10 @@
+class java/beans/beancontext/BeanContext
+globalHierarchyLock
+ Ljava/lang/Object;
+ L1java/lang/Object;
+addBeanContextMembershipListener
+ (Ljava/beans/beancontext/BeanContextMembershipListener;)V
+ (L1java/beans/beancontext/BeanContextMembershipListener;)V
+removeBeanContextMembershipListener
+ (Ljava/beans/beancontext/BeanContextMembershipListener;)V
+ (L1java/beans/beancontext/BeanContextMembershipListener;)V

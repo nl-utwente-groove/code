@@ -1,0 +1,7 @@
+class java/awt/event/KeyEvent
+getKeyModifiersText
+ (I)Ljava/lang/String;
+ (I)L1java/lang/String;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

@@ -1,0 +1,46 @@
+class java/util/jar/Attributes
+<init>
+ (Ljava/util/jar/Attributes;)V
+ (L1java/util/jar/Attributes;)V
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+containsKey
+ (Ljava/lang/Object;)Z
+ (L1java/lang/Object;)Z
+containsValue
+ (Ljava/lang/Object;)Z
+ (L1java/lang/Object;)Z
+entrySet
+ ()Ljava/util/Set<Ljava/util/Map$Entry<Ljava/lang/Object;Ljava/lang/Object;>;>;
+ ()L1java/util/Set<L1java/util/Map$Entry<L1java/lang/Object;L1java/lang/Object;>;>;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+get
+ (Ljava/lang/Object;)Ljava/lang/Object;
+ (Ljava/lang/Object;)L0java/lang/Object;
+getValue
+ (Ljava/lang/String;)Ljava/lang/String;
+ (L1java/lang/String;)L0java/lang/String;
+getValue
+ (Ljava/util/jar/Attributes$Name;)Ljava/lang/String;
+ (L1java/util/jar/Attributes$Name;)L0java/lang/String;
+keySet
+ ()Ljava/util/Set<Ljava/lang/Object;>;
+ ()L1java/util/Set<L1java/lang/Object;>;
+put
+ (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+ (L1java/lang/Object;L1java/lang/Object;)L0java/lang/Object;
+putAll
+ (Ljava/util/Map<**>;)V
+ (L1java/util/Map<**>;)V
+putValue
+ (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+ (L1java/lang/String;L1java/lang/String;)L0java/lang/String;
+remove
+ (Ljava/lang/Object;)Ljava/lang/Object;
+ (L1java/lang/Object;)L0java/lang/Object;
+values
+ ()Ljava/util/Collection<Ljava/lang/Object;>;
+ ()L1java/util/Collection<L1java/lang/Object;>;

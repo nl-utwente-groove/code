@@ -35,3 +35,24 @@ VALUE_PROPERTY
 WANTS_INPUT_PROPERTY
  Ljava/lang/String;
  L1java/lang/String;
+showInputDialog
+ (Ljava/awt/Component;Ljava/lang/Object;Ljava/lang/String;ILjavax/swing/Icon;[Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+ (Ljava/awt/Component;Ljava/lang/Object;Ljava/lang/String;ILjavax/swing/Icon;[Ljava/lang/Object;Ljava/lang/Object;)L0java/lang/Object;
+showInternalInputDialog
+ (Ljava/awt/Component;Ljava/lang/Object;Ljava/lang/String;ILjavax/swing/Icon;[Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+ (Ljava/awt/Component;Ljava/lang/Object;Ljava/lang/String;ILjavax/swing/Icon;[Ljava/lang/Object;Ljava/lang/Object;)L0java/lang/Object;
+createDialog
+ (Ljava/awt/Component;Ljava/lang/String;)Ljavax/swing/JDialog;
+ (Ljava/awt/Component;Ljava/lang/String;)L1javax/swing/JDialog;
+createDialog
+ (Ljava/lang/String;)Ljavax/swing/JDialog;
+ (Ljava/lang/String;)L1javax/swing/JDialog;
+createInternalFrame
+ (Ljava/awt/Component;Ljava/lang/String;)Ljavax/swing/JInternalFrame;
+ (Ljava/awt/Component;Ljava/lang/String;)L1javax/swing/JInternalFrame;
+getUIClassID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

@@ -1,0 +1,4 @@
+class javax/security/auth/SubjectDomainCombiner
+combine
+ ([Ljava/security/ProtectionDomain;[Ljava/security/ProtectionDomain;)[Ljava/security/ProtectionDomain;
+ ([Ljava/security/ProtectionDomain;[Ljava/security/ProtectionDomain;)[0Ljava/security/ProtectionDomain;

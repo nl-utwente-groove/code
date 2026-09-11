@@ -1,0 +1,4 @@
+class java/awt/SplashScreen
+createGraphics
+ ()Ljava/awt/Graphics2D;
+ ()L1java/awt/Graphics2D;

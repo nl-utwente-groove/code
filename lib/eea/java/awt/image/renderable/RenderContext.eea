@@ -1,0 +1,7 @@
+class java/awt/image/renderable/RenderContext
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+getTransform
+ ()Ljava/awt/geom/AffineTransform;
+ ()L1java/awt/geom/AffineTransform;

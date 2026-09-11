@@ -1,0 +1,10 @@
+class java/time/chrono/HijrahDate
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getLong
+ (Ljava/time/temporal/TemporalField;)J
+ (L1java/time/temporal/TemporalField;)J
+range
+ (Ljava/time/temporal/TemporalField;)Ljava/time/temporal/ValueRange;
+ (L1java/time/temporal/TemporalField;)L1java/time/temporal/ValueRange;

@@ -1,0 +1,4 @@
+class java/awt/print/PrinterJob
+getPrintService
+ ()Ljavax/print/PrintService;
+ ()L0javax/print/PrintService;

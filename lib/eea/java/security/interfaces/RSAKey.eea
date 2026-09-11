@@ -1,0 +1,4 @@
+class java/security/interfaces/RSAKey
+getParams
+ ()Ljava/security/spec/AlgorithmParameterSpec;
+ ()L0java/security/spec/AlgorithmParameterSpec;

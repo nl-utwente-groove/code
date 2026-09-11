@@ -1,0 +1,4 @@
+class java/rmi/server/LoaderHandler
+packagePrefix
+ Ljava/lang/String;
+ L1java/lang/String;

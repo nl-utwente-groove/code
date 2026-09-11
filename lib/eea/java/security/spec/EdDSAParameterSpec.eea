@@ -1,0 +1,4 @@
+class java/security/spec/EdDSAParameterSpec
+getContext
+ ()Ljava/util/Optional<[B>;
+ ()L1java/util/Optional<[B>;

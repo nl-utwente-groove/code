@@ -1,0 +1,10 @@
+class java/awt/TextArea
+minimumSize
+ ()Ljava/awt/Dimension;
+ ()L1java/awt/Dimension;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+preferredSize
+ ()Ljava/awt/Dimension;
+ ()L1java/awt/Dimension;

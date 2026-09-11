@@ -1,0 +1,7 @@
+class java/lang/invoke/VarHandle
+describeConstable
+ ()Ljava/util/Optional<Ljava/lang/invoke/VarHandle$VarHandleDesc;>;
+ ()L1java/util/Optional<Ljava/lang/invoke/VarHandle$VarHandleDesc;>;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

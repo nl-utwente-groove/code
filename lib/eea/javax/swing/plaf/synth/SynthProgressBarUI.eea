@@ -1,0 +1,13 @@
+class javax/swing/plaf/synth/SynthProgressBarUI
+createUI
+ (Ljavax/swing/JComponent;)Ljavax/swing/plaf/ComponentUI;
+ (Ljavax/swing/JComponent;)L1javax/swing/plaf/ComponentUI;
+getBox
+ (Ljava/awt/Rectangle;)Ljava/awt/Rectangle;
+ (Ljava/awt/Rectangle;)L0java/awt/Rectangle;
+getPreferredSize
+ (Ljavax/swing/JComponent;)Ljava/awt/Dimension;
+ (Ljavax/swing/JComponent;)L1java/awt/Dimension;
+propertyChange
+ (Ljava/beans/PropertyChangeEvent;)V
+ (L1java/beans/PropertyChangeEvent;)V

@@ -1,0 +1,4 @@
+class javax/sound/sampled/EnumControl$Type
+REVERB
+ Ljavax/sound/sampled/EnumControl$Type;
+ L1javax/sound/sampled/EnumControl$Type;

@@ -1,0 +1,7 @@
+class java/beans/VetoableChangeSupport
+addVetoableChangeListener
+ (Ljava/beans/VetoableChangeListener;)V
+ (L1java/beans/VetoableChangeListener;)V
+removeVetoableChangeListener
+ (Ljava/beans/VetoableChangeListener;)V
+ (L1java/beans/VetoableChangeListener;)V

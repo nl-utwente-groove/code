@@ -2,6 +2,9 @@ class javax/swing/tree/DefaultTreeModel
 addTreeModelListener
  (Ljavax/swing/event/TreeModelListener;)V
  (L1javax/swing/event/TreeModelListener;)V
+getPathToRoot
+ (Ljavax/swing/tree/TreeNode;I)[Ljavax/swing/tree/TreeNode;
+ (Ljavax/swing/tree/TreeNode;I)[0Ljavax/swing/tree/TreeNode;
 removeTreeModelListener
  (Ljavax/swing/event/TreeModelListener;)V
  (L1javax/swing/event/TreeModelListener;)V

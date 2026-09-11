@@ -1,0 +1,14 @@
+class javax/management/openmbean/OpenType
+ <T:Ljava/lang/Object;>
+ALLOWED_CLASSNAMES
+ [Ljava/lang/String;
+ [1Ljava/lang/String;
+ALLOWED_CLASSNAMES_LIST
+ Ljava/util/List<Ljava/lang/String;>;
+ L1java/util/List<Ljava/lang/String;>;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

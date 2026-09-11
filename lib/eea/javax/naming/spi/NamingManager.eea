@@ -1,0 +1,7 @@
+class javax/naming/spi/NamingManager
+CPE
+ Ljava/lang/String;
+ L1java/lang/String;
+getURLContext
+ (Ljava/lang/String;Ljava/util/Hashtable<**>;)Ljavax/naming/Context;
+ (Ljava/lang/String;Ljava/util/Hashtable<**>;)L0javax/naming/Context;

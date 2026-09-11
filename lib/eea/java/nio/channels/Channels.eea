@@ -1,0 +1,13 @@
+class java/nio/channels/Channels
+newInputStream
+ (Ljava/nio/channels/AsynchronousByteChannel;)Ljava/io/InputStream;
+ (Ljava/nio/channels/AsynchronousByteChannel;)L1java/io/InputStream;
+newInputStream
+ (Ljava/nio/channels/ReadableByteChannel;)Ljava/io/InputStream;
+ (Ljava/nio/channels/ReadableByteChannel;)L1java/io/InputStream;
+newOutputStream
+ (Ljava/nio/channels/AsynchronousByteChannel;)Ljava/io/OutputStream;
+ (Ljava/nio/channels/AsynchronousByteChannel;)L1java/io/OutputStream;
+newOutputStream
+ (Ljava/nio/channels/WritableByteChannel;)Ljava/io/OutputStream;
+ (Ljava/nio/channels/WritableByteChannel;)L1java/io/OutputStream;

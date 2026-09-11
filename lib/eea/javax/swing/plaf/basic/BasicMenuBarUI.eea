@@ -1,0 +1,16 @@
+class javax/swing/plaf/basic/BasicMenuBarUI
+createUI
+ (Ljavax/swing/JComponent;)Ljavax/swing/plaf/ComponentUI;
+ (Ljavax/swing/JComponent;)L1javax/swing/plaf/ComponentUI;
+createChangeListener
+ ()Ljavax/swing/event/ChangeListener;
+ ()L1javax/swing/event/ChangeListener;
+createContainerListener
+ ()Ljava/awt/event/ContainerListener;
+ ()L1java/awt/event/ContainerListener;
+getMaximumSize
+ (Ljavax/swing/JComponent;)Ljava/awt/Dimension;
+ (Ljavax/swing/JComponent;)L0java/awt/Dimension;
+getMinimumSize
+ (Ljavax/swing/JComponent;)Ljava/awt/Dimension;
+ (Ljavax/swing/JComponent;)L0java/awt/Dimension;

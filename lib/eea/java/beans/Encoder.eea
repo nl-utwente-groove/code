@@ -1,0 +1,4 @@
+class java/beans/Encoder
+writeObject
+ (Ljava/lang/Object;)V
+ (L1java/lang/Object;)V

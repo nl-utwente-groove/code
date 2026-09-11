@@ -1,0 +1,4 @@
+class java/sql/JDBCType
+getVendor
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

@@ -1,0 +1,10 @@
+class javax/net/ssl/SSLSocket
+addHandshakeCompletedListener
+ (Ljavax/net/ssl/HandshakeCompletedListener;)V
+ (L1javax/net/ssl/HandshakeCompletedListener;)V
+getSSLParameters
+ ()Ljavax/net/ssl/SSLParameters;
+ ()L1javax/net/ssl/SSLParameters;
+removeHandshakeCompletedListener
+ (Ljavax/net/ssl/HandshakeCompletedListener;)V
+ (L1javax/net/ssl/HandshakeCompletedListener;)V

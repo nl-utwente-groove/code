@@ -1,0 +1,22 @@
+class javax/imageio/ImageWriter
+addIIOWriteProgressListener
+ (Ljavax/imageio/event/IIOWriteProgressListener;)V
+ (L1javax/imageio/event/IIOWriteProgressListener;)V
+addIIOWriteWarningListener
+ (Ljavax/imageio/event/IIOWriteWarningListener;)V
+ (L1javax/imageio/event/IIOWriteWarningListener;)V
+getAvailableLocales
+ ()[Ljava/util/Locale;
+ ()[1Ljava/util/Locale;
+getDefaultWriteParam
+ ()Ljavax/imageio/ImageWriteParam;
+ ()L1javax/imageio/ImageWriteParam;
+getPreferredThumbnailSizes
+ (Ljavax/imageio/ImageTypeSpecifier;Ljavax/imageio/ImageWriteParam;Ljavax/imageio/metadata/IIOMetadata;Ljavax/imageio/metadata/IIOMetadata;)[Ljava/awt/Dimension;
+ (Ljavax/imageio/ImageTypeSpecifier;Ljavax/imageio/ImageWriteParam;Ljavax/imageio/metadata/IIOMetadata;Ljavax/imageio/metadata/IIOMetadata;)[0Ljava/awt/Dimension;
+removeIIOWriteProgressListener
+ (Ljavax/imageio/event/IIOWriteProgressListener;)V
+ (L1javax/imageio/event/IIOWriteProgressListener;)V
+removeIIOWriteWarningListener
+ (Ljavax/imageio/event/IIOWriteWarningListener;)V
+ (L1javax/imageio/event/IIOWriteWarningListener;)V

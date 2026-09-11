@@ -1,0 +1,10 @@
+class javax/swing/text/LabelView
+getBackground
+ ()Ljava/awt/Color;
+ ()L0java/awt/Color;
+getFont
+ ()Ljava/awt/Font;
+ ()L0java/awt/Font;
+getForeground
+ ()Ljava/awt/Color;
+ ()L0java/awt/Color;

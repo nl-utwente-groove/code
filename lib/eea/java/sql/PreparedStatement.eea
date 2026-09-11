@@ -1,0 +1,7 @@
+class java/sql/PreparedStatement
+executeQuery
+ ()Ljava/sql/ResultSet;
+ ()L1java/sql/ResultSet;
+getMetaData
+ ()Ljava/sql/ResultSetMetaData;
+ ()L0java/sql/ResultSetMetaData;

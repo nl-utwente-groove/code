@@ -1,0 +1,4 @@
+class javax/swing/plaf/basic/BasicScrollPaneUI$HSBChangeListener
+stateChanged
+ (Ljavax/swing/event/ChangeEvent;)V
+ (L1javax/swing/event/ChangeEvent;)V

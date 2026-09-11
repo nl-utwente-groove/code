@@ -1,0 +1,19 @@
+class java/time/chrono/JapaneseChronology
+INSTANCE
+ Ljava/time/chrono/JapaneseChronology;
+ L1java/time/chrono/JapaneseChronology;
+date
+ (III)Ljava/time/chrono/JapaneseDate;
+ (III)L1java/time/chrono/JapaneseDate;
+dateEpochDay
+ (J)Ljava/time/chrono/JapaneseDate;
+ (J)L1java/time/chrono/JapaneseDate;
+dateYearDay
+ (II)Ljava/time/chrono/JapaneseDate;
+ (II)L1java/time/chrono/JapaneseDate;
+getCalendarType
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+getId
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

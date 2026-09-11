@@ -1,0 +1,19 @@
+class javax/imageio/plugins/jpeg/JPEGQTable
+K1Div2Luminance
+ Ljavax/imageio/plugins/jpeg/JPEGQTable;
+ L1javax/imageio/plugins/jpeg/JPEGQTable;
+K1Luminance
+ Ljavax/imageio/plugins/jpeg/JPEGQTable;
+ L1javax/imageio/plugins/jpeg/JPEGQTable;
+K2Chrominance
+ Ljavax/imageio/plugins/jpeg/JPEGQTable;
+ L1javax/imageio/plugins/jpeg/JPEGQTable;
+K2Div2Chrominance
+ Ljavax/imageio/plugins/jpeg/JPEGQTable;
+ L1javax/imageio/plugins/jpeg/JPEGQTable;
+getScaledInstance
+ (FZ)Ljavax/imageio/plugins/jpeg/JPEGQTable;
+ (FZ)L1javax/imageio/plugins/jpeg/JPEGQTable;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

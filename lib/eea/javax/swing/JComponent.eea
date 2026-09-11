@@ -8,9 +8,48 @@ addAncestorListener
 addVetoableChangeListener
  (Ljava/beans/VetoableChangeListener;)V
  (L1java/beans/VetoableChangeListener;)V
+createToolTip
+ ()Ljavax/swing/JToolTip;
+ ()L1javax/swing/JToolTip;
+getActionForKeyStroke
+ (Ljavax/swing/KeyStroke;)Ljava/awt/event/ActionListener;
+ (Ljavax/swing/KeyStroke;)L0java/awt/event/ActionListener;
+getClientProperty
+ (Ljava/lang/Object;)Ljava/lang/Object;
+ (Ljava/lang/Object;)L0java/lang/Object;
+getComponentGraphics
+ (Ljava/awt/Graphics;)Ljava/awt/Graphics;
+ (Ljava/awt/Graphics;)L1java/awt/Graphics;
+getComponentPopupMenu
+ ()Ljavax/swing/JPopupMenu;
+ ()L0javax/swing/JPopupMenu;
+getGraphics
+ ()Ljava/awt/Graphics;
+ ()L0java/awt/Graphics;
+getPopupLocation
+ (Ljava/awt/event/MouseEvent;)Ljava/awt/Point;
+ (Ljava/awt/event/MouseEvent;)L0java/awt/Point;
+getRegisteredKeyStrokes
+ ()[Ljavax/swing/KeyStroke;
+ ()[1Ljavax/swing/KeyStroke;
+getToolTipLocation
+ (Ljava/awt/event/MouseEvent;)Ljava/awt/Point;
+ (Ljava/awt/event/MouseEvent;)L0java/awt/Point;
 getToolTipText
  (Ljava/awt/event/MouseEvent;)Ljava/lang/String;
  (L1java/awt/event/MouseEvent;)Ljava/lang/String;
+getTopLevelAncestor
+ ()Ljava/awt/Container;
+ ()L0java/awt/Container;
+getUIClassID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+getVisibleRect
+ ()Ljava/awt/Rectangle;
+ ()L1java/awt/Rectangle;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
 removeAncestorListener
  (Ljavax/swing/event/AncestorListener;)V
  (L1javax/swing/event/AncestorListener;)V

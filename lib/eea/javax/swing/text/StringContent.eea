@@ -1,0 +1,13 @@
+class javax/swing/text/StringContent
+createPosition
+ (I)Ljavax/swing/text/Position;
+ (I)L1javax/swing/text/Position;
+getString
+ (II)Ljava/lang/String;
+ (II)L1java/lang/String;
+insertString
+ (ILjava/lang/String;)Ljavax/swing/undo/UndoableEdit;
+ (ILjava/lang/String;)L1javax/swing/undo/UndoableEdit;
+remove
+ (II)Ljavax/swing/undo/UndoableEdit;
+ (II)L1javax/swing/undo/UndoableEdit;

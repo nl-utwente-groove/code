@@ -1,0 +1,16 @@
+class java/sql/Timestamp
+compareTo
+ (Ljava/sql/Timestamp;)I
+ (L1java/sql/Timestamp;)I
+compareTo
+ (Ljava/util/Date;)I
+ (L1java/util/Date;)I
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+toInstant
+ ()Ljava/time/Instant;
+ ()L1java/time/Instant;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

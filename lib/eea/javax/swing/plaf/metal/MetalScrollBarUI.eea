@@ -1,0 +1,19 @@
+class javax/swing/plaf/metal/MetalScrollBarUI
+FREE_STANDING_PROP
+ Ljava/lang/String;
+ L1java/lang/String;
+createUI
+ (Ljavax/swing/JComponent;)Ljavax/swing/plaf/ComponentUI;
+ (Ljavax/swing/JComponent;)L1javax/swing/plaf/ComponentUI;
+createDecreaseButton
+ (I)Ljavax/swing/JButton;
+ (I)L1javax/swing/JButton;
+createIncreaseButton
+ (I)Ljavax/swing/JButton;
+ (I)L1javax/swing/JButton;
+createPropertyChangeListener
+ ()Ljava/beans/PropertyChangeListener;
+ ()L1java/beans/PropertyChangeListener;
+getPreferredSize
+ (Ljavax/swing/JComponent;)Ljava/awt/Dimension;
+ (Ljavax/swing/JComponent;)L1java/awt/Dimension;

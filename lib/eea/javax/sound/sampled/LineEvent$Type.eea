@@ -1,0 +1,19 @@
+class javax/sound/sampled/LineEvent$Type
+CLOSE
+ Ljavax/sound/sampled/LineEvent$Type;
+ L1javax/sound/sampled/LineEvent$Type;
+OPEN
+ Ljavax/sound/sampled/LineEvent$Type;
+ L1javax/sound/sampled/LineEvent$Type;
+START
+ Ljavax/sound/sampled/LineEvent$Type;
+ L1javax/sound/sampled/LineEvent$Type;
+STOP
+ Ljavax/sound/sampled/LineEvent$Type;
+ L1javax/sound/sampled/LineEvent$Type;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

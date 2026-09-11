@@ -2,3 +2,6 @@ class java/awt/geom/Path2D$Float
 clone
  ()Ljava/lang/Object;
  ()L1java/lang/Object;
+getPathIterator
+ (Ljava/awt/geom/AffineTransform;)Ljava/awt/geom/PathIterator;
+ (Ljava/awt/geom/AffineTransform;)L1java/awt/geom/PathIterator;

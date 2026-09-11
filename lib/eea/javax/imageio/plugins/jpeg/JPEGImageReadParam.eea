@@ -1,0 +1,10 @@
+class javax/imageio/plugins/jpeg/JPEGImageReadParam
+getACHuffmanTables
+ ()[Ljavax/imageio/plugins/jpeg/JPEGHuffmanTable;
+ ()[0Ljavax/imageio/plugins/jpeg/JPEGHuffmanTable;
+getDCHuffmanTables
+ ()[Ljavax/imageio/plugins/jpeg/JPEGHuffmanTable;
+ ()[0Ljavax/imageio/plugins/jpeg/JPEGHuffmanTable;
+getQTables
+ ()[Ljavax/imageio/plugins/jpeg/JPEGQTable;
+ ()[0Ljavax/imageio/plugins/jpeg/JPEGQTable;

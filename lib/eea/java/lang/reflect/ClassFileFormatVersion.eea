@@ -1,0 +1,4 @@
+class java/lang/reflect/ClassFileFormatVersion
+runtimeVersion
+ ()Ljava/lang/Runtime$Version;
+ ()L0java/lang/Runtime$Version;

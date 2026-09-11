@@ -1,0 +1,4 @@
+class javax/xml/xpath/XPathEvaluationResult$XPathResultType
+getQNameType
+ (Ljava/lang/Class<*>;)Ljavax/xml/namespace/QName;
+ (Ljava/lang/Class<*>;)L0javax/xml/namespace/QName;

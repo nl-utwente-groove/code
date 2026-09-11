@@ -1,0 +1,64 @@
+class java/awt/datatransfer/DataFlavor
+allHtmlFlavor
+ Ljava/awt/datatransfer/DataFlavor;
+ L1java/awt/datatransfer/DataFlavor;
+fragmentHtmlFlavor
+ Ljava/awt/datatransfer/DataFlavor;
+ L1java/awt/datatransfer/DataFlavor;
+imageFlavor
+ Ljava/awt/datatransfer/DataFlavor;
+ L1java/awt/datatransfer/DataFlavor;
+javaFileListFlavor
+ Ljava/awt/datatransfer/DataFlavor;
+ L1java/awt/datatransfer/DataFlavor;
+javaJVMLocalObjectMimeType
+ Ljava/lang/String;
+ L1java/lang/String;
+javaRemoteObjectMimeType
+ Ljava/lang/String;
+ L1java/lang/String;
+javaSerializedObjectMimeType
+ Ljava/lang/String;
+ L1java/lang/String;
+plainTextFlavor
+ Ljava/awt/datatransfer/DataFlavor;
+ L1java/awt/datatransfer/DataFlavor;
+selectionHtmlFlavor
+ Ljava/awt/datatransfer/DataFlavor;
+ L1java/awt/datatransfer/DataFlavor;
+stringFlavor
+ Ljava/awt/datatransfer/DataFlavor;
+ L1java/awt/datatransfer/DataFlavor;
+selectBestTextFlavor
+ ([Ljava/awt/datatransfer/DataFlavor;)Ljava/awt/datatransfer/DataFlavor;
+ ([Ljava/awt/datatransfer/DataFlavor;)L0java/awt/datatransfer/DataFlavor;
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getDefaultRepresentationClass
+ ()Ljava/lang/Class<*>;
+ ()L1java/lang/Class<*>;
+getMimeType
+ ()Ljava/lang/String;
+ ()L0java/lang/String;
+getParameter
+ (Ljava/lang/String;)Ljava/lang/String;
+ (Ljava/lang/String;)L0java/lang/String;
+getPrimaryType
+ ()Ljava/lang/String;
+ ()L0java/lang/String;
+getSubType
+ ()Ljava/lang/String;
+ ()L0java/lang/String;
+readExternal
+ (Ljava/io/ObjectInput;)V
+ (L1java/io/ObjectInput;)V
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+writeExternal
+ (Ljava/io/ObjectOutput;)V
+ (L1java/io/ObjectOutput;)V

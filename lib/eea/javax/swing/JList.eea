@@ -12,12 +12,30 @@ class javax/swing/JList
 addListSelectionListener
  (Ljavax/swing/event/ListSelectionListener;)V
  (L1javax/swing/event/ListSelectionListener;)V
+createSelectionModel
+ ()Ljavax/swing/ListSelectionModel;
+ ()L1javax/swing/ListSelectionModel;
+getCellBounds
+ (II)Ljava/awt/Rectangle;
+ (II)L0java/awt/Rectangle;
 getPrototypeCellValue
  ()TE;
  ()T0E;
+getSelectedValues
+ ()[Ljava/lang/Object;
+ ()[1Ljava/lang/Object;
 getToolTipText
  (Ljava/awt/event/MouseEvent;)Ljava/lang/String;
  (L1java/awt/event/MouseEvent;)Ljava/lang/String;
+getUIClassID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+indexToLocation
+ (I)Ljava/awt/Point;
+ (I)L0java/awt/Point;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
 removeListSelectionListener
  (Ljavax/swing/event/ListSelectionListener;)V
  (L1javax/swing/event/ListSelectionListener;)V

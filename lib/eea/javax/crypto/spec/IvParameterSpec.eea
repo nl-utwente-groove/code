@@ -1,0 +1,4 @@
+class javax/crypto/spec/IvParameterSpec
+getIV
+ ()[B
+ ()[1B

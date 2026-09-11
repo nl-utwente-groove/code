@@ -1,0 +1,5 @@
+class java/util/concurrent/StructuredTaskScope$ShutdownOnSuccess
+ <T:Ljava/lang/Object;>
+result
+ <X:Ljava/lang/Throwable;>(Ljava/util/function/Function<Ljava/lang/Throwable;+TX;>;)TT;^TX;
+ <X:Ljava/lang/Throwable;>(Ljava/util/function/Function<Ljava/lang/Throwable;+TX;>;)T0T;^TX;

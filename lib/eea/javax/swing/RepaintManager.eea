@@ -1,0 +1,7 @@
+class javax/swing/RepaintManager
+getVolatileOffscreenBuffer
+ (Ljava/awt/Component;II)Ljava/awt/Image;
+ (Ljava/awt/Component;II)L0java/awt/Image;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

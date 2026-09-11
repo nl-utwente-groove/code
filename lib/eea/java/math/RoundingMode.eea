@@ -1,0 +1,4 @@
+class java/math/RoundingMode
+valueOf
+ (I)Ljava/math/RoundingMode;
+ (I)L1java/math/RoundingMode;

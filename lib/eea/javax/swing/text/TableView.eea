@@ -1,0 +1,13 @@
+class javax/swing/text/TableView
+calculateMinorAxisRequirements
+ (ILjavax/swing/SizeRequirements;)Ljavax/swing/SizeRequirements;
+ (ILjavax/swing/SizeRequirements;)L1javax/swing/SizeRequirements;
+createTableCell
+ (Ljavax/swing/text/Element;)Ljavax/swing/text/TableView$TableCell;
+ (Ljavax/swing/text/Element;)L1javax/swing/text/TableView$TableCell;
+createTableRow
+ (Ljavax/swing/text/Element;)Ljavax/swing/text/TableView$TableRow;
+ (Ljavax/swing/text/Element;)L1javax/swing/text/TableView$TableRow;
+getViewAtPosition
+ (ILjava/awt/Rectangle;)Ljavax/swing/text/View;
+ (ILjava/awt/Rectangle;)L0javax/swing/text/View;

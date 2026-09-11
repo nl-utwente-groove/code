@@ -1,0 +1,13 @@
+class javax/swing/plaf/synth/SynthTreeUI
+createUI
+ (Ljavax/swing/JComponent;)Ljavax/swing/plaf/ComponentUI;
+ (Ljavax/swing/JComponent;)L1javax/swing/plaf/ComponentUI;
+createDefaultCellEditor
+ ()Ljavax/swing/tree/TreeCellEditor;
+ ()L1javax/swing/tree/TreeCellEditor;
+createDefaultCellRenderer
+ ()Ljavax/swing/tree/TreeCellRenderer;
+ ()L1javax/swing/tree/TreeCellRenderer;
+propertyChange
+ (Ljava/beans/PropertyChangeEvent;)V
+ (L1java/beans/PropertyChangeEvent;)V

@@ -1,0 +1,7 @@
+class javax/naming/ldap/PagedResultsResponseControl
+OID
+ Ljava/lang/String;
+ L1java/lang/String;
+getCookie
+ ()[B
+ ()[0B

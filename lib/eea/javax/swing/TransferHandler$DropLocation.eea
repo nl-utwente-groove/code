@@ -1,0 +1,7 @@
+class javax/swing/TransferHandler$DropLocation
+getDropPoint
+ ()Ljava/awt/Point;
+ ()L1java/awt/Point;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

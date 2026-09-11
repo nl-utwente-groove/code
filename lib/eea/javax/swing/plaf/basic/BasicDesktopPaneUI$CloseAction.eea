@@ -1,0 +1,4 @@
+class javax/swing/plaf/basic/BasicDesktopPaneUI$CloseAction
+actionPerformed
+ (Ljava/awt/event/ActionEvent;)V
+ (L1java/awt/event/ActionEvent;)V

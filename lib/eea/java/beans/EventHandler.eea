@@ -1,0 +1,13 @@
+class java/beans/EventHandler
+create
+ <T:Ljava/lang/Object;>(Ljava/lang/Class<TT;>;Ljava/lang/Object;Ljava/lang/String;)TT;
+ <T:Ljava/lang/Object;>(Ljava/lang/Class<TT;>;Ljava/lang/Object;Ljava/lang/String;)T1T;
+create
+ <T:Ljava/lang/Object;>(Ljava/lang/Class<TT;>;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)TT;
+ <T:Ljava/lang/Object;>(Ljava/lang/Class<TT;>;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;)T1T;
+create
+ <T:Ljava/lang/Object;>(Ljava/lang/Class<TT;>;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)TT;
+ <T:Ljava/lang/Object;>(Ljava/lang/Class<TT;>;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)T1T;
+invoke
+ (Ljava/lang/Object;Ljava/lang/reflect/Method;[Ljava/lang/Object;)Ljava/lang/Object;
+ (L1java/lang/Object;L1java/lang/reflect/Method;[0L0java/lang/Object;)L0java/lang/Object;

@@ -1,0 +1,22 @@
+class java/beans/SimpleBeanInfo
+getAdditionalBeanInfo
+ ()[Ljava/beans/BeanInfo;
+ ()[0Ljava/beans/BeanInfo;
+getBeanDescriptor
+ ()Ljava/beans/BeanDescriptor;
+ ()L0java/beans/BeanDescriptor;
+getEventSetDescriptors
+ ()[Ljava/beans/EventSetDescriptor;
+ ()[0Ljava/beans/EventSetDescriptor;
+getIcon
+ (I)Ljava/awt/Image;
+ (I)L0java/awt/Image;
+getMethodDescriptors
+ ()[Ljava/beans/MethodDescriptor;
+ ()[0Ljava/beans/MethodDescriptor;
+getPropertyDescriptors
+ ()[Ljava/beans/PropertyDescriptor;
+ ()[0Ljava/beans/PropertyDescriptor;
+loadImage
+ (Ljava/lang/String;)Ljava/awt/Image;
+ (Ljava/lang/String;)L0java/awt/Image;

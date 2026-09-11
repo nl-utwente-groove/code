@@ -1,0 +1,25 @@
+class javax/swing/plaf/metal/MetalIconFactory
+getInternalFrameAltMaximizeIcon
+ (I)Ljavax/swing/Icon;
+ (I)L1javax/swing/Icon;
+getInternalFrameCloseIcon
+ (I)Ljavax/swing/Icon;
+ (I)L1javax/swing/Icon;
+getInternalFrameMaximizeIcon
+ (I)Ljavax/swing/Icon;
+ (I)L1javax/swing/Icon;
+getInternalFrameMinimizeIcon
+ (I)Ljavax/swing/Icon;
+ (I)L1javax/swing/Icon;
+getMenuItemCheckIcon
+ ()Ljavax/swing/Icon;
+ ()L0javax/swing/Icon;
+getTreeControlIcon
+ (Z)Ljavax/swing/Icon;
+ (Z)L1javax/swing/Icon;
+getTreeFolderIcon
+ ()Ljavax/swing/Icon;
+ ()L1javax/swing/Icon;
+getTreeLeafIcon
+ ()Ljavax/swing/Icon;
+ ()L1javax/swing/Icon;

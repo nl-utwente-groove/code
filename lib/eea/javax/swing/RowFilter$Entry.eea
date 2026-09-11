@@ -1,0 +1,5 @@
+class javax/swing/RowFilter$Entry
+ <M:Ljava/lang/Object;I:Ljava/lang/Object;>
+getStringValue
+ (I)Ljava/lang/String;
+ (I)L1java/lang/String;

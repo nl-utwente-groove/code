@@ -1,10 +1,22 @@
 class java/awt/image/BufferedImage
+createGraphics
+ ()Ljava/awt/Graphics2D;
+ ()L1java/awt/Graphics2D;
 getProperty
  (Ljava/lang/String;)Ljava/lang/Object;
  (Ljava/lang/String;)L1java/lang/Object;
 getPropertyNames
  ()[Ljava/lang/String;
  ()[0L1java/lang/String;
+getRGB
+ (IIII[III)[I
+ (IIII[III)[1I
+getSources
+ ()Ljava/util/Vector<Ljava/awt/image/RenderedImage;>;
+ ()L0java/util/Vector<Ljava/awt/image/RenderedImage;>;
+getWritableTileIndices
+ ()[Ljava/awt/Point;
+ ()[1Ljava/awt/Point;
 toString
  ()Ljava/lang/String;
  ()L1java/lang/String;

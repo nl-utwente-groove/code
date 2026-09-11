@@ -1,0 +1,7 @@
+class javax/management/remote/JMXConnector
+CREDENTIALS
+ Ljava/lang/String;
+ L1java/lang/String;
+removeConnectionNotificationListener
+ (Ljavax/management/NotificationListener;)V
+ (L1javax/management/NotificationListener;)V

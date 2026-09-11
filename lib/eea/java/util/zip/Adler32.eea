@@ -1,0 +1,7 @@
+class java/util/zip/Adler32
+update
+ (Ljava/nio/ByteBuffer;)V
+ (L1java/nio/ByteBuffer;)V
+update
+ ([BII)V
+ ([1BII)V

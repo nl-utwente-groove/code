@@ -2,6 +2,36 @@ class javax/swing/JMenu
 addMenuListener
  (Ljavax/swing/event/MenuListener;)V
  (L1javax/swing/event/MenuListener;)V
+createActionChangeListener
+ (Ljavax/swing/JMenuItem;)Ljava/beans/PropertyChangeListener;
+ (Ljavax/swing/JMenuItem;)L1java/beans/PropertyChangeListener;
+createActionComponent
+ (Ljavax/swing/Action;)Ljavax/swing/JMenuItem;
+ (Ljavax/swing/Action;)L1javax/swing/JMenuItem;
+createWinListener
+ (Ljavax/swing/JPopupMenu;)Ljavax/swing/JMenu$WinListener;
+ (Ljavax/swing/JPopupMenu;)L1javax/swing/JMenu$WinListener;
+getItem
+ (I)Ljavax/swing/JMenuItem;
+ (I)L0javax/swing/JMenuItem;
+getMenuComponent
+ (I)Ljava/awt/Component;
+ (I)L0java/awt/Component;
+getPopupMenuOrigin
+ ()Ljava/awt/Point;
+ ()L1java/awt/Point;
+getSubElements
+ ()[Ljavax/swing/MenuElement;
+ ()[1Ljavax/swing/MenuElement;
+getUIClassID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+insert
+ (Ljavax/swing/Action;I)Ljavax/swing/JMenuItem;
+ (Ljavax/swing/Action;I)L1javax/swing/JMenuItem;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
 removeMenuListener
  (Ljavax/swing/event/MenuListener;)V
  (L1javax/swing/event/MenuListener;)V

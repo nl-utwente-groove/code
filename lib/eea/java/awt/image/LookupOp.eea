@@ -1,0 +1,10 @@
+class java/awt/image/LookupOp
+createCompatibleDestImage
+ (Ljava/awt/image/BufferedImage;Ljava/awt/image/ColorModel;)Ljava/awt/image/BufferedImage;
+ (Ljava/awt/image/BufferedImage;Ljava/awt/image/ColorModel;)L1java/awt/image/BufferedImage;
+createCompatibleDestRaster
+ (Ljava/awt/image/Raster;)Ljava/awt/image/WritableRaster;
+ (Ljava/awt/image/Raster;)L1java/awt/image/WritableRaster;
+getPoint2D
+ (Ljava/awt/geom/Point2D;Ljava/awt/geom/Point2D;)Ljava/awt/geom/Point2D;
+ (Ljava/awt/geom/Point2D;Ljava/awt/geom/Point2D;)L1java/awt/geom/Point2D;

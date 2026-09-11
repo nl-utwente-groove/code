@@ -1,0 +1,13 @@
+class javax/swing/JFormattedTextField$AbstractFormatter
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+getActions
+ ()[Ljavax/swing/Action;
+ ()[0Ljavax/swing/Action;
+getDocumentFilter
+ ()Ljavax/swing/text/DocumentFilter;
+ ()L0javax/swing/text/DocumentFilter;
+getNavigationFilter
+ ()Ljavax/swing/text/NavigationFilter;
+ ()L0javax/swing/text/NavigationFilter;

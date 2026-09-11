@@ -1,0 +1,115 @@
+class java/awt/AWTEventMulticaster
+actionPerformed
+ (Ljava/awt/event/ActionEvent;)V
+ (L1java/awt/event/ActionEvent;)V
+adjustmentValueChanged
+ (Ljava/awt/event/AdjustmentEvent;)V
+ (L1java/awt/event/AdjustmentEvent;)V
+ancestorMoved
+ (Ljava/awt/event/HierarchyEvent;)V
+ (L1java/awt/event/HierarchyEvent;)V
+ancestorResized
+ (Ljava/awt/event/HierarchyEvent;)V
+ (L1java/awt/event/HierarchyEvent;)V
+caretPositionChanged
+ (Ljava/awt/event/InputMethodEvent;)V
+ (L1java/awt/event/InputMethodEvent;)V
+componentAdded
+ (Ljava/awt/event/ContainerEvent;)V
+ (L1java/awt/event/ContainerEvent;)V
+componentHidden
+ (Ljava/awt/event/ComponentEvent;)V
+ (L1java/awt/event/ComponentEvent;)V
+componentMoved
+ (Ljava/awt/event/ComponentEvent;)V
+ (L1java/awt/event/ComponentEvent;)V
+componentRemoved
+ (Ljava/awt/event/ContainerEvent;)V
+ (L1java/awt/event/ContainerEvent;)V
+componentResized
+ (Ljava/awt/event/ComponentEvent;)V
+ (L1java/awt/event/ComponentEvent;)V
+componentShown
+ (Ljava/awt/event/ComponentEvent;)V
+ (L1java/awt/event/ComponentEvent;)V
+focusGained
+ (Ljava/awt/event/FocusEvent;)V
+ (L1java/awt/event/FocusEvent;)V
+focusLost
+ (Ljava/awt/event/FocusEvent;)V
+ (L1java/awt/event/FocusEvent;)V
+hierarchyChanged
+ (Ljava/awt/event/HierarchyEvent;)V
+ (L1java/awt/event/HierarchyEvent;)V
+inputMethodTextChanged
+ (Ljava/awt/event/InputMethodEvent;)V
+ (L1java/awt/event/InputMethodEvent;)V
+itemStateChanged
+ (Ljava/awt/event/ItemEvent;)V
+ (L1java/awt/event/ItemEvent;)V
+keyPressed
+ (Ljava/awt/event/KeyEvent;)V
+ (L1java/awt/event/KeyEvent;)V
+keyReleased
+ (Ljava/awt/event/KeyEvent;)V
+ (L1java/awt/event/KeyEvent;)V
+keyTyped
+ (Ljava/awt/event/KeyEvent;)V
+ (L1java/awt/event/KeyEvent;)V
+mouseClicked
+ (Ljava/awt/event/MouseEvent;)V
+ (L1java/awt/event/MouseEvent;)V
+mouseDragged
+ (Ljava/awt/event/MouseEvent;)V
+ (L1java/awt/event/MouseEvent;)V
+mouseEntered
+ (Ljava/awt/event/MouseEvent;)V
+ (L1java/awt/event/MouseEvent;)V
+mouseExited
+ (Ljava/awt/event/MouseEvent;)V
+ (L1java/awt/event/MouseEvent;)V
+mouseMoved
+ (Ljava/awt/event/MouseEvent;)V
+ (L1java/awt/event/MouseEvent;)V
+mousePressed
+ (Ljava/awt/event/MouseEvent;)V
+ (L1java/awt/event/MouseEvent;)V
+mouseReleased
+ (Ljava/awt/event/MouseEvent;)V
+ (L1java/awt/event/MouseEvent;)V
+mouseWheelMoved
+ (Ljava/awt/event/MouseWheelEvent;)V
+ (L1java/awt/event/MouseWheelEvent;)V
+textValueChanged
+ (Ljava/awt/event/TextEvent;)V
+ (L1java/awt/event/TextEvent;)V
+windowActivated
+ (Ljava/awt/event/WindowEvent;)V
+ (L1java/awt/event/WindowEvent;)V
+windowClosed
+ (Ljava/awt/event/WindowEvent;)V
+ (L1java/awt/event/WindowEvent;)V
+windowClosing
+ (Ljava/awt/event/WindowEvent;)V
+ (L1java/awt/event/WindowEvent;)V
+windowDeactivated
+ (Ljava/awt/event/WindowEvent;)V
+ (L1java/awt/event/WindowEvent;)V
+windowDeiconified
+ (Ljava/awt/event/WindowEvent;)V
+ (L1java/awt/event/WindowEvent;)V
+windowGainedFocus
+ (Ljava/awt/event/WindowEvent;)V
+ (L1java/awt/event/WindowEvent;)V
+windowIconified
+ (Ljava/awt/event/WindowEvent;)V
+ (L1java/awt/event/WindowEvent;)V
+windowLostFocus
+ (Ljava/awt/event/WindowEvent;)V
+ (L1java/awt/event/WindowEvent;)V
+windowOpened
+ (Ljava/awt/event/WindowEvent;)V
+ (L1java/awt/event/WindowEvent;)V
+windowStateChanged
+ (Ljava/awt/event/WindowEvent;)V
+ (L1java/awt/event/WindowEvent;)V

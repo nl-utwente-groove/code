@@ -1,0 +1,7 @@
+class java/lang/constant/ModuleDesc
+of
+ (Ljava/lang/String;)Ljava/lang/constant/ModuleDesc;
+ (Ljava/lang/String;)L1java/lang/constant/ModuleDesc;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z

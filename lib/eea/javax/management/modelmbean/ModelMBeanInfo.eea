@@ -1,0 +1,4 @@
+class javax/management/modelmbean/ModelMBeanInfo
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;

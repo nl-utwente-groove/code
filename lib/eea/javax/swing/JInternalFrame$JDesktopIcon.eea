@@ -1,0 +1,7 @@
+class javax/swing/JInternalFrame$JDesktopIcon
+getDesktopPane
+ ()Ljavax/swing/JDesktopPane;
+ ()L0javax/swing/JDesktopPane;
+getUIClassID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

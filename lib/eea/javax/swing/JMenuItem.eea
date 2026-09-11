@@ -5,6 +5,15 @@ addMenuDragMouseListener
 addMenuKeyListener
  (Ljavax/swing/event/MenuKeyListener;)V
  (L1javax/swing/event/MenuKeyListener;)V
+getSubElements
+ ()[Ljavax/swing/MenuElement;
+ ()[1Ljavax/swing/MenuElement;
+getUIClassID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
 removeMenuDragMouseListener
  (Ljavax/swing/event/MenuDragMouseListener;)V
  (L1javax/swing/event/MenuDragMouseListener;)V

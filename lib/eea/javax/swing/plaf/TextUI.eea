@@ -1,0 +1,4 @@
+class javax/swing/plaf/TextUI
+getToolTipText
+ (Ljavax/swing/text/JTextComponent;Ljava/awt/Point;)Ljava/lang/String;
+ (Ljavax/swing/text/JTextComponent;Ljava/awt/Point;)L0java/lang/String;

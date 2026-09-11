@@ -15,6 +15,9 @@ contains
 containsAll
  (Ljava/util/Collection<*>;)Z
  (L1java/util/Collection<*>;)Z
+elements
+ ()Ljava/util/Enumeration<TE;>;
+ ()L1java/util/Enumeration<TE;>;
 equals
  (Ljava/lang/Object;)Z
  (L0java/lang/Object;)Z

@@ -1,0 +1,7 @@
+class javax/swing/plaf/synth/SynthStyle
+getIcon
+ (Ljavax/swing/plaf/synth/SynthContext;Ljava/lang/Object;)Ljavax/swing/Icon;
+ (Ljavax/swing/plaf/synth/SynthContext;Ljava/lang/Object;)L0javax/swing/Icon;
+getPainter
+ (Ljavax/swing/plaf/synth/SynthContext;)Ljavax/swing/plaf/synth/SynthPainter;
+ (Ljavax/swing/plaf/synth/SynthContext;)L0javax/swing/plaf/synth/SynthPainter;

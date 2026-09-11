@@ -1,0 +1,4 @@
+class javax/crypto/KeyAgreement
+getInstance
+ (Ljava/lang/String;)Ljavax/crypto/KeyAgreement;
+ (Ljava/lang/String;)L1javax/crypto/KeyAgreement;

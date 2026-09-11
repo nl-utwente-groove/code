@@ -16,7 +16,7 @@ directory is shipped in release artifacts.
 ## Provenance and license
 
 The `.eea` files are taken from the [no-npe](https://github.com/vegardit/no-npe) project
-(artifact `com.vegardit.no-npe:no-npe-eea-java-21`, version 1.1.0), successor of
+(artifact `com.vegardit.no-npe:no-npe-eea-java-21`, version 1.3.14), successor of
 lastnpe.org. They are licensed under the Eclipse Public License 2.0 (see `LICENSE`);
 they are development-time data only and are not distributed with GROOVE.
 

@@ -1,0 +1,16 @@
+class java/security/Policy
+UNSUPPORTED_EMPTY_COLLECTION
+ Ljava/security/PermissionCollection;
+ L1java/security/PermissionCollection;
+getParameters
+ ()Ljava/security/Policy$Parameters;
+ ()L0java/security/Policy$Parameters;
+getPermissions
+ (Ljava/security/ProtectionDomain;)Ljava/security/PermissionCollection;
+ (Ljava/security/ProtectionDomain;)L1java/security/PermissionCollection;
+getProvider
+ ()Ljava/security/Provider;
+ ()L0java/security/Provider;
+getType
+ ()Ljava/lang/String;
+ ()L0java/lang/String;

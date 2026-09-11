@@ -1,0 +1,13 @@
+class java/applet/Applet
+getAppletInfo
+ ()Ljava/lang/String;
+ ()L0java/lang/String;
+getAudioClip
+ (Ljava/net/URL;Ljava/lang/String;)Ljava/applet/AudioClip;
+ (Ljava/net/URL;Ljava/lang/String;)L0java/applet/AudioClip;
+getImage
+ (Ljava/net/URL;Ljava/lang/String;)Ljava/awt/Image;
+ (Ljava/net/URL;Ljava/lang/String;)L0java/awt/Image;
+getParameterInfo
+ ()[[Ljava/lang/String;
+ ()[0[Ljava/lang/String;

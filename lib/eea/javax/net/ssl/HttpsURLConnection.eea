@@ -1,0 +1,7 @@
+class javax/net/ssl/HttpsURLConnection
+getLocalPrincipal
+ ()Ljava/security/Principal;
+ ()L0java/security/Principal;
+getSSLSession
+ ()Ljava/util/Optional<Ljavax/net/ssl/SSLSession;>;
+ ()L1java/util/Optional<Ljavax/net/ssl/SSLSession;>;

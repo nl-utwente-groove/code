@@ -1,0 +1,34 @@
+class java/security/cert/X509CertSelector
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+getAuthorityKeyIdentifier
+ ()[B
+ ()[0B
+getCertificateValid
+ ()Ljava/util/Date;
+ ()L0java/util/Date;
+getKeyUsage
+ ()[Z
+ ()[0Z
+getNameConstraints
+ ()[B
+ ()[0B
+getPathToNames
+ ()Ljava/util/Collection<Ljava/util/List<*>;>;
+ ()L0java/util/Collection<Ljava/util/List<*>;>;
+getPrivateKeyValid
+ ()Ljava/util/Date;
+ ()L0java/util/Date;
+getSubjectAlternativeNames
+ ()Ljava/util/Collection<Ljava/util/List<*>;>;
+ ()L0java/util/Collection<Ljava/util/List<*>;>;
+getSubjectKeyIdentifier
+ ()[B
+ ()[0B
+getSubjectPublicKeyAlgID
+ ()Ljava/lang/String;
+ ()L0java/lang/String;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

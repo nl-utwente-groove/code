@@ -1,0 +1,10 @@
+class javax/swing/plaf/basic/BasicSplitPaneDivider
+createLeftOneTouchButton
+ ()Ljavax/swing/JButton;
+ ()L1javax/swing/JButton;
+createRightOneTouchButton
+ ()Ljavax/swing/JButton;
+ ()L1javax/swing/JButton;
+propertyChange
+ (Ljava/beans/PropertyChangeEvent;)V
+ (L1java/beans/PropertyChangeEvent;)V

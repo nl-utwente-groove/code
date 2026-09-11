@@ -1,0 +1,40 @@
+class javax/swing/plaf/basic/BasicInternalFrameUI
+createUI
+ (Ljavax/swing/JComponent;)Ljavax/swing/plaf/ComponentUI;
+ (Ljavax/swing/JComponent;)L1javax/swing/plaf/ComponentUI;
+createBorderListener
+ (Ljavax/swing/JInternalFrame;)Ljavax/swing/event/MouseInputAdapter;
+ (Ljavax/swing/JInternalFrame;)L1javax/swing/event/MouseInputAdapter;
+createComponentListener
+ ()Ljava/awt/event/ComponentListener;
+ ()L1java/awt/event/ComponentListener;
+createDesktopManager
+ ()Ljavax/swing/DesktopManager;
+ ()L1javax/swing/DesktopManager;
+createEastPane
+ (Ljavax/swing/JInternalFrame;)Ljavax/swing/JComponent;
+ (Ljavax/swing/JInternalFrame;)L0javax/swing/JComponent;
+createGlassPaneDispatcher
+ ()Ljavax/swing/event/MouseInputListener;
+ ()L0javax/swing/event/MouseInputListener;
+createLayoutManager
+ ()Ljava/awt/LayoutManager;
+ ()L1java/awt/LayoutManager;
+createNorthPane
+ (Ljavax/swing/JInternalFrame;)Ljavax/swing/JComponent;
+ (Ljavax/swing/JInternalFrame;)L1javax/swing/JComponent;
+createPropertyChangeListener
+ ()Ljava/beans/PropertyChangeListener;
+ ()L1java/beans/PropertyChangeListener;
+createSouthPane
+ (Ljavax/swing/JInternalFrame;)Ljavax/swing/JComponent;
+ (Ljavax/swing/JInternalFrame;)L0javax/swing/JComponent;
+createWestPane
+ (Ljavax/swing/JInternalFrame;)Ljavax/swing/JComponent;
+ (Ljavax/swing/JInternalFrame;)L0javax/swing/JComponent;
+getMaximumSize
+ (Ljavax/swing/JComponent;)Ljava/awt/Dimension;
+ (Ljavax/swing/JComponent;)L1java/awt/Dimension;
+getPreferredSize
+ (Ljavax/swing/JComponent;)Ljava/awt/Dimension;
+ (Ljavax/swing/JComponent;)L0java/awt/Dimension;

@@ -1,0 +1,16 @@
+class javax/swing/text/BoxView
+baselineRequirements
+ (ILjavax/swing/SizeRequirements;)Ljavax/swing/SizeRequirements;
+ (ILjavax/swing/SizeRequirements;)L1javax/swing/SizeRequirements;
+calculateMajorAxisRequirements
+ (ILjavax/swing/SizeRequirements;)Ljavax/swing/SizeRequirements;
+ (ILjavax/swing/SizeRequirements;)L1javax/swing/SizeRequirements;
+calculateMinorAxisRequirements
+ (ILjavax/swing/SizeRequirements;)Ljavax/swing/SizeRequirements;
+ (ILjavax/swing/SizeRequirements;)L1javax/swing/SizeRequirements;
+getChildAllocation
+ (ILjava/awt/Shape;)Ljava/awt/Shape;
+ (ILjava/awt/Shape;)L0java/awt/Shape;
+modelToView
+ (ILjava/awt/Shape;Ljavax/swing/text/Position$Bias;)Ljava/awt/Shape;
+ (ILjava/awt/Shape;Ljavax/swing/text/Position$Bias;)L0java/awt/Shape;

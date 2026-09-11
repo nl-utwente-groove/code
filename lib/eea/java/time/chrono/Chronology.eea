@@ -1,0 +1,13 @@
+class java/time/chrono/Chronology
+compareTo
+ (Ljava/time/chrono/Chronology;)I
+ (L1java/time/chrono/Chronology;)I
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+period
+ (III)Ljava/time/chrono/ChronoPeriod;
+ (III)L1java/time/chrono/ChronoPeriod;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

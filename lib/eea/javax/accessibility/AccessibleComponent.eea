@@ -1,0 +1,7 @@
+class javax/accessibility/AccessibleComponent
+addFocusListener
+ (Ljava/awt/event/FocusListener;)V
+ (L1java/awt/event/FocusListener;)V
+removeFocusListener
+ (Ljava/awt/event/FocusListener;)V
+ (L1java/awt/event/FocusListener;)V

@@ -1,0 +1,25 @@
+class java/awt/TextComponent$AccessibleAWTTextComponent
+getAccessibleText
+ ()Ljavax/accessibility/AccessibleText;
+ ()L0javax/accessibility/AccessibleText;
+getAfterIndex
+ (II)Ljava/lang/String;
+ (II)L0java/lang/String;
+getAtIndex
+ (II)Ljava/lang/String;
+ (II)L0java/lang/String;
+getBeforeIndex
+ (II)Ljava/lang/String;
+ (II)L0java/lang/String;
+getCharacterAttribute
+ (I)Ljavax/swing/text/AttributeSet;
+ (I)L0javax/swing/text/AttributeSet;
+getCharacterBounds
+ (I)Ljava/awt/Rectangle;
+ (I)L0java/awt/Rectangle;
+getSelectedText
+ ()Ljava/lang/String;
+ ()L0java/lang/String;
+textValueChanged
+ (Ljava/awt/event/TextEvent;)V
+ (L1java/awt/event/TextEvent;)V

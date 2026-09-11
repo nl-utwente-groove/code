@@ -26,3 +26,6 @@ WEST
 WIDTH
  Ljava/lang/String;
  L1java/lang/String;
+getConstraint
+ (Ljava/lang/String;Ljava/awt/Component;)Ljavax/swing/Spring;
+ (Ljava/lang/String;Ljava/awt/Component;)L1javax/swing/Spring;

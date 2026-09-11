@@ -1,0 +1,4 @@
+class javax/print/PrintServiceLookup
+lookupDefaultPrintService
+ ()Ljavax/print/PrintService;
+ ()L0javax/print/PrintService;

@@ -1,0 +1,28 @@
+class javax/xml/transform/TransformerException
+<init>
+ (Ljava/lang/String;)V
+ (L0java/lang/String;)V
+<init>
+ (Ljava/lang/String;Ljava/lang/Throwable;)V
+ (L0java/lang/String;L0java/lang/Throwable;)V
+<init>
+ (Ljava/lang/Throwable;)V
+ (L0java/lang/Throwable;)V
+getCause
+ ()Ljava/lang/Throwable;
+ ()L0java/lang/Throwable;
+getLocationAsString
+ ()Ljava/lang/String;
+ ()L0java/lang/String;
+getMessageAndLocation
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+initCause
+ (Ljava/lang/Throwable;)Ljava/lang/Throwable;
+ (L0java/lang/Throwable;)Ljava/lang/Throwable;
+printStackTrace
+ (Ljava/io/PrintStream;)V
+ (L1java/io/PrintStream;)V
+printStackTrace
+ (Ljava/io/PrintWriter;)V
+ (L1java/io/PrintWriter;)V

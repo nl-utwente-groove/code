@@ -1,5 +1,11 @@
 class java/util/LinkedHashSet
  <E:Ljava/lang/Object;>
+newLinkedHashSet
+ <T:Ljava/lang/Object;>(I)Ljava/util/LinkedHashSet<TT;>;
+ <T:Ljava/lang/Object;>(I)L1java/util/LinkedHashSet<TT;>;
+reversed
+ ()Ljava/util/SequencedSet<TE;>;
+ ()L1java/util/SequencedSet<TE;>;
 spliterator
  ()Ljava/util/Spliterator<TE;>;
  ()L1java/util/Spliterator<TE;>;

@@ -1,0 +1,13 @@
+class javax/security/auth/kerberos/KeyTab
+getInstance
+ ()Ljavax/security/auth/kerberos/KeyTab;
+ ()L1javax/security/auth/kerberos/KeyTab;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getKeys
+ (Ljavax/security/auth/kerberos/KerberosPrincipal;)[Ljavax/security/auth/kerberos/KerberosKey;
+ (Ljavax/security/auth/kerberos/KerberosPrincipal;)[1Ljavax/security/auth/kerberos/KerberosKey;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

@@ -1,0 +1,7 @@
+class javax/security/auth/callback/ChoiceCallback
+getChoices
+ ()[Ljava/lang/String;
+ ()[1Ljava/lang/String;
+getSelectedIndexes
+ ()[I
+ ()[1I

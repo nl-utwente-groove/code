@@ -1,0 +1,5 @@
+class javax/swing/DefaultRowSorter$ModelWrapper
+ <M:Ljava/lang/Object;I:Ljava/lang/Object;>
+getStringValueAt
+ (II)Ljava/lang/String;
+ (II)L1java/lang/String;

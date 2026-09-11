@@ -1,0 +1,7 @@
+class javax/net/ssl/SSLSessionBindingListener
+valueBound
+ (Ljavax/net/ssl/SSLSessionBindingEvent;)V
+ (L1javax/net/ssl/SSLSessionBindingEvent;)V
+valueUnbound
+ (Ljavax/net/ssl/SSLSessionBindingEvent;)V
+ (L1javax/net/ssl/SSLSessionBindingEvent;)V

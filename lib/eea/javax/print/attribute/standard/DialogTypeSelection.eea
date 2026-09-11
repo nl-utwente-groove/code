@@ -1,0 +1,19 @@
+class javax/print/attribute/standard/DialogTypeSelection
+COMMON
+ Ljavax/print/attribute/standard/DialogTypeSelection;
+ L1javax/print/attribute/standard/DialogTypeSelection;
+NATIVE
+ Ljavax/print/attribute/standard/DialogTypeSelection;
+ L1javax/print/attribute/standard/DialogTypeSelection;
+getCategory
+ ()Ljava/lang/Class<+Ljavax/print/attribute/Attribute;>;
+ ()L1java/lang/Class<+Ljavax/print/attribute/Attribute;>;
+getEnumValueTable
+ ()[Ljavax/print/attribute/EnumSyntax;
+ ()[0Ljavax/print/attribute/EnumSyntax;
+getName
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+getStringTable
+ ()[Ljava/lang/String;
+ ()[0Ljava/lang/String;

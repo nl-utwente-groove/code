@@ -1,0 +1,4 @@
+class javax/swing/JToolBar$Separator
+getUIClassID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

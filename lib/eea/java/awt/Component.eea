@@ -29,6 +29,48 @@ addMouseWheelListener
 addPropertyChangeListener
  (Ljava/beans/PropertyChangeListener;)V
  (L1java/beans/PropertyChangeListener;)V
+coalesceEvents
+ (Ljava/awt/AWTEvent;Ljava/awt/AWTEvent;)Ljava/awt/AWTEvent;
+ (Ljava/awt/AWTEvent;Ljava/awt/AWTEvent;)L0java/awt/AWTEvent;
+createImage
+ (II)Ljava/awt/Image;
+ (II)L0java/awt/Image;
+createImage
+ (Ljava/awt/image/ImageProducer;)Ljava/awt/Image;
+ (Ljava/awt/image/ImageProducer;)L1java/awt/Image;
+createVolatileImage
+ (II)Ljava/awt/image/VolatileImage;
+ (II)L0java/awt/image/VolatileImage;
+createVolatileImage
+ (IILjava/awt/ImageCapabilities;)Ljava/awt/image/VolatileImage;
+ (IILjava/awt/ImageCapabilities;)L1java/awt/image/VolatileImage;
+getBackground
+ ()Ljava/awt/Color;
+ ()L0java/awt/Color;
+getForeground
+ ()Ljava/awt/Color;
+ ()L0java/awt/Color;
+getGraphics
+ ()Ljava/awt/Graphics;
+ ()L0java/awt/Graphics;
+getInputContext
+ ()Ljava/awt/im/InputContext;
+ ()L0java/awt/im/InputContext;
+getInputMethodRequests
+ ()Ljava/awt/im/InputMethodRequests;
+ ()L0java/awt/im/InputMethodRequests;
+locate
+ (II)Ljava/awt/Component;
+ (II)L0java/awt/Component;
+minimumSize
+ ()Ljava/awt/Dimension;
+ ()L1java/awt/Dimension;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+preferredSize
+ ()Ljava/awt/Dimension;
+ ()L1java/awt/Dimension;
 removeComponentListener
  (Ljava/awt/event/ComponentListener;)V
  (L1java/awt/event/ComponentListener;)V

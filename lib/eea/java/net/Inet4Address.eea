@@ -1,0 +1,10 @@
+class java/net/Inet4Address
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getAddress
+ ()[B
+ ()[1B
+getHostAddress
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

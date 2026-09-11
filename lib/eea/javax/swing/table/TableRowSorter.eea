@@ -1,0 +1,5 @@
+class javax/swing/table/TableRowSorter
+ <M::Ljavax/swing/table/TableModel;>
+getComparator
+ (I)Ljava/util/Comparator<*>;
+ (I)L0java/util/Comparator<*>;

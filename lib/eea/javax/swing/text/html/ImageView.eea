@@ -1,0 +1,10 @@
+class javax/swing/text/html/ImageView
+getImageURL
+ ()Ljava/net/URL;
+ ()L0java/net/URL;
+getToolTipText
+ (FFLjava/awt/Shape;)Ljava/lang/String;
+ (FFLjava/awt/Shape;)L0java/lang/String;
+modelToView
+ (ILjava/awt/Shape;Ljavax/swing/text/Position$Bias;)Ljava/awt/Shape;
+ (ILjava/awt/Shape;Ljavax/swing/text/Position$Bias;)L0java/awt/Shape;

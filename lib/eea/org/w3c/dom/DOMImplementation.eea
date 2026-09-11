@@ -1,0 +1,7 @@
+class org/w3c/dom/DOMImplementation
+createDocument
+ (Ljava/lang/String;Ljava/lang/String;Lorg/w3c/dom/DocumentType;)Lorg/w3c/dom/Document;
+ (Ljava/lang/String;Ljava/lang/String;Lorg/w3c/dom/DocumentType;)L1org/w3c/dom/Document;
+createDocumentType
+ (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Lorg/w3c/dom/DocumentType;
+ (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)L1org/w3c/dom/DocumentType;

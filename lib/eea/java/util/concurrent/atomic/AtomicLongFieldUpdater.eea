@@ -1,0 +1,5 @@
+class java/util/concurrent/atomic/AtomicLongFieldUpdater
+ <T:Ljava/lang/Object;>
+newUpdater
+ <U:Ljava/lang/Object;>(Ljava/lang/Class<TU;>;Ljava/lang/String;)Ljava/util/concurrent/atomic/AtomicLongFieldUpdater<TU;>;
+ <U:Ljava/lang/Object;>(Ljava/lang/Class<TU;>;Ljava/lang/String;)L1java/util/concurrent/atomic/AtomicLongFieldUpdater<TU;>;

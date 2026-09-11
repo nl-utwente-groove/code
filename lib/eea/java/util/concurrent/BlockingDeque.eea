@@ -1,0 +1,86 @@
+class java/util/concurrent/BlockingDeque
+ <E:Ljava/lang/Object;>
+add
+ (TE;)Z
+ (T1E;)Z
+addFirst
+ (TE;)V
+ (T1E;)V
+addLast
+ (TE;)V
+ (T1E;)V
+contains
+ (Ljava/lang/Object;)Z
+ (L1java/lang/Object;)Z
+element
+ ()TE;
+ ()T1E;
+iterator
+ ()Ljava/util/Iterator<TE;>;
+ ()L1java/util/Iterator<TE;>;
+offer
+ (TE;)Z
+ (T1E;)Z
+offer
+ (TE;JLjava/util/concurrent/TimeUnit;)Z
+ (T1E;JL1java/util/concurrent/TimeUnit;)Z
+offerFirst
+ (TE;)Z
+ (T1E;)Z
+offerFirst
+ (TE;JLjava/util/concurrent/TimeUnit;)Z
+ (T1E;JLjava/util/concurrent/TimeUnit;)Z
+offerLast
+ (TE;)Z
+ (T1E;)Z
+offerLast
+ (TE;JLjava/util/concurrent/TimeUnit;)Z
+ (T1E;JLjava/util/concurrent/TimeUnit;)Z
+peek
+ ()TE;
+ ()T0E;
+poll
+ ()TE;
+ ()T0E;
+poll
+ (JLjava/util/concurrent/TimeUnit;)TE;
+ (JL1java/util/concurrent/TimeUnit;)T0E;
+pollFirst
+ (JLjava/util/concurrent/TimeUnit;)TE;
+ (JL1java/util/concurrent/TimeUnit;)TE;
+pollLast
+ (JLjava/util/concurrent/TimeUnit;)TE;
+ (JL1java/util/concurrent/TimeUnit;)TE;
+push
+ (TE;)V
+ (T1E;)V
+put
+ (TE;)V
+ (T1E;)V
+putFirst
+ (TE;)V
+ (T1E;)V
+putLast
+ (TE;)V
+ (T1E;)V
+remove
+ ()TE;
+ ()T1E;
+remove
+ (Ljava/lang/Object;)Z
+ (L1java/lang/Object;)Z
+removeFirstOccurrence
+ (Ljava/lang/Object;)Z
+ (L1java/lang/Object;)Z
+removeLastOccurrence
+ (Ljava/lang/Object;)Z
+ (L1java/lang/Object;)Z
+take
+ ()TE;
+ ()T1E;
+takeFirst
+ ()TE;
+ ()T1E;
+takeLast
+ ()TE;
+ ()T1E;

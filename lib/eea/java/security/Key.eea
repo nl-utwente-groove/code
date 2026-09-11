@@ -1,0 +1,7 @@
+class java/security/Key
+getEncoded
+ ()[B
+ ()[0B
+getFormat
+ ()Ljava/lang/String;
+ ()L0java/lang/String;

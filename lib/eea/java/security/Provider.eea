@@ -1,0 +1,58 @@
+class java/security/Provider
+elements
+ ()Ljava/util/Enumeration<Ljava/lang/Object;>;
+ ()L1java/util/Enumeration<L1java/lang/Object;>;
+entrySet
+ ()Ljava/util/Set<Ljava/util/Map$Entry<Ljava/lang/Object;Ljava/lang/Object;>;>;
+ ()L1java/util/Set<L1java/util/Map$Entry<L1java/lang/Object;L1java/lang/Object;>;>;
+forEach
+ (Ljava/util/function/BiConsumer<-Ljava/lang/Object;-Ljava/lang/Object;>;)V
+ (L1java/util/function/BiConsumer<-1Ljava/lang/Object;-1Ljava/lang/Object;>;)V
+get
+ (Ljava/lang/Object;)Ljava/lang/Object;
+ (L1java/lang/Object;)L0java/lang/Object;
+getOrDefault
+ (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+ (L1java/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+getProperty
+ (Ljava/lang/String;)Ljava/lang/String;
+ (L1java/lang/String;)L0java/lang/String;
+getService
+ (Ljava/lang/String;Ljava/lang/String;)Ljava/security/Provider$Service;
+ (Ljava/lang/String;Ljava/lang/String;)L0java/security/Provider$Service;
+keySet
+ ()Ljava/util/Set<Ljava/lang/Object;>;
+ ()L1java/util/Set<L1java/lang/Object;>;
+keys
+ ()Ljava/util/Enumeration<Ljava/lang/Object;>;
+ ()L1java/util/Enumeration<L1java/lang/Object;>;
+load
+ (Ljava/io/InputStream;)V
+ (L1java/io/InputStream;)V
+put
+ (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+ (L1java/lang/Object;L1java/lang/Object;)L0java/lang/Object;
+putAll
+ (Ljava/util/Map<**>;)V
+ (L1java/util/Map<*1*1>;)V
+putIfAbsent
+ (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+ (L1java/lang/Object;L1java/lang/Object;)L0java/lang/Object;
+remove
+ (Ljava/lang/Object;)Ljava/lang/Object;
+ (L1java/lang/Object;)L0java/lang/Object;
+remove
+ (Ljava/lang/Object;Ljava/lang/Object;)Z
+ (L1java/lang/Object;L1java/lang/Object;)Z
+replace
+ (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+ (L1java/lang/Object;L1java/lang/Object;)L0java/lang/Object;
+replace
+ (Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Z
+ (L1java/lang/Object;L1java/lang/Object;L1java/lang/Object;)Z
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+values
+ ()Ljava/util/Collection<Ljava/lang/Object;>;
+ ()L1java/util/Collection<L1java/lang/Object;>;

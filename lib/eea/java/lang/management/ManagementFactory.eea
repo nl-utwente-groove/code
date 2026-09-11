@@ -1,0 +1,34 @@
+class java/lang/management/ManagementFactory
+CLASS_LOADING_MXBEAN_NAME
+ Ljava/lang/String;
+ L1java/lang/String;
+COMPILATION_MXBEAN_NAME
+ Ljava/lang/String;
+ L1java/lang/String;
+GARBAGE_COLLECTOR_MXBEAN_DOMAIN_TYPE
+ Ljava/lang/String;
+ L1java/lang/String;
+MEMORY_MANAGER_MXBEAN_DOMAIN_TYPE
+ Ljava/lang/String;
+ L1java/lang/String;
+MEMORY_MXBEAN_NAME
+ Ljava/lang/String;
+ L1java/lang/String;
+MEMORY_POOL_MXBEAN_DOMAIN_TYPE
+ Ljava/lang/String;
+ L1java/lang/String;
+OPERATING_SYSTEM_MXBEAN_NAME
+ Ljava/lang/String;
+ L1java/lang/String;
+RUNTIME_MXBEAN_NAME
+ Ljava/lang/String;
+ L1java/lang/String;
+THREAD_MXBEAN_NAME
+ Ljava/lang/String;
+ L1java/lang/String;
+getPlatformMBeanServer
+ ()Ljavax/management/MBeanServer;
+ ()L1javax/management/MBeanServer;
+getRuntimeMXBean
+ ()Ljava/lang/management/RuntimeMXBean;
+ ()L1java/lang/management/RuntimeMXBean;

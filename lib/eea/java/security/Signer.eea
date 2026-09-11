@@ -1,0 +1,4 @@
+class java/security/Signer
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

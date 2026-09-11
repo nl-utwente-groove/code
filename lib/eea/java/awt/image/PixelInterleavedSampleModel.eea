@@ -1,0 +1,7 @@
+class java/awt/image/PixelInterleavedSampleModel
+createCompatibleSampleModel
+ (II)Ljava/awt/image/SampleModel;
+ (II)L1java/awt/image/SampleModel;
+createSubsetSampleModel
+ ([I)Ljava/awt/image/SampleModel;
+ ([I)L1java/awt/image/SampleModel;

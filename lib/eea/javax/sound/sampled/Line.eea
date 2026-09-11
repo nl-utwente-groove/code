@@ -1,0 +1,7 @@
+class javax/sound/sampled/Line
+addLineListener
+ (Ljavax/sound/sampled/LineListener;)V
+ (L1javax/sound/sampled/LineListener;)V
+removeLineListener
+ (Ljavax/sound/sampled/LineListener;)V
+ (L1javax/sound/sampled/LineListener;)V

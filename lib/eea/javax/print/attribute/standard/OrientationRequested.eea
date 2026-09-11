@@ -1,0 +1,25 @@
+class javax/print/attribute/standard/OrientationRequested
+LANDSCAPE
+ Ljavax/print/attribute/standard/OrientationRequested;
+ L1javax/print/attribute/standard/OrientationRequested;
+PORTRAIT
+ Ljavax/print/attribute/standard/OrientationRequested;
+ L1javax/print/attribute/standard/OrientationRequested;
+REVERSE_LANDSCAPE
+ Ljavax/print/attribute/standard/OrientationRequested;
+ L1javax/print/attribute/standard/OrientationRequested;
+REVERSE_PORTRAIT
+ Ljavax/print/attribute/standard/OrientationRequested;
+ L1javax/print/attribute/standard/OrientationRequested;
+getCategory
+ ()Ljava/lang/Class<+Ljavax/print/attribute/Attribute;>;
+ ()L1java/lang/Class<+Ljavax/print/attribute/Attribute;>;
+getEnumValueTable
+ ()[Ljavax/print/attribute/EnumSyntax;
+ ()[0Ljavax/print/attribute/EnumSyntax;
+getName
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+getStringTable
+ ()[Ljava/lang/String;
+ ()[0Ljava/lang/String;

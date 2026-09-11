@@ -1,4 +1,7 @@
 class java/awt/CardLayout
+maximumLayoutSize
+ (Ljava/awt/Container;)Ljava/awt/Dimension;
+ (Ljava/awt/Container;)L1java/awt/Dimension;
 toString
  ()Ljava/lang/String;
  ()L1java/lang/String;

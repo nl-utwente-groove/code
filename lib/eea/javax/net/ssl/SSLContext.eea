@@ -1,0 +1,7 @@
+class javax/net/ssl/SSLContext
+createSSLEngine
+ ()Ljavax/net/ssl/SSLEngine;
+ ()L1javax/net/ssl/SSLEngine;
+createSSLEngine
+ (Ljava/lang/String;I)Ljavax/net/ssl/SSLEngine;
+ (Ljava/lang/String;I)L1javax/net/ssl/SSLEngine;

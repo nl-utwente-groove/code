@@ -1,0 +1,43 @@
+class javax/swing/plaf/basic/BasicSliderUI
+createUI
+ (Ljavax/swing/JComponent;)Ljavax/swing/plaf/ComponentUI;
+ (Ljavax/swing/JComponent;)L1javax/swing/plaf/ComponentUI;
+createChangeListener
+ (Ljavax/swing/JSlider;)Ljavax/swing/event/ChangeListener;
+ (Ljavax/swing/JSlider;)L1javax/swing/event/ChangeListener;
+createComponentListener
+ (Ljavax/swing/JSlider;)Ljava/awt/event/ComponentListener;
+ (Ljavax/swing/JSlider;)L1java/awt/event/ComponentListener;
+createFocusListener
+ (Ljavax/swing/JSlider;)Ljava/awt/event/FocusListener;
+ (Ljavax/swing/JSlider;)L1java/awt/event/FocusListener;
+createPropertyChangeListener
+ (Ljavax/swing/JSlider;)Ljava/beans/PropertyChangeListener;
+ (Ljavax/swing/JSlider;)L1java/beans/PropertyChangeListener;
+createScrollListener
+ (Ljavax/swing/JSlider;)Ljavax/swing/plaf/basic/BasicSliderUI$ScrollListener;
+ (Ljavax/swing/JSlider;)L1javax/swing/plaf/basic/BasicSliderUI$ScrollListener;
+createTrackListener
+ (Ljavax/swing/JSlider;)Ljavax/swing/plaf/basic/BasicSliderUI$TrackListener;
+ (Ljavax/swing/JSlider;)L1javax/swing/plaf/basic/BasicSliderUI$TrackListener;
+getHighestValue
+ ()Ljava/lang/Integer;
+ ()L0java/lang/Integer;
+getHighestValueLabel
+ ()Ljava/awt/Component;
+ ()L0java/awt/Component;
+getLowestValue
+ ()Ljava/lang/Integer;
+ ()L0java/lang/Integer;
+getLowestValueLabel
+ ()Ljava/awt/Component;
+ ()L0java/awt/Component;
+getMinimumSize
+ (Ljavax/swing/JComponent;)Ljava/awt/Dimension;
+ (Ljavax/swing/JComponent;)L1java/awt/Dimension;
+getPreferredSize
+ (Ljavax/swing/JComponent;)Ljava/awt/Dimension;
+ (Ljavax/swing/JComponent;)L1java/awt/Dimension;
+getThumbSize
+ ()Ljava/awt/Dimension;
+ ()L1java/awt/Dimension;

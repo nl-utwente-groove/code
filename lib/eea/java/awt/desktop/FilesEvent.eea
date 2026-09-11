@@ -1,0 +1,4 @@
+class java/awt/desktop/FilesEvent
+getFiles
+ ()Ljava/util/List<Ljava/io/File;>;
+ ()L1java/util/List<Ljava/io/File;>;

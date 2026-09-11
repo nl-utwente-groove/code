@@ -1,0 +1,7 @@
+class javax/management/remote/NotificationResult
+getTargetedNotifications
+ ()[Ljavax/management/remote/TargetedNotification;
+ ()[1Ljavax/management/remote/TargetedNotification;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

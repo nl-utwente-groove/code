@@ -1,0 +1,4 @@
+class javax/swing/text/html/ParagraphView
+calculateMinorAxisRequirements
+ (ILjavax/swing/SizeRequirements;)Ljavax/swing/SizeRequirements;
+ (ILjavax/swing/SizeRequirements;)L1javax/swing/SizeRequirements;

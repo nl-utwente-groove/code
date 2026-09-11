@@ -1,0 +1,7 @@
+class javax/imageio/metadata/IIOMetadataFormatImpl
+standardMetadataFormatName
+ Ljava/lang/String;
+ L1java/lang/String;
+getChildNames
+ (Ljava/lang/String;)[Ljava/lang/String;
+ (Ljava/lang/String;)[0Ljava/lang/String;

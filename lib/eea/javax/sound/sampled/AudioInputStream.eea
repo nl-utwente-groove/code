@@ -1,0 +1,7 @@
+class javax/sound/sampled/AudioInputStream
+read
+ ([B)I
+ ([1B)I
+read
+ ([BII)I
+ ([1BII)I

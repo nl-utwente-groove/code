@@ -1,0 +1,13 @@
+class javax/rmi/ssl/SslRMIServerSocketFactory
+createServerSocket
+ (I)Ljava/net/ServerSocket;
+ (I)L1java/net/ServerSocket;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getEnabledCipherSuites
+ ()[Ljava/lang/String;
+ ()[1Ljava/lang/String;
+getEnabledProtocols
+ ()[Ljava/lang/String;
+ ()[1Ljava/lang/String;

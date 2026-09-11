@@ -1,0 +1,4 @@
+class javax/net/ssl/CertPathTrustManagerParameters
+getParameters
+ ()Ljava/security/cert/CertPathParameters;
+ ()L1java/security/cert/CertPathParameters;

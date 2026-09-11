@@ -1,0 +1,19 @@
+class javax/swing/plaf/metal/MetalLookAndFeel
+getCurrentTheme
+ ()Ljavax/swing/plaf/metal/MetalTheme;
+ ()L1javax/swing/plaf/metal/MetalTheme;
+getDefaults
+ ()Ljavax/swing/UIDefaults;
+ ()L0javax/swing/UIDefaults;
+getDescription
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+getDisabledIcon
+ (Ljavax/swing/JComponent;Ljavax/swing/Icon;)Ljavax/swing/Icon;
+ (Ljavax/swing/JComponent;Ljavax/swing/Icon;)L0javax/swing/Icon;
+getID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+getName
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

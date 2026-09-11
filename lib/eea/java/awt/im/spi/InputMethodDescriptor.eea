@@ -1,0 +1,4 @@
+class java/awt/im/spi/InputMethodDescriptor
+createInputMethod
+ ()Ljava/awt/im/spi/InputMethod;
+ ()L1java/awt/im/spi/InputMethod;

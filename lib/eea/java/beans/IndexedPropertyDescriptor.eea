@@ -1,0 +1,10 @@
+class java/beans/IndexedPropertyDescriptor
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getIndexedReadMethod
+ ()Ljava/lang/reflect/Method;
+ ()L0java/lang/reflect/Method;
+getIndexedWriteMethod
+ ()Ljava/lang/reflect/Method;
+ ()L0java/lang/reflect/Method;

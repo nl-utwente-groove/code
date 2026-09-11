@@ -1,0 +1,7 @@
+class java/sql/Statement
+enquoteLiteral
+ (Ljava/lang/String;)Ljava/lang/String;
+ (Ljava/lang/String;)L1java/lang/String;
+enquoteNCharLiteral
+ (Ljava/lang/String;)Ljava/lang/String;
+ (Ljava/lang/String;)L1java/lang/String;

@@ -1,0 +1,4 @@
+class javax/management/remote/rmi/RMIServerImpl
+getVersion
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

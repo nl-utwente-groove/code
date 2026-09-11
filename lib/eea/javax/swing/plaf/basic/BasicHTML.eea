@@ -5,3 +5,6 @@ documentBaseKey
 propertyKey
  Ljava/lang/String;
  L1java/lang/String;
+createHTMLView
+ (Ljavax/swing/JComponent;Ljava/lang/String;)Ljavax/swing/text/View;
+ (Ljavax/swing/JComponent;Ljava/lang/String;)L1javax/swing/text/View;

@@ -1,0 +1,10 @@
+class java/awt/MenuShortcut
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

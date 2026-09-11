@@ -1,0 +1,4 @@
+class javax/tools/Tool
+name
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

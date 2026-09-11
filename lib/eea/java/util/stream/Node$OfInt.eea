@@ -1,0 +1,13 @@
+class java/util/stream/Node$OfInt
+copyInto
+ ([Ljava/lang/Integer;I)V
+ ([1Ljava/lang/Integer;I)V
+forEach
+ (Ljava/util/function/Consumer<-Ljava/lang/Integer;>;)V
+ (L1java/util/function/Consumer<-Ljava/lang/Integer;>;)V
+getShape
+ ()Ljava/util/stream/StreamShape;
+ ()L1java/util/stream/StreamShape;
+newArray
+ (I)[I
+ (I)[1I

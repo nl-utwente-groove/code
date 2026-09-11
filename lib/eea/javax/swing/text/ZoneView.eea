@@ -1,0 +1,4 @@
+class javax/swing/text/ZoneView
+createZone
+ (II)Ljavax/swing/text/View;
+ (II)L1javax/swing/text/View;

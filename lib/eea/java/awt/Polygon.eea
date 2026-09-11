@@ -1,0 +1,4 @@
+class java/awt/Polygon
+getPathIterator
+ (Ljava/awt/geom/AffineTransform;)Ljava/awt/geom/PathIterator;
+ (Ljava/awt/geom/AffineTransform;)L1java/awt/geom/PathIterator;

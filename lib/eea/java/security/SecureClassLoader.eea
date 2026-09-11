@@ -1,0 +1,4 @@
+class java/security/SecureClassLoader
+getPermissions
+ (Ljava/security/CodeSource;)Ljava/security/PermissionCollection;
+ (Ljava/security/CodeSource;)L1java/security/PermissionCollection;

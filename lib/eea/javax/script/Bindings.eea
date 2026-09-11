@@ -1,0 +1,4 @@
+class javax/script/Bindings
+containsKey
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z

@@ -47,6 +47,12 @@ TREE_MODEL_PROPERTY
 VISIBLE_ROW_COUNT_PROPERTY
  Ljava/lang/String;
  L1java/lang/String;
+createTreeModel
+ (Ljava/lang/Object;)Ljavax/swing/tree/TreeModel;
+ (Ljava/lang/Object;)L1javax/swing/tree/TreeModel;
+getDefaultTreeModel
+ ()Ljavax/swing/tree/TreeModel;
+ ()L1javax/swing/tree/TreeModel;
 addTreeExpansionListener
  (Ljavax/swing/event/TreeExpansionListener;)V
  (L1javax/swing/event/TreeExpansionListener;)V
@@ -56,9 +62,54 @@ addTreeSelectionListener
 addTreeWillExpandListener
  (Ljavax/swing/event/TreeWillExpandListener;)V
  (L1javax/swing/event/TreeWillExpandListener;)V
+convertValueToText
+ (Ljava/lang/Object;ZZZIZ)Ljava/lang/String;
+ (Ljava/lang/Object;ZZZIZ)L1java/lang/String;
+createTreeModelListener
+ ()Ljavax/swing/event/TreeModelListener;
+ ()L1javax/swing/event/TreeModelListener;
+getClosestPathForLocation
+ (II)Ljavax/swing/tree/TreePath;
+ (II)L0javax/swing/tree/TreePath;
+getEditingPath
+ ()Ljavax/swing/tree/TreePath;
+ ()L0javax/swing/tree/TreePath;
+getExpandedDescendants
+ (Ljavax/swing/tree/TreePath;)Ljava/util/Enumeration<Ljavax/swing/tree/TreePath;>;
+ (Ljavax/swing/tree/TreePath;)L0java/util/Enumeration<Ljavax/swing/tree/TreePath;>;
+getLastSelectedPathComponent
+ ()Ljava/lang/Object;
+ ()L0java/lang/Object;
+getNextMatch
+ (Ljava/lang/String;ILjavax/swing/text/Position$Bias;)Ljavax/swing/tree/TreePath;
+ (Ljava/lang/String;ILjavax/swing/text/Position$Bias;)L0javax/swing/tree/TreePath;
+getPathBetweenRows
+ (II)[Ljavax/swing/tree/TreePath;
+ (II)[1Ljavax/swing/tree/TreePath;
+getPathBounds
+ (Ljavax/swing/tree/TreePath;)Ljava/awt/Rectangle;
+ (Ljavax/swing/tree/TreePath;)L0java/awt/Rectangle;
+getPathForLocation
+ (II)Ljavax/swing/tree/TreePath;
+ (II)L0javax/swing/tree/TreePath;
+getPathForRow
+ (I)Ljavax/swing/tree/TreePath;
+ (I)L0javax/swing/tree/TreePath;
+getPreferredScrollableViewportSize
+ ()Ljava/awt/Dimension;
+ ()L1java/awt/Dimension;
+getSelectionPaths
+ ()[Ljavax/swing/tree/TreePath;
+ ()[0Ljavax/swing/tree/TreePath;
 getToolTipText
  (Ljava/awt/event/MouseEvent;)Ljava/lang/String;
  (L1java/awt/event/MouseEvent;)Ljava/lang/String;
+getUIClassID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
 removeTreeExpansionListener
  (Ljavax/swing/event/TreeExpansionListener;)V
  (L1javax/swing/event/TreeExpansionListener;)V

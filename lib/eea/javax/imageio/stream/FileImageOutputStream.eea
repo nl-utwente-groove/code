@@ -1,0 +1,4 @@
+class javax/imageio/stream/FileImageOutputStream
+write
+ ([BII)V
+ ([1BII)V

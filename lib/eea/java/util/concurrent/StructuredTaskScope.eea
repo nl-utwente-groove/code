@@ -1,0 +1,8 @@
+class java/util/concurrent/StructuredTaskScope
+ <T:Ljava/lang/Object;>
+fork
+ <U:TT;>(Ljava/util/concurrent/Callable<+TU;>;)Ljava/util/concurrent/StructuredTaskScope$Subtask<TU;>;
+ <U:TT;>(Ljava/util/concurrent/Callable<+TU;>;)L1java/util/concurrent/StructuredTaskScope$Subtask<TU;>;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

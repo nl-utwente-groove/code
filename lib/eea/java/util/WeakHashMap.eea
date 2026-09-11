@@ -1,5 +1,8 @@
 class java/util/WeakHashMap
  <K:Ljava/lang/Object;V:Ljava/lang/Object;>
+newWeakHashMap
+ <K:Ljava/lang/Object;V:Ljava/lang/Object;>(I)Ljava/util/WeakHashMap<TK;TV;>;
+ <K:Ljava/lang/Object;V:Ljava/lang/Object;>(I)L1java/util/WeakHashMap<TK;TV;>;
 containsKey
  (Ljava/lang/Object;)Z
  (L0java/lang/Object;)Z

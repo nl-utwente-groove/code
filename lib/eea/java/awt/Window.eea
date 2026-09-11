@@ -1,4 +1,7 @@
 class java/awt/Window
+getOwnerlessWindows
+ ()[Ljava/awt/Window;
+ ()[1Ljava/awt/Window;
 addPropertyChangeListener
  (Ljava/beans/PropertyChangeListener;)V
  (L1java/beans/PropertyChangeListener;)V
@@ -11,6 +14,27 @@ addWindowListener
 addWindowStateListener
  (Ljava/awt/event/WindowStateListener;)V
  (L1java/awt/event/WindowStateListener;)V
+getBackground
+ ()Ljava/awt/Color;
+ ()L0java/awt/Color;
+getFocusCycleRootAncestor
+ ()Ljava/awt/Container;
+ ()L0java/awt/Container;
+getFocusOwner
+ ()Ljava/awt/Component;
+ ()L0java/awt/Component;
+getFocusTraversalKeys
+ (I)Ljava/util/Set<Ljava/awt/AWTKeyStroke;>;
+ (I)L0java/util/Set<Ljava/awt/AWTKeyStroke;>;
+getIconImages
+ ()Ljava/util/List<Ljava/awt/Image;>;
+ ()L1java/util/List<Ljava/awt/Image;>;
+getInputContext
+ ()Ljava/awt/im/InputContext;
+ ()L0java/awt/im/InputContext;
+getMostRecentFocusOwner
+ ()Ljava/awt/Component;
+ ()L0java/awt/Component;
 removeWindowFocusListener
  (Ljava/awt/event/WindowFocusListener;)V
  (L1java/awt/event/WindowFocusListener;)V

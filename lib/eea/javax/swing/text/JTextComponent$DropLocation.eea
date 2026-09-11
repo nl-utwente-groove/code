@@ -1,0 +1,4 @@
+class javax/swing/text/JTextComponent$DropLocation
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

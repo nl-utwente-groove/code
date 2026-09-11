@@ -1,0 +1,16 @@
+class java/net/ServerSocket
+accept
+ ()Ljava/net/Socket;
+ ()L1java/net/Socket;
+getChannel
+ ()Ljava/nio/channels/ServerSocketChannel;
+ ()L0java/nio/channels/ServerSocketChannel;
+getInetAddress
+ ()Ljava/net/InetAddress;
+ ()L0java/net/InetAddress;
+getLocalSocketAddress
+ ()Ljava/net/SocketAddress;
+ ()L0java/net/SocketAddress;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

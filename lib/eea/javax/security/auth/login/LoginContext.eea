@@ -1,0 +1,4 @@
+class javax/security/auth/login/LoginContext
+getSubject
+ ()Ljavax/security/auth/Subject;
+ ()L0javax/security/auth/Subject;

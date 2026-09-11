@@ -1,0 +1,7 @@
+class javax/swing/DebugGraphics
+create
+ ()Ljava/awt/Graphics;
+ ()L1java/awt/Graphics;
+create
+ (IIII)Ljava/awt/Graphics;
+ (IIII)L1java/awt/Graphics;

@@ -1,0 +1,5 @@
+class java/util/Spliterators$AbstractSpliterator
+ <T:Ljava/lang/Object;>
+trySplit
+ ()Ljava/util/Spliterator<TT;>;
+ ()L1java/util/Spliterator<TT;>;

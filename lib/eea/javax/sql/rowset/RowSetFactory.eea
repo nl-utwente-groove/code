@@ -1,0 +1,16 @@
+class javax/sql/rowset/RowSetFactory
+createCachedRowSet
+ ()Ljavax/sql/rowset/CachedRowSet;
+ ()L1javax/sql/rowset/CachedRowSet;
+createFilteredRowSet
+ ()Ljavax/sql/rowset/FilteredRowSet;
+ ()L1javax/sql/rowset/FilteredRowSet;
+createJdbcRowSet
+ ()Ljavax/sql/rowset/JdbcRowSet;
+ ()L1javax/sql/rowset/JdbcRowSet;
+createJoinRowSet
+ ()Ljavax/sql/rowset/JoinRowSet;
+ ()L1javax/sql/rowset/JoinRowSet;
+createWebRowSet
+ ()Ljavax/sql/rowset/WebRowSet;
+ ()L1javax/sql/rowset/WebRowSet;

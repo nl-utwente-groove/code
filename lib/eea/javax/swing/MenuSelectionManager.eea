@@ -2,6 +2,12 @@ class javax/swing/MenuSelectionManager
 addChangeListener
  (Ljavax/swing/event/ChangeListener;)V
  (L1javax/swing/event/ChangeListener;)V
+componentForPoint
+ (Ljava/awt/Component;Ljava/awt/Point;)Ljava/awt/Component;
+ (Ljava/awt/Component;Ljava/awt/Point;)L0java/awt/Component;
+getSelectedPath
+ ()[Ljavax/swing/MenuElement;
+ ()[1Ljavax/swing/MenuElement;
 removeChangeListener
  (Ljavax/swing/event/ChangeListener;)V
  (L1javax/swing/event/ChangeListener;)V

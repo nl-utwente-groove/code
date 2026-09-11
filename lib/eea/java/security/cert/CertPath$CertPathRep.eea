@@ -1,0 +1,4 @@
+class java/security/cert/CertPath$CertPathRep
+readResolve
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;

@@ -1,0 +1,10 @@
+class java/awt/image/DirectColorModel
+createCompatibleWritableRaster
+ (II)Ljava/awt/image/WritableRaster;
+ (II)L1java/awt/image/WritableRaster;
+getComponents
+ (I[II)[I
+ (I[II)[1I
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

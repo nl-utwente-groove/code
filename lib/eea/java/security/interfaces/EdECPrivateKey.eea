@@ -1,0 +1,4 @@
+class java/security/interfaces/EdECPrivateKey
+getBytes
+ ()Ljava/util/Optional<[B>;
+ ()L1java/util/Optional<[B>;

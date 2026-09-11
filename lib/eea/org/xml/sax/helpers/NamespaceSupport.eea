@@ -1,0 +1,10 @@
+class org/xml/sax/helpers/NamespaceSupport
+NSDECL
+ Ljava/lang/String;
+ L1java/lang/String;
+XMLNS
+ Ljava/lang/String;
+ L1java/lang/String;
+processName
+ (Ljava/lang/String;[Ljava/lang/String;Z)[Ljava/lang/String;
+ (Ljava/lang/String;[Ljava/lang/String;Z)[0Ljava/lang/String;

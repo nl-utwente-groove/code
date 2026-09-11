@@ -1,0 +1,10 @@
+class javax/sql/rowset/BaseRowSet
+addRowSetListener
+ (Ljavax/sql/RowSetListener;)V
+ (L1javax/sql/RowSetListener;)V
+getParams
+ ()[Ljava/lang/Object;
+ ()[1Ljava/lang/Object;
+removeRowSetListener
+ (Ljavax/sql/RowSetListener;)V
+ (L1javax/sql/RowSetListener;)V

@@ -1,0 +1,70 @@
+class javax/swing/JTable$AccessibleJTable$AccessibleJTableCell
+addFocusListener
+ (Ljava/awt/event/FocusListener;)V
+ (L1java/awt/event/FocusListener;)V
+addPropertyChangeListener
+ (Ljava/beans/PropertyChangeListener;)V
+ (L1java/beans/PropertyChangeListener;)V
+getAccessibleAction
+ ()Ljavax/accessibility/AccessibleAction;
+ ()L0javax/accessibility/AccessibleAction;
+getAccessibleAt
+ (Ljava/awt/Point;)Ljavax/accessibility/Accessible;
+ (Ljava/awt/Point;)L0javax/accessibility/Accessible;
+getAccessibleChild
+ (I)Ljavax/accessibility/Accessible;
+ (I)L0javax/accessibility/Accessible;
+getAccessibleComponent
+ ()Ljavax/accessibility/AccessibleComponent;
+ ()L0javax/accessibility/AccessibleComponent;
+getAccessibleSelection
+ ()Ljavax/accessibility/AccessibleSelection;
+ ()L0javax/accessibility/AccessibleSelection;
+getAccessibleStateSet
+ ()Ljavax/accessibility/AccessibleStateSet;
+ ()L1javax/accessibility/AccessibleStateSet;
+getAccessibleText
+ ()Ljavax/accessibility/AccessibleText;
+ ()L0javax/accessibility/AccessibleText;
+getAccessibleValue
+ ()Ljavax/accessibility/AccessibleValue;
+ ()L0javax/accessibility/AccessibleValue;
+getBackground
+ ()Ljava/awt/Color;
+ ()L0java/awt/Color;
+getBounds
+ ()Ljava/awt/Rectangle;
+ ()L0java/awt/Rectangle;
+getCurrentAccessibleContext
+ ()Ljavax/accessibility/AccessibleContext;
+ ()L0javax/accessibility/AccessibleContext;
+getCursor
+ ()Ljava/awt/Cursor;
+ ()L0java/awt/Cursor;
+getFont
+ ()Ljava/awt/Font;
+ ()L0java/awt/Font;
+getFontMetrics
+ (Ljava/awt/Font;)Ljava/awt/FontMetrics;
+ (Ljava/awt/Font;)L0java/awt/FontMetrics;
+getForeground
+ ()Ljava/awt/Color;
+ ()L0java/awt/Color;
+getLocale
+ ()Ljava/util/Locale;
+ ()L0java/util/Locale;
+getLocation
+ ()Ljava/awt/Point;
+ ()L0java/awt/Point;
+getLocationOnScreen
+ ()Ljava/awt/Point;
+ ()L0java/awt/Point;
+getSize
+ ()Ljava/awt/Dimension;
+ ()L0java/awt/Dimension;
+removeFocusListener
+ (Ljava/awt/event/FocusListener;)V
+ (L1java/awt/event/FocusListener;)V
+removePropertyChangeListener
+ (Ljava/beans/PropertyChangeListener;)V
+ (L1java/beans/PropertyChangeListener;)V

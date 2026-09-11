@@ -1,0 +1,10 @@
+class javax/swing/plaf/basic/BasicLookAndFeel
+createAudioAction
+ (Ljava/lang/Object;)Ljavax/swing/Action;
+ (Ljava/lang/Object;)L0javax/swing/Action;
+getAudioActionMap
+ ()Ljavax/swing/ActionMap;
+ ()L1javax/swing/ActionMap;
+getDefaults
+ ()Ljavax/swing/UIDefaults;
+ ()L0javax/swing/UIDefaults;

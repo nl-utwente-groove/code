@@ -5,9 +5,30 @@ HONOR_DISPLAY_PROPERTIES
 W3C_LENGTH_UNITS
  Ljava/lang/String;
  L1java/lang/String;
+createEditorKitForContentType
+ (Ljava/lang/String;)Ljavax/swing/text/EditorKit;
+ (Ljava/lang/String;)L0javax/swing/text/EditorKit;
 addHyperlinkListener
  (Ljavax/swing/event/HyperlinkListener;)V
  (L1javax/swing/event/HyperlinkListener;)V
+createDefaultEditorKit
+ ()Ljavax/swing/text/EditorKit;
+ ()L1javax/swing/text/EditorKit;
+getContentType
+ ()Ljava/lang/String;
+ ()L0java/lang/String;
+getPreferredSize
+ ()Ljava/awt/Dimension;
+ ()L1java/awt/Dimension;
+getText
+ ()Ljava/lang/String;
+ ()L0java/lang/String;
+getUIClassID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
 removeHyperlinkListener
  (Ljavax/swing/event/HyperlinkListener;)V
  (L1javax/swing/event/HyperlinkListener;)V

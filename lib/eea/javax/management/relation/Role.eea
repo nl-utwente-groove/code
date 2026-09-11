@@ -1,0 +1,10 @@
+class javax/management/relation/Role
+roleValueToString
+ (Ljava/util/List<Ljavax/management/ObjectName;>;)Ljava/lang/String;
+ (Ljava/util/List<Ljavax/management/ObjectName;>;)L1java/lang/String;
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

@@ -68,6 +68,30 @@ ACCESSIBLE_VISIBLE_DATA_PROPERTY
 addPropertyChangeListener
  (Ljava/beans/PropertyChangeListener;)V
  (L1java/beans/PropertyChangeListener;)V
+getAccessibleAction
+ ()Ljavax/accessibility/AccessibleAction;
+ ()L0javax/accessibility/AccessibleAction;
+getAccessibleComponent
+ ()Ljavax/accessibility/AccessibleComponent;
+ ()L0javax/accessibility/AccessibleComponent;
+getAccessibleEditableText
+ ()Ljavax/accessibility/AccessibleEditableText;
+ ()L0javax/accessibility/AccessibleEditableText;
+getAccessibleIcon
+ ()[Ljavax/accessibility/AccessibleIcon;
+ ()[0Ljavax/accessibility/AccessibleIcon;
+getAccessibleSelection
+ ()Ljavax/accessibility/AccessibleSelection;
+ ()L0javax/accessibility/AccessibleSelection;
+getAccessibleTable
+ ()Ljavax/accessibility/AccessibleTable;
+ ()L0javax/accessibility/AccessibleTable;
+getAccessibleText
+ ()Ljavax/accessibility/AccessibleText;
+ ()L0javax/accessibility/AccessibleText;
+getAccessibleValue
+ ()Ljavax/accessibility/AccessibleValue;
+ ()L0javax/accessibility/AccessibleValue;
 removePropertyChangeListener
  (Ljava/beans/PropertyChangeListener;)V
  (L1java/beans/PropertyChangeListener;)V

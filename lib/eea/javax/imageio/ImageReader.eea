@@ -1,0 +1,28 @@
+class javax/imageio/ImageReader
+addIIOReadProgressListener
+ (Ljavax/imageio/event/IIOReadProgressListener;)V
+ (L1javax/imageio/event/IIOReadProgressListener;)V
+addIIOReadUpdateListener
+ (Ljavax/imageio/event/IIOReadUpdateListener;)V
+ (L1javax/imageio/event/IIOReadUpdateListener;)V
+addIIOReadWarningListener
+ (Ljavax/imageio/event/IIOReadWarningListener;)V
+ (L1javax/imageio/event/IIOReadWarningListener;)V
+getAvailableLocales
+ ()[Ljava/util/Locale;
+ ()[0Ljava/util/Locale;
+getDefaultReadParam
+ ()Ljavax/imageio/ImageReadParam;
+ ()L1javax/imageio/ImageReadParam;
+readAll
+ (ILjavax/imageio/ImageReadParam;)Ljavax/imageio/IIOImage;
+ (ILjavax/imageio/ImageReadParam;)L1javax/imageio/IIOImage;
+removeIIOReadProgressListener
+ (Ljavax/imageio/event/IIOReadProgressListener;)V
+ (L1javax/imageio/event/IIOReadProgressListener;)V
+removeIIOReadUpdateListener
+ (Ljavax/imageio/event/IIOReadUpdateListener;)V
+ (L1javax/imageio/event/IIOReadUpdateListener;)V
+removeIIOReadWarningListener
+ (Ljavax/imageio/event/IIOReadWarningListener;)V
+ (L1javax/imageio/event/IIOReadWarningListener;)V

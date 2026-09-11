@@ -23,6 +23,9 @@ valueOf
 compareTo
  (Ljava/lang/Float;)I
  (L1java/lang/Float;)I
+describeConstable
+ ()Ljava/util/Optional<Ljava/lang/Float;>;
+ ()L1java/util/Optional<Ljava/lang/Float;>;
 equals
  (Ljava/lang/Object;)Z
  (L0java/lang/Object;)Z

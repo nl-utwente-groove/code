@@ -1,0 +1,10 @@
+class javax/naming/ldap/StartTlsResponse
+OID
+ Ljava/lang/String;
+ L1java/lang/String;
+getEncodedValue
+ ()[B
+ ()[0B
+getID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

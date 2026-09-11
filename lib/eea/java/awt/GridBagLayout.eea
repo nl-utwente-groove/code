@@ -1,4 +1,13 @@
 class java/awt/GridBagLayout
+GetMinSize
+ (Ljava/awt/Container;Ljava/awt/GridBagLayoutInfo;)Ljava/awt/Dimension;
+ (Ljava/awt/Container;Ljava/awt/GridBagLayoutInfo;)L1java/awt/Dimension;
+getConstraints
+ (Ljava/awt/Component;)Ljava/awt/GridBagConstraints;
+ (Ljava/awt/Component;)L1java/awt/GridBagConstraints;
+maximumLayoutSize
+ (Ljava/awt/Container;)Ljava/awt/Dimension;
+ (Ljava/awt/Container;)L1java/awt/Dimension;
 toString
  ()Ljava/lang/String;
  ()L1java/lang/String;

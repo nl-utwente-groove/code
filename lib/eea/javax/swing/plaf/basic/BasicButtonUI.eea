@@ -1,0 +1,13 @@
+class javax/swing/plaf/basic/BasicButtonUI
+createUI
+ (Ljavax/swing/JComponent;)Ljavax/swing/plaf/ComponentUI;
+ (Ljavax/swing/JComponent;)L1javax/swing/plaf/ComponentUI;
+createButtonListener
+ (Ljavax/swing/AbstractButton;)Ljavax/swing/plaf/basic/BasicButtonListener;
+ (Ljavax/swing/AbstractButton;)L1javax/swing/plaf/basic/BasicButtonListener;
+getPreferredSize
+ (Ljavax/swing/JComponent;)Ljava/awt/Dimension;
+ (Ljavax/swing/JComponent;)L0java/awt/Dimension;
+getPropertyPrefix
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

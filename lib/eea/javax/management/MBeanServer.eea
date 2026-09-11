@@ -1,0 +1,13 @@
+class javax/management/MBeanServer
+createMBean
+ (Ljava/lang/String;Ljavax/management/ObjectName;)Ljavax/management/ObjectInstance;
+ (Ljava/lang/String;Ljavax/management/ObjectName;)L1javax/management/ObjectInstance;
+createMBean
+ (Ljava/lang/String;Ljavax/management/ObjectName;Ljavax/management/ObjectName;)Ljavax/management/ObjectInstance;
+ (Ljava/lang/String;Ljavax/management/ObjectName;Ljavax/management/ObjectName;)L1javax/management/ObjectInstance;
+createMBean
+ (Ljava/lang/String;Ljavax/management/ObjectName;Ljavax/management/ObjectName;[Ljava/lang/Object;[Ljava/lang/String;)Ljavax/management/ObjectInstance;
+ (Ljava/lang/String;Ljavax/management/ObjectName;Ljavax/management/ObjectName;[Ljava/lang/Object;[Ljava/lang/String;)L1javax/management/ObjectInstance;
+createMBean
+ (Ljava/lang/String;Ljavax/management/ObjectName;[Ljava/lang/Object;[Ljava/lang/String;)Ljavax/management/ObjectInstance;
+ (Ljava/lang/String;Ljavax/management/ObjectName;[Ljava/lang/Object;[Ljava/lang/String;)L1javax/management/ObjectInstance;

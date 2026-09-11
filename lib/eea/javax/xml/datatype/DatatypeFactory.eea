@@ -1,0 +1,10 @@
+class javax/xml/datatype/DatatypeFactory
+DATATYPEFACTORY_IMPLEMENTATION_CLASS
+ Ljava/lang/String;
+ L1java/lang/String;
+DATATYPEFACTORY_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+newDefaultInstance
+ ()Ljavax/xml/datatype/DatatypeFactory;
+ ()L1javax/xml/datatype/DatatypeFactory;

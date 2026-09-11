@@ -1,0 +1,13 @@
+class java/awt/color/ICC_Profile
+getInstance
+ ([B)Ljava/awt/color/ICC_Profile;
+ ([B)L1java/awt/color/ICC_Profile;
+getData
+ ()[B
+ ()[1B
+getData
+ (I)[B
+ (I)[0B
+readResolve
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;

@@ -1,0 +1,7 @@
+class javax/swing/border/LineBorder
+createBlackLineBorder
+ ()Ljavax/swing/border/Border;
+ ()L1javax/swing/border/Border;
+createGrayLineBorder
+ ()Ljavax/swing/border/Border;
+ ()L1javax/swing/border/Border;

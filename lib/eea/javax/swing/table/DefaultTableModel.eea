@@ -1,0 +1,4 @@
+class javax/swing/table/DefaultTableModel
+getColumnName
+ (I)Ljava/lang/String;
+ (I)L1java/lang/String;

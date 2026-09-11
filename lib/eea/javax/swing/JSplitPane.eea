@@ -35,3 +35,9 @@ RIGHT
 TOP
  Ljava/lang/String;
  L1java/lang/String;
+getUIClassID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

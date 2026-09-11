@@ -1,0 +1,4 @@
+class java/util/stream/Sink$OfLong
+accept
+ (Ljava/lang/Long;)V
+ (L1java/lang/Long;)V

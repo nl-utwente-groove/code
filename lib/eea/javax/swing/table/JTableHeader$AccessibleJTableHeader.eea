@@ -1,0 +1,7 @@
+class javax/swing/table/JTableHeader$AccessibleJTableHeader
+getAccessibleAt
+ (Ljava/awt/Point;)Ljavax/accessibility/Accessible;
+ (Ljava/awt/Point;)L0javax/accessibility/Accessible;
+getAccessibleChild
+ (I)Ljavax/accessibility/Accessible;
+ (I)L0javax/accessibility/Accessible;

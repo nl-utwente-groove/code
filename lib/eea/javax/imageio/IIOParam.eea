@@ -1,0 +1,10 @@
+class javax/imageio/IIOParam
+getDestinationOffset
+ ()Ljava/awt/Point;
+ ()L1java/awt/Point;
+getSourceBands
+ ()[I
+ ()[0I
+getSourceRegion
+ ()Ljava/awt/Rectangle;
+ ()L0java/awt/Rectangle;

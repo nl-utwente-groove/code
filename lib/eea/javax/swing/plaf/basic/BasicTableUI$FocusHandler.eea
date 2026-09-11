@@ -1,0 +1,7 @@
+class javax/swing/plaf/basic/BasicTableUI$FocusHandler
+focusGained
+ (Ljava/awt/event/FocusEvent;)V
+ (L1java/awt/event/FocusEvent;)V
+focusLost
+ (Ljava/awt/event/FocusEvent;)V
+ (L1java/awt/event/FocusEvent;)V

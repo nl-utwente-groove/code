@@ -1,4 +1,19 @@
 class javax/swing/LookAndFeel
+makeComponentInputMap
+ (Ljavax/swing/JComponent;[Ljava/lang/Object;)Ljavax/swing/ComponentInputMap;
+ (Ljavax/swing/JComponent;[Ljava/lang/Object;)L1javax/swing/ComponentInputMap;
+makeInputMap
+ ([Ljava/lang/Object;)Ljavax/swing/InputMap;
+ ([Ljava/lang/Object;)L1javax/swing/InputMap;
+makeKeyBindings
+ ([Ljava/lang/Object;)[Ljavax/swing/text/JTextComponent$KeyBinding;
+ ([Ljava/lang/Object;)[1Ljavax/swing/text/JTextComponent$KeyBinding;
+getDefaults
+ ()Ljavax/swing/UIDefaults;
+ ()L0javax/swing/UIDefaults;
+getDisabledIcon
+ (Ljavax/swing/JComponent;Ljavax/swing/Icon;)Ljavax/swing/Icon;
+ (Ljavax/swing/JComponent;Ljavax/swing/Icon;)L0javax/swing/Icon;
 toString
  ()Ljava/lang/String;
  ()L1java/lang/String;

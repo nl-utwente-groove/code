@@ -2,3 +2,9 @@ class java/awt/geom/RectangularShape
 clone
  ()Ljava/lang/Object;
  ()L1java/lang/Object;
+getFrame
+ ()Ljava/awt/geom/Rectangle2D;
+ ()L1java/awt/geom/Rectangle2D;
+getPathIterator
+ (Ljava/awt/geom/AffineTransform;D)Ljava/awt/geom/PathIterator;
+ (Ljava/awt/geom/AffineTransform;D)L1java/awt/geom/PathIterator;

@@ -1,0 +1,4 @@
+class java/text/CollationKey
+compareTo
+ (Ljava/text/CollationKey;)I
+ (L1java/text/CollationKey;)I

@@ -1,0 +1,4 @@
+class javax/xml/catalog/GroupEntry$ResolveType
+getType
+ (Ljava/lang/String;)Ljavax/xml/catalog/GroupEntry$ResolveType;
+ (Ljava/lang/String;)L0javax/xml/catalog/GroupEntry$ResolveType;

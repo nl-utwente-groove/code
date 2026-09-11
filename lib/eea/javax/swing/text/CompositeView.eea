@@ -1,0 +1,16 @@
+class javax/swing/text/CompositeView
+getChildAllocation
+ (ILjava/awt/Shape;)Ljava/awt/Shape;
+ (ILjava/awt/Shape;)L0java/awt/Shape;
+getInsideAllocation
+ (Ljava/awt/Shape;)Ljava/awt/Rectangle;
+ (Ljava/awt/Shape;)L0java/awt/Rectangle;
+getView
+ (I)Ljavax/swing/text/View;
+ (I)L0javax/swing/text/View;
+getViewAtPosition
+ (ILjava/awt/Rectangle;)Ljavax/swing/text/View;
+ (ILjava/awt/Rectangle;)L0javax/swing/text/View;
+modelToView
+ (ILjava/awt/Shape;Ljavax/swing/text/Position$Bias;)Ljava/awt/Shape;
+ (ILjava/awt/Shape;Ljavax/swing/text/Position$Bias;)L0java/awt/Shape;

@@ -1,0 +1,7 @@
+class java/security/cert/TrustAnchor
+getNameConstraints
+ ()[B
+ ()[1B
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

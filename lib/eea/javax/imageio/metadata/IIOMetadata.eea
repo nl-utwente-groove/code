@@ -1,0 +1,34 @@
+class javax/imageio/metadata/IIOMetadata
+getExtraMetadataFormatNames
+ ()[Ljava/lang/String;
+ ()[0Ljava/lang/String;
+getMetadataFormatNames
+ ()[Ljava/lang/String;
+ ()[0Ljava/lang/String;
+getStandardChromaNode
+ ()Ljavax/imageio/metadata/IIOMetadataNode;
+ ()L0javax/imageio/metadata/IIOMetadataNode;
+getStandardCompressionNode
+ ()Ljavax/imageio/metadata/IIOMetadataNode;
+ ()L0javax/imageio/metadata/IIOMetadataNode;
+getStandardDataNode
+ ()Ljavax/imageio/metadata/IIOMetadataNode;
+ ()L0javax/imageio/metadata/IIOMetadataNode;
+getStandardDimensionNode
+ ()Ljavax/imageio/metadata/IIOMetadataNode;
+ ()L0javax/imageio/metadata/IIOMetadataNode;
+getStandardDocumentNode
+ ()Ljavax/imageio/metadata/IIOMetadataNode;
+ ()L0javax/imageio/metadata/IIOMetadataNode;
+getStandardTextNode
+ ()Ljavax/imageio/metadata/IIOMetadataNode;
+ ()L0javax/imageio/metadata/IIOMetadataNode;
+getStandardTileNode
+ ()Ljavax/imageio/metadata/IIOMetadataNode;
+ ()L0javax/imageio/metadata/IIOMetadataNode;
+getStandardTransparencyNode
+ ()Ljavax/imageio/metadata/IIOMetadataNode;
+ ()L0javax/imageio/metadata/IIOMetadataNode;
+getStandardTree
+ ()Ljavax/imageio/metadata/IIOMetadataNode;
+ ()L1javax/imageio/metadata/IIOMetadataNode;

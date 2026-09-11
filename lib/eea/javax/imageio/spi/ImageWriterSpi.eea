@@ -1,0 +1,16 @@
+class javax/imageio/spi/ImageWriterSpi
+STANDARD_OUTPUT_TYPE
+ [Ljava/lang/Class<*>;
+ [1Ljava/lang/Class<*>;
+createWriterInstance
+ ()Ljavax/imageio/ImageWriter;
+ ()L1javax/imageio/ImageWriter;
+createWriterInstance
+ (Ljava/lang/Object;)Ljavax/imageio/ImageWriter;
+ (Ljava/lang/Object;)L1javax/imageio/ImageWriter;
+getImageReaderSpiNames
+ ()[Ljava/lang/String;
+ ()[1Ljava/lang/String;
+getOutputTypes
+ ()[Ljava/lang/Class<*>;
+ ()[1Ljava/lang/Class<*>;

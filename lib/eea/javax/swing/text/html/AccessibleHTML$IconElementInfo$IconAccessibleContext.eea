@@ -1,0 +1,4 @@
+class javax/swing/text/html/AccessibleHTML$IconElementInfo$IconAccessibleContext
+getAccessibleIcon
+ ()[Ljavax/accessibility/AccessibleIcon;
+ ()[1Ljavax/accessibility/AccessibleIcon;

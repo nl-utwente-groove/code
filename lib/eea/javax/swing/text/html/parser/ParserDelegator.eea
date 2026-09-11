@@ -1,0 +1,4 @@
+class javax/swing/text/html/parser/ParserDelegator
+createDTD
+ (Ljavax/swing/text/html/parser/DTD;Ljava/lang/String;)Ljavax/swing/text/html/parser/DTD;
+ (Ljavax/swing/text/html/parser/DTD;Ljava/lang/String;)L1javax/swing/text/html/parser/DTD;

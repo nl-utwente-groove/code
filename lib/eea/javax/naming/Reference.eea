@@ -1,0 +1,13 @@
+class javax/naming/Reference
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+get
+ (Ljava/lang/String;)Ljavax/naming/RefAddr;
+ (Ljava/lang/String;)L0javax/naming/RefAddr;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

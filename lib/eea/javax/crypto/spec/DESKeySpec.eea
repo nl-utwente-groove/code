@@ -1,0 +1,4 @@
+class javax/crypto/spec/DESKeySpec
+getKey
+ ()[B
+ ()[1B

@@ -1,0 +1,28 @@
+class javax/management/timer/Timer
+getAllNotificationIDs
+ ()Ljava/util/Vector<Ljava/lang/Integer;>;
+ ()L1java/util/Vector<Ljava/lang/Integer;>;
+getDate
+ (Ljava/lang/Integer;)Ljava/util/Date;
+ (Ljava/lang/Integer;)L0java/util/Date;
+getFixedRate
+ (Ljava/lang/Integer;)Ljava/lang/Boolean;
+ (Ljava/lang/Integer;)L0java/lang/Boolean;
+getNbOccurences
+ (Ljava/lang/Integer;)Ljava/lang/Long;
+ (Ljava/lang/Integer;)L0java/lang/Long;
+getNotificationIDs
+ (Ljava/lang/String;)Ljava/util/Vector<Ljava/lang/Integer;>;
+ (Ljava/lang/String;)L1java/util/Vector<Ljava/lang/Integer;>;
+getNotificationMessage
+ (Ljava/lang/Integer;)Ljava/lang/String;
+ (Ljava/lang/Integer;)L0java/lang/String;
+getNotificationType
+ (Ljava/lang/Integer;)Ljava/lang/String;
+ (Ljava/lang/Integer;)L0java/lang/String;
+getNotificationUserData
+ (Ljava/lang/Integer;)Ljava/lang/Object;
+ (Ljava/lang/Integer;)L0java/lang/Object;
+getPeriod
+ (Ljava/lang/Integer;)Ljava/lang/Long;
+ (Ljava/lang/Integer;)L0java/lang/Long;

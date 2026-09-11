@@ -1,0 +1,19 @@
+class javax/swing/GroupLayout
+createBaselineGroup
+ (ZZ)Ljavax/swing/GroupLayout$ParallelGroup;
+ (ZZ)L1javax/swing/GroupLayout$ParallelGroup;
+createParallelGroup
+ ()Ljavax/swing/GroupLayout$ParallelGroup;
+ ()L1javax/swing/GroupLayout$ParallelGroup;
+createParallelGroup
+ (Ljavax/swing/GroupLayout$Alignment;)Ljavax/swing/GroupLayout$ParallelGroup;
+ (Ljavax/swing/GroupLayout$Alignment;)L1javax/swing/GroupLayout$ParallelGroup;
+createParallelGroup
+ (Ljavax/swing/GroupLayout$Alignment;Z)Ljavax/swing/GroupLayout$ParallelGroup;
+ (Ljavax/swing/GroupLayout$Alignment;Z)L1javax/swing/GroupLayout$ParallelGroup;
+createSequentialGroup
+ ()Ljavax/swing/GroupLayout$SequentialGroup;
+ ()L1javax/swing/GroupLayout$SequentialGroup;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

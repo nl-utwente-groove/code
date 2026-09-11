@@ -1,0 +1,7 @@
+class javax/swing/event/InternalFrameEvent
+getInternalFrame
+ ()Ljavax/swing/JInternalFrame;
+ ()L0javax/swing/JInternalFrame;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

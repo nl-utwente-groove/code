@@ -1,0 +1,4 @@
+class javax/swing/JPopupMenu$Separator
+getUIClassID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

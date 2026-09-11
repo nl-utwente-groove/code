@@ -1,0 +1,13 @@
+class javax/swing/plaf/nimbus/AbstractRegionPainter
+decodeColor
+ (Ljava/awt/Color;Ljava/awt/Color;F)Ljava/awt/Color;
+ (Ljava/awt/Color;Ljava/awt/Color;F)L1java/awt/Color;
+decodeGradient
+ (FFFF[F[Ljava/awt/Color;)Ljava/awt/LinearGradientPaint;
+ (FFFF[F[Ljava/awt/Color;)L1java/awt/LinearGradientPaint;
+decodeRadialGradient
+ (FFF[F[Ljava/awt/Color;)Ljava/awt/RadialGradientPaint;
+ (FFF[F[Ljava/awt/Color;)L1java/awt/RadialGradientPaint;
+getExtendedCacheKeys
+ (Ljavax/swing/JComponent;)[Ljava/lang/Object;
+ (Ljavax/swing/JComponent;)[0Ljava/lang/Object;

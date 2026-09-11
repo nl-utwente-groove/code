@@ -1,0 +1,4 @@
+class java/net/URLStreamHandler
+toExternalForm
+ (Ljava/net/URL;)Ljava/lang/String;
+ (Ljava/net/URL;)L1java/lang/String;

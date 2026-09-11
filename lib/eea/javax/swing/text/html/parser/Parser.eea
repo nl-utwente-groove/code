@@ -1,0 +1,7 @@
+class javax/swing/text/html/parser/Parser
+makeTag
+ (Ljavax/swing/text/html/parser/Element;Z)Ljavax/swing/text/html/parser/TagElement;
+ (Ljavax/swing/text/html/parser/Element;Z)L1javax/swing/text/html/parser/TagElement;
+parseDTDMarkup
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

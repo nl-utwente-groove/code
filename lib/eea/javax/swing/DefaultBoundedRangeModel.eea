@@ -1,0 +1,10 @@
+class javax/swing/DefaultBoundedRangeModel
+addChangeListener
+ (Ljavax/swing/event/ChangeListener;)V
+ (L1javax/swing/event/ChangeListener;)V
+removeChangeListener
+ (Ljavax/swing/event/ChangeListener;)V
+ (L1javax/swing/event/ChangeListener;)V
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

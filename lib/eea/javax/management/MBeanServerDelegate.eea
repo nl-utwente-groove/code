@@ -1,0 +1,25 @@
+class javax/management/MBeanServerDelegate
+DELEGATE_NAME
+ Ljavax/management/ObjectName;
+ L1javax/management/ObjectName;
+getImplementationName
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+getImplementationVendor
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+getNotificationInfo
+ ()[Ljavax/management/MBeanNotificationInfo;
+ ()[1Ljavax/management/MBeanNotificationInfo;
+getSpecificationName
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+getSpecificationVendor
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+getSpecificationVersion
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+removeNotificationListener
+ (Ljavax/management/NotificationListener;)V
+ (L1javax/management/NotificationListener;)V

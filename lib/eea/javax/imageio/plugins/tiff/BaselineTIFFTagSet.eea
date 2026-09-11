@@ -1,0 +1,4 @@
+class javax/imageio/plugins/tiff/BaselineTIFFTagSet
+getInstance
+ ()Ljavax/imageio/plugins/tiff/BaselineTIFFTagSet;
+ ()L1javax/imageio/plugins/tiff/BaselineTIFFTagSet;

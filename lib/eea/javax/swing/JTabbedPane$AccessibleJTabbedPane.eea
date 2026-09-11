@@ -1,0 +1,16 @@
+class javax/swing/JTabbedPane$AccessibleJTabbedPane
+getAccessibleAt
+ (Ljava/awt/Point;)Ljavax/accessibility/Accessible;
+ (Ljava/awt/Point;)L0javax/accessibility/Accessible;
+getAccessibleChild
+ (I)Ljavax/accessibility/Accessible;
+ (I)L0javax/accessibility/Accessible;
+getAccessibleSelection
+ ()Ljavax/accessibility/AccessibleSelection;
+ ()L0javax/accessibility/AccessibleSelection;
+getAccessibleSelection
+ (I)Ljavax/accessibility/Accessible;
+ (I)L0javax/accessibility/Accessible;
+stateChanged
+ (Ljavax/swing/event/ChangeEvent;)V
+ (L1javax/swing/event/ChangeEvent;)V

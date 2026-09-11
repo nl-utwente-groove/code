@@ -1,0 +1,4 @@
+class java/util/stream/Sink$OfDouble
+accept
+ (Ljava/lang/Double;)V
+ (L1java/lang/Double;)V

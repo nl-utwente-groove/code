@@ -1,0 +1,10 @@
+class javax/print/attribute/standard/PrinterMoreInfo
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getCategory
+ ()Ljava/lang/Class<+Ljavax/print/attribute/Attribute;>;
+ ()L1java/lang/Class<+Ljavax/print/attribute/Attribute;>;
+getName
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

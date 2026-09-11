@@ -1,0 +1,10 @@
+class javax/crypto/EncryptedPrivateKeyInfo
+getEncoded
+ ()[B
+ ()[1B
+getEncryptedData
+ ()[B
+ ()[1B
+getKeySpec
+ (Ljavax/crypto/Cipher;)Ljava/security/spec/PKCS8EncodedKeySpec;
+ (Ljavax/crypto/Cipher;)L1java/security/spec/PKCS8EncodedKeySpec;

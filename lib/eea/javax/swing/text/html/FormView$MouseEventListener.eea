@@ -1,0 +1,4 @@
+class javax/swing/text/html/FormView$MouseEventListener
+mouseReleased
+ (Ljava/awt/event/MouseEvent;)V
+ (L1java/awt/event/MouseEvent;)V

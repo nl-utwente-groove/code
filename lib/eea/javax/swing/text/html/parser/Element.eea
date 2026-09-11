@@ -1,0 +1,10 @@
+class javax/swing/text/html/parser/Element
+getAttribute
+ (Ljava/lang/String;)Ljavax/swing/text/html/parser/AttributeList;
+ (Ljava/lang/String;)L0javax/swing/text/html/parser/AttributeList;
+getAttributeByValue
+ (Ljava/lang/String;)Ljavax/swing/text/html/parser/AttributeList;
+ (Ljava/lang/String;)L0javax/swing/text/html/parser/AttributeList;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

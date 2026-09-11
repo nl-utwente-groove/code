@@ -1,4 +1,10 @@
 class java/awt/Graphics
+create
+ ()Ljava/awt/Graphics;
+ ()L1java/awt/Graphics;
+create
+ (IIII)Ljava/awt/Graphics;
+ (IIII)L0java/awt/Graphics;
 toString
  ()Ljava/lang/String;
  ()L1java/lang/String;

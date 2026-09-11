@@ -1,0 +1,4 @@
+class javax/swing/plaf/metal/OceanTheme
+getName
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

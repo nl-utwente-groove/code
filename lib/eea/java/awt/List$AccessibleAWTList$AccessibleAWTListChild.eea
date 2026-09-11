@@ -1,0 +1,25 @@
+class java/awt/List$AccessibleAWTList$AccessibleAWTListChild
+addFocusListener
+ (Ljava/awt/event/FocusListener;)V
+ (L1java/awt/event/FocusListener;)V
+getAccessibleAt
+ (Ljava/awt/Point;)Ljavax/accessibility/Accessible;
+ (Ljava/awt/Point;)L0javax/accessibility/Accessible;
+getAccessibleChild
+ (I)Ljavax/accessibility/Accessible;
+ (I)L0javax/accessibility/Accessible;
+getBounds
+ ()Ljava/awt/Rectangle;
+ ()L0java/awt/Rectangle;
+getLocation
+ ()Ljava/awt/Point;
+ ()L0java/awt/Point;
+getLocationOnScreen
+ ()Ljava/awt/Point;
+ ()L0java/awt/Point;
+getSize
+ ()Ljava/awt/Dimension;
+ ()L0java/awt/Dimension;
+removeFocusListener
+ (Ljava/awt/event/FocusListener;)V
+ (L1java/awt/event/FocusListener;)V

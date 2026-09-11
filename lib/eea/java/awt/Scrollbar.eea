@@ -1,0 +1,10 @@
+class java/awt/Scrollbar
+addAdjustmentListener
+ (Ljava/awt/event/AdjustmentListener;)V
+ (L1java/awt/event/AdjustmentListener;)V
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+removeAdjustmentListener
+ (Ljava/awt/event/AdjustmentListener;)V
+ (L1java/awt/event/AdjustmentListener;)V

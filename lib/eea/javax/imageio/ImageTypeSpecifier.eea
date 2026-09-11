@@ -1,0 +1,31 @@
+class javax/imageio/ImageTypeSpecifier
+createBanded
+ (Ljava/awt/color/ColorSpace;[I[IIZZ)Ljavax/imageio/ImageTypeSpecifier;
+ (Ljava/awt/color/ColorSpace;[I[IIZZ)L1javax/imageio/ImageTypeSpecifier;
+createFromBufferedImageType
+ (I)Ljavax/imageio/ImageTypeSpecifier;
+ (I)L1javax/imageio/ImageTypeSpecifier;
+createFromRenderedImage
+ (Ljava/awt/image/RenderedImage;)Ljavax/imageio/ImageTypeSpecifier;
+ (Ljava/awt/image/RenderedImage;)L1javax/imageio/ImageTypeSpecifier;
+createGrayscale
+ (IIZ)Ljavax/imageio/ImageTypeSpecifier;
+ (IIZ)L1javax/imageio/ImageTypeSpecifier;
+createGrayscale
+ (IIZZ)Ljavax/imageio/ImageTypeSpecifier;
+ (IIZZ)L1javax/imageio/ImageTypeSpecifier;
+createIndexed
+ ([B[B[B[BII)Ljavax/imageio/ImageTypeSpecifier;
+ ([B[B[B[BII)L1javax/imageio/ImageTypeSpecifier;
+createInterleaved
+ (Ljava/awt/color/ColorSpace;[IIZZ)Ljavax/imageio/ImageTypeSpecifier;
+ (Ljava/awt/color/ColorSpace;[IIZZ)L1javax/imageio/ImageTypeSpecifier;
+createPacked
+ (Ljava/awt/color/ColorSpace;IIIIIZ)Ljavax/imageio/ImageTypeSpecifier;
+ (Ljava/awt/color/ColorSpace;IIIIIZ)L1javax/imageio/ImageTypeSpecifier;
+createBufferedImage
+ (II)Ljava/awt/image/BufferedImage;
+ (II)L1java/awt/image/BufferedImage;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z

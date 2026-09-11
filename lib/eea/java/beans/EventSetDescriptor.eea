@@ -1,0 +1,10 @@
+class java/beans/EventSetDescriptor
+getListenerMethodDescriptors
+ ()[Ljava/beans/MethodDescriptor;
+ ()[0Ljava/beans/MethodDescriptor;
+getListenerMethods
+ ()[Ljava/lang/reflect/Method;
+ ()[1Ljava/lang/reflect/Method;
+getListenerType
+ ()Ljava/lang/Class<*>;
+ ()L0java/lang/Class<*>;

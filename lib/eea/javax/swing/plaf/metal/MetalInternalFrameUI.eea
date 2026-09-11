@@ -1,0 +1,10 @@
+class javax/swing/plaf/metal/MetalInternalFrameUI
+createUI
+ (Ljavax/swing/JComponent;)Ljavax/swing/plaf/ComponentUI;
+ (Ljavax/swing/JComponent;)L1javax/swing/plaf/ComponentUI;
+createBorderListener
+ (Ljavax/swing/JInternalFrame;)Ljavax/swing/event/MouseInputAdapter;
+ (Ljavax/swing/JInternalFrame;)L1javax/swing/event/MouseInputAdapter;
+createNorthPane
+ (Ljavax/swing/JInternalFrame;)Ljavax/swing/JComponent;
+ (Ljavax/swing/JInternalFrame;)L1javax/swing/JComponent;

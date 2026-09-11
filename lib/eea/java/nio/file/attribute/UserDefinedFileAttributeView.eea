@@ -1,0 +1,4 @@
+class java/nio/file/attribute/UserDefinedFileAttributeView
+list
+ ()Ljava/util/List<Ljava/lang/String;>;
+ ()L1java/util/List<L1java/lang/String;>;

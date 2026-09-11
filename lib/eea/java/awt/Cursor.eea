@@ -1,4 +1,10 @@
 class java/awt/Cursor
+getPredefinedCursor
+ (I)Ljava/awt/Cursor;
+ (I)L1java/awt/Cursor;
+getSystemCustomCursor
+ (Ljava/lang/String;)Ljava/awt/Cursor;
+ (Ljava/lang/String;)L0java/awt/Cursor;
 toString
  ()Ljava/lang/String;
  ()L1java/lang/String;

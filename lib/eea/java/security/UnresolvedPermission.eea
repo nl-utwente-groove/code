@@ -1,0 +1,16 @@
+class java/security/UnresolvedPermission
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getActions
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+getUnresolvedCerts
+ ()[Ljava/security/cert/Certificate;
+ ()[1Ljava/security/cert/Certificate;
+newPermissionCollection
+ ()Ljava/security/PermissionCollection;
+ ()L1java/security/PermissionCollection;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

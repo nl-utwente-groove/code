@@ -1,0 +1,13 @@
+class java/awt/color/ICC_ColorSpace
+fromCIEXYZ
+ ([F)[F
+ ([F)[1F
+fromRGB
+ ([F)[F
+ ([F)[1F
+toCIEXYZ
+ ([F)[F
+ ([F)[1F
+toRGB
+ ([F)[F
+ ([F)[1F

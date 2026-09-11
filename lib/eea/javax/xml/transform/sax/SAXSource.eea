@@ -1,0 +1,10 @@
+class javax/xml/transform/sax/SAXSource
+FEATURE
+ Ljava/lang/String;
+ L1java/lang/String;
+sourceToInputSource
+ (Ljavax/xml/transform/Source;)Lorg/xml/sax/InputSource;
+ (Ljavax/xml/transform/Source;)L0org/xml/sax/InputSource;
+getSystemId
+ ()Ljava/lang/String;
+ ()L0java/lang/String;

@@ -1,0 +1,49 @@
+class java/awt/MenuComponent$AccessibleAWTMenuComponent
+addFocusListener
+ (Ljava/awt/event/FocusListener;)V
+ (L1java/awt/event/FocusListener;)V
+getAccessibleAt
+ (Ljava/awt/Point;)Ljavax/accessibility/Accessible;
+ (Ljava/awt/Point;)L0javax/accessibility/Accessible;
+getAccessibleChild
+ (I)Ljavax/accessibility/Accessible;
+ (I)L0javax/accessibility/Accessible;
+getAccessibleComponent
+ ()Ljavax/accessibility/AccessibleComponent;
+ ()L0javax/accessibility/AccessibleComponent;
+getAccessibleParent
+ ()Ljavax/accessibility/Accessible;
+ ()L0javax/accessibility/Accessible;
+getAccessibleSelection
+ ()Ljavax/accessibility/AccessibleSelection;
+ ()L0javax/accessibility/AccessibleSelection;
+getAccessibleSelection
+ (I)Ljavax/accessibility/Accessible;
+ (I)L0javax/accessibility/Accessible;
+getBackground
+ ()Ljava/awt/Color;
+ ()L0java/awt/Color;
+getBounds
+ ()Ljava/awt/Rectangle;
+ ()L0java/awt/Rectangle;
+getCursor
+ ()Ljava/awt/Cursor;
+ ()L0java/awt/Cursor;
+getFontMetrics
+ (Ljava/awt/Font;)Ljava/awt/FontMetrics;
+ (Ljava/awt/Font;)L0java/awt/FontMetrics;
+getForeground
+ ()Ljava/awt/Color;
+ ()L0java/awt/Color;
+getLocation
+ ()Ljava/awt/Point;
+ ()L0java/awt/Point;
+getLocationOnScreen
+ ()Ljava/awt/Point;
+ ()L0java/awt/Point;
+getSize
+ ()Ljava/awt/Dimension;
+ ()L0java/awt/Dimension;
+removeFocusListener
+ (Ljava/awt/event/FocusListener;)V
+ (L1java/awt/event/FocusListener;)V

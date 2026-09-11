@@ -5,6 +5,21 @@ addMenuKeyListener
 addPopupMenuListener
  (Ljavax/swing/event/PopupMenuListener;)V
  (L1javax/swing/event/PopupMenuListener;)V
+createActionChangeListener
+ (Ljavax/swing/JMenuItem;)Ljava/beans/PropertyChangeListener;
+ (Ljavax/swing/JMenuItem;)L1java/beans/PropertyChangeListener;
+createActionComponent
+ (Ljavax/swing/Action;)Ljavax/swing/JMenuItem;
+ (Ljavax/swing/Action;)L1javax/swing/JMenuItem;
+getSubElements
+ ()[Ljavax/swing/MenuElement;
+ ()[1Ljavax/swing/MenuElement;
+getUIClassID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
 removeMenuKeyListener
  (Ljavax/swing/event/MenuKeyListener;)V
  (L1javax/swing/event/MenuKeyListener;)V

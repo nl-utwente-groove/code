@@ -1,0 +1,4 @@
+class java/nio/channels/spi/SelectorProvider
+inheritedChannel
+ ()Ljava/nio/channels/Channel;
+ ()L0java/nio/channels/Channel;

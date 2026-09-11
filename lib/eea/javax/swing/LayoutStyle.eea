@@ -1,0 +1,4 @@
+class javax/swing/LayoutStyle
+getInstance
+ ()Ljavax/swing/LayoutStyle;
+ ()L1javax/swing/LayoutStyle;

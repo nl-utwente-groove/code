@@ -1,0 +1,4 @@
+class javax/xml/transform/stax/StAXSource
+FEATURE
+ Ljava/lang/String;
+ L1java/lang/String;

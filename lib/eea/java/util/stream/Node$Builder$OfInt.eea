@@ -1,0 +1,4 @@
+class java/util/stream/Node$Builder$OfInt
+build
+ ()Ljava/util/stream/Node$OfInt;
+ ()L1java/util/stream/Node$OfInt;

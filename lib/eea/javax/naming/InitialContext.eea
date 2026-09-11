@@ -1,0 +1,13 @@
+class javax/naming/InitialContext
+composeName
+ (Ljavax/naming/Name;Ljavax/naming/Name;)Ljavax/naming/Name;
+ (Ljavax/naming/Name;Ljavax/naming/Name;)L1javax/naming/Name;
+createSubcontext
+ (Ljava/lang/String;)Ljavax/naming/Context;
+ (Ljava/lang/String;)L1javax/naming/Context;
+createSubcontext
+ (Ljavax/naming/Name;)Ljavax/naming/Context;
+ (Ljavax/naming/Name;)L1javax/naming/Context;
+getNameInNamespace
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

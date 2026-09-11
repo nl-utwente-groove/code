@@ -1,0 +1,4 @@
+class java/security/Permissions
+elements
+ ()Ljava/util/Enumeration<Ljava/security/Permission;>;
+ ()L1java/util/Enumeration<Ljava/security/Permission;>;

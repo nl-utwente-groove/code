@@ -1,0 +1,58 @@
+class javax/swing/JInternalFrame
+CONTENT_PANE_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+FRAME_ICON_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+GLASS_PANE_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+IS_CLOSED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+IS_ICON_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+IS_MAXIMUM_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+IS_SELECTED_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+LAYERED_PANE_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+MENU_BAR_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+ROOT_PANE_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+TITLE_PROPERTY
+ Ljava/lang/String;
+ L1java/lang/String;
+addInternalFrameListener
+ (Ljavax/swing/event/InternalFrameListener;)V
+ (L1javax/swing/event/InternalFrameListener;)V
+createRootPane
+ ()Ljavax/swing/JRootPane;
+ ()L1javax/swing/JRootPane;
+getFocusCycleRootAncestor
+ ()Ljava/awt/Container;
+ ()L0java/awt/Container;
+getFocusOwner
+ ()Ljava/awt/Component;
+ ()L0java/awt/Component;
+getUIClassID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+getWarningString
+ ()Ljava/lang/String;
+ ()L0java/lang/String;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+removeInternalFrameListener
+ (Ljavax/swing/event/InternalFrameListener;)V
+ (L1javax/swing/event/InternalFrameListener;)V

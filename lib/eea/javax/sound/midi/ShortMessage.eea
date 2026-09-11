@@ -1,0 +1,4 @@
+class javax/sound/midi/ShortMessage
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;

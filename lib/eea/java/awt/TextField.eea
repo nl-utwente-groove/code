@@ -1,0 +1,16 @@
+class java/awt/TextField
+addActionListener
+ (Ljava/awt/event/ActionListener;)V
+ (L1java/awt/event/ActionListener;)V
+minimumSize
+ ()Ljava/awt/Dimension;
+ ()L1java/awt/Dimension;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+preferredSize
+ ()Ljava/awt/Dimension;
+ ()L1java/awt/Dimension;
+removeActionListener
+ (Ljava/awt/event/ActionListener;)V
+ (L1java/awt/event/ActionListener;)V

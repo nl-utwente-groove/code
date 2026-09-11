@@ -1,0 +1,4 @@
+class javax/swing/text/StyledEditorKit$StyledTextAction
+getEditor
+ (Ljava/awt/event/ActionEvent;)Ljavax/swing/JEditorPane;
+ (Ljava/awt/event/ActionEvent;)L0javax/swing/JEditorPane;

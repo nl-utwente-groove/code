@@ -1,0 +1,4 @@
+class javax/xml/validation/SchemaFactory
+newDefaultInstance
+ ()Ljavax/xml/validation/SchemaFactory;
+ ()L1javax/xml/validation/SchemaFactory;

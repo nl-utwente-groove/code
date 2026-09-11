@@ -1,0 +1,4 @@
+class javax/swing/event/TreeSelectionEvent
+getPaths
+ ()[Ljavax/swing/tree/TreePath;
+ ()[1Ljavax/swing/tree/TreePath;

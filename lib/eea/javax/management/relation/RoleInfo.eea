@@ -1,0 +1,4 @@
+class javax/management/relation/RoleInfo
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

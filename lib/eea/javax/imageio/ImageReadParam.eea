@@ -1,0 +1,7 @@
+class javax/imageio/ImageReadParam
+getDestinationBands
+ ()[I
+ ()[0I
+getSourceRenderSize
+ ()Ljava/awt/Dimension;
+ ()L1java/awt/Dimension;

@@ -1,0 +1,7 @@
+class java/lang/management/MemoryNotificationInfo
+MEMORY_COLLECTION_THRESHOLD_EXCEEDED
+ Ljava/lang/String;
+ L1java/lang/String;
+MEMORY_THRESHOLD_EXCEEDED
+ Ljava/lang/String;
+ L1java/lang/String;

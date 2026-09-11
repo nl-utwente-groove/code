@@ -1,0 +1,7 @@
+class javax/sound/midi/MidiMessage
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+getMessage
+ ()[B
+ ()[1B

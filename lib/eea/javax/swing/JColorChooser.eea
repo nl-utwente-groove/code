@@ -8,3 +8,12 @@ PREVIEW_PANEL_PROPERTY
 SELECTION_MODEL_PROPERTY
  Ljava/lang/String;
  L1java/lang/String;
+createDialog
+ (Ljava/awt/Component;Ljava/lang/String;ZLjavax/swing/JColorChooser;Ljava/awt/event/ActionListener;Ljava/awt/event/ActionListener;)Ljavax/swing/JDialog;
+ (Ljava/awt/Component;Ljava/lang/String;ZLjavax/swing/JColorChooser;Ljava/awt/event/ActionListener;Ljava/awt/event/ActionListener;)L1javax/swing/JDialog;
+getUIClassID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

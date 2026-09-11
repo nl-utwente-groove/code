@@ -1,0 +1,4 @@
+class java/awt/dnd/DragSourceEvent
+getLocation
+ ()Ljava/awt/Point;
+ ()L0java/awt/Point;

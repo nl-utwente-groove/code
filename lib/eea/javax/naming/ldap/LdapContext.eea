@@ -1,0 +1,4 @@
+class javax/naming/ldap/LdapContext
+CONTROL_FACTORIES
+ Ljava/lang/String;
+ L1java/lang/String;

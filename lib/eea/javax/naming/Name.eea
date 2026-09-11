@@ -1,0 +1,7 @@
+class javax/naming/Name
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+compareTo
+ (Ljava/lang/Object;)I
+ (L1java/lang/Object;)I

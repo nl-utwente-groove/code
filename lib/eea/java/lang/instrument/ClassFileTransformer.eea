@@ -1,0 +1,4 @@
+class java/lang/instrument/ClassFileTransformer
+transform
+ (Ljava/lang/ClassLoader;Ljava/lang/String;Ljava/lang/Class<*>;Ljava/security/ProtectionDomain;[B)[B
+ (Ljava/lang/ClassLoader;Ljava/lang/String;Ljava/lang/Class<*>;Ljava/security/ProtectionDomain;[B)[0B

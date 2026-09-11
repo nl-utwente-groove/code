@@ -77,9 +77,21 @@ white
 yellow
  Ljava/awt/Color;
  L1java/awt/Color;
+RGBtoHSB
+ (III[F)[F
+ (III[F)[1F
+getHSBColor
+ (FFF)Ljava/awt/Color;
+ (FFF)L1java/awt/Color;
+createContext
+ (Ljava/awt/image/ColorModel;Ljava/awt/Rectangle;Ljava/awt/geom/Rectangle2D;Ljava/awt/geom/AffineTransform;Ljava/awt/RenderingHints;)Ljava/awt/PaintContext;
+ (Ljava/awt/image/ColorModel;Ljava/awt/Rectangle;Ljava/awt/geom/Rectangle2D;Ljava/awt/geom/AffineTransform;Ljava/awt/RenderingHints;)L1java/awt/PaintContext;
 equals
  (Ljava/lang/Object;)Z
  (L0java/lang/Object;)Z
+getComponents
+ (Ljava/awt/color/ColorSpace;[F)[F
+ (Ljava/awt/color/ColorSpace;[F)[1F
 toString
  ()Ljava/lang/String;
  ()L1java/lang/String;

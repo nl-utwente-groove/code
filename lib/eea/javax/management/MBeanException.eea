@@ -1,0 +1,4 @@
+class javax/management/MBeanException
+getCause
+ ()Ljava/lang/Throwable;
+ ()L0java/lang/Throwable;

@@ -8,6 +8,9 @@ addChangeListener
 addItemListener
  (Ljava/awt/event/ItemListener;)V
  (L1java/awt/event/ItemListener;)V
+getGroup
+ ()Ljavax/swing/ButtonGroup;
+ ()L0javax/swing/ButtonGroup;
 removeActionListener
  (Ljava/awt/event/ActionListener;)V
  (L1java/awt/event/ActionListener;)V

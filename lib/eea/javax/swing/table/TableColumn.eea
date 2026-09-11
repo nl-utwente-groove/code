@@ -14,6 +14,9 @@ HEADER_VALUE_PROPERTY
 addPropertyChangeListener
  (Ljava/beans/PropertyChangeListener;)V
  (L1java/beans/PropertyChangeListener;)V
+createDefaultHeaderRenderer
+ ()Ljavax/swing/table/TableCellRenderer;
+ ()L1javax/swing/table/TableCellRenderer;
 removePropertyChangeListener
  (Ljava/beans/PropertyChangeListener;)V
  (L1java/beans/PropertyChangeListener;)V

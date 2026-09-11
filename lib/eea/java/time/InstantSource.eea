@@ -1,0 +1,4 @@
+class java/time/InstantSource
+withZone
+ (Ljava/time/ZoneId;)Ljava/time/Clock;
+ (Ljava/time/ZoneId;)L1java/time/Clock;

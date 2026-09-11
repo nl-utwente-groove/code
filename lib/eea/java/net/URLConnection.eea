@@ -1,7 +1,13 @@
 class java/net/URLConnection
+getDefaultRequestProperty
+ (Ljava/lang/String;)Ljava/lang/String;
+ (Ljava/lang/String;)L0java/lang/String;
 getFileNameMap
  ()Ljava/net/FileNameMap;
  ()L1java/net/FileNameMap;
+guessContentTypeFromStream
+ (Ljava/io/InputStream;)Ljava/lang/String;
+ (Ljava/io/InputStream;)L0java/lang/String;
 getContent
  ()Ljava/lang/Object;
  ()L1java/lang/Object;
@@ -17,6 +23,9 @@ getHeaderField
 getHeaderField
  (Ljava/lang/String;)Ljava/lang/String;
  (Ljava/lang/String;)L0java/lang/String;
+getHeaderFieldKey
+ (I)Ljava/lang/String;
+ (I)L0java/lang/String;
 getInputStream
  ()Ljava/io/InputStream;
  ()L1java/io/InputStream;
@@ -26,6 +35,9 @@ getOutputStream
 getPermission
  ()Ljava/security/Permission;
  ()L1java/security/Permission;
+getRequestProperty
+ (Ljava/lang/String;)Ljava/lang/String;
+ (Ljava/lang/String;)L0java/lang/String;
 getURL
  ()Ljava/net/URL;
  ()L1java/net/URL;

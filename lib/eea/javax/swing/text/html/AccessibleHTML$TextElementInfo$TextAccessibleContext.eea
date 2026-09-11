@@ -1,0 +1,13 @@
+class javax/swing/text/html/AccessibleHTML$TextElementInfo$TextAccessibleContext
+getAccessibleName
+ ()Ljava/lang/String;
+ ()L0java/lang/String;
+getAccessibleText
+ ()Ljavax/accessibility/AccessibleText;
+ ()L0javax/accessibility/AccessibleText;
+getCharacterAttribute
+ (I)Ljavax/swing/text/AttributeSet;
+ (I)L0javax/swing/text/AttributeSet;
+getCharacterBounds
+ (I)Ljava/awt/Rectangle;
+ (I)L0java/awt/Rectangle;

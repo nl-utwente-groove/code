@@ -1,0 +1,4 @@
+class javax/swing/plaf/basic/BasicSplitPaneUI$PropertyHandler
+propertyChange
+ (Ljava/beans/PropertyChangeEvent;)V
+ (L1java/beans/PropertyChangeEvent;)V

@@ -1,0 +1,10 @@
+class java/security/cert/URICertStoreParameters
+clone
+ ()Ljava/security/cert/URICertStoreParameters;
+ ()L1java/security/cert/URICertStoreParameters;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

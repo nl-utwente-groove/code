@@ -1,0 +1,7 @@
+class java/util/SplittableRandom
+split
+ ()Ljava/util/SplittableRandom;
+ ()L1java/util/SplittableRandom;
+split
+ (Ljava/util/random/RandomGenerator$SplittableGenerator;)Ljava/util/SplittableRandom;
+ (Ljava/util/random/RandomGenerator$SplittableGenerator;)L1java/util/SplittableRandom;

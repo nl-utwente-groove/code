@@ -1,0 +1,7 @@
+class javax/crypto/spec/PBEKeySpec
+getPassword
+ ()[C
+ ()[1C
+getSalt
+ ()[B
+ ()[0B

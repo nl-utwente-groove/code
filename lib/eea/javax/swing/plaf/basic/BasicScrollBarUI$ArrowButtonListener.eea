@@ -1,0 +1,7 @@
+class javax/swing/plaf/basic/BasicScrollBarUI$ArrowButtonListener
+mousePressed
+ (Ljava/awt/event/MouseEvent;)V
+ (L1java/awt/event/MouseEvent;)V
+mouseReleased
+ (Ljava/awt/event/MouseEvent;)V
+ (L1java/awt/event/MouseEvent;)V

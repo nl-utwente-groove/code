@@ -1,0 +1,16 @@
+class java/awt/Choice
+addItemListener
+ (Ljava/awt/event/ItemListener;)V
+ (L1java/awt/event/ItemListener;)V
+getSelectedItem
+ ()Ljava/lang/String;
+ ()L0java/lang/String;
+getSelectedObjects
+ ()[Ljava/lang/Object;
+ ()[0Ljava/lang/Object;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+removeItemListener
+ (Ljava/awt/event/ItemListener;)V
+ (L1java/awt/event/ItemListener;)V

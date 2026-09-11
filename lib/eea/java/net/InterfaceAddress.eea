@@ -1,0 +1,13 @@
+class java/net/InterfaceAddress
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getAddress
+ ()Ljava/net/InetAddress;
+ ()L1java/net/InetAddress;
+getBroadcast
+ ()Ljava/net/InetAddress;
+ ()L0java/net/InetAddress;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

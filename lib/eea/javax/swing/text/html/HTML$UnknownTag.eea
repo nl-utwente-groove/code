@@ -1,0 +1,4 @@
+class javax/swing/text/html/HTML$UnknownTag
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z

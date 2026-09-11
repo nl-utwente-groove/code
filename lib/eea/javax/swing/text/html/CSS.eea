@@ -1,0 +1,4 @@
+class javax/swing/text/html/CSS
+getAllAttributeKeys
+ ()[Ljavax/swing/text/html/CSS$Attribute;
+ ()[1Ljavax/swing/text/html/CSS$Attribute;

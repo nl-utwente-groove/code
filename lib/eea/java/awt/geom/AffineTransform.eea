@@ -1,10 +1,49 @@
 class java/awt/geom/AffineTransform
+getQuadrantRotateInstance
+ (I)Ljava/awt/geom/AffineTransform;
+ (I)L1java/awt/geom/AffineTransform;
+getQuadrantRotateInstance
+ (IDD)Ljava/awt/geom/AffineTransform;
+ (IDD)L1java/awt/geom/AffineTransform;
+getRotateInstance
+ (D)Ljava/awt/geom/AffineTransform;
+ (D)L1java/awt/geom/AffineTransform;
+getRotateInstance
+ (DD)Ljava/awt/geom/AffineTransform;
+ (DD)L1java/awt/geom/AffineTransform;
+getRotateInstance
+ (DDD)Ljava/awt/geom/AffineTransform;
+ (DDD)L1java/awt/geom/AffineTransform;
+getRotateInstance
+ (DDDD)Ljava/awt/geom/AffineTransform;
+ (DDDD)L1java/awt/geom/AffineTransform;
+getScaleInstance
+ (DD)Ljava/awt/geom/AffineTransform;
+ (DD)L1java/awt/geom/AffineTransform;
+getShearInstance
+ (DD)Ljava/awt/geom/AffineTransform;
+ (DD)L1java/awt/geom/AffineTransform;
+getTranslateInstance
+ (DD)Ljava/awt/geom/AffineTransform;
+ (DD)L1java/awt/geom/AffineTransform;
 clone
  ()Ljava/lang/Object;
  ()L1java/lang/Object;
+createInverse
+ ()Ljava/awt/geom/AffineTransform;
+ ()L0java/awt/geom/AffineTransform;
+deltaTransform
+ (Ljava/awt/geom/Point2D;Ljava/awt/geom/Point2D;)Ljava/awt/geom/Point2D;
+ (Ljava/awt/geom/Point2D;Ljava/awt/geom/Point2D;)L0java/awt/geom/Point2D;
 equals
  (Ljava/lang/Object;)Z
  (L0java/lang/Object;)Z
+inverseTransform
+ (Ljava/awt/geom/Point2D;Ljava/awt/geom/Point2D;)Ljava/awt/geom/Point2D;
+ (Ljava/awt/geom/Point2D;Ljava/awt/geom/Point2D;)L1java/awt/geom/Point2D;
 toString
  ()Ljava/lang/String;
  ()L1java/lang/String;
+transform
+ (Ljava/awt/geom/Point2D;Ljava/awt/geom/Point2D;)Ljava/awt/geom/Point2D;
+ (Ljava/awt/geom/Point2D;Ljava/awt/geom/Point2D;)L0java/awt/geom/Point2D;

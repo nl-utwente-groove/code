@@ -1,0 +1,4 @@
+class javax/swing/ActionMap
+keys
+ ()[Ljava/lang/Object;
+ ()[0Ljava/lang/Object;

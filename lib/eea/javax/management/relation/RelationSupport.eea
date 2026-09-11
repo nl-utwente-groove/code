@@ -1,0 +1,7 @@
+class javax/management/relation/RelationSupport
+getReferencedMBeans
+ ()Ljava/util/Map<Ljavax/management/ObjectName;Ljava/util/List<Ljava/lang/String;>;>;
+ ()L1java/util/Map<Ljavax/management/ObjectName;Ljava/util/List<Ljava/lang/String;>;>;
+retrieveAllRoles
+ ()Ljavax/management/relation/RoleList;
+ ()L1javax/management/relation/RoleList;

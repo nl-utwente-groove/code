@@ -1,0 +1,10 @@
+class java/awt/event/InvocationEvent
+getException
+ ()Ljava/lang/Exception;
+ ()L0java/lang/Exception;
+getThrowable
+ ()Ljava/lang/Throwable;
+ ()L0java/lang/Throwable;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

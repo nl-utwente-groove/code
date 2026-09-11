@@ -1,0 +1,4 @@
+class javax/xml/crypto/dsig/XMLSignature
+XMLNS
+ Ljava/lang/String;
+ L1java/lang/String;

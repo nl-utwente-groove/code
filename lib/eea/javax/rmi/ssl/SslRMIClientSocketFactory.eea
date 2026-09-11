@@ -1,0 +1,7 @@
+class javax/rmi/ssl/SslRMIClientSocketFactory
+createSocket
+ (Ljava/lang/String;I)Ljava/net/Socket;
+ (Ljava/lang/String;I)L1java/net/Socket;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z

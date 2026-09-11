@@ -1,0 +1,10 @@
+class java/awt/Frame
+getFrames
+ ()[Ljava/awt/Frame;
+ ()[1Ljava/awt/Frame;
+getIconImage
+ ()Ljava/awt/Image;
+ ()L0java/awt/Image;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

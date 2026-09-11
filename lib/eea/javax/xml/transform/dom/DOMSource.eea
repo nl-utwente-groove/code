@@ -1,0 +1,4 @@
+class javax/xml/transform/dom/DOMSource
+FEATURE
+ Ljava/lang/String;
+ L1java/lang/String;

@@ -8,6 +8,9 @@ findResource
 findResources
  (Ljava/lang/String;)Ljava/util/Enumeration<Ljava/net/URL;>;
  (L0java/lang/String;)L1java/util/Enumeration<L1java/net/URL;>;
+getPermissions
+ (Ljava/security/CodeSource;)Ljava/security/PermissionCollection;
+ (Ljava/security/CodeSource;)L1java/security/PermissionCollection;
 getResourceAsStream
  (Ljava/lang/String;)Ljava/io/InputStream;
  (L1java/lang/String;)L0java/io/InputStream;

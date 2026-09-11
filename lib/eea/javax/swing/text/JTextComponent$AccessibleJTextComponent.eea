@@ -1,0 +1,31 @@
+class javax/swing/text/JTextComponent$AccessibleJTextComponent
+caretUpdate
+ (Ljavax/swing/event/CaretEvent;)V
+ (L1javax/swing/event/CaretEvent;)V
+changedUpdate
+ (Ljavax/swing/event/DocumentEvent;)V
+ (L1javax/swing/event/DocumentEvent;)V
+getAccessibleAction
+ ()Ljavax/accessibility/AccessibleAction;
+ ()L0javax/accessibility/AccessibleAction;
+getAccessibleActionDescription
+ (I)Ljava/lang/String;
+ (I)L0java/lang/String;
+getAccessibleEditableText
+ ()Ljavax/accessibility/AccessibleEditableText;
+ ()L0javax/accessibility/AccessibleEditableText;
+getAccessibleText
+ ()Ljavax/accessibility/AccessibleText;
+ ()L0javax/accessibility/AccessibleText;
+getCharacterBounds
+ (I)Ljava/awt/Rectangle;
+ (I)L0java/awt/Rectangle;
+getTextBounds
+ (II)Ljava/awt/Rectangle;
+ (II)L0java/awt/Rectangle;
+insertUpdate
+ (Ljavax/swing/event/DocumentEvent;)V
+ (L1javax/swing/event/DocumentEvent;)V
+removeUpdate
+ (Ljavax/swing/event/DocumentEvent;)V
+ (L1javax/swing/event/DocumentEvent;)V

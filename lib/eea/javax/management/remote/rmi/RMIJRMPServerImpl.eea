@@ -1,0 +1,7 @@
+class javax/management/remote/rmi/RMIJRMPServerImpl
+getProtocol
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+makeClient
+ (Ljava/lang/String;Ljavax/security/auth/Subject;)Ljavax/management/remote/rmi/RMIConnection;
+ (Ljava/lang/String;Ljavax/security/auth/Subject;)L1javax/management/remote/rmi/RMIConnection;

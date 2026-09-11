@@ -1,0 +1,19 @@
+class javax/swing/text/View
+createFragment
+ (II)Ljavax/swing/text/View;
+ (II)L1javax/swing/text/View;
+getChildAllocation
+ (ILjava/awt/Shape;)Ljava/awt/Shape;
+ (ILjava/awt/Shape;)L0java/awt/Shape;
+getContainer
+ ()Ljava/awt/Container;
+ ()L0java/awt/Container;
+getToolTipText
+ (FFLjava/awt/Shape;)Ljava/lang/String;
+ (FFLjava/awt/Shape;)L0java/lang/String;
+getView
+ (I)Ljavax/swing/text/View;
+ (I)L0javax/swing/text/View;
+getViewFactory
+ ()Ljavax/swing/text/ViewFactory;
+ ()L0javax/swing/text/ViewFactory;

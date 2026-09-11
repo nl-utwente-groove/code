@@ -1,0 +1,4 @@
+class java/awt/font/ImageGraphicAttribute
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z

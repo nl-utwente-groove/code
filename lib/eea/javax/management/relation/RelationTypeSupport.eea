@@ -1,0 +1,4 @@
+class javax/management/relation/RelationTypeSupport
+getRoleInfos
+ ()Ljava/util/List<Ljavax/management/relation/RoleInfo;>;
+ ()L1java/util/List<Ljavax/management/relation/RoleInfo;>;

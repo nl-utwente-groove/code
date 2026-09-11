@@ -1,0 +1,4 @@
+class javax/swing/tree/AbstractLayoutCache
+getNodeDimensions
+ (Ljava/lang/Object;IIZLjava/awt/Rectangle;)Ljava/awt/Rectangle;
+ (Ljava/lang/Object;IIZLjava/awt/Rectangle;)L0java/awt/Rectangle;

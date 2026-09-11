@@ -1,0 +1,7 @@
+class java/security/spec/ECFieldF2m
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getMidTermsOfReductionPolynomial
+ ()[I
+ ()[0I

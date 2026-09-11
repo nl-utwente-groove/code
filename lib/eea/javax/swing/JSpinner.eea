@@ -2,6 +2,12 @@ class javax/swing/JSpinner
 addChangeListener
  (Ljavax/swing/event/ChangeListener;)V
  (L1javax/swing/event/ChangeListener;)V
+createEditor
+ (Ljavax/swing/SpinnerModel;)Ljavax/swing/JComponent;
+ (Ljavax/swing/SpinnerModel;)L1javax/swing/JComponent;
+getUIClassID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
 removeChangeListener
  (Ljavax/swing/event/ChangeListener;)V
  (L1javax/swing/event/ChangeListener;)V

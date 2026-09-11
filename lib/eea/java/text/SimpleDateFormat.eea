@@ -1,0 +1,19 @@
+class java/text/SimpleDateFormat
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+formatToCharacterIterator
+ (Ljava/lang/Object;)Ljava/text/AttributedCharacterIterator;
+ (L1java/lang/Object;)L1java/text/AttributedCharacterIterator;
+get2DigitYearStart
+ ()Ljava/util/Date;
+ ()L1java/util/Date;
+getDateFormatSymbols
+ ()Ljava/text/DateFormatSymbols;
+ ()L1java/text/DateFormatSymbols;
+parse
+ (Ljava/lang/String;Ljava/text/ParsePosition;)Ljava/util/Date;
+ (Ljava/lang/String;Ljava/text/ParsePosition;)L0java/util/Date;

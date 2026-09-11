@@ -1,0 +1,10 @@
+class javax/accessibility/AccessibleRelationSet
+get
+ (Ljava/lang/String;)Ljavax/accessibility/AccessibleRelation;
+ (Ljava/lang/String;)L0javax/accessibility/AccessibleRelation;
+toArray
+ ()[Ljavax/accessibility/AccessibleRelation;
+ ()[1Ljavax/accessibility/AccessibleRelation;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

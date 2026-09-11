@@ -1,0 +1,22 @@
+class javax/management/modelmbean/DescriptorSupport
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getFieldNames
+ ()[Ljava/lang/String;
+ ()[1Ljava/lang/String;
+getFieldValues
+ ([Ljava/lang/String;)[Ljava/lang/Object;
+ ([Ljava/lang/String;)[1Ljava/lang/Object;
+getFields
+ ()[Ljava/lang/String;
+ ()[1Ljava/lang/String;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+toXMLString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

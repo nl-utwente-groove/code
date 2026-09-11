@@ -1,0 +1,4 @@
+class javax/sound/sampled/BooleanControl
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

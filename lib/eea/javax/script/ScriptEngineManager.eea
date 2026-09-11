@@ -1,0 +1,10 @@
+class javax/script/ScriptEngineManager
+getEngineByExtension
+ (Ljava/lang/String;)Ljavax/script/ScriptEngine;
+ (Ljava/lang/String;)L0javax/script/ScriptEngine;
+getEngineByMimeType
+ (Ljava/lang/String;)Ljavax/script/ScriptEngine;
+ (Ljava/lang/String;)L0javax/script/ScriptEngine;
+getEngineByName
+ (Ljava/lang/String;)Ljavax/script/ScriptEngine;
+ (Ljava/lang/String;)L0javax/script/ScriptEngine;

@@ -1,0 +1,8 @@
+class java/nio/file/SecureDirectoryStream
+ <T:Ljava/lang/Object;>
+deleteDirectory
+ (TT;)V
+ (T1T;)V
+deleteFile
+ (TT;)V
+ (T1T;)V

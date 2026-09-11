@@ -1,0 +1,4 @@
+class javax/sound/midi/Sequencer
+removeMetaEventListener
+ (Ljavax/sound/midi/MetaEventListener;)V
+ (L1javax/sound/midi/MetaEventListener;)V

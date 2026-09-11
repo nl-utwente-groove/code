@@ -1,0 +1,11 @@
+class java/util/random/RandomGeneratorFactory
+ <T::Ljava/util/random/RandomGenerator;>
+create
+ ()TT;
+ ()T1T;
+create
+ (J)TT;
+ (J)T1T;
+create
+ ([B)TT;
+ ([B)T1T;

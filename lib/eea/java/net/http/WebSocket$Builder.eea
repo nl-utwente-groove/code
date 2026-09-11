@@ -1,0 +1,10 @@
+class java/net/http/WebSocket$Builder
+connectTimeout
+ (Ljava/time/Duration;)Ljava/net/http/WebSocket$Builder;
+ (Ljava/time/Duration;)L1java/net/http/WebSocket$Builder;
+header
+ (Ljava/lang/String;Ljava/lang/String;)Ljava/net/http/WebSocket$Builder;
+ (Ljava/lang/String;Ljava/lang/String;)L1java/net/http/WebSocket$Builder;
+subprotocols
+ (Ljava/lang/String;[Ljava/lang/String;)Ljava/net/http/WebSocket$Builder;
+ (Ljava/lang/String;[Ljava/lang/String;)L1java/net/http/WebSocket$Builder;

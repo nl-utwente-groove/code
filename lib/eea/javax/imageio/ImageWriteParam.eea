@@ -1,0 +1,10 @@
+class javax/imageio/ImageWriteParam
+getCompressionQualityDescriptions
+ ()[Ljava/lang/String;
+ ()[0Ljava/lang/String;
+getCompressionQualityValues
+ ()[F
+ ()[0F
+getCompressionTypes
+ ()[Ljava/lang/String;
+ ()[0Ljava/lang/String;

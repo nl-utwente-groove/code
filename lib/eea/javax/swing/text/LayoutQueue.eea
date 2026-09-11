@@ -1,0 +1,4 @@
+class javax/swing/text/LayoutQueue
+waitForWork
+ ()Ljava/lang/Runnable;
+ ()L0java/lang/Runnable;

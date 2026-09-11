@@ -1,0 +1,4 @@
+class java/security/SignedObject
+getSignature
+ ()[B
+ ()[1B

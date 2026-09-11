@@ -1,0 +1,4 @@
+class javax/swing/plaf/basic/BasicComboPopup$InvocationMouseMotionHandler
+mouseDragged
+ (Ljava/awt/event/MouseEvent;)V
+ (L1java/awt/event/MouseEvent;)V

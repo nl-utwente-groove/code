@@ -1,0 +1,7 @@
+class javax/imageio/spi/ImageOutputStreamSpi
+createOutputStreamInstance
+ (Ljava/lang/Object;)Ljavax/imageio/stream/ImageOutputStream;
+ (Ljava/lang/Object;)L1javax/imageio/stream/ImageOutputStream;
+createOutputStreamInstance
+ (Ljava/lang/Object;ZLjava/io/File;)Ljavax/imageio/stream/ImageOutputStream;
+ (Ljava/lang/Object;ZLjava/io/File;)L1javax/imageio/stream/ImageOutputStream;

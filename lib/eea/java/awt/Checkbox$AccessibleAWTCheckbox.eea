@@ -1,0 +1,22 @@
+class java/awt/Checkbox$AccessibleAWTCheckbox
+getAccessibleAction
+ ()Ljavax/accessibility/AccessibleAction;
+ ()L0javax/accessibility/AccessibleAction;
+getAccessibleActionDescription
+ (I)Ljava/lang/String;
+ (I)L0java/lang/String;
+getAccessibleValue
+ ()Ljavax/accessibility/AccessibleValue;
+ ()L0javax/accessibility/AccessibleValue;
+getCurrentAccessibleValue
+ ()Ljava/lang/Number;
+ ()L0java/lang/Number;
+getMaximumAccessibleValue
+ ()Ljava/lang/Number;
+ ()L0java/lang/Number;
+getMinimumAccessibleValue
+ ()Ljava/lang/Number;
+ ()L0java/lang/Number;
+itemStateChanged
+ (Ljava/awt/event/ItemEvent;)V
+ (L1java/awt/event/ItemEvent;)V

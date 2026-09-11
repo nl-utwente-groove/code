@@ -1,0 +1,10 @@
+class javax/management/AttributeValueExp
+apply
+ (Ljavax/management/ObjectName;)Ljavax/management/ValueExp;
+ (Ljavax/management/ObjectName;)L1javax/management/ValueExp;
+getAttribute
+ (Ljavax/management/ObjectName;)Ljava/lang/Object;
+ (Ljavax/management/ObjectName;)L0java/lang/Object;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

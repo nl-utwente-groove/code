@@ -1,0 +1,4 @@
+class java/security/PermissionCollection
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

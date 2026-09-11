@@ -1,0 +1,13 @@
+class java/util/stream/Node$OfDouble
+copyInto
+ ([Ljava/lang/Double;I)V
+ ([1Ljava/lang/Double;I)V
+forEach
+ (Ljava/util/function/Consumer<-Ljava/lang/Double;>;)V
+ (L1java/util/function/Consumer<-Ljava/lang/Double;>;)V
+getShape
+ ()Ljava/util/stream/StreamShape;
+ ()L1java/util/stream/StreamShape;
+newArray
+ (I)[D
+ (I)[1D

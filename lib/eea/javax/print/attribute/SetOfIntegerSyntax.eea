@@ -1,0 +1,10 @@
+class javax/print/attribute/SetOfIntegerSyntax
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getMembers
+ ()[[I
+ ()[1[I
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

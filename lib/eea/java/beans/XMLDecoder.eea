@@ -1,0 +1,7 @@
+class java/beans/XMLDecoder
+createHandler
+ (Ljava/lang/Object;Ljava/beans/ExceptionListener;Ljava/lang/ClassLoader;)Lorg/xml/sax/helpers/DefaultHandler;
+ (Ljava/lang/Object;Ljava/beans/ExceptionListener;Ljava/lang/ClassLoader;)L1org/xml/sax/helpers/DefaultHandler;
+readObject
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;

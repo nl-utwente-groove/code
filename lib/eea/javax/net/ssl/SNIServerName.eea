@@ -1,0 +1,10 @@
+class javax/net/ssl/SNIServerName
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getEncoded
+ ()[B
+ ()[1B
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

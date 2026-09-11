@@ -1,0 +1,22 @@
+class java/time/chrono/JapaneseDate
+now
+ (Ljava/time/Clock;)Ljava/time/chrono/JapaneseDate;
+ (Ljava/time/Clock;)L1java/time/chrono/JapaneseDate;
+of
+ (III)Ljava/time/chrono/JapaneseDate;
+ (III)L1java/time/chrono/JapaneseDate;
+of
+ (Ljava/time/chrono/JapaneseEra;III)Ljava/time/chrono/JapaneseDate;
+ (Ljava/time/chrono/JapaneseEra;III)L1java/time/chrono/JapaneseDate;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getLong
+ (Ljava/time/temporal/TemporalField;)J
+ (L1java/time/temporal/TemporalField;)J
+isSupported
+ (Ljava/time/temporal/TemporalField;)Z
+ (L1java/time/temporal/TemporalField;)Z
+range
+ (Ljava/time/temporal/TemporalField;)Ljava/time/temporal/ValueRange;
+ (L1java/time/temporal/TemporalField;)L1java/time/temporal/ValueRange;

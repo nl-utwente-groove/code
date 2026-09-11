@@ -1,4 +1,7 @@
 class javax/swing/undo/UndoableEditSupport
+createCompoundEdit
+ ()Ljavax/swing/undo/CompoundEdit;
+ ()L1javax/swing/undo/CompoundEdit;
 toString
  ()Ljava/lang/String;
  ()L1java/lang/String;

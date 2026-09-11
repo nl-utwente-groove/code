@@ -1,0 +1,4 @@
+class javax/tools/ToolProvider
+getSystemToolClassLoader
+ ()Ljava/lang/ClassLoader;
+ ()L0java/lang/ClassLoader;

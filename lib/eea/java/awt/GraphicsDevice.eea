@@ -1,0 +1,4 @@
+class java/awt/GraphicsDevice
+getDefaultConfiguration
+ ()Ljava/awt/GraphicsConfiguration;
+ ()L1java/awt/GraphicsConfiguration;

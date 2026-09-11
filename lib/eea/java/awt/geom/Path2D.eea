@@ -2,3 +2,12 @@ class java/awt/geom/Path2D
 clone
  ()Ljava/lang/Object;
  ()L1java/lang/Object;
+createTransformedShape
+ (Ljava/awt/geom/AffineTransform;)Ljava/awt/Shape;
+ (Ljava/awt/geom/AffineTransform;)L1java/awt/Shape;
+getCurrentPoint
+ ()Ljava/awt/geom/Point2D;
+ ()L0java/awt/geom/Point2D;
+getPathIterator
+ (Ljava/awt/geom/AffineTransform;D)Ljava/awt/geom/PathIterator;
+ (Ljava/awt/geom/AffineTransform;D)L1java/awt/geom/PathIterator;
