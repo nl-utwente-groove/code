@@ -76,6 +76,8 @@ in two different ways, it is up to the developer to ensure that they are identic
 
 2. Create and push a tag of the form `release-x_y_z`
 
+To build a pre-release instead (for instance to test the workflow), set `prerelease: true` in the `release` job of `.github/workflows/release.yml` on the tagged commit, since the workflow runs as it is in that commit; a pre-release is not shown as the latest release of the repository. Use a version number that cannot be mistaken for a real one, such as `99.0.0`; a first number of 0 may fail the macOS installers, since jpackage there is believed to reject it.
+
 If something goes wrong on github and you have to repeat the last step, you first have to delete the remote tag on the command line, like so:
 
 `git push --delete origin release-x_y_z`
