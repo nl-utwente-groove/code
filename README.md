@@ -13,9 +13,9 @@ All Maven dependencies are obtained automatically; a fresh clone builds without 
 mvn clean package
 ```
 
-All libraries come from Maven Central. Four third-party libraries that were never
-published there by their upstreams (`gnuprologjava`, `ltl2buchi`, `osxadapter`,
-`groove-gxl`) have been republished to Maven Central by the GROOVE project itself,
+All libraries come from Maven Central. Three third-party libraries that were never
+published there by their upstreams (`gnuprologjava`, `ltl2buchi`, `groove-gxl`)
+have been republished to Maven Central by the GROOVE project itself,
 under the `nl.utwente.groove` group id; the repackaging modules and the publication
 procedure live in [`lib/publish`](lib/publish/README.md).
 

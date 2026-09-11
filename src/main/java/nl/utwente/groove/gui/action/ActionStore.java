@@ -577,7 +577,7 @@ public class ActionStore implements SimulatorListener {
     private SimulatorAction previewTypeAction;
 
     /** Returns the quit action permanently associated with this simulator. */
-    public SimulatorAction getQuitAction() {
+    public QuitAction getQuitAction() {
         // lazily create the action
         if (this.quitAction == null) {
             this.quitAction = new QuitAction(this.simulator);

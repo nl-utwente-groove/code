@@ -36,6 +36,7 @@ import static nl.utwente.groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import static nl.utwente.groove.util.io.FileType.GRAMMAR;
 
 import java.awt.Component;
+import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
@@ -67,7 +68,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.WindowConstants;
 
-import apple.dts.samplecode.osxadapter.OSXAdapter;
 import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
@@ -99,6 +99,7 @@ import nl.utwente.groove.lts.GraphNextState;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.RuleTransitionLabel;
 import nl.utwente.groove.transform.oracle.OracleParser;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.parse.FormatErrorSet;
@@ -263,11 +264,35 @@ public class Simulator implements SimulatorListener {
     }
 
     /**
-     * Execute the quit action as a method of the Simulator class.
-     * Needed for Command-Q shortcut on MacOS only (see {@link #getFrame}).
+     * Routes the platform's application quit request (on macOS: Command-Q,
+     * the application menu and the dock) through the quit action, so that
+     * unsaved changes are offered for saving and the quit can be cancelled.
+     * Without a handler, macOS terminates the JVM straight away.
+     * Does nothing on other platforms.
      */
-    public void tryQuit() {
-        this.getActions().getQuitAction().execute();
+    @AIGenerated("Claude Opus 5, 2026-09")
+    private void installQuitHandler() {
+        if (!IS_PLATFORM_MAC || !Desktop.isDesktopSupported()) {
+            return;
+        }
+        var desktop = Desktop.getDesktop();
+        if (!desktop.isSupported(Desktop.Action.APP_QUIT_HANDLER)) {
+            return;
+        }
+        desktop.setQuitHandler((e, response) -> {
+            // the platform waits until one of the responses is given,
+            // so make sure an exception does not leave it hanging
+            boolean quit = false;
+            try {
+                quit = getActions().getQuitAction().tryQuit();
+            } finally {
+                if (quit) {
+                    response.performQuit();
+                } else {
+                    response.cancelQuit();
+                }
+            }
+        });
     }
 
     /**
@@ -285,15 +310,7 @@ public class Simulator implements SimulatorListener {
             result.setIconImage(Icons.GROOVE_ICON_16x16.getImage());
             result.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
-            // register doQuit() for the Command-Q shortcut on MacOS
-            if (IS_PLATFORM_MAC) {
-                try {
-                    OSXAdapter.setQuitHandler(this, this.getClass().getDeclaredMethod("tryQuit"));
-                } catch (NoSuchMethodException e1) {
-                    // should not happen (thrown when 'tryQuit' does not exist)
-                    // ignore
-                }
-            }
+            installQuitHandler();
             // register doQuit() as the closing method of the window
             result.addWindowListener(new WindowAdapter() {
                 @Override
