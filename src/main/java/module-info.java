@@ -54,7 +54,6 @@ module nl.utwente.groove {
     exports nl.utwente.groove.annotation;
     exports nl.utwente.groove.graph.plain;
     exports nl.utwente.groove.verify;
-    exports nl.utwente.groove.gui.jgraph;
     exports nl.utwente.groove.prolog.builtin;
     exports nl.utwente.groove.grammar.aspect;
     exports nl.utwente.groove.io;
@@ -102,7 +101,7 @@ module nl.utwente.groove {
     requires java.net.http;
     requires java.xml;
     requires com.formdev.flatlaf;
-    requires transitive jgraph;
+    requires jgraph;
     requires ltl2buchi;
     requires org.eclipse.emf.common;
     requires org.eclipse.emf.ecore;
