@@ -90,6 +90,15 @@ To try this locally without any packaging tools, build the release as described 
 
 which produces the raw application directory (no installer) under `jpackage/target/dist`. Building the actual `.msi` locally additionally requires the WiX toolset.
 
+## The release page
+
+The installers are not code-signed, so Windows and macOS block them at first. The release page therefore explains how to get past that, in two places, both kept in `github`:
+
+- `INSTALL-NOTE.md` opens the body of the release page. The `release` job builds the body with `github/release-notes.sh`, which appends this release's section of `include/CHANGES.md` (its first section) in a collapsed block, so that the note stays close to the asset list below it. Run `bash github/release-notes.sh` to preview the body.
+- `IF-WINDOWS-OR-MACOS-BLOCKS-THIS-INSTALLER-READ-ME.txt` is attached to the release as an asset, with step-by-step instructions. Its name is the message, for those who read nothing but the asset list.
+
+Unlike the contents of `include`, neither file ends up in the zips or the installers.
+
 ## Postprocessing
 
 1. In the main `pom.xml`, update the `revision` property (containing the release
