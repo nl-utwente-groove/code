@@ -37,7 +37,7 @@ import nl.utwente.groove.graph.Node;
 public interface RuleNode extends Node, RuleElement {
     /** Returns the optional ID of this rule node.
      * This is the {@link AspectKind#ID}-value if any;
-     * it defaults to the {@link #toString()}-value.
+     * it defaults to the {@link Object#toString()}-value.
      */
     default public String getId() {
         return toString();

@@ -74,6 +74,11 @@ extension directory and offers to install itself; see "Phase 5b" below. What rem
 on Arend's side: the private repository and secret for the release workflow, the
 license correspondence with yWorks, the download page, and the merge into `master`; the
 backend module split (gh #887) stays an independent decision. The architecture allowlist is empty.
+**The public history was rewritten on 2026-09-10** with `git filter-repo`, removing
+`yfiles/` from `master` and `yworks-migration` and force-pushing both; the release tags
+were outside the rewritten range and kept their SHAs. Commit SHAs quoted in `claude/*.md`
+and in commit messages from before that date refer to the old history and no longer
+resolve.
 
 ## Goal and motivation
 

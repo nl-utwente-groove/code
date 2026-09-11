@@ -36,7 +36,7 @@ import nl.utwente.groove.util.AIGenerated;
  * {@code 2*(n-2)} control points {@code b}, laid out so that the curve is
  * <pre>
  *   quadratic  p[0]   -- b[0]                  -- p[1]
- *   cubic      p[i-1] -- b[2*i-3] and b[2*i-2] -- p[i]     for 2 <= i <= n-2
+ *   cubic      p[i-1] -- b[2*i-3] and b[2*i-2] -- p[i]     for 2 &lt;= i &lt;= n-2
  *   quadratic  p[n-2] -- b[2*(n-2)-1]          -- p[n-1]
  * </pre>
  * @author Arend Rensink

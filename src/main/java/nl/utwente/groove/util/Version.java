@@ -210,7 +210,7 @@ public class Version {
      * @param version2 String of the form 0.0.0...
      * @return 0 if versions are equal,
      *         1 if version1 > version2,
-     *         -1 if version1 < version2
+     *         -1 if version1 &lt; version2
      */
     public static int compareGrammarVersions(String version1, String version2) {
         String[] as1 = version1.split("\\.");

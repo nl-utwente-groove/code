@@ -49,27 +49,3 @@ Outside the unit, `com.yworks` names occur only in `release/yfiles/pom.xml` (art
 coordinates and the `Obfuscation` annotation class name for yGuard) and as API names in
 prose in `claude/phase-2-model-and-ownership.md`, `claude/yfiles-migration.md`,
 `claude/yfiles-spike-findings.md`.
-
-## Rewriting master and purging the old objects (estimate, for scheduling)
-
-Only if yWorks answers question (f) with "purge". Mechanical, Opus-level work; roughly
-half a day of wall-clock, little of it Fable reasoning:
-
-1. Freeze: all branches merged or rebased as Arend wants them, all worktrees clean; the
-   stale worktrees removed. Nothing else in flight.
-2. Fresh clone with all branches; `git filter-repo --path yfiles --invert-paths` (also
-   `--path claude/yfiles-spike-findings.md` etc. if the prose is to go; decide first).
-   Every commit since phase 2 slice 3 (early September, ~150 commits over the branch
-   chain) gets a new SHA.
-3. Force-push every branch (`master`, `yworks-migration`, the review branches); release
-   tags are older than the unit and keep their SHAs, so they are unaffected.
-4. Ask GitHub support to purge unreachable objects and cached views (the old commits stay
-   reachable by SHA until then, and forks would keep them; there are none known).
-5. Re-clone or hard-reset every local checkout and worktree; the main checkout at
-   `C:\Groove\code` must be reset by Arend himself (no session may touch it).
-6. Stale SHAs in `claude/*.md` and in the memory files: leave them, note the rewrite date
-   in `yfiles-migration.md`.
-
-Schedule it after the yWorks answer and before the next release tag, in a session that
-can afford to be mostly waiting. Note that `git subtree split` walked all 5856 commits
-and took about 35 minutes; `git filter-repo` is faster but budget for it.

@@ -46,6 +46,6 @@ public sealed interface HostNode extends Node, HostElement, AnchorValue
         return getType().label();
     }
 
-    /** Host node comparator, based on their {@link #toString()} value. */
+    /** Host node comparator, based on their {@link Object#toString()} value. */
     static Comparator<HostNode> COMPARATOR = (h1, h2) -> h1.toString().compareTo(h2.toString());
 }
