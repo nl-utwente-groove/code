@@ -1,5 +1,18 @@
 # Multigraph semantics: SPO versus DPO
 
+*Status (2026-09-11): the decision was taken and the §7 migration plan is **fully
+executed and on master**. Option (a) stands — SPO and DPO both stay. All three slices
+landed: `parallelEdges` → `semantics` with `ParallelMode` → `Semantics`
+(`SPO-simple`/`SPO-multi`/`DPO`) in 73634c6fb (2026-08-24); the gh #901 creator-NAC
+semantics pinned in a346825c0 (2026-08-24, issue closed); the default flipped to
+`SPO-multi` for new grammars, with pre-3.12 bundles pinned to `SPO-simple` on load, in
+c4c7957e1 (2026-08-26). Follow-ups since closed: gh #904 (warning severity) and gh #906
+(iso-checker parallel-edge bundles, 89d7535c2). Still open: gh #886, the critical-pair
+revival (see critical-pair-review.md), which is unstarted; the §5 checklist boxes that
+are documentation rather than code (the S1/S2 wordings in the manual, the SPO scope of
+gh #900); the "notable"-key question; and the external text — the web manual's grammar
+chapter and the 8.0.0 release notes still say `parallelEdges`.*
+
 Status: analysis, 2026-08-22. Answers the open question recorded in
 [aspect-parallel-edges.md](aspect-parallel-edges.md) and
 [eraser-injectivity.md](eraser-injectivity.md) (user, 2026-07-27): "for
@@ -88,7 +101,7 @@ Everything gated on `isDPO()`:
 8. Critical pairs: identification filter (`CriticalPair.java:318-320`),
    currently unreachable because `canComputePairs` rejects
    `checkDangling` grammars (`CriticalPair.java:636`; see
-   [critical-pair-review.md](critical-pair-review.md)).
+   [critical-pair-review.md](../critical-pair-review.md)).
 
 Pinned counterpart (`junit/rules/mult.gps/readerEraser`, same rule,
 `parallelEdges=DPO`): 1 copy → no result file (inapplicable);

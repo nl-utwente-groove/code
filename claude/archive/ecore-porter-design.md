@@ -1,6 +1,35 @@
 # Design: the Ecore porter (Phase 3 of the io refactoring)
 
-*2026-07-26. Companion to `io-refactor-plan.md`. Sources: the retired
+*Status (2026-09-11): implemented as designed and on master. `168dc28a4`
+(2026-07-26) added the EMF dependencies at the versions named below plus the
+two grammar keys, `f1fec102e` the importer, `72791044a` the exporter,
+`173328392` the per-feature round-trip metadata and `dd5094de0` the silent
+treatment of the lossy mappings; `710383fa2`, `128a4ac96` (index mode narrowed,
+numeric error path), `174899bf7` (attribute-safe feature names) and `ac5888c11`
+followed on 2026-07-26/27. The code layout is as specified
+(`io/external/format/ecore`, `gui/dialog/EcoreOptionsDialog`), with
+`EcoreMapping`, `EcoreMappingSchema` and `EcoreKey` added later by the settings
+work.*
+
+*Done differently in two places. (1) Options persistence: the `ecoreOrdering` /
+`ecoreUseIdentifiers` grammar keys of this design lived one week and were
+retired on 2026-07-31 (`81bc355a0`) in favour of the `ecore` settings resource;
+the dialog keeps its two widgets but reads and writes that resource, and the
+choices became per-element — per-feature `ordering` (`76b3a22a2`) and
+classifier/enum-literal name overrides (`be858f817`). See
+`settings-resource-design.md`. (2) Fixtures: `junit/ecore` holds nine
+`.ecore`/`.xmi` pairs (shop, ordered, broken, datatypes, hierarchy, network,
+packages, …) with a README, rather than the two pairs planned; `EcoreTest` is
+JUnit 4 style in the fast suite as intended.*
+
+*Open: principle 4 (approximations stay silent) is now contested — gh #907 is
+open to turn them into non-blocking WARNING diagnostics, `FormatError` having
+gained a warning severity since (gh #885). gh #558 (skip the options dialog
+when a valid `ecore` settings resource exists) is open. The hand-added-type
+export trap noted under "Export" is still there, tracked as item 1 of gh #898.
+Phase 4 (constraint rules) has not been started.*
+
+*2026-07-26. Companion to [`io-refactor-plan.md`](../io-refactor-plan.md). Sources: the retired
 `io/conceptual` layer (readable at `git show f85d56128^:...`), whose encoding
 this design simplifies, and the current aspect/type machinery.*
 

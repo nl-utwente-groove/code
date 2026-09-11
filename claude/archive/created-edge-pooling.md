@@ -1,8 +1,17 @@
 # Cross-event pooling of content-equal created edges (gh #905)
 
+*Status (2026-09-11): done and on master; gh #905 closed 2026-08-31. Slices 0–3
+landed 2026-08-30 (`d9b22ff3b`…`65642f3f8`, incl. the content-indexed factory pool
+`138a0d49b` and the canonical number ordering `78acdef64`), and the
+`edge-replay-unification` follow-up (slices A, C, eager per-state edge recording,
+slice B and the morphism repair) 2026-08-31 (`7cf967068`…`8a6b4a2d3`). Both branches
+are deleted. The `## Status` checklist below is one item behind — slice 4 (close-out)
+happened, and the "Slice B remains open" sentence in the follow-up section is
+superseded by the "Slice B: delivered" section further down. Nothing open.*
+
 Working notes for the repair of gh #905: in non-simple (multigraph) mode, content-equal
 created edges are not shared across events, which cascades into an event explosion and
-from there into isomorphism-checking overhead. Companion to `claude/iso-edge-bundles.md`
+from there into isomorphism-checking overhead. Companion to `claude/archive/iso-edge-bundles.md`
 (gh #906), which addressed the complementary half of the `append` overhead.
 
 ## The mechanism (from the issue's measurement comment, verified in code)
@@ -196,9 +205,9 @@ on the parallel-heavy As-and-Bs.
 - [x] Slice 1: factory pool + HostFactoryTest
 - [x] Slice 2: transform layer (BasicEvent, RuleEffect)
 - [x] Slice 3: verification + timing table (complete slow suite pending at time of writing)
-- [ ] Slice 4: close-out (issue comment, merge)
+- [x] Slice 4: close-out (issue comment, merge — gh #905 closed 2026-08-31)
 
-## Follow-up: unifying node and edge replay (branch `edge-replay-unification`)
+## Follow-up: unifying node and edge replay (branch `edge-replay-unification`, merged to master 2026-08-31)
 
 Created nodes and created edges are recorded and replayed by two structurally different
 mechanisms, though they solve the same problem: making a re-derivation of a transition
@@ -268,7 +277,8 @@ with mergers, so the predefined-edges replay is exercised together with a merge 
 expected — first derivations are untouched, the win is confined to re-derivations under
 memory pressure, which a plain run has none of).
 
-Slice B remains open: `MergeMap.mapEdge` (via `AGraphMap.createImage`) still mints fresh
+Slice B remains open *(at the time of writing; delivered later the same day — see
+"Slice B: delivered" below)*: `MergeMap.mapEdge` (via `AGraphMap.createImage`) still mints fresh
 merge images per application. Consequences: merger grammars in multi mode keep falling
 back to isomorphism checking (no cross-branch sharing), and `computeMorphism` keeps the
 ghost-edge/consumed-slot substitution. A same-flavoured known gap: a

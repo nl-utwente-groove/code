@@ -1,5 +1,17 @@
 # FormatError context refactoring (dependency cleanup P3 + gh #885)
 
+*Status (2026-09-11): **implemented and merged; both issues closed**. The
+context genericisation landed on master 2026-08-18 (`cd3acb945`, with the
+dependency cleanup); the severity half came in via `format-error-severity`,
+merged 2026-08-31 (`cc4c5923c`), which is the authoritative version (see the
+rebase paragraph below). gh #885 closed 2026-08-31, gh #904 (first warning
+producer, `a4f04e928`) closed 2026-08-30. In the tree: `util.parse.Severity`,
+`grammar.model.ErrorLocation` (the "resolver" of the design, under its final
+name) and `grammar.model.ResourceId`, `gui.list.SearchResult` /
+`SelectableListEntry`; `FormatError.java` is down to 328 lines and imports
+nothing from `grammar`/`graph`/`lts`, so the `util.parse` whitelist entries are
+gone. Branches `format-error-context` and `format-error-severity` are deleted.*
+
 *Design note 2026-08-18 (Claude session). Covers the last P3 item of
 `dependency-analysis.md` except the `automaton` split: the
 `util.parse -> grammar/graph/lts` whitelist entries of `LayeringTest`, caused
@@ -48,7 +60,8 @@ nested `FormatError`s, `Integer` → numbers, `Severity` → severity, everythin
 else → context. Equality, `clone`, `extend` and `transfer` work uniformly
 over (message, context). Interpretation moves to where the types are known:
 
-- **Resolver** (`grammar.model`): the former 15-branch `instanceof` chain,
+- **Resolver** (`grammar.model`; shipped as `ErrorLocation`): the former
+  15-branch `instanceof` chain,
   reconstituted as a derivation over the context list producing (resource
   kind, resource names, elements, property key). Gui adapts it into list
   entries; `CompositeControlModel` uses it directly. The single `GraphState`
