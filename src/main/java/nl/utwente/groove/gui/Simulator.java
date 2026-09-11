@@ -1025,7 +1025,9 @@ public class Simulator implements SimulatorListener {
     public void addExternalAction(Action action) {
         JMenu externalMenu = getExternalActionsMenu();
         // remove the dummy action if it is still there
-        if (externalMenu.getItem(0).getAction() == this.dummyExternalAction) {
+        var firstItem = externalMenu.getItem(0);
+        assert firstItem != null : "External actions menu is never empty and holds action items only";
+        if (firstItem.getAction() == this.dummyExternalAction) {
             externalMenu.remove(0);
         }
         getExternalActionsMenu().add(action);

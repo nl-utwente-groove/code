@@ -144,6 +144,7 @@ public class FindReplaceDialog {
     private TypeLabel getNewLabelWithErrors() throws FormatException {
         TypeLabel result = null;
         String text = getNewField().getText();
+        assert text != null : "Plain text field without text";
         if (text.length() > 0) {
             int labelType = getNewTypeCombobox().getSelectedIndex();
             result = TypeLabel.createLabel(EdgeRole.getRole(labelType), text);

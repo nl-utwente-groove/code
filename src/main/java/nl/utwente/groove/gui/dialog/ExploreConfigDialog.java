@@ -1112,7 +1112,11 @@ public class ExploreConfigDialog extends JDialog {
         /** Returns the text of the currently visible content editor. */
         private String getContentText(Setting.Kind kind) {
             return switch (getCard(kind)) {
-            case CARD_TEXT -> this.textField.getText().trim();
+            case CARD_TEXT -> {
+                String text = this.textField.getText();
+                assert text != null : "Plain text field without text";
+                yield text.trim();
+            }
             case CARD_NAMES -> {
                 Object item = this.namesBox.isEditable()
                     ? this.namesBox.getEditor().getItem()

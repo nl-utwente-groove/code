@@ -306,6 +306,7 @@ public class PrologDisplay extends ResourceDisplay {
                     return null;
                 }
                 TreePath curPath = getPathForLocation(evt.getX(), evt.getY());
+                assert curPath != null : "There is a row at the location";
                 Object userObject =
                     ((DefaultMutableTreeNode) curPath.getLastPathComponent()).getUserObject();
                 if (userObject instanceof CompoundTermTag) {
@@ -555,8 +556,9 @@ public class PrologDisplay extends ResourceDisplay {
             // ignore
         }
         JTextArea results = getResultsArea();
-        if (!results.getText()
-            .endsWith("\n")) {
+        String resultsText = results.getText();
+        assert resultsText != null : "Plain text area without text";
+        if (!resultsText.endsWith("\n")) {
             results.append("\n");
         }
         if (queryResult == null) {

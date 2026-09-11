@@ -53,7 +53,9 @@ public class BehaviourOption extends JMenu implements ItemListener {
         for (String answer : this.answers) {
             addAnswer(answer);
         }
-        getItem(ASK).setSelected(true);
+        var askItem = getItem(ASK);
+        assert askItem != null : "Menu consists of answer items only";
+        askItem.setSelected(true);
     }
 
     private void addAnswer(String answer) {
@@ -82,7 +84,9 @@ public class BehaviourOption extends JMenu implements ItemListener {
         if (value != this.value) {
             int oldValue = this.value;
             this.value = value;
-            getItem(value).setSelected(true);
+            var item = getItem(value);
+            assert item != null : "Menu consists of answer items only";
+            item.setSelected(true);
             firePropertyChange(SELECTION, oldValue, value);
         }
     }

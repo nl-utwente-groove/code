@@ -253,8 +253,11 @@ public class BoundedModelCheckingDialog {
         private void setBoundary() {
             BoundedModelCheckingDialog aDialog = BoundedModelCheckingDialog.this;
             if (aDialog.graphBoundButton.isSelected()) {
-                int graphBound = Integer.parseInt(aDialog.boundField.getText());
-                int delta = Integer.parseInt(aDialog.deltaField.getText());
+                String boundText = aDialog.boundField.getText();
+                String deltaText = aDialog.deltaField.getText();
+                assert boundText != null && deltaText != null : "Plain text field without text";
+                int graphBound = Integer.parseInt(boundText);
+                int delta = Integer.parseInt(deltaText);
                 aDialog.boundary = new GraphNodeSizeBoundary(graphBound, delta);
             } else if (aDialog.ruleSetBoundButton.isSelected()) {
                 Set<Rule> selectedRules = new HashSet<>();

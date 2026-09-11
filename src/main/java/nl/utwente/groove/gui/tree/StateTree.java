@@ -890,7 +890,9 @@ public class StateTree extends JTree implements SimulatorListener {
             int[] selectedRows = getSelectionRows();
             if (selectedRows != null) {
                 for (int selectedRow : selectedRows) {
-                    Object[] nodes = getPathForRow(selectedRow).getPath();
+                    TreePath path = getPathForRow(selectedRow);
+                    assert path != null : "Selection rows are visible rows";
+                    Object[] nodes = path.getPath();
                     for (int i = nodes.length - 1; i >= 0; i--) {
                         if (nodes[i] instanceof RuleTreeNode) {
                             result.add(((RuleTreeNode) nodes[i]).getQualName());

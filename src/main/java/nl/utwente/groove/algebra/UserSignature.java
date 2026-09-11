@@ -105,6 +105,7 @@ public sealed abstract class UserSignature implements Signature permits UserAlge
             } else {
                 boolean clazOk = true;
                 var rcs = claz.getRecordComponents();
+                assert rcs != null : "Record type without record components";
                 // collect the types of the record components
                 var parTypes = new Class<?>[rcs.length];
                 for (int i = 0; i < rcs.length; i++) {

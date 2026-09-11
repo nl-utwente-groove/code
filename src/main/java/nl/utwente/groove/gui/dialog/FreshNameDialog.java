@@ -100,7 +100,9 @@ abstract public class FreshNameDialog<Name> {
         JTextField nameField = getNameField();
         nameField.setText(this.suggestion.toString());
         nameField.setSelectionStart(0);
-        nameField.setSelectionEnd(nameField.getText().length());
+        String name = nameField.getText();
+        assert name != null : "Plain text field without text";
+        nameField.setSelectionEnd(name.length());
         setOkEnabled();
         JDialog dialog = getOptionPane().createDialog(frame, title == null
             ? DEFAULT_TITLE
