@@ -1,0 +1,7 @@
+class javax/sound/midi/SysexMessage
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+getData
+ ()[B
+ ()[1B

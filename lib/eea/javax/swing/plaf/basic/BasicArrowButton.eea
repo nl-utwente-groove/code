@@ -1,0 +1,4 @@
+class javax/swing/plaf/basic/BasicArrowButton
+getMaximumSize
+ ()Ljava/awt/Dimension;
+ ()L1java/awt/Dimension;

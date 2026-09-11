@@ -1,0 +1,13 @@
+class javax/imageio/plugins/tiff/TIFFDirectory
+createFromMetadata
+ (Ljavax/imageio/metadata/IIOMetadata;)Ljavax/imageio/plugins/tiff/TIFFDirectory;
+ (Ljavax/imageio/metadata/IIOMetadata;)L1javax/imageio/plugins/tiff/TIFFDirectory;
+clone
+ ()Ljavax/imageio/plugins/tiff/TIFFDirectory;
+ ()L1javax/imageio/plugins/tiff/TIFFDirectory;
+getAsMetadata
+ ()Ljavax/imageio/metadata/IIOMetadata;
+ ()L1javax/imageio/metadata/IIOMetadata;
+getTIFFFields
+ ()[Ljavax/imageio/plugins/tiff/TIFFField;
+ ()[1Ljavax/imageio/plugins/tiff/TIFFField;

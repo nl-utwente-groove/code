@@ -1,0 +1,16 @@
+class javax/swing/text/AbstractDocument$DefaultDocumentEvent
+getChange
+ (Ljavax/swing/text/Element;)Ljavax/swing/event/DocumentEvent$ElementChange;
+ (Ljavax/swing/text/Element;)L0javax/swing/event/DocumentEvent$ElementChange;
+getPresentationName
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+getRedoPresentationName
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+getUndoPresentationName
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

@@ -2,9 +2,24 @@ class javax/swing/JTabbedPane
 addChangeListener
  (Ljavax/swing/event/ChangeListener;)V
  (L1javax/swing/event/ChangeListener;)V
+createChangeListener
+ ()Ljavax/swing/event/ChangeListener;
+ ()L1javax/swing/event/ChangeListener;
+getBoundsAt
+ (I)Ljava/awt/Rectangle;
+ (I)L0java/awt/Rectangle;
+getSelectedComponent
+ ()Ljava/awt/Component;
+ ()L0java/awt/Component;
 getToolTipText
  (Ljava/awt/event/MouseEvent;)Ljava/lang/String;
  (L1java/awt/event/MouseEvent;)Ljava/lang/String;
+getUIClassID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
 removeChangeListener
  (Ljavax/swing/event/ChangeListener;)V
  (L1javax/swing/event/ChangeListener;)V

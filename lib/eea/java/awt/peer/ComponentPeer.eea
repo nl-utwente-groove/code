@@ -1,0 +1,7 @@
+class java/awt/peer/ComponentPeer
+createImage
+ (II)Ljava/awt/Image;
+ (II)L1java/awt/Image;
+createVolatileImage
+ (II)Ljava/awt/image/VolatileImage;
+ (II)L1java/awt/image/VolatileImage;

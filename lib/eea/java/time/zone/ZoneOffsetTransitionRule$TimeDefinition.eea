@@ -1,0 +1,4 @@
+class java/time/zone/ZoneOffsetTransitionRule$TimeDefinition
+createDateTime
+ (Ljava/time/LocalDateTime;Ljava/time/ZoneOffset;Ljava/time/ZoneOffset;)Ljava/time/LocalDateTime;
+ (Ljava/time/LocalDateTime;Ljava/time/ZoneOffset;Ljava/time/ZoneOffset;)L1java/time/LocalDateTime;

@@ -1,0 +1,16 @@
+class javax/swing/JToolBar
+createActionChangeListener
+ (Ljavax/swing/JButton;)Ljava/beans/PropertyChangeListener;
+ (Ljavax/swing/JButton;)L0java/beans/PropertyChangeListener;
+createActionComponent
+ (Ljavax/swing/Action;)Ljavax/swing/JButton;
+ (Ljavax/swing/Action;)L1javax/swing/JButton;
+getComponentAtIndex
+ (I)Ljava/awt/Component;
+ (I)L0java/awt/Component;
+getUIClassID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

@@ -1,0 +1,7 @@
+class java/rmi/registry/LocateRegistry
+createRegistry
+ (I)Ljava/rmi/registry/Registry;
+ (I)L1java/rmi/registry/Registry;
+createRegistry
+ (ILjava/rmi/server/RMIClientSocketFactory;Ljava/rmi/server/RMIServerSocketFactory;)Ljava/rmi/registry/Registry;
+ (ILjava/rmi/server/RMIClientSocketFactory;Ljava/rmi/server/RMIServerSocketFactory;)L1java/rmi/registry/Registry;

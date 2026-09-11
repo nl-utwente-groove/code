@@ -1,0 +1,4 @@
+class javax/swing/JToggleButton$AccessibleJToggleButton
+itemStateChanged
+ (Ljava/awt/event/ItemEvent;)V
+ (L1java/awt/event/ItemEvent;)V

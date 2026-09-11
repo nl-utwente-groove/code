@@ -1,0 +1,4 @@
+class javax/swing/plaf/metal/MetalScrollButton
+getMaximumSize
+ ()Ljava/awt/Dimension;
+ ()L1java/awt/Dimension;

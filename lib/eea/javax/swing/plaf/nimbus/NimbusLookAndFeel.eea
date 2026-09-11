@@ -1,0 +1,19 @@
+class javax/swing/plaf/nimbus/NimbusLookAndFeel
+getDefaults
+ ()Ljavax/swing/UIDefaults;
+ ()L0javax/swing/UIDefaults;
+getDerivedColor
+ (Ljava/awt/Color;Ljava/awt/Color;FZ)Ljava/awt/Color;
+ (Ljava/awt/Color;Ljava/awt/Color;FZ)L1java/awt/Color;
+getDescription
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+getDisabledIcon
+ (Ljavax/swing/JComponent;Ljavax/swing/Icon;)Ljavax/swing/Icon;
+ (Ljavax/swing/JComponent;Ljavax/swing/Icon;)L0javax/swing/Icon;
+getID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+getName
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

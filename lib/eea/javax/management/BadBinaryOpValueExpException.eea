@@ -1,0 +1,4 @@
+class javax/management/BadBinaryOpValueExpException
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

@@ -1,0 +1,4 @@
+class java/util/spi/TimeZoneNameProvider
+getGenericDisplayName
+ (Ljava/lang/String;ILjava/util/Locale;)Ljava/lang/String;
+ (Ljava/lang/String;ILjava/util/Locale;)L0java/lang/String;

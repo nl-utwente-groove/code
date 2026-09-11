@@ -1,0 +1,146 @@
+class java/util/concurrent/LinkedBlockingDeque
+ <E:Ljava/lang/Object;>
+add
+ (TE;)Z
+ (T1E;)Z
+addAll
+ (Ljava/util/Collection<+TE;>;)Z
+ (L1java/util/Collection<+TE;>;)Z
+addFirst
+ (TE;)V
+ (T1E;)V
+addLast
+ (TE;)V
+ (T1E;)V
+contains
+ (Ljava/lang/Object;)Z
+ (L1java/lang/Object;)Z
+descendingIterator
+ ()Ljava/util/Iterator<TE;>;
+ ()L1java/util/Iterator<TE;>;
+drainTo
+ (Ljava/util/Collection<-TE;>;)I
+ (L1java/util/Collection<-TE;>;)I
+drainTo
+ (Ljava/util/Collection<-TE;>;I)I
+ (L1java/util/Collection<-TE;>;I)I
+element
+ ()TE;
+ ()T1E;
+getFirst
+ ()TE;
+ ()T1E;
+getLast
+ ()TE;
+ ()T1E;
+iterator
+ ()Ljava/util/Iterator<TE;>;
+ ()L1java/util/Iterator<TE;>;
+offer
+ (TE;)Z
+ (T1E;)Z
+offer
+ (TE;JLjava/util/concurrent/TimeUnit;)Z
+ (T1E;JL1java/util/concurrent/TimeUnit;)Z
+offerFirst
+ (TE;)Z
+ (T1E;)Z
+offerFirst
+ (TE;JLjava/util/concurrent/TimeUnit;)Z
+ (T1E;JLjava/util/concurrent/TimeUnit;)Z
+offerLast
+ (TE;)Z
+ (T1E;)Z
+offerLast
+ (TE;JLjava/util/concurrent/TimeUnit;)Z
+ (T1E;JLjava/util/concurrent/TimeUnit;)Z
+peek
+ ()TE;
+ ()T0E;
+peekFirst
+ ()TE;
+ ()T0E;
+peekLast
+ ()TE;
+ ()T0E;
+poll
+ ()TE;
+ ()T0E;
+poll
+ (JLjava/util/concurrent/TimeUnit;)TE;
+ (JL1java/util/concurrent/TimeUnit;)T0E;
+pollFirst
+ ()TE;
+ ()T0E;
+pollFirst
+ (JLjava/util/concurrent/TimeUnit;)TE;
+ (JL1java/util/concurrent/TimeUnit;)TE;
+pollLast
+ ()TE;
+ ()T0E;
+pollLast
+ (JLjava/util/concurrent/TimeUnit;)TE;
+ (JL1java/util/concurrent/TimeUnit;)TE;
+pop
+ ()TE;
+ ()T1E;
+push
+ (TE;)V
+ (T1E;)V
+put
+ (TE;)V
+ (T1E;)V
+putFirst
+ (TE;)V
+ (T1E;)V
+putLast
+ (TE;)V
+ (T1E;)V
+remove
+ ()TE;
+ ()T1E;
+remove
+ (Ljava/lang/Object;)Z
+ (L1java/lang/Object;)Z
+removeAll
+ (Ljava/util/Collection<*>;)Z
+ (L1java/util/Collection<*>;)Z
+removeFirst
+ ()TE;
+ ()T1E;
+removeFirstOccurrence
+ (Ljava/lang/Object;)Z
+ (L1java/lang/Object;)Z
+removeIf
+ (Ljava/util/function/Predicate<-TE;>;)Z
+ (L1java/util/function/Predicate<-TE;>;)Z
+removeLast
+ ()TE;
+ ()T1E;
+removeLastOccurrence
+ (Ljava/lang/Object;)Z
+ (L1java/lang/Object;)Z
+retainAll
+ (Ljava/util/Collection<*>;)Z
+ (L1java/util/Collection<*>;)Z
+spliterator
+ ()Ljava/util/Spliterator<TE;>;
+ ()L1java/util/Spliterator<TE;>;
+take
+ ()TE;
+ ()T1E;
+takeFirst
+ ()TE;
+ ()T1E;
+takeLast
+ ()TE;
+ ()T1E;
+toArray
+ ()[Ljava/lang/Object;
+ ()[1Ljava/lang/Object;
+toArray
+ <T:Ljava/lang/Object;>([TT;)[TT;
+ <T:Ljava/lang/Object;>([1TT;)[1TT;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

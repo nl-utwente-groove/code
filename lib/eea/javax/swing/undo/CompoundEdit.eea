@@ -1,4 +1,10 @@
 class javax/swing/undo/CompoundEdit
+getPresentationName
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+lastEdit
+ ()Ljavax/swing/undo/UndoableEdit;
+ ()L0javax/swing/undo/UndoableEdit;
 toString
  ()Ljava/lang/String;
  ()L1java/lang/String;

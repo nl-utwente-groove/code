@@ -1,0 +1,40 @@
+class javax/swing/plaf/basic/BasicSplitPaneUI
+NON_CONTINUOUS_DIVIDER
+ Ljava/lang/String;
+ L1java/lang/String;
+createUI
+ (Ljavax/swing/JComponent;)Ljavax/swing/plaf/ComponentUI;
+ (Ljavax/swing/JComponent;)L1javax/swing/plaf/ComponentUI;
+createDefaultDivider
+ ()Ljavax/swing/plaf/basic/BasicSplitPaneDivider;
+ ()L1javax/swing/plaf/basic/BasicSplitPaneDivider;
+createDefaultNonContinuousLayoutDivider
+ ()Ljava/awt/Component;
+ ()L1java/awt/Component;
+createFocusListener
+ ()Ljava/awt/event/FocusListener;
+ ()L1java/awt/event/FocusListener;
+createKeyboardDownRightListener
+ ()Ljava/awt/event/ActionListener;
+ ()L1java/awt/event/ActionListener;
+createKeyboardEndListener
+ ()Ljava/awt/event/ActionListener;
+ ()L1java/awt/event/ActionListener;
+createKeyboardHomeListener
+ ()Ljava/awt/event/ActionListener;
+ ()L1java/awt/event/ActionListener;
+createKeyboardResizeToggleListener
+ ()Ljava/awt/event/ActionListener;
+ ()L1java/awt/event/ActionListener;
+createKeyboardUpLeftListener
+ ()Ljava/awt/event/ActionListener;
+ ()L1java/awt/event/ActionListener;
+createPropertyChangeListener
+ ()Ljava/beans/PropertyChangeListener;
+ ()L1java/beans/PropertyChangeListener;
+getInsets
+ (Ljavax/swing/JComponent;)Ljava/awt/Insets;
+ (Ljavax/swing/JComponent;)L0java/awt/Insets;
+getPreferredSize
+ (Ljavax/swing/JComponent;)Ljava/awt/Dimension;
+ (Ljavax/swing/JComponent;)L0java/awt/Dimension;

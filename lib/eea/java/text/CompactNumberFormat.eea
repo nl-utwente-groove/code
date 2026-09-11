@@ -1,0 +1,19 @@
+class java/text/CompactNumberFormat
+clone
+ ()Ljava/text/CompactNumberFormat;
+ ()L1java/text/CompactNumberFormat;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+format
+ (Ljava/lang/Object;Ljava/lang/StringBuffer;Ljava/text/FieldPosition;)Ljava/lang/StringBuffer;
+ (L0java/lang/Object;L1java/lang/StringBuffer;L1java/text/FieldPosition;)L1java/lang/StringBuffer;
+formatToCharacterIterator
+ (Ljava/lang/Object;)Ljava/text/AttributedCharacterIterator;
+ (L1java/lang/Object;)L1java/text/AttributedCharacterIterator;
+getRoundingMode
+ ()Ljava/math/RoundingMode;
+ ()L1java/math/RoundingMode;
+parse
+ (Ljava/lang/String;Ljava/text/ParsePosition;)Ljava/lang/Number;
+ (L1java/lang/String;L1java/text/ParsePosition;)L1java/lang/Number;

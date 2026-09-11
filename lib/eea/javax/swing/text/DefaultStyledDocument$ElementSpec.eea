@@ -1,0 +1,4 @@
+class javax/swing/text/DefaultStyledDocument$ElementSpec
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

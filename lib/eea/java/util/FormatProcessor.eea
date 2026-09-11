@@ -1,0 +1,10 @@
+class java/util/FormatProcessor
+FMT
+ Ljava/util/FormatProcessor;
+ L1java/util/FormatProcessor;
+create
+ (Ljava/util/Locale;)Ljava/util/FormatProcessor;
+ (Ljava/util/Locale;)L1java/util/FormatProcessor;
+process
+ (Ljava/lang/StringTemplate;)Ljava/lang/String;
+ (Ljava/lang/StringTemplate;)L1java/lang/String;

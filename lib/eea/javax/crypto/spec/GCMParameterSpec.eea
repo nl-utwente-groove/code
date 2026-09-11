@@ -1,0 +1,4 @@
+class javax/crypto/spec/GCMParameterSpec
+getIV
+ ()[B
+ ()[1B

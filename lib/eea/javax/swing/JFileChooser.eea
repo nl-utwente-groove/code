@@ -62,6 +62,21 @@ SELECTED_FILE_CHANGED_PROPERTY
 addActionListener
  (Ljava/awt/event/ActionListener;)V
  (L1java/awt/event/ActionListener;)V
+createDialog
+ (Ljava/awt/Component;)Ljavax/swing/JDialog;
+ (Ljava/awt/Component;)L1javax/swing/JDialog;
+getChoosableFileFilters
+ ()[Ljavax/swing/filechooser/FileFilter;
+ ()[1Ljavax/swing/filechooser/FileFilter;
+getSelectedFiles
+ ()[Ljava/io/File;
+ ()[1Ljava/io/File;
+getUIClassID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
 removeActionListener
  (Ljava/awt/event/ActionListener;)V
  (L1java/awt/event/ActionListener;)V

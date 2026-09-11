@@ -1,0 +1,14 @@
+class javax/lang/model/util/AbstractElementVisitor6
+ <R:Ljava/lang/Object;P:Ljava/lang/Object;>
+visit
+ (Ljavax/lang/model/element/Element;)TR;
+ (L1javax/lang/model/element/Element;)TR;
+visit
+ (Ljavax/lang/model/element/Element;TP;)TR;
+ (L1javax/lang/model/element/Element;TP;)TR;
+visitModule
+ (Ljavax/lang/model/element/ModuleElement;TP;)TR;
+ (L1javax/lang/model/element/ModuleElement;TP;)TR;
+visitUnknown
+ (Ljavax/lang/model/element/Element;TP;)TR;
+ (L1javax/lang/model/element/Element;TP;)TR;

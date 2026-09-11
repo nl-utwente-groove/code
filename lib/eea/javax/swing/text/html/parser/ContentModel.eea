@@ -1,0 +1,7 @@
+class javax/swing/text/html/parser/ContentModel
+first
+ ()Ljavax/swing/text/html/parser/Element;
+ ()L0javax/swing/text/html/parser/Element;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

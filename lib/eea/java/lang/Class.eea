@@ -15,6 +15,12 @@ asSubclass
 cast
  (Ljava/lang/Object;)TT;
  (L0java/lang/Object;)TT;
+componentType
+ ()Ljava/lang/Class<*>;
+ ()L0java/lang/Class<*>;
+describeConstable
+ ()Ljava/util/Optional<Ljava/lang/constant/ClassDesc;>;
+ ()L1java/util/Optional<Ljava/lang/constant/ClassDesc;>;
 getAnnotatedInterfaces
  ()[Ljava/lang/reflect/AnnotatedType;
  ()[1L1java/lang/reflect/AnnotatedType;
@@ -132,9 +138,15 @@ getPackage
 getPackageName
  ()Ljava/lang/String;
  ()L1java/lang/String;
+getPermittedSubclasses
+ ()[Ljava/lang/Class<*>;
+ ()[0Ljava/lang/Class<*>;
 getProtectionDomain
  ()Ljava/security/ProtectionDomain;
  ()L1java/security/ProtectionDomain;
+getRecordComponents
+ ()[Ljava/lang/reflect/RecordComponent;
+ ()[0Ljava/lang/reflect/RecordComponent;
 getResource
  (Ljava/lang/String;)Ljava/net/URL;
  (L1java/lang/String;)L0java/net/URL;

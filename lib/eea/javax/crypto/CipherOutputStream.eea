@@ -1,0 +1,7 @@
+class javax/crypto/CipherOutputStream
+write
+ ([B)V
+ ([1B)V
+write
+ ([BII)V
+ ([1BII)V

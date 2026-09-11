@@ -1,4 +1,10 @@
 class javax/swing/undo/UndoManager
+editToBeRedone
+ ()Ljavax/swing/undo/UndoableEdit;
+ ()L0javax/swing/undo/UndoableEdit;
+editToBeUndone
+ ()Ljavax/swing/undo/UndoableEdit;
+ ()L0javax/swing/undo/UndoableEdit;
 toString
  ()Ljava/lang/String;
  ()L1java/lang/String;

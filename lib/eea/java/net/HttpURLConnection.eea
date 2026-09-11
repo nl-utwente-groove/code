@@ -1,0 +1,13 @@
+class java/net/HttpURLConnection
+getErrorStream
+ ()Ljava/io/InputStream;
+ ()L0java/io/InputStream;
+getHeaderField
+ (I)Ljava/lang/String;
+ (I)L0java/lang/String;
+getHeaderFieldKey
+ (I)Ljava/lang/String;
+ (I)L0java/lang/String;
+getPermission
+ ()Ljava/security/Permission;
+ ()L1java/security/Permission;

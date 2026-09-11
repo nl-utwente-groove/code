@@ -1,0 +1,16 @@
+class javax/swing/text/ElementIterator
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+current
+ ()Ljavax/swing/text/Element;
+ ()L0javax/swing/text/Element;
+first
+ ()Ljavax/swing/text/Element;
+ ()L0javax/swing/text/Element;
+next
+ ()Ljavax/swing/text/Element;
+ ()L0javax/swing/text/Element;
+previous
+ ()Ljavax/swing/text/Element;
+ ()L0javax/swing/text/Element;

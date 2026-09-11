@@ -1,0 +1,10 @@
+class javax/security/auth/login/Configuration
+getParameters
+ ()Ljavax/security/auth/login/Configuration$Parameters;
+ ()L0javax/security/auth/login/Configuration$Parameters;
+getProvider
+ ()Ljava/security/Provider;
+ ()L0java/security/Provider;
+getType
+ ()Ljava/lang/String;
+ ()L0java/lang/String;

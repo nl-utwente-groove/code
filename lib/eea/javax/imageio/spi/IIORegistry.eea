@@ -1,0 +1,4 @@
+class javax/imageio/spi/IIORegistry
+getDefaultInstance
+ ()Ljavax/imageio/spi/IIORegistry;
+ ()L1javax/imageio/spi/IIORegistry;

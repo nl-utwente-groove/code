@@ -1,0 +1,4 @@
+class java/time/chrono/HijrahChronology
+INSTANCE
+ Ljava/time/chrono/HijrahChronology;
+ L1java/time/chrono/HijrahChronology;

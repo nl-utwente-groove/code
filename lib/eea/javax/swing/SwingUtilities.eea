@@ -1,0 +1,28 @@
+class javax/swing/SwingUtilities
+computeDifference
+ (Ljava/awt/Rectangle;Ljava/awt/Rectangle;)[Ljava/awt/Rectangle;
+ (Ljava/awt/Rectangle;Ljava/awt/Rectangle;)[1Ljava/awt/Rectangle;
+findFocusOwner
+ (Ljava/awt/Component;)Ljava/awt/Component;
+ (Ljava/awt/Component;)L0java/awt/Component;
+getAccessibleAt
+ (Ljava/awt/Component;Ljava/awt/Point;)Ljavax/accessibility/Accessible;
+ (Ljava/awt/Component;Ljava/awt/Point;)L0javax/accessibility/Accessible;
+getDeepestComponentAt
+ (Ljava/awt/Component;II)Ljava/awt/Component;
+ (Ljava/awt/Component;II)L0java/awt/Component;
+getLocalBounds
+ (Ljava/awt/Component;)Ljava/awt/Rectangle;
+ (Ljava/awt/Component;)L1java/awt/Rectangle;
+getRootPane
+ (Ljava/awt/Component;)Ljavax/swing/JRootPane;
+ (Ljava/awt/Component;)L0javax/swing/JRootPane;
+getUIActionMap
+ (Ljavax/swing/JComponent;)Ljavax/swing/ActionMap;
+ (Ljavax/swing/JComponent;)L0javax/swing/ActionMap;
+getUIInputMap
+ (Ljavax/swing/JComponent;I)Ljavax/swing/InputMap;
+ (Ljavax/swing/JComponent;I)L0javax/swing/InputMap;
+getWindowAncestor
+ (Ljava/awt/Component;)Ljava/awt/Window;
+ (Ljava/awt/Component;)L0java/awt/Window;

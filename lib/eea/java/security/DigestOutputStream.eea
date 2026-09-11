@@ -1,0 +1,7 @@
+class java/security/DigestOutputStream
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+write
+ ([BII)V
+ ([1BII)V

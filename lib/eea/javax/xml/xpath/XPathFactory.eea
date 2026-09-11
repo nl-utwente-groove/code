@@ -1,0 +1,13 @@
+class javax/xml/xpath/XPathFactory
+DEFAULT_OBJECT_MODEL_URI
+ Ljava/lang/String;
+ L1java/lang/String;
+DEFAULT_PROPERTY_NAME
+ Ljava/lang/String;
+ L1java/lang/String;
+newDefaultInstance
+ ()Ljavax/xml/xpath/XPathFactory;
+ ()L1javax/xml/xpath/XPathFactory;
+newXPath
+ ()Ljavax/xml/xpath/XPath;
+ ()L1javax/xml/xpath/XPath;

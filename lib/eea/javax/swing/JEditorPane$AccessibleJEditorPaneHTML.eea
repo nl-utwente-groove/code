@@ -1,0 +1,10 @@
+class javax/swing/JEditorPane$AccessibleJEditorPaneHTML
+getAccessibleAt
+ (Ljava/awt/Point;)Ljavax/accessibility/Accessible;
+ (Ljava/awt/Point;)L0javax/accessibility/Accessible;
+getAccessibleChild
+ (I)Ljavax/accessibility/Accessible;
+ (I)L0javax/accessibility/Accessible;
+getAccessibleText
+ ()Ljavax/accessibility/AccessibleText;
+ ()L1javax/accessibility/AccessibleText;

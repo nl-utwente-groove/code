@@ -1,0 +1,10 @@
+class java/nio/charset/CoderResult
+OVERFLOW
+ Ljava/nio/charset/CoderResult;
+ L1java/nio/charset/CoderResult;
+UNDERFLOW
+ Ljava/nio/charset/CoderResult;
+ L1java/nio/charset/CoderResult;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

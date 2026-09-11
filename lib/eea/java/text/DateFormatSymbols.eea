@@ -1,0 +1,13 @@
+class java/text/DateFormatSymbols
+getInstance
+ ()Ljava/text/DateFormatSymbols;
+ ()L1java/text/DateFormatSymbols;
+getInstance
+ (Ljava/util/Locale;)Ljava/text/DateFormatSymbols;
+ (L1java/util/Locale;)L1java/text/DateFormatSymbols;
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z

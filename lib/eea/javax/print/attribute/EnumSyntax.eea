@@ -1,0 +1,16 @@
+class javax/print/attribute/EnumSyntax
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+getEnumValueTable
+ ()[Ljavax/print/attribute/EnumSyntax;
+ ()[0Ljavax/print/attribute/EnumSyntax;
+getStringTable
+ ()[Ljava/lang/String;
+ ()[0Ljava/lang/String;
+readResolve
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

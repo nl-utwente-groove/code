@@ -1,0 +1,10 @@
+class javax/swing/plaf/synth/SynthMenuUI
+createUI
+ (Ljavax/swing/JComponent;)Ljavax/swing/plaf/ComponentUI;
+ (Ljavax/swing/JComponent;)L1javax/swing/plaf/ComponentUI;
+getPreferredMenuItemSize
+ (Ljavax/swing/JComponent;Ljavax/swing/Icon;Ljavax/swing/Icon;I)Ljava/awt/Dimension;
+ (Ljavax/swing/JComponent;Ljavax/swing/Icon;Ljavax/swing/Icon;I)L1java/awt/Dimension;
+propertyChange
+ (Ljava/beans/PropertyChangeEvent;)V
+ (L1java/beans/PropertyChangeEvent;)V

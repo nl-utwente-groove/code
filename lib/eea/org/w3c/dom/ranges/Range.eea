@@ -1,0 +1,4 @@
+class org/w3c/dom/ranges/Range
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

@@ -33,6 +33,9 @@ containsValue
 entrySet
  ()Ljava/util/Set<Ljava/util/Map$Entry<TK;TV;>;>;
  ()L1java/util/Set<L1java/util/Map$Entry<TK;TV;>;>;
+firstEntry
+ ()Ljava/util/Map$Entry<TK;TV;>;
+ ()L0java/util/Map$Entry<TK;TV;>;
 forEach
  (Ljava/util/function/BiConsumer<-TK;-TV;>;)V
  (L1java/util/function/BiConsumer<-TK;-TV;>;)V
@@ -42,9 +45,18 @@ get
 keySet
  ()Ljava/util/Set<TK;>;
  ()L1java/util/Set<TK;>;
+lastEntry
+ ()Ljava/util/Map$Entry<TK;TV;>;
+ ()L0java/util/Map$Entry<TK;TV;>;
 merge
  (TK;TV;Ljava/util/function/BiFunction<-TV;-TV;+TV;>;)TV;
  (TK;T1V;L1java/util/function/BiFunction<-TV;-TV;+TV;>;)T0V;
+pollFirstEntry
+ ()Ljava/util/Map$Entry<TK;TV;>;
+ ()L0java/util/Map$Entry<TK;TV;>;
+pollLastEntry
+ ()Ljava/util/Map$Entry<TK;TV;>;
+ ()L0java/util/Map$Entry<TK;TV;>;
 put
  (TK;TV;)TV;
  (TK;TV;)T0V;

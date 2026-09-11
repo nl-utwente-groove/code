@@ -1,0 +1,7 @@
+class java/awt/image/ShortLookupTable
+lookupPixel
+ ([I[I)[I
+ ([I[I)[1I
+lookupPixel
+ ([S[S)[S
+ ([S[S)[1S

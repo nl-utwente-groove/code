@@ -1,0 +1,4 @@
+class javax/swing/text/AbstractDocument$Content
+createPosition
+ (I)Ljavax/swing/text/Position;
+ (I)L1javax/swing/text/Position;

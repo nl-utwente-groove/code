@@ -1,0 +1,4 @@
+class javax/swing/text/FlowView$FlowStrategy
+createView
+ (Ljavax/swing/text/FlowView;III)Ljavax/swing/text/View;
+ (Ljavax/swing/text/FlowView;III)L1javax/swing/text/View;

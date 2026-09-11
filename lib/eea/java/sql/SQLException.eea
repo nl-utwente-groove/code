@@ -8,3 +8,6 @@ class java/sql/SQLException
 <init>
  (Ljava/lang/Throwable;)V
  (L0java/lang/Throwable;)V
+iterator
+ ()Ljava/util/Iterator<Ljava/lang/Throwable;>;
+ ()L1java/util/Iterator<Ljava/lang/Throwable;>;

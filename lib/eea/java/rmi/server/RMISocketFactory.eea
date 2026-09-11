@@ -1,0 +1,7 @@
+class java/rmi/server/RMISocketFactory
+createServerSocket
+ (I)Ljava/net/ServerSocket;
+ (I)L1java/net/ServerSocket;
+createSocket
+ (Ljava/lang/String;I)Ljava/net/Socket;
+ (Ljava/lang/String;I)L1java/net/Socket;

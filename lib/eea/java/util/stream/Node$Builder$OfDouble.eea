@@ -1,0 +1,4 @@
+class java/util/stream/Node$Builder$OfDouble
+build
+ ()Ljava/util/stream/Node$OfDouble;
+ ()L1java/util/stream/Node$OfDouble;

@@ -1,0 +1,16 @@
+class javax/print/attribute/standard/MediaPrintableArea
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getCategory
+ ()Ljava/lang/Class<+Ljavax/print/attribute/Attribute;>;
+ ()L1java/lang/Class<+Ljavax/print/attribute/Attribute;>;
+getName
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+toString
+ (ILjava/lang/String;)Ljava/lang/String;
+ (ILjava/lang/String;)L1java/lang/String;

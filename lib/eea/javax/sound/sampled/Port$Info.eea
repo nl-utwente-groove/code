@@ -1,0 +1,25 @@
+class javax/sound/sampled/Port$Info
+COMPACT_DISC
+ Ljavax/sound/sampled/Port$Info;
+ L1javax/sound/sampled/Port$Info;
+HEADPHONE
+ Ljavax/sound/sampled/Port$Info;
+ L1javax/sound/sampled/Port$Info;
+LINE_IN
+ Ljavax/sound/sampled/Port$Info;
+ L1javax/sound/sampled/Port$Info;
+LINE_OUT
+ Ljavax/sound/sampled/Port$Info;
+ L1javax/sound/sampled/Port$Info;
+MICROPHONE
+ Ljavax/sound/sampled/Port$Info;
+ L1javax/sound/sampled/Port$Info;
+SPEAKER
+ Ljavax/sound/sampled/Port$Info;
+ L1javax/sound/sampled/Port$Info;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

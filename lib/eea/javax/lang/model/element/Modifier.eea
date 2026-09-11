@@ -1,0 +1,4 @@
+class javax/lang/model/element/Modifier
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

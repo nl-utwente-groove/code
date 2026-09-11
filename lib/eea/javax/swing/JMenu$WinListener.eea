@@ -1,0 +1,4 @@
+class javax/swing/JMenu$WinListener
+windowClosing
+ (Ljava/awt/event/WindowEvent;)V
+ (L1java/awt/event/WindowEvent;)V

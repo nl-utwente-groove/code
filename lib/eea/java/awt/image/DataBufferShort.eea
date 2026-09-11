@@ -1,0 +1,4 @@
+class java/awt/image/DataBufferShort
+getBankData
+ ()[[S
+ ()[1[S

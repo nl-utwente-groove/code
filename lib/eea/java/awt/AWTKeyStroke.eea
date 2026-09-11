@@ -1,4 +1,7 @@
 class java/awt/AWTKeyStroke
+getAWTKeyStrokeForEvent
+ (Ljava/awt/event/KeyEvent;)Ljava/awt/AWTKeyStroke;
+ (Ljava/awt/event/KeyEvent;)L0java/awt/AWTKeyStroke;
 equals
  (Ljava/lang/Object;)Z
  (L0java/lang/Object;)Z

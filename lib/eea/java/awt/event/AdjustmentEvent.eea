@@ -1,0 +1,4 @@
+class java/awt/event/AdjustmentEvent
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

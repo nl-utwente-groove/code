@@ -1,0 +1,4 @@
+class javax/xml/crypto/dsig/keyinfo/KeyInfoFactory
+getInstance
+ ()Ljavax/xml/crypto/dsig/keyinfo/KeyInfoFactory;
+ ()L1javax/xml/crypto/dsig/keyinfo/KeyInfoFactory;

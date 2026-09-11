@@ -1,0 +1,4 @@
+class java/text/AttributedString
+getIterator
+ ([Ljava/text/AttributedCharacterIterator$Attribute;II)Ljava/text/AttributedCharacterIterator;
+ ([Ljava/text/AttributedCharacterIterator$Attribute;II)L1java/text/AttributedCharacterIterator;

@@ -1,0 +1,8 @@
+class java/util/concurrent/Flow$Subscriber
+ <T:Ljava/lang/Object;>
+onError
+ (Ljava/lang/Throwable;)V
+ (L1java/lang/Throwable;)V
+onSubscribe
+ (Ljava/util/concurrent/Flow$Subscription;)V
+ (L1java/util/concurrent/Flow$Subscription;)V

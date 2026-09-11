@@ -1,0 +1,4 @@
+class java/security/DrbgParameters$NextBytes
+getAdditionalInput
+ ()[B
+ ()[1B

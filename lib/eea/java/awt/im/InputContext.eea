@@ -1,0 +1,10 @@
+class java/awt/im/InputContext
+getInstance
+ ()Ljava/awt/im/InputContext;
+ ()L1java/awt/im/InputContext;
+getInputMethodControlObject
+ ()Ljava/lang/Object;
+ ()L0java/lang/Object;
+getLocale
+ ()Ljava/util/Locale;
+ ()L0java/util/Locale;

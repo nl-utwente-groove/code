@@ -1,0 +1,7 @@
+class java/beans/Statement
+getArguments
+ ()[Ljava/lang/Object;
+ ()[1Ljava/lang/Object;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

@@ -1,0 +1,47 @@
+class java/util/concurrent/ConcurrentSkipListSet
+ <E:Ljava/lang/Object;>
+ceiling
+ (TE;)TE;
+ (TE;)T0E;
+clone
+ ()Ljava/util/concurrent/ConcurrentSkipListSet<TE;>;
+ ()L1java/util/concurrent/ConcurrentSkipListSet<TE;>;
+comparator
+ ()Ljava/util/Comparator<-TE;>;
+ ()L0java/util/Comparator<-TE;>;
+descendingIterator
+ ()Ljava/util/Iterator<TE;>;
+ ()L1java/util/Iterator<TE;>;
+descendingSet
+ ()Ljava/util/NavigableSet<TE;>;
+ ()L1java/util/NavigableSet<TE;>;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+floor
+ (TE;)TE;
+ (TE;)T0E;
+headSet
+ (TE;Z)Ljava/util/NavigableSet<TE;>;
+ (TE;Z)L1java/util/NavigableSet<TE;>;
+higher
+ (TE;)TE;
+ (TE;)T0E;
+iterator
+ ()Ljava/util/Iterator<TE;>;
+ ()L1java/util/Iterator<TE;>;
+lower
+ (TE;)TE;
+ (TE;)T0E;
+removeAll
+ (Ljava/util/Collection<*>;)Z
+ (L1java/util/Collection<*>;)Z
+spliterator
+ ()Ljava/util/Spliterator<TE;>;
+ ()L1java/util/Spliterator<TE;>;
+subSet
+ (TE;ZTE;Z)Ljava/util/NavigableSet<TE;>;
+ (TE;ZTE;Z)L1java/util/NavigableSet<TE;>;
+tailSet
+ (TE;Z)Ljava/util/NavigableSet<TE;>;
+ (TE;Z)L1java/util/NavigableSet<TE;>;

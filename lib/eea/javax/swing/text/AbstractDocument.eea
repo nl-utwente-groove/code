@@ -23,6 +23,24 @@ addDocumentListener
 addUndoableEditListener
  (Ljavax/swing/event/UndoableEditListener;)V
  (L1javax/swing/event/UndoableEditListener;)V
+createBranchElement
+ (Ljavax/swing/text/Element;Ljavax/swing/text/AttributeSet;)Ljavax/swing/text/Element;
+ (Ljavax/swing/text/Element;Ljavax/swing/text/AttributeSet;)L1javax/swing/text/Element;
+createLeafElement
+ (Ljavax/swing/text/Element;Ljavax/swing/text/AttributeSet;II)Ljavax/swing/text/Element;
+ (Ljavax/swing/text/Element;Ljavax/swing/text/AttributeSet;II)L1javax/swing/text/Element;
+createPosition
+ (I)Ljavax/swing/text/Position;
+ (I)L1javax/swing/text/Position;
+getEndPosition
+ ()Ljavax/swing/text/Position;
+ ()L0javax/swing/text/Position;
+getRootElements
+ ()[Ljavax/swing/text/Element;
+ ()[1Ljavax/swing/text/Element;
+getStartPosition
+ ()Ljavax/swing/text/Position;
+ ()L0javax/swing/text/Position;
 removeDocumentListener
  (Ljavax/swing/event/DocumentListener;)V
  (L1javax/swing/event/DocumentListener;)V

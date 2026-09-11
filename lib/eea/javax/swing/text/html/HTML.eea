@@ -1,0 +1,13 @@
+class javax/swing/text/html/HTML
+NULL_ATTRIBUTE_VALUE
+ Ljava/lang/String;
+ L1java/lang/String;
+getAllAttributeKeys
+ ()[Ljavax/swing/text/html/HTML$Attribute;
+ ()[1Ljavax/swing/text/html/HTML$Attribute;
+getAllTags
+ ()[Ljavax/swing/text/html/HTML$Tag;
+ ()[1Ljavax/swing/text/html/HTML$Tag;
+getAttributeKey
+ (Ljava/lang/String;)Ljavax/swing/text/html/HTML$Attribute;
+ (Ljava/lang/String;)L0javax/swing/text/html/HTML$Attribute;

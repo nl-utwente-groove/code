@@ -1,0 +1,10 @@
+class java/awt/geom/Line2D
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+getPathIterator
+ (Ljava/awt/geom/AffineTransform;)Ljava/awt/geom/PathIterator;
+ (Ljava/awt/geom/AffineTransform;)L1java/awt/geom/PathIterator;
+getPathIterator
+ (Ljava/awt/geom/AffineTransform;D)Ljava/awt/geom/PathIterator;
+ (Ljava/awt/geom/AffineTransform;D)L1java/awt/geom/PathIterator;

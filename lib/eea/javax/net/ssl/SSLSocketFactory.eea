@@ -1,0 +1,7 @@
+class javax/net/ssl/SSLSocketFactory
+createSocket
+ (Ljava/net/Socket;Ljava/io/InputStream;Z)Ljava/net/Socket;
+ (Ljava/net/Socket;Ljava/io/InputStream;Z)L1java/net/Socket;
+createSocket
+ (Ljava/net/Socket;Ljava/lang/String;IZ)Ljava/net/Socket;
+ (Ljava/net/Socket;Ljava/lang/String;IZ)L1java/net/Socket;

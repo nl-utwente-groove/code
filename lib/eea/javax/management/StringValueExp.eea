@@ -1,0 +1,4 @@
+class javax/management/StringValueExp
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

@@ -1,0 +1,10 @@
+class javax/swing/text/AsyncBoxView
+createChildState
+ (Ljavax/swing/text/View;)Ljavax/swing/text/AsyncBoxView$ChildState;
+ (Ljavax/swing/text/View;)L1javax/swing/text/AsyncBoxView$ChildState;
+getChildAllocation
+ (ILjava/awt/Shape;)Ljava/awt/Shape;
+ (ILjava/awt/Shape;)L0java/awt/Shape;
+getView
+ (I)Ljavax/swing/text/View;
+ (I)L0javax/swing/text/View;

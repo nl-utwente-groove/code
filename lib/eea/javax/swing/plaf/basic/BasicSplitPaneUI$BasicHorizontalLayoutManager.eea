@@ -1,0 +1,13 @@
+class javax/swing/plaf/basic/BasicSplitPaneUI$BasicHorizontalLayoutManager
+getSizes
+ ()[I
+ ()[1I
+maximumLayoutSize
+ (Ljava/awt/Container;)Ljava/awt/Dimension;
+ (Ljava/awt/Container;)L1java/awt/Dimension;
+minimumLayoutSize
+ (Ljava/awt/Container;)Ljava/awt/Dimension;
+ (Ljava/awt/Container;)L1java/awt/Dimension;
+preferredLayoutSize
+ (Ljava/awt/Container;)Ljava/awt/Dimension;
+ (Ljava/awt/Container;)L1java/awt/Dimension;

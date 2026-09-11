@@ -1,0 +1,7 @@
+class java/security/spec/PKCS8EncodedKeySpec
+getEncoded
+ ()[B
+ ()[1B
+getFormat
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

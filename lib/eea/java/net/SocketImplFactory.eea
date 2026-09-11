@@ -1,0 +1,4 @@
+class java/net/SocketImplFactory
+createSocketImpl
+ ()Ljava/net/SocketImpl;
+ ()L1java/net/SocketImpl;

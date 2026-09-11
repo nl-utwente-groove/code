@@ -1,0 +1,7 @@
+class javax/sound/sampled/CompoundControl
+getMemberControls
+ ()[Ljavax/sound/sampled/Control;
+ ()[1Ljavax/sound/sampled/Control;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

@@ -1,0 +1,7 @@
+class javax/naming/spi/DirectoryManager
+getContinuationDirContext
+ (Ljavax/naming/CannotProceedException;)Ljavax/naming/directory/DirContext;
+ (Ljavax/naming/CannotProceedException;)L1javax/naming/directory/DirContext;
+getStateToBind
+ (Ljava/lang/Object;Ljavax/naming/Name;Ljavax/naming/Context;Ljava/util/Hashtable<**>;Ljavax/naming/directory/Attributes;)Ljavax/naming/spi/DirStateFactory$Result;
+ (Ljava/lang/Object;Ljavax/naming/Name;Ljavax/naming/Context;Ljava/util/Hashtable<**>;Ljavax/naming/directory/Attributes;)L1javax/naming/spi/DirStateFactory$Result;

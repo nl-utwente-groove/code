@@ -1,0 +1,13 @@
+class javax/net/ServerSocketFactory
+createServerSocket
+ ()Ljava/net/ServerSocket;
+ ()L1java/net/ServerSocket;
+createServerSocket
+ (I)Ljava/net/ServerSocket;
+ (I)L1java/net/ServerSocket;
+createServerSocket
+ (II)Ljava/net/ServerSocket;
+ (II)L1java/net/ServerSocket;
+createServerSocket
+ (IILjava/net/InetAddress;)Ljava/net/ServerSocket;
+ (IILjava/net/InetAddress;)L1java/net/ServerSocket;

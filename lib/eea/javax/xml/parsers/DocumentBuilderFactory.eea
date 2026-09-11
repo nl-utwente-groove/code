@@ -1,0 +1,4 @@
+class javax/xml/parsers/DocumentBuilderFactory
+newDefaultInstance
+ ()Ljavax/xml/parsers/DocumentBuilderFactory;
+ ()L1javax/xml/parsers/DocumentBuilderFactory;

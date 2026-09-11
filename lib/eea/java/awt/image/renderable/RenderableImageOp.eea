@@ -1,0 +1,10 @@
+class java/awt/image/renderable/RenderableImageOp
+createDefaultRendering
+ ()Ljava/awt/image/RenderedImage;
+ ()L1java/awt/image/RenderedImage;
+createRendering
+ (Ljava/awt/image/renderable/RenderContext;)Ljava/awt/image/RenderedImage;
+ (Ljava/awt/image/renderable/RenderContext;)L0java/awt/image/RenderedImage;
+createScaledRendering
+ (IILjava/awt/RenderingHints;)Ljava/awt/image/RenderedImage;
+ (IILjava/awt/RenderingHints;)L1java/awt/image/RenderedImage;

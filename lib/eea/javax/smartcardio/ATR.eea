@@ -1,0 +1,13 @@
+class javax/smartcardio/ATR
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getBytes
+ ()[B
+ ()[1B
+getHistoricalBytes
+ ()[B
+ ()[1B
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

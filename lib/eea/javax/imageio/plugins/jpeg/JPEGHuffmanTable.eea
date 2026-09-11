@@ -1,0 +1,16 @@
+class javax/imageio/plugins/jpeg/JPEGHuffmanTable
+StdACChrominance
+ Ljavax/imageio/plugins/jpeg/JPEGHuffmanTable;
+ L1javax/imageio/plugins/jpeg/JPEGHuffmanTable;
+StdACLuminance
+ Ljavax/imageio/plugins/jpeg/JPEGHuffmanTable;
+ L1javax/imageio/plugins/jpeg/JPEGHuffmanTable;
+StdDCChrominance
+ Ljavax/imageio/plugins/jpeg/JPEGHuffmanTable;
+ L1javax/imageio/plugins/jpeg/JPEGHuffmanTable;
+StdDCLuminance
+ Ljavax/imageio/plugins/jpeg/JPEGHuffmanTable;
+ L1javax/imageio/plugins/jpeg/JPEGHuffmanTable;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

@@ -1,0 +1,16 @@
+class javax/swing/text/StyleContext$NamedStyle
+addChangeListener
+ (Ljavax/swing/event/ChangeListener;)V
+ (L1javax/swing/event/ChangeListener;)V
+copyAttributes
+ ()Ljavax/swing/text/AttributeSet;
+ ()L1javax/swing/text/AttributeSet;
+getName
+ ()Ljava/lang/String;
+ ()L0java/lang/String;
+removeChangeListener
+ (Ljavax/swing/event/ChangeListener;)V
+ (L1javax/swing/event/ChangeListener;)V
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

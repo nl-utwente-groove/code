@@ -1,0 +1,10 @@
+class javax/swing/UIManager
+createLookAndFeel
+ (Ljava/lang/String;)Ljavax/swing/LookAndFeel;
+ (Ljava/lang/String;)L1javax/swing/LookAndFeel;
+getAuxiliaryLookAndFeels
+ ()[Ljavax/swing/LookAndFeel;
+ ()[0Ljavax/swing/LookAndFeel;
+getInstalledLookAndFeels
+ ()[Ljavax/swing/UIManager$LookAndFeelInfo;
+ ()[1Ljavax/swing/UIManager$LookAndFeelInfo;

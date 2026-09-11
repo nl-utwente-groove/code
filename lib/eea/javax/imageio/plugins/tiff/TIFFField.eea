@@ -1,0 +1,13 @@
+class javax/imageio/plugins/tiff/TIFFField
+createArrayForType
+ (II)Ljava/lang/Object;
+ (II)L1java/lang/Object;
+createFromMetadataNode
+ (Ljavax/imageio/plugins/tiff/TIFFTagSet;Lorg/w3c/dom/Node;)Ljavax/imageio/plugins/tiff/TIFFField;
+ (Ljavax/imageio/plugins/tiff/TIFFTagSet;Lorg/w3c/dom/Node;)L1javax/imageio/plugins/tiff/TIFFField;
+clone
+ ()Ljavax/imageio/plugins/tiff/TIFFField;
+ ()L1javax/imageio/plugins/tiff/TIFFField;
+getAsNativeNode
+ ()Lorg/w3c/dom/Node;
+ ()L1org/w3c/dom/Node;

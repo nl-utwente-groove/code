@@ -1,0 +1,10 @@
+class javax/swing/JCheckBoxMenuItem
+getSelectedObjects
+ ()[Ljava/lang/Object;
+ ()[0Ljava/lang/Object;
+getUIClassID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

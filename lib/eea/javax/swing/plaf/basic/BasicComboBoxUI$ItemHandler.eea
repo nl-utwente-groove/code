@@ -1,0 +1,4 @@
+class javax/swing/plaf/basic/BasicComboBoxUI$ItemHandler
+itemStateChanged
+ (Ljava/awt/event/ItemEvent;)V
+ (L1java/awt/event/ItemEvent;)V

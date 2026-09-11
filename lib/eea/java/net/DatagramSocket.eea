@@ -1,0 +1,13 @@
+class java/net/DatagramSocket
+getChannel
+ ()Ljava/nio/channels/DatagramChannel;
+ ()L0java/nio/channels/DatagramChannel;
+getLocalAddress
+ ()Ljava/net/InetAddress;
+ ()L0java/net/InetAddress;
+getLocalSocketAddress
+ ()Ljava/net/SocketAddress;
+ ()L0java/net/SocketAddress;
+getRemoteSocketAddress
+ ()Ljava/net/SocketAddress;
+ ()L0java/net/SocketAddress;

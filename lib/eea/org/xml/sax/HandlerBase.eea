@@ -1,0 +1,22 @@
+class org/xml/sax/HandlerBase
+characters
+ ([CII)V
+ ([1CII)V
+endElement
+ (Ljava/lang/String;)V
+ (L1java/lang/String;)V
+ignorableWhitespace
+ ([CII)V
+ ([1CII)V
+processingInstruction
+ (Ljava/lang/String;Ljava/lang/String;)V
+ (L1java/lang/String;L0java/lang/String;)V
+resolveEntity
+ (Ljava/lang/String;Ljava/lang/String;)Lorg/xml/sax/InputSource;
+ (L0java/lang/String;L0java/lang/String;)L0org/xml/sax/InputSource;
+setDocumentLocator
+ (Lorg/xml/sax/Locator;)V
+ (L1org/xml/sax/Locator;)V
+startElement
+ (Ljava/lang/String;Lorg/xml/sax/AttributeList;)V
+ (L1java/lang/String;L0org/xml/sax/AttributeList;)V

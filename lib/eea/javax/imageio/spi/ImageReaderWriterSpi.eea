@@ -1,0 +1,16 @@
+class javax/imageio/spi/ImageReaderWriterSpi
+getExtraImageMetadataFormatNames
+ ()[Ljava/lang/String;
+ ()[1Ljava/lang/String;
+getExtraStreamMetadataFormatNames
+ ()[Ljava/lang/String;
+ ()[1Ljava/lang/String;
+getFileSuffixes
+ ()[Ljava/lang/String;
+ ()[1Ljava/lang/String;
+getFormatNames
+ ()[Ljava/lang/String;
+ ()[1Ljava/lang/String;
+getMIMETypes
+ ()[Ljava/lang/String;
+ ()[1Ljava/lang/String;

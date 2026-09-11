@@ -1,0 +1,7 @@
+class javax/swing/InputMap
+get
+ (Ljavax/swing/KeyStroke;)Ljava/lang/Object;
+ (Ljavax/swing/KeyStroke;)L0java/lang/Object;
+keys
+ ()[Ljavax/swing/KeyStroke;
+ ()[0Ljavax/swing/KeyStroke;

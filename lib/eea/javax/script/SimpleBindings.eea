@@ -1,0 +1,7 @@
+class javax/script/SimpleBindings
+containsKey
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+containsValue
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z

@@ -1,0 +1,7 @@
+class javax/swing/text/html/HTMLDocument$BlockElement
+getName
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+getResolveParent
+ ()Ljavax/swing/text/AttributeSet;
+ ()L0javax/swing/text/AttributeSet;

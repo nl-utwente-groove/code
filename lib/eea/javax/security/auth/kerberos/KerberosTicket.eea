@@ -1,0 +1,28 @@
+class javax/security/auth/kerberos/KerberosTicket
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getAuthTime
+ ()Ljava/util/Date;
+ ()L1java/util/Date;
+getClientAddresses
+ ()[Ljava/net/InetAddress;
+ ()[1Ljava/net/InetAddress;
+getEncoded
+ ()[B
+ ()[1B
+getEndTime
+ ()Ljava/util/Date;
+ ()L1java/util/Date;
+getFlags
+ ()[Z
+ ()[1Z
+getRenewTill
+ ()Ljava/util/Date;
+ ()L1java/util/Date;
+getStartTime
+ ()Ljava/util/Date;
+ ()L1java/util/Date;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

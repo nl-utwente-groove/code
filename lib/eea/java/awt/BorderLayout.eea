@@ -38,6 +38,12 @@ SOUTH
 WEST
  Ljava/lang/String;
  L1java/lang/String;
+getConstraints
+ (Ljava/awt/Component;)Ljava/lang/Object;
+ (Ljava/awt/Component;)L0java/lang/Object;
+maximumLayoutSize
+ (Ljava/awt/Container;)Ljava/awt/Dimension;
+ (Ljava/awt/Container;)L1java/awt/Dimension;
 toString
  ()Ljava/lang/String;
  ()L1java/lang/String;

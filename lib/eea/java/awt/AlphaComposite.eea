@@ -35,6 +35,9 @@ SrcOver
 Xor
  Ljava/awt/AlphaComposite;
  L1java/awt/AlphaComposite;
+createContext
+ (Ljava/awt/image/ColorModel;Ljava/awt/image/ColorModel;Ljava/awt/RenderingHints;)Ljava/awt/CompositeContext;
+ (Ljava/awt/image/ColorModel;Ljava/awt/image/ColorModel;Ljava/awt/RenderingHints;)L1java/awt/CompositeContext;
 equals
  (Ljava/lang/Object;)Z
  (L0java/lang/Object;)Z

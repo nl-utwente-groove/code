@@ -1,0 +1,4 @@
+class javax/imageio/plugins/tiff/GeoTIFFTagSet
+getInstance
+ ()Ljavax/imageio/plugins/tiff/GeoTIFFTagSet;
+ ()L1javax/imageio/plugins/tiff/GeoTIFFTagSet;

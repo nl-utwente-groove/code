@@ -1,0 +1,16 @@
+class javax/swing/text/GlyphView
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+createFragment
+ (II)Ljavax/swing/text/View;
+ (II)L1javax/swing/text/View;
+getBackground
+ ()Ljava/awt/Color;
+ ()L0java/awt/Color;
+getFont
+ ()Ljava/awt/Font;
+ ()L0java/awt/Font;
+getForeground
+ ()Ljava/awt/Color;
+ ()L0java/awt/Color;

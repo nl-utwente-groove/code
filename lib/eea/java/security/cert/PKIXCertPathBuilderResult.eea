@@ -1,0 +1,4 @@
+class java/security/cert/PKIXCertPathBuilderResult
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

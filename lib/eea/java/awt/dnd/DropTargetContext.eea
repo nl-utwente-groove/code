@@ -1,0 +1,7 @@
+class java/awt/dnd/DropTargetContext
+createTransferableProxy
+ (Ljava/awt/datatransfer/Transferable;Z)Ljava/awt/datatransfer/Transferable;
+ (Ljava/awt/datatransfer/Transferable;Z)L1java/awt/datatransfer/Transferable;
+getCurrentDataFlavors
+ ()[Ljava/awt/datatransfer/DataFlavor;
+ ()[1Ljava/awt/datatransfer/DataFlavor;

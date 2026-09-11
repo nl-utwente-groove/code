@@ -1,0 +1,13 @@
+class javax/management/remote/JMXConnectionNotification
+CLOSED
+ Ljava/lang/String;
+ L1java/lang/String;
+FAILED
+ Ljava/lang/String;
+ L1java/lang/String;
+NOTIFS_LOST
+ Ljava/lang/String;
+ L1java/lang/String;
+OPENED
+ Ljava/lang/String;
+ L1java/lang/String;

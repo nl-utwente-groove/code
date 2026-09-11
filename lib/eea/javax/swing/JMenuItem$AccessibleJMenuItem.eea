@@ -1,0 +1,4 @@
+class javax/swing/JMenuItem$AccessibleJMenuItem
+stateChanged
+ (Ljavax/swing/event/ChangeEvent;)V
+ (L1javax/swing/event/ChangeEvent;)V

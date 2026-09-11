@@ -5,6 +5,9 @@ RedoName
 UndoName
  Ljava/lang/String;
  L1java/lang/String;
+getPresentationName
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
 toString
  ()Ljava/lang/String;
  ()L1java/lang/String;

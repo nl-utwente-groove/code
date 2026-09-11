@@ -1,0 +1,19 @@
+class java/io/ObjectOutputStream
+write
+ ([B)V
+ ([1B)V
+write
+ ([BII)V
+ ([1BII)V
+writeBytes
+ (Ljava/lang/String;)V
+ (L1java/lang/String;)V
+writeChars
+ (Ljava/lang/String;)V
+ (L1java/lang/String;)V
+writeObject
+ (Ljava/lang/Object;)V
+ (L1java/lang/Object;)V
+writeUTF
+ (Ljava/lang/String;)V
+ (L1java/lang/String;)V

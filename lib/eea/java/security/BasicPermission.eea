@@ -1,0 +1,10 @@
+class java/security/BasicPermission
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getActions
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+newPermissionCollection
+ ()Ljava/security/PermissionCollection;
+ ()L1java/security/PermissionCollection;

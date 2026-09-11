@@ -1,0 +1,10 @@
+class java/lang/constant/ClassDesc
+ofDescriptor
+ (Ljava/lang/String;)Ljava/lang/constant/ClassDesc;
+ (Ljava/lang/String;)L1java/lang/constant/ClassDesc;
+componentType
+ ()Ljava/lang/constant/ClassDesc;
+ ()L0java/lang/constant/ClassDesc;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z

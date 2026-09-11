@@ -1,0 +1,7 @@
+class javax/security/cert/X509Certificate
+getInstance
+ (Ljava/io/InputStream;)Ljavax/security/cert/X509Certificate;
+ (L1java/io/InputStream;)L1javax/security/cert/X509Certificate;
+getInstance
+ ([B)Ljavax/security/cert/X509Certificate;
+ ([1B)L1javax/security/cert/X509Certificate;

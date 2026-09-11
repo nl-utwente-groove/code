@@ -1,0 +1,10 @@
+class java/time/chrono/IsoChronology
+INSTANCE
+ Ljava/time/chrono/IsoChronology;
+ L1java/time/chrono/IsoChronology;
+getCalendarType
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+getId
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

@@ -1,0 +1,4 @@
+class java/awt/geom/Line2D$Double
+getBounds2D
+ ()Ljava/awt/geom/Rectangle2D;
+ ()L1java/awt/geom/Rectangle2D;

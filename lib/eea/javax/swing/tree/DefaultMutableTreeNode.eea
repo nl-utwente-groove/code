@@ -2,12 +2,51 @@ class javax/swing/tree/DefaultMutableTreeNode
 EMPTY_ENUMERATION
  Ljava/util/Enumeration<Ljavax/swing/tree/TreeNode;>;
  L1java/util/Enumeration<Ljavax/swing/tree/TreeNode;>;
+breadthFirstEnumeration
+ ()Ljava/util/Enumeration<Ljavax/swing/tree/TreeNode;>;
+ ()L1java/util/Enumeration<Ljavax/swing/tree/TreeNode;>;
 clone
  ()Ljava/lang/Object;
  ()L1java/lang/Object;
+getChildAfter
+ (Ljavax/swing/tree/TreeNode;)Ljavax/swing/tree/TreeNode;
+ (Ljavax/swing/tree/TreeNode;)L0javax/swing/tree/TreeNode;
+getChildBefore
+ (Ljavax/swing/tree/TreeNode;)Ljavax/swing/tree/TreeNode;
+ (Ljavax/swing/tree/TreeNode;)L0javax/swing/tree/TreeNode;
 getIndex
  (Ljavax/swing/tree/TreeNode;)I
  (L1javax/swing/tree/TreeNode;)I
+getNextLeaf
+ ()Ljavax/swing/tree/DefaultMutableTreeNode;
+ ()L0javax/swing/tree/DefaultMutableTreeNode;
+getNextNode
+ ()Ljavax/swing/tree/DefaultMutableTreeNode;
+ ()L0javax/swing/tree/DefaultMutableTreeNode;
+getPathToRoot
+ (Ljavax/swing/tree/TreeNode;I)[Ljavax/swing/tree/TreeNode;
+ (Ljavax/swing/tree/TreeNode;I)[0Ljavax/swing/tree/TreeNode;
+getPreviousLeaf
+ ()Ljavax/swing/tree/DefaultMutableTreeNode;
+ ()L0javax/swing/tree/DefaultMutableTreeNode;
+getPreviousNode
+ ()Ljavax/swing/tree/DefaultMutableTreeNode;
+ ()L0javax/swing/tree/DefaultMutableTreeNode;
+getSharedAncestor
+ (Ljavax/swing/tree/DefaultMutableTreeNode;)Ljavax/swing/tree/TreeNode;
+ (Ljavax/swing/tree/DefaultMutableTreeNode;)L0javax/swing/tree/TreeNode;
+getUserObjectPath
+ ()[Ljava/lang/Object;
+ ()[1Ljava/lang/Object;
+pathFromAncestorEnumeration
+ (Ljavax/swing/tree/TreeNode;)Ljava/util/Enumeration<Ljavax/swing/tree/TreeNode;>;
+ (Ljavax/swing/tree/TreeNode;)L1java/util/Enumeration<Ljavax/swing/tree/TreeNode;>;
+postorderEnumeration
+ ()Ljava/util/Enumeration<Ljavax/swing/tree/TreeNode;>;
+ ()L1java/util/Enumeration<Ljavax/swing/tree/TreeNode;>;
+preorderEnumeration
+ ()Ljava/util/Enumeration<Ljavax/swing/tree/TreeNode;>;
+ ()L1java/util/Enumeration<Ljavax/swing/tree/TreeNode;>;
 toString
  ()Ljava/lang/String;
  ()L1java/lang/String;

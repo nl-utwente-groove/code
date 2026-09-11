@@ -1,0 +1,7 @@
+class java/awt/image/ByteLookupTable
+lookupPixel
+ ([B[B)[B
+ ([B[B)[1B
+lookupPixel
+ ([I[I)[I
+ ([I[I)[1I

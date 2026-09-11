@@ -1,0 +1,4 @@
+class java/awt/Scrollbar$AccessibleAWTScrollBar
+getAccessibleValue
+ ()Ljavax/accessibility/AccessibleValue;
+ ()L0javax/accessibility/AccessibleValue;

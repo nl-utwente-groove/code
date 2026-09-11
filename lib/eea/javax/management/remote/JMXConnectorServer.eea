@@ -1,0 +1,4 @@
+class javax/management/remote/JMXConnectorServer
+AUTHENTICATOR
+ Ljava/lang/String;
+ L1java/lang/String;

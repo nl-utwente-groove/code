@@ -1,0 +1,28 @@
+class javax/swing/plaf/basic/BasicListUI
+createUI
+ (Ljavax/swing/JComponent;)Ljavax/swing/plaf/ComponentUI;
+ (Ljavax/swing/JComponent;)L1javax/swing/plaf/ComponentUI;
+createFocusListener
+ ()Ljava/awt/event/FocusListener;
+ ()L1java/awt/event/FocusListener;
+createListDataListener
+ ()Ljavax/swing/event/ListDataListener;
+ ()L1javax/swing/event/ListDataListener;
+createListSelectionListener
+ ()Ljavax/swing/event/ListSelectionListener;
+ ()L1javax/swing/event/ListSelectionListener;
+createMouseInputListener
+ ()Ljavax/swing/event/MouseInputListener;
+ ()L1javax/swing/event/MouseInputListener;
+createPropertyChangeListener
+ ()Ljava/beans/PropertyChangeListener;
+ ()L1java/beans/PropertyChangeListener;
+getCellBounds
+ (Ljavax/swing/JList<*>;II)Ljava/awt/Rectangle;
+ (Ljavax/swing/JList<*>;II)L0java/awt/Rectangle;
+getPreferredSize
+ (Ljavax/swing/JComponent;)Ljava/awt/Dimension;
+ (Ljavax/swing/JComponent;)L0java/awt/Dimension;
+indexToLocation
+ (Ljavax/swing/JList<*>;I)Ljava/awt/Point;
+ (Ljavax/swing/JList<*>;I)L0java/awt/Point;

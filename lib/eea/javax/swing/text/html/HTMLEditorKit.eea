@@ -41,3 +41,21 @@ PARA_INDENT_RIGHT
 clone
  ()Ljava/lang/Object;
  ()L1java/lang/Object;
+createDefaultDocument
+ ()Ljavax/swing/text/Document;
+ ()L1javax/swing/text/Document;
+getAccessibleContext
+ ()Ljavax/accessibility/AccessibleContext;
+ ()L0javax/accessibility/AccessibleContext;
+getActions
+ ()[Ljavax/swing/Action;
+ ()[1Ljavax/swing/Action;
+getContentType
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+getStyleSheet
+ ()Ljavax/swing/text/html/StyleSheet;
+ ()L1javax/swing/text/html/StyleSheet;
+getViewFactory
+ ()Ljavax/swing/text/ViewFactory;
+ ()L0javax/swing/text/ViewFactory;

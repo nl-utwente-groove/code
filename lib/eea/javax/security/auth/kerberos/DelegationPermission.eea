@@ -1,0 +1,7 @@
+class javax/security/auth/kerberos/DelegationPermission
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+newPermissionCollection
+ ()Ljava/security/PermissionCollection;
+ ()L1java/security/PermissionCollection;

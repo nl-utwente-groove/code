@@ -1,0 +1,13 @@
+class java/time/chrono/MinguoChronology
+INSTANCE
+ Ljava/time/chrono/MinguoChronology;
+ L1java/time/chrono/MinguoChronology;
+dateEpochDay
+ (J)Ljava/time/chrono/MinguoDate;
+ (J)L1java/time/chrono/MinguoDate;
+getCalendarType
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+getId
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

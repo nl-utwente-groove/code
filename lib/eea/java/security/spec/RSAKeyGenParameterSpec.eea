@@ -1,0 +1,7 @@
+class java/security/spec/RSAKeyGenParameterSpec
+F0
+ Ljava/math/BigInteger;
+ L1java/math/BigInteger;
+F4
+ Ljava/math/BigInteger;
+ L1java/math/BigInteger;

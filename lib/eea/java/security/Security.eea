@@ -1,0 +1,7 @@
+class java/security/Security
+getAlgorithmProperty
+ (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+ (Ljava/lang/String;Ljava/lang/String;)L0java/lang/String;
+getProviders
+ (Ljava/util/Map<Ljava/lang/String;Ljava/lang/String;>;)[Ljava/security/Provider;
+ (Ljava/util/Map<Ljava/lang/String;Ljava/lang/String;>;)[0Ljava/security/Provider;

@@ -1,0 +1,13 @@
+class javax/sound/midi/MidiSystem
+getMidiFileTypes
+ ()[I
+ ()[1I
+getMidiFileTypes
+ (Ljavax/sound/midi/Sequence;)[I
+ (Ljavax/sound/midi/Sequence;)[1I
+getReceiver
+ ()Ljavax/sound/midi/Receiver;
+ ()L1javax/sound/midi/Receiver;
+getTransmitter
+ ()Ljavax/sound/midi/Transmitter;
+ ()L1javax/sound/midi/Transmitter;

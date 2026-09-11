@@ -1,0 +1,4 @@
+class javax/swing/JScrollBar$AccessibleJScrollBar
+getAccessibleValue
+ ()Ljavax/accessibility/AccessibleValue;
+ ()L0javax/accessibility/AccessibleValue;

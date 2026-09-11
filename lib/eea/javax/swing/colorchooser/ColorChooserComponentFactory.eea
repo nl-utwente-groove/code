@@ -1,0 +1,4 @@
+class javax/swing/colorchooser/ColorChooserComponentFactory
+getPreviewPanel
+ ()Ljavax/swing/JComponent;
+ ()L1javax/swing/JComponent;

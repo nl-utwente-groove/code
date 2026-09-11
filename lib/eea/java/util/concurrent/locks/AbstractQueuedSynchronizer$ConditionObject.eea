@@ -1,0 +1,10 @@
+class java/util/concurrent/locks/AbstractQueuedSynchronizer$ConditionObject
+await
+ (JLjava/util/concurrent/TimeUnit;)Z
+ (JL1java/util/concurrent/TimeUnit;)Z
+awaitUntil
+ (Ljava/util/Date;)Z
+ (L1java/util/Date;)Z
+getWaitingThreads
+ ()Ljava/util/Collection<Ljava/lang/Thread;>;
+ ()L1java/util/Collection<Ljava/lang/Thread;>;

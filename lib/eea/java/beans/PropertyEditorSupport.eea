@@ -1,0 +1,19 @@
+class java/beans/PropertyEditorSupport
+addPropertyChangeListener
+ (Ljava/beans/PropertyChangeListener;)V
+ (L1java/beans/PropertyChangeListener;)V
+getAsText
+ ()Ljava/lang/String;
+ ()L0java/lang/String;
+getCustomEditor
+ ()Ljava/awt/Component;
+ ()L0java/awt/Component;
+getJavaInitializationString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+getTags
+ ()[Ljava/lang/String;
+ ()[0Ljava/lang/String;
+removePropertyChangeListener
+ (Ljava/beans/PropertyChangeListener;)V
+ (L1java/beans/PropertyChangeListener;)V

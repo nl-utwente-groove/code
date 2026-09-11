@@ -1,0 +1,7 @@
+class javax/swing/text/DefaultHighlighter
+DefaultPainter
+ Ljavax/swing/text/LayeredHighlighter$LayerPainter;
+ L1javax/swing/text/LayeredHighlighter$LayerPainter;
+addHighlight
+ (IILjavax/swing/text/Highlighter$HighlightPainter;)Ljava/lang/Object;
+ (IILjavax/swing/text/Highlighter$HighlightPainter;)L1java/lang/Object;

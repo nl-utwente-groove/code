@@ -1,0 +1,10 @@
+class java/rmi/server/LogStream
+log
+ (Ljava/lang/String;)Ljava/rmi/server/LogStream;
+ (Ljava/lang/String;)L1java/rmi/server/LogStream;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+write
+ ([BII)V
+ ([1BII)V

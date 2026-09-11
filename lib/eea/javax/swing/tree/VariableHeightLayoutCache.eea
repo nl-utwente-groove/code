@@ -1,0 +1,13 @@
+class javax/swing/tree/VariableHeightLayoutCache
+getBounds
+ (Ljavax/swing/tree/TreePath;Ljava/awt/Rectangle;)Ljava/awt/Rectangle;
+ (Ljavax/swing/tree/TreePath;Ljava/awt/Rectangle;)L0java/awt/Rectangle;
+getPathClosestTo
+ (II)Ljavax/swing/tree/TreePath;
+ (II)L0javax/swing/tree/TreePath;
+getPathForRow
+ (I)Ljavax/swing/tree/TreePath;
+ (I)L0javax/swing/tree/TreePath;
+getVisiblePathsFrom
+ (Ljavax/swing/tree/TreePath;)Ljava/util/Enumeration<Ljavax/swing/tree/TreePath;>;
+ (Ljavax/swing/tree/TreePath;)L0java/util/Enumeration<Ljavax/swing/tree/TreePath;>;

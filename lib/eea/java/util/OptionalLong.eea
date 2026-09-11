@@ -1,0 +1,10 @@
+class java/util/OptionalLong
+of
+ (J)Ljava/util/OptionalLong;
+ (J)L1java/util/OptionalLong;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

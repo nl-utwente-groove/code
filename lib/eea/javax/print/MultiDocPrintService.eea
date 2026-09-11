@@ -1,0 +1,4 @@
+class javax/print/MultiDocPrintService
+createMultiDocPrintJob
+ ()Ljavax/print/MultiDocPrintJob;
+ ()L1javax/print/MultiDocPrintJob;

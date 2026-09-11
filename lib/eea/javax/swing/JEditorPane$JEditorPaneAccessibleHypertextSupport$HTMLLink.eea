@@ -1,0 +1,7 @@
+class javax/swing/JEditorPane$JEditorPaneAccessibleHypertextSupport$HTMLLink
+getAccessibleActionDescription
+ (I)Ljava/lang/String;
+ (I)L0java/lang/String;
+getAccessibleActionObject
+ (I)Ljava/lang/Object;
+ (I)L0java/lang/Object;

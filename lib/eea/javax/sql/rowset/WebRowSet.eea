@@ -1,0 +1,7 @@
+class javax/sql/rowset/WebRowSet
+PUBLIC_XML_SCHEMA
+ Ljava/lang/String;
+ L1java/lang/String;
+SCHEMA_SYSTEM_ID
+ Ljava/lang/String;
+ L1java/lang/String;

@@ -1,0 +1,7 @@
+class javax/management/monitor/Monitor
+getObservedObject
+ ()Ljavax/management/ObjectName;
+ ()L0javax/management/ObjectName;
+getObservedObjects
+ ()[Ljavax/management/ObjectName;
+ ()[1Ljavax/management/ObjectName;

@@ -1,0 +1,10 @@
+class javax/swing/JTextArea
+createDefaultModel
+ ()Ljavax/swing/text/Document;
+ ()L1javax/swing/text/Document;
+getUIClassID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

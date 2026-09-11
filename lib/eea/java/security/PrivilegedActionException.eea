@@ -1,0 +1,4 @@
+class java/security/PrivilegedActionException
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

@@ -1,0 +1,4 @@
+class java/awt/MultipleGradientPaint
+getTransform
+ ()Ljava/awt/geom/AffineTransform;
+ ()L1java/awt/geom/AffineTransform;

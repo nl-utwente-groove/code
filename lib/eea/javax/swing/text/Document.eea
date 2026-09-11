@@ -11,6 +11,9 @@ addDocumentListener
 addUndoableEditListener
  (Ljavax/swing/event/UndoableEditListener;)V
  (L1javax/swing/event/UndoableEditListener;)V
+createPosition
+ (I)Ljavax/swing/text/Position;
+ (I)L1javax/swing/text/Position;
 removeDocumentListener
  (Ljavax/swing/event/DocumentListener;)V
  (L1javax/swing/event/DocumentListener;)V

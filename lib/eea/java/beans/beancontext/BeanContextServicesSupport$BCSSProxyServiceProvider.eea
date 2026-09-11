@@ -1,0 +1,7 @@
+class java/beans/beancontext/BeanContextServicesSupport$BCSSProxyServiceProvider
+getService
+ (Ljava/beans/beancontext/BeanContextServices;Ljava/lang/Object;Ljava/lang/Class<*>;Ljava/lang/Object;)Ljava/lang/Object;
+ (Ljava/beans/beancontext/BeanContextServices;Ljava/lang/Object;Ljava/lang/Class<*>;Ljava/lang/Object;)L0java/lang/Object;
+serviceRevoked
+ (Ljava/beans/beancontext/BeanContextServiceRevokedEvent;)V
+ (L1java/beans/beancontext/BeanContextServiceRevokedEvent;)V

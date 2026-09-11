@@ -1,0 +1,7 @@
+class java/time/format/TextStyle
+asNormal
+ ()Ljava/time/format/TextStyle;
+ ()L1java/time/format/TextStyle;
+asStandalone
+ ()Ljava/time/format/TextStyle;
+ ()L1java/time/format/TextStyle;

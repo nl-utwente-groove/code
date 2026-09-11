@@ -1,0 +1,7 @@
+class javax/xml/transform/sax/SAXTransformerFactory
+FEATURE
+ Ljava/lang/String;
+ L1java/lang/String;
+FEATURE_XMLFILTER
+ Ljava/lang/String;
+ L1java/lang/String;

@@ -1,0 +1,34 @@
+class javax/swing/plaf/basic/BasicOptionPaneUI
+createUI
+ (Ljavax/swing/JComponent;)Ljavax/swing/plaf/ComponentUI;
+ (Ljavax/swing/JComponent;)L1javax/swing/plaf/ComponentUI;
+createButtonActionListener
+ (I)Ljava/awt/event/ActionListener;
+ (I)L1java/awt/event/ActionListener;
+createButtonArea
+ ()Ljava/awt/Container;
+ ()L1java/awt/Container;
+createLayoutManager
+ ()Ljava/awt/LayoutManager;
+ ()L1java/awt/LayoutManager;
+createMessageArea
+ ()Ljava/awt/Container;
+ ()L1java/awt/Container;
+createPropertyChangeListener
+ ()Ljava/beans/PropertyChangeListener;
+ ()L1java/beans/PropertyChangeListener;
+createSeparator
+ ()Ljava/awt/Container;
+ ()L0java/awt/Container;
+getButtons
+ ()[Ljava/lang/Object;
+ ()[0Ljava/lang/Object;
+getIconForType
+ (I)Ljavax/swing/Icon;
+ (I)L0javax/swing/Icon;
+getMessage
+ ()Ljava/lang/Object;
+ ()L0java/lang/Object;
+getPreferredSize
+ (Ljavax/swing/JComponent;)Ljava/awt/Dimension;
+ (Ljavax/swing/JComponent;)L0java/awt/Dimension;

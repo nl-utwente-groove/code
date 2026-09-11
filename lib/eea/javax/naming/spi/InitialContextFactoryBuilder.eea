@@ -1,0 +1,4 @@
+class javax/naming/spi/InitialContextFactoryBuilder
+createInitialContextFactory
+ (Ljava/util/Hashtable<**>;)Ljavax/naming/spi/InitialContextFactory;
+ (Ljava/util/Hashtable<**>;)L1javax/naming/spi/InitialContextFactory;

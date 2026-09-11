@@ -1,0 +1,13 @@
+class java/io/FilePermission
+<init>
+ (Ljava/lang/String;Ljava/lang/String;)V
+ (L1java/lang/String;L1java/lang/String;)V
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getActions
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+newPermissionCollection
+ ()Ljava/security/PermissionCollection;
+ ()L1java/security/PermissionCollection;

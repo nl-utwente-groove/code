@@ -1,0 +1,7 @@
+class java/security/DigestInputStream
+read
+ ([BII)I
+ ([1BII)I
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

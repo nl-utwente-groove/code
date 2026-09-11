@@ -1,0 +1,19 @@
+class java/util/ResourceBundle$Control
+FORMAT_CLASS
+ Ljava/util/List<Ljava/lang/String;>;
+ L1java/util/List<Ljava/lang/String;>;
+FORMAT_DEFAULT
+ Ljava/util/List<Ljava/lang/String;>;
+ L1java/util/List<Ljava/lang/String;>;
+FORMAT_PROPERTIES
+ Ljava/util/List<Ljava/lang/String;>;
+ L1java/util/List<Ljava/lang/String;>;
+getCandidateLocales
+ (Ljava/lang/String;Ljava/util/Locale;)Ljava/util/List<Ljava/util/Locale;>;
+ (Ljava/lang/String;Ljava/util/Locale;)L1java/util/List<Ljava/util/Locale;>;
+newBundle
+ (Ljava/lang/String;Ljava/util/Locale;Ljava/lang/String;Ljava/lang/ClassLoader;Z)Ljava/util/ResourceBundle;
+ (Ljava/lang/String;Ljava/util/Locale;Ljava/lang/String;Ljava/lang/ClassLoader;Z)L0java/util/ResourceBundle;
+toResourceName
+ (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+ (Ljava/lang/String;Ljava/lang/String;)L1java/lang/String;

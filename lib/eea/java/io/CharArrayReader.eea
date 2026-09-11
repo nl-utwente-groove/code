@@ -1,0 +1,16 @@
+class java/io/CharArrayReader
+buf
+ [C
+ [1C
+<init>
+ ([C)V
+ ([1C)V
+<init>
+ ([CII)V
+ ([1CII)V
+read
+ (Ljava/nio/CharBuffer;)I
+ (L1java/nio/CharBuffer;)I
+read
+ ([CII)I
+ ([1CII)I

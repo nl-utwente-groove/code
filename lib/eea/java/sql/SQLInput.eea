@@ -1,0 +1,4 @@
+class java/sql/SQLInput
+readObject
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;

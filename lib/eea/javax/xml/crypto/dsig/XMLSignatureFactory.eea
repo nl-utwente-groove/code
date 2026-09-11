@@ -1,0 +1,4 @@
+class javax/xml/crypto/dsig/XMLSignatureFactory
+getInstance
+ ()Ljavax/xml/crypto/dsig/XMLSignatureFactory;
+ ()L1javax/xml/crypto/dsig/XMLSignatureFactory;

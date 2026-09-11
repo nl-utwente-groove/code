@@ -1,0 +1,40 @@
+class javax/swing/text/html/AccessibleHTML$TableElementInfo$TableAccessibleContext
+getAccessibleAt
+ (II)Ljavax/accessibility/Accessible;
+ (II)L0javax/accessibility/Accessible;
+getAccessibleCaption
+ ()Ljavax/accessibility/Accessible;
+ ()L0javax/accessibility/Accessible;
+getAccessibleChild
+ (I)Ljavax/accessibility/Accessible;
+ (I)L0javax/accessibility/Accessible;
+getAccessibleColumnDescription
+ (I)Ljavax/accessibility/Accessible;
+ (I)L0javax/accessibility/Accessible;
+getAccessibleColumnHeader
+ ()Ljavax/accessibility/AccessibleTable;
+ ()L0javax/accessibility/AccessibleTable;
+getAccessibleColumnHeader
+ (I)Ljava/lang/String;
+ (I)L0java/lang/String;
+getAccessibleName
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+getAccessibleRowDescription
+ (I)Ljavax/accessibility/Accessible;
+ (I)L0javax/accessibility/Accessible;
+getAccessibleRowHeader
+ (I)Ljava/lang/String;
+ (I)L0java/lang/String;
+getAccessibleSummary
+ ()Ljavax/accessibility/Accessible;
+ ()L0javax/accessibility/Accessible;
+getAccessibleTable
+ ()Ljavax/accessibility/AccessibleTable;
+ ()L0javax/accessibility/AccessibleTable;
+getSelectedAccessibleColumns
+ ()[I
+ ()[1I
+getSelectedAccessibleRows
+ ()[I
+ ()[1I

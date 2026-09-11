@@ -1,0 +1,19 @@
+class javax/swing/plaf/basic/BasicSpinnerUI
+createUI
+ (Ljavax/swing/JComponent;)Ljavax/swing/plaf/ComponentUI;
+ (Ljavax/swing/JComponent;)L1javax/swing/plaf/ComponentUI;
+createEditor
+ ()Ljavax/swing/JComponent;
+ ()L1javax/swing/JComponent;
+createLayout
+ ()Ljava/awt/LayoutManager;
+ ()L1java/awt/LayoutManager;
+createNextButton
+ ()Ljava/awt/Component;
+ ()L1java/awt/Component;
+createPreviousButton
+ ()Ljava/awt/Component;
+ ()L1java/awt/Component;
+createPropertyChangeListener
+ ()Ljava/beans/PropertyChangeListener;
+ ()L1java/beans/PropertyChangeListener;

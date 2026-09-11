@@ -1,0 +1,31 @@
+class javax/swing/plaf/basic/BasicTabbedPaneUI
+createUI
+ (Ljavax/swing/JComponent;)Ljavax/swing/plaf/ComponentUI;
+ (Ljavax/swing/JComponent;)L1javax/swing/plaf/ComponentUI;
+createChangeListener
+ ()Ljavax/swing/event/ChangeListener;
+ ()L1javax/swing/event/ChangeListener;
+createFocusListener
+ ()Ljava/awt/event/FocusListener;
+ ()L1java/awt/event/FocusListener;
+createLayoutManager
+ ()Ljava/awt/LayoutManager;
+ ()L1java/awt/LayoutManager;
+createMouseListener
+ ()Ljava/awt/event/MouseListener;
+ ()L1java/awt/event/MouseListener;
+createPropertyChangeListener
+ ()Ljava/beans/PropertyChangeListener;
+ ()L1java/beans/PropertyChangeListener;
+createScrollButton
+ (I)Ljavax/swing/JButton;
+ (I)L1javax/swing/JButton;
+getMaximumSize
+ (Ljavax/swing/JComponent;)Ljava/awt/Dimension;
+ (Ljavax/swing/JComponent;)L0java/awt/Dimension;
+getMinimumSize
+ (Ljavax/swing/JComponent;)Ljava/awt/Dimension;
+ (Ljavax/swing/JComponent;)L0java/awt/Dimension;
+getTextViewForTab
+ (I)Ljavax/swing/text/View;
+ (I)L0javax/swing/text/View;

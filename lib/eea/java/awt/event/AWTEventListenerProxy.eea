@@ -1,0 +1,4 @@
+class java/awt/event/AWTEventListenerProxy
+eventDispatched
+ (Ljava/awt/AWTEvent;)V
+ (L1java/awt/AWTEvent;)V

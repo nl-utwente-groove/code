@@ -1,0 +1,4 @@
+class java/awt/datatransfer/StringSelection
+getTransferDataFlavors
+ ()[Ljava/awt/datatransfer/DataFlavor;
+ ()[1Ljava/awt/datatransfer/DataFlavor;

@@ -1,4 +1,7 @@
 class java/lang/invoke/MethodHandles$Lookup
+revealDirect
+ (Ljava/lang/invoke/MethodHandle;)Ljava/lang/invoke/MethodHandleInfo;
+ (Ljava/lang/invoke/MethodHandle;)L1java/lang/invoke/MethodHandleInfo;
 toString
  ()Ljava/lang/String;
  ()L1java/lang/String;

@@ -1,0 +1,4 @@
+class javax/swing/text/MaskFormatter
+valueToString
+ (Ljava/lang/Object;)Ljava/lang/String;
+ (Ljava/lang/Object;)L1java/lang/String;

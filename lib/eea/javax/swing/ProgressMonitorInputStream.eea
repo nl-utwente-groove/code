@@ -1,0 +1,7 @@
+class javax/swing/ProgressMonitorInputStream
+read
+ ([B)I
+ ([1B)I
+read
+ ([BII)I
+ ([1BII)I

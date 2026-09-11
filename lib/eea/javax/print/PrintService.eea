@@ -1,0 +1,13 @@
+class javax/print/PrintService
+addPrintServiceAttributeListener
+ (Ljavax/print/event/PrintServiceAttributeListener;)V
+ (L1javax/print/event/PrintServiceAttributeListener;)V
+createPrintJob
+ ()Ljavax/print/DocPrintJob;
+ ()L1javax/print/DocPrintJob;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+removePrintServiceAttributeListener
+ (Ljavax/print/event/PrintServiceAttributeListener;)V
+ (L1javax/print/event/PrintServiceAttributeListener;)V

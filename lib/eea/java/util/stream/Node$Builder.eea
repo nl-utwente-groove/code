@@ -1,0 +1,5 @@
+class java/util/stream/Node$Builder
+ <T:Ljava/lang/Object;>
+build
+ ()Ljava/util/stream/Node<TT;>;
+ ()L1java/util/stream/Node<TT;>;

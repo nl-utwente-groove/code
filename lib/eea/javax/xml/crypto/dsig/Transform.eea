@@ -1,0 +1,16 @@
+class javax/xml/crypto/dsig/Transform
+BASE64
+ Ljava/lang/String;
+ L1java/lang/String;
+ENVELOPED
+ Ljava/lang/String;
+ L1java/lang/String;
+XPATH
+ Ljava/lang/String;
+ L1java/lang/String;
+XPATH2
+ Ljava/lang/String;
+ L1java/lang/String;
+XSLT
+ Ljava/lang/String;
+ L1java/lang/String;

@@ -1,0 +1,19 @@
+class javax/swing/JComponent$AccessibleJComponent
+addPropertyChangeListener
+ (Ljava/beans/PropertyChangeListener;)V
+ (L1java/beans/PropertyChangeListener;)V
+getAccessibleChild
+ (I)Ljavax/accessibility/Accessible;
+ (I)L0javax/accessibility/Accessible;
+getAccessibleKeyBinding
+ ()Ljavax/accessibility/AccessibleKeyBinding;
+ ()L0javax/accessibility/AccessibleKeyBinding;
+getBorderTitle
+ (Ljavax/swing/border/Border;)Ljava/lang/String;
+ (Ljavax/swing/border/Border;)L0java/lang/String;
+getTitledBorderText
+ ()Ljava/lang/String;
+ ()L0java/lang/String;
+removePropertyChangeListener
+ (Ljava/beans/PropertyChangeListener;)V
+ (L1java/beans/PropertyChangeListener;)V

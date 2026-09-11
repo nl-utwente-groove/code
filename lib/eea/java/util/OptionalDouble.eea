@@ -1,0 +1,10 @@
+class java/util/OptionalDouble
+of
+ (D)Ljava/util/OptionalDouble;
+ (D)L1java/util/OptionalDouble;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

@@ -1,0 +1,19 @@
+class javax/swing/text/html/parser/DTD
+getDTD
+ (Ljava/lang/String;)Ljavax/swing/text/html/parser/DTD;
+ (Ljava/lang/String;)L1javax/swing/text/html/parser/DTD;
+defAttributeList
+ (Ljava/lang/String;IILjava/lang/String;Ljava/lang/String;Ljavax/swing/text/html/parser/AttributeList;)Ljavax/swing/text/html/parser/AttributeList;
+ (Ljava/lang/String;IILjava/lang/String;Ljava/lang/String;Ljavax/swing/text/html/parser/AttributeList;)L1javax/swing/text/html/parser/AttributeList;
+defContentModel
+ (ILjava/lang/Object;Ljavax/swing/text/html/parser/ContentModel;)Ljavax/swing/text/html/parser/ContentModel;
+ (ILjava/lang/Object;Ljavax/swing/text/html/parser/ContentModel;)L1javax/swing/text/html/parser/ContentModel;
+defineEntity
+ (Ljava/lang/String;I[C)Ljavax/swing/text/html/parser/Entity;
+ (Ljava/lang/String;I[C)L1javax/swing/text/html/parser/Entity;
+getElement
+ (Ljava/lang/String;)Ljavax/swing/text/html/parser/Element;
+ (Ljava/lang/String;)L1javax/swing/text/html/parser/Element;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

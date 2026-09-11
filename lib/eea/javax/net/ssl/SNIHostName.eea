@@ -1,0 +1,10 @@
+class javax/net/ssl/SNIHostName
+createSNIMatcher
+ (Ljava/lang/String;)Ljavax/net/ssl/SNIMatcher;
+ (Ljava/lang/String;)L1javax/net/ssl/SNIMatcher;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

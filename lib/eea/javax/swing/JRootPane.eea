@@ -1,0 +1,19 @@
+class javax/swing/JRootPane
+createContentPane
+ ()Ljava/awt/Container;
+ ()L1java/awt/Container;
+createGlassPane
+ ()Ljava/awt/Component;
+ ()L1java/awt/Component;
+createLayeredPane
+ ()Ljavax/swing/JLayeredPane;
+ ()L1javax/swing/JLayeredPane;
+createRootLayout
+ ()Ljava/awt/LayoutManager;
+ ()L1java/awt/LayoutManager;
+getUIClassID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

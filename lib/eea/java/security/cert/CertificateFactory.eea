@@ -1,0 +1,13 @@
+class java/security/cert/CertificateFactory
+getInstance
+ (Ljava/lang/String;)Ljava/security/cert/CertificateFactory;
+ (L1java/lang/String;)L1java/security/cert/CertificateFactory;
+getInstance
+ (Ljava/lang/String;Ljava/lang/String;)Ljava/security/cert/CertificateFactory;
+ (L1java/lang/String;L1java/lang/String;)L1java/security/cert/CertificateFactory;
+getInstance
+ (Ljava/lang/String;Ljava/security/Provider;)Ljava/security/cert/CertificateFactory;
+ (L1java/lang/String;L1java/security/Provider;)L1java/security/cert/CertificateFactory;
+generateCertificate
+ (Ljava/io/InputStream;)Ljava/security/cert/Certificate;
+ (L1java/io/InputStream;)L1java/security/cert/Certificate;

@@ -1,0 +1,10 @@
+class javax/swing/plaf/basic/BasicComboPopup$ListDataHandler
+contentsChanged
+ (Ljavax/swing/event/ListDataEvent;)V
+ (L1javax/swing/event/ListDataEvent;)V
+intervalAdded
+ (Ljavax/swing/event/ListDataEvent;)V
+ (L1javax/swing/event/ListDataEvent;)V
+intervalRemoved
+ (Ljavax/swing/event/ListDataEvent;)V
+ (L1javax/swing/event/ListDataEvent;)V

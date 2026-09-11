@@ -1,0 +1,28 @@
+class javax/swing/plaf/basic/BasicMenuItemUI
+createUI
+ (Ljavax/swing/JComponent;)Ljavax/swing/plaf/ComponentUI;
+ (Ljavax/swing/JComponent;)L1javax/swing/plaf/ComponentUI;
+createMenuDragMouseListener
+ (Ljavax/swing/JComponent;)Ljavax/swing/event/MenuDragMouseListener;
+ (Ljavax/swing/JComponent;)L1javax/swing/event/MenuDragMouseListener;
+createMenuKeyListener
+ (Ljavax/swing/JComponent;)Ljavax/swing/event/MenuKeyListener;
+ (Ljavax/swing/JComponent;)L0javax/swing/event/MenuKeyListener;
+createMouseInputListener
+ (Ljavax/swing/JComponent;)Ljavax/swing/event/MouseInputListener;
+ (Ljavax/swing/JComponent;)L1javax/swing/event/MouseInputListener;
+createPropertyChangeListener
+ (Ljavax/swing/JComponent;)Ljava/beans/PropertyChangeListener;
+ (Ljavax/swing/JComponent;)L1java/beans/PropertyChangeListener;
+getPath
+ ()[Ljavax/swing/MenuElement;
+ ()[1Ljavax/swing/MenuElement;
+getPreferredMenuItemSize
+ (Ljavax/swing/JComponent;Ljavax/swing/Icon;Ljavax/swing/Icon;I)Ljava/awt/Dimension;
+ (Ljavax/swing/JComponent;Ljavax/swing/Icon;Ljavax/swing/Icon;I)L1java/awt/Dimension;
+getPreferredSize
+ (Ljavax/swing/JComponent;)Ljava/awt/Dimension;
+ (Ljavax/swing/JComponent;)L0java/awt/Dimension;
+getPropertyPrefix
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

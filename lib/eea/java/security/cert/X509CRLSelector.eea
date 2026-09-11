@@ -1,0 +1,16 @@
+class java/security/cert/X509CRLSelector
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+getDateAndTime
+ ()Ljava/util/Date;
+ ()L0java/util/Date;
+getIssuerNames
+ ()Ljava/util/Collection<Ljava/lang/Object;>;
+ ()L0java/util/Collection<Ljava/lang/Object;>;
+getIssuers
+ ()Ljava/util/Collection<Ljavax/security/auth/x500/X500Principal;>;
+ ()L0java/util/Collection<Ljavax/security/auth/x500/X500Principal;>;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

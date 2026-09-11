@@ -2,3 +2,9 @@ class javax/swing/text/EditorKit
 clone
  ()Ljava/lang/Object;
  ()L1java/lang/Object;
+createCaret
+ ()Ljavax/swing/text/Caret;
+ ()L1javax/swing/text/Caret;
+createDefaultDocument
+ ()Ljavax/swing/text/Document;
+ ()L1javax/swing/text/Document;

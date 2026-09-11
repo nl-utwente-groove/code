@@ -1,0 +1,13 @@
+class java/beans/FeatureDescriptor
+attributeNames
+ ()Ljava/util/Enumeration<Ljava/lang/String;>;
+ ()L1java/util/Enumeration<L1java/lang/String;>;
+getValue
+ (Ljava/lang/String;)Ljava/lang/Object;
+ (L1java/lang/String;)L0java/lang/Object;
+setValue
+ (Ljava/lang/String;Ljava/lang/Object;)V
+ (L1java/lang/String;L0java/lang/Object;)V
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

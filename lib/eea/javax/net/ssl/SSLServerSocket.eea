@@ -1,0 +1,4 @@
+class javax/net/ssl/SSLServerSocket
+getSSLParameters
+ ()Ljavax/net/ssl/SSLParameters;
+ ()L1javax/net/ssl/SSLParameters;

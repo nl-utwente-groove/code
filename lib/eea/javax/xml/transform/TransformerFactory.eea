@@ -1,0 +1,4 @@
+class javax/xml/transform/TransformerFactory
+newDefaultInstance
+ ()Ljavax/xml/transform/TransformerFactory;
+ ()L1javax/xml/transform/TransformerFactory;

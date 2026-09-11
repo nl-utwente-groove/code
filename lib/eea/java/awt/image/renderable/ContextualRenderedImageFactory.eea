@@ -1,0 +1,4 @@
+class java/awt/image/renderable/ContextualRenderedImageFactory
+create
+ (Ljava/awt/image/renderable/RenderContext;Ljava/awt/image/renderable/ParameterBlock;)Ljava/awt/image/RenderedImage;
+ (Ljava/awt/image/renderable/RenderContext;Ljava/awt/image/renderable/ParameterBlock;)L1java/awt/image/RenderedImage;

@@ -15,15 +15,30 @@ addPopupMenuListener
 contentsChanged
  (Ljavax/swing/event/ListDataEvent;)V
  (L1javax/swing/event/ListDataEvent;)V
+createActionPropertyChangeListener
+ (Ljavax/swing/Action;)Ljava/beans/PropertyChangeListener;
+ (Ljavax/swing/Action;)L1java/beans/PropertyChangeListener;
+createDefaultKeySelectionManager
+ ()Ljavax/swing/JComboBox$KeySelectionManager;
+ ()L1javax/swing/JComboBox$KeySelectionManager;
 getItemAt
  (I)TE;
  (I)T0E;
+getSelectedObjects
+ ()[Ljava/lang/Object;
+ ()[1Ljava/lang/Object;
+getUIClassID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
 intervalAdded
  (Ljavax/swing/event/ListDataEvent;)V
  (L1javax/swing/event/ListDataEvent;)V
 intervalRemoved
  (Ljavax/swing/event/ListDataEvent;)V
  (L1javax/swing/event/ListDataEvent;)V
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
 removeActionListener
  (Ljava/awt/event/ActionListener;)V
  (L1java/awt/event/ActionListener;)V

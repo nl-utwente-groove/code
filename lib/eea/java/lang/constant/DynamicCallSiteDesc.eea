@@ -1,0 +1,16 @@
+class java/lang/constant/DynamicCallSiteDesc
+of
+ (Ljava/lang/constant/DirectMethodHandleDesc;Ljava/lang/String;Ljava/lang/constant/MethodTypeDesc;)Ljava/lang/constant/DynamicCallSiteDesc;
+ (Ljava/lang/constant/DirectMethodHandleDesc;Ljava/lang/String;Ljava/lang/constant/MethodTypeDesc;)L1java/lang/constant/DynamicCallSiteDesc;
+of
+ (Ljava/lang/constant/DirectMethodHandleDesc;Ljava/lang/String;Ljava/lang/constant/MethodTypeDesc;[Ljava/lang/constant/ConstantDesc;)Ljava/lang/constant/DynamicCallSiteDesc;
+ (Ljava/lang/constant/DirectMethodHandleDesc;Ljava/lang/String;Ljava/lang/constant/MethodTypeDesc;[Ljava/lang/constant/ConstantDesc;)L1java/lang/constant/DynamicCallSiteDesc;
+bootstrapArgs
+ ()[Ljava/lang/constant/ConstantDesc;
+ ()[1Ljava/lang/constant/ConstantDesc;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

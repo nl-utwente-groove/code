@@ -1,0 +1,10 @@
+class java/lang/module/ModuleDescriptor$Provides
+compareTo
+ (Ljava/lang/module/ModuleDescriptor$Provides;)I
+ (L1java/lang/module/ModuleDescriptor$Provides;)I
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

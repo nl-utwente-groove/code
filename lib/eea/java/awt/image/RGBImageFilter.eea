@@ -1,0 +1,4 @@
+class java/awt/image/RGBImageFilter
+filterIndexColorModel
+ (Ljava/awt/image/IndexColorModel;)Ljava/awt/image/IndexColorModel;
+ (Ljava/awt/image/IndexColorModel;)L1java/awt/image/IndexColorModel;

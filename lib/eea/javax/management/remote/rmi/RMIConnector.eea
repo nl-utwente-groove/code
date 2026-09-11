@@ -1,0 +1,7 @@
+class javax/management/remote/rmi/RMIConnector
+removeConnectionNotificationListener
+ (Ljavax/management/NotificationListener;)V
+ (L1javax/management/NotificationListener;)V
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

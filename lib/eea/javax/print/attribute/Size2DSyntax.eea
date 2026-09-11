@@ -1,0 +1,10 @@
+class javax/print/attribute/Size2DSyntax
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+toString
+ (ILjava/lang/String;)Ljava/lang/String;
+ (ILjava/lang/String;)L1java/lang/String;

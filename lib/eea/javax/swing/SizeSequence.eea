@@ -1,0 +1,4 @@
+class javax/swing/SizeSequence
+getSizes
+ ()[I
+ ()[1I

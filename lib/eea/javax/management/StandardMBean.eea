@@ -1,0 +1,4 @@
+class javax/management/StandardMBean
+getConstructors
+ ([Ljavax/management/MBeanConstructorInfo;Ljava/lang/Object;)[Ljavax/management/MBeanConstructorInfo;
+ ([Ljavax/management/MBeanConstructorInfo;Ljava/lang/Object;)[0Ljavax/management/MBeanConstructorInfo;

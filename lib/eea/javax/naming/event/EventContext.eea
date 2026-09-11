@@ -1,0 +1,4 @@
+class javax/naming/event/EventContext
+removeNamingListener
+ (Ljavax/naming/event/NamingListener;)V
+ (L1javax/naming/event/NamingListener;)V

@@ -1,0 +1,22 @@
+class javax/swing/plaf/metal/MetalComboBoxUI
+createUI
+ (Ljavax/swing/JComponent;)Ljavax/swing/plaf/ComponentUI;
+ (Ljavax/swing/JComponent;)L1javax/swing/plaf/ComponentUI;
+createArrowButton
+ ()Ljavax/swing/JButton;
+ ()L1javax/swing/JButton;
+createEditor
+ ()Ljavax/swing/ComboBoxEditor;
+ ()L1javax/swing/ComboBoxEditor;
+createLayoutManager
+ ()Ljava/awt/LayoutManager;
+ ()L1java/awt/LayoutManager;
+createPopup
+ ()Ljavax/swing/plaf/basic/ComboPopup;
+ ()L1javax/swing/plaf/basic/ComboPopup;
+createPropertyChangeListener
+ ()Ljava/beans/PropertyChangeListener;
+ ()L1java/beans/PropertyChangeListener;
+getMinimumSize
+ (Ljavax/swing/JComponent;)Ljava/awt/Dimension;
+ (Ljavax/swing/JComponent;)L1java/awt/Dimension;

@@ -1,0 +1,10 @@
+class java/awt/event/MouseEvent
+getMouseModifiersText
+ (I)Ljava/lang/String;
+ (I)L1java/lang/String;
+getPoint
+ ()Ljava/awt/Point;
+ ()L1java/awt/Point;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

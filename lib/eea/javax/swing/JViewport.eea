@@ -2,6 +2,30 @@ class javax/swing/JViewport
 addChangeListener
  (Ljavax/swing/event/ChangeListener;)V
  (L1javax/swing/event/ChangeListener;)V
+createLayoutManager
+ ()Ljava/awt/LayoutManager;
+ ()L1java/awt/LayoutManager;
+createViewListener
+ ()Ljavax/swing/JViewport$ViewListener;
+ ()L1javax/swing/JViewport$ViewListener;
+getUIClassID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+getView
+ ()Ljava/awt/Component;
+ ()L0java/awt/Component;
+getViewRect
+ ()Ljava/awt/Rectangle;
+ ()L1java/awt/Rectangle;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
 removeChangeListener
  (Ljavax/swing/event/ChangeListener;)V
  (L1javax/swing/event/ChangeListener;)V
+toViewCoordinates
+ (Ljava/awt/Dimension;)Ljava/awt/Dimension;
+ (Ljava/awt/Dimension;)L1java/awt/Dimension;
+toViewCoordinates
+ (Ljava/awt/Point;)Ljava/awt/Point;
+ (Ljava/awt/Point;)L1java/awt/Point;

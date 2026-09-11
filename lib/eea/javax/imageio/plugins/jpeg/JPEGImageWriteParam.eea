@@ -1,0 +1,16 @@
+class javax/imageio/plugins/jpeg/JPEGImageWriteParam
+getACHuffmanTables
+ ()[Ljavax/imageio/plugins/jpeg/JPEGHuffmanTable;
+ ()[0Ljavax/imageio/plugins/jpeg/JPEGHuffmanTable;
+getCompressionQualityDescriptions
+ ()[Ljava/lang/String;
+ ()[1Ljava/lang/String;
+getCompressionQualityValues
+ ()[F
+ ()[1F
+getDCHuffmanTables
+ ()[Ljavax/imageio/plugins/jpeg/JPEGHuffmanTable;
+ ()[0Ljavax/imageio/plugins/jpeg/JPEGHuffmanTable;
+getQTables
+ ()[Ljavax/imageio/plugins/jpeg/JPEGQTable;
+ ()[0Ljavax/imageio/plugins/jpeg/JPEGQTable;

@@ -1,0 +1,13 @@
+class javax/swing/plaf/nimbus/Effect$ArrayCache
+getTmpByteArray1
+ (I)[B
+ (I)[1B
+getTmpByteArray2
+ (I)[B
+ (I)[1B
+getTmpByteArray3
+ (I)[B
+ (I)[1B
+getTmpIntArray
+ (I)[I
+ (I)[1I

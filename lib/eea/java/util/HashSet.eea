@@ -1,5 +1,8 @@
 class java/util/HashSet
  <E:Ljava/lang/Object;>
+newHashSet
+ <T:Ljava/lang/Object;>(I)Ljava/util/HashSet<TT;>;
+ <T:Ljava/lang/Object;>(I)L1java/util/HashSet<TT;>;
 <init>
  (Ljava/util/Collection<+TE;>;)V
  (L1java/util/Collection<+TE;>;)V

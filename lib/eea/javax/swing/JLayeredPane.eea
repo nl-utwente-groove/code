@@ -20,3 +20,9 @@ PALETTE_LAYER
 POPUP_LAYER
  Ljava/lang/Integer;
  L1java/lang/Integer;
+getComponentsInLayer
+ (I)[Ljava/awt/Component;
+ (I)[1Ljava/awt/Component;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

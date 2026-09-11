@@ -1,0 +1,4 @@
+class javax/imageio/spi/ImageTranscoderSpi
+createTranscoderInstance
+ ()Ljavax/imageio/ImageTranscoder;
+ ()L1javax/imageio/ImageTranscoder;

@@ -1,0 +1,7 @@
+class java/nio/channels/GatheringByteChannel
+write
+ ([Ljava/nio/ByteBuffer;)J
+ ([1Ljava/nio/ByteBuffer;)J
+write
+ ([Ljava/nio/ByteBuffer;II)J
+ ([1Ljava/nio/ByteBuffer;II)J

@@ -1,0 +1,4 @@
+class javax/net/ssl/KeyManagerFactory
+getDefaultAlgorithm
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

@@ -2,6 +2,12 @@ class javax/swing/table/AbstractTableModel
 addTableModelListener
  (Ljavax/swing/event/TableModelListener;)V
  (L1javax/swing/event/TableModelListener;)V
+getColumnClass
+ (I)Ljava/lang/Class<*>;
+ (I)L1java/lang/Class<*>;
+getColumnName
+ (I)Ljava/lang/String;
+ (I)L1java/lang/String;
 removeTableModelListener
  (Ljavax/swing/event/TableModelListener;)V
  (L1javax/swing/event/TableModelListener;)V

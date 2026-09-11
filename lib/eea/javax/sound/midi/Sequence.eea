@@ -1,0 +1,7 @@
+class javax/sound/midi/Sequence
+createTrack
+ ()Ljavax/sound/midi/Track;
+ ()L1javax/sound/midi/Track;
+getPatchList
+ ()[Ljavax/sound/midi/Patch;
+ ()[1Ljavax/sound/midi/Patch;

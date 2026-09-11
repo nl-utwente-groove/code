@@ -1,0 +1,4 @@
+class java/awt/PopupMenu
+getParent
+ ()Ljava/awt/MenuContainer;
+ ()L0java/awt/MenuContainer;

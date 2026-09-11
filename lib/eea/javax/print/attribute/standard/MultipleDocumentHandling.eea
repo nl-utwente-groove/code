@@ -1,0 +1,25 @@
+class javax/print/attribute/standard/MultipleDocumentHandling
+SEPARATE_DOCUMENTS_COLLATED_COPIES
+ Ljavax/print/attribute/standard/MultipleDocumentHandling;
+ L1javax/print/attribute/standard/MultipleDocumentHandling;
+SEPARATE_DOCUMENTS_UNCOLLATED_COPIES
+ Ljavax/print/attribute/standard/MultipleDocumentHandling;
+ L1javax/print/attribute/standard/MultipleDocumentHandling;
+SINGLE_DOCUMENT
+ Ljavax/print/attribute/standard/MultipleDocumentHandling;
+ L1javax/print/attribute/standard/MultipleDocumentHandling;
+SINGLE_DOCUMENT_NEW_SHEET
+ Ljavax/print/attribute/standard/MultipleDocumentHandling;
+ L1javax/print/attribute/standard/MultipleDocumentHandling;
+getCategory
+ ()Ljava/lang/Class<+Ljavax/print/attribute/Attribute;>;
+ ()L1java/lang/Class<+Ljavax/print/attribute/Attribute;>;
+getEnumValueTable
+ ()[Ljavax/print/attribute/EnumSyntax;
+ ()[1Ljavax/print/attribute/EnumSyntax;
+getName
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+getStringTable
+ ()[Ljava/lang/String;
+ ()[1Ljava/lang/String;

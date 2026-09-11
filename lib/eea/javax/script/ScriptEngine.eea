@@ -1,0 +1,25 @@
+class javax/script/ScriptEngine
+ARGV
+ Ljava/lang/String;
+ L1java/lang/String;
+ENGINE
+ Ljava/lang/String;
+ L1java/lang/String;
+ENGINE_VERSION
+ Ljava/lang/String;
+ L1java/lang/String;
+FILENAME
+ Ljava/lang/String;
+ L1java/lang/String;
+LANGUAGE
+ Ljava/lang/String;
+ L1java/lang/String;
+LANGUAGE_VERSION
+ Ljava/lang/String;
+ L1java/lang/String;
+NAME
+ Ljava/lang/String;
+ L1java/lang/String;
+createBindings
+ ()Ljavax/script/Bindings;
+ ()L1javax/script/Bindings;

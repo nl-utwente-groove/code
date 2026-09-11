@@ -1,0 +1,4 @@
+class java/security/IdentityScope
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

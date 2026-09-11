@@ -1,0 +1,10 @@
+class java/awt/image/renderable/ParameterBlock
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+getParamClasses
+ ()[Ljava/lang/Class<*>;
+ ()[1Ljava/lang/Class<*>;
+shallowClone
+ ()Ljava/lang/Object;
+ ()L0java/lang/Object;

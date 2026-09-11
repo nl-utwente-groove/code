@@ -1,0 +1,7 @@
+class javax/swing/filechooser/FileNameExtensionFilter
+getExtensions
+ ()[Ljava/lang/String;
+ ()[1Ljava/lang/String;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

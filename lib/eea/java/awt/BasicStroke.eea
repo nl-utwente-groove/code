@@ -1,4 +1,10 @@
 class java/awt/BasicStroke
+createStrokedShape
+ (Ljava/awt/Shape;)Ljava/awt/Shape;
+ (Ljava/awt/Shape;)L1java/awt/Shape;
 equals
  (Ljava/lang/Object;)Z
  (L0java/lang/Object;)Z
+getDashArray
+ ()[F
+ ()[0F

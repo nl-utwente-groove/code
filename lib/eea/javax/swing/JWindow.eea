@@ -1,0 +1,10 @@
+class javax/swing/JWindow
+createRootPane
+ ()Ljavax/swing/JRootPane;
+ ()L1javax/swing/JRootPane;
+getGraphics
+ ()Ljava/awt/Graphics;
+ ()L0java/awt/Graphics;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

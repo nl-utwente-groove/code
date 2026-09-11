@@ -1,0 +1,10 @@
+class java/awt/EventQueue
+createSecondaryLoop
+ ()Ljava/awt/SecondaryLoop;
+ ()L1java/awt/SecondaryLoop;
+peekEvent
+ ()Ljava/awt/AWTEvent;
+ ()L0java/awt/AWTEvent;
+peekEvent
+ (I)Ljava/awt/AWTEvent;
+ (I)L0java/awt/AWTEvent;

@@ -14,9 +14,45 @@ SANS_SERIF
 SERIF
  Ljava/lang/String;
  L1java/lang/String;
+createFont
+ (ILjava/io/File;)Ljava/awt/Font;
+ (ILjava/io/File;)L1java/awt/Font;
+createFont
+ (ILjava/io/InputStream;)Ljava/awt/Font;
+ (ILjava/io/InputStream;)L1java/awt/Font;
+createFonts
+ (Ljava/io/File;)[Ljava/awt/Font;
+ (Ljava/io/File;)[1Ljava/awt/Font;
+createFonts
+ (Ljava/io/InputStream;)[Ljava/awt/Font;
+ (Ljava/io/InputStream;)[1Ljava/awt/Font;
+decode
+ (Ljava/lang/String;)Ljava/awt/Font;
+ (Ljava/lang/String;)L1java/awt/Font;
+createGlyphVector
+ (Ljava/awt/font/FontRenderContext;Ljava/lang/String;)Ljava/awt/font/GlyphVector;
+ (Ljava/awt/font/FontRenderContext;Ljava/lang/String;)L1java/awt/font/GlyphVector;
+createGlyphVector
+ (Ljava/awt/font/FontRenderContext;Ljava/text/CharacterIterator;)Ljava/awt/font/GlyphVector;
+ (Ljava/awt/font/FontRenderContext;Ljava/text/CharacterIterator;)L1java/awt/font/GlyphVector;
+createGlyphVector
+ (Ljava/awt/font/FontRenderContext;[C)Ljava/awt/font/GlyphVector;
+ (Ljava/awt/font/FontRenderContext;[C)L1java/awt/font/GlyphVector;
+createGlyphVector
+ (Ljava/awt/font/FontRenderContext;[I)Ljava/awt/font/GlyphVector;
+ (Ljava/awt/font/FontRenderContext;[I)L1java/awt/font/GlyphVector;
+deriveFont
+ (ILjava/awt/geom/AffineTransform;)Ljava/awt/Font;
+ (ILjava/awt/geom/AffineTransform;)L1java/awt/Font;
 equals
  (Ljava/lang/Object;)Z
  (L0java/lang/Object;)Z
+getAttributes
+ ()Ljava/util/Map<Ljava/awt/font/TextAttribute;*>;
+ ()L1java/util/Map<Ljava/awt/font/TextAttribute;*>;
+getTransform
+ ()Ljava/awt/geom/AffineTransform;
+ ()L1java/awt/geom/AffineTransform;
 toString
  ()Ljava/lang/String;
  ()L1java/lang/String;

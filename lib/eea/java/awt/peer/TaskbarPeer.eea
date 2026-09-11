@@ -1,0 +1,7 @@
+class java/awt/peer/TaskbarPeer
+getIconImage
+ ()Ljava/awt/Image;
+ ()L0java/awt/Image;
+getMenu
+ ()Ljava/awt/PopupMenu;
+ ()L0java/awt/PopupMenu;

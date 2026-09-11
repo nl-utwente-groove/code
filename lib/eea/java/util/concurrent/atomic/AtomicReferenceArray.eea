@@ -1,0 +1,5 @@
+class java/util/concurrent/atomic/AtomicReferenceArray
+ <E:Ljava/lang/Object;>
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

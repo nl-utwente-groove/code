@@ -1,0 +1,7 @@
+class javax/swing/undo/StateEdit
+RCSID
+ Ljava/lang/String;
+ L1java/lang/String;
+getPresentationName
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

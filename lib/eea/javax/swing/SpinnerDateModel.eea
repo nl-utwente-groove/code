@@ -1,0 +1,7 @@
+class javax/swing/SpinnerDateModel
+getNextValue
+ ()Ljava/lang/Object;
+ ()L0java/lang/Object;
+getPreviousValue
+ ()Ljava/lang/Object;
+ ()L0java/lang/Object;

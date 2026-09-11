@@ -1,5 +1,8 @@
 class java/util/HashMap
  <K:Ljava/lang/Object;V:Ljava/lang/Object;>
+newHashMap
+ <K:Ljava/lang/Object;V:Ljava/lang/Object;>(I)Ljava/util/HashMap<TK;TV;>;
+ <K:Ljava/lang/Object;V:Ljava/lang/Object;>(I)L1java/util/HashMap<TK;TV;>;
 <init>
  (Ljava/util/Map<+TK;+TV;>;)V
  (L1java/util/Map<+TK;+TV;>;)V

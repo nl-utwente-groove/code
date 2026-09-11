@@ -1,0 +1,10 @@
+class java/awt/font/TransformAttribute
+IDENTITY
+ Ljava/awt/font/TransformAttribute;
+ L1java/awt/font/TransformAttribute;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getTransform
+ ()Ljava/awt/geom/AffineTransform;
+ ()L1java/awt/geom/AffineTransform;

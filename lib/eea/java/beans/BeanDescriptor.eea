@@ -1,0 +1,7 @@
+class java/beans/BeanDescriptor
+getBeanClass
+ ()Ljava/lang/Class<*>;
+ ()L0java/lang/Class<*>;
+getCustomizerClass
+ ()Ljava/lang/Class<*>;
+ ()L0java/lang/Class<*>;

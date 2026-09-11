@@ -1,0 +1,16 @@
+class javax/imageio/ImageIO
+createImageInputStream
+ (Ljava/lang/Object;)Ljavax/imageio/stream/ImageInputStream;
+ (Ljava/lang/Object;)L0javax/imageio/stream/ImageInputStream;
+createImageOutputStream
+ (Ljava/lang/Object;)Ljavax/imageio/stream/ImageOutputStream;
+ (Ljava/lang/Object;)L0javax/imageio/stream/ImageOutputStream;
+getImageReader
+ (Ljavax/imageio/ImageWriter;)Ljavax/imageio/ImageReader;
+ (Ljavax/imageio/ImageWriter;)L0javax/imageio/ImageReader;
+getImageWriter
+ (Ljavax/imageio/ImageReader;)Ljavax/imageio/ImageWriter;
+ (Ljavax/imageio/ImageReader;)L0javax/imageio/ImageWriter;
+read
+ (Ljavax/imageio/stream/ImageInputStream;)Ljava/awt/image/BufferedImage;
+ (Ljavax/imageio/stream/ImageInputStream;)L0java/awt/image/BufferedImage;

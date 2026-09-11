@@ -1,0 +1,28 @@
+class java/awt/image/ComponentColorModel
+createCompatibleSampleModel
+ (II)Ljava/awt/image/SampleModel;
+ (II)L1java/awt/image/SampleModel;
+createCompatibleWritableRaster
+ (II)Ljava/awt/image/WritableRaster;
+ (II)L1java/awt/image/WritableRaster;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getAlphaRaster
+ (Ljava/awt/image/WritableRaster;)Ljava/awt/image/WritableRaster;
+ (Ljava/awt/image/WritableRaster;)L0java/awt/image/WritableRaster;
+getComponents
+ (I[II)[I
+ (I[II)[1I
+getComponents
+ (Ljava/lang/Object;[II)[I
+ (Ljava/lang/Object;[II)[1I
+getNormalizedComponents
+ (Ljava/lang/Object;[FI)[F
+ (Ljava/lang/Object;[FI)[1F
+getNormalizedComponents
+ ([II[FI)[F
+ ([II[FI)[1F
+getUnnormalizedComponents
+ ([FI[II)[I
+ ([FI[II)[1I

@@ -1,0 +1,4 @@
+class javax/swing/PopupFactory
+getSharedInstance
+ ()Ljavax/swing/PopupFactory;
+ ()L1javax/swing/PopupFactory;

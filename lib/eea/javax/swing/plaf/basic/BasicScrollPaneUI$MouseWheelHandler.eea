@@ -1,0 +1,4 @@
+class javax/swing/plaf/basic/BasicScrollPaneUI$MouseWheelHandler
+mouseWheelMoved
+ (Ljava/awt/event/MouseWheelEvent;)V
+ (L1java/awt/event/MouseWheelEvent;)V

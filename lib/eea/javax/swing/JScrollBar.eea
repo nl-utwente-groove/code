@@ -2,6 +2,15 @@ class javax/swing/JScrollBar
 addAdjustmentListener
  (Ljava/awt/event/AdjustmentListener;)V
  (L1java/awt/event/AdjustmentListener;)V
+getMaximumSize
+ ()Ljava/awt/Dimension;
+ ()L1java/awt/Dimension;
+getUIClassID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
 removeAdjustmentListener
  (Ljava/awt/event/AdjustmentListener;)V
  (L1java/awt/event/AdjustmentListener;)V

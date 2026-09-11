@@ -1,0 +1,10 @@
+class java/lang/StringTemplate
+RAW
+ Ljava/lang/StringTemplate$Processor<Ljava/lang/StringTemplate;Ljava/lang/RuntimeException;>;
+ L1java/lang/StringTemplate$Processor<Ljava/lang/StringTemplate;Ljava/lang/RuntimeException;>;
+STR
+ Ljava/lang/StringTemplate$Processor<Ljava/lang/String;Ljava/lang/RuntimeException;>;
+ L1java/lang/StringTemplate$Processor<Ljava/lang/String;Ljava/lang/RuntimeException;>;
+toString
+ (Ljava/lang/StringTemplate;)Ljava/lang/String;
+ (Ljava/lang/StringTemplate;)L1java/lang/String;

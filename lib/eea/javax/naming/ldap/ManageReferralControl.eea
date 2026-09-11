@@ -1,0 +1,4 @@
+class javax/naming/ldap/ManageReferralControl
+OID
+ Ljava/lang/String;
+ L1java/lang/String;

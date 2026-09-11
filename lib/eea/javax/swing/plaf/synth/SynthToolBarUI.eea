@@ -1,0 +1,10 @@
+class javax/swing/plaf/synth/SynthToolBarUI
+createUI
+ (Ljavax/swing/JComponent;)Ljavax/swing/plaf/ComponentUI;
+ (Ljavax/swing/JComponent;)L1javax/swing/plaf/ComponentUI;
+createLayout
+ ()Ljava/awt/LayoutManager;
+ ()L1java/awt/LayoutManager;
+propertyChange
+ (Ljava/beans/PropertyChangeEvent;)V
+ (L1java/beans/PropertyChangeEvent;)V

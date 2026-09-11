@@ -1,0 +1,31 @@
+class javax/swing/plaf/basic/BasicInternalFrameTitlePane
+CLOSE_CMD
+ Ljava/lang/String;
+ L1java/lang/String;
+ICONIFY_CMD
+ Ljava/lang/String;
+ L1java/lang/String;
+MAXIMIZE_CMD
+ Ljava/lang/String;
+ L1java/lang/String;
+MOVE_CMD
+ Ljava/lang/String;
+ L1java/lang/String;
+RESTORE_CMD
+ Ljava/lang/String;
+ L1java/lang/String;
+SIZE_CMD
+ Ljava/lang/String;
+ L1java/lang/String;
+createLayout
+ ()Ljava/awt/LayoutManager;
+ ()L1java/awt/LayoutManager;
+createPropertyChangeListener
+ ()Ljava/beans/PropertyChangeListener;
+ ()L1java/beans/PropertyChangeListener;
+createSystemMenu
+ ()Ljavax/swing/JMenu;
+ ()L1javax/swing/JMenu;
+createSystemMenuBar
+ ()Ljavax/swing/JMenuBar;
+ ()L1javax/swing/JMenuBar;

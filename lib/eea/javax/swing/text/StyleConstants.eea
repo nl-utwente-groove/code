@@ -1,0 +1,97 @@
+class javax/swing/text/StyleConstants
+Alignment
+ Ljava/lang/Object;
+ L1java/lang/Object;
+Background
+ Ljava/lang/Object;
+ L1java/lang/Object;
+BidiLevel
+ Ljava/lang/Object;
+ L1java/lang/Object;
+Bold
+ Ljava/lang/Object;
+ L1java/lang/Object;
+ComponentAttribute
+ Ljava/lang/Object;
+ L1java/lang/Object;
+ComponentElementName
+ Ljava/lang/String;
+ L1java/lang/String;
+ComposedTextAttribute
+ Ljava/lang/Object;
+ L1java/lang/Object;
+Family
+ Ljava/lang/Object;
+ L1java/lang/Object;
+FirstLineIndent
+ Ljava/lang/Object;
+ L1java/lang/Object;
+FontFamily
+ Ljava/lang/Object;
+ L1java/lang/Object;
+FontSize
+ Ljava/lang/Object;
+ L1java/lang/Object;
+Foreground
+ Ljava/lang/Object;
+ L1java/lang/Object;
+IconAttribute
+ Ljava/lang/Object;
+ L1java/lang/Object;
+IconElementName
+ Ljava/lang/String;
+ L1java/lang/String;
+Italic
+ Ljava/lang/Object;
+ L1java/lang/Object;
+LeftIndent
+ Ljava/lang/Object;
+ L1java/lang/Object;
+LineSpacing
+ Ljava/lang/Object;
+ L1java/lang/Object;
+ModelAttribute
+ Ljava/lang/Object;
+ L1java/lang/Object;
+NameAttribute
+ Ljava/lang/Object;
+ L1java/lang/Object;
+Orientation
+ Ljava/lang/Object;
+ L1java/lang/Object;
+ResolveAttribute
+ Ljava/lang/Object;
+ L1java/lang/Object;
+RightIndent
+ Ljava/lang/Object;
+ L1java/lang/Object;
+Size
+ Ljava/lang/Object;
+ L1java/lang/Object;
+SpaceAbove
+ Ljava/lang/Object;
+ L1java/lang/Object;
+SpaceBelow
+ Ljava/lang/Object;
+ L1java/lang/Object;
+StrikeThrough
+ Ljava/lang/Object;
+ L1java/lang/Object;
+Subscript
+ Ljava/lang/Object;
+ L1java/lang/Object;
+Superscript
+ Ljava/lang/Object;
+ L1java/lang/Object;
+TabSet
+ Ljava/lang/Object;
+ L1java/lang/Object;
+Underline
+ Ljava/lang/Object;
+ L1java/lang/Object;
+getFontFamily
+ (Ljavax/swing/text/AttributeSet;)Ljava/lang/String;
+ (Ljavax/swing/text/AttributeSet;)L1java/lang/String;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

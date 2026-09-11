@@ -1,0 +1,7 @@
+class javax/sound/sampled/AudioSystem
+getSourceLineInfo
+ (Ljavax/sound/sampled/Line$Info;)[Ljavax/sound/sampled/Line$Info;
+ (Ljavax/sound/sampled/Line$Info;)[1Ljavax/sound/sampled/Line$Info;
+getTargetLineInfo
+ (Ljavax/sound/sampled/Line$Info;)[Ljavax/sound/sampled/Line$Info;
+ (Ljavax/sound/sampled/Line$Info;)[1Ljavax/sound/sampled/Line$Info;

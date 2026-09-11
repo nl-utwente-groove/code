@@ -1,0 +1,4 @@
+class javax/swing/GrayFilter
+createDisabledImage
+ (Ljava/awt/Image;)Ljava/awt/Image;
+ (Ljava/awt/Image;)L1java/awt/Image;

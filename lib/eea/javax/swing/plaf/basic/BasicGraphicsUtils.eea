@@ -1,0 +1,4 @@
+class javax/swing/plaf/basic/BasicGraphicsUtils
+getPreferredButtonSize
+ (Ljavax/swing/AbstractButton;I)Ljava/awt/Dimension;
+ (Ljavax/swing/AbstractButton;I)L0java/awt/Dimension;

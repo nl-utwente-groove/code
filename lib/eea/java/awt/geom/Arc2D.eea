@@ -1,0 +1,13 @@
+class java/awt/geom/Arc2D
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getEndPoint
+ ()Ljava/awt/geom/Point2D;
+ ()L1java/awt/geom/Point2D;
+getPathIterator
+ (Ljava/awt/geom/AffineTransform;)Ljava/awt/geom/PathIterator;
+ (Ljava/awt/geom/AffineTransform;)L1java/awt/geom/PathIterator;
+getStartPoint
+ ()Ljava/awt/geom/Point2D;
+ ()L1java/awt/geom/Point2D;

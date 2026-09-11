@@ -1,0 +1,37 @@
+class javax/swing/plaf/basic/BasicComboPopup
+computePopupBounds
+ (IIII)Ljava/awt/Rectangle;
+ (IIII)L1java/awt/Rectangle;
+createItemListener
+ ()Ljava/awt/event/ItemListener;
+ ()L1java/awt/event/ItemListener;
+createKeyListener
+ ()Ljava/awt/event/KeyListener;
+ ()L0java/awt/event/KeyListener;
+createList
+ ()Ljavax/swing/JList<Ljava/lang/Object;>;
+ ()L1javax/swing/JList<Ljava/lang/Object;>;
+createListDataListener
+ ()Ljavax/swing/event/ListDataListener;
+ ()L0javax/swing/event/ListDataListener;
+createListMouseListener
+ ()Ljava/awt/event/MouseListener;
+ ()L1java/awt/event/MouseListener;
+createListMouseMotionListener
+ ()Ljava/awt/event/MouseMotionListener;
+ ()L1java/awt/event/MouseMotionListener;
+createListSelectionListener
+ ()Ljavax/swing/event/ListSelectionListener;
+ ()L0javax/swing/event/ListSelectionListener;
+createMouseListener
+ ()Ljava/awt/event/MouseListener;
+ ()L1java/awt/event/MouseListener;
+createMouseMotionListener
+ ()Ljava/awt/event/MouseMotionListener;
+ ()L1java/awt/event/MouseMotionListener;
+createPropertyChangeListener
+ ()Ljava/beans/PropertyChangeListener;
+ ()L1java/beans/PropertyChangeListener;
+createScroller
+ ()Ljavax/swing/JScrollPane;
+ ()L1javax/swing/JScrollPane;

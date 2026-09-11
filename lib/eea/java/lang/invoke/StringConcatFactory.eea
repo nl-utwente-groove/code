@@ -1,0 +1,4 @@
+class java/lang/invoke/StringConcatFactory
+makeConcat
+ (Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;)Ljava/lang/invoke/CallSite;
+ (Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;Ljava/lang/invoke/MethodType;)L1java/lang/invoke/CallSite;

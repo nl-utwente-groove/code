@@ -1,0 +1,19 @@
+class java/awt/datatransfer/SystemFlavorMap
+decodeDataFlavor
+ (Ljava/lang/String;)Ljava/awt/datatransfer/DataFlavor;
+ (Ljava/lang/String;)L0java/awt/datatransfer/DataFlavor;
+decodeJavaMIMEType
+ (Ljava/lang/String;)Ljava/lang/String;
+ (Ljava/lang/String;)L0java/lang/String;
+encodeDataFlavor
+ (Ljava/awt/datatransfer/DataFlavor;)Ljava/lang/String;
+ (Ljava/awt/datatransfer/DataFlavor;)L0java/lang/String;
+encodeJavaMIMEType
+ (Ljava/lang/String;)Ljava/lang/String;
+ (Ljava/lang/String;)L0java/lang/String;
+getFlavorsForNative
+ (Ljava/lang/String;)Ljava/util/List<Ljava/awt/datatransfer/DataFlavor;>;
+ (Ljava/lang/String;)L1java/util/List<Ljava/awt/datatransfer/DataFlavor;>;
+getNativesForFlavor
+ (Ljava/awt/datatransfer/DataFlavor;)Ljava/util/List<Ljava/lang/String;>;
+ (Ljava/awt/datatransfer/DataFlavor;)L1java/util/List<Ljava/lang/String;>;

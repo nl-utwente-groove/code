@@ -1,0 +1,19 @@
+class java/awt/TrayIcon
+addActionListener
+ (Ljava/awt/event/ActionListener;)V
+ (L1java/awt/event/ActionListener;)V
+addMouseListener
+ (Ljava/awt/event/MouseListener;)V
+ (L1java/awt/event/MouseListener;)V
+addMouseMotionListener
+ (Ljava/awt/event/MouseMotionListener;)V
+ (L1java/awt/event/MouseMotionListener;)V
+removeActionListener
+ (Ljava/awt/event/ActionListener;)V
+ (L1java/awt/event/ActionListener;)V
+removeMouseListener
+ (Ljava/awt/event/MouseListener;)V
+ (L1java/awt/event/MouseListener;)V
+removeMouseMotionListener
+ (Ljava/awt/event/MouseMotionListener;)V
+ (L1java/awt/event/MouseMotionListener;)V

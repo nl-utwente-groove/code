@@ -1,0 +1,10 @@
+class javax/print/DocFlavor
+hostEncoding
+ Ljava/lang/String;
+ L1java/lang/String;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

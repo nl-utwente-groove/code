@@ -1,0 +1,4 @@
+class javax/swing/text/html/parser/Entity
+getString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

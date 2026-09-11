@@ -1,0 +1,31 @@
+class javax/swing/JLabel$AccessibleJLabel
+getAccessibleIcon
+ ()[Ljavax/accessibility/AccessibleIcon;
+ ()[0Ljavax/accessibility/AccessibleIcon;
+getAccessibleKeyBinding
+ ()Ljavax/accessibility/AccessibleKeyBinding;
+ ()L0javax/accessibility/AccessibleKeyBinding;
+getAccessibleText
+ ()Ljavax/accessibility/AccessibleText;
+ ()L0javax/accessibility/AccessibleText;
+getAfterIndex
+ (II)Ljava/lang/String;
+ (II)L0java/lang/String;
+getAtIndex
+ (II)Ljava/lang/String;
+ (II)L0java/lang/String;
+getBeforeIndex
+ (II)Ljava/lang/String;
+ (II)L0java/lang/String;
+getCharacterAttribute
+ (I)Ljavax/swing/text/AttributeSet;
+ (I)L0javax/swing/text/AttributeSet;
+getCharacterBounds
+ (I)Ljava/awt/Rectangle;
+ (I)L0java/awt/Rectangle;
+getSelectedText
+ ()Ljava/lang/String;
+ ()L0java/lang/String;
+getTitledBorderText
+ ()Ljava/lang/String;
+ ()L0java/lang/String;

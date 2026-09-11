@@ -1,0 +1,10 @@
+class java/awt/event/WindowEvent
+getOppositeWindow
+ ()Ljava/awt/Window;
+ ()L0java/awt/Window;
+getWindow
+ ()Ljava/awt/Window;
+ ()L0java/awt/Window;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

@@ -1,0 +1,4 @@
+class javax/swing/text/DefaultHighlighter$DefaultHighlightPainter
+paintLayer
+ (Ljava/awt/Graphics;IILjava/awt/Shape;Ljavax/swing/text/JTextComponent;Ljavax/swing/text/View;)Ljava/awt/Shape;
+ (Ljava/awt/Graphics;IILjava/awt/Shape;Ljavax/swing/text/JTextComponent;Ljavax/swing/text/View;)L0java/awt/Shape;

@@ -1,0 +1,5 @@
+class javax/lang/model/util/ElementKindVisitor9
+ <R:Ljava/lang/Object;P:Ljava/lang/Object;>
+visitModule
+ (Ljavax/lang/model/element/ModuleElement;TP;)TR;
+ (L1javax/lang/model/element/ModuleElement;TP;)TR;

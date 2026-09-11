@@ -1,0 +1,10 @@
+class javax/print/DocFlavor$SERVICE_FORMATTED
+PAGEABLE
+ Ljavax/print/DocFlavor$SERVICE_FORMATTED;
+ L1javax/print/DocFlavor$SERVICE_FORMATTED;
+PRINTABLE
+ Ljavax/print/DocFlavor$SERVICE_FORMATTED;
+ L1javax/print/DocFlavor$SERVICE_FORMATTED;
+RENDERABLE_IMAGE
+ Ljavax/print/DocFlavor$SERVICE_FORMATTED;
+ L1javax/print/DocFlavor$SERVICE_FORMATTED;

@@ -1,0 +1,22 @@
+class java/util/GregorianCalendar
+from
+ (Ljava/time/ZonedDateTime;)Ljava/util/GregorianCalendar;
+ (Ljava/time/ZonedDateTime;)L1java/util/GregorianCalendar;
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getCalendarType
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+getGregorianChange
+ ()Ljava/util/Date;
+ ()L1java/util/Date;
+getTimeZone
+ ()Ljava/util/TimeZone;
+ ()L1java/util/TimeZone;
+setTimeZone
+ (Ljava/util/TimeZone;)V
+ (L1java/util/TimeZone;)V

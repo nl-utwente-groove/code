@@ -1,0 +1,10 @@
+class javax/management/remote/JMXConnectorFactory
+DEFAULT_CLASS_LOADER
+ Ljava/lang/String;
+ L1java/lang/String;
+PROTOCOL_PROVIDER_CLASS_LOADER
+ Ljava/lang/String;
+ L1java/lang/String;
+PROTOCOL_PROVIDER_PACKAGES
+ Ljava/lang/String;
+ L1java/lang/String;

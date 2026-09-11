@@ -1,0 +1,10 @@
+class org/xml/sax/helpers/AttributeListImpl
+getName
+ (I)Ljava/lang/String;
+ (I)L0java/lang/String;
+getType
+ (I)Ljava/lang/String;
+ (I)L0java/lang/String;
+getValue
+ (I)Ljava/lang/String;
+ (I)L0java/lang/String;

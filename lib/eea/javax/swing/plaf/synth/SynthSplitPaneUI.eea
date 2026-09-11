@@ -1,0 +1,13 @@
+class javax/swing/plaf/synth/SynthSplitPaneUI
+createUI
+ (Ljavax/swing/JComponent;)Ljavax/swing/plaf/ComponentUI;
+ (Ljavax/swing/JComponent;)L1javax/swing/plaf/ComponentUI;
+createDefaultDivider
+ ()Ljavax/swing/plaf/basic/BasicSplitPaneDivider;
+ ()L1javax/swing/plaf/basic/BasicSplitPaneDivider;
+createDefaultNonContinuousLayoutDivider
+ ()Ljava/awt/Component;
+ ()L1java/awt/Component;
+propertyChange
+ (Ljava/beans/PropertyChangeEvent;)V
+ (L1java/beans/PropertyChangeEvent;)V

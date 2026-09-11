@@ -1,0 +1,16 @@
+class javax/management/openmbean/TabularDataSupport
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+containsKey
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+containsValue
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

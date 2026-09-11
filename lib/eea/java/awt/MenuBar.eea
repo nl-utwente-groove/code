@@ -1,0 +1,4 @@
+class java/awt/MenuBar
+getShortcutMenuItem
+ (Ljava/awt/MenuShortcut;)Ljava/awt/MenuItem;
+ (Ljava/awt/MenuShortcut;)L0java/awt/MenuItem;

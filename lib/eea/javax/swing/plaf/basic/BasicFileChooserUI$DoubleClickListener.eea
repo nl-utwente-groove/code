@@ -1,0 +1,7 @@
+class javax/swing/plaf/basic/BasicFileChooserUI$DoubleClickListener
+mouseClicked
+ (Ljava/awt/event/MouseEvent;)V
+ (L1java/awt/event/MouseEvent;)V
+mouseEntered
+ (Ljava/awt/event/MouseEvent;)V
+ (L1java/awt/event/MouseEvent;)V

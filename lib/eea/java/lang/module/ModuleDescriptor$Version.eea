@@ -1,0 +1,13 @@
+class java/lang/module/ModuleDescriptor$Version
+parse
+ (Ljava/lang/String;)Ljava/lang/module/ModuleDescriptor$Version;
+ (Ljava/lang/String;)L1java/lang/module/ModuleDescriptor$Version;
+compareTo
+ (Ljava/lang/module/ModuleDescriptor$Version;)I
+ (L1java/lang/module/ModuleDescriptor$Version;)I
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

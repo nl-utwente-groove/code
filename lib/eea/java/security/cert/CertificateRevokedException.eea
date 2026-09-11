@@ -1,0 +1,10 @@
+class java/security/cert/CertificateRevokedException
+getInvalidityDate
+ ()Ljava/util/Date;
+ ()L0java/util/Date;
+getMessage
+ ()Ljava/lang/String;
+ ()L0java/lang/String;
+getRevocationDate
+ ()Ljava/util/Date;
+ ()L1java/util/Date;

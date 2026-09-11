@@ -1,0 +1,25 @@
+class javax/swing/text/StyleContext
+DEFAULT_STYLE
+ Ljava/lang/String;
+ L1java/lang/String;
+getStaticAttributeKey
+ (Ljava/lang/Object;)Ljava/lang/Object;
+ (Ljava/lang/Object;)L1java/lang/Object;
+addChangeListener
+ (Ljavax/swing/event/ChangeListener;)V
+ (L1javax/swing/event/ChangeListener;)V
+addStyle
+ (Ljava/lang/String;Ljavax/swing/text/Style;)Ljavax/swing/text/Style;
+ (Ljava/lang/String;Ljavax/swing/text/Style;)L1javax/swing/text/Style;
+createLargeAttributeSet
+ (Ljavax/swing/text/AttributeSet;)Ljavax/swing/text/MutableAttributeSet;
+ (Ljavax/swing/text/AttributeSet;)L1javax/swing/text/MutableAttributeSet;
+createSmallAttributeSet
+ (Ljavax/swing/text/AttributeSet;)Ljavax/swing/text/StyleContext$SmallAttributeSet;
+ (Ljavax/swing/text/AttributeSet;)L1javax/swing/text/StyleContext$SmallAttributeSet;
+removeChangeListener
+ (Ljavax/swing/event/ChangeListener;)V
+ (L1javax/swing/event/ChangeListener;)V
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

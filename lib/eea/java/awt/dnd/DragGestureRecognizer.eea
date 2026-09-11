@@ -1,0 +1,7 @@
+class java/awt/dnd/DragGestureRecognizer
+addDragGestureListener
+ (Ljava/awt/dnd/DragGestureListener;)V
+ (L1java/awt/dnd/DragGestureListener;)V
+removeDragGestureListener
+ (Ljava/awt/dnd/DragGestureListener;)V
+ (L1java/awt/dnd/DragGestureListener;)V

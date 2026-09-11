@@ -1,0 +1,7 @@
+class java/security/ProtectionDomain
+getPrincipals
+ ()[Ljava/security/Principal;
+ ()[1Ljava/security/Principal;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

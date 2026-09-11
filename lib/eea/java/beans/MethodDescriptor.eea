@@ -1,0 +1,4 @@
+class java/beans/MethodDescriptor
+getParameterDescriptors
+ ()[Ljava/beans/ParameterDescriptor;
+ ()[0Ljava/beans/ParameterDescriptor;

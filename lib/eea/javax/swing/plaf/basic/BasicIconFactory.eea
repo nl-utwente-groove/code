@@ -1,0 +1,4 @@
+class javax/swing/plaf/basic/BasicIconFactory
+createEmptyFrameIcon
+ ()Ljavax/swing/Icon;
+ ()L1javax/swing/Icon;

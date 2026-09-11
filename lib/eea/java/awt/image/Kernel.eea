@@ -1,0 +1,7 @@
+class java/awt/image/Kernel
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+getKernelData
+ ([F)[F
+ ([F)[1F

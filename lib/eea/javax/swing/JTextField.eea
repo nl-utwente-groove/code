@@ -5,6 +5,18 @@ notifyAction
 addActionListener
  (Ljava/awt/event/ActionListener;)V
  (L1java/awt/event/ActionListener;)V
+createActionPropertyChangeListener
+ (Ljavax/swing/Action;)Ljava/beans/PropertyChangeListener;
+ (Ljavax/swing/Action;)L1java/beans/PropertyChangeListener;
+createDefaultModel
+ ()Ljavax/swing/text/Document;
+ ()L1javax/swing/text/Document;
+getUIClassID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
 removeActionListener
  (Ljava/awt/event/ActionListener;)V
  (L1java/awt/event/ActionListener;)V

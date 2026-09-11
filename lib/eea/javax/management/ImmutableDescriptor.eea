@@ -1,0 +1,22 @@
+class javax/management/ImmutableDescriptor
+EMPTY_DESCRIPTOR
+ Ljavax/management/ImmutableDescriptor;
+ L1javax/management/ImmutableDescriptor;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getFieldNames
+ ()[Ljava/lang/String;
+ ()[1Ljava/lang/String;
+getFieldValue
+ (Ljava/lang/String;)Ljava/lang/Object;
+ (Ljava/lang/String;)L0java/lang/Object;
+getFieldValues
+ ([Ljava/lang/String;)[Ljava/lang/Object;
+ ([Ljava/lang/String;)[1Ljava/lang/Object;
+getFields
+ ()[Ljava/lang/String;
+ ()[1Ljava/lang/String;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

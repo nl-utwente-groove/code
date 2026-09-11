@@ -1,0 +1,4 @@
+class javax/swing/UIManager$LookAndFeelInfo
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

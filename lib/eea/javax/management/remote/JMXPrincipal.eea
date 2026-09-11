@@ -1,0 +1,10 @@
+class javax/management/remote/JMXPrincipal
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getName
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

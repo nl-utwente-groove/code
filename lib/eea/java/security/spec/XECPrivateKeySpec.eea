@@ -1,0 +1,4 @@
+class java/security/spec/XECPrivateKeySpec
+getScalar
+ ()[B
+ ()[1B

@@ -1,0 +1,13 @@
+class java/util/HexFormat
+ofDelimiter
+ (Ljava/lang/String;)Ljava/util/HexFormat;
+ (Ljava/lang/String;)L1java/util/HexFormat;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+formatHex
+ ([BII)Ljava/lang/String;
+ ([BII)L1java/lang/String;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

@@ -1,0 +1,8 @@
+class javax/swing/RowSorter
+ <M:Ljava/lang/Object;>
+addRowSorterListener
+ (Ljavax/swing/event/RowSorterListener;)V
+ (L1javax/swing/event/RowSorterListener;)V
+removeRowSorterListener
+ (Ljavax/swing/event/RowSorterListener;)V
+ (L1javax/swing/event/RowSorterListener;)V

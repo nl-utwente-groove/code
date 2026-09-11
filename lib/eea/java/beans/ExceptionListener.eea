@@ -1,0 +1,4 @@
+class java/beans/ExceptionListener
+exceptionThrown
+ (Ljava/lang/Exception;)V
+ (L1java/lang/Exception;)V

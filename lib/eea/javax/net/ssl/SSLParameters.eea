@@ -1,0 +1,10 @@
+class javax/net/ssl/SSLParameters
+getApplicationProtocols
+ ()[Ljava/lang/String;
+ ()[1Ljava/lang/String;
+getSNIMatchers
+ ()Ljava/util/Collection<Ljavax/net/ssl/SNIMatcher;>;
+ ()L0java/util/Collection<Ljavax/net/ssl/SNIMatcher;>;
+getServerNames
+ ()Ljava/util/List<Ljavax/net/ssl/SNIServerName;>;
+ ()L0java/util/List<Ljavax/net/ssl/SNIServerName;>;

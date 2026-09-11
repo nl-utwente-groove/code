@@ -1,0 +1,34 @@
+class javax/swing/table/JTableHeader
+columnAdded
+ (Ljavax/swing/event/TableColumnModelEvent;)V
+ (L1javax/swing/event/TableColumnModelEvent;)V
+columnMarginChanged
+ (Ljavax/swing/event/ChangeEvent;)V
+ (L1javax/swing/event/ChangeEvent;)V
+columnMoved
+ (Ljavax/swing/event/TableColumnModelEvent;)V
+ (L1javax/swing/event/TableColumnModelEvent;)V
+columnRemoved
+ (Ljavax/swing/event/TableColumnModelEvent;)V
+ (L1javax/swing/event/TableColumnModelEvent;)V
+columnSelectionChanged
+ (Ljavax/swing/event/ListSelectionEvent;)V
+ (L1javax/swing/event/ListSelectionEvent;)V
+createDefaultColumnModel
+ ()Ljavax/swing/table/TableColumnModel;
+ ()L1javax/swing/table/TableColumnModel;
+createDefaultRenderer
+ ()Ljavax/swing/table/TableCellRenderer;
+ ()L1javax/swing/table/TableCellRenderer;
+getHeaderRect
+ (I)Ljava/awt/Rectangle;
+ (I)L1java/awt/Rectangle;
+getToolTipText
+ (Ljava/awt/event/MouseEvent;)Ljava/lang/String;
+ (L1java/awt/event/MouseEvent;)Ljava/lang/String;
+getUIClassID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

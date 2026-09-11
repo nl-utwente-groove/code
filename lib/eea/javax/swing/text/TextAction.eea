@@ -1,0 +1,4 @@
+class javax/swing/text/TextAction
+augmentList
+ ([Ljavax/swing/Action;[Ljavax/swing/Action;)[Ljavax/swing/Action;
+ ([Ljavax/swing/Action;[Ljavax/swing/Action;)[1Ljavax/swing/Action;

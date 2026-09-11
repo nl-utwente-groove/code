@@ -1,0 +1,10 @@
+class javax/swing/text/DefaultStyledDocument
+addDocumentListener
+ (Ljavax/swing/event/DocumentListener;)V
+ (L1javax/swing/event/DocumentListener;)V
+createDefaultRoot
+ ()Ljavax/swing/text/AbstractDocument$AbstractElement;
+ ()L1javax/swing/text/AbstractDocument$AbstractElement;
+removeDocumentListener
+ (Ljavax/swing/event/DocumentListener;)V
+ (L1javax/swing/event/DocumentListener;)V

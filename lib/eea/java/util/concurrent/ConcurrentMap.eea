@@ -1,0 +1,29 @@
+class java/util/concurrent/ConcurrentMap
+ <K:Ljava/lang/Object;V:Ljava/lang/Object;>
+compute
+ (TK;Ljava/util/function/BiFunction<-TK;-TV;+TV;>;)TV;
+ (TK;L1java/util/function/BiFunction<-TK;-T0V;+T0V;>;)T0V;
+computeIfAbsent
+ (TK;Ljava/util/function/Function<-TK;+TV;>;)TV;
+ (TK;L1java/util/function/Function<-TK;+T0V;>;)TV;
+computeIfPresent
+ (TK;Ljava/util/function/BiFunction<-TK;-TV;+TV;>;)TV;
+ (TK;L1java/util/function/BiFunction<-TK;-TV;+T0V;>;)TV;
+forEach
+ (Ljava/util/function/BiConsumer<-TK;-TV;>;)V
+ (L1java/util/function/BiConsumer<-TK;-TV;>;)V
+merge
+ (TK;TV;Ljava/util/function/BiFunction<-TV;-TV;+TV;>;)TV;
+ (TK;T1V;L1java/util/function/BiFunction<-TV;-TV;+TV;>;)TV;
+putIfAbsent
+ (TK;TV;)TV;
+ (TK;TV;)T0V;
+remove
+ (Ljava/lang/Object;Ljava/lang/Object;)Z
+ (L0java/lang/Object;L0java/lang/Object;)Z
+replace
+ (TK;TV;)TV;
+ (TK;TV;)T0V;
+replaceAll
+ (Ljava/util/function/BiFunction<-TK;-TV;+TV;>;)V
+ (L1java/util/function/BiFunction<-TK;-TV;+TV;>;)V

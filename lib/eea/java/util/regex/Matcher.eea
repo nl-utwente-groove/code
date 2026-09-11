@@ -21,6 +21,8 @@ group
  ()Ljava/lang/String;
  ()L1java/lang/String;
 group
+ (I)Ljava/lang/String;
+group
  (Ljava/lang/String;)Ljava/lang/String;
  (L1java/lang/String;)L0java/lang/String;
 pattern

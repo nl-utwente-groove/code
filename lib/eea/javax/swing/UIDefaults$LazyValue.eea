@@ -1,0 +1,4 @@
+class javax/swing/UIDefaults$LazyValue
+createValue
+ (Ljavax/swing/UIDefaults;)Ljava/lang/Object;
+ (Ljavax/swing/UIDefaults;)L1java/lang/Object;

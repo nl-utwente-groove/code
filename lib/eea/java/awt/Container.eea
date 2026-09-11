@@ -5,6 +5,21 @@ addContainerListener
 addPropertyChangeListener
  (Ljava/beans/PropertyChangeListener;)V
  (L1java/beans/PropertyChangeListener;)V
+getFocusTraversalPolicy
+ ()Ljava/awt/FocusTraversalPolicy;
+ ()L0java/awt/FocusTraversalPolicy;
+locate
+ (II)Ljava/awt/Component;
+ (II)L0java/awt/Component;
+minimumSize
+ ()Ljava/awt/Dimension;
+ ()L1java/awt/Dimension;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+preferredSize
+ ()Ljava/awt/Dimension;
+ ()L1java/awt/Dimension;
 removeContainerListener
  (Ljava/awt/event/ContainerListener;)V
  (L1java/awt/event/ContainerListener;)V

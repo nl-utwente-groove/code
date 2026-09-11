@@ -1,0 +1,4 @@
+class javax/lang/model/element/Name
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z

@@ -1,0 +1,10 @@
+class java/awt/Button
+addActionListener
+ (Ljava/awt/event/ActionListener;)V
+ (L1java/awt/event/ActionListener;)V
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+removeActionListener
+ (Ljava/awt/event/ActionListener;)V
+ (L1java/awt/event/ActionListener;)V

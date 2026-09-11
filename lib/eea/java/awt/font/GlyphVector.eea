@@ -1,0 +1,4 @@
+class java/awt/font/GlyphVector
+getGlyphCharIndices
+ (II[I)[I
+ (II[I)[1I

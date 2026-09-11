@@ -113,6 +113,9 @@ contentEquals
 contentEquals
  (Ljava/lang/StringBuffer;)Z
  (L1java/lang/StringBuffer;)Z
+describeConstable
+ ()Ljava/util/Optional<Ljava/lang/String;>;
+ ()L1java/util/Optional<Ljava/lang/String;>;
 endsWith
  (Ljava/lang/String;)Z
  (L1java/lang/String;)Z
@@ -122,6 +125,9 @@ equals
 equalsIgnoreCase
  (Ljava/lang/String;)Z
  (L0java/lang/String;)Z
+formatted
+ ([Ljava/lang/Object;)Ljava/lang/String;
+ ([Ljava/lang/Object;)L1java/lang/String;
 getBytes
  ()[B
  ()[1B

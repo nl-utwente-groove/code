@@ -1,0 +1,8 @@
+class javax/swing/DefaultComboBoxModel
+ <E:Ljava/lang/Object;>
+getElementAt
+ (I)TE;
+ (I)T0E;
+insertElementAt
+ (TE;I)V
+ (T0E;I)V

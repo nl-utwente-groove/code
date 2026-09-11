@@ -1,0 +1,16 @@
+class java/lang/module/ModuleDescriptor$Requires
+compareTo
+ (Ljava/lang/module/ModuleDescriptor$Requires;)I
+ (L1java/lang/module/ModuleDescriptor$Requires;)I
+compiledVersion
+ ()Ljava/util/Optional<Ljava/lang/module/ModuleDescriptor$Version;>;
+ ()L1java/util/Optional<Ljava/lang/module/ModuleDescriptor$Version;>;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+rawCompiledVersion
+ ()Ljava/util/Optional<Ljava/lang/String;>;
+ ()L1java/util/Optional<Ljava/lang/String;>;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

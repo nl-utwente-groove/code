@@ -1,0 +1,4 @@
+class javax/xml/crypto/dsig/SignatureProperties
+TYPE
+ Ljava/lang/String;
+ L1java/lang/String;

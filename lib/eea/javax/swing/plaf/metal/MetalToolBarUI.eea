@@ -1,0 +1,19 @@
+class javax/swing/plaf/metal/MetalToolBarUI
+createUI
+ (Ljavax/swing/JComponent;)Ljavax/swing/plaf/ComponentUI;
+ (Ljavax/swing/JComponent;)L1javax/swing/plaf/ComponentUI;
+createContainerListener
+ ()Ljava/awt/event/ContainerListener;
+ ()L0java/awt/event/ContainerListener;
+createDockingListener
+ ()Ljavax/swing/event/MouseInputListener;
+ ()L1javax/swing/event/MouseInputListener;
+createNonRolloverBorder
+ ()Ljavax/swing/border/Border;
+ ()L1javax/swing/border/Border;
+createRolloverBorder
+ ()Ljavax/swing/border/Border;
+ ()L1javax/swing/border/Border;
+createRolloverListener
+ ()Ljava/beans/PropertyChangeListener;
+ ()L0java/beans/PropertyChangeListener;

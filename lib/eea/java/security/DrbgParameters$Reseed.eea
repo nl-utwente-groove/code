@@ -1,0 +1,4 @@
+class java/security/DrbgParameters$Reseed
+getAdditionalInput
+ ()[B
+ ()[1B

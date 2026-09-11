@@ -1,0 +1,10 @@
+class java/lang/constant/PackageDesc
+of
+ (Ljava/lang/String;)Ljava/lang/constant/PackageDesc;
+ (Ljava/lang/String;)L1java/lang/constant/PackageDesc;
+ofInternalName
+ (Ljava/lang/String;)Ljava/lang/constant/PackageDesc;
+ (Ljava/lang/String;)L1java/lang/constant/PackageDesc;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z

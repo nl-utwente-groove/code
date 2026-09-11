@@ -1,0 +1,4 @@
+class javax/swing/plaf/FileChooserUI
+getDefaultButton
+ (Ljavax/swing/JFileChooser;)Ljavax/swing/JButton;
+ (Ljavax/swing/JFileChooser;)L0javax/swing/JButton;

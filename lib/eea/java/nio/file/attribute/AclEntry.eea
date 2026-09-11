@@ -1,0 +1,16 @@
+class java/nio/file/attribute/AclEntry
+newBuilder
+ ()Ljava/nio/file/attribute/AclEntry$Builder;
+ ()L1java/nio/file/attribute/AclEntry$Builder;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+flags
+ ()Ljava/util/Set<Ljava/nio/file/attribute/AclEntryFlag;>;
+ ()L1java/util/Set<Ljava/nio/file/attribute/AclEntryFlag;>;
+permissions
+ ()Ljava/util/Set<Ljava/nio/file/attribute/AclEntryPermission;>;
+ ()L1java/util/Set<Ljava/nio/file/attribute/AclEntryPermission;>;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

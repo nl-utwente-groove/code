@@ -1,0 +1,13 @@
+class java/time/chrono/ThaiBuddhistDate
+now
+ (Ljava/time/Clock;)Ljava/time/chrono/ThaiBuddhistDate;
+ (Ljava/time/Clock;)L1java/time/chrono/ThaiBuddhistDate;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getLong
+ (Ljava/time/temporal/TemporalField;)J
+ (L1java/time/temporal/TemporalField;)J
+range
+ (Ljava/time/temporal/TemporalField;)Ljava/time/temporal/ValueRange;
+ (L1java/time/temporal/TemporalField;)L1java/time/temporal/ValueRange;

@@ -1,0 +1,82 @@
+class java/nio/ShortBuffer
+allocate
+ (I)Ljava/nio/ShortBuffer;
+ (I)L1java/nio/ShortBuffer;
+wrap
+ ([S)Ljava/nio/ShortBuffer;
+ ([1S)L1java/nio/ShortBuffer;
+wrap
+ ([SII)Ljava/nio/ShortBuffer;
+ ([1SII)L1java/nio/ShortBuffer;
+array
+ ()[S
+ ()[1S
+asReadOnlyBuffer
+ ()Ljava/nio/ShortBuffer;
+ ()L1java/nio/ShortBuffer;
+clear
+ ()Ljava/nio/ShortBuffer;
+ ()L1java/nio/ShortBuffer;
+compact
+ ()Ljava/nio/ShortBuffer;
+ ()L1java/nio/ShortBuffer;
+compareTo
+ (Ljava/nio/ShortBuffer;)I
+ (L1java/nio/ShortBuffer;)I
+duplicate
+ ()Ljava/nio/ShortBuffer;
+ ()L1java/nio/ShortBuffer;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+flip
+ ()Ljava/nio/ShortBuffer;
+ ()L1java/nio/ShortBuffer;
+get
+ ([S)Ljava/nio/ShortBuffer;
+ ([1S)L1java/nio/ShortBuffer;
+get
+ ([SII)Ljava/nio/ShortBuffer;
+ ([1SII)L1java/nio/ShortBuffer;
+limit
+ (I)Ljava/nio/ShortBuffer;
+ (I)L1java/nio/ShortBuffer;
+mark
+ ()Ljava/nio/ShortBuffer;
+ ()L1java/nio/ShortBuffer;
+mismatch
+ (Ljava/nio/ShortBuffer;)I
+ (L1java/nio/ShortBuffer;)I
+order
+ ()Ljava/nio/ByteOrder;
+ ()L1java/nio/ByteOrder;
+position
+ (I)Ljava/nio/ShortBuffer;
+ (I)L1java/nio/ShortBuffer;
+put
+ (IS)Ljava/nio/ShortBuffer;
+ (IS)L1java/nio/ShortBuffer;
+put
+ (Ljava/nio/ShortBuffer;)Ljava/nio/ShortBuffer;
+ (L1java/nio/ShortBuffer;)L1java/nio/ShortBuffer;
+put
+ (S)Ljava/nio/ShortBuffer;
+ (S)L1java/nio/ShortBuffer;
+put
+ ([S)Ljava/nio/ShortBuffer;
+ ([1S)L1java/nio/ShortBuffer;
+put
+ ([SII)Ljava/nio/ShortBuffer;
+ ([1SII)L1java/nio/ShortBuffer;
+reset
+ ()Ljava/nio/ShortBuffer;
+ ()L1java/nio/ShortBuffer;
+rewind
+ ()Ljava/nio/ShortBuffer;
+ ()L1java/nio/ShortBuffer;
+slice
+ ()Ljava/nio/ShortBuffer;
+ ()L1java/nio/ShortBuffer;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

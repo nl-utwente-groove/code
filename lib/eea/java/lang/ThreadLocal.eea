@@ -1,0 +1,7 @@
+class java/lang/ThreadLocal
+ <T:Ljava/lang/Object;>
+withInitial
+ <S:Ljava/lang/Object;>(Ljava/util/function/Supplier<+TS;>;)Ljava/lang/ThreadLocal<TS;>;
+ <S:Ljava/lang/Object;>(L1java/util/function/Supplier<+TS;>;)L1java/lang/ThreadLocal<TS;>;
+initialValue
+ ()TT;

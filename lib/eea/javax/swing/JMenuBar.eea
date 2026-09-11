@@ -1,0 +1,16 @@
+class javax/swing/JMenuBar
+getComponentAtIndex
+ (I)Ljava/awt/Component;
+ (I)L0java/awt/Component;
+getMenu
+ (I)Ljavax/swing/JMenu;
+ (I)L0javax/swing/JMenu;
+getSubElements
+ ()[Ljavax/swing/MenuElement;
+ ()[1Ljavax/swing/MenuElement;
+getUIClassID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

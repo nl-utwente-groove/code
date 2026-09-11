@@ -1,0 +1,34 @@
+class java/awt/font/TextLayout
+DEFAULT_CARET_POLICY
+ Ljava/awt/font/TextLayout$CaretPolicy;
+ L1java/awt/font/TextLayout$CaretPolicy;
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+getBaselineOffsets
+ ()[F
+ ()[1F
+getBounds
+ ()Ljava/awt/geom/Rectangle2D;
+ ()L1java/awt/geom/Rectangle2D;
+getCaretShapes
+ (ILjava/awt/geom/Rectangle2D;Ljava/awt/font/TextLayout$CaretPolicy;)[Ljava/awt/Shape;
+ (ILjava/awt/geom/Rectangle2D;Ljava/awt/font/TextLayout$CaretPolicy;)[1Ljava/awt/Shape;
+getLogicalRangesForVisualSelection
+ (Ljava/awt/font/TextHitInfo;Ljava/awt/font/TextHitInfo;)[I
+ (Ljava/awt/font/TextHitInfo;Ljava/awt/font/TextHitInfo;)[1I
+getNextLeftHit
+ (ILjava/awt/font/TextLayout$CaretPolicy;)Ljava/awt/font/TextHitInfo;
+ (ILjava/awt/font/TextLayout$CaretPolicy;)L0java/awt/font/TextHitInfo;
+getNextLeftHit
+ (Ljava/awt/font/TextHitInfo;)Ljava/awt/font/TextHitInfo;
+ (Ljava/awt/font/TextHitInfo;)L0java/awt/font/TextHitInfo;
+getNextRightHit
+ (ILjava/awt/font/TextLayout$CaretPolicy;)Ljava/awt/font/TextHitInfo;
+ (ILjava/awt/font/TextLayout$CaretPolicy;)L0java/awt/font/TextHitInfo;
+getNextRightHit
+ (Ljava/awt/font/TextHitInfo;)Ljava/awt/font/TextHitInfo;
+ (Ljava/awt/font/TextHitInfo;)L0java/awt/font/TextHitInfo;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

@@ -1,5 +1,8 @@
 class java/util/LinkedHashMap
  <K:Ljava/lang/Object;V:Ljava/lang/Object;>
+newLinkedHashMap
+ <K:Ljava/lang/Object;V:Ljava/lang/Object;>(I)Ljava/util/LinkedHashMap<TK;TV;>;
+ <K:Ljava/lang/Object;V:Ljava/lang/Object;>(I)L1java/util/LinkedHashMap<TK;TV;>;
 <init>
  (Ljava/util/Map<+TK;+TV;>;)V
  (L1java/util/Map<+TK;+TV;>;)V
@@ -24,6 +27,18 @@ removeEldestEntry
 replaceAll
  (Ljava/util/function/BiFunction<-TK;-TV;+TV;>;)V
  (L1java/util/function/BiFunction<-TK;-TV;+TV;>;)V
+reversed
+ ()Ljava/util/SequencedMap<TK;TV;>;
+ ()L1java/util/SequencedMap<TK;TV;>;
+sequencedEntrySet
+ ()Ljava/util/SequencedSet<Ljava/util/Map$Entry<TK;TV;>;>;
+ ()L1java/util/SequencedSet<Ljava/util/Map$Entry<TK;TV;>;>;
+sequencedKeySet
+ ()Ljava/util/SequencedSet<TK;>;
+ ()L1java/util/SequencedSet<TK;>;
+sequencedValues
+ ()Ljava/util/SequencedCollection<TV;>;
+ ()L1java/util/SequencedCollection<TV;>;
 values
  ()Ljava/util/Collection<TV;>;
  ()L1java/util/Collection<TV;>;

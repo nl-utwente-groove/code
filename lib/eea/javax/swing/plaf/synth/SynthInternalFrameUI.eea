@@ -1,0 +1,13 @@
+class javax/swing/plaf/synth/SynthInternalFrameUI
+createUI
+ (Ljavax/swing/JComponent;)Ljavax/swing/plaf/ComponentUI;
+ (Ljavax/swing/JComponent;)L1javax/swing/plaf/ComponentUI;
+createComponentListener
+ ()Ljava/awt/event/ComponentListener;
+ ()L1java/awt/event/ComponentListener;
+createNorthPane
+ (Ljavax/swing/JInternalFrame;)Ljavax/swing/JComponent;
+ (Ljavax/swing/JInternalFrame;)L1javax/swing/JComponent;
+propertyChange
+ (Ljava/beans/PropertyChangeEvent;)V
+ (L1java/beans/PropertyChangeEvent;)V

@@ -1,0 +1,16 @@
+class javax/swing/text/SimpleAttributeSet
+EMPTY
+ Ljavax/swing/text/AttributeSet;
+ L1javax/swing/text/AttributeSet;
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+copyAttributes
+ ()Ljavax/swing/text/AttributeSet;
+ ()L1javax/swing/text/AttributeSet;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

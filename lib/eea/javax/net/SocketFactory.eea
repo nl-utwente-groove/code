@@ -1,0 +1,16 @@
+class javax/net/SocketFactory
+createSocket
+ ()Ljava/net/Socket;
+ ()L1java/net/Socket;
+createSocket
+ (Ljava/lang/String;I)Ljava/net/Socket;
+ (Ljava/lang/String;I)L1java/net/Socket;
+createSocket
+ (Ljava/lang/String;ILjava/net/InetAddress;I)Ljava/net/Socket;
+ (Ljava/lang/String;ILjava/net/InetAddress;I)L1java/net/Socket;
+createSocket
+ (Ljava/net/InetAddress;I)Ljava/net/Socket;
+ (Ljava/net/InetAddress;I)L1java/net/Socket;
+createSocket
+ (Ljava/net/InetAddress;ILjava/net/InetAddress;I)Ljava/net/Socket;
+ (Ljava/net/InetAddress;ILjava/net/InetAddress;I)L1java/net/Socket;

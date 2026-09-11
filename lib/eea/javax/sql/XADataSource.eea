@@ -1,0 +1,4 @@
+class javax/sql/XADataSource
+createXAConnectionBuilder
+ ()Ljavax/sql/XAConnectionBuilder;
+ ()L1javax/sql/XAConnectionBuilder;

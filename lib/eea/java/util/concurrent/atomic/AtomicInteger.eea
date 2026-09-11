@@ -1,0 +1,4 @@
+class java/util/concurrent/atomic/AtomicInteger
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

@@ -1,0 +1,4 @@
+class javax/security/auth/callback/ConfirmationCallback
+getOptions
+ ()[Ljava/lang/String;
+ ()[1Ljava/lang/String;

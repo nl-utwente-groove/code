@@ -1,0 +1,19 @@
+class javax/naming/CompoundName
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+compareTo
+ (Ljava/lang/Object;)I
+ (L1java/lang/Object;)I
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getPrefix
+ (I)Ljavax/naming/Name;
+ (I)L1javax/naming/Name;
+getSuffix
+ (I)Ljavax/naming/Name;
+ (I)L1javax/naming/Name;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

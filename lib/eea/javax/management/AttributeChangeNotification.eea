@@ -1,0 +1,4 @@
+class javax/management/AttributeChangeNotification
+ATTRIBUTE_CHANGE
+ Ljava/lang/String;
+ L1java/lang/String;

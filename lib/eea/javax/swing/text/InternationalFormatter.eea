@@ -1,0 +1,10 @@
+class javax/swing/text/InternationalFormatter
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+getActions
+ ()[Ljavax/swing/Action;
+ ()[0Ljavax/swing/Action;
+valueToString
+ (Ljava/lang/Object;)Ljava/lang/String;
+ (Ljava/lang/Object;)L1java/lang/String;

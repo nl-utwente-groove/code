@@ -1,0 +1,10 @@
+class javax/xml/datatype/Duration
+compare
+ (Ljavax/xml/datatype/Duration;)I
+ (L1javax/xml/datatype/Duration;)I
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

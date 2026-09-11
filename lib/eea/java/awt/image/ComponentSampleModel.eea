@@ -1,0 +1,31 @@
+class java/awt/image/ComponentSampleModel
+createCompatibleSampleModel
+ (II)Ljava/awt/image/SampleModel;
+ (II)L1java/awt/image/SampleModel;
+createDataBuffer
+ ()Ljava/awt/image/DataBuffer;
+ ()L1java/awt/image/DataBuffer;
+createSubsetSampleModel
+ ([I)Ljava/awt/image/SampleModel;
+ ([I)L1java/awt/image/SampleModel;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getBandOffsets
+ ()[I
+ ()[1I
+getBankIndices
+ ()[I
+ ()[1I
+getPixel
+ (II[ILjava/awt/image/DataBuffer;)[I
+ (II[ILjava/awt/image/DataBuffer;)[1I
+getPixels
+ (IIII[ILjava/awt/image/DataBuffer;)[I
+ (IIII[ILjava/awt/image/DataBuffer;)[1I
+getSampleSize
+ ()[I
+ ()[1I
+getSamples
+ (IIIII[ILjava/awt/image/DataBuffer;)[I
+ (IIIII[ILjava/awt/image/DataBuffer;)[1I

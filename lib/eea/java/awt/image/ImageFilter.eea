@@ -1,0 +1,7 @@
+class java/awt/image/ImageFilter
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+getFilterInstance
+ (Ljava/awt/image/ImageConsumer;)Ljava/awt/image/ImageFilter;
+ (Ljava/awt/image/ImageConsumer;)L1java/awt/image/ImageFilter;

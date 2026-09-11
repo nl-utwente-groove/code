@@ -1,0 +1,4 @@
+class java/awt/font/LineBreakMeasurer
+nextLayout
+ (FIZ)Ljava/awt/font/TextLayout;
+ (FIZ)L0java/awt/font/TextLayout;

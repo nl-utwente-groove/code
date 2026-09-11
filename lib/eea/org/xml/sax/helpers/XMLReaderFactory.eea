@@ -1,0 +1,7 @@
+class org/xml/sax/helpers/XMLReaderFactory
+createXMLReader
+ ()Lorg/xml/sax/XMLReader;
+ ()L1org/xml/sax/XMLReader;
+createXMLReader
+ (Ljava/lang/String;)Lorg/xml/sax/XMLReader;
+ (Ljava/lang/String;)L1org/xml/sax/XMLReader;

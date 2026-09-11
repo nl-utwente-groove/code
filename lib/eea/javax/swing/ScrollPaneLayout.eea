@@ -1,0 +1,10 @@
+class javax/swing/ScrollPaneLayout
+getCorner
+ (Ljava/lang/String;)Ljava/awt/Component;
+ (Ljava/lang/String;)L0java/awt/Component;
+minimumLayoutSize
+ (Ljava/awt/Container;)Ljava/awt/Dimension;
+ (Ljava/awt/Container;)L1java/awt/Dimension;
+preferredLayoutSize
+ (Ljava/awt/Container;)Ljava/awt/Dimension;
+ (Ljava/awt/Container;)L1java/awt/Dimension;

@@ -1,0 +1,4 @@
+class javax/swing/JRootPane$AccessibleJRootPane
+getAccessibleChild
+ (I)Ljavax/accessibility/Accessible;
+ (I)L0javax/accessibility/Accessible;

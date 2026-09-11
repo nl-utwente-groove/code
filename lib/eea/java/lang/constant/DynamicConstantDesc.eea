@@ -1,5 +1,11 @@
 class java/lang/constant/DynamicConstantDesc
  <T:Ljava/lang/Object;>
+ofNamed
+ <T:Ljava/lang/Object;>(Ljava/lang/constant/DirectMethodHandleDesc;Ljava/lang/String;Ljava/lang/constant/ClassDesc;[Ljava/lang/constant/ConstantDesc;)Ljava/lang/constant/DynamicConstantDesc<TT;>;
+ <T:Ljava/lang/Object;>(Ljava/lang/constant/DirectMethodHandleDesc;Ljava/lang/String;Ljava/lang/constant/ClassDesc;[Ljava/lang/constant/ConstantDesc;)L1java/lang/constant/DynamicConstantDesc<TT;>;
+bootstrapArgs
+ ()[Ljava/lang/constant/ConstantDesc;
+ ()[1Ljava/lang/constant/ConstantDesc;
 equals
  (Ljava/lang/Object;)Z
  (L0java/lang/Object;)Z

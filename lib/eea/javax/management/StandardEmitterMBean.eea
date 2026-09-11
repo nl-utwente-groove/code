@@ -1,0 +1,4 @@
+class javax/management/StandardEmitterMBean
+removeNotificationListener
+ (Ljavax/management/NotificationListener;)V
+ (L1javax/management/NotificationListener;)V

@@ -1,0 +1,4 @@
+class java/security/cert/CertStoreParameters
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;

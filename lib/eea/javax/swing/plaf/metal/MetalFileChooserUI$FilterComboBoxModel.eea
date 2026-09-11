@@ -1,0 +1,7 @@
+class javax/swing/plaf/metal/MetalFileChooserUI$FilterComboBoxModel
+getElementAt
+ (I)Ljava/lang/Object;
+ (I)L0java/lang/Object;
+propertyChange
+ (Ljava/beans/PropertyChangeEvent;)V
+ (L1java/beans/PropertyChangeEvent;)V

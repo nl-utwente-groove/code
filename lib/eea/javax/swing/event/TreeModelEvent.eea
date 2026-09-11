@@ -1,0 +1,13 @@
+class javax/swing/event/TreeModelEvent
+getChildIndices
+ ()[I
+ ()[0I
+getChildren
+ ()[Ljava/lang/Object;
+ ()[0Ljava/lang/Object;
+getPath
+ ()[Ljava/lang/Object;
+ ()[0Ljava/lang/Object;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

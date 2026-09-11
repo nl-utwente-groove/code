@@ -1,4 +1,19 @@
 class java/awt/geom/Rectangle2D
+createIntersection
+ (Ljava/awt/geom/Rectangle2D;)Ljava/awt/geom/Rectangle2D;
+ (Ljava/awt/geom/Rectangle2D;)L1java/awt/geom/Rectangle2D;
+createUnion
+ (Ljava/awt/geom/Rectangle2D;)Ljava/awt/geom/Rectangle2D;
+ (Ljava/awt/geom/Rectangle2D;)L1java/awt/geom/Rectangle2D;
 equals
  (Ljava/lang/Object;)Z
  (L0java/lang/Object;)Z
+getBounds2D
+ ()Ljava/awt/geom/Rectangle2D;
+ ()L1java/awt/geom/Rectangle2D;
+getPathIterator
+ (Ljava/awt/geom/AffineTransform;)Ljava/awt/geom/PathIterator;
+ (Ljava/awt/geom/AffineTransform;)L1java/awt/geom/PathIterator;
+getPathIterator
+ (Ljava/awt/geom/AffineTransform;D)Ljava/awt/geom/PathIterator;
+ (Ljava/awt/geom/AffineTransform;D)L1java/awt/geom/PathIterator;

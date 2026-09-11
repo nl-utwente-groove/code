@@ -1,0 +1,13 @@
+class javax/swing/text/AbstractDocument$LeafElement
+children
+ ()Ljava/util/Enumeration<Ljavax/swing/tree/TreeNode;>;
+ ()L0java/util/Enumeration<Ljavax/swing/tree/TreeNode;>;
+getElement
+ (I)Ljavax/swing/text/Element;
+ (I)L0javax/swing/text/Element;
+getName
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

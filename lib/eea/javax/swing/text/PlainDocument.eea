@@ -5,3 +5,6 @@ lineLimitAttribute
 tabSizeAttribute
  Ljava/lang/String;
  L1java/lang/String;
+createDefaultRoot
+ ()Ljavax/swing/text/AbstractDocument$AbstractElement;
+ ()L1javax/swing/text/AbstractDocument$AbstractElement;

@@ -1,0 +1,13 @@
+class java/text/DecimalFormatSymbols
+getInstance
+ ()Ljava/text/DecimalFormatSymbols;
+ ()L1java/text/DecimalFormatSymbols;
+getInstance
+ (Ljava/util/Locale;)Ljava/text/DecimalFormatSymbols;
+ (L1java/util/Locale;)L1java/text/DecimalFormatSymbols;
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z

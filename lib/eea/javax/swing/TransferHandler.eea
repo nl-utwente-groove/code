@@ -1,0 +1,7 @@
+class javax/swing/TransferHandler
+createTransferable
+ (Ljavax/swing/JComponent;)Ljava/awt/datatransfer/Transferable;
+ (Ljavax/swing/JComponent;)L0java/awt/datatransfer/Transferable;
+getVisualRepresentation
+ (Ljava/awt/datatransfer/Transferable;)Ljavax/swing/Icon;
+ (Ljava/awt/datatransfer/Transferable;)L0javax/swing/Icon;

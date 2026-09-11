@@ -1,0 +1,10 @@
+class java/security/DrbgParameters
+instantiation
+ (ILjava/security/DrbgParameters$Capability;[B)Ljava/security/DrbgParameters$Instantiation;
+ (ILjava/security/DrbgParameters$Capability;[B)L1java/security/DrbgParameters$Instantiation;
+nextBytes
+ (IZ[B)Ljava/security/DrbgParameters$NextBytes;
+ (IZ[B)L1java/security/DrbgParameters$NextBytes;
+reseed
+ (Z[B)Ljava/security/DrbgParameters$Reseed;
+ (Z[B)L1java/security/DrbgParameters$Reseed;

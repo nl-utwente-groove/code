@@ -1,0 +1,4 @@
+class java/awt/event/InputMethodEvent
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

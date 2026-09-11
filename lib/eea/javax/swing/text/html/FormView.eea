@@ -1,0 +1,13 @@
+class javax/swing/text/html/FormView
+RESET
+ Ljava/lang/String;
+ L1java/lang/String;
+SUBMIT
+ Ljava/lang/String;
+ L1java/lang/String;
+actionPerformed
+ (Ljava/awt/event/ActionEvent;)V
+ (L1java/awt/event/ActionEvent;)V
+createComponent
+ ()Ljava/awt/Component;
+ ()L1java/awt/Component;

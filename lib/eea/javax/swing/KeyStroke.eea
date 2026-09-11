@@ -1,0 +1,4 @@
+class javax/swing/KeyStroke
+getKeyStroke
+ (Ljava/lang/String;)Ljavax/swing/KeyStroke;
+ (Ljava/lang/String;)L0javax/swing/KeyStroke;

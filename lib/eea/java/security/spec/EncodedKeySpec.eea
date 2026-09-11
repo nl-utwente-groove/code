@@ -1,0 +1,4 @@
+class java/security/spec/EncodedKeySpec
+getEncoded
+ ()[B
+ ()[1B

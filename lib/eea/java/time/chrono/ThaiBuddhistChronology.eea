@@ -1,0 +1,13 @@
+class java/time/chrono/ThaiBuddhistChronology
+INSTANCE
+ Ljava/time/chrono/ThaiBuddhistChronology;
+ L1java/time/chrono/ThaiBuddhistChronology;
+dateEpochDay
+ (J)Ljava/time/chrono/ThaiBuddhistDate;
+ (J)L1java/time/chrono/ThaiBuddhistDate;
+getCalendarType
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+getId
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

@@ -1,0 +1,22 @@
+class javax/swing/JScrollPane
+createHorizontalScrollBar
+ ()Ljavax/swing/JScrollBar;
+ ()L1javax/swing/JScrollBar;
+createVerticalScrollBar
+ ()Ljavax/swing/JScrollBar;
+ ()L1javax/swing/JScrollBar;
+createViewport
+ ()Ljavax/swing/JViewport;
+ ()L1javax/swing/JViewport;
+getCorner
+ (Ljava/lang/String;)Ljava/awt/Component;
+ (Ljava/lang/String;)L0java/awt/Component;
+getUIClassID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+getViewportBorderBounds
+ ()Ljava/awt/Rectangle;
+ ()L1java/awt/Rectangle;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

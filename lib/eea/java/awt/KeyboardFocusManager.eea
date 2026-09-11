@@ -1,0 +1,19 @@
+class java/awt/KeyboardFocusManager
+addPropertyChangeListener
+ (Ljava/beans/PropertyChangeListener;)V
+ (L1java/beans/PropertyChangeListener;)V
+addVetoableChangeListener
+ (Ljava/beans/VetoableChangeListener;)V
+ (L1java/beans/VetoableChangeListener;)V
+getKeyEventDispatchers
+ ()Ljava/util/List<Ljava/awt/KeyEventDispatcher;>;
+ ()L0java/util/List<Ljava/awt/KeyEventDispatcher;>;
+getKeyEventPostProcessors
+ ()Ljava/util/List<Ljava/awt/KeyEventPostProcessor;>;
+ ()L0java/util/List<Ljava/awt/KeyEventPostProcessor;>;
+removePropertyChangeListener
+ (Ljava/beans/PropertyChangeListener;)V
+ (L1java/beans/PropertyChangeListener;)V
+removeVetoableChangeListener
+ (Ljava/beans/VetoableChangeListener;)V
+ (L1java/beans/VetoableChangeListener;)V

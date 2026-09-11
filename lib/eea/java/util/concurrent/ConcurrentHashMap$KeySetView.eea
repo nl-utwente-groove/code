@@ -1,0 +1,5 @@
+class java/util/concurrent/ConcurrentHashMap$KeySetView
+ <K:Ljava/lang/Object;V:Ljava/lang/Object;>
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z

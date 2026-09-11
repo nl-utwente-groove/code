@@ -1,0 +1,10 @@
+class javax/swing/JDesktopPane
+getUIClassID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+selectFrame
+ (Z)Ljavax/swing/JInternalFrame;
+ (Z)L0javax/swing/JInternalFrame;

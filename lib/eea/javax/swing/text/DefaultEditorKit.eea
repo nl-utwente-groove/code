@@ -152,3 +152,18 @@ upAction
 writableAction
  Ljava/lang/String;
  L1java/lang/String;
+createCaret
+ ()Ljavax/swing/text/Caret;
+ ()L0javax/swing/text/Caret;
+createDefaultDocument
+ ()Ljavax/swing/text/Document;
+ ()L1javax/swing/text/Document;
+getActions
+ ()[Ljavax/swing/Action;
+ ()[1Ljavax/swing/Action;
+getContentType
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+getViewFactory
+ ()Ljavax/swing/text/ViewFactory;
+ ()L0javax/swing/text/ViewFactory;

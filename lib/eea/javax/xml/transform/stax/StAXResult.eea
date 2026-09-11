@@ -1,0 +1,7 @@
+class javax/xml/transform/stax/StAXResult
+FEATURE
+ Ljava/lang/String;
+ L1java/lang/String;
+getSystemId
+ ()Ljava/lang/String;
+ ()L0java/lang/String;

@@ -1,0 +1,7 @@
+class javax/management/relation/RoleUnresolved
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

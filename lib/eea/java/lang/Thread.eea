@@ -14,6 +14,12 @@ getDefaultUncaughtExceptionHandler
 holdsLock
  (Ljava/lang/Object;)Z
  (L1java/lang/Object;)Z
+ofPlatform
+ ()Ljava/lang/Thread$Builder$OfPlatform;
+ ()L1java/lang/Thread$Builder$OfPlatform;
+ofVirtual
+ ()Ljava/lang/Thread$Builder$OfVirtual;
+ ()L1java/lang/Thread$Builder$OfVirtual;
 setDefaultUncaughtExceptionHandler
  (Ljava/lang/Thread$UncaughtExceptionHandler;)V
  (L0java/lang/Thread$UncaughtExceptionHandler;)V

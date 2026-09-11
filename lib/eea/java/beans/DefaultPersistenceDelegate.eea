@@ -1,0 +1,4 @@
+class java/beans/DefaultPersistenceDelegate
+instantiate
+ (Ljava/lang/Object;Ljava/beans/Encoder;)Ljava/beans/Expression;
+ (Ljava/lang/Object;Ljava/beans/Encoder;)L1java/beans/Expression;

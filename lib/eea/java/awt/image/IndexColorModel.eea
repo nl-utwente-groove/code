@@ -1,0 +1,19 @@
+class java/awt/image/IndexColorModel
+createCompatibleSampleModel
+ (II)Ljava/awt/image/SampleModel;
+ (II)L1java/awt/image/SampleModel;
+createCompatibleWritableRaster
+ (II)Ljava/awt/image/WritableRaster;
+ (II)L1java/awt/image/WritableRaster;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getComponentSize
+ ()[I
+ ()[1I
+getComponents
+ (I[II)[I
+ (I[II)[1I
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

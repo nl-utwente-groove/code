@@ -1,0 +1,4 @@
+class javax/management/BadAttributeValueExpException
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

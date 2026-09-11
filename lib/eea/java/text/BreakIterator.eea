@@ -1,0 +1,4 @@
+class java/text/BreakIterator
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;

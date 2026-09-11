@@ -1,0 +1,4 @@
+class javax/crypto/spec/ChaCha20ParameterSpec
+getNonce
+ ()[B
+ ()[1B

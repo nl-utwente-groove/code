@@ -1,0 +1,13 @@
+class org/w3c/dom/ls/DOMImplementationLS
+createLSInput
+ ()Lorg/w3c/dom/ls/LSInput;
+ ()L1org/w3c/dom/ls/LSInput;
+createLSOutput
+ ()Lorg/w3c/dom/ls/LSOutput;
+ ()L1org/w3c/dom/ls/LSOutput;
+createLSParser
+ (SLjava/lang/String;)Lorg/w3c/dom/ls/LSParser;
+ (SLjava/lang/String;)L1org/w3c/dom/ls/LSParser;
+createLSSerializer
+ ()Lorg/w3c/dom/ls/LSSerializer;
+ ()L1org/w3c/dom/ls/LSSerializer;

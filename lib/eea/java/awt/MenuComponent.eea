@@ -1,4 +1,10 @@
 class java/awt/MenuComponent
+getFont
+ ()Ljava/awt/Font;
+ ()L0java/awt/Font;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
 toString
  ()Ljava/lang/String;
  ()L1java/lang/String;

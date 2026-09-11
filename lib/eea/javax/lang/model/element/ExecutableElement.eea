@@ -1,0 +1,25 @@
+class javax/lang/model/element/ExecutableElement
+asType
+ ()Ljavax/lang/model/type/TypeMirror;
+ ()L1javax/lang/model/type/TypeMirror;
+getDefaultValue
+ ()Ljavax/lang/model/element/AnnotationValue;
+ ()L0javax/lang/model/element/AnnotationValue;
+getEnclosingElement
+ ()Ljavax/lang/model/element/Element;
+ ()L0javax/lang/model/element/Element;
+getParameters
+ ()Ljava/util/List<+Ljavax/lang/model/element/VariableElement;>;
+ ()L1java/util/List<+L1javax/lang/model/element/VariableElement;>;
+getReceiverType
+ ()Ljavax/lang/model/type/TypeMirror;
+ ()L1javax/lang/model/type/TypeMirror;
+getSimpleName
+ ()Ljavax/lang/model/element/Name;
+ ()L1javax/lang/model/element/Name;
+getThrownTypes
+ ()Ljava/util/List<+Ljavax/lang/model/type/TypeMirror;>;
+ ()L1java/util/List<+L1javax/lang/model/type/TypeMirror;>;
+getTypeParameters
+ ()Ljava/util/List<+Ljavax/lang/model/element/TypeParameterElement;>;
+ ()L1java/util/List<+L1javax/lang/model/element/TypeParameterElement;>;

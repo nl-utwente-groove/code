@@ -1,0 +1,4 @@
+class javax/print/attribute/AttributeSet
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z

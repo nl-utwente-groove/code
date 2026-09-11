@@ -1,0 +1,7 @@
+class javax/naming/directory/Attribute
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+getAll
+ ()Ljavax/naming/NamingEnumeration<*>;
+ ()Ljavax/naming/NamingEnumeration<*1>;

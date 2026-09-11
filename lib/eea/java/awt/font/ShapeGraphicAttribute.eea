@@ -1,0 +1,7 @@
+class java/awt/font/ShapeGraphicAttribute
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getBounds
+ ()Ljava/awt/geom/Rectangle2D;
+ ()L1java/awt/geom/Rectangle2D;

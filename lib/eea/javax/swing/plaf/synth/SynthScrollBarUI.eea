@@ -1,0 +1,16 @@
+class javax/swing/plaf/synth/SynthScrollBarUI
+createUI
+ (Ljavax/swing/JComponent;)Ljavax/swing/plaf/ComponentUI;
+ (Ljavax/swing/JComponent;)L1javax/swing/plaf/ComponentUI;
+createDecreaseButton
+ (I)Ljavax/swing/JButton;
+ (I)L1javax/swing/JButton;
+createIncreaseButton
+ (I)Ljavax/swing/JButton;
+ (I)L1javax/swing/JButton;
+getPreferredSize
+ (Ljavax/swing/JComponent;)Ljava/awt/Dimension;
+ (Ljavax/swing/JComponent;)L1java/awt/Dimension;
+propertyChange
+ (Ljava/beans/PropertyChangeEvent;)V
+ (L1java/beans/PropertyChangeEvent;)V

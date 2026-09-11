@@ -1,0 +1,10 @@
+class java/util/OptionalInt
+of
+ (I)Ljava/util/OptionalInt;
+ (I)L1java/util/OptionalInt;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

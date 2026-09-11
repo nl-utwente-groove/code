@@ -1,0 +1,19 @@
+class javax/sound/midi/Sequencer$SyncMode
+INTERNAL_CLOCK
+ Ljavax/sound/midi/Sequencer$SyncMode;
+ L1javax/sound/midi/Sequencer$SyncMode;
+MIDI_SYNC
+ Ljavax/sound/midi/Sequencer$SyncMode;
+ L1javax/sound/midi/Sequencer$SyncMode;
+MIDI_TIME_CODE
+ Ljavax/sound/midi/Sequencer$SyncMode;
+ L1javax/sound/midi/Sequencer$SyncMode;
+NO_SYNC
+ Ljavax/sound/midi/Sequencer$SyncMode;
+ L1javax/sound/midi/Sequencer$SyncMode;
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

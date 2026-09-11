@@ -1,0 +1,13 @@
+class javax/swing/text/DefaultFormatter
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;
+getDocumentFilter
+ ()Ljavax/swing/text/DocumentFilter;
+ ()L0javax/swing/text/DocumentFilter;
+getNavigationFilter
+ ()Ljavax/swing/text/NavigationFilter;
+ ()L0javax/swing/text/NavigationFilter;
+valueToString
+ (Ljava/lang/Object;)Ljava/lang/String;
+ (Ljava/lang/Object;)L1java/lang/String;

@@ -1,0 +1,4 @@
+class java/rmi/server/RemoteRef
+packagePrefix
+ Ljava/lang/String;
+ L1java/lang/String;

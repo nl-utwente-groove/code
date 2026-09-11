@@ -68,6 +68,9 @@ valueOf
 compareTo
  (Ljava/lang/Integer;)I
  (L1java/lang/Integer;)I
+describeConstable
+ ()Ljava/util/Optional<Ljava/lang/Integer;>;
+ ()L1java/util/Optional<Ljava/lang/Integer;>;
 equals
  (Ljava/lang/Object;)Z
  (L0java/lang/Object;)Z

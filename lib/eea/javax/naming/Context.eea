@@ -1,0 +1,55 @@
+class javax/naming/Context
+APPLET
+ Ljava/lang/String;
+ L1java/lang/String;
+AUTHORITATIVE
+ Ljava/lang/String;
+ L1java/lang/String;
+BATCHSIZE
+ Ljava/lang/String;
+ L1java/lang/String;
+DNS_URL
+ Ljava/lang/String;
+ L1java/lang/String;
+INITIAL_CONTEXT_FACTORY
+ Ljava/lang/String;
+ L1java/lang/String;
+LANGUAGE
+ Ljava/lang/String;
+ L1java/lang/String;
+OBJECT_FACTORIES
+ Ljava/lang/String;
+ L1java/lang/String;
+PROVIDER_URL
+ Ljava/lang/String;
+ L1java/lang/String;
+REFERRAL
+ Ljava/lang/String;
+ L1java/lang/String;
+SECURITY_AUTHENTICATION
+ Ljava/lang/String;
+ L1java/lang/String;
+SECURITY_CREDENTIALS
+ Ljava/lang/String;
+ L1java/lang/String;
+SECURITY_PRINCIPAL
+ Ljava/lang/String;
+ L1java/lang/String;
+SECURITY_PROTOCOL
+ Ljava/lang/String;
+ L1java/lang/String;
+STATE_FACTORIES
+ Ljava/lang/String;
+ L1java/lang/String;
+URL_PKG_PREFIXES
+ Ljava/lang/String;
+ L1java/lang/String;
+createSubcontext
+ (Ljava/lang/String;)Ljavax/naming/Context;
+ (Ljava/lang/String;)L1javax/naming/Context;
+createSubcontext
+ (Ljavax/naming/Name;)Ljavax/naming/Context;
+ (Ljavax/naming/Name;)L1javax/naming/Context;
+getNameInNamespace
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

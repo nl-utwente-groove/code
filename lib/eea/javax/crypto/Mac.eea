@@ -1,0 +1,7 @@
+class javax/crypto/Mac
+getInstance
+ (Ljava/lang/String;)Ljavax/crypto/Mac;
+ (Ljava/lang/String;)L1javax/crypto/Mac;
+clone
+ ()Ljava/lang/Object;
+ ()L1java/lang/Object;

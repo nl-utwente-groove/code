@@ -1,0 +1,10 @@
+class java/util/spi/LocaleNameProvider
+getDisplayScript
+ (Ljava/lang/String;Ljava/util/Locale;)Ljava/lang/String;
+ (Ljava/lang/String;Ljava/util/Locale;)L0java/lang/String;
+getDisplayUnicodeExtensionKey
+ (Ljava/lang/String;Ljava/util/Locale;)Ljava/lang/String;
+ (Ljava/lang/String;Ljava/util/Locale;)L0java/lang/String;
+getDisplayUnicodeExtensionType
+ (Ljava/lang/String;Ljava/lang/String;Ljava/util/Locale;)Ljava/lang/String;
+ (Ljava/lang/String;Ljava/lang/String;Ljava/util/Locale;)L0java/lang/String;

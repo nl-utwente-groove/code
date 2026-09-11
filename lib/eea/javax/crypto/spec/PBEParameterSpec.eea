@@ -1,0 +1,4 @@
+class javax/crypto/spec/PBEParameterSpec
+getSalt
+ ()[B
+ ()[1B

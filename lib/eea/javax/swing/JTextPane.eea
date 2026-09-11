@@ -1,0 +1,16 @@
+class javax/swing/JTextPane
+createDefaultEditorKit
+ ()Ljavax/swing/text/EditorKit;
+ ()L1javax/swing/text/EditorKit;
+getCharacterAttributes
+ ()Ljavax/swing/text/AttributeSet;
+ ()L0javax/swing/text/AttributeSet;
+getParagraphAttributes
+ ()Ljavax/swing/text/AttributeSet;
+ ()L0javax/swing/text/AttributeSet;
+getUIClassID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

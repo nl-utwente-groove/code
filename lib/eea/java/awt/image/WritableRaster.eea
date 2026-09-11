@@ -1,0 +1,7 @@
+class java/awt/image/WritableRaster
+createWritableChild
+ (IIIIII[I)Ljava/awt/image/WritableRaster;
+ (IIIIII[I)L1java/awt/image/WritableRaster;
+createWritableTranslatedChild
+ (II)Ljava/awt/image/WritableRaster;
+ (II)L1java/awt/image/WritableRaster;

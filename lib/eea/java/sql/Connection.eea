@@ -1,0 +1,55 @@
+class java/sql/Connection
+createArrayOf
+ (Ljava/lang/String;[Ljava/lang/Object;)Ljava/sql/Array;
+ (Ljava/lang/String;[Ljava/lang/Object;)L1java/sql/Array;
+createBlob
+ ()Ljava/sql/Blob;
+ ()L1java/sql/Blob;
+createClob
+ ()Ljava/sql/Clob;
+ ()L1java/sql/Clob;
+createNClob
+ ()Ljava/sql/NClob;
+ ()L1java/sql/NClob;
+createSQLXML
+ ()Ljava/sql/SQLXML;
+ ()L1java/sql/SQLXML;
+createStatement
+ ()Ljava/sql/Statement;
+ ()L1java/sql/Statement;
+createStatement
+ (II)Ljava/sql/Statement;
+ (II)L1java/sql/Statement;
+createStatement
+ (III)Ljava/sql/Statement;
+ (III)L1java/sql/Statement;
+createStruct
+ (Ljava/lang/String;[Ljava/lang/Object;)Ljava/sql/Struct;
+ (Ljava/lang/String;[Ljava/lang/Object;)L1java/sql/Struct;
+prepareCall
+ (Ljava/lang/String;)Ljava/sql/CallableStatement;
+ (Ljava/lang/String;)L1java/sql/CallableStatement;
+prepareCall
+ (Ljava/lang/String;II)Ljava/sql/CallableStatement;
+ (Ljava/lang/String;II)L1java/sql/CallableStatement;
+prepareCall
+ (Ljava/lang/String;III)Ljava/sql/CallableStatement;
+ (Ljava/lang/String;III)L1java/sql/CallableStatement;
+prepareStatement
+ (Ljava/lang/String;)Ljava/sql/PreparedStatement;
+ (Ljava/lang/String;)L1java/sql/PreparedStatement;
+prepareStatement
+ (Ljava/lang/String;I)Ljava/sql/PreparedStatement;
+ (Ljava/lang/String;I)L1java/sql/PreparedStatement;
+prepareStatement
+ (Ljava/lang/String;II)Ljava/sql/PreparedStatement;
+ (Ljava/lang/String;II)L1java/sql/PreparedStatement;
+prepareStatement
+ (Ljava/lang/String;III)Ljava/sql/PreparedStatement;
+ (Ljava/lang/String;III)L1java/sql/PreparedStatement;
+prepareStatement
+ (Ljava/lang/String;[I)Ljava/sql/PreparedStatement;
+ (Ljava/lang/String;[I)L1java/sql/PreparedStatement;
+prepareStatement
+ (Ljava/lang/String;[Ljava/lang/String;)Ljava/sql/PreparedStatement;
+ (Ljava/lang/String;[Ljava/lang/String;)L1java/sql/PreparedStatement;

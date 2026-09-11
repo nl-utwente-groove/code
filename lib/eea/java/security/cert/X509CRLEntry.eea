@@ -1,0 +1,13 @@
+class java/security/cert/X509CRLEntry
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getCertificateIssuer
+ ()Ljavax/security/auth/x500/X500Principal;
+ ()L0javax/security/auth/x500/X500Principal;
+getRevocationReason
+ ()Ljava/security/cert/CRLReason;
+ ()L0java/security/cert/CRLReason;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

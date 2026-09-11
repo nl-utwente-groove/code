@@ -1,0 +1,13 @@
+class javax/sql/rowset/CachedRowSet
+createCopy
+ ()Ljavax/sql/rowset/CachedRowSet;
+ ()L1javax/sql/rowset/CachedRowSet;
+createCopyNoConstraints
+ ()Ljavax/sql/rowset/CachedRowSet;
+ ()L1javax/sql/rowset/CachedRowSet;
+createCopySchema
+ ()Ljavax/sql/rowset/CachedRowSet;
+ ()L1javax/sql/rowset/CachedRowSet;
+createShared
+ ()Ljavax/sql/RowSet;
+ ()L1javax/sql/RowSet;

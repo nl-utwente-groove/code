@@ -65,6 +65,27 @@ addChangeListener
 addItemListener
  (Ljava/awt/event/ItemListener;)V
  (L1java/awt/event/ItemListener;)V
+createActionListener
+ ()Ljava/awt/event/ActionListener;
+ ()L1java/awt/event/ActionListener;
+createActionPropertyChangeListener
+ (Ljavax/swing/Action;)Ljava/beans/PropertyChangeListener;
+ (Ljavax/swing/Action;)L1java/beans/PropertyChangeListener;
+createChangeListener
+ ()Ljavax/swing/event/ChangeListener;
+ ()L1javax/swing/event/ChangeListener;
+createItemListener
+ ()Ljava/awt/event/ItemListener;
+ ()L1java/awt/event/ItemListener;
+getMargin
+ ()Ljava/awt/Insets;
+ ()L1java/awt/Insets;
+getSelectedObjects
+ ()[Ljava/lang/Object;
+ ()[0Ljava/lang/Object;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
 removeActionListener
  (Ljava/awt/event/ActionListener;)V
  (L1java/awt/event/ActionListener;)V

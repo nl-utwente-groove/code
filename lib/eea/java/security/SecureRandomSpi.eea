@@ -1,0 +1,7 @@
+class java/security/SecureRandomSpi
+engineGetParameters
+ ()Ljava/security/SecureRandomParameters;
+ ()L0java/security/SecureRandomParameters;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

@@ -1,0 +1,4 @@
+class java/lang/foreign/SegmentAllocator
+slicingAllocator
+ (Ljava/lang/foreign/MemorySegment;)Ljava/lang/foreign/SegmentAllocator;
+ (Ljava/lang/foreign/MemorySegment;)L1java/lang/foreign/SegmentAllocator;

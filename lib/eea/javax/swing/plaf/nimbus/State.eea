@@ -1,0 +1,5 @@
+class javax/swing/plaf/nimbus/State
+ <T:Ljavax/swing/JComponent;>
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

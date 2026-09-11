@@ -1,0 +1,31 @@
+class javax/naming/directory/DirContext
+createSubcontext
+ (Ljava/lang/String;Ljavax/naming/directory/Attributes;)Ljavax/naming/directory/DirContext;
+ (Ljava/lang/String;Ljavax/naming/directory/Attributes;)L1javax/naming/directory/DirContext;
+createSubcontext
+ (Ljavax/naming/Name;Ljavax/naming/directory/Attributes;)Ljavax/naming/directory/DirContext;
+ (Ljavax/naming/Name;Ljavax/naming/directory/Attributes;)L1javax/naming/directory/DirContext;
+search
+ (Ljava/lang/String;Ljava/lang/String;Ljavax/naming/directory/SearchControls;)Ljavax/naming/NamingEnumeration<Ljavax/naming/directory/SearchResult;>;
+ (Ljava/lang/String;Ljava/lang/String;Ljavax/naming/directory/SearchControls;)L1javax/naming/NamingEnumeration<L1javax/naming/directory/SearchResult;>;
+search
+ (Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;Ljavax/naming/directory/SearchControls;)Ljavax/naming/NamingEnumeration<Ljavax/naming/directory/SearchResult;>;
+ (Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;Ljavax/naming/directory/SearchControls;)L1javax/naming/NamingEnumeration<L1javax/naming/directory/SearchResult;>;
+search
+ (Ljava/lang/String;Ljavax/naming/directory/Attributes;)Ljavax/naming/NamingEnumeration<Ljavax/naming/directory/SearchResult;>;
+ (Ljava/lang/String;Ljavax/naming/directory/Attributes;)L1javax/naming/NamingEnumeration<L1javax/naming/directory/SearchResult;>;
+search
+ (Ljava/lang/String;Ljavax/naming/directory/Attributes;[Ljava/lang/String;)Ljavax/naming/NamingEnumeration<Ljavax/naming/directory/SearchResult;>;
+ (Ljava/lang/String;Ljavax/naming/directory/Attributes;[Ljava/lang/String;)L1javax/naming/NamingEnumeration<L1javax/naming/directory/SearchResult;>;
+search
+ (Ljavax/naming/Name;Ljava/lang/String;Ljavax/naming/directory/SearchControls;)Ljavax/naming/NamingEnumeration<Ljavax/naming/directory/SearchResult;>;
+ (Ljavax/naming/Name;Ljava/lang/String;Ljavax/naming/directory/SearchControls;)L1javax/naming/NamingEnumeration<L1javax/naming/directory/SearchResult;>;
+search
+ (Ljavax/naming/Name;Ljava/lang/String;[Ljava/lang/Object;Ljavax/naming/directory/SearchControls;)Ljavax/naming/NamingEnumeration<Ljavax/naming/directory/SearchResult;>;
+ (Ljavax/naming/Name;Ljava/lang/String;[Ljava/lang/Object;Ljavax/naming/directory/SearchControls;)L1javax/naming/NamingEnumeration<L1javax/naming/directory/SearchResult;>;
+search
+ (Ljavax/naming/Name;Ljavax/naming/directory/Attributes;)Ljavax/naming/NamingEnumeration<Ljavax/naming/directory/SearchResult;>;
+ (Ljavax/naming/Name;Ljavax/naming/directory/Attributes;)L1javax/naming/NamingEnumeration<L1javax/naming/directory/SearchResult;>;
+search
+ (Ljavax/naming/Name;Ljavax/naming/directory/Attributes;[Ljava/lang/String;)Ljavax/naming/NamingEnumeration<Ljavax/naming/directory/SearchResult;>;
+ (Ljavax/naming/Name;Ljavax/naming/directory/Attributes;[Ljava/lang/String;)L1javax/naming/NamingEnumeration<L1javax/naming/directory/SearchResult;>;

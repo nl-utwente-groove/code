@@ -1,0 +1,4 @@
+class javax/swing/plaf/metal/MetalLabelUI
+createUI
+ (Ljavax/swing/JComponent;)Ljavax/swing/plaf/ComponentUI;
+ (Ljavax/swing/JComponent;)L1javax/swing/plaf/ComponentUI;

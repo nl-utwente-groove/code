@@ -1,0 +1,19 @@
+class java/io/DataInputStream
+read
+ ([B)I
+ ([1B)I
+read
+ ([BII)I
+ ([1BII)I
+readFully
+ ([B)V
+ ([1B)V
+readFully
+ ([BII)V
+ ([1BII)V
+readLine
+ ()Ljava/lang/String;
+ ()L0java/lang/String;
+readUTF
+ ()Ljava/lang/String;
+ ()L1java/lang/String;

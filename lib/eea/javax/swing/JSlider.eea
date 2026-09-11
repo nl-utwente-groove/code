@@ -2,6 +2,21 @@ class javax/swing/JSlider
 addChangeListener
  (Ljavax/swing/event/ChangeListener;)V
  (L1javax/swing/event/ChangeListener;)V
+createChangeListener
+ ()Ljavax/swing/event/ChangeListener;
+ ()L1javax/swing/event/ChangeListener;
+createStandardLabels
+ (I)Ljava/util/Hashtable<Ljava/lang/Integer;Ljavax/swing/JComponent;>;
+ (I)L1java/util/Hashtable<Ljava/lang/Integer;Ljavax/swing/JComponent;>;
+createStandardLabels
+ (II)Ljava/util/Hashtable<Ljava/lang/Integer;Ljavax/swing/JComponent;>;
+ (II)L1java/util/Hashtable<Ljava/lang/Integer;Ljavax/swing/JComponent;>;
+getUIClassID
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
+paramString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
 removeChangeListener
  (Ljavax/swing/event/ChangeListener;)V
  (L1javax/swing/event/ChangeListener;)V

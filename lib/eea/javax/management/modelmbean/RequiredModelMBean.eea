@@ -1,0 +1,16 @@
+class javax/management/modelmbean/RequiredModelMBean
+getAttributes
+ ([Ljava/lang/String;)Ljavax/management/AttributeList;
+ ([Ljava/lang/String;)L1javax/management/AttributeList;
+getMBeanInfo
+ ()Ljavax/management/MBeanInfo;
+ ()L1javax/management/MBeanInfo;
+getNotificationInfo
+ ()[Ljavax/management/MBeanNotificationInfo;
+ ()[1Ljavax/management/MBeanNotificationInfo;
+removeNotificationListener
+ (Ljavax/management/NotificationListener;)V
+ (L1javax/management/NotificationListener;)V
+setAttributes
+ (Ljavax/management/AttributeList;)Ljavax/management/AttributeList;
+ (Ljavax/management/AttributeList;)L1javax/management/AttributeList;

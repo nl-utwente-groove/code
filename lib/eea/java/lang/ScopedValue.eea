@@ -1,0 +1,5 @@
+class java/lang/ScopedValue
+ <T:Ljava/lang/Object;>
+newInstance
+ <T:Ljava/lang/Object;>()Ljava/lang/ScopedValue<TT;>;
+ <T:Ljava/lang/Object;>()L1java/lang/ScopedValue<TT;>;

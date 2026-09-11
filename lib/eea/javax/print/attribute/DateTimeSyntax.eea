@@ -1,0 +1,10 @@
+class javax/print/attribute/DateTimeSyntax
+equals
+ (Ljava/lang/Object;)Z
+ (L0java/lang/Object;)Z
+getValue
+ ()Ljava/util/Date;
+ ()L1java/util/Date;
+toString
+ ()Ljava/lang/String;
+ ()L1java/lang/String;
