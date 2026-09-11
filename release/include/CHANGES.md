@@ -3,54 +3,43 @@ GROOVE Change Log
 
 This document describes the major changes in the GROOVE tool set
 
-Upcoming release
+Upcoming release (8.0.0)
 -------------------------------
-- The graph views of the Simulator, the editor, the Viewer and the Imager now run
-  on one of two interchangeable visualisation backends (gh #909): the JGraph-based
-  one of all previous releases, and a new one built on the commercial library
-  yFiles for Java (Swing). The latter is not part of the standard release: it comes
-  as a separate add-on (`groove-x_y_z-yfiles-addon.zip`, for non-commercial use only,
-  see `YFILES-ADDON.md` inside), which is unzipped into GROOVE's new extension
-  directory (`%APPDATA%\GROOVE\extensions` on Windows, `~/Library/Application
-  Support/GROOVE/extensions` on macOS, `~/.groove/extensions` elsewhere; overridable
-  with the system property `groove.extensions.dir`) and loaded from there at start-up.
-  The Simulator offers to download and install the add-on at the first start of a
-  release (once per version), and the same is available at any time under View >
-  `yFiles add-on`, together with installation from a downloaded file and removal.
-  Where both are present, the Options menu of the Simulator offers the choice
-  (`Graph backend`, applied at the next start), yFiles is the default, its seven
-  layout algorithms (hierarchic, organic, orthogonal, tree, balloon, circular,
-  radial) join the layout menu, and the Imager's new `-b` option selects the
-  backend to render with
-- Removed the remote exploration strategy (`remote:host`), which sent the explored
-  state space as a symbolic transition system (STS) to a remote server; command lines
-  or saved explorations using `remote` now fail with an unknown-strategy error
-- Removed the minimax exploration strategy (`minimax:...`), which generated a game
-  strategy for a two-player game encoded as a grammar with parametrised rules;
-  command lines or saved explorations using `minimax` now fail with an error
-  pointing to gh issue #890
-- API change: the programmatic exploration interface `explore.Transformer` (until
-  this release `transform.Transformer`) lost its `setStrategy` and `setAcceptor`
-  methods (without deprecation); use `setExploreType` instead
-- API change: a dependency-layering cleanup moved a number of classes to new
-  packages (without deprecation), notably `transform.Transformer` →
-  `explore.Transformer`, `grammar.QualName` and `grammar.ModuleName` → `util`,
-  `io.FileType`, `io.FileUtils` and `io.ExtensionFilter` → `util.io`,
-  `explore.ExploreResult` and `explore.util.LTSLabels` → `lts`,
-  `transform.Proof` → `match`, and `explore.Verbosity` → `util.cli`
-- The Generator's `-l` run log no longer appends the contents of a `gc.log` file
-  found in the working directory (a remnant of the JDK 8 `-Xloggc` era); use
-  `-Xlog:gc:file=...` to record garbage collection separately
-- The Labels panel of the Type display no longer shows occurrence counts, which are
-  always 1 for type graph elements (gh #879)
-- Resolved gh #878: with "Show arrows on labels" enabled, subtype edges in a
-  type graph no longer show a spurious arrow symbol as their label
-- Resolved gh #908: grammars saved before GROOVE 7.4.0 with a `disabledRules`
-  property silently lost their disabled rules on loading, since the property had
-  been replaced by `ruleEnabling` without conversion; errors in the wrongly
-  re-enabled rules then blocked the grammar. The legacy property is now converted
-  on loading. Unknown rule names in `ruleEnabling` are reported as warnings
-  instead of errors, since the property is a filter over the existing rules
+Major release; `CHANGES-8_0_0.md` expands on every item below
+
+- Graph views run on a swappable backend; yFiles for Java is available as an optional add-on (gh #909)
+- Platform-native installers for Windows, macOS and Linux with bundled Java runtime; the zips need Java 21+
+- Multigraph transformation: new `semantics` property (`SPO-simple`, `SPO-multi`, `DPO`) and `mult=k:` host aspect
+- Regular expressions are no longer witnessed by edges the rule erases (`regExpMatching` property, gh #900)
+- Exploration is configured in settings resources (`explore` folder) and a reworked dialog; Generator `-x`
+- New exploration features: unstored exploration, traces as results, random and beam frontiers, new bounds
+- Reproducible randomness: Generator `-seed`, exploration key `seed`; effective seed stored in the LTS (gh #897)
+- Exploration order is identical across JVM runs (gh #888, #894)
+- Settings resources: new resource kind for schema-checked properties files inside the grammar
+- Ecore import/export revived (`.ecore` and type graphs, `.xmi` and host graphs), with an `ecore` settings resource
+- Too many matches halts exploration gracefully; new `matchBound` grammar property (gh #784)
+- Format errors have severities; warnings no longer block a grammar (gh #885, #904)
+- Duplicate node ids in a host graph merge the nodes (gh #780)
+- Quantifier levels on `test:`/`let:` edges are honoured (gh #725); clearer errors for disabled units (gh #560)
+- Control: dead out-parameter values no longer distinguish states; expression arguments fixed (gh #561)
+- Recipes: an undefined in-argument makes the call inapplicable; deleted out-parameters render as `_`
+- CTL always explores the full state space (gh #863); weak-until and release verdicts corrected
+- LTL counterexamples are proper lassos (gh #484); special transition labels are respected (gh #855)
+- Regular-expression automaton minimisation and equivalence fixed (gh #892)
+- Faster multigraph exploration through edge pooling and per-bundle certificates (gh #905, #906)
+- Saving large state spaces needs far less memory (gh #854); text exports are UTF-8 with LF line ends
+- LTS export as control program compiles again (gh #861)
+- Diagnostic logging through `-log level[:subsystem]` on all command-line tools (gh #891)
+- FlatLaf look-and-feel (HiDPI, light/dark) replaces JGoodies; macOS Cmd-Q runs the quit action
+- Editor: one undo step for create-and-label (gh #913), own clipboard, offset paste, line-style and bend fixes
+- Editor: bidirectional edges merged in preview (gh #336), find/replace on untyped labels (gh #701), case-only rename (gh #853)
+- Display: sub-level match emphasis (gh #858), quantifier names shown, type-graph fixes (gh #878, #879), level tags (gh #867)
+- Legacy `disabledRules` property converted on loading; unknown names in `ruleEnabling` are warnings (gh #908)
+- Removed: RETE engine, `remote` and `minimax` strategies (gh #890), `ModelChecker -ltl` (gh #727), old Ecore layer
+- Removed dependencies: JGoodies, OSXAdapter, args4j (now picocli), xerces; EMF is back at 2.41
+- API: package relocations without deprecation, `Transformer.setStrategy`/`setAcceptor` gone, `automaton` package dissolved
+- Unpublished third-party libraries are now on Maven Central; the GROOVE jar is a proper Java module again
+- Also resolved: gh #421, #732, #733 (partial), #756, #843, #865, #881, #901
 
 Release 7.5.3, 3 March 2026
 -------------------------------
