@@ -539,10 +539,14 @@ public class Imager extends GrooveCmdLineTool<Object> {
         public void handleImageAction() {
             String error = null;
             try {
-                File inFile = new File(this.inFileField.getText());
+                String inFileName = this.inFileField.getText();
+                assert inFileName != null : "Plain text field without text";
+                File inFile = new File(inFileName);
                 File outFile;
                 if (this.outFileField.isEditable()) {
-                    outFile = new File(this.outFileField.getText());
+                    String outFileName = this.outFileField.getText();
+                    assert outFileName != null : "Plain text field without text";
+                    outFile = new File(outFileName);
                 } else {
                     outFile = inFile;
                 }
@@ -560,7 +564,9 @@ public class Imager extends GrooveCmdLineTool<Object> {
          * field.
          */
         public void handleBrowseAction(JTextField fileField) {
-            this.browseChooser.setSelectedFile(new File(fileField.getText()));
+            String fileName = fileField.getText();
+            assert fileName != null : "Plain text field without text";
+            this.browseChooser.setSelectedFile(new File(fileName));
             int answer = this.browseChooser.showOpenDialog(this);
             if (answer == JFileChooser.APPROVE_OPTION) {
                 fileField.setText(this.browseChooser.getSelectedFile().getAbsolutePath());
@@ -684,7 +690,9 @@ public class Imager extends GrooveCmdLineTool<Object> {
                     // enabled
                     if (evt.getSource() == ImagerFrame.this.inFileBrowseButton
                         && !ImagerFrame.this.outFileEnabler.isSelected()) {
-                        File file = new File(ImagerFrame.this.inFileField.getText());
+                        String fileName = ImagerFrame.this.inFileField.getText();
+                        assert fileName != null : "Plain text field without text";
+                        File file = new File(fileName);
                         File dir = file.isDirectory()
                             ? file
                             : file.getParentFile();

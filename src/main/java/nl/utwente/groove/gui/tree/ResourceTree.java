@@ -135,6 +135,7 @@ public class ResourceTree extends AbstractResourceTree {
                 Set<QualName> selected = getSimulatorModel().getSelectSet(getResourceKind());
                 for (int i = 0; i < getRowCount(); i++) {
                     TreePath path = getPathForRow(i);
+                    assert path != null : "Row %d is within the row count".formatted(i);
                     TreeNode node = (TreeNode) path.getLastPathComponent();
                     if (node instanceof ResourceTreeNode rnode) {
                         visible.add(rnode.getQualName());
@@ -182,6 +183,7 @@ public class ResourceTree extends AbstractResourceTree {
                 var model = source.getResource(getResourceKind());
                 for (int i = 0; model != null && i < getRowCount(); i++) {
                     TreePath path = getPathForRow(i);
+                    assert path != null : "Row %d is within the row count".formatted(i);
                     TreeNode node = (TreeNode) path.getLastPathComponent();
                     if (node instanceof ResourceTreeNode rnode
                         && rnode.getQualName().equals(model.getQualName())) {

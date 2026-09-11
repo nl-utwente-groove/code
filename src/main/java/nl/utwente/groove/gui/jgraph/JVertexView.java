@@ -408,6 +408,7 @@ public class JVertexView extends VertexView {
                 ? background
                 : graph.getBackground();
             if (emph) {
+                assert background != null : "Neither visual map nor graph has a background";
                 float darken = .95f;
                 background = new Color(Math.max((int) (background.getRed() * darken), 0),
                     Math.max((int) (background.getGreen() * darken), 0),

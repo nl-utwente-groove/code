@@ -211,6 +211,7 @@ abstract public class FormulaDialog {
     /** Reacts to a change in the editor. */
     private void processTextChange() {
         final String currentText = getEditor().getText();
+        assert currentText != null : "Plain text field without text";
         String result = parseText(currentText);
         getOkButton().setEnabled(result != null && !currentText.isEmpty());
         getModel().setDirty(currentText);

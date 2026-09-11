@@ -251,7 +251,9 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
         Set<TreeNode> collapsedNodes = new HashSet<>();
         for (int i = 0; i < getRowCount(); i++) {
             if (isCollapsed(i)) {
-                TreeNode child = (TreeNode) getPathForRow(i).getLastPathComponent();
+                TreePath path = getPathForRow(i);
+                assert path != null : "Row %d is within the row count".formatted(i);
+                TreeNode child = (TreeNode) path.getLastPathComponent();
                 if (child.getChildCount() > 0) {
                     collapsedNodes.add(child);
                 }

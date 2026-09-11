@@ -110,8 +110,13 @@ public class CheckboxTreeSelectionTest {
         if (label == null) {
             return fail("no label in the rendered cell " + cell);
         }
-        return new Rendering(label.isOpaque(), label.getBackground(), label.getForeground(),
-            cell.isOpaque(), cell.getBackground());
+        Color labelBackground = label.getBackground();
+        Color labelForeground = label.getForeground();
+        Color cellBackground = cell.getBackground();
+        assert labelBackground != null && labelForeground != null && cellBackground != null
+            : "The renderer sets explicit colours";
+        return new Rendering(label.isOpaque(), labelBackground, labelForeground,
+            cell.isOpaque(), cellBackground);
     }
 
     /** Colours of a rendered row, copied out of the (reused) renderer. */

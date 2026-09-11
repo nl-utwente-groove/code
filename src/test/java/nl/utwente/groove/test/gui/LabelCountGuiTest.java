@@ -114,7 +114,9 @@ public class LabelCountGuiTest {
             assert tree != null; // established by the wait above
             tree.synchroniseModel();
             for (int i = 0; i < tree.getRowCount(); i++) {
-                Object node = tree.getPathForRow(i).getLastPathComponent();
+                var path = tree.getPathForRow(i);
+                assert path != null : "Row %d is within the row count".formatted(i);
+                Object node = path.getLastPathComponent();
                 result.add(tree.convertValueToText(node, false, false, false, i, false));
             }
         });

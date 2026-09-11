@@ -92,6 +92,7 @@ final public class ControlDisplay extends ResourceDisplay {
                     return null;
                 }
                 TreePath curPath = getPathForLocation(evt.getX(), evt.getY());
+                assert curPath != null : "There is a row at the location";
                 Object userObject =
                     ((DefaultMutableTreeNode) curPath.getLastPathComponent()).getUserObject();
                 return getToolTip(userObject);

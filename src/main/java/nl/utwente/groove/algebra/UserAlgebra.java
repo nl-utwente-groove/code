@@ -49,6 +49,7 @@ public final class UserAlgebra extends UserSignature implements Algebra<Object> 
         var op = UserSignature.getOperators().get(claz.getSimpleName());
         assert op != null; // every user type has a constructor operator of the same name
         var rc = claz.getRecordComponents();
+        assert rc != null : "User type '%s' is not a record".formatted(claz);
         var args = new Expression[rc.length];
         for (int i = 0; i < rc.length; i++) {
             try {
@@ -70,7 +71,9 @@ public final class UserAlgebra extends UserSignature implements Algebra<Object> 
         result.append(claz.getSimpleName());
         result.append('(');
         boolean first = true;
-        for (var c : claz.getRecordComponents()) {
+        var rc = claz.getRecordComponents();
+        assert rc != null : "User type '%s' is not a record".formatted(claz);
+        for (var c : rc) {
             if (first) {
                 first = false;
             } else {

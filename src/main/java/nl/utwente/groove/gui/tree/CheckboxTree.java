@@ -128,6 +128,7 @@ public class CheckboxTree extends JTree {
         boolean result = false;
         if (path != null && path.getLastPathComponent() instanceof TreeNode labelNode) {
             Rectangle pathBounds = getPathBounds(path);
+            assert pathBounds != null : "Path under the mouse is visible";
             if (CHECKBOX_ORIENTATION.equals(BorderLayout.WEST)) {
                 int checkboxBorder = pathBounds.x + CHECKBOX_WIDTH;
                 result = labelNode.hasCheckbox() && x < checkboxBorder;
