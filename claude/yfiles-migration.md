@@ -456,7 +456,7 @@ Four commits, one per implementation slice of that note:
 3. **CI** (`release.yml`): the release job checks out the private repository
    `nl-utwente-groove/yfiles-lib` (plain jar + license file in `lib/`; since 2026-09-09 also the backend source, its root project) with `YFILES_LIB_TOKEN`,
    installs the jar, builds the backend (tests skipped on the headless runner) and
-   packages with `-Pyfiles`. Not yet exercised: the repository and secret do not exist.
+   packages with `-Pyfiles`. Exercised by the test releases of 2026-09-10 and 2026-09-11, which carry the add-on zip.
 4. **In-app installer** (`gui.AddOnInstaller`, `util.AddOn`): the options part of the
    View menu gets a `yFiles add-on` submenu (download and install, install from file,
    remove); at the
