@@ -96,6 +96,8 @@ To try this locally without any packaging tools, build the release as described 
 
 which produces the raw application directory (no installer) under `jpackage/target/dist`. Building the actual `.msi` locally additionally requires the WiX toolset.
 
+Uninstalling the `.msi` also removes the yFiles add-on (see the second chapter) from the user's extension directory, so that the library does not outlive the GROOVE version it was built for; the old version of an upgrade counts as uninstalled, and the new version then offers the add-on again at its first start. The other installers do not do this: a `.dmg` has no uninstall step at all. jpackage's own WiX sources know nothing about the add-on, but take a custom `main.wxs` from a resource directory in place of the bundled one, so the script extracts the bundled one from the running JDK and splices the removal (`jpackage/wix/addon-cleanup.wxf`) into it at build time. A checked-in copy of `main.wxs` would go stale with every JDK upgrade; the splice instead fails the build if the structure of `main.wxs` changes. Only the add-on directory and, if they are empty afterwards, the directories above it are removed; other extensions the user put there stay, as does the record in the Java preferences that the first-run question was asked, so a reinstallation of the same version does not repeat that question.
+
 ## The release page
 
 The installers are not code-signed, so Windows and macOS block them at first. The release page therefore explains how to get past that, in two places, both kept in `github`:
@@ -175,7 +177,8 @@ from Maven Central like any plugin.
 
 The script `do-all.sh yfiles` runs the standard steps and then these two. The
 installers need nothing for the add-on: the standard ones bundle a runtime that
-suffices for it.
+suffices for it. The Windows installer does know of it in one respect: uninstalling
+GROOVE removes the add-on directory (see the Installers section).
 
 ## In the release workflow
 

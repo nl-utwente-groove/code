@@ -1,0 +1,37 @@
+  <!-- Spliced into jpackage's main.wxs by build-installer.sh, which also adds a
+       reference to the component group GrooveAddOnCleanup to the installer's
+       feature. WiX 3 syntax, like jpackage's own sources; the $(var.Jp...)
+       variables are the ones jpackage defines for main.wxs. -->
+  <Fragment>
+    <!-- GROOVE's extension directory (nl.utwente.groove.util.Extensions) and the
+         directory of the yFiles add-on in it (nl.utwente.groove.util.AddOn) -->
+    <DirectoryRef Id="TARGETDIR">
+      <Directory Id="AppDataFolder">
+        <Directory Id="GrooveAppDataDir" Name="GROOVE">
+          <Directory Id="GrooveExtensionsDir" Name="extensions">
+            <Directory Id="GrooveYfilesAddOnDir" Name="yfiles"/>
+          </Directory>
+        </Directory>
+      </Directory>
+    </DirectoryRef>
+    <ComponentGroup Id="GrooveAddOnCleanup">
+      <!-- Removes the yFiles add-on, which GROOVE downloads into the user's extension
+           directory, when GROOVE is uninstalled (the old version of an upgrade
+           included), so that the library does not outlive the GROOVE version it
+           was built for. The add-on directory is flat, so a plain RemoveFile
+           suffices; RemoveFolder only removes directories that are then empty, so
+           anything else the user put in the extension directory stays. The registry
+           value is the key path a component in the user profile must have (ICE38),
+           under the key jpackage uses for its own key paths; the fixed GUID keeps
+           the component identical across builds, as the component rules require. -->
+      <Component Id="GrooveYfilesAddOnCleanup" Directory="GrooveYfilesAddOnDir"
+                 Guid="58668494-aac4-4d8d-b0ba-42e0ab99de53" Win64="yes">
+        <RegistryValue Root="HKCU" Key="Software\$(var.JpAppVendor)\$(var.JpAppName)\$(var.JpAppVersion)"
+                       Name="YfilesAddOnCleanup" Type="integer" Value="1" KeyPath="yes"/>
+        <RemoveFile Id="RemoveGrooveYfilesAddOnFiles" Name="*" On="uninstall"/>
+        <RemoveFolder Id="RemoveGrooveYfilesAddOnDir" On="uninstall"/>
+        <RemoveFolder Id="RemoveGrooveExtensionsDir" Directory="GrooveExtensionsDir" On="uninstall"/>
+        <RemoveFolder Id="RemoveGrooveAppDataDir" Directory="GrooveAppDataDir" On="uninstall"/>
+      </Component>
+    </ComponentGroup>
+  </Fragment>

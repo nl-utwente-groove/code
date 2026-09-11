@@ -151,6 +151,32 @@ make_launcher ModelChecker true
 make_launcher Imager true
 make_launcher Viewer false
 
+# ----------------------------------------------------------------- msi resources
+# Uninstalling the MSI also removes the yFiles add-on from the user's extension
+# directory (see README.md), which jpackage's own WiX sources know nothing
+# about. jpackage takes a main.wxs from its resource directory in place of the
+# bundled one, so this extracts the bundled one from the running JDK and
+# splices the removal fragment wix/addon-cleanup.wxf into it. A checked-in
+# copy of main.wxs would go stale with every JDK upgrade; the two anchor lines
+# used here have been the same from JDK 21 to 26, and the splice fails loudly
+# should they change.
+msi_resources() {
+    local java_home=${JAVA_HOME:-$("${JAVA_BIN}java" -XshowSettings:properties -version 2>&1 | sed -n 's/^ *java.home = //p')}
+    MSI_RESOURCES=$WORK/resources
+    mkdir -p "$MSI_RESOURCES"
+    "${JAVA_BIN}jimage" extract --dir "$(native_path "$MSI_RESOURCES")" \
+        --include 'regex:/jdk.jpackage/jdk/jpackage/internal/resources/main.wxs' \
+        "$(native_path "$java_home/lib/modules")"
+    mv "$MSI_RESOURCES/jdk.jpackage/jdk/jpackage/internal/resources/main.wxs" "$MSI_RESOURCES/main.wxs"
+    sed -i -e '/<ComponentGroupRef Id="Files"\/>/a\      <ComponentGroupRef Id="GrooveAddOnCleanup"/>' \
+        -e "/<\/Product>/r $SCRIPT_DIR/wix/addon-cleanup.wxf" "$MSI_RESOURCES/main.wxs"
+    if ! grep -q '<ComponentGroupRef Id="GrooveAddOnCleanup"/>' "$MSI_RESOURCES/main.wxs" \
+        || ! grep -q '<ComponentGroup Id="GrooveAddOnCleanup">' "$MSI_RESOURCES/main.wxs"; then
+        echo "error: cannot splice the add-on removal into jpackage's main.wxs: its structure has changed" >&2
+        exit 1
+    fi
+}
+
 # ----------------------------------------------------------------- jpackage
 # MSI and DMG version numbers must be plain x.y.z: strip any -SNAPSHOT suffix
 APP_VERSION=${VERSION%%-*}
@@ -189,9 +215,11 @@ if [[ $TYPE != app-image ]]; then
             # No --win-dir-chooser: jpackage's MSI does not remember the chosen
             # folder, so every upgrade would offer the default folder again;
             # users who care about the location can use the zip instead.
+            msi_resources
             args+=(--win-menu-group GROOVE
                 --win-per-user-install
-                --win-upgrade-uuid c8adea88-1eaa-4127-838b-7b4be5a147f3)
+                --win-upgrade-uuid c8adea88-1eaa-4127-838b-7b4be5a147f3
+                --resource-dir "$(native_path "$MSI_RESOURCES")")
             ;;
         linux)
             args+=(--linux-menu-group Development)
