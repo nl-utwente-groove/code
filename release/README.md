@@ -17,7 +17,8 @@ Below, the _release directory_ refers to the project subdirectory (of the `code`
 
 1. Update the version and date in the GROOVE source:
 
-    - The version number is the `revision` property in the main `pom.xml`: a semantic version `x.y.z` with the optional suffix `-SNAPSHOT`. The number might already be correct (it is updated in postprocessing, see below) but the changes in this revision may necessitate the `x` or `y` values. In any case remove the `-SNAPSHOT` suffix. (The `GROOVE_VERSION` resource file is generated from this property by resource filtering; do not edit it.) The `revision` property of the `pom.xml` of the private `yfiles-lib` repository (the optional yFiles backend) must be kept equal to it.
+    - The version number is the `revision` property in the main `pom.xml`: a semantic version `x.y.z` with the optional suffix `-SNAPSHOT`. The number might already be correct (it is updated in postprocessing, see below) but the changes in this revision may necessitate updating the `x` or `y` values. In any case remove the `-SNAPSHOT` suffix. (The `GROOVE_VERSION` resource file is generated from this property by resource filtering; do not edit it.)
+    - The `revision` property of the `pom.xml` of the private `yfiles-lib` repository (the optional yFiles backend) must be kept equal to that of the release.
     - The remaining files in `src/main/resources/nl/utwente/groove/resource/version`:
         - `GROOVE_BUILD`: the build date, in format `YYYYMMDD`. Update to the build date.
         - [Optional] `GXL_VERSION`: the name of the version of GXL currently used for the encoding of graphs. (This will rarely change.)
@@ -27,6 +28,8 @@ Below, the _release directory_ refers to the project subdirectory (of the `code`
    to reflect all changes with respect to the previous release.
 
 3. [Optional] Update `include/usermanual.pdf` file in the groove-release project with the newest version of the manual.
+
+3. [Optional] Check the files in `release/github` to see if the wording is still up-to-date
 
 4. [Optional] Update `include/groove2tikz.sty file` in the groove-release project.
    This is done by running the `TikzStyleExtractor` class in the package
@@ -82,7 +85,8 @@ If something goes wrong on github and you have to repeat the last step, you firs
 
 ## Installers
 
-The `installers` job of the release workflow (`.github/workflows/release.yml`) runs `jpackage/build-installer.sh` on a matrix of platform runners — jpackage can only build for the platform it runs on — and attaches the resulting installers to the same github release. The script unpacks the `-bin` zip and turns it into a native package with a bundled, jlink-trimmed Java runtime: the Simulator becomes the main launcher (which jpackage names after the application: GROOVE), the tools (Simulator, Generator, ModelChecker, Imager, Viewer) become additional launchers named after themselves, and those carry the menu entries.
+The `installers` job of the release workflow (`.github/workflows/release.yml`) runs `jpackage/build-installer.sh` on a matrix of platform runners — jpackage can only build for the platform it runs on — and attaches the resulting installers to the same github release.
+The script unpacks the `-bin` zip and turns it into a native package with a bundled, jlink-trimmed Java runtime: the Simulator becomes the main launcher (which jpackage names after the application: GROOVE), the tools (Simulator, Generator, ModelChecker, Imager, Viewer) become additional launchers named after themselves, and those carry the menu entries.
 
 To try this locally without any packaging tools, build the release as described above and then run
 
