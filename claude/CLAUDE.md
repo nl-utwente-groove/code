@@ -40,6 +40,14 @@ mvn -q test -Dexcluded.test.groups= -Dtest='*GuiTest' -DfailIfNoSpecifiedTests=f
 
 Results land in `target/surefire-reports/*GuiTest.txt`; `-q` prints nothing on success, so exit 0 is the pass signal. The run needs a display (headless runs skip the classes by assumption), so CI cannot substitute for it. The gate is not hypothetical: the view-model split (750e8215f) broke all ten GUI tests and sat on master unnoticed for two days. Since the suite shares one Simulator per JVM, a failure that wedges the shared `SimulatorModel` also makes unrelated tests in the same JVM flaky, so the damage is not confined to the GUI classes.
 
+**The yFiles backend is a second gate for changes to the neutral view layer.** Its source lives in the private repository `nl-utwente-groove/yfiles-lib` (clone expected at `../yfiles-lib`, see `claude/yfiles-migration.md`), so no run in this repository compiles or tests it. Before handing over work that touches `gui/view`, `gui/view/cell`, `gui/layout` or `gui/look`, build and test the unit against the branch:
+
+```
+mvn -q -f ../yfiles-lib/pom.xml -Dgroove.dir=<absolute path of this checkout or worktree> test > yfiles.log 2>&1
+```
+
+The `groove.dir` property names the checkout whose core is installed first and whose `junit/` fixtures the tests load; it defaults to `../code`, which is the main checkout, not a worktree. Expect 65 tests with 4 Robot skips; a stale core shows up as "Unresolved compilation problems" at run time, cured by `mvn -q clean install -DskipTests` here and a `clean` build of the unit. The private repository's own workflow runs the same tests under Xvfb on every push, against `master` of this repository by default, so a branch that changes the interface leaves that workflow red until it is merged.
+
 **Keep build output out of the model context**: a `PreToolUse` hook (`.claude/hooks/pretool-guard.ps1`, wired up in `.claude/settings.json`) denies `mvn` test/package/install/verify runs that are neither quiet nor redirected. Run `mvn -q <goals> > <log> 2>&1` and grep the log; test-failure details land in `target/surefire-reports`. The same hook blocks `git commit` on `master` and turns `git push` / `gh pr create` into a user confirmation prompt. The guard matches only text that is really a command — heredoc bodies are stripped, and `git`/`gh`/`mvn` must stand at the start of a command — so a commit message may quote a build command without being denied as one. A decision table lives next to it (`.claude/hooks/pretool-guard.tests.ps1`, run with `powershell -NoProfile -ExecutionPolicy Bypass -File`); run it after touching the guard, since matching too widely blocks legitimate commits and matching too narrowly stops protecting anything.
 
 ### Eclipse
