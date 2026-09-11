@@ -109,9 +109,13 @@ MODULES=$(printf '%s\n' ${MODULES//,/ } $EXTRA_MODULES | sort -u | paste -sd, -)
 echo "bundled runtime modules: $MODULES"
 
 # ----------------------------------------------------------------- launchers
-# The main launcher (named GROOVE) starts the Simulator; the other tools
-# become additional launchers. win-console gives the command-line tools a
-# console on Windows (ignored elsewhere).
+# jpackage names the main launcher after the application (GROOVE), and it
+# starts the Simulator; the tools, the Simulator included, become additional
+# launchers named after themselves. The menu entries (Windows start menu,
+# Linux desktop files) hang off the tool launchers rather than the main one,
+# so the GROOVE menu group lists Simulator, Generator, ... and not a second
+# GROOVE. win-console gives the command-line tools a console on Windows
+# (ignored elsewhere).
 LAUNCHERS_DIR=$WORK/launchers
 mkdir -p "$LAUNCHERS_DIR"
 add_launcher_args=()
@@ -119,9 +123,12 @@ make_launcher() { # <name> <console>
     {
         echo "main-jar=bin/$1.jar"
         echo "win-console=$2"
+        echo "win-menu=true"
+        echo "linux-shortcut=true"
     } > "$LAUNCHERS_DIR/$1.properties"
     add_launcher_args+=(--add-launcher "$1=$(native_path "$LAUNCHERS_DIR/$1.properties")")
 }
+make_launcher Simulator false
 make_launcher Generator true
 make_launcher ModelChecker true
 make_launcher Imager true
@@ -162,12 +169,12 @@ if [[ $TYPE != app-image ]]; then
     case $OS in
         windows)
             # the fixed upgrade UUID makes a newer MSI replace an older install
-            args+=(--win-menu --win-menu-group GROOVE
+            args+=(--win-menu-group GROOVE
                 --win-per-user-install --win-dir-chooser
                 --win-upgrade-uuid c8adea88-1eaa-4127-838b-7b4be5a147f3)
             ;;
         linux)
-            args+=(--linux-menu-group Development --linux-shortcut)
+            args+=(--linux-menu-group Development)
             ;;
     esac
 fi
