@@ -294,11 +294,14 @@ public class DisplaysPanel extends JTabbedPane implements SimulatorListener {
             // change the selected tab in the appropriate lists panel
             JTabbedPane listsTabPane = getListsPanel(newDisplayKind);
             ListPanel newListPanel = getDisplay(newDisplayKind).getListPanel();
-            boolean changeList = listsTabPane != null;
+            // the lists pane has no selected list if all its list panels are detached
+            ListPanel oldListPanel = listsTabPane == null
+                ? null
+                : (ListPanel) listsTabPane.getSelectedComponent();
+            boolean changeList = oldListPanel != null;
             if (changeList) {
-                assert listsTabPane != null; // implied by changeList
-                DisplayKind oldListDisplayKind
-                    = ((ListPanel) listsTabPane.getSelectedComponent()).getDisplayKind();
+                assert listsTabPane != null && oldListPanel != null; // implied by changeList
+                DisplayKind oldListDisplayKind = oldListPanel.getDisplayKind();
                 changeList = oldListDisplayKind != newDisplayKind && newListPanel != null
                     && listsTabPane.indexOfComponent(newListPanel) >= 0;
                 // do not automatically switch lists panel between state and rule mode
