@@ -10,7 +10,7 @@ GROOVE is a tool for graph transformation and verification (state-space explorat
 
 ### Dependencies
 
-All dependencies resolve from Maven Central; a fresh clone builds without setup. Four third-party libraries never published by their upstreams (`gnuprologjava`, `ltl2buchi`, `osxadapter`, `groove-gxl`) are republished to Central under the `nl.utwente.groove` group id, with a fourth version digit marking the repackaging. The repackaging modules, the upstream jars they are built from, and the publication procedure live in `lib/publish` (see its README); upgrading such a library means a new upstream jar in `lib/publish/upstream`, a new published version, and a redeploy by a maintainer.
+All dependencies resolve from Maven Central; a fresh clone builds without setup. Three third-party libraries never published by their upstreams (`gnuprologjava`, `ltl2buchi`, `groove-gxl`) are republished to Central under the `nl.utwente.groove` group id, with a fourth version digit marking the repackaging. The repackaging modules, the upstream jars they are built from, and the publication procedure live in `lib/publish` (see its README); upgrading such a library means a new upstream jar in `lib/publish/upstream`, a new published version, and a redeploy by a maintainer.
 
 ### Commands
 

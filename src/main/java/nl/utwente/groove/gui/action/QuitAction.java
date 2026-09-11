@@ -5,14 +5,18 @@ import java.lang.System.Logger.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.UserSettings;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Log;
 
 /**
  * Action for quitting the simulator.
  */
+@NonNullByDefault
 public class QuitAction extends SimulatorAction {
     /** Constructs an instance of the action. */
     public QuitAction(Simulator simulator) {
@@ -22,6 +26,17 @@ public class QuitAction extends SimulatorAction {
 
     @Override
     public void execute() {
+        tryQuit();
+    }
+
+    /**
+     * Tries to quit the simulator, giving the user the chance to save
+     * unsaved changes or to cancel.
+     * @return {@code true} if the simulator was closed, {@code false}
+     * if the user cancelled the quit
+     */
+    @AIGenerated("Claude Opus 5, 2026-09")
+    public boolean tryQuit() {
         boolean quit = getDisplaysPanel().saveAllEditors(true);
         if (quit) {
             // Saving the user settings is a convenience, whereas disposing of
@@ -43,6 +58,7 @@ public class QuitAction extends SimulatorAction {
             }
 
         }
+        return quit;
     }
 
     /** Logger for failures encountered while shutting down. */
