@@ -17,6 +17,12 @@
 			<outputDirectory>doc</outputDirectory>
 	    </fileSet>
 	</fileSets>
+	<files>
+	    <file>
+		    <source>../../../LICENSE.txt</source>
+			<outputDirectory></outputDirectory>
+	    </file>
+	</files>
 	
 	<dependencySets>
 		<dependencySet>

@@ -181,7 +181,7 @@ case $OS in
         ;;
 esac
 if [[ $TYPE != app-image ]]; then
-    args+=(--license-file "$(native_path "$ROOT_DIR/LICENSE.md")"
+    args+=(--license-file "$(native_path "$ROOT_DIR/LICENSE.txt")"
         --about-url "https://nl-utwente-groove.github.io")
     case $OS in
         windows)
