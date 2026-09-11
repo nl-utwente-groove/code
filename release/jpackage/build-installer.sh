@@ -168,9 +168,12 @@ if [[ $TYPE != app-image ]]; then
         --about-url "https://nl-utwente-groove.github.io")
     case $OS in
         windows)
-            # the fixed upgrade UUID makes a newer MSI replace an older install
+            # the fixed upgrade UUID makes a newer MSI replace an older install.
+            # No --win-dir-chooser: jpackage's MSI does not remember the chosen
+            # folder, so every upgrade would offer the default folder again;
+            # users who care about the location can use the zip instead.
             args+=(--win-menu-group GROOVE
-                --win-per-user-install --win-dir-chooser
+                --win-per-user-install
                 --win-upgrade-uuid c8adea88-1eaa-4127-838b-7b4be5a147f3)
             ;;
         linux)
