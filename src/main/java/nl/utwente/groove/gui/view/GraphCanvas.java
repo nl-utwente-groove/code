@@ -113,12 +113,6 @@ public interface GraphCanvas<G extends Graph> {
      */
     void setViewModel(@Nullable GraphViewModel<G> model);
 
-    /**
-     * Indicates that the canvas is in the process of refreshing its content model;
-     * while this is the case, change events should be ignored.
-     */
-    boolean isModelRefreshing();
-
     /** Returns all cells currently shown; empty if there is no content model. */
     Collection<? extends ViewCell<G>> getCells();
 
@@ -137,14 +131,6 @@ public interface GraphCanvas<G extends Graph> {
 
     /** Returns the currently selected cells. */
     List<ViewCell<G>> getSelection();
-
-    /** Returns the first selected cell, if any. */
-    default @Nullable ViewCell<G> getSelectedCell() {
-        var selection = getSelection();
-        return selection.isEmpty()
-            ? null
-            : selection.get(0);
-    }
 
     /** Tests if no cell is selected. */
     boolean isSelectionEmpty();
@@ -188,14 +174,8 @@ public interface GraphCanvas<G extends Graph> {
         getNonNullViewModel().changeVisuals(changes);
     }
 
-    /** Removes the bend points of all edges, as one edit. */
-    void clearAllEdgePoints();
-
     /** Commits the in-place editor, if one is active. */
     void finishEditing();
-
-    /** Indicates if the content may be edited interactively. */
-    boolean isEditable();
 
     /** Enables or disables interactive editing. */
     void setEditable(boolean editable);
@@ -223,9 +203,6 @@ public interface GraphCanvas<G extends Graph> {
      * @return {@code true} if the mode changed
      */
     boolean setMode(GraphViewMode mode);
-
-    /** Returns the interaction mode that the canvas starts in. */
-    GraphViewMode getDefaultMode();
 
     // ---------- layout ----------
 
@@ -261,9 +238,6 @@ public interface GraphCanvas<G extends Graph> {
 
     /** Zooms in or out by a number of steps (negative for zooming out). */
     void changeScale(int steps);
-
-    /** Zooms and scrolls so that a given area (in graph coordinates) fills the viewport. */
-    void zoomTo(Rectangle2D bounds);
 
     /** Scrolls so that a given area (in graph coordinates) becomes visible. */
     void scrollTo(Rectangle2D bounds);
@@ -304,9 +278,6 @@ public interface GraphCanvas<G extends Graph> {
     /** Sets the overlay drawn over the canvas. */
     void setOverlay(Overlay overlay);
 
-    /** Returns the overlay drawn over the canvas. */
-    Overlay getOverlay();
-
     /** Decorations a canvas may draw over its content, to signal the state of that content. */
     enum Overlay {
         /** No decoration. */
@@ -320,9 +291,6 @@ public interface GraphCanvas<G extends Graph> {
 
     /** Switches tool tips on or off. */
     void setToolTipEnabled(boolean enabled);
-
-    /** Indicates if tool tips are on. */
-    boolean getToolTipEnabled();
 
     /**
      * Returns a listener that refreshes the canvas when a given display option changes,
