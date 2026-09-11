@@ -238,7 +238,7 @@ public final class GraphToTikz<G extends @NonNull Graph> {
         appendTikzHeader();
 
         for (Node node : this.graph.nodeSet()) {
-            ViewVertex<G> vertex = this.model.getJCellForNode(node);
+            ViewVertex<G> vertex = this.model.getCellForNode(node);
             if (vertex != null) {
                 this.model.synchroniseLayout(vertex);
                 NodeLayout layout = null;
@@ -257,10 +257,10 @@ public final class GraphToTikz<G extends @NonNull Graph> {
             if (this.layoutMap != null) {
                 layout = this.layoutMap.getLayout(edge);
             }
-            ViewCell<G> jCell = this.model.getJCellForEdge(edge);
-            if (jCell != null && !consumedEdges.contains(jCell)) {
-                appendTikzEdge(jCell, layout);
-                consumedEdges.add(jCell);
+            ViewCell<G> cell = this.model.getCellForEdge(edge);
+            if (cell != null && !consumedEdges.contains(cell)) {
+                appendTikzEdge(cell, layout);
+                consumedEdges.add(cell);
             }
         }
 
@@ -285,7 +285,7 @@ public final class GraphToTikz<G extends @NonNull Graph> {
     // -------------------------- Nodes ---------------------------------------
 
     /**
-     * Converts a jGraph node to a Tikz string representation.
+     * Converts a vertex cell to a Tikz string representation.
      * @param node the node to be converted.
      * @param layout information regarding layout of the node.
     */
@@ -416,8 +416,8 @@ public final class GraphToTikz<G extends @NonNull Graph> {
 
     /**
      * Appends the given points to the string builder. The coordinates are
-     * scaled by a constant factor and the y-coordinate is inverted as the
-     * jGraph and Tikz representation are different.
+     * scaled by a constant factor and the y-coordinate is inverted as the graph
+     * view and Tikz representation are different.
      * @param x the x coordinate of the point.
      * @param y the y coordinate of the point.
      * @param usePar flag to indicate whether the point coordinates should be
@@ -482,7 +482,7 @@ public final class GraphToTikz<G extends @NonNull Graph> {
     }
 
     /**
-     * Converts a jGraph edge to a Tikz string representation.
+     * Converts an edge cell to a Tikz string representation.
      * @param edge the edge to be converted.
      * @param layout information regarding layout of the edge.
      */

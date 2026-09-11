@@ -43,47 +43,47 @@ import nl.utwente.groove.gui.view.ViewEdge;
 import nl.utwente.groove.gui.view.ViewVertex;
 
 /**
- * Abstract class for j-cell edit actions, working on the selected cells of
+ * Abstract class for cell edit actions, working on the selected cells of
  * a given {@link AspectGraphCanvas}.
  * @author Arend Rensink
  * @version $Revision$
  */
-public abstract class JCellEditAction extends AbstractAction
+public abstract class CellEditAction extends AbstractAction
     implements GraphCanvasListener<@NonNull AspectGraph> {
     /**
-     * Constructs an edit action that is enabled for all j-cells.
+     * Constructs an edit action that is enabled for all cells.
      * @param canvas the canvas on which this action works
      * @param name the name of the action
      */
-    protected JCellEditAction(AspectGraphCanvas canvas, String name) {
+    protected CellEditAction(AspectGraphCanvas canvas, String name) {
         super(name);
         this.canvas = canvas;
         this.allCells = true;
         this.vertexOnly = true;
-        this.jCells = new ArrayList<>();
+        this.cells = new ArrayList<>();
         refresh();
         canvas.addCanvasListener(this);
     }
 
     /**
-     * Constructs an edit action that is enabled for only j-vertices or
-     * j-edges.
+     * Constructs an edit action that is enabled for only vertex cells or
+     * edge cells.
      * @param canvas the canvas on which this action works
      * @param name the name of the action
-     * @param vertexOnly <tt>true</tt> if the action is for j-vertices only
+     * @param vertexOnly <tt>true</tt> if the action is for vertex cells only
      */
-    protected JCellEditAction(AspectGraphCanvas canvas, String name, boolean vertexOnly) {
+    protected CellEditAction(AspectGraphCanvas canvas, String name, boolean vertexOnly) {
         super(name);
         this.canvas = canvas;
         this.allCells = false;
         this.vertexOnly = vertexOnly;
-        this.jCells = new ArrayList<>();
+        this.cells = new ArrayList<>();
         refresh();
         canvas.addCanvasListener(this);
     }
 
     /**
-     * Sets the j-cell to the first selected cell. Disables the action if
+     * Sets the cell to the first selected cell. Disables the action if
      * the type of the cell disagrees with the expected type.
      */
     @Override
@@ -92,16 +92,16 @@ public abstract class JCellEditAction extends AbstractAction
     }
 
     private void refresh() {
-        this.jCell = null;
-        this.jCells.clear();
-        for (var cell : this.canvas.getSelection()) {
-            AspectViewCell jCell = (AspectViewCell) cell;
-            if (this.allCells || this.vertexOnly == (jCell instanceof ViewVertex)) {
-                this.jCell = jCell;
-                this.jCells.add(jCell);
+        this.cell = null;
+        this.cells.clear();
+        for (var selected : this.canvas.getSelection()) {
+            AspectViewCell cell = (AspectViewCell) selected;
+            if (this.allCells || this.vertexOnly == (cell instanceof ViewVertex)) {
+                this.cell = cell;
+                this.cells.add(cell);
             }
         }
-        this.setEnabled(this.jCell != null);
+        this.setEnabled(this.cell != null);
     }
 
     /**
@@ -137,22 +137,22 @@ public abstract class JCellEditAction extends AbstractAction
         return new JMenuItem(this) {
             @Override
             protected void fireActionPerformed(ActionEvent event) {
-                JCellEditAction.this.setLocation(at);
+                CellEditAction.this.setLocation(at);
                 super.fireActionPerformed(event);
             }
         };
     }
 
     /** Convenience method to invoke an edit of a single visual attribute. */
-    protected void edit(ViewCell<@NonNull AspectGraph> jCell, VisualKey key, Object value) {
+    protected void edit(ViewCell<@NonNull AspectGraph> cell, VisualKey key, Object value) {
         VisualMap newVisuals = new VisualMap();
         newVisuals.put(key, value);
-        edit(jCell, newVisuals);
+        edit(cell, newVisuals);
     }
 
     /** Convenience method to invoke an edit of a set of visual attributes. */
-    protected void edit(ViewCell<@NonNull AspectGraph> jCell, VisualMap newVisuals) {
-        this.canvas.edit(Collections.singletonMap(jCell, newVisuals));
+    protected void edit(ViewCell<@NonNull AspectGraph> cell, VisualMap newVisuals) {
+        this.canvas.edit(Collections.singletonMap(cell, newVisuals));
     }
 
     /**
@@ -161,14 +161,14 @@ public abstract class JCellEditAction extends AbstractAction
      * closest to the location. If the location is
      * <tt>null</tt>,{@link #createPointBetween} is invoked instead. Does not
      * update the view; this is to be done by the client.
-     * @param jCell the edge to which the point is added
+     * @param cell the edge to which the point is added
      * @param location the location at which the new point should appear; if
      *        <tt>null</tt>, a point is added beside the first segment
      * @return a copy of the points of the edge (see {@link #shownPoints}) with a
      * point added
      */
-    protected List<Point2D> addPointAt(AspectViewCell jCell, @Nullable Point2D location) {
-        List<Point2D> result = shownPoints(jCell);
+    protected List<Point2D> addPointAt(AspectViewCell cell, @Nullable Point2D location) {
+        List<Point2D> result = shownPoints(cell);
         if (location == null) {
             result.add(1, createPointBetween(result.get(0), result.get(1)));
         } else {
@@ -185,9 +185,9 @@ public abstract class JCellEditAction extends AbstractAction
      * end points replaced by the current centres of the end vertices, which the
      * stored end points do not follow when a vertex is moved.
      */
-    protected static List<Point2D> shownPoints(AspectViewCell jCell) {
-        List<Point2D> result = new LinkedList<>(jCell.getVisuals().getPoints());
-        if (jCell instanceof ViewEdge<?> edge && result.size() >= 2) {
+    protected static List<Point2D> shownPoints(AspectViewCell cell) {
+        List<Point2D> result = new LinkedList<>(cell.getVisuals().getPoints());
+        if (cell instanceof ViewEdge<?> edge && result.size() >= 2) {
             var source = edge.getSourceVertex();
             if (source != null) {
                 result.set(0, source.getVisuals().getNodePos());
@@ -233,15 +233,15 @@ public abstract class JCellEditAction extends AbstractAction
     protected final AspectGraphCanvas canvas;
     /**
      * Switch indication that the action is enabled for all types of
-     * j-cells.
+     * cells.
      */
     protected final boolean allCells;
-    /** Switch indication that the action is enabled for all j-vertices. */
+    /** Switch indication that the action is enabled for all vertex cells. */
     protected final boolean vertexOnly;
-    /** The first currently selected j-cell of the right type. */
-    protected AspectViewCell jCell;
-    /** List list of currently selected j-cells of the right type. */
-    protected final List<AspectViewCell> jCells;
+    /** The first currently selected cell of the right type. */
+    protected AspectViewCell cell;
+    /** List list of currently selected cells of the right type. */
+    protected final List<AspectViewCell> cells;
     /** The location set for the next invocation, if any; see {@link #takeLocation()}. */
     private @Nullable Point2D location;
 }

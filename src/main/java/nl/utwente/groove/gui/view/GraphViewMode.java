@@ -8,7 +8,7 @@ import javax.swing.KeyStroke;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
 
-/** Manipulation and viewing mode of a JGraph. */
+/** Manipulation and viewing mode of a graph view. */
 public enum GraphViewMode {
     /** Selection and possibly label edit mode. */
     SELECT_MODE(Options.SELECT_MODE_NAME, Options.SELECT_MODE_KEY,
@@ -18,7 +18,7 @@ public enum GraphViewMode {
             Icons.HAND_OPEN_CURSOR, Icons.HAND_CLOSED_CURSOR),
     /** Edge edit mode. */
     EDIT_MODE(Options.EDIT_MODE_NAME, Options.EDIT_MODE_KEY, Icons.EDGE_ICON),
-    /** JGraph preview mode. */
+    /** Preview mode. */
     PREVIEW_MODE(Options.PREVIEW_MODE_NAME, Options.PREVIEW_MODE_KEY,
             Icons.PREVIEW_ICON);
 

@@ -163,7 +163,7 @@ final public class AspectEditorTab extends AspectTab
                 }
             }
         }
-        // ensure the JGraph gets focus as soon as the graph panel
+        // ensure the canvas gets focus as soon as the graph panel
         // is clicked anywhere
         // for reasons not clear to me, mouse listeners do not work on
         // the level of the GraphPanel
@@ -437,7 +437,7 @@ final public class AspectEditorTab extends AspectTab
         }
         JPanel result = new TitledPanel("Label syntax help", tabbedPane, null, false);
         // add a listener that switches the syntax help between nodes and edges
-        // when a cell edit is started in the JGraph
+        // when a cell edit is started on the canvas
         getCanvas().addCanvasListener(new GraphCanvasListener<@NonNull AspectGraph>() {
             @Override
             public void editingStarted(GraphCanvas<@NonNull AspectGraph> canvas,

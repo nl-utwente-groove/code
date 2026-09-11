@@ -317,11 +317,11 @@ public class LTSDisplay extends Display
         if (viewModel == null || counterExamples.isEmpty()) {
             return;
         }
-        Set<ViewCell<@NonNull GTS>> jCells = new HashSet<>();
+        Set<ViewCell<@NonNull GTS>> cells = new HashSet<>();
         Iterator<GraphState> stateIter = counterExamples.iterator();
         GraphState current = stateIter.next();
         while (current != null) {
-            jCells.add(viewModel.getJCellForNode(current));
+            cells.add(viewModel.getCellForNode(current));
             GraphState next = stateIter.hasNext()
                 ? stateIter.next()
                 : null;
@@ -329,14 +329,14 @@ public class LTSDisplay extends Display
                 for (GraphTransition trans : current
                     .getTransitions(getController().getTransitionClass())) {
                     if (trans.target() == next) {
-                        jCells.add(viewModel.getJCellForEdge(trans));
+                        cells.add(viewModel.getCellForEdge(trans));
                         break;
                     }
                 }
             }
             current = next;
         }
-        getCanvas().select(jCells);
+        getCanvas().select(cells);
     }
 
     /**
@@ -352,20 +352,20 @@ public class LTSDisplay extends Display
         if (viewModel == null) {
             return;
         }
-        Set<ViewCell<@NonNull GTS>> jCells = new HashSet<>();
+        Set<ViewCell<@NonNull GTS>> cells = new HashSet<>();
         for (GraphState state : result.getStates()) {
-            var jCell = viewModel.getJCellForNode(state);
-            if (jCell != null) {
-                jCells.add(jCell);
+            var cell = viewModel.getCellForNode(state);
+            if (cell != null) {
+                cells.add(cell);
             }
         }
         for (GraphTransition trans : result.getTransitions()) {
-            var jCell = viewModel.getJCellForEdge(trans);
-            if (jCell != null) {
-                jCells.add(jCell);
+            var cell = viewModel.getCellForEdge(trans);
+            if (cell != null) {
+                cells.add(cell);
             }
         }
-        getCanvas().select(jCells);
+        getCanvas().select(cells);
     }
 
     /** Creates a panel consisting of the error panel and the status bar. */

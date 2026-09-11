@@ -183,7 +183,7 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
      * of graph elements.
      */
     public Set<ViewCell<?>> getJCells(Collection<? extends Element> elements) {
-        return getViewModel().getJCells(elements);
+        return getViewModel().getCellsFor(elements);
     }
 
     /**
@@ -195,7 +195,7 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
      * @return the cell associated with <tt>elem</tt>
      */
     public ViewCell<G> getJCell(Element elem) {
-        return getViewModel().getJCell(elem);
+        return getViewModel().getCell(elem);
     }
 
     /**
@@ -206,7 +206,7 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
      * @return the cell modelling <tt>edge</tt>
      */
     public ViewCell<G> getJCellForEdge(Edge edge) {
-        return getViewModel().getJCellForEdge(edge);
+        return getViewModel().getCellForEdge(edge);
     }
 
     /**
@@ -215,7 +215,7 @@ abstract public class JModel<G extends @NonNull Graph> extends DefaultGraphModel
      * @return the vertex cell modelling node (if node is known)
      */
     public ViewVertex<G> getJCellForNode(Node node) {
-        return getViewModel().getJCellForNode(node);
+        return getViewModel().getCellForNode(node);
     }
 
     /** Returns the number of graph nodes currently represented in this {@link JModel}. */

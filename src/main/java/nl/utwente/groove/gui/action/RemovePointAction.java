@@ -30,11 +30,11 @@ import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
 
 /**
- * Action to remove a point from the currently selected j-edge.
+ * Action to remove a point from the currently selected edge cell.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class RemovePointAction extends JCellEditAction {
+public class RemovePointAction extends CellEditAction {
     /** Constructs an instance of the action. */
     public RemovePointAction(AspectGraphCanvas canvas) {
         super(canvas, Options.REMOVE_POINT_ACTION, false);
@@ -43,25 +43,25 @@ public class RemovePointAction extends JCellEditAction {
 
     @Override
     public boolean isEnabled() {
-        return this.jCells.size() == 1;
+        return this.cells.size() == 1;
     }
 
     @Override
     public void actionPerformed(ActionEvent evt) {
-        execute(this.jCell, takeLocation());
+        execute(this.cell, takeLocation());
     }
 
     /**
-     * Removes an intermediate point from a given j-edge, controlled by a given
+     * Removes an intermediate point from a given edge cell, controlled by a given
      * location. The point removed is either the second point (if the location
      * is <tt>null</tt>) or the one closest to the location.
-     * @param jEdge the j-edge to be modified
+     * @param edge the edge cell to be modified
      * @param at the location, in graph coordinates
      */
-    public void execute(AspectViewCell jEdge, @Nullable Point2D at) {
-        VisualMap visuals = jEdge.getVisuals();
+    public void execute(AspectViewCell edge, @Nullable Point2D at) {
+        VisualMap visuals = edge.getVisuals();
         List<Point2D> points = visuals.getPoints();
-        edit(jEdge, VisualKey.POINTS, removePointAt(points, at));
+        edit(edge, VisualKey.POINTS, removePointAt(points, at));
     }
 
     /**

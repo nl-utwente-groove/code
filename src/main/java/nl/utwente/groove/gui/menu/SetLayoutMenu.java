@@ -85,8 +85,8 @@ public class SetLayoutMenu extends JMenu {
     }
 
     /**
-     * Sets a given layouter for the jgraph and returns the corresponding layout
-     * action. Also notifies the underlying jgraph.
+     * Sets a given layouter for the canvas and returns the corresponding layout
+     * action. Also notifies the underlying canvas.
      * @param prototypeLayout the new layout action
      */
     public LayoutAction selectLayoutAction(Layouter prototypeLayout) {
@@ -102,7 +102,6 @@ public class SetLayoutMenu extends JMenu {
             }
         }
         return result;
-        // jgraph.doLayout();
     }
 
     /**

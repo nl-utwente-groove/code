@@ -284,19 +284,19 @@ public class LTSGraphViewController extends GraphViewController<GTS> {
         GraphTransition oldActiveTrans = getActiveTransition();
         this.activeTransition = activeTrans;
         if (oldActiveTrans != null) {
-            for (LTSViewCell jCell : getTransitionCells(oldActiveTrans)) {
-                if (jCell.setActive(false)) {
-                    changedCells.add(jCell);
+            for (LTSViewCell cell : getTransitionCells(oldActiveTrans)) {
+                if (cell.setActive(false)) {
+                    changedCells.add(cell);
                 }
             }
         }
         if (activeTrans != null) {
-            for (LTSViewCell jCell : getTransitionCells(activeTrans)) {
-                if (jCell.getVisuals().isVisible()) {
-                    activeCells.add(jCell);
+            for (LTSViewCell cell : getTransitionCells(activeTrans)) {
+                if (cell.getVisuals().isVisible()) {
+                    activeCells.add(cell);
                 }
-                if (jCell.setActive(true)) {
-                    changedCells.add(jCell);
+                if (cell.setActive(true)) {
+                    changedCells.add(cell);
                 }
             }
         }
@@ -304,23 +304,23 @@ public class LTSGraphViewController extends GraphViewController<GTS> {
         GraphState oldActiveState = this.activeState;
         this.activeState = activeState;
         if (oldActiveState != null) {
-            LTSViewCell jCell = (LTSViewCell) model.getJCellForNode(oldActiveState);
-            if (jCell != null && jCell.setActive(false)) {
-                changedCells.add(jCell);
+            LTSViewCell cell = (LTSViewCell) model.getCellForNode(oldActiveState);
+            if (cell != null && cell.setActive(false)) {
+                changedCells.add(cell);
             }
         }
         if (activeState != null && getCanvas().getViewModel() != null) {
-            LTSViewCell jCell = (LTSViewCell) model.getJCellForNode(activeState);
-            if (jCell == null) {
+            LTSViewCell cell = (LTSViewCell) model.getCellForNode(activeState);
+            if (cell == null) {
                 result = addToModel(activeState);
-                jCell = (LTSViewCell) model.getJCellForNode(activeState);
+                cell = (LTSViewCell) model.getCellForNode(activeState);
             }
-            if (jCell != null) {
-                if (jCell.setActive(true)) {
-                    changedCells.add(jCell);
+            if (cell != null) {
+                if (cell.setActive(true)) {
+                    changedCells.add(cell);
                 }
-                if (jCell.getVisuals().isVisible()) {
-                    activeCells.add(jCell);
+                if (cell.getVisuals().isVisible()) {
+                    activeCells.add(cell);
                 }
             }
         }
@@ -344,12 +344,12 @@ public class LTSGraphViewController extends GraphViewController<GTS> {
             GraphTransition in = ns.getInTransition();
             newTransitions.add(in);
             parent = in.source();
-            if (model.getJCellForNode(parent) == null) {
+            if (model.getCellForNode(parent) == null) {
                 newStates.add(parent);
             }
         }
         for (GraphTransition trans : state.getTransitions(getTransitionClass())) {
-            if (model.getJCellForEdge(trans) == null) {
+            if (model.getCellForEdge(trans) == null) {
                 newTransitions.add(trans);
                 newStates.add(trans.target());
             }
@@ -371,7 +371,7 @@ public class LTSGraphViewController extends GraphViewController<GTS> {
         List<ViewCell<GTS>> activeCells = new ArrayList<>();
         GraphState activeState = getActiveState();
         if (activeState != null) {
-            LTSViewCell activeCell = (LTSViewCell) model.getJCellForNode(activeState);
+            LTSViewCell activeCell = (LTSViewCell) model.getCellForNode(activeState);
             if (activeCell != null) {
                 activeCell.setActive(true);
                 activeCells.add(activeCell);
@@ -379,7 +379,7 @@ public class LTSGraphViewController extends GraphViewController<GTS> {
         }
         GraphTransition activeTrans = getActiveTransition();
         if (activeTrans != null) {
-            LTSViewCell activeCell = (LTSViewCell) model.getJCellForEdge(activeTrans);
+            LTSViewCell activeCell = (LTSViewCell) model.getCellForEdge(activeTrans);
             if (activeCell != null) {
                 activeCell.setActive(true);
                 activeCells.add(activeCell);
@@ -395,19 +395,19 @@ public class LTSGraphViewController extends GraphViewController<GTS> {
     private Collection<LTSViewCell> getTransitionCells(GraphTransition trans) {
         var model = getCanvas().getNonNullViewModel();
         Collection<LTSViewCell> result = new ArrayList<>();
-        LTSViewCell jCell = (LTSViewCell) model.getJCellForEdge(trans);
-        if (jCell != null) {
-            result.add(jCell);
+        LTSViewCell cell = (LTSViewCell) model.getCellForEdge(trans);
+        if (cell != null) {
+            result.add(cell);
         }
         if (trans instanceof RecipeTransition) {
             for (RuleTransition subTrans : ((RecipeTransition) trans).getSteps()) {
-                jCell = (LTSViewCell) model.getJCellForEdge(subTrans);
-                if (jCell != null) {
-                    result.add(jCell);
+                cell = (LTSViewCell) model.getCellForEdge(subTrans);
+                if (cell != null) {
+                    result.add(cell);
                 }
-                jCell = (LTSViewCell) model.getJCellForNode(subTrans.source());
-                if (jCell != null) {
-                    result.add(jCell);
+                cell = (LTSViewCell) model.getCellForNode(subTrans.source());
+                if (cell != null) {
+                    result.add(cell);
                 }
             }
         }
@@ -474,17 +474,17 @@ public class LTSGraphViewController extends GraphViewController<GTS> {
         // first make the vertices (in)visible,
         // as otherwise they may prevent the edges from becoming visible
         for (var cell : cells) {
-            if (cell instanceof ViewVertex<?> jVertex && cell instanceof LTSViewCell ltsCell) {
-                boolean visible = fragment.nodeSet().contains(jVertex.getNode());
+            if (cell instanceof ViewVertex<?> vertex && cell instanceof LTSViewCell ltsCell) {
+                boolean visible = fragment.nodeSet().contains(vertex.getNode());
                 boolean thisChanged = ltsCell.setVisibleFlag(visible);
                 result |= thisChanged & visible;
             }
         }
         // now change the visibility of the edges
         for (var cell : cells) {
-            if (cell instanceof ViewEdge<?> jEdge && cell instanceof LTSViewCell ltsCell) {
+            if (cell instanceof ViewEdge<?> edge && cell instanceof LTSViewCell ltsCell) {
                 var visibleEdges = fragment.edgeSet();
-                boolean visible = jEdge.getEdges().stream().anyMatch(visibleEdges::contains);
+                boolean visible = edge.getEdges().stream().anyMatch(visibleEdges::contains);
                 boolean thisChanged = ltsCell.setVisibleFlag(visible);
                 result |= thisChanged & visible;
             }

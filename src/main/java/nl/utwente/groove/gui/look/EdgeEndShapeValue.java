@@ -50,10 +50,10 @@ public class EdgeEndShapeValue implements VisualValue<EdgeEnd> {
         } else if (controller.isShowArrowsOnLabels()) {
             // only show some arrows
             boolean show = false;
-            if (cell instanceof AspectViewEdge jEdge) {
-                show |= jEdge.getAspects().has(AspectKind.SUBTYPE);
-                show |= this.source && jEdge.getAspects().has(AspectKind.COMPOSITE);
-                show |= jEdge.isNodeEdgeOut();
+            if (cell instanceof AspectViewEdge edge) {
+                show |= edge.getAspects().has(AspectKind.SUBTYPE);
+                show |= this.source && edge.getAspects().has(AspectKind.COMPOSITE);
+                show |= edge.isNodeEdgeOut();
             }
             if (!show) {
                 result = EdgeEnd.NONE;

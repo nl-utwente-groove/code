@@ -141,7 +141,7 @@ public class CheckboxTreeSelectionTest {
         return null;
     }
 
-    /** Loads the fixture start graph into a headless JGraph and returns
+    /** Loads the fixture start graph into a headless canvas and returns
      * the label tree built for it. */
     private TypeTree buildTree() throws IOException {
         GrammarModel grammar = Groove.loadGrammar(GRAMMAR);
@@ -149,11 +149,11 @@ public class CheckboxTreeSelectionTest {
         assert graph != null; // the grammar has a single start graph
         var controller = new AspectGraphViewController(null, DisplayKind.HOST, false);
         controller.setGrammar(grammar);
-        var jGraph = controller.getCanvas();
-        var model = jGraph.newViewModel();
+        var canvas = controller.getCanvas();
+        var model = canvas.newViewModel();
         model.loadGraph(graph);
-        jGraph.setViewModel(model);
-        TypeTree result = new TypeTree(jGraph, true);
+        canvas.setViewModel(model);
+        TypeTree result = new TypeTree(canvas, true);
         result.synchroniseModel();
         assertTrue(result.getTopNode().getChildCount() > 0, "label tree is empty");
         return result;

@@ -26,7 +26,7 @@ import nl.utwente.groove.gui.look.Look;
 import nl.utwente.groove.gui.look.MultiLabel.Direct;
 
 /**
- * JGraph edge wrapping a set of graph edges.
+ * Graph-view edge wrapping a set of graph edges.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -38,16 +38,16 @@ public interface ViewEdge<G extends Graph> extends ViewCell<G> {
     public abstract ViewEdge<G> clone();
 
     /**
-     * Returns the j-vertex that is the parent of the source port of this
-     * j-edge.
+     * Returns the vertex cell that is the parent of the source port of this
+     * edge cell.
      * @return the source vertex; may be {@code null} if the model has not
      * yet been fully initialised
      */
     abstract public @Nullable ViewVertex<G> getSourceVertex();
 
     /**
-     * Returns the j-vertex that is the parent of the target port of this
-     * j-edge.
+     * Returns the vertex cell that is the parent of the target port of this
+     * edge cell.
      * @return the target vertex; may be {@code null} if the model has not
      * yet been fully initialised
      */

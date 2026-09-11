@@ -144,18 +144,18 @@ public class AspectGraphViewModel extends GraphViewModel<AspectGraph> {
     private @Nullable GrammarModel grammar;
 
     @Override
-    public @Nullable AspectViewCell getJCell(Element elem) {
-        return (AspectViewCell) super.getJCell(elem);
+    public @Nullable AspectViewCell getCell(Element elem) {
+        return (AspectViewCell) super.getCell(elem);
     }
 
     @Override
-    public @Nullable AspectViewCell getJCellForEdge(Edge edge) {
-        return (AspectViewCell) super.getJCellForEdge(edge);
+    public @Nullable AspectViewCell getCellForEdge(Edge edge) {
+        return (AspectViewCell) super.getCellForEdge(edge);
     }
 
     @Override
-    public @Nullable AspectViewVertex getJCellForNode(Node node) {
-        return (AspectViewVertex) super.getJCellForNode(node);
+    public @Nullable AspectViewVertex getCellForNode(Node node) {
+        return (AspectViewVertex) super.getCellForNode(node);
     }
 
     @Override
@@ -193,44 +193,44 @@ public class AspectGraphViewModel extends GraphViewModel<AspectGraph> {
         var grammar = getNonNullGrammar();
         var oldGraph = getNonNullGraph();
         GraphRole role = oldGraph.getRole();
-        Map<AspectNode,AspectViewVertex> nodeJVertexMap = new HashMap<>();
-        Map<AspectEdge,AspectViewCell> edgeJCellMap = new HashMap<>();
+        Map<AspectNode,AspectViewVertex> nodeVertexMap = new HashMap<>();
+        Map<AspectEdge,AspectViewCell> edgeCellMap = new HashMap<>();
         AspectGraph graph = new AspectGraph(oldGraph.getName(), role,
             !grammar.getProperties().getSemantics().isMulti());
         graph.setTypeSortMap(grammar.getTypeModel().getTypeSortMap());
         for (var cell : getCells()) {
-            if (cell instanceof AspectViewVertex jVertex) {
-                jVertex.applyEditableLabels(graph);
-                graph.addNode(jVertex.getNode());
-                nodeJVertexMap.put(jVertex.getNode(), jVertex);
-                for (AspectEdge edge : jVertex.getEdges()) {
-                    edgeJCellMap.put(edge, jVertex);
+            if (cell instanceof AspectViewVertex vertex) {
+                vertex.applyEditableLabels(graph);
+                graph.addNode(vertex.getNode());
+                nodeVertexMap.put(vertex.getNode(), vertex);
+                for (AspectEdge edge : vertex.getEdges()) {
+                    edgeCellMap.put(edge, vertex);
                     graph.addEdgeContext(edge);
                 }
             }
         }
         for (var cell : getCells()) {
-            if (cell instanceof AspectViewEdge jEdge) {
-                jEdge.applyEditableLabels(graph);
-                for (AspectEdge edge : jEdge.getEdges()) {
-                    edgeJCellMap.put(edge, jEdge);
-                    graph.addEdgeContext(edge);
+            if (cell instanceof AspectViewEdge edge) {
+                edge.applyEditableLabels(graph);
+                for (AspectEdge aspectEdge : edge.getEdges()) {
+                    edgeCellMap.put(aspectEdge, edge);
+                    graph.addEdgeContext(aspectEdge);
                 }
             }
         }
-        for (AspectViewVertex jVertex : nodeJVertexMap.values()) {
-            jVertex.setNodeFixed();
+        for (AspectViewVertex vertex : nodeVertexMap.values()) {
+            vertex.setNodeFixed();
         }
         // collect the layout information
         LayoutMap layoutMap = new LayoutMap();
         for (var cell : getCells()) {
-            if (cell instanceof AspectViewVertex jVertex) {
-                layoutMap.putNode(jVertex.getNode(), jVertex.getLayoutVisuals().toNodeLayout());
-            } else if (cell instanceof AspectViewEdge jEdge) {
-                EdgeLayout layout = jEdge.getLayoutVisuals().toEdgeLayout();
+            if (cell instanceof AspectViewVertex vertex) {
+                layoutMap.putNode(vertex.getNode(), vertex.getLayoutVisuals().toNodeLayout());
+            } else if (cell instanceof AspectViewEdge edge) {
+                EdgeLayout layout = edge.getLayoutVisuals().toEdgeLayout();
                 if (!layout.isDefault()) {
-                    for (AspectEdge edge : jEdge.getEdges()) {
-                        layoutMap.putEdge(edge, layout);
+                    for (AspectEdge aspectEdge : edge.getEdges()) {
+                        layoutMap.putEdge(aspectEdge, layout);
                     }
                 }
             }
@@ -238,7 +238,7 @@ public class AspectGraphViewModel extends GraphViewModel<AspectGraph> {
         GraphInfo.setLayoutMap(graph, layoutMap);
         ResourceProperties.setProperties(graph, getProperties());
         graph.setFixed();
-        setJCellMaps(nodeJVertexMap, edgeJCellMap);
+        setCellMaps(nodeVertexMap, edgeCellMap);
         setGraph(graph);
     }
 
@@ -255,9 +255,9 @@ public class AspectGraphViewModel extends GraphViewModel<AspectGraph> {
         }
         for (FormatError error : getResourceModel().getErrors()) {
             for (Element errorObject : error.getContext(Element.class)) {
-                AspectViewCell errorCell = getJCell(errorObject);
+                AspectViewCell errorCell = getCell(errorObject);
                 if (errorCell == null && errorObject instanceof Edge e) {
-                    errorCell = getJCell(e.source());
+                    errorCell = getCell(e.source());
                 }
                 if (errorCell != null) {
                     errorCell.getErrors().addError(error, true);

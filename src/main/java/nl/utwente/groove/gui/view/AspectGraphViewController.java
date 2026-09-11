@@ -35,7 +35,7 @@ import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.action.AddPointAction;
 import nl.utwente.groove.gui.action.EditLabelAction;
-import nl.utwente.groove.gui.action.JCellEditAction;
+import nl.utwente.groove.gui.action.CellEditAction;
 import nl.utwente.groove.gui.action.RemovePointAction;
 import nl.utwente.groove.gui.action.ResetLabelPositionAction;
 import nl.utwente.groove.gui.action.SetLineStyleAction;
@@ -184,7 +184,7 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
     /**
      * @return an action to edit the currently selected cell label.
      */
-    public JCellEditAction getEditLabelAction() {
+    public CellEditAction getEditLabelAction() {
         var result = this.editLabelAction;
         if (result == null) {
             this.editLabelAction = result = new EditLabelAction(getCanvas());
@@ -215,7 +215,7 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
      * @return an action to reset the label position of the currently selected
      *         edge.
      */
-    public JCellEditAction getResetLabelPositionAction() {
+    public CellEditAction getResetLabelPositionAction() {
         var result = this.resetLabelPositionAction;
         if (result == null) {
             this.resetLabelPositionAction = result = new ResetLabelPositionAction(getCanvas());
@@ -230,7 +230,7 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
      * @param lineStyle the lineStyle for which to get the set-action
      * @return an action to set the line style of the currently selected edge.
      */
-    public JCellEditAction getSetLineStyleAction(LineStyle lineStyle) {
+    public CellEditAction getSetLineStyleAction(LineStyle lineStyle) {
         var result = this.setLineStyleActionMap.get(lineStyle);
         if (result == null) {
             result = new SetLineStyleAction(getCanvas(), lineStyle);
@@ -241,7 +241,7 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
     }
 
     /** Map from line styles to corresponding actions. */
-    private final Map<LineStyle,@Nullable JCellEditAction> setLineStyleActionMap
+    private final Map<LineStyle,@Nullable CellEditAction> setLineStyleActionMap
         = new EnumMap<>(LineStyle.class);
 
     /**

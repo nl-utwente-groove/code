@@ -28,14 +28,14 @@ import nl.utwente.groove.gui.view.AspectViewVertex;
  */
 public class IdAdornmentValue extends AspectValue<String> {
     @Override
-    protected String getForJVertex(AspectViewVertex jVertex) {
+    protected String getForVertex(AspectViewVertex vertex) {
         String result = null;
-        var canvas = jVertex.getCanvas();
+        var canvas = vertex.getCanvas();
         assert canvas != null; // adornments are only computed for displayed cells
         var controller = canvas.getController();
         if (controller.isShowNodeIdentities()) {
             var role = controller.getGraphRole();
-            var node = jVertex.getNode();
+            var node = vertex.getNode();
             if (role == GraphRole.RULE && (!node.hasId() || !node.has(Category.SORT))
                 || role == GraphRole.HOST && !node.hasValue()) {
                 result = node.toString();
@@ -45,7 +45,7 @@ public class IdAdornmentValue extends AspectValue<String> {
     }
 
     @Override
-    protected String getForJEdge(AspectViewEdge jEdge) {
+    protected String getForEdge(AspectViewEdge edge) {
         return null;
     }
 }

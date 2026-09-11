@@ -220,9 +220,9 @@ public class StateDisplay extends Display
 
     /** Returns the currently displayed state graph. */
     public AspectGraph getStateGraph() {
-        var jModel = getCanvas().getViewModel();
-        assert jModel != null;
-        return jModel.getGraph();
+        var model = getCanvas().getViewModel();
+        assert model != null;
+        return model.getGraph();
     }
 
     /** Returns component on which the state graph is displayed. */
@@ -393,20 +393,20 @@ public class StateDisplay extends Display
     private void selectMatch(Proof match) {
         assert match != null : "Match update should not be called with empty match";
         displayState(getSimulatorModel().getState());
-        AspectGraphViewModel jModel = getCanvas().getViewModel();
-        assert jModel != null;
+        AspectGraphViewModel model = getCanvas().getViewModel();
+        assert model != null;
         HostToAspectMap aspectMap = getAspectMap(getSimulatorModel().getState());
         Set<AspectViewCell> emphElems = new HashSet<>();
         match
             .getNodeValues()
             .stream()
-            .map(n -> getCell(jModel, aspectMap.getNode(n)))
+            .map(n -> getCell(model, aspectMap.getNode(n)))
             .filter(c -> c != null)
             .forEach(c -> emphElems.add(c));
         match
             .getEdgeValues()
             .stream()
-            .map(e -> getCell(jModel, aspectMap.getEdge(e)))
+            .map(e -> getCell(model, aspectMap.getEdge(e)))
             .filter(c -> c != null)
             .forEach(c -> emphElems.add(c));
         getCanvas().select(emphElems);
@@ -422,7 +422,7 @@ public class StateDisplay extends Display
                                                     @Nullable AspectElement elem) {
         return elem == null
             ? null
-            : model.getJCell(elem);
+            : model.getCell(elem);
     }
 
     /** Updates the display status bar. */
@@ -549,10 +549,10 @@ public class StateDisplay extends Display
         AspectGraphViewModel result = this.stateToViewModel.get(state);
         if (result == null) {
             if (state instanceof GraphNextState ns) {
-                result = createNextStateJModel(ns);
+                result = createNextStateModel(ns);
             } else {
                 // this is the start state
-                result = createStartStateJModel((StartGraphState) state);
+                result = createStartStateModel((StartGraphState) state);
             }
             assert result != null;
             this.stateToViewModel.put(state, result);
@@ -561,7 +561,7 @@ public class StateDisplay extends Display
     }
 
     /** Copies layout from the host model of the start graph. */
-    private AspectGraphViewModel createStartStateJModel(StartGraphState state) {
+    private AspectGraphViewModel createStartStateModel(StartGraphState state) {
         HostToAspectMap stateMap = getAspectMap(state);
         var result = createAspectGraphViewModel(stateMap.getAspectGraph());
         var startHostModel = getGrammar().getStartGraphModel();
@@ -569,18 +569,18 @@ public class StateDisplay extends Display
         assert startGraph != null;
         HostModelMap startGraphMap = startHostModel.getMap();
         // the AspectGraph in result does not equal startGraph, we have to convert
-        var startJModel = createAspectGraphViewModel(startGraph);
+        var startModel = createAspectGraphViewModel(startGraph);
         for (AspectNode node : startGraph.nodeSet()) {
             var stateNode = stateMap.getNode(startGraphMap.getNode(node));
             AspectViewVertex stateVertex = stateNode == null
                 ? null
-                : result.getJCellForNode(stateNode);
+                : result.getCellForNode(stateNode);
             // nesting nodes are not in the state;
             // data nodes may have been merged
             if (stateVertex == null) {
                 continue;
             }
-            AspectViewVertex graphVertex = startJModel.getJCellForNode(node);
+            AspectViewVertex graphVertex = startModel.getCellForNode(node);
             assert graphVertex != null; // the start graph model has a cell for each of its nodes
             // copy only the layout attributes: the start graph map may be
             // non-injective (shared node IDs, see gh #780), in which case the
@@ -595,22 +595,22 @@ public class StateDisplay extends Display
             var stateAspectEdge = stateMap.getEdge(startGraphMap.getEdge(edge));
             AspectViewCell stateEdge = stateAspectEdge == null
                 ? null
-                : result.getJCellForEdge(stateAspectEdge);
+                : result.getCellForEdge(stateAspectEdge);
             // nesting edges and merged data edges are not in the state
             if (stateEdge == null) {
                 continue;
             }
-            AspectViewCell graphEdge = startJModel.getJCellForEdge(edge);
-            if (stateEdge instanceof AspectViewEdge && graphEdge instanceof AspectViewEdge graphJEdge) {
-                stateEdge.putVisuals(new Attributes(graphJEdge).toVisuals());
-                stateEdge.setGrayedOut(graphJEdge.isGrayedOut());
+            AspectViewCell graphCell = startModel.getCellForEdge(edge);
+            if (stateEdge instanceof AspectViewEdge && graphCell instanceof AspectViewEdge graphEdge) {
+                stateEdge.putVisuals(new Attributes(graphEdge).toVisuals());
+                stateEdge.setGrayedOut(graphEdge.isGrayedOut());
             }
             result.synchroniseLayout(stateEdge);
         }
         return result;
     }
 
-    private AspectGraphViewModel createNextStateJModel(GraphNextState state) {
+    private AspectGraphViewModel createNextStateModel(GraphNextState state) {
         var result = createAspectGraphViewModel(getAspectMap(state).getAspectGraph());
         Stack<GraphTransition> stack = new Stack<>();
         GraphState source = state;
@@ -637,16 +637,16 @@ public class StateDisplay extends Display
         AttributesMap result = new AttributesMap();
         for (Map.Entry<HostNode,? extends AspectNode> entry : aspectMap.nodeMap().entrySet()) {
             AspectNode aspectNode = entry.getValue();
-            AspectViewVertex jCell = model.getJCellForNode(aspectNode);
-            assert jCell != null : "Source element " + aspectNode + " unknown";
-            result.nodeMap.put(entry.getKey(), new Attributes(jCell));
+            AspectViewVertex cell = model.getCellForNode(aspectNode);
+            assert cell != null : "Source element " + aspectNode + " unknown";
+            result.nodeMap.put(entry.getKey(), new Attributes(cell));
         }
         // compute target edge attributes
         for (Map.Entry<HostEdge,? extends AspectEdge> entry : aspectMap.edgeMap().entrySet()) {
             AspectEdge aspectEdge = entry.getValue();
-            AspectViewCell jCell = model.getJCellForEdge(aspectEdge);
-            if (jCell instanceof AspectViewEdge) {
-                result.edgeMap.put(entry.getKey(), new Attributes((AspectViewEdge) jCell));
+            AspectViewCell cell = model.getCellForEdge(aspectEdge);
+            if (cell instanceof AspectViewEdge) {
+                result.edgeMap.put(entry.getKey(), new Attributes((AspectViewEdge) cell));
             }
         }
         return result;
@@ -714,20 +714,20 @@ public class StateDisplay extends Display
         for (Map.Entry<HostNode,Attributes> e : map.nodeMap.entrySet()) {
             AspectNode aspectNode = aspectMap.getNode(e.getKey());
             assert aspectNode != null : "Target element " + e.getKey() + " unknown";
-            AspectViewVertex jCell = result.getJCellForNode(aspectNode);
-            assert jCell != null : "Target element " + aspectNode + " unknown";
+            AspectViewVertex cell = result.getCellForNode(aspectNode);
+            assert cell != null : "Target element " + aspectNode + " unknown";
             Attributes attrs = e.getValue();
-            jCell.putVisuals(attrs.toVisuals());
-            jCell.setGrayedOut(attrs.grayedOut);
-            jCell.setLayoutable(attrs.pos == null);
-            result.synchroniseLayout(jCell);
+            cell.putVisuals(attrs.toVisuals());
+            cell.setGrayedOut(attrs.grayedOut);
+            cell.setLayoutable(attrs.pos == null);
+            result.synchroniseLayout(cell);
             if (attrs.color != null) {
                 // also colour all outgoing edges
-                Iterator<? extends AspectViewEdge> iter = jCell.getContext();
+                Iterator<? extends AspectViewEdge> iter = cell.getContext();
                 while (iter.hasNext()) {
-                    AspectViewEdge jEdge = iter.next();
-                    if (jEdge.getSourceVertex() == jCell) {
-                        jEdge.putVisual(VisualKey.COLOR, attrs.color);
+                    AspectViewEdge edge = iter.next();
+                    if (edge.getSourceVertex() == cell) {
+                        edge.putVisual(VisualKey.COLOR, attrs.color);
                     }
                 }
             }
@@ -736,15 +736,15 @@ public class StateDisplay extends Display
         for (Map.Entry<HostEdge,Attributes> e : map.edgeMap.entrySet()) {
             AspectEdge aspectEdge = aspectMap.getEdge(e.getKey());
             assert aspectEdge != null : "Target element " + e.getKey() + " unknown";
-            AspectViewCell jCell = result.getJCellForEdge(aspectEdge);
-            if (jCell instanceof AspectViewVertex) {
+            AspectViewCell cell = result.getCellForEdge(aspectEdge);
+            if (cell instanceof AspectViewVertex) {
                 continue;
             }
-            assert jCell != null : "Target element " + aspectEdge + " unknown";
+            assert cell != null : "Target element " + aspectEdge + " unknown";
             Attributes attr = e.getValue();
-            jCell.putVisuals(attr.toVisuals());
-            jCell.setGrayedOut(attr.grayedOut);
-            result.synchroniseLayout(jCell);
+            cell.putVisuals(attr.toVisuals());
+            cell.setGrayedOut(attr.grayedOut);
+            result.synchroniseLayout(cell);
         }
     }
 
@@ -866,10 +866,10 @@ public class StateDisplay extends Display
 
     /** Temporary record of graph element attributes. */
     private static class Attributes {
-        Attributes(AspectViewVertex jVertex) {
-            VisualMap visuals = jVertex.getVisuals();
+        Attributes(AspectViewVertex vertex) {
+            VisualMap visuals = vertex.getVisuals();
             this.pos = visuals.getNodePos();
-            this.grayedOut = jVertex.isGrayedOut();
+            this.grayedOut = vertex.isGrayedOut();
             this.color = visuals.getColor();
             this.points = null;
             this.labelPosition = null;
@@ -885,10 +885,10 @@ public class StateDisplay extends Display
             this.lineStyle = LineStyle.DEFAULT_VALUE;
         }
 
-        Attributes(AspectViewEdge jEdge) {
-            VisualMap visuals = jEdge.getVisuals();
+        Attributes(AspectViewEdge edge) {
+            VisualMap visuals = edge.getVisuals();
             this.pos = null;
-            this.grayedOut = jEdge.isGrayedOut();
+            this.grayedOut = edge.isGrayedOut();
             this.color = null;
             this.points = visuals.getPoints();
             this.labelPosition = visuals.getLabelPos();

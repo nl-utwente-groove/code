@@ -82,17 +82,17 @@ final public class AspectJModel extends JModel<@NonNull AspectGraph> {
 
     @Override
     public AspectViewCell getJCell(Element elem) {
-        return getViewModel().getJCell(elem);
+        return getViewModel().getCell(elem);
     }
 
     @Override
     public AspectViewCell getJCellForEdge(Edge edge) {
-        return getViewModel().getJCellForEdge(edge);
+        return getViewModel().getCellForEdge(edge);
     }
 
     @Override
     public AspectViewVertex getJCellForNode(Node node) {
-        return getViewModel().getJCellForNode(node);
+        return getViewModel().getCellForNode(node);
     }
 
     /**

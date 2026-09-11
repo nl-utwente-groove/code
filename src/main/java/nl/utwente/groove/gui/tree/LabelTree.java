@@ -176,7 +176,7 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
     public Collection<LabelledCells<G>> getLabels() {
         TreeMap<LabelEntry,Set<ViewCell<G>>> treeMap = new TreeMap<>();
         for (LabelEntry entry : getFilter().getEntries()) {
-            treeMap.put(entry, getFilter().getJCells(entry));
+            treeMap.put(entry, getFilter().getCells(entry));
         }
         var result = new ArrayList<LabelledCells<G>>();
         for (var e : treeMap.entrySet()) {
@@ -186,8 +186,8 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
     }
 
     /**
-     * Refreshes the labels according to the jModel,
-     * if the jModel has changed.
+     * Refreshes the labels according to the model,
+     * if the model has changed.
      */
     public void synchroniseModel() {
         if (isModelStale()) {
@@ -227,7 +227,7 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
      */
     void updateFilter() {
         for (ViewCell<G> cell : getNonNullViewModel().getCells()) {
-            getFilter().addJCell(cell);
+            getFilter().addCell(cell);
         }
     }
 
@@ -298,21 +298,21 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
     private boolean processEdit(CellChange<G> change) {
         boolean result = false;
         // added cells mean added labels
-        for (ViewCell<G> jCell : change.inserted()) {
-            result |= getFilter().addJCell(jCell);
+        for (ViewCell<G> cell : change.inserted()) {
+            result |= getFilter().addCell(cell);
         }
-        for (ViewCell<G> jCell : change.modified()) {
-            result |= getFilter().modifyJCell(jCell);
+        for (ViewCell<G> cell : change.modified()) {
+            result |= getFilter().modifyCell(cell);
         }
         // removed cells mean removed labels
-        for (ViewCell<G> jCell : change.removed()) {
-            result |= getFilter().removeJCell(jCell);
+        for (ViewCell<G> cell : change.removed()) {
+            result |= getFilter().removeCell(cell);
         }
         return result;
     }
 
     /**
-     * Emphasises/deemphasises cells in the associated jmodel, based on the list
+     * Emphasises/deemphasises cells in the associated view model, based on the list
      * selection.
      */
     @Override
@@ -324,7 +324,7 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
                 Object treeNode = selectedPath.getLastPathComponent();
                 if (treeNode instanceof LabelTree.LabelTreeNode) {
                     LabelEntry entry = ((LabelTreeNode) treeNode).getEntry();
-                    Set<ViewCell<G>> occurrences = getFilter().getJCells(entry);
+                    Set<ViewCell<G>> occurrences = getFilter().getCells(entry);
                     //if (occurrences != null) {
                     emphSet.addAll(occurrences);
                     //}
@@ -423,14 +423,14 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
         return result;
     }
 
-    /** Indicates if a given jCell is entirely filtered.
-     * @return {@code true} if the jCell is currently visible
+    /** Indicates if a given cell is entirely filtered.
+     * @return {@code true} if the cell is currently visible
      */
-    public boolean isIncluded(ViewCell<G> jCell) {
+    public boolean isIncluded(ViewCell<G> cell) {
         synchroniseModel();
         // a cell of a model that is not shown on the canvas is unknown to the filter
         // (which may even belong to another type graph), and so it is not filtered
-        return jCell.getViewModel() != this.viewModel || getFilter().isIncluded(jCell);
+        return cell.getViewModel() != this.viewModel || getFilter().isIncluded(cell);
     }
 
     /** Indicates if a given key is actively filtered.
@@ -554,10 +554,10 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
             super(Options.FILTER_UNSELECT_ACTION_NAME);
             this.filter = true;
             this.entries = new ArrayList<>();
-            for (Object cell : cells) {
+            for (Object item : cells) {
                 @SuppressWarnings("unchecked")
-                ViewCell<G> jCell = (ViewCell<G>) cell;
-                this.entries.addAll(getFilter().getEntries(jCell));
+                ViewCell<G> cell = (ViewCell<G>) item;
+                this.entries.addAll(getFilter().getEntries(cell));
             }
         }
 

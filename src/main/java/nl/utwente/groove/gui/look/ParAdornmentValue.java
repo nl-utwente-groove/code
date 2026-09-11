@@ -29,13 +29,13 @@ import nl.utwente.groove.gui.view.AspectViewVertex;
  */
 public class ParAdornmentValue extends AspectValue<String> {
     @Override
-    protected String getForJVertex(AspectViewVertex jVertex) {
-        AspectNode node = jVertex.getNode();
+    protected String getForVertex(AspectViewVertex vertex) {
+        AspectNode node = vertex.getNode();
         return node.get(Category.PARAM, UnitPar::toRuleAdornment);
     }
 
     @Override
-    protected String getForJEdge(AspectViewEdge jEdge) {
+    protected String getForEdge(AspectViewEdge edge) {
         return null;
     }
 }

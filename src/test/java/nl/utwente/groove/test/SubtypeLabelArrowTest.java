@@ -92,17 +92,17 @@ public class SubtypeLabelArrowTest {
         boolean seenSubtype = false;
         boolean seenLabelled = false;
         for (var cell : model.getCells()) {
-            if (cell instanceof AspectViewEdge jEdge) {
-                var visuals = jEdge.getVisuals();
+            if (cell instanceof AspectViewEdge edge) {
+                var visuals = edge.getVisuals();
                 String text = visuals.getLabel().toString(StringFormat.instance(), START, END).toString();
-                if (jEdge.getAspects().has(AspectKind.SUBTYPE)) {
+                if (edge.getAspects().has(AspectKind.SUBTYPE)) {
                     assertEquals("", text, "subtype edge label should be empty");
                     assertEquals(EdgeEnd.SUBTYPE, visuals.getEdgeTargetShape());
                     seenSubtype = true;
                 } else {
-                    var edge = jEdge.getEdge();
-                    assert edge != null; // a labelled edge cell wraps an edge
-                    String label = edge.getInnerText();
+                    var aspectEdge = edge.getEdge();
+                    assert aspectEdge != null; // a labelled edge cell wraps an edge
+                    String label = aspectEdge.getInnerText();
                     assertTrue(text.startsWith(label), "label text lost: " + text);
                     assertNotEquals(label, text, "no arrow on label " + label);
                     seenLabelled = true;
@@ -113,7 +113,7 @@ public class SubtypeLabelArrowTest {
         assertTrue(seenLabelled, "fixture has no labelled edge");
     }
 
-    /** Loads the fixture type graph into a headless type-graph JGraph model. */
+    /** Loads the fixture type graph into a headless type-graph view model. */
     private AspectGraphViewModel loadTypeGraph() throws IOException {
         GrammarModel grammar = Groove.loadGrammar(GRAMMAR);
         TypeModel typeModel = grammar.getTypeModel(QualName.parse(TYPE_GRAPH));

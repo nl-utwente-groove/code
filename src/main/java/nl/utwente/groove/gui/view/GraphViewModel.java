@@ -135,15 +135,15 @@ public abstract class GraphViewModel<G extends Graph> {
     private @Nullable LayoutMap layoutMap;
 
     /** Stores the layout of a given cell back into the layout map of the graph. */
-    public void synchroniseLayout(ViewCell<G> jCell) {
+    public void synchroniseLayout(ViewCell<G> cell) {
         LayoutMap layoutMap = getLayoutMap();
         assert layoutMap == GraphInfo.getLayoutMap(getGraph());
-        if (jCell instanceof ViewEdge) {
-            for (Edge edge : jCell.getEdges()) {
-                layoutMap.putEdge(edge, jCell.getVisuals().toEdgeLayout());
+        if (cell instanceof ViewEdge) {
+            for (Edge edge : cell.getEdges()) {
+                layoutMap.putEdge(edge, cell.getVisuals().toEdgeLayout());
             }
-        } else if (jCell instanceof ViewVertex) {
-            layoutMap.putNode(((ViewVertex<G>) jCell).getNode(), jCell.getVisuals().toNodeLayout());
+        } else if (cell instanceof ViewVertex) {
+            layoutMap.putNode(((ViewVertex<G>) cell).getNode(), cell.getVisuals().toNodeLayout());
         }
     }
 
@@ -483,9 +483,9 @@ public abstract class GraphViewModel<G extends Graph> {
     /** Returns the set of cells associated with a given collection
      * of graph elements.
      */
-    public Set<@Nullable ViewCell<?>> getJCells(Collection<? extends Element> elements) {
+    public Set<@Nullable ViewCell<?>> getCellsFor(Collection<? extends Element> elements) {
         var result = new HashSet<@Nullable ViewCell<?>>();
-        elements.stream().map(this::getJCell).forEach(result::add);
+        elements.stream().map(this::getCell).forEach(result::add);
         return result;
     }
 
@@ -497,11 +497,11 @@ public abstract class GraphViewModel<G extends Graph> {
      * @param elem the graph element for which the cell is requested
      * @return the cell associated with <tt>elem</tt>
      */
-    public @Nullable ViewCell<G> getJCell(Element elem) {
+    public @Nullable ViewCell<G> getCell(Element elem) {
         if (elem instanceof Node) {
-            return getJCellForNode((Node) elem);
+            return getCellForNode((Node) elem);
         } else {
-            return getJCellForEdge((Edge) elem);
+            return getCellForEdge((Edge) elem);
         }
     }
 
@@ -512,8 +512,8 @@ public abstract class GraphViewModel<G extends Graph> {
      * @param edge the graph edge we're interested in
      * @return the cell displaying <tt>edge</tt>
      */
-    public @Nullable ViewCell<G> getJCellForEdge(Edge edge) {
-        return this.edgeJCellMap.get(edge);
+    public @Nullable ViewCell<G> getCellForEdge(Edge edge) {
+        return this.edgeCellMap.get(edge);
     }
 
     /**
@@ -521,24 +521,24 @@ public abstract class GraphViewModel<G extends Graph> {
      * @param node the graph node we're interested in
      * @return the cell displaying <tt>node</tt> (if the node is known)
      */
-    public @Nullable ViewVertex<G> getJCellForNode(Node node) {
-        return this.nodeJCellMap.get(node);
+    public @Nullable ViewVertex<G> getCellForNode(Node node) {
+        return this.nodeCellMap.get(node);
     }
 
     /**
      * Inserts a node-to-cell entry into the element-to-cell mapping.
      * @return the previous cell associated with the node, if any
      */
-    public @Nullable ViewVertex<G> putNode(Node node, ViewVertex<G> jVertex) {
-        return this.nodeJCellMap.put(node, jVertex);
+    public @Nullable ViewVertex<G> putNode(Node node, ViewVertex<G> vertex) {
+        return this.nodeCellMap.put(node, vertex);
     }
 
     /**
      * Inserts an edge-to-cell entry into the element-to-cell mapping.
      * @return the previous cell associated with the edge, if any
      */
-    public @Nullable ViewCell<G> putEdge(Edge edge, ViewCell<G> jCell) {
-        return this.edgeJCellMap.put(edge, jCell);
+    public @Nullable ViewCell<G> putEdge(Edge edge, ViewCell<G> cell) {
+        return this.edgeCellMap.put(edge, cell);
     }
 
     /**
@@ -546,17 +546,17 @@ public abstract class GraphViewModel<G extends Graph> {
      * Used when the cells are the primary data from which the graph
      * is (re)constructed, as in the editor.
      */
-    public void setJCellMaps(Map<? extends Node,? extends ViewVertex<G>> nodeJCellMap,
-                             Map<? extends Edge,? extends ViewCell<G>> edgeJCellMap) {
-        this.nodeJCellMap.clear();
-        this.nodeJCellMap.putAll(nodeJCellMap);
-        this.edgeJCellMap.clear();
-        this.edgeJCellMap.putAll(edgeJCellMap);
+    public void setCellMaps(Map<? extends Node,? extends ViewVertex<G>> nodeCellMap,
+                             Map<? extends Edge,? extends ViewCell<G>> edgeCellMap) {
+        this.nodeCellMap.clear();
+        this.nodeCellMap.putAll(nodeCellMap);
+        this.edgeCellMap.clear();
+        this.edgeCellMap.putAll(edgeCellMap);
     }
 
     /** Returns the set of graph nodes currently represented in this view model. */
     public Set<Node> getNodes() {
-        return this.nodeJCellMap.keySet();
+        return this.nodeCellMap.keySet();
     }
 
     /**
@@ -569,7 +569,7 @@ public abstract class GraphViewModel<G extends Graph> {
 
     /** Sets the layoutable status of all vertices. */
     public void setLayoutable(boolean layoutable) {
-        for (var vertex : this.nodeJCellMap.values()) {
+        for (var vertex : this.nodeCellMap.values()) {
             vertex.setLayoutable(layoutable);
         }
     }
@@ -584,7 +584,7 @@ public abstract class GraphViewModel<G extends Graph> {
     /** Returns a map from nodes to the foreground colours of their vertices. */
     public Map<Node,Color> getColorMap() {
         Map<Node,Color> result = new HashMap<>();
-        for (var entry : this.nodeJCellMap.entrySet()) {
+        for (var entry : this.nodeCellMap.entrySet()) {
             Color foreground = entry.getValue().getVisuals().getForeground();
             if (foreground != null) {
                 result.put(entry.getKey(), foreground);
@@ -612,12 +612,12 @@ public abstract class GraphViewModel<G extends Graph> {
 
     /** Returns the number of graph nodes currently represented in this view model. */
     public int nodeCount() {
-        return this.nodeJCellMap.size();
+        return this.nodeCellMap.size();
     }
 
     /** Returns the size of the graph, as a sum of the number of nodes and edges. */
     public int size() {
-        return this.nodeJCellMap.size() + this.edgeJCellMap.size();
+        return this.nodeCellMap.size() + this.edgeCellMap.size();
     }
 
     // ---------- loading ----------
@@ -641,8 +641,8 @@ public abstract class GraphViewModel<G extends Graph> {
         if (this.layoutMap == null) {
             this.layoutMap = graph.getInfo().getLayoutMap();
         }
-        this.nodeJCellMap.clear();
-        this.edgeJCellMap.clear();
+        this.nodeCellMap.clear();
+        this.edgeCellMap.clear();
     }
 
     /**
@@ -692,11 +692,11 @@ public abstract class GraphViewModel<G extends Graph> {
      * cell to the pending vertices, and updates the element-to-cell map.
      */
     protected ViewVertex<G> addNode(Node node) {
-        ViewVertex<G> jVertex = computeVertex(node);
-        this.addedVertices.add(jVertex);
-        ViewVertex<G> oldNode = putNode(node, jVertex);
+        ViewVertex<G> vertex = computeVertex(node);
+        this.addedVertices.add(vertex);
+        ViewVertex<G> oldNode = putNode(node, vertex);
         assert oldNode == null;
-        return jVertex;
+        return vertex;
     }
 
     /**
@@ -706,42 +706,42 @@ public abstract class GraphViewModel<G extends Graph> {
      * be a new edge cell.
      */
     protected ViewCell<G> addEdge(Edge edge) {
-        ViewCell<G> result = getJCellForEdge(edge);
+        ViewCell<G> result = getCellForEdge(edge);
         // check if edge was processed earlier
-        ViewVertex<G> sourceJVertex = getJCellForNode(edge.source());
-        assert sourceJVertex != null : "No vertex for source node of " + edge;
+        ViewVertex<G> sourceVertex = getCellForNode(edge.source());
+        assert sourceVertex != null : "No vertex for source node of " + edge;
         if (result == null) {
             // try to add the edge as vertex label to its source vertex
-            if (sourceJVertex.isCompatible(edge)) {
-                sourceJVertex.addEdge(edge);
+            if (sourceVertex.isCompatible(edge)) {
+                sourceVertex.addEdge(edge);
                 // yes, the edge could be added here; we're done
-                result = sourceJVertex;
+                result = sourceVertex;
             }
         }
         if (result == null) {
             // try to add the edge to an existing edge cell
-            Iterator<? extends ViewEdge<G>> edgeIter = getJEdges(sourceJVertex);
+            Iterator<? extends ViewEdge<G>> edgeIter = getIncidentEdges(sourceVertex);
             while (edgeIter.hasNext()) {
-                ViewEdge<G> jEdge = edgeIter.next();
-                if (jEdge.isCompatible(edge)) {
+                ViewEdge<G> edgeCell = edgeIter.next();
+                if (edgeCell.isCompatible(edge)) {
                     // yes, the edge could be added here; we're done
-                    jEdge.addEdge(edge);
-                    result = jEdge;
+                    edgeCell.addEdge(edge);
+                    result = edgeCell;
                     break;
                 }
             }
         }
         if (result == null) {
             // none of the above: so create a new edge cell
-            ViewEdge<G> jEdge;
-            result = jEdge = computeEdge(edge);
+            ViewEdge<G> edgeCell;
+            result = edgeCell = computeEdge(edge);
             // put the edge at the end to make sure it goes to the back
-            this.addedEdges.add(jEdge);
-            ViewVertex<G> targetJVertex = getJCellForNode(edge.target());
-            assert targetJVertex != null : "No vertex for target node of " + edge;
-            this.connections.add(new Connection<>(jEdge, sourceJVertex, targetJVertex));
-            addFreshJEdge(sourceJVertex, jEdge);
-            addFreshJEdge(targetJVertex, jEdge);
+            this.addedEdges.add(edgeCell);
+            ViewVertex<G> targetVertex = getCellForNode(edge.target());
+            assert targetVertex != null : "No vertex for target node of " + edge;
+            this.connections.add(new Connection<>(edgeCell, sourceVertex, targetVertex));
+            addFreshEdge(sourceVertex, edgeCell);
+            addFreshEdge(targetVertex, edgeCell);
         }
         putEdge(edge, result);
         return result;
@@ -752,13 +752,13 @@ public abstract class GraphViewModel<G extends Graph> {
      * either from the explicitly stored fresh edges (if the vertex is fresh)
      * or from the stored context of the vertex.
      */
-    private Iterator<? extends ViewEdge<G>> getJEdges(ViewVertex<G> jVertex) {
+    private Iterator<? extends ViewEdge<G>> getIncidentEdges(ViewVertex<G> vertex) {
         Iterator<? extends ViewEdge<G>> result;
-        Set<ViewEdge<G>> outJEdges = this.freshJEdges.get(jVertex);
-        if (outJEdges == null) {
-            result = jVertex.getContext();
+        Set<ViewEdge<G>> outEdges = this.freshEdges.get(vertex);
+        if (outEdges == null) {
+            result = vertex.getContext();
         } else {
-            result = new NestedIterator<>(outJEdges.iterator(), jVertex.getContext());
+            result = new NestedIterator<>(outEdges.iterator(), vertex.getContext());
         }
         return result;
     }
@@ -766,12 +766,12 @@ public abstract class GraphViewModel<G extends Graph> {
     /**
      * Adds a given edge cell to the fresh incident edges of a vertex.
      */
-    private void addFreshJEdge(ViewVertex<G> jVertex, ViewEdge<G> jEdge) {
-        Set<ViewEdge<G>> jEdges = this.freshJEdges.get(jVertex);
-        if (jEdges == null) {
-            this.freshJEdges.put(jVertex, jEdges = new HashSet<>());
+    private void addFreshEdge(ViewVertex<G> vertex, ViewEdge<G> edge) {
+        Set<ViewEdge<G>> edges = this.freshEdges.get(vertex);
+        if (edges == null) {
+            this.freshEdges.put(vertex, edges = new HashSet<>());
         }
-        jEdges.add(jEdge);
+        edges.add(edge);
     }
 
     /**
@@ -843,7 +843,7 @@ public abstract class GraphViewModel<G extends Graph> {
     protected void prepareInsert() {
         this.addedEdges.clear();
         this.addedVertices.clear();
-        this.freshJEdges.clear();
+        this.freshEdges.clear();
         this.connections.clear();
     }
 
@@ -885,16 +885,16 @@ public abstract class GraphViewModel<G extends Graph> {
     /**
      * Map from graph nodes to the cells displaying them.
      */
-    private final Map<Node,ViewVertex<G>> nodeJCellMap = new HashMap<>();
+    private final Map<Node,ViewVertex<G>> nodeCellMap = new HashMap<>();
     /**
      * Map from graph edges to the cells displaying them.
      */
-    private final Map<Edge,ViewCell<G>> edgeJCellMap = new HashMap<>();
+    private final Map<Edge,ViewCell<G>> edgeCellMap = new HashMap<>();
     /**
      * Mapping from vertices to incident edge cells.
      * Used in the process of constructing the cells.
      */
-    private final Map<ViewVertex<G>,Set<ViewEdge<G>>> freshJEdges = new HashMap<>();
+    private final Map<ViewVertex<G>,Set<ViewEdge<G>>> freshEdges = new HashMap<>();
     /** Pending edge cells of the current insertion. */
     private final List<ViewEdge<G>> addedEdges = new ArrayList<>();
     /** Pending vertex cells of the current insertion. */

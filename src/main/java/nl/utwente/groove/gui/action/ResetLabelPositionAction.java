@@ -24,12 +24,12 @@ import nl.utwente.groove.gui.view.AspectGraphCanvas;
 import nl.utwente.groove.gui.look.VisualKey;
 
 /**
- * Action to set the label of the currently selected j-cell to its default
+ * Action to set the label of the currently selected cell to its default
  * position.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class ResetLabelPositionAction extends JCellEditAction {
+public class ResetLabelPositionAction extends CellEditAction {
     /** Constructs an instance of the action. */
     public ResetLabelPositionAction(AspectGraphCanvas canvas) {
         super(canvas, Options.RESET_LABEL_POSITION_ACTION, false);
@@ -38,17 +38,17 @@ public class ResetLabelPositionAction extends JCellEditAction {
     /** Resets the label positions of the selected cells. */
     @Override
     public void actionPerformed(ActionEvent evt) {
-        for (AspectViewCell jCell : this.jCells) {
-            execute(jCell);
+        for (AspectViewCell cell : this.cells) {
+            execute(cell);
         }
     }
 
     /**
-     * Resets the label position of a given a given j-edge to the default
+     * Resets the label position of a given a given edge cell to the default
      * position.
-     * @param jEdge the j-edge to be modified
+     * @param edge the edge cell to be modified
      */
-    public void execute(AspectViewCell jEdge) {
-        edit(jEdge, VisualKey.LABEL_POS, VisualKey.LABEL_POS.getDefaultValue());
+    public void execute(AspectViewCell edge) {
+        edit(edge, VisualKey.LABEL_POS, VisualKey.LABEL_POS.getDefaultValue());
     }
 }

@@ -110,12 +110,12 @@ public class ForestLayouter extends AbstractLayouter {
             Set<LayoutNode> oldBranchSet = oldBranchMap.get(key);
             if (oldBranchSet != null) {
                 for (LayoutNode oldChild : oldBranchSet) {
-                    ViewVertex<?> jVertex = oldChild.getVertex();
-                    if (this.immovableMap.containsKey(jVertex)) {
-                        var layoutNode = this.layoutMap.get(jVertex);
+                    ViewVertex<?> vertex = oldChild.getVertex();
+                    if (this.immovableMap.containsKey(vertex)) {
+                        var layoutNode = this.layoutMap.get(vertex);
                         assert layoutNode != null; // the immovables are a subset of the layout map
                         branchSet.add(layoutNode);
-                        fixed.add(jVertex);
+                        fixed.add(vertex);
                     }
                 }
             }
@@ -205,13 +205,13 @@ public class ForestLayouter extends AbstractLayouter {
         @Nullable Graph graph = viewModel.getGraph();
         assert graph != null; // a layout is requested only for a loaded graph
         if (graph instanceof GTS lts) {
-            var start = viewModel.getJCellForNode(lts.startState());
+            var start = viewModel.getCellForNode(lts.startState());
             result = start == null
                 ? Collections.emptyList()
                 : Collections.singleton(start);
         } else if (graph instanceof ControlGraph ctrl) {
             ControlNode startNode = ctrl.getStart();
-            var start = viewModel.getJCellForNode(startNode);
+            var start = viewModel.getCellForNode(startNode);
             result = start == null
                 ? Collections.emptyList()
                 : Collections.singleton(start);

@@ -34,17 +34,17 @@ public abstract class AspectValue<T> implements VisualValue<T> {
     @Override
     public <G extends @NonNull Graph> T get(GraphViewController<G> controller, ViewCell<G> cell) {
         if (cell instanceof AspectViewVertex v) {
-            return getForJVertex(v);
+            return getForVertex(v);
         }
         if (cell instanceof AspectViewEdge e) {
-            return getForJEdge(e);
+            return getForEdge(e);
         }
         return null;
     }
 
     /** Delegate method to retrieve the visual value from an {@link AspectViewVertex}. */
-    abstract protected T getForJVertex(AspectViewVertex jVertex);
+    abstract protected T getForVertex(AspectViewVertex vertex);
 
     /** Delegate method to retrieve the visual value from an {@link AspectViewEdge}. */
-    abstract protected T getForJEdge(AspectViewEdge jEdge);
+    abstract protected T getForEdge(AspectViewEdge edge);
 }

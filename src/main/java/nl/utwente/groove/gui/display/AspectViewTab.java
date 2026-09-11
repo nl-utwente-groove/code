@@ -110,26 +110,26 @@ final public class AspectViewTab extends AspectTab {
     }
 
     /** Loads the properties of a given model into the properties panel. */
-    private void loadProperties(AspectGraphViewModel jModel) {
-        loadProperties(jModel.getProperties(), jModel.getGraph());
+    private void loadProperties(AspectGraphViewModel model) {
+        loadProperties(model.getProperties(), model.getGraph());
     }
 
     @Override
     public boolean setResource(@Nullable QualName name) {
-        AspectGraphViewModel jModel = this.viewModelMap.get(name);
-        if (jModel == null && name != null) {
+        AspectGraphViewModel model = this.viewModelMap.get(name);
+        if (model == null && name != null) {
             AspectGraph graph = getSimulatorModel().getGrammar().getModelGraph(getResourceKind(), name);
             if (graph != null) {
-                this.viewModelMap.put(name, jModel = getCanvas().newViewModel());
-                jModel.loadGraph(graph);
+                this.viewModelMap.put(name, model = getCanvas().newViewModel());
+                model.loadGraph(graph);
             }
         }
-        if (jModel == null) {
+        if (model == null) {
             name = null;
         }
-        getCanvas().setViewModel(jModel);
-        if (jModel != null) {
-            loadProperties(jModel);
+        getCanvas().setViewModel(model);
+        if (model != null) {
+            loadProperties(model);
         }
         setQualName(name);
         String nameString = name == null
@@ -151,7 +151,7 @@ final public class AspectViewTab extends AspectTab {
         }
         updateErrors();
         updatePropertiesNotable();
-        return jModel != null;
+        return model != null;
     }
 
     @Override

@@ -316,7 +316,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
                 continue;
             }
             if (isShowsAllLabels()
-                || node.getSubtypes().stream().anyMatch(getFilter()::hasJCells)) {
+                || node.getSubtypes().stream().anyMatch(getFilter()::hasCells)) {
                 depNodeMap.put(node, new TreeSet<>(e.getValue()));
             }
         }
@@ -354,7 +354,7 @@ public class TypeTree extends LabelTree<AspectGraph> {
             var edgeEntries = new TreeSet<TypeEntry>();
             for (TypeEdge edge : typeEdges) {
                 TypeEntry edgeEntry = getFilter().getEntry(edge);
-                if (isShowsAllLabels() || getFilter().hasJCells(edgeEntry)) {
+                if (isShowsAllLabels() || getFilter().hasCells(edgeEntry)) {
                     edgeEntries.add(edgeEntry);
                 }
             }
