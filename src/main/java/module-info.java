@@ -111,7 +111,6 @@ module nl.utwente.groove {
     requires com.opencsv;
     requires org.apache.groovy;
     requires transitive org.eclipse.jdt.annotation;
-    requires osxadapter;
     requires org.fife.RSyntaxTextArea;
     requires transitive xmlgraphics.commons;
     requires transitive batik.all;
