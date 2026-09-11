@@ -1,5 +1,13 @@
 # Design note: priority-aware symmetric choice (gh #880)
 
+*Status (2026-09-11): still design only — gh #880 is open and untouched since
+2026-08-05; the only commit naming it is 61acdcdc9, which added this note.
+`Term.getPriorityChoice()` is still the parked abstract sketch. One correction to the
+block below: the interim gh #756 guard no longer lives on a branch — branch
+`priority-control-conflict` was merged to master as bca2e0916 (2026-08-11) and deleted,
+so the "Explicit call of prioritised %s '%s' not allowed" error
+(`CtrlHelper.java:682`) is live on master and is what this design would remove.*
+
 *Status (2026-08-05): design points collected, implementation not started. Follow-up to
 gh #756 (= SF FR #195), whose interim fix — the guarded "explicit call of prioritised
 action" error — lives on branch `priority-control-conflict`. When this design is
