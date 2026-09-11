@@ -31,7 +31,7 @@ import nl.utwente.groove.util.AIGenerated;
 
 /**
  * Seals the visualization-backend boundary (see {@code claude/view-facade.md}): no file
- * outside the backend package {@code nl.utwente.groove.gui.jgraph} may import the JGraph
+ * outside the backend package {@code nl.utwente.groove.gui.jgraph} may import or name the JGraph
  * library or the backend package, except for the files listed in {@link #ALLOWED}, each
  * tagged with the phase or slice of the migration that removes it. The test fails both on
  * a new violation and on a stale entry, so the list only ever shrinks.
@@ -54,6 +54,9 @@ public class ArchitectureTest {
      */
     private static final Map<String,String> ALLOWED = new TreeMap<>();
 
+    /** This file, which names the backend in its constants; exempt from the scan. */
+    private static final String SELF = "nl/utwente/groove/test/ArchitectureTest.java";
+
     /** Source roots to scan. */
     private static final Path[] SOURCE_ROOTS = {Path.of("src/main/java"), Path.of("src/test/java")};
 
@@ -67,7 +70,8 @@ public class ArchitectureTest {
             try (Stream<Path> files = Files.walk(root)) {
                 for (Path file : (Iterable<Path>) files::iterator) {
                     String relative = root.relativize(file).toString().replace('\\', '/');
-                    if (!relative.endsWith(".java") || relative.startsWith(BACKEND_PACKAGE)) {
+                    if (!relative.endsWith(".java") || relative.startsWith(BACKEND_PACKAGE)
+                        || relative.equals("module-info.java") || relative.equals(SELF)) {
                         continue;
                     }
                     List<String> offending = offendingImports(file);
@@ -89,17 +93,41 @@ public class ArchitectureTest {
                        + String.join("\n", stale));
     }
 
-    /** Returns the backend imports of a given source file. */
+    /**
+     * Returns the backend imports of a given source file, and the code lines that
+     * name a backend type by its qualified name without importing it.
+     * Comment lines are exempt from the latter, so that javadoc may refer to the
+     * backend (as the documentation of the persisted layout constants does).
+     */
     private static List<String> offendingImports(Path file) throws IOException {
         List<String> result = new ArrayList<>();
         for (String line : Files.readAllLines(file)) {
             String trimmed = line.strip();
+            boolean isImport = false;
             for (String prefix : BACKEND_IMPORTS) {
                 if (trimmed.startsWith(prefix)) {
+                    result.add(trimmed);
+                    isImport = true;
+                }
+            }
+            if (isImport || isComment(trimmed)) {
+                continue;
+            }
+            for (String prefix : BACKEND_PACKAGES) {
+                if (trimmed.contains(prefix)) {
                     result.add(trimmed);
                 }
             }
         }
         return result;
     }
+
+    /** Tests if a stripped source line is (the start or continuation of) a comment. */
+    private static boolean isComment(String trimmed) {
+        return trimmed.startsWith("//") || trimmed.startsWith("/*") || trimmed.startsWith("*");
+    }
+
+    /** Qualified name prefixes of the backend packages, as they occur in code. */
+    private static final String[] BACKEND_PACKAGES
+        = {"org.jgraph.", "com.jgraph.", "nl.utwente.groove.gui.jgraph."};
 }
