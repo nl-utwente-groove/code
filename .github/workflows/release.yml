@@ -68,13 +68,17 @@ jobs:
       run: |
         YFILES_VERSION=$(mvn -B -q -f ../yfiles-lib/pom.xml help:evaluate -Dexpression=yfiles.version -DforceStdout)
         mvn -B -q install:install-file -Dfile=../yfiles-lib/lib/yfiles-for-java-swing.jar -DgroupId=com.yworks.yfiles -DartifactId=yfiles-for-java-swing -Dversion=$YFILES_VERSION -Dpackaging=jar
+    - name: Install a virtual display
+      # the backend's tests open Simulator windows; they run under Xvfb (the
+      # Robot tests, which need a real pointer, skip by assumption)
+      run: sudo apt-get update && sudo apt-get install -y xvfb
     - name: Build yFiles backend
       # from the private repository checked out above, against the GROOVE
-      # artifact just installed; the license directory defaults to the lib/ directory of
-      # that checkout, where the license file is committed. The backend's tests
-      # open Simulator windows and are run by the developer, not on this
-      # headless runner
-      run: mvn -B -f ../yfiles-lib/pom.xml -Dgroove.install.skip=true -Drevision=$VERSION -DskipTests clean install
+      # artifact just installed; the license directory and the fixture
+      # grammars are found through the backend pom's defaults for this
+      # sibling layout. The tests are not skipped: an add-on whose tests did
+      # not run must not be released
+      run: xvfb-run -a -s "-screen 0 1600x1200x24" mvn -B -f ../yfiles-lib/pom.xml -Dgroove.install.skip=true -Drevision=$VERSION clean install
     - name: Build release
       # the yfiles profile adds the add-on zip to the standard zips
       run: cd release; mvn -B -Drevision=$VERSION -Pyfiles clean package
