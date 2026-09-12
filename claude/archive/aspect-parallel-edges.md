@@ -1,5 +1,15 @@
 # Parallel edges at the aspect level: decided architecture
 
+*Status (2026-09-11): on master. Branch `parallel-edges` merged on 2026-08-02
+(`18c63bb21`) and is deleted; `AspectKind.MULT` (`mult=k:`) and the fixtures
+`junit/rules/mult.gps`, `multErrors.gps`, `multNoParallel.gps` are in master.
+Rule-side MULT remains deferred (user, 2026-07-31) — host-side only, no issue
+filed; that is the only open item here. Two later changes outdate the wording
+below: the gating grammar property `parallelEdges` (`none|SPO|DPO`) was renamed
+to `semantics` (`SPO-simple|SPO-multi|DPO`) on 2026-08-24 (`0025cd1ff`) and
+SPO-multi became the default for new grammars on 2026-08-26 (`c4c7957e1`) — see
+`claude/archive/multigraph-spo-vs-dpo.md`. Performance follow-ups gh #905/#906 are closed.*
+
 Status: design decided (2026-07-19); **implemented** (2026-07-26);
 **rule-side use of the MULT aspect DEFERRED** (user, 2026-07-31, see the
 deferral section below — the aspect remains available in host graphs).
@@ -8,7 +18,8 @@ Step 1 — the `RuleGraph` parallel-edge representation (numbered
 index-preserving morphisms and typing) and plan-engine matching of
 parallel bundles (including edge injectivity) — and step 2, the MULT
 aspect itself (syntax, checks, and expansion; see the implementation
-section below), are both on branch `parallel-edges`. RETE was retired
+section below), both landed on master with the `parallel-edges` merge of
+2026-08-02. RETE was retired
 from master instead of being adapted. Builds on the GXL serialisation
 work in [parallel-edge-serialisation.md](parallel-edge-serialisation.md).
 An earlier implementation that made `AspectGraph` itself a multigraph was
@@ -105,13 +116,13 @@ counts per node, `mult=` states parallel copy counts per edge.
   (mirroring the used-nodes set for node injectivity) plus the corresponding
   backtracking dependencies in `SearchPlan`, both active only for injective
   matching of non-simple patterns, so simple matching pays nothing.
-  `ParallelEdgeMatchingTest` pins these counts. The RETE engine does not yet
-  handle parallel rule edges; per user decision (2026-07-19) RETE is
-  unmaintained and will be treated later, possibly retired altogether — see
+  `ParallelEdgeMatchingTest` pins these counts. The RETE engine never handled
+  parallel rule edges; per user decision (2026-07-19) it was retired from
+  master on 2026-07-20 — see
   [eraser-injectivity.md](eraser-injectivity.md), which also covers the
   related decision that eraser edges must *always* be matched injectively
-  (the DPO identification condition), implemented for the plan engine on
-  this branch.
+  (the DPO identification condition), implemented for the plan engine and
+  merged with this work.
 - **Match relevance prunes reader-bundle symmetry for free.** The plan
   engine only distinguishes matches that differ on *relevant* elements —
   those bound to the rule anchor or condition output nodes; matches that

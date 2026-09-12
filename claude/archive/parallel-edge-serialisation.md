@@ -1,6 +1,17 @@
 # Proposal: parallel-edge-preserving GXL serialisation
 
-Status: implemented on this branch (2026-07-18). Branch: `parallel-edges`.
+*Status (2026-09-11): implemented in `4072ae584` (2026-07-18) on branch
+`parallel-edges`, which merged to master on 2026-08-02 (`18c63bb21`); the branch
+is gone. All seven steps are in master: `AttrGraph` carries a `simple` flag,
+`AttrGraph.toPlainGraph` and `AspectGraph.createPlainGraph` honour it, `GxlIO`
+derives it from `edgeids` with the LTS override, `AutIO` uses the role rule, and
+the `AttrFactory` singleton is gone. Two later changes to note: the GXL *writer*
+moved to the streaming `GxlListener` (branch `lts-export-streaming`, merged
+`ef98ba93e`, 2026-09-03), so `GxlIO.graphToGxl` no longer exists — the
+`edgeids="…"` emission now lives there; and the "natural next step" recorded at
+the bottom (wiring simplicity into host-model compilation) was done in
+`b33257cdf` (2026-07-26), now driven by the `semantics` grammar key. Nothing
+open.*
 
 ## Problem
 
@@ -175,6 +186,9 @@ namespace, which is user-visible in the Simulator.
   aspect-graph flag into host-model compilation is the natural next step
   towards exploring with parallel edges, and will need a decision on
   precedence between the grammar property and the per-file `edgeids` flag.
+  *(Done in `b33257cdf`, 2026-07-26: `HostModelMorphism` takes its
+  simplicity from the grammar property — since the 2026-08-24 rename, from
+  `semantics`.)*
 
 ## Verification plan
 

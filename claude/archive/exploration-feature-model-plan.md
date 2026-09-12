@@ -1,5 +1,15 @@
 # Migration plan: feature-model-based exploration configuration
 
+*Status (2026-09-11): **executed and merged to master**. All phases including the
+phase-6 demolition landed on 2026-08-11 (the engine branch was rebased in, so the
+per-phase SHAs recorded below are pre-rebase; the tail of the merge is 389bd6bce,
+splitting off `explore.feature`, and f4553792a, renaming `explore.strategy` to
+`explore.verify`). `explore.encode` and `explore.prettyparse` are gone from master;
+the `-s/-a/-r` keyword syntax survives through `explore.config.LegacySyntaxParser`.
+Not executed: feature 4, the **heuristic dimension** (and with it cost-based
+ordering), deferred by Arend to be designed first — `explore.feature.Heuristic`
+carries only `NONE`.*
+
 Branch: `worktree-explore-feature-model`. Source: Arend's document *A Feature Model for
 Exploratory Search* (July 2026), transcribed below so the repo is self-contained.
 
@@ -226,7 +236,7 @@ seeding decisions resolved — streams re-derived per exploration with no run
 counter (fixed seed ⇒ identical explorations), seed settable via the
 `groove.randomSeed` system property and a `-seed` Generator option.*
 
-- `util.Randomness`: the master-seed registry from `claude/randomness-seeding.md`
+- `util.Randomness`: the master-seed registry from `claude/archive/randomness-seeding.md`
   (per-purpose streams EXPLORATION/ORACLE, splitmix64 derivation, lazy resolution
   explicit → property → generated-and-logged).
 - `next=random` realised by `explore.engine.RandomPool`, converter keyword

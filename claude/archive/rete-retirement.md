@@ -1,5 +1,13 @@
 # Retirement of the RETE matching engine
 
+*Status (2026-09-11): done and on master. The engine was deleted in
+`b61a71dd2` (2026-07-20, merged as `8376effe7`); `match/rete`, the three
+RETE strategies, the `StrategyValue`/`Matcher.Key`/`GraphRole` constants
+and the tests are all absent from master today. The revival anchor tag
+`rete-final` (`1d54570a5`) still exists. Nothing open; the semantic-debt
+ledger below has only grown (DPO/SPO semantics are now selected by the
+`semantics` grammar key, and regexpr censoring landed as gh #900).*
+
 Status: retired (user decision, 2026-07-20). The engine was unmaintained,
 saw no regular use (all three RETE strategies were development-only, hidden
 from the standard exploration dialog), and had fallen behind the semantics
@@ -44,9 +52,10 @@ keywords now fail with the generic unknown-strategy error.
   listed above by hand.
 - Note: branch `parallel-edges` adapted RETE *mechanically* to numbered
   rule edges (end-renaming, commit b2b8fb6e9) after the point where this
-  retirement branched off. If that branch has merged by revival time, the
-  last pre-deletion mainline tree contains the adapted files — prefer
-  those over the tag where they differ.
+  retirement branched off. That branch merged into master on 2026-08-02
+  (`18c63bb21`) *without* resurrecting the package, so the adapted files
+  live only in the tree of `b2b8fb6e9` — still reachable from master
+  history. Prefer that tree over the `rete-final` tag where they differ.
 
 ## Semantic-debt ledger
 

@@ -1,5 +1,18 @@
 # Recipe out-parameters vs. deletion: the StateCache:803 assert is reachable
 
+*Status (2026-09-11): **resolved and merged; the assert is gone**. Option 1
+(deleted out-parameter ⇒ null) was implemented and merged to master 2026-08-29
+via `594f02e41` (`9401b2143` null out-parameters, `27cbc7b09` the recipe
+boundary check, `19288f21c` the `nullargs.gps` tests), with the computed-/
+created-node repair `e9aa7b1c1` on 2026-08-31. In today's
+`getOutValuesFromFinalTrans` there is no assert and no `isIdentity()` shortcut:
+the out-values are mapped through the morphism unconditionally, a missing image
+yields null, and `ValueNode`s and nodes created by the final step pass through
+unchanged. `Step.getRecipeParAssign()` exists; `RecipeNullArgsTest` and
+`junit/control/nullargs.gps` are in the tree. gh #881, which introduced the
+assert, closed 2026-08-18. Note the last section ("no boundary check") is
+superseded — see the marker there.*
+
 Investigation of the assert in `StateCache.RecipeTarget.getOutValuesFromFinalTrans`
 (`src/main/java/nl/utwente/groove/lts/StateCache.java:803`), added during the EEA
 adoption (gh #881) with the comment "out-parameters are not deleted by the final
@@ -186,6 +199,11 @@ This supports **option 1** for F1: a deleted out-parameter binding becoming null
 is the same rule applied at the recipe boundary.
 
 ### Recipe calls with null in-arguments: no boundary check (verified)
+
+*Superseded: the "possible follow-up" at the end of this section was
+implemented in the same branch (`27cbc7b09`, master 2026-08-29) — see
+"Recipe boundary check" under Implementation above. What follows describes the
+behaviour before that commit.*
 
 Because the null gate lives on the innermost *rule* call only, a recipe invoked
 with a null in-argument is **not** inapplicable as a whole — contrary to the

@@ -1,5 +1,14 @@
 # Critical-pair analysis: code review and revival plan
 
+*Status (2026-09-11): none of the four route slices has been started; gh #886 is open.
+`transform.criticalpair` is unchanged apart from repo-wide sweeps (the `Proof` move to
+`match`, the `QualName` move, LF normalisation, the gh #881 null-annotation passes, the
+`parallelEdges` → `semantics` rename): the `NOT_STICTLY_CONFLUENT` typo is still in
+`ConfluenceStatus`, no class in the package carries `@NonNullByDefault`, and there is
+no `ConflictAnalysis` or any other entry point. The multigraph/DPO ground the revival
+was waiting for did arrive in the meantime — see [multigraph-spo-vs-dpo.md](archive/multigraph-spo-vs-dpo.md) — so the
+route below stands as written.*
+
 *Review of `nl.utwente.groove.transform.criticalpair`, 2026-08-10 (Claude session).
 The package implements Ruud Welling's MSc work: delete-use conflict detection via
 critical-pair enumeration, plus strict-local-confluence checking. It never became

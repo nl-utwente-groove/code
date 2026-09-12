@@ -1,5 +1,14 @@
 # Liveness-based control location variables (gh #561)
 
+*Status (2026-09-11): **merged; gh #561 closed 2026-08-31**. The work landed on
+master 2026-08-31: `bb9c26794` (expression-argument binding deferred to
+assignment computation), `1cbf66f75` (location variables restricted to live
+variables), `af9873e2b` (golden updates), note `cd9f7fb5c`. Branch
+`parout-liveness` is deleted. Fixture `junit/control/parout.gps` and
+`test/control/ParOutLivenessTest` are in the tree. The only thing not addressed
+is the residual retention across verdict-connected regions, which the issue
+explicitly ruled out of scope (see "Residual retention" below).*
+
 Analysis note for the `parout-liveness` branch, 2026-08-31. The branch resolves
 gh #561 ("Get rid of parameter binding in target state") and, entangled with it,
 a crash on control variables used inside expression arguments.

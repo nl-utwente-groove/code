@@ -1,11 +1,24 @@
 # State of the exploration feature model programme (2026-07-27)
 
+*Status (2026-09-11): the programme is **merged to master** — phases 1–4 plus 5a, all
+of 5b and the phase-6 demolition landed on 2026-08-11, ending with the package
+reshuffle 389bd6bce (`explore.feature` split off) and f4553792a (`explore.strategy` →
+`explore.verify`). The engine branch was rebased on the way in, so the phase-6 SHAs
+cited further down (594693426..687ec19dc) are no longer ancestors of master; the
+evidence is that `explore.encode`/`explore.prettyparse` are gone from master while
+`explore.config.LegacySyntaxParser` and the whole `explore.feature` package are
+present. The **only** part still outstanding is the heuristic dimension (and with it
+cost-based ordering), deferred by Arend at slice-2 start to be designed first rather
+than grown from `nen`: `explore.feature.Heuristic` on master has the single value
+`NONE`. Everything below describes the as-built state at the time of writing and is
+kept for its invariants and open threads, not as a progress report.*
+
 Note to a future Claude session. Companion to
 [exploration-feature-model-plan.md](exploration-feature-model-plan.md), which holds the
 feature model, the phase plan and the decision log; this note records the *as-built*
 state, the invariants discovered along the way, and where to pick up.
 
-## Status: phases 1–4 done; 5a done; 5b ongoing (slices 1–2: randomness, beam)
+## Status at the time of writing: phases 1–4 done; 5a done; 5b ongoing (slices 1–2: randomness, beam) — superseded by the status block above
 
 Branch topology (2026-07-26): **phases 1–4 are merged to master and pushed**
 (master fast-forwarded onto `explore-feature-model`@64e5813ed at Arend's request;
@@ -26,7 +39,7 @@ configuration-based exploration instantiates the `explore.engine` classes
 directly, without the encode/Template machinery; the deprecated keyword path
 (`-s/-a`, legacy property) still runs the enumerator-instantiated legacy classes
 as the parity reference. Phase 5b slice 1 (2026-07-26): seeded randomness — see
-the `util.Randomness` entry below and `claude/randomness-seeding.md`. Slice 2
+the `util.Randomness` entry below and `claude/archive/randomness-seeding.md`. Slice 2
 (2026-07-27): beam search (`BeamPool`); **the heuristic dimension (and with it
 cost-based ordering) was deferred by Arend at slice start** — he wants to
 design that dimension carefully rather than start from `nen` (see the open
@@ -176,7 +189,7 @@ disappears in phase 6; the preview field (the config's own text form) stays.
   M)". A goal-less none-run retains the last state's trace — which for a
   linear random walk is the whole walk, the natural Simulator use case.
 - `util.Randomness` (5b slice 1, 2026-07-26) — the master-seed registry of
-  `claude/randomness-seeding.md` (decisions resolved, see there): per-purpose
+  `claude/archive/randomness-seeding.md` (decisions resolved, see there): per-purpose
   streams (EXPLORATION, ORACLE) derived per obtainment, so a fixed master seed
   (explicit `-seed` / `groove.randomSeed` property / generated-and-logged) makes
   every exploration identical. Seeded consumers: `RandomLinearStrategy`,
@@ -461,7 +474,7 @@ Dialog/Simulator threads (2026-07-26, from Arend's review):
     goal behaviour on an ancient grammar (deliberate 6.1 decision).
 - Randomness features (`next=random`, `successor=*-random`) must respect the pending
   deterministic-seeding design (see memory: randomness-seeding-design; design note
-  committed as claude/randomness-seeding.md).
+  committed as claude/archive/randomness-seeding.md).
 
 ## Working agreements in force
 

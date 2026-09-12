@@ -1,8 +1,21 @@
 # Injective matching of eraser edges (DPO identification condition)
 
+*Status (2026-09-11): complete and on master. All five steps (the section
+headings below say "implemented" for each) merged with branch `parallel-edges`
+on 2026-08-02 (`18c63bb21`); the branch is deleted. The one deferral, dynamic
+censored re-match, was delivered as gh #900 (closed 2026-08-31, merge
+`026b5a593`) — see [regexpr-censored-match.md](regexpr-censored-match.md).
+"Open: SPO for multigraphs" below was answered by the three-mode design in the
+final section. Two renames outdate the body's vocabulary: the `parallelEdges`
+enum property became `semantics` (`SPO-simple|SPO-multi|DPO`, `0025cd1ff`,
+2026-08-24, now defaulting to SPO-multi for new grammars), and the boolean
+`ignoreRegExp` became the enum `regExpMatching` (`a6a90f2b9`, 2026-08-31).
+Nothing open.*
+
 Status: decided 2026-07-19; steps 1 (within-level eraser *edges*, plan-based
 matcher) and 2 (within-level eraser *nodes*, compile-time merge embargoes)
-implemented on branch `parallel-edges`. Related to, but distinct
+implemented with the parallel-edge work (on master since 2026-08-02).
+Related to, but distinct
 from, the parallel-edge work in
 [aspect-parallel-edges.md](aspect-parallel-edges.md): the machinery lives in
 the same code region as the edge-injectivity support for non-simple patterns,
@@ -343,7 +356,9 @@ eraser made any typed LHS node error out. Node typings are not paths — the
 witness is the (tracked) node itself — so the check now skips labels with
 role NODE_TYPE.
 
-**Open: SPO for multigraphs.** DPO is the implemented behaviour for
+**Open: SPO for multigraphs.** *(Resolved 2026-07-27 by the three-mode design
+in the next section, and shipped: SPO-multi is now the default semantics for
+new grammars.)* DPO is the implemented behaviour for
 parallelEdges grammars, but not a final commitment — the user wants to
 investigate an SPO option for multigraphs as well (what delete-wins means
 for bundles, non-injective eraser bundles, amalgamation). If it becomes

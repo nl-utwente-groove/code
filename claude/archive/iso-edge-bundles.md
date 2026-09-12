@@ -1,5 +1,16 @@
 # Edge bundles in the isomorphism checker (gh #906)
 
+*Status (2026-09-11): done and on master; gh #906 closed 2026-08-30. All slices
+landed 2026-08-29/30 (`89d7535c2` measurement, `b673d3030` slice 1, `00bf216e0`
++ `36a5013f7` + `f84f62f8d` slice 2, `5deff89b9` the slice-3 write-up); the
+`iso-edge-bundles` branch is gone. `graph/iso/EdgeBundles` is in master. The
+only carry-over is the deferred enumerating `getIsomorphism`, which no longer
+walks intra-bundle permutations — tracked by gh #886 (critical-pair revival),
+still OPEN. Two side notes since: the latent `Bisimulator.MyEdge1Cert.equals`
+bug spotted below was fixed (`664610971`, 2026-08-30), and the two
+`PaigeTarjanMcKay` strategies mentioned in the slice-2 plan were removed as
+unused (`aafebfa57`, 2026-08-31). The eager-bundle-build residue stands.*
+
 Working note for the repair of gh #906. Slice 0 (measurement) is done and
 recorded below; slices 1–3 are the plan it justifies.
 

@@ -1,5 +1,13 @@
 # Retirement of the STS package and remote exploration
 
+*Status (2026-09-11): **done and merged; nothing open**. The deletion commit is
+`66161b34f` on master, 2026-08-02, and the revival tag `sts-final` still exists.
+Verified in the tree: no `nl.utwente.groove.sts` package, no `SymbolicStrategy`,
+`RemoteStrategy` or `EncodedHostName`, and no `REMOTE` strategy value under
+`explore`. The defect ledger below is kept as input for any revival, which
+would be new work (the `io/external` exporter shape sketched at the end), not a
+resumption of this one.*
+
 Status: retired (user decision, 2026-08-02). The `sts` package (author
 Vincent de Bruijn, 2012 MSc work) converted an explored GTS into a Symbolic
 Transition System — locations are host graphs generalised over data values,

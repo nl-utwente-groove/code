@@ -1,5 +1,15 @@
 # RuleModel split: design note
 
+*Status (2026-09-11): **all four steps done and merged; branch deleted**. The
+work landed on master 2026-08-18 (`0e08e0c3a` step 1 … `5b6cf4394` the step-4
+review follow-up); branch `rulemodel-split` no longer exists. All eight target
+classes are in `grammar/model/`: `RuleCompiler`, `LevelIndexTree`,
+`LevelDistribution`, `LevelPattern`, `PatternBuilder`, `PatternTyper`,
+`ConditionAssembler`, `SignatureExtractor`; `RuleModel.java` is 530 lines
+(from 3,005). The test-coverage gap this exposed was filed as gh #893 and closed
+2026-08-21 (golden-master test `bfec6feeb`, fixtures `e3067e4c5`, dead-check
+removal `bb672cc99`). Nothing outstanding.*
+
 *Analysis of 2026-08-18 (Claude session). Follow-up to the package-structure
 observation that `RuleModel` (3005 lines) is overly large; scope here is the
 internal structure of the RULE aspect-graph-to-`Rule` translation, not
@@ -130,6 +140,9 @@ suite + full suite incl. `ExplorationTest` (grammar-smoke) + `null-check`
 order-bearing collections (2 and 4 in particular).
 
 ## Status
+
+*(All four steps below were done on branch `rulemodel-split` and merged to
+master; see the block at the top.)*
 
 - Step 1 done on branch `rulemodel-split` (2026-08-18): `RuleCompiler`
   extracted, `RuleModel` down to 527 lines. Moved code textually unchanged

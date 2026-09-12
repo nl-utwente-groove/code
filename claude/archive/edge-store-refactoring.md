@@ -1,5 +1,14 @@
 # Design note: the StoreFactory edge store and the per-factory perfect hash
 
+*Status (2026-09-11): complete on master. Steps 1–2 landed 2026-07-17/18, steps 3–7 as
+the `worktree-numbered-edge-split` branch (merged `3222b7e15`, 2026-07-18); gh #895
+(steps 4–7) closed 2026-08-29. Verified on master: `NumberedEdge`/`ANumberedEdge` exist,
+`graph.multi` is gone, `StoreFactory` carries the content pool and the simplicity flag.
+The step-6 residue — non-simple graphs not round-tripping through disk — was closed by
+the GXL work in [parallel-edge-serialisation.md](parallel-edge-serialisation.md)
+(`4072ae584`, on master with the `parallel-edges` merge `18c63bb21`, 2026-08-02). Still
+open, deliberately and without an issue: pushing edge numbering up to `ElementFactory`.*
+
 *Status (2026-08-29): all seven steps landed on `master`; gh #895 (steps 4–7) is closed.
 The migration section below records what was planned and, where the as-built shape
 deviated, what was actually done and why. The design sections (pool layering,
@@ -94,7 +103,8 @@ accruing every edge for the Simulator's lifetime.
    number field moves to a new `ANumberedEdge`; `getNumber` leaves `Element`/`Edge` (nodes keep
    it). Numbered edges are exactly `PlainEdge`, `DefaultHostEdge`, `MultiEdge`, `AspectEdge`,
    `AttrEdge`; `TypeEdge`/`RuleEdge`/`RegEdge`/`ALabelEdge` and the LTS transitions stay on an
-   unnumbered content-identified base. *(done — branch `worktree-numbered-edge-split`)*
+   unnumbered content-identified base. *(done — master, branch
+   `worktree-numbered-edge-split` merged `3222b7e15`, 2026-07-18)*
 4. **Identity switch** (the deep step) — *(done — master, `4a71e96e4`/`85c878df1`, with a
    deliberate deviation)*. The plan said equality = class + number, hash = `spread(number)`
    (the `ANode` pattern). As built, the number **refines** content instead of replacing it:
@@ -119,7 +129,8 @@ accruing every edge for the Simulator's lifetime.
    of every plain element, and makes numbering in converted graphs start at 0 per family
    instead of continuing a session-wide counter. Known residue, recorded in `85c878df1`:
    `AspectGraph.toPlainGraph` and the GXL/`AttrGraph` I/O chain still convert always-simple,
-   so non-simple graphs do not round-trip through disk yet.
+   so non-simple graphs do not round-trip through disk yet. *(That residue was closed on
+   2026-07-18 by `4072ae584`, see [parallel-edge-serialisation.md](parallel-edge-serialisation.md).)*
 7. **Subsume `graph.multi`** — *(done — master, `3ac7acba9`)*, see the section above.
 
 Dependencies held as planned: 3 after 1; 4 after 1–3; 5–7 after 4 in order (7 needed 6).
