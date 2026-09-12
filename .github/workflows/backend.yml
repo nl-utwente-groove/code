@@ -8,13 +8,15 @@ run-name: Testing the yFiles backend after push of ${{ github.ref_name }}
 # private repository has the mirror-image workflow (test.yml), which tests a
 # push there against this repository.
 #
-# The backend is taken from the branch of the private repository that carries
-# the same name as the pushed branch, if there is one, and from main
-# otherwise: a backend branch that follows an interface change on a branch of
-# this repository must carry that branch's name. When the two sides of such a
-# change are pushed one after the other, the first run is red until the
-# second push exists; that is accurate, since the pushed branch alone would
-# break the other repository.
+# The backend is taken from the branch of the private repository that
+# release/github/choose-backend.sh chooses, as in release.yml: the nearest of
+# the branches the pushed commit descends from that the private repository
+# also has, and main if there is none. A backend branch that follows an
+# interface change on a branch of this repository must therefore carry that
+# branch's name; a throwaway branch off it, as for a test release, then
+# resolves to it as well. When the two sides of such a change are pushed one
+# after the other, the first run is red until the second push exists; that is
+# accurate, since the pushed branch alone would break the other repository.
 #
 # The private repository is read with the same token as in release.yml. A
 # pull request from a fork has no secrets, so the job skips there. The tests
@@ -38,10 +40,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Choose the backend branch
-      # the same-named branch of the private repository if it exists, else
-      # main; without a token (a fork) the rest of the job is skipped
-      id: choose
+    - name: Check for the token
+      # without a token (a fork) the rest of the job is skipped
+      id: token
       env:
         TOKEN: ${{ secrets.YFILES_LIB_TOKEN }}
       working-directory: .
@@ -49,23 +50,29 @@ jobs:
         if [ -z "$TOKEN" ]; then
           echo "No token for the private repository: skipping"
           echo "run=false" >> "$GITHUB_OUTPUT"
-          exit 0
-        fi
-        if git ls-remote --exit-code --heads "https://x-access-token:$TOKEN@github.com/nl-utwente-groove/yfiles-lib.git" "refs/heads/$GITHUB_REF_NAME" > /dev/null; then
-          REF="$GITHUB_REF_NAME"
         else
-          REF=main
+          echo "run=true" >> "$GITHUB_OUTPUT"
         fi
-        echo "Testing nl-utwente-groove/yfiles-lib at $REF"
-        echo "run=true" >> "$GITHUB_OUTPUT"
-        echo "YFILES_REF=$REF" >> "$GITHUB_ENV"
     - name: Check out code
-      if: steps.choose.outputs.run == 'true'
+      # with the whole history, which the choice of backend branch below needs
+      # in order to test ancestry; blobs are fetched on demand, so this stays
+      # a treeless fetch rather than a full clone
+      if: steps.token.outputs.run == 'true'
       uses: actions/checkout@v7
       with:
         path: 'code'
+        fetch-depth: 0
+        filter: 'blob:none'
+    - name: Choose the backend branch
+      if: steps.token.outputs.run == 'true'
+      env:
+        TOKEN: ${{ secrets.YFILES_LIB_TOKEN }}
+      run: |
+        REF=$(bash release/github/choose-backend.sh "$GITHUB_SHA")
+        echo "Testing nl-utwente-groove/yfiles-lib at $REF"
+        echo "YFILES_REF=$REF" >> "$GITHUB_ENV"
     - name: Check out yFiles backend
-      if: steps.choose.outputs.run == 'true'
+      if: steps.token.outputs.run == 'true'
       uses: actions/checkout@v7
       with:
         repository: 'nl-utwente-groove/yfiles-lib'
@@ -73,26 +80,26 @@ jobs:
         token: ${{ secrets.YFILES_LIB_TOKEN }}
         path: 'yfiles-lib'
     - name: Set up JDK 21
-      if: steps.choose.outputs.run == 'true'
+      if: steps.token.outputs.run == 'true'
       uses: actions/setup-java@v5
       with:
         java-version: '21'
         distribution: 'temurin'
         cache: maven
     - name: Install a virtual display
-      if: steps.choose.outputs.run == 'true'
+      if: steps.token.outputs.run == 'true'
       run: sudo apt-get update && sudo apt-get install -y xvfb
     - name: Retrieve VERSION from the pom
-      if: steps.choose.outputs.run == 'true'
+      if: steps.token.outputs.run == 'true'
       run: echo "VERSION=$(mvn -B -q help:evaluate -Dexpression=revision -DforceStdout)" >> $GITHUB_ENV
     - name: Build GROOVE
       # the core's own tests run in maven.yml
-      if: steps.choose.outputs.run == 'true'
+      if: steps.token.outputs.run == 'true'
       run: mvn -B -q -DskipTests -Dmaven.javadoc.skip=true clean install
     - name: Install yFiles library
       # into the local Maven repository, under the coordinates the backend
       # depends on; the version is the backend pom's yfiles.version
-      if: steps.choose.outputs.run == 'true'
+      if: steps.token.outputs.run == 'true'
       run: |
         YFILES_VERSION=$(mvn -B -q -f ../yfiles-lib/pom.xml help:evaluate -Dexpression=yfiles.version -DforceStdout)
         mvn -B -q install:install-file -Dfile=../yfiles-lib/lib/yfiles-for-java-swing.jar -DgroupId=com.yworks.yfiles -DartifactId=yfiles-for-java-swing -Dversion=$YFILES_VERSION -Dpackaging=jar
@@ -100,10 +107,10 @@ jobs:
       # the core was just installed, so the freshness guard is skipped; the
       # fixture grammars and the license directory are found through the
       # backend pom's defaults for the sibling layout of the two checkouts
-      if: steps.choose.outputs.run == 'true'
+      if: steps.token.outputs.run == 'true'
       run: xvfb-run -a -s "-screen 0 1600x1200x24" mvn -B -f ../yfiles-lib/pom.xml -Dgroove.install.skip=true -Drevision=$VERSION clean test
     - name: Keep the test reports of a failed run
-      if: failure() && steps.choose.outputs.run == 'true'
+      if: failure() && steps.token.outputs.run == 'true'
       uses: actions/upload-artifact@v4
       with:
         name: surefire-reports
