@@ -20,9 +20,13 @@ run-name: Testing the yFiles backend after push of ${{ github.ref_name }}
 # pull request from a fork has no secrets, so the job skips there. The tests
 # open Simulator windows and run under a virtual X display; the Robot tests,
 # which need a real pointer, skip by assumption.
+#
+# Only branch pushes trigger the job: a release tag names no branch of the
+# private repository, and release.yml builds and tests the backend for it.
 
 on:
   push:
+    branches: ['**']
   workflow_dispatch:
 
 jobs:
