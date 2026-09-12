@@ -37,6 +37,34 @@ jobs:
       with:
         repository: 'nl-utwente-groove/samples'
         path: 'samples'
+    - name: Choose the backend branch
+      # The rule of backend.yml: the branch of the private repository that
+      # carries the same name as the branch being built, if there is one, and
+      # main otherwise. It matters for a test release (see release/README.md,
+      # "Deploying"), which is built from a branch precisely because nothing
+      # is merged yet, and whose backend counterpart is then on the
+      # same-named branch of the private repository.
+      #
+      # A tag carries no branch name, so the candidates are the branches of
+      # this repository whose tip is the tagged commit; the first of those
+      # that the private repository also has wins. A release tagged on master
+      # yields no candidate, since the private repository's default branch is
+      # main, and is thus built from main as before.
+      working-directory: .
+      env:
+        TOKEN: ${{ secrets.YFILES_LIB_TOKEN }}
+      run: |
+        REF=main
+        LIB=https://x-access-token:$TOKEN@github.com/nl-utwente-groove/yfiles-lib.git
+        TIPS=$(git ls-remote --heads "https://github.com/$GITHUB_REPOSITORY.git")
+        for BRANCH in $(echo "$TIPS" | awk -v sha="$GITHUB_SHA" '$1 == sha { sub("refs/heads/", "", $2); print $2 }'); do
+          if git ls-remote --exit-code --heads "$LIB" "refs/heads/$BRANCH" > /dev/null; then
+            REF="$BRANCH"
+            break
+          fi
+        done
+        echo "Building the yFiles add-on from nl-utwente-groove/yfiles-lib at $REF"
+        echo "YFILES_REF=$REF" >> "$GITHUB_ENV"
     - name: Check out yFiles library
       # The licensed yFiles library, its runtime license file and the source of
       # the yFiles backend (the repository's root project) live in a private
@@ -48,6 +76,7 @@ jobs:
       uses: actions/checkout@v7
       with:
         repository: 'nl-utwente-groove/yfiles-lib'
+        ref: ${{ env.YFILES_REF }}
         token: ${{ secrets.YFILES_LIB_TOKEN }}
         path: 'yfiles-lib'
     - name: Set up JDK 21

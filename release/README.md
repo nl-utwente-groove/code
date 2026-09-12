@@ -81,6 +81,8 @@ in two different ways, it is up to the developer to ensure that they are identic
 
 To build a pre-release instead (for instance to test the workflow), use a version number starting at 99, such as `99.0.0`: the `release` job marks any such version as a pre-release automatically, and a pre-release is not shown as the latest release of the repository. Do not use a first number of 0, which may fail the macOS installers, since jpackage there is believed to reject it. Increase the minor number for every further pre-release (`99.1.0`, `99.2.0`, ...): the Windows installer derives its product code from the version, so it refuses to install over an existing installation of the same version ("Another version of this product is already installed"), whereas a different version replaces it.
 
+A pre-release is typically tagged on a branch, since testing the workflow before merging is the point of it. The yFiles add-on then has to be built from the matching state of the private repository, which is not its default branch: the `release` job therefore applies the rule of `backend.yml` and takes the branch of `yfiles-lib` that carries the same name as the branch being released, falling back to `main`. Since a tag carries no branch name, the job looks for branches of this repository whose tip is the tagged commit and uses the first of those that `yfiles-lib` also has — so tag the tip of the pushed branch, not an older commit on it, and make sure the branch is pushed before the tag. A release tagged on `master` matches nothing (the private default branch being `main`) and is built from `main`, as before.
+
 If something goes wrong on github and you have to repeat the last step, you first have to delete the remote tag on the command line, like so:
 
 `git push --delete origin release-x_y_z`
@@ -184,7 +186,9 @@ GROOVE removes the add-on directory (see the Installers section).
 
 The `release` job of `.github/workflows/release.yml` builds the add-on along with the
 standard zips, so that a release needs no manual step. For that it checks out the
-private repository `nl-utwente-groove/yfiles-lib` next to the code checkout. That
+private repository `nl-utwente-groove/yfiles-lib` next to the code checkout, at the
+branch of the same name as the branch being released if there is one and at `main`
+otherwise (see "Deploying" above, on pre-releases). That
 repository holds two files in its `lib/` directory: `yfiles-for-java-swing.jar`, the plain library
 jar from the `lib` directory of the licensed distribution, and the runtime license file
 (the `.xml` file that `yfiles.license.dir` points to); the rest of that repository is
