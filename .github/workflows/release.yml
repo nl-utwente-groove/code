@@ -18,9 +18,14 @@ jobs:
 
     steps:
     - name: Check out code
+      # with the whole history, which the choice of backend branch below needs
+      # in order to test ancestry; blobs are fetched on demand, so this stays
+      # a treeless fetch rather than a full clone
       uses: actions/checkout@v7
       with:
         path: 'code'
+        fetch-depth: 0
+        filter: 'blob:none'
     - name: Assemble release notes
       # the note on getting past the warnings for the unsigned installers,
       # and this release's change log; see release/README.md, "The release
@@ -38,26 +43,35 @@ jobs:
         repository: 'nl-utwente-groove/samples'
         path: 'samples'
     - name: Choose the backend branch
-      # The rule of backend.yml: the branch of the private repository that
+      # The rule of backend.yml - the branch of the private repository that
       # carries the same name as the branch being built, if there is one, and
-      # main otherwise. It matters for a test release (see release/README.md,
-      # "Deploying"), which is built from a branch precisely because nothing
-      # is merged yet, and whose backend counterpart is then on the
-      # same-named branch of the private repository.
+      # main otherwise - in the form a tag allows. It matters for a test
+      # release (see release/README.md, "Deploying"), which is built from a
+      # branch precisely because nothing is merged yet, and whose backend
+      # counterpart is then on a branch of the private repository rather than
+      # on main.
       #
-      # A tag carries no branch name, so the candidates are the branches of
-      # this repository whose tip is the tagged commit; the first of those
-      # that the private repository also has wins. A release tagged on master
-      # yields no candidate, since the private repository's default branch is
-      # main, and is thus built from main as before.
-      working-directory: .
+      # A tag carries no branch name, and matching only the branches whose tip
+      # IS the tagged commit would miss the ordinary case, in which the tag
+      # sits on a short-lived branch a version bump ahead of the branch the
+      # interface change lives on. The candidates are therefore the branches
+      # whose tip is an ancestor of the tagged commit - the branch tagged and
+      # everything it was branched off - and the add-on is built from the
+      # nearest of those that the private repository also has; an exact tip
+      # match, being at distance 0, still wins. A release tagged on master
+      # yields no candidate that the private repository has, its default
+      # branch being main, and is built from main as before.
       env:
         TOKEN: ${{ secrets.YFILES_LIB_TOKEN }}
       run: |
         REF=main
         LIB=https://x-access-token:$TOKEN@github.com/nl-utwente-groove/yfiles-lib.git
-        TIPS=$(git ls-remote --heads "https://github.com/$GITHUB_REPOSITORY.git")
-        for BRANCH in $(echo "$TIPS" | awk -v sha="$GITHUB_SHA" '$1 == sha { sub("refs/heads/", "", $2); print $2 }'); do
+        CANDIDATES=$(git for-each-ref --format='%(objectname) %(refname:lstrip=3)' refs/remotes/origin           | while read -r SHA BRANCH; do
+              if [ "$BRANCH" != HEAD ] && git merge-base --is-ancestor "$SHA" "$GITHUB_SHA"; then
+                echo "$(git rev-list --count "$SHA..$GITHUB_SHA") $BRANCH"
+              fi
+            done | sort -k1,1n -k2,2 | awk '{ print $2 }')
+        for BRANCH in $CANDIDATES; do
           if git ls-remote --exit-code --heads "$LIB" "refs/heads/$BRANCH" > /dev/null; then
             REF="$BRANCH"
             break
