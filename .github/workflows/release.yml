@@ -72,7 +72,12 @@ jobs:
               fi
             done | sort -k1,1n -k2,2 | awk '{ print $2 }')
         for BRANCH in $CANDIDATES; do
-          if git ls-remote --exit-code --heads "$LIB" "refs/heads/$BRANCH" > /dev/null; then
+          # asked from outside the checkout: actions/checkout leaves the
+          # workflow token in the checkout's git config as an authorization
+          # header for github.com, which would take precedence over the
+          # private-repository token in the URL and turn the private
+          # repository into "Repository not found"
+          if git -C "$RUNNER_TEMP" ls-remote --exit-code --heads "$LIB" "refs/heads/$BRANCH" > /dev/null; then
             REF="$BRANCH"
             break
           fi
