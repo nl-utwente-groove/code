@@ -18,7 +18,7 @@ Below, the _release directory_ refers to the project subdirectory (of the `code`
 1. Update the version and date in the GROOVE source:
 
     - The version number is the `revision` property in the main `pom.xml`: a semantic version `x.y.z` with the optional suffix `-SNAPSHOT`. The number might already be correct (it is updated in postprocessing, see below) but the changes in this revision may necessitate updating the `x` or `y` values. In any case remove the `-SNAPSHOT` suffix. (The `GROOVE_VERSION` resource file is generated from this property by resource filtering; do not edit it.)
-    - The `revision` property of the `pom.xml` of the private `yfiles-lib` repository (the optional yFiles backend) must be kept equal to that of the release.
+    - The `revision` property of the `pom.xml` of the private `yfiles-lib` repository (the optional yFiles backend) should be updated along with it, to keep the two equal. This is development hygiene rather than a condition for the release: every build of the backend, by hand or in a workflow, is passed the version of the main pom with `-Drevision`, so the add-on gets the right version either way. The default in that pom governs Eclipse, where equal versions are what make m2e resolve the dependency from the open `groove` project instead of an installed artifact; a command-line build of the backend fails if the two have drifted apart.
     - The remaining files in `src/main/resources/nl/utwente/groove/resource/version`:
         - `GROOVE_BUILD`: the build date, in format `YYYYMMDD`. Update to the build date.
         - [Optional] `GXL_VERSION`: the name of the version of GXL currently used for the encoding of graphs. (This will rarely change.)
