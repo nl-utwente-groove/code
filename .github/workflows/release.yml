@@ -90,7 +90,13 @@ jobs:
         artifacts: "code/release/target/*.zip,code/release/github/IF-WINDOWS-OR-MACOS-BLOCKS-THE-INSTALLER.txt"
         bodyFile: "${{ runner.temp }}/release-notes.md"
         draft: false
-        prerelease: false
+        # version numbers starting at 99 are reserved for test releases (see
+        # release/README.md); marking them as pre-releases keeps them from
+        # becoming the repository's latest release. Every other version goes
+        # out as a full release, so a test release needs no workflow edit on
+        # the tagged commit. The installers job leaves the flag alone
+        # (omitPrereleaseDuringUpdate)
+        prerelease: ${{ startsWith(env.VERSION, '99.') }}
 
   # Builds self-contained installers (with bundled Java runtime) via jpackage
   # and attaches them to the release created by the job above. jpackage can
