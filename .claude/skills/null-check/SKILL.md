@@ -47,8 +47,8 @@ hierarchies, so the modular/unnamed distinction does not affect the analysis the
 `-All` does not combine with explicit file arguments, and unrecognized switches are
 rejected rather than passed to ecj as file names.
 
-Expected baseline: **17 problems, exit code 0** — 16 warnings (2 missing-`@Override` in
-`control/Binding.java`, 14 TODO task tags: 10 main, 4 test) plus 1 info in
+Expected baseline: **16 problems, exit code 0** — 15 warnings (2 missing-`@Override` in
+`control/Binding.java`, 13 TODO task tags: 9 main, 4 test) plus 1 info in
 `gui/tree/TypeTree.java` (exported API mentioning a non-exported type; surfaces only in
 modular compilation). The Binding warnings are spurious: those record component accessors
 do carry `@Override`; the warning is an ecj 3.42.0 regression (3.37.0 does not report it).

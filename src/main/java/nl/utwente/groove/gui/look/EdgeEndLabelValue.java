@@ -34,19 +34,19 @@ public class EdgeEndLabelValue extends AspectValue<String> {
     }
 
     @Override
-    protected String getForJVertex(AspectViewVertex jVertex) {
+    protected String getForVertex(AspectViewVertex vertex) {
         return null;
     }
 
     @Override
-    protected String getForJEdge(AspectViewEdge jEdge) {
+    protected String getForEdge(AspectViewEdge edge) {
         String result = null;
-        AspectEdge edge = jEdge.getEdge();
-        // the edge could be null, if we're in the process of adding a ViewEdge
-        if (edge != null && edge.hasGraphRole(GraphRole.TYPE)) {
+        AspectEdge aspectEdge = edge.getEdge();
+        // the aspect edge could be null, if we're in the process of adding a ViewEdge
+        if (aspectEdge != null && aspectEdge.hasGraphRole(GraphRole.TYPE)) {
             Multiplicity mult = this.source
-                ? edge.getOutMult()
-                : edge.getInMult();
+                ? aspectEdge.getOutMult()
+                : aspectEdge.getInMult();
             if (mult != null) {
                 result = mult.toString();
             }

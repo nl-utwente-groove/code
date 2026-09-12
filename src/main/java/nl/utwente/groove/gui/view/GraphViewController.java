@@ -273,7 +273,7 @@ public abstract class GraphViewController<G extends Graph> {
      * Sets (but does not start) the layout action for the display. First stops
      * the current layout action, if it is running.
      * @param prototypeLayouter prototype for the new layout action; the actual
-     *        layout action is obtained by calling <tt>newInstance(jGraph)</tt>
+     *        layout action is obtained by calling <tt>newInstance(canvas)</tt>
      * @see #getLayouter()
      */
     public void setLayouter(Layouter prototypeLayouter) {

@@ -237,12 +237,12 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
         return new LabelMenu(showMode);
     }
 
-    /** Returns the JGraph for which this menu works. */
+    /** Returns the canvas for which this menu works. */
     GraphCanvas<G> getCanvas() {
         return this.canvas;
     }
 
-    /** The JGraph upon which this menu works. */
+    /** The canvas upon which this menu works. */
     private final GraphCanvas<G> canvas;
 
     /** Mnemonic key for the {@link AllAction} */
@@ -297,11 +297,11 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
         public void actionPerformed(ActionEvent e) {
             Set<ViewCell<G>> hiddenCells = new HashSet<>();
             Set<ViewCell<G>> shownCells = new HashSet<>();
-            for (ViewCell<G> jCell : this.canvas.getCells()) {
-                if (isHiding(jCell)) {
-                    hiddenCells.add(jCell);
-                } else if (isShowing(jCell)) {
-                    shownCells.add(jCell);
+            for (ViewCell<G> cell : this.canvas.getCells()) {
+                if (isHiding(cell)) {
+                    hiddenCells.add(cell);
+                } else if (isShowing(cell)) {
+                    shownCells.add(cell);
                 }
             }
             // if the main function is showing, hide first and then show
@@ -329,14 +329,14 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
          * {@link #isInvolved(ViewCell)}) and the show mode of this action is
          * {@link #HIDE_MODE}, or it is not involved and the show mode is
          * {@link #ONLY_MODE}.
-         * @param jCell the cell for which the indication is given
+         * @param cell the cell for which the indication is given
          * @return <tt>true</tt> if (according to this action) <tt>cell</tt>
          *         should be hidden
          * @see #isInvolved(ViewCell)
          * @see #getShowMode()
          */
-        protected boolean isHiding(ViewCell<G> jCell) {
-            boolean involved = isInvolved(jCell);
+        protected boolean isHiding(ViewCell<G> cell) {
+            boolean involved = isInvolved(cell);
             return (involved && getShowMode() == HIDE_MODE)
                 || (!involved && getShowMode() == ONLY_MODE);
         }
@@ -346,20 +346,20 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
          * hidden. This is the case if the cell is involved (according to
          * {@link #isInvolved(ViewCell)}) and the show mode of this action is
          * {@link #ADD_MODE} or {@link #ONLY_MODE}.
-         * @param jCell the cell for which the indication is given
+         * @param cell the cell for which the indication is given
          * @return <tt>true</tt> if (according to this action) <tt>cell</tt>
          *         should be hidden
          * @see #isInvolved(ViewCell)
          * @see #getShowMode()
          */
-        protected boolean isShowing(ViewCell<G> jCell) {
-            return isInvolved(jCell) && getShowMode() != HIDE_MODE;
+        protected boolean isShowing(ViewCell<G> cell) {
+            return isInvolved(cell) && getShowMode() != HIDE_MODE;
         }
 
         /**
-         * Convenience method to changes a set of jcells to hidden or visible in
+         * Convenience method to changes a set of cells to hidden or visible in
          * the underlying canvas.
-         * @param cells the jcells to be changed
+         * @param cells the cells to be changed
          * @param hidden <tt>true</tt> if the cells are to be changed to hidden
          */
         protected final void setHidden(Set<ViewCell<G>> cells, boolean hidden) {
@@ -369,12 +369,12 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
         /**
          * Indicates whether a given canvas cell is involved in this show/hide
          * action.
-         * @param jCell the canvas cell for which the involvement is to be
+         * @param cell the canvas cell for which the involvement is to be
          *        decided
          * @return <tt>true</tt> if <tt>cell</tt> should be shown/hidden by this
          *         action
          */
-        abstract protected boolean isInvolved(ViewCell<G> jCell);
+        abstract protected boolean isInvolved(ViewCell<G> cell);
 
         /** The canvas upon which this menu works. */
         protected final GraphCanvas<G> canvas;
@@ -617,8 +617,8 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
          * model.
          */
         @Override
-        protected boolean isInvolved(ViewCell<G> jCell) {
-            return this.canvas.getSelection().contains(jCell);
+        protected boolean isInvolved(ViewCell<G> cell) {
+            return this.canvas.getSelection().contains(cell);
         }
     }
 
@@ -668,9 +668,9 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
          * labels read from the file.
          */
         @Override
-        protected boolean isInvolved(ViewCell<G> jCell) {
+        protected boolean isInvolved(ViewCell<G> cell) {
             boolean result = false;
-            for (Label label : jCell.getKeys()) {
+            for (Label label : cell.getKeys()) {
                 result = this.labels.contains(label.text());
                 if (result) {
                     break;
@@ -712,10 +712,10 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
         }
 
         @Override
-        protected boolean isInvolved(ViewCell<@NonNull GTS> jCell) {
+        protected boolean isInvolved(ViewCell<@NonNull GTS> cell) {
             boolean result = false;
-            if (jCell instanceof LTSViewCell ltsJCell) {
-                for (var t : ltsJCell.getEdges()) {
+            if (cell instanceof LTSViewCell ltsCell) {
+                for (var t : ltsCell.getEdges()) {
                     result = this.trace.contains(t);
                     if (result) {
                         break;
@@ -758,7 +758,7 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
         /**
          * This action builds the menu on-the-fly. It iterates ove the roots of
          * the canvas, adding a <tt>LabelAction</tt> for every label of every
-         * jcell thus found.
+         * cell thus found.
          */
         @Override
         public void menuSelectionChanged(boolean isIncluded) {

@@ -130,7 +130,7 @@ public interface ViewCell<G extends Graph> extends Serializable {
     public Set<? extends Edge> getEdges();
 
     /**
-     * Returns tool tip text for this j-cell.
+     * Returns tool tip text for this cell.
      */
     public abstract String getToolTipText();
 

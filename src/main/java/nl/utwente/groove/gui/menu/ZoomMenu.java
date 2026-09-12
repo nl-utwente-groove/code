@@ -31,7 +31,7 @@ import javax.swing.KeyStroke;
 import nl.utwente.groove.gui.view.GraphCanvas;
 
 /**
- * Menu for zoomin in/out on a jgraph.
+ * Menu for zooming in and out on a canvas.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -83,7 +83,7 @@ public class ZoomMenu extends JMenu {
 
     /** Enables the menu actions according to the current scaling. */
     protected void setActionsEnabled() {
-        // zoomInAction.setEnabled(jgraph.getScale() < 1);
+        // no action currently depends on the scaling
     }
 
     /**

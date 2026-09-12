@@ -1,0 +1,106 @@
+name: Test the yFiles backend
+run-name: Testing the yFiles backend after push of ${{ github.ref_name }}
+
+# Builds and tests the yFiles graph backend, whose source lives in the private
+# repository nl-utwente-groove/yfiles-lib, against every push of this
+# repository, so that a change to the interfaces the backend implements is
+# noticed without anyone remembering to run the backend's tests by hand. The
+# private repository has the mirror-image workflow (test.yml), which tests a
+# push there against this repository.
+#
+# The backend is taken from the branch of the private repository that carries
+# the same name as the pushed branch, if there is one, and from main
+# otherwise: a backend branch that follows an interface change on a branch of
+# this repository must carry that branch's name. When the two sides of such a
+# change are pushed one after the other, the first run is red until the
+# second push exists; that is accurate, since the pushed branch alone would
+# break the other repository.
+#
+# The private repository is read with the same token as in release.yml. A
+# pull request from a fork has no secrets, so the job skips there. The tests
+# open Simulator windows and run under a virtual X display; the Robot tests,
+# which need a real pointer, skip by assumption.
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  backend:
+    defaults:
+      run:
+        working-directory: code
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Choose the backend branch
+      # the same-named branch of the private repository if it exists, else
+      # main; without a token (a fork) the rest of the job is skipped
+      id: choose
+      env:
+        TOKEN: ${{ secrets.YFILES_LIB_TOKEN }}
+      working-directory: .
+      run: |
+        if [ -z "$TOKEN" ]; then
+          echo "No token for the private repository: skipping"
+          echo "run=false" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+        if git ls-remote --exit-code --heads "https://x-access-token:$TOKEN@github.com/nl-utwente-groove/yfiles-lib.git" "refs/heads/$GITHUB_REF_NAME" > /dev/null; then
+          REF="$GITHUB_REF_NAME"
+        else
+          REF=main
+        fi
+        echo "Testing nl-utwente-groove/yfiles-lib at $REF"
+        echo "run=true" >> "$GITHUB_OUTPUT"
+        echo "YFILES_REF=$REF" >> "$GITHUB_ENV"
+    - name: Check out code
+      if: steps.choose.outputs.run == 'true'
+      uses: actions/checkout@v7
+      with:
+        path: 'code'
+    - name: Check out yFiles backend
+      if: steps.choose.outputs.run == 'true'
+      uses: actions/checkout@v7
+      with:
+        repository: 'nl-utwente-groove/yfiles-lib'
+        ref: ${{ env.YFILES_REF }}
+        token: ${{ secrets.YFILES_LIB_TOKEN }}
+        path: 'yfiles-lib'
+    - name: Set up JDK 21
+      if: steps.choose.outputs.run == 'true'
+      uses: actions/setup-java@v5
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: maven
+    - name: Install a virtual display
+      if: steps.choose.outputs.run == 'true'
+      run: sudo apt-get update && sudo apt-get install -y xvfb
+    - name: Retrieve VERSION from the pom
+      if: steps.choose.outputs.run == 'true'
+      run: echo "VERSION=$(mvn -B -q help:evaluate -Dexpression=revision -DforceStdout)" >> $GITHUB_ENV
+    - name: Build GROOVE
+      # the core's own tests run in maven.yml
+      if: steps.choose.outputs.run == 'true'
+      run: mvn -B -q -DskipTests -Dmaven.javadoc.skip=true clean install
+    - name: Install yFiles library
+      # into the local Maven repository, under the coordinates the backend
+      # depends on; the version is the backend pom's yfiles.version
+      if: steps.choose.outputs.run == 'true'
+      run: |
+        YFILES_VERSION=$(mvn -B -q -f ../yfiles-lib/pom.xml help:evaluate -Dexpression=yfiles.version -DforceStdout)
+        mvn -B -q install:install-file -Dfile=../yfiles-lib/lib/yfiles-for-java-swing.jar -DgroupId=com.yworks.yfiles -DartifactId=yfiles-for-java-swing -Dversion=$YFILES_VERSION -Dpackaging=jar
+    - name: Test the backend
+      # the core was just installed, so the freshness guard is skipped; the
+      # fixture grammars and the license directory are found through the
+      # backend pom's defaults for the sibling layout of the two checkouts
+      if: steps.choose.outputs.run == 'true'
+      run: xvfb-run -a -s "-screen 0 1600x1200x24" mvn -B -f ../yfiles-lib/pom.xml -Dgroove.install.skip=true -Drevision=$VERSION clean test
+    - name: Keep the test reports of a failed run
+      if: failure() && steps.choose.outputs.run == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: surefire-reports
+        path: yfiles-lib/target/surefire-reports

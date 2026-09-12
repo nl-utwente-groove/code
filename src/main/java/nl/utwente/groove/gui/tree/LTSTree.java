@@ -86,7 +86,7 @@ public class LTSTree extends LabelTree<GTS> {
         }
         for (var entry : getFilter().getEntries()) {
             entry.refreshSelection();
-            if (getFilter().hasJCells(entry)) {
+            if (getFilter().hasCells(entry)) {
                 headers |= entry.getType() != Type.GRAPH_CONDITION;
                 var entries = typedEntries.get(entry.getType());
                 assert entries != null; // all entry types are pre-populated

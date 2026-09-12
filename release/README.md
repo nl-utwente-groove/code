@@ -192,8 +192,8 @@ the source of the backend itself, its root project, which the yFiles license
 does not allow to be public. The workflow installs the jar into
 the runner's local Maven repository under the coordinates of that repository's
 `pom.xml` (whose `yfiles.version` it reads), builds the backend from that
-checkout (the license directory defaults to its `lib/` directory; tests skipped: they
-open Simulator windows), and packages the release with
+checkout with its tests (the license directory defaults to its `lib/` directory; the
+tests open Simulator windows, so they run under Xvfb), and packages the release with
 the `yfiles` profile; the add-on zip is then attached to the github release by the
 same step as the standard zips.
 

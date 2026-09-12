@@ -144,9 +144,9 @@ public class AspectVertexCell extends AViewVertex<AspectGraph> implements Aspect
         // add all outgoing edge cells that are source labels
         Iterator<? extends AspectEdgeCell> iter = getContext();
         while (iter.hasNext()) {
-            AspectEdgeCell jEdge = iter.next();
-            if (jEdge.getSourceVertex() == this && jEdge.isSourceLabel()) {
-                result.addAll(jEdge.getEdges());
+            AspectEdgeCell edge = iter.next();
+            if (edge.getSourceVertex() == this && edge.isSourceLabel()) {
+                result.addAll(edge.getEdges());
             }
         }
         return result;
@@ -247,9 +247,9 @@ public class AspectVertexCell extends AViewVertex<AspectGraph> implements Aspect
                 }
             }
             // add incident edges
-            var jEdges = getContext();
-            while (jEdges.hasNext()) {
-                for (var edge : jEdges.next().getEdges()) {
+            var edges = getContext();
+            while (edges.hasNext()) {
+                for (var edge : edges.next().getEdges()) {
                     TypeEdge key = getKey(edge);
                     if (key != null) {
                         result.add(key);

@@ -102,12 +102,12 @@ public class LTSGraphViewModel extends GraphViewModel<GTS> implements GTSListene
             prepareInsert();
             // note that (as per GraphListener contract)
             // source and target Nodes (if any) have already been added
-            var edgeJCell = addEdge(transition);
+            var edgeCell = addEdge(transition);
             doInsert(false);
-            var stateJCell = getJCellForNode(transition.target());
-            assert stateJCell != null; // the target state was added before
-            stateJCell.setStale(VisualKey.VISIBLE);
-            edgeJCell.setStale(VisualKey.VISIBLE);
+            var stateCell = getCellForNode(transition.target());
+            assert stateCell != null; // the target state was added before
+            stateCell.setStale(VisualKey.VISIBLE);
+            edgeCell.setStale(VisualKey.VISIBLE);
             // layout should occur after the transition has been added
             // otherwise the forest will not be computed correctly
             getController().doLayout(false);
@@ -117,12 +117,12 @@ public class LTSGraphViewModel extends GraphViewModel<GTS> implements GTSListene
 
     @Override
     public void statusUpdate(GTS lts, GraphState explored, int change) {
-        var jCell = registerChange(explored, change);
-        if (jCell != null) {
+        var cell = registerChange(explored, change);
+        if (cell != null) {
             if (isExploring()) {
-                this.changedCells.add(jCell);
+                this.changedCells.add(cell);
             } else {
-                getCanvas().refresh(Collections.singleton(jCell), false);
+                getCanvas().refresh(Collections.singleton(cell), false);
             }
         }
     }
@@ -133,26 +133,26 @@ public class LTSGraphViewModel extends GraphViewModel<GTS> implements GTSListene
      * {@code null} if there was no change.
      */
     private @Nullable ViewCell<GTS> registerChange(GraphState explored, int change) {
-        var jCell = getJCellForNode(explored);
-        if (jCell != null) {
+        var cell = getCellForNode(explored);
+        if (cell != null) {
             if (Flag.CLOSED.test(change)) {
-                jCell.setLook(Look.OPEN, false);
+                cell.setLook(Look.OPEN, false);
             }
             if (Flag.FULL.test(change)) {
-                jCell.setLook(Look.RECIPE, explored.isInner());
-                jCell.setLook(Look.TRANSIENT, explored.isTransient());
-                jCell.setLook(Look.FINAL, explored.isFinal());
+                cell.setLook(Look.RECIPE, explored.isInner());
+                cell.setLook(Look.TRANSIENT, explored.isTransient());
+                cell.setLook(Look.FINAL, explored.isFinal());
                 if (explored.isAbsent()) {
-                    var iter = jCell.getContext();
+                    var iter = cell.getContext();
                     while (iter.hasNext()) {
                         iter.next().setLook(Look.ABSENT, true);
                     }
-                    jCell.setLook(Look.ABSENT, true);
+                    cell.setLook(Look.ABSENT, true);
                 }
             }
-            jCell.setStale(VisualKey.refreshables());
+            cell.setStale(VisualKey.refreshables());
         }
-        return jCell;
+        return cell;
     }
 
     @Override
@@ -200,9 +200,9 @@ public class LTSGraphViewModel extends GraphViewModel<GTS> implements GTSListene
             if (!isAcceptState(state)) {
                 continue;
             }
-            LTSViewCell jVertex = (LTSViewCell) getJCellForNode(node);
-            if (jVertex != null) {
-                result |= jVertex.setVisibleFlag(true);
+            LTSViewCell vertex = (LTSViewCell) getCellForNode(node);
+            if (vertex != null) {
+                result |= vertex.setVisibleFlag(true);
                 continue;
             }
             addNode(node);
@@ -271,17 +271,17 @@ public class LTSGraphViewModel extends GraphViewModel<GTS> implements GTSListene
             return false;
         }
         // make visible if the transition is already there
-        LTSViewCell jCell = (LTSViewCell) getJCellForEdge(trans);
-        if (jCell != null) {
-            return jCell.setVisibleFlag(true);
+        LTSViewCell cell = (LTSViewCell) getCellForEdge(trans);
+        if (cell != null) {
+            return cell.setVisibleFlag(true);
         }
         addEdge(trans);
         return true;
     }
 
     private boolean isVisible(GraphState state) {
-        LTSViewCell jVertex = (LTSViewCell) getJCellForNode(state);
-        return jVertex != null && jVertex.hasVisibleFlag();
+        LTSViewCell vertex = (LTSViewCell) getCellForNode(state);
+        return vertex != null && vertex.hasVisibleFlag();
     }
 
     /**

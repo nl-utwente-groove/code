@@ -456,7 +456,7 @@ Four commits, one per implementation slice of that note:
 3. **CI** (`release.yml`): the release job checks out the private repository
    `nl-utwente-groove/yfiles-lib` (plain jar + license file in `lib/`; since 2026-09-09 also the backend source, its root project) with `YFILES_LIB_TOKEN`,
    installs the jar, builds the backend (tests skipped on the headless runner) and
-   packages with `-Pyfiles`. Not yet exercised: the repository and secret do not exist.
+   packages with `-Pyfiles`. Exercised by the test releases of 2026-09-10 and 2026-09-11, which carry the add-on zip.
 4. **In-app installer** (`gui.AddOnInstaller`, `util.AddOn`): the options part of the
    View menu gets a `yFiles add-on` submenu (download and install, install from file,
    remove); at the
@@ -549,3 +549,20 @@ the guide's editor figures for the viewer. The deployment demo
 (`demos/src/deploy/obfuscation/build.xml`) and the Maven demo
 (`demos/src-maven/deploy/mavendemo/pom.xml`) are the permitted references for the
 obfuscation setup.
+
+## Pre-merge trims (2026-09-11, branch `migration-trims` off `yworks-migration`)
+
+A pre-merge review (full suite, GUI suite, null analysis, a vestige sweep and a
+usage census of the neutral API) found no hard JGraph dependency outside the backend
+and no interface growth from the yFiles layouts (their cost is `getBackendLayouters`
+and `Layouter.getSettingsPanel`; `YFilesLayouter` wraps the algorithms as partial
+layouts). The residues it did find are on `migration-trims`: the backend package is no
+longer exported and `jgraph` no longer `transitive`; `ArchitectureTest` also catches
+qualified backend names in code; the Simulator launch with the yFiles class path moved
+to `yfiles-lib/launch` (branch `simulator-launch`, jar via `M2_REPO`); eight canvas
+members that only the backends themselves called left the interface; the J-flavored
+names of the neutral layer are gone (`getCellForNode`, `getCellsFor`, `CellEditAction`,
+…). **The yFiles unit follows on `yfiles-lib` branch `simulator-launch`**, which also
+repairs the unit's tests (fixture paths broke when the unit became the repository root):
+merge that branch into `main` together with `migration-trims`, since the unit no longer
+compiles against the untrimmed interface. Every gate is green on both sides.

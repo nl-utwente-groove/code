@@ -22,11 +22,11 @@ import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.view.AspectGraphCanvas;
 
 /**
- * Action to edit the label of the currently selected j-cell.
+ * Action to edit the label of the currently selected cell.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class EditLabelAction extends JCellEditAction {
+public class EditLabelAction extends CellEditAction {
     /** Constructs an instance of the action. */
     public EditLabelAction(AspectGraphCanvas canvas) {
         super(canvas, Options.EDIT_LABEL_ACTION);
@@ -35,6 +35,6 @@ public class EditLabelAction extends JCellEditAction {
 
     @Override
     public void actionPerformed(ActionEvent evt) {
-        this.canvas.startEditing(this.jCell);
+        this.canvas.startEditing(this.cell);
     }
 }

@@ -609,7 +609,7 @@ public class Simulator implements SimulatorListener {
     /**
      * Creates and returns an edit menu for the menu bar. The menu is filled
      * out each time it gets selected so as to be sure it applies to the current
-     * jgraph.
+     * graph view.
      * @see #fillEditMenu(MyJMenu)
      */
     private MyJMenu createEditMenu() {
@@ -677,7 +677,7 @@ public class Simulator implements SimulatorListener {
     /**
      * Creates and returns a display menu for the menu bar. The menu is filled
      * out each time it gets selected so as to be sure it applies to the current
-     * jgraph
+     * graph view
      * @see #fillDisplayMenu(MyJMenu)
      */
     private MyJMenu createDisplayMenu() {

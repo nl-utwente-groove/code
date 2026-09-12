@@ -50,9 +50,9 @@ public class LayoutAction extends AbstractAction {
     public void doLayout() {
         var selection = this.canvas.getSelection();
         this.canvas.getNonNullViewModel().setLayoutable(selection.isEmpty());
-        for (var jCell : selection) {
-            if (jCell instanceof ViewVertex) {
-                ((ViewVertex<?>) jCell).setLayoutable(true);
+        for (var cell : selection) {
+            if (cell instanceof ViewVertex) {
+                ((ViewVertex<?>) cell).setLayoutable(true);
             }
         }
         getLayouter().start();

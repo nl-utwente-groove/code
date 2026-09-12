@@ -25,13 +25,13 @@ import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Node;
 
 /**
- * JGraph vertex wrapping a single graph node and a set of graph edges.
+ * Graph-view vertex wrapping a single graph node and a set of graph edges.
  * @author Arend Rensink
  * @version $Revision$
  */
 @NonNullByDefault
 public interface ViewVertex<G extends Graph> extends ViewCell<G> {
-    /** Returns the set of incident JEdges. */
+    /** Returns the set of incident edge cells. */
     @Override
     public Iterator<? extends ViewEdge<G>> getContext();
 
@@ -61,11 +61,11 @@ public interface ViewVertex<G extends Graph> extends ViewCell<G> {
      */
     public @Nullable String getNodeIdString();
 
-    /** Indicates if this jVertex is currently layed-out. */
+    /** Indicates if this vertex is currently layed-out. */
     boolean isLayoutable();
 
     /**
-     * Sets this jVertex to layed-out.
+     * Sets this vertex to layed-out.
      * This means that the next attempt to layout the graph will not
      * change the position of this cell.
      * @return {@code true} if the layed-out status changed as a result of this call

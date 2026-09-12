@@ -32,7 +32,7 @@ import nl.utwente.groove.gui.look.VisualKey;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class AddPointAction extends JCellEditAction {
+public class AddPointAction extends CellEditAction {
     /** Constructs an instance of the action. */
     public AddPointAction(AspectGraphCanvas canvas) {
         super(canvas, Options.ADD_POINT_ACTION, false);
@@ -41,12 +41,12 @@ public class AddPointAction extends JCellEditAction {
 
     @Override
     public boolean isEnabled() {
-        return this.jCells.size() == 1;
+        return this.cells.size() == 1;
     }
 
     @Override
     public void actionPerformed(ActionEvent evt) {
-        execute(this.jCell, takeLocation());
+        execute(this.cell, takeLocation());
     }
 
     /**
@@ -54,8 +54,8 @@ public class AddPointAction extends JCellEditAction {
      * @param at the location of the new point, in graph coordinates; if {@code null},
      * the point is added beside the first segment
      */
-    public void execute(AspectViewCell jCell, @Nullable Point2D at) {
-        List<Point2D> points = addPointAt(jCell, at);
-        edit(jCell, VisualKey.POINTS, points);
+    public void execute(AspectViewCell cell, @Nullable Point2D at) {
+        List<Point2D> points = addPointAt(cell, at);
+        edit(cell, VisualKey.POINTS, points);
     }
 }

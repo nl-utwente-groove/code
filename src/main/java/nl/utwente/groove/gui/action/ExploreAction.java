@@ -100,11 +100,11 @@ public class ExploreAction extends SimulatorAction {
     public Exploration explore(GraphState state, ExploreType exploreType) {
         Exploration result = null;
         SimulatorModel simModel = getSimulatorModel();
-        LTSGraphViewModel ltsJModel = getLtsDisplay().getViewModel();
-        if (ltsJModel == null) {
+        LTSGraphViewModel ltsModel = getLtsDisplay().getViewModel();
+        if (ltsModel == null) {
             if (simModel.resetGTS()) {
-                ltsJModel = getLtsDisplay().getViewModel();
-                assert ltsJModel != null; // the LTS display shows the GTS created by the reset
+                ltsModel = getLtsDisplay().getViewModel();
+                assert ltsModel != null; // the LTS display shows the GTS created by the reset
             } else {
                 return null;
             }
@@ -114,8 +114,8 @@ public class ExploreAction extends SimulatorAction {
         }
         try {
             result = new Exploration(exploreType, state);
-            // unhook the lts' jmodel from the lts, for efficiency's sake
-            ltsJModel.setExploring(true);
+            // unhook the LTS view model from the LTS, for efficiency's sake
+            ltsModel.setExploring(true);
             this.bound = INITIAL_STATE_BOUND;
             // create a thread to do the work in the background
             ExploreThread generateThread = new ExploreThread(result);
@@ -126,7 +126,7 @@ public class ExploreAction extends SimulatorAction {
             result.removeListener(exploreStats);
             exploreStats.report();
             // emphasise the result states, if required
-            ltsJModel.setExploring(false);
+            ltsModel.setExploring(false);
             simModel.setExploreResult(result.getResult(), exploreType);
         } catch (FormatException exc) {
             // this should not occur, as the exploration and the

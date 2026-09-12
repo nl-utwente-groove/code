@@ -551,7 +551,6 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
      * a {@link #refresh(Collection, boolean)}. This allows listeners to ignore the
      * resulting graph view update, if they wish.
      */
-    @Override
     public boolean isModelRefreshing() {
         return this.modelRefreshing;
     }
@@ -734,11 +733,6 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
             this.overlay = overlay;
             repaint();
         }
-    }
-
-    @Override
-    public Overlay getOverlay() {
-        return this.overlay;
     }
 
     /** The overlay drawn over the content. */
@@ -1103,29 +1097,15 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
     }
 
     /** Callback method to create the default initial mode for this JGraph. */
-    @Override
     public GraphViewMode getDefaultMode() {
         return SELECT_MODE;
     }
 
     /**
-     * Indicates whether this jgraph is currently registered at the tool tip
-     * manager.
-     * @return <tt>true</tt> if this jgraph is currently registered at the tool
-     *         tip manager
-     */
-    @Override
-    public boolean getToolTipEnabled() {
-        return getController().getToolTipEnabled();
-    }
-
-    /**
      * Registers or unregisters this jgraph with the tool tip manager. The
-     * current registration state can be queried using
-     * <tt>getToolTipEnabled()</tt>
+     * current registration state can be queried on the controller.
      * @param enabled <tt>true</tt> if this jgraph is to be registered with the
      *        tool tip manager
-     * @see #getToolTipEnabled()
      * @see ToolTipManager#registerComponent(javax.swing.JComponent)
      * @see ToolTipManager#unregisterComponent(javax.swing.JComponent)
      */
@@ -1154,7 +1134,6 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
      * Zooms and centres a given portion of the JGraph, as
      * defined by a certain rectangle.
      */
-    @Override
     public void zoomTo(Rectangle2D bounds) {
         Rectangle2D viewBounds = getViewPortBounds();
         double widthScale = viewBounds.getWidth() / bounds.getWidth();
@@ -1406,7 +1385,6 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
     }
 
     /** Clear all intermediate points from all edges. */
-    @Override
     public void clearAllEdgePoints() {
         Map<ViewCell<G>,VisualMap> change = new HashMap<>();
         for (var jCell : getCells()) {

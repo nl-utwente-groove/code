@@ -30,11 +30,11 @@ import nl.utwente.groove.gui.look.VisualMap;
 import nl.utwente.groove.util.line.LineStyle;
 
 /**
- * Action to set the line style of the currently selected j-edge.
+ * Action to set the line style of the currently selected edge cell.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class SetLineStyleAction extends JCellEditAction {
+public class SetLineStyleAction extends CellEditAction {
     /** Constructs an instance of the action, for a given line style. */
     public SetLineStyleAction(AspectGraphCanvas canvas, LineStyle lineStyle) {
         super(canvas, lineStyle.getName(), false);
@@ -50,8 +50,8 @@ public class SetLineStyleAction extends JCellEditAction {
     @Override
     public void actionPerformed(ActionEvent evt) {
         Map<AspectViewCell,VisualMap> changes = new LinkedHashMap<>();
-        for (AspectViewCell jCell : this.jCells) {
-            VisualMap visuals = jCell.getVisuals();
+        for (AspectViewCell cell : this.cells) {
+            VisualMap visuals = cell.getVisuals();
             if (visuals.getLineStyle() == this.lineStyle) {
                 continue;
             }
@@ -59,9 +59,9 @@ public class SetLineStyleAction extends JCellEditAction {
             newVisuals.setLineStyle(this.lineStyle);
             List<Point2D> points = visuals.getPoints();
             if (this.lineStyle.isCurved() && points.size() == 2) {
-                newVisuals.put(VisualKey.POINTS, addPointAt(jCell, null));
+                newVisuals.put(VisualKey.POINTS, addPointAt(cell, null));
             }
-            changes.put(jCell, newVisuals);
+            changes.put(cell, newVisuals);
         }
         if (!changes.isEmpty()) {
             this.canvas.edit(changes);

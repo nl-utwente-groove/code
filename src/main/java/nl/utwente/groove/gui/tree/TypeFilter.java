@@ -83,7 +83,7 @@ class TypeFilter extends LabelFilter<AspectGraph,TypeEntry> {
                 for (var ee : te.getEdges()) {
                     if (ee.getNodes().stream().allMatch(TypeEntry::isSelected)
                         && ee.setPassive(false)) {
-                        result.addAll(getJCells(ee));
+                        result.addAll(getCells(ee));
                     }
                 }
             } else {
@@ -92,7 +92,7 @@ class TypeFilter extends LabelFilter<AspectGraph,TypeEntry> {
                     .getNodes()
                     .stream()
                     .filter(ne -> ne.setPassive(true))
-                    .map(this::getJCells)
+                    .map(this::getCells)
                     .forEach(result::addAll);
             }
         } else {
@@ -102,14 +102,14 @@ class TypeFilter extends LabelFilter<AspectGraph,TypeEntry> {
                     .getEdges()
                     .stream()
                     .filter(ce -> ce.setPassive(true))
-                    .map(this::getJCells)
+                    .map(this::getCells)
                     .forEach(result::addAll);
             } else {
                 // previously passively filtered incident nodes may become fully filtered
                 for (var ne : te.getNodes()) {
                     if (ne.getEdges().stream().noneMatch(TypeEntry::isSelected)
                         && ne.setPassive(false)) {
-                        result.addAll(getJCells(ne));
+                        result.addAll(getCells(ne));
                     }
                 }
             }
