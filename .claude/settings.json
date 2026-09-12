@@ -25,6 +25,8 @@
       "PowerShell(git branch *)",
       "PowerShell(gh issue view *)",
       "PowerShell(gh issue list *)",
+      "Bash(gh issue comment *)",
+      "PowerShell(gh issue comment *)",
       "mcp__ccd_session_mgmt__search_session_transcripts",
       "Bash(mvn -q -f ../yfiles-lib/pom.xml test *)",
       "Bash(mvn -q -f ../yfiles-lib/pom.xml compile *)",
