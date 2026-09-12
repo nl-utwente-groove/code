@@ -56,7 +56,7 @@ jobs:
       with:
         # the READ-ME asset carries its message in its name, for those who
         # read nothing but the asset list
-        artifacts: "code/release/target/*.zip,code/release/github/IF-WINDOWS-OR-MACOS-BLOCKS-THIS-INSTALLER-READ-ME.txt"
+        artifacts: "code/release/target/*.zip,code/release/github/IF-WINDOWS-OR-MACOS-BLOCKS-THE-INSTALLER.txt"
         bodyFile: "${{ runner.temp }}/release-notes.md"
         draft: false
         prerelease: false

@@ -47,8 +47,8 @@ LINUX (.deb)
 Not affected.
 
 
-WITHOUT AN INSTALLER
---------------------
+SELF-INSTALL
+------------
 
 The groove-...-bin.zip archives need no installer and trigger none of these
 warnings, but they require Java 21 or newer to be installed. Unzip one and see
