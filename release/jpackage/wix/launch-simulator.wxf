@@ -7,15 +7,18 @@
          dialog set ends. The checkbox is ticked by default. ExitDialog shows it
          only after an installation (NOT Installed), an upgrade included, and not
          after a repair or an uninstall, which end on the same dialog; the launch
-         carries the same condition. The launch does not wait for the Simulator,
-         and runs as the installing user, who for this per-user installation is
-         not elevated. A silent installation shows no dialog and launches nothing. -->
+         carries the same condition. The launch goes through WixShellExec from
+         WixUtilExtension, which jpackage links anyway; a plain exe custom action
+         (Directory plus ExeCommand) fails when run from ExitDialog, with return
+         value 1631. The Simulator starts as the installing user, who for this
+         per-user installation is not elevated. A silent installation shows no
+         dialog and launches nothing. -->
     <UI Id="GrooveLaunchSimulatorUI">
       <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Start the GROOVE Simulator"/>
       <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1"/>
+      <Property Id="WixShellExecTarget" Value="[INSTALLDIR]Simulator.exe"/>
       <Publish Dialog="ExitDialog" Control="Finish" Event="DoAction"
                Value="GrooveLaunchSimulator">WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 and NOT Installed</Publish>
     </UI>
-    <CustomAction Id="GrooveLaunchSimulator" Directory="INSTALLDIR"
-                  ExeCommand="&quot;[INSTALLDIR]Simulator.exe&quot;" Return="asyncNoWait" Impersonate="yes"/>
+    <CustomAction Id="GrooveLaunchSimulator" BinaryKey="WixCA" DllEntry="WixShellExec" Impersonate="yes"/>
   </Fragment>
