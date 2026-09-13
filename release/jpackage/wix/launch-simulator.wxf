@@ -21,4 +21,15 @@
                Value="GrooveLaunchSimulator">WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 and NOT Installed</Publish>
     </UI>
     <CustomAction Id="GrooveLaunchSimulator" BinaryKey="WixCA" DllEntry="WixShellExec" Impersonate="yes"/>
+    <!-- Windows Installer paints checkboxes in the system dialog colour and cannot
+         make them transparent, so on WiX's white dialog background the checkbox
+         shows up as a gray block (so does the licence checkbox on the first
+         page). The replacement background of the first and last pages is dialog
+         gray wherever the dialogs place their controls, with a tinted GROOVE
+         panel to the left of them; the banner of the pages in between (progress,
+         files in use, maintenance) gets the same tint and the G in place of
+         WiX's icon. build-installer.sh substitutes the placeholder with the
+         icons directory. -->
+    <WixVariable Id="WixUIDialogBmp" Value="@GROOVE_ICONS_DIR@/groove-dialog.bmp"/>
+    <WixVariable Id="WixUIBannerBmp" Value="@GROOVE_ICONS_DIR@/groove-banner.bmp"/>
   </Fragment>
