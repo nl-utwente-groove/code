@@ -48,6 +48,8 @@ Installers and distribution
   or newer.
 - The Windows installer does not offer an install-folder chooser (the MSI would
   not remember the choice across upgrades); use the zip for a custom location.
+- The Windows installer does not close a running GROOVE; installing over it
+  requires a reboot to clean up, and closing GROOVE first avoids that.
 - The zips now include the license (`LICENSE.txt`, plain text instead of
   Markdown) and no longer ship the reactor pom in `lib/`.
 - The GROOVE jar is a proper Java module again (`nl.utwente.groove`): the four
