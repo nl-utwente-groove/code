@@ -1,0 +1,21 @@
+  <!-- Spliced into jpackage's main.wxs by build-installer.sh, which also adds a
+       reference to the UI GrooveLaunchSimulatorUI next to jpackage's own JpUI.
+       WiX 3 syntax, like jpackage's own sources. -->
+  <Fragment>
+    <!-- Offers to start the Simulator on the last page of the installation, through
+         the optional checkbox of WiX's standard ExitDialog, on which every WixUI
+         dialog set ends. The checkbox is ticked by default. ExitDialog shows it
+         only after an installation (NOT Installed), an upgrade included, and not
+         after a repair or an uninstall, which end on the same dialog; the launch
+         carries the same condition. The launch does not wait for the Simulator,
+         and runs as the installing user, who for this per-user installation is
+         not elevated. A silent installation shows no dialog and launches nothing. -->
+    <UI Id="GrooveLaunchSimulatorUI">
+      <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Start the GROOVE Simulator"/>
+      <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1"/>
+      <Publish Dialog="ExitDialog" Control="Finish" Event="DoAction"
+               Value="GrooveLaunchSimulator">WIXUI_EXITDIALOGOPTIONALCHECKBOX = 1 and NOT Installed</Publish>
+    </UI>
+    <CustomAction Id="GrooveLaunchSimulator" Directory="INSTALLDIR"
+                  ExeCommand="&quot;[INSTALLDIR]Simulator.exe&quot;" Return="asyncNoWait" Impersonate="yes"/>
+  </Fragment>

@@ -154,13 +154,15 @@ make_launcher Viewer false
 
 # ----------------------------------------------------------------- msi resources
 # Uninstalling the MSI also removes the yFiles add-on from the user's extension
-# directory (see README.md), which jpackage's own WiX sources know nothing
-# about. jpackage takes a main.wxs from its resource directory in place of the
+# directory (see README.md), and the last page of the installation offers to
+# start the Simulator; jpackage's own WiX sources know nothing of either.
+# jpackage takes a main.wxs from its resource directory in place of the
 # bundled one, so this extracts the bundled one from the running JDK and
-# splices the removal fragment wix/addon-cleanup.wxf into it. A checked-in
-# copy of main.wxs would go stale with every JDK upgrade; the two anchor lines
-# used here have been the same from JDK 21 to 26, and the splice fails loudly
-# should they change.
+# splices the fragments wix/addon-cleanup.wxf and wix/launch-simulator.wxf
+# into it, each with a reference that pulls it into the installer. A
+# checked-in copy of main.wxs would go stale with every JDK upgrade; the three
+# anchor lines used here have been the same from JDK 21 to 26, and the splice
+# fails loudly should they change.
 msi_resources() {
     local java_home=${JAVA_HOME:-$("${JAVA_BIN}java" -XshowSettings:properties -version 2>&1 | sed -n 's/^ *java.home = //p')}
     MSI_RESOURCES=$WORK/resources
@@ -170,10 +172,14 @@ msi_resources() {
         "$(native_path "$java_home/lib/modules")"
     mv "$MSI_RESOURCES/jdk.jpackage/jdk/jpackage/internal/resources/main.wxs" "$MSI_RESOURCES/main.wxs"
     sed -i -e '/<ComponentGroupRef Id="Files"\/>/a\      <ComponentGroupRef Id="GrooveAddOnCleanup"/>' \
-        -e "/<\/Product>/r $SCRIPT_DIR/wix/addon-cleanup.wxf" "$MSI_RESOURCES/main.wxs"
+        -e '/<UIRef Id="JpUI"\/>/a\    <UIRef Id="GrooveLaunchSimulatorUI"/>' \
+        -e "/<\/Product>/r $SCRIPT_DIR/wix/addon-cleanup.wxf" \
+        -e "/<\/Product>/r $SCRIPT_DIR/wix/launch-simulator.wxf" "$MSI_RESOURCES/main.wxs"
     if ! grep -q '<ComponentGroupRef Id="GrooveAddOnCleanup"/>' "$MSI_RESOURCES/main.wxs" \
-        || ! grep -q '<ComponentGroup Id="GrooveAddOnCleanup">' "$MSI_RESOURCES/main.wxs"; then
-        echo "error: cannot splice the add-on removal into jpackage's main.wxs: its structure has changed" >&2
+        || ! grep -q '<ComponentGroup Id="GrooveAddOnCleanup">' "$MSI_RESOURCES/main.wxs" \
+        || ! grep -q '<UIRef Id="GrooveLaunchSimulatorUI"/>' "$MSI_RESOURCES/main.wxs" \
+        || ! grep -q '<UI Id="GrooveLaunchSimulatorUI">' "$MSI_RESOURCES/main.wxs"; then
+        echo "error: cannot splice the installer additions into jpackage's main.wxs: its structure has changed" >&2
         exit 1
     fi
 }

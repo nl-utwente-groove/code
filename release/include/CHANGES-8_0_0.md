@@ -48,6 +48,7 @@ Installers and distribution
   or newer.
 - The Windows installer does not offer an install-folder chooser (the MSI would
   not remember the choice across upgrades); use the zip for a custom location.
+- The Windows installer offers to start the Simulator when it finishes.
 - The zips now include the license (`LICENSE.txt`, plain text instead of
   Markdown) and no longer ship the reactor pom in `lib/`.
 - The GROOVE jar is a proper Java module again (`nl.utwente.groove`): the four
