@@ -198,7 +198,8 @@ public class AddOnInstaller {
         try {
             URI uri = new URI(href);
             if ("file".equals(uri.getScheme())) {
-                @Nullable Path path = Path.of(uri);
+                @Nullable
+                Path path = Path.of(uri);
                 while (path != null && !Files.exists(path)) {
                     path = path.getParent();
                 }
@@ -218,11 +219,11 @@ public class AddOnInstaller {
      * the parameter is the add-on's display name.
      */
     private static final String STALE_SITUATION
-        = "The installed %s add-on was built for another GROOVE version and is not loaded.";
+        = "The currently installed %s add-on was built for another GROOVE version and is not loaded.";
     /** Opening of the installation question if no add-on is installed. */
     private static final String ABSENT_SITUATION = """
-        GROOVE can show graphs with the commercial library yFiles for Java (Swing)
-        by yWorks GmbH, which adds its layout algorithms to the layout menu.""";
+        GROOVE can optionally show graphs using the commercial library yFiles for Java (Swing)
+        by yWorks GmbH, with better rendering and layouting.""";
     /**
      * HTML template of the installation question. The parameters are, in order: the
      * opening situation, the add-on's display name, its download URI, its installation
@@ -231,12 +232,12 @@ public class AddOnInstaller {
      * white space to the HTML pane of {@link #createMessagePane}.
      */
     private static final String INSTALL_QUESTION = """
-        <html><body style='width: 480px'>%1$s<br><br>
-        The %2$s comes as an add-on of about 9 MB, downloaded from<br>
-        <a href="%3$s">%3$s</a><br>
-        and installed in<br>
-        <a href="%7$s">%4$s</a><br><br>
-        The library is licensed to the University of Twente for <i>non-commercial use only</i>
+        <html><body style='width: 400px'>%1$s<br><br>
+        The %2$s comes as an add-on of about 9 MB, downloaded from
+        <a href="%3$s">github</a>
+        and added to
+        <a href="%7$s">GROOVE's extension folder</a>.<br><br>
+        The library is licensed to the University of Twente for <i>non-commercial use</i>
         (research, teaching and study), hence GROOVE with the add-on installed may be used
         for such purposes only. The library may not be extracted from the add-on,
         de-obfuscated or reverse engineered. If in doubt, do not install it.<br><br>
