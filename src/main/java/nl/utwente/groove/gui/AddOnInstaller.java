@@ -139,28 +139,50 @@ public class AddOnInstaller {
 
     /** Asks whether the add-on should be downloaded and installed, showing the license restriction. */
     private boolean confirmInstall(Status status) {
+        String name = this.addOn.getDisplayName();
         String situation = status == Status.STALE
-            ? "The installed " + this.addOn.getDisplayName()
-                + " add-on was built for another GROOVE version and is not loaded."
-            : "GROOVE can show graphs with the commercial library yFiles for Java (Swing)"
-                + " by yWorks GmbH, which adds its layout algorithms to the layout menu.";
-        String message = "<html><body style='width: 480px'>" + situation + "<br><br>The "
-            + this.addOn.getDisplayName() + " comes as an add-on of about 9 MB, downloaded from<br><i>"
-            + this.addOn.getDownloadUri(Version.NUMBER) + "</i><br>and installed in<br><i>"
-            + this.addOn.getDir(Extensions.dir())
-            + "</i><br><br>The library is licensed to the University of Twente for"
-            + " <b>non-commercial use only</b> (research, teaching and study), and GROOVE with the"
-            + " add-on installed may be used for such purposes only. The library may not be extracted"
-            + " from the add-on, de-obfuscated or reverse engineered. If in doubt, do not install"
-            + " it; the full notice comes with the add-on.<br><br>Install the "
-            + this.addOn.getDisplayName() + " now? (The choice stays available under "
-            + Options.DISPLAY_MENU_NAME + " &gt; " + Options.YFILES_ADDON_MENU_NAME
-            + ".)</body></html>";
+            ? STALE_SITUATION.formatted(name)
+            : ABSENT_SITUATION;
+        String message = INSTALL_QUESTION
+            .formatted(situation, name, this.addOn.getDownloadUri(Version.NUMBER),
+                       this.addOn.getDir(Extensions.dir()), Options.DISPLAY_MENU_NAME,
+                       Options.YFILES_ADDON_MENU_NAME);
         int answer = JOptionPane
-            .showConfirmDialog(this.frame, message, "Install " + this.addOn.getDisplayName() + "?",
+            .showConfirmDialog(this.frame, message, "Install " + name + "?",
                                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
         return answer == JOptionPane.YES_OPTION;
     }
+
+    /**
+     * Opening of the installation question if an add-on for another version is installed;
+     * the parameter is the add-on's display name.
+     */
+    private static final String STALE_SITUATION
+        = "The installed %s add-on was built for another GROOVE version and is not loaded.";
+    /** Opening of the installation question if no add-on is installed. */
+    private static final String ABSENT_SITUATION = """
+        GROOVE can show graphs with the commercial library yFiles for Java (Swing) \
+        by yWorks GmbH, which adds its layout algorithms to the layout menu.""";
+    /**
+     * HTML template of the installation question. The parameters are, in order: the
+     * opening situation, the add-on's display name, its download URI, its installation
+     * directory, and the names of the menu and submenu where the choice stays available.
+     * Every line ends in a line continuation, so the template contains no line breaks
+     * and no stray blank starts a rendered line after a {@code <br>}.
+     */
+    private static final String INSTALL_QUESTION = """
+        <html><body style='width: 480px'>%1$s<br><br>\
+        The %2$s comes as an add-on of about 9 MB, downloaded from<br>\
+        <i>%3$s</i><br>\
+        and installed in<br>\
+        <i>%4$s</i><br><br>\
+        The library is licensed to the University of Twente for <b>non-commercial use only</b> \
+        (research, teaching and study), and GROOVE with the add-on installed may be used \
+        for such purposes only. The library may not be extracted from the add-on, \
+        de-obfuscated or reverse engineered. If in doubt, do not install it; the full \
+        notice comes with the add-on.<br><br>\
+        Install the %2$s now? (The choice stays available under %5$s &gt; %6$s.)\
+        </body></html>""";
 
     /**
      * Downloads the add-on for the running GROOVE version and installs it, in the
