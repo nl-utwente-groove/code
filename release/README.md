@@ -102,6 +102,8 @@ Uninstalling the `.msi` also removes the yFiles add-on (see the second chapter) 
 
 The last page of the `.msi` installation offers to start the Simulator, through a checkbox that is ticked by default; it is spliced into `main.wxs` the same way (`jpackage/wix/launch-simulator.wxf`). It uses the optional checkbox of WiX's standard exit dialog, which the dialog shows after an installation or upgrade but not after a repair or an uninstall. Since Windows Installer cannot draw checkboxes transparently, the fragment also replaces WiX's white dialog background with `jpackage/icons/groove-dialog.bmp`, which is dialog gray where the controls are, with a green GROOVE panel beside them; the banner of the pages in between gets the same green and the G (`groove-banner.bmp`; see the README in `jpackage/icons`). A silent installation (`msiexec /qn`) shows no dialogs and so starts nothing. The other installers cannot offer this: a `.dmg` is installed by dragging the application into place, and `.deb` package scripts run as root, often without a display.
 
+The `.msi` shows the licence in a narrow box on its first page. jpackage converts a plain-text licence to RTF line by line, keeping the hard line breaks of `LICENSE.txt`, which then wrap raggedly; the script therefore writes the RTF itself at build time, one paragraph per block of `LICENSE.txt`, which stays the only copy of the text.
+
 ## The release page
 
 The installers are not code-signed, so Windows and macOS block them at first. The release page therefore explains how to get past that, in two places, both kept in `github`:

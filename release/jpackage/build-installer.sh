@@ -9,7 +9,7 @@
 # - a JDK (>= 21) providing jpackage and jdeps, located through JAVA_HOME if
 #   set, otherwise through the PATH
 # - for the Windows .msi type: the WiX toolset (preinstalled on the GitHub
-#   windows runners)
+#   windows runners), and perl, which Git Bash ships with
 #
 # Usage:
 #   build-installer.sh <version> [<type>]
@@ -187,6 +187,34 @@ msi_resources() {
     fi
 }
 
+# ----------------------------------------------------------------- msi licence
+# The MSI shows the licence in a narrow box on its first page. jpackage turns
+# a plain-text licence into RTF line by line, so the hard line breaks of
+# LICENSE.txt survive and wrap raggedly there. This writes RTF with one
+# paragraph per blank-line-separated block of LICENSE.txt instead, which
+# jpackage recognises by its header and takes as it is; LICENSE.txt remains the
+# only copy of the text. Non-ASCII characters become RTF Unicode escapes.
+msi_license() {
+    MSI_LICENSE=$WORK/LICENSE.rtf
+    perl - "$ROOT_DIR/LICENSE.txt" > "$MSI_LICENSE" <<'PERL'
+use strict; use warnings;
+open my $in, '<:encoding(UTF-8)', $ARGV[0] or die "cannot read $ARGV[0]: $!";
+my $text = do { local $/; <$in> };
+$text =~ s/\r//g;
+print "{\\rtf1\\ansi\\deff0{\\fonttbl{\\f0\\fswiss Segoe UI;}}\\fs18\n";
+for my $par (split /\n[ \t]*\n/, $text) {
+    $par =~ s/^\s+//;
+    $par =~ s/\s+\z//;
+    next unless length $par;
+    $par =~ s/([\\{}])/\\$1/g;
+    $par =~ s/\s*\n\s*/ /g;
+    $par =~ s/([^\x00-\x7f])/sprintf('\\u%d?', ord $1)/ge;
+    print "\\pard\\sa120 $par\\par\n";
+}
+print "}\n";
+PERL
+}
+
 # ----------------------------------------------------------------- jpackage
 # MSI and DMG version numbers must be plain x.y.z: strip any -SNAPSHOT suffix
 APP_VERSION=${VERSION%%-*}
@@ -217,7 +245,12 @@ case $OS in
         ;;
 esac
 if [[ $TYPE != app-image ]]; then
-    args+=(--license-file "$(native_path "$ROOT_DIR/LICENSE.txt")"
+    LICENSE=$ROOT_DIR/LICENSE.txt
+    if [[ $OS == windows ]]; then
+        msi_license
+        LICENSE=$MSI_LICENSE
+    fi
+    args+=(--license-file "$(native_path "$LICENSE")"
         --about-url "https://nl-utwente-groove.github.io")
     case $OS in
         windows)
