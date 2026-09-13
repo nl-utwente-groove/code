@@ -137,15 +137,16 @@ make_launcher Viewer false
 
 # ----------------------------------------------------------------- msi resources
 # The MSI does not let the Restart Manager close a running GROOVE (see
-# wix/files-in-use.wxf), it warns before replacing another installed version
-# (see wix/replace-warning.wxf), and the last page of the installation offers
-# to start the Simulator; jpackage's own WiX sources know nothing of these.
-# jpackage takes a main.wxs from its resource directory in place of the
-# bundled one, so this extracts the bundled one from the running JDK and
-# splices the fragments in wix/ into it, each with a reference that pulls it
-# into the installer. A checked-in copy of main.wxs would go stale with every
-# JDK upgrade; the anchor lines used here have been the same from JDK 21 to
-# 26, and the splice fails loudly should they change.
+# wix/files-in-use.wxf), it warns before replacing another installed version,
+# another build of the same version included, for which every build gets its
+# own product code (see wix/replace-warning.wxf), and the last page of the
+# installation offers to start the Simulator; jpackage's own WiX sources know
+# nothing of these. jpackage takes a main.wxs from its resource directory in
+# place of the bundled one, so this extracts the bundled one from the running
+# JDK and splices the fragments in wix/ into it, each with a reference that
+# pulls it into the installer. A checked-in copy of main.wxs would go stale
+# with every JDK upgrade; the anchor lines used here have been the same from
+# JDK 21 to 26, and the splice fails loudly should they change.
 msi_resources() {
     local java_home=${JAVA_HOME:-$("${JAVA_BIN}java" -XshowSettings:properties -version 2>&1 | sed -n 's/^ *java.home = //p')}
     MSI_RESOURCES=$WORK/resources
@@ -157,6 +158,7 @@ msi_resources() {
     sed -i -e '/<UIRef Id="JpUI"\/>/a\    <PropertyRef Id="MSIRESTARTMANAGERCONTROL"/>' \
         -e '/<UIRef Id="JpUI"\/>/a\    <UIRef Id="GrooveLaunchSimulatorUI"/>' \
         -e '/<UIRef Id="JpUI"\/>/a\    <UIRef Id="GrooveReplaceWarningUI"/>' \
+        -e 's/Id="\$(var\.JpProductCode)"/Id="*"/' \
         -e "/<\/Product>/r $SCRIPT_DIR/wix/files-in-use.wxf" \
         -e "/<\/Product>/r $SCRIPT_DIR/wix/launch-simulator.wxf" \
         -e "/<\/Product>/r $SCRIPT_DIR/wix/replace-warning.wxf" "$MSI_RESOURCES/main.wxs"
@@ -168,7 +170,10 @@ msi_resources() {
         || ! grep -q '<UIRef Id="GrooveLaunchSimulatorUI"/>' "$MSI_RESOURCES/main.wxs" \
         || ! grep -q '<UI Id="GrooveLaunchSimulatorUI">' "$MSI_RESOURCES/main.wxs" \
         || ! grep -q '<UIRef Id="GrooveReplaceWarningUI"/>' "$MSI_RESOURCES/main.wxs" \
-        || ! grep -q '<UI Id="GrooveReplaceWarningUI">' "$MSI_RESOURCES/main.wxs"; then
+        || ! grep -q '<UI Id="GrooveReplaceWarningUI">' "$MSI_RESOURCES/main.wxs" \
+        || ! grep -q '<UpgradeVersion Property="GROOVE_SAME_VERSION_FOUND"' "$MSI_RESOURCES/main.wxs" \
+        || ! grep -Fq 'Id="*"' "$MSI_RESOURCES/main.wxs" \
+        || grep -Fq 'JpProductCode' "$MSI_RESOURCES/main.wxs"; then
         echo "error: cannot splice the installer additions into jpackage's main.wxs: its structure has changed" >&2
         exit 1
     fi
