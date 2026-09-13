@@ -339,9 +339,10 @@ public class AddOnInstaller {
      */
     private static final String INSTALLED_REPORT = """
         <html><body style='width: 400px'>
-        The %1$s is installed in <a href="%2$s">Groove's extension folder</a>
-        and will be available from the next start of GROOVE on.<br><br>
-        Its use is restricted to non-commercial purposes; see <code>%3$s</code> for more information.
+        The %1$s is installed in <a href="%2$s">GROOVE's extension folder</a>
+        and will be available after a restart of GROOVE.<br><br>
+        Its use is restricted to non-commercial purposes; see <code>%3$s</code>
+        (in the installation folder) for more information.
         </body></html>
         """;
 
