@@ -92,6 +92,8 @@ To try this locally without any packaging tools, build the release as described 
 
 which produces the raw application directory (no installer) under `jpackage/target/dist`. Building the actual `.msi` locally additionally requires the WiX toolset.
 
+The last page of the `.msi` installation offers to start the Simulator, through a checkbox that is ticked by default. jpackage's own WiX sources know nothing about this, but take a custom `main.wxs` from a resource directory in place of the bundled one, so the script extracts the bundled one from the running JDK and splices the addition (`jpackage/wix/launch-simulator.wxf`) into it at build time. A checked-in copy of `main.wxs` would go stale with every JDK upgrade; the splice instead fails the build if the structure of `main.wxs` changes. The addition uses the optional checkbox of WiX's standard exit dialog, which the dialog shows after an installation or upgrade but not after a repair or an uninstall. A silent installation (`msiexec /qn`) shows no dialogs and so starts nothing. The other installers cannot offer this: a `.dmg` is installed by dragging the application into place, and `.deb` package scripts run as root, often without a display.
+
 ## The release page
 
 The installers are not code-signed, so Windows and macOS block them at first. The release page therefore explains how to get past that, in two places, both kept in `github`:
