@@ -1,7 +1,23 @@
   <!-- Spliced into jpackage's main.wxs by build-installer.sh, which also adds a
-       reference to the UI GrooveReplaceWarningUI next to jpackage's own JpUI.
-       WiX 3 syntax, like jpackage's own sources. -->
+       reference to the UI GrooveReplaceWarningUI next to jpackage's own JpUI, and
+       gives every build its own product code (see below). WiX 3 syntax, like
+       jpackage's own sources. -->
   <Fragment>
+    <!-- Detects an installed build of the same version. jpackage derives the product
+         code from name and version, so a rebuild of the same version would be taken
+         for a minor update of the installed product, which msiexec refuses with
+         error 1638 ("Another version of this product is already installed"), and
+         jpackage's upgrade rules exclude the same version anyway. With a product
+         code of its own per build, this rule finds the other build, and
+         RemoveExistingProducts removes it like an older version. It has its own
+         property because jpackage's JpFindRelatedProducts resets JP_UPGRADABLE_FOUND
+         and JP_DOWNGRADABLE_FOUND. Running the very same file again still opens the
+         maintenance dialog (repair or remove). -->
+    <Upgrade Id="$(var.JpProductUpgradeCode)">
+      <UpgradeVersion Property="GROOVE_SAME_VERSION_FOUND" MigrateFeatures="yes"
+                      Minimum="$(var.JpAppVersion)" IncludeMinimum="yes"
+                      Maximum="$(var.JpAppVersion)" IncludeMaximum="yes"/>
+    </Upgrade>
     <!-- The version of GROOVE that an installation replaces, read from the
          uninstall entry of its product code (see below), which Windows Installer
          keeps under HKLM even for this per-user installation; HKCU is searched
@@ -25,14 +41,13 @@
          any other version with the same upgrade code, older or newer, without
          saying so. Its JpFindRelatedProducts also runs in the UI sequence and sets
          JP_UPGRADABLE_FOUND (an older version) or JP_DOWNGRADABLE_FOUND (a newer
-         one); this page is shown before the licence page if either is set, and
-         says which, with the version if the search above found it. Continue
-         proceeds to the licence page, Cancel asks WiX's usual confirmation and
-         leaves the installed version alone. The same version is not found by
-         either property, since it has the same product code and so opens the
-         maintenance dialog instead. Whether the yFiles add-on is present is not
-         checked, hence the "if installed". A silent installation (msiexec /qn)
-         shows no dialog and replaces the other version as before. -->
+         one), and the rule above sets GROOVE_SAME_VERSION_FOUND (another build of
+         this version); this page is shown before the licence page if any of them is
+         set, and says which, with the version if the search above found it.
+         Continue proceeds to the licence page, Cancel asks WiX's usual confirmation
+         and leaves the installed version alone. Whether the yFiles add-on is
+         present is not checked, hence the "if installed". A silent installation
+         (msiexec /qn) shows no dialog and replaces the other version as before. -->
     <UI Id="GrooveReplaceWarningUI">
       <Dialog Id="GrooveReplaceDlg" Width="370" Height="270" Title="[ProductName] Setup">
         <Control Id="Continue" Type="PushButton" X="236" Y="243" Width="56" Height="17"
@@ -73,13 +88,18 @@
                  Text="A newer version is currently installed. Continuing replaces it with the older GROOVE [ProductVersion].">
           <Condition Action="show">JP_DOWNGRADABLE_FOUND AND NOT JP_UPGRADABLE_FOUND AND NOT GROOVE_NEWER_VERSION</Condition>
         </Control>
+        <Control Id="Same" Type="Text" X="20" Y="60" Width="330" Height="30"
+                 Hidden="yes" NoPrefix="yes"
+                 Text="This version, GROOVE [ProductVersion], is already installed from a different build. Continuing replaces it with this build.">
+          <Condition Action="show">GROOVE_SAME_VERSION_FOUND AND NOT JP_UPGRADABLE_FOUND AND NOT JP_DOWNGRADABLE_FOUND</Condition>
+        </Control>
         <Control Id="Kept" Type="Text" X="20" Y="100" Width="330" Height="30" NoPrefix="yes"
                  Text="Your grammars and preferences are not affected. If installed, the yFiles add-on is removed with the installed version and offered again at the first start."/>
         <Control Id="Choice" Type="Text" X="20" Y="140" Width="330" Height="30" NoPrefix="yes"
                  Text="Click Continue to proceed, or Cancel to keep the installed version."/>
       </Dialog>
       <InstallUISequence>
-        <Show Dialog="GrooveReplaceDlg" Before="WelcomeEulaDlg">NOT Installed AND (JP_UPGRADABLE_FOUND OR JP_DOWNGRADABLE_FOUND)</Show>
+        <Show Dialog="GrooveReplaceDlg" Before="WelcomeEulaDlg">NOT Installed AND (JP_UPGRADABLE_FOUND OR JP_DOWNGRADABLE_FOUND OR GROOVE_SAME_VERSION_FOUND)</Show>
       </InstallUISequence>
     </UI>
   </Fragment>

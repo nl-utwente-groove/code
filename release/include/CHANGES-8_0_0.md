@@ -52,7 +52,7 @@ Installers and distribution
   requires a reboot to clean up, and closing GROOVE first avoids that.
 - The Windows installer offers to start the Simulator when it finishes.
 - The Windows installer asks before replacing another installed version of
-  GROOVE, older or newer.
+  GROOVE: older, newer, or another build of the same version.
 - The zips now include the license (`LICENSE.txt`, plain text instead of
   Markdown) and no longer ship the reactor pom in `lib/`.
 - The GROOVE jar is a proper Java module again (`nl.utwente.groove`): the four
