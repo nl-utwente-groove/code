@@ -1,0 +1,85 @@
+  <!-- Spliced into jpackage's main.wxs by build-installer.sh, which also adds a
+       reference to the UI GrooveReplaceWarningUI next to jpackage's own JpUI.
+       WiX 3 syntax, like jpackage's own sources. -->
+  <Fragment>
+    <!-- The version of GROOVE that an installation replaces, read from the
+         uninstall entry of its product code (see below), which Windows Installer
+         keeps under HKLM even for this per-user installation; HKCU is searched
+         as well in case it does not. FindRelatedProducts and jpackage's
+         JpFindRelatedProducts run before AppSearch, so the product codes are
+         known when the key paths are formatted. -->
+    <Property Id="GROOVE_OLDER_VERSION">
+      <RegistrySearch Id="GrooveOlderVersionHklm" Root="HKLM" Type="raw" Win64="yes"
+                      Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[JP_UPGRADABLE_FOUND]" Name="DisplayVersion"/>
+      <RegistrySearch Id="GrooveOlderVersionHkcu" Root="HKCU" Type="raw" Win64="yes"
+                      Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[JP_UPGRADABLE_FOUND]" Name="DisplayVersion"/>
+    </Property>
+    <Property Id="GROOVE_NEWER_VERSION">
+      <RegistrySearch Id="GrooveNewerVersionHklm" Root="HKLM" Type="raw" Win64="yes"
+                      Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[JP_DOWNGRADABLE_FOUND]" Name="DisplayVersion"/>
+      <RegistrySearch Id="GrooveNewerVersionHkcu" Root="HKCU" Type="raw" Win64="yes"
+                      Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\[JP_DOWNGRADABLE_FOUND]" Name="DisplayVersion"/>
+    </Property>
+    <!-- Warns before an installation replaces another version of GROOVE. jpackage
+         defines both JpAllowUpgrades and JpAllowDowngrades, so its main.wxs removes
+         any other version with the same upgrade code, older or newer, without
+         saying so. Its JpFindRelatedProducts also runs in the UI sequence and sets
+         JP_UPGRADABLE_FOUND (an older version) or JP_DOWNGRADABLE_FOUND (a newer
+         one); this page is shown before the licence page if either is set, and
+         says which, with the version if the search above found it. Continue
+         proceeds to the licence page, Cancel asks WiX's usual confirmation and
+         leaves the installed version alone. The same version is not found by
+         either property, since it has the same product code and so opens the
+         maintenance dialog instead. Whether the yFiles add-on is present is not
+         checked, hence the "if installed". A silent installation (msiexec /qn)
+         shows no dialog and replaces the other version as before. -->
+    <UI Id="GrooveReplaceWarningUI">
+      <Dialog Id="GrooveReplaceDlg" Width="370" Height="270" Title="[ProductName] Setup">
+        <Control Id="Continue" Type="PushButton" X="236" Y="243" Width="56" Height="17"
+                 Default="yes" Text="&amp;Continue">
+          <Publish Event="EndDialog" Value="Return">1</Publish>
+        </Control>
+        <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17"
+                 Cancel="yes" Text="Cancel">
+          <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
+        </Control>
+        <Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44"
+                 TabSkip="no" Text="WixUI_Bmp_Banner"/>
+        <Control Id="BannerLine" Type="Line" X="0" Y="44" Width="370" Height="0"/>
+        <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0"/>
+        <Control Id="Title" Type="Text" X="15" Y="6" Width="290" Height="15"
+                 Transparent="yes" NoPrefix="yes"
+                 Text="{\WixUI_Font_Title}GROOVE is already installed"/>
+        <Control Id="Description" Type="Text" X="25" Y="23" Width="280" Height="15"
+                 Transparent="yes" NoPrefix="yes"
+                 Text="This installation replaces the installed version."/>
+        <Control Id="Older" Type="Text" X="20" Y="60" Width="330" Height="30"
+                 Hidden="yes" NoPrefix="yes"
+                 Text="An older version, GROOVE [GROOVE_OLDER_VERSION], is currently installed. Continuing replaces it with GROOVE [ProductVersion].">
+          <Condition Action="show">JP_UPGRADABLE_FOUND AND GROOVE_OLDER_VERSION</Condition>
+        </Control>
+        <Control Id="OlderUnknown" Type="Text" X="20" Y="60" Width="330" Height="30"
+                 Hidden="yes" NoPrefix="yes"
+                 Text="An older version is currently installed. Continuing replaces it with GROOVE [ProductVersion].">
+          <Condition Action="show">JP_UPGRADABLE_FOUND AND NOT GROOVE_OLDER_VERSION</Condition>
+        </Control>
+        <Control Id="Newer" Type="Text" X="20" Y="60" Width="330" Height="30"
+                 Hidden="yes" NoPrefix="yes"
+                 Text="A newer version, GROOVE [GROOVE_NEWER_VERSION], is currently installed. Continuing replaces it with the older GROOVE [ProductVersion].">
+          <Condition Action="show">JP_DOWNGRADABLE_FOUND AND NOT JP_UPGRADABLE_FOUND AND GROOVE_NEWER_VERSION</Condition>
+        </Control>
+        <Control Id="NewerUnknown" Type="Text" X="20" Y="60" Width="330" Height="30"
+                 Hidden="yes" NoPrefix="yes"
+                 Text="A newer version is currently installed. Continuing replaces it with the older GROOVE [ProductVersion].">
+          <Condition Action="show">JP_DOWNGRADABLE_FOUND AND NOT JP_UPGRADABLE_FOUND AND NOT GROOVE_NEWER_VERSION</Condition>
+        </Control>
+        <Control Id="Kept" Type="Text" X="20" Y="100" Width="330" Height="30" NoPrefix="yes"
+                 Text="Your grammars and preferences are not affected. If installed, the yFiles add-on is removed with the installed version and offered again at the first start."/>
+        <Control Id="Choice" Type="Text" X="20" Y="140" Width="330" Height="30" NoPrefix="yes"
+                 Text="Click Continue to proceed, or Cancel to keep the installed version."/>
+      </Dialog>
+      <InstallUISequence>
+        <Show Dialog="GrooveReplaceDlg" Before="WelcomeEulaDlg">NOT Installed AND (JP_UPGRADABLE_FOUND OR JP_DOWNGRADABLE_FOUND)</Show>
+      </InstallUISequence>
+    </UI>
+  </Fragment>
