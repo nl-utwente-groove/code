@@ -342,7 +342,7 @@ public class AddOnInstaller {
         <html><body style='width: 400px'>
         The %1$s is installed in <a href="%2$s">GROOVE's extension folder</a>
         and will be available after a restart of GROOVE.<br><br>
-        Its use is restricted to non-commercial purposes; see <code>%3$s</code>
+        The use of this backend is restricted to non-commercial purposes; see <code>%3$s</code>
         (in the installation folder) for more information.
         </body></html>
         """;
