@@ -10,12 +10,15 @@ name: Java CI with Maven
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ '**' ]
   pull_request:
     branches: [ "master" ]
 
 jobs:
   build:
+    # a pull request from a branch of this repository was already tested by
+    # the push of that branch, on the same commit; only a fork's needs a run
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     defaults:
       run:
         working-directory: code
