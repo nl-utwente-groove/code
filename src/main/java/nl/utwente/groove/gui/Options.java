@@ -16,7 +16,6 @@
  */
 package nl.utwente.groove.gui;
 
-
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -945,7 +944,7 @@ public class Options implements Cloneable {
      */
     static public final String GRAPH_BACKEND_OPTION = "Graph backend";
     /** Name of the yFiles add-on submenu of the options menu (part of the View menu). */
-    static public final String YFILES_ADDON_MENU_NAME = "yFiles add-on";
+    static public final String YFILES_ADDON_MENU_NAME = "YFiles add-on";
     /** Name of the action downloading and installing the yFiles add-on. */
     static public final String DOWNLOAD_ADDON_ACTION_NAME = "Download and install...";
     /** Name of the download action when an add-on for another version is installed. */
@@ -958,7 +957,7 @@ public class Options implements Cloneable {
      * User preference holding the GROOVE version for which the user was last asked
      * whether to install the yFiles add-on (see {@link AddOnInstaller}).
      */
-    static public final String YFILES_ADDON_ASKED_OPTION = "yFiles add-on asked for version";
+    static public final String YFILES_ADDON_ASKED_OPTION = "YFiles add-on asked for version";
     /** Default value map for the boolean options. */
     static private final Map<String,Boolean> boolOptionDefaults = new HashMap<>();
     /** Default value map for the behaviour options. */
