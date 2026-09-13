@@ -16,19 +16,26 @@
  */
 package nl.utwente.groove.gui;
 
+import java.awt.Desktop;
+import java.awt.Font;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
+import javax.swing.UIManager;
+import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -145,14 +152,65 @@ public class AddOnInstaller {
         String situation = status == Status.STALE
             ? STALE_SITUATION.formatted(name)
             : ABSENT_SITUATION;
+        Path dir = this.addOn.getDir(Extensions.dir());
         String message = INSTALL_QUESTION
-            .formatted(situation, name, this.addOn.getDownloadUri(Version.NUMBER),
-                       this.addOn.getDir(Extensions.dir()), Options.DISPLAY_MENU_NAME,
-                       Options.YFILES_ADDON_MENU_NAME);
+            .formatted(situation, name, this.addOn.getDownloadUri(Version.NUMBER), dir,
+                       Options.DISPLAY_MENU_NAME, Options.YFILES_ADDON_MENU_NAME, dir.toUri());
         int answer = JOptionPane
-            .showConfirmDialog(this.frame, message, "Install " + name + "?",
+            .showConfirmDialog(this.frame, createMessagePane(message), "Install " + name + "?",
                                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
         return answer == JOptionPane.YES_OPTION;
+    }
+
+    /**
+     * Creates a read-only pane showing an HTML message in the option pane's font, with
+     * clickable links. {@link JOptionPane} gets the pane rather than the string, since it
+     * would show a string's links as inert text and break the string into separate labels
+     * at every line break, of which only the first is rendered as HTML.
+     */
+    private static JEditorPane createMessagePane(String html) {
+        JEditorPane result = new JEditorPane("text/html", html);
+        result.setEditable(false);
+        result.setOpaque(false);
+        result.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+        Font font = UIManager.getFont("OptionPane.messageFont");
+        if (font != null) {
+            result.setFont(font);
+        }
+        result.addHyperlinkListener(e -> {
+            if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                followLink(e.getDescription());
+            }
+        });
+        return result;
+    }
+
+    /**
+     * Opens the target of a link in a message: a web address in the browser, and a local
+     * directory in the file manager, or its nearest existing ancestor if it does not exist,
+     * as the installation directory does not before the add-on is installed. Failures are
+     * ignored, since the link text shows the target anyway.
+     */
+    private static void followLink(@Nullable String href) {
+        if (href == null || !Desktop.isDesktopSupported()) {
+            return;
+        }
+        try {
+            URI uri = new URI(href);
+            if ("file".equals(uri.getScheme())) {
+                @Nullable Path path = Path.of(uri);
+                while (path != null && !Files.exists(path)) {
+                    path = path.getParent();
+                }
+                if (path != null) {
+                    Desktop.getDesktop().open(path.toFile());
+                }
+            } else {
+                Desktop.getDesktop().browse(uri);
+            }
+        } catch (IOException | URISyntaxException | RuntimeException exc) {
+            // nothing to be done; the user can still copy the target from the link text
+        }
     }
 
     /**
@@ -168,16 +226,16 @@ public class AddOnInstaller {
     /**
      * HTML template of the installation question. The parameters are, in order: the
      * opening situation, the add-on's display name, its download URI, its installation
-     * directory, and the names of the menu and submenu where the choice stays available.
-     * Every line ends in a line continuation, so the template contains no line breaks
-     * and no stray blank starts a rendered line after a {@code <br>}.
+     * directory, the names of the menu and submenu where the choice stays available, and
+     * the installation directory as a URI, for its link. Line breaks in the template are
+     * white space to the HTML pane of {@link #createMessagePane}.
      */
     private static final String INSTALL_QUESTION = """
         <html><body style='width: 480px'>%1$s<br><br>
         The %2$s comes as an add-on of about 9 MB, downloaded from<br>
         <a href="%3$s">%3$s</a><br>
         and installed in<br>
-        <a href="%4$s">%4$s</a><br><br>
+        <a href="%7$s">%4$s</a><br><br>
         The library is licensed to the University of Twente for <i>non-commercial use only</i>
         (research, teaching and study), hence GROOVE with the add-on installed may be used
         for such purposes only. The library may not be extracted from the add-on,
