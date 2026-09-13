@@ -111,11 +111,12 @@ echo "bundled runtime modules: $MODULES"
 # ----------------------------------------------------------------- launchers
 # jpackage names the main launcher after the application (GROOVE), and it
 # starts the Simulator; the tools, the Simulator included, become additional
-# launchers named after themselves. The menu entries (Windows start menu,
-# Linux desktop files) hang off the tool launchers rather than the main one,
-# so the GROOVE menu group lists Simulator, Generator, ... and not a second
-# GROOVE. win-console gives the command-line tools a console on Windows
-# (ignored elsewhere).
+# launchers named after themselves, each with a menu entry (Windows start
+# menu, Linux desktop file). The main launcher has one too, which jpackage
+# does not let us suppress: on Windows its menu entry follows the global
+# --win-menu, without which no launcher gets one at all, and on Linux the
+# custom icon forces its desktop file. win-console gives the command-line
+# tools a console on Windows (ignored elsewhere).
 LAUNCHERS_DIR=$WORK/launchers
 mkdir -p "$LAUNCHERS_DIR"
 add_launcher_args=()
@@ -172,7 +173,7 @@ if [[ $TYPE != app-image ]]; then
             # No --win-dir-chooser: jpackage's MSI does not remember the chosen
             # folder, so every upgrade would offer the default folder again;
             # users who care about the location can use the zip instead.
-            args+=(--win-menu-group GROOVE
+            args+=(--win-menu --win-menu-group GROOVE
                 --win-per-user-install
                 --win-upgrade-uuid c8adea88-1eaa-4127-838b-7b4be5a147f3)
             ;;
