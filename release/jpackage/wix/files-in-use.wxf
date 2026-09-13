@@ -1,0 +1,22 @@
+  <!-- Spliced into jpackage's main.wxs by build-installer.sh, which also adds a
+       reference to the property MSIRESTARTMANAGERCONTROL to the product. WiX 3
+       syntax, like jpackage's own sources. -->
+  <Fragment>
+    <!-- Keeps Windows Installer from shutting down a running GROOVE when files of
+         the installation are in use (in an upgrade, say). By default it offers to
+         close the application through the Restart Manager, which fails for
+         GROOVE: every launcher start is two processes, a windowless launcher and
+         the JVM it starts as a child, and the Restart Manager cannot close the
+         launcher, so its dialog reports failure and returns until both are gone.
+         It would also end the Simulator's session rather than close its window,
+         which most likely leaves no chance to ask about unsaved grammars.
+         DisableShutdown still lets the Restart Manager find the processes that
+         hold files, but not shut them down: Windows Installer then reports once
+         that a reboot will be required, and on OK installs the new version next
+         to the running one, whose files are moved aside and deleted at the next
+         reboot. Disable, which falls back to Windows Installer's older FilesInUse
+         dialog, is worse: that check matches loaded DLLs by name, so it takes
+         minutes and lists every application that loads the same runtime DLLs as
+         the bundled Java runtime (browsers, mail, IDEs), and Retry never clears. -->
+    <Property Id="MSIRESTARTMANAGERCONTROL" Value="DisableShutdown"/>
+  </Fragment>
