@@ -362,15 +362,26 @@ public class AddOnInstaller {
     }
 
     private void reportInstalled(Path dir) {
-        String message = "<html><body style='width: 400px'>The " + this.addOn.getDisplayName()
-            + " is installed in<br><i>" + dir
-            + "</i><br>and is used from the next start of GROOVE on."
-            + "<br><br>Its use is restricted to non-commercial purposes; see <i>"
-            + this.addOn.getNoticeName() + "</i> in that directory.</body></html>";
+        String name = this.addOn.getDisplayName();
+        String message = INSTALLED_REPORT.formatted(name, dir, this.addOn.getNoticeName());
         JOptionPane
-            .showMessageDialog(this.frame, message, this.addOn.getDisplayName() + " installed",
+            .showMessageDialog(this.frame, createMessagePane(message), name + " installed",
                                JOptionPane.INFORMATION_MESSAGE);
     }
+
+    /**
+     * HTML template of the report of a successful installation. The parameters are, in
+     * order: the add-on's display name, its installation directory, and the file name of
+     * its notice. Line breaks in the template are white space to the HTML pane of
+     * {@link #createMessagePane}.
+     */
+    private static final String INSTALLED_REPORT = """
+        <html><body style='width: 400px'>The %1$s is installed in<br>
+        <i>%2$s</i><br>
+        and is used from the next start of GROOVE on.<br><br>
+        Its use is restricted to non-commercial purposes; see <i>%3$s</i> in that directory.
+        </body></html>
+        """;
 
     private void reportError(String message, Throwable cause) {
         String detail = cause.getMessage();
