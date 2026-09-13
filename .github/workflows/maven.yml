@@ -6,7 +6,7 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: Java CI with Maven
+name: Test the GROOVE core
 run-name: "${{ github.event_name == 'pull_request' && format('Testing the GROOVE core for pull request #{0}', github.event.number) || format('Testing the GROOVE core after push of {0}', github.ref_name) }}"
 
 on:
