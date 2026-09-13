@@ -1,6 +1,8 @@
 # Download statistics from GitHub releases
 
-Design note, 2026-09-13. Nothing implemented yet.
+Design note, 2026-09-13. The repository and the collector exist since the same day
+(<https://github.com/nl-utwente-groove/download-stats>, first snapshot taken, workflow
+verified by a manual run); the SourceForge import and the website page do not yet.
 
 ## What SourceForge gives and GitHub does not
 
@@ -36,12 +38,13 @@ for the part of the traffic that uses them.
 **Collector.** A scheduled GitHub Actions workflow (daily cron plus `workflow_dispatch`)
 reads the releases API and appends one row per asset to an append-only CSV
 `snapshots.csv` with columns `date,tag,asset,count`, then commits the file with the
-workflow's `GITHUB_TOKEN`. The whole collector is one `gh api` line:
+workflow's `GITHUB_TOKEN`. The whole collector is one `gh api` line (the date is spliced
+into the filter as a literal, since gh's `--jq` takes no `--arg`; a run on a day that
+already has rows replaces them):
 
 ```
 gh api repos/nl-utwente-groove/code/releases --paginate \
-  --jq --arg d "$(date -u +%F)" \
-  '.[] | .tag_name as $t | .assets[] | [$d, $t, .name, .download_count] | @csv' \
+  --jq ".[] | .tag_name as \$t | .assets[] | [\"$TODAY\", \$t, .name, (.download_count | tostring)] | join(\",\")" \
   >> snapshots.csv
 ```
 
