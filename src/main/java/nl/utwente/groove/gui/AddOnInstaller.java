@@ -16,19 +16,26 @@
  */
 package nl.utwente.groove.gui;
 
+import java.awt.Desktop;
+import java.awt.Font;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
+import javax.swing.UIManager;
+import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -94,7 +101,9 @@ public class AddOnInstaller {
                     .setText(status == Status.STALE
                         ? Options.UPDATE_ADDON_ACTION_NAME
                         : Options.DOWNLOAD_ADDON_ACTION_NAME);
-                downloadItem.setToolTipText("From " + AddOnInstaller.this.addOn.getDownloadUri(Version.NUMBER));
+                downloadItem
+                    .setToolTipText("From "
+                        + AddOnInstaller.this.addOn.getDownloadUri(Version.NUMBER));
                 removeItem.setEnabled(AddOnInstaller.this.addOn.isPresent(Extensions.dir()));
                 removeItem.setToolTipText(describeStatus(status));
             }
@@ -139,28 +148,102 @@ public class AddOnInstaller {
 
     /** Asks whether the add-on should be downloaded and installed, showing the license restriction. */
     private boolean confirmInstall(Status status) {
+        String name = this.addOn.getDisplayName();
         String situation = status == Status.STALE
-            ? "The installed " + this.addOn.getDisplayName()
-                + " add-on was built for another GROOVE version and is not loaded."
-            : "GROOVE can show graphs with the commercial library yFiles for Java (Swing)"
-                + " by yWorks GmbH, which adds its layout algorithms to the layout menu.";
-        String message = "<html><body style='width: 480px'>" + situation + "<br><br>The "
-            + this.addOn.getDisplayName() + " comes as an add-on of about 9 MB, downloaded from<br><i>"
-            + this.addOn.getDownloadUri(Version.NUMBER) + "</i><br>and installed in<br><i>"
-            + this.addOn.getDir(Extensions.dir())
-            + "</i><br><br>The library is licensed to the University of Twente for"
-            + " <b>non-commercial use only</b> (research, teaching and study), and GROOVE with the"
-            + " add-on installed may be used for such purposes only. The library may not be extracted"
-            + " from the add-on, de-obfuscated or reverse engineered. If in doubt, do not install"
-            + " it; the full notice comes with the add-on.<br><br>Install the "
-            + this.addOn.getDisplayName() + " now? (The choice stays available under "
-            + Options.DISPLAY_MENU_NAME + " &gt; " + Options.YFILES_ADDON_MENU_NAME
-            + ".)</body></html>";
+            ? STALE_SITUATION.formatted(name)
+            : ABSENT_SITUATION;
+        Path dir = this.addOn.getDir(Extensions.dir());
+        String message = INSTALL_QUESTION
+            .formatted(situation, name, this.addOn.getDownloadUri(Version.NUMBER), dir,
+                       Options.DISPLAY_MENU_NAME, Options.YFILES_ADDON_MENU_NAME, dir.toUri());
         int answer = JOptionPane
-            .showConfirmDialog(this.frame, message, "Install " + this.addOn.getDisplayName() + "?",
+            .showConfirmDialog(this.frame, createMessagePane(message), "Install " + name + "?",
                                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
         return answer == JOptionPane.YES_OPTION;
     }
+
+    /**
+     * Creates a read-only pane showing an HTML message in the option pane's font, with
+     * clickable links. {@link JOptionPane} gets the pane rather than the string, since it
+     * would show a string's links as inert text and break the string into separate labels
+     * at every line break, of which only the first is rendered as HTML.
+     */
+    private static JEditorPane createMessagePane(String html) {
+        JEditorPane result = new JEditorPane("text/html", html);
+        result.setEditable(false);
+        result.setOpaque(false);
+        result.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+        Font font = UIManager.getFont("OptionPane.messageFont");
+        if (font != null) {
+            result.setFont(font);
+        }
+        result.addHyperlinkListener(e -> {
+            if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                followLink(e.getDescription());
+            }
+        });
+        return result;
+    }
+
+    /**
+     * Opens the target of a link in a message: a web address in the browser, and a local
+     * directory in the file manager, or its nearest existing ancestor if it does not exist,
+     * as the installation directory does not before the add-on is installed. Failures are
+     * ignored, since the link text shows the target anyway.
+     */
+    private static void followLink(@Nullable String href) {
+        if (href == null || !Desktop.isDesktopSupported()) {
+            return;
+        }
+        try {
+            URI uri = new URI(href);
+            if ("file".equals(uri.getScheme())) {
+                @Nullable
+                Path path = Path.of(uri);
+                while (path != null && !Files.exists(path)) {
+                    path = path.getParent();
+                }
+                if (path != null) {
+                    Desktop.getDesktop().open(path.toFile());
+                }
+            } else {
+                Desktop.getDesktop().browse(uri);
+            }
+        } catch (IOException | URISyntaxException | RuntimeException exc) {
+            // nothing to be done; the user can still copy the target from the link text
+        }
+    }
+
+    /**
+     * Opening of the installation question if an add-on for another version is installed;
+     * the parameter is the add-on's display name.
+     */
+    private static final String STALE_SITUATION
+        = "The currently installed %s add-on was built for another GROOVE version and is not loaded.";
+    /** Opening of the installation question if no add-on is installed. */
+    private static final String ABSENT_SITUATION = """
+        GROOVE can optionally show graphs using the commercial library yFiles for Java (Swing)
+        by yWorks GmbH, with better rendering and layouting.""";
+    /**
+     * HTML template of the installation question. The parameters are, in order: the
+     * opening situation, the add-on's display name, its download URI, its installation
+     * directory, the names of the menu and submenu where the choice stays available, and
+     * the installation directory as a URI, for its link. Line breaks in the template are
+     * white space to the HTML pane of {@link #createMessagePane}.
+     */
+    private static final String INSTALL_QUESTION = """
+        <html><body style='width: 400px'>%1$s<br><br>
+        The %2$s comes as an add-on of about 9 MB, downloaded from
+        <a href="%3$s">github</a>
+        and added to
+        <a href="%7$s">GROOVE's extension folder</a>.<br><br>
+        The library is licensed to the University of Twente for <i>non-commercial use</i>
+        (research, teaching and study), hence GROOVE with the add-on installed may be used
+        for such purposes only. The library may not be extracted from the add-on,
+        de-obfuscated or reverse engineered. If in doubt, do not install it.<br><br>
+        Install the %2$s now? (The choice stays available under %5$s &gt; %6$s.)
+        </body></html>
+        """;
 
     /**
      * Downloads the add-on for the running GROOVE version and installs it, in the
@@ -224,9 +307,10 @@ public class AddOnInstaller {
             } catch (ExecutionException exc) {
                 Throwable cause = exc.getCause();
                 reportError("Installation of the " + AddOnInstaller.this.addOn.getDisplayName()
-                    + " failed", cause == null
-                        ? exc
-                        : cause);
+                    + " failed",
+                            cause == null
+                                ? exc
+                                : cause);
             }
         }
     }
@@ -257,17 +341,18 @@ public class AddOnInstaller {
         Path dir = this.addOn.getDir(Extensions.dir());
         int answer = JOptionPane
             .showConfirmDialog(this.frame,
-                               "Remove the " + this.addOn.getDisplayName() + " by deleting " + dir + "?",
-                               "Remove " + this.addOn.getDisplayName() + "?", JOptionPane.YES_NO_OPTION);
+                               "Remove the " + this.addOn.getDisplayName() + " by deleting " + dir
+                                   + "?",
+                               "Remove " + this.addOn.getDisplayName() + "?",
+                               JOptionPane.YES_NO_OPTION);
         if (answer != JOptionPane.YES_OPTION) {
             return;
         }
         try {
             if (this.addOn.uninstall(Extensions.dir())) {
                 JOptionPane
-                    .showMessageDialog(this.frame,
-                                       "The " + this.addOn.getDisplayName()
-                                           + " is removed; the change takes effect at the next start of GROOVE.",
+                    .showMessageDialog(this.frame, "The " + this.addOn.getDisplayName()
+                        + " is removed; the change takes effect at the next start of GROOVE.",
                                        this.addOn.getDisplayName() + " removed",
                                        JOptionPane.INFORMATION_MESSAGE);
             }
@@ -278,7 +363,8 @@ public class AddOnInstaller {
 
     private void reportInstalled(Path dir) {
         String message = "<html><body style='width: 400px'>The " + this.addOn.getDisplayName()
-            + " is installed in<br><i>" + dir + "</i><br>and is used from the next start of GROOVE on."
+            + " is installed in<br><i>" + dir
+            + "</i><br>and is used from the next start of GROOVE on."
             + "<br><br>Its use is restricted to non-commercial purposes; see <i>"
             + this.addOn.getNoticeName() + "</i> in that directory.</body></html>";
         JOptionPane
