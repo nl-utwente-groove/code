@@ -9,7 +9,7 @@
 # - a JDK (>= 21) providing jpackage and jdeps, located through JAVA_HOME if
 #   set, otherwise through the PATH
 # - for the Windows .msi type: the WiX toolset (preinstalled on the GitHub
-#   windows runners)
+#   windows runners), and perl, which Git Bash ships with
 #
 # Usage:
 #   build-installer.sh <version> [<type>]
@@ -154,15 +154,15 @@ make_launcher Viewer false
 
 # ----------------------------------------------------------------- msi resources
 # Uninstalling the MSI also removes the yFiles add-on from the user's extension
-# directory (see README.md), and it does not let the Restart Manager close a
-# running GROOVE (see wix/files-in-use.wxf); jpackage's own WiX sources know
-# nothing of either. jpackage takes a main.wxs from its resource directory in
+# directory (see README.md), it does not let the Restart Manager close a
+# running GROOVE (see wix/files-in-use.wxf), and the last page of the
+# installation offers to start the Simulator; jpackage's own WiX sources know
+# nothing of these. jpackage takes a main.wxs from its resource directory in
 # place of the bundled one, so this extracts the bundled one from the running
-# JDK and splices the fragments wix/addon-cleanup.wxf and wix/files-in-use.wxf
-# into it, each with a reference that pulls it into the installer. A
-# checked-in copy of main.wxs would go stale with every JDK upgrade; the three
-# anchor lines used here have been the same from JDK 21 to 26, and the splice
-# fails loudly should they change.
+# JDK and splices the fragments in wix/ into it, each with a reference that
+# pulls it into the installer. A checked-in copy of main.wxs would go stale
+# with every JDK upgrade; the three anchor lines used here have been the same
+# from JDK 21 to 26, and the splice fails loudly should they change.
 msi_resources() {
     local java_home=${JAVA_HOME:-$("${JAVA_BIN}java" -XshowSettings:properties -version 2>&1 | sed -n 's/^ *java.home = //p')}
     MSI_RESOURCES=$WORK/resources
@@ -173,15 +173,50 @@ msi_resources() {
     mv "$MSI_RESOURCES/jdk.jpackage/jdk/jpackage/internal/resources/main.wxs" "$MSI_RESOURCES/main.wxs"
     sed -i -e '/<ComponentGroupRef Id="Files"\/>/a\      <ComponentGroupRef Id="GrooveAddOnCleanup"/>' \
         -e '/<UIRef Id="JpUI"\/>/a\    <PropertyRef Id="MSIRESTARTMANAGERCONTROL"/>' \
+        -e '/<UIRef Id="JpUI"\/>/a\    <UIRef Id="GrooveLaunchSimulatorUI"/>' \
         -e "/<\/Product>/r $SCRIPT_DIR/wix/addon-cleanup.wxf" \
-        -e "/<\/Product>/r $SCRIPT_DIR/wix/files-in-use.wxf" "$MSI_RESOURCES/main.wxs"
+        -e "/<\/Product>/r $SCRIPT_DIR/wix/files-in-use.wxf" \
+        -e "/<\/Product>/r $SCRIPT_DIR/wix/launch-simulator.wxf" "$MSI_RESOURCES/main.wxs"
+    # text read in by r is not subject to the other commands of the same run;
+    # WiX takes forward slashes in paths, which keeps sed's replacement simple
+    sed -i "s|@GROOVE_ICONS_DIR@|$(cygpath -m "$SCRIPT_DIR/icons")|" "$MSI_RESOURCES/main.wxs"
     if ! grep -q '<ComponentGroupRef Id="GrooveAddOnCleanup"/>' "$MSI_RESOURCES/main.wxs" \
         || ! grep -q '<ComponentGroup Id="GrooveAddOnCleanup">' "$MSI_RESOURCES/main.wxs" \
         || ! grep -q '<PropertyRef Id="MSIRESTARTMANAGERCONTROL"/>' "$MSI_RESOURCES/main.wxs" \
-        || ! grep -q '<Property Id="MSIRESTARTMANAGERCONTROL" Value="DisableShutdown"/>' "$MSI_RESOURCES/main.wxs"; then
+        || ! grep -q '<Property Id="MSIRESTARTMANAGERCONTROL" Value="DisableShutdown"/>' "$MSI_RESOURCES/main.wxs" \
+        || ! grep -q '<UIRef Id="GrooveLaunchSimulatorUI"/>' "$MSI_RESOURCES/main.wxs" \
+        || ! grep -q '<UI Id="GrooveLaunchSimulatorUI">' "$MSI_RESOURCES/main.wxs"; then
         echo "error: cannot splice the installer additions into jpackage's main.wxs: its structure has changed" >&2
         exit 1
     fi
+}
+
+# ----------------------------------------------------------------- msi licence
+# The MSI shows the licence in a narrow box on its first page. jpackage turns
+# a plain-text licence into RTF line by line, so the hard line breaks of
+# LICENSE.txt survive and wrap raggedly there. This writes RTF with one
+# paragraph per blank-line-separated block of LICENSE.txt instead, which
+# jpackage recognises by its header and takes as it is; LICENSE.txt remains the
+# only copy of the text. Non-ASCII characters become RTF Unicode escapes.
+msi_license() {
+    MSI_LICENSE=$WORK/LICENSE.rtf
+    perl - "$ROOT_DIR/LICENSE.txt" > "$MSI_LICENSE" <<'PERL'
+use strict; use warnings;
+open my $in, '<:encoding(UTF-8)', $ARGV[0] or die "cannot read $ARGV[0]: $!";
+my $text = do { local $/; <$in> };
+$text =~ s/\r//g;
+print "{\\rtf1\\ansi\\deff0{\\fonttbl{\\f0\\fswiss Segoe UI;}}\\fs18\n";
+for my $par (split /\n[ \t]*\n/, $text) {
+    $par =~ s/^\s+//;
+    $par =~ s/\s+\z//;
+    next unless length $par;
+    $par =~ s/([\\{}])/\\$1/g;
+    $par =~ s/\s*\n\s*/ /g;
+    $par =~ s/([^\x00-\x7f])/sprintf('\\u%d?', ord $1)/ge;
+    print "\\pard\\sa120 $par\\par\n";
+}
+print "}\n";
+PERL
 }
 
 # ----------------------------------------------------------------- jpackage
@@ -214,7 +249,12 @@ case $OS in
         ;;
 esac
 if [[ $TYPE != app-image ]]; then
-    args+=(--license-file "$(native_path "$ROOT_DIR/LICENSE.txt")"
+    LICENSE=$ROOT_DIR/LICENSE.txt
+    if [[ $OS == windows ]]; then
+        msi_license
+        LICENSE=$MSI_LICENSE
+    fi
+    args+=(--license-file "$(native_path "$LICENSE")"
         --about-url "https://nl-utwente-groove.github.io")
     case $OS in
         windows)
