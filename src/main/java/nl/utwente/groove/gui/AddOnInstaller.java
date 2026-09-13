@@ -319,9 +319,7 @@ public class AddOnInstaller {
     public void installFromFile() {
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle("Install " + this.addOn.getDisplayName() + " from file");
-        chooser
-            .setFileFilter(new FileNameExtensionFilter(this.addOn.getDisplayName() + " add-on ("
-                + this.addOn.getZipName(Version.NUMBER) + ")", "zip"));
+        chooser.setFileFilter(new FileNameExtensionFilter("Zip archives (*.zip)", "zip"));
         if (chooser.showOpenDialog(this.frame) != JFileChooser.APPROVE_OPTION) {
             return;
         }
