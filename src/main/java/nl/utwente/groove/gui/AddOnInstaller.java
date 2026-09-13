@@ -223,7 +223,7 @@ public class AddOnInstaller {
 
     private void reportInstalled(Path dir) {
         String name = this.addOn.getDisplayName();
-        String message = INSTALLED_REPORT.formatted(name, dir, this.addOn.getNoticeName());
+        String message = INSTALLED_REPORT.formatted(name, dir.toUri(), this.addOn.getNoticeName());
         JOptionPane
             .showMessageDialog(this.frame, createMessagePane(message), name + " installed",
                                JOptionPane.INFORMATION_MESSAGE);
@@ -333,8 +333,9 @@ public class AddOnInstaller {
         """;
     /**
      * HTML template of the report of a successful installation. The parameters are, in
-     * order: the add-on's display name, its installation directory, and the file name of
-     * its notice. Line breaks in the template are white space to the HTML pane of
+     * order: the add-on's display name, its installation directory as a URI (a plain path
+     * is no valid link target), and the file name of its notice. Line breaks in the
+     * template are white space to the HTML pane of
      * {@link #createMessagePane}.
      */
     private static final String INSTALLED_REPORT = """
