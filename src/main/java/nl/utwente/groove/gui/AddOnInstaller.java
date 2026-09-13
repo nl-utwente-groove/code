@@ -163,6 +163,93 @@ public class AddOnInstaller {
     }
 
     /**
+     * Downloads the add-on for the running GROOVE version and installs it, in the
+     * background, with a progress dialog; reports the outcome in a dialog.
+     */
+    public void download() {
+        String version = Version.NUMBER;
+        ProgressBarDialog progress
+            = new ProgressBarDialog(this.frame, "Downloading " + this.addOn.getDisplayName());
+        progress.setMessage("Downloading " + this.addOn.getZipName(version) + "...");
+        progress.activate(0);
+        new Download(version, progress).execute();
+    }
+
+    /** Installs the add-on from a zip file chosen by the user; reports the outcome in a dialog. */
+    public void installFromFile() {
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle("Install " + this.addOn.getDisplayName() + " from file");
+        chooser
+            .setFileFilter(new FileNameExtensionFilter(this.addOn.getDisplayName() + " add-on ("
+                + this.addOn.getZipName(Version.NUMBER) + ")", "zip"));
+        if (chooser.showOpenDialog(this.frame) != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+        File file = chooser.getSelectedFile();
+        if (file == null) {
+            return;
+        }
+        try {
+            reportInstalled(this.addOn.install(file.toPath(), Extensions.dir()));
+        } catch (IOException exc) {
+            reportError("Installation of the " + this.addOn.getDisplayName() + " failed", exc);
+        }
+    }
+
+    /** Removes the installed add-on after confirmation; reports the outcome in a dialog. */
+    public void remove() {
+        Path dir = this.addOn.getDir(Extensions.dir());
+        int answer = JOptionPane
+            .showConfirmDialog(this.frame,
+                               "Remove the " + this.addOn.getDisplayName() + " by deleting " + dir
+                                   + "?",
+                               "Remove " + this.addOn.getDisplayName() + "?",
+                               JOptionPane.YES_NO_OPTION);
+        if (answer != JOptionPane.YES_OPTION) {
+            return;
+        }
+        try {
+            if (this.addOn.uninstall(Extensions.dir())) {
+                JOptionPane
+                    .showMessageDialog(this.frame, "The " + this.addOn.getDisplayName()
+                        + " is removed; the change takes effect at the next start of GROOVE.",
+                                       this.addOn.getDisplayName() + " removed",
+                                       JOptionPane.INFORMATION_MESSAGE);
+            }
+        } catch (IOException exc) {
+            reportError("Removal of the " + this.addOn.getDisplayName() + " failed", exc);
+        }
+    }
+
+    private void reportInstalled(Path dir) {
+        String name = this.addOn.getDisplayName();
+        String message = INSTALLED_REPORT.formatted(name, dir.toUri(), this.addOn.getNoticeName());
+        JOptionPane
+            .showMessageDialog(this.frame, createMessagePane(message), name + " installed",
+                               JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void reportError(String message, Throwable cause) {
+        String detail = cause.getMessage();
+        new ErrorDialog(this.frame, detail == null
+            ? message
+            : message + ": " + detail, cause).setVisible(true);
+    }
+
+    private Status getStatus() {
+        return this.addOn.getStatus(Extensions.instance());
+    }
+
+    private String describeStatus(Status status) {
+        return switch (status) {
+        case INSTALLED -> "Installed in " + this.addOn.getDir(Extensions.dir());
+        case STALE -> "Installed in " + this.addOn.getDir(Extensions.dir())
+            + ", but built for another GROOVE version";
+        case ABSENT -> "Not installed";
+        };
+    }
+
+    /**
      * Creates a read-only pane showing an HTML message in the option pane's font, with
      * clickable links. {@link JOptionPane} gets the pane rather than the string, since it
      * would show a string's links as inert text and break the string into separate labels
@@ -244,19 +331,27 @@ public class AddOnInstaller {
         Install the %2$s now? (The choice stays available under %5$s &gt; %6$s.)
         </body></html>
         """;
+    /**
+     * HTML template of the report of a successful installation. The parameters are, in
+     * order: the add-on's display name, its installation directory as a URI (a plain path
+     * is no valid link target), and the file name of its notice. Line breaks in the
+     * template are white space to the HTML pane of
+     * {@link #createMessagePane}.
+     */
+    private static final String INSTALLED_REPORT = """
+        <html><body style='width: 400px'>
+        The %1$s is installed in <a href="%2$s">GROOVE's extension folder</a>
+        and will be available after a restart of GROOVE.<br><br>
+        The use of this backend is restricted to non-commercial purposes; see <code>%3$s</code>
+        (in the installation folder) for more information.
+        </body></html>
+        """;
 
     /**
-     * Downloads the add-on for the running GROOVE version and installs it, in the
-     * background, with a progress dialog; reports the outcome in a dialog.
+     * System property that suppresses the first-run question when set to {@code false}.
+     * The test configurations set it, so that the question cannot block a test.
      */
-    public void download() {
-        String version = Version.NUMBER;
-        ProgressBarDialog progress
-            = new ProgressBarDialog(this.frame, "Downloading " + this.addOn.getDisplayName());
-        progress.setMessage("Downloading " + this.addOn.getZipName(version) + "...");
-        progress.activate(0);
-        new Download(version, progress).execute();
-    }
+    public static final String PROMPT_PROPERTY = "groove.addon.prompt";
 
     /**
      * Background download and installation of the add-on for a GROOVE version,
@@ -314,87 +409,4 @@ public class AddOnInstaller {
             }
         }
     }
-
-    /** Installs the add-on from a zip file chosen by the user; reports the outcome in a dialog. */
-    public void installFromFile() {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle("Install " + this.addOn.getDisplayName() + " from file");
-        chooser
-            .setFileFilter(new FileNameExtensionFilter(this.addOn.getDisplayName() + " add-on ("
-                + this.addOn.getZipName(Version.NUMBER) + ")", "zip"));
-        if (chooser.showOpenDialog(this.frame) != JFileChooser.APPROVE_OPTION) {
-            return;
-        }
-        File file = chooser.getSelectedFile();
-        if (file == null) {
-            return;
-        }
-        try {
-            reportInstalled(this.addOn.install(file.toPath(), Extensions.dir()));
-        } catch (IOException exc) {
-            reportError("Installation of the " + this.addOn.getDisplayName() + " failed", exc);
-        }
-    }
-
-    /** Removes the installed add-on after confirmation; reports the outcome in a dialog. */
-    public void remove() {
-        Path dir = this.addOn.getDir(Extensions.dir());
-        int answer = JOptionPane
-            .showConfirmDialog(this.frame,
-                               "Remove the " + this.addOn.getDisplayName() + " by deleting " + dir
-                                   + "?",
-                               "Remove " + this.addOn.getDisplayName() + "?",
-                               JOptionPane.YES_NO_OPTION);
-        if (answer != JOptionPane.YES_OPTION) {
-            return;
-        }
-        try {
-            if (this.addOn.uninstall(Extensions.dir())) {
-                JOptionPane
-                    .showMessageDialog(this.frame, "The " + this.addOn.getDisplayName()
-                        + " is removed; the change takes effect at the next start of GROOVE.",
-                                       this.addOn.getDisplayName() + " removed",
-                                       JOptionPane.INFORMATION_MESSAGE);
-            }
-        } catch (IOException exc) {
-            reportError("Removal of the " + this.addOn.getDisplayName() + " failed", exc);
-        }
-    }
-
-    private void reportInstalled(Path dir) {
-        String message = "<html><body style='width: 400px'>The " + this.addOn.getDisplayName()
-            + " is installed in<br><i>" + dir
-            + "</i><br>and is used from the next start of GROOVE on."
-            + "<br><br>Its use is restricted to non-commercial purposes; see <i>"
-            + this.addOn.getNoticeName() + "</i> in that directory.</body></html>";
-        JOptionPane
-            .showMessageDialog(this.frame, message, this.addOn.getDisplayName() + " installed",
-                               JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    private void reportError(String message, Throwable cause) {
-        String detail = cause.getMessage();
-        new ErrorDialog(this.frame, detail == null
-            ? message
-            : message + ": " + detail, cause).setVisible(true);
-    }
-
-    private Status getStatus() {
-        return this.addOn.getStatus(Extensions.instance());
-    }
-
-    private String describeStatus(Status status) {
-        return switch (status) {
-        case INSTALLED -> "Installed in " + this.addOn.getDir(Extensions.dir());
-        case STALE -> "Installed in " + this.addOn.getDir(Extensions.dir())
-            + ", but built for another GROOVE version";
-        case ABSENT -> "Not installed";
-        };
-    }
-
-    /**
-     * System property that suppresses the first-run question when set to {@code false}.
-     * The test configurations set it, so that the question cannot block a test.
-     */
-    public static final String PROMPT_PROPERTY = "groove.addon.prompt";
 }
