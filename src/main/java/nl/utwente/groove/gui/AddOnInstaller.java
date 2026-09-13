@@ -38,18 +38,19 @@ import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
-import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.gui.dialog.ErrorDialog;
 import nl.utwente.groove.gui.dialog.ProgressBarDialog;
+import nl.utwente.groove.gui.dialog.SwingExtensionFilter;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.AddOn;
 import nl.utwente.groove.util.AddOn.Status;
 import nl.utwente.groove.util.Extensions;
 import nl.utwente.groove.util.Version;
+import nl.utwente.groove.util.io.FileType;
 
 /**
  * The Simulator's front for installing an {@link AddOn}: a menu with the download,
@@ -319,7 +320,10 @@ public class AddOnInstaller {
     public void installFromFile() {
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle("Install " + this.addOn.getDisplayName() + " from file");
-        chooser.setFileFilter(new FileNameExtensionFilter("Zip archives (*.zip)", "zip"));
+        chooser.setFileFilter(SwingExtensionFilter.getFilter(FileType.ZIP));
+        chooser
+            .setSelectedFile(new File(chooser.getCurrentDirectory(),
+                this.addOn.getZipName(Version.NUMBER)));
         if (chooser.showOpenDialog(this.frame) != JFileChooser.APPROVE_OPTION) {
             return;
         }
