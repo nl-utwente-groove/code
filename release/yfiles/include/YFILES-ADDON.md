@@ -4,12 +4,18 @@ GROOVE yFiles add-on
 This is the yFiles add-on of GROOVE: a second graph-visualisation backend for
 the GROOVE tool set, built on the commercial library
 [yFiles for Java (Swing)](https://www.yworks.com/products/yfiles-for-java)
-by yWorks GmbH. It consists of this directory, which GROOVE loads from its
-extension directory at start-up: the Simulator then uses the yFiles backend by
-default (the choice is in the View menu, under "Graph backend", and takes
-effect at the next start), which adds yFiles' layout algorithms to the layout
-menu, and the Imager selects it with its `-b` option. The vintage JGraph-based
-backend of the standard release remains available.
+by yWorks GmbH. GROOVE does not install this add-on by itself: at the first
+start of a new GROOVE version whose add-on is not yet installed, the Simulator
+asks once whether to download and install it, showing this notice (the same
+choice remains available afterwards under the View menu, "yFiles add-on"). If
+you choose not to install it, the vintage JGraph-based backend of the standard
+release is used, as it always is when this add-on is absent.
+
+Once installed, GROOVE loads this directory from its extension directory at
+start-up and the yFiles backend becomes the default (the choice between
+installed backends is in the View menu, under "Graph backend", and takes
+effect at the next start), adding yFiles' layout algorithms to the layout
+menu; the Imager selects it with its `-b` option.
 
 The add-on is built for one GROOVE version, recorded in the manifest of its
 `groove-yfiles-*.jar`; another version of GROOVE skips it with a warning at
