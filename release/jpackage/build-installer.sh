@@ -175,6 +175,9 @@ msi_resources() {
         -e '/<UIRef Id="JpUI"\/>/a\    <UIRef Id="GrooveLaunchSimulatorUI"/>' \
         -e "/<\/Product>/r $SCRIPT_DIR/wix/addon-cleanup.wxf" \
         -e "/<\/Product>/r $SCRIPT_DIR/wix/launch-simulator.wxf" "$MSI_RESOURCES/main.wxs"
+    # text read in by r is not subject to the other commands of the same run;
+    # WiX takes forward slashes in paths, which keeps sed's replacement simple
+    sed -i "s|@GROOVE_ICONS_DIR@|$(cygpath -m "$SCRIPT_DIR/icons")|" "$MSI_RESOURCES/main.wxs"
     if ! grep -q '<ComponentGroupRef Id="GrooveAddOnCleanup"/>' "$MSI_RESOURCES/main.wxs" \
         || ! grep -q '<ComponentGroup Id="GrooveAddOnCleanup">' "$MSI_RESOURCES/main.wxs" \
         || ! grep -q '<UIRef Id="GrooveLaunchSimulatorUI"/>' "$MSI_RESOURCES/main.wxs" \
