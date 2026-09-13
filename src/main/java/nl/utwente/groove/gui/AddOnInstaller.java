@@ -94,7 +94,9 @@ public class AddOnInstaller {
                     .setText(status == Status.STALE
                         ? Options.UPDATE_ADDON_ACTION_NAME
                         : Options.DOWNLOAD_ADDON_ACTION_NAME);
-                downloadItem.setToolTipText("From " + AddOnInstaller.this.addOn.getDownloadUri(Version.NUMBER));
+                downloadItem
+                    .setToolTipText("From "
+                        + AddOnInstaller.this.addOn.getDownloadUri(Version.NUMBER));
                 removeItem.setEnabled(AddOnInstaller.this.addOn.isPresent(Extensions.dir()));
                 removeItem.setToolTipText(describeStatus(status));
             }
@@ -161,7 +163,7 @@ public class AddOnInstaller {
         = "The installed %s add-on was built for another GROOVE version and is not loaded.";
     /** Opening of the installation question if no add-on is installed. */
     private static final String ABSENT_SITUATION = """
-        GROOVE can show graphs with the commercial library yFiles for Java (Swing) \
+        GROOVE can show graphs with the commercial library yFiles for Java (Swing)
         by yWorks GmbH, which adds its layout algorithms to the layout menu.""";
     /**
      * HTML template of the installation question. The parameters are, in order: the
@@ -171,18 +173,18 @@ public class AddOnInstaller {
      * and no stray blank starts a rendered line after a {@code <br>}.
      */
     private static final String INSTALL_QUESTION = """
-        <html><body style='width: 480px'>%1$s<br><br>\
-        The %2$s comes as an add-on of about 9 MB, downloaded from<br>\
-        <i>%3$s</i><br>\
-        and installed in<br>\
-        <i>%4$s</i><br><br>\
-        The library is licensed to the University of Twente for <b>non-commercial use only</b> \
-        (research, teaching and study), and GROOVE with the add-on installed may be used \
-        for such purposes only. The library may not be extracted from the add-on, \
-        de-obfuscated or reverse engineered. If in doubt, do not install it; the full \
-        notice comes with the add-on.<br><br>\
-        Install the %2$s now? (The choice stays available under %5$s &gt; %6$s.)\
-        </body></html>""";
+        <html><body style='width: 480px'>%1$s<br><br>
+        The %2$s comes as an add-on of about 9 MB, downloaded from<br>
+        <a href="%3$s">%3$s</a><br>
+        and installed in<br>
+        <a href="%4$s">%4$s</a><br><br>
+        The library is licensed to the University of Twente for <i>non-commercial use only</i>
+        (research, teaching and study), hence GROOVE with the add-on installed may be used
+        for such purposes only. The library may not be extracted from the add-on,
+        de-obfuscated or reverse engineered. If in doubt, do not install it.<br><br>
+        Install the %2$s now? (The choice stays available under %5$s &gt; %6$s.)
+        </body></html>
+        """;
 
     /**
      * Downloads the add-on for the running GROOVE version and installs it, in the
@@ -246,9 +248,10 @@ public class AddOnInstaller {
             } catch (ExecutionException exc) {
                 Throwable cause = exc.getCause();
                 reportError("Installation of the " + AddOnInstaller.this.addOn.getDisplayName()
-                    + " failed", cause == null
-                        ? exc
-                        : cause);
+                    + " failed",
+                            cause == null
+                                ? exc
+                                : cause);
             }
         }
     }
@@ -279,17 +282,18 @@ public class AddOnInstaller {
         Path dir = this.addOn.getDir(Extensions.dir());
         int answer = JOptionPane
             .showConfirmDialog(this.frame,
-                               "Remove the " + this.addOn.getDisplayName() + " by deleting " + dir + "?",
-                               "Remove " + this.addOn.getDisplayName() + "?", JOptionPane.YES_NO_OPTION);
+                               "Remove the " + this.addOn.getDisplayName() + " by deleting " + dir
+                                   + "?",
+                               "Remove " + this.addOn.getDisplayName() + "?",
+                               JOptionPane.YES_NO_OPTION);
         if (answer != JOptionPane.YES_OPTION) {
             return;
         }
         try {
             if (this.addOn.uninstall(Extensions.dir())) {
                 JOptionPane
-                    .showMessageDialog(this.frame,
-                                       "The " + this.addOn.getDisplayName()
-                                           + " is removed; the change takes effect at the next start of GROOVE.",
+                    .showMessageDialog(this.frame, "The " + this.addOn.getDisplayName()
+                        + " is removed; the change takes effect at the next start of GROOVE.",
                                        this.addOn.getDisplayName() + " removed",
                                        JOptionPane.INFORMATION_MESSAGE);
             }
@@ -300,7 +304,8 @@ public class AddOnInstaller {
 
     private void reportInstalled(Path dir) {
         String message = "<html><body style='width: 400px'>The " + this.addOn.getDisplayName()
-            + " is installed in<br><i>" + dir + "</i><br>and is used from the next start of GROOVE on."
+            + " is installed in<br><i>" + dir
+            + "</i><br>and is used from the next start of GROOVE on."
             + "<br><br>Its use is restricted to non-commercial purposes; see <i>"
             + this.addOn.getNoticeName() + "</i> in that directory.</body></html>";
         JOptionPane
