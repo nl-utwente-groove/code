@@ -28,21 +28,21 @@ jobs:
 
     steps:
     - name: Check out code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         path: 'code'
     - name: Check out grammars
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         repository: 'nl-utwente-groove/grammars'
         path: 'grammars'
     - name: Check out samples
-      uses: actions/checkout@v4
+      uses: actions/checkout@v7
       with:
         repository: 'nl-utwente-groove/samples'
         path: 'samples'
     - name: Set up JDK 21
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       with:
         java-version: '21'
         distribution: 'temurin'
@@ -51,3 +51,41 @@ jobs:
       run: mvn -B clean package -DskipTests --file pom.xml
     - name: Run full test suite (including slow tests)
       run: mvn -B test -Dexcluded.test.groups= --file pom.xml
+
+  # The Jemmy-driven GUI tests skip themselves without a display, so the
+  # build job above passes them without running them. Here they run under a
+  # virtual X display, in a job of their own so that a GUI failure is told
+  # apart from a core one at a glance. They load only the fixtures in junit/.
+  gui:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v7
+    - name: Set up JDK 21
+      uses: actions/setup-java@v5
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: maven
+    - name: Install a virtual display
+      run: sudo apt-get update && sudo apt-get install -y xvfb
+    - name: Run GUI tests
+      run: xvfb-run -a -s "-screen 0 1600x1200x24" mvn -B test -Dexcluded.test.groups= -Dtest='*GuiTest' -DfailIfNoSpecifiedTests=false
+    - name: Check that no GUI test was skipped
+      # a display that is not picked up makes every class skip by assumption,
+      # which surefire reports as a pass
+      run: |
+        ls target/surefire-reports/*GuiTest.txt
+        if grep -L "Skipped: 0," target/surefire-reports/*GuiTest.txt | grep .; then
+          echo "The GUI test classes above skipped tests"
+          exit 1
+        fi
+    - name: Keep the test reports of a failed run
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: gui-surefire-reports
+        path: target/surefire-reports
