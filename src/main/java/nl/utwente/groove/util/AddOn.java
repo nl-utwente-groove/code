@@ -19,6 +19,8 @@ package nl.utwente.groove.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -28,7 +30,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.function.LongConsumer;
 import java.util.stream.Stream;
@@ -91,9 +92,27 @@ public final class AddOn {
         return extensionDir.resolve(getName());
     }
 
-    /** Indicates if the directory of this add-on exists within a given extension directory. */
+    /**
+     * Indicates if this add-on has files within a given extension directory that a
+     * removal would delete: its own directory, or a pending installation.
+     */
     public boolean isPresent(Path extensionDir) {
-        return Files.isDirectory(getDir(extensionDir));
+        return Files.isDirectory(getDir(extensionDir))
+            || Files.isDirectory(Extensions.pendingInstallDir(extensionDir, getName()));
+    }
+
+    /**
+     * Returns the operation on this add-on that is recorded in a given extension
+     * directory as pending until the next start, if any.
+     */
+    public Pending getPending(Path extensionDir) {
+        if (Files.isDirectory(Extensions.pendingInstallDir(extensionDir, getName()))) {
+            return Pending.INSTALL;
+        } else if (Files.exists(Extensions.removeMarker(extensionDir, getName()))) {
+            return Pending.REMOVE;
+        } else {
+            return Pending.NONE;
+        }
     }
 
     /**
@@ -219,27 +238,41 @@ public final class AddOn {
      * extension directory as it was. The zip is unpacked into a staging directory
      * first, hidden from the scan of {@link Extensions} by its leading dot, so that
      * an installation that fails halfway leaves nothing that would be loaded.
+     * <p>
+     * If the installed version cannot be replaced because its files are in use, as
+     * they are on Windows when it is loaded by this or another GROOVE instance, the new
+     * version is left as a pending installation (see {@link Extensions#pendingInstallDir})
+     * that the next scan puts in place. An installation cancels a pending removal.
      * @param zip the zip file to install from
      * @param extensionDir the extension directory to install into; created if absent
-     * @return the directory of the installed add-on
+     * @return {@link Outcome#DONE} if the add-on is installed in {@link #getDir},
+     * {@link Outcome#DEFERRED} if it is installed at the next start
      * @throws IOException if the zip is not an add-on for the running version, or the
      * installation fails
      */
-    public Path install(Path zip, Path extensionDir) throws IOException {
+    public Outcome install(Path zip, Path extensionDir) throws IOException {
         Files.createDirectories(extensionDir);
         Path target = getDir(extensionDir);
         Path staging = extensionDir.resolve("." + getName() + "-installing");
-        deleteRecursively(staging);
+        Extensions.deleteRecursively(staging);
         try {
             unzip(zip, staging);
             checkVersion(staging);
-            deleteRecursively(target);
-            Files.move(staging, target, StandardCopyOption.ATOMIC_MOVE);
         } catch (IOException | RuntimeException exc) {
-            deleteRecursively(staging);
+            Extensions.deleteRecursively(staging);
             throw exc;
         }
-        return target;
+        Path pending = Extensions.pendingInstallDir(extensionDir, getName());
+        Files.deleteIfExists(Extensions.removeMarker(extensionDir, getName()));
+        Extensions.deleteRecursively(pending);
+        try {
+            Extensions.replace(staging, target);
+            return Outcome.DONE;
+        } catch (IOException exc) {
+            LOGGER.log(Level.INFO, "Installation of {0} deferred to the next start: {1}", target, exc);
+            Files.move(staging, pending, StandardCopyOption.ATOMIC_MOVE);
+            return Outcome.DEFERRED;
+        }
     }
 
     /** Unpacks the add-on's directory in a zip into a staging directory. */
@@ -304,27 +337,68 @@ public final class AddOn {
     }
 
     /**
-     * Removes this add-on from a given extension directory, if it is present.
-     * @return {@code true} if the add-on was present
+     * Removes this add-on from a given extension directory, if it is present, cancelling
+     * a pending installation. If the add-on's files cannot be deleted because they are
+     * in use, as they are on Windows when the add-on is loaded by this or another GROOVE
+     * instance, the removal is left pending (see {@link Extensions#removeMarker}) for the
+     * next scan to carry out; the add-on's directory is then still intact (see
+     * {@link Extensions#remove}), so the removal can be cancelled by {@link #reactivate}.
+     * @return {@link Outcome#DONE} if the add-on is gone, {@link Outcome#DEFERRED} if
+     * it is removed at the next start
+     * @throws IOException if a pending installation cannot be deleted
      */
-    public boolean uninstall(Path extensionDir) throws IOException {
-        boolean result = isPresent(extensionDir);
-        deleteRecursively(getDir(extensionDir));
-        return result;
+    public Outcome uninstall(Path extensionDir) throws IOException {
+        Extensions.deleteRecursively(Extensions.pendingInstallDir(extensionDir, getName()));
+        Path target = getDir(extensionDir);
+        if (!Files.exists(target)) {
+            return Outcome.DONE;
+        }
+        Path marker = Extensions.removeMarker(extensionDir, getName());
+        if (!Files.exists(marker)) {
+            Files.createFile(marker);
+        }
+        try {
+            Extensions.remove(target);
+            Files.delete(marker);
+            return Outcome.DONE;
+        } catch (IOException exc) {
+            LOGGER.log(Level.INFO, "Removal of {0} deferred to the next start: {1}", target, exc);
+            return Outcome.DEFERRED;
+        }
     }
 
-    private static void deleteRecursively(Path dir) throws IOException {
-        if (!Files.exists(dir)) {
-            return;
-        }
-        try (Stream<Path> files = Files.walk(dir)) {
-            for (Path path : files.sorted(Comparator.reverseOrder()).toList()) {
-                Files.delete(path);
-            }
-        }
+    /**
+     * Cancels a pending removal of this add-on from a given extension directory, if
+     * there is one, so that the add-on stays installed.
+     */
+    public void reactivate(Path extensionDir) throws IOException {
+        Files.deleteIfExists(Extensions.removeMarker(extensionDir, getName()));
     }
 
     private static final int BUFFER_SIZE = 64 * 1024;
+
+    private static final Logger LOGGER = Log.getLogger("util.addon");
+
+    /** Outcome of an installation or removal. */
+    public enum Outcome {
+        /** The operation is carried out. */
+        DONE,
+        /**
+         * The add-on's files are in use, by this or another GROOVE instance, so the
+         * operation is recorded as pending and carried out at the next start.
+         */
+        DEFERRED;
+    }
+
+    /** Operation on an add-on that is pending until the next start. */
+    public enum Pending {
+        /** Nothing is pending. */
+        NONE,
+        /** A new version is installed at the next start. */
+        INSTALL,
+        /** The add-on is removed at the next start. */
+        REMOVE;
+    }
 
     /** Status of an add-on in the extension directory. */
     public enum Status {

@@ -24,9 +24,13 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -56,6 +60,17 @@ import org.eclipse.jdt.annotation.Nullable;
  * attribute (a library the extension needs) is loaded as it is. The check is on the
  * version string, so a jar built for the same snapshot version as a later development
  * build passes it even if the interfaces changed in between.
+ * <p>
+ * The loader keeps the jars open for the life of the JVM, and on Windows an open file
+ * cannot be deleted or replaced. An add-on that is removed or replaced while its jars are
+ * loaded (see {@link AddOn}) therefore records the operation as pending in the directory,
+ * by a marker file {@link #removeMarker} or a directory {@link #pendingInstallDir} holding
+ * the new version, both hidden by their leading dot; a scan carries the pending operations
+ * out before it builds the loader, and hides an add-on whose pending operation fails once
+ * more (typically because another GROOVE instance still holds its jars), so that an
+ * add-on due for removal is never loaded. A directory in use is moved rather than
+ * deleted file by file, which fails without changing anything (see {@link #remove}), so
+ * an add-on with a pending removal is still intact and can be reactivated.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -63,7 +78,8 @@ import org.eclipse.jdt.annotation.Nullable;
 @NonNullByDefault
 public final class Extensions {
     /**
-     * Scans a given directory for extension jars.
+     * Scans a given directory for extension jars, after carrying out the pending
+     * installations and removals recorded in it.
      * The result is not shared; the extension directory of this run is scanned once,
      * by {@link #instance()}.
      * @param dir the directory to scan; need not exist
@@ -76,7 +92,7 @@ public final class Extensions {
     @SuppressWarnings("resource")
     private Extensions(Path dir) {
         this.dir = dir;
-        this.jars = collect(dir);
+        this.jars = collect(dir, applyPending(dir));
         var accepted = this.jars.stream().filter(Jar::accepted).map(Jar::path).toList();
         ClassLoader parent = Extensions.class.getClassLoader();
         assert parent != null : "GROOVE is not loaded by the bootstrap loader";
@@ -112,8 +128,137 @@ public final class Extensions {
 
     private final ClassLoader loader;
 
-    /** Collects the jars of a directory and its immediate subdirectories, sorted by path. */
-    private static List<Jar> collect(Path dir) {
+    /**
+     * Carries out the pending removals and installations recorded in a directory:
+     * for every marker {@link #removeMarker} the named subdirectory is deleted, and for
+     * every {@link #pendingInstallDir} the named subdirectory is replaced by it.
+     * An operation that fails is logged and left pending, and the name of its
+     * subdirectory is returned so that the scan hides it.
+     * @param dir the directory; need not exist
+     * @return the names of the subdirectories whose pending operation failed
+     */
+    private static Set<String> applyPending(Path dir) {
+        Set<String> result = new HashSet<>();
+        if (!Files.isDirectory(dir)) {
+            return result;
+        }
+        List<Path> entries;
+        try (Stream<Path> stream = Files.list(dir)) {
+            entries = stream.sorted().toList();
+        } catch (IOException exc) {
+            LOGGER.log(Level.WARNING, "Cannot read extension directory {0}: {1}", dir, exc);
+            return result;
+        }
+        for (Path entry : entries) {
+            String entryName = entry.getFileName().toString();
+            if (!entryName.startsWith(".")) {
+                continue;
+            }
+            if (entryName.endsWith(REMOVE_SUFFIX) && Files.isRegularFile(entry)) {
+                String name = entryName.substring(1, entryName.length() - REMOVE_SUFFIX.length());
+                try {
+                    remove(dir.resolve(name));
+                    Files.delete(entry);
+                    LOGGER.log(Level.INFO, "Removed extension {0}", name);
+                } catch (IOException exc) {
+                    LOGGER.log(Level.WARNING, "Removal of extension {0} is still pending: {1}", name, exc);
+                    result.add(name);
+                }
+            } else if (entryName.endsWith(INSTALL_SUFFIX) && Files.isDirectory(entry)) {
+                String name = entryName.substring(1, entryName.length() - INSTALL_SUFFIX.length());
+                try {
+                    replace(entry, dir.resolve(name));
+                    LOGGER.log(Level.INFO, "Installed extension {0}", name);
+                } catch (IOException exc) {
+                    LOGGER.log(Level.WARNING, "Installation of extension {0} is still pending: {1}", name, exc);
+                    result.add(name);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the directory of a pending installation of a named extension within a
+     * given extension directory: a directory holding the version to be installed at the
+     * next scan, in place of the extension's own directory. Hidden from the scan.
+     */
+    public static Path pendingInstallDir(Path dir, String name) {
+        return dir.resolve("." + name + INSTALL_SUFFIX);
+    }
+
+    /**
+     * Returns the marker of a pending removal of a named extension within a given
+     * extension directory: a file whose presence makes the next scan delete the
+     * extension's directory. Hidden from the scan.
+     */
+    public static Path removeMarker(Path dir, String name) {
+        return dir.resolve("." + name + REMOVE_SUFFIX);
+    }
+
+    /**
+     * Replaces a target directory by a source directory: moves the target out of the way
+     * if it exists, moves the source to it, and deletes the old target.
+     * @throws IOException if the target cannot be moved, e.g. because a file in it is in
+     * use, in which case nothing has changed; or if a later step fails
+     * @see #remove(Path)
+     */
+    public static void replace(Path source, Path target) throws IOException {
+        Path old = removingDir(target);
+        deleteRecursively(old);
+        if (Files.exists(target)) {
+            Files.move(target, old, StandardCopyOption.ATOMIC_MOVE);
+        }
+        Files.move(source, target, StandardCopyOption.ATOMIC_MOVE);
+        deleteRecursively(old);
+    }
+
+    /**
+     * Removes a directory with all its content, by first moving it to a hidden name and
+     * then deleting that. On Windows a directory holding a file that is in use can be
+     * neither deleted nor moved, so the move fails before anything is deleted, leaving the
+     * directory intact rather than half deleted; and once moved, the directory is hidden
+     * from the scan should the deletion fail after all. Does nothing if the directory does
+     * not exist.
+     * @throws IOException if the directory cannot be moved, e.g. because a file in it is
+     * in use, in which case nothing has changed; or if the deletion fails
+     */
+    public static void remove(Path dir) throws IOException {
+        if (!Files.exists(dir)) {
+            return;
+        }
+        Path old = removingDir(dir);
+        deleteRecursively(old);
+        Files.move(dir, old, StandardCopyOption.ATOMIC_MOVE);
+        deleteRecursively(old);
+    }
+
+    /** Returns the hidden name under which a directory is deleted, next to it. */
+    private static Path removingDir(Path dir) {
+        return dir.resolveSibling("." + dir.getFileName() + "-removing");
+    }
+
+    /**
+     * Deletes a directory with all its content, or a file; does nothing if it does not exist.
+     * @throws IOException if the deletion fails, e.g. because a file is in use;
+     * the directory may then be partially deleted
+     */
+    public static void deleteRecursively(Path dir) throws IOException {
+        if (!Files.exists(dir)) {
+            return;
+        }
+        try (Stream<Path> files = Files.walk(dir)) {
+            for (Path path : files.sorted(Comparator.reverseOrder()).toList()) {
+                Files.delete(path);
+            }
+        }
+    }
+
+    /**
+     * Collects the jars of a directory and its immediate subdirectories, sorted by path.
+     * @param hidden names of subdirectories to be skipped
+     */
+    private static List<Jar> collect(Path dir, Set<String> hidden) {
         if (!Files.isDirectory(dir)) {
             LOGGER.log(Level.DEBUG, "No extension directory {0}", dir);
             return List.of();
@@ -121,7 +266,7 @@ public final class Extensions {
         List<Path> paths = new ArrayList<>();
         try (Stream<Path> entries = Files.list(dir)) {
             for (Path entry : entries.sorted().toList()) {
-                if (isHidden(entry)) {
+                if (isHidden(entry) || hidden.contains(entry.getFileName().toString())) {
                     continue;
                 }
                 if (isJar(entry)) {
@@ -224,6 +369,10 @@ public final class Extensions {
 
     /** System property naming the extension directory, overriding the platform default. */
     public static final String DIR_PROPERTY = "groove.extensions.dir";
+    /** Suffix of the name of the directory of a pending installation, see {@link #pendingInstallDir}. */
+    private static final String INSTALL_SUFFIX = "-install";
+    /** Suffix of the name of the marker of a pending removal, see {@link #removeMarker}. */
+    private static final String REMOVE_SUFFIX = "-remove";
     /**
      * Manifest attribute by which an extension jar declares the GROOVE version it was
      * built against; a jar declaring another version than {@link Version#NUMBER} is skipped.

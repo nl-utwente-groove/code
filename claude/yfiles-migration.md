@@ -468,6 +468,23 @@ Four commits, one per implementation slice of that note:
    directory (hidden from the scan), verifies the version attribute and replaces the
    add-on directory. `AddOnTest` covers the install/verify/remove path headlessly,
    `AddOnGuiTest` drives the file installation and the removal through the menu.
+5. **Deferred removal and replacement** (2026-09-14, branch
+   `yfiles-addon-deferred-removal`): the extension loader keeps the jars open for the
+   life of the JVM, and on Windows an open file can be neither deleted nor moved, so
+   removing or updating a loaded add-on from the running Simulator failed with "being
+   used by another process" (a `JarFile` is opened without delete sharing; NIO streams
+   are not, which is why the test locks with a `JarFile`). Now `AddOn.uninstall` and
+   `install` return an `Outcome`: `DONE`, or `DEFERRED` when the files are in use, in
+   which case the operation is recorded in the extension directory — a marker file
+   `.yfiles-remove`, or the unpacked new version as `.yfiles-install` — and
+   `Extensions.scan` carries it out before building the loader at the next start,
+   hiding the add-on if it fails again (another instance). A directory is removed by
+   moving it to `.yfiles-removing` first and deleting that, so a directory in use fails
+   atomically and stays intact, which is what makes `AddOn.reactivate` (dropping the
+   marker) possible. The menu shows only what applies: remove for an installed add-on,
+   reactivate for one pending removal, install for an absent one, both update and
+   remove for a stale one. The deferral test runs on Windows only, by assumption; CI is
+   Linux, where open files delete fine and the deferral never happens.
 
 **Verified**: the obfuscated jars work from the child loader (Imager on the ferryman
 grammar), a stale add-on gives one warning and a JGraph fallback, and the standard app
