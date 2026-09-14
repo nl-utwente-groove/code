@@ -169,12 +169,21 @@ side-effect free; the action remains the only writer.
 3. Export from settings: `GraphsToEcore` takes packages, classifiers, features
    and opposites from `EcoreMapping` instead of the graph properties, with the
    per-label default rule above (the trap fix). `EcoreTest` adapted; a
-   hand-added-type export test added.
+   hand-added-type export test added. *(done, branch `ecore-metadata-port`;
+   deviation: several entries may match one label once the import writes a
+   qualified `typeName` next to a hand-written unqualified one, so matches that
+   qualify one another are collapsed to the most qualified rather than reported
+   as ambiguous.)*
 4. Import writes settings: `EcoreToGraphs.createMetadata` produces records
    instead of properties; `EcorePorter` merges them into the resource text and
    returns the SETTINGS `Imported`; `ImportAction` applies it without asking.
-   `testMetadata` rewritten against the resource text.
-5. Remove the graph-property reader, writer and constants.
+   `testMetadata` rewritten against the resource text. *(done; deviation: a
+   feature whose Ecore name is not a single path segment — `unit.price` in the
+   packages fixture — stands under its GROOVE label, the `name` field carrying
+   the Ecore name either way.)*
+5. Remove the graph-property reader, writer and constants. *(done; the
+   `literal` classifier kind went with them, and the three passages of
+   `junit/ecore/README.md` that showed the record syntax now show entries.)*
 6. Status blocks in the two archived notes; gh #898 comment.
 
 Steps 2 to 5 are Opus-scale once this note is agreed; step 2 has no behaviour
