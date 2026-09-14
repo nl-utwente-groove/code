@@ -29,7 +29,6 @@ Status lines below are as of 2026-09-11.
 | [priority-symmetric-choice.md](priority-symmetric-choice.md) | gh #880, priority-aware symmetric choice in control. Design points only, not started; interim gh #756 guard is on master. |
 | [critical-pair-review.md](critical-pair-review.md) | gh #886, revival of the critical-pair package. Review and plan only, nothing implemented. |
 | [fixable-builder-survey.md](fixable-builder-survey.md) | Which `Fixable` implementors should become builders. Step 1 (`AspectLabel`) done 2026-09-06; the rest open, no `Buildable` type. |
-
 ## Archive
 
 Finished work, kept for the design rationale and rejected alternatives. Grouped by theme.
@@ -75,3 +74,9 @@ Finished work, kept for the design rationale and rejected alternatives. Grouped 
 |---|---|
 | [ecore-porter-design.md](archive/ecore-porter-design.md) | The Ecore importer/exporter (phase 3 of the io plan). Implemented as designed; principle 4 contested by gh #907. |
 | [settings-resource-design.md](archive/settings-resource-design.md) | The SETTINGS resource kind and the Ecore mapping schema. Landed 2026-07-31 to 08-05; schema registry since inverted to `ServiceLoader`. Deferred items filed as gh #898. |
+
+**Release and installers**
+
+| Note | Status |
+|---|---|
+| [installer-files-in-use.md](archive/installer-files-in-use.md) | Windows MSI with GROOVE running: why `DisableShutdown` failed with the real app (jars not renameable, per-user, `RemoveExistingProducts` outside the transaction) and the close-GROOVE prompt that replaced it. Verified with the real installer 2026-09-14; on `installer-files-in-use`. |
