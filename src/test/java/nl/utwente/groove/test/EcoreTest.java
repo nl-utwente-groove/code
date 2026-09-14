@@ -49,7 +49,6 @@ import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
-import nl.utwente.groove.grammar.ResourceProperties;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.iso.IsoChecker;
 import nl.utwente.groove.graph.plain.PlainGraph;
@@ -59,16 +58,11 @@ import nl.utwente.groove.io.external.Imported;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.io.external.format.ecore.EcoreKey;
 import nl.utwente.groove.io.external.format.ecore.EcoreMapping;
-import nl.utwente.groove.io.external.format.ecore.EcoreMapping.Bounds;
-import nl.utwente.groove.io.external.format.ecore.EcoreMapping.FeatureData;
-import nl.utwente.groove.io.external.format.ecore.EcoreMapping.Kind;
 import nl.utwente.groove.io.external.format.ecore.EcoreMapping.LiteralStyle;
 import nl.utwente.groove.io.external.format.ecore.EcoreMapping.Ordering;
-import nl.utwente.groove.io.external.format.ecore.EcoreMapping.PackageData;
 import nl.utwente.groove.io.external.format.ecore.EcoreMappingSchema;
 import nl.utwente.groove.io.external.format.ecore.EcoreNames;
 import nl.utwente.groove.io.external.format.ecore.EcorePorter;
-import nl.utwente.groove.io.external.format.ecore.EcoreToGraphs;
 import nl.utwente.groove.io.external.format.ecore.GraphsToEcore;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.util.QualName;
@@ -121,31 +115,59 @@ public class EcoreTest {
         assertEquals(Collections.emptyList(), messages(type.getErrors()));
     }
 
-    /** Tests the round-trip metadata recorded on the imported type graph. */
+    /**
+     * Tests the round-trip records that the import writes into the mapping
+     * resource: the package namespaces, the classifier kinds (which double as
+     * the package membership list), the feature declarations that the type
+     * graph does not determine, the opposite pairing, and the labels that are
+     * not derivable from the Ecore names.
+     */
     @Test
     public void testMetadata() throws Exception {
-        AspectGraph type = single(importFrom("shop.ecore", Ordering.NONE, true), ResourceKind.TYPE);
-        var properties = ResourceProperties.getProperties(type);
-        assertEquals("shop|http://groove.utwente.nl/ecore/shop|shop;"
-            + "shop.catalog|http://groove.utwente.nl/ecore/shop/catalog|catalog",
-                     properties.getProperty(EcoreToGraphs.PACKAGES_KEY));
-        assertEquals("Shop|shop|Shop|class;shop$Item|shop|Item|class;Book|shop|Book|class;"
-            + "Customer|shop|Customer|class;Category|shop|Category|enum;"
-            + "Category$UNKNOWN|shop|UNKNOWN|literal;Category$FICTION|shop|FICTION|literal;"
-            + "Category$NONFICTION|shop|NONFICTION|literal;Isbn|shop|Isbn|datatype;"
-            + "catalog$Item|shop.catalog|Item|class",
-                     properties.getProperty(EcoreToGraphs.TYPES_KEY));
-        assertEquals("Shop.items|shop$Item.shop",
-                     properties.getProperty(EcoreToGraphs.OPPOSITES_KEY));
-        // only the features that the type graph does not determine completely:
-        // the many-valued ones (whose order, uniqueness and bounds are not
-        // encoded), the ones over a data type other than the sort's default, and
-        // the ones whose name had to be repaired — none, in this meta-model,
-        // which is why every record ends in an empty field
-        assertEquals("Shop|customers||false|true|0|-1|;Shop|items||false|true|1|-1|;"
-            + "Book|isbn|Isbn|true|true|0|1|;Book|tags||false|true|0|-1|;"
-            + "Customer|favourites||false|true|0|-1|",
-                     properties.getProperty(EcoreToGraphs.FEATURES_KEY));
+        String expected = mappingText(Ordering.NONE, true) + """
+            # recorded by the import of shop.ecore
+            shop.package = nsURI=http://groove.utwente.nl/ecore/shop
+            shop.catalog.package = nsURI=http://groove.utwente.nl/ecore/shop/catalog
+            shop.Shop.kind = class
+            shop.Item.kind = class
+            shop.Book.kind = class
+            shop.Customer.kind = class
+            shop.Category.kind = enum
+            shop.Isbn.kind = datatype
+            shop.catalog.Item.kind = class
+            shop.Shop.customers.feature = ordered=false bounds=0..*
+            shop.Shop.items.feature = ordered=false bounds=1..*
+            shop.Book.isbn.feature = type=Isbn
+            shop.Book.tags.feature = ordered=false bounds=0..*
+            shop.Customer.favourites.feature = ordered=false bounds=0..*
+            shop.Shop.items.opposite = shop.Item.shop
+            shop.Item.typeName = shop$Item
+            shop.catalog.Item.typeName = catalog$Item
+            """;
+        // no nsPrefix field: both packages have the prefix the name implies.
+        // Only the features that the type graph does not determine completely
+        // are recorded, and of those only the deviating fields: the enum
+        // literals, the single-valued features and the unrepaired names are
+        // all absent, and so are the 'unique' flags, which are all true
+        assertEquals(expected, settings(importFrom("shop.ecore", Ordering.NONE, true)));
+    }
+
+    /** Tests that an import preserves the comments and hand-written entries of
+     * an existing mapping resource, and replaces a recorded entry in place. */
+    @Test
+    public void testMetadataMerge() throws Exception {
+        String hand = mappingText(Ordering.NONE, true) + """
+            # a hand-written comment
+            Book.typeName = Boek
+            shop.Item.kind = interface
+            """;
+        String merged = settings(importFrom("shop.ecore", hand));
+        assertTrue(merged, merged.contains("# a hand-written comment\nBook.typeName = Boek\n"));
+        // the stale kind is corrected where it stands, not appended again
+        assertTrue(merged, merged.contains("Book.typeName = Boek\nshop.Item.kind = class\n"));
+        assertEquals(merged, 1, merged.split("shop\\.Item\\.kind", -1).length - 1);
+        // a re-import of the merged text changes nothing at all
+        assertEquals(merged, settings(importFrom("shop.ecore", merged)));
     }
 
     /**
@@ -176,7 +198,8 @@ public class EcoreTest {
     @Test
     public void testInstance() throws Exception {
         Set<Imported> imported = importFrom("shop.xmi", Ordering.NONE, true);
-        assertEquals(2, imported.size());
+        // the type graph, the host graph and the updated mapping resource
+        assertEquals(3, imported.size());
         assertEquals("shop", single(imported, ResourceKind.TYPE).getName());
         AspectGraph host = single(imported, ResourceKind.HOST);
         assertEquals("shop", host.getName());
@@ -387,12 +410,11 @@ public class EcoreTest {
      */
     @Test
     public void testAddedType() throws Exception {
-        AspectGraph type = single(importFrom("shop.ecore", Ordering.NONE, true), ResourceKind.TYPE);
-        PlainGraph plain = type.toPlainGraph().clone();
+        Set<Imported> imported = importFrom("shop.ecore", Ordering.NONE, true);
+        PlainGraph plain = single(imported, ResourceKind.TYPE).toPlainGraph().clone();
         PlainNode node = plain.addNode();
         plain.addEdge(node, "type:Voucher", node);
-        GraphsToEcore converter
-            = new GraphsToEcore(mapping(withRecords(mappingText(Ordering.NONE, true), type)));
+        GraphsToEcore converter = new GraphsToEcore(mapping(settings(imported)));
         List<EPackage> roots = converter.addTypeGraph(AspectGraph.newInstance(plain));
         assertEquals(Collections.emptyList(), messages(converter.getErrors()));
         assertEquals(1, roots.size());
@@ -540,9 +562,10 @@ public class EcoreTest {
                             "route"),
                      selfLabels(type).get("Station"));
         assertEquals(Set.of("Network -out=2..4:part:stations-> Station"), binaryEdges(type));
-        // the opposite pairing is not structural: it lives in the metadata
-        assertEquals("Station.next|Station.previous",
-                     ResourceProperties.getProperties(type).getProperty(EcoreToGraphs.OPPOSITES_KEY));
+        // the opposite pairing is not structural: it lives in the records
+        assertTrue(settings(imported),
+                   settings(imported)
+                       .contains("network.Station.next.opposite = network.Station.previous\n"));
         AspectGraph host = single(imported, ResourceKind.HOST);
         // both directions of an opposite pair are present as ordinary edges
         assertEquals(Set.of("north -next-> middle", "middle -next-> south"),
@@ -584,16 +607,26 @@ public class EcoreTest {
         assertEquals(Set
             .of("packages$Item -part:entries-> core$Item", "core$Item -part:details-> detail$Item",
                 "Line_HYPH_Item -sub:-> core$Item"), binaryEdges(type));
-        var properties = ResourceProperties.getProperties(type);
-        assertEquals("packages|http://groove.utwente.nl/ecore/packages|packages;"
-            + "packages.core|http://groove.utwente.nl/ecore/packages/core|core;"
-            + "packages.core.detail|http://groove.utwente.nl/ecore/packages/core/detail|detail",
-                     properties.getProperty(EcoreToGraphs.PACKAGES_KEY));
-        // the metadata keeps the original names, so an export restores them
-        assertEquals("packages$Item|packages|Item|class;core$Item|packages.core|Item|class;"
-            + "Line_HYPH_Item|packages.core|Line-Item|class;"
-            + "detail$Item|packages.core.detail|Item|class",
-                     properties.getProperty(EcoreToGraphs.TYPES_KEY));
+        // the records keep the original names, so an export restores them
+        assertEquals(mappingText(Ordering.NONE, true) + """
+            # recorded by the import of packages.xmi
+            packages.package = nsURI=http://groove.utwente.nl/ecore/packages
+            packages.core.package = nsURI=http://groove.utwente.nl/ecore/packages/core
+            packages.core.detail.package = nsURI=http://groove.utwente.nl/ecore/packages/core/detail
+            packages.Item.kind = class
+            packages.core.Item.kind = class
+            packages.core.Line-Item.kind = class
+            packages.core.detail.Item.kind = class
+            packages.Item.entries.feature = ordered=false bounds=0..*
+            packages.core.Item.details.feature = bounds=0..*
+            packages.core.Line-Item.self.feature = name=self
+            packages.core.Line-Item.unit_UNKN_price.feature = name=unit.price
+            packages.core.Line-Item.unit-price.feature = name=unit-price
+            packages.Item.typeName = packages$Item
+            packages.core.Item.typeName = core$Item
+            packages.core.Line-Item.typeName = Line_HYPH_Item
+            packages.core.detail.Item.typeName = detail$Item
+            """, settings(imported));
         assertRoundTrip("packages.xmi", Ordering.NONE);
     }
 
@@ -606,22 +639,18 @@ public class EcoreTest {
      */
     @Test
     public void testPackagesNames() throws Exception {
-        AspectGraph type
-            = single(importFrom("packages.xmi", Ordering.NONE, true), ResourceKind.TYPE);
-        String expected
-            = "packages$Item|entries||false|true|0|-1|;" + "core$Item|details||true|true|0|-1|;"
-            // the repaired names, each with the Ecore name it came from
-                + "Line_HYPH_Item|_self_||true|true|0|1|self;"
-                + "Line_HYPH_Item|unit_UNKN_price||true|true|0|1|unit.price;"
-                + "Line_HYPH_Item|unit_price||true|true|0|1|unit-price";
-        assertEquals(expected,
-                     ResourceProperties.getProperties(type).getProperty(EcoreToGraphs.FEATURES_KEY));
+        // the repaired names, each with the Ecore name it came from. The one
+        // that is not a single path segment stands under its GROOVE label
+        List<String> expected = List
+            .of("packages.core.Line-Item.self.feature = name=self",
+                "packages.core.Line-Item.unit_UNKN_price.feature = name=unit.price",
+                "packages.core.Line-Item.unit-price.feature = name=unit-price");
+        String first = settings(importFrom("packages.xmi", Ordering.NONE, true));
+        expected.forEach(line -> assertTrue(first, first.contains(line + "\n")));
         // the re-import can only record 'unit-price' again if the export wrote
         // the attribute back under that name
-        AspectGraph result
-            = single(assertRoundTrip("packages.xmi", Ordering.NONE), ResourceKind.TYPE);
-        assertEquals(expected,
-                     ResourceProperties.getProperties(result).getProperty(EcoreToGraphs.FEATURES_KEY));
+        String result = settings(assertRoundTrip("packages.xmi", Ordering.NONE));
+        expected.forEach(line -> assertTrue(result, result.contains(line + "\n")));
     }
 
     /** Tests that the intermediate node of an indexed feature is named after the
@@ -946,6 +975,7 @@ public class EcoreTest {
         Set<Imported> imported = importFrom(new File(DIR + fixture), mappingText);
         AspectGraph type = single(imported, ResourceKind.TYPE);
         AspectGraph host = optional(imported, ResourceKind.HOST);
+        String settings = settings(imported);
         assertEquals(Collections.emptyList(), messages(type.getErrors()));
         // the imported graphs are used as they are: since the approximations
         // of the encoding are silent, a well-formed input carries no errors
@@ -961,11 +991,12 @@ public class EcoreTest {
             assertEquals(Collections.emptyList(), messages(grammar.getErrors()));
         }
         File dir = newDir();
-        exportTo(newGrammar(type, host, withRecords(mappingText, type)), dir);
-        Set<Imported> result = importFrom(new File(dir, fixture), mappingText);
+        exportTo(newGrammar(type, host, settings), dir);
+        Set<Imported> result = importFrom(new File(dir, fixture), settings);
         AspectGraph resultType = single(result, ResourceKind.TYPE);
         assertIsomorphic(type, resultType);
-        assertEquals(metadata(type), metadata(resultType));
+        // the re-import records the same entries, and so leaves the text alone
+        assertEquals(settings, settings(result));
         if (host != null) {
             AspectGraph resultHost = single(result, ResourceKind.HOST);
             assertIsomorphic(host, resultHost);
@@ -1016,130 +1047,18 @@ public class EcoreTest {
                        .areIsomorphic(one.toPlainGraph(), two.toPlainGraph()));
     }
 
-    /**
-     * Returns a mapping resource text extended with the round-trip records of
-     * an imported type graph, so that an export can be driven from the
-     * settings. This is a bridge for as long as the import still records the
-     * metadata in the graph properties; once it writes the records itself
-     * (step 4 of {@code claude/ecore-metadata-settings.md}) it disappears.
-     */
-    static private String withRecords(String mappingText, AspectGraph type) {
-        var properties = ResourceProperties.getProperties(type);
-        Map<String,PackageData> packages = new LinkedHashMap<>();
-        for (var record : records(properties, EcoreToGraphs.PACKAGES_KEY)) {
-            String name = lastSegment(record[0]);
-            packages
-                .put(record[0], new PackageData(record[1], record[2].equals(name)
-                    ? null
-                    : record[2]));
-        }
-        Map<String,Kind> kinds = new LinkedHashMap<>();
-        Map<String,String> paths = new LinkedHashMap<>();
-        List<String> names = new ArrayList<>();
-        String enumPath = "";
-        for (var record : records(properties, EcoreToGraphs.TYPES_KEY)) {
-            String path;
-            if (record[3].equals(EcoreNames.LITERAL_KIND)) {
-                path = enumPath + "." + record[2];
-            } else {
-                path = record[1] + "." + record[2];
-                kinds.put(path, Kind.valueOfText(record[3]));
-                if (record[3].equals(EcoreNames.ENUM_KIND)) {
-                    enumPath = path;
-                }
-            }
-            paths.put(record[0], path);
-            if (!record[0].equals(record[2])) {
-                names.add(path + "." + EcoreMapping.TYPE_NAME_KEY + " = " + record[0]);
+    /** Returns the settings resource text produced by an import. */
+    static private String settings(Set<Imported> imported) {
+        String result = null;
+        for (var res : imported) {
+            if (res.kind() == ResourceKind.SETTINGS) {
+                assertEquals(null, result);
+                assertTrue("The settings update should not be asked about", res.update());
+                assertEquals(EcoreMapping.RESOURCE_QUAL_NAME, res.qualName());
+                result = res.text();
             }
         }
-        Map<String,FeatureData> features = new LinkedHashMap<>();
-        Map<String,String> featurePaths = new LinkedHashMap<>();
-        for (var record : records(properties, EcoreToGraphs.FEATURES_KEY)) {
-            String ownerPath = paths.getOrDefault(record[0], record[0]);
-            String declared = paths.get(record[2]);
-            int lower = Integer.parseInt(record[5]);
-            int upper = Integer.parseInt(record[6]);
-            // the Ecore name is the path segment, unless it is not a single
-            // segment, in which case the label stands in for it
-            String path = ownerPath + "." + (record[7].isEmpty() || record[7].contains(".")
-                ? record[1]
-                : record[7]);
-            featurePaths.put(record[0] + "." + record[1], path);
-            features
-                .put(path, new FeatureData(record[2].isEmpty()
-                    ? null
-                    : declared == null
-                        ? record[2]
-                        : lastSegment(declared), record[3].equals("true")
-                            ? null
-                            : Boolean.FALSE,
-                    record[4].equals("true")
-                        ? null
-                        : Boolean.FALSE,
-                    lower == 0 && upper == 1
-                        ? null
-                        : new Bounds(lower, upper),
-                    record[7].isEmpty()
-                        ? null
-                        : record[7]));
-        }
-        Map<String,String> opposites = new LinkedHashMap<>();
-        for (var record : records(properties, EcoreToGraphs.OPPOSITES_KEY)) {
-            opposites
-                .put(featurePath(paths, featurePaths, record[0]),
-                     featurePath(paths, featurePaths, record[1]));
-        }
-        StringBuilder result = new StringBuilder(mappingText);
-        names.forEach(line -> result.append(line).append('\n'));
-        EcoreMapping
-            .entryLines(packages, kinds, features, opposites)
-            .forEach(line -> result.append(line).append('\n'));
-        return result.toString();
-    }
-
-    /** Returns the Ecore element path of an {@code owner.feature} reference. */
-    static private String featurePath(Map<String,String> paths, Map<String,String> featurePaths,
-                                      String reference) {
-        String result = featurePaths.get(reference);
-        if (result != null) {
-            return result;
-        }
-        int split = reference.lastIndexOf('.');
-        return paths.getOrDefault(reference.substring(0, split), reference.substring(0, split))
-            + reference.substring(split);
-    }
-
-    /** Returns the last dot-separated segment of a path. */
-    static private String lastSegment(String path) {
-        return path.substring(path.lastIndexOf('.') + 1);
-    }
-
-    /** Returns the records of a graph-property metadata value. */
-    static private List<String[]> records(ResourceProperties properties, String key) {
-        List<String[]> result = new ArrayList<>();
-        String text = properties.getProperty(key);
-        if (text == null || text.isEmpty()) {
-            return result;
-        }
-        for (var record : EcoreToGraphs.split(text, EcoreToGraphs.RECORD_SEP_CHAR, false)) {
-            result
-                .add(EcoreToGraphs
-                    .split(record, EcoreToGraphs.FIELD_SEP_CHAR, true)
-                    .toArray(new String[0]));
-        }
-        return result;
-    }
-
-    /** Returns the Ecore round-trip metadata of a graph, as a key-to-value map. */
-    static private Map<String,String> metadata(AspectGraph graph) {
-        var properties = ResourceProperties.getProperties(graph);
-        Map<String,String> result = new LinkedHashMap<>();
-        for (var key : List
-            .of(EcoreToGraphs.PACKAGES_KEY, EcoreToGraphs.TYPES_KEY, EcoreToGraphs.FEATURES_KEY,
-                EcoreToGraphs.OPPOSITES_KEY)) {
-            result.put(key, properties.getProperty(key));
-        }
+        assertNotNull(result);
         return result;
     }
 

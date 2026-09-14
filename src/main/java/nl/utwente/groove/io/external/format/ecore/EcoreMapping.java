@@ -309,9 +309,7 @@ public class EcoreMapping {
         String orderingLine = ORDERING_KEY + " = " + ordering.text();
         String useIdsLine = USE_IDENTIFIERS_KEY + " = " + useIdentifiers;
         if (oldText == null) {
-            return "# Ecore encoding options; see the '" + EcoreMappingSchema.NAME + "' schema\n"
-                + SettingsModel.SCHEMA_KEY + " = " + EcoreMappingSchema.NAME + "\n" + orderingLine
-                + "\n" + useIdsLine + "\n";
+            return header() + orderingLine + "\n" + useIdsLine + "\n";
         }
         List<String> lines = new ArrayList<>(Arrays.asList(oldText.split("\\R", -1)));
         boolean orderingSeen = false;
@@ -338,6 +336,75 @@ public class EcoreMapping {
             lines.add(useIdsLine);
         }
         return String.join("\n", lines) + "\n";
+    }
+
+    /**
+     * Returns the text of a settings resource with a set of generated entries
+     * merged in. An entry whose key already occurs is replaced in place (at its
+     * first occurrence, as {@link #setGlobals} does for the globals), so that
+     * the surrounding comments and hand-written entries survive; entries with a
+     * new key are appended in one group, under a comment naming the source they
+     * were generated from. Nothing is ever removed. If no original text is
+     * given, a fresh resource text is generated to merge into.
+     * @param oldText the text of the existing resource, or {@code null} if
+     * there is none
+     * @param entries the generated entry lines, as {@link #entryLines} renders them
+     * @param source the name of the file the entries were generated from
+     */
+    @AIGenerated("Claude Opus 5, 2026-09")
+    public static String addEntries(@Nullable String oldText, List<String> entries, String source) {
+        List<String> lines = new ArrayList<>(Arrays.asList((oldText == null
+            ? header()
+            : oldText).split("\\R", -1)));
+        List<String> added = new ArrayList<>();
+        for (var entry : entries) {
+            String key = keyOf(entry);
+            boolean replaced = false;
+            for (int i = 0; i < lines.size() && !replaced; i++) {
+                if (keyOf(lines.get(i)).equals(key)) {
+                    lines.set(i, entry);
+                    replaced = true;
+                }
+            }
+            if (!replaced) {
+                added.add(entry);
+            }
+        }
+        // strip a single trailing empty line before appending, restore after
+        if (!lines.isEmpty() && lines.get(lines.size() - 1).isEmpty()) {
+            lines.remove(lines.size() - 1);
+        }
+        if (!added.isEmpty()) {
+            lines.add("# recorded by the import of " + source);
+            lines.addAll(added);
+        }
+        return String.join("\n", lines) + "\n";
+    }
+
+    /** Returns the key of a settings entry line, or the empty string if the
+     * line is a comment or carries no key. */
+    @AIGenerated("Claude Opus 5, 2026-09")
+    private static String keyOf(String line) {
+        String trimmed = line.trim();
+        if (trimmed.isEmpty() || trimmed.startsWith("#") || trimmed.startsWith("!")) {
+            return "";
+        }
+        int split = trimmed.length();
+        for (int i = 0; i < trimmed.length(); i++) {
+            char c = trimmed.charAt(i);
+            if (c == '=' || c == ':') {
+                split = i;
+                break;
+            }
+        }
+        return trimmed.substring(0, split).trim();
+    }
+
+    /** Returns the opening lines of a freshly generated settings resource:
+     * an explanatory comment and the schema declaration. */
+    private static String header() {
+        return "# Ecore encoding options; see the '" + EcoreMappingSchema.NAME + "' schema\n"
+            + SettingsModel.SCHEMA_KEY + " = " + EcoreMappingSchema.NAME + "\n";
     }
 
     /**
