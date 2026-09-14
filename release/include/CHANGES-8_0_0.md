@@ -191,6 +191,13 @@ Grammars, rules and the editor
   of their edges (gh #780). Rule graphs keep the duplicate-id error.
 - Explicit quantifier levels on role-prefixed `test:` and `let:` edges
   (`use=q:test:expr`) are honoured; they used to parse and be dropped (gh #725).
+- The compile-time error for indeterminate user operations (such as `randomInt`)
+  on a quantified level is back (gh #911). It had been switched off in the 7.5
+  releases, but the outcome drawn on a sub-level is not part of the rule event,
+  so the match of a transition could not be reconstructed for display; grammars
+  that loaded in 7.5 with such a rule now report an error on it. Lifting the
+  restriction properly, by recording and re-seeding sub-level outcomes, is
+  tracked in the issue.
 - Calls and imports of units in disabled or erroneous control programs and rules
   get informative errors instead of "Unknown unit" (gh #560).
 - Format errors carry a severity (error, warning, info) and only errors block
