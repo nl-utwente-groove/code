@@ -154,8 +154,8 @@ make_launcher Viewer false
 
 # ----------------------------------------------------------------- msi resources
 # Uninstalling the MSI also removes the yFiles add-on from the user's extension
-# directory (see README.md), it does not let the Restart Manager close a
-# running GROOVE (see wix/files-in-use.wxf), it warns before replacing another
+# directory (see README.md), it asks the user to close a running GROOVE before
+# it touches anything (see wix/files-in-use.wxf), it warns before replacing another
 # installed version, another build of the same version included, for which
 # every build gets its own product code (see wix/replace-warning.wxf), and the
 # last page of the installation offers to start the Simulator; jpackage's own
@@ -189,6 +189,10 @@ msi_resources() {
         || ! grep -q '<ComponentGroup Id="GrooveAddOnCleanup">' "$MSI_RESOURCES/main.wxs" \
         || ! grep -q '<PropertyRef Id="MSIRESTARTMANAGERCONTROL"/>' "$MSI_RESOURCES/main.wxs" \
         || ! grep -q '<Property Id="MSIRESTARTMANAGERCONTROL" Value="DisableShutdown"/>' "$MSI_RESOURCES/main.wxs" \
+        || ! grep -q 'xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"' "$MSI_RESOURCES/main.wxs" \
+        || ! grep -q '<util:CloseApplication Id="GrooveCloseSimulator"' "$MSI_RESOURCES/main.wxs" \
+        || ! grep -q '<RemoveExistingProducts Before="CostInitialize"/>' "$MSI_RESOURCES/main.wxs" \
+        || ! grep -q '<Custom Action="WixCloseApplications" Before="RemoveExistingProducts"/>' "$MSI_RESOURCES/main.wxs" \
         || ! grep -q '<UIRef Id="GrooveLaunchSimulatorUI"/>' "$MSI_RESOURCES/main.wxs" \
         || ! grep -q '<UI Id="GrooveLaunchSimulatorUI">' "$MSI_RESOURCES/main.wxs" \
         || ! grep -q '<UIRef Id="GrooveReplaceWarningUI"/>' "$MSI_RESOURCES/main.wxs" \
