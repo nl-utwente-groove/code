@@ -12,8 +12,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-
-Third-party dependencies
-
-This project may include dependencies licensed under different terms.
-See src/main/resources/nl/utwente/groove/resource/libraries.csv for details.
+GROOVE has a yFiles graph backend that is only available for 
+non-commercial use. It is installed as a separate step upon the first
+invocation of the Simulator, and not as part of the current sequence.

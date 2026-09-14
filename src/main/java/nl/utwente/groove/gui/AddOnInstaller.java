@@ -256,6 +256,7 @@ public class AddOnInstaller {
      * clickable links. {@link JOptionPane} gets the pane rather than the string, since it
      * would show a string's links as inert text and break the string into separate labels
      * at every line break, of which only the first is rendered as HTML.
+     * Hovering over a link shows its target as a tooltip, since the link text does not.
      */
     private static JEditorPane createMessagePane(String html) {
         JEditorPane result = new JEditorPane("text/html", html);
@@ -267,11 +268,35 @@ public class AddOnInstaller {
             result.setFont(font);
         }
         result.addHyperlinkListener(e -> {
-            if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+            var type = e.getEventType();
+            if (type == HyperlinkEvent.EventType.ACTIVATED) {
                 followLink(e.getDescription());
+            } else if (type == HyperlinkEvent.EventType.ENTERED) {
+                result.setToolTipText(describeLink(e.getDescription()));
+            } else if (type == HyperlinkEvent.EventType.EXITED) {
+                result.setToolTipText(null);
             }
         });
         return result;
+    }
+
+    /**
+     * Returns the target of a link as a tooltip text: a local directory or file as a
+     * path, any other target as it is written in the link.
+     */
+    private static @Nullable String describeLink(@Nullable String href) {
+        if (href == null) {
+            return null;
+        }
+        try {
+            URI uri = new URI(href);
+            if ("file".equals(uri.getScheme())) {
+                return Path.of(uri).toString();
+            }
+        } catch (URISyntaxException | RuntimeException exc) {
+            // fall through to the raw link
+        }
+        return href;
     }
 
     /**
@@ -310,9 +335,11 @@ public class AddOnInstaller {
     private static final String STALE_SITUATION
         = "The currently installed %s add-on was built for another GROOVE version and is not loaded.";
     /** Opening of the installation question if no add-on is installed. */
-    private static final String ABSENT_SITUATION = """
-        GROOVE can optionally show graphs using the commercial library yFiles for Java (Swing)
-        by yWorks GmbH, with better rendering and layouting.""";
+    private static final String ABSENT_SITUATION
+        = """
+            GROOVE can optionally show and edit graphs using the commercial library "yFiles for Java (Swing)"
+            by yWorks GmbH, with better rendering and layouting.
+            """;
     /**
      * HTML template of the installation question. The parameters are, in order: the
      * opening situation, the add-on's display name, its download URI, its installation
@@ -340,14 +367,15 @@ public class AddOnInstaller {
      * template are white space to the HTML pane of
      * {@link #createMessagePane}.
      */
-    private static final String INSTALLED_REPORT = """
-        <html><body style='width: 400px'>
-        The %1$s is installed in <a href="%2$s">GROOVE's extension folder</a>
-        and will be available after a restart of GROOVE.<br><br>
-        The use of this backend is restricted to non-commercial purposes; see <code>%3$s</code>
-        (in the installation folder) for more information.
-        </body></html>
-        """;
+    private static final String INSTALLED_REPORT
+        = """
+            <html><body style='width: 400px'>
+            The %1$s is installed in <a href="%2$s">GROOVE's extension folder</a>
+            and will be available after a restart of the Simulator.<br><br>
+            The use of this backend is restricted to non-commercial purposes; see <a href="%2$s%3$s">%3$s</a>
+            (in the extension folder) for more information.
+            </body></html>
+            """;
 
     /**
      * System property that suppresses the first-run question when set to {@code false}.

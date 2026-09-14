@@ -94,7 +94,7 @@
           <Condition Action="show">GROOVE_SAME_VERSION_FOUND AND NOT JP_UPGRADABLE_FOUND AND NOT JP_DOWNGRADABLE_FOUND</Condition>
         </Control>
         <Control Id="Kept" Type="Text" X="20" Y="100" Width="330" Height="30" NoPrefix="yes"
-                 Text="Your grammars and preferences are not affected. If installed, the yFiles add-on is removed with the installed version and offered again at the first start."/>
+                 Text="Your grammars and preferences are not affected. If installed, the yFiles add-on is removed and offered again at the first start of the Simulator."/>
         <Control Id="Choice" Type="Text" X="20" Y="140" Width="330" Height="30" NoPrefix="yes"
                  Text="Click Continue to proceed, or Cancel to keep the installed version."/>
       </Dialog>
