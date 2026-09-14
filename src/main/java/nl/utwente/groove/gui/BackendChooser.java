@@ -38,19 +38,20 @@ import nl.utwente.groove.util.Extensions;
 
 /**
  * The Simulator's chooser of the graph-visualisation backend: a menu with an item for
- * every backend that can be chosen for the next start, which are the backends
- * available in this run (see {@link GraphBackend#available()}) and the backend of
+ * every backend that can be chosen for after a restart, which are the backends
+ * available in this session (see {@link GraphBackend#available()}) and the backend of
  * the add-on if that is installed but not loaded, as after an installation during
- * this run. The choice is stored as the user preference
- * {@link Options#GRAPH_BACKEND_OPTION} and takes effect at the next start, since the
+ * this session. The choice is stored as the user preference
+ * {@link Options#GRAPH_BACKEND_OPTION} and takes effect after a restart, since the
  * backend is selected at start-up (see {@link GraphBackend#instance()}); a dialog
  * says so whenever a backend other than the one in use is chosen.
  * <p>
- * The menu shows two things: the backend in use in this run, by its check mark, and
- * the backend expected to be in use at the next start, by the suffix
- * {@link #NEXT_START_SUFFIX} to its name if it is not the one in use. The expectation
- * applies the selection of the start-up to the backends of the next start: the
- * preferred one if it is among them, otherwise the first in the ranking.
+ * The check mark of the menu shows the backend expected to be in use after a restart,
+ * which is what a choice sets. The expectation applies the selection of the start-up
+ * to the backends of the next start: the preferred one if it is among them, otherwise
+ * the first in the ranking. If the expected backend is not the one in use in this
+ * session, the two are told apart by the suffixes {@link #AFTER_RESTART_SUFFIX} and
+ * {@link #THIS_SESSION_SUFFIX} to their names.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -72,7 +73,7 @@ public class BackendChooser {
     private final AddOn addOn;
 
     /**
-     * Creates a fresh menu with the backends that can be chosen for the next start,
+     * Creates a fresh menu with the backends that can be chosen for after a restart,
      * marked as described in the class comment; the menu reflects the state at the
      * time of the call, so it should be created afresh whenever it is shown.
      * @return the menu, or {@code null} if there is nothing to choose, i.e., if
@@ -104,31 +105,36 @@ public class BackendChooser {
             : GraphBackend
                 .selectName(nextAvailable, Options.userPrefs.get(Options.GRAPH_BACKEND_OPTION, null));
         JMenu result = new JMenu(Options.GRAPH_BACKEND_OPTION);
-        result.setToolTipText("A change takes effect at the next start of the Simulator");
+        result.setToolTipText("A change takes effect after a restart of the Simulator");
+        boolean changePending = !running.equals(next);
         for (var choice : choices.entrySet()) {
             String name = choice.getKey();
             String displayName = choice.getValue();
             boolean isRunning = name.equals(running);
             boolean isNext = name.equals(next);
-            JRadioButtonMenuItem item = new JRadioButtonMenuItem(isNext && !isRunning
-                ? displayName + NEXT_START_SUFFIX
-                : displayName);
-            item.setSelected(isRunning);
+            String text = displayName;
+            if (changePending && isNext) {
+                text += AFTER_RESTART_SUFFIX;
+            } else if (changePending && isRunning) {
+                text += THIS_SESSION_SUFFIX;
+            }
+            JRadioButtonMenuItem item = new JRadioButtonMenuItem(text);
+            item.setSelected(isNext);
             item
-                .setToolTipText(isRunning
-                    ? (isNext
-                        ? "In use, also from the next start"
-                        : "In use in this run; click to keep it from the next start")
-                    : (isNext
-                        ? "Selected for the next start"
-                        : "Click to select for the next start"));
+                .setToolTipText(isNext
+                    ? (isRunning
+                        ? "In use, also after a restart"
+                        : "In use after a restart")
+                    : (isRunning
+                        ? "In use in this session; click to keep it after a restart"
+                        : "Click to use after a restart"));
             item.addActionListener(e -> choose(name, displayName, isRunning));
             result.add(item);
         }
         return result;
     }
 
-    /** Records a backend as the choice for the next start, and says so if it is not the one in use. */
+    /** Records a backend as the choice for after a restart, and says so if it is not the one in use. */
     private void choose(String name, String displayName, boolean isRunning) {
         Options.userPrefs.put(Options.GRAPH_BACKEND_OPTION, name);
         if (!isRunning) {
@@ -136,13 +142,15 @@ public class BackendChooser {
             SwingUtilities.invokeLater(() -> JOptionPane
                 .showMessageDialog(this.frame,
                                    "The graph backend is set to " + displayName
-                                       + "; the change takes effect at the next start of the Simulator.",
+                                       + "; the change takes effect after a restart of the Simulator.",
                                    CHANGED_TITLE, JOptionPane.INFORMATION_MESSAGE));
         }
     }
 
-    /** Suffix to the name of the backend expected at the next start, if that is not the one in use. */
-    public static final String NEXT_START_SUFFIX = " (from next start)";
+    /** Suffix to the name of the backend expected after a restart, if that is not the one in use. */
+    public static final String AFTER_RESTART_SUFFIX = " (after restart)";
+    /** Suffix to the name of the backend in use, if that is not the one expected after a restart. */
+    public static final String THIS_SESSION_SUFFIX = " (this session)";
     /** Title of the dialog reporting a changed choice. */
     public static final String CHANGED_TITLE = "Graph backend changed";
 }
