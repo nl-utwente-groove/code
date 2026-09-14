@@ -505,15 +505,16 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
     /** Meta-variable name for the exploration configuration option. */
     public final static String EXPLORE_VAR = "config";
     /** Usage message for the exploration configuration option.
-     * The keys and values must be kept in sync with the
-     * {@code nl.utwente.groove.explore.config} package. */
+     * The keys and values must be kept in sync with
+     * {@code nl.utwente.groove.explore.feature.ExploreKey} and the setting
+     * kinds it refers to. */
     public final static String EXPLORE_USAGE
         = "Set the exploration to <config>: a space-separated list of key=value settings\n"
             + "(quote the argument if it contains spaces). Omitted keys get their default\n"
             + "(marked *). Keys and values:\n"
             + "  next        - next state to explore: oldest*, newest, random\n"
             + "  successor   - successors to generate: all*, all-random, single, single-random\n"
-            + "  frontier    - frontier size restriction: complete*, single, <n> (beam width)\n"
+            + "  frontier    - frontier size restriction: complete*, single, beam:<n>\n"
             + "  heuristic   - state quality function: none*, nen\n"
             + "  cost        - transition cost: none*, uniform, rule\n"
             + "  goal        - result condition: final*, none, any, graph:id,\n"
@@ -521,13 +522,14 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
             + "                fires:id, ltl:prop, ctl:prop\n"
             + "  outcome     - desired goal outcome: satisfy*, violate\n"
             + "  shape       - shape of the results: state*, trace\n"
-            + "  count       - results before halting: all*, first, <n>\n"
-            + "  bound       - exploration bound: none*, cost:max[+inc], size:max[+inc],\n"
+            + "  count       - results before halting: all*, first, value:<n>\n"
+            + "  bound       - exploration bound: none*, initial, cost:max[+inc], size:max[+inc],\n"
             + "                nodes:max[+inc], edges:id_1>n_1,...,id_k>n_k,\n"
             + "                upto:[!]id, include:[!]id\n"
             + "  persistence - state storage: all*, none\n"
             + "  collapse    - state equivalence: grammar*, equality, isomorphism, hash\n"
             + "  algebra     - data values: grammar*, default, big, point, term\n"
+            + "  seed        - master random seed: auto*, value:<long>\n"
             + "Example: -x \"next=newest count=first goal=condition:mygoal\"";
 
     /**
