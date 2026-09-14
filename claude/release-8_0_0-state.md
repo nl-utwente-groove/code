@@ -5,29 +5,34 @@ Handoff note for the release of GROOVE 8.0.0 from `yworks-migration` (merged int
 
 ## Branches and worktrees
 
-All off the `yworks-migration` tip 103f6b74d, worktrees under `.claude/worktrees/`,
-detached for review:
+All off the `yworks-migration` tip 103f6b74d, worktrees under `.claude/worktrees/`:
 
-- `changelog-8_0_0` (52a16ffce): change notes brought up to date with the installer and
-  add-on work; 7.5.3 date corrected to 2 July 2026.
-- `release-8_0_0-prep`: PDF manual dropped from the release (`release/include/`,
-  both READMEs), bundled README issue link fixed, `claude/website-manual-8_0_0.md`
-  (manual proposal), this note.
-- Website repository `nl-utwente-groove.github.io`: worktree
-  `.claude/worktrees/release-8_0_0`, branch `release-8_0_0` off `main`, **uncommitted**:
-  `installing.md` (installers, zips, add-on), `mac.md` (blocked `.dmg`),
-  `manual/introduction.md` (7.5.3 -> 8.0.0). Awaiting the answers under "Open decisions".
-- Quick reference chart: checked 2026-09-14 and dropped from the release (branch
-  `quick-reference` off `release-8_0_0-prep`; website link removed on branch
-  `quick-reference-drop` of the website repo). The PDF is a 2012 tutorial poster by Tim
-  Molderez (Antwerp) showing GROOVE 4.x; its source was never in any repository, and its
-  Simulator screenshot does not render in poppler or pdfium. The copy in the usermanual
-  repo is left in place.
+- `changelog-8_0_0` (52a16ffce, detached for review): change notes brought up to date with
+  the installer and add-on work; 7.5.3 date corrected to 2 July 2026.
+- `release-8_0_0-prep` (9169da1b2, held by the main checkout): PDF manual and quick
+  reference chart dropped from the release, bundled README issue link fixed, the manual
+  proposal `claude/website-manual-8_0_0.md`, this note.
+- `release-8_0_0-fixes`, off 9169da1b2 in the worktree `release-8_0_0-prep` (the worktree
+  could not re-attach to the branch while the main checkout holds it): the checklist
+  items 4 and 8 below, the Generator `-x` usage text synchronised with `ExploreKey`, and
+  the answers to the open questions folded into the two notes. Meant to be fast-forwarded
+  onto `release-8_0_0-prep`; the uncommitted answer edits in the main checkout are
+  contained verbatim in its last commit and can be discarded there first.
+- Website repository `nl-utwente-groove.github.io`: worktree `.claude/worktrees/release-8_0_0`,
+  branch `release-8_0_0` off `main`, committed (fb02d3a): `installing.md` (installers first,
+  generic `x_y_z` asset names, add-on section linking `YFILES-ADDON.md`), `mac.md`
+  (blocked `.dmg`), `index.md` (ModelChecker restored), `manual.md` (legacy PDF section
+  gone), `manual/introduction.md` (8.0.0, installers bundle Java). Branch
+  `quick-reference-drop` (worktree of the same name) is subsumed by this and can be deleted.
+- Quick reference chart: dropped 2026-09-14 (2012 tutorial poster by Tim Molderez for
+  GROOVE 4.x, source never in a repository, Simulator screenshot unrenderable). The copy in
+  the usermanual repo is left in place.
 
 ## Checklist
 
-Done: change notes; PDF manual removal; website draft; manual proposal; grammar version
-already 3.12 (no bump needed).
+Done: change notes; PDF manual and quick reference removal; website draft; manual
+proposal with answers; release-page texts (item 4); `Version` javadoc for 3.12 (item 8);
+grammar version already 3.12 (no bump needed).
 
 Before the tag, in order:
 
@@ -37,43 +42,69 @@ Before the tag, in order:
 3. `revision` 7.5.4-SNAPSHOT -> 8.0.0 in `pom.xml` and `yfiles-lib/pom.xml`;
    `GROOVE_BUILD` (still 20260702); CHANGES.md heading "Upcoming release (8.0.0)" ->
    release form with date (underline style feeds `release-notes.sh`).
-4. Fix `release/github/INSTALL-NOTE.md`: asset name `yfiles-add-on.zip` -> `yfiles-addon.zip`;
-   "loaded automatically" -> opt-in prompt. `release/README.md:128` names the READ-ME asset
-   with an old file name. `YFILES-ADDON.md` writes the menu label as `yFiles add-on`; the code
-   says `YFiles add-on`.
-5. Full suite, GUI tests, yFiles backend tests on the merged tip.
-6. Decide the version-sensitive issues: gh #911 (indeterminate operators on quantified
+4. Full suite, GUI tests, yFiles backend tests on the merged tip.
+5. Decide the version-sensitive issues: gh #911 (indeterminate operators on quantified
    levels silently accepted; reinstating the check is ~1h), gh #819 (ESC commits in the
    JGraph editor), gh #877 restriction half. Consider #917, #915, #907, #898 item 1, #558.
    Close gh #846 (fixed in 7.5.3, never closed); #851 is unreproducible as filed.
-7. Website: commit and merge `release-8_0_0` when the release is out (it names 8.0.0 as
-   current); manual per `claude/website-manual-8_0_0.md` (gh #896 is the minimum).
-8. `Version` javadoc for grammar 3.12 omits `regExpMatching`, `matchBound`, the settings
-   resource kind and `ecore` settings.
-9. Post-release: bump to 8.0.1-SNAPSHOT, Maven Central deploy, close the issues in the
+6. Website: merge `release-8_0_0` when the release is out (it names 8.0.0 as current);
+   manual per the plan below (gh #896 is the minimum).
+7. Post-release: bump to 8.0.1-SNAPSHOT, Maven Central deploy, close the issues in the
    change notes, delete `claude/yfiles-private-move-state.md`, download-stats SourceForge
    import and website page.
 
+## Manual plan
+
+Derived from the answers in `claude/website-manual-8_0_0.md` (§5). Work in the website
+worktree `release-8_0_0`, one commit per step; the `manual.md` *Checked against* entry of a
+chapter moves to 8.0.0 in the commit that revises the chapter (see the last open decision).
+
+1. `MakeRefs.java`: replace `writeExploration()` by a page "Exploration keys" generated
+   from `explore.feature.ExploreKey` and its setting kinds (name, explanation, content
+   type, default marked), keeping a hand-written legacy `-s`/`-a` table at the end of the
+   same page, labelled as legacy shorthand. Rename the sidebar entry and the `manual.md`
+   bullet accordingly. Then regenerate all four reference pages against an 8.0.0 build
+   (`make-refs.sh`; version string from `GROOVE_SRC`).
+2. `verification.md`: drop the hand-written key table in favour of a link to the generated
+   page (the maintainer wants to see the result before deciding), rewrite the Simulator
+   exploration part for settings resources and the rebuilt dialog, add `-seed`/`-log`,
+   correct the `-s`/`-a` status, remove `ModelChecker -ltl`, drop the CTL completeness
+   caveat. `goal=graph:<name>` is a future extension: do not document it.
+3. `basics.md`: new section on simple graphs versus multigraphs, `mult=k:`, and the
+   rule-side behaviour (gh #896); `advanced.md`: new section on transformation semantics
+   (`SPO-simple`, `SPO-multi`, `DPO`, DPO injectivity), the property table rows for
+   `semantics`, `regExpMatching`, `matchBound`, the `exploration` row corrected, the two
+   Ecore rows removed, `parallelEdges`/`ignoreRegExp` mentions replaced.
+4. `manual/graphs.gps`: resave at grammar version 3.12 with `semantics=SPO-multi` (it is
+   illustration material and must be able to hold parallel edges); draw the `mult=k:` and
+   DPO example graphs (the unused `multiple-edges-left/right.gst` fixtures are a start);
+   re-render with `make-figures.sh` using JGraph and diff the SVGs (expected changes: straight
+   edges between axis-aligned nodes, filled embargo arrow heads, `!a` no longer rendered as
+   a regular expression). One yFiles-rendered figure only if it shows a visible difference:
+   with a stored layout the two backends differ cosmetically (fonts, arrow heads, label
+   placement), so the candidate is an automatic layout such as hierarchic or organic of a
+   larger graph, rendered with `Imager -b yfiles` on a machine with the add-on installed.
+   Untested expectation.
+5. `io.md`: settings resources row and section, Ecore rewrite (no conceptual layer, options
+   in the `ecore` settings resource), headless exporter changes, Imager `-b`, one-liners
+   for the C items. `control.md`: the B items of the table in §2 of the proposal.
+6. `introduction.md`: the four wrong statements of §3 of the proposal; no new Simulator
+   chapter, no add-on or extension-directory material (that stays on `installing.md`); the
+   format-error severities get a paragraph where errors are first mentioned, not a section.
+7. `_data/glossary.yml` and `_data/definitions.yml` are referenced nowhere in
+   `_includes`, `_layouts` or `_config.yml` (checked 2026-09-14): leave them.
+
 ## Open decisions
 
-Website draft (answer yes/no unless stated):
-
-1. Version-explicit asset names on `installing.md` (used) or generic placeholders?
-2. Installers first, zip demoted to "if you want more control"?
-3. Keep the one-paragraph summary of the yFiles license terms, or only link `YFILES-ADDON.md`?
-4. Maven Central paragraph still accurate for 8.0.0?
-5. Should `index.md` mention 8.0.0 or the installers?
-6. `index.md` comments ModelChecker out as "not available right now", while the installers
-   register a ModelChecker launcher. Restore it?
-7. `manual.md`: drop the "Full user manual" PDF link (usermanual repo, 2024)? (The
-   quick-reference link is already gone, see above.)
-8. "MAC users need to get the Open JDK" kept unchanged. Still true?
-
-Settled without asking: add-on asset name `yfiles-addon`; menu path View > Options >
-Graph backend and label `YFiles add-on`; Gatekeeper text on `mac.md`, linked from
-`installing.md`; the uninstall-removes-add-on sentence added.
-
-Manual: twelve questions at the end of `claude/website-manual-8_0_0.md`; the blocking ones
-are a new Simulator chapter or not, how to resave `manual/graphs.gps`, JGraph or yFiles
-for the figures, and whether `ref-exploration.md` becomes generated (`MakeRefs.java`
-no longer compiles against 8.0.0).
+- "MacOS ships no Java of its own, so on a Mac the `zip` route requires you to get the
+  Open JDK" (`installing.md`): reworded to scope the claim to the zip route, otherwise
+  unverified. To find out: have a colleague on a Mac without a JDK try both the `.dmg`
+  (should run without any Java) and the zip; the only open question is whether Apple's
+  bundled `java` stub still misleads, which such a test settles.
+- The *Checked against* column of `manual.md` records, per chapter, the tool version the
+  chapter was last verified against. The question was whether to move an entry to 8.0.0 as
+  soon as that chapter is revised, or to set all six to 8.0.0 at release time. Per chapter
+  is honest (a chapter not yet revised still says 7.5.3) at the cost of a mixed table
+  until the manual pass is complete; in one go is tidy but claims checks that were not
+  done. The plan above assumes per chapter.
+- Item 5 of the checklist: which of the version-sensitive issues go into 8.0.0.

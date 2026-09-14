@@ -200,23 +200,41 @@ for the re-render:
 
 1. Does 8.0.0 get a new chapter on the Simulator as an application (backend, layouts, look and
    feel, add-on installation), or do those go into `introduction.md`?
+   Answer: Since the manual is now part of the website, the current link to the installation page is sufficient
 2. Resave `manual/graphs.gps` at grammar version 3.12 with `semantics=SPO-simple` (figures
    unchanged) or with `SPO-multi` (matches the new default)?
+   Answer: The manual needs to be extended to explain the difference between simple graphs and multigraphs,
+   and the support for SPO and DPO. I think that, since graphs.gps is for illustrations purposes, it needs to
+   be multi-graph (so it can contain graphs with parallel edges).
 3. Render the 8.0.0 figures with JGraph or with yFiles?
+   Answer: Let's stick to JGraph right now. Are there cases where it makes a difference? The two backends
+   have to be documented in the manual, it makes sense to include one yFiles graph to show the difference,
+   if indeed there is an example where there is a noticeable difference
 4. Replace `ref-exploration.md` by a generated exploration-key reference, or keep a hand-written
    legacy `-s`/`-a` table?
+   Answer: both, with the latter for legacy purposes only
 5. If the key reference becomes generated, should `verification.md` drop its own key table and
    link instead?
+   Answer: sounds like a good idea, I want to see what that looks like
 6. Is `goal=graph:<name>` still supported and to be documented? It is in `ExploreKey` but absent
    from the goal-unification sentence of the change notes.
+   Answer: it's a future extension, not part of 8.0.0
 7. Do the add-on installation instructions belong in the manual or only on `installing.md`?
+   Answer: in installing.md, see also answer to 1.
 8. Should `installing.md`, `downloads.md` and `index.md` be updated in the same pass (installers,
    Java requirement, add-on)? They are outside `manual/`.
+   Answer: Yes, see also 1 and 8
 9. Add a short "Errors and warnings" section for the new severities, or fold it into an existing
    chapter?
+   Answer: a separate section sounds like too much
 10. `_data/glossary.yml` and `_data/definitions.yml` are still the untouched Jekyll theme samples
     (elephant, baseball). Populate with GROOVE terms, or leave them?
+    Answer: Are these linked or used? If so, populate with GROOVE terms
+    Follow-up: referenced nowhere in `_includes`, `_layouts` or `_config.yml` (2026-09-14), so left alone.
 11. Should the manual document the extension directory and `-Dgroove.extensions.dir`, or treat it
     as installation detail?
+    Answer: that's an implementation detail
 12. Does the *Checked against* column move to 8.0.0 per chapter as each is revised, or in one go
     at release?
+    Answer: I can't place this, please elaborate
+    Follow-up: elaborated under Open decisions in `claude/release-8_0_0-state.md`; the plan assumes per chapter.
