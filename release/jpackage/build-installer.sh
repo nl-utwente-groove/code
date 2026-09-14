@@ -136,13 +136,13 @@ make_launcher Imager true
 make_launcher Viewer false
 
 # ----------------------------------------------------------------- msi resources
-# The MSI does not let the Restart Manager close a running GROOVE (see
-# wix/files-in-use.wxf), it warns before replacing another installed version,
-# another build of the same version included, for which every build gets its
-# own product code (see wix/replace-warning.wxf), and the last page of the
-# installation offers to start the Simulator; jpackage's own WiX sources know
-# nothing of these. jpackage takes a main.wxs from its resource directory in
-# place of the bundled one, so this extracts the bundled one from the running
+# The MSI asks the user to close a running GROOVE before it touches anything
+# (see wix/files-in-use.wxf), it warns before replacing another installed
+# version, another build of the same version included, for which every build
+# gets its own product code (see wix/replace-warning.wxf), and the last page of
+# the installation offers to start the Simulator; jpackage's own WiX sources
+# know nothing of these. jpackage takes a main.wxs from its resource directory
+# in place of the bundled one, so this extracts the bundled one from the running
 # JDK and splices the fragments in wix/ into it, each with a reference that
 # pulls it into the installer. A checked-in copy of main.wxs would go stale
 # with every JDK upgrade; the anchor lines used here have been the same from
@@ -167,6 +167,10 @@ msi_resources() {
     sed -i "s|@GROOVE_ICONS_DIR@|$(cygpath -m "$SCRIPT_DIR/icons")|" "$MSI_RESOURCES/main.wxs"
     if ! grep -q '<PropertyRef Id="MSIRESTARTMANAGERCONTROL"/>' "$MSI_RESOURCES/main.wxs" \
         || ! grep -q '<Property Id="MSIRESTARTMANAGERCONTROL" Value="DisableShutdown"/>' "$MSI_RESOURCES/main.wxs" \
+        || ! grep -q 'xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"' "$MSI_RESOURCES/main.wxs" \
+        || ! grep -q '<util:CloseApplication Id="GrooveCloseSimulator"' "$MSI_RESOURCES/main.wxs" \
+        || ! grep -q '<RemoveExistingProducts Before="CostInitialize"/>' "$MSI_RESOURCES/main.wxs" \
+        || ! grep -q '<Custom Action="WixCloseApplications" Before="RemoveExistingProducts"/>' "$MSI_RESOURCES/main.wxs" \
         || ! grep -q '<UIRef Id="GrooveLaunchSimulatorUI"/>' "$MSI_RESOURCES/main.wxs" \
         || ! grep -q '<UI Id="GrooveLaunchSimulatorUI">' "$MSI_RESOURCES/main.wxs" \
         || ! grep -q '<UIRef Id="GrooveReplaceWarningUI"/>' "$MSI_RESOURCES/main.wxs" \
