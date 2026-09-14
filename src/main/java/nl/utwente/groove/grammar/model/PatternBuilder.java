@@ -335,10 +335,10 @@ class PatternBuilder {
             Operator operator = operatorEdge.getOperator();
             assert operator != null;
             if (productNode.getLevelNode() != null && operator.isIndeterminate()) {
-                //                throw new FormatException(
-                //                    "Indeterminate operator '%s' not allowed on quantified level "
-                //                        + "(do a feature request if you want this constraint dropped!)",
-                //                    operator.getName(), operatorEdge);
+                throw new FormatException(
+                    "Indeterminate operator '%s' not allowed on quantified level "
+                        + "(see gh #911)",
+                    operator.getName(), operatorEdge);
             }
             boolean embargo = productNode.has(ROLE, AspectKind::inNAC);
             List<VariableNode> arguments = new ArrayList<>();
