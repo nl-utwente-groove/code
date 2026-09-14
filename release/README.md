@@ -27,8 +27,6 @@ Below, the _release directory_ refers to the project subdirectory (of the `code`
 2. Update the `include/CHANGES.md` file in the release directory
    to reflect all changes with respect to the previous release.
 
-3. [Optional] Update `include/usermanual.pdf` file in the groove-release project with the newest version of the manual.
-
 3. [Optional] Check the files in `release/github` to see if the wording is still up-to-date
 
 4. [Optional] Update `include/groove2tikz.sty file` in the groove-release project.
