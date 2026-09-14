@@ -41,7 +41,7 @@ Major release; `CHANGES-8_0_0.md` expands on every item below
 - Unpublished third-party libraries are now on Maven Central; the GROOVE jar is a proper Java module again
 - Also resolved: gh #421, #732, #733 (partial), #756, #843, #865, #881, #901
 
-Release 7.5.3, 3 March 2026
+Release 7.5.3, 2 July 2026
 -------------------------------
 - Bug fix release after ICGT 2026 presentation
 - user sort now also supperted in type graphs (sic)

@@ -2,7 +2,7 @@ GROOVE 8.0.0: detailed change notes
 ===================================
 
 This document expands the one-line entries of `CHANGES.md` for release 8.0.0,
-which collects the changes since 7.5.3 (March 2026). It is organised by topic
+which collects the changes since 7.5.3 (July 2026). It is organised by topic
 rather than by date. GitHub issues are referenced as `gh #N`.
 
 Graph visualisation backends and the yFiles add-on
@@ -23,10 +23,20 @@ Graph visualisation backends and the yFiles add-on
 - The Simulator offers to download and install the add-on at the first start of a
   release version (once per version; never for snapshot builds; suppressed with
   `-Dgroove.addon.prompt=false`). The same is available at any time under View >
-  `yFiles add-on`, together with installation from a downloaded file and removal.
-  The Windows installer removes the add-on on uninstall and hence on upgrade.
-- Where both backends are present, the Simulator's Options menu offers the choice
-  (`Graph backend`, applied at the next start); yFiles is the default. Its seven
+  `YFiles add-on`, together with installation from a downloaded file (the file
+  chooser pre-fills the expected zip name) and removal; the submenu offers only
+  the actions that apply to the add-on's current state. Removing or replacing an
+  add-on whose jars the running JVM holds open (as it does on Windows) is
+  recorded as pending and carried out at the next start; a pending removal can
+  be cancelled with `Reactivate`. The Windows installer removes the add-on on
+  uninstall and hence on upgrade.
+- Where both backends are present, the Simulator's View > Options menu offers the
+  choice (`Graph backend`); yFiles is the default. The submenu is rebuilt each
+  time the View menu opens, so a freshly installed add-on shows up without a
+  restart, and installing it selects its backend. A choice takes effect at the
+  next start, which an information dialog points out; the radio mark shows the
+  backend in use, the suffix "(from next start)" the one the next start will pick
+  if that differs. The seven yFiles
   layout algorithms (hierarchic, organic, orthogonal, tree, balloon, circular,
   radial) join the layout menu. The Imager's new `-b` option selects the backend
   to render with, falling back with a warning if the requested one is unavailable.
@@ -42,15 +52,19 @@ Installers and distribution
 - GitHub releases now carry platform-native installers built with jpackage:
   Windows `.msi`, macOS `.dmg` (Intel and Apple silicon) and Linux `.deb`, each
   with a bundled Java runtime, so no Java installation is needed. The start menu
-  group lists Simulator, Generator, ModelChecker, Imager and Viewer. The
-  installers are not code-signed; the release page explains how to get past the
-  Windows and macOS warnings. The `-bin.zip` remains available and needs Java 21
-  or newer.
+  group lists GROOVE (the main launcher), Simulator, Generator, ModelChecker,
+  Imager and Viewer. The installers are not code-signed; the release page
+  explains how to get past the Windows and macOS warnings. The `-bin.zip`
+  remains available and needs Java 21 or newer.
 - The Windows installer does not offer an install-folder chooser (the MSI would
   not remember the choice across upgrades); use the zip for a custom location.
-- The Windows installer does not close a running GROOVE; installing over it
-  requires a reboot to clean up, and closing GROOVE first avoids that.
-- The Windows installer offers to start the Simulator when it finishes.
+- The Windows installer asks to close a running GROOVE before it touches anything
+  (Cancel/Retry/Ignore): the JVM holds the installed jars open, so an install over
+  a running GROOVE could not complete, and its rollback left no GROOVE installed.
+- The Windows installer offers to start the Simulator when it finishes; the
+  window opens behind those already open.
+- The Windows installer shows GROOVE's own banner and panel images, and the
+  licence as formatted text.
 - The Windows installer asks before replacing another installed version of
   GROOVE: older, newer, or another build of the same version.
 - The zips now include the license (`LICENSE.txt`, plain text instead of
@@ -197,7 +211,8 @@ Grammars, rules and the editor
   and step further on repeat. Line-style changes add a bend only for curved
   styles, act on the selected edges only and are a single edit; Add/Remove Point
   act at the pointer and pick the nearest segment. Control-dragging a label no
-  longer crashes (gh #843).
+  longer crashes (gh #843). The snap-to-grid button is enabled as soon as the
+  first editor opens, not only after the next unrelated change.
 - Editor: bidirectional edges are merged in preview mode (gh #336); find/replace
   offers labels that fail to type and works when all labels are erroneous
   (gh #701); renaming a resource to a case variant of its name is allowed
@@ -295,7 +310,8 @@ Simulator look and behaviour
   expression containing `+` or `*`; an NPE and stale rule tree when loading a
   second grammar while a state with matches was displayed; a crash of the state
   list on grammars whose exploration is unstored; the wrong display staying up
-  after selecting a graph; various NPEs found through the JDK nullness
+  after selecting a graph; an NPE on selecting a graph in a detached Host list
+  while no optional tabs are shown; various NPEs found through the JDK nullness
   annotations (gh #881).
 
 Performance
