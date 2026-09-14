@@ -30,8 +30,12 @@ import nl.utwente.groove.annotation.Syntax;
 import nl.utwente.groove.annotation.ToolTipBody;
 import nl.utwente.groove.annotation.ToolTipHeader;
 import nl.utwente.groove.annotation.ToolTipPars;
+import nl.utwente.groove.io.external.format.ecore.EcoreMapping.FeatureData;
+import nl.utwente.groove.io.external.format.ecore.EcoreMapping.Kind;
 import nl.utwente.groove.io.external.format.ecore.EcoreMapping.LiteralStyle;
 import nl.utwente.groove.io.external.format.ecore.EcoreMapping.Ordering;
+import nl.utwente.groove.io.external.format.ecore.EcoreMapping.PackageData;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.parse.IdValidator;
 
@@ -101,7 +105,55 @@ public enum EcoreKey {
             + " and needed if the plain name is ambiguous", "the enum literal",
             "the GROOVE type name to be used"})
     LITERAL_TYPE_NAME("typeName", 2, EcoreKey.UNBOUNDED, "<name>", EcoreKey::checkTypeName, "enum",
-        "literal"),;
+        "literal"),
+    /** Namespace data of a package. */
+    @Syntax("package.DOT.PACKAGE = value")
+    @ToolTipHeader("Package namespace data")
+    @ToolTipBody({"Records the namespace of an Ecore package, which the type graph",
+            "does not determine. Written by the import for every package of the",
+            "imported metamodel."})
+    @ToolTipPars({"the Ecore package; nested packages are dot-separated",
+            "the namespace data: 'nsURI=uri', optionally followed by 'nsPrefix=prefix'"
+                + " (the prefix defaults to the package name)"})
+    PACKAGE("package", 1, EcoreKey.UNBOUNDED, "nsURI=<uri> nsPrefix=<prefix>",
+        EcoreKey::checkPackage, "package"),
+    /** Kind of a classifier. */
+    @Syntax("classifier.DOT.KIND = value")
+    @ToolTipHeader("Classifier kind")
+    @ToolTipBody({"Records what an Ecore classifier is, which the type graph does not",
+            "determine, and thereby also which package it belongs to.",
+            "Written by the import for every classifier of the imported metamodel."})
+    @ToolTipPars({"the Ecore class, data type or enum; package qualification is allowed,"
+            + " and needed if the plain name is ambiguous",
+            "the kind: 'class', 'interface', 'enum' or 'datatype'"})
+    KIND("kind", 1, EcoreKey.UNBOUNDED, "class", EcoreKey::checkKind, "classifier"),
+    /** Ecore declaration of a structural feature. */
+    @Syntax("class.DOT.feature.DOT.FEATURE = value")
+    @ToolTipHeader("Feature declaration")
+    @ToolTipBody({"Records the parts of the Ecore declaration of a structural feature",
+            "that the type graph does not determine. Written by the import only for",
+            "features that need it, and then only for the fields that deviate."})
+    @ToolTipPars({"the Ecore class declaring the feature; package qualification is allowed,"
+            + " and needed if the plain name is ambiguous",
+            "the structural feature that is declared",
+            "space-separated fields, in any order and all optional: 'type=name' (the declared"
+                + " Ecore data type), 'ordered=bool', 'unique=bool',"
+                + " 'bounds=lo..hi' (with hi a number or '*'), 'name=original'"
+                + " (the Ecore name the label was repaired from)"})
+    FEATURE("feature", 2, EcoreKey.UNBOUNDED,
+        "type=<name> ordered=<bool> unique=<bool> bounds=<lo>..<hi> name=<original>",
+        EcoreKey::checkFeature, "class", "feature"),
+    /** Opposite of a reference. */
+    @Syntax("class.DOT.reference.DOT.OPPOSITE = value")
+    @ToolTipHeader("Opposite reference")
+    @ToolTipBody({"Records that a reference is the Ecore opposite of another one,",
+            "which the type graph does not determine. Written by the import once",
+            "for each member of an opposite pair."})
+    @ToolTipPars({"the Ecore class declaring the reference; package qualification is allowed,"
+            + " and needed if the plain name is ambiguous", "the reference that has an opposite",
+            "the path of the opposite reference, being its declaring class and its name"})
+    OPPOSITE("opposite", 2, EcoreKey.UNBOUNDED, "<class>.<reference>", EcoreKey::checkOpposite,
+        "class", "reference"),;
 
     private EcoreKey(String text, int minPath, int maxPath, String templateValue,
                      Function<String,@Nullable String> valueCheck, String... pathParts) {
@@ -219,7 +271,9 @@ public enum EcoreKey {
     /** Mapping from tokens in the syntax annotations to corresponding text. */
     private static final Map<String,String> tokenMap = Map
         .of("DOT", ".", "ORDERING", ORDERING.text(), "USE_IDENTIFIERS", USE_IDENTIFIERS.text(),
-            "TYPE_NAME", TYPE_NAME.text(), "LITERAL_STYLE", LITERAL_STYLE.text());
+            "TYPE_NAME", TYPE_NAME.text(), "LITERAL_STYLE", LITERAL_STYLE.text(), "PACKAGE",
+            PACKAGE.text(), "KIND", KIND.text(), "FEATURE", FEATURE.text(), "OPPOSITE",
+            OPPOSITE.text());
 
     private static @Nullable String checkOrdering(String value) {
         return Ordering.hasText(value)
@@ -243,6 +297,31 @@ public enum EcoreKey {
         return LiteralStyle.hasText(value)
             ? null
             : "should be one of " + LiteralStyle.texts();
+    }
+
+    @AIGenerated("Claude Opus 5, 2026-09")
+    private static @Nullable String checkPackage(String value) {
+        return PackageData.parse(value).error();
+    }
+
+    @AIGenerated("Claude Opus 5, 2026-09")
+    private static @Nullable String checkKind(String value) {
+        return Kind.hasText(value)
+            ? null
+            : "should be one of " + Kind.texts();
+    }
+
+    @AIGenerated("Claude Opus 5, 2026-09")
+    private static @Nullable String checkFeature(String value) {
+        return FeatureData.parse(value).error();
+    }
+
+    @AIGenerated("Claude Opus 5, 2026-09")
+    private static @Nullable String checkOpposite(String value) {
+        List<String> segments = Arrays.asList(value.split("\\.", -1));
+        return segments.size() >= 2 && segments.stream().noneMatch(String::isEmpty)
+            ? null
+            : "is not an Ecore element path of at least two segments";
     }
 
     /** Path length bound for key forms whose element path may be arbitrarily
