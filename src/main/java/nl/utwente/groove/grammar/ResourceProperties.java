@@ -132,7 +132,9 @@ public class ResourceProperties extends Properties {
         TRANSITION_LABEL("transitionLabel",
             "<body>String to be used as the transition label in the LTS. "
                 + "<p>If empty, defaults to the rule name."
-                + "<br>Optional format parameters as in <tt>String.format</tt> are instantiated with rule parameters.",
+                + "<br>Rule parameters can be inserted by <tt>%s</tt> (the next parameter), "
+                + "<tt>%i$s</tt> (the <i>i</i>-th parameter, counting from 1) and <tt>%%</tt> (a percent sign); "
+                + "no other <tt>String.format</tt> specifiers are allowed.",
             ValueType.STRING),
 
         /** Graph version. */
@@ -244,7 +246,8 @@ public class ResourceProperties extends Properties {
         /** Computes the value for {@link #checker}. */
         private Checker computeChecker() {
             return switch (this) {
-            case FORMAT, TRANSITION_LABEL -> formatChecker;
+            case FORMAT -> formatChecker;
+            case TRANSITION_LABEL -> labelChecker;
             default -> trueChecker;
             };
         }
@@ -286,20 +289,7 @@ public class ResourceProperties extends Properties {
      * parameters of a rule model. */
     private static final Checker formatChecker = (g, v) -> {
         var result = new FormatErrorSet();
-        // compute the max par: number occurring in the source graph
-        @SuppressWarnings("null")
-        var maxPar = g
-            .nodeSet()
-            .stream()
-            .map(n -> n.get(Category.PARAM))
-            .map(a -> a == null
-                ? null
-                : a.getContent())
-            .map(c -> c instanceof IntegerContent i
-                ? i.get() + 1
-                : 0)
-            .reduce((i1, i2) -> Math.max(i1, i2))
-            .orElse(0);
+        var maxPar = getParCount(g);
         Object[] args = new Object[maxPar];
         Arrays.fill(args, "");
         var formatString = v.value(ValueType.STRING);
@@ -312,6 +302,43 @@ public class ResourceProperties extends Properties {
         }
         return result;
     };
+
+    /** Creates a checker for a transition label format string (see {@link LabelFormat}),
+     * whose parameter references must be covered by the parameters of a rule model. */
+    private static final Checker labelChecker = (g, v) -> {
+        var result = new FormatErrorSet();
+        var formatString = v.value(ValueType.STRING);
+        try {
+            var format = LabelFormat.parse(formatString);
+            var maxPar = getParCount(g);
+            if (format.getArity() > maxPar) {
+                result
+                    .add("Rule has %s parameters, but format string '%s' expects %s", maxPar,
+                         formatString, format.getArity(), g);
+            }
+        } catch (FormatException exc) {
+            result.add("%s", exc.getMessage(), g);
+        }
+        return result;
+    };
+
+    /** Computes the number of rule parameters declared in a source graph,
+     * being one more than the highest <tt>par:</tt> number occurring in it. */
+    @SuppressWarnings("null")
+    private static int getParCount(AspectGraph g) {
+        return g
+            .nodeSet()
+            .stream()
+            .map(n -> n.get(Category.PARAM))
+            .map(a -> a == null
+                ? null
+                : a.getContent())
+            .map(c -> c instanceof IntegerContent i
+                ? i.get() + 1
+                : 0)
+            .reduce((i1, i2) -> Math.max(i1, i2))
+            .orElse(0);
+    }
 
     /** Mapping from key names (as in {@link Key#getName()}) to keys. */
     static private final Factory<Map<String,Key>> nameKeyMap
