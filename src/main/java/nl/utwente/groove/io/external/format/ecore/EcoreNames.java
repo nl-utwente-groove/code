@@ -142,11 +142,16 @@ public class EcoreNames {
      * easier to predict than two.
      */
     private static String repair(EStructuralFeature feature) {
-        String name = feature.getName();
-        if (name != null) {
-            name = name.replace(HYPHEN, UNDERSCORE);
-        }
-        return IdValidator.JAVA_ID_NON_RESERVED.repair(name);
+        return featureLabelFor(feature.getName());
+    }
+
+    /** Returns the GROOVE edge label derived from a given Ecore feature name,
+     * before disambiguation.
+     * @see #repair(EStructuralFeature) */
+    public static String featureLabelFor(@Nullable String name) {
+        return IdValidator.JAVA_ID_NON_RESERVED.repair(name == null
+            ? null
+            : name.replace(HYPHEN, UNDERSCORE));
     }
 
     /** Returns the dot-separated path of a given package, relative to its root package. */

@@ -38,6 +38,7 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EcoreFactory;
@@ -58,8 +59,12 @@ import nl.utwente.groove.io.external.Imported;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.io.external.format.ecore.EcoreKey;
 import nl.utwente.groove.io.external.format.ecore.EcoreMapping;
+import nl.utwente.groove.io.external.format.ecore.EcoreMapping.Bounds;
+import nl.utwente.groove.io.external.format.ecore.EcoreMapping.FeatureData;
+import nl.utwente.groove.io.external.format.ecore.EcoreMapping.Kind;
 import nl.utwente.groove.io.external.format.ecore.EcoreMapping.LiteralStyle;
 import nl.utwente.groove.io.external.format.ecore.EcoreMapping.Ordering;
+import nl.utwente.groove.io.external.format.ecore.EcoreMapping.PackageData;
 import nl.utwente.groove.io.external.format.ecore.EcoreMappingSchema;
 import nl.utwente.groove.io.external.format.ecore.EcoreNames;
 import nl.utwente.groove.io.external.format.ecore.EcorePorter;
@@ -373,6 +378,32 @@ public class EcoreTest {
         assertEquals(tags, targets(host, "tags"));
         Set<Imported> result = assertRoundTrip("shop.xmi", Ordering.NONE);
         assertEquals(tags, targets(single(result, ResourceKind.HOST), "tags"));
+    }
+
+    /**
+     * Tests that a node type added by hand to an imported type graph is
+     * exported as a class of the default package, rather than being dropped
+     * because the records do not mention it.
+     */
+    @Test
+    public void testAddedType() throws Exception {
+        AspectGraph type = single(importFrom("shop.ecore", Ordering.NONE, true), ResourceKind.TYPE);
+        PlainGraph plain = type.toPlainGraph().clone();
+        PlainNode node = plain.addNode();
+        plain.addEdge(node, "type:Voucher", node);
+        GraphsToEcore converter
+            = new GraphsToEcore(mapping(withRecords(mappingText(Ordering.NONE, true), type)));
+        List<EPackage> roots = converter.addTypeGraph(AspectGraph.newInstance(plain));
+        assertEquals(Collections.emptyList(), messages(converter.getErrors()));
+        assertEquals(1, roots.size());
+        EPackage root = roots.get(0);
+        assertEquals("shop", root.getName());
+        // the added type joins the recorded classifiers of the root package,
+        // after the ones with a type node and before the recorded data type
+        assertEquals(List.of("Shop", "Item", "Book", "Customer", "Category", "Voucher", "Isbn"),
+                     root.getEClassifiers().stream().map(EClassifier::getName).toList());
+        assertTrue(String.valueOf(root.getEClassifier("Voucher")),
+                   root.getEClassifier("Voucher") instanceof EClass);
     }
 
     // ----------------------------------------------------------------------
@@ -930,7 +961,7 @@ public class EcoreTest {
             assertEquals(Collections.emptyList(), messages(grammar.getErrors()));
         }
         File dir = newDir();
-        exportTo(newGrammar(type, host, mappingText), dir);
+        exportTo(newGrammar(type, host, withRecords(mappingText, type)), dir);
         Set<Imported> result = importFrom(new File(dir, fixture), mappingText);
         AspectGraph resultType = single(result, ResourceKind.TYPE);
         assertIsomorphic(type, resultType);
@@ -983,6 +1014,121 @@ public class EcoreTest {
                    IsoChecker
                        .getInstance(true)
                        .areIsomorphic(one.toPlainGraph(), two.toPlainGraph()));
+    }
+
+    /**
+     * Returns a mapping resource text extended with the round-trip records of
+     * an imported type graph, so that an export can be driven from the
+     * settings. This is a bridge for as long as the import still records the
+     * metadata in the graph properties; once it writes the records itself
+     * (step 4 of {@code claude/ecore-metadata-settings.md}) it disappears.
+     */
+    static private String withRecords(String mappingText, AspectGraph type) {
+        var properties = ResourceProperties.getProperties(type);
+        Map<String,PackageData> packages = new LinkedHashMap<>();
+        for (var record : records(properties, EcoreToGraphs.PACKAGES_KEY)) {
+            String name = lastSegment(record[0]);
+            packages
+                .put(record[0], new PackageData(record[1], record[2].equals(name)
+                    ? null
+                    : record[2]));
+        }
+        Map<String,Kind> kinds = new LinkedHashMap<>();
+        Map<String,String> paths = new LinkedHashMap<>();
+        List<String> names = new ArrayList<>();
+        String enumPath = "";
+        for (var record : records(properties, EcoreToGraphs.TYPES_KEY)) {
+            String path;
+            if (record[3].equals(EcoreNames.LITERAL_KIND)) {
+                path = enumPath + "." + record[2];
+            } else {
+                path = record[1] + "." + record[2];
+                kinds.put(path, Kind.valueOfText(record[3]));
+                if (record[3].equals(EcoreNames.ENUM_KIND)) {
+                    enumPath = path;
+                }
+            }
+            paths.put(record[0], path);
+            if (!record[0].equals(record[2])) {
+                names.add(path + "." + EcoreMapping.TYPE_NAME_KEY + " = " + record[0]);
+            }
+        }
+        Map<String,FeatureData> features = new LinkedHashMap<>();
+        Map<String,String> featurePaths = new LinkedHashMap<>();
+        for (var record : records(properties, EcoreToGraphs.FEATURES_KEY)) {
+            String ownerPath = paths.getOrDefault(record[0], record[0]);
+            String declared = paths.get(record[2]);
+            int lower = Integer.parseInt(record[5]);
+            int upper = Integer.parseInt(record[6]);
+            // the Ecore name is the path segment, unless it is not a single
+            // segment, in which case the label stands in for it
+            String path = ownerPath + "." + (record[7].isEmpty() || record[7].contains(".")
+                ? record[1]
+                : record[7]);
+            featurePaths.put(record[0] + "." + record[1], path);
+            features
+                .put(path, new FeatureData(record[2].isEmpty()
+                    ? null
+                    : declared == null
+                        ? record[2]
+                        : lastSegment(declared), record[3].equals("true")
+                            ? null
+                            : Boolean.FALSE,
+                    record[4].equals("true")
+                        ? null
+                        : Boolean.FALSE,
+                    lower == 0 && upper == 1
+                        ? null
+                        : new Bounds(lower, upper),
+                    record[7].isEmpty()
+                        ? null
+                        : record[7]));
+        }
+        Map<String,String> opposites = new LinkedHashMap<>();
+        for (var record : records(properties, EcoreToGraphs.OPPOSITES_KEY)) {
+            opposites
+                .put(featurePath(paths, featurePaths, record[0]),
+                     featurePath(paths, featurePaths, record[1]));
+        }
+        StringBuilder result = new StringBuilder(mappingText);
+        names.forEach(line -> result.append(line).append('\n'));
+        EcoreMapping
+            .entryLines(packages, kinds, features, opposites)
+            .forEach(line -> result.append(line).append('\n'));
+        return result.toString();
+    }
+
+    /** Returns the Ecore element path of an {@code owner.feature} reference. */
+    static private String featurePath(Map<String,String> paths, Map<String,String> featurePaths,
+                                      String reference) {
+        String result = featurePaths.get(reference);
+        if (result != null) {
+            return result;
+        }
+        int split = reference.lastIndexOf('.');
+        return paths.getOrDefault(reference.substring(0, split), reference.substring(0, split))
+            + reference.substring(split);
+    }
+
+    /** Returns the last dot-separated segment of a path. */
+    static private String lastSegment(String path) {
+        return path.substring(path.lastIndexOf('.') + 1);
+    }
+
+    /** Returns the records of a graph-property metadata value. */
+    static private List<String[]> records(ResourceProperties properties, String key) {
+        List<String[]> result = new ArrayList<>();
+        String text = properties.getProperty(key);
+        if (text == null || text.isEmpty()) {
+            return result;
+        }
+        for (var record : EcoreToGraphs.split(text, EcoreToGraphs.RECORD_SEP_CHAR, false)) {
+            result
+                .add(EcoreToGraphs
+                    .split(record, EcoreToGraphs.FIELD_SEP_CHAR, true)
+                    .toArray(new String[0]));
+        }
+        return result;
     }
 
     /** Returns the Ecore round-trip metadata of a graph, as a key-to-value map. */

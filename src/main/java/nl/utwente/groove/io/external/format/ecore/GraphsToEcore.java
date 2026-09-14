@@ -17,6 +17,7 @@
 package nl.utwente.groove.io.external.format.ecore;
 
 import java.util.Objects;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -50,7 +51,9 @@ import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.type.Multiplicity;
 import nl.utwente.groove.graph.EdgeRole;
-import nl.utwente.groove.grammar.ResourceProperties;
+import nl.utwente.groove.io.external.format.ecore.EcoreMapping.FeatureData;
+import nl.utwente.groove.io.external.format.ecore.EcoreMapping.Kind;
+import nl.utwente.groove.io.external.format.ecore.EcoreMapping.PackageData;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.IdValidator;
 
@@ -66,10 +69,13 @@ import nl.utwente.groove.util.parse.IdValidator;
  * The Ecore declarations that the type graph does not determine — package data,
  * the enum/interface classification, the opposite pairing, the declared data
  * types and the order and uniqueness of the features — are taken from the
- * round-trip metadata recorded by {@link EcoreToGraphs} in the graph
- * properties. A type graph without that metadata is exported by the default
- * policy of the design: a single package named after the graph, in which every
- * node type is a class.
+ * records of the {@link EcoreMapping}, which the import writes into the
+ * {@code ecore} settings resource. The records are resolved against the labels
+ * of the type graph in hand: an unmatched record is skipped (it may concern
+ * another metamodel), and a label without a record becomes a class in the
+ * default package. A type graph without any records is therefore exported by
+ * the default policy of the design: a single package named after the graph, in
+ * which every node type is a class.
  * <p>
  * Since an export has no graph to attach errors to, all problems are collected
  * in {@link #getErrors()}; it is up to the caller to report them.
@@ -102,14 +108,12 @@ public class GraphsToEcore {
      */
     public List<EPackage> addTypeGraph(AspectGraph typeGraph) {
         this.typeGraph = typeGraph;
-        ResourceProperties properties = ResourceProperties.getProperties(typeGraph);
         collectNodes(typeGraph);
-        collectFeatureData(properties);
-        List<EPackage> result = createPackages(properties, typeGraph.getName());
-        createClassifiers(properties);
+        List<EPackage> result = createPackages(typeGraph.getName());
+        createClassifiers();
         createFeatures();
-        createOpposites(properties);
-        return result;
+        createOpposites();
+        return prune(result);
     }
 
     /** The type graph passed to {@link #addTypeGraph(AspectGraph)}. */
@@ -129,14 +133,18 @@ public class GraphsToEcore {
     private @Nullable EPackage defaultPackage;
     /** Mapping from node type labels to the classifiers created for them. */
     private final Map<String,EClassifier> classifiers = new LinkedHashMap<>();
+    /** Mapping from node type labels to the Ecore element paths they were matched to. */
+    private final Map<String,String> classifierPaths = new LinkedHashMap<>();
+    /** Mapping from Ecore names to the data types created for them. */
+    private final Map<String,@Nullable EDataType> dataTypes = new LinkedHashMap<>();
     /** Mapping from node type labels to the enum literals created for them. */
     private final Map<String,@Nullable EEnumLiteral> literals = new LinkedHashMap<>();
     /** Mapping from node type labels to the nodified-edge data of intermediate nodes. */
     private final Map<String,Intermediate> intermediates = new LinkedHashMap<>();
-    /** Mapping from {@code owner.feature} references to the recorded feature data. */
-    private final Map<String,@Nullable FeatureData> featureData = new LinkedHashMap<>();
     /** Mapping from {@code owner.feature} references to the created features. */
     private final Map<String,EStructuralFeature> features = new LinkedHashMap<>();
+    /** Mapping from Ecore element paths to the features created for them. */
+    private final Map<String,@Nullable EStructuralFeature> featurePaths = new LinkedHashMap<>();
     /** Mapping from the created features to the edge labels they came from.
      * The two differ whenever a repaired name was restored on creation, so this
      * is what a host graph's edge labels have to be resolved against. */
@@ -155,38 +163,28 @@ public class GraphsToEcore {
         }
     }
 
-    /** Collects the per-feature metadata records. */
-    private void collectFeatureData(ResourceProperties properties) {
-        for (var record : records(properties, EcoreToGraphs.FEATURES_KEY, 8)) {
-            this.featureData
-                .put(record[0] + FEATURE_SEP + record[1],
-                     new FeatureData(record[2], Boolean.parseBoolean(record[3]),
-                         Boolean.parseBoolean(record[4]), bound(record[5], 0), bound(record[6], 1),
-                         record[7]));
-        }
-    }
-
-    /** Parses a recorded multiplicity bound, falling back to a default. */
-    private static int bound(String text, int fallback) {
-        try {
-            return Integer.parseInt(text);
-        } catch (NumberFormatException exc) {
-            return fallback;
-        }
-    }
-
-    /** Creates the packages recorded in the metadata, and returns the root ones.
-     * If there is no package metadata, a single default package is created.
+    /** Creates the recorded packages, and returns the root ones.
+     * If no package is recorded, a single default package is created.
      */
-    private List<EPackage> createPackages(ResourceProperties properties, String graphName) {
+    private List<EPackage> createPackages(String graphName) {
         List<EPackage> result = new ArrayList<>();
-        for (var record : records(properties, EcoreToGraphs.PACKAGES_KEY, 3)) {
-            String path = record[0];
+        // the entries are alphabetical, in which a sub-package may precede its
+        // parent ('shop.catalog.package' before 'shop.package'); the packages
+        // have to be created outside in for the nesting to be reconstructed
+        List<String> paths = new ArrayList<>(this.options.packages().keySet());
+        paths.sort(Comparator.comparingInt(p -> segments(p).size()));
+        for (var path : paths) {
+            PackageData data = this.options.packages().get(path);
+            assert data != null; // the paths are the keys of the package map
             int split = path.lastIndexOf(PATH_SEP);
+            String name = path.substring(split + 1);
             EPackage pkg = FACTORY.createEPackage();
-            pkg.setName(path.substring(split + 1));
-            pkg.setNsURI(record[1]);
-            pkg.setNsPrefix(record[2]);
+            pkg.setName(name);
+            pkg.setNsURI(data.nsURI());
+            String prefix = data.nsPrefix();
+            pkg.setNsPrefix(prefix == null
+                ? name
+                : prefix);
             this.packages.put(path, pkg);
             EPackage parent = split < 0
                 ? null
@@ -198,7 +196,7 @@ public class GraphsToEcore {
             }
         }
         if (result.isEmpty()) {
-            // there is no package metadata: derive a package from the graph name
+            // no package is recorded: derive one from the graph name
             int split = graphName.lastIndexOf(PATH_SEP);
             String name = IdValidator.JAVA_ID_NON_RESERVED.repair(graphName.substring(split + 1));
             EPackage pkg = FACTORY.createEPackage();
@@ -211,99 +209,216 @@ public class GraphsToEcore {
         return result;
     }
 
-    /** Creates the classifiers of the meta-model, in metadata order. */
-    private void createClassifiers(ResourceProperties properties) {
-        var records = records(properties, EcoreToGraphs.TYPES_KEY, 4);
-        if (records.isEmpty()) {
-            // there is no classifier metadata: every node type is a class,
-            // named by its label or the reverse of a typeName mapping override
-            for (var entry : this.typeNodes.entrySet()) {
-                if (!this.intermediates.containsKey(entry.getKey())) {
-                    addClassifier(entry.getKey(), "",
-                                  createClass(ecoreNameFor(entry.getKey()), false));
-                }
+    /**
+     * Creates the classifiers of the meta-model, in the order of the type nodes
+     * of the graph — which is the model order of an imported metamodel, so that
+     * an export followed by an import reproduces the original classifier order.
+     * The recorded data types, which have no type node, come last in their
+     * package; the enum literals, which need their enums, come last of all.
+     */
+    private void createClassifiers() {
+        // resolve every type label against the recorded entries
+        Map<String,@Nullable Match> matches = new LinkedHashMap<>();
+        for (var label : this.typeNodes.keySet()) {
+            if (!this.intermediates.containsKey(label)) {
+                matches.put(label, matchFor(label));
             }
-            return;
         }
-        for (var record : records) {
-            String label = record[0];
-            String kind = record[3];
-            if (kind.equals(EcoreNames.DATATYPE_KIND)) {
-                EDataType dataType = FACTORY.createEDataType();
-                dataType.setName(record[2]);
-                // the encoding maps every custom data type to a string,
-                // so that is the instance class it comes back with
-                dataType.setInstanceClassName(String.class.getName());
-                addClassifier(label, record[1], dataType);
-                continue;
+        // the literal types are the sub-types of the recorded enums
+        Set<String> enumLabels = new LinkedHashSet<>();
+        matches.forEach((label, match) -> {
+            if (match != null && match.kind() == Kind.ENUM) {
+                enumLabels.add(label);
             }
-            if (!this.typeNodes.containsKey(label) || kind.equals(EcoreNames.LITERAL_KIND)) {
-                // literals are created in the pass below; classifiers whose node
-                // has been removed from the type graph are no longer part of the model
-                continue;
-            }
-            EClassifier classifier;
-            if (kind.equals(EcoreNames.ENUM_KIND)) {
-                classifier = FACTORY.createEEnum();
-                classifier.setName(record[2]);
-            } else {
-                classifier = createClass(record[2], kind.equals(EcoreNames.INTERFACE_KIND));
-            }
-            addClassifier(label, record[1], classifier);
-        }
-        // now the literals, which need their enums to exist
-        for (var record : records) {
-            if (!record[3].equals(EcoreNames.LITERAL_KIND)) {
-                continue;
-            }
-            String label = record[0];
+        });
+        Set<String> literalLabels = new LinkedHashSet<>();
+        for (var label : matches.keySet()) {
             AspectNode node = this.typeNodes.get(label);
-            if (node == null) {
+            assert node != null; // the labels are the keys of the type node map
+            if (superLabels(node).stream().anyMatch(enumLabels::contains)) {
+                literalLabels.add(label);
+            }
+        }
+        Set<String> usedPaths = new LinkedHashSet<>();
+        for (var entry : matches.entrySet()) {
+            String label = entry.getKey();
+            if (literalLabels.contains(label)) {
                 continue;
             }
-            EEnum eEnum = null;
-            for (var superLabel : superLabels(node)) {
-                if (this.classifiers.get(superLabel) instanceof EEnum found) {
-                    eEnum = found;
-                }
-            }
-            if (eEnum == null) {
-                this.errors.add("Enum literal '%s' has no enum type", label);
+            Match match = entry.getValue();
+            // a label without a match is a class of its own name in the default
+            // package: an unrecorded type is exported, not silently dropped
+            String path = match == null
+                ? label
+                : match.path();
+            Kind kind = match == null
+                ? Kind.CLASS
+                : match.kind();
+            usedPaths.add(path);
+            addClassifier(label, path, createClassifier(lastSegment(path), kind));
+        }
+        // the recorded data types have no type node of their own
+        for (var entry : this.options.kinds().entrySet()) {
+            String path = entry.getKey();
+            if (entry.getValue() != Kind.DATATYPE || usedPaths.contains(path)) {
                 continue;
             }
-            EEnumLiteral literal = FACTORY.createEEnumLiteral();
-            literal.setName(record[2]);
-            literal.setValue(eEnum.getELiterals().size());
-            eEnum.getELiterals().add(literal);
-            this.literals.put(label, literal);
+            addClassifier(null, path, createClassifier(lastSegment(path), Kind.DATATYPE));
+        }
+        for (var label : literalLabels) {
+            createLiteral(label);
         }
     }
 
+    /** Creates the enum literal of a given type label, in the enum of its super-type. */
+    private void createLiteral(String label) {
+        AspectNode node = this.typeNodes.get(label);
+        assert node != null; // the literal labels are keys of the type node map
+        EEnum eEnum = null;
+        String enumLabel = null;
+        for (var superLabel : superLabels(node)) {
+            if (this.classifiers.get(superLabel) instanceof EEnum found) {
+                eEnum = found;
+                enumLabel = superLabel;
+            }
+        }
+        if (eEnum == null || enumLabel == null) {
+            this.errors.add("Enum literal '%s' has no enum type", label);
+            return;
+        }
+        EEnumLiteral literal = FACTORY.createEEnumLiteral();
+        literal.setName(literalNameFor(label, enumLabel));
+        literal.setValue(eEnum.getELiterals().size());
+        eEnum.getELiterals().add(literal);
+        this.literals.put(label, literal);
+    }
+
     /**
-     * Returns the Ecore class name for a type label of a metadata-free graph:
-     * the reverse of a typeName mapping override if there is exactly one whose
-     * value is the label, the label itself otherwise. More than one reverse
-     * match is an error.
+     * Returns the Ecore name of the enum literal with a given type label: the
+     * last segment of a recorded {@code typeName} entry if there is one,
+     * otherwise the inverse of the literal naming style — the label with the
+     * enum's own label stripped off, for the qualified style, and the plain
+     * label for the plain style.
      */
-    private String ecoreNameFor(String label) {
-        List<String> matches = this.options
+    private String literalNameFor(String label, String enumLabel) {
+        String path = reduce(label, EcoreMapping.TYPE_NAME_KEY, namedPaths(label));
+        if (path != null) {
+            return lastSegment(path);
+        }
+        String prefix = enumLabel + EcoreNames.SEPARATOR;
+        return label.startsWith(prefix)
+            ? label.substring(prefix.length())
+            : label;
+    }
+
+    /**
+     * Returns the Ecore element path and classifier kind recorded for a given
+     * type label: a {@code typeName} entry whose value is the label if there is
+     * one, otherwise a {@code kind} entry named after the label. An ambiguous
+     * match is an error; no match at all is not (the graph may hold types the
+     * settings do not know about).
+     */
+    private @Nullable Match matchFor(String label) {
+        List<String> named = namedPaths(label);
+        String choice = named.isEmpty()
+            ? EcoreMapping.KIND_KEY
+            : EcoreMapping.TYPE_NAME_KEY;
+        List<String> candidates = named.isEmpty()
+            ? this.options
+                .kinds()
+                .keySet()
+                .stream()
+                .filter(p -> lastSegment(p).equals(label))
+                .toList()
+            : named;
+        String path = reduce(label, choice, candidates);
+        if (path == null) {
+            return null;
+        }
+        Kind kind = this.options.kinds().get(path);
+        if (kind == null) {
+            // the matched entry may be a less qualified typeName override;
+            // the kind (and with it the package) then comes from its counterpart
+            String kindPath = reduce(label, EcoreMapping.KIND_KEY, relatedPaths(path));
+            if (kindPath != null) {
+                path = kindPath;
+                kind = this.options.kinds().get(kindPath);
+            }
+        }
+        return new Match(path, kind == null
+            ? Kind.CLASS
+            : kind);
+    }
+
+    /** Returns the paths of the {@code typeName} entries whose value is a given label. */
+    private List<String> namedPaths(String label) {
+        return this.options
             .typeNames()
             .entrySet()
             .stream()
             .filter(e -> e.getValue().equals(label))
             .map(Map.Entry::getKey)
             .toList();
-        if (matches.size() > 1) {
-            this.errors
-                .add("Label '%s' matches multiple %s mapping entries: %s", label,
-                     EcoreMapping.TYPE_NAME_KEY, String.join(" and ", matches));
-            return label;
+    }
+
+    /** Returns the paths of the {@code kind} entries that qualify a given path
+     * further, or are qualified further by it. */
+    private List<String> relatedPaths(String path) {
+        return this.options
+            .kinds()
+            .keySet()
+            .stream()
+            .filter(p -> isSuffix(p, path) || isSuffix(path, p))
+            .toList();
+    }
+
+    /**
+     * Reduces a list of matching element paths to the one to be used: the most
+     * qualified, if the paths all qualify one another and hence denote the same
+     * Ecore element. Genuinely distinct matches are an error.
+     * @return the single applicable path, or {@code null} if there is none
+     */
+    private @Nullable String reduce(String label, String choice, List<String> paths) {
+        if (paths.size() <= 1) {
+            return paths.isEmpty()
+                ? null
+                : paths.get(0);
         }
-        if (matches.isEmpty()) {
-            return label;
+        String longest = paths.get(0);
+        for (var path : paths) {
+            if (segments(path).size() > segments(longest).size()) {
+                longest = path;
+            }
         }
-        String key = matches.get(0);
-        return key.substring(key.lastIndexOf('.') + 1);
+        for (var path : paths) {
+            if (!isSuffix(path, longest)) {
+                this.errors
+                    .add("Label '%s' matches multiple %s mapping entries: %s", label, choice,
+                         String.join(" and ", paths));
+                return null;
+            }
+        }
+        return longest;
+    }
+
+    /** Creates an empty classifier of a given kind and Ecore name. */
+    private EClassifier createClassifier(String name, Kind kind) {
+        EClassifier result;
+        switch (kind) {
+        case ENUM -> {
+            result = FACTORY.createEEnum();
+            result.setName(name);
+        }
+        case DATATYPE -> {
+            result = FACTORY.createEDataType();
+            result.setName(name);
+            // the encoding maps every custom data type to a string,
+            // so that is the instance class it comes back with
+            result.setInstanceClassName(String.class.getName());
+        }
+        default -> result = createClass(name, kind == Kind.INTERFACE);
+        }
+        return result;
     }
 
     /** Creates a class with a given name, taking its abstractness from the type graph. */
@@ -315,20 +430,60 @@ public class GraphsToEcore {
         return result;
     }
 
-    /** Adds a classifier to the package of a given path, and registers it. */
-    private void addClassifier(String label, String path, EClassifier classifier) {
-        EPackage pkg = this.packages.get(path);
+    /**
+     * Adds a classifier to the package its element path lies in, and registers it.
+     * @param label the type label the classifier was created for, or {@code null}
+     * for a data type, which has no type node
+     * @param path the Ecore element path of the classifier
+     */
+    private void addClassifier(@Nullable String label, String path, EClassifier classifier) {
+        int split = path.lastIndexOf(PATH_SEP);
+        EPackage pkg = split < 0
+            ? null
+            : this.packages.get(path.substring(0, split));
         if (pkg == null) {
             pkg = this.defaultPackage;
         }
         assert pkg != null;
         pkg.getEClassifiers().add(classifier);
+        if (classifier instanceof EDataType dataType && !(classifier instanceof EEnum)) {
+            this.dataTypes.put(lastSegment(path), dataType);
+        }
+        if (label == null) {
+            return;
+        }
         this.classifiers.put(label, classifier);
+        this.classifierPaths.put(label, path);
         AspectNode node = this.typeNodes.get(label);
         if (classifier instanceof EClass eClass && node != null
             && node.has(AspectKind.ABSTRACT)) {
             eClass.setAbstract(true);
         }
+    }
+
+    /** Drops the packages that hold neither a classifier nor a non-empty
+     * sub-package, and returns the root packages that survive. */
+    private List<EPackage> prune(List<EPackage> roots) {
+        List<EPackage> result = new ArrayList<>();
+        for (var pkg : roots) {
+            if (retain(pkg)) {
+                result.add(pkg);
+            }
+        }
+        return result;
+    }
+
+    /** Prunes the sub-packages of a package, and tells if the package itself
+     * has anything left in it. */
+    private boolean retain(EPackage pkg) {
+        List<EPackage> keep = new ArrayList<>();
+        for (var sub : pkg.getESubpackages()) {
+            if (retain(sub)) {
+                keep.add(sub);
+            }
+        }
+        pkg.getESubpackages().retainAll(keep);
+        return !pkg.getEClassifiers().isEmpty() || !pkg.getESubpackages().isEmpty();
     }
 
     /** Creates the super-types and the structural features of all classes. */
@@ -346,11 +501,13 @@ public class GraphsToEcore {
                     eClass.getESuperTypes().add(superClass);
                 }
             }
+            String ownerPath = this.classifierPaths.getOrDefault(entry.getKey(), entry.getKey());
             for (var descriptor : descriptorsOf(entry.getKey(), node)) {
-                EStructuralFeature feature = createFeature(entry.getKey(), descriptor);
+                EStructuralFeature feature = createFeature(entry.getKey(), ownerPath, descriptor);
                 if (feature != null) {
                     eClass.getEStructuralFeatures().add(feature);
                     this.features.put(entry.getKey() + FEATURE_SEP + descriptor.name(), feature);
+                    this.featurePaths.put(ownerPath + FEATURE_SEP + feature.getName(), feature);
                     this.featureLabels.put(feature, descriptor.name());
                 }
             }
@@ -403,9 +560,34 @@ public class GraphsToEcore {
         return result;
     }
 
+    /**
+     * Returns the feature declaration recorded for a feature of a given class:
+     * the entry under the feature's own label if there is one, otherwise the
+     * entry whose recorded Ecore name repairs to that label.
+     */
+    private @Nullable FeatureData featureDataFor(String ownerPath, String label) {
+        var result = this.options.features().get(ownerPath + FEATURE_SEP + label);
+        if (result != null) {
+            return result;
+        }
+        String prefix = ownerPath + FEATURE_SEP;
+        for (var entry : this.options.features().entrySet()) {
+            String key = entry.getKey();
+            if (!key.startsWith(prefix) || key.indexOf(PATH_SEP, prefix.length()) >= 0) {
+                continue;
+            }
+            String name = entry.getValue().name();
+            if (name != null && EcoreNames.featureLabelFor(name).equals(label)) {
+                return entry.getValue();
+            }
+        }
+        return null;
+    }
+
     /** Creates the structural feature described by a given descriptor. */
-    private @Nullable EStructuralFeature createFeature(String ownerLabel, Descriptor descriptor) {
-        FeatureData data = this.featureData.get(ownerLabel + FEATURE_SEP + descriptor.name());
+    private @Nullable EStructuralFeature createFeature(String ownerLabel, String ownerPath,
+                                                      Descriptor descriptor) {
+        FeatureData data = featureDataFor(ownerPath, descriptor.name());
         EStructuralFeature result;
         String targetLabel = descriptor.targetLabel();
         EClassifier target = targetLabel == null
@@ -436,15 +618,23 @@ public class GraphsToEcore {
             attribute.setEType(dataTypeOf(sort, data));
             result = attribute;
         }
-        // the label is the repaired name; the metadata has the original one
-        result
-            .setName(data == null || data.originalName().isEmpty()
-                ? descriptor.name()
-                : data.originalName());
+        // the label is the repaired name; the record has the original one
+        String name = data == null
+            ? null
+            : data.name();
+        result.setName(name == null
+            ? descriptor.name()
+            : name);
         setBounds(result, descriptor, data);
         if (data != null) {
-            result.setOrdered(data.ordered());
-            result.setUnique(data.unique());
+            Boolean ordered = data.ordered();
+            if (ordered != null) {
+                result.setOrdered(ordered);
+            }
+            Boolean unique = data.unique();
+            if (unique != null) {
+                result.setUnique(unique);
+            }
         }
         return result;
     }
@@ -461,14 +651,21 @@ public class GraphsToEcore {
         Multiplicity mult = descriptor.indexed()
             ? null
             : descriptor.mult();
+        var bounds = data == null
+            ? null
+            : data.bounds();
         if (mult != null) {
             feature.setLowerBound(mult.lower());
             feature.setUpperBound(mult.isUnbounded()
                 ? -1
                 : mult.upper());
+        } else if (bounds != null) {
+            feature.setLowerBound(bounds.lower());
+            feature.setUpperBound(bounds.upper());
         } else if (data != null) {
-            feature.setLowerBound(data.lower());
-            feature.setUpperBound(data.upper());
+            // the record omits the bounds, so they are the Ecore defaults
+            feature.setLowerBound(0);
+            feature.setUpperBound(1);
         } else {
             // an attribute self-loop stands for a single value; an unannotated
             // edge for the Ecore default 0..*
@@ -483,10 +680,11 @@ public class GraphsToEcore {
      * the recorded declared type if there is one, otherwise the sort's default. */
     private EDataType dataTypeOf(Sort sort, @Nullable FeatureData data) {
         String declared = data == null
-            ? ""
-            : data.declaredType();
-        if (!declared.isEmpty()) {
-            if (this.classifiers.get(declared) instanceof EDataType custom) {
+            ? null
+            : data.type();
+        if (declared != null) {
+            EDataType custom = this.dataTypes.get(declared);
+            if (custom != null) {
                 return custom;
             }
             if (EcorePackage.eINSTANCE.getEClassifier(declared) instanceof EDataType standard) {
@@ -498,16 +696,36 @@ public class GraphsToEcore {
         return (EDataType) result;
     }
 
-    /** Wires up the opposite reference pairs recorded in the metadata. */
-    private void createOpposites(ResourceProperties properties) {
-        for (var record : records(properties, EcoreToGraphs.OPPOSITES_KEY, 2)) {
-            var one = this.features.get(record[0]);
-            var two = this.features.get(record[1]);
+    /** Wires up the recorded opposite reference pairs. */
+    private void createOpposites() {
+        for (var entry : this.options.opposites().entrySet()) {
+            var one = featureFor(entry.getKey());
+            var two = featureFor(entry.getValue());
             if (one instanceof EReference first && two instanceof EReference second) {
                 first.setEOpposite(second);
                 second.setEOpposite(first);
             }
         }
+    }
+
+    /** Returns the feature created for a given Ecore element path, if any.
+     * A path that qualifies a created feature further, or is qualified further
+     * by it, resolves to that feature as long as it does so uniquely. */
+    private @Nullable EStructuralFeature featureFor(String path) {
+        var result = this.featurePaths.get(path);
+        if (result != null) {
+            return result;
+        }
+        for (var entry : this.featurePaths.entrySet()) {
+            String key = entry.getKey();
+            if (isSuffix(path, key) || isSuffix(key, path)) {
+                if (result != null) {
+                    return null;
+                }
+                result = entry.getValue();
+            }
+        }
+        return result;
     }
 
     /** Analyses an intermediate (nodified edge) node of the type graph. */
@@ -828,22 +1046,36 @@ public class GraphsToEcore {
         return result;
     }
 
-    /** Returns the records of a metadata property, restricted to those of the right arity. */
-    private List<String[]> records(ResourceProperties properties, String key, int arity) {
-        String text = properties.getProperty(key);
-        List<String[]> result = new ArrayList<>();
-        if (text == null || text.isEmpty()) {
-            return result;
+    /** Returns the last segment of an Ecore element path. */
+    private static String lastSegment(String path) {
+        return path.substring(path.lastIndexOf(PATH_SEP) + 1);
+    }
+
+    /** Returns the segments of an Ecore element path. */
+    private static List<String> segments(String path) {
+        return Arrays.asList(path.split("\\" + PATH_SEP, -1));
+    }
+
+    /** Tests if one Ecore element path qualifies another further, i.e., if the
+     * segments of the second are a suffix of those of the first. */
+    private static boolean isSuffix(String suffix, String full) {
+        List<String> one = segments(suffix);
+        List<String> two = segments(full);
+        return two.size() >= one.size()
+            && two.subList(two.size() - one.size(), two.size()).equals(one);
+    }
+
+    /** The Ecore element path and kind that a type label was matched to.
+     * @param path the Ecore element path of the matched entry
+     * @param kind the recorded kind, defaulting to {@link Kind#CLASS}
+     */
+    private static record Match(String path, Kind kind) {
+        /** Overrides the generated hash code, which would use identity-based enum hashes. */
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.path, this.kind.ordinal());
         }
-        for (var record : EcoreToGraphs.split(text, EcoreToGraphs.RECORD_SEP_CHAR, false)) {
-            var fields = EcoreToGraphs.split(record, EcoreToGraphs.FIELD_SEP_CHAR, true);
-            if (fields.size() == arity) {
-                result.add(fields.toArray(new String[0]));
-            } else {
-                this.errors.add("Malformed '%s' metadata record '%s'", key, record);
-            }
-        }
-        return result;
+        // no additional members
     }
 
     /** Description of a structural feature, extracted from the type graph.
@@ -890,20 +1122,6 @@ public class GraphsToEcore {
      * @param node the graph node holding the value
      */
     private static record Indexed(int index, AspectNode node) {
-        // no additional members
-    }
-
-    /** The recorded data of a single structural feature.
-     * @param declaredType the name of the declared data type, or the empty string
-     * @param ordered the recorded {@code ordered} flag
-     * @param unique the recorded {@code unique} flag
-     * @param lower the recorded lower bound
-     * @param upper the recorded upper bound ({@code -1} if unbounded)
-     * @param originalName the Ecore name the label was repaired from, or the
-     * empty string if the label reproduces it
-     */
-    private static record FeatureData(String declaredType, boolean ordered, boolean unique,
-        int lower, int upper, String originalName) {
         // no additional members
     }
 
