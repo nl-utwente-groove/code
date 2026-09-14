@@ -21,6 +21,7 @@ Major release; `CHANGES-8_0_0.md` expands on every item below
 - Format errors have severities; warnings no longer block a grammar (gh #885, #904)
 - Duplicate node ids in a host graph merge the nodes (gh #780)
 - Quantifier levels on `test:`/`let:` edges are honoured (gh #725); clearer errors for disabled units (gh #560)
+- Indeterminate operations on quantified levels are rejected again, pending proper support (gh #911)
 - Control: dead out-parameter values no longer distinguish states; expression arguments fixed (gh #561)
 - Recipes: an undefined in-argument makes the call inapplicable; deleted out-parameters render as `_`
 - CTL always explores the full state space (gh #863); weak-until and release verdicts corrected
@@ -41,7 +42,7 @@ Major release; `CHANGES-8_0_0.md` expands on every item below
 - Unpublished third-party libraries are now on Maven Central; the GROOVE jar is a proper Java module again
 - Also resolved: gh #421, #732, #733 (partial), #756, #843, #865, #881, #901
 
-Release 7.5.3, 3 March 2026
+Release 7.5.3, 2 July 2026
 -------------------------------
 - Bug fix release after ICGT 2026 presentation
 - user sort now also supperted in type graphs (sic)
