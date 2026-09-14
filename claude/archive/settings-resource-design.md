@@ -26,9 +26,10 @@ lives at the `GrammarModel` level is stale: `bfe07e431`/`fcbd95338`
 64-bit content type (`3c8726600`, 2026-08-31, gh #897), and `05aef03d5`
 (2026-09-07) kept a failing settings sync from blocking shutdown.*
 
-*Open: all four "Deliberately deferred" items are untouched and filed as gh
-#898 (metadata into the settings file, EAnnotation defaults, generic keyed
-table editor, `system.properties` as the `system` schema). Related open issue:
+*Open: the four "Deliberately deferred" items are filed as gh #898. Item 1
+(metadata into the settings file) was done on 2026-09-15, see
+`ecore-metadata-settings.md`; EAnnotation defaults, the generic keyed table
+editor and `system.properties` as the `system` schema are untouched. Related open issue:
 gh #558.*
 
 *2026-07-31, revised 2026-08-02 and 2026-08-05. Follow-up to the Ecore porter

@@ -1,10 +1,16 @@
 # Design: Ecore round-trip metadata in the `ecore` settings resource
 
+*Status (2026-09-15): implemented as proposed. The note and the vocabulary
+(step 2) reached master through branch `ecore-metadata-settings` (140950da4);
+steps 3 to 5 are on branch `ecore-metadata-port` (36550a0f8 export from the
+records, 1a697a4f9 import writes the records, 3ff54a13b removal of the
+graph-property form), handed over for review on 2026-09-15. Deviations from
+the proposals are recorded under "Steps".*
+
 *2026-09-14. Item 1 of gh #898, deferred by the settings-resource design
-(`archive/settings-resource-design.md`) and reversing principle 3 of the porter
-design (`archive/ecore-porter-design.md`: "round-trip metadata rides on the
-graphs, not in extra resources"). Target: before release 8.0.0. Branch
-`ecore-metadata-settings`. The porter and its metadata landed on 2026-07-26 and
+(`settings-resource-design.md`) and reversing principle 3 of the porter
+design (`ecore-porter-design.md`: "round-trip metadata rides on the
+graphs, not in extra resources"). Target: before release 8.0.0. The porter and its metadata landed on 2026-07-26 and
 have not been released, so the graph-property format has no compatibility
 obligation.*
 
@@ -184,7 +190,6 @@ side-effect free; the action remains the only writer.
 5. Remove the graph-property reader, writer and constants. *(done; the
    `literal` classifier kind went with them, and the three passages of
    `junit/ecore/README.md` that showed the record syntax now show entries.)*
-6. Status blocks in the two archived notes; gh #898 comment.
-
-Steps 2 to 5 are Opus-scale once this note is agreed; step 2 has no behaviour
-change and is safe to land ahead of agreement on the rest.
+6. Status blocks in the two archived notes; gh #898 comment. *(status blocks
+   done 2026-09-15; the issue comment is drafted in the handover, to be posted
+   after the merge.)*

@@ -23,7 +23,6 @@ Status lines below are as of 2026-09-11.
 | [yfiles-distribution-options.md](yfiles-distribution-options.md) | What a release consists of now that a license-restricted yFiles edition exists: facts, options, decision. |
 | [yfiles-private-move-state.md](yfiles-private-move-state.md) | Handoff state for moving the yFiles backend source out of the public repo (branch `yfiles-private-move`, under review). Transient: delete after merge. |
 | [yworks-question-2026-09.md](yworks-question-2026-09.md) | Draft message to yWorks on distribution and source of the yFiles backend. Transient: delete once sent. |
-| [ecore-metadata-settings.md](ecore-metadata-settings.md) | gh #898 item 1: moving the Ecore round-trip metadata from type-graph properties into the `ecore` settings resource. Steps 2 to 5 done (vocabulary on `ecore-metadata-settings`, export/import/removal on `ecore-metadata-port`); only step 6, the status blocks and the issue comment, is left. |
 | [module-split-plan.md](module-split-plan.md) | gh #887, Maven module split. Phases 1–4 (preparatory decoupling) on master; phase 5, the split itself, not started. The yFiles add-on built the service-discovery and second-artifact machinery along a different seam; rescope proposed on the issue. |
 | [io-refactor-plan.md](io-refactor-plan.md) | Four-phase `io` plan of 2026-07-26. Phases 1–3 (conceptual layer removed, io simplified, Ecore porter) on master; phase 4 (constraint rules) not started. gh #907, #558 open. |
 | [gh763-810-plan.md](gh763-810-plan.md) | Composite-graph error tracing, gh #763 (gh #810 closed as duplicate). Plan only, none of its six commits done. |
@@ -78,6 +77,7 @@ Finished work, kept for the design rationale and rejected alternatives. Grouped 
 |---|---|
 | [ecore-porter-design.md](archive/ecore-porter-design.md) | The Ecore importer/exporter (phase 3 of the io plan). Implemented as designed; principle 4 contested by gh #907. |
 | [settings-resource-design.md](archive/settings-resource-design.md) | The SETTINGS resource kind and the Ecore mapping schema. Landed 2026-07-31 to 08-05; schema registry since inverted to `ServiceLoader`. Deferred items filed as gh #898. |
+| [ecore-metadata-settings.md](archive/ecore-metadata-settings.md) | gh #898 item 1: the Ecore round-trip metadata moved from type-graph properties into the `ecore` settings resource, fixing the hand-added-type export trap. Vocabulary on master; steps 3 to 5 on `ecore-metadata-port`, under review. |
 
 **Release and installers**
 
