@@ -133,13 +133,14 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
             result.setWrapStyleWord(true);
 
             // substitute a JTextArea's VK_ENTER action with our own that will
-            // stop an edit.
+            // stop an edit, and let VK_ESCAPE cancel it
             InputMap focusedInputMap = result.getInputMap(JComponent.WHEN_FOCUSED);
-            focusedInputMap.put(STOP_EDIT_KEY_1, STOP_EDIT_STRING);
-            focusedInputMap.put(STOP_EDIT_KEY_2, STOP_EDIT_STRING);
+            focusedInputMap.put(STOP_EDIT_KEY, STOP_EDIT_STRING);
+            focusedInputMap.put(CANCEL_EDIT_KEY, CANCEL_EDIT_STRING);
             focusedInputMap.put(NEWLINE_KEY_1, NEWLINE_STRING);
             focusedInputMap.put(NEWLINE_KEY_2, NEWLINE_STRING);
             result.getActionMap().put(STOP_EDIT_STRING, new StopEditAction());
+            result.getActionMap().put(CANCEL_EDIT_STRING, new CancelEditAction());
             result.getActionMap().put(NEWLINE_STRING, new NewlineAction());
             this.completion = new LabelCompletion(result);
             return result;
@@ -163,19 +164,28 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
 
         private final static String NEWLINE_STRING = "newline";
         private final static String STOP_EDIT_STRING = "stop";
+        private final static String CANCEL_EDIT_STRING = "cancel";
         private final static KeyStroke NEWLINE_KEY_1
             = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.SHIFT_DOWN_MASK);
         private final static KeyStroke NEWLINE_KEY_2
             = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK);
-        private final static KeyStroke STOP_EDIT_KEY_1
+        private final static KeyStroke STOP_EDIT_KEY
             = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
-        private final static KeyStroke STOP_EDIT_KEY_2
+        private final static KeyStroke CANCEL_EDIT_KEY
             = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
 
         private class StopEditAction extends AbstractAction {
             @Override
             public void actionPerformed(ActionEvent e) {
                 stopCellEditing();
+            }
+        }
+
+        /** Cancels the edit, discarding the edited text. */
+        private class CancelEditAction extends AbstractAction {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                cancelCellEditing();
             }
         }
 
