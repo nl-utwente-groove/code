@@ -9,22 +9,24 @@ All off the `yworks-migration` tip 103f6b74d, worktrees under `.claude/worktrees
 
 - `changelog-8_0_0` (52a16ffce, detached for review): change notes brought up to date with
   the installer and add-on work; 7.5.3 date corrected to 2 July 2026.
-- `release-8_0_0-prep` (9169da1b2, held by the main checkout): PDF manual and quick
+- `release-8_0_0-prep` (b72d9e711, held by the main checkout): PDF manual and quick
   reference chart dropped from the release, bundled README issue link fixed, the manual
-  proposal `claude/website-manual-8_0_0.md`, this note.
-- `release-8_0_0-fixes`, off 9169da1b2 in the worktree `release-8_0_0-prep` (the worktree
-  could not re-attach to the branch while the main checkout holds it): the checklist
-  items 4 and 8 below, the Generator `-x` usage text synchronised with `ExploreKey`, and
-  the answers to the open questions folded into the two notes (the manual note verbatim,
-  this note rewritten with the answers applied). Meant to be fast-forwarded onto
-  `release-8_0_0-prep`; the uncommitted answer edits in the main checkout are superseded by
-  its last commit and can be discarded there first.
+  proposal `claude/website-manual-8_0_0.md`, the checklist items 4 and 8 below, the
+  Generator `-x` usage text synchronised with `ExploreKey`, this note.
+- `release-8_0_0-usage-fix`, off b72d9e711 in the worktree `release-8_0_0-prep` (the
+  worktree cannot re-attach to the branch while the main checkout holds it): restores the
+  bare number forms `<n>` in the `-x` usage text, which the previous commit had wrongly
+  replaced by `beam:<n>`/`value:<n>` (the parser accepts both; the bare form is what
+  `unparse` writes), plus this note. To be fast-forwarded onto `release-8_0_0-prep`.
 - Website repository `nl-utwente-groove.github.io`: worktree `.claude/worktrees/release-8_0_0`,
-  branch `release-8_0_0` off `main`, committed (fb02d3a): `installing.md` (installers first,
-  generic `x_y_z` asset names, add-on section linking `YFILES-ADDON.md`), `mac.md`
-  (blocked `.dmg`), `index.md` (ModelChecker restored), `manual.md` (legacy PDF section
-  gone), `manual/introduction.md` (8.0.0, installers bundle Java). Branch
-  `quick-reference-drop` (worktree of the same name) is subsumed by this and can be deleted.
+  branch `release-8_0_0` off `main`, three commits, detached for review:
+  fb02d3a `installing.md` (installers first, generic `x_y_z` asset names, add-on section
+  linking `YFILES-ADDON.md`), `mac.md` (blocked `.dmg`), `index.md` (ModelChecker
+  restored), `manual.md` (legacy PDF section gone), `manual/introduction.md` (8.0.0,
+  installers bundle Java); 455cd12 the generated exploration-key reference (manual plan
+  step 1); 2238066 the multigraph documentation for gh #896 (step 3, with the fixture
+  grammar and two new figures from step 4). Branch `quick-reference-drop` (worktree of the
+  same name) is subsumed by this and can be deleted.
 - Quick reference chart: dropped 2026-09-14 (2012 tutorial poster by Tim Molderez for
   GROOVE 4.x, source never in a repository, Simulator screenshot unrenderable). The copy in
   the usermanual repo is left in place.
@@ -60,26 +62,35 @@ Derived from the answers in `claude/website-manual-8_0_0.md` (§5). Work in the 
 worktree `release-8_0_0`, one commit per step; the `manual.md` *Checked against* entry of a
 chapter moves to 8.0.0 in the commit that revises the chapter (see the last open decision).
 
-1. `MakeRefs.java`: replace `writeExploration()` by a page "Exploration keys" generated
-   from `explore.feature.ExploreKey` and its setting kinds (name, explanation, content
-   type, default marked), keeping a hand-written legacy `-s`/`-a` table at the end of the
-   same page, labelled as legacy shorthand. Rename the sidebar entry and the `manual.md`
-   bullet accordingly. Then regenerate all four reference pages against an 8.0.0 build
-   (`make-refs.sh`; version string from `GROOVE_SRC`).
+1. DONE (455cd12). `MakeRefs.java` generates "Reference: exploration keys" from
+   `ExploreKey` and its setting kinds: overview table, one section per key with the content
+   each alternative takes (descriptions mirror the hints of `ExploreConfigDialog`, which does
+   not expose them; `Goal.GRAPH` omitted as a future extension), and the legacy `-s`/`-a`/`-r`
+   options as the Generator's usage strings verbatim. `make-refs.sh` no longer needs
+   `GROOVE_SRC`: the version comes from `Version.getCurrentGrooveVersion()` of the build
+   (the source file it used to read holds the unfiltered `${revision}`). All four pages
+   were regenerated from a 7.5.4-SNAPSHOT build of the candidate; regenerate at the tag
+   with the release classpath so the pages say 8.0.0.
 2. `verification.md`: drop the hand-written key table in favour of a link to the generated
    page (the maintainer wants to see the result before deciding), rewrite the Simulator
    exploration part for settings resources and the rebuilt dialog, add `-seed`/`-log`,
    correct the `-s`/`-a` status, remove `ModelChecker -ltl`, drop the CTL completeness
    caveat. `goal=graph:<name>` is a future extension: do not document it.
-3. `basics.md`: new section on simple graphs versus multigraphs, `mult=k:`, and the
-   rule-side behaviour (gh #896); `advanced.md`: new section on transformation semantics
-   (`SPO-simple`, `SPO-multi`, `DPO`, DPO injectivity), the property table rows for
-   `semantics`, `regExpMatching`, `matchBound`, the `exploration` row corrected, the two
-   Ecore rows removed, `parallelEdges`/`ignoreRegExp` mentions replaced.
-4. `manual/graphs.gps`: resave at grammar version 3.12 with `semantics=SPO-multi` (it is
-   illustration material and must be able to hold parallel edges); draw the `mult=k:` and
-   DPO example graphs (the unused `multiple-edges-left/right.gst` fixtures are a start);
-   re-render with `make-figures.sh` using JGraph and diff the SVGs (expected changes: straight
+3. DONE (2238066). `basics.md`: "Parallel edges" section under Graphs, a reader-plus-eraser
+   paragraph under Rules, DPO eraser injectivity under Injectivities; `advanced.md`: property
+   table (`semantics`, `regExpMatching`, `matchBound`, `checkDangling` implied by DPO,
+   `exploration` names a settings resource, Ecore rows gone) and the explanatory bullets
+   rebuilt around the transformation semantics. The *Checked against* entries stay at 7.5.3:
+   both chapters still have other 8.0.0 items open (string escapes, remark merging, duplicate
+   node ids, `use=q:` on `test:`/`let:`, priority/control conflict). gh #896 can be closed
+   once the branch is merged; it still names the property `parallelEdges`.
+4. PARTLY DONE: `graphs.gps/system.properties` hand-written at grammar version 3.12 with
+   `semantics=SPO-multi` (obsolete `subtypes`/`enableControl` keys dropped); new fixtures
+   `parallel-edges.gst` and `parallel-rule.gpr` rendered to four SVGs (edge bend points
+   were needed, since parallel edges between the same nodes are drawn on top of each
+   other). Still to do: re-render all figures with `make-figures.sh` against the release
+   classpath (`multiple-edges-left/right.gst` turned out to show differently labelled edges,
+   not parallel copies, so they were not used) and diff the SVGs (expected changes: straight
    edges between axis-aligned nodes, filled embargo arrow heads, `!a` no longer rendered as
    a regular expression). One yFiles-rendered figure only if it shows a visible difference:
    with a stored layout the two backends differ cosmetically (fonts, arrow heads, label
