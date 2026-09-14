@@ -488,7 +488,7 @@ public class EcoreNames {
         return result;
     }
 
-    /** Returns the kind recorded for a given classifier in the round-trip metadata. */
+    /** Returns the textual kind recorded for a given classifier in the mapping. */
     public static String kindOf(EClassifier classifier) {
         if (classifier instanceof EEnum) {
             return ENUM_KIND;
@@ -515,6 +515,4 @@ public class EcoreNames {
     public static final String ENUM_KIND = "enum";
     /** Metadata kind of a data type. */
     public static final String DATATYPE_KIND = "datatype";
-    /** Metadata kind of an enumeration literal. */
-    public static final String LITERAL_KIND = "literal";
 }

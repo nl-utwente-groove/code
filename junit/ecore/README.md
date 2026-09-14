@@ -120,8 +120,8 @@ book1 -tags-> string:"fiction"      book1 -tags-> string:"classic"
 book1 -category-> Category$FICTION  alice -favourites-> book1
 ```
 
-The `eOpposite` pairing is not structural; it is recorded as
-`ecoreOpposites = Shop.items|shop$Item.shop`.
+The `eOpposite` pairing is not structural; it is recorded in the `ecore`
+settings resource as `shop.Shop.items.opposite = shop.Item.shop`.
 
 **Covering tests.** `testMetamodel`, `testMetadata`, `testCompilation`,
 `testInstance`, `testUseIdentifiers`, `testOrderingSetSemantics`,
@@ -243,8 +243,8 @@ String values are quoted GROOVE-style: both a `"` and a `\` inside the value
 are escaped with a backslash (since grammar version 3.12; before that only the
 quote was escaped, so a value ending in a backslash broke the graph).
 `EDate` and the custom `Colour` are both approximated by strings; the declared
-type is kept in the metadata (`Values|dateValue|EDate|...`,
-`Values|customValue|Colour|...`), so an export puts it back.
+type is kept in the records (`Values.dateValue.feature = type=EDate`,
+`Values.customValue.feature = type=Colour`), so an export puts it back.
 
 Under `ordering=index` only the many-valued `aliases` changes, to
 `Values$aliases` with `edge:"aliases"`, `int:index`, `string:val`.
@@ -319,10 +319,10 @@ type-checks.
 
 The opposite pair is `Station.next` / `Station.previous`. Both directions become
 ordinary edges — the encoding does not enforce the pairing — and only the
-metadata knows they belong together:
+records know they belong together:
 
 ```
-ecoreOpposites = Station.next|Station.previous
+network.Station.next.opposite = network.Station.previous
 
 north -next-> middle      middle -previous-> north
 middle -next-> south      south -previous-> middle
@@ -395,28 +395,32 @@ line   type:Line_HYPH_Item  id:line  let:code=2
        let:unit_UNKN_price=9.5  let:unit_price=7.25  let:_self_="own"
 ```
 
-The metadata carries the package paths, the classifier names, and the name of
+The records carry the package paths, the classifier names, and the name of
 every feature whose label does not reproduce it, so an export reconstructs the
 package tree and puts all four names back:
 
 ```
-ecorePackages = packages|http://groove.utwente.nl/ecore/packages|packages;
-                packages.core|http://groove.utwente.nl/ecore/packages/core|core;
-                packages.core.detail|http://groove.utwente.nl/ecore/packages/core/detail|detail
-ecoreTypes    = packages$Item|packages|Item|class;core$Item|packages.core|Item|class;
-                Line_HYPH_Item|packages.core|Line-Item|class;
-                detail$Item|packages.core.detail|Item|class
-ecoreFeatures = packages$Item|entries||false|true|0|-1|;
-                core$Item|details||true|true|0|-1|;
-                Line_HYPH_Item|_self_||true|true|0|1|self;
-                Line_HYPH_Item|unit_UNKN_price||true|true|0|1|unit.price;
-                Line_HYPH_Item|unit_price||true|true|0|1|unit-price
+packages.package = nsURI=http://groove.utwente.nl/ecore/packages
+packages.core.package = nsURI=http://groove.utwente.nl/ecore/packages/core
+packages.core.detail.package = nsURI=http://groove.utwente.nl/ecore/packages/core/detail
+packages.Item.kind = class
+packages.core.Item.kind = class
+packages.core.Line-Item.kind = class
+packages.core.detail.Item.kind = class
+packages.core.Line-Item.self.feature = name=self
+packages.core.Line-Item.unit_UNKN_price.feature = name=unit.price
+packages.core.Line-Item.unit-price.feature = name=unit-price
+packages.Item.typeName = packages$Item
+packages.core.Item.typeName = core$Item
+packages.core.Line-Item.typeName = Line_HYPH_Item
+packages.core.detail.Item.typeName = detail$Item
 ```
 
-(the line breaks are for readability; the recorded values have none). A feature
-record is `owner|feature|declaredType|ordered|unique|lower|upper|originalName`,
-with the last field empty — as in the first two records above — whenever the
-label already is the Ecore name.
+A `feature` entry only mentions the fields that deviate from the Ecore
+defaults, so here only the `name` of the three repaired attributes; the
+`entries` and `details` references are recorded for their multiplicity
+instead. `unit.price` stands under its GROOVE label rather than its Ecore
+name, since a name with a dot in it cannot be a single key segment.
 
 Under `ordering=index` the intermediate node of `core$Item.details` is named
 after the *already qualified* owner label: `type:core$Item$details`.

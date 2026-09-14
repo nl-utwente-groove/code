@@ -750,65 +750,6 @@ public class EcoreToGraphs {
         return result;
     }
 
-    /** Appends a record of (escaped) fields to a metadata property value. */
-    private static void append(StringBuilder text, String... fields) {
-        if (!text.isEmpty()) {
-            text.append(RECORD_SEP);
-        }
-        for (int i = 0; i < fields.length; i++) {
-            if (i > 0) {
-                text.append(FIELD_SEP);
-            }
-            text.append(escape(fields[i]));
-        }
-    }
-
-    /** Escapes the separators (and the escape character) in a metadata field. */
-    public static String escape(String field) {
-        StringBuilder result = new StringBuilder();
-        for (int i = 0; i < field.length(); i++) {
-            char c = field.charAt(i);
-            if (c == ESCAPE_CHAR || c == RECORD_SEP_CHAR || c == FIELD_SEP_CHAR) {
-                result.append(ESCAPE_CHAR);
-            }
-            result.append(c);
-        }
-        return result.toString();
-    }
-
-    /**
-     * Splits a metadata property value at its unescaped separators.
-     * @param text the value to be split
-     * @param separator the separator to split at
-     * @param unescape if {@code true}, the escape characters are removed from the
-     * result; if {@code false} they are retained, so that the parts can be split
-     * again at a finer separator
-     */
-    public static List<String> split(String text, char separator, boolean unescape) {
-        List<String> result = new ArrayList<>();
-        StringBuilder current = new StringBuilder();
-        boolean escaped = false;
-        for (int i = 0; i < text.length(); i++) {
-            char c = text.charAt(i);
-            if (escaped) {
-                current.append(c);
-                escaped = false;
-            } else if (c == ESCAPE_CHAR) {
-                if (!unescape) {
-                    current.append(c);
-                }
-                escaped = true;
-            } else if (c == separator) {
-                result.add(current.toString());
-                current.setLength(0);
-            } else {
-                current.append(c);
-            }
-        }
-        result.add(current.toString());
-        return result;
-    }
-
     /** Returns a given string, or the empty string if it is {@code null}. */
     private static String nonNull(@Nullable String text) {
         return text == null
@@ -856,31 +797,6 @@ public class EcoreToGraphs {
         }
         return result;
     }
-
-    /** Graph property key under which the package data is recorded. */
-    public static final String PACKAGES_KEY = "ecorePackages";
-    /** Graph property key under which the classifier data is recorded. */
-    public static final String TYPES_KEY = "ecoreTypes";
-    /** Graph property key under which the per-feature data is recorded.
-     * Only features are recorded whose Ecore declaration cannot be reconstructed
-     * from the type graph alone; the records are
-     * {@code owner|feature|declaredType|ordered|unique|lower|upper|originalName},
-     * with {@code originalName} empty unless the feature label had to be
-     * repaired.
-     */
-    public static final String FEATURES_KEY = "ecoreFeatures";
-    /** Graph property key under which the opposite reference pairs are recorded. */
-    public static final String OPPOSITES_KEY = "ecoreOpposites";
-    /** Separator between the records of a metadata property value. */
-    public static final char RECORD_SEP_CHAR = ';';
-    /** Separator between the fields of a metadata record. */
-    public static final char FIELD_SEP_CHAR = '|';
-    /** Character escaping a separator (or itself) inside a metadata field. */
-    public static final char ESCAPE_CHAR = '\\';
-    /** Separator between the records of a metadata property value. */
-    public static final String RECORD_SEP = String.valueOf(RECORD_SEP_CHAR);
-    /** Separator between the fields of a metadata record. */
-    public static final String FIELD_SEP = String.valueOf(FIELD_SEP_CHAR);
 
     /** Separator between the segments of an Ecore element path. */
     private static final String SEGMENT_SEP = ".";
