@@ -9,12 +9,12 @@ by yWorks GmbH.
 At the first start of a new GROOVE version whose add-on is not yet installed, the
 Simulator asks once whether to download and install it. If you choose not to
 install it, the vintage JGraph-based backend of the standard release is used.
-The same choice remains available afterwards under the View menu, "yFiles add-on".
+The same choice remains available afterwards under the View menu, "YFiles add-on".
 
 Once installed, GROOVE loads this directory from its extension directory at
 start-up and the yFiles backend becomes the default (the choice between
-installed backends is in the View menu, under "Graph backend", and takes
-effect at the next start), adding yFiles' layout algorithms to the layout
+installed backends is in the View menu, under Options, "Graph backend", and
+takes effect at the next start), adding yFiles' layout algorithms to the layout
 menu; the Imager selects it with its `-b` option.
 
 The add-on is built for one GROOVE version, recorded in the manifest of its
