@@ -15,9 +15,10 @@ All off the `yworks-migration` tip 103f6b74d, worktrees under `.claude/worktrees
 - `release-8_0_0-fixes`, off 9169da1b2 in the worktree `release-8_0_0-prep` (the worktree
   could not re-attach to the branch while the main checkout holds it): the checklist
   items 4 and 8 below, the Generator `-x` usage text synchronised with `ExploreKey`, and
-  the answers to the open questions folded into the two notes. Meant to be fast-forwarded
-  onto `release-8_0_0-prep`; the uncommitted answer edits in the main checkout are
-  contained verbatim in its last commit and can be discarded there first.
+  the answers to the open questions folded into the two notes (the manual note verbatim,
+  this note rewritten with the answers applied). Meant to be fast-forwarded onto
+  `release-8_0_0-prep`; the uncommitted answer edits in the main checkout are superseded by
+  its last commit and can be discarded there first.
 - Website repository `nl-utwente-groove.github.io`: worktree `.claude/worktrees/release-8_0_0`,
   branch `release-8_0_0` off `main`, committed (fb02d3a): `installing.md` (installers first,
   generic `x_y_z` asset names, add-on section linking `YFILES-ADDON.md`), `mac.md`
