@@ -29,7 +29,7 @@ More detailed instructions can be found in `IF-WINDOWS-OR-MACOS-BLOCKS-THE-INSTA
 <details>
 <summary><b>The yFiles add-on</b></summary>
 
-The `groove-…-yfiles-add-on.zip` is _not_ a stand-alone asset; instead, it is a separate backend with stricter usage requirements than the main tool: in particular, you may not use it for commercial purposes. This add-on will either be loaded automatically (on demand) the first time you start up a newly released GROOVE simulator, or you can download the zip and import it into the Simulator yourself.
+The `groove-…-yfiles-addon.zip` is _not_ a stand-alone asset; instead, it is a separate backend with stricter usage requirements than the main tool: in particular, you may not use it for commercial purposes. The first time you start a newly released GROOVE Simulator, it asks once whether to download and install this add-on; the same choice remains available afterwards under the `View` menu, which also installs the add-on from a zip you downloaded yourself.
 
 More precise usage restrictions for the yFiles add-on can be found in `YFILES-ADDON.md` inside the zip.
 

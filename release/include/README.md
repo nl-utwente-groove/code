@@ -16,9 +16,8 @@ following ways:
    program in question. If you use `-h` as parameter, you will get information
    about the (other) command-line parameters.
 
-See usermanual.pdf for instructions on how to use the GROOVE Tool Set
-(including these installation instructions), or quick-reference.pdf for a quick
-non-comprehensive overview.
+See the user manual at <https://nl-utwente-groove.github.io/manual.html> for
+instructions on how to use the GROOVE Tool Set.
 
 The yFiles add-on
 -----------------
@@ -38,8 +37,8 @@ Features
 --------
 
 Here is a brief list of the features supported by GROOVE. For details please
-consult the included user manual or quick reference poster,
-or the YouTube demos on [the GROOVE web site](https://groove.cs.utwente.nl).
+consult the online user manual or the YouTube demos on
+[the GROOVE web site](https://groove.cs.utwente.nl).
 
 *  Visual editing and simulation of graphs and graph transformation rules
 *  Global rule priorities or control program
@@ -68,7 +67,7 @@ Contact
 -------
 
 Any comments, bug reports and reactions are welcome, either as
-[a github issue](http://github.nl/nl-utwente-groove/code/issues) or through an email to
+[a github issue](https://github.com/nl-utwente-groove/code/issues) or through an email to
 
 Arend Rensink
 University of Twente

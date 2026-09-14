@@ -30,6 +30,8 @@ Status lines below are as of 2026-09-11.
 | [critical-pair-review.md](critical-pair-review.md) | gh #886, revival of the critical-pair package. Review and plan only, nothing implemented. |
 | [fixable-builder-survey.md](fixable-builder-survey.md) | Which `Fixable` implementors should become builders. Step 1 (`AspectLabel`) done 2026-09-06; the rest open, no `Buildable` type. |
 | [download-stats.md](download-stats.md) | Download statistics from GitHub releases, SourceForge-style: daily counter snapshots differenced at render time. Repository and collector live since 2026-09-13 (`nl-utwente-groove/download-stats`); SourceForge import and website page open. |
+| [website-manual-8_0_0.md](website-manual-8_0_0.md) | gh #896 and the 8.0.0 release: what the web user manual (website repo, `manual/`) needs, change by change, plus the wrong statements and the broken reference-page generator. Proposal only, nothing written yet. |
+| [release-8_0_0-state.md](release-8_0_0-state.md) | Handoff state for the 8.0.0 release: branches, ordered checklist before the tag, open website and manual decisions. Transient: delete after the release. |
 ## Archive
 
 Finished work, kept for the design rationale and rejected alternatives. Grouped by theme.

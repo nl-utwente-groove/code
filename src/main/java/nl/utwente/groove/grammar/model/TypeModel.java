@@ -297,6 +297,11 @@ public class TypeModel extends GraphBasedModel<TypeGraph> {
                 model.addInheritance(typeSource, typeTarget);
             } else {
                 TypeLabel typeLabel = modelEdge.getTypeLabel();
+                if (typeLabel == null) {
+                    // only possible if the label was requested before the edge was parsed
+                    throw new FormatException("Edge '%s' has no type label", modelEdge.label(),
+                        modelEdge);
+                }
                 typeEdge = model.addEdge(typeSource, typeLabel, typeTarget);
                 typeEdge.setComposite(modelEdge.has(COMPOSITE));
                 typeEdge.setInMult(modelEdge.getInMult());
