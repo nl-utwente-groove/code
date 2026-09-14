@@ -154,20 +154,31 @@ public interface GraphBackend {
      * preferred name if there is one, otherwise the first in the {@link #RANKING}.
      * @param available the available backends, in discovery order
      * @param preferred the name of the preferred backend; {@code null} if there is none
+     * @see #selectName
      */
     static GraphBackend select(List<GraphBackend> available, @Nullable String preferred) {
+        String name = selectName(available.stream().map(GraphBackend::getName).toList(), preferred);
+        return available.stream().filter(b -> b.getName().equals(name)).findFirst().orElseThrow();
+    }
+
+    /**
+     * Selects a backend name among a non-empty list of available ones: the preferred
+     * name if it is among them, otherwise the first in the {@link #RANKING}; names not
+     * in the ranking come last, in list order. This is the selection of
+     * {@link #instance()}, applicable by name alone to a run yet to come, such as the
+     * next start after an add-on was installed.
+     * @param available the names of the available backends, in discovery order
+     * @param preferred the name of the preferred backend; {@code null} if there is none
+     * @throws IllegalStateException if the list is empty
+     */
+    static String selectName(List<String> available, @Nullable String preferred) {
         if (available.isEmpty()) {
             throw Exceptions.illegalState("No graph backend available");
         }
-        for (var backend : available) {
-            if (backend.getName().equals(preferred)) {
-                return backend;
-            }
+        if (preferred != null && available.contains(preferred)) {
+            return preferred;
         }
-        return available
-            .stream()
-            .min(Comparator.comparingInt(Instance::rank))
-            .orElseThrow();
+        return available.stream().min(Comparator.comparingInt(Instance::rank)).orElseThrow();
     }
 
     /** Name of the JGraph backend, the one every distribution has. */
@@ -226,9 +237,9 @@ public interface GraphBackend {
             return result;
         }
 
-        /** Returns the position of a backend in the ranking; unranked backends come last. */
-        private static int rank(GraphBackend backend) {
-            int result = RANKING.indexOf(backend.getName());
+        /** Returns the position of a backend name in the ranking; unranked names come last. */
+        private static int rank(String name) {
+            int result = RANKING.indexOf(name);
             return result < 0
                 ? RANKING.size()
                 : result;

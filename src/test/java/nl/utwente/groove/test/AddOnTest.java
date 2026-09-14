@@ -124,6 +124,38 @@ public class AddOnTest {
     }
 
     /**
+     * Checks that whether the add-on loads at the next start follows the extension
+     * directory as it is now: the jars in the add-on's directory, overridden by a
+     * pending installation or removal.
+     */
+    @Test
+    void loadsAtNextStartFollowsTheDirectory(@TempDir Path tmp) throws IOException {
+        Path ext = tmp.resolve("ext");
+        AddOn addOn = AddOn.YFILES;
+        assertFalse(addOn.loadsAtNextStart(ext));
+        Path zip = writeZip(tmp.resolve("good.zip"),
+                            Map.of("yfiles/groove-yfiles.jar", jar(Version.NUMBER),
+                                   "yfiles/lib.jar", jar(null)));
+        assertEquals(Outcome.DONE, addOn.install(zip, ext));
+        assertTrue(addOn.loadsAtNextStart(ext));
+        // a pending removal takes precedence, until it is cancelled
+        Path marker = Extensions.removeMarker(ext, addOn.getName());
+        Files.createFile(marker);
+        assertFalse(addOn.loadsAtNextStart(ext));
+        addOn.reactivate(ext);
+        assertTrue(addOn.loadsAtNextStart(ext));
+        // a stale jar does not load, whether or not there is an unversioned one next to it
+        Path dir = addOn.getDir(ext);
+        Files.write(dir.resolve("groove-yfiles.jar"), jar("0.0.0"));
+        assertFalse(addOn.loadsAtNextStart(ext));
+        // a pending installation takes precedence over the stale jar
+        Files.createDirectories(Extensions.pendingInstallDir(ext, addOn.getName()));
+        assertTrue(addOn.loadsAtNextStart(ext));
+        assertEquals(Outcome.DONE, addOn.uninstall(ext));
+        assertFalse(addOn.loadsAtNextStart(ext));
+    }
+
+    /**
      * Checks that a removal or replacement of an add-on whose files cannot be deleted is
      * deferred to the next scan, which hides the add-on until it succeeds; and that a
      * pending removal and a pending installation cancel one another.

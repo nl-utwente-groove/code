@@ -66,7 +66,11 @@ public final class AddOn {
         this.noticeName = noticeName;
     }
 
-    /** Returns the name of this add-on: the name of its directory and the infix of its zip. */
+    /**
+     * Returns the name of this add-on: the name of its directory and the infix of its zip,
+     * and also the name of the graph backend it provides (see
+     * {@link nl.utwente.groove.gui.view.GraphBackend#getName()}).
+     */
     public String getName() {
         return this.name;
     }
@@ -113,6 +117,41 @@ public final class AddOn {
         } else {
             return Pending.NONE;
         }
+    }
+
+    /**
+     * Indicates if this add-on is loaded at the next start of GROOVE, going by the
+     * extension directory as it is now rather than by the scan at start-up (see
+     * {@link #getStatus}), so that an installation or removal during this run counts:
+     * a pending installation is loaded (it was checked to be for the running version
+     * when it was installed), an add-on with a pending removal is not, and otherwise the
+     * add-on is loaded if its directory holds a jar built for the running GROOVE version.
+     * @param extensionDir the extension directory
+     */
+    public boolean loadsAtNextStart(Path extensionDir) {
+        return switch (getPending(extensionDir)) {
+        case INSTALL -> true;
+        case REMOVE -> false;
+        case NONE -> hasJarForVersion(getDir(extensionDir));
+        };
+    }
+
+    /** Tests if a directory exists and holds a jar built for the running GROOVE version. */
+    private static boolean hasJarForVersion(Path dir) {
+        if (!Files.isDirectory(dir)) {
+            return false;
+        }
+        try {
+            for (Path path : jars(dir)) {
+                Jar jar = Jar.read(path);
+                if (jar.version() != null && jar.accepted()) {
+                    return true;
+                }
+            }
+        } catch (IOException exc) {
+            LOGGER.log(Level.WARNING, "Cannot read the jars of {0}: {1}", dir, exc);
+        }
+        return false;
     }
 
     /**

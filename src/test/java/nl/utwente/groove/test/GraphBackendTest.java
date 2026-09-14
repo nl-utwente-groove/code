@@ -72,6 +72,19 @@ public class GraphBackendTest {
         assertThrows(IllegalStateException.class, () -> GraphBackend.select(List.of(), null));
     }
 
+    @Test
+    void selectionByNameFollowsTheSameRules() {
+        List<String> available = List.of("other", GraphBackend.JGRAPH, GraphBackend.YFILES);
+        assertEquals(GraphBackend.YFILES, GraphBackend.selectName(available, null));
+        assertEquals(GraphBackend.YFILES, GraphBackend.selectName(available, "unknown"));
+        assertEquals(GraphBackend.JGRAPH, GraphBackend.selectName(available, GraphBackend.JGRAPH));
+        assertEquals("other", GraphBackend.selectName(available, "other"));
+        assertEquals(GraphBackend.JGRAPH,
+                     GraphBackend.selectName(List.of("other", GraphBackend.JGRAPH), null));
+        assertEquals("other", GraphBackend.selectName(List.of("other"), null));
+        assertThrows(IllegalStateException.class, () -> GraphBackend.selectName(List.of(), null));
+    }
+
     /** Backend stand-in with a name and no canvases. */
     private static class StandIn implements GraphBackend {
         StandIn(String name) {
