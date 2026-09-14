@@ -19,6 +19,7 @@ package nl.utwente.groove.gui;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -48,10 +49,12 @@ import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
@@ -117,8 +120,9 @@ public class Options implements Cloneable {
     /**
      * Adds a menu to choose the graph-visualisation backend among the available ones,
      * and returns the associated (fresh) menu item. The choice is stored as a user
-     * preference and takes effect at the next start; the backend in use is initially
-     * selected.
+     * preference and takes effect at the next start, as a dialog reminds the user
+     * whenever a backend other than the one in use is chosen; the backend in use is
+     * initially selected.
      * @see GraphBackend#instance()
      */
     private final JMenu addBackendMenu() {
@@ -128,11 +132,24 @@ public class Options implements Cloneable {
         String current = GraphBackend.instance().getName();
         for (GraphBackend backend : GraphBackend.available()) {
             String name = backend.getName();
-            JRadioButtonMenuItem item = new JRadioButtonMenuItem(backend.getDisplayName());
+            String displayName = backend.getDisplayName();
+            JRadioButtonMenuItem item = new JRadioButtonMenuItem(displayName);
             item.setSelected(name.equals(current));
             item.addItemListener(e -> {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
                     userPrefs.put(GRAPH_BACKEND_OPTION, name);
+                    if (!name.equals(current)) {
+                        // postponed until the menu has closed, so the dialog is
+                        // centred on the window the menu belonged to
+                        SwingUtilities.invokeLater(() -> JOptionPane
+                            .showMessageDialog(KeyboardFocusManager
+                                .getCurrentKeyboardFocusManager()
+                                .getActiveWindow(),
+                                               "The graph backend is set to " + displayName
+                                                   + "; the change takes effect at the next start of the Simulator.",
+                                               "Graph backend changed",
+                                               JOptionPane.INFORMATION_MESSAGE));
+                    }
                 }
             });
             group.add(item);
