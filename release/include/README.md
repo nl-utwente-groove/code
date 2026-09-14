@@ -68,7 +68,7 @@ Contact
 -------
 
 Any comments, bug reports and reactions are welcome, either as
-[a github issue](http://github.nl/nl-utwente-groove/code/issues) or through an email to
+[a github issue](https://github.com/nl-utwente-groove/code/issues) or through an email to
 
 Arend Rensink
 University of Twente
