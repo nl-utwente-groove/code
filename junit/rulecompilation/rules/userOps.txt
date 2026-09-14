@@ -1,18 +1,6 @@
 == rule allRandom
-signature: ()
-hidden: []
-anchor: []
-Existential allRandom [non-positive]
-  root: nodes [] edges []
-  lhs: nodes [int:10:int] edges []
-  rhs: nodes [int:10:int] edges []
-  Universal allRandom[0] [non-positive]
-    root: nodes [int:10:int] edges []
-    lhs: nodes [n1:Ω#, int:10:int, p3:user:randomInt(int), x4:int] edges []
-    rhs: nodes [n1:Ω#, int:10:int, p3:user:randomInt(int), x4:int] edges [n1--x-->x4]
-    Existential allRandom[0,0]
-      root: nodes [] edges []
-      lhs: nodes [] edges []
+errors:
+  - Indeterminate operator 'randomInt' not allowed on quantified level (see gh #911)
 == rule charAt
 signature: ()
 hidden: []

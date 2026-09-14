@@ -16,12 +16,12 @@
         </node>
         <edge from="n5" to="n5">
             <attr name="label">
-                <string>let:x=4</string>
+                <string>let:x=6</string>
             </attr>
         </edge>
         <edge from="n6" to="n6">
             <attr name="label">
-                <string>let:y=0</string>
+                <string>let:y=10</string>
             </attr>
         </edge>
     </graph>
