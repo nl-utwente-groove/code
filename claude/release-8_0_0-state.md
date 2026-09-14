@@ -17,8 +17,12 @@ detached for review:
   `.claude/worktrees/release-8_0_0`, branch `release-8_0_0` off `main`, **uncommitted**:
   `installing.md` (installers, zips, add-on), `mac.md` (blocked `.dmg`),
   `manual/introduction.md` (7.5.3 -> 8.0.0). Awaiting the answers under "Open decisions".
-- A chip "Check the quick-reference chart against GROOVE 8.0.0" was spawned; the PDF has
-  no source anywhere under `C:\Groove` (cairo-produced, probably Inkscape).
+- Quick reference chart: checked 2026-09-14 and dropped from the release (branch
+  `quick-reference` off `release-8_0_0-prep`; website link removed on branch
+  `quick-reference-drop` of the website repo). The PDF is a 2012 tutorial poster by Tim
+  Molderez (Antwerp) showing GROOVE 4.x; its source was never in any repository, and its
+  Simulator screenshot does not render in poppler or pdfium. The copy in the usermanual
+  repo is left in place.
 
 ## Checklist
 
@@ -61,8 +65,8 @@ Website draft (answer yes/no unless stated):
 5. Should `index.md` mention 8.0.0 or the installers?
 6. `index.md` comments ModelChecker out as "not available right now", while the installers
    register a ModelChecker launcher. Restore it?
-7. `manual.md`: drop the "Full user manual" PDF link (usermanual repo, 2024), keep the
-   quick-reference link?
+7. `manual.md`: drop the "Full user manual" PDF link (usermanual repo, 2024)? (The
+   quick-reference link is already gone, see above.)
 8. "MAC users need to get the Open JDK" kept unchanged. Still true?
 
 Settled without asking: add-on asset name `yfiles-addon`; menu path View > Options >

@@ -17,8 +17,7 @@ following ways:
    about the (other) command-line parameters.
 
 See the user manual at <https://nl-utwente-groove.github.io/manual.html> for
-instructions on how to use the GROOVE Tool Set, or quick-reference.pdf for a
-quick non-comprehensive overview.
+instructions on how to use the GROOVE Tool Set.
 
 The yFiles add-on
 -----------------
@@ -38,8 +37,8 @@ Features
 --------
 
 Here is a brief list of the features supported by GROOVE. For details please
-consult the online user manual or the included quick reference poster,
-or the YouTube demos on [the GROOVE web site](https://groove.cs.utwente.nl).
+consult the online user manual or the YouTube demos on
+[the GROOVE web site](https://groove.cs.utwente.nl).
 
 *  Visual editing and simulation of graphs and graph transformation rules
 *  Global rule priorities or control program
