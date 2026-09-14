@@ -206,8 +206,11 @@ public class Rule implements Action, Fixable {
         testMutable();
         try {
             this.priority = properties.parseProperty(Key.PRIORITY).value(ValueType.INTEGER);
-            this.transitionLabel
+            var transitionLabel
                 = properties.parseProperty(Key.TRANSITION_LABEL).value(ValueType.STRING);
+            this.transitionLabel = transitionLabel.isBlank()
+                ? null
+                : LabelFormat.parse(transitionLabel);
             this.formatString = properties.parseProperty(Key.FORMAT).value(ValueType.STRING);
         } catch (FormatException exc) {
             throw Exceptions.illegalState("Error in graph properties: %s", exc.getMessage());
@@ -215,15 +218,12 @@ public class Rule implements Action, Fixable {
     }
 
     @Override
-    public String getSpecialLabel() {
-        var result = this.transitionLabel;
-        return result == null
-            ? ""
-            : result;
+    public Optional<LabelFormat> getSpecialLabelFormat() {
+        return Optional.ofNullable(this.transitionLabel);
     }
 
-    /** The optional transition label. */
-    private @Nullable String transitionLabel;
+    /** The optional transition label format. */
+    private @Nullable LabelFormat transitionLabel;
 
     @Override
     public Optional<String> getFormatString() {

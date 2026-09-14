@@ -18,7 +18,6 @@ package nl.utwente.groove.grammar;
 
 import java.awt.Color;
 import java.util.HashMap;
-import java.util.IllegalFormatException;
 import java.util.Map;
 import java.util.Optional;
 
@@ -61,11 +60,20 @@ public interface Action extends Callable, Comparable<Action> {
     public int getPriority();
 
     /**
-     * Returns the special label to be used in the LTS when this action is applied.
+     * Returns the special label format to be used in the LTS when this action is applied,
+     * if any. If absent, the qualified action name is used.
+     */
+    default public Optional<LabelFormat> getSpecialLabelFormat() {
+        return Optional.empty();
+    }
+
+    /**
+     * Returns the special label to be used in the LTS when this action is applied,
+     * as a format string (see {@link #getSpecialLabelFormat()}).
      * If this is the empty string, the qualified action name is used.
      */
     default public String getSpecialLabel() {
-        return "";
+        return getSpecialLabelFormat().map(LabelFormat::getFormat).orElse("");
     }
 
     /** Constructs the label string for a transition based on this action,
@@ -78,10 +86,10 @@ public interface Action extends Callable, Comparable<Action> {
      * property are to be regarded
      */
     default public String toLabelString(HostNode[] args, boolean special) {
-        StringBuilder result = new StringBuilder();
-        var specialLabel = getSpecialLabel();
-        // First try to construct a special label
-        if (special & !specialLabel.isBlank()) {
+        var format = special
+            ? getSpecialLabelFormat()
+            : Optional.<LabelFormat>empty();
+        if (format.isPresent()) {
             Object[] stringArgs = new Object[args.length];
             for (int i = 0; i < args.length; i++) {
                 var arg = args[i];
@@ -91,14 +99,9 @@ public interface Action extends Callable, Comparable<Action> {
                         ? vn.getValue()
                         : arg;
             }
-            try {
-                result.append(String.format(specialLabel, stringArgs));
-            } catch (IllegalFormatException e) {
-                // do nothing
-            }
-        }
-        // If that failed, form a regular label
-        if (result.isEmpty()) {
+            return format.get().apply(stringArgs);
+        } else {
+            StringBuilder result = new StringBuilder();
             result.append(getQualName());
             ThreeValued useParameters = getGrammarProperties().isUseParameters();
             if (!special
@@ -120,9 +123,8 @@ public interface Action extends Callable, Comparable<Action> {
                 }
                 result.append(')');
             }
+            return result.toString();
         }
-        return result.toString();
-
     }
 
     /**
