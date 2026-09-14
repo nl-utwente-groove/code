@@ -32,8 +32,8 @@ import nl.utwente.groove.util.parse.Severity;
  */
 public class AspectViewCellErrors implements Iterable<FormatError> {
     /** Constructs an initially empty error object for a given cell. */
-    public AspectViewCellErrors(AspectViewCell jCell) {
-        this.jCell = jCell;
+    public AspectViewCellErrors(AspectViewCell cell) {
+        this.cell = cell;
     }
 
     /** Adds a format error to either the aspect errors or the extra errors.
@@ -41,7 +41,7 @@ public class AspectViewCellErrors implements Iterable<FormatError> {
      */
     public void addError(FormatError error, boolean aspect) {
         getErrors(aspect, true).add(error);
-        this.jCell.setStale(VisualKey.ERROR);
+        this.cell.setStale(VisualKey.ERROR);
     }
 
     /** Adds a collection of format errors to either the aspect errors or the extra errors.
@@ -50,7 +50,7 @@ public class AspectViewCellErrors implements Iterable<FormatError> {
     public void addErrors(FormatErrorSet errors, boolean aspect) {
         if (!errors.isEmpty()) {
             getErrors(aspect, true).addAll(errors);
-            this.jCell.setStale(VisualKey.ERROR);
+            this.cell.setStale(VisualKey.ERROR);
         }
     }
 
@@ -58,7 +58,7 @@ public class AspectViewCellErrors implements Iterable<FormatError> {
     public void clear() {
         this.aspectErrors = FormatErrorSet.EMPTY;
         this.extraErrors = FormatErrorSet.EMPTY;
-        this.jCell.setStale(VisualKey.ERROR);
+        this.cell.setStale(VisualKey.ERROR);
     }
 
     @Override
@@ -106,7 +106,7 @@ public class AspectViewCellErrors implements Iterable<FormatError> {
     }
 
     /** The ViewCell of which this is the error set. */
-    private final AspectViewCell jCell;
+    private final AspectViewCell cell;
     /** Initially empty set of aspect errors. */
     private FormatErrorSet aspectErrors = FormatErrorSet.EMPTY;
     /** Initially empty set of extra errors. */

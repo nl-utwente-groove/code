@@ -22,8 +22,8 @@ import nl.utwente.groove.grammar.aspect.AspectKind;
 import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.type.TypeNode;
 import nl.utwente.groove.graph.GraphRole;
-import nl.utwente.groove.gui.jgraph.AspectJEdge;
-import nl.utwente.groove.gui.jgraph.AspectJVertex;
+import nl.utwente.groove.gui.view.AspectViewEdge;
+import nl.utwente.groove.gui.view.AspectViewVertex;
 
 /**
  * Refresher for the controlled colour value of a ViewCell.
@@ -32,14 +32,14 @@ import nl.utwente.groove.gui.jgraph.AspectJVertex;
  */
 public class ColorValue extends AspectValue<Color> {
     @Override
-    protected Color getForJVertex(AspectJVertex jVertex) {
+    protected Color getForVertex(AspectViewVertex vertex) {
         Color result = null;
-        AspectNode node = jVertex.getNode();
+        AspectNode node = vertex.getNode();
         if (node.getGraphRole() != GraphRole.RULE) {
             if (node.hasColor()) {
                 result = node.getColor();
             } else {
-                TypeNode nodeType = jVertex.getNodeType();
+                TypeNode nodeType = vertex.getNodeType();
                 if (nodeType != null) {
                     result = nodeType.getColor();
                 }
@@ -49,17 +49,17 @@ public class ColorValue extends AspectValue<Color> {
     }
 
     @Override
-    protected Color getForJEdge(AspectJEdge jEdge) {
+    protected Color getForEdge(AspectViewEdge edge) {
         Color result = null;
-        var edge = jEdge.getEdge();
-        if (edge != null) {
+        var aspectEdge = edge.getEdge();
+        if (aspectEdge != null) {
             // determine the node that determines the colour
-            AspectNode node = edge.has(AspectKind.SUBTYPE)
-                ? edge.target()
-                : edge.source();
-            AspectJVertex jNode = jEdge.getJModel().getJCellForNode(node);
-            if (jNode != null) {
-                result = getForJVertex(jNode);
+            AspectNode node = aspectEdge.has(AspectKind.SUBTYPE)
+                ? aspectEdge.target()
+                : aspectEdge.source();
+            var vertex = (AspectViewVertex) edge.getViewModel().getCellForNode(node);
+            if (vertex != null) {
+                result = getForVertex(vertex);
             }
         }
         return result;

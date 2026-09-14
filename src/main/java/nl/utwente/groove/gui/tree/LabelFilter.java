@@ -45,21 +45,21 @@ import nl.utwente.groove.util.Observable;
  */
 @NonNullByDefault
 abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observable {
-    /** Returns the filter entries on a given jCell. */
-    public Set<E> getEntries(ViewCell<G> jCell) {
-        Set<E> result = this.jCellEntryMap.get(jCell);
+    /** Returns the filter entries on a given cell. */
+    public Set<E> getEntries(ViewCell<G> cell) {
+        Set<E> result = this.cellEntryMap.get(cell);
         if (result == null) {
-            addJCell(jCell);
-            result = this.jCellEntryMap.get(jCell);
-            assert result != null; // due to addJCell
+            addCell(cell);
+            result = this.cellEntryMap.get(cell);
+            assert result != null; // due to addCell
         }
         return result;
     }
 
-    /** Computes the filter entries for a given jCell. */
-    private Set<E> computeEntries(ViewCell<G> jCell) {
+    /** Computes the filter entries for a given cell. */
+    private Set<E> computeEntries(ViewCell<G> cell) {
         Set<E> result = new HashSet<>();
-        for (Label key : jCell.getKeys()) {
+        for (Label key : cell.getKeys()) {
             result.add(getEntry(key));
         }
         return result;
@@ -69,20 +69,20 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
      * Adds a {@link ViewCell} and all corresponding entries to the filter.
      * @return {@code true} if any entries were added
      */
-    public boolean addJCell(ViewCell<G> jCell) {
+    public boolean addCell(ViewCell<G> cell) {
         boolean result = false;
-        if (this.jCellEntryMap.containsKey(jCell)) {
+        if (this.cellEntryMap.containsKey(cell)) {
             // a known cell; modify rather than add
-            result = modifyJCell(jCell);
+            result = modifyCell(cell);
         } else {
             // a new cell; add it to the map
-            Set<E> entries = computeEntries(jCell);
-            this.jCellEntryMap.put(jCell, entries);
+            Set<E> entries = computeEntries(cell);
+            this.cellEntryMap.put(cell, entries);
             // also modify the inverse map
             for (LabelEntry entry : entries) {
                 var data = this.entryDataMap.get(entry);
                 assert data != null; // every entry is registered upon creation
-                result |= data.add(jCell);
+                result |= data.add(cell);
             }
         }
         return result;
@@ -92,14 +92,14 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
      * Removes a {@link ViewCell} from the inverse mapping.
      * @return {@code true} if any entries were removed
      */
-    public boolean removeJCell(ViewCell<G> jCell) {
+    public boolean removeCell(ViewCell<G> cell) {
         boolean result = false;
-        Set<E> jCellEntries = this.jCellEntryMap.remove(jCell);
-        if (jCellEntries != null) {
-            for (LabelEntry jCellEntry : jCellEntries) {
-                var data = this.entryDataMap.get(jCellEntry);
+        Set<E> cellEntries = this.cellEntryMap.remove(cell);
+        if (cellEntries != null) {
+            for (LabelEntry cellEntry : cellEntries) {
+                var data = this.entryDataMap.get(cellEntry);
                 assert data != null; // every entry is registered upon creation
-                result |= data.remove(jCell);
+                result |= data.remove(cell);
             }
         }
         return result;
@@ -109,21 +109,21 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
      * Modifies the inverse mapping for a given {@link ViewCell}.
      * @return {@code true} if any entries were added or removed
      */
-    public boolean modifyJCell(ViewCell<G> jCell) {
+    public boolean modifyCell(ViewCell<G> cell) {
         boolean result = false;
         // it may happen that the cell is already removed,
         // for instance when the filter has been reinitialised in the course
         // of an undo operation. In that case, do nothing
-        if (this.jCellEntryMap.containsKey(jCell)) {
-            Set<E> newEntrySet = computeEntries(jCell);
-            Set<E> oldEntrySet = this.jCellEntryMap.put(jCell, newEntrySet);
+        if (this.cellEntryMap.containsKey(cell)) {
+            Set<E> newEntrySet = computeEntries(cell);
+            Set<E> oldEntrySet = this.cellEntryMap.put(cell, newEntrySet);
             assert oldEntrySet != null; // due to containsKey test above
             // remove the obsolete entries
             for (LabelEntry oldEntry : oldEntrySet) {
                 if (!newEntrySet.contains(oldEntry)) {
                     var data = this.entryDataMap.get(oldEntry);
                     assert data != null; // every entry is registered upon creation
-                    result |= data.remove(jCell);
+                    result |= data.remove(cell);
                 }
             }
             // add the new entries
@@ -131,7 +131,7 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
                 if (!oldEntrySet.contains(newEntry)) {
                     var data = this.entryDataMap.get(newEntry);
                     assert data != null; // every entry is registered upon creation
-                    result |= data.add(jCell);
+                    result |= data.add(cell);
                 }
             }
         }
@@ -139,10 +139,10 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
     }
 
     /** Returns the set of {@link ViewCell}s for a given entry. */
-    public Set<ViewCell<G>> getJCells(LabelEntry entry) {
+    public Set<ViewCell<G>> getCells(LabelEntry entry) {
         var data = this.entryDataMap.get(entry);
         assert data != null; // every entry is registered upon creation
-        return data.jCells();
+        return data.cells();
     }
 
     /** Returns the number of instances for a given entry. */
@@ -153,15 +153,15 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
     }
 
     /** Indicates if there is at least one {@link ViewCell} with a given entry. */
-    public boolean hasJCells(LabelEntry entry) {
-        return !getJCells(entry).isEmpty();
+    public boolean hasCells(LabelEntry entry) {
+        return !getCells(entry).isEmpty();
     }
 
     /**
      * Clears the entire filter.
      */
     public void clear() {
-        this.jCellEntryMap.clear();
+        this.cellEntryMap.clear();
         this.entryDataMap.clear();
     }
 
@@ -185,22 +185,22 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
     /** Mapping from entries to {@link ViewCell}s with that entry. */
     private final Map<E,EntryData> entryDataMap = new HashMap<>();
     /** Inverse mapping of {@link #entryDataMap}. */
-    private final Map<ViewCell<G>,@Nullable Set<E>> jCellEntryMap = new HashMap<>();
+    private final Map<ViewCell<G>,@Nullable Set<E>> cellEntryMap = new HashMap<>();
 
-    /** Convenience method to return the JCells for a given label.
+    /** Convenience method to return the cells for a given label.
      * @see #getEntry(Label)
-     * @see #getJCells(LabelEntry)
+     * @see #getCells(LabelEntry)
      */
-    public Set<ViewCell<G>> getJCells(Label label) {
-        return getJCells(getEntry(label));
+    public Set<ViewCell<G>> getCells(Label label) {
+        return getCells(getEntry(label));
     }
 
-    /** Convenience method to test whether there are JCells for a given label.
+    /** Convenience method to test whether there are cells for a given label.
      * @see #getEntry(Label)
-     * @see #getJCells(LabelEntry)
+     * @see #getCells(LabelEntry)
      */
-    public boolean hasJCells(Label label) {
-        return !getJCells(label).isEmpty();
+    public boolean hasCells(Label label) {
+        return !getCells(label).isEmpty();
     }
 
     /**
@@ -254,7 +254,7 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
         var data = this.entryDataMap.get(entry);
         assert data != null : String.format("Label %s unknown in map %s", entry, this.entryDataMap);
         if (entry.setSelected(selected)) {
-            result = data.jCells();
+            result = data.cells();
         }
         return result;
     }
@@ -266,9 +266,9 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
     private void notifyIfNonempty(@Nullable Set<ViewCell<G>> changedCells) {
         if (changedCells != null && !changedCells.isEmpty()) {
             // stale the visibility of the affected cells
-            for (ViewCell<G> jCell : changedCells) {
-                jCell.setStale(AFFECTED_KEYS);
-                Iterator<? extends ViewCell<G>> iter = jCell.getContext();
+            for (ViewCell<G> cell : changedCells) {
+                cell.setStale(AFFECTED_KEYS);
+                Iterator<? extends ViewCell<G>> iter = cell.getContext();
                 while (iter.hasNext()) {
                     iter.next().setStale(AFFECTED_KEYS);
                 }
@@ -278,20 +278,20 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
     }
 
     /**
-     * Indicates if a given jCell is currently visible,
+     * Indicates if a given cell is currently visible,
      * according to the entry selection.
      * This is the case if no node type entry is actively filtered, and either unfiltered
      * edges need not be shown or all or all edge entries are also unselected.
-     * @param jCell the jCell for which the test is performed
-     * @return {@code true} if {@code jCell} is visible
+     * @param cell the cell for which the test is performed
+     * @return {@code true} if {@code cell} is visible
      */
-    public boolean isIncluded(ViewCell<G> jCell) {
+    public boolean isIncluded(ViewCell<G> cell) {
         boolean activeShow = false;
         boolean activeHide = false;
         boolean passiveHide = false;
         boolean anyEntry = false;
-        boolean isNode = jCell instanceof ViewVertex;
-        for (var entry : getEntries(jCell)) {
+        boolean isNode = cell instanceof ViewVertex;
+        for (var entry : getEntries(cell)) {
             anyEntry = true;
             if (entry.isPassive()) {
                 passiveHide |= !entry.isSelected();
@@ -324,18 +324,18 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
          */
         public EntryData(LabelEntry entry) {
             this.entry = entry;
-            this.jCells = new HashSet<>();
+            this.cells = new HashSet<>();
             this.count = new Counter();
         }
 
         private final LabelEntry entry;
 
         /** Returns the set of cells in this data object. */
-        Set<ViewCell<G>> jCells() {
-            return this.jCells;
+        Set<ViewCell<G>> cells() {
+            return this.cells;
         }
 
-        private final Set<ViewCell<G>> jCells;
+        private final Set<ViewCell<G>> cells;
 
         /** Returns the number of cells with this entry's label as primary key. */
         Counter count() {
@@ -347,9 +347,9 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
         /** Updates the record by adding a given cell.
          * @return {@code true} if the data was change by the operation
          */
-        boolean add(ViewCell<G> jCell) {
-            boolean result = this.jCells.add(jCell);
-            if (result && jCell.getLabels().stream().anyMatch(this.entry::matches)) {
+        boolean add(ViewCell<G> cell) {
+            boolean result = this.cells.add(cell);
+            if (result && cell.getLabels().stream().anyMatch(this.entry::matches)) {
                 this.count.increase();
             }
             return result;
@@ -358,9 +358,9 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
         /** Updates the record by removing a given cell.
          * @return {@code true} if the data was change by the operation
          */
-        boolean remove(ViewCell<G> jCell) {
-            boolean result = this.jCells.remove(jCell);
-            if (result && jCell.getLabels().stream().anyMatch(this.entry::matches)) {
+        boolean remove(ViewCell<G> cell) {
+            boolean result = this.cells.remove(cell);
+            if (result && cell.getLabels().stream().anyMatch(this.entry::matches)) {
                 this.count.decrease();
             }
             return result;
@@ -369,7 +369,7 @@ abstract class LabelFilter<G extends Graph,E extends LabelEntry> extends Observa
         @Override
         public String toString() {
             return "Entry: " + this.entry + "; count: " + this.count.value() + "; cells: "
-                + this.jCells;
+                + this.cells;
         }
     }
 }

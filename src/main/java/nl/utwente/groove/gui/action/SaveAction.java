@@ -10,7 +10,7 @@ import nl.utwente.groove.grammar.model.TextBasedModel;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
-import nl.utwente.groove.gui.display.GraphEditorTab;
+import nl.utwente.groove.gui.display.AspectEditorTab;
 import nl.utwente.groove.gui.display.ResourceTab;
 import nl.utwente.groove.gui.display.TextTab;
 import nl.utwente.groove.io.graph.GxlIO;
@@ -57,8 +57,8 @@ public final class SaveAction extends SimulatorAction {
                         .get(name);
                     minor = true;
                 } else {
-                    graph = ((GraphEditorTab) editor).getGraph();
-                    minor = ((GraphEditorTab) editor).isDirtMinor();
+                    graph = ((AspectEditorTab) editor).getGraph();
+                    minor = ((AspectEditorTab) editor).isDirtMinor();
                 }
                 saved = this.saveAs ? doSaveGraphAs(graph) : doSaveGraph(graph, minor);
             } else {

@@ -45,7 +45,9 @@ public enum Look {
             add(VisualKey.OPAQUE, true);
             add(VisualKey.NODE_SHAPE, NodeShape.ROUNDED);
             add(VisualKey.EDGE_TARGET_SHAPE, EdgeEnd.ARROW);
-            add(VisualKey.FONT, Font.PLAIN);
+            // no font: the key's default is plain, and an explicit value here would
+            // reach every look that has this one as a template, overriding REGULAR's
+            // italic on (for instance) embargo edges
         }
     },
     /** Bidirectional edge look change. */
@@ -135,7 +137,7 @@ public enum Look {
             add(VisualKey.BACKGROUND, Values.EMBARGO_BACKGROUND);
             add(VisualKey.LINE_WIDTH, 5f);
             add(VisualKey.DASH, Values.EMBARGO_DASH);
-            add(VisualKey.EDGE_TARGET_SHAPE, EdgeEnd.UNFILLED);
+            add(VisualKey.EDGE_TARGET_SHAPE, EdgeEnd.ARROW);
         }
 
     },
@@ -233,7 +235,7 @@ public enum Look {
             boolean isStart = (map.getBackground() == Values.START_BACKGROUND);
             super.apply(map);
             if (isStart) {
-                map.put(VisualKey.BACKGROUND, Values.START_OPEN_BACKGROUND, false);
+                map.putDerived(VisualKey.BACKGROUND, Values.START_OPEN_BACKGROUND);
             }
         }
     },
@@ -297,9 +299,9 @@ public enum Look {
             boolean isStart = (map.getForeground() == Values.START_FOREGROUND);
             super.apply(map);
             if (inRecipe) {
-                map.put(VisualKey.FOREGROUND, Values.ACTIVE_RECIPE_COLOR, false);
+                map.putDerived(VisualKey.FOREGROUND, Values.ACTIVE_RECIPE_COLOR);
             } else if (isStart) {
-                map.put(VisualKey.FOREGROUND, Values.ACTIVE_START_COLOR, false);
+                map.putDerived(VisualKey.FOREGROUND, Values.ACTIVE_START_COLOR);
             }
         }
     },
@@ -351,7 +353,7 @@ public enum Look {
     /** Adds a derived or refreshable key-value pair to the attribute map of this look. */
     void add(VisualKey key, Object value) {
         assert key.getNature() == Nature.DERIVED || key.getNature() == Nature.REFRESHABLE;
-        this.visuals.put(key, value, false);
+        this.visuals.putDerived(key, value);
     }
 
     /** Returns the attribute map associated with this look. */

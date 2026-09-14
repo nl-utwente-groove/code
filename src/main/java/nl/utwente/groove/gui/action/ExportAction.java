@@ -15,13 +15,12 @@ import nl.utwente.groove.gui.dialog.GrooveFileChooser;
 import nl.utwente.groove.gui.dialog.SaveDialog;
 import nl.utwente.groove.gui.display.Display;
 import nl.utwente.groove.gui.display.DisplayKind;
-import nl.utwente.groove.gui.display.GraphEditorTab;
-import nl.utwente.groove.gui.display.GraphTab;
+import nl.utwente.groove.gui.display.GraphDisplay;
 import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.gui.display.ResourceTab;
-import nl.utwente.groove.gui.export.JGraphExportable;
-import nl.utwente.groove.gui.jgraph.AspectJGraph;
-import nl.utwente.groove.gui.jgraph.JGraph;
+import nl.utwente.groove.gui.export.CanvasExportable;
+import nl.utwente.groove.gui.view.AspectGraphCanvas;
+import nl.utwente.groove.gui.view.GraphCanvas;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Exporter;
 import nl.utwente.groove.io.external.Exporters;
@@ -30,32 +29,32 @@ import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.io.FileType;
 
 /**
- * Action to save the content of a {@link JGraph},
+ * Action to save the content of a graph canvas,
  * as a graph or in some export format.
- * There is a discrepancy between exporter action for JGraphs and for displays: JGraph exports have no access to the original resource (if any)
- * and so an export initiated from a JGraph directly (as opposed for example form the menu) will never show an export option that requires a resource
+ * There is a discrepancy between exporter action for canvases and for displays: canvas exports have no access to the original resource (if any)
+ * and so an export initiated from a canvas directly (as opposed for example form the menu) will never show an export option that requires a resource
  * Doubles as the dialog-based driver of the {@link Exporters} registry.
  */
 public class ExportAction extends SimulatorAction {
     /** Constructs an instance of the action for a given display. */
     public ExportAction(Simulator simulator, DisplayKind displayKind) {
-        // fill in a generic name, as the JGraph may not yet hold a graph.
+        // fill in a generic name, as the canvas may not yet hold a graph.
         super(simulator, Options.EXPORT_ACTION_NAME, Icons.EXPORT_ICON);
         putValue(ACCELERATOR_KEY, Options.EXPORT_KEY);
         this.displayKind = displayKind;
         this.display = simulator.getDisplaysPanel().getDisplay(displayKind);
-        this.jGraph = null;
+        this.canvas = null;
         this.isGraph = this.displayKind.isGraphBased();
     }
 
     /** Constructs an instance of the action. */
-    public ExportAction(JGraph<?> jGraph) {
-        // fill in a generic name, as the JGraph may not yet hold a graph.
-        super(jGraph.getActions().getSimulator(), Options.EXPORT_ACTION_NAME, Icons.EXPORT_ICON);
+    public ExportAction(GraphCanvas<?> canvas) {
+        // fill in a generic name, as the canvas may not yet hold a graph.
+        super(getSimulator(canvas), Options.EXPORT_ACTION_NAME, Icons.EXPORT_ICON);
         putValue(ACCELERATOR_KEY, Options.EXPORT_KEY);
         this.display = null;
         this.displayKind = null;
-        this.jGraph = jGraph;
+        this.canvas = canvas;
         this.isGraph = true;
     }
 
@@ -64,7 +63,7 @@ public class ExportAction extends SimulatorAction {
         Exportable exportable;
         if (this.isGraph) {
             // Export graph
-            exportable = JGraphExportable.instance(getJGraph());
+            exportable = CanvasExportable.instance(getCanvas());
         } else {
             // Export resource
             exportable = Exportable.resource(getResource());
@@ -112,8 +111,8 @@ public class ExportAction extends SimulatorAction {
     public void refresh() {
         boolean setenabled = getSimulatorModel().getGrammar() != null;
         if (this.isGraph && setenabled) {
-            JGraph<?> jGraph = getJGraph();
-            setenabled = jGraph != null && jGraph.isEnabled();
+            GraphCanvas<?> canvas = getCanvas();
+            setenabled = canvas != null && canvas.isEnabled();
         } else if (setenabled) {
             setenabled = getResource() != null;
         }
@@ -129,15 +128,15 @@ public class ExportAction extends SimulatorAction {
         }
     }
 
-    /** Returns the export action name for a given JGraph being saved. */
+    /** Returns the export action name for a given canvas being saved. */
     private String getActionName() {
         String type = null;
         if (this.isGraph) {
-            JGraph<?> jGraph = getJGraph();
-            Graph graph = jGraph.getGraph();
+            GraphCanvas<?> canvas = getCanvas();
+            Graph graph = canvas.getGraph();
             assert graph != null;
             GraphRole role = graph.getRole();
-            boolean isState = jGraph instanceof AspectJGraph ag && ag.isForState();
+            boolean isState = canvas instanceof AspectGraphCanvas ag && ag.getController().isForState();
             type = isState
                 ? "State"
                 : role.getDescription();
@@ -160,43 +159,48 @@ public class ExportAction extends SimulatorAction {
         return getGrammarModel().getResource(this.displayKind.getResource(), tab.getQualName());
     }
 
-    // Get active graph if any
-    private final JGraph<?> getJGraph() {
+    /** Returns the simulator of a canvas, which must exist for the action to be created. */
+    private static Simulator getSimulator(GraphCanvas<?> canvas) {
+        var actions = canvas.getController().getActions();
+        assert actions != null; // the export action is only created with a simulator present
+        return actions.getSimulator();
+    }
+
+    // Get active graph canvas if any
+    private final GraphCanvas<?> getCanvas() {
         assert (this.isGraph);
-        if (this.jGraph == null) {
+        if (this.canvas == null) {
             switch (this.displayKind) {
             case HOST:
             case RULE:
             case TYPE:
                 ResourceTab selectedTab = ((ResourceDisplay) this.display).getSelectedTab();
-                return selectedTab == null
-                    ? null
-                    : selectedTab instanceof GraphTab gt
-                        ? gt.getJGraph()
-                        : ((GraphEditorTab) selectedTab).getJGraph();
+                return selectedTab instanceof GraphDisplay<?> graphDisplay
+                    ? graphDisplay.getCanvas()
+                    : null;
             case STATE:
-                return getStateDisplay().getJGraph();
+                return getStateDisplay().getCanvas();
             case LTS:
-                return getLtsDisplay().getJGraph();
+                return getLtsDisplay().getCanvas();
             default:
                 throw Exceptions.unreachable();
             }
         } else {
-            return this.jGraph;
+            return this.canvas;
         }
     }
 
-    /** The fixed JGraph with which this action is associated,
+    /** The fixed canvas with which this action is associated,
      * if it is not associated with a {@link Display}.
      */
-    private final JGraph<?> jGraph;
+    private final GraphCanvas<?> canvas;
     /**
      * The display with which this action is associated,
-     * if it is not associated with a fixed {@link JGraph}.
+     * if it is not associated with a fixed canvas.
      */
     private final Display display;
     /** The display kind, if the display is set. */
     private final DisplayKind displayKind;
-    /** True if exporter for jgraphs, false otherwise. */
+    /** True if exporter for graph canvases, false otherwise. */
     private boolean isGraph;
 }

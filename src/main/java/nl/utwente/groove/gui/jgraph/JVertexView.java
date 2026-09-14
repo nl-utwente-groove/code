@@ -56,6 +56,7 @@ import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.look.MultiLabel;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
+import nl.utwente.groove.gui.view.EdgeGeometry;
 import nl.utwente.groove.util.parse.Severity;
 import nl.utwente.groove.util.Fonts;
 import nl.utwente.groove.util.NodeShape;
@@ -76,7 +77,7 @@ public class JVertexView extends VertexView {
      * @param jNode the node underlying the view
      * @param jGraph the graph on which the node is to be displayed
      */
-    public JVertexView(ViewVertex<?> jNode, JGraph<?> jGraph) {
+    public JVertexView(JVertex<?> jNode, JGraph<?> jGraph) {
         super(jNode);
         this.jGraph = jGraph;
     }
@@ -87,7 +88,7 @@ public class JVertexView extends VertexView {
     @Override
     public Rectangle2D getBounds() {
         var result = super.getBounds();
-        if (getCell().isStale(VisualKey.NODE_SIZE)) {
+        if (getViewCell().isStale(VisualKey.NODE_SIZE)) {
             this.jGraph.setToPreferredSize(this, result);
         }
         return result;
@@ -97,13 +98,18 @@ public class JVertexView extends VertexView {
      * Specialises the return type.
      */
     @Override
-    public @NonNull ViewVertex<?> getCell() {
-        return (ViewVertex<?>) super.getCell();
+    public @NonNull JVertex<?> getCell() {
+        return (JVertex<?>) super.getCell();
+    }
+
+    /** Returns the vertex cell shown by this view. */
+    public @NonNull ViewVertex<?> getViewCell() {
+        return getCell().getViewCell();
     }
 
     /** Returns the visual attributes map of the viewed cell. */
     public VisualMap getCellVisuals() {
-        return getCell().getVisuals();
+        return getViewCell().getVisuals();
     }
 
     /*
@@ -144,14 +150,7 @@ public class JVertexView extends VertexView {
         Point2D result = null;
         double qx = q.getX();
         double qy = q.getY();
-        // use the adornment bounds if there is an adornment, and the
-        // source lies to the northwest of it
-        Rectangle2D bounds = getBounds();
-        // revert to the actual borders by subtracting the
-        // extra border space
-        float extra = EXTRA_BORDER_SPACE - getCellVisuals().getLineWidth();
-        bounds = new Rectangle2D.Double(bounds.getMinX() + extra, bounds.getMinY() + extra,
-            bounds.getWidth() - 2 * extra, bounds.getHeight() - 2 * extra);
+        Rectangle2D bounds = getShapeBounds();
         double left = bounds.getMinX();
         double right = bounds.getMaxX();
         double top = bounds.getMinY();
@@ -160,7 +159,7 @@ public class JVertexView extends VertexView {
         double cy = bounds.getCenterY();
         // in manhattan line style, we shift the target point so it is
         // in horizontal or vertical reach of the node
-        VisualMap edgeVisuals = ((JEdgeView) edge).getCell().getVisuals();
+        VisualMap edgeVisuals = ((JEdgeView) edge).getViewCell().getVisuals();
         if (edgeVisuals.getLineStyle() == LineStyle.MANHATTAN
             && edgeVisuals.getPoints().size() > 2) {
             if ((qx < left || qx > right) && (qy < top || qy > bottom)) {
@@ -325,10 +324,21 @@ public class JVertexView extends VertexView {
     }
 
     /**
-     * Fraction of the width or height that is the minimum for special perimeter
-     * point placement.
+     * Returns the bounds of the node shape: the view bounds less the extra
+     * border space around them.
      */
-    private static final double DROP_FRACTION = 10;
+    public Rectangle2D getShapeBounds() {
+        Rectangle2D bounds = getBounds();
+        float extra = EXTRA_BORDER_SPACE - getCellVisuals().getLineWidth();
+        return new Rectangle2D.Double(bounds.getMinX() + extra, bounds.getMinY() + extra,
+            bounds.getWidth() - 2 * extra, bounds.getHeight() - 2 * extra);
+    }
+
+    /**
+     * Fraction of the width or height that is the minimum for special perimeter
+     * point placement; shared with the other backend.
+     */
+    private static final double DROP_FRACTION = EdgeGeometry.DROP_FRACTION;
     /**
      * Maximal distance (horizontal or vertical) for perpendicular perimeter
      * points to be placed in ratio.
@@ -360,7 +370,7 @@ public class JVertexView extends VertexView {
             assert view instanceof JVertexView : String
                 .format("This renderer is only meant for %s", JVertexView.class);
             var jView = this.view = (JVertexView) view;
-            this.cell = this.view.getCell();
+            this.cell = this.view.getViewCell();
             VisualMap visuals = this.visuals = jView.getCellVisuals();
             this.parAdornment = visuals.getParAdornment();
             if (this.parAdornment == null) {
@@ -697,8 +707,8 @@ public class JVertexView extends VertexView {
                 }
                 break;
             case OVAL:
-                result.left += JAttr.STRONG_ARC_SIZE / 6;
-                result.right += JAttr.STRONG_ARC_SIZE / 6;
+                result.left += Values.STRONG_ARC_SIZE / 6;
+                result.right += Values.STRONG_ARC_SIZE / 6;
                 break;
             default:
                 // no adjustments
@@ -733,11 +743,11 @@ public class JVertexView extends VertexView {
             case RECTANGLE:
                 return new Rectangle2D.Double(x, y, width, height);
             case ROUNDED:
-                return new RoundRectangle2D.Double(x, y, width, height, JAttr.NORMAL_ARC_SIZE,
-                    JAttr.NORMAL_ARC_SIZE);
+                return new RoundRectangle2D.Double(x, y, width, height, Values.NORMAL_ARC_SIZE,
+                    Values.NORMAL_ARC_SIZE);
             case OVAL:
-                return new RoundRectangle2D.Double(x, y, width, height, JAttr.STRONG_ARC_SIZE,
-                    JAttr.STRONG_ARC_SIZE);
+                return new RoundRectangle2D.Double(x, y, width, height, Values.STRONG_ARC_SIZE,
+                    Values.STRONG_ARC_SIZE);
             default:
                 assert false;
                 return null;

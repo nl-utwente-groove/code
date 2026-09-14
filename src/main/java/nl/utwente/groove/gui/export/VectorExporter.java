@@ -42,7 +42,7 @@ import nl.utwente.groove.util.io.FileType;
 public class VectorExporter extends AbstractExporter {
     /** Private constructor for the singleton instance. */
     private VectorExporter() {
-        super(Exporter.ExportKind.JGRAPH);
+        super(Exporter.ExportKind.CANVAS);
         addFormat(FileType.EPS, new GraphToEPS());
         addFormat(FileType.PDF, new GraphToPDF());
         addFormat(FileType.SVG, new GraphToSVG());
@@ -55,19 +55,19 @@ public class VectorExporter extends AbstractExporter {
 
     @Override
     public boolean exports(Exportable exportable) {
-        return exportable instanceof JGraphExportable;
+        return exportable instanceof CanvasExportable;
     }
 
     @Override
     public void doExport(Exportable exportable, File file, FileType fileType) throws PortException {
-        if (!(exportable instanceof JGraphExportable jExportable)) {
+        if (!(exportable instanceof CanvasExportable canvasExportable)) {
             throw new PortException(String
                 .format("'%s' does not contain a rendered graph and hence cannot be exported to %s",
                         exportable.qualName(), fileType.getExtension()));
         }
         var format = this.formats.get(fileType);
         assert format != null; // the format map holds an entry for every registered file type
-        format.renderGraph(jExportable.jGraph(), file);
+        format.renderGraph(canvasExportable.canvas(), file);
     }
 
     private final Map<FileType,GraphToVector> formats = new EnumMap<>(FileType.class);

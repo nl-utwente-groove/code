@@ -16,6 +16,7 @@
  */
 package nl.utwente.groove.gui;
 
+import static nl.utwente.groove.util.cli.Verbosity.LOW;
 import static nl.utwente.groove.util.cli.Verbosity.MEDIUM;
 import static nl.utwente.groove.util.io.FileType.GRAMMAR;
 import static nl.utwente.groove.util.io.FileType.GXL;
@@ -64,15 +65,16 @@ import nl.utwente.groove.grammar.model.GraphBasedModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.dialog.GrooveFileChooser;
 import nl.utwente.groove.gui.display.DisplayKind;
-import nl.utwente.groove.gui.export.JGraphExportable;
-import nl.utwente.groove.gui.export.JGraphExporters;
-import nl.utwente.groove.gui.jgraph.AspectJGraph;
-import nl.utwente.groove.gui.jgraph.AspectJModel;
+import nl.utwente.groove.gui.export.CanvasExportable;
+import nl.utwente.groove.gui.export.CanvasExporters;
+import nl.utwente.groove.gui.view.AspectGraphViewController;
+import nl.utwente.groove.gui.view.GraphBackend;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Exporter;
 import nl.utwente.groove.io.external.Exporters;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.io.store.SystemStore;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.cli.CmdLineException;
@@ -110,8 +112,8 @@ public class Imager extends GrooveCmdLineTool<Object> {
         super("Imager", args);
         // force the LAF to be set
         Options.initLookAndFeel();
-        // the imager exports by rendering, so it needs the JGraph-based exporters
-        JGraphExporters.register();
+        // the imager exports by rendering, so it needs the canvas-based exporters
+        CanvasExporters.register();
         if (gui) {
             if (args.length > 0) {
                 throw Exceptions
@@ -143,12 +145,38 @@ public class Imager extends GrooveCmdLineTool<Object> {
      */
     @Override
     protected Object run() throws Exception {
+        selectBackend();
         File inFile = getInFile();
         File outFile = getOutFile();
         makeImage(inFile, outFile == null
             ? inFile
             : outFile);
         return null;
+    }
+
+    /**
+     * Requests the graph backend named by the {@code -b} option, if any, and warns
+     * on standard output if the backend actually selected is another one: because
+     * the requested one is not available in this distribution, or because the
+     * selection was already made before this imager ran.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    private void selectBackend() {
+        String requested = this.backend;
+        if (requested == null) {
+            return;
+        }
+        GraphBackend.request(requested);
+        String selected = GraphBackend.instance().getName();
+        if (!selected.equals(requested)) {
+            List<String> available
+                = GraphBackend.available().stream().map(GraphBackend::getName).toList();
+            String reason = available.contains(requested)
+                ? "the graph backend was already selected"
+                : "graph backend '" + requested + "' is not available";
+            emit(LOW, "Warning: %s; using '%s' (available: %s)%n", reason, selected,
+                 String.join(", ", available));
+        }
     }
 
     /**
@@ -282,27 +310,27 @@ public class Imager extends GrooveCmdLineTool<Object> {
         Exportable result = switch (outFormats) {
         case GRAPH -> Exportable.graph(aspectGraph);
         case RESOURCE -> Exportable.resource(resourceModel);
-        case JGRAPH -> {
+        case CANVAS -> {
             Options options = Options.instance();
             options.getItem(Options.SHOW_VALUE_NODES_OPTION).setSelected(isEditorView());
             options.getItem(Options.SHOW_ASPECTS_OPTION).setSelected(isEditorView());
             DisplayKind displayKind
                 = DisplayKind.toDisplay(ResourceKind.toResource(aspectGraph.getRole()));
-            AspectJGraph jGraph = new AspectJGraph(null, displayKind, false);
+            var controller = new AspectGraphViewController(null, displayKind, false);
             var grammar = resourceModel.getGrammar();
             assert grammar != null; // the resource model was created from a grammar
-            jGraph.getController().setGrammar(grammar);
-            AspectJModel model = jGraph.newModel();
-            model.loadGraph(aspectGraph);
-            jGraph.setModel(model);
+            controller.setGrammar(grammar);
+            var canvas = controller.getCanvas();
+            canvas.showGraph(aspectGraph);
             // Ugly hack to prevent clipping of the image. We set the
-            // jGraph size to twice its normal size. This does not
+            // component size to twice its normal size. This does not
             // affect the final size of the exported figure, hence
             // it can be considered harmless... ;P
-            Dimension oldPrefSize = jGraph.getPreferredSize();
+            var component = canvas.getComponent();
+            Dimension oldPrefSize = component.getPreferredSize();
             Dimension newPrefSize = new Dimension(oldPrefSize.width * 2, oldPrefSize.height * 2);
-            jGraph.setSize(newPrefSize);
-            yield JGraphExportable.instance(jGraph);
+            component.setSize(newPrefSize);
+            yield CanvasExportable.instance(canvas);
         }
         };
         return result;
@@ -364,6 +392,13 @@ public class Imager extends GrooveCmdLineTool<Object> {
 
     @Option(names = "-e", description = "Enforces editor view export")
     private boolean editorView;
+
+    /** Name of the graph backend to render with, if specified. */
+    @Option(names = "-b", paramLabel = "backend",
+        description = "Graph backend to render with ('" + GraphBackend.JGRAPH + "' or '"
+            + GraphBackend.YFILES + "'); if it is not available, "
+            + "the default backend is used, with a warning")
+    private String backend;
 
     /**
      * Starts the imager with a list of options and file names.

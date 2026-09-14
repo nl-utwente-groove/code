@@ -28,17 +28,17 @@ import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.gui.view.AspectViewCell;
-import nl.utwente.groove.gui.jgraph.AspectJEdge;
+import nl.utwente.groove.gui.view.AspectViewEdge;
 import nl.utwente.groove.gui.view.AspectGraphViewController;
-import nl.utwente.groove.gui.jgraph.AspectJVertex;
+import nl.utwente.groove.gui.view.AspectViewVertex;
 import nl.utwente.groove.gui.view.ViewCell;
 import nl.utwente.groove.gui.view.ViewEdge;
 import nl.utwente.groove.gui.view.GraphViewController;
 import nl.utwente.groove.gui.view.ViewVertex;
 import nl.utwente.groove.gui.view.LTSViewCell;
-import nl.utwente.groove.gui.jgraph.LTSJEdge;
+import nl.utwente.groove.gui.view.LTSViewEdge;
 import nl.utwente.groove.gui.view.LTSGraphViewController;
-import nl.utwente.groove.gui.jgraph.LTSJVertex;
+import nl.utwente.groove.gui.view.LTSViewVertex;
 import nl.utwente.groove.gui.tree.LabelTree;
 import nl.utwente.groove.gui.tree.RuleLevelTree;
 import nl.utwente.groove.lts.GraphState;
@@ -57,12 +57,12 @@ public class VisibleValue implements VisualValue<Boolean> {
         assert controller != null; // should be the case by the time this method gets called
         if (cell instanceof AspectViewCell) {
             result = isVertex
-                ? getAspectVertexValue((AspectGraphViewController) controller, (AspectJVertex) cell)
-                : getAspectEdgeValue((AspectGraphViewController) controller, (AspectJEdge) cell);
+                ? getAspectVertexValue((AspectGraphViewController) controller, (AspectViewVertex) cell)
+                : getAspectEdgeValue((AspectGraphViewController) controller, (AspectViewEdge) cell);
         } else if (cell instanceof LTSViewCell) {
             result = isVertex
-                ? getLTSVertexValue((LTSGraphViewController) controller, (LTSJVertex) cell)
-                : getLTSEdgeValue((LTSGraphViewController) controller, (LTSJEdge) cell);
+                ? getLTSVertexValue((LTSGraphViewController) controller, (LTSViewVertex) cell)
+                : getLTSEdgeValue((LTSGraphViewController) controller, (LTSViewEdge) cell);
         } else if (cell instanceof ViewVertex) {
             result = isVertex
                 ? getBasicVertexValue(controller, (ViewVertex<G>) cell)
@@ -72,15 +72,15 @@ public class VisibleValue implements VisualValue<Boolean> {
     }
 
     private <G extends @NonNull Graph> boolean getBasicVertexValue(GraphViewController<G> controller,
-                                                                   ViewVertex<G> jVertex) {
+                                                                   ViewVertex<G> vertex) {
         LabelTree<G> labelTree = controller.getLabelTree();
-        return labelTree == null || labelTree.isIncluded(jVertex);
+        return labelTree == null || labelTree.isIncluded(vertex);
     }
 
-    private <G extends @NonNull Graph> boolean getBasicEdgeValue(GraphViewController<G> controller, ViewEdge<G> jEdge) {
+    private <G extends @NonNull Graph> boolean getBasicEdgeValue(GraphViewController<G> controller, ViewEdge<G> edge) {
         boolean result = true;
-        ViewVertex<?> source = jEdge.getSourceVertex();
-        ViewVertex<?> target = jEdge.getTargetVertex();
+        ViewVertex<?> source = edge.getSourceVertex();
+        ViewVertex<?> target = edge.getTargetVertex();
         if (source == null || !source.getVisuals().isVisible()) {
             return false;
         }
@@ -89,29 +89,29 @@ public class VisibleValue implements VisualValue<Boolean> {
         }
         LabelTree<G> labelTree = controller.getLabelTree();
         if (labelTree != null) {
-            result = labelTree.isIncluded(jEdge);
+            result = labelTree.isIncluded(edge);
         }
         return result;
     }
 
-    private boolean getAspectVertexValue(AspectGraphViewController controller, AspectJVertex jVertex) {
-        AspectNode node = jVertex.getNode();
+    private boolean getAspectVertexValue(AspectGraphViewController controller, AspectViewVertex vertex) {
+        AspectNode node = vertex.getNode();
         // remark nodes are always visible
         if (node.has(REMARK)) {
             return true;
         }
         // anything explicitly filtered by the level tree is not visible
         RuleLevelTree levelTree = controller.getLevelTree();
-        if (levelTree != null && !levelTree.isVisible(jVertex)) {
+        if (levelTree != null && !levelTree.isVisible(vertex)) {
             return false;
         }
         // anything declared invisible by the super method is not visible
-        if (!getBasicVertexValue(controller, jVertex)) {
+        if (!getBasicVertexValue(controller, vertex)) {
             return false;
         }
         // identified nodes, parameter nodes, quantifiers and error nodes are always visible
         if (node.hasId() || node.has(Category.PARAM) || node.has(Category.NESTING)
-            || jVertex.hasErrors()) {
+            || vertex.hasErrors()) {
             return true;
         }
         // All non-sorted nodes should be visible
@@ -128,7 +128,7 @@ public class VisibleValue implements VisualValue<Boolean> {
             return true;
         }
         // data nodes with test edges should always be shown
-        if (jVertex.getEdges().stream().anyMatch(e -> e.has(AspectKind.TEST))) {
+        if (vertex.getEdges().stream().anyMatch(e -> e.has(AspectKind.TEST))) {
             return true;
         }
         // data type nodes in type graphs should never be shown
@@ -137,28 +137,28 @@ public class VisibleValue implements VisualValue<Boolean> {
         }
         // we are now sure that the underlying node has a data type;
         // any non-source-label of an incoming edge makes the node visible
-        var edgeIter = jVertex.getContext();
+        var edgeIter = vertex.getContext();
         while (edgeIter.hasNext()) {
             var e = edgeIter.next();
-            if (e.getTargetVertex() == jVertex && (e.isLoop() || !e.isSourceLabel())) {
+            if (e.getTargetVertex() == vertex && (e.isLoop() || !e.isSourceLabel())) {
                 return true;
             }
         }
         return false;
     }
 
-    private boolean getAspectEdgeValue(AspectGraphViewController controller, AspectJEdge jEdge) {
+    private boolean getAspectEdgeValue(AspectGraphViewController controller, AspectViewEdge edge) {
         // anything explicitly filtered by the level tree is not visible
         RuleLevelTree levelTree = controller.getLevelTree();
-        if (levelTree != null && !levelTree.isVisible(jEdge)) {
+        if (levelTree != null && !levelTree.isVisible(edge)) {
             return false;
         }
-        return getBasicEdgeValue(controller, jEdge);
+        return getBasicEdgeValue(controller, edge);
     }
 
-    private boolean getLTSVertexValue(LTSGraphViewController controller, LTSJVertex jVertex) {
-        GraphState state = jVertex.getNode();
-        if (!jVertex.hasVisibleFlag()) {
+    private boolean getLTSVertexValue(LTSGraphViewController controller, LTSViewVertex vertex) {
+        GraphState state = vertex.getNode();
+        if (!vertex.hasVisibleFlag()) {
             return false;
         }
         if (!controller.isShowAbsentStates() && state.isAbsent()) {
@@ -167,24 +167,25 @@ public class VisibleValue implements VisualValue<Boolean> {
         if (!controller.isShowRecipeSteps() && state.isInner() && state.isFull()) {
             return false;
         }
-        if (jVertex.isStart() || jVertex.isFinal() || !jVertex.isClosed()) {
+        if (vertex.isStart() || vertex.isFinal() || !vertex.isClosed()) {
             return true;
         }
-        if (hasVisibleIncidentEdge(controller, jVertex)) {
+        if (hasVisibleIncidentEdge(controller, vertex)) {
             return true;
         }
         return false;
     }
 
-    private boolean getLTSEdgeValue(LTSGraphViewController controller, LTSJEdge jEdge) {
-        GraphTransition trans = jEdge.getEdge();
-        if (!jEdge.hasVisibleFlag()) {
+    private boolean getLTSEdgeValue(LTSGraphViewController controller, LTSViewEdge edge) {
+        GraphTransition trans = edge.getEdge();
+        assert trans != null; // an LTS edge cell wraps at least one transition
+        if (!edge.hasVisibleFlag()) {
             return false;
         }
         if (!controller.isShowRecipeSteps() && trans.isInnerStep() && trans.source().isFull()) {
             return false;
         }
-        if (!getBasicEdgeValue(controller, jEdge)) {
+        if (!getBasicEdgeValue(controller, edge)) {
             return false;
         }
         return true;
@@ -196,13 +197,13 @@ public class VisibleValue implements VisualValue<Boolean> {
      * This is to determine the visibility of the node.
      */
     private <G extends @NonNull Graph> boolean hasVisibleIncidentEdge(@NonNull GraphViewController<G> controller,
-                                                                      ViewVertex<G> jVertex) {
+                                                                      ViewVertex<G> vertex) {
         boolean result = false;
         LabelTree<G> labelTree = controller.getLabelTree();
         if (labelTree == null) {
             result = true;
         } else {
-            Iterator<? extends ViewEdge<G>> iter = jVertex.getContext();
+            Iterator<? extends ViewEdge<G>> iter = vertex.getContext();
             while (iter.hasNext()) {
                 if (labelTree.isIncluded(iter.next())) {
                     result = true;

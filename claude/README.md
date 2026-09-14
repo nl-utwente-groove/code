@@ -23,13 +23,16 @@ Status lines below are as of 2026-09-11.
 | [yfiles-distribution-options.md](yfiles-distribution-options.md) | What a release consists of now that a license-restricted yFiles edition exists: facts, options, decision. |
 | [yfiles-private-move-state.md](yfiles-private-move-state.md) | Handoff state for moving the yFiles backend source out of the public repo (branch `yfiles-private-move`, under review). Transient: delete after merge. |
 | [yworks-question-2026-09.md](yworks-question-2026-09.md) | Draft message to yWorks on distribution and source of the yFiles backend. Transient: delete once sent. |
+| [ecore-metadata-settings.md](ecore-metadata-settings.md) | gh #898 item 1: moving the Ecore round-trip metadata from type-graph properties into the `ecore` settings resource. Step 2 (vocabulary, no behaviour change) done on `ecore-metadata-settings`; the proposals on vocabulary shape and scoping await agreement before steps 3 to 5. |
 | [module-split-plan.md](module-split-plan.md) | gh #887, Maven module split. Phases 1–4 (preparatory decoupling) on master; phase 5, the split itself, not started. The yFiles add-on built the service-discovery and second-artifact machinery along a different seam; rescope proposed on the issue. |
 | [io-refactor-plan.md](io-refactor-plan.md) | Four-phase `io` plan of 2026-07-26. Phases 1–3 (conceptual layer removed, io simplified, Ecore porter) on master; phase 4 (constraint rules) not started. gh #907, #558 open. |
 | [gh763-810-plan.md](gh763-810-plan.md) | Composite-graph error tracing, gh #763 (gh #810 closed as duplicate). Plan only, none of its six commits done. |
 | [priority-symmetric-choice.md](priority-symmetric-choice.md) | gh #880, priority-aware symmetric choice in control. Design points only, not started; interim gh #756 guard is on master. |
 | [critical-pair-review.md](critical-pair-review.md) | gh #886, revival of the critical-pair package. Review and plan only, nothing implemented. |
 | [fixable-builder-survey.md](fixable-builder-survey.md) | Which `Fixable` implementors should become builders. Step 1 (`AspectLabel`) done 2026-09-06; the rest open, no `Buildable` type. |
-
+| [download-stats.md](download-stats.md) | Download statistics from GitHub releases, SourceForge-style: daily counter snapshots differenced at render time. Repository and collector live since 2026-09-13 (`nl-utwente-groove/download-stats`); SourceForge import and website page open. |
+| [website-manual-8_0_0.md](website-manual-8_0_0.md) | gh #896 and the 8.0.0 release: what the web user manual (website repo, `manual/`) needs, change by change, plus the wrong statements and the broken reference-page generator. Proposal only, nothing written yet. |
+| [release-8_0_0-state.md](release-8_0_0-state.md) | Handoff state for the 8.0.0 release: branches, ordered checklist before the tag, open website and manual decisions. Transient: delete after the release. |
 ## Archive
 
 Finished work, kept for the design rationale and rejected alternatives. Grouped by theme.
@@ -75,3 +78,9 @@ Finished work, kept for the design rationale and rejected alternatives. Grouped 
 |---|---|
 | [ecore-porter-design.md](archive/ecore-porter-design.md) | The Ecore importer/exporter (phase 3 of the io plan). Implemented as designed; principle 4 contested by gh #907. |
 | [settings-resource-design.md](archive/settings-resource-design.md) | The SETTINGS resource kind and the Ecore mapping schema. Landed 2026-07-31 to 08-05; schema registry since inverted to `ServiceLoader`. Deferred items filed as gh #898. |
+
+**Release and installers**
+
+| Note | Status |
+|---|---|
+| [installer-files-in-use.md](archive/installer-files-in-use.md) | Windows MSI with GROOVE running: why `DisableShutdown` failed with the real app (jars not renameable, per-user, `RemoveExistingProducts` outside the transaction) and the close-GROOVE prompt that replaced it. Verified with the real installer 2026-09-14; on `installer-files-in-use`. |

@@ -18,8 +18,8 @@ package nl.utwente.groove.gui.look;
 
 import nl.utwente.groove.grammar.aspect.AspectKind.Category;
 import nl.utwente.groove.graph.GraphRole;
-import nl.utwente.groove.gui.jgraph.AspectJEdge;
-import nl.utwente.groove.gui.jgraph.AspectJVertex;
+import nl.utwente.groove.gui.view.AspectViewEdge;
+import nl.utwente.groove.gui.view.AspectViewVertex;
 
 /**
  * Strategy for computing the internal identity adornment for a given ViewVertex
@@ -28,14 +28,14 @@ import nl.utwente.groove.gui.jgraph.AspectJVertex;
  */
 public class IdAdornmentValue extends AspectValue<String> {
     @Override
-    protected String getForJVertex(AspectJVertex jVertex) {
+    protected String getForVertex(AspectViewVertex vertex) {
         String result = null;
-        var jGraph = jVertex.getJGraph();
-        assert jGraph != null;
-        var controller = jGraph.getController();
+        var canvas = vertex.getCanvas();
+        assert canvas != null; // adornments are only computed for displayed cells
+        var controller = canvas.getController();
         if (controller.isShowNodeIdentities()) {
             var role = controller.getGraphRole();
-            var node = jVertex.getNode();
+            var node = vertex.getNode();
             if (role == GraphRole.RULE && (!node.hasId() || !node.has(Category.SORT))
                 || role == GraphRole.HOST && !node.hasValue()) {
                 result = node.toString();
@@ -45,7 +45,7 @@ public class IdAdornmentValue extends AspectValue<String> {
     }
 
     @Override
-    protected String getForJEdge(AspectJEdge jEdge) {
+    protected String getForEdge(AspectViewEdge edge) {
         return null;
     }
 }

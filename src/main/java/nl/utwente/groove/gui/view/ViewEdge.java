@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.gui.view;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.graph.Edge;
@@ -26,27 +26,28 @@ import nl.utwente.groove.gui.look.Look;
 import nl.utwente.groove.gui.look.MultiLabel.Direct;
 
 /**
- * JGraph edge wrapping a set of graph edges.
+ * Graph-view edge wrapping a set of graph edges.
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface ViewEdge<G extends @NonNull Graph> extends ViewCell<G> {
+@NonNullByDefault
+public interface ViewEdge<G extends Graph> extends ViewCell<G> {
     /**
      * The cloned object is equal to this one after a reset.
      */
     public abstract ViewEdge<G> clone();
 
     /**
-     * Returns the j-vertex that is the parent of the source port of this
-     * j-edge.
+     * Returns the vertex cell that is the parent of the source port of this
+     * edge cell.
      * @return the source vertex; may be {@code null} if the model has not
      * yet been fully initialised
      */
     abstract public @Nullable ViewVertex<G> getSourceVertex();
 
     /**
-     * Returns the j-vertex that is the parent of the target port of this
-     * j-edge.
+     * Returns the vertex cell that is the parent of the target port of this
+     * edge cell.
      * @return the target vertex; may be {@code null} if the model has not
      * yet been fully initialised
      */
@@ -68,7 +69,7 @@ public interface ViewEdge<G extends @NonNull Graph> extends ViewCell<G> {
     /**
      * Returns the first edge from the set of underlying edges.
      */
-    public abstract Edge getEdge();
+    public abstract @Nullable Edge getEdge();
 
     /**
      * Determines the direction corresponding to a given edge
@@ -80,5 +81,5 @@ public interface ViewEdge<G extends @NonNull Graph> extends ViewCell<G> {
      * @param edge the edge of which the direction should be returned; if {@code null},
      * it is assumed to be a forward edge
      */
-    public abstract Direct getDirect(Edge edge);
+    public abstract Direct getDirect(@Nullable Edge edge);
 }

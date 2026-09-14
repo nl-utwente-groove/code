@@ -34,9 +34,9 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.graph.Label;
-import nl.utwente.groove.gui.jgraph.JAttr;
-import nl.utwente.groove.gui.jgraph.LTSJGraph;
+import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.tree.LTSEntry.Type;
+import nl.utwente.groove.gui.view.LTSGraphCanvas;
 import nl.utwente.groove.lts.GTS;
 
 /**
@@ -47,8 +47,8 @@ import nl.utwente.groove.lts.GTS;
 @NonNullByDefault
 public class LTSTree extends LabelTree<GTS> {
     /** Constructs a tree for a given graph. */
-    public LTSTree(LTSJGraph jGraph) {
-        super(jGraph, true);
+    public LTSTree(LTSGraphCanvas canvas) {
+        super(canvas, true);
         this.headerNodes = new EnumMap<>(LTSEntry.Type.class);
         for (var entryType : LTSEntry.Type.values()) {
             this.headerNodes.put(entryType, new HeaderNode(entryType));
@@ -56,15 +56,15 @@ public class LTSTree extends LabelTree<GTS> {
     }
 
     @Override
-    public LTSJGraph getJGraph() {
-        return (LTSJGraph) super.getJGraph();
+    public LTSGraphCanvas getCanvas() {
+        return (LTSGraphCanvas) super.getCanvas();
     }
 
     @Override
     LTSFilter getFilter() {
         var result = this.filter;
         if (result == null) {
-            this.filter = result = new LTSFilter(getJGraph());
+            this.filter = result = new LTSFilter(getCanvas());
         }
         return result;
     }
@@ -86,7 +86,7 @@ public class LTSTree extends LabelTree<GTS> {
         }
         for (var entry : getFilter().getEntries()) {
             entry.refreshSelection();
-            if (getFilter().hasJCells(entry)) {
+            if (getFilter().hasCells(entry)) {
                 headers |= entry.getType() != Type.GRAPH_CONDITION;
                 var entries = typedEntries.get(entry.getType());
                 assert entries != null; // all entry types are pre-populated
@@ -138,8 +138,10 @@ public class LTSTree extends LabelTree<GTS> {
     @Override
     protected void paintComponent(@Nullable Graphics g) {
         super.paintComponent(g);
-        if (getJGraph().getSimulatorModel().hasAbsentState()) {
-            JAttr.paintHatch(this, g);
+        var simulatorModel = getCanvas().getController().getSimulatorModel();
+        assert simulatorModel != null; // LTS canvases always live in a simulator
+        if (simulatorModel.hasAbsentState()) {
+            Values.paintHatch(this, g);
         }
     }
 

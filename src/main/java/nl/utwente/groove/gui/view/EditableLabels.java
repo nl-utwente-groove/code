@@ -1,0 +1,133 @@
+/*
+ * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2023
+ * University of Twente
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ *
+ * $Id$
+ */
+package nl.utwente.groove.gui.view;
+
+import static nl.utwente.groove.grammar.aspect.AspectKind.REMARK;
+
+import java.util.ArrayList;
+import java.util.Collection;
+
+import nl.utwente.groove.grammar.aspect.AspectEdge;
+import nl.utwente.groove.grammar.aspect.AspectLabel;
+import nl.utwente.groove.gui.look.MultiLabel;
+import nl.utwente.groove.gui.look.MultiLabel.Direct;
+import nl.utwente.groove.util.Strings;
+import nl.utwente.groove.util.line.Line;
+
+/**
+ * The editable labels of an aspect graph cell: a list of label texts, one per node label
+ * or wrapped edge, which the in-place editor shows as newline-separated text.
+ * @author Arend Rensink
+ * @version $Revision$
+ */
+public class EditableLabels extends ArrayList<String> {
+    /** Constructs an empty list of labels. */
+    public EditableLabels() {
+        // empty
+    }
+
+    /** Constructs a copy of a given list of labels. */
+    public EditableLabels(EditableLabels other) {
+        super(other);
+    }
+
+    /**
+     * Converts the labels to an editable string, in which the individual
+     * labels are separated by newlines
+     */
+    public String toEditString() {
+        return Strings.toString(toArray(), "", "", NEWLINE);
+    }
+
+    /**
+     * Returns a list of lines constituting the node or edge label
+     * in case this object is displayed directly.
+     */
+    public MultiLabel toLines() {
+        MultiLabel result = new MultiLabel();
+        for (String text : this) {
+            result.add(Line.atom(text), Direct.NONE);
+        }
+        return result;
+    }
+
+    /**
+     * Loads the labels from a given string value. This
+     * implementation splits the value using newlines, and trims the
+     * individual labels. This means that
+     * edit separators behave as the lowest-priority operators, lower even than
+     * bracketing or quoting.
+     * @param value the value from which to load the labels; may not be
+     *        <tt>null</tt>
+     */
+    public void load(String value) {
+        for (String text : value.split(NEWLINE)) {
+            text = text.trim();
+            if (text.length() > 0) {
+                add(text);
+            }
+        }
+        if (isEmpty()) {
+            add("");
+        }
+    }
+
+    /**
+     * Loads the labels from a given label set.
+     *
+     * @param labelSet the label set from which to load the labels
+     */
+    public void addLabels(Collection<AspectLabel> labelSet) {
+        for (AspectLabel label : labelSet) {
+            add(label.toString());
+        }
+    }
+
+    /**
+     * Loads the labels from a given edge set.
+     *
+     * @param edgeSet the edge set from which to load the labels
+     */
+    public void addEdges(Collection<AspectEdge> edgeSet) {
+        for (AspectEdge edge : edgeSet) {
+            addEdge(edge);
+        }
+    }
+
+    /**
+     * Adds the label of a given edge to the labels.
+     * @param edge the edge from which to load the labels
+     */
+    private void addEdge(AspectEdge edge) {
+        if (edge.has(REMARK)) {
+            // Add remark prefixes to every line of the comment
+            for (String line : edge.label().getInnerText().split("\n")) {
+                add(REMARK.getPrefix() + line);
+            }
+        } else {
+            add(edge.label().toString());
+        }
+    }
+
+    @Override
+    public EditableLabels clone() {
+        return (EditableLabels) super.clone();
+    }
+
+    /** The default label separator. */
+    public static final String NEWLINE = "\n";
+}

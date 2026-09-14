@@ -33,10 +33,10 @@ import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.TypeModel;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.display.DisplayKind;
-import nl.utwente.groove.gui.jgraph.AspectJEdge;
-import nl.utwente.groove.gui.jgraph.AspectJGraph;
-import nl.utwente.groove.gui.jgraph.AspectJModel;
 import nl.utwente.groove.gui.look.EdgeEnd;
+import nl.utwente.groove.gui.view.AspectGraphViewController;
+import nl.utwente.groove.gui.view.AspectGraphViewModel;
+import nl.utwente.groove.gui.view.AspectViewEdge;
 import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.QualName;
@@ -49,7 +49,7 @@ import nl.utwente.groove.util.line.StringFormat;
  * itself. Labelled edges do get the arrow, as a check that the option is
  * in effect.
  * <p>
- * The type graph is rendered into a headless {@link AspectJGraph}, the
+ * The type graph is rendered into a headless canvas of the JGraph backend, the
  * way the {@code Imager} does it; only the computed visuals are inspected.
  * @author Arend Rensink
  * @version $Revision$
@@ -88,19 +88,21 @@ public class SubtypeLabelArrowTest {
      */
     @Test
     void subtypeEdgesHaveNoLabelArrow() throws IOException {
-        AspectJModel model = loadTypeGraph();
+        AspectGraphViewModel model = loadTypeGraph();
         boolean seenSubtype = false;
         boolean seenLabelled = false;
-        for (var cell : model.getRoots()) {
-            if (cell instanceof AspectJEdge jEdge) {
-                var visuals = jEdge.getVisuals();
+        for (var cell : model.getCells()) {
+            if (cell instanceof AspectViewEdge edge) {
+                var visuals = edge.getVisuals();
                 String text = visuals.getLabel().toString(StringFormat.instance(), START, END).toString();
-                if (jEdge.getAspects().has(AspectKind.SUBTYPE)) {
+                if (edge.getAspects().has(AspectKind.SUBTYPE)) {
                     assertEquals("", text, "subtype edge label should be empty");
                     assertEquals(EdgeEnd.SUBTYPE, visuals.getEdgeTargetShape());
                     seenSubtype = true;
                 } else {
-                    String label = jEdge.getEdge().getInnerText();
+                    var aspectEdge = edge.getEdge();
+                    assert aspectEdge != null; // a labelled edge cell wraps an edge
+                    String label = aspectEdge.getInnerText();
                     assertTrue(text.startsWith(label), "label text lost: " + text);
                     assertNotEquals(label, text, "no arrow on label " + label);
                     seenLabelled = true;
@@ -111,15 +113,16 @@ public class SubtypeLabelArrowTest {
         assertTrue(seenLabelled, "fixture has no labelled edge");
     }
 
-    /** Loads the fixture type graph into a headless type-graph JGraph model. */
-    private AspectJModel loadTypeGraph() throws IOException {
+    /** Loads the fixture type graph into a headless type-graph view model. */
+    private AspectGraphViewModel loadTypeGraph() throws IOException {
         GrammarModel grammar = Groove.loadGrammar(GRAMMAR);
         TypeModel typeModel = grammar.getTypeModel(QualName.parse(TYPE_GRAPH));
-        AspectJGraph jGraph = new AspectJGraph(null, DisplayKind.TYPE, false);
-        jGraph.getController().setGrammar(grammar);
-        AspectJModel result = jGraph.newModel();
+        var controller = new AspectGraphViewController(null, DisplayKind.TYPE, false);
+        controller.setGrammar(grammar);
+        var canvas = controller.getCanvas();
+        AspectGraphViewModel result = canvas.newViewModel();
         result.loadGraph(typeModel.getSource());
-        jGraph.setModel(result);
+        canvas.setViewModel(result);
         return result;
     }
 }

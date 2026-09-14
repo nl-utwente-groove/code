@@ -20,38 +20,42 @@ import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
 import java.util.List;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.view.AspectViewCell;
-import nl.utwente.groove.gui.jgraph.AspectJGraph;
+import nl.utwente.groove.gui.view.AspectGraphCanvas;
 import nl.utwente.groove.gui.look.VisualKey;
-import nl.utwente.groove.gui.look.VisualMap;
 
 /**
  * Action to add an intermediate point to a ViewEdge.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class AddPointAction extends JCellEditAction {
+public class AddPointAction extends CellEditAction {
     /** Constructs an instance of the action. */
-    public AddPointAction(AspectJGraph jGraph) {
-        super(jGraph, Options.ADD_POINT_ACTION, false);
+    public AddPointAction(AspectGraphCanvas canvas) {
+        super(canvas, Options.ADD_POINT_ACTION, false);
         putValue(ACCELERATOR_KEY, Options.ADD_POINT_KEY);
     }
 
     @Override
     public boolean isEnabled() {
-        return this.jCells.size() == 1;
+        return this.cells.size() == 1;
     }
 
     @Override
     public void actionPerformed(ActionEvent evt) {
-        execute(this.jCell);
+        execute(this.cell, takeLocation());
     }
 
-    /** Executes the action. */
-    public void execute(AspectViewCell jCell) {
-        VisualMap visuals = jCell.getVisuals();
-        List<Point2D> points = addPointAt(visuals.getPoints(), this.location);
-        edit(jCell, VisualKey.POINTS, points);
+    /**
+     * Adds a point to a given edge at a given location; see {@link #addPointAt}.
+     * @param at the location of the new point, in graph coordinates; if {@code null},
+     * the point is added beside the first segment
+     */
+    public void execute(AspectViewCell cell, @Nullable Point2D at) {
+        List<Point2D> points = addPointAt(cell, at);
+        edit(cell, VisualKey.POINTS, points);
     }
 }

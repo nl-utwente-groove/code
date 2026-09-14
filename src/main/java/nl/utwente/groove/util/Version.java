@@ -324,7 +324,7 @@ public class Version {
     public static final String GRAMMAR_VERSION_3_11 = "3.11";
     /**
      * This is the grammar version introduced with Groove version 8.0.0.
-     * Three changes share this version:
+     * The following changes share this version:
      * <ul>
      * <li> The exploration strategy is now stored in the {@code exploration}
      * property, which names a settings resource holding a feature-model
@@ -357,6 +357,25 @@ public class Version {
      * of this version the property was briefly called {@code parallelEdges},
      * with values {@code none}, {@code SPO} and {@code DPO}; a stored legacy
      * key is translated on load and dropped on the next save.)
+     * <li> Two further grammar properties are new. {@code regExpMatching}
+     * ({@code faithful}, the default, or {@code sloppy}) governs whether a
+     * composite regular expression must be witnessed by a path that survives
+     * the rule's own erasures; {@code matchBound} (default 10000, {@code 0}
+     * disables it) bounds the number of matches in a single state, beyond
+     * which exploration halts. The Ecore-related properties
+     * {@code ecoreOrdering} and {@code ecoreUseIdentifiers} are gone; see the
+     * next item.
+     * <li> Settings resources are a new resource kind: schema-checked
+     * properties files inside the {@code .gps}, in a top-level folder named
+     * after their schema ({@code explore/}, {@code ecore/}), or a top-level
+     * file named after the schema if that schema is singular. The
+     * {@code exploration} property above names an {@code explore} settings
+     * resource; the Ecore import and export options ({@code ordering},
+     * {@code useIdentifiers}, per-element overrides) live in an {@code ecore}
+     * settings resource. The grammar properties file is now the built-in
+     * {@code system} schema, {@code system.properties}; a legacy
+     * {@code <grammar name>.properties} file is still read and migrated on
+     * the next save, and the folder {@code system/} is reserved.
      * </ul>
      */
     public static final String GRAMMAR_VERSION_3_12 = "3.12";

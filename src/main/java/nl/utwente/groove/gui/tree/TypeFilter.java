@@ -83,7 +83,7 @@ class TypeFilter extends LabelFilter<AspectGraph,TypeEntry> {
                 for (var ee : te.getEdges()) {
                     if (ee.getNodes().stream().allMatch(TypeEntry::isSelected)
                         && ee.setPassive(false)) {
-                        result.addAll(getJCells(ee));
+                        result.addAll(getCells(ee));
                     }
                 }
             } else {
@@ -92,7 +92,7 @@ class TypeFilter extends LabelFilter<AspectGraph,TypeEntry> {
                     .getNodes()
                     .stream()
                     .filter(ne -> ne.setPassive(true))
-                    .map(this::getJCells)
+                    .map(this::getCells)
                     .forEach(result::addAll);
             }
         } else {
@@ -102,14 +102,14 @@ class TypeFilter extends LabelFilter<AspectGraph,TypeEntry> {
                     .getEdges()
                     .stream()
                     .filter(ce -> ce.setPassive(true))
-                    .map(this::getJCells)
+                    .map(this::getCells)
                     .forEach(result::addAll);
             } else {
                 // previously passively filtered incident nodes may become fully filtered
                 for (var ne : te.getNodes()) {
                     if (ne.getEdges().stream().noneMatch(TypeEntry::isSelected)
                         && ne.setPassive(false)) {
-                        result.addAll(getJCells(ne));
+                        result.addAll(getCells(ne));
                     }
                 }
             }
@@ -143,6 +143,17 @@ class TypeFilter extends LabelFilter<AspectGraph,TypeEntry> {
 
     private EntryMap getEntryMap(TypeGraph typeGraph) {
         return update(typeGraph);
+    }
+
+    /**
+     * Indicates if the entries of this filter are those of a given type graph:
+     * they were built from that very instance and are not stale. An implicit type
+     * graph is derived anew from the graph after every edit, so an editor's filter
+     * falls behind it and must be rebuilt.
+     */
+    boolean isFor(@Nullable TypeGraph typeGraph) {
+        var map = this.entryMap;
+        return !this.stale && map != null && map.typeGraph() == typeGraph;
     }
 
     /** Flag indicating that the {@link #entryMap} might have to be refreshed. */

@@ -19,36 +19,54 @@ package nl.utwente.groove.gui.view;
 import java.util.Comparator;
 import java.util.Iterator;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.aspect.Aspect;
 import nl.utwente.groove.grammar.aspect.AspectEdge;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.aspect.AspectKind;
+import nl.utwente.groove.grammar.model.GraphBasedModel;
+import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.EdgeComparator;
-import nl.utwente.groove.gui.jgraph.AspectJObject;
 import nl.utwente.groove.util.parse.Severity;
 
 /**
- * Instantiation of a {@link ViewCell} with an {@link AspectJObject}
- * that stores the (editable) string representation of the node/edge label.
+ * Instantiation of a {@link ViewCell} carrying {@link EditableLabels},
+ * the editable string representation of the node/edge labels.
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface AspectViewCell extends ViewCell<@NonNull AspectGraph> {
+@NonNullByDefault
+public interface AspectViewCell extends ViewCell<AspectGraph> {
     @Override
     public Iterator<? extends AspectViewCell> getContext();
 
     /** Returns the aspect kind of the element wrapped in this cell. */
     Aspect.Map getAspects();
 
-    /** Returns the user object of this cell, with the given type. */
-    AspectJObject getUserObject();
+    /**
+     * Returns the resource model of the graph this cell is part of.
+     * Available as soon as the cell has a content model, whether or not
+     * that model is shown on a canvas.
+     */
+    GraphBasedModel<?> getResourceModel();
 
-    /** Sets the user object to a given value. */
-    void setUserObject(Object value);
+    /** Returns the type graph against which this cell's elements are typed. */
+    TypeGraph getTypeGraph();
+
+    /**
+     * Returns the editable labels of this cell: the texts of its node labels and
+     * wrapped edges, as shown and changed by the in-place editor.
+     */
+    EditableLabels getEditableLabels();
+
+    /**
+     * Sets the editable labels of this cell to a copy of the given labels.
+     * The cell's own elements are not affected until {@link #applyEditableLabels}.
+     */
+    void setEditableLabels(EditableLabels labels);
 
     /**
      * Returns the errors in this cell.
@@ -66,15 +84,15 @@ public interface AspectViewCell extends ViewCell<@NonNull AspectGraph> {
     }
 
     /**
-     * Sets the user object with information from the cell's wrapped
+     * Recomputes the editable labels from the cell's wrapped
      * nodes and edges.
      */
-    void saveToUserObject();
+    void refreshEditableLabels();
 
     /**
-     * Resets the cell's nodes and edges from the user object.
+     * Resets the cell's nodes and edges from the editable labels.
      */
-    void loadFromUserObject(AspectGraph graph);
+    void applyEditableLabels(AspectGraph graph);
 
     /** Separator between level name and edge label. */
     static final char LEVEL_NAME_SEPARATOR = '@';

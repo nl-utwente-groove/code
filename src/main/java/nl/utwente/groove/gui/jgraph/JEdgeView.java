@@ -33,7 +33,6 @@ import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JLabel;
@@ -56,9 +55,12 @@ import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
 import nl.utwente.groove.util.collect.Matrix;
+import nl.utwente.groove.util.Fonts;
 import nl.utwente.groove.util.line.HTMLLineFormat;
 import nl.utwente.groove.util.line.LineStyle;
 import nl.utwente.groove.util.line.MatrixFormat;
+import nl.utwente.groove.gui.view.EdgeGeometry;
+import nl.utwente.groove.gui.view.ParallelEdges;
 import nl.utwente.groove.gui.view.ViewEdge;
 import nl.utwente.groove.gui.view.ViewVertex;
 
@@ -77,7 +79,7 @@ public class JEdgeView extends EdgeView {
     /**
      * Constructs an edge view for a given jEdge.
      */
-    public JEdgeView(ViewEdge<?> jEdge, JGraph<?> jGraph) {
+    public JEdgeView(JEdge<?> jEdge, JGraph<?> jGraph) {
         super(jEdge);
     }
 
@@ -117,12 +119,12 @@ public class JEdgeView extends EdgeView {
 
     /** Convenience method to retrieve the source vertex. */
     private ViewVertex<?> getSourceVertex() {
-        return getCell().getSourceVertex();
+        return getViewCell().getSourceVertex();
     }
 
     /** Convenience method to retrieve the target vertex. */
     private ViewVertex<?> getTargetVertex() {
-        return getCell().getTargetVertex();
+        return getViewCell().getTargetVertex();
     }
 
     @Override
@@ -147,8 +149,13 @@ public class JEdgeView extends EdgeView {
      * Specialises the return type.
      */
     @Override
-    public ViewEdge<?> getCell() {
-        return (ViewEdge<?>) super.getCell();
+    public JEdge<?> getCell() {
+        return (JEdge<?>) super.getCell();
+    }
+
+    /** Returns the edge cell shown by this view. */
+    public ViewEdge<?> getViewCell() {
+        return getCell().getViewCell();
     }
 
     /**
@@ -222,53 +229,22 @@ public class JEdgeView extends EdgeView {
     }
 
     /**
-     * Returns the parallel edges rank of this edge.
-     * This is the rank within the set of parallel unrouted
-     * edges. The rank is
-     * determined by the position in the edge set of this edges's source port.
-     * If this edge is routed (that is, it has explicit routing points)
-     * then its parallel rank is always 0.
-     * @return the computed parallel edges rank
+     * Returns the parallel edges rank of this edge, see {@link ParallelEdges#rank}:
+     * 0 for a routed edge, a loop, or an edge without parallels.
      */
     private int getParRank() {
         if (this.source == null || this.target == null) {
             return 0;
         }
+        // the cell may be disconnected already while the view is still asked,
+        // during the removal of the edge
+        if (getSourceVertex() == null || getTargetVertex() == null) {
+            return 0;
+        }
         if (getPointCount() > 2) {
             return 0;
         }
-        if (getCell().isLoop()) {
-            return 0;
-        }
-        // the total number of incoming and outgoing parallel edges
-        int inCount = 0;
-        int outCount = 0;
-        // the rank calculated for this edge
-        int rank = 0;
-        // flag indicating that this edge has been encountered
-        boolean found = false;
-        // determine the rank within the incoming/outgoing edges
-        Iterator<? extends ViewEdge<?>> iter = getSourceVertex().getContext();
-        while (iter.hasNext()) {
-            ViewEdge<?> edge = iter.next();
-            // determine if this is a parallel edge
-            if (edge.getVisuals().getPoints().size() > 2) {
-                continue;
-            }
-            found |= edge == getCell();
-            if (edge.getTargetVertex() == getTargetVertex()) {
-                // edge is outgoing
-                outCount++;
-                if (!found) {
-                    rank++;
-                }
-            } else if (edge.getSourceVertex() == getTargetVertex()) {
-                // edge is incoming
-                inCount++;
-            }
-        }
-        // adjust so the ranks are points on an interval centered on 0 with distance 2
-        return 2 * (inCount + rank) - (inCount + outCount - 1);
+        return ParallelEdges.rank(getViewCell());
     }
 
     /** Returns the perimeter point where the end of this edge has to connect.
@@ -280,6 +256,22 @@ public class JEdgeView extends EdgeView {
         JVertexView vertexView = (JVertexView) vertex;
         Point2D center = getCenterPoint(vertex);
         Point2D nextPoint = getNearestPoint(source);
+        // a straight edge between aligned vertices runs vertically or horizontally
+        // between them, see EdgeGeometry.alignedCentres
+        if (getPointCount() == 2 && !isLoop() && this.source != null && this.target != null
+            && this.source.getParentView() instanceof JVertexView sourceView
+            && this.target.getParentView() instanceof JVertexView targetView) {
+            var aligned = EdgeGeometry
+                .alignedCentres(sourceView.getShapeBounds(), targetView.getShapeBounds());
+            if (aligned != null) {
+                center = source
+                    ? aligned.source()
+                    : aligned.target();
+                nextPoint = source
+                    ? aligned.target()
+                    : aligned.source();
+            }
+        }
         // adjust the centre and next point depending on the number of
         // parallel edges, as determined by the parameter rank
         Point2D adjustedCenter;
@@ -304,7 +296,7 @@ public class JEdgeView extends EdgeView {
                 = vertexView.getCellVisuals().getNodeShape().getRadius(bounds, offDirX, offDirY);
             // calculate actual offset
             double offset
-                = Math.signum(parRank) * Math.min(PAR_EDGES_DISTANCE * Math.abs(parRank), offMax);
+                = Math.signum(parRank) * Math.min(ParallelEdges.DISTANCE * Math.abs(parRank), offMax);
             double offX = offset * offDirX / offDist;
             double offY = offset * offDirY / offDist;
             adjustedCenter = new Point2D.Double(center.getX() + offX, center.getY() + offY);
@@ -321,7 +313,7 @@ public class JEdgeView extends EdgeView {
     public Point2D getLabelVector() {
         Point2D p0 = getPoint(0);
         Point2D p1 = getPoint(1);
-        if (getCell().getVisuals().getLineStyle() == LineStyle.MANHATTAN
+        if (getViewCell().getVisuals().getLineStyle() == LineStyle.MANHATTAN
             && p1.getX() != p0.getX()) {
             p1 = new Point2D.Double(p1.getX(), p0.getY());
         }
@@ -341,8 +333,6 @@ public class JEdgeView extends EdgeView {
         }
     }
 
-    /** Preferred distance between parallel edges. */
-    private static final int PAR_EDGES_DISTANCE = 4;
 
     static {
         renderer = new MyEdgeRenderer();
@@ -430,7 +420,7 @@ public class JEdgeView extends EdgeView {
                 .format("This renderer is only meant for %s", JEdgeView.class);
 
             JEdgeView view = this.jView = (JEdgeView) v;
-            VisualMap visuals = view.getCell().getVisuals();
+            VisualMap visuals = view.getViewCell().getVisuals();
             this.line2color = visuals.getInnerLine();
             this.twoLines = this.line2color != null;
             this.errorOverlay = Values.getSeverityOverlay(visuals.getErrorSeverity());
@@ -703,12 +693,15 @@ public class JEdgeView extends EdgeView {
             Dimension result = this.jLabelSize;
             Color foreground = getForeground();
             // see if we can use the previously stored value
-            MultiLabel lines = view.getCell().getVisuals().getLabel();
+            VisualMap visuals = view.getViewCell().getVisuals();
+            MultiLabel lines = visuals.getLabel();
+            int fontStyle = visuals.getFont();
             if (lines.isEmpty()) {
                 result = this.jLabelSize = new Dimension();
-            } else if (lines != this.jLabelLines || foreground != this.jLabelColor) {
+            } else if (lines != this.jLabelLines || foreground != this.jLabelColor
+                || fontStyle != this.jLabelFontStyle) {
                 // no, the text or colour have changed; reload the jLabel component
-                JGraph<?> jGraph = view.getCell().getJGraph();
+                JGraph<?> jGraph = (JGraph<?>) view.getViewCell().getCanvas();
                 assert jGraph != null; // guaranteed by now
                 Point2D start = null;
                 Point2D end = null;
@@ -716,7 +709,8 @@ public class JEdgeView extends EdgeView {
                     start = view.getPoint(0);
                     end = view.getPoint(view.getPointCount() - 1);
                 }
-                // set the text in the label
+                // set the font and text in the label
+                this.jLabel.setFont(Fonts.getLabelFont().deriveFont(fontStyle));
                 var text = lines.toString(HTMLLineFormat.instance(), start, end);
                 this.jLabel.setText(HTMLLineFormat.toHtml(text, foreground));
                 if (FAST_SIZE) {
@@ -735,6 +729,7 @@ public class JEdgeView extends EdgeView {
             }
             this.jLabelLines = lines;
             this.jLabelColor = foreground;
+            this.jLabelFontStyle = fontStyle;
             return result;
         }
 
@@ -759,7 +754,7 @@ public class JEdgeView extends EdgeView {
         public Dimension getLabelSize(EdgeView view, String label) {
             Dimension result = null;
             ViewEdge<?> edge = view instanceof JEdgeView
-                ? ((JEdgeView) view).getCell()
+                ? ((JEdgeView) view).getViewCell()
                 : null;
             if (edge == null) {
                 result = computeLabelSize(view, label);
@@ -797,6 +792,8 @@ public class JEdgeView extends EdgeView {
         private MultiLabel jLabelLines;
         /** Last colour set in the jLabel component. */
         private Color jLabelColor;
+        /** Last font style set in the jLabel component. */
+        private int jLabelFontStyle;
         /** Last computed preferred size of the jLabel component. */
         private Dimension jLabelSize;
     }

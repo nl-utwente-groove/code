@@ -16,7 +16,6 @@
  */
 package nl.utwente.groove.gui;
 
-
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
@@ -904,6 +903,29 @@ public class Options implements Cloneable {
     static public final String SHOW_ARROWS_ON_LABELS_OPTION = "Show arrows on labels";
     /** Always delete resources without confirmation. */
     static public final String DELETE_RESOURCE_OPTION = "Delete seletected resource?";
+    /**
+     * Name of the graph backend submenu of the options menu (part of the View menu, see
+     * {@link BackendChooser}); also the user preference key under which the name of the
+     * chosen backend is stored (see {@link nl.utwente.groove.gui.view.GraphBackend#getName()}).
+     */
+    static public final String GRAPH_BACKEND_OPTION = "Graph backend";
+    /** Name of the yFiles add-on submenu of the options menu (part of the View menu). */
+    static public final String YFILES_ADDON_MENU_NAME = "YFiles add-on";
+    /** Name of the action downloading and installing the yFiles add-on. */
+    static public final String DOWNLOAD_ADDON_ACTION_NAME = "Download and install...";
+    /** Name of the download action when an add-on for another version is installed. */
+    static public final String UPDATE_ADDON_ACTION_NAME = "Download and install update...";
+    /** Name of the action installing the yFiles add-on from a file. */
+    static public final String INSTALL_ADDON_FILE_ACTION_NAME = "Install from file...";
+    /** Name of the action removing the yFiles add-on. */
+    static public final String REMOVE_ADDON_ACTION_NAME = "Remove";
+    /** Name of the action cancelling a pending removal of the yFiles add-on. */
+    static public final String REACTIVATE_ADDON_ACTION_NAME = "Reactivate";
+    /**
+     * User preference holding the GROOVE version for which the user was last asked
+     * whether to install the yFiles add-on (see {@link AddOnInstaller}).
+     */
+    static public final String YFILES_ADDON_ASKED_OPTION = "YFiles add-on asked for version";
     /** Default value map for the boolean options. */
     static private final Map<String,Boolean> boolOptionDefaults = new HashMap<>();
     /** Default value map for the behaviour options. */

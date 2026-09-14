@@ -33,8 +33,8 @@ import nl.utwente.groove.util.QualName;
 /**
  * Wrapper class for resources to be exported.
  * Can wrap either {@link Graph}s or {@link ResourceModel}s (or a combination).
- * Rendered graphs are wrapped by a GUI-side subclass, as they require a
- * JGraph and hence cannot be constructed headlessly.
+ * Rendered graphs are wrapped by a GUI-side subclass, since they need a canvas
+ * to render them.
  * The export kinds determine which of the fields of this {@link Exportable} is non-{@code null}:
  * <ul>
  * <li> {@link ExportKind#RESOURCE} is an element if and only if {@link #resourceModel()} is non-{@code null}

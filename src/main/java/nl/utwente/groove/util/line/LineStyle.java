@@ -33,17 +33,18 @@ import nl.utwente.groove.util.Exceptions;
  */
 public enum LineStyle {
     /** Orthogonal line style. */
-    ORTHOGONAL(11, "Orthogonal"),
+    ORTHOGONAL(11, "Orthogonal", false),
     /** Splined line style. */
-    SPLINE(13, "Spline"),
+    SPLINE(13, "Spline", true),
     /** Bezier curved line style. */
-    BEZIER(12, "Bezier"),
+    BEZIER(12, "Bezier", true),
     /** Manhattan skyline style (only horizontal and vertical). */
-    MANHATTAN(14, "Manhattan");
+    MANHATTAN(14, "Manhattan", false);
 
-    private LineStyle(int code, String name) {
+    private LineStyle(int code, String name, boolean curved) {
         this.code = code;
         this.name = name;
+        this.curved = curved;
     }
 
     /** Returns a number coding for the line style. */
@@ -61,8 +62,17 @@ public enum LineStyle {
         return this == DEFAULT_VALUE;
     }
 
+    /**
+     * Indicates if this is a curved line style, which shows only on an edge with
+     * intermediate points: without a bend, a curve is a straight line.
+     */
+    public boolean isCurved() {
+        return this.curved;
+    }
+
     private final int code;
     private final String name;
+    private final boolean curved;
 
     /** Indicates if a given code stands for a valid line style. */
     public static boolean isStyle(int code) {

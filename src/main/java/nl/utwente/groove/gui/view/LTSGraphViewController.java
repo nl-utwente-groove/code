@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.gui.view;
 
-import java.awt.Point;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -31,12 +31,11 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.gui.Options;
+import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.action.ScrollToActiveAction;
-import nl.utwente.groove.gui.jgraph.JGraphMode;
-import nl.utwente.groove.gui.jgraph.LTSJEdge;
-import nl.utwente.groove.gui.jgraph.LTSJGraph;
-import nl.utwente.groove.gui.jgraph.LTSJVertex;
+import nl.utwente.groove.gui.layout.ForestLayouter;
+import nl.utwente.groove.gui.layout.Layouter;
 import nl.utwente.groove.gui.menu.ModelCheckingMenu;
 import nl.utwente.groove.gui.menu.MyJMenu;
 import nl.utwente.groove.lts.ExploreResult;
@@ -59,18 +58,33 @@ import nl.utwente.groove.lts.RuleTransition;
 @NonNullByDefault
 public class LTSGraphViewController extends GraphViewController<GTS> {
     /**
-     * Constructs a controller for a given graph-view component.
-     * @param graphView the graph-view component that this controller belongs to
+     * Constructs a controller.
      * @param simulator simulator to which the display belongs; may be {@code null}
      */
-    public LTSGraphViewController(LTSJGraph graphView, @Nullable Simulator simulator) {
-        super(graphView, simulator);
+    public LTSGraphViewController(@Nullable Simulator simulator) {
+        super(simulator);
+    }
+
+    @Override
+    protected LTSGraphCanvas createCanvas(GraphBackend backend) {
+        return backend.newLTSCanvas(this);
     }
 
     /* Specialises the return type. */
     @Override
-    public LTSJGraph getGraphView() {
-        return (LTSJGraph) super.getGraphView();
+    public LTSGraphCanvas getCanvas() {
+        return (LTSGraphCanvas) super.getCanvas();
+    }
+
+    @Override
+    public GraphRole getGraphRole() {
+        return GraphRole.LTS;
+    }
+
+    /* The LTS is laid out as a forest by default. */
+    @Override
+    public Layouter getDefaultLayouter() {
+        return ForestLayouter.PROTOTYPE;
     }
 
     /*
@@ -79,9 +93,9 @@ public class LTSGraphViewController extends GraphViewController<GTS> {
      * subsequently invokes the super implementation.
      */
     @Override
-    public JMenu createPopupMenu(@Nullable Point atPoint) {
+    public JMenu createPopupMenu(@Nullable Point2D atPoint) {
         MyJMenu result = new MyJMenu("Popup");
-        if (getGraphView().getMode() == JGraphMode.SELECT_MODE) {
+        if (getCanvas().getMode() == GraphViewMode.SELECT_MODE) {
             result.addSubmenu(createExploreMenu());
             result.addSubmenu(createGotoMenu());
             result.addSubmenu(super.createPopupMenu(atPoint));
@@ -206,7 +220,7 @@ public class LTSGraphViewController extends GraphViewController<GTS> {
             elem = getActiveState();
         }
         if (elem != null) {
-            getGraphView().scrollTo(elem);
+            getCanvas().scrollTo(elem);
         }
     }
 
@@ -270,57 +284,57 @@ public class LTSGraphViewController extends GraphViewController<GTS> {
         GraphTransition oldActiveTrans = getActiveTransition();
         this.activeTransition = activeTrans;
         if (oldActiveTrans != null) {
-            for (LTSViewCell jCell : getTransitionCells(oldActiveTrans)) {
-                if (jCell.setActive(false)) {
-                    changedCells.add(jCell);
+            for (LTSViewCell cell : getTransitionCells(oldActiveTrans)) {
+                if (cell.setActive(false)) {
+                    changedCells.add(cell);
                 }
             }
         }
         if (activeTrans != null) {
-            for (LTSViewCell jCell : getTransitionCells(activeTrans)) {
-                if (jCell.getVisuals().isVisible()) {
-                    activeCells.add(jCell);
+            for (LTSViewCell cell : getTransitionCells(activeTrans)) {
+                if (cell.getVisuals().isVisible()) {
+                    activeCells.add(cell);
                 }
-                if (jCell.setActive(true)) {
-                    changedCells.add(jCell);
+                if (cell.setActive(true)) {
+                    changedCells.add(cell);
                 }
             }
         }
-        var model = getGraphView().getNonNullModel();
+        var model = getCanvas().getNonNullViewModel();
         GraphState oldActiveState = this.activeState;
         this.activeState = activeState;
         if (oldActiveState != null) {
-            LTSJVertex jCell = (LTSJVertex) model.getJCellForNode(oldActiveState);
-            if (jCell != null && jCell.setActive(false)) {
-                changedCells.add(jCell);
+            LTSViewCell cell = (LTSViewCell) model.getCellForNode(oldActiveState);
+            if (cell != null && cell.setActive(false)) {
+                changedCells.add(cell);
             }
         }
-        if (activeState != null && getGraphView().getModel() != null) {
-            LTSJVertex jCell = (LTSJVertex) model.getJCellForNode(activeState);
-            if (jCell == null) {
+        if (activeState != null && getCanvas().getViewModel() != null) {
+            LTSViewCell cell = (LTSViewCell) model.getCellForNode(activeState);
+            if (cell == null) {
                 result = addToModel(activeState);
-                jCell = (LTSJVertex) model.getJCellForNode(activeState);
+                cell = (LTSViewCell) model.getCellForNode(activeState);
             }
-            if (jCell != null) {
-                if (jCell.setActive(true)) {
-                    changedCells.add(jCell);
+            if (cell != null) {
+                if (cell.setActive(true)) {
+                    changedCells.add(cell);
                 }
-                if (jCell.getVisuals().isVisible()) {
-                    activeCells.add(jCell);
+                if (cell.getVisuals().isVisible()) {
+                    activeCells.add(cell);
                 }
             }
         }
         if (!activeCells.isEmpty()) {
-            getGraphView().setSelectionCells(activeCells.toArray());
+            getCanvas().select(activeCells);
         }
         if (!changedCells.isEmpty()) {
-            getGraphView().refreshCells(changedCells, false);
+            getCanvas().refresh(changedCells, false);
         }
         return result;
     }
 
     private boolean addToModel(GraphState state) {
-        var model = getGraphView().getNonNullModel();
+        var model = getCanvas().getNonNullViewModel();
         // add the state and its parents and successors to the model
         Set<GraphState> newStates = new HashSet<>();
         Set<GraphTransition> newTransitions = new HashSet<>();
@@ -330,39 +344,34 @@ public class LTSGraphViewController extends GraphViewController<GTS> {
             GraphTransition in = ns.getInTransition();
             newTransitions.add(in);
             parent = in.source();
-            if (model.getJCellForNode(parent) == null) {
+            if (model.getCellForNode(parent) == null) {
                 newStates.add(parent);
             }
         }
         for (GraphTransition trans : state.getTransitions(getTransitionClass())) {
-            if (model.getJCellForEdge(trans) == null) {
+            if (model.getCellForEdge(trans) == null) {
                 newTransitions.add(trans);
                 newStates.add(trans.target());
             }
         }
-        int oldBound = model.getStateBound();
-        model.setStateBound(Integer.MAX_VALUE);
-        boolean result = model.addElements(newStates, newTransitions, false);
-        model.setStateBound(oldBound);
+        var canvas = getCanvas();
+        int oldBound = canvas.setStateBound(Integer.MAX_VALUE);
+        boolean result = canvas.addElements(newStates, newTransitions, false);
+        canvas.setStateBound(oldBound);
         return result;
     }
 
     /**
-     * Refreshes the active state and transition, if any.
-     * This is necessary after reloading the LTS.
+     * Refreshes the active state and transition, if any, in a given model.
+     * This is necessary after reloading the LTS. The model may be detached:
+     * the display loads a new model before showing it, so the canvas is only
+     * touched if the model is the one it shows.
      */
-    public void reactivate() {
-        var model = getGraphView().getModel();
-        if (model == null) {
-            // the graph view holds no model yet, so there are no cells
-            // to reactivate; this happens on the first LTS load, where the
-            // freshly loaded model is only installed after loading
-            return;
-        }
+    public void reactivate(LTSGraphViewModel model) {
         List<ViewCell<GTS>> activeCells = new ArrayList<>();
         GraphState activeState = getActiveState();
         if (activeState != null) {
-            LTSViewCell activeCell = (LTSViewCell) model.getJCellForNode(activeState);
+            LTSViewCell activeCell = (LTSViewCell) model.getCellForNode(activeState);
             if (activeCell != null) {
                 activeCell.setActive(true);
                 activeCells.add(activeCell);
@@ -370,35 +379,35 @@ public class LTSGraphViewController extends GraphViewController<GTS> {
         }
         GraphTransition activeTrans = getActiveTransition();
         if (activeTrans != null) {
-            LTSViewCell activeCell = (LTSViewCell) model.getJCellForEdge(activeTrans);
+            LTSViewCell activeCell = (LTSViewCell) model.getCellForEdge(activeTrans);
             if (activeCell != null) {
                 activeCell.setActive(true);
                 activeCells.add(activeCell);
             }
         }
-        if (!activeCells.isEmpty()) {
-            getGraphView().setSelectionCells(activeCells.toArray());
-            getGraphView().refreshCells(activeCells, false);
+        if (!activeCells.isEmpty() && model == getCanvas().getViewModel()) {
+            getCanvas().select(activeCells);
+            getCanvas().refresh(activeCells, false);
         }
     }
 
     /** Collects all cells for a given transition and its subtransitions. */
     private Collection<LTSViewCell> getTransitionCells(GraphTransition trans) {
-        var model = getGraphView().getNonNullModel();
+        var model = getCanvas().getNonNullViewModel();
         Collection<LTSViewCell> result = new ArrayList<>();
-        LTSViewCell jCell = (LTSViewCell) model.getJCellForEdge(trans);
-        if (jCell != null) {
-            result.add(jCell);
+        LTSViewCell cell = (LTSViewCell) model.getCellForEdge(trans);
+        if (cell != null) {
+            result.add(cell);
         }
         if (trans instanceof RecipeTransition) {
             for (RuleTransition subTrans : ((RecipeTransition) trans).getSteps()) {
-                jCell = (LTSViewCell) model.getJCellForEdge(subTrans);
-                if (jCell != null) {
-                    result.add(jCell);
+                cell = (LTSViewCell) model.getCellForEdge(subTrans);
+                if (cell != null) {
+                    result.add(cell);
                 }
-                jCell = (LTSViewCell) model.getJCellForNode(subTrans.source());
-                if (jCell != null) {
-                    result.add(jCell);
+                cell = (LTSViewCell) model.getCellForNode(subTrans.source());
+                if (cell != null) {
+                    result.add(cell);
                 }
             }
         }
@@ -457,27 +466,26 @@ public class LTSGraphViewController extends GraphViewController<GTS> {
         if (getFilter() == Filter.RESULT && exploreResult != null && !exploreResult.isEmpty()) {
             fragment = exploreResult.toFragment(isShowRecipeSteps());
         } else {
-            var model = getGraphView().getNonNullModel();
-            fragment = model
-                .getViewModel()
-                .getNonNullGraph()
-                .toFragment(getFilter() == Filter.NONE, isShowRecipeSteps());
+            var lts = getCanvas().getNonNullViewModel().getGraph();
+            assert lts != null; // filtering is invoked only while an LTS is shown
+            fragment = lts.toFragment(getFilter() == Filter.NONE, isShowRecipeSteps());
         }
+        var cells = getCanvas().getCells();
         // first make the vertices (in)visible,
         // as otherwise they may prevent the edges from becoming visible
-        for (Object root : getGraphView().getRoots()) {
-            if (root instanceof LTSJVertex jVertex) {
-                boolean visible = fragment.nodeSet().contains(jVertex.getNode());
-                boolean thisChanged = jVertex.setVisibleFlag(visible);
+        for (var cell : cells) {
+            if (cell instanceof ViewVertex<?> vertex && cell instanceof LTSViewCell ltsCell) {
+                boolean visible = fragment.nodeSet().contains(vertex.getNode());
+                boolean thisChanged = ltsCell.setVisibleFlag(visible);
                 result |= thisChanged & visible;
             }
         }
         // now change the visibility of the edges
-        for (Object root : getGraphView().getRoots()) {
-            if (root instanceof LTSJEdge jEdge) {
+        for (var cell : cells) {
+            if (cell instanceof ViewEdge<?> edge && cell instanceof LTSViewCell ltsCell) {
                 var visibleEdges = fragment.edgeSet();
-                boolean visible = jEdge.getEdges().stream().anyMatch(visibleEdges::contains);
-                boolean thisChanged = jEdge.setVisibleFlag(visible);
+                boolean visible = edge.getEdges().stream().anyMatch(visibleEdges::contains);
+                boolean thisChanged = ltsCell.setVisibleFlag(visible);
                 result |= thisChanged & visible;
             }
         }
@@ -502,11 +510,11 @@ public class LTSGraphViewController extends GraphViewController<GTS> {
 
     /** Indicates if there are no states not added or invisible due to node bound or filter. */
     public boolean isComplete() {
-        var model = getGraphView().getModel();
+        var model = getCanvas().getViewModel();
         boolean result = model != null && getFilter() != Filter.SPANNING;
         if (result) {
             assert model != null;
-            if (model.getStateBound() < model.nodeCount()) {
+            if (getCanvas().getStateBound() < model.nodeCount()) {
                 result = false;
             } else if (getFilter() == Filter.RESULT && getSimulatorModel() != null) {
                 result = !hasResult();

@@ -29,7 +29,6 @@ import org.jgraph.graph.DefaultGraphModel;
 import org.jgraph.graph.DefaultPort;
 import org.jgraph.graph.GraphLayoutCache;
 import org.jgraph.graph.GraphModel;
-import nl.utwente.groove.gui.view.ViewCell;
 
 /**
  * A layout cache that, for efficiency, does not pass on all change events,
@@ -61,8 +60,8 @@ public class JGraphLayoutCache extends GraphLayoutCache {
 
     @Override
     public boolean isVisible(Object cell) {
-        if (cell instanceof ViewCell) {
-            return ((ViewCell<?>) cell).getVisuals().isVisible();
+        if (cell instanceof JCell<?> item) {
+            return item.getViewCell().getVisuals().isVisible();
         } else if (cell instanceof DefaultPort) {
             return isVisible(((DefaultPort) cell).getParent());
         } else {

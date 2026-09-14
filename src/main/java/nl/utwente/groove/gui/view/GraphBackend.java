@@ -1,0 +1,248 @@
+/*
+ * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2023
+ * University of Twente
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ *
+ * $Id$
+ */
+package nl.utwente.groove.gui.view;
+
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.ServiceConfigurationError;
+import java.util.ServiceLoader;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
+import nl.utwente.groove.graph.Graph;
+import nl.utwente.groove.gui.Options;
+import nl.utwente.groove.util.AIGenerated;
+import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.Extensions;
+import nl.utwente.groove.util.Log;
+
+/**
+ * Factory for the canvases of one graph-visualisation backend.
+ * A controller obtains its canvas from the backend selected at start-up,
+ * see {@link #instance()}; the canvas attaches itself to the controller
+ * during construction (see {@link GraphViewController#attachCanvas}).
+ * <p>
+ * Backends are services: each backend module declares its implementation
+ * with {@code provides} (and in {@code META-INF/services}, for the class path),
+ * so what is on the module path is what is available, plus the jars of the
+ * user-level extension directory of {@link Extensions}.
+ * @author Arend Rensink
+ * @version $Revision$
+ */
+@AIGenerated("Claude Fable 5.1, 2026-09")
+@NonNullByDefault
+public interface GraphBackend {
+    /** Creates a canvas for aspect graphs, for a given controller. */
+    AspectGraphCanvas newAspectCanvas(AspectGraphViewController controller);
+
+    /** Creates a canvas for LTSs, for a given controller. */
+    LTSGraphCanvas newLTSCanvas(LTSGraphViewController controller);
+
+    /** Creates a canvas for control graphs, for a given controller. */
+    CtrlGraphCanvas newCtrlCanvas(CtrlGraphViewController controller);
+
+    /** Creates a canvas for plain graphs, for a given controller. */
+    GraphCanvas<Graph> newPlainCanvas(PlainGraphViewController controller);
+
+    /**
+     * Returns the name of this backend: a short lower-case key, stable across
+     * releases, by which the backend is ranked (see {@link #RANKING}) and
+     * chosen by the user (see {@link Options#GRAPH_BACKEND_OPTION}).
+     */
+    String getName();
+
+    /** Returns the name of this backend as shown to the user. */
+    default String getDisplayName() {
+        return getName();
+    }
+
+    /**
+     * Returns the backend selected for this run.
+     * The backends available are discovered once through the {@link ServiceLoader},
+     * on the class path and among the jars of the extension directory (see
+     * {@link Extensions}); a provider that fails to instantiate is logged and skipped,
+     * as is a second provider with the name of an earlier one. Among the available
+     * backends the one requested for this run (see {@link #request}) is selected if it
+     * is available, otherwise the one named by the user preference
+     * {@link Options#GRAPH_BACKEND_OPTION} if that is available, otherwise the one
+     * ranking first in {@link #RANKING}; backends not in the ranking come last, in
+     * discovery order. There is no runtime switching: the selection is made at the
+     * first call, and a changed preference takes effect at the next start.
+     * @throws IllegalStateException if no backend is available
+     */
+    static GraphBackend instance() {
+        return Instance.Selected.INSTANCE;
+    }
+
+    /**
+     * Requests a backend by name for this run, ahead of the user preference; meant for
+     * a command-line switch. The request is honoured only if it precedes the selection,
+     * i.e. the first call of {@link #instance()}, and names an available backend;
+     * otherwise it is ignored, which the caller can detect by comparing the name of
+     * {@link #instance()} with the requested one.
+     * @param name the name of the requested backend (see {@link #getName()})
+     */
+    static void request(String name) {
+        Instance.requested = name;
+    }
+
+    /** Returns the backends available in this run, in discovery order. */
+    static List<GraphBackend> available() {
+        return Instance.AVAILABLE;
+    }
+
+    /**
+     * Discovers the backends that a class loader provides, in discovery order:
+     * the {@link ServiceLoader} providers visible through the loader, i.e., those on the
+     * class path and module path of the loader and its ancestors. A provider that cannot
+     * be loaded or instantiated is logged and skipped, and so is a provider whose name
+     * (see {@link #getName()}) is that of a provider discovered before it, so that the
+     * same backend on the class path and in the extension directory counts once.
+     * The backends of this run are discovered once, through the loader of
+     * {@link Extensions#instance()}; see {@link #available()}.
+     * @param loader the class loader to discover providers through
+     */
+    static List<GraphBackend> discover(ClassLoader loader) {
+        List<GraphBackend> result = new ArrayList<>();
+        var providers = ServiceLoader.load(GraphBackend.class, loader).iterator();
+        // the iterator reports a provider that fails to load by throwing from next(),
+        // and then moves on to the following provider, so a loop that catches the error
+        // and continues gets all the providers that can be loaded
+        while (true) {
+            try {
+                if (!providers.hasNext()) {
+                    break;
+                }
+                GraphBackend backend = providers.next();
+                String name = backend.getName();
+                var earlier = result.stream().filter(b -> b.getName().equals(name)).findFirst();
+                if (earlier.isPresent()) {
+                    Instance.LOGGER
+                        .log(Level.WARNING, "Graph backend {0} ignored: {1} already provides ''{2}''",
+                             backend.getClass().getName(), earlier.get().getClass().getName(),
+                             name);
+                } else {
+                    result.add(backend);
+                }
+            } catch (ServiceConfigurationError exc) {
+                Instance.LOGGER.log(Level.WARNING, "Graph backend unavailable: {0}", exc);
+            }
+        }
+        return List.copyOf(result);
+    }
+
+    /**
+     * Selects a backend among a non-empty list of available ones: the one with the
+     * preferred name if there is one, otherwise the first in the {@link #RANKING}.
+     * @param available the available backends, in discovery order
+     * @param preferred the name of the preferred backend; {@code null} if there is none
+     * @see #selectName
+     */
+    static GraphBackend select(List<GraphBackend> available, @Nullable String preferred) {
+        String name = selectName(available.stream().map(GraphBackend::getName).toList(), preferred);
+        return available.stream().filter(b -> b.getName().equals(name)).findFirst().orElseThrow();
+    }
+
+    /**
+     * Selects a backend name among a non-empty list of available ones: the preferred
+     * name if it is among them, otherwise the first in the {@link #RANKING}; names not
+     * in the ranking come last, in list order. This is the selection of
+     * {@link #instance()}, applicable by name alone to a run yet to come, such as the
+     * next start after an add-on was installed.
+     * @param available the names of the available backends, in discovery order
+     * @param preferred the name of the preferred backend; {@code null} if there is none
+     * @throws IllegalStateException if the list is empty
+     */
+    static String selectName(List<String> available, @Nullable String preferred) {
+        if (available.isEmpty()) {
+            throw Exceptions.illegalState("No graph backend available");
+        }
+        if (preferred != null && available.contains(preferred)) {
+            return preferred;
+        }
+        return available.stream().min(Comparator.comparingInt(Instance::rank)).orElseThrow();
+    }
+
+    /** Name of the JGraph backend, the one every distribution has. */
+    String JGRAPH = "jgraph";
+    /** Name of the yFiles backend, present only in the yFiles edition. */
+    String YFILES = "yfiles";
+    /**
+     * Backend names in order of preference: the yFiles backend is the target of the
+     * migration, so it is used whenever it is available and the user has not chosen
+     * otherwise.
+     */
+    List<String> RANKING = List.of(YFILES, JGRAPH);
+
+    /** Lazy holder of the available and the selected backend instances. */
+    final class Instance {
+        private Instance() {
+            // not to be instantiated
+        }
+
+        /** Declared before {@link Selected}, whose initialisation logs. */
+        private static final Logger LOGGER = Log.getLogger("gui.backend");
+
+        static final List<GraphBackend> AVAILABLE = discover(Extensions.instance().getLoader());
+
+        /** Name of the backend requested for this run, if any; see {@link GraphBackend#request}. */
+        static @Nullable String requested;
+
+        /** Lazy holder of the selected backend, initialised on the first call of {@link GraphBackend#instance()}. */
+        static final class Selected {
+            private Selected() {
+                // not to be instantiated
+            }
+
+            static final GraphBackend INSTANCE = create();
+        }
+
+        private static GraphBackend create() {
+            String requested = Instance.requested;
+            String preferred = Options.userPrefs.get(Options.GRAPH_BACKEND_OPTION, null);
+            GraphBackend result = null;
+            if (requested != null) {
+                for (var backend : AVAILABLE) {
+                    if (backend.getName().equals(requested)) {
+                        result = backend;
+                    }
+                }
+            }
+            if (result == null) {
+                result = select(AVAILABLE, preferred);
+            }
+            LOGGER
+                .log(Level.DEBUG,
+                     "Graph backend: {0} (available: {1}, requested: {2}, preferred: {3})",
+                     result.getName(), AVAILABLE.stream().map(GraphBackend::getName).toList(),
+                     requested, preferred);
+            return result;
+        }
+
+        /** Returns the position of a backend name in the ranking; unranked names come last. */
+        private static int rank(String name) {
+            int result = RANKING.indexOf(name);
+            return result < 0
+                ? RANKING.size()
+                : result;
+        }
+    }
+}

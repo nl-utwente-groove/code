@@ -19,22 +19,22 @@ package nl.utwente.groove.gui.action;
 import java.awt.event.ActionEvent;
 
 import nl.utwente.groove.gui.Options;
-import nl.utwente.groove.gui.jgraph.AspectJGraph;
+import nl.utwente.groove.gui.view.AspectGraphCanvas;
 
 /**
- * Action to edit the label of the currently selected j-cell.
+ * Action to edit the label of the currently selected cell.
  * @author Arend Rensink
  * @version $Revision$
  */
-public class EditLabelAction extends JCellEditAction {
+public class EditLabelAction extends CellEditAction {
     /** Constructs an instance of the action. */
-    public EditLabelAction(AspectJGraph jGraph) {
-        super(jGraph, Options.EDIT_LABEL_ACTION);
+    public EditLabelAction(AspectGraphCanvas canvas) {
+        super(canvas, Options.EDIT_LABEL_ACTION);
         putValue(ACCELERATOR_KEY, Options.RENAME_KEY);
     }
 
     @Override
     public void actionPerformed(ActionEvent evt) {
-        this.jGraph.startEditingAtCell(this.jCell);
+        this.canvas.startEditing(this.cell);
     }
 }

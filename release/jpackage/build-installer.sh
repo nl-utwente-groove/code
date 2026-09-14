@@ -9,7 +9,7 @@
 # - a JDK (>= 21) providing jpackage and jdeps, located through JAVA_HOME if
 #   set, otherwise through the PATH
 # - for the Windows .msi type: the WiX toolset (preinstalled on the GitHub
-#   windows runners)
+#   windows runners), and perl, which Git Bash ships with
 #
 # Usage:
 #   build-installer.sh <version> [<type>]
@@ -95,8 +95,21 @@ INPUT=$WORK/input/groove-$VERSION_UNDERSCORED
 # the download of the yFiles add-on (gh #909).
 EXTRA_MODULES="java.instrument java.management java.naming java.scripting java.sql jdk.accessibility jdk.charsets jdk.crypto.ec jdk.unsupported jdk.zipfs"
 MAIN_JAR=$INPUT/lib/groove-$VERSION.jar
+# The analysis runs on the core jar's classes WITHOUT its module descriptor.
+# The core jar is a named module whose "requires" clauses name the automatic
+# modules of the class-path jars; a jdeps that resolves the module graph before
+# analysing -- JDK 26 does, JDK 21 does not -- then stops at the first of them
+# with "Module jgraph not found, required by nl.utwente.groove". That is not
+# covered by --ignore-missing-deps, which ignores dependences missing from the
+# analysis, not modules missing from the resolution, and putting lib/ on the
+# module path only moves the failure on, since the automatic module names the
+# jars derive are not consistent among themselves (commons-beanutils requires
+# org.apache.commons.logging, the jar yields commons.logging). Without the
+# descriptor there is no resolution to fail, and both JDKs give the same answer.
+CLASSES=$WORK/classes
+unzip -q "$MAIN_JAR" -x module-info.class -d "$CLASSES"
 if JDEPS_OUT=$("$JDEPS" --multi-release 21 --ignore-missing-deps --print-module-deps \
-        --class-path "$(native_path "$INPUT/lib")/*" "$(native_path "$MAIN_JAR")" 2> /dev/null); then
+        --class-path "$(native_path "$INPUT/lib")/*" "$(native_path "$CLASSES")" 2> /dev/null); then
     # jdeps may precede the module list with warnings; the list is the last
     # line that looks like comma-separated module names
     MODULES=$(grep -E '^[a-z][a-zA-Z0-9._]*(,[a-zA-Z0-9._]+)*$' <<< "$JDEPS_OUT" | tail -1)
@@ -105,17 +118,22 @@ if [[ -z ${MODULES:-} ]]; then
     echo "warning: jdeps failed to compute the module list; falling back to java.se" >&2
     MODULES=java.se
 fi
+# The yFiles add-on (see README.md) is loaded from the user's extension
+# directory into this same runtime; its jars need jdk.xml.dom, which the core
+# jar's analysis already yields, so no module is added for it here. Should
+# that change, the add-on would fail at start-up with a NoClassDefFoundError.
 MODULES=$(printf '%s\n' ${MODULES//,/ } $EXTRA_MODULES | sort -u | paste -sd, -)
 echo "bundled runtime modules: $MODULES"
 
 # ----------------------------------------------------------------- launchers
 # jpackage names the main launcher after the application (GROOVE), and it
 # starts the Simulator; the tools, the Simulator included, become additional
-# launchers named after themselves. The menu entries (Windows start menu,
-# Linux desktop files) hang off the tool launchers rather than the main one,
-# so the GROOVE menu group lists Simulator, Generator, ... and not a second
-# GROOVE. win-console gives the command-line tools a console on Windows
-# (ignored elsewhere).
+# launchers named after themselves, each with a menu entry (Windows start
+# menu, Linux desktop file). The main launcher has one too, which jpackage
+# does not let us suppress: on Windows its menu entry follows the global
+# --win-menu, without which no launcher gets one at all, and on Linux the
+# custom icon forces its desktop file. win-console gives the command-line
+# tools a console on Windows (ignored elsewhere).
 LAUNCHERS_DIR=$WORK/launchers
 mkdir -p "$LAUNCHERS_DIR"
 add_launcher_args=()
@@ -133,6 +151,87 @@ make_launcher Generator true
 make_launcher ModelChecker true
 make_launcher Imager true
 make_launcher Viewer false
+
+# ----------------------------------------------------------------- msi resources
+# Uninstalling the MSI also removes the yFiles add-on from the user's extension
+# directory (see README.md), it asks the user to close a running GROOVE before
+# it touches anything (see wix/files-in-use.wxf), it warns before replacing another
+# installed version, another build of the same version included, for which
+# every build gets its own product code (see wix/replace-warning.wxf), and the
+# last page of the installation offers to start the Simulator; jpackage's own
+# WiX sources know nothing of these. jpackage takes a main.wxs from its
+# resource directory in place of the bundled one, so this extracts the bundled one from the running
+# JDK and splices the fragments in wix/ into it, each with a reference that
+# pulls it into the installer. A checked-in copy of main.wxs would go stale
+# with every JDK upgrade; the three anchor lines used here have been the same
+# from JDK 21 to 26, and the splice fails loudly should they change.
+msi_resources() {
+    local java_home=${JAVA_HOME:-$("${JAVA_BIN}java" -XshowSettings:properties -version 2>&1 | sed -n 's/^ *java.home = //p')}
+    MSI_RESOURCES=$WORK/resources
+    mkdir -p "$MSI_RESOURCES"
+    "${JAVA_BIN}jimage" extract --dir "$(native_path "$MSI_RESOURCES")" \
+        --include 'regex:/jdk.jpackage/jdk/jpackage/internal/resources/main.wxs' \
+        "$(native_path "$java_home/lib/modules")"
+    mv "$MSI_RESOURCES/jdk.jpackage/jdk/jpackage/internal/resources/main.wxs" "$MSI_RESOURCES/main.wxs"
+    sed -i -e '/<ComponentGroupRef Id="Files"\/>/a\      <ComponentGroupRef Id="GrooveAddOnCleanup"/>' \
+        -e '/<UIRef Id="JpUI"\/>/a\    <PropertyRef Id="MSIRESTARTMANAGERCONTROL"/>' \
+        -e '/<UIRef Id="JpUI"\/>/a\    <UIRef Id="GrooveLaunchSimulatorUI"/>' \
+        -e '/<UIRef Id="JpUI"\/>/a\    <UIRef Id="GrooveReplaceWarningUI"/>' \
+        -e 's/Id="\$(var\.JpProductCode)"/Id="*"/' \
+        -e "/<\/Product>/r $SCRIPT_DIR/wix/addon-cleanup.wxf" \
+        -e "/<\/Product>/r $SCRIPT_DIR/wix/files-in-use.wxf" \
+        -e "/<\/Product>/r $SCRIPT_DIR/wix/launch-simulator.wxf" \
+        -e "/<\/Product>/r $SCRIPT_DIR/wix/replace-warning.wxf" "$MSI_RESOURCES/main.wxs"
+    # text read in by r is not subject to the other commands of the same run;
+    # WiX takes forward slashes in paths, which keeps sed's replacement simple
+    sed -i "s|@GROOVE_ICONS_DIR@|$(cygpath -m "$SCRIPT_DIR/icons")|" "$MSI_RESOURCES/main.wxs"
+    if ! grep -q '<ComponentGroupRef Id="GrooveAddOnCleanup"/>' "$MSI_RESOURCES/main.wxs" \
+        || ! grep -q '<ComponentGroup Id="GrooveAddOnCleanup">' "$MSI_RESOURCES/main.wxs" \
+        || ! grep -q '<PropertyRef Id="MSIRESTARTMANAGERCONTROL"/>' "$MSI_RESOURCES/main.wxs" \
+        || ! grep -q '<Property Id="MSIRESTARTMANAGERCONTROL" Value="DisableShutdown"/>' "$MSI_RESOURCES/main.wxs" \
+        || ! grep -q 'xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"' "$MSI_RESOURCES/main.wxs" \
+        || ! grep -q '<util:CloseApplication Id="GrooveCloseSimulator"' "$MSI_RESOURCES/main.wxs" \
+        || ! grep -q '<RemoveExistingProducts Before="CostInitialize"/>' "$MSI_RESOURCES/main.wxs" \
+        || ! grep -q '<Custom Action="WixCloseApplications" Before="RemoveExistingProducts"/>' "$MSI_RESOURCES/main.wxs" \
+        || ! grep -q '<UIRef Id="GrooveLaunchSimulatorUI"/>' "$MSI_RESOURCES/main.wxs" \
+        || ! grep -q '<UI Id="GrooveLaunchSimulatorUI">' "$MSI_RESOURCES/main.wxs" \
+        || ! grep -q '<UIRef Id="GrooveReplaceWarningUI"/>' "$MSI_RESOURCES/main.wxs" \
+        || ! grep -q '<UI Id="GrooveReplaceWarningUI">' "$MSI_RESOURCES/main.wxs" \
+        || ! grep -q '<UpgradeVersion Property="GROOVE_SAME_VERSION_FOUND"' "$MSI_RESOURCES/main.wxs" \
+        || ! grep -Fq 'Id="*"' "$MSI_RESOURCES/main.wxs" \
+        || grep -Fq 'JpProductCode' "$MSI_RESOURCES/main.wxs"; then
+        echo "error: cannot splice the installer additions into jpackage's main.wxs: its structure has changed" >&2
+        exit 1
+    fi
+}
+
+# ----------------------------------------------------------------- msi licence
+# The MSI shows the licence in a narrow box on its first page. jpackage turns
+# a plain-text licence into RTF line by line, so the hard line breaks of
+# LICENSE.txt survive and wrap raggedly there. This writes RTF with one
+# paragraph per blank-line-separated block of LICENSE.txt instead, which
+# jpackage recognises by its header and takes as it is; LICENSE.txt remains the
+# only copy of the text. Non-ASCII characters become RTF Unicode escapes.
+msi_license() {
+    MSI_LICENSE=$WORK/LICENSE.rtf
+    perl - "$ROOT_DIR/LICENSE.txt" > "$MSI_LICENSE" <<'PERL'
+use strict; use warnings;
+open my $in, '<:encoding(UTF-8)', $ARGV[0] or die "cannot read $ARGV[0]: $!";
+my $text = do { local $/; <$in> };
+$text =~ s/\r//g;
+print "{\\rtf1\\ansi\\deff0{\\fonttbl{\\f0\\fswiss Segoe UI;}}\\fs18\n";
+for my $par (split /\n[ \t]*\n/, $text) {
+    $par =~ s/^\s+//;
+    $par =~ s/\s+\z//;
+    next unless length $par;
+    $par =~ s/([\\{}])/\\$1/g;
+    $par =~ s/\s*\n\s*/ /g;
+    $par =~ s/([^\x00-\x7f])/sprintf('\\u%d?', ord $1)/ge;
+    print "\\pard\\sa120 $par\\par\n";
+}
+print "}\n";
+PERL
+}
 
 # ----------------------------------------------------------------- jpackage
 # MSI and DMG version numbers must be plain x.y.z: strip any -SNAPSHOT suffix
@@ -164,7 +263,12 @@ case $OS in
         ;;
 esac
 if [[ $TYPE != app-image ]]; then
-    args+=(--license-file "$(native_path "$ROOT_DIR/LICENSE.txt")"
+    LICENSE=$ROOT_DIR/LICENSE.txt
+    if [[ $OS == windows ]]; then
+        msi_license
+        LICENSE=$MSI_LICENSE
+    fi
+    args+=(--license-file "$(native_path "$LICENSE")"
         --about-url "https://nl-utwente-groove.github.io")
     case $OS in
         windows)
@@ -172,9 +276,11 @@ if [[ $TYPE != app-image ]]; then
             # No --win-dir-chooser: jpackage's MSI does not remember the chosen
             # folder, so every upgrade would offer the default folder again;
             # users who care about the location can use the zip instead.
-            args+=(--win-menu-group GROOVE
+            msi_resources
+            args+=(--win-menu --win-menu-group GROOVE
                 --win-per-user-install
-                --win-upgrade-uuid c8adea88-1eaa-4127-838b-7b4be5a147f3)
+                --win-upgrade-uuid c8adea88-1eaa-4127-838b-7b4be5a147f3
+                --resource-dir "$(native_path "$MSI_RESOURCES")")
             ;;
         linux)
             args+=(--linux-menu-group Development)

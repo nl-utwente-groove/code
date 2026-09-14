@@ -1,0 +1,520 @@
+/*
+ * GROOVE: GRaphs for Object Oriented VErification Copyright 2003--2023
+ * University of Twente
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ *
+ * $Id$
+ */
+package nl.utwente.groove.gui.view;
+
+import java.beans.PropertyChangeListener;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
+import nl.utwente.groove.grammar.ResourceProperties;
+import nl.utwente.groove.grammar.aspect.AspectEdge;
+import nl.utwente.groove.grammar.aspect.AspectGraph;
+import nl.utwente.groove.grammar.aspect.AspectKind;
+import nl.utwente.groove.grammar.aspect.AspectNode;
+import nl.utwente.groove.grammar.model.GrammarModel;
+import nl.utwente.groove.grammar.model.GraphBasedModel;
+import nl.utwente.groove.grammar.type.TypeGraph;
+import nl.utwente.groove.graph.Edge;
+import nl.utwente.groove.graph.Element;
+import nl.utwente.groove.graph.GraphInfo;
+import nl.utwente.groove.graph.GraphRole;
+import nl.utwente.groove.graph.Node;
+import nl.utwente.groove.graph.layout.EdgeLayout;
+import nl.utwente.groove.graph.layout.LayoutMap;
+import nl.utwente.groove.gui.view.CellStore.Connection;
+import nl.utwente.groove.gui.look.VisualMap;
+import nl.utwente.groove.gui.look.VisualKey;
+import java.util.List;
+import java.util.ArrayList;
+import java.awt.geom.Point2D;
+import nl.utwente.groove.gui.view.cell.AspectEdgeCell;
+import nl.utwente.groove.gui.view.cell.AspectVertexCell;
+import nl.utwente.groove.util.AIGenerated;
+import nl.utwente.groove.util.ChangeCount;
+import nl.utwente.groove.util.ChangeCount.Derived;
+import nl.utwente.groove.util.QualName;
+import nl.utwente.groove.util.parse.FormatError;
+
+/**
+ * View model of an aspect graph: a graph-based resource of a grammar, typed
+ * against that grammar and possibly under edit. Knows how to rebuild the aspect
+ * graph from the cells after an edit, how the grammar diagnoses the graph, and
+ * how fresh nodes are numbered.
+ * @author Arend Rensink
+ * @version $Revision$
+ */
+@AIGenerated("Claude Fable 5.1, 2026-09")
+@NonNullByDefault
+public class AspectGraphViewModel extends GraphViewModel<AspectGraph> {
+    /**
+     * Creates an new model, initially without a graph or grammar loaded.
+     * Call {@link #setGrammar(GrammarModel)} to complete construction.
+     */
+    public AspectGraphViewModel(AspectGraphViewController controller,
+                                CellStore<AspectGraph> store) {
+        super(controller, store);
+        this.graphModCount = new ChangeCount();
+        this.resource = new Derived<>(this.graphModCount) {
+            @Override
+            protected GraphBasedModel<?> computeValue() {
+                return getNonNullGrammar().createGraphModel(getNonNullGraph());
+            }
+        };
+        this.typeGraph = new Derived<>(this.graphModCount) {
+            @Override
+            protected TypeGraph computeValue() {
+                return getResourceModel().getTypeGraph();
+            }
+        };
+        addGraphChangeListener(evt -> loadViewErrors());
+    }
+
+    @Override
+    public AspectGraphViewController getController() {
+        return (AspectGraphViewController) super.getController();
+    }
+
+    @Override
+    public AspectVertexCell newVertex(Node node) {
+        return (AspectVertexCell) super.newVertex(node);
+    }
+
+    @Override
+    public AspectEdgeCell newEdge(@Nullable Edge edge) {
+        return (AspectEdgeCell) super.newEdge(edge);
+    }
+
+    @Override
+    protected AspectVertexCell createVertexCell(Node node) {
+        assert node instanceof AspectNode;
+        return new AspectVertexCell(this);
+    }
+
+    @Override
+    protected AspectEdgeCell createEdgeCell() {
+        return new AspectEdgeCell(this);
+    }
+
+    /** Sets a grammar model, with respect to which typing is resolved. */
+    public void setGrammar(GrammarModel grammar) {
+        assert this.grammar == null || this.grammar == grammar;
+        this.grammar = grammar;
+    }
+
+    /** Returns the (possibly {@code null}) grammar set for this model. */
+    public @Nullable GrammarModel getGrammar() {
+        return this.grammar;
+    }
+
+    /** Returns the grammar set for this model; fails if there is none. */
+    private GrammarModel getNonNullGrammar() {
+        var result = getGrammar();
+        assert result != null; // set right after construction
+        return result;
+    }
+
+    /** Returns the graph of this model; fails if there is none. */
+    private AspectGraph getNonNullGraph() {
+        var result = getGraph();
+        assert result != null; // loaded right after construction, before any content is used
+        return result;
+    }
+
+    /** The associated grammar. */
+    private @Nullable GrammarModel grammar;
+
+    @Override
+    public @Nullable AspectViewCell getCell(Element elem) {
+        return (AspectViewCell) super.getCell(elem);
+    }
+
+    @Override
+    public @Nullable AspectViewCell getCellForEdge(Edge edge) {
+        return (AspectViewCell) super.getCellForEdge(edge);
+    }
+
+    @Override
+    public @Nullable AspectViewVertex getCellForNode(Node node) {
+        return (AspectViewVertex) super.getCellForNode(node);
+    }
+
+    @Override
+    public void loadGraph(AspectGraph graph) {
+        boolean wasLoading = isLoading();
+        setLoading(true);
+        setGraphDirty();
+        // signal that graph is modified twice, to ensure
+        // that all resources get synced properly
+        super.loadGraph(graph);
+        for (var cell : getCells()) {
+            ((AspectViewCell) cell).refreshEditableLabels();
+        }
+        this.properties = ResourceProperties.getProperties(graph);
+        setLoading(wasLoading);
+        setGraphModified();
+    }
+
+    @Override
+    public void setGraph(AspectGraph graph) {
+        super.setGraph(graph);
+        setGraphModified();
+    }
+
+    /**
+     * Reconstructs the aspect graph on the basis of the current cells.
+     * This method should be called immediately after the changes to
+     * the cells have been made, but before any graph listeners are
+     * notified.
+     */
+    public void syncGraph() {
+        if (isLoading()) {
+            return;
+        }
+        var grammar = getNonNullGrammar();
+        var oldGraph = getNonNullGraph();
+        GraphRole role = oldGraph.getRole();
+        Map<AspectNode,AspectViewVertex> nodeVertexMap = new HashMap<>();
+        Map<AspectEdge,AspectViewCell> edgeCellMap = new HashMap<>();
+        AspectGraph graph = new AspectGraph(oldGraph.getName(), role,
+            !grammar.getProperties().getSemantics().isMulti());
+        graph.setTypeSortMap(grammar.getTypeModel().getTypeSortMap());
+        for (var cell : getCells()) {
+            if (cell instanceof AspectViewVertex vertex) {
+                vertex.applyEditableLabels(graph);
+                graph.addNode(vertex.getNode());
+                nodeVertexMap.put(vertex.getNode(), vertex);
+                for (AspectEdge edge : vertex.getEdges()) {
+                    edgeCellMap.put(edge, vertex);
+                    graph.addEdgeContext(edge);
+                }
+            }
+        }
+        for (var cell : getCells()) {
+            if (cell instanceof AspectViewEdge edge) {
+                edge.applyEditableLabels(graph);
+                for (AspectEdge aspectEdge : edge.getEdges()) {
+                    edgeCellMap.put(aspectEdge, edge);
+                    graph.addEdgeContext(aspectEdge);
+                }
+            }
+        }
+        for (AspectViewVertex vertex : nodeVertexMap.values()) {
+            vertex.setNodeFixed();
+        }
+        // collect the layout information
+        LayoutMap layoutMap = new LayoutMap();
+        for (var cell : getCells()) {
+            if (cell instanceof AspectViewVertex vertex) {
+                layoutMap.putNode(vertex.getNode(), vertex.getLayoutVisuals().toNodeLayout());
+            } else if (cell instanceof AspectViewEdge edge) {
+                EdgeLayout layout = edge.getLayoutVisuals().toEdgeLayout();
+                if (!layout.isDefault()) {
+                    for (AspectEdge aspectEdge : edge.getEdges()) {
+                        layoutMap.putEdge(aspectEdge, layout);
+                    }
+                }
+            }
+        }
+        GraphInfo.setLayoutMap(graph, layoutMap);
+        ResourceProperties.setProperties(graph, getProperties());
+        graph.setFixed();
+        setCellMaps(nodeVertexMap, edgeCellMap);
+        setGraph(graph);
+    }
+
+    /**
+     * Sets the extra-error flags of all the cells, based
+     * on the errors in the view.
+     */
+    private void loadViewErrors() {
+        if (getGrammar() == null) {
+            return;
+        }
+        for (var cell : getCells()) {
+            ((AspectViewCell) cell).getErrors().clear();
+        }
+        for (FormatError error : getResourceModel().getErrors()) {
+            for (Element errorObject : error.getContext(Element.class)) {
+                AspectViewCell errorCell = getCell(errorObject);
+                if (errorCell == null && errorObject instanceof Edge e) {
+                    errorCell = getCell(e.source());
+                }
+                if (errorCell != null) {
+                    errorCell.getErrors().addError(error, true);
+                }
+            }
+        }
+    }
+
+    /** Returns an up-to-date resource model for the graph being edited here. */
+    public GraphBasedModel<?> getResourceModel() {
+        return this.resource.getValue();
+    }
+
+    /** Returns the type graph associated with this model, if any. */
+    public TypeGraph getTypeGraph() {
+        return this.typeGraph.getValue();
+    }
+
+    /** Returns the name of this aspect model as a qualified name. */
+    public QualName getQualName() {
+        return QualName.parse(getNonNullGraph().getName());
+    }
+
+    /** Changes the name of the model (and the underlying graph). */
+    public void setQualName(QualName name) {
+        setGraph(getNonNullGraph().rename(name));
+    }
+
+    /**
+     * Returns the properties associated with this model.
+     */
+    public final ResourceProperties getProperties() {
+        var result = this.properties;
+        if (result == null) {
+            this.properties = result = new ResourceProperties();
+        }
+        return result;
+    }
+
+    /**
+     * Enable bidirectional edges to be merged, if the aspect graph is a host
+     * graph, and the grammar property is set to true.
+     */
+    @Override
+    public boolean isMergeBidirectionalEdges() {
+        if (this.beingEdited || getNonNullGraph().getRole() != GraphRole.HOST) {
+            return false;
+        } else {
+            return super.isMergeBidirectionalEdges();
+        }
+    }
+
+    /**
+     * Change the {@link #beingEdited} flag; an edited model records its edits
+     * in an {@link EditHistory}.
+     */
+    public void setBeingEdited(boolean flag) {
+        this.beingEdited = flag;
+        if (flag) {
+            enableEditHistory();
+        }
+    }
+
+    @Override
+    protected EditableLabels getLabels(ViewCell<AspectGraph> cell) {
+        return ((AspectViewCell) cell).getEditableLabels();
+    }
+
+    @Override
+    protected void setLabels(ViewCell<AspectGraph> cell, EditableLabels labels) {
+        ((AspectViewCell) cell).setEditableLabels(labels);
+    }
+
+    /* The graph is rebuilt from the cells after every edit that is not layout only. */
+    @Override
+    protected void afterEdit(GraphEdit<AspectGraph> edit) {
+        if (!edit.isMinor()) {
+            syncGraph();
+        }
+    }
+
+    /** Indicates if the graph of this model is being edited. */
+    public boolean isBeingEdited() {
+        return this.beingEdited;
+    }
+
+    /** Role names, for the tool tips of the cells. */
+    public static final Map<AspectKind,String> ROLE_NAMES = new EnumMap<>(AspectKind.class);
+    /** Role descriptions, for the tool tips of the cells. */
+    public static final Map<AspectKind,String> ROLE_DESCRIPTIONS
+        = new EnumMap<>(AspectKind.class);
+
+    static {
+        ROLE_NAMES.put(AspectKind.EMBARGO, "Embargo");
+        ROLE_NAMES.put(AspectKind.READER, "Reader");
+        ROLE_NAMES.put(AspectKind.CREATOR, "Creator");
+        ROLE_NAMES.put(AspectKind.ADDER, "Adder");
+        ROLE_NAMES.put(AspectKind.ERASER, "Eraser");
+        ROLE_NAMES.put(AspectKind.REMARK, "Remark");
+        ROLE_DESCRIPTIONS
+            .put(AspectKind.EMBARGO, "Must be absent from a graph for this rule to apply");
+        ROLE_DESCRIPTIONS.put(AspectKind.READER, "Must be matched for this rule to apply");
+        ROLE_DESCRIPTIONS.put(AspectKind.CREATOR, "Will be created by applying this rule");
+        ROLE_DESCRIPTIONS
+            .put(AspectKind.ADDER,
+                 "Must be absent from a graph for this rule to apply, and will be created when applying this rule");
+        ROLE_DESCRIPTIONS.put(AspectKind.ERASER, "Will be deleted by applying this rule");
+        ROLE_DESCRIPTIONS.put(AspectKind.REMARK, "Has no effect on the execution of the rule");
+    }
+
+    /**
+     * Inserts the cells of a graph fragment, as one edit: fresh vertices with the
+     * fragment's labels, at the fragment's positions shifted by a given offset, and
+     * edges between them likewise. The fragment is typically the content of the
+     * clipboard, see {@link GraphClipboard}.
+     * @return the inserted cells, the vertices first
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    public List<AspectViewCell> insertFragment(GraphFragment fragment, double dx, double dy) {
+        settlePendingInsertion();
+        List<AspectVertexCell> vertices = new ArrayList<>();
+        startNodeNumbering();
+        for (var v : fragment.vertices()) {
+            AspectVertexCell vertex = newVertex(createAspectNode());
+            vertex.setNodeFixed();
+            vertex.setEditableLabels(new EditableLabels(v.labels()));
+            vertex
+                .putVisual(VisualKey.NODE_POS, new Point2D.Double(v.position().getX() + dx,
+                    v.position().getY() + dy));
+            vertices.add(vertex);
+        }
+        List<AspectEdgeCell> edges = new ArrayList<>();
+        List<Connection<AspectGraph>> connections = new ArrayList<>();
+        for (var e : fragment.edges()) {
+            AspectEdgeCell edge = newEdge(null);
+            edge.setEditableLabels(new EditableLabels(e.labels()));
+            List<Point2D> points = new ArrayList<>();
+            for (Point2D point : e.points()) {
+                points.add(new Point2D.Double(point.getX() + dx, point.getY() + dy));
+            }
+            VisualMap visuals = new VisualMap();
+            visuals.setPoints(points);
+            visuals.setLabelPos(e.labelPosition());
+            visuals.setLineStyle(e.lineStyle());
+            edge.putVisuals(visuals);
+            edges.add(edge);
+            connections
+                .add(new Connection<>(edge, vertices.get(e.source()), vertices.get(e.target())));
+        }
+        insert(vertices, edges, connections);
+        stopNodeNumbering();
+        List<AspectViewCell> result = new ArrayList<>(vertices);
+        result.addAll(edges);
+        return result;
+    }
+
+    /**
+     * Creates a new aspect node, with a fresh node number and
+     * the graph role taken from the current graph.
+     */
+    public AspectNode createAspectNode() {
+        return new AspectNode(createNewNodeNr(), getNonNullGraph());
+    }
+
+    /**
+     * Starts a batch of node number requests: the numbers in use are collected once,
+     * and every number handed out until {@link #stopNodeNumbering()} is reserved.
+     */
+    public void startNodeNumbering() {
+        collectNodeNrs();
+    }
+
+    /** Ends a batch of node number requests; see {@link #startNodeNumbering()}. */
+    public void stopNodeNumbering() {
+        resetNodeNrs();
+    }
+
+    /** Initialises the set {@link #usedNrs} with the currently used node numbers,
+     * if that has not been done yet.
+     * @return {@code true} if the numbers were collected by this call
+     */
+    private boolean collectNodeNrs() {
+        boolean result = this.usedNrs == null;
+        if (result) {
+            Set<Integer> usedNrs = new HashSet<>();
+            for (var cell : getCells()) {
+                if (cell instanceof ViewVertex<?> v) {
+                    usedNrs.add(v.getNumber());
+                }
+            }
+            this.usedNrs = usedNrs;
+        }
+        return result;
+    }
+
+    /** Resets the set of used node numbers to {@code null}. */
+    private void resetNodeNrs() {
+        this.usedNrs = null;
+    }
+
+    /**
+     * Returns the first non-negative number that is not used as a node number
+     * in this model.
+     */
+    private int createNewNodeNr() {
+        int result = 0;
+        boolean collect = collectNodeNrs();
+        var usedNrs = this.usedNrs;
+        assert usedNrs != null; // just collected
+        // search for an unused node number
+        while (usedNrs.contains(result)) {
+            result++;
+        }
+        if (collect) {
+            resetNodeNrs();
+        } else {
+            usedNrs.add(result);
+        }
+        return result;
+    }
+
+    /**
+     * Notifies the model (but not the listeners) that the underlying graph has changed.
+     * @see #setGraphModified()
+     */
+    public void setGraphDirty() {
+        this.graphModCount.increaseSilent();
+    }
+
+    /**
+     * Notifies the model and all listeners that the underlying graph has
+     * been modified.
+     */
+    public void setGraphModified() {
+        this.graphModCount.increase();
+    }
+
+    /** Adds a listener to graph modifications. */
+    public void addGraphChangeListener(PropertyChangeListener listener) {
+        this.graphModCount.addObserver(listener);
+    }
+
+    /** Removes a listener to graph modifications. */
+    public void removeGraphChangeListener(PropertyChangeListener listener) {
+        this.graphModCount.deleteObserver(listener);
+    }
+
+    /** Counter of the modifications to the graph. */
+    private final ChangeCount graphModCount;
+    /** The resource model of the graph being edited. */
+    private final Derived<GraphBasedModel<?>> resource;
+    /** The type graph of the graph being edited. */
+    private final Derived<TypeGraph> typeGraph;
+    /** Flag to indicate if the graph is being edited or not. */
+    private boolean beingEdited = false;
+    /** Properties map of the graph being displayed or edited. */
+    private @Nullable ResourceProperties properties;
+    /** The set of used node numbers, during a numbering batch. */
+    private @Nullable Set<Integer> usedNrs;
+}

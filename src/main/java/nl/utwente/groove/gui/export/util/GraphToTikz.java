@@ -29,7 +29,6 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.jgraph.util.Bezier;
 
 import nl.utwente.groove.grammar.UnitPar;
 import nl.utwente.groove.grammar.aspect.AspectKind.Category;
@@ -38,18 +37,19 @@ import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.graph.layout.EdgeLayout;
-import nl.utwente.groove.graph.layout.ElementLayout;
 import nl.utwente.groove.graph.layout.LayoutMap;
 import nl.utwente.groove.graph.layout.NodeLayout;
 import nl.utwente.groove.gui.export.util.TikzStylesExtractor.Style;
-import nl.utwente.groove.gui.jgraph.AspectJVertex;
-import nl.utwente.groove.gui.view.ViewCell;
-import nl.utwente.groove.gui.view.ViewEdge;
-import nl.utwente.groove.gui.jgraph.JGraph;
-import nl.utwente.groove.gui.jgraph.JModel;
-import nl.utwente.groove.gui.view.ViewVertex;
 import nl.utwente.groove.gui.look.Look;
 import nl.utwente.groove.gui.look.MultiLabel;
+import nl.utwente.groove.gui.view.EdgeGeometry;
+import nl.utwente.groove.gui.view.AspectViewVertex;
+import nl.utwente.groove.gui.view.GraphCanvas;
+import nl.utwente.groove.gui.view.GraphViewModel;
+import nl.utwente.groove.gui.view.InterpolatingBezier;
+import nl.utwente.groove.gui.view.ViewCell;
+import nl.utwente.groove.gui.view.ViewEdge;
+import nl.utwente.groove.gui.view.ViewVertex;
 import nl.utwente.groove.util.Exceptions;
 
 /**
@@ -62,11 +62,11 @@ public final class GraphToTikz<G extends @NonNull Graph> {
     // Object fields
     // ------------------------------------------------------------------------
 
-    /** The jGraph to be output. */
-    private final JGraph<G> jGraph;
-    /** The underlying model for jGraph. */
-    private final JModel<G> model;
-    /** The underlying Groove graph connected to the jGraph. */
+    /** The canvas to be output. */
+    private final GraphCanvas<G> canvas;
+    /** The content model of the canvas. */
+    private final GraphViewModel<G> model;
+    /** The underlying Groove graph shown on the canvas. */
     private final Graph graph;
     /** The layout map of the graph. */
     private final LayoutMap layoutMap;
@@ -80,12 +80,14 @@ public final class GraphToTikz<G extends @NonNull Graph> {
 
     /**
      * The constructor is private. To perform the conversion just call the
-     * static method {@link #convert(JGraph)}.
+     * static method {@link #convert(GraphCanvas)}.
      */
-    private GraphToTikz(JGraph<G> jGraph) {
-        this.jGraph = jGraph;
-        this.model = this.jGraph.getModel();
-        this.graph = this.model.getGraph();
+    private GraphToTikz(GraphCanvas<G> canvas) {
+        this.canvas = canvas;
+        this.model = canvas.getNonNullViewModel();
+        var graph = this.model.getGraph();
+        assert graph != null; // a canvas is exported only while it shows a graph
+        this.graph = graph;
         this.layoutMap = GraphInfo.getLayoutMap(this.graph);
         this.result = new StringBuilder();
     }
@@ -94,18 +96,18 @@ public final class GraphToTikz<G extends @NonNull Graph> {
     // Static methods
     // ------------------------------------------------------------------------
 
-    /** Writes a graph in LaTeX <code>Tikz</code> format to a print writer. */
-    public static void export(JGraph<?> graph, PrintWriter writer) {
-        writer.print(GraphToTikz.convert(graph));
+    /** Writes the graph shown on a canvas in LaTeX <code>Tikz</code> format to a print writer. */
+    public static void export(GraphCanvas<?> canvas, PrintWriter writer) {
+        writer.print(GraphToTikz.convert(canvas));
     }
 
     /**
-     * Converts a graph to a Tikz representation.
-     * @param jGraph the graph to be converted.
+     * Converts the graph shown on a canvas to a Tikz representation.
+     * @param canvas the canvas showing the graph to be converted.
      * @return a string with the Tikz encoding of the graph.
      */
-    public static <G extends @NonNull Graph> String convert(JGraph<G> jGraph) {
-        return new GraphToTikz<>(jGraph).doConvert();
+    public static <G extends @NonNull Graph> String convert(GraphCanvas<G> canvas) {
+        return new GraphToTikz<>(canvas).doConvert();
     }
 
     // BEGIN
@@ -199,99 +201,12 @@ public final class GraphToTikz<G extends @NonNull Graph> {
         return result;
     }
 
-    /**
-     * Adapted from jGraph.
-     * Converts an relative label position (x is distance along edge and y is
-     * distance above/below edge vector) into an absolute coordination point.
-     * @param geometry the relative label position.
-     * @param points the list of points along the edge.
-     * @return the absolute label position.
-     */
-    private static Point2D convertRelativeLabelPositionToAbsolute(Point2D geometry,
-                                                                  List<Point2D> points) {
-
-        Point2D pt = points.get(0);
-
-        if (pt != null) {
-            double length = 0;
-            int pointCount = points.size();
-            double[] segments = new double[pointCount];
-            // Find the total length of the segments and also store the length
-            // of each segment.
-            for (int i = 1; i < pointCount; i++) {
-                Point2D tmp = points.get(i);
-
-                if (tmp != null) {
-                    double dx = pt.getX() - tmp.getX();
-                    double dy = pt.getY() - tmp.getY();
-
-                    double segment = Math.sqrt(dx * dx + dy * dy);
-
-                    segments[i - 1] = segment;
-                    length += segment;
-                    pt = tmp;
-                }
-            }
-
-            // Change x to be a value between 0 and 1 indicating how far
-            // along the edge the label is.
-            double x = geometry.getX() / ElementLayout.PERMILLE;
-            double y = geometry.getY();
-
-            // dist is the distance along the edge the label is.
-            double dist = x * length;
-            length = 0;
-
-            int index = 1;
-            double segment = segments[0];
-
-            // Find the length up to the start of the segment the label is
-            // on (length) and retrieve the length of that segment (segment).
-            while (dist > length + segment && index < pointCount - 1) {
-                length += segment;
-                segment = segments[index++];
-            }
-
-            // factor is the proportion along this segment the label lies at.
-            double factor = (dist - length) / segment;
-
-            Point2D p0 = points.get(index - 1);
-            Point2D pe = points.get(index);
-
-            if (p0 != null && pe != null) {
-                // The x and y offsets of the label from the start point
-                // of the segment.
-                double dx = pe.getX() - p0.getX();
-                double dy = pe.getY() - p0.getY();
-
-                // The normal vectors.
-                double nx = dy / segment;
-                double ny = dx / segment;
-
-                // The x position is the start x of the segment + the factor of
-                // the x offset between the start and end of the segment + the
-                // x component of the y (height) offset contributed along the
-                // normal vector.
-                x = p0.getX() + dx * factor - nx * y;
-
-                // The x position is the start y of the segment + the factor of
-                // the y offset between the start and end of the segment + the
-                // y component of the y (height) offset contributed along the
-                // normal vector.
-                y = p0.getY() + dy * factor + ny * y;
-                return new Point2D.Double(x, y);
-            }
-        }
-
-        return null;
-    }
-
     private static boolean isNodifiedEdge(ViewVertex<?> node) {
-        return node instanceof AspectJVertex v && v.isNodeEdge();
+        return node instanceof AspectViewVertex v && v.isNodeEdge();
     }
 
     private static boolean hasParameter(ViewVertex<?> node) {
-        return node instanceof AspectJVertex v
+        return node instanceof AspectViewVertex v
             ? v.getNode().has(Category.PARAM)
             : false;
     }
@@ -301,7 +216,7 @@ public final class GraphToTikz<G extends @NonNull Graph> {
     }
 
     private static boolean isProductNode(ViewVertex<?> node) {
-        return (node instanceof AspectJVertex v) && v.getNode().has(PRODUCT);
+        return (node instanceof AspectViewVertex v) && v.getNode().has(PRODUCT);
     }
 
     // ------------------------------------------------------------------------
@@ -323,7 +238,7 @@ public final class GraphToTikz<G extends @NonNull Graph> {
         appendTikzHeader();
 
         for (Node node : this.graph.nodeSet()) {
-            ViewVertex<G> vertex = this.model.getJCellForNode(node);
+            ViewVertex<G> vertex = this.model.getCellForNode(node);
             if (vertex != null) {
                 this.model.synchroniseLayout(vertex);
                 NodeLayout layout = null;
@@ -342,10 +257,10 @@ public final class GraphToTikz<G extends @NonNull Graph> {
             if (this.layoutMap != null) {
                 layout = this.layoutMap.getLayout(edge);
             }
-            ViewCell<G> jCell = this.model.getJCellForEdge(edge);
-            if (jCell != null && !consumedEdges.contains(jCell)) {
-                appendTikzEdge(jCell, layout);
-                consumedEdges.add(jCell);
+            ViewCell<G> cell = this.model.getCellForEdge(edge);
+            if (cell != null && !consumedEdges.contains(cell)) {
+                appendTikzEdge(cell, layout);
+                consumedEdges.add(cell);
             }
         }
 
@@ -370,7 +285,7 @@ public final class GraphToTikz<G extends @NonNull Graph> {
     // -------------------------- Nodes ---------------------------------------
 
     /**
-     * Converts a jGraph node to a Tikz string representation.
+     * Converts a vertex cell to a Tikz string representation.
      * @param node the node to be converted.
      * @param layout information regarding layout of the node.
     */
@@ -403,11 +318,11 @@ public final class GraphToTikz<G extends @NonNull Graph> {
 
         // Add small parameter node, if needed.
         if (hasParameter(node)) {
-            appendParameterNode((AspectJVertex) node);
+            appendParameterNode((AspectViewVertex) node);
         }
     }
 
-    private void appendParameterNode(AspectJVertex node) {
+    private void appendParameterNode(AspectViewVertex node) {
         String nodeId = node.getNode().toString();
         var param = node.getNode().get(Category.PARAM);
         assert param != null;
@@ -501,8 +416,8 @@ public final class GraphToTikz<G extends @NonNull Graph> {
 
     /**
      * Appends the given points to the string builder. The coordinates are
-     * scaled by a constant factor and the y-coordinate is inverted as the
-     * jGraph and Tikz representation are different.
+     * scaled by a constant factor and the y-coordinate is inverted as the graph
+     * view and Tikz representation are different.
      * @param x the x coordinate of the point.
      * @param y the y coordinate of the point.
      * @param usePar flag to indicate whether the point coordinates should be
@@ -567,7 +482,7 @@ public final class GraphToTikz<G extends @NonNull Graph> {
     }
 
     /**
-     * Converts a jGraph edge to a Tikz string representation.
+     * Converts an edge cell to a Tikz string representation.
      * @param edge the edge to be converted.
      * @param layout information regarding layout of the edge.
      */
@@ -709,10 +624,9 @@ public final class GraphToTikz<G extends @NonNull Graph> {
         List<Point2D> points = layout.getPoints();
 
         // Compute the bezier line.
-        Bezier bezier = new Bezier(points.toArray(new Point2D[points.size()]));
-        Point2D[] bPoints = bezier.getPoints();
+        List<Point2D> bPoints = InterpolatingBezier.controlPoints(points);
 
-        if (bPoints == null) {
+        if (bPoints.isEmpty()) {
             // The edge is with a bezier style but it does not have any bezier
             // points, just use standard layout.
             appendDefaultLayout(edge);
@@ -729,7 +643,7 @@ public final class GraphToTikz<G extends @NonNull Graph> {
             appendNode(srcVertex);
             int i = 1; // Index for edge points.
             int j = 0; // Index for bezier points. Always j = i - 1;
-            while (j < bPoints.length - 1) {
+            while (j < bPoints.size() - 1) {
                 append(BEGIN_CONTROLS);
                 if (isLoop) {
                     // Drawing a loop edge is a special case, for the first and
@@ -741,7 +655,7 @@ public final class GraphToTikz<G extends @NonNull Graph> {
                         appendPoint(points, i - 1);
                     } else {
                         // Not a special case, just use a bezier point.
-                        appendPoint(bPoints[j]);
+                        appendPoint(bPoints.get(j));
                     }
                     append(AND);
                     if (i == 1) {
@@ -749,13 +663,13 @@ public final class GraphToTikz<G extends @NonNull Graph> {
                         appendPoint(points, i);
                     } else {
                         // Not a special case, just use a bezier point.
-                        appendPoint(bPoints[j + 1]);
+                        appendPoint(bPoints.get(j + 1));
                     }
                 } else {
                     // The edge is not a loop, just use the bezier points.
-                    appendPoint(bPoints[j]);
+                    appendPoint(bPoints.get(j));
                     append(AND);
-                    appendPoint(bPoints[j + 1]);
+                    appendPoint(bPoints.get(j + 1));
                 }
                 append(END_CONTROLS);
                 // Use the edge intermediate point as the next coordinate.
@@ -774,23 +688,23 @@ public final class GraphToTikz<G extends @NonNull Graph> {
             // The first part of the curve is quadratic.
             appendNode(srcVertex);
             append(BEGIN_CONTROLS);
-            appendPoint(bPoints[0]);
+            appendPoint(bPoints.get(0));
             append(END_CONTROLS);
             appendPoint(points, 1);
 
             // The middle part of the curve is cubic.
             for (int i = 2; i < points.size() - 1; i++) {
                 append(BEGIN_CONTROLS);
-                appendPoint(bPoints[2 * i - 3]);
+                appendPoint(bPoints.get(2 * i - 3));
                 append(AND);
-                appendPoint(bPoints[2 * i - 2]);
+                appendPoint(bPoints.get(2 * i - 2));
                 append(END_CONTROLS);
                 appendPoint(points, i);
             }
 
             // The last part of the curve is again quadratic.
             append(BEGIN_CONTROLS);
-            appendPoint(bPoints[bPoints.length - 1]);
+            appendPoint(bPoints.get(bPoints.size() - 1));
             append(END_CONTROLS);
             appendNode(tgtVertex);
         }
@@ -884,7 +798,7 @@ public final class GraphToTikz<G extends @NonNull Graph> {
             MultiLabel lines = edge.getVisuals().getLabel();
             List<Point2D> points = edge.getVisuals().getPoints();
             StringBuilder text;
-            if (this.jGraph.getController().isShowArrowsOnLabels()) {
+            if (this.canvas.getController().isShowArrowsOnLabels()) {
                 Point2D start = points.get(0);
                 Point2D end = points.get(points.size() - 1);
                 text = lines.toString(TeXLineFormat.instance(), start, end);
@@ -903,8 +817,7 @@ public final class GraphToTikz<G extends @NonNull Graph> {
      */
     private void appendEdgeLabel(ViewEdge<G> edge, EdgeLayout layout, List<Point2D> points) {
         if (hasNonEmptyLabel(edge)) {
-            Point2D labelPos
-                = convertRelativeLabelPositionToAbsolute(layout.getLabelPosition(), points);
+            Point2D labelPos = EdgeGeometry.labelPosition(layout.getLabelPosition(), points);
             // Extra path for the label position.
             append(NODE);
             append(encloseSpace(AT_KEYWORD));

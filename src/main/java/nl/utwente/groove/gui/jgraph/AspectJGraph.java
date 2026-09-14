@@ -18,12 +18,13 @@ package nl.utwente.groove.gui.jgraph;
 
 import static nl.utwente.groove.gui.Options.SHOW_ASPECTS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_VALUE_NODES_OPTION;
-import static nl.utwente.groove.gui.jgraph.JGraphMode.EDIT_MODE;
-import static nl.utwente.groove.gui.jgraph.JGraphMode.PREVIEW_MODE;
+import static nl.utwente.groove.gui.view.GraphViewMode.EDIT_MODE;
+import static nl.utwente.groove.gui.view.GraphViewMode.PREVIEW_MODE;
 
 import java.awt.event.ItemEvent;
 import java.awt.geom.Point2D;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -32,45 +33,44 @@ import java.util.List;
 import javax.accessibility.AccessibleState;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 import org.jgraph.event.GraphModelEvent;
 import org.jgraph.event.GraphModelListener;
-import org.jgraph.graph.ConnectionSet;
 import org.jgraph.graph.DefaultPort;
 import org.jgraph.graph.GraphModel;
 import org.jgraph.graph.PortView;
 
-import nl.utwente.groove.grammar.aspect.AspectEdge;
+import nl.utwente.groove.gui.view.GraphViewMode;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
-import nl.utwente.groove.grammar.aspect.AspectNode;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Element;
-import nl.utwente.groove.graph.GraphRole;
-import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.gui.Options;
-import nl.utwente.groove.gui.Simulator;
+import nl.utwente.groove.gui.view.AspectGraphCanvas;
 import nl.utwente.groove.gui.view.AspectGraphViewController;
-import nl.utwente.groove.gui.display.DisplayKind;
+import nl.utwente.groove.gui.view.AspectGraphViewModel;
+import nl.utwente.groove.gui.view.CellStore.Connection;
+import nl.utwente.groove.gui.view.AspectViewEdge;
+import nl.utwente.groove.gui.view.CellStore;
+import nl.utwente.groove.gui.view.cell.AspectEdgeCell;
+import nl.utwente.groove.gui.view.cell.AspectVertexCell;
+import nl.utwente.groove.grammar.model.GraphBasedModel;
+import nl.utwente.groove.grammar.type.TypeGraph;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.view.AspectViewCell;
+import nl.utwente.groove.gui.view.OptionRefreshListener;
 
 /**
  * Extension of {@link JGraph} for {@link AspectGraph}s.
  */
-public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
+public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements AspectGraphCanvas {
     /**
-     * Creates a new instance, for a given graph role.
-     * A flag determines whether the graph is editable.
-     * @param kind display kind on which this JGraph will be showing
-     * @param editing if {@code true}, the graph is editable
+     * Creates a new instance as the canvas of a given controller,
+     * which determines the graph role and whether the graph is editable.
      */
-    public AspectJGraph(Simulator simulator, DisplayKind kind, boolean editing) {
-        super(simulator);
-        this.editing = editing;
-        this.forState = kind == DisplayKind.STATE;
-        this.graphRole = this.forState
-            ? GraphRole.HOST
-            : kind.getGraphRole();
+    public AspectJGraph(AspectGraphViewController controller) {
+        super(controller);
+        boolean editing = controller.isEditing();
         setEditable(editing);
         getGraphLayoutCache().setSelectsLocalInsertedCells(editing);
         setCloneable(editing);
@@ -83,7 +83,7 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
         super.installListeners();
         var actions = getActions();
         if (actions != null) {
-            addGraphSelectionListener(actions.getSelectColorAction());
+            addCanvasListener(actions.getSelectColorAction());
         }
         addOptionListener(SHOW_ASPECTS_OPTION);
         addOptionListener(SHOW_VALUE_NODES_OPTION);
@@ -94,22 +94,26 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
         super.removeListeners();
         var actions = getActions();
         if (actions != null) {
-            addGraphSelectionListener(actions.getSelectColorAction());
+            removeCanvasListener(actions.getSelectColorAction());
         }
-        removeGraphSelectionListener(getActions().getSelectColorAction());
     }
 
     @Override
     public void setModel(GraphModel model) {
-        GraphModel oldModel = getModel();
+        AspectJModel oldModel = getModel();
         if (oldModel != null) {
             oldModel.removeGraphModelListener(getRefreshGraphListener());
+            oldModel.removeGraphChangeListener(this.graphChangeListener);
         }
         super.setModel(model);
-        if (model != null) {
-            model.addGraphModelListener(getRefreshGraphListener());
+        if (model instanceof AspectJModel newModel) {
+            newModel.addGraphModelListener(getRefreshGraphListener());
+            newModel.addGraphChangeListener(this.graphChangeListener);
         }
     }
+
+    /** Forwards the graph rebuilds of the current model to the canvas listeners. */
+    private final PropertyChangeListener graphChangeListener = evt -> notifyGraphChanged();
 
     @Override
     public AspectJModel getModel() {
@@ -128,13 +132,41 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
     }
 
     @Override
-    protected AspectGraphViewController createController(Simulator simulator) {
-        return new AspectGraphViewController(this, simulator);
+    public @Nullable AspectGraphViewModel getViewModel() {
+        var model = getModel();
+        return model == null
+            ? null
+            : model.getViewModel();
+    }
+
+    @Override
+    public AspectGraphViewModel newViewModel() {
+        return newModel().getViewModel();
+    }
+
+    @Override
+    public AspectGraphViewModel showGraph(AspectGraph graph) {
+        return (AspectGraphViewModel) super.showGraph(graph);
+    }
+
+    @Override
+    public GraphBasedModel<?> getResourceModel() {
+        return getNonNullModel().getResourceModel();
+    }
+
+    @Override
+    public TypeGraph getTypeGraph() {
+        return getNonNullModel().getTypeGraph();
+    }
+
+    @Override
+    AspectGraphViewModel createViewModel(CellStore<@NonNull AspectGraph> store) {
+        return new AspectGraphViewModel(getController(), store);
     }
 
     @Override
     public AspectJModel newModel() {
-        AspectJModel result = (AspectJModel) super.newModel();
+        AspectJModel result = new AspectJModel(this);
         GrammarModel grammar = getController().getGrammar();
         if (grammar == null) {
             assert getSimulatorModel() != null : "Can't create AspectJGraphs without grammar model";
@@ -146,7 +178,7 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
 
     /* Makes sure the JGraph is rebuilt rather than just refreshed, if necessary. */
     @Override
-    public RefreshListener getRefreshListener(String option) {
+    public OptionRefreshListener getRefreshListener(String option) {
         if (option.equals(Options.SHOW_BIDIRECTIONAL_EDGES_OPTION)) {
             return new RebuildListener();
         } else {
@@ -155,35 +187,10 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
     }
 
     /** Indicates that the JModel has an editor enabled. */
-    public boolean hasActiveEditor() {
-        return this.editing && getMode() != PREVIEW_MODE;
-    }
-
-    /**
-     * The (possibly {@code null}) editor with which this j-graph is associated.
-     */
-    private final boolean editing;
-
-    /**
-     * Indicates if the graph being displayed is a graph state.
-     */
-    public boolean isForState() {
-        return this.forState;
-    }
-
-    /** The kind of graphs being displayed. */
-    private final boolean forState;
-
-    /**
-     * Returns the role of the graph being displayed.
-     */
     @Override
-    public GraphRole getGraphRole() {
-        return this.graphRole;
+    public boolean hasActiveEditor() {
+        return getController().isEditing() && getMode() != PREVIEW_MODE;
     }
-
-    /** The role for which this {@link JGraph} will display graphs. */
-    private final GraphRole graphRole;
 
     @Override
     public void setEditable(boolean editable) {
@@ -203,16 +210,24 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
         stopEditing();
         Point2D atPoint = fromScreen(snap(screenPoint));
         // define the j-cell to be inserted
-        AspectJVertex jVertex = (AspectJVertex) model.createJVertex(model.createAspectNode());
-        jVertex.setNodeFixed();
-        jVertex.putVisual(VisualKey.NODE_POS, atPoint);
-        // add the cell to the jGraph
-        Object[] insert = {jVertex};
-        model.insert(insert, null, null, null, null);
-        setSelectionCell(jVertex);
-        // immediately add a label, if so indicated by startEditingNewNode
+        var viewModel = model.getViewModel();
+        AspectVertexCell vertex = viewModel.newVertex(viewModel.createAspectNode());
+        vertex.setNodeFixed();
+        vertex.putVisual(VisualKey.NODE_POS, atPoint);
+        var jVertex = JCell.of(vertex);
         if (this.startEditingNewNode) {
+            // the vertex and its first label are one edit, settled when the
+            // in-place editor closes (see JGraphUI.completeEditing)
+            viewModel.insertPending(List.of(vertex), List.of(), List.of());
+            setSelectionCell(jVertex);
             startEditingAtCell(jVertex);
+            if (!isEditing()) {
+                viewModel.settlePendingInsertion();
+            }
+        } else {
+            // add the cell through the view model, which records the edit
+            viewModel.insert(List.of(vertex), List.of(), List.of());
+            setSelectionCell(jVertex);
         }
     }
 
@@ -243,17 +258,12 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
         assert fromPortView != null : "addEdge should not be called with dangling source " + from;
         DefaultPort fromPort = (DefaultPort) fromPortView.getCell();
         DefaultPort toPort = (DefaultPort) toPortView.getCell();
+        var source = ((JVertex<?>) fromPort.getParent()).getViewCell();
+        var target = ((JVertex<?>) toPort.getParent()).getViewCell();
         // define the edge to be inserted
-        AspectJEdge newEdge = (AspectJEdge) model.createJEdge(null);
+        AspectEdgeCell edge = model.getViewModel().newEdge(null);
         // add a single, empty label so the edge will be displayed
-        newEdge.getUserObject().add("");
-        // to make sure there is at least one graph edge wrapped by this ViewEdge,
-        // we add a dummy edge label to the ViewEdge's user object
-        Object[] insert = {newEdge};
-        // define connections between edge and nodes, if any
-        ConnectionSet cs = new ConnectionSet();
-        cs.connect(newEdge, fromPort, true);
-        cs.connect(newEdge, toPort, false);
+        edge.getEditableLabels().add("");
         // if we're drawing a self-edge, provide some intermediate points
         List<Point2D> points;
         if (toPort == fromPort) {
@@ -261,19 +271,29 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
         } else {
             points = Arrays.asList(from, to);
         }
-        newEdge.putVisual(VisualKey.POINTS, points);
-        // add the cell to the jGraph
-        model.insert(insert, null, cs, null, null);
-        setSelectionCell(newEdge);
-        // immediately add a label
+        edge.putVisual(VisualKey.POINTS, points);
+        var viewModel = model.getViewModel();
+        var connections = List
+            .of(new Connection<>(edge, (AspectVertexCell) source, (AspectVertexCell) target));
         if (this.startEditingNewEdge) {
-            startEditingAtCell(newEdge);
+            // the edge and its first label are one edit, settled when the
+            // in-place editor closes (see JGraphUI.completeEditing)
+            viewModel.insertPending(List.of(), List.of(edge), connections);
+            setSelectionCell(JCell.of(edge));
+            startEditingAtCell(JCell.of(edge));
+            if (!isEditing()) {
+                viewModel.settlePendingInsertion();
+            }
+        } else {
+            // add the cell through the view model, which records the edit
+            viewModel.insert(List.of(), List.of(edge), connections);
+            setSelectionCell(JCell.of(edge));
         }
     }
 
     @Override
-    protected JGraphMode getDefaultMode() {
-        return this.editing
+    public GraphViewMode getDefaultMode() {
+        return getController().isEditing()
             ? EDIT_MODE
             : super.getDefaultMode();
     }
@@ -281,14 +301,15 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
     /**
      * Selects the cells corresponding to a given collection of graph elements.
      */
-    public void setSelectionCells(Collection<Element> elems) {
+    @Override
+    public void selectElements(Collection<? extends Element> elems) {
         var model = getNonNullModel();
         var errorCells = new HashSet<AspectViewCell>();
         for (var elem : elems) {
             var errorCell = model.getJCell(elem);
             if (errorCell == null && elem instanceof Edge e) {
                 errorCell = model.getJCell(e.source());
-            } else if (errorCell instanceof AspectJEdge e && e.isSourceLabel()) {
+            } else if (errorCell instanceof AspectViewEdge e && e.isSourceLabel()) {
                 errorCell = e.getSourceVertex();
             }
             if (errorCell != null) {
@@ -296,7 +317,7 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
             }
         }
         if (!errorCells.isEmpty()) {
-            setSelectionCells(errorCells.toArray());
+            setSelectionCells(JCell.items(errorCells));
         }
     }
 
@@ -333,7 +354,7 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
      * Special listener for the show bidirectional edges option, for which a
      * refresh is not enough, but a rebuild is required.
      */
-    private class RebuildListener extends RefreshListener {
+    private class RebuildListener extends OptionRefreshListener {
         RebuildListener() {
             super(AspectJGraph.this);
         }
@@ -366,36 +387,4 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> {
         }
     }
 
-    @Override
-    protected JGraphFactory<@NonNull AspectGraph> createFactory() {
-        return new MyFactory();
-    }
-
-    private class MyFactory extends JGraphFactory<@NonNull AspectGraph> {
-        public MyFactory() {
-            super(AspectJGraph.this);
-        }
-
-        @Override
-        public AspectJGraph getJGraph() {
-            return (AspectJGraph) super.getJGraph();
-        }
-
-        @Override
-        public AspectJVertex newJVertex(Node node) {
-            assert node instanceof AspectNode;
-            return AspectJVertex.newInstance(getJGraph().getGraphRole());
-        }
-
-        @Override
-        public AspectJEdge newJEdge(Edge edge) {
-            assert edge == null || edge instanceof AspectEdge;
-            return AspectJEdge.newInstance(getJGraph().getGraphRole());
-        }
-
-        @Override
-        public AspectJModel newModel() {
-            return new AspectJModel(getJGraph());
-        }
-    }
 }

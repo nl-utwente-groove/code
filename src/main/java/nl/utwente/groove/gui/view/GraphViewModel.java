@@ -16,10 +16,18 @@
  */
 package nl.utwente.groove.gui.view;
 
+import java.awt.Color;
+import java.awt.geom.Point2D;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Random;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -30,20 +38,55 @@ import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphInfo;
 import nl.utwente.groove.graph.Node;
+import nl.utwente.groove.graph.layout.EdgeLayout;
 import nl.utwente.groove.graph.layout.LayoutMap;
-import nl.utwente.groove.gui.jgraph.JModel;
+import nl.utwente.groove.graph.layout.NodeLayout;
+import nl.utwente.groove.gui.look.VisualKey;
+import nl.utwente.groove.gui.look.VisualMap;
+import nl.utwente.groove.gui.view.CellStore.Connection;
+import nl.utwente.groove.util.AIGenerated;
+import nl.utwente.groove.gui.view.cell.AViewEdge;
+import nl.utwente.groove.gui.view.cell.AViewVertex;
+import nl.utwente.groove.util.collect.NestedIterator;
 
 /**
  * Library-independent content model of a graph view:
- * the displayed graph, its layout map, and the mapping from
- * graph elements to the cells that display them.
- * Owned by the (backend-specific) {@link JModel}, which keeps
- * delegating accessors; see {@code claude/jgraph-controller-split.md}.
+ * the displayed graph, its layout map, the cells that display its elements
+ * (kept in a backend {@link CellStore}) and the mapping from graph elements to cells.
+ * Loading a graph creates the cells and commits them to the store; role subclasses
+ * add the semantics of their kind of graph.
  * @author Arend Rensink
  * @version $Revision$
  */
 @NonNullByDefault
-public class GraphViewModel<G extends Graph> {
+public abstract class GraphViewModel<G extends Graph> {
+    /**
+     * Constructs a view model for a given controller, with a given backend cell store.
+     */
+    public GraphViewModel(GraphViewController<G> controller, CellStore<G> store) {
+        this.controller = controller;
+        this.store = store;
+    }
+
+    /** Returns the controller of the graph view. */
+    public GraphViewController<G> getController() {
+        return this.controller;
+    }
+
+    private final GraphViewController<G> controller;
+
+    /** Returns the canvas of the graph view. */
+    public GraphCanvas<G> getCanvas() {
+        return getController().getCanvas();
+    }
+
+    /** Returns the backend store of the cells of this model. */
+    public CellStore<G> getStore() {
+        return this.store;
+    }
+
+    private final CellStore<G> store;
+
     /**
      * Returns the underlying graph of this view model.
      */
@@ -51,11 +94,12 @@ public class GraphViewModel<G extends Graph> {
         return this.graph;
     }
 
-    /** Convenience method to retrieve the underlying graph as a non-{@code null} object. */
-    public G getNonNullGraph() {
-        var result = getGraph();
-        assert result != null;
-        return result;
+    /** Returns the name of the underlying graph, if any. */
+    public @Nullable String getName() {
+        var graph = getGraph();
+        return graph == null
+            ? null
+            : graph.getName();
     }
 
     /**
@@ -67,20 +111,6 @@ public class GraphViewModel<G extends Graph> {
     public void setGraph(G graph) {
         this.graph = graph;
         this.layoutMap = GraphInfo.getLayoutMap(graph);
-    }
-
-    /**
-     * Prepares the view model for loading a new graph:
-     * sets the graph and layout map, and clears the element-to-cell maps.
-     */
-    public void reset(G graph) {
-        this.graph = graph;
-        this.layoutMap = GraphInfo.getLayoutMap(graph);
-        if (this.layoutMap == null) {
-            this.layoutMap = graph.getInfo().getLayoutMap();
-        }
-        this.nodeJCellMap.clear();
-        this.edgeJCellMap.clear();
     }
 
     /**
@@ -105,24 +135,357 @@ public class GraphViewModel<G extends Graph> {
     private @Nullable LayoutMap layoutMap;
 
     /** Stores the layout of a given cell back into the layout map of the graph. */
-    public void synchroniseLayout(ViewCell<G> jCell) {
+    public void synchroniseLayout(ViewCell<G> cell) {
         LayoutMap layoutMap = getLayoutMap();
         assert layoutMap == GraphInfo.getLayoutMap(getGraph());
-        if (jCell instanceof ViewEdge) {
-            for (Edge edge : jCell.getEdges()) {
-                layoutMap.putEdge(edge, jCell.getVisuals().toEdgeLayout());
+        if (cell instanceof ViewEdge) {
+            for (Edge edge : cell.getEdges()) {
+                layoutMap.putEdge(edge, cell.getVisuals().toEdgeLayout());
             }
-        } else if (jCell instanceof ViewVertex) {
-            layoutMap.putNode(((ViewVertex<G>) jCell).getNode(), jCell.getVisuals().toNodeLayout());
+        } else if (cell instanceof ViewVertex) {
+            layoutMap.putNode(((ViewVertex<G>) cell).getNode(), cell.getVisuals().toNodeLayout());
         }
     }
+
+    // ---------- editing ----------
+
+    /**
+     * Returns the edit history of this model, if it records its edits;
+     * {@code null} for a model that is only viewed.
+     */
+    public @Nullable EditHistory<G> getEditHistory() {
+        return this.editHistory;
+    }
+
+    /**
+     * Starts recording edits: from now on, the editing operations of this
+     * model ({@link #insert}, {@link #remove}, {@link #changeVisuals},
+     * {@link #changeLabels}) are undoable through the history.
+     */
+    public EditHistory<G> enableEditHistory() {
+        var result = this.editHistory;
+        if (result == null) {
+            this.editHistory = result = new EditHistory<>(this);
+        }
+        return result;
+    }
+
+    private @Nullable EditHistory<G> editHistory;
+
+    /**
+     * Inserts fresh cells, connected as given, as one edit.
+     * The cells are created by {@link #newVertex} and {@link #newEdge}; every
+     * inserted edge must have a connection.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    public void insert(List<? extends ViewVertex<G>> vertices, List<? extends ViewEdge<G>> edges,
+                       List<Connection<G>> connections) {
+        doEdit(new GraphEdit<G>().withInserted(vertices, edges, connections));
+    }
+
+    /**
+     * Inserts fresh cells provisionally, for a gesture that goes on to give one of
+     * them its first label in place: the cells are shown, but they are not part of
+     * the graph and the insertion is not in the history until it is <i>settled</i>.
+     * A label change of one of the cells ({@link #changeLabels}) settles it as one
+     * edit together with the insertion, so that creating and labelling a cell is one
+     * undo step; any other edit, and {@link #settlePendingInsertion} (the in-place
+     * editor closing without a label), settle it on its own: inserted vertices are
+     * kept, inserted edges are withdrawn, since an edge without a label is no edge.
+     * Without a history, this is a plain {@link #insert}.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    public void insertPending(List<? extends ViewVertex<G>> vertices,
+                              List<? extends ViewEdge<G>> edges,
+                              List<Connection<G>> connections) {
+        settlePendingInsertion();
+        if (this.editHistory == null || isLoading()) {
+            insert(vertices, edges, connections);
+            return;
+        }
+        var edit = new GraphEdit<G>().withInserted(vertices, edges, connections);
+        apply(edit, true, false);
+        this.pendingInsertion = edit;
+    }
+
+    /** Indicates if there is a pending insertion, see {@link #insertPending}. */
+    public boolean hasPendingInsertion() {
+        return this.pendingInsertion != null;
+    }
+
+    /**
+     * Settles the pending insertion, if any, without a label change: inserted
+     * vertices are kept and their insertion is recorded, inserted edges are withdrawn.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    public void settlePendingInsertion() {
+        var pending = this.pendingInsertion;
+        if (pending == null) {
+            return;
+        }
+        this.pendingInsertion = null;
+        if (pending.getInsertedEdges().isEmpty()) {
+            afterEdit(pending);
+            getCanvas().refresh(pending.getInsertedCells(), false);
+            recorded(pending);
+        } else {
+            getStore().removeCells(pending.getInsertedCells());
+        }
+    }
+
+    /** The insertion that awaits its first label, if any; see {@link #insertPending}. */
+    private @Nullable GraphEdit<G> pendingInsertion;
+
+    /**
+     * Removes cells as one edit, together with the edges incident to the
+     * removed vertices.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    public void remove(Collection<? extends ViewCell<G>> cells) {
+        Set<ViewCell<G>> removed = new LinkedHashSet<>(cells);
+        for (var cell : cells) {
+            if (cell instanceof ViewVertex<G> vertex) {
+                var edges = vertex.getContext();
+                while (edges.hasNext()) {
+                    removed.add(edges.next());
+                }
+            }
+        }
+        List<ViewVertex<G>> vertices = new ArrayList<>();
+        List<ViewEdge<G>> edges = new ArrayList<>();
+        List<Connection<G>> connections = new ArrayList<>();
+        for (var cell : removed) {
+            if (cell instanceof ViewVertex<G> vertex) {
+                vertices.add(vertex);
+            } else if (cell instanceof ViewEdge<G> edge) {
+                var source = edge.getSourceVertex();
+                var target = edge.getTargetVertex();
+                assert source != null && target != null : "Removed edge " + edge + " is not connected";
+                edges.add(edge);
+                connections.add(new Connection<>(edge, source, target));
+            }
+        }
+        doEdit(new GraphEdit<G>().withRemoved(vertices, edges, connections));
+    }
+
+    /**
+     * Reconnects an edge to other end vertices as one edit, optionally with
+     * visual changes (the new edge points) in the same edit.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    public void reconnect(ViewEdge<G> edge, ViewVertex<G> source, ViewVertex<G> target,
+                          @Nullable Map<? extends ViewCell<G>,VisualMap> changes) {
+        var oldSource = edge.getSourceVertex();
+        var oldTarget = edge.getTargetVertex();
+        assert oldSource != null && oldTarget != null : "Reconnected edge " + edge
+            + " is not connected";
+        var edit = new GraphEdit<G>();
+        if (oldSource != source || oldTarget != target) {
+            edit.withReconnection(edge, oldSource, oldTarget, source, target);
+        }
+        if (changes != null) {
+            addVisuals(edit, changes);
+        }
+        doEdit(edit);
+    }
+
+    /**
+     * Changes visuals of cells as one edit; the funnel behind
+     * {@link GraphCanvas#edit}. Only controlled keys are recorded and changed.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    public void changeVisuals(Map<? extends ViewCell<G>,VisualMap> changes) {
+        var edit = new GraphEdit<G>();
+        addVisuals(edit, changes);
+        doEdit(edit);
+    }
+
+    /** Adds visual changes to an edit, with the current values as the old ones. */
+    private void addVisuals(GraphEdit<G> edit, Map<? extends ViewCell<G>,VisualMap> changes) {
+        for (var entry : changes.entrySet()) {
+            ViewCell<G> cell = entry.getKey();
+            VisualMap current = cell.getVisuals();
+            VisualMap oldVisuals = new VisualMap();
+            VisualMap newVisuals = new VisualMap();
+            for (VisualKey key : entry.getValue().keySet()) {
+                Object oldValue = current.get(key);
+                Object newValue = entry.getValue().get(key);
+                // a gesture that ends where it started changes nothing
+                if (key.getNature() == VisualKey.Nature.CONTROLLED
+                    && !Objects.equals(oldValue, newValue)) {
+                    oldVisuals.put(key, oldValue);
+                    newVisuals.put(key, newValue);
+                }
+            }
+            if (!newVisuals.keySet().isEmpty()) {
+                edit.withVisuals(cell, oldVisuals, newVisuals);
+            }
+        }
+    }
+
+    /**
+     * Changes the editable labels of a cell as one edit. If the cell is one of a
+     * pending insertion (see {@link #insertPending}), the insertion is settled with
+     * the label change, as one edit; an edge that gets no label is withdrawn.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    public void changeLabels(ViewCell<G> cell, EditableLabels labels) {
+        var oldLabels = new EditableLabels(getLabels(cell));
+        var newLabels = new EditableLabels(labels);
+        var labelEdit = new GraphEdit<G>().withLabels(cell, oldLabels, newLabels);
+        var pending = this.pendingInsertion;
+        if (pending == null || !pending.getInsertedCells().contains(cell)) {
+            settlePendingInsertion();
+            doEdit(labelEdit);
+            return;
+        }
+        this.pendingInsertion = null;
+        if (cell instanceof ViewEdge && isBlank(newLabels)) {
+            getStore().removeCells(pending.getInsertedCells());
+        } else if (oldLabels.toEditString().equals(newLabels.toEditString())) {
+            afterEdit(pending);
+            recorded(pending);
+        } else {
+            apply(labelEdit, true);
+            var history = this.editHistory;
+            if (history != null && !isLoading()) {
+                history.record(() -> {
+                    history.recorded(pending);
+                    history.recorded(labelEdit);
+                });
+            }
+        }
+    }
+
+    /** Indicates if editable labels are all blank. */
+    private static boolean isBlank(EditableLabels labels) {
+        for (String text : labels) {
+            if (!text.isBlank()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Returns the editable labels of a cell; only role models with editable labels support this. */
+    protected EditableLabels getLabels(ViewCell<G> cell) {
+        throw new UnsupportedOperationException("Cells of " + getClass().getSimpleName()
+            + " have no editable labels");
+    }
+
+    /** Sets the editable labels of a cell; only role models with editable labels support this. */
+    protected void setLabels(ViewCell<G> cell, EditableLabels labels) {
+        throw new UnsupportedOperationException("Cells of " + getClass().getSimpleName()
+            + " have no editable labels");
+    }
+
+    /**
+     * Applies an edit and records it in the history, if there is one and
+     * the model is not loading. Empty edits are ignored.
+     */
+    protected void doEdit(GraphEdit<G> edit) {
+        if (edit.isEmpty()) {
+            return;
+        }
+        settlePendingInsertion();
+        apply(edit, true);
+        recorded(edit);
+    }
+
+    /** Records an applied edit in the history, if there is one and the model is not loading. */
+    private void recorded(GraphEdit<G> edit) {
+        var history = this.editHistory;
+        if (history != null && !isLoading()) {
+            history.recorded(edit);
+        }
+    }
+
+    /**
+     * Applies an edit forward, or reverts it: the store inserts and removes
+     * the cells and applies the visuals, the cells take their labels, and
+     * {@link #afterEdit} lets the model react.
+     * @param forward if {@code true}, the edit is applied; otherwise reverted
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    public void apply(GraphEdit<G> edit, boolean forward) {
+        apply(edit, forward, true);
+    }
+
+    /**
+     * Applies an edit forward or reverts it, see {@link #apply(GraphEdit, boolean)}.
+     * @param complete if {@code false}, the model does not react to the edit
+     * ({@link #afterEdit}): a pending insertion, see {@link #insertPending}
+     */
+    private void apply(GraphEdit<G> edit, boolean forward, boolean complete) {
+        var store = getStore();
+        if (forward) {
+            if (!edit.getRemovedCells().isEmpty()) {
+                store.removeCells(edit.getRemovedCells());
+            }
+            if (!edit.getInsertedCells().isEmpty()) {
+                store
+                    .insertCells(edit.getInsertedVertices(), edit.getInsertedEdges(),
+                                 edit.getInsertedConnections(), false);
+            }
+        } else {
+            if (!edit.getInsertedCells().isEmpty()) {
+                store.removeCells(edit.getInsertedCells());
+            }
+            if (!edit.getRemovedCells().isEmpty()) {
+                store
+                    .insertCells(edit.getRemovedVertices(), edit.getRemovedEdges(),
+                                 edit.getRemovedConnections(), false);
+            }
+        }
+        for (var entry : edit.getReconnections().entrySet()) {
+            var connection = entry.getValue().get(forward);
+            store.reconnectEdge(entry.getKey(), connection.source(), connection.target());
+        }
+        if (!edit.getVisualChanges().isEmpty()) {
+            var visuals = edit.getVisuals(forward);
+            store.applyVisuals(visuals);
+            if (!isLoading()) {
+                for (var cell : visuals.keySet()) {
+                    synchroniseLayout(cell);
+                }
+            }
+        }
+        // the cells to refresh after the model reacted: the relabelled ones, and the
+        // inserted ones, whose graph elements the aspect model builds from the labels
+        // only then (the yFiles backend fixes the label text of an item at creation)
+        List<ViewCell<G>> refreshed = new ArrayList<>(forward
+            ? edit.getInsertedCells()
+            : edit.getRemovedCells());
+        for (var entry : edit.getLabelChanges().entrySet()) {
+            setLabels(entry.getKey(), entry.getValue().get(forward));
+            refreshed.add(entry.getKey());
+        }
+        if (!complete) {
+            return;
+        }
+        afterEdit(edit);
+        if (!refreshed.isEmpty()) {
+            // after the graph was rebuilt from the labels, which the cells show
+            getCanvas().refresh(refreshed, false);
+        }
+    }
+
+    /**
+     * Callback after an edit was applied or reverted; does nothing by default.
+     * The aspect model rebuilds its graph from the cells after non-minor edits.
+     */
+    protected void afterEdit(GraphEdit<G> edit) {
+        // empty
+    }
+
+    // ---------- element-to-cell maps ----------
 
     /** Returns the set of cells associated with a given collection
      * of graph elements.
      */
-    public Set<@Nullable ViewCell<?>> getJCells(Collection<? extends Element> elements) {
+    public Set<@Nullable ViewCell<?>> getCellsFor(Collection<? extends Element> elements) {
         var result = new HashSet<@Nullable ViewCell<?>>();
-        elements.stream().map(this::getJCell).forEach(result::add);
+        elements.stream().map(this::getCell).forEach(result::add);
         return result;
     }
 
@@ -134,11 +497,11 @@ public class GraphViewModel<G extends Graph> {
      * @param elem the graph element for which the cell is requested
      * @return the cell associated with <tt>elem</tt>
      */
-    public @Nullable ViewCell<G> getJCell(Element elem) {
+    public @Nullable ViewCell<G> getCell(Element elem) {
         if (elem instanceof Node) {
-            return getJCellForNode((Node) elem);
+            return getCellForNode((Node) elem);
         } else {
-            return getJCellForEdge((Edge) elem);
+            return getCellForEdge((Edge) elem);
         }
     }
 
@@ -149,8 +512,8 @@ public class GraphViewModel<G extends Graph> {
      * @param edge the graph edge we're interested in
      * @return the cell displaying <tt>edge</tt>
      */
-    public @Nullable ViewCell<G> getJCellForEdge(Edge edge) {
-        return this.edgeJCellMap.get(edge);
+    public @Nullable ViewCell<G> getCellForEdge(Edge edge) {
+        return this.edgeCellMap.get(edge);
     }
 
     /**
@@ -158,24 +521,24 @@ public class GraphViewModel<G extends Graph> {
      * @param node the graph node we're interested in
      * @return the cell displaying <tt>node</tt> (if the node is known)
      */
-    public @Nullable ViewVertex<G> getJCellForNode(Node node) {
-        return this.nodeJCellMap.get(node);
+    public @Nullable ViewVertex<G> getCellForNode(Node node) {
+        return this.nodeCellMap.get(node);
     }
 
     /**
      * Inserts a node-to-cell entry into the element-to-cell mapping.
      * @return the previous cell associated with the node, if any
      */
-    public @Nullable ViewVertex<G> putNode(Node node, ViewVertex<G> jVertex) {
-        return this.nodeJCellMap.put(node, jVertex);
+    public @Nullable ViewVertex<G> putNode(Node node, ViewVertex<G> vertex) {
+        return this.nodeCellMap.put(node, vertex);
     }
 
     /**
      * Inserts an edge-to-cell entry into the element-to-cell mapping.
      * @return the previous cell associated with the edge, if any
      */
-    public @Nullable ViewCell<G> putEdge(Edge edge, ViewCell<G> jCell) {
-        return this.edgeJCellMap.put(edge, jCell);
+    public @Nullable ViewCell<G> putEdge(Edge edge, ViewCell<G> cell) {
+        return this.edgeCellMap.put(edge, cell);
     }
 
     /**
@@ -183,35 +546,366 @@ public class GraphViewModel<G extends Graph> {
      * Used when the cells are the primary data from which the graph
      * is (re)constructed, as in the editor.
      */
-    public void setJCellMaps(Map<? extends Node,? extends ViewVertex<G>> nodeJCellMap,
-                             Map<? extends Edge,? extends ViewCell<G>> edgeJCellMap) {
-        this.nodeJCellMap.clear();
-        this.nodeJCellMap.putAll(nodeJCellMap);
-        this.edgeJCellMap.clear();
-        this.edgeJCellMap.putAll(edgeJCellMap);
+    public void setCellMaps(Map<? extends Node,? extends ViewVertex<G>> nodeCellMap,
+                             Map<? extends Edge,? extends ViewCell<G>> edgeCellMap) {
+        this.nodeCellMap.clear();
+        this.nodeCellMap.putAll(nodeCellMap);
+        this.edgeCellMap.clear();
+        this.edgeCellMap.putAll(edgeCellMap);
     }
 
     /** Returns the set of graph nodes currently represented in this view model. */
     public Set<Node> getNodes() {
-        return this.nodeJCellMap.keySet();
+        return this.nodeCellMap.keySet();
     }
+
+    /**
+     * Returns all cells of this view model, in the z-order of the backend store.
+     * In an editor, this may include cells not (yet) mapped from a graph element.
+     */
+    public Collection<? extends ViewCell<G>> getCells() {
+        return getStore().getCells();
+    }
+
+    /** Sets the layoutable status of all vertices. */
+    public void setLayoutable(boolean layoutable) {
+        for (var vertex : this.nodeCellMap.values()) {
+            vertex.setLayoutable(layoutable);
+        }
+    }
+
+    /** Marks all refreshable visuals of all cells as stale. */
+    public void refreshVisuals() {
+        for (var cell : getCells()) {
+            cell.setStale(VisualKey.refreshables());
+        }
+    }
+
+    /** Returns a map from nodes to the foreground colours of their vertices. */
+    public Map<Node,Color> getColorMap() {
+        Map<Node,Color> result = new HashMap<>();
+        for (var entry : this.nodeCellMap.entrySet()) {
+            Color foreground = entry.getValue().getVisuals().getForeground();
+            if (foreground != null) {
+                result.put(entry.getKey(), foreground);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Indicates if this model is in the process of being loaded from a graph.
+     * Change events arriving while this holds reflect the loading, not user edits,
+     * and should be ignored by listeners that track edits.
+     */
+    public boolean isLoading() {
+        return this.loading;
+    }
+
+    /** Sets the loading status; see {@link #isLoading()}. */
+    public void setLoading(boolean loading) {
+        this.loading = loading;
+    }
+
+    /** Flag indicating that the model is being loaded from a graph. */
+    private boolean loading;
 
     /** Returns the number of graph nodes currently represented in this view model. */
     public int nodeCount() {
-        return this.nodeJCellMap.size();
+        return this.nodeCellMap.size();
     }
 
     /** Returns the size of the graph, as a sum of the number of nodes and edges. */
     public int size() {
-        return this.nodeJCellMap.size() + this.edgeJCellMap.size();
+        return this.nodeCellMap.size() + this.edgeCellMap.size();
+    }
+
+    // ---------- loading ----------
+
+    /**
+     * Loads in a given graph, replacing the current cells by cells for its
+     * nodes and edges.
+     */
+    public void loadGraph(G graph) {
+        prepareLoad(graph);
+        addElements(graph.nodeSet(), graph.edgeSet(), true);
+    }
+
+    /**
+     * Prepares the view model for loading a new graph:
+     * sets the graph and layout map, and clears the element-to-cell maps.
+     */
+    protected void prepareLoad(G graph) {
+        this.graph = graph;
+        this.layoutMap = GraphInfo.getLayoutMap(graph);
+        if (this.layoutMap == null) {
+            this.layoutMap = graph.getInfo().getLayoutMap();
+        }
+        this.nodeCellMap.clear();
+        this.edgeCellMap.clear();
+    }
+
+    /**
+     * Adds cells for new graph elements to this model, in one committed edit.
+     * @param nodeSet the set of nodes to be added
+     * @param edgeSet the set of edges to be added; if {@code null},
+     * the incident edges of {@code nodeSet} are used (where a role supports this)
+     * @param replace if {@code true}, all existing cells are removed
+     * @return {@code true} if the model was changed
+     */
+    public boolean addElements(Collection<? extends Node> nodeSet,
+                               @Nullable Collection<? extends Edge> edgeSet, boolean replace) {
+        boolean result = replace;
+        boolean wasLoading = isLoading();
+        setLoading(true);
+        prepareInsert();
+        result |= addNodes(nodeSet);
+        result |= addEdges(edgeSet);
+        if (result) {
+            doInsert(replace);
+        }
+        setLoading(wasLoading);
+        return result;
+    }
+
+    /** Adds the given set of nodes to this model.
+     * @return {@code true} if any nodes were added.*/
+    protected boolean addNodes(Collection<? extends Node> nodeSet) {
+        for (Node node : nodeSet) {
+            addNode(node);
+        }
+        return !nodeSet.isEmpty();
+    }
+
+    /** Adds the given set of edges to this model.
+     * @return {@code true} if any edges were added. */
+    protected boolean addEdges(@Nullable Collection<? extends Edge> edgeSet) {
+        assert edgeSet != null; // implied edges are only supported by role subclasses
+        for (Edge edge : edgeSet) {
+            addEdge(edge);
+        }
+        return !edgeSet.isEmpty();
+    }
+
+    /**
+     * Creates a cell corresponding to a given node in the graph. Adds the
+     * cell to the pending vertices, and updates the element-to-cell map.
+     */
+    protected ViewVertex<G> addNode(Node node) {
+        ViewVertex<G> vertex = computeVertex(node);
+        this.addedVertices.add(vertex);
+        ViewVertex<G> oldNode = putNode(node, vertex);
+        assert oldNode == null;
+        return vertex;
+    }
+
+    /**
+     * Creates a cell corresponding to a given graph edge. This may be a
+     * vertex, if the edge can be graphically depicted by that vertex; or an
+     * existing edge cell, if the edge can be represented by it. Otherwise, it will
+     * be a new edge cell.
+     */
+    protected ViewCell<G> addEdge(Edge edge) {
+        ViewCell<G> result = getCellForEdge(edge);
+        // check if edge was processed earlier
+        ViewVertex<G> sourceVertex = getCellForNode(edge.source());
+        assert sourceVertex != null : "No vertex for source node of " + edge;
+        if (result == null) {
+            // try to add the edge as vertex label to its source vertex
+            if (sourceVertex.isCompatible(edge)) {
+                sourceVertex.addEdge(edge);
+                // yes, the edge could be added here; we're done
+                result = sourceVertex;
+            }
+        }
+        if (result == null) {
+            // try to add the edge to an existing edge cell
+            Iterator<? extends ViewEdge<G>> edgeIter = getIncidentEdges(sourceVertex);
+            while (edgeIter.hasNext()) {
+                ViewEdge<G> edgeCell = edgeIter.next();
+                if (edgeCell.isCompatible(edge)) {
+                    // yes, the edge could be added here; we're done
+                    edgeCell.addEdge(edge);
+                    result = edgeCell;
+                    break;
+                }
+            }
+        }
+        if (result == null) {
+            // none of the above: so create a new edge cell
+            ViewEdge<G> edgeCell;
+            result = edgeCell = computeEdge(edge);
+            // put the edge at the end to make sure it goes to the back
+            this.addedEdges.add(edgeCell);
+            ViewVertex<G> targetVertex = getCellForNode(edge.target());
+            assert targetVertex != null : "No vertex for target node of " + edge;
+            this.connections.add(new Connection<>(edgeCell, sourceVertex, targetVertex));
+            addFreshEdge(sourceVertex, edgeCell);
+            addFreshEdge(targetVertex, edgeCell);
+        }
+        putEdge(edge, result);
+        return result;
+    }
+
+    /**
+     * Retrieves the known incident edge cells of a given vertex,
+     * either from the explicitly stored fresh edges (if the vertex is fresh)
+     * or from the stored context of the vertex.
+     */
+    private Iterator<? extends ViewEdge<G>> getIncidentEdges(ViewVertex<G> vertex) {
+        Iterator<? extends ViewEdge<G>> result;
+        Set<ViewEdge<G>> outEdges = this.freshEdges.get(vertex);
+        if (outEdges == null) {
+            result = vertex.getContext();
+        } else {
+            result = new NestedIterator<>(outEdges.iterator(), vertex.getContext());
+        }
+        return result;
+    }
+
+    /**
+     * Adds a given edge cell to the fresh incident edges of a vertex.
+     */
+    private void addFreshEdge(ViewVertex<G> vertex, ViewEdge<G> edge) {
+        Set<ViewEdge<G>> edges = this.freshEdges.get(vertex);
+        if (edges == null) {
+            this.freshEdges.put(vertex, edges = new HashSet<>());
+        }
+        edges.add(edge);
+    }
+
+    /**
+     * Creates a new edge cell through the store, and adds available
+     * layout information from the layout map stored in this model.
+     * @param edge graph edge for which a corresponding cell is to be created
+     */
+    protected ViewEdge<G> computeEdge(Edge edge) {
+        ViewEdge<G> result = newEdge(edge);
+        EdgeLayout layout = getLayoutMap().getLayout(edge);
+        if (layout != null) {
+            result.putVisuals(VisualMap.newInstance(layout));
+        }
+        return result;
+    }
+
+    /**
+     * Creates a new vertex cell through the store, and adds available
+     * layout information from the layout map stored in this model; or adds a
+     * random position otherwise.
+     * @param node graph node for which a corresponding cell is to be created
+     */
+    final protected ViewVertex<G> computeVertex(Node node) {
+        ViewVertex<G> result = newVertex(node);
+        NodeLayout layout = getLayoutMap().getLayout(node);
+        if (layout != null) {
+            result.putVisuals(VisualMap.newInstance(layout));
+        } else {
+            Point2D nodePos = new Point2D.Double(this.nodeX, this.nodeY);
+            result.putVisual(VisualKey.NODE_POS, nodePos);
+            this.nodeX = randomCoordinate();
+            this.nodeY = randomCoordinate();
+            result.setLayoutable(true);
+        }
+        return result;
+    }
+
+    /** Creates a fresh, initialised vertex cell for a given node, not yet in the store. */
+    public AViewVertex<G> newVertex(Node node) {
+        var result = createVertexCell(node);
+        result.setNode(node);
+        result.initialise();
+        return result;
+    }
+
+    /**
+     * Creates a fresh, initialised edge cell, not yet in the store.
+     * @param edge the initial edge of the cell; {@code null} if there is none yet
+     */
+    public AViewEdge<G> newEdge(@Nullable Edge edge) {
+        var result = createEdgeCell();
+        result.initialise();
+        if (edge != null) {
+            result.addEdge(edge);
+        }
+        return result;
+    }
+
+    /** Callback factory method for a vertex cell of the role of this model, for a given node. */
+    protected abstract AViewVertex<G> createVertexCell(Node node);
+
+    /** Callback factory method for an edge cell of the role of this model. */
+    protected abstract AViewEdge<G> createEdgeCell();
+
+    /**
+     * Sets the transient variables (pending cells and connections) to fresh
+     * (empty) initial values.
+     */
+    protected void prepareInsert() {
+        this.addedEdges.clear();
+        this.addedVertices.clear();
+        this.freshEdges.clear();
+        this.connections.clear();
+    }
+
+    /**
+     * Commits the insertion prepared by node and edge additions to the store.
+     * @param replace if {@code true}, the old cells should be deleted
+     */
+    protected void doInsert(boolean replace) {
+        getStore().insertCells(this.addedVertices, this.addedEdges, this.connections, replace);
+    }
+
+    /**
+     * Returns a random number bounded by the size of the model. Used to
+     * generate a random position for any added vertex without layout
+     * information.
+     */
+    protected int randomCoordinate() {
+        return 25 + randomGenerator.nextInt(size() * 5 + 1);
+    }
+
+    /**
+     * Returns whether or not equally named bidirectional edges should be
+     * merged (i.e. mapped to the same edge cell). Override in subclass to
+     * modify this behaviour.
+     */
+    public boolean isMergeBidirectionalEdges() {
+        return getController().isShowBidirectionalEdges();
+    }
+
+    /**
+     * Returns whether all edges should be
+     * merged (i.e. mapped to the same edge cell). Override in subclass to
+     * modify this behaviour.
+     */
+    public boolean isMergeAllEdges() {
+        return getController().isShowArrowsOnLabels();
     }
 
     /**
      * Map from graph nodes to the cells displaying them.
      */
-    private final Map<Node,ViewVertex<G>> nodeJCellMap = new HashMap<>();
+    private final Map<Node,ViewVertex<G>> nodeCellMap = new HashMap<>();
     /**
      * Map from graph edges to the cells displaying them.
      */
-    private final Map<Edge,ViewCell<G>> edgeJCellMap = new HashMap<>();
+    private final Map<Edge,ViewCell<G>> edgeCellMap = new HashMap<>();
+    /**
+     * Mapping from vertices to incident edge cells.
+     * Used in the process of constructing the cells.
+     */
+    private final Map<ViewVertex<G>,Set<ViewEdge<G>>> freshEdges = new HashMap<>();
+    /** Pending edge cells of the current insertion. */
+    private final List<ViewEdge<G>> addedEdges = new ArrayList<>();
+    /** Pending vertex cells of the current insertion. */
+    private final List<ViewVertex<G>> addedVertices = new ArrayList<>();
+    /** Pending connections between newly created edge cells and their end vertices. */
+    private final List<Connection<G>> connections = new ArrayList<>();
+    /** Counter to provide the x-coordinate of fresh nodes with fresh values. */
+    private int nodeX;
+    /** Counter to provide the y-coordinate of fresh nodes with fresh values. */
+    private int nodeY;
+
+    /** Random generator for coordinates of new nodes. */
+    private static final Random randomGenerator = new Random();
 }

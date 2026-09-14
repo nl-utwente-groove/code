@@ -28,6 +28,30 @@
 				</plugin>
 			</plugins>
 		</pluginManagement>
+		<plugins>
+			<plugin>
+				<!-- the version with underscores, as used in the artifact names
+				     (groove-x_y_z-bin.zip, groove-x_y_z-yfiles-addon.zip) -->
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>3.3.0</version>
+				<executions>
+					<execution>
+						<id>regex-property</id>
+						<goals>
+							<goal>regex-property</goal>
+						</goals>
+						<configuration>
+							<name>groove-version-underscored</name>
+							<value>${revision}</value>
+							<regex>\.</regex>
+							<replacement>_</replacement>
+							<failIfNoMatch>false</failIfNoMatch>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
 	</build>
 
 	<dependencies>
@@ -37,4 +61,20 @@
 			<version>${revision}</version>
 		</dependency>
 	</dependencies>
+
+	<profiles>
+		<profile>
+			<!-- The yFiles add-on: the yFiles backend (the groove-yfiles artifact
+			     built from the private yfiles-lib repository) and the yFiles
+			     library, the latter obfuscated as its
+			     license requires, zipped up for the user's extension directory
+			     (see README.md). The standard zips are not affected. Activate with
+			     -Pyfiles; it needs the licensed library in the local Maven
+			     repository. -->
+			<id>yfiles</id>
+			<modules>
+				<module>yfiles</module>
+			</modules>
+		</profile>
+	</profiles>
 </project>

@@ -29,7 +29,6 @@ import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.action.LayoutAction;
 import nl.utwente.groove.gui.view.GraphViewController;
 import nl.utwente.groove.gui.layout.ForestLayouter;
-import nl.utwente.groove.gui.layout.LayoutKind;
 import nl.utwente.groove.gui.layout.Layouter;
 import nl.utwente.groove.gui.layout.SpringLayouter;
 
@@ -52,8 +51,8 @@ public class SetLayoutMenu extends JMenu {
         addLayoutItem(SpringLayouter.PROTOTYPE);
         addLayoutItem(ForestLayouter.PROTOTYPE);
         this.addSeparator();
-        for (LayoutKind kind : LayoutKind.values()) {
-            addLayoutItem(LayoutKind.getLayouterItemProto(kind));
+        for (Layouter prototype : controller.getCanvas().getBackendLayouters()) {
+            addLayoutItem(prototype);
         }
         selectLayoutAction(initialLayout);
     }
@@ -86,8 +85,8 @@ public class SetLayoutMenu extends JMenu {
     }
 
     /**
-     * Sets a given layouter for the jgraph and returns the corresponding layout
-     * action. Also notifies the underlying jgraph.
+     * Sets a given layouter for the canvas and returns the corresponding layout
+     * action. Also notifies the underlying canvas.
      * @param prototypeLayout the new layout action
      */
     public LayoutAction selectLayoutAction(Layouter prototypeLayout) {
@@ -103,7 +102,6 @@ public class SetLayoutMenu extends JMenu {
             }
         }
         return result;
-        // jgraph.doLayout();
     }
 
     /**

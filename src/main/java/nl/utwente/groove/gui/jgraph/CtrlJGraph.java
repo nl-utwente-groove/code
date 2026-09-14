@@ -18,41 +18,30 @@ package nl.utwente.groove.gui.jgraph;
 
 import org.eclipse.jdt.annotation.NonNull;
 
-import nl.utwente.groove.control.graph.ControlEdge;
 import nl.utwente.groove.control.graph.ControlGraph;
-import nl.utwente.groove.control.graph.ControlNode;
 import nl.utwente.groove.control.template.Template;
-import nl.utwente.groove.graph.Edge;
-import nl.utwente.groove.graph.GraphRole;
-import nl.utwente.groove.graph.Node;
-import nl.utwente.groove.gui.Simulator;
+import nl.utwente.groove.gui.view.CellStore;
+import nl.utwente.groove.gui.view.CtrlGraphCanvas;
 import nl.utwente.groove.gui.view.CtrlGraphViewController;
-import nl.utwente.groove.gui.layout.ForestLayouter;
-import nl.utwente.groove.gui.layout.Layouter;
+import nl.utwente.groove.gui.view.CtrlGraphViewModel;
 
 /**
  * This is the JGraph representation of a ControlAutomaton.
  * @author Tom Staijen
  * @version $Revision$
  */
-public class CtrlJGraph extends JGraph<@NonNull ControlGraph> {
+public class CtrlJGraph extends JGraph<@NonNull ControlGraph> implements CtrlGraphCanvas {
     /**
      * Creates a ControlJGraph given a ControlJModel
-     * @param simulator the simulator that is the context of this jgraph; may be
-     *        <code>null</code>.
+     * @param controller the controller of this canvas
      */
-    public CtrlJGraph(Simulator simulator) {
-        super(simulator);
+    public CtrlJGraph(CtrlGraphViewController controller) {
+        super(controller);
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
         setConnectable(false);
         setDisconnectable(false);
         setEnabled(true);
         setToolTipEnabled(true);
-    }
-
-    @Override
-    public GraphRole getGraphRole() {
-        return GraphRole.CTRL;
     }
 
     /** Creates a new model based on a given control automaton. */
@@ -75,35 +64,7 @@ public class CtrlJGraph extends JGraph<@NonNull ControlGraph> {
     }
 
     @Override
-    protected CtrlGraphViewController createController(Simulator simulator) {
-        return new CtrlGraphViewController(this, simulator);
-    }
-
-    @Override
-    public Layouter getDefaultLayouter() {
-        return ForestLayouter.PROTOTYPE;
-    }
-
-    @Override
-    protected JGraphFactory<@NonNull ControlGraph> createFactory() {
-        return new MyFactory();
-    }
-
-    private class MyFactory extends JGraphFactory<@NonNull ControlGraph> {
-        public MyFactory() {
-            super(CtrlJGraph.this);
-        }
-
-        @Override
-        public CtrlJVertex newJVertex(Node node) {
-            assert node instanceof ControlNode;
-            return CtrlJVertex.newInstance();
-        }
-
-        @Override
-        public CtrlJEdge newJEdge(Edge edge) {
-            assert edge instanceof ControlEdge;
-            return CtrlJEdge.newInstance();
-        }
+    CtrlGraphViewModel createViewModel(CellStore<@NonNull ControlGraph> store) {
+        return new CtrlGraphViewModel(getController(), store);
     }
 }

@@ -18,18 +18,20 @@ package nl.utwente.groove.gui.view;
 
 import java.util.Iterator;
 
-import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Node;
 
 /**
- * JGraph vertex wrapping a single graph node and a set of graph edges.
+ * Graph-view vertex wrapping a single graph node and a set of graph edges.
  * @author Arend Rensink
  * @version $Revision$
  */
-public interface ViewVertex<G extends @NonNull Graph> extends ViewCell<G> {
-    /** Returns the set of incident JEdges. */
+@NonNullByDefault
+public interface ViewVertex<G extends Graph> extends ViewCell<G> {
+    /** Returns the set of incident edge cells. */
     @Override
     public Iterator<? extends ViewEdge<G>> getContext();
 
@@ -42,7 +44,7 @@ public interface ViewVertex<G extends @NonNull Graph> extends ViewCell<G> {
     /**
      * Returns the graph node wrapped by this {@link ViewVertex}.
      */
-    public @NonNull Node getNode();
+    public Node getNode();
 
     /**
      * The cloned object is equal to this one after a reset.
@@ -57,13 +59,13 @@ public interface ViewVertex<G extends @NonNull Graph> extends ViewCell<G> {
      * used for the node inscription in case node identities are to be shown.
      * Subclasses may return {@code null} if there is no useful node identity.
      */
-    public String getNodeIdString();
+    public @Nullable String getNodeIdString();
 
-    /** Indicates if this jVertex is currently layed-out. */
+    /** Indicates if this vertex is currently layed-out. */
     boolean isLayoutable();
 
     /**
-     * Sets this jVertex to layed-out.
+     * Sets this vertex to layed-out.
      * This means that the next attempt to layout the graph will not
      * change the position of this cell.
      * @return {@code true} if the layed-out status changed as a result of this call

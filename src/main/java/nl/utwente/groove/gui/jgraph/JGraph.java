@@ -21,16 +21,16 @@ import static nl.utwente.groove.gui.Options.SHOW_ARROWS_ON_LABELS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_BIDIRECTIONAL_EDGES_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_INTERNAL_NODE_IDS_OPTION;
 import static nl.utwente.groove.gui.Options.SHOW_USER_NODE_IDS_OPTION;
-import static nl.utwente.groove.gui.jgraph.JGraphMode.EDIT_MODE;
-import static nl.utwente.groove.gui.jgraph.JGraphMode.SELECT_MODE;
+import static nl.utwente.groove.gui.view.GraphViewMode.EDIT_MODE;
+import static nl.utwente.groove.gui.view.GraphViewMode.SELECT_MODE;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -39,11 +39,11 @@ import java.awt.geom.Dimension2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -53,7 +53,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import javax.accessibility.AccessibleState;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
@@ -82,22 +81,28 @@ import org.jgraph.graph.PortView;
 import org.jgraph.plaf.GraphUI;
 import org.jgraph.plaf.basic.BasicGraphUI;
 
+import nl.utwente.groove.gui.view.GraphViewMode;
 import nl.utwente.groove.graph.Edge;
+import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.Graph;
-import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.gui.Options;
-import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.gui.action.ActionStore;
 import nl.utwente.groove.gui.action.ExportAction;
 import nl.utwente.groove.gui.action.LayoutAction;
+import nl.utwente.groove.gui.view.GraphCanvas;
+import nl.utwente.groove.gui.view.CellStore;
+import nl.utwente.groove.gui.view.CellChange;
+import nl.utwente.groove.gui.view.GraphCanvasListener;
 import nl.utwente.groove.gui.view.GraphViewController;
+import nl.utwente.groove.gui.view.GraphViewModel;
+import nl.utwente.groove.gui.view.OptionRefreshListener;
 import nl.utwente.groove.gui.layout.Layouter;
-import nl.utwente.groove.gui.layout.SpringLayouter;
 import nl.utwente.groove.gui.look.MultiLabel;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
+import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.tree.LabelTree;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.util.Factory;
@@ -106,18 +111,22 @@ import nl.utwente.groove.gui.view.ViewEdge;
 import nl.utwente.groove.gui.view.ViewVertex;
 
 /**
- * Enhanced j-graph, dedicated to j-models.
+ * Enhanced j-graph, dedicated to j-models; the JGraph implementation of {@link GraphCanvas}.
  * @author Arend Rensink
  * @version $Revision$ $Date: 2008-02-05 13:27:59 $
  */
-abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph {
+abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
+    implements GraphCanvas<G> {
     /**
-     * Constructs a JGraph for a given simulator.
-     * @param simulator simulator to which the JGraph belongs; may be {@code null}
+     * Constructs a JGraph as the canvas of a given controller.
+     * The JGraph attaches itself to the controller before installing its listeners,
+     * as those ask the controller for its canvas.
+     * @param controller the controller of this canvas
      */
-    protected JGraph(Simulator simulator) {
+    protected JGraph(GraphViewController<G> controller) {
         super((JModel<G>) null);
-        this.controller = createController(simulator);
+        this.controller = controller;
+        controller.attachCanvas(this);
         // make sure the layout cache has been created
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
         setMarqueeHandler(createMarqueeHandler());
@@ -139,6 +148,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
         addMouseListener(getMouseListener());
         addKeyListener(getCancelEditListener());
         getSelectionModel().addGraphSelectionListener(getGraphSelectionListener());
+        getSelectionModel().addGraphSelectionListener(this.canvasEventListener);
         addOptionListener(SHOW_INTERNAL_NODE_IDS_OPTION);
         addOptionListener(SHOW_USER_NODE_IDS_OPTION);
         addOptionListener(SHOW_ANCHORS_OPTION);
@@ -150,40 +160,52 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
      * Removes this {@link JGraph} as listener,
      * so as to avoid memory leaks.
      */
+    @Override
     public void removeListeners() {
         removeMouseListener(getMouseListener());
         removeKeyListener(getCancelEditListener());
         getSelectionModel().removeGraphSelectionListener(getGraphSelectionListener());
+        getSelectionModel().removeGraphSelectionListener(this.canvasEventListener);
         getController().removeListeners();
     }
 
+    @Override
+    public JComponent getComponent() {
+        return this;
+    }
+
+    @Override
+    public void addCanvasListener(GraphCanvasListener<G> listener) {
+        this.canvasListeners.add(listener);
+    }
+
+    @Override
+    public void removeCanvasListener(GraphCanvasListener<G> listener) {
+        this.canvasListeners.remove(listener);
+    }
+
+    /** The registered canvas listeners. */
+    private final List<GraphCanvasListener<G>> canvasListeners = new ArrayList<>();
+
+    /** Adapter from the JGraph selection and model events to the canvas listeners. */
+    private final CanvasEventListener canvasEventListener = new CanvasEventListener();
+
     /** Returns the display controller associated with this {@link JGraph}. */
+    @Override
     public GraphViewController<G> getController() {
         return this.controller;
+    }
+
+    /** Indicates if the controller has been created; only false during construction. */
+    protected boolean hasController() {
+        return this.controller != null;
     }
 
     /** The display controller associated with this {@link JGraph}. */
     private final GraphViewController<G> controller;
 
-    /**
-     * Callback factory method for the display controller.
-     * Called from the constructor, so it must not depend on subclass state.
-     */
-    protected GraphViewController<G> createController(Simulator simulator) {
-        return new GraphViewController<>(this, simulator);
-    }
-
-    /** Returns the graph role of the graphs expected for this JGraph. */
-    public GraphRole getGraphRole() {
-        return GraphRole.NONE;
-    }
-
-    /** Checks if the graph being displayed has a given role. */
-    public boolean hasGraphRole(GraphRole role) {
-        return getGraphRole() == role;
-    }
-
     /** Returns the object holding the display options for this {@link JGraph}. */
+    @Override
     public final Options getOptions() {
         return getController().getOptions();
     }
@@ -211,15 +233,16 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
      * @return the refresh listener, or {@code null} if this JGraph doesn't
      * not need refreshing for a given option.
      */
-    public RefreshListener getRefreshListener(String option) {
+    @Override
+    public OptionRefreshListener getRefreshListener(String option) {
         if (this.refreshListener == null) {
-            this.refreshListener = new RefreshListener(this);
+            this.refreshListener = new OptionRefreshListener(this);
         }
         return this.refreshListener;
     }
 
     /** Change listener that refreshes the JGraph cells when activated. */
-    private RefreshListener refreshListener;
+    private OptionRefreshListener refreshListener;
 
     /** Convenience method to retrieve the state of the simulator, if any. */
     final public SimulatorModel getSimulatorModel() {
@@ -243,11 +266,11 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
         String result = null;
         if (value instanceof String) {
             result = (String) value;
-        } else if (value instanceof ViewVertex) {
-            MultiLabel label = ((ViewVertex<?>) value).getVisuals().getLabel();
+        } else if (value instanceof JVertex<?> vertex) {
+            MultiLabel label = vertex.getViewCell().getVisuals().getLabel();
             result = label.toString();
         } else if (value instanceof JEdgeView) {
-            MultiLabel label = ((JEdgeView) value).getCell().getVisuals().getLabel();
+            MultiLabel label = ((JEdgeView) value).getViewCell().getVisuals().getLabel();
             result = label.toString();
         }
         if (result == null || result.length() == 0) {
@@ -277,7 +300,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
      */
     @Override
     public boolean isCellEditable(Object cell) {
-        return !(cell instanceof ViewCell && ((ViewCell<?>) cell).isGrayedOut())
+        return !(cell instanceof JCell<?> item && item.getViewCell().isGrayedOut())
             && super.isCellEditable(cell);
     }
 
@@ -348,7 +371,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
     private Dimension2D getPreferredSize(CellView view) {
         Dimension2D result;
         if (view instanceof JVertexView jView) {
-            var vertex = jView.getCell();
+            var vertex = jView.getViewCell();
             if (vertex.isStale(VisualKey.TEXT_SIZE)) {
                 result = computePreferredSize(jView);
                 vertex.putVisual(VisualKey.TEXT_SIZE, result);
@@ -399,20 +422,30 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
     /**
      * @return the bounds of the entire display.
      */
+    @Override
     public Rectangle2D getGraphBounds() {
         return getCellBounds(getRoots());
+    }
+
+    @Override
+    public Dimension2D getPreferredSize(ViewVertex<G> vertex) {
+        var view = getGraphLayoutCache().getMapping(JCell.of(vertex), false);
+        return view == null
+            ? vertex.getVisuals().getNodeSize()
+            : getPreferredSize(view);
     }
 
     /** Refreshes the visibility and view of a given set of JCells.
      * @param unselectGrayedOut if {@code true}, unselect all grayed-out cells.
      */
-    public void refreshCells(Collection<? extends ViewCell<G>> jCellSet, boolean unselectGrayedOut) {
+    @Override
+    public void refresh(Collection<? extends ViewCell<G>> jCellSet, boolean unselectGrayedOut) {
         if (!jCellSet.isEmpty()) {
             JGraphLayoutCache cache = getGraphLayoutCache();
             Collection<ViewCell<G>> visibleCells = new HashSet<>(jCellSet.size());
             Collection<ViewCell<G>> hiddenCells = new HashSet<>(jCellSet.size());
             for (ViewCell<G> jCell : jCellSet) {
-                CellView jView = cache.getMapping(jCell, false);
+                CellView jView = cache.getMapping(JCell.of(jCell), false);
                 boolean wasVisible = jView != null;
                 boolean isVisible = jCell.getVisuals().isVisible();
                 Collection<ViewCell<G>> changeCells = wasVisible
@@ -440,18 +473,23 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
                 // unselect all hidden and grayed-out cells
                 var unselectedCells = new HashSet<>(hiddenCells);
                 visibleCells.stream().filter(ViewCell::isGrayedOut).forEach(unselectedCells::add);
-                getSelectionModel().removeSelectionCells(unselectedCells.toArray());
+                getSelectionModel().removeSelectionCells(JCell.items(unselectedCells));
             }
             // make sure refreshed cells are not selected
             boolean selectsInsertedCells = cache.isSelectsLocalInsertedCells();
             cache.setSelectsLocalInsertedCells(false);
-            cache.setVisible(visibleCells.toArray(), hiddenCells.toArray());
+            cache.setVisible(JCell.items(visibleCells), JCell.items(hiddenCells));
             cache.setSelectsLocalInsertedCells(selectsInsertedCells);
             if (getSelectionCount() > 0) {
                 Rectangle2D scope = (Rectangle2D) getCellBounds(getSelectionCells()).clone();
                 scrollRectToVisible(toScreen(scope).getBounds());
             }
             JGraph.this.modelRefreshing = false;
+            // the refreshed cells changed: the label tree recounts them
+            var change = new CellChange<>(List.of(), new ArrayList<>(jCellSet), List.of());
+            for (var listener : this.canvasListeners) {
+                listener.cellsChanged(this, change);
+            }
         }
     }
 
@@ -459,10 +497,11 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
      * Refreshes the visibility and view of all JCells in the model.
      * @param unselectGrayedOut if {@code true}, unselect all grayed-out cells.
      */
-    public void refreshAllCells(boolean unselectGrayedOut) {
+    @Override
+    public void refreshAll(boolean unselectGrayedOut) {
         var model = getModel();
         if (model != null) {
-            refreshCells(model.getRoots(), unselectGrayedOut);
+            refresh(model.getCells(), unselectGrayedOut);
         }
     }
 
@@ -472,7 +511,8 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
      * @param grayedOut the new grayed-out status of the cell
      * @see ViewCell#isGrayedOut()
      */
-    public void changeGrayedOut(Set<ViewCell<G>> jCells, boolean grayedOut) {
+    @Override
+    public void setGrayedOut(Set<ViewCell<G>> jCells, boolean grayedOut) {
         var model = getModel();
         assert model != null;
         Set<ViewCell<G>> changedJCells = new HashSet<>();
@@ -503,12 +543,12 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
         if (grayedOut) {
             model.toBackSilent(changedJCells);
         }
-        refreshCells(changedJCells, false);
+        refresh(changedJCells, false);
     }
 
     /**
      * Indicates if this {@link JGraph} is in the course of processing
-     * a {@link #refreshCells(Collection, boolean)}. This allows listeners to ignore the
+     * a {@link #refresh(Collection, boolean)}. This allows listeners to ignore the
      * resulting graph view update, if they wish.
      */
     public boolean isModelRefreshing() {
@@ -534,11 +574,11 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
         CellView[] viewRoots = this.graphLayoutCache.getRoots();
         for (int i = viewRoots.length - 1; result == null && i >= 0; i--) {
             CellView jCellView = viewRoots[i];
-            if (!(jCellView.getCell() instanceof ViewCell)) {
+            if (!(jCellView.getCell() instanceof JCell<?> item)) {
                 continue;
             }
             @SuppressWarnings("unchecked")
-            ViewCell<G> jCell = (ViewCell<G>) jCellView.getCell();
+            ViewCell<G> jCell = (ViewCell<G>) item.getViewCell();
             boolean typeCorrect = vertex
                 ? jCell instanceof ViewVertex
                 : edge
@@ -563,14 +603,181 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
         return getFirstCellForLocation(x, y, false, false);
     }
 
+    @Override
+    public @Nullable ViewCell<G> getCellAt(double x, double y) {
+        return getFirstCellForLocation(x, y);
+    }
+
+    @Override
+    public @Nullable GraphViewModel<G> getViewModel() {
+        var model = getModel();
+        return model == null
+            ? null
+            : model.getViewModel();
+    }
+
+    @Override
+    public GraphViewModel<G> showGraph(G graph) {
+        var model = newModel();
+        model.loadGraph(graph);
+        setModel(model);
+        return model.getViewModel();
+    }
+
+    @Override
+    public GraphViewModel<G> newViewModel() {
+        return newModel().getViewModel();
+    }
+
+    /*
+     * The view model's cell store is the JModel adapter created by this JGraph's
+     * factory, so that is what gets set as the JGraph model.
+     */
+    @Override
+    public void setViewModel(@Nullable GraphViewModel<G> model) {
+        if (model == null) {
+            setModel(null);
+        } else {
+            var store = model.getStore();
+            assert store instanceof JModel : "View model not created by this backend";
+            setModel((JModel<?>) store);
+        }
+    }
+
+    @Override
+    public Collection<? extends ViewCell<G>> getCells() {
+        var model = getModel();
+        return model == null
+            ? Collections.emptyList()
+            : model.getCells();
+    }
+
+    @Override
+    public List<ViewCell<G>> getSelection() {
+        List<ViewCell<G>> result = new ArrayList<>();
+        for (Object cell : getSelectionCells()) {
+            if (cell instanceof JCell<?> item) {
+                @SuppressWarnings("unchecked")
+                ViewCell<G> viewCell = (ViewCell<G>) item.getViewCell();
+                result.add(viewCell);
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public void select(Collection<? extends ViewCell<G>> cells) {
+        setSelectionCells(JCell.items(cells));
+    }
+
+    @Override
+    public void selectElements(Collection<? extends Element> elements) {
+        var model = getNonNullModel();
+        List<ViewCell<G>> cells = new ArrayList<>();
+        for (var elem : elements) {
+            var cell = model.getJCell(elem);
+            if (cell != null) {
+                cells.add(cell);
+            }
+        }
+        if (!cells.isEmpty()) {
+            select(cells);
+        }
+    }
+
+    /* Commits JGraph's in-place editor. */
+    @Override
+    public void finishEditing() {
+        stopEditing();
+    }
+
+    /* Also shows or hides the grid. */
+    @Override
+    public void setGridEnabled(boolean enabled) {
+        super.setGridEnabled(enabled);
+        setGridVisible(enabled);
+    }
+
+    @Override
+    public void startEditing(ViewCell<G> cell) {
+        startEditingAtCell(JCell.of(cell));
+    }
+
+    /* This implementation returns {@code false}; to be overridden by editable canvases. */
+    @Override
+    public boolean hasActiveEditor() {
+        return false;
+    }
+
+    @Override
+    public void scrollTo(Rectangle2D bounds) {
+        scrollRectToVisible(bounds.getBounds());
+    }
+
+    @Override
+    public void scrollTo(ViewCell<G> cell) {
+        scrollToRoot(JCell.of(cell));
+    }
+
+    @Override
+    public void scrollTo(Element element) {
+        final var cell = getNonNullModel().getJCell(element);
+        if (cell != null) {
+            SwingUtilities.invokeLater(() -> scrollCellToVisible(JCell.of(cell)));
+        }
+    }
+
+    @Override
+    public void setOverlay(Overlay overlay) {
+        if (overlay != this.overlay) {
+            this.overlay = overlay;
+            repaint();
+        }
+    }
+
+    /** The overlay drawn over the content. */
+    private Overlay overlay = Overlay.NONE;
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        if (this.overlay == Overlay.HATCHED) {
+            Values.paintHatch(this, g);
+        }
+    }
+
+    @Override
+    public void paintGraph(Graphics2D graphics) {
+        Rectangle2D bounds = getGraphBounds();
+        if (bounds == null) {
+            return;
+        }
+        graphics.translate(-bounds.getMinX(), -bounds.getMinY());
+        double scale = getScale();
+        graphics.scale(1.0 / scale, 1.0 / scale);
+        toScreen(bounds);
+        Object[] selection = getSelectionCells();
+        boolean gridVisible = isGridVisible();
+        boolean doubleBuffered = isDoubleBuffered();
+        setGridVisible(false);
+        clearSelection();
+        // turn off double buffering, otherwise everything gets rasterised
+        setDoubleBuffered(false);
+        paint(graphics);
+        setDoubleBuffered(doubleBuffered);
+        setSelectionCells(selection);
+        setGridVisible(gridVisible);
+    }
+
     /**
      * This method returns the port of the topmost vertex.
      */
     @Override
     public PortView getPortViewAt(double x, double y) {
-        AJVertex<?,?,?,?> vertex = (AJVertex<?,?,?,?>) getFirstCellForLocation(x, y, true, false);
+        var vertex = getFirstCellForLocation(x, y, true, false);
         if (vertex != null) {
-            return (PortView) getGraphLayoutCache().getMapping(vertex.getPort(), false);
+            return (PortView) getGraphLayoutCache()
+                .getMapping(((JVertex<G>) JCell.of(vertex)).getPort(), false);
         } else {
             return null;
         }
@@ -598,6 +805,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
                 // gives trouble when setting the model
                 clearSelection();
                 oldJModel.removeGraphModelListener(getCancelEditListener());
+                oldJModel.removeGraphModelListener(this.canvasEventListener);
             }
             // refreshing the visuals here makes manually set colours go away.
             // It seems more reasonable to ask callers of setModel to do this
@@ -613,6 +821,15 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
             //            }
             if (newJModel != null) {
                 newJModel.addGraphModelListener(getCancelEditListener());
+                newJModel.addGraphModelListener(this.canvasEventListener);
+            }
+            for (var listener : this.canvasListeners) {
+                listener
+                    .viewModelChanged(this, oldJModel == null
+                        ? null
+                        : oldJModel.getViewModel(), newJModel == null
+                            ? null
+                            : newJModel.getViewModel());
             }
             setEnabled(newJModel != null);
             if (newJModel != null && getActions() != null) {
@@ -639,6 +856,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
     /** Convenience method to retrieve the graph from the underlying model.
      * The return value is {@code null} if the model is {@code null} or contains a {@code null} graph.
      */
+    @Override
     public @Nullable G getGraph() {
         var model = getModel();
         return model == null
@@ -650,35 +868,17 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
      * instance for this JGraph.
      */
     public @NonNull JModel<G> newModel() {
-        return getFactory().newModel();
+        return new JModel<>(this) {
+            // empty
+        };
     }
 
     /**
-     * Returns the factory for JGraph-related objects.
-     * The factory is initialised either through {@link #createFactory()}
-     * or through {@link #setFactory}
-     * @return the factory to be used for this JGraph
+     * Callback factory method for the view model of a given JGraph model of this
+     * JGraph, with the model as its cell store.
      */
-    final public JGraphFactory<G> getFactory() {
-        if (this.factory == null) {
-            this.factory = createFactory();
-        }
-        return this.factory;
-    }
+    abstract GraphViewModel<G> createViewModel(CellStore<G> store);
 
-    /**
-     * Sets the factory to be used.
-     * Must be called before the first invocation of {@link #getFactory()}.
-     */
-    final public void setFactory(JGraphFactory<G> factory) {
-        assert this.factory == null;
-        this.factory = factory;
-    }
-
-    /** Callback factory method for the JGraphFactory to be used. */
-    abstract protected JGraphFactory<G> createFactory();
-
-    private JGraphFactory<G> factory;
 
     /**
      * In addition to delegating the method to the label list and to
@@ -771,6 +971,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
      * @return an image object of the jgraph; <tt>null</tt> if this jgraph is
      *         empty.
      */
+    @Override
     public BufferedImage toImage() {
         Rectangle2D bounds = getGraphBounds();
         if (bounds != null) {
@@ -826,9 +1027,9 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
         return getController().getLayouter();
     }
 
-    /** Prototype factory method to create a layouter for this JGraph. */
+    /** Returns the prototype layouter for this JGraph. */
     public Layouter getDefaultLayouter() {
-        return SpringLayouter.PROTOTYPE;
+        return getController().getDefaultLayouter();
     }
 
     /**
@@ -855,25 +1056,15 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
         return getController().doLayout(complete);
     }
 
-    /** Adds a listener to {@link #setMode(JGraphMode)} calls. */
-    public void addJGraphModeListener(PropertyChangeListener listener) {
-        addPropertyChangeListener(JGRAPH_MODE_PROPERTY, listener);
-    }
-
-    /** Removes a listener to {@link #setMode(JGraphMode)} calls. */
-    public void removeJGraphModeListener(PropertyChangeListener listener) {
-        removePropertyChangeListener(JGRAPH_MODE_PROPERTY, listener);
-    }
-
     /**
      * Sets the JGraph mode to a new value.
-     * Fires a property change event for {@link #JGRAPH_MODE_PROPERTY} if the
-     * mode was changed.
+     * Notifies the canvas listeners if the mode was changed.
      * @return {@code true} if the JGraph mode was changed as a result
      * of this call
      */
-    public boolean setMode(JGraphMode mode) {
-        JGraphMode oldMode = this.mode;
+    @Override
+    public boolean setMode(GraphViewMode mode) {
+        GraphViewMode oldMode = this.mode;
         boolean result = mode != oldMode;
         // set the value if it has changed
         if (result) {
@@ -885,7 +1076,11 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
             getController().getModeButton(mode).setSelected(true);
             setCursor(mode.getCursor());
             // fire change only if there was a previous value
-            firePropertyChange(JGRAPH_MODE_PROPERTY, oldMode, mode);
+            if (oldMode != null) {
+                for (var listener : this.canvasListeners) {
+                    listener.modeChanged(this, oldMode, mode);
+                }
+            }
         }
         return result;
     }
@@ -893,7 +1088,8 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
     /**
      * Returns the current JGraph mode.
      */
-    public JGraphMode getMode() {
+    @Override
+    public GraphViewMode getMode() {
         if (this.mode == null) {
             this.mode = getDefaultMode();
         }
@@ -901,30 +1097,19 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
     }
 
     /** Callback method to create the default initial mode for this JGraph. */
-    protected JGraphMode getDefaultMode() {
+    public GraphViewMode getDefaultMode() {
         return SELECT_MODE;
     }
 
     /**
-     * Indicates whether this jgraph is currently registered at the tool tip
-     * manager.
-     * @return <tt>true</tt> if this jgraph is currently registered at the tool
-     *         tip manager
-     */
-    public boolean getToolTipEnabled() {
-        return getController().getToolTipEnabled();
-    }
-
-    /**
      * Registers or unregisters this jgraph with the tool tip manager. The
-     * current registration state can be queried using
-     * <tt>getToolTipEnabled()</tt>
+     * current registration state can be queried on the controller.
      * @param enabled <tt>true</tt> if this jgraph is to be registered with the
      *        tool tip manager
-     * @see #getToolTipEnabled()
      * @see ToolTipManager#registerComponent(javax.swing.JComponent)
      * @see ToolTipManager#unregisterComponent(javax.swing.JComponent)
      */
+    @Override
     public void setToolTipEnabled(boolean enabled) {
         getController().setToolTipEnabled(enabled);
     }
@@ -992,7 +1177,8 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
     private int lastSelectedRoot;
 
     /** Searches for the next selected root and scrolls it into view. */
-    public void scrollToNextSelectedRoot() {
+    @Override
+    public void scrollToNextSelected() {
         int lastSelectedRoot = this.lastSelectedRoot;
         int rootCount = getRoots().length;
         var viewBounds = getViewPortBounds();
@@ -1083,10 +1269,22 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
     /** Changes the scale of the {@link JGraph} by a given
      * increment or decrement.
      */
+    @Override
     public void changeScale(int change) {
         double scale = getScale();
         scale *= Math.pow(ZOOM_FACTOR, change);
         setScale(scale);
+    }
+
+    @Override
+    public @Nullable Point2D getPointerLocation() {
+        if (GraphicsEnvironment.isHeadless()) {
+            return null;
+        }
+        Point position = getMousePosition();
+        return position == null
+            ? null
+            : fromScreen(new Point2D.Double(position.x, position.y));
     }
 
     /** Shows a popup menu if the event is a popup trigger. */
@@ -1094,7 +1292,11 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
         if (isPopupMenuEvent(evt) && getActions() != null) {
             getUI().cancelEdgeAdding();
             Point atPoint = evt.getPoint();
-            getController().createPopupMenu(atPoint).getPopupMenu().show(this, atPoint.x, atPoint.y);
+            Point2D graphPoint = fromScreen(new Point2D.Double(atPoint.x, atPoint.y));
+            getController()
+                .createPopupMenu(graphPoint)
+                .getPopupMenu()
+                .show(this, atPoint.x, atPoint.y);
         }
     }
 
@@ -1114,6 +1316,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
      * of this JGraph.
      * @param action the action to be added
      */
+    @Override
     public void addAccelerator(Action action) {
         Object actionName = action.getValue(Action.NAME);
         KeyStroke actionKey = (KeyStroke) action.getValue(Action.ACCELERATOR_KEY);
@@ -1129,7 +1332,13 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
 
     @Override
     public void startEditingAtCell(Object cell) {
-        firePropertyChange(CELL_EDIT_PROPERTY, null, cell);
+        if (cell instanceof JCell<?> item) {
+            @SuppressWarnings("unchecked")
+            ViewCell<G> viewCell = (ViewCell<G>) item.getViewCell();
+            for (var listener : this.canvasListeners) {
+                listener.editingStarted(this, viewCell);
+            }
+        }
         getUI().cancelEdgeAdding();
         super.startEditingAtCell(cell);
     }
@@ -1177,26 +1386,24 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
 
     /** Clear all intermediate points from all edges. */
     public void clearAllEdgePoints() {
-        var model = getModel();
-        assert model != null;
-        Map<ViewCell<G>,AttributeMap> change = new HashMap<>();
-        for (ViewCell<G> jCell : model.getRoots()) {
+        Map<ViewCell<G>,VisualMap> change = new HashMap<>();
+        for (var jCell : getCells()) {
             if (jCell instanceof ViewEdge) {
-                VisualMap visuals = jCell.getVisuals();
-                List<Point2D> points = visuals.getPoints();
+                List<Point2D> points = jCell.getVisuals().getPoints();
                 // don't make the change directly in the cell,
                 // as this messes up the undo history
-                List<Point2D> newPoints
-                    = Arrays.asList(points.get(0), points.get(points.size() - 1));
-                AttributeMap newAttributes = new AttributeMap();
-                GraphConstants.setPoints(newAttributes, newPoints);
-                change.put(jCell, newAttributes);
+                VisualMap newVisuals = new VisualMap();
+                newVisuals
+                    .setPoints(new ArrayList<>(Arrays
+                        .asList(points.get(0), points.get(points.size() - 1))));
+                change.put(jCell, newVisuals);
             }
         }
-        model.edit(change, null, null, null);
+        edit(change);
     }
 
     /** Sets the layouting flag to the given value. */
+    @Override
     public void setLayouting(boolean layouting) {
         var model = getModel();
         assert model != null;
@@ -1220,15 +1427,22 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
     }
 
     /** Returns the layouting status of this jGraph. */
+    @Override
     public boolean isLayouting() {
         return this.layouting;
+    }
+
+    /* The JGraph backend contributes the layouts of the JGraph layout library. */
+    @Override
+    public List<Layouter> getBackendLayouters() {
+        return LayoutKind.getPrototypes();
     }
 
     /** Flag indicating if the JGraph is being layouted. */
     private boolean layouting;
 
     /** The manipulation mode of the JGraph. */
-    private JGraphMode mode;
+    private GraphViewMode mode;
     /** Flag indicating that a model refresh is being executed. */
     private boolean modelRefreshing;
 
@@ -1239,10 +1453,6 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
      * Property name of the JGraph mode.
      * Values are of type {@link GraphRole}.
      */
-    static public final String JGRAPH_MODE_PROPERTY = "JGraphMode";
-    /** Property name for the pseudo-property that signals a cell edit has started. */
-    static public final String CELL_EDIT_PROPERTY = "editedCell";
-
     /** Listener class that cancels the edge adding mode on various occasions. */
     private final class CancelEditListener extends KeyAdapter implements GraphModelListener {
         @Override
@@ -1287,7 +1497,18 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
             Object[] selectedCells = getSelectionCells();
             if (selectedCells.length > 0) {
                 getSelectionModel().removeGraphSelectionListener(this);
-                getGraphLayoutCache().setVisible(selectedCells, true);
+                // show the selected cells that the layout cache hides; showing cells
+                // that are already visible would post a spurious undoable edit
+                var cache = getGraphLayoutCache();
+                List<Object> hiddenCells = new ArrayList<>();
+                for (Object cell : selectedCells) {
+                    if (cache.getMapping(cell, false) == null) {
+                        hiddenCells.add(cell);
+                    }
+                }
+                if (!hiddenCells.isEmpty()) {
+                    cache.setVisible(hiddenCells.toArray(), true);
+                }
                 // reorder the roots so the selected cells come last
                 var model = getModel();
                 assert model != null;
@@ -1317,8 +1538,8 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
             for (int i = 0; i < cells.length; i++) {
                 Object c = cells[i];
                 boolean selected = e.isAddedCell(i);
-                if (c instanceof ViewCell<?> jCell) {
-                    jCell.putVisual(VisualKey.EMPHASIS, selected);
+                if (c instanceof JCell<?> item) {
+                    item.getViewCell().putVisual(VisualKey.EMPHASIS, selected);
                 }
                 if (selected && (selectedCell == null || isCellInView(viewBounds, c))) {
                     selectedCell = c;
@@ -1331,40 +1552,61 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
     }
 
     /**
-     * Listener that causes all cells of a JGraph to be refreshed
-     * on activation.
+     * Adapter that forwards JGraph selection and model events to the canvas listeners.
      */
-    public static class RefreshListener implements ItemListener, PropertyChangeListener {
-        /** Constructs a listener for a given JGraph. */
-        public RefreshListener(JGraph<?> jGraph) {
-            this.jGraph = jGraph;
-        }
-
+    private class CanvasEventListener implements GraphSelectionListener, GraphModelListener {
         @Override
-        public void itemStateChanged(ItemEvent e) {
-            if (this.jGraph.isEnabled()) {
-                doRefresh();
+        public void valueChanged(GraphSelectionEvent e) {
+            for (var listener : JGraph.this.canvasListeners) {
+                listener.selectionChanged(JGraph.this);
             }
         }
 
         @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(AccessibleState.ENABLED.toDisplayString())
-                && this.jGraph.isEnabled()) {
-                doRefresh();
+        public void graphChanged(GraphModelEvent e) {
+            if (JGraph.this.canvasListeners.isEmpty()) {
+                return;
+            }
+            var jChange = e.getChange();
+            List<ViewCell<G>> inserted = toViewCells(jChange.getInserted());
+            List<ViewCell<G>> removed = toViewCells(jChange.getRemoved());
+            // JGraph's changed cells include the inserted and removed ones
+            Set<Object> structural = new HashSet<>(inserted);
+            structural.addAll(removed);
+            List<ViewCell<G>> modified = new ArrayList<>();
+            for (ViewCell<G> cell : toViewCells(jChange.getChanged())) {
+                if (!structural.contains(cell)) {
+                    modified.add(cell);
+                }
+            }
+            var change = new CellChange<>(inserted, modified, removed);
+            for (var listener : JGraph.this.canvasListeners) {
+                listener.cellsChanged(JGraph.this, change);
             }
         }
 
-        /** Callback option to refresh as this listener demands. */
-        protected void doRefresh() {
-            var model = this.jGraph.getModel();
-            assert model != null;
-            model.refreshVisuals();
-            this.jGraph.refreshAllCells(true);
+        /** Collects the view cells from a (possibly {@code null}) array of JGraph cells;
+         * the array may also contain ports, which are skipped. */
+        private List<ViewCell<G>> toViewCells(Object @Nullable [] cells) {
+            List<ViewCell<G>> result = new ArrayList<>();
+            if (cells != null) {
+                for (Object cell : cells) {
+                    if (cell instanceof JCell<?> item) {
+                        @SuppressWarnings("unchecked")
+                        ViewCell<G> viewCell = (ViewCell<G>) item.getViewCell();
+                        result.add(viewCell);
+                    }
+                }
+            }
+            return result;
         }
+    }
 
-        /** The JGraph to be refreshed. */
-        protected final JGraph<?> jGraph;
+    /** Notifies the canvas listeners that the shown graph was rebuilt or reloaded. */
+    protected void notifyGraphChanged() {
+        for (var listener : this.canvasListeners) {
+            listener.graphChanged(this);
+        }
     }
 
     /** Interface for obtaining display attributes for graph elements. */

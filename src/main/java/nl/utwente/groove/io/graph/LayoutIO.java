@@ -109,7 +109,6 @@ public class LayoutIO {
             throw new FormatException("Unknown node " + parts[1]);
         }
         Rectangle bounds = toBounds(parts, 2);
-        // bounds.setSize(JAttr.DEFAULT_NODE_SIZE);
         if (bounds == null) {
             throw new FormatException("Bounds for " + parts[1] + " cannot be parsed");
         }

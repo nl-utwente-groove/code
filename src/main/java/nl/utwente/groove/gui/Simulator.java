@@ -82,18 +82,17 @@ import nl.utwente.groove.gui.display.Display;
 import nl.utwente.groove.gui.display.Display.ListPanel;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.display.DisplaysPanel;
-import nl.utwente.groove.gui.display.GraphEditorTab;
-import nl.utwente.groove.gui.display.GraphTab;
-import nl.utwente.groove.gui.display.JGraphPanel;
+import nl.utwente.groove.gui.display.GraphDisplay;
+import nl.utwente.groove.gui.display.GraphPanel;
 import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.gui.display.TextTab;
-import nl.utwente.groove.gui.export.JGraphExporters;
-import nl.utwente.groove.gui.jgraph.AspectJGraph;
-import nl.utwente.groove.gui.jgraph.JGraph;
+import nl.utwente.groove.gui.export.CanvasExporters;
 import nl.utwente.groove.gui.list.ErrorEntry;
 import nl.utwente.groove.gui.list.ListTabbedPane;
 import nl.utwente.groove.gui.menu.ModelCheckingMenu;
 import nl.utwente.groove.gui.menu.MyJMenu;
+import nl.utwente.groove.gui.view.AspectGraphCanvas;
+import nl.utwente.groove.gui.view.GraphCanvas;
 import nl.utwente.groove.gui.prolog.GuiPredicates;
 import nl.utwente.groove.lts.GraphNextState;
 import nl.utwente.groove.lts.GraphState;
@@ -101,6 +100,7 @@ import nl.utwente.groove.lts.RuleTransitionLabel;
 import nl.utwente.groove.transform.oracle.OracleParser;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.AddOn;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.gui.list.SearchResult;
@@ -125,8 +125,8 @@ public class Simulator implements SimulatorListener {
         }
         instantiated = true;
         // the simulator can export by rendering, so it contributes
-        // the JGraph-based exporters to the exporter registry
-        JGraphExporters.register();
+        // the canvas-based exporters to the exporter registry
+        CanvasExporters.register();
         // contribute the GUI-bound prolog predicates (show_graph)
         GuiPredicates.register();
         // contribute the (UI-bound) dialog value oracle
@@ -219,6 +219,8 @@ public class Simulator implements SimulatorListener {
         getFrame().pack();
         nl.utwente.groove.gui.UserSettings.applyUserSettings(this);
         getFrame().setVisible(true);
+        // the question about the yFiles add-on, once the frame is there to own it
+        SwingUtilities.invokeLater(getAddOnInstaller()::promptOnFirstRun);
     }
 
     /** Returns the store of actions for this simulator. */
@@ -504,15 +506,9 @@ public class Simulator implements SimulatorListener {
             getModel().doSelectSet(resource, names);
             var resourceTab = resourceDisplay.getSelectedTab();
             if (resourceTab != null) {
-                if (resource.isGraphBased()) {
-                    AspectJGraph jGraph;
-                    if (resourceTab.isEditor()) {
-                        jGraph = ((GraphEditorTab) resourceTab).getJGraph();
-                    } else {
-                        jGraph = ((GraphTab) resourceTab).getJGraph();
-                    }
+                if (resourceTab instanceof GraphDisplay<?> graphDisplay) {
                     // select the error cell and switch to the panel
-                    jGraph.setSelectionCells(entry.getElements());
+                    graphDisplay.getCanvas().selectElements(entry.getElements());
                     resourceTab.setPropertyKey(entry.getPropertyKey());
                 } else if (entry instanceof ErrorEntry errorEntry) {
                     var numbers = errorEntry.getError().getNumbers();
@@ -612,7 +608,7 @@ public class Simulator implements SimulatorListener {
     /**
      * Creates and returns an edit menu for the menu bar. The menu is filled
      * out each time it gets selected so as to be sure it applies to the current
-     * jgraph.
+     * graph view.
      * @see #fillEditMenu(MyJMenu)
      */
     private MyJMenu createEditMenu() {
@@ -665,11 +661,10 @@ public class Simulator implements SimulatorListener {
         menu.add(this.actions.getEditRulePropertiesAction());
 
         // add graph edit menu when appropriate
-        JGraphPanel<?> panel = getDisplaysPanel().getGraphPanel();
+        GraphPanel<?> panel = getDisplaysPanel().getGraphPanel();
         if (panel != null) {
-            JGraph<?> jGraph = panel.getJGraph();
-            if (jGraph instanceof AspectJGraph) {
-                menu.addSubmenu(((AspectJGraph) jGraph).getController().createEditMenu(null));
+            if (panel.getCanvas() instanceof AspectGraphCanvas canvas) {
+                menu.addSubmenu(canvas.getController().createEditMenu(null));
             }
         }
 
@@ -681,7 +676,7 @@ public class Simulator implements SimulatorListener {
     /**
      * Creates and returns a display menu for the menu bar. The menu is filled
      * out each time it gets selected so as to be sure it applies to the current
-     * jgraph
+     * graph view
      * @see #fillDisplayMenu(MyJMenu)
      */
     private MyJMenu createDisplayMenu() {
@@ -702,11 +697,11 @@ public class Simulator implements SimulatorListener {
      * Fills the show menu with items (upon refresh).
      */
     private void fillDisplayMenu(MyJMenu menu) {
-        JGraphPanel<?> panel = getDisplaysPanel().getGraphPanel();
+        GraphPanel<?> panel = getDisplaysPanel().getGraphPanel();
         if (panel != null) {
-            JGraph<?> jGraph = panel.getJGraph();
-            menu.add(jGraph.getController().createShowHideMenu());
-            menu.add(jGraph.getController().createZoomMenu());
+            GraphCanvas<?> canvas = panel.getCanvas();
+            menu.add(canvas.getController().createShowHideMenu());
+            menu.add(canvas.getController().createZoomMenu());
         }
         menu.addSubmenu(createOptionsMenu());
     }
@@ -753,8 +748,25 @@ public class Simulator implements SimulatorListener {
         }
         result.addSeparator();
         result.add(getOptions().getItem(DELETE_RESOURCE_OPTION));
+        // the backend choice exists only if there is a choice
+        JMenu backendMenu = new BackendChooser(getFrame(), AddOn.YFILES).createMenu();
+        if (backendMenu != null) {
+            result.add(backendMenu);
+        }
+        result.add(getAddOnInstaller().createMenu());
         return result;
     }
+
+    /** Returns (after lazily creating) the installer of the yFiles add-on. */
+    private AddOnInstaller getAddOnInstaller() {
+        var result = this.addOnInstaller;
+        if (result == null) {
+            this.addOnInstaller = result = new AddOnInstaller(getFrame(), AddOn.YFILES);
+        }
+        return result;
+    }
+
+    private AddOnInstaller addOnInstaller;
 
     /**
      * Creates and returns an exploration menu for the menu bar.

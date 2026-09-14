@@ -22,6 +22,7 @@ module nl.utwente.groove {
     exports nl.utwente.groove.gui.look;
     exports nl.utwente.groove.gui.tree;
     exports nl.utwente.groove.gui.view;
+    exports nl.utwente.groove.gui.view.cell;
     exports nl.utwente.groove.algebra.syntax;
     exports nl.utwente.groove.explore;
     exports nl.utwente.groove.util.line;
@@ -53,7 +54,6 @@ module nl.utwente.groove {
     exports nl.utwente.groove.annotation;
     exports nl.utwente.groove.graph.plain;
     exports nl.utwente.groove.verify;
-    exports nl.utwente.groove.gui.jgraph;
     exports nl.utwente.groove.prolog.builtin;
     exports nl.utwente.groove.grammar.aspect;
     exports nl.utwente.groove.io;
@@ -86,6 +86,9 @@ module nl.utwente.groove {
     uses nl.utwente.groove.grammar.model.ResourceValidator;
     provides nl.utwente.groove.grammar.model.ResourceValidator
         with nl.utwente.groove.prolog.PrologValidator;
+    uses nl.utwente.groove.gui.view.GraphBackend;
+    provides nl.utwente.groove.gui.view.GraphBackend
+        with nl.utwente.groove.gui.jgraph.JGraphBackend;
 
     requires antlr.complete;
     requires antlrworks;
@@ -95,9 +98,10 @@ module nl.utwente.groove {
     requires transitive java.desktop;
     requires transitive java.prefs;
     requires java.logging;
+    requires java.net.http;
     requires java.xml;
     requires com.formdev.flatlaf;
-    requires transitive jgraph;
+    requires jgraph;
     requires ltl2buchi;
     requires org.eclipse.emf.common;
     requires org.eclipse.emf.ecore;

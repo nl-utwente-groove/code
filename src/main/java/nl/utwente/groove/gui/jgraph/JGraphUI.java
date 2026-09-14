@@ -19,8 +19,8 @@ package nl.utwente.groove.gui.jgraph;
 import static java.awt.event.MouseEvent.BUTTON1;
 import static java.awt.event.MouseEvent.BUTTON3;
 import static nl.utwente.groove.gui.jgraph.JAttr.EXTRA_BORDER_SPACE;
-import static nl.utwente.groove.gui.jgraph.JGraphMode.EDIT_MODE;
-import static nl.utwente.groove.gui.jgraph.JGraphMode.PAN_MODE;
+import static nl.utwente.groove.gui.view.GraphViewMode.EDIT_MODE;
+import static nl.utwente.groove.gui.view.GraphViewMode.PAN_MODE;
 import static nl.utwente.groove.gui.jgraph.JGraphUI.DragMode.EDGE;
 import static nl.utwente.groove.gui.jgraph.JGraphUI.DragMode.MOVE;
 import static nl.utwente.groove.gui.jgraph.JGraphUI.DragMode.PAN;
@@ -56,11 +56,13 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.jgraph.graph.CellView;
 import org.jgraph.plaf.basic.BasicGraphUI;
 
+import nl.utwente.groove.gui.view.GraphViewMode;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.gui.Icons;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.gui.view.AspectViewEdge;
 import nl.utwente.groove.gui.view.ViewCell;
-import nl.utwente.groove.gui.view.ViewEdge;
 import nl.utwente.groove.gui.view.ViewVertex;
 
 /** Adapted UI for JGraphs. */
@@ -70,7 +72,26 @@ public class JGraphUI<G extends @NonNull Graph> extends BasicGraphUI {
         return (JGraph<G>) this.graph;
     }
 
-    private JGraphMode getJGraphMode() {
+    /*
+     * Overridden to settle a pending insertion of the view model when the in-place
+     * editor closes: a cell created for the editor is recorded with its first
+     * label, or withdrawn if the editor gave it none (an edge) or was cancelled.
+     * The value of a stopped editor reaches the model before this, through the
+     * layout cache and the model's edit.
+     */
+    @Override
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    protected void completeEditing(boolean messageStop, boolean messageCancel,
+                                   boolean messageGraph) {
+        boolean wasEditing = this.editingComponent != null;
+        super.completeEditing(messageStop, messageCancel, messageGraph);
+        var viewModel = getJGraph().getViewModel();
+        if (wasEditing && viewModel != null) {
+            viewModel.settlePendingInsertion();
+        }
+    }
+
+    private GraphViewMode getGraphViewMode() {
         return getJGraph().getMode();
     }
 
@@ -198,7 +219,7 @@ public class JGraphUI<G extends @NonNull Graph> extends BasicGraphUI {
                 return;
             }
             boolean addEdge = false;
-            if (getJGraphMode() == EDIT_MODE && e.getButton() == BUTTON1) {
+            if (getGraphViewMode() == EDIT_MODE && e.getButton() == BUTTON1) {
                 // this is an editing-related event
                 AspectJGraph jGraph = (AspectJGraph) getJGraph();
                 if (isEdgeAdding() && e.getClickCount() == 1) {
@@ -208,12 +229,13 @@ public class JGraphUI<G extends @NonNull Graph> extends BasicGraphUI {
                     // add or remove an edge point
                     ViewCell<G> jEdge = getJEdgeAt(e.getPoint());
                     Object selectedCell = getJGraph().getSelectionCell();
-                    if (selectedCell instanceof ViewEdge) {
-                        AspectJEdge selectedEdge = (AspectJEdge) selectedCell;
-                        if (selectedCell == jEdge) {
-                            jGraph.getController().getRemovePointAction(e.getPoint()).execute(selectedEdge);
+                    if (selectedCell instanceof JEdge<?> selectedItem
+                        && selectedItem.getViewCell() instanceof AspectViewEdge selectedEdge) {
+                        Point2D at = jGraph.fromScreen(new Point2D.Double(e.getX(), e.getY()));
+                        if (selectedEdge == jEdge) {
+                            jGraph.getController().getRemovePointAction().execute(selectedEdge, at);
                         } else {
-                            jGraph.getController().getAddPointAction(e.getPoint()).execute(selectedEdge);
+                            jGraph.getController().getAddPointAction().execute(selectedEdge, at);
                         }
                     }
                 } else if (getJCellAt(e.getPoint()) != null) {
@@ -225,7 +247,7 @@ public class JGraphUI<G extends @NonNull Graph> extends BasicGraphUI {
                         addEdge
                             = jCell instanceof ViewVertex && !e.isControlDown() && !e.isShiftDown();
                     }
-                    case 2 -> jGraph.startEditingAtCell(jCell);
+                    case 2 -> jGraph.startEditingAtCell(JCell.of(jCell));
                     default -> { // nothing happens
                     }
                     }
@@ -270,15 +292,15 @@ public class JGraphUI<G extends @NonNull Graph> extends BasicGraphUI {
             DragMode newDragMode;
             ViewCell<G> jVertex = getJVertexAt(e.getPoint());
             ViewCell<G> jEdge = getJEdgeAt(e.getPoint());
-            if (getJGraphMode() == PAN_MODE && e.getButton() == BUTTON1) {
+            if (getGraphViewMode() == PAN_MODE && e.getButton() == BUTTON1) {
                 newDragMode = PAN;
             } else if (jVertex != null || jEdge != null) {
                 // either start adding an edge, or move
-                if (getJGraphMode() == EDIT_MODE && e.getButton() == BUTTON1
+                if (getGraphViewMode() == EDIT_MODE && e.getButton() == BUTTON1
                     && !ADD_EDGE_BY_CLICK) {
                     if (jEdge != null) {
                         newDragMode = MOVE;
-                    } else if (getJGraph().isCellSelected(jVertex)) {
+                    } else if (getJGraph().isCellSelected(JCell.of(jVertex))) {
                         newDragMode = EDGE;
                     } else if (e.isAltDown()) {
                         newDragMode = EDGE;
@@ -319,12 +341,12 @@ public class JGraphUI<G extends @NonNull Graph> extends BasicGraphUI {
                     // we give preference to selected cells, since otherwise
                     // we will never be able to drag edge points
                     ViewCell<G> cell = getJEdgeAt(this.dragStart.getPoint());
-                    if (cell == null || !getJGraph().getSelectionModel().isCellSelected(cell)) {
+                    if (cell == null || !getJGraph().isCellSelected(JCell.of(cell))) {
                         cell = getJCellAt(this.dragStart.getPoint());
                         getJGraph().setCursor(Icons.HAND_CLOSED_CURSOR);
                     }
-                    if (!getJGraph().isCellSelected(cell)) {
-                        getJGraph().setSelectionCell(cell);
+                    if (cell != null && !getJGraph().isCellSelected(JCell.of(cell))) {
+                        getJGraph().setSelectionCell(JCell.of(cell));
                     }
                     getHandle().mousePressed(this.dragStart);
                 }
@@ -430,7 +452,7 @@ public class JGraphUI<G extends @NonNull Graph> extends BasicGraphUI {
         @SuppressWarnings("unchecked")
         private void completeSelect(MouseEvent evt) {
             Rectangle bounds = this.selectHandler.getBounds();
-            if (getJGraphMode() == PAN_MODE) {
+            if (getGraphViewMode() == PAN_MODE) {
                 getJGraph().zoomTo(bounds);
             } else {
                 // adapt the bound to the scale
@@ -439,8 +461,9 @@ public class JGraphUI<G extends @NonNull Graph> extends BasicGraphUI {
                 ArrayList<ViewCell<G>> list = new ArrayList<>();
                 CellView[] views = getJGraph().getGraphLayoutCache().getRoots();
                 for (int i = 0; i < views.length; i++) {
-                    if (bounds.contains(views[i].getBounds())) {
-                        list.add((ViewCell<G>) views[i].getCell());
+                    if (bounds.contains(views[i].getBounds())
+                        && views[i].getCell() instanceof JCell<?> item) {
+                        list.add((ViewCell<G>) item.getViewCell());
                     }
                 }
                 selectCellsForEvent(list, evt);
@@ -460,13 +483,13 @@ public class JGraphUI<G extends @NonNull Graph> extends BasicGraphUI {
             } else if (isToggleSelectionEvent(evt)) {
                 for (ViewCell<G> jCell : nonGrayCells) {
                     if (!jCell.isGrayedOut()) {
-                        toggleSelectionCellForEvent(jCell, evt);
+                        toggleSelectionCellForEvent(JCell.of(jCell), evt);
                     }
                 }
             } else if (isAddToSelectionEvent(evt)) {
-                getJGraph().addSelectionCells(nonGrayCells.toArray());
+                getJGraph().addSelectionCells(JCell.items(nonGrayCells));
             } else {
-                getJGraph().setSelectionCells(nonGrayCells.toArray());
+                getJGraph().setSelectionCells(JCell.items(nonGrayCells));
             }
         }
 
@@ -821,7 +844,9 @@ public class JGraphUI<G extends @NonNull Graph> extends BasicGraphUI {
          */
         private JVertexView vertexAt(Point2D p) {
             ViewCell<?> jCell = this.canvas.getFirstCellForLocation(p.getX(), p.getY(), true, false);
-            return (JVertexView) this.canvas.getGraphLayoutCache().getMapping(jCell, false);
+            return jCell == null
+                ? null
+                : (JVertexView) this.canvas.getGraphLayoutCache().getMapping(JCell.of(jCell), false);
         }
 
         /** the canvas where the rubber band will be drawn onto */
