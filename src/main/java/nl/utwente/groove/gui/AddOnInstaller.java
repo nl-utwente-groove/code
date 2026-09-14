@@ -260,15 +260,23 @@ public class AddOnInstaller {
         }
     }
 
+    /**
+     * Reports a successful installation, having selected the add-on's backend for the
+     * next start: installing the add-on is what a user does to use it, whatever an
+     * earlier choice was.
+     */
     private void reportInstalled(Outcome outcome) {
+        Options.userPrefs.put(Options.GRAPH_BACKEND_OPTION, this.addOn.getName());
         String name = this.addOn.getDisplayName();
         Path ext = Extensions.dir();
         String message = switch (outcome) {
         case DONE -> INSTALLED_REPORT
-            .formatted(name, this.addOn.getDir(ext).toUri(), this.addOn.getNoticeName());
+            .formatted(name, this.addOn.getDir(ext).toUri(), this.addOn.getNoticeName(),
+                       Options.DISPLAY_MENU_NAME, Options.GRAPH_BACKEND_OPTION);
         case DEFERRED -> DEFERRED_REPORT
             .formatted(name, Extensions.pendingInstallDir(ext, this.addOn.getName()).toUri(),
-                       this.addOn.getNoticeName());
+                       this.addOn.getNoticeName(), Options.DISPLAY_MENU_NAME,
+                       Options.GRAPH_BACKEND_OPTION);
         };
         JOptionPane
             .showMessageDialog(this.frame, createMessagePane(message), name + " installed",
@@ -420,7 +428,8 @@ public class AddOnInstaller {
     /**
      * HTML template of the report of a successful installation. The parameters are, in
      * order: the add-on's display name, its installation directory as a URI (a plain path
-     * is no valid link target), and the file name of its notice. Line breaks in the
+     * is no valid link target), the file name of its notice, and the names of the menu
+     * and submenu where the backend choice can be changed. Line breaks in the
      * template are white space to the HTML pane of
      * {@link #createMessagePane}.
      */
@@ -428,7 +437,8 @@ public class AddOnInstaller {
         = """
             <html><body style='width: 400px'>
             The %1$s is installed in <a href="%2$s">GROOVE's extension folder</a>
-            and will be available after a restart of the Simulator.<br><br>
+            and selected as graph backend from the next start of the Simulator on
+            (the choice can be changed under %4$s &gt; %5$s).<br><br>
             The use of this backend is restricted to non-commercial purposes; see <a href="%2$s%3$s">%3$s</a>
             (in the extension folder) for more information.
             </body></html>
@@ -444,7 +454,8 @@ public class AddOnInstaller {
             The %1$s is unpacked into <a href="%2$s">GROOVE's extension folder</a>,
             but the previously installed version is in use, by this or another running GROOVE,
             and cannot be replaced now; the new version is installed at the next start of GROOVE
-            and available from then on.<br><br>
+            and selected as graph backend from then on
+            (the choice can be changed under %4$s &gt; %5$s).<br><br>
             The use of this backend is restricted to non-commercial purposes; see <a href="%2$s%3$s">%3$s</a>
             (in the extension folder) for more information.
             </body></html>

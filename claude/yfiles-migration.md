@@ -485,6 +485,18 @@ Four commits, one per implementation slice of that note:
    reactivate for one pending removal, install for an absent one, both update and
    remove for a stale one. The deferral test runs on Windows only, by assumption; CI is
    Linux, where open files delete fine and the deferral never happens.
+6. **Backend chooser** (2026-09-14, branch `backend-chooser-states`): the `Graph
+   backend` submenu moved out of `Options`, where it was built once at start-up from
+   the backends loaded in this run, into `gui.BackendChooser`, which builds it afresh
+   each time the View menu opens, so that it appears as soon as the add-on is
+   installed. It offers the loaded backends plus the add-on's if
+   `AddOn.loadsAtNextStart` says so (directory contents now, overridden by a pending
+   operation, since a rescan would apply the pending operations) and shows three
+   states per item: the radio mark for the backend in use, the suffix `(from next
+   start)` for the one the start-up selection (`GraphBackend.selectName`, the
+   name-based form of the selection) will pick, nothing for the rest. A successful
+   installation sets the preference to the add-on's backend, which is why the add-on's
+   name doubles as its backend's name.
 
 **Verified**: the obfuscated jars work from the child loader (Imager on the ferryman
 grammar), a stale add-on gives one warning and a JGraph fallback, and the standard app
