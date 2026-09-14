@@ -953,6 +953,8 @@ public class Options implements Cloneable {
     static public final String INSTALL_ADDON_FILE_ACTION_NAME = "Install from file...";
     /** Name of the action removing the yFiles add-on. */
     static public final String REMOVE_ADDON_ACTION_NAME = "Remove";
+    /** Name of the action cancelling a pending removal of the yFiles add-on. */
+    static public final String REACTIVATE_ADDON_ACTION_NAME = "Reactivate";
     /**
      * User preference holding the GROOVE version for which the user was last asked
      * whether to install the yFiles add-on (see {@link AddOnInstaller}).

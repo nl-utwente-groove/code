@@ -47,6 +47,8 @@ import nl.utwente.groove.gui.dialog.ProgressBarDialog;
 import nl.utwente.groove.gui.dialog.SwingExtensionFilter;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.AddOn;
+import nl.utwente.groove.util.AddOn.Outcome;
+import nl.utwente.groove.util.AddOn.Pending;
 import nl.utwente.groove.util.AddOn.Status;
 import nl.utwente.groove.util.Extensions;
 import nl.utwente.groove.util.Version;
@@ -79,34 +81,50 @@ public class AddOnInstaller {
     private final AddOn addOn;
 
     /**
-     * Creates the menu of this installer, for the options part of the View menu. The items are refreshed
-     * whenever the menu is opened, since the installer changes what they act on.
+     * Creates the menu of this installer, for the options part of the View menu. The items
+     * are put in whenever the menu is opened, since the installer changes what applies:
+     * an add-on that is installed can only be removed, one with a pending removal only
+     * reactivated, one that is absent only installed; only a stale add-on can be both
+     * updated and removed.
      */
     public JMenu createMenu() {
         JMenu result = new JMenu(Options.YFILES_ADDON_MENU_NAME);
         JMenuItem downloadItem = new JMenuItem(Options.DOWNLOAD_ADDON_ACTION_NAME);
         downloadItem.addActionListener(e -> download());
+        downloadItem.setToolTipText("From " + this.addOn.getDownloadUri(Version.NUMBER));
         JMenuItem fileItem = new JMenuItem(Options.INSTALL_ADDON_FILE_ACTION_NAME);
         fileItem.addActionListener(e -> installFromFile());
         JMenuItem removeItem = new JMenuItem(Options.REMOVE_ADDON_ACTION_NAME);
         removeItem.addActionListener(e -> remove());
-        result.add(downloadItem);
-        result.add(fileItem);
-        result.add(removeItem);
+        JMenuItem reactivateItem = new JMenuItem(Options.REACTIVATE_ADDON_ACTION_NAME);
+        reactivateItem.addActionListener(e -> reactivate());
         result.addMenuListener(new MenuListener() {
             // the listener's parameters are unconstrained, hence nullable here
             @Override
             public void menuSelected(@Nullable MenuEvent e) {
+                result.removeAll();
+                Path ext = Extensions.dir();
+                AddOn addOn = AddOnInstaller.this.addOn;
                 Status status = getStatus();
-                downloadItem
-                    .setText(status == Status.STALE
-                        ? Options.UPDATE_ADDON_ACTION_NAME
-                        : Options.DOWNLOAD_ADDON_ACTION_NAME);
-                downloadItem
-                    .setToolTipText("From "
-                        + AddOnInstaller.this.addOn.getDownloadUri(Version.NUMBER));
-                removeItem.setEnabled(AddOnInstaller.this.addOn.isPresent(Extensions.dir()));
-                removeItem.setToolTipText(describeStatus(status));
+                boolean present = addOn.isPresent(ext);
+                String description = describeStatus(status, present);
+                if (addOn.getPending(ext) == Pending.REMOVE) {
+                    reactivateItem.setToolTipText(description);
+                    result.add(reactivateItem);
+                    return;
+                }
+                if (status == Status.STALE || !present) {
+                    downloadItem
+                        .setText(status == Status.STALE
+                            ? Options.UPDATE_ADDON_ACTION_NAME
+                            : Options.DOWNLOAD_ADDON_ACTION_NAME);
+                    result.add(downloadItem);
+                    result.add(fileItem);
+                }
+                if (present) {
+                    removeItem.setToolTipText(description);
+                    result.add(removeItem);
+                }
             }
 
             @Override
@@ -135,7 +153,8 @@ public class AddOnInstaller {
             return;
         }
         Status status = getStatus();
-        if (status == Status.INSTALLED) {
+        if (status == Status.INSTALLED
+            || this.addOn.getPending(Extensions.dir()) == Pending.INSTALL) {
             return;
         }
         if (Version.NUMBER.equals(Options.userPrefs.get(Options.YFILES_ADDON_ASKED_OPTION, null))) {
@@ -210,22 +229,47 @@ public class AddOnInstaller {
         if (answer != JOptionPane.YES_OPTION) {
             return;
         }
+        String name = this.addOn.getDisplayName();
         try {
-            if (this.addOn.uninstall(Extensions.dir())) {
-                JOptionPane
-                    .showMessageDialog(this.frame, "The " + this.addOn.getDisplayName()
-                        + " is removed; the change takes effect at the next start of GROOVE.",
-                                       this.addOn.getDisplayName() + " removed",
-                                       JOptionPane.INFORMATION_MESSAGE);
-            }
+            String message = switch (this.addOn.uninstall(Extensions.dir())) {
+            case DONE -> "The " + name
+                + " is removed; the change takes effect at the next start of GROOVE.";
+            case DEFERRED -> "The files of the " + name
+                + " are in use, by this or another running GROOVE, and cannot be deleted now;"
+                + " the " + name + " is removed at the next start of GROOVE."
+                + " Until then, it can be reactivated from the menu.";
+            };
+            JOptionPane
+                .showMessageDialog(this.frame, message, name + " removed",
+                                   JOptionPane.INFORMATION_MESSAGE);
         } catch (IOException exc) {
-            reportError("Removal of the " + this.addOn.getDisplayName() + " failed", exc);
+            reportError("Removal of the " + name + " failed", exc);
         }
     }
 
-    private void reportInstalled(Path dir) {
+    /** Cancels a pending removal of the add-on; reports the outcome in a dialog. */
+    public void reactivate() {
         String name = this.addOn.getDisplayName();
-        String message = INSTALLED_REPORT.formatted(name, dir.toUri(), this.addOn.getNoticeName());
+        try {
+            this.addOn.reactivate(Extensions.dir());
+            JOptionPane
+                .showMessageDialog(this.frame, "The " + name + " stays installed.",
+                                   name + " reactivated", JOptionPane.INFORMATION_MESSAGE);
+        } catch (IOException exc) {
+            reportError("Reactivation of the " + name + " failed", exc);
+        }
+    }
+
+    private void reportInstalled(Outcome outcome) {
+        String name = this.addOn.getDisplayName();
+        Path ext = Extensions.dir();
+        String message = switch (outcome) {
+        case DONE -> INSTALLED_REPORT
+            .formatted(name, this.addOn.getDir(ext).toUri(), this.addOn.getNoticeName());
+        case DEFERRED -> DEFERRED_REPORT
+            .formatted(name, Extensions.pendingInstallDir(ext, this.addOn.getName()).toUri(),
+                       this.addOn.getNoticeName());
+        };
         JOptionPane
             .showMessageDialog(this.frame, createMessagePane(message), name + " installed",
                                JOptionPane.INFORMATION_MESSAGE);
@@ -242,12 +286,25 @@ public class AddOnInstaller {
         return this.addOn.getStatus(Extensions.instance());
     }
 
-    private String describeStatus(Status status) {
-        return switch (status) {
-        case INSTALLED -> "Installed in " + this.addOn.getDir(Extensions.dir());
-        case STALE -> "Installed in " + this.addOn.getDir(Extensions.dir())
-            + ", but built for another GROOVE version";
-        case ABSENT -> "Not installed";
+    /**
+     * Describes the status of the add-on in this run, and what changes at the next start.
+     * @param status the status in the scan of this run
+     * @param present whether the add-on has files in the extension directory, which it
+     * may have without being loaded in this run, e.g. when installed during the run
+     */
+    private String describeStatus(Status status, boolean present) {
+        Path dir = this.addOn.getDir(Extensions.dir());
+        String result = switch (status) {
+        case INSTALLED -> "Installed in " + dir;
+        case STALE -> "Installed in " + dir + ", but built for another GROOVE version";
+        case ABSENT -> present
+            ? "Installed in " + dir + ", but not loaded in this run"
+            : "Not installed";
+        };
+        return switch (this.addOn.getPending(Extensions.dir())) {
+        case NONE -> result;
+        case INSTALL -> result + "; a new version is installed at the next start";
+        case REMOVE -> result + "; removed at the next start unless reactivated";
         };
     }
 
@@ -376,6 +433,22 @@ public class AddOnInstaller {
             (in the extension folder) for more information.
             </body></html>
             """;
+    /**
+     * HTML template of the report of an installation deferred to the next start, with
+     * the same parameters as {@link #INSTALLED_REPORT}, the directory being that of the
+     * pending installation.
+     */
+    private static final String DEFERRED_REPORT
+        = """
+            <html><body style='width: 400px'>
+            The %1$s is unpacked into <a href="%2$s">GROOVE's extension folder</a>,
+            but the previously installed version is in use, by this or another running GROOVE,
+            and cannot be replaced now; the new version is installed at the next start of GROOVE
+            and available from then on.<br><br>
+            The use of this backend is restricted to non-commercial purposes; see <a href="%2$s%3$s">%3$s</a>
+            (in the extension folder) for more information.
+            </body></html>
+            """;
 
     /**
      * System property that suppresses the first-run question when set to {@code false}.
@@ -389,7 +462,7 @@ public class AddOnInstaller {
      * The worker's inherited methods are unconstrained, hence the default is off.
      */
     @NonNullByDefault({})
-    private class Download extends SwingWorker<Path,Long> {
+    private class Download extends SwingWorker<Outcome,Long> {
         Download(String version, ProgressBarDialog progress) {
             this.version = version;
             this.progress = progress;
@@ -400,7 +473,7 @@ public class AddOnInstaller {
         private long size = -1;
 
         @Override
-        protected Path doInBackground() throws IOException {
+        protected Outcome doInBackground() throws IOException {
             AddOn addOn = AddOnInstaller.this.addOn;
             this.size = addOn.getSize(this.version);
             Path zip = addOn.download(this.version, this::publish);
