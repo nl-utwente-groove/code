@@ -71,7 +71,10 @@ launch configuration.
 Github runs the steps under Building automatically when a tag is pushed of the form `release-x_y_z`
 where `x.y.z` should be the version number. This will result in a release called `release-x_y_z`
 containing the ZIP artifacts. Note that the numbering of the releases and of the artifacts are controlled
-in two different ways, it is up to the developer to ensure that they are identical.
+in two different ways: the tag names the release, whereas the `revision` property in the pom of the tagged
+commit determines the artifact names and whether the release is marked as a pre-release. The `release` job
+checks that the two agree and fails before building anything if they do not; in that case, delete the tag
+(see below), update the `revision` and tag again.
 
 1. Commit and push the entire code repository, including the changes under "Preparation".
 
