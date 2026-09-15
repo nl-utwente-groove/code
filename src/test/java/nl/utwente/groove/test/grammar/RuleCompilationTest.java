@@ -140,12 +140,13 @@ public class RuleCompilationTest {
         for (QualName ruleName : new TreeSet<>(grammar.getNames(ResourceKind.RULE))) {
             RuleModel model = grammar.getRuleModel(ruleName);
             result.append("== rule ").append(ruleName).append('\n');
-            if (model.hasErrors()) {
+            if (!model.getErrors().isEmpty()) {
                 result.append("errors:\n");
                 for (FormatError error : model.getErrors()) {
                     result.append("  - ").append(error).append('\n');
                 }
-            } else {
+            }
+            if (!model.hasErrors()) {
                 dump(model.toResource(), result);
             }
         }
