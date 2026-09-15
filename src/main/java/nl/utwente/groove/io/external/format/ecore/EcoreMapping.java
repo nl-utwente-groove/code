@@ -134,7 +134,7 @@ public class EcoreMapping {
             case USE_IDENTIFIERS -> useIdentifiers = Boolean.parseBoolean(value);
             case FEATURE_ORDERING -> this.featureOrdering
                 .put(joinPath(path), Ordering.valueOfText(value));
-            case TYPE_NAME, LITERAL_TYPE_NAME -> this.typeNames.put(joinPath(path), value);
+            case TYPE_NAME -> this.typeNames.put(joinPath(path), value);
             case LITERAL_STYLE -> this.literalStyles
                 .put(joinPath(path), LiteralStyle.valueOfText(value));
             case PACKAGE -> this.packages.put(joinPath(path), PackageData.parse(value).getValue());

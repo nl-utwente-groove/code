@@ -77,15 +77,18 @@ public enum EcoreKey {
             "the encoding: 'none' or 'index'"})
     FEATURE_ORDERING("ordering", 2, EcoreKey.UNBOUNDED, "index", EcoreKey::checkOrdering, "class",
         "feature"),
-    /** Classifier type name override. */
-    @Syntax("classifier.DOT.TYPE_NAME = name")
-    @ToolTipHeader("Classifier type name")
-    @ToolTipBody({"Overrides the GROOVE type name derived for an Ecore classifier.",
-            "Derived names of other classifiers are disambiguated around the override."})
-    @ToolTipPars({"the Ecore class, data type or enum; package qualification is allowed,"
+    /** Type name override of a classifier or enum literal. */
+    @Syntax("element.DOT.TYPE_NAME = name")
+    @ToolTipHeader("Type name override")
+    @ToolTipBody({"Overrides the GROOVE type name derived for an Ecore classifier",
+            "(class, data type or enum) or for an enum literal. Derived names of",
+            "other elements are disambiguated around the override; an override of",
+            "a literal wins over the enum's literal naming style."})
+    @ToolTipPars({"the Ecore element, being a classifier or, for a literal, the enum"
+            + " followed by the literal name; package qualification is allowed,"
             + " and needed if the plain name is ambiguous",
             "the GROOVE type name to be used"})
-    TYPE_NAME("typeName", 1, EcoreKey.UNBOUNDED, "<name>", EcoreKey::checkTypeName, "classifier"),
+    TYPE_NAME("typeName", 1, EcoreKey.UNBOUNDED, "<name>", EcoreKey::checkTypeName, "element"),
     /** Per-enum literal naming style. */
     @Syntax("enum.DOT.LITERAL_STYLE = value")
     @ToolTipHeader("Enum literal naming style")
@@ -96,16 +99,6 @@ public enum EcoreKey {
             "the style: 'qualified' (default) or 'plain'"})
     LITERAL_STYLE("literalStyle", 1, EcoreKey.UNBOUNDED, "plain", EcoreKey::checkLiteralStyle,
         "enum"),
-    /** Enum literal type name override. */
-    @Syntax("enum.DOT.literal.DOT.TYPE_NAME = name")
-    @ToolTipHeader("Enum literal type name")
-    @ToolTipBody({"Overrides the GROOVE type name of a single enum literal;",
-            "wins over the enum's literal naming style."})
-    @ToolTipPars({"the Ecore enum; package qualification is allowed,"
-            + " and needed if the plain name is ambiguous", "the enum literal",
-            "the GROOVE type name to be used"})
-    LITERAL_TYPE_NAME("typeName", 2, EcoreKey.UNBOUNDED, "<name>", EcoreKey::checkTypeName, "enum",
-        "literal"),
     /** Namespace data of a package. */
     @Syntax("package.DOT.PACKAGE = value")
     @ToolTipHeader("Package namespace data")
