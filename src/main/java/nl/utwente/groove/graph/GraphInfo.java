@@ -171,7 +171,7 @@ public class GraphInfo extends DefaultFixable {
      */
     public static void transferErrors(Graph source, Graph target, GraphMap elementMap) {
         assert !target.isFixed();
-        if (source.hasErrors()) {
+        if (source.hasInfo() && !source.getErrors().isEmpty()) {
             // copy all the info
             var sourceErrors = source.getErrors();
             if (elementMap != null) {
