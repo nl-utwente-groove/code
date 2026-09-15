@@ -2,10 +2,12 @@
 
 *Status (2026-09-15): implemented as proposed. The note and the vocabulary
 (step 2) reached master through branch `ecore-metadata-settings` (140950da4);
-steps 3 to 5 are on branch `ecore-metadata-port` (36550a0f8 export from the
+steps 3 to 5 through branch `ecore-metadata-port` (36550a0f8 export from the
 records, 1a697a4f9 import writes the records, 3ff54a13b removal of the
-graph-property form), handed over for review on 2026-09-15. Deviations from
-the proposals are recorded under "Steps".*
+graph-property form, plus fc85132f0 and 4a21b6216 for two leftovers found on
+the way), merged on 2026-09-15. Deviations from the proposals are recorded
+under "Steps". An optional prune of stale recorded entries on re-import is
+filed as item 5 of gh #898.*
 
 *2026-09-14. Item 1 of gh #898, deferred by the settings-resource design
 (`settings-resource-design.md`) and reversing principle 3 of the porter
@@ -190,6 +192,4 @@ side-effect free; the action remains the only writer.
 5. Remove the graph-property reader, writer and constants. *(done; the
    `literal` classifier kind went with them, and the three passages of
    `junit/ecore/README.md` that showed the record syntax now show entries.)*
-6. Status blocks in the two archived notes; gh #898 comment. *(status blocks
-   done 2026-09-15; the issue comment is drafted in the handover, to be posted
-   after the merge.)*
+6. Status blocks in the two archived notes; gh #898 comment. *(done 2026-09-15.)*
