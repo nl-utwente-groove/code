@@ -7,26 +7,22 @@ Handoff note for the release of GROOVE 8.0.0 from `yworks-migration` (merged int
 
 All off the `yworks-migration` tip 103f6b74d, worktrees under `.claude/worktrees/`:
 
-- `changelog-8_0_0` (52a16ffce, detached for review): change notes brought up to date with
-  the installer and add-on work; 7.5.3 date corrected to 2 July 2026.
-- `release-8_0_0-prep` (b72d9e711, held by the main checkout): PDF manual and quick
-  reference chart dropped from the release, bundled README issue link fixed, the manual
-  proposal `claude/website-manual-8_0_0.md`, the checklist items 4 and 8 below, the
-  Generator `-x` usage text synchronised with `ExploreKey`, this note.
-- `release-8_0_0-usage-fix`, off b72d9e711 in the worktree `release-8_0_0-prep` (the
-  worktree cannot re-attach to the branch while the main checkout holds it): restores the
-  bare number forms `<n>` in the `-x` usage text, which the previous commit had wrongly
-  replaced by `beam:<n>`/`value:<n>` (the parser accepts both; the bare form is what
-  `unparse` writes), plus this note. To be fast-forwarded onto `release-8_0_0-prep`.
+- `release-8_0_0-prep` (worktree of the same name): everything for the code repository,
+  with `changelog-8_0_0` and `release-8_0_0-usage-fix` merged in (2026-09-15): the change
+  notes, PDF manual and quick reference chart dropped from the release, bundled README
+  issue link fixed, the manual proposal `claude/website-manual-8_0_0.md`, the checklist
+  items 4 and 8 below, the Generator `-x` usage text synchronised with `ExploreKey`
+  (bare number forms `<n>` are accepted and are what `unparse` writes), this note.
 - Website repository `nl-utwente-groove.github.io`: worktree `.claude/worktrees/release-8_0_0`,
-  branch `release-8_0_0` off `main`, three commits, detached for review:
-  fb02d3a `installing.md` (installers first, generic `x_y_z` asset names, add-on section
-  linking `YFILES-ADDON.md`), `mac.md` (blocked `.dmg`), `index.md` (ModelChecker
-  restored), `manual.md` (legacy PDF section gone), `manual/introduction.md` (8.0.0,
-  installers bundle Java); 455cd12 the generated exploration-key reference (manual plan
-  step 1); 2238066 the multigraph documentation for gh #896 (step 3, with the fixture
-  grammar and two new figures from step 4). Branch `quick-reference-drop` (worktree of the
-  same name) is subsumed by this and can be deleted.
+  branch `release-8_0_0` off `main`, detached for review. Commits: fb02d3a `installing.md`
+  (installers first, generic `x_y_z` asset names, add-on section linking `YFILES-ADDON.md`),
+  `mac.md` (blocked `.dmg`), `index.md` (ModelChecker restored), `manual.md` (legacy PDF
+  section gone), `manual/introduction.md` (8.0.0, installers bundle Java); 455cd12 the
+  generated exploration-key reference (manual plan step 1); 2238066 the multigraph
+  documentation for gh #896 (step 3, with the fixture grammar and two new figures from
+  step 4); 5578456 temporal goals left out of the reference; 68cbc2f the verification
+  chapter rewrite (step 2). Branch `quick-reference-drop` (worktree of the same name) is
+  subsumed by this and can be deleted.
 - Quick reference chart: dropped 2026-09-14 (2012 tutorial poster by Tim Molderez for
   GROOVE 4.x, source never in a repository, Simulator screenshot unrenderable). The copy in
   the usermanual repo is left in place.
@@ -71,11 +67,19 @@ chapter moves to 8.0.0 in the commit that revises the chapter (see the last open
    (the source file it used to read holds the unfiltered `${revision}`). All four pages
    were regenerated from a 7.5.4-SNAPSHOT build of the candidate; regenerate at the tag
    with the release classpath so the pages say 8.0.0.
-2. `verification.md`: drop the hand-written key table in favour of a link to the generated
-   page (the maintainer wants to see the result before deciding), rewrite the Simulator
-   exploration part for settings resources and the rebuilt dialog, add `-seed`/`-log`,
-   correct the `-s`/`-a` status, remove `ModelChecker -ltl`, drop the CTL completeness
-   caveat. `goal=graph:<name>` is a future extension: do not document it.
+2. DONE (68cbc2f). `verification.md`: the key table is replaced by a link to the generated
+   page plus a prose account of how the keys combine; settings resources and the rebuilt
+   dialog, `explorationStrategy` migration, new sections on determinism/master seed and
+   on `matchBound`, Generator `-seed`/`-log`/`-D exploration`, `-s`/`-a`/`-r` as shorthand
+   kept indefinitely, CTL caveat dropped, LTL lassos and `transitionLabel`, `ModelChecker
+   -ltl` gone, `show_graph` Simulator-only. *Checked against* moved to 8.0.0. Two
+   findings: `goal=ltl`/`ctl` are rejected by `ExploreTypeConverter` ("handled by the
+   model checking actions"), so they are omitted from the reference page along with
+   `goal=graph`; and the legacy `-s ltl:` strategies map to `LTLExploreType`, not to a
+   configuration, so the manual sends command-line LTL checking through `-s ltl:prop`.
+   Not verified by running the tool: the Settings tab name and that enabling a settings
+   resource in the resource list switches the `exploration` property (both taken from
+   the change notes and `ResourceKind`).
 3. DONE (2238066). `basics.md`: "Parallel edges" section under Graphs, a reader-plus-eraser
    paragraph under Rules, DPO eraser injectivity under Injectivities; `advanced.md`: property
    table (`semantics`, `regExpMatching`, `matchBound`, `checkDangling` implied by DPO,
