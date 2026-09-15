@@ -119,9 +119,19 @@ chapter moves to 8.0.0 in the commit that revises the chapter (see the last open
    arguments; recipe call edge cases in the recipe bullet; unavailable procedures in
    disabled or erroneous programs (gh #560). *Checked against* moved to 8.0.0. That group
    calls honour priorities is taken from `Term`'s prioritised choice, not from a run.
-6. `introduction.md`: the four wrong statements of §3 of the proposal; no new Simulator
-   chapter, no add-on or extension-directory material (that stays on `installing.md`); the
-   format-error severities get a paragraph where errors are first mentioned, not a section.
+6. DONE (website commit after cfed4fe). `introduction.md`: exploration configuration
+   instead of a selectable strategy, Generator runs the stored exploration, installers
+   register the tools (zip has the `bin` jars), multigraphs in the Graph concept, the
+   Simulator bullet carries the error/warning severities and a pointer to the add-on on
+   `installing.md`; chapter list updated. *Checked against* moved to 8.0.0. Found on the
+   way: `PrologChecker` is an entry-point class but ships neither as a `bin` jar nor as an
+   installer launcher (`release/runnable`, `build-installer.sh`), so the sentence claiming
+   a PrologChecker tool was taken out of `verification.md` again.
+
+   Remaining for the manual: `basics.md` and `advanced.md` stay at 7.5.3 until their other
+   8.0.0 items are done (string escapes and the `'\\?\''` example, remark merging, duplicate
+   node ids merge, `use=q:` on `test:`/`let:`, `valueOracle=dialog` Simulator-only, editor
+   and display items if wanted); then regenerate the reference pages and figures at the tag.
 7. `_data/glossary.yml` and `_data/definitions.yml` are referenced nowhere in
    `_includes`, `_layouts` or `_config.yml` (checked 2026-09-14): leave them.
 
