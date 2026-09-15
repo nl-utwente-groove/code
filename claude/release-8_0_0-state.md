@@ -61,7 +61,7 @@ worktree `release-8_0_0`, one commit per step; the `manual.md` *Checked against*
 chapter moves to 8.0.0 in the commit that revises the chapter (see the last open decision).
 
 Progress, 2026-09-15: all seven steps are committed on the website branch `release-8_0_0`
-(tip 17860f6, nine commits ahead of `main`); every chapter is checked against 8.0.0. Two
+(tip 0064990, ten commits ahead of `main`, the last one adding the `.rpm` installer to `installing.md`); every chapter is checked against 8.0.0. Two
 things remain: the figures were rendered with a 7.5.4-SNAPSHOT candidate and are to be
 regenerated at the tag with the release classpath (`make-figures.sh`, then `make-refs.sh`
 for the version string on the reference pages), and the optional yFiles-rendered figure of
