@@ -105,9 +105,15 @@ chapter moves to 8.0.0 in the commit that revises the chapter (see the last open
    placement), so the candidate is an automatic layout such as hierarchic or organic of a
    larger graph, rendered with `Imager -b yfiles` on a machine with the add-on installed.
    Untested expectation.
-5. `io.md`: settings resources row and section, Ecore rewrite (no conceptual layer, options
-   in the `ecore` settings resource), headless exporter changes, Imager `-b`, one-liners
-   for the C items. `control.md`: the B items of the table in §2 of the proposal.
+5. `io.md` DONE (website commit after e26b4c2): settings resources (table row, paragraph
+   on schemas and the `system.properties` rename), layout bullet freed of JGraph, `edgeids`
+   bullet, native porter covers text resources and settings, headless versus GUI-side
+   exporters and UTF-8/LF, Ecore section rewritten from `EcorePorter`/`EcoreToGraphs`
+   javadoc and `EcoreKey` (options `ordering`, `useIdentifiers`, per-feature ordering,
+   `typeName`, `literalStyle`), LTS export extensions and defaults, gh #854/#861, Imager
+   `-b`. *Checked against* moved to 8.0.0. Not verified by running the tool: the dialog
+   offered at import/export time and the Settings-tab template (from the change notes).
+   `control.md`: the B items of the table in §2 of the proposal — still to do.
 6. `introduction.md`: the four wrong statements of §3 of the proposal; no new Simulator
    chapter, no add-on or extension-directory material (that stays on `installing.md`); the
    format-error severities get a paragraph where errors are first mentioned, not a section.
