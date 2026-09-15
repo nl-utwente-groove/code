@@ -17,11 +17,13 @@ import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
+import nl.utwente.groove.gui.dialog.EcoreOptionsDialog;
 import nl.utwente.groove.gui.dialog.GrooveFileChooser;
 import nl.utwente.groove.io.external.Imported;
 import nl.utwente.groove.io.external.Importer;
 import nl.utwente.groove.io.external.Importers;
 import nl.utwente.groove.io.external.PortException;
+import nl.utwente.groove.io.external.format.ecore.EcoreMapping;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.io.FileType;
 import nl.utwente.groove.util.parse.FormatException;
@@ -72,6 +74,48 @@ public class ImportAction extends SimulatorAction {
                 throw new IOException(e);
             }
         }
+    }
+
+    /**
+     * Asks the user for the Ecore encoding options on the first Ecore import
+     * into a grammar, if a given file type calls for them, and stores the
+     * chosen options in a fresh Ecore mapping settings resource under the
+     * default name {@link EcoreMapping#RESOURCE_NAME}.
+     * Once the grammar has such a resource the dialog is skipped, whatever
+     * the state of the resource (gh #558): the settings display edits the
+     * options directly, and a broken or ambiguous resource is reported by the
+     * port itself, which the dialog could not repair anyway.
+     * The resource is created through the (undoable) store, so that the
+     * subsequent import sees the chosen values; this is why the dialog is
+     * shown before the import rather than as part of it. The import writes to
+     * the same resource afterwards, recording what the type graph does not
+     * determine about the imported metamodel — but it does so by returning
+     * the updated text as an {@link Imported}, since importers are
+     * side-effect free. Exports never ask: they use the resource if there is
+     * one and the default options otherwise.
+     * @param fileType the file type chosen for the import
+     * @return {@code false} if the user cancelled the dialog, in which case the
+     * import should not go ahead
+     * @throws IOException if storing the new settings failed
+     */
+    private boolean askEcoreOptions(FileType fileType) throws IOException {
+        if (fileType != FileType.ECORE && fileType != FileType.XMI) {
+            return true;
+        }
+        if (!EcoreMapping.candidates(getGrammarModel()).isEmpty()) {
+            return true;
+        }
+        EcoreMapping defaults = EcoreMapping.getDefault();
+        EcoreOptionsDialog dialog
+            = new EcoreOptionsDialog(defaults.ordering(), defaults.useIdentifiers());
+        if (!dialog.showDialog(getFrame(), null)) {
+            return false;
+        }
+        // always create the resource, also for the default values, so that the
+        // global option lines are there to be edited and the dialog stays away
+        String text = EcoreMapping.setGlobals(null, dialog.getOrdering(), dialog.isUseIdentifiers());
+        getSimulatorModel().doAddText(ResourceKind.SETTINGS, EcoreMapping.RESOURCE_QUAL_NAME, text);
+        return true;
     }
 
     private void doChosenImport(GrammarModel grammar) throws PortException, FormatException,

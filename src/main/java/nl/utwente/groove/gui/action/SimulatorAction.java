@@ -25,7 +25,6 @@ import nl.utwente.groove.gui.BehaviourOption;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.SimulatorModel;
-import nl.utwente.groove.gui.dialog.EcoreOptionsDialog;
 import nl.utwente.groove.gui.dialog.ErrorDialog;
 import nl.utwente.groove.gui.dialog.FindReplaceDialog;
 import nl.utwente.groove.gui.dialog.FreshNameDialog;
@@ -40,8 +39,6 @@ import nl.utwente.groove.gui.display.PrologDisplay;
 import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.gui.display.RuleDisplay;
 import nl.utwente.groove.gui.display.StateDisplay;
-import nl.utwente.groove.io.external.PortException;
-import nl.utwente.groove.io.external.format.ecore.EcoreMapping;
 import nl.utwente.groove.io.store.EditType;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.util.AIGenerated;
@@ -293,61 +290,6 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
             };
         nameDialog.showDialog(getFrame(), title);
         return nameDialog.getName();
-    }
-
-    /**
-     * Asks the user for the Ecore encoding options, if a given file type calls
-     * for them, and stores the chosen options in the grammar's Ecore mapping
-     * settings resource, creating it under the default name
-     * {@link EcoreMapping#RESOURCE_NAME} on demand.
-     * Only the global option lines of the resource are touched, so
-     * hand-written per-element entries and comments survive.
-     * The resource is changed through the (undoable) store, so that the
-     * subsequent port sees the new values; this is why the dialog is shown
-     * before the port rather than as part of it. An import writes to the same
-     * resource afterwards, recording what the type graph does not determine
-     * about the imported metamodel — but it does so by returning the updated
-     * text as an {@link nl.utwente.groove.io.external.Imported}, since
-     * importers are side-effect free.
-     * @param fileType the file type chosen for the import or export
-     * @return {@code false} if the user cancelled the dialog, in which case the
-     * port should not go ahead
-     * @throws IOException if storing the changed settings failed
-     */
-    final protected boolean askEcoreOptions(FileType fileType) throws IOException {
-        if (fileType != FileType.ECORE && fileType != FileType.XMI) {
-            return true;
-        }
-        var candidates = EcoreMapping.candidates(getGrammarModel());
-        if (candidates.size() > 1) {
-            // the dialog cannot know which resource to edit;
-            // the port itself will report the ambiguity
-            return true;
-        }
-        QualName target = candidates.isEmpty()
-            ? EcoreMapping.RESOURCE_QUAL_NAME
-            : candidates.get(0);
-        EcoreMapping oldMapping;
-        try {
-            oldMapping = EcoreMapping.of(getGrammarModel());
-        } catch (PortException exc) {
-            // a broken settings resource seeds the dialog with the defaults;
-            // the port itself will report the actual problem
-            oldMapping = EcoreMapping.getDefault();
-        }
-        EcoreOptionsDialog dialog
-            = new EcoreOptionsDialog(oldMapping.ordering(), oldMapping.useIdentifiers());
-        if (!dialog.showDialog(getFrame(), null)) {
-            return false;
-        }
-        if (dialog.getOrdering() != oldMapping.ordering()
-            || dialog.isUseIdentifiers() != oldMapping.useIdentifiers()) {
-            String oldText = getGrammarModel().getStore().getTexts(ResourceKind.SETTINGS).get(target);
-            String newText = EcoreMapping
-                .setGlobals(oldText, dialog.getOrdering(), dialog.isUseIdentifiers());
-            getSimulatorModel().doAddText(ResourceKind.SETTINGS, target, newText);
-        }
-        return true;
     }
 
     /**
