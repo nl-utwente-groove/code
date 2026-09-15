@@ -3,7 +3,6 @@ package nl.utwente.groove.gui.action;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -111,7 +110,6 @@ public class ImportAction extends SimulatorAction {
                             newTexts.put(kind, texts = new HashMap<>());
                         }
                         texts.put(name, text);
-                        store.putTexts(kind, Collections.singletonMap(name, text));
                     }
                 }
             }
