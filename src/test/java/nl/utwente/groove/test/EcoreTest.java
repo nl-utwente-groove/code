@@ -70,6 +70,7 @@ import nl.utwente.groove.util.io.FileType;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
+import nl.utwente.groove.util.parse.Severity;
 
 /**
  * Tests the import of Ecore meta-models and XMI instance models.
@@ -111,9 +112,15 @@ public class EcoreTest {
         expectedEdges.add("Category$FICTION -sub:-> Category");
         expectedEdges.add("Category$NONFICTION -sub:-> Category");
         assertEquals(expectedEdges, binaryEdges(type));
-        // the approximations the encoding makes are silent
-        assertEquals(Collections.emptyList(), messages(type.getErrors()));
+        // the many-valued features of the shop meta-model all have set
+        // semantics, so the only approximation is the custom Isbn data type
+        assertEquals(Collections.emptyList(), blocking(type.getErrors()));
+        assertEquals(Set.of(ISBN_APPROXIMATED), warnings(type.getErrors()));
     }
+
+    /** Expected warning for the custom {@code Isbn} data type of the shop meta-model. */
+    static private final String ISBN_APPROXIMATED
+        = "Data type 'Isbn' of attribute 'isbn' has no GROOVE sort; its values are encoded as strings";
 
     /**
      * Tests the round-trip records that the import writes into the mapping
@@ -182,11 +189,22 @@ public class EcoreTest {
         AspectGraph type = single(imported, ResourceKind.TYPE);
         AspectGraph host = single(imported, ResourceKind.HOST).rename(QualName.name("start"));
         GrammarModel grammar = newGrammar(type, host);
-        assertEquals(Collections.emptyList(), messages(grammar.getTypeModel().getErrors()));
+        // the import warning travels with the type model, without blocking it,
+        // and from there (wrapped) with the composite type model
+        var typeModel = grammar.getTypeModel(type.getQualName());
+        assertNotNull(typeModel);
+        assertEquals(Collections.emptyList(), blocking(typeModel.getErrors()));
+        assertEquals(Set.of(ISBN_APPROXIMATED), warnings(typeModel.getErrors()));
+        assertFalse(typeModel.hasErrors());
+        var composite = grammar.getTypeModel();
+        assertEquals(Collections.emptyList(), blocking(composite.getErrors()));
+        assertEquals(Set.of("Warning in type 'shop': " + ISBN_APPROXIMATED),
+                     warnings(composite.getErrors()));
+        assertFalse(composite.hasErrors());
         var hostModel = grammar.getHostModel(QualName.name("start"));
         assertNotNull(hostModel);
         assertEquals(Collections.emptyList(), messages(hostModel.getErrors()));
-        assertEquals(Collections.emptyList(), messages(grammar.getErrors()));
+        assertEquals(Collections.emptyList(), blocking(grammar.getErrors()));
     }
 
     // ----------------------------------------------------------------------
@@ -276,16 +294,26 @@ public class EcoreTest {
 
     /**
      * Tests that an ordered many-valued feature becomes a plain edge in
-     * {@code none} mode, without complaint: dropping the order is documented
-     * behaviour of that mode, not an error.
+     * {@code none} mode, with a warning per feature but no error: dropping
+     * the order is documented behaviour of that mode, which the user should
+     * see without the import being rejected.
      */
     @Test
     public void testOrderingNone() throws Exception {
         AspectGraph type
             = single(importFrom("ordered.ecore", Ordering.NONE, true), ResourceKind.TYPE);
         assertEquals(Set.of("List -part:elements-> Element"), binaryEdges(type));
-        assertEquals(Collections.emptyList(), messages(type.getErrors()));
+        assertEquals(Collections.emptyList(), blocking(type.getErrors()));
+        // the containment is ordered, the attribute is ordered and non-unique
+        assertEquals(labels(LOSSY_ELEMENTS, LOSSY_LABELS), warnings(type.getErrors()));
     }
+
+    /** Expected warning for the ordered {@code elements} containment of the list meta-model. */
+    static private final String LOSSY_ELEMENTS
+        = "Direct encoding of feature 'elements' drops the order of its values; ordering 'index' keeps them";
+    /** Expected warning for the ordered, non-unique {@code labels} attribute of the list meta-model. */
+    static private final String LOSSY_LABELS
+        = "Direct encoding of feature 'labels' drops the order and duplicates of its values; ordering 'index' keeps them";
 
     /**
      * Tests that many-valued features with set semantics keep the direct
@@ -456,6 +484,16 @@ public class EcoreTest {
                        "string:charValue", "string:characterObject", "string:dateValue",
                        "string:customValue", "string:aliases")),
                      selfLabels(type));
+        // the string approximations are warned about, once per attribute,
+        // as is the direct encoding of the ordered many-valued attribute
+        assertEquals(Collections.emptyList(), blocking(type.getErrors()));
+        assertEquals(labels("Data type 'EDate' of attribute 'dateValue' has no GROOVE sort; "
+            + "its values are encoded as strings",
+                            "Data type 'Colour' of attribute 'customValue' has no GROOVE sort; "
+                                + "its values are encoded as strings",
+                            "Direct encoding of feature 'aliases' drops the order of its values; "
+                                + "ordering 'index' keeps them"),
+                     warnings(type.getErrors()));
         AspectGraph host = single(imported, ResourceKind.HOST);
         Set<String> values = new TreeSet<>(selfLabels(host).get("values"));
         // EMF renders an EDate in the time zone of the machine reading it,
@@ -680,7 +718,8 @@ public class EcoreTest {
         var listLabels = selfLabels(type).get("List");
         assert listLabels != null; // keySet asserted above
         assertTrue(listLabels.contains("string:labels"));
-        assertEquals(Collections.emptyList(), messages(type.getErrors()));
+        // only the non-overridden labels attribute is still encoded lossily
+        assertEquals(List.of(LOSSY_LABELS), messages(type.getErrors()));
         // a none override for the labels feature, under global index;
         // the element path may be package-qualified
         type = single(importFrom("ordered.ecore",
@@ -691,7 +730,8 @@ public class EcoreTest {
         listLabels = selfLabels(type).get("List");
         assert listLabels != null; // keySet asserted above
         assertTrue(listLabels.contains("string:labels"));
-        assertEquals(Collections.emptyList(), messages(type.getErrors()));
+        // the override asked for the lossy encoding, but the loss is still real
+        assertEquals(List.of(LOSSY_LABELS), messages(type.getErrors()));
     }
 
     /** Tests the instance encoding and the round trip under an override. */
@@ -739,7 +779,7 @@ public class EcoreTest {
         assertTrue(labels.toString(), labels.contains("FICTION")); // plain literal style
         assertTrue(labels.toString(), labels.contains("Misc")); // literal override wins
         assertFalse(labels.toString(), labels.contains("Category"));
-        assertEquals(Collections.emptyList(), messages(type.getErrors()));
+        assertEquals(Collections.emptyList(), blocking(type.getErrors()));
     }
 
     /** Tests the instance round trip under naming overrides. */
@@ -760,7 +800,7 @@ public class EcoreTest {
                                                          "Book.typeName = Ware",
                                                          "Category.typeName = Ware")),
                                   ResourceKind.TYPE);
-        List<String> errors = messages(type.getErrors());
+        List<String> errors = blocking(type.getErrors());
         assertEquals(errors.toString(), 1, errors.size());
         assertTrue(errors.get(0), errors.get(0).contains("Colliding"));
     }
@@ -787,12 +827,12 @@ public class EcoreTest {
                                              mappingText(Ordering.NONE, true,
                                                          "Shop.orders.ordering = index")),
                                   ResourceKind.TYPE);
-        assertEquals(Collections.emptyList(), messages(type.getErrors()));
+        assertEquals(Collections.emptyList(), blocking(type.getErrors()));
         // an entry resolving to a single-valued feature is an error
         type = single(importFrom("ordered.ecore",
                                  mappingText(Ordering.NONE, true, "Element.name.ordering = index")),
                       ResourceKind.TYPE);
-        List<String> errors = messages(type.getErrors());
+        List<String> errors = blocking(type.getErrors());
         assertEquals(errors.toString(), 1, errors.size());
         assertTrue(errors.get(0), errors.get(0).contains("single-valued"));
     }
@@ -976,19 +1016,20 @@ public class EcoreTest {
         AspectGraph type = single(imported, ResourceKind.TYPE);
         AspectGraph host = optional(imported, ResourceKind.HOST);
         String settings = settings(imported);
-        assertEquals(Collections.emptyList(), messages(type.getErrors()));
-        // the imported graphs are used as they are: since the approximations
-        // of the encoding are silent, a well-formed input carries no errors
+        assertEquals(Collections.emptyList(), blocking(type.getErrors()));
+        // the imported graphs are used as they are: the approximations of the
+        // encoding are only warned about, so a well-formed input carries no
+        // blocking errors
         GrammarModel grammar = newGrammar(type, host == null
             ? null
             : host.rename(QualName.name("start")), mappingText);
-        assertEquals(Collections.emptyList(), messages(grammar.getTypeModel().getErrors()));
+        assertEquals(Collections.emptyList(), blocking(grammar.getTypeModel().getErrors()));
         if (host != null) {
             assertEquals(Collections.emptyList(), messages(host.getErrors()));
             var hostModel = grammar.getHostModel(QualName.name("start"));
             assertNotNull(hostModel);
             assertEquals(Collections.emptyList(), messages(hostModel.getErrors()));
-            assertEquals(Collections.emptyList(), messages(grammar.getErrors()));
+            assertEquals(Collections.emptyList(), blocking(grammar.getErrors()));
         }
         File dir = newDir();
         exportTo(newGrammar(type, host, settings), dir);
@@ -1040,7 +1081,7 @@ public class EcoreTest {
 
     /** Asserts that two aspect graphs are isomorphic. */
     static private void assertIsomorphic(AspectGraph one, AspectGraph two) {
-        assertEquals(Collections.emptyList(), messages(two.getErrors()));
+        assertEquals(Collections.emptyList(), blocking(two.getErrors()));
         assertTrue("Graphs are not isomorphic",
                    IsoChecker
                        .getInstance(true)
@@ -1205,6 +1246,16 @@ public class EcoreTest {
     /** Returns the messages of a set of format errors, for readable assertions. */
     static private List<String> messages(FormatErrorSet errors) {
         return errors.stream().map(FormatError::toString).toList();
+    }
+
+    /** Returns the messages of the blocking errors in a set of format errors. */
+    static private List<String> blocking(FormatErrorSet errors) {
+        return messages(errors.filter(Severity.ERROR));
+    }
+
+    /** Returns the messages of the warnings in a set of format errors, sorted. */
+    static private Set<String> warnings(FormatErrorSet errors) {
+        return new TreeSet<>(messages(errors.filter(Severity.WARNING)));
     }
 
     /** Convenience method to build a set of labels. */
