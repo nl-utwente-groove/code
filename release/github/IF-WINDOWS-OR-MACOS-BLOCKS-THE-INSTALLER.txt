@@ -41,8 +41,8 @@ in Terminal instead, then open GROOVE normally:
     xattr -dr com.apple.quarantine /Applications/GROOVE.app
 
 
-LINUX (.deb)
-------------
+LINUX (.deb, .rpm)
+------------------
 
 Not affected.
 
