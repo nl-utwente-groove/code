@@ -51,7 +51,7 @@ Before the tag, in order:
 6. Website: merge `release-8_0_0` when the release is out (it names 8.0.0 as current);
    manual per the plan below (gh #896 is the minimum).
 7. Post-release: bump to 8.0.1-SNAPSHOT, Maven Central deploy, close the issues in the
-   change notes, delete `claude/yfiles-private-move-state.md`, download-stats SourceForge
+   change notes, download-stats SourceForge
    import and website page.
 
 ## Manual plan
