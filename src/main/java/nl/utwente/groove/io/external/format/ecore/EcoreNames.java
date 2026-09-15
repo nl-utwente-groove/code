@@ -142,11 +142,16 @@ public class EcoreNames {
      * easier to predict than two.
      */
     private static String repair(EStructuralFeature feature) {
-        String name = feature.getName();
-        if (name != null) {
-            name = name.replace(HYPHEN, UNDERSCORE);
-        }
-        return IdValidator.JAVA_ID_NON_RESERVED.repair(name);
+        return featureLabelFor(feature.getName());
+    }
+
+    /** Returns the GROOVE edge label derived from a given Ecore feature name,
+     * before disambiguation.
+     * @see #repair(EStructuralFeature) */
+    public static String featureLabelFor(@Nullable String name) {
+        return IdValidator.JAVA_ID_NON_RESERVED.repair(name == null
+            ? null
+            : name.replace(HYPHEN, UNDERSCORE));
     }
 
     /** Returns the dot-separated path of a given package, relative to its root package. */
@@ -483,7 +488,7 @@ public class EcoreNames {
         return result;
     }
 
-    /** Returns the kind recorded for a given classifier in the round-trip metadata. */
+    /** Returns the textual kind recorded for a given classifier in the mapping. */
     public static String kindOf(EClassifier classifier) {
         if (classifier instanceof EEnum) {
             return ENUM_KIND;
@@ -510,6 +515,4 @@ public class EcoreNames {
     public static final String ENUM_KIND = "enum";
     /** Metadata kind of a data type. */
     public static final String DATATYPE_KIND = "datatype";
-    /** Metadata kind of an enumeration literal. */
-    public static final String LITERAL_KIND = "literal";
 }

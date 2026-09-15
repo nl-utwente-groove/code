@@ -34,21 +34,31 @@ import nl.utwente.groove.util.QualName;
  */
 @NonNullByDefault
 public record Imported(QualName qualName, ResourceKind kind, @Nullable AspectGraph graph,
-                       @Nullable String text) {
+                       @Nullable String text, boolean update) {
 
     /** Overrides the generated hash code, which would use identity-based enum hashes. */
     @Override
     public int hashCode() {
-        return Objects.hash(this.qualName, this.kind.ordinal(), this.graph, this.text);
+        return Objects
+            .hash(this.qualName, this.kind.ordinal(), this.graph, this.text, this.update);
     }
     /** Constructs a graph-based resource. */
     public Imported(ResourceKind kind, AspectGraph resource) {
-        this(resource.getQualName(), kind, resource, null);
+        this(resource.getQualName(), kind, resource, null, false);
     }
 
     /** Constructs a text-based resource. */
     public Imported(ResourceKind kind, QualName name, String resource) {
-        this(name, kind, null, resource);
+        this(name, kind, null, resource, false);
+    }
+
+    /**
+     * Constructs a text-based resource that is an update, computed by the
+     * importer, of a resource the grammar already has. There is nothing to ask
+     * the user about such a resource: the existing content is in it.
+     */
+    public Imported(ResourceKind kind, QualName name, String resource, boolean update) {
+        this(name, kind, null, resource, update);
     }
 
     /** Indicates if this is a graph-based resource. */

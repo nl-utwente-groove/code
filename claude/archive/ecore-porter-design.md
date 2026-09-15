@@ -26,7 +26,9 @@ JUnit 4 style in the fast suite as intended.*
 open to turn them into non-blocking WARNING diagnostics, `FormatError` having
 gained a warning severity since (gh #885). gh #558 (skip the options dialog
 when a valid `ecore` settings resource exists) is open. The hand-added-type
-export trap noted under "Export" is still there, tracked as item 1 of gh #898.
+export trap noted under "Export" was fixed on 2026-09-15 by
+`ecore-metadata-settings.md`, which also reversed principle 3: the round-trip
+metadata now lives in the `ecore` settings resource, not on the type graph.
 Phase 4 (constraint rules) has not been started.*
 
 *2026-07-26. Companion to [`io-refactor-plan.md`](../io-refactor-plan.md). Sources: the retired

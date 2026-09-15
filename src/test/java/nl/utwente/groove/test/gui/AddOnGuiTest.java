@@ -102,7 +102,8 @@ public class AddOnGuiTest {
             assertEquals(addOn.getName(), Options.userPrefs.get(Options.GRAPH_BACKEND_OPTION, null));
             String jgraph = GraphBackend.instance().getDisplayName();
             String yfiles = addOn.getDisplayName();
-            assertChooserShows(jgraph, true, yfiles + BackendChooser.NEXT_START_SUFFIX, false);
+            assertChooserShows(jgraph + BackendChooser.THIS_SESSION_SUFFIX, false,
+                               yfiles + BackendChooser.AFTER_RESTART_SUFFIX, true);
             // choosing the backend in use cancels the switch, without a dialog
             new JMenuBarOperator(frame())
                 .pushMenu(Options.DISPLAY_MENU_NAME + "|" + Options.GRAPH_BACKEND_OPTION + "|"
@@ -118,7 +119,8 @@ public class AddOnGuiTest {
             new JButtonOperator(changed, "OK").push();
             changed.waitClosed();
             assertEquals(addOn.getName(), Options.userPrefs.get(Options.GRAPH_BACKEND_OPTION, null));
-            assertChooserShows(jgraph, true, yfiles + BackendChooser.NEXT_START_SUFFIX, false);
+            assertChooserShows(jgraph + BackendChooser.THIS_SESSION_SUFFIX, false,
+                               yfiles + BackendChooser.AFTER_RESTART_SUFFIX, true);
 
             new JMenuBarOperator(frame())
                 .pushMenuNoBlock(Options.DISPLAY_MENU_NAME + "|" + Options.YFILES_ADDON_MENU_NAME

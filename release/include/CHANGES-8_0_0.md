@@ -50,12 +50,12 @@ Installers and distribution
 -------------------------------
 
 - GitHub releases now carry platform-native installers built with jpackage:
-  Windows `.msi`, macOS `.dmg` (Intel and Apple silicon) and Linux `.deb`, each
-  with a bundled Java runtime, so no Java installation is needed. The start menu
-  group lists GROOVE (the main launcher), Simulator, Generator, ModelChecker,
-  Imager and Viewer. The installers are not code-signed; the release page
-  explains how to get past the Windows and macOS warnings. The `-bin.zip`
-  remains available and needs Java 21 or newer.
+  Windows `.msi`, macOS `.dmg` (Intel and Apple silicon) and Linux `.deb` and
+  `.rpm`, each with a bundled Java runtime, so no Java installation is needed.
+  The start menu group lists GROOVE (the main launcher), Simulator, Generator,
+  ModelChecker, Imager and Viewer. The installers are not code-signed; the
+  release page explains how to get past the Windows and macOS warnings. The
+  `-bin.zip` remains available and needs Java 21 or newer.
 - The Windows installer does not offer an install-folder chooser (the MSI would
   not remember the choice across upgrades); use the zip for a custom location.
 - The Windows installer asks to close a running GROOVE before it touches anything

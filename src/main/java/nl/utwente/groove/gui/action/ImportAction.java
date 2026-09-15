@@ -3,7 +3,6 @@ package nl.utwente.groove.gui.action;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,6 +29,13 @@ import nl.utwente.groove.util.parse.FormatException;
 /**
  * Action for importing elements in the grammar.
  * Doubles as the dialog-based driver of the {@link Importers} registry.
+ * <p>
+ * Importers are side-effect free, so this action is the only writer: it stores
+ * every resource an importer returns, asking before it overwrites an existing
+ * one. A resource flagged as an {@link Imported#update()} is stored without
+ * asking — it is an update of an existing resource that the importer computed
+ * from that resource's own content, as the Ecore porter does for the
+ * {@code ecore} settings resource it records the round-trip metadata in.
  */
 public class ImportAction extends SimulatorAction {
     /** Constructs an instance of the action for a given simulator. */
@@ -86,7 +92,9 @@ public class ImportAction extends SimulatorAction {
                 QualName name = resource.qualName();
                 name.getErrors().throwException();
                 ResourceKind kind = resource.kind();
-                if (grammar.getResource(kind, name) == null
+                // an update was computed from the existing resource, so there
+                // is nothing an overwrite question could save
+                if (resource.update() || grammar.getResource(kind, name) == null
                     || confirmOverwrite(kind, name.toString())) {
                     if (resource.isGraph()) {
                         AspectGraph graph = resource.graph();
@@ -102,7 +110,6 @@ public class ImportAction extends SimulatorAction {
                             newTexts.put(kind, texts = new HashMap<>());
                         }
                         texts.put(name, text);
-                        store.putTexts(kind, Collections.singletonMap(name, text));
                     }
                 }
             }

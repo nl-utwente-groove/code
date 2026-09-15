@@ -77,6 +77,7 @@ Finished work, kept for the design rationale and rejected alternatives. Grouped 
 |---|---|
 | [ecore-porter-design.md](archive/ecore-porter-design.md) | The Ecore importer/exporter (phase 3 of the io plan). Implemented as designed; principle 4 contested by gh #907. |
 | [settings-resource-design.md](archive/settings-resource-design.md) | The SETTINGS resource kind and the Ecore mapping schema. Landed 2026-07-31 to 08-05; schema registry since inverted to `ServiceLoader`. Deferred items filed as gh #898. |
+| [ecore-metadata-settings.md](archive/ecore-metadata-settings.md) | gh #898 item 1: the Ecore round-trip metadata moved from type-graph properties into the `ecore` settings resource, fixing the hand-added-type export trap. Merged to master 2026-09-15; a stale-entry prune is item 5 of gh #898. |
 
 **Release and installers**
 

@@ -28,6 +28,7 @@ import java.util.Set;
 
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EDataType;
 import org.eclipse.emf.ecore.EEnum;
 import org.eclipse.emf.ecore.EEnumLiteral;
@@ -44,11 +45,15 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.type.Multiplicity;
-import nl.utwente.groove.grammar.ResourceProperties;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.plain.PlainGraph;
 import nl.utwente.groove.graph.plain.PlainNode;
+import nl.utwente.groove.io.external.format.ecore.EcoreMapping.Bounds;
+import nl.utwente.groove.io.external.format.ecore.EcoreMapping.FeatureData;
+import nl.utwente.groove.io.external.format.ecore.EcoreMapping.Kind;
 import nl.utwente.groove.io.external.format.ecore.EcoreMapping.Ordering;
+import nl.utwente.groove.io.external.format.ecore.EcoreMapping.PackageData;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.parse.IdValidator;
 import nl.utwente.groove.util.parse.StringHandler;
 
@@ -156,7 +161,7 @@ public class EcoreToGraphs {
                 addTypeReference(result, node, eClass, reference, classNodes);
             }
         }
-        ResourceProperties.setProperties(result, createMetadata());
+        createRecords();
         return AspectGraph.newInstance(result);
     }
 
@@ -253,62 +258,139 @@ public class EcoreToGraphs {
         return this.names.labelFor(eClass) + EcoreNames.SEPARATOR + this.names.labelFor(feature);
     }
 
-    /** Creates the round-trip metadata of the meta-model. */
-    private ResourceProperties createMetadata() {
-        ResourceProperties result = new ResourceProperties();
-        StringBuilder packages = new StringBuilder();
+    /**
+     * Returns the settings entry lines recording what the type graph built by
+     * {@link #toTypeGraph(String)} does not determine about the meta-model.
+     * @see EcoreMapping#addEntries
+     */
+    @AIGenerated("Claude Opus 5, 2026-09")
+    public List<String> entryLines() {
+        List<String> result = new ArrayList<>(EcoreMapping
+            .entryLines(this.packageRecords, this.kindRecords, this.featureRecords,
+                        this.oppositeRecords));
+        result.addAll(this.nameRecords);
+        return result;
+    }
+
+    /** Recorded namespace data, keyed by Ecore package path. */
+    private final Map<String,PackageData> packageRecords = new LinkedHashMap<>();
+    /** Recorded classifier kinds, keyed by Ecore element path. */
+    private final Map<String,Kind> kindRecords = new LinkedHashMap<>();
+    /** Recorded feature declarations, keyed by Ecore element path. */
+    private final Map<String,FeatureData> featureRecords = new LinkedHashMap<>();
+    /** Recorded opposite references, keyed by Ecore element path. */
+    private final Map<String,String> oppositeRecords = new LinkedHashMap<>();
+    /** Recorded {@code typeName} entry lines, for the labels that are not
+     * derivable from the Ecore names. */
+    private final List<String> nameRecords = new ArrayList<>();
+
+    /** Computes the round-trip records of the meta-model. */
+    @AIGenerated("Claude Opus 5, 2026-09")
+    private void createRecords() {
         for (var pkg : this.names.packages()) {
-            append(packages, this.names.pathOf(pkg), nonNull(pkg.getNsURI()),
-                   nonNull(pkg.getNsPrefix()));
+            String path = this.names.pathOf(pkg);
+            String prefix = nonNull(pkg.getNsPrefix());
+            this.packageRecords
+                .put(path, new PackageData(nonNull(pkg.getNsURI()),
+                    prefix.equals(lastSegment(path))
+                        ? null
+                        : prefix));
         }
-        result.setProperty(PACKAGES_KEY, packages.toString());
-        StringBuilder types = new StringBuilder();
         for (var classifier : this.names.classifiers()) {
-            append(types, this.names.labelFor(classifier),
-                   this.names.pathOf(classifier.getEPackage()), nonNull(classifier.getName()),
-                   EcoreNames.kindOf(classifier));
+            String path = pathOf(classifier);
+            this.kindRecords.put(path, Kind.valueOfText(EcoreNames.kindOf(classifier)));
+            addNameRecord(path, this.names.labelFor(classifier), nonNull(classifier.getName()));
             if (classifier instanceof EEnum eEnum) {
+                String enumLabel = this.names.labelFor(eEnum);
                 for (var literal : eEnum.getELiterals()) {
-                    append(types, this.names.labelFor(literal),
-                           this.names.pathOf(eEnum.getEPackage()), nonNull(literal.getName()),
-                           EcoreNames.LITERAL_KIND);
+                    String name = nonNull(literal.getName());
+                    // the export derives the label of a literal by stripping the
+                    // enum label, so only a label it cannot derive is recorded
+                    addNameRecord(path + SEGMENT_SEP + name, this.names.labelFor(literal), name,
+                                  enumLabel + EcoreNames.SEPARATOR + name);
                 }
             }
         }
-        result.setProperty(TYPES_KEY, types.toString());
-        StringBuilder features = new StringBuilder();
         for (var classifier : this.names.classifiers()) {
-            if (!(classifier instanceof EClass eClass)) {
-                continue;
-            }
-            for (var feature : sortedFeatures(eClass)) {
-                String declaredType = declaredTypeOf(feature);
-                String originalName = originalNameOf(feature);
-                if (declaredType.isEmpty() && originalName.isEmpty() && !isMultiple(feature)) {
-                    // the declaration is completely reconstructible from the type graph
-                    continue;
-                }
-                append(features, this.names.labelFor(eClass), this.names.labelFor(feature),
-                       declaredType, Boolean.toString(feature.isOrdered()),
-                       Boolean.toString(feature.isUnique()),
-                       Integer.toString(Math.max(feature.getLowerBound(), 0)),
-                       Integer.toString(feature.getUpperBound()), originalName);
+            if (classifier instanceof EClass eClass) {
+                addFeatureRecords(eClass);
             }
         }
-        result.setProperty(FEATURES_KEY, features.toString());
-        StringBuilder opposites = new StringBuilder();
         Set<EReference> seen = new LinkedHashSet<>();
         for (var eClass : this.classes) {
             for (var reference : eClass.getEReferences()) {
                 var opposite = reference.getEOpposite();
                 if (opposite != null && !seen.contains(opposite)) {
                     seen.add(reference);
-                    append(opposites, featureRef(reference), featureRef(opposite));
+                    this.oppositeRecords.put(pathOf(reference), pathOf(opposite));
                 }
             }
         }
-        result.setProperty(OPPOSITES_KEY, opposites.toString());
-        return result;
+    }
+
+    /** Records the declarations of the features of a class that the type graph
+     * does not determine. */
+    @AIGenerated("Claude Opus 5, 2026-09")
+    private void addFeatureRecords(EClass eClass) {
+        for (var feature : sortedFeatures(eClass)) {
+            String declaredType = declaredTypeOf(feature);
+            String originalName = originalNameOf(feature);
+            if (declaredType.isEmpty() && originalName.isEmpty() && !isMultiple(feature)) {
+                // the declaration is completely reconstructible from the type graph
+                continue;
+            }
+            Bounds bounds
+                = new Bounds(Math.max(feature.getLowerBound(), 0), feature.getUpperBound());
+            this.featureRecords
+                .put(pathOf(feature), new FeatureData(declaredType.isEmpty()
+                    ? null
+                    : declaredType, feature.isOrdered()
+                        ? null
+                        : Boolean.FALSE, feature.isUnique()
+                            ? null
+                            : Boolean.FALSE, bounds.equals(DEFAULT_BOUNDS)
+                                ? null
+                                : bounds, originalName.isEmpty()
+                                    ? null
+                                    : originalName));
+        }
+    }
+
+    /** Records the GROOVE label of an Ecore element under a given path, unless
+     * it is one of the forms the export derives from the path by itself. */
+    @AIGenerated("Claude Opus 5, 2026-09")
+    private void addNameRecord(String path, String label, String... derived) {
+        for (var candidate : derived) {
+            if (label.equals(candidate)) {
+                return;
+            }
+        }
+        this.nameRecords.add(path + SEGMENT_SEP + EcoreMapping.TYPE_NAME_KEY + " = " + label);
+    }
+
+    /** Returns the Ecore element path of a classifier. */
+    private String pathOf(EClassifier classifier) {
+        return this.names.pathOf(classifier.getEPackage()) + SEGMENT_SEP
+            + nonNull(classifier.getName());
+    }
+
+    /**
+     * Returns the Ecore element path of a structural feature. The last segment
+     * is the Ecore name, except when that is not a single path segment — a name
+     * with a dot in it — in which case the GROOVE label stands in for it; the
+     * {@code name} field of the record carries the Ecore name either way.
+     */
+    private String pathOf(EStructuralFeature feature) {
+        String name = nonNull(feature.getName());
+        return pathOf(feature.getEContainingClass()) + SEGMENT_SEP
+            + (name.contains(SEGMENT_SEP)
+                ? this.names.labelFor(feature)
+                : name);
+    }
+
+    /** Returns the last segment of an Ecore element path. */
+    private static String lastSegment(String path) {
+        return path.substring(path.lastIndexOf(SEGMENT_SEP) + 1);
     }
 
     /** Returns the features declared by a given class, ordered by their GROOVE label.
@@ -335,15 +417,13 @@ public class EcoreToGraphs {
         if (!(attribute.getEType() instanceof EDataType dataType) || dataType instanceof EEnum) {
             return "";
         }
+        String name = nonNull(dataType.getName());
         Sort sort = sortOf(dataType);
         if (sort == null) {
-            // a custom data type: record it under the label of its classifier,
-            // so that it can be looked up among the recorded types
-            return this.names.classifiers().contains(dataType)
-                ? this.names.labelFor(dataType)
-                : nonNull(dataType.getName());
+            // a custom data type: record it under its Ecore name, which is
+            // how the recorded classifiers are keyed
+            return name;
         }
-        String name = nonNull(dataType.getName());
         return name.equals(DEFAULT_TYPE_MAP.get(sort))
             ? ""
             : name;
@@ -361,12 +441,6 @@ public class EcoreToGraphs {
         return name.equals(this.names.labelFor(feature))
             ? ""
             : name;
-    }
-
-    /** Returns the {@code type.feature} reference of a given structural feature. */
-    private String featureRef(EStructuralFeature feature) {
-        return this.names.labelFor(feature.getEContainingClass()) + "."
-            + this.names.labelFor(feature);
     }
 
     // ----------------------------------------------------------------------
@@ -676,65 +750,6 @@ public class EcoreToGraphs {
         return result;
     }
 
-    /** Appends a record of (escaped) fields to a metadata property value. */
-    private static void append(StringBuilder text, String... fields) {
-        if (!text.isEmpty()) {
-            text.append(RECORD_SEP);
-        }
-        for (int i = 0; i < fields.length; i++) {
-            if (i > 0) {
-                text.append(FIELD_SEP);
-            }
-            text.append(escape(fields[i]));
-        }
-    }
-
-    /** Escapes the separators (and the escape character) in a metadata field. */
-    public static String escape(String field) {
-        StringBuilder result = new StringBuilder();
-        for (int i = 0; i < field.length(); i++) {
-            char c = field.charAt(i);
-            if (c == ESCAPE_CHAR || c == RECORD_SEP_CHAR || c == FIELD_SEP_CHAR) {
-                result.append(ESCAPE_CHAR);
-            }
-            result.append(c);
-        }
-        return result.toString();
-    }
-
-    /**
-     * Splits a metadata property value at its unescaped separators.
-     * @param text the value to be split
-     * @param separator the separator to split at
-     * @param unescape if {@code true}, the escape characters are removed from the
-     * result; if {@code false} they are retained, so that the parts can be split
-     * again at a finer separator
-     */
-    public static List<String> split(String text, char separator, boolean unescape) {
-        List<String> result = new ArrayList<>();
-        StringBuilder current = new StringBuilder();
-        boolean escaped = false;
-        for (int i = 0; i < text.length(); i++) {
-            char c = text.charAt(i);
-            if (escaped) {
-                current.append(c);
-                escaped = false;
-            } else if (c == ESCAPE_CHAR) {
-                if (!unescape) {
-                    current.append(c);
-                }
-                escaped = true;
-            } else if (c == separator) {
-                result.add(current.toString());
-                current.setLength(0);
-            } else {
-                current.append(c);
-            }
-        }
-        result.add(current.toString());
-        return result;
-    }
-
     /** Returns a given string, or the empty string if it is {@code null}. */
     private static String nonNull(@Nullable String text) {
         return text == null
@@ -783,30 +798,10 @@ public class EcoreToGraphs {
         return result;
     }
 
-    /** Graph property key under which the package data is recorded. */
-    public static final String PACKAGES_KEY = "ecorePackages";
-    /** Graph property key under which the classifier data is recorded. */
-    public static final String TYPES_KEY = "ecoreTypes";
-    /** Graph property key under which the per-feature data is recorded.
-     * Only features are recorded whose Ecore declaration cannot be reconstructed
-     * from the type graph alone; the records are
-     * {@code owner|feature|declaredType|ordered|unique|lower|upper|originalName},
-     * with {@code originalName} empty unless the feature label had to be
-     * repaired.
-     */
-    public static final String FEATURES_KEY = "ecoreFeatures";
-    /** Graph property key under which the opposite reference pairs are recorded. */
-    public static final String OPPOSITES_KEY = "ecoreOpposites";
-    /** Separator between the records of a metadata property value. */
-    public static final char RECORD_SEP_CHAR = ';';
-    /** Separator between the fields of a metadata record. */
-    public static final char FIELD_SEP_CHAR = '|';
-    /** Character escaping a separator (or itself) inside a metadata field. */
-    public static final char ESCAPE_CHAR = '\\';
-    /** Separator between the records of a metadata property value. */
-    public static final String RECORD_SEP = String.valueOf(RECORD_SEP_CHAR);
-    /** Separator between the fields of a metadata record. */
-    public static final String FIELD_SEP = String.valueOf(FIELD_SEP_CHAR);
+    /** Separator between the segments of an Ecore element path. */
+    private static final String SEGMENT_SEP = ".";
+    /** The multiplicity bounds a feature record does not have to mention. */
+    private static final Bounds DEFAULT_BOUNDS = new Bounds(0, 1);
 
     /** Separator between an aspect prefix and what follows it. */
     private static final String SEP = ":";

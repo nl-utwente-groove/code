@@ -304,7 +304,11 @@ public abstract class SimulatorAction extends AbstractAction implements Refresha
      * hand-written per-element entries and comments survive.
      * The resource is changed through the (undoable) store, so that the
      * subsequent port sees the new values; this is why the dialog is shown
-     * before the port rather than as part of it.
+     * before the port rather than as part of it. An import writes to the same
+     * resource afterwards, recording what the type graph does not determine
+     * about the imported metamodel — but it does so by returning the updated
+     * text as an {@link nl.utwente.groove.io.external.Imported}, since
+     * importers are side-effect free.
      * @param fileType the file type chosen for the import or export
      * @return {@code false} if the user cancelled the dialog, in which case the
      * port should not go ahead

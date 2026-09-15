@@ -80,6 +80,25 @@ jobs:
       # the release poms are a separate reactor that receives the version
       # via -Drevision; the main pom's revision property is the source
       run: echo "VERSION=$(mvn -B -q help:evaluate -Dexpression=revision -DforceStdout)" >> $GITHUB_ENV
+    - name: Check the pom version and the tag
+      # the pom's revision must be a release version x.y.z, and the tag
+      # release-x_y_z must name it. The build's enforcer rule admits a
+      # -SNAPSHOT suffix, which a release must not have, and the tag filter
+      # above admits release-7_5_4-SNAPSHOT as well, so the form is checked
+      # here in full. The asset names and the pre-release flag follow the pom,
+      # not the tag, so a tag on a commit whose revision was not updated would
+      # otherwise publish mislabelled assets, and a test release as a full
+      # one; this stops the run before anything is built or published
+      run: |
+        if ! [[ "$VERSION" =~ ^(0|[1-9][0-9]?)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+          echo "::error::A release needs a pom revision of the form x.y.z, with natural numbers x < 100, y and z, but the tagged commit has $VERSION"
+          exit 1
+        fi
+        EXPECTED=$(echo "${GITHUB_REF_NAME#release-}" | tr _ .)
+        if [ "$VERSION" != "$EXPECTED" ]; then
+          echo "::error::Tag $GITHUB_REF_NAME expects pom revision $EXPECTED, but the tagged commit has $VERSION"
+          exit 1
+        fi
     - name: Build GROOVE
       run: mvn -B clean install
     - name: Install yFiles library
@@ -120,20 +139,27 @@ jobs:
 
   # Builds self-contained installers (with bundled Java runtime) via jpackage
   # and attaches them to the release created by the job above. jpackage can
-  # only build for the platform it runs on, hence the matrix.
+  # only build for the platform it runs on, hence the matrix; one entry per
+  # installer, since jpackage builds one type per run.
   installers:
     needs: release
 
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - windows-latest   # Windows x64 (.msi)
-          - macos-latest     # macOS aarch64 (.dmg)
+        include:
+          - os: windows-latest   # Windows x64
+            type: msi
+          - os: macos-latest     # macOS aarch64
+            type: dmg
           # Intel image; guaranteed to exist only until August 2027, after
           # which github drops x64 macOS runners altogether
-          - macos-15-intel   # macOS x64 (.dmg)
-          - ubuntu-latest    # Linux x64 (.deb)
+          - os: macos-15-intel   # macOS x64
+            type: dmg
+          - os: ubuntu-latest    # Linux x64
+            type: deb
+          - os: ubuntu-latest    # Linux x64
+            type: rpm
 
     runs-on: ${{ matrix.os }}
 
@@ -161,8 +187,14 @@ jobs:
     - name: Build release zip
       # bin+doc is excluded because it needs the javadoc skipped above
       run: cd release; mvn -B -Drevision=$VERSION -pl '!assembly/bin+doc' clean package
+    - name: Install rpmbuild
+      # jpackage needs rpmbuild for the rpm type; the ubuntu image ships the
+      # rpm package that provides it, but the install is cheap insurance
+      # against the image dropping it
+      if: matrix.type == 'rpm'
+      run: sudo apt-get install -y rpm
     - name: Build installer
-      run: bash release/jpackage/build-installer.sh $VERSION
+      run: bash release/jpackage/build-installer.sh $VERSION ${{ matrix.type }}
     - name: Attach installer to release
       uses: ncipollo/release-action@v1.21.0
       with:
