@@ -1,7 +1,8 @@
 # Release 8.0.0: preparation state
 
 Handoff note for the release of GROOVE 8.0.0 from `yworks-migration` (merged into
-`master`). Written 2026-09-14; the Maven module split (gh #887) is out of scope.
+`master`). Written 2026-09-14, re-checked 2026-09-15; the Maven module split (gh #887)
+is out of scope.
 
 ## Branches and worktrees
 
@@ -29,28 +30,40 @@ All off the `yworks-migration` tip 103f6b74d, worktrees under `.claude/worktrees
 
 ## Checklist
 
-Done: change notes; PDF manual and quick reference removal; website draft; manual
-proposal with answers; release-page texts (item 4); `Version` javadoc for 3.12 (item 8);
-grammar version already 3.12 (no bump needed).
+Done: change notes (brought up to date with master again on 2026-09-15, after the
+merge of master into this branch: gh #819, #877 restriction, Ecore metadata in the
+settings resource, rpm installer); PDF manual and quick reference removal; website
+draft; manual pass (all six chapters checked against 8.0.0); release-page texts;
+`Version` javadoc for 3.12; grammar version already 3.12 (no bump needed);
+`yfiles-lib` branch `yworks-migration` merged into `main` (2026-09-14, in sync with
+origin); gh #819, #846, #851 closed; gh #911 settled by reinstating the ban.
 
 Before the tag, in order:
 
-1. Merge `yfiles-lib` branch `yworks-migration` into `main` (18 commits ahead); a
-   `master` tag resolves to `main` there via `release/github/choose-backend.sh`.
+1. Website: branch `release-8_0_0` stops at 6dd7135, but the worktree's detached HEAD
+   17860f6 ("Finished the basics and advanced chapters for 8.0.0") is on no branch;
+   `git branch -f release-8_0_0 17860f6` in the website repository. Then add the `.rpm`
+   row to the asset table of `installing.md` (only the `.deb` is listed), and reword the
+   transition-label paragraph of `manual/basics.md`, which still calls the syntax
+   String.format-like (now `%s`, `%i$s`, `%%` only, gh #877).
 2. Check `YFILES_LIB_TOKEN` has not expired (no skip guard in `release.yml`).
 3. `revision` 7.5.4-SNAPSHOT -> 8.0.0 in `pom.xml` and `yfiles-lib/pom.xml`;
    `GROOVE_BUILD` (still 20260702); CHANGES.md heading "Upcoming release (8.0.0)" ->
    release form with date (underline style feeds `release-notes.sh`).
-4. Full suite, GUI tests, yFiles backend tests on the merged tip.
-5. Decide the version-sensitive issues: gh #911 (indeterminate operators on quantified
-   levels silently accepted; reinstating the check is ~1h), gh #819 (ESC commits in the
-   JGraph editor), gh #877 restriction half. Consider #917, #915, #907, #898 item 1, #558.
-   Close gh #846 (fixed in 7.5.3, never closed); #851 is unreproducible as filed.
-6. Website: merge `release-8_0_0` when the release is out (it names 8.0.0 as current);
-   manual per the plan below (gh #896 is the minimum).
-7. Post-release: bump to 8.0.1-SNAPSHOT, Maven Central deploy, close the issues in the
+4. Full suite, GUI tests, yFiles backend tests on the merged tip (not run since the
+   merge of master).
+5. Remaining issue decisions: gh #558 and #907 are being looked at in a parallel
+   session (2026-09-15); #917, #915, the remainders of #877 and #898, and the old bugs
+   #869 and #828 are not version-sensitive. Decide whether #909 closes with the release
+   or stays open for the JGraph removal.
+6. Test-release residue: tags `release-99_0_1` to `_6` locally, `_3`, `_4`, `_6` on
+   origin, pre-release 99.0.6 on GitHub; delete before or after tagging.
+7. Website: merge `release-8_0_0` when the release is out (it names 8.0.0 as current);
+   regenerate the figures and reference pages at the tag (see the manual plan); close
+   gh #896.
+8. Post-release: bump to 8.0.1-SNAPSHOT, Maven Central deploy, close the issues in the
    change notes, delete `claude/yfiles-private-move-state.md`, download-stats SourceForge
-   import and website page.
+   import (the website page is on the website's `main`).
 
 ## Manual plan
 
