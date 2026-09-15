@@ -519,7 +519,8 @@ add-on (two products to explain, macOS gap); a single installer with a yFiles qu
    `groove-yfiles` in place of the old nested project (delete the old one from the workspace first). Until then the backend is built
    from that clone.
 4. **The license questions for yWorks**, drafted as a message in
-   `claude/yworks-question-2026-09.md` for Arend to send (2026-09-09). The questions,
+   `claude/yworks-question-2026-09.md` for Arend to send (2026-09-09; moved to the
+   private repository `yfiles-lib` on 2026-09-15, still unsent). The questions,
    sharpened after re-reading the SLA (see "License constraints"):
    (a) the Subscription status and delivered generation of the license (the code is
    written against 3.6.0.1);
@@ -539,7 +540,8 @@ add-on (two products to explain, macOS gap); a single installer with a yFiles qu
    repository readable by the licensed developer and the build automation only;
    (f) §1/§2.1c: whether the commits that added the backend source must be purged
    from the public history, or removal from the current branches suffices (the purge
-   procedure is estimated in `claude/yfiles-private-move-state.md`);
+   procedure was estimated in `claude/yfiles-private-move-state.md`, deleted since and
+   left in the history; the purge was done on 2026-09-10);
    (g) §2.1d: the add-on jar necessarily has public classes (the service provider,
    the canvases GROOVE calls); acceptable if documented as internal, or must the
    surface be reduced;
