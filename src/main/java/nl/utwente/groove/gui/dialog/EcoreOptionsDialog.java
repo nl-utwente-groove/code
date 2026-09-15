@@ -28,6 +28,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JRadioButton;
 
+import nl.utwente.groove.io.external.format.ecore.EcoreMapping;
 import nl.utwente.groove.io.external.format.ecore.EcoreMapping.Ordering;
 
 /**
@@ -96,7 +97,9 @@ public class EcoreOptionsDialog {
         if (this.optionPane == null) {
             this.optionPane = new JOptionPane(
                 new Object[] {new JLabel("Order of multi-valued features:"), getNoneButton(),
-                    getIndexButton(), getIdentifierBox()},
+                    getIndexButton(), getIdentifierBox(), new JLabel(" "),
+                    new JLabel("The options are kept in the '" + EcoreMapping.RESOURCE_NAME
+                        + "' settings resource, which can be edited later.")},
                 JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION, null,
                 new Object[] {getOkButton(), getCancelButton()});
         }
