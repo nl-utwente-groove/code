@@ -26,6 +26,7 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.aspect.AspectGraph;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.ChangeCount;
 import nl.utwente.groove.util.ChangeCount.Tracker;
 import nl.utwente.groove.util.Status;
@@ -140,6 +141,9 @@ abstract public class ResourceModel<R> {
             try {
                 checkSourceProperties();
                 this.resource = compute();
+                // the build succeeded, so the source has no blocking errors,
+                // but it may carry diagnostics that should travel with the model
+                addErrors(getSourceDiagnostics());
                 this.status = Status.DONE;
             } catch (FormatException e) {
                 this.resource = null;
@@ -254,6 +258,16 @@ abstract public class ResourceModel<R> {
      */
     public final boolean hasErrors() {
         return getErrors().hasErrors();
+    }
+
+    /**
+     * Returns the non-blocking diagnostics of the model source, to be carried
+     * over to the model after a successful build. Empty by default; a model
+     * whose source can carry diagnostics of its own should override this.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    FormatErrorSet getSourceDiagnostics() {
+        return FormatErrorSet.EMPTY;
     }
 
     /** Callback factory method to create an appropriate error collection. */
