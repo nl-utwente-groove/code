@@ -58,6 +58,36 @@
 			</plugin>
 
 			<plugin>
+				<!-- Fails every build (in the validate phase) on a revision that
+				     is not x.y.z, with natural numbers x < 100, y and z, plus an
+				     optional -SNAPSHOT suffix; a release additionally requires
+				     the suffix to be absent, which release.yml checks. The
+				     release workflow reads the pre-release flag off this form
+				     (a leading "99."), so a malformed revision such as 99_0_6
+				     would otherwise be published as a full release -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<version>3.6.3</version>
+				<executions>
+					<execution>
+						<id>check-revision</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<requireProperty>
+									<property>revision</property>
+									<regex>(0|[1-9][0-9]?)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-SNAPSHOT)?</regex>
+									<regexMessage>The revision property must have the form x.y.z or x.y.z-SNAPSHOT, with natural numbers x &lt; 100, y and z (without leading zeros), but is ${revision}</regexMessage>
+								</requireProperty>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
 				<!-- Generates CtrlLexer, CtrlParser and CtrlChecker in
 				     nl.utwente.groove.control.parse from the ANTLR 3 grammars
 				     Ctrl.g and CtrlChecker.g (in src/main/antlr3) at build time -->
