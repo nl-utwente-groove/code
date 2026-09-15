@@ -21,7 +21,7 @@ All off the `yworks-migration` tip 103f6b74d, worktrees under `.claude/worktrees
   generated exploration-key reference (manual plan step 1); 2238066 the multigraph
   documentation for gh #896 (step 3, with the fixture grammar and two new figures from
   step 4); 5578456 temporal goals left out of the reference; 68cbc2f the verification
-  chapter rewrite (step 2). Branch `quick-reference-drop` (worktree of the same name) is
+  chapter rewrite (step 2); e26b4c2 all figures re-rendered (step 4). Branch `quick-reference-drop` (worktree of the same name) is
   subsumed by this and can be deleted.
 - Quick reference chart: dropped 2026-09-14 (2012 tutorial poster by Tim Molderez for
   GROOVE 4.x, source never in a repository, Simulator screenshot unrenderable). The copy in
@@ -88,15 +88,19 @@ chapter moves to 8.0.0 in the commit that revises the chapter (see the last open
    both chapters still have other 8.0.0 items open (string escapes, remark merging, duplicate
    node ids, `use=q:` on `test:`/`let:`, priority/control conflict). gh #896 can be closed
    once the branch is merged; it still names the property `parallelEdges`.
-4. PARTLY DONE: `graphs.gps/system.properties` hand-written at grammar version 3.12 with
-   `semantics=SPO-multi` (obsolete `subtypes`/`enableControl` keys dropped); new fixtures
-   `parallel-edges.gst` and `parallel-rule.gpr` rendered to four SVGs (edge bend points
-   were needed, since parallel edges between the same nodes are drawn on top of each
-   other). Still to do: re-render all figures with `make-figures.sh` against the release
-   classpath (`multiple-edges-left/right.gst` turned out to show differently labelled edges,
-   not parallel copies, so they were not used) and diff the SVGs (expected changes: straight
-   edges between axis-aligned nodes, filled embargo arrow heads, `!a` no longer rendered as
-   a regular expression). One yFiles-rendered figure only if it shows a visible difference:
+4. DONE (2238066 and the figure commit after 68cbc2f): `graphs.gps/system.properties`
+   hand-written at grammar version 3.12 with `semantics=SPO-multi` (obsolete
+   `subtypes`/`enableControl` keys dropped); new fixtures `parallel-edges.gst` and
+   `parallel-rule.gpr` (edge bend points were needed, since parallel edges between the
+   same nodes are drawn on top of each other; `multiple-edges-left/right.gst` show
+   differently labelled edges, not parallel copies, and stay unused). All 70 figures
+   re-rendered with `make-figures.sh` against the candidate build: 53 SVGs differ, none
+   in label text, only half-pixel shifts, filled embargo arrow heads and straightened
+   edges between aligned nodes; the manual text needed no change (the `!a` display note
+   in `basics.md` still holds: negations remain italic edges). Regenerate once more at the
+   tag with the release classpath. Of the three expected changes (straight edges between
+   axis-aligned nodes, filled embargo arrow heads, `!a` no longer rendered as a regular
+   expression) the third did not show. One yFiles-rendered figure only if it shows a visible difference:
    with a stored layout the two backends differ cosmetically (fonts, arrow heads, label
    placement), so the candidate is an automatic layout such as hierarchic or organic of a
    larger graph, rendered with `Imager -b yfiles` on a machine with the add-on installed.
