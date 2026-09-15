@@ -284,6 +284,10 @@ if [[ $TYPE != app-image ]]; then
             ;;
         linux)
             args+=(--linux-menu-group Development)
+            if [[ $TYPE == rpm ]]; then
+                # the rpm License tag; without it jpackage writes "Unknown"
+                args+=(--linux-rpm-license-type Apache-2.0)
+            fi
             ;;
     esac
 fi
