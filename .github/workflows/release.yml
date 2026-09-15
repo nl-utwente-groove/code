@@ -80,13 +80,20 @@ jobs:
       # the release poms are a separate reactor that receives the version
       # via -Drevision; the main pom's revision property is the source
       run: echo "VERSION=$(mvn -B -q help:evaluate -Dexpression=revision -DforceStdout)" >> $GITHUB_ENV
-    - name: Check the tag against the pom version
-      # the tag release-x_y_z must name the pom's revision x.y.z. The asset
-      # names and the pre-release flag follow the pom, not the tag, so a tag
-      # on a commit whose revision was not updated would otherwise publish
-      # mislabelled assets, and a test release as a full one; this stops the
-      # run before anything is built or published
+    - name: Check the pom version and the tag
+      # the pom's revision must be a release version x.y.z, and the tag
+      # release-x_y_z must name it. The build's enforcer rule admits a
+      # -SNAPSHOT suffix, which a release must not have, and the tag filter
+      # above admits release-7_5_4-SNAPSHOT as well, so the form is checked
+      # here in full. The asset names and the pre-release flag follow the pom,
+      # not the tag, so a tag on a commit whose revision was not updated would
+      # otherwise publish mislabelled assets, and a test release as a full
+      # one; this stops the run before anything is built or published
       run: |
+        if ! [[ "$VERSION" =~ ^(0|[1-9][0-9]?)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+          echo "::error::A release needs a pom revision of the form x.y.z, with natural numbers x < 100, y and z, but the tagged commit has $VERSION"
+          exit 1
+        fi
         EXPECTED=$(echo "${GITHUB_REF_NAME#release-}" | tr _ .)
         if [ "$VERSION" != "$EXPECTED" ]; then
           echo "::error::Tag $GITHUB_REF_NAME expects pom revision $EXPECTED, but the tagged commit has $VERSION"
