@@ -198,6 +198,15 @@ Grammars, rules and the editor
   that loaded in 7.5 with such a rule now report an error on it. Lifting the
   restriction properly, by recording and re-seeding sub-level outcomes, is
   tracked in the issue.
+- A rule's `transitionLabel` admits only `%s`, `%i$s` (explicit parameter index,
+  so parameters can be reordered) and `%%`; it used to be an arbitrary
+  `String.format` string, rendered at run time with a silent fallback to the rule
+  name when the format failed. The format is now parsed once, at rule
+  compilation, and any other specifier or an arity that does not match the
+  rule's parameters is an error on the rule, naming the offending specifier. A
+  label that renders to the empty string stays empty instead of reverting to the
+  rule name. `printFormat` keeps the full `String.format` syntax (gh #877, in
+  preparation of template matching in temporal propositions).
 - Calls and imports of units in disabled or erroneous control programs and rules
   get informative errors instead of "Unknown unit" (gh #560).
 - Format errors carry a severity (error, warning, info) and only errors block
@@ -219,7 +228,11 @@ Grammars, rules and the editor
   styles, act on the selected edges only and are a single edit; Add/Remove Point
   act at the pointer and pick the nearest segment. Control-dragging a label no
   longer crashes (gh #843). The snap-to-grid button is enabled as soon as the
-  first editor opens, not only after the next unrelated change.
+  first editor opens, not only after the next unrelated change. Escape cancels an
+  in-place label edit instead of committing it, so a half-typed label no longer
+  reaches the type-graph converter, and a type label that is missing where one
+  is required is reported as a format error instead of crashing the event thread
+  (gh #819).
 - Editor: bidirectional edges are merged in preview mode (gh #336); find/replace
   offers labels that fail to type and works when all labels are erroneous
   (gh #701); renaming a resource to a case variant of its name is allowed
@@ -263,8 +276,13 @@ Import and export
   host graph, and both export again. Multiplicities become `out=lo..hi:`,
   containment `part:`, abstract classes and enums `abs:`/`sub:`. Options
   (`ordering`, `useIdentifiers`, per-element overrides) live in an `ecore`
-  settings resource and are offered in a dialog at import and export time. The
-  EMF dependency is at 2.41.
+  settings resource and are offered in a dialog at import and export time.
+  The metadata that lets an export reproduce an imported metamodel (packages,
+  classifier kinds, feature declarations, opposites) is recorded in the same
+  resource, merged in under a comment naming the imported file so that
+  hand-written entries and comments survive a re-import; imported type graphs
+  are plain GXL. A label without an entry exports as a class of the default
+  package. The EMF dependency is at 2.41.
 - Settings resources are a new resource kind: schema-checked Java properties
   files inside the `.gps`, in folders named after their schema (`explore`,
   `ecore`), with a display, a template for new resources and line-precise
@@ -397,10 +415,11 @@ counterexample), #560 (errors for disabled units), #561 (control variables and
 expression arguments), #701 (find/replace), #725 (quantifier levels on
 test/let edges), #727 (`ModelChecker -ltl`), #732 (edge-bound labels), #733
 (recipe priority, partial), #756 (priority/control conflict), #780 (duplicate
-node ids), #784 (match bound), #843 (label drag crash), #853 (case-only rename),
+node ids), #784 (match bound), #819 (Escape in the editor), #843 (label drag crash), #853 (case-only rename),
 #854 (memory when saving), #855 (`transitionLabel` in LTL), #858 (sub-level match
 emphasis), #861 (LTS export as control), #863 (CTL on partial explorations),
-#865 (exploration dialog), #867 (level tag placement), #878 (subtype arrow
+#865 (exploration dialog), #867 (level tag placement), #877 (`transitionLabel` format,
+partial), #878 (subtype arrow
 label), #879 (occurrence counts), #881 (JDK nullness annotations), #885 (error
 severity), #888, #894 (determinism across runs), #890 (minimax removal), #891
 (diagnostic logging), #892 (DFA minimisation), #897 (random seed), #900

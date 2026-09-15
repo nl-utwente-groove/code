@@ -8,7 +8,7 @@ Upcoming release (8.0.0)
 Major release; `CHANGES-8_0_0.md` expands on every item below
 
 - Graph views run on a swappable backend; yFiles for Java is available as an optional add-on (gh #909)
-- Platform-native installers for Windows, macOS and Linux with bundled Java runtime; the zips need Java 21+
+- Platform-native installers (`.msi`, `.dmg`, `.deb`, `.rpm`) with bundled Java runtime; the zips need Java 21+
 - Multigraph transformation: new `semantics` property (`SPO-simple`, `SPO-multi`, `DPO`) and `mult=k:` host aspect
 - Regular expressions are no longer witnessed by edges the rule erases (`regExpMatching` property, gh #900)
 - Exploration is configured in settings resources (`explore` folder) and a reworked dialog; Generator `-x`
@@ -25,7 +25,7 @@ Major release; `CHANGES-8_0_0.md` expands on every item below
 - Control: dead out-parameter values no longer distinguish states; expression arguments fixed (gh #561)
 - Recipes: an undefined in-argument makes the call inapplicable; deleted out-parameters render as `_`
 - CTL always explores the full state space (gh #863); weak-until and release verdicts corrected
-- LTL counterexamples are proper lassos (gh #484); special transition labels are respected (gh #855)
+- LTL counterexamples are proper lassos (gh #484); special transition labels are respected (gh #855) and restricted to `%s` forms (gh #877)
 - Regular-expression automaton minimisation and equivalence fixed (gh #892)
 - Faster multigraph exploration through edge pooling and per-bundle certificates (gh #905, #906)
 - Saving large state spaces needs far less memory (gh #854); text exports are UTF-8 with LF line ends
@@ -33,7 +33,7 @@ Major release; `CHANGES-8_0_0.md` expands on every item below
 - Diagnostic logging through `-log level[:subsystem]` on all command-line tools (gh #891)
 - FlatLaf look-and-feel (HiDPI, light/dark) replaces JGoodies; macOS Cmd-Q runs the quit action
 - Editor: one undo step for create-and-label (gh #913), own clipboard, offset paste, line-style and bend fixes
-- Editor: bidirectional edges merged in preview (gh #336), find/replace on untyped labels (gh #701), case-only rename (gh #853)
+- Editor: bidirectional edges merged in preview (gh #336), find/replace on untyped labels (gh #701), case-only rename (gh #853), Escape cancels edits (gh #819)
 - Display: sub-level match emphasis (gh #858), quantifier names shown, type-graph fixes (gh #878, #879), level tags (gh #867)
 - Legacy `disabledRules` property converted on loading; unknown names in `ruleEnabling` are warnings (gh #908)
 - Removed: RETE engine, `remote` and `minimax` strategies (gh #890), `ModelChecker -ltl` (gh #727), old Ecore layer
