@@ -113,7 +113,12 @@ chapter moves to 8.0.0 in the commit that revises the chapter (see the last open
    `typeName`, `literalStyle`), LTS export extensions and defaults, gh #854/#861, Imager
    `-b`. *Checked against* moved to 8.0.0. Not verified by running the tool: the dialog
    offered at import/export time and the Settings-tab template (from the change notes).
-   `control.md`: the B items of the table in §2 of the proposal — still to do.
+   `control.md` DONE (website commit after fad46f1): the priority/control conflict
+   (gh #756) under Calls and expressions, mirrored in the recipe bullet and in the
+   `priority` bullet of `basics.md`; variable liveness (gh #561) under Variables and
+   arguments; recipe call edge cases in the recipe bullet; unavailable procedures in
+   disabled or erroneous programs (gh #560). *Checked against* moved to 8.0.0. That group
+   calls honour priorities is taken from `Term`'s prioritised choice, not from a run.
 6. `introduction.md`: the four wrong statements of §3 of the proposal; no new Simulator
    chapter, no add-on or extension-directory material (that stays on `installing.md`); the
    format-error severities get a paragraph where errors are first mentioned, not a section.
