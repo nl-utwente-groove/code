@@ -24,7 +24,8 @@ All off the `yworks-migration` tip 103f6b74d, worktrees under `.claude/worktrees
   generic `x_y_z` asset names, add-on section linking `YFILES-ADDON.md`), `mac.md`
   (blocked `.dmg`), `index.md` (ModelChecker restored), `manual.md` (legacy PDF section
   gone), `manual/introduction.md` (8.0.0, installers bundle Java). Branch
-  `quick-reference-drop` (worktree of the same name) is subsumed by this and can be deleted.
+  `quick-reference-drop` was merged into it on 2026-09-15 (no content change) and deleted,
+  worktree included.
 - Quick reference chart: dropped 2026-09-14 (2012 tutorial poster by Tim Molderez for
   GROOVE 4.x, source never in a repository, Simulator screenshot unrenderable). The copy in
   the usermanual repo is left in place.
