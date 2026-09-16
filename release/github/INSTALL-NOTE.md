@@ -14,13 +14,16 @@ The `linux`, `macos` and `windows` assets are automatic installers for the three
 
 #### Potential installation problems
 
-The installers are not code-signed, so Windows and MacOS block them at initial invocation, throwing up a warning screen. Here is how to solve this:
+The installers are not code-signed, so Windows and MacOS block them at initial invocation, throwing up a warning screen, and some Linux package managers ask before installing the `.rpm`. Here is how to solve this:
 
 - **Windows** (*"Windows protected your PC"*):
   Right-click the downloaded `.msi` → `Properties` → `General` → tick `Unblock` at the bottom; then press `OK` and run it again.
   
 - **MacOS** (*"Apple could not verify GROOVE…"*):
   After the warning, open `System Settings` → `Privacy & Security` and click `Open Anyway`.
+
+- **Linux** (*"Package is not signed!"*):
+  `zypper` asks whether to continue: answer yes. `dnf` and `rpm -i` install the `.rpm` without asking; if `dnf` refuses, add `--nogpgcheck`. The `.deb` is not affected, as `apt` and `dpkg` do not check signatures of local package files.
 
 More detailed instructions can be found in `IF-WINDOWS-OR-MACOS-BLOCKS-THE-INSTALLER.txt` among the assets. If you cannot get the installer for your platform to work, please [file an issue on github](https://github.com/nl-utwente-groove/code/issues) and use the manual installation route for now (see above).
 

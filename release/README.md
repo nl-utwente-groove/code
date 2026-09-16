@@ -123,7 +123,7 @@ The `.msi` shows the licence in a narrow box on its first page. jpackage convert
 
 ## The release page
 
-The installers are not code-signed, so Windows and macOS block them at first. The release page therefore explains how to get past that, in two places, both kept in `github`:
+The installers are not code-signed, so Windows and macOS block them at first, and rpm-based package managers may ask before installing the `.rpm` (`zypper` does, `dnf` normally does not; `apt` and `dpkg` never check local `.deb` files). The release page therefore explains how to get past that, in two places, both kept in `github`:
 
 - `INSTALL-NOTE.md` opens the body of the release page. The `release` job builds the body with `github/release-notes.sh`, which appends this release's section of `include/CHANGES.md` (its first section) in a collapsed block, so that the note stays close to the asset list below it. Run `bash github/release-notes.sh` to preview the body. To save the preview to a file from Windows PowerShell, keep the redirection inside bash, as in `bash -c "github/release-notes.sh > body.md"`: PowerShell 5.1's `>` writes UTF-16, which GitHub does not render as Markdown (in a gist, for instance).
 - `IF-WINDOWS-OR-MACOS-BLOCKS-THE-INSTALLER.txt` is attached to the release as an asset, with step-by-step instructions. Its name is the message, for those who read nothing but the asset list.
