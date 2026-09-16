@@ -100,14 +100,33 @@ The tagged branch must be pushed, since the rule resolves against the remote bra
 
 ## Installers
 
-The `installers` job of the release workflow (`.github/workflows/release.yml`) runs `jpackage/build-installer.sh` on a matrix of platform runners — jpackage can only build for the platform it runs on — and attaches the resulting installers to the same github release.
+The `installers` job of the release workflow (`.github/workflows/release.yml`) runs `jpackage/build-installer.sh` on a matrix of platform runners — jpackage can only build for the platform it runs on — and attaches the resulting installers to the same github release. The job sets up JDK 25 rather than the Java 21 the code targets: jpackage bundles a runtime trimmed from the JDK it runs on, so that is the Java the installers ship. The launchers start their JVM with compact object headers (`-XX:+UseCompactObjectHeaders`, a product option since JDK 25, worth 7–10% of heap in exploration); the script adds the option only when its jpackage is 25 or newer, since an older JVM refuses to start on it.
 The script unpacks the `-bin` zip and turns it into a native package with a bundled, jlink-trimmed Java runtime: the Simulator becomes the main launcher (which jpackage names after the application: GROOVE), the tools (Simulator, Generator, ModelChecker, Imager, Viewer) become additional launchers named after themselves. All of them carry menu entries, so the menu lists GROOVE next to the Simulator: jpackage offers no way to suppress the main launcher's entry that leaves those of the tools in place.
 
 To try this locally without any packaging tools, build the release as described above and then run
 
     bash jpackage/build-installer.sh x.y.z app-image
 
-which produces the raw application directory (no installer) under `jpackage/target/dist`. Building the actual `.msi` locally additionally requires the WiX toolset.
+which produces the raw application directory (no installer) under `jpackage/target/dist`. On Windows this must be Git Bash: in PowerShell, `bash` resolves to WSL's `C:\Windows\System32\bash.exe`, and the script then runs under Linux with the Linux jpackage, which knows no `msi` ("Invalid or unsupported type: [msi]"). Either run the script from a Git Bash window, or name Git Bash: `& "C:\Program Files\Git\bin\bash.exe" release/jpackage/build-installer.sh x.y.z msi`.
+
+### Building the Windows installer locally
+
+1. Install WiX 3.14, the version the GitHub Windows runner has. Its installer (`wix314.exe`, from the wix3 releases on GitHub) puts it under `C:\Program Files (x86)\WiX Toolset v3.14`, where jpackage finds it without any PATH change. The `wixtoolset` package of scoop is WiX 7, the .NET `wix.exe`, which jpackage 25 accepts as a toolset but which rejects the spliced `main.wxs`: jpackage converts only its own sources to the WiX 4 syntax, not a custom one. Making the script convert the file (`wix convert`, plus the `override` keyword WiX 4 wants on the rescheduled close-applications action) does yield a working `.msi`, but the release path uses WiX 3, so the script stays with that.
+2. Point `JAVA_HOME` at a JDK 25, the version the installers job uses: the runtime it bundles and the compact object headers it enables come from the jpackage JDK (see above). With an older JDK the script warns and leaves the compact headers out. The core build is unaffected: it targets Java 21 whatever JDK runs it.
+3. Build the core artifact and the release zip, on the branch to be tested (the main checkout is where Eclipse builds; a worktree does as well):
+
+        mvn -B clean install -DskipTests
+        cd release; mvn -B -Drevision=x.y.z -pl '!assembly/bin+doc' clean package; cd ..
+
+    `x.y.z` is the pom's `revision`, `-SNAPSHOT` suffix included; the script strips the suffix for the MSI version number.
+4. Build the installer, from the repository root in Git Bash:
+
+        bash release/jpackage/build-installer.sh x.y.z msi
+
+    The log should end in `installer built: .../jpackage/target/dist/groove-x_y_z-windows-x64.msi`. A failed splice check ("cannot splice the installer additions into jpackage's main.wxs") means the `main.wxs` of this JDK differs in structure from the one the fragments in `jpackage/wix` were written against.
+5. Install it by double-clicking; the installation is per user and needs no elevation. Things to look at: with another version installed, the first page says that it will be replaced; the licence page shows paragraphs, not ragged lines; the last page offers to start the Simulator; with the Simulator running, a second run of the same `.msi` first shows the Cancel/Retry/Ignore box. The installation lands in `%LOCALAPPDATA%\GROOVE`, with the launchers' JVM options in `app\<launcher>.cfg`.
+6. Check the running JVM from outside, since a GUI launcher has no console. A JDK's `jcmd -l` lists the Java processes with their main jar, which is how to tell the JVM from the windowless launcher process next to it (attaching to the latter fails with "Access is denied"); then `jcmd <pid> VM.flags` shows the options in effect, `-XX:+UseCompactObjectHeaders` among them. The bundled runtime has no `jcmd`; use the one of the JDK that built the installer.
+7. Uninstall through Settings > Apps. This also removes the yFiles add-on from the extension directory, see below.
 
 Uninstalling the `.msi` also removes the yFiles add-on (see the second chapter) from the user's extension directory, so that the library does not outlive the GROOVE version it was built for; the old version of an upgrade counts as uninstalled, and the new version then offers the add-on again at its first start. The other installers do not do this: a `.dmg` has no uninstall step at all. jpackage's own WiX sources know nothing about the add-on, but take a custom `main.wxs` from a resource directory in place of the bundled one, so the script extracts the bundled one from the running JDK and splices the removal (`jpackage/wix/addon-cleanup.wxf`) into it at build time. A checked-in copy of `main.wxs` would go stale with every JDK upgrade; the splice instead fails the build if the structure of `main.wxs` changes. Only the add-on directory and, if they are empty afterwards, the directories above it are removed; other extensions the user put there stay, as does the record in the Java preferences that the first-run question was asked, so a reinstallation of the same version does not repeat that question.
 
