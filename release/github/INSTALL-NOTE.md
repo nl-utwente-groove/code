@@ -10,7 +10,7 @@ The `groove-…-bin[+doc].zip` assets contain compiled sources (one of them with
 <details>
 <summary><b>Automatic installers</b></summary>
 
-The `linux`, `macos` and `windows` assets are automatic installers for the three most common platforms. They will save you the trouble of unzipping, having the right Java version on your machine and getting the invocation correct. Note that the installers have few customisation options; among other things, they use a fixed, platform-default installation path. If you want more control, use the manual installation route above.
+The `linux`, `macos` and `windows` assets are automatic installers for the three most common platforms. They will save you the trouble of unzipping, having the right Java version on your machine (they bundle a Java 25 runtime of their own) and getting the invocation correct. Note that the installers have few customisation options; among other things, they use a fixed, platform-default installation path. If you want more control, use the manual installation route above.
 
 #### Potential installation problems
 
