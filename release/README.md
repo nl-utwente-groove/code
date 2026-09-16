@@ -145,8 +145,9 @@ graph-visualisation backend (the root project of the private repository
 library it runs on, zipped up as `groove-x_y_z-yfiles-addon.zip`. The standard zips
 and installers do not contain it; a user unzips it into GROOVE's extension directory
 (`%APPDATA%\GROOVE\extensions` on Windows, `~/Library/Application Support/GROOVE/extensions`
-on macOS, `~/.groove/extensions` elsewhere; the system property `groove.extensions.dir`
-overrides the location), from which GROOVE loads it at start-up
+on macOS, `$XDG_DATA_HOME/groove/extensions`, normally `~/.local/share/groove/extensions`,
+elsewhere; the system property `groove.extensions.dir` overrides the location), from
+which GROOVE loads it at start-up
 (`nl.utwente.groove.util.Extensions`). The zip unpacks into a subdirectory `yfiles/`
 there, holding the two jars and the license notice. The yFiles license (an academic
 project license held by the University of Twente) has three consequences that shape

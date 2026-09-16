@@ -17,8 +17,9 @@ Graph visualisation backends and the yFiles add-on
   add-on (`groove-x_y_z-yfiles-addon.zip`, for non-commercial use only, see
   `YFILES-ADDON.md` inside), which is unzipped into GROOVE's new extension
   directory: `%APPDATA%\GROOVE\extensions` on Windows, `~/Library/Application
-  Support/GROOVE/extensions` on macOS, `~/.groove/extensions` elsewhere, overridable
-  with the system property `groove.extensions.dir`. Jars there are loaded at
+  Support/GROOVE/extensions` on macOS, `$XDG_DATA_HOME/groove/extensions` (normally
+  `~/.local/share/groove/extensions`) elsewhere, overridable with the system
+  property `groove.extensions.dir`. Jars there are loaded at
   start-up; a jar built for another GROOVE version is skipped with a warning.
 - The Simulator offers to download and install the add-on at the first start of a
   release version (once per version; never for snapshot builds; suppressed with

@@ -32,7 +32,8 @@ non-commercial use only (see YFILES-ADDON.md inside). The Simulator offers to
 download and install it at the first start of a new version, and at any later
 time under View > yFiles add-on; by hand, unzip it into GROOVE's extension
 directory (`%APPDATA%\GROOVE\extensions` on Windows,
-`~/Library/Application Support/GROOVE/extensions` on macOS, `~/.groove/extensions`
+`~/Library/Application Support/GROOVE/extensions` on macOS,
+`$XDG_DATA_HOME/groove/extensions`, normally `~/.local/share/groove/extensions`,
 elsewhere), from which GROOVE loads it at the next start.
 
 Features

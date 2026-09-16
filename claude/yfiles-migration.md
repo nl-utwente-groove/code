@@ -437,7 +437,8 @@ Four commits, one per implementation slice of that note:
 
 1. **Extension loader** (`util.Extensions`, `GraphBackend.discover`): a user-level
    extension directory (`%APPDATA%\GROOVE\extensions`, `~/Library/Application
-   Support/GROOVE/extensions`, `~/.groove/extensions`; property `groove.extensions.dir`)
+   Support/GROOVE/extensions`, `$XDG_DATA_HOME/groove/extensions`; property
+   `groove.extensions.dir`)
    whose jars, in the directory and its immediate subdirectories, go behind one
    `URLClassLoader` with the application loader as parent; backend discovery runs the
    `ServiceLoader` through that loader, deduplicating by backend name. A jar declaring

@@ -334,7 +334,9 @@ public final class Extensions {
      * where applications keep their data on the platform, with a subdirectory for GROOVE.
      * On Windows this is {@code %APPDATA%\GROOVE\extensions}, on macOS
      * {@code ~/Library/Application Support/GROOVE/extensions}, elsewhere
-     * {@code ~/.groove/extensions}.
+     * {@code $XDG_DATA_HOME/groove/extensions} as the XDG Base Directory specification
+     * prescribes, with {@code ~/.local/share} standing in for an unset or relative
+     * {@code XDG_DATA_HOME}.
      */
     public static Path defaultDir() {
         String os = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
@@ -348,7 +350,10 @@ public final class Extensions {
         } else if (os.contains("mac")) {
             base = Path.of(home, "Library", "Application Support", "GROOVE");
         } else {
-            base = Path.of(home, ".groove");
+            String dataHome = System.getenv("XDG_DATA_HOME");
+            base = dataHome == null || !Path.of(dataHome).isAbsolute()
+                ? Path.of(home, ".local", "share", "groove")
+                : Path.of(dataHome, "groove");
         }
         return base.resolve("extensions");
     }
