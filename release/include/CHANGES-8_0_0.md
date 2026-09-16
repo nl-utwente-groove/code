@@ -41,7 +41,8 @@ Installers and distribution
 
 - GitHub releases now carry platform-native installers built with jpackage:
   Windows `.msi`, macOS `.dmg` (Intel and Apple silicon) and Linux `.deb` and
-  `.rpm`, each with a bundled Java runtime, so no Java installation is needed.
+  `.rpm`, each with a bundled Java 25 runtime, so no Java installation is
+  needed.
   The start menu group lists Simulator, Generator, ModelChecker, Imager and
   Viewer. The installers are not code-signed; the release page explains how to
   get past the Windows and macOS warnings. The `-bin.zip` remains available and
