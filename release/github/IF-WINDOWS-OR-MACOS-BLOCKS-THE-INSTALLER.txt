@@ -44,7 +44,17 @@ in Terminal instead, then open GROOVE normally:
 LINUX (.deb, .rpm)
 ------------------
 
-Not affected.
+Neither package is blocked, but the .rpm is not signed either, and package
+managers differ in how they take that:
+
+- zypper (openSUSE) asks "Package is not signed! ... Continue?": answer yes.
+- dnf and yum (Fedora, RHEL) install a local unsigned package without asking,
+  unless the system has been configured to check local packages; then add
+  --nogpgcheck to the install command.
+- rpm -i never checks.
+
+The .deb is not affected: apt and dpkg do not check signatures of local
+package files.
 
 
 SELF-INSTALL
