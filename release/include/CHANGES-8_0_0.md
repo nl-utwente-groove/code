@@ -48,6 +48,14 @@ Installers and distribution
   Viewer. The installers are not code-signed; the release page explains how to
   get past the Windows and macOS warnings. The `-bin.zip` remains available and
   needs Java 21 or newer.
+- The launcher jars in `bin` (and so the installers, which start the same
+  way) declare native access for the class path in their manifest
+  (`Enable-Native-Access: ALL-UNNAMED`), so a `java -jar` start on Java 24 or
+  newer no longer warns when FlatLaf loads its window-decoration library
+  (JEP 472). The attribute is honoured only for the main jar of a `java -jar`
+  start: an application that starts the Simulator from the class path, for
+  instance through the Maven artifact, on such a Java needs
+  `--enable-native-access=ALL-UNNAMED` to keep the warning away.
 - The Windows installer does not offer an install-folder chooser (the MSI would
   not remember the choice across upgrades); use the zip for a custom location.
 - The Windows installer does not close a running GROOVE; installing over it

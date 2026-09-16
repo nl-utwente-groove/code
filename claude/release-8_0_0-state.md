@@ -24,7 +24,15 @@ All off the `yworks-migration` tip 103f6b74d, worktrees under `.claude/worktrees
   generic `x_y_z` asset names, add-on section linking `YFILES-ADDON.md`), `mac.md`
   (blocked `.dmg`), `index.md` (ModelChecker restored), `manual.md` (legacy PDF section
   gone), `manual/introduction.md` (8.0.0, installers bundle Java). Branch
-  `quick-reference-drop` (worktree of the same name) is subsumed by this and can be deleted.
+  `quick-reference-drop` was merged into it on 2026-09-15 (no content change) and deleted,
+  worktree included.
+- `flatlaf-native-access` (off master, 2026-09-16, awaiting review): launcher-jar manifest
+  grants native access (silences FlatLaf's JEP 472 warning on Java 24+), Surefire argLine
+  grant, installers job on JDK 25; same-named branch in `yfiles-lib`.
+- `java-requirement-docs` (off master, 2026-09-16): Java-requirement wording that follows
+  from it: zip README states Java 21+, change notes and release-page text name the Java 25
+  runtime and the native-access grant, this note and `claude/CLAUDE.md`. Same-named branch
+  in the website repository off `release-8_0_0` (`installing.md`, `manual/introduction.md`).
 - Quick reference chart: dropped 2026-09-14 (2012 tutorial poster by Tim Molderez for
   GROOVE 4.x, source never in a repository, Simulator screenshot unrenderable). The copy in
   the usermanual repo is left in place.
@@ -43,7 +51,8 @@ Before the tag, in order:
 3. `revision` 7.5.4-SNAPSHOT -> 8.0.0 in `pom.xml` and `yfiles-lib/pom.xml`;
    `GROOVE_BUILD` (still 20260702); CHANGES.md heading "Upcoming release (8.0.0)" ->
    release form with date (underline style feeds `release-notes.sh`).
-4. Full suite, GUI tests, yFiles backend tests on the merged tip.
+4. Merge `flatlaf-native-access` (code and `yfiles-lib`) and `java-requirement-docs`; then
+   full suite, GUI tests, yFiles backend tests on the merged tip.
 5. Decide the version-sensitive issues: gh #911 (indeterminate operators on quantified
    levels silently accepted; reinstating the check is ~1h), gh #819 (ESC commits in the
    JGraph editor), gh #877 restriction half. Consider #917, #915, #907, #898 item 1, #558.
@@ -59,6 +68,14 @@ Before the tag, in order:
 Derived from the answers in `claude/website-manual-8_0_0.md` (§5). Work in the website
 worktree `release-8_0_0`, one commit per step; the `manual.md` *Checked against* entry of a
 chapter moves to 8.0.0 in the commit that revises the chapter (see the last open decision).
+
+Progress, 2026-09-15: all seven steps are committed on the website branch `release-8_0_0`
+(tip 0064990, ten commits ahead of `main`, the last one adding the `.rpm` installer to `installing.md`); every chapter is checked against 8.0.0. Two
+things remain: the figures were rendered with a 7.5.4-SNAPSHOT candidate and are to be
+regenerated at the tag with the release classpath (`make-figures.sh`, then `make-refs.sh`
+for the version string on the reference pages), and the optional yFiles-rendered figure of
+step 4 was not made. The editor and display items of the proposal's table (prio C, no
+home in the manual) were skipped as planned.
 
 1. `MakeRefs.java`: replace `writeExploration()` by a page "Exploration keys" generated
    from `explore.feature.ExploreKey` and its setting kinds (name, explanation, content
