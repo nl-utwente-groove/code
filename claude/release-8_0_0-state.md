@@ -24,7 +24,8 @@ All off the `yworks-migration` tip 103f6b74d, worktrees under `.claude/worktrees
   generic `x_y_z` asset names, add-on section linking `YFILES-ADDON.md`), `mac.md`
   (blocked `.dmg`), `index.md` (ModelChecker restored), `manual.md` (legacy PDF section
   gone), `manual/introduction.md` (8.0.0, installers bundle Java). Branch
-  `quick-reference-drop` (worktree of the same name) is subsumed by this and can be deleted.
+  `quick-reference-drop` was merged into it on 2026-09-15 (no content change) and deleted,
+  worktree included.
 - Quick reference chart: dropped 2026-09-14 (2012 tutorial poster by Tim Molderez for
   GROOVE 4.x, source never in a repository, Simulator screenshot unrenderable). The copy in
   the usermanual repo is left in place.
@@ -59,6 +60,14 @@ Before the tag, in order:
 Derived from the answers in `claude/website-manual-8_0_0.md` (§5). Work in the website
 worktree `release-8_0_0`, one commit per step; the `manual.md` *Checked against* entry of a
 chapter moves to 8.0.0 in the commit that revises the chapter (see the last open decision).
+
+Progress, 2026-09-15: all seven steps are committed on the website branch `release-8_0_0`
+(tip 0064990, ten commits ahead of `main`, the last one adding the `.rpm` installer to `installing.md`); every chapter is checked against 8.0.0. Two
+things remain: the figures were rendered with a 7.5.4-SNAPSHOT candidate and are to be
+regenerated at the tag with the release classpath (`make-figures.sh`, then `make-refs.sh`
+for the version string on the reference pages), and the optional yFiles-rendered figure of
+step 4 was not made. The editor and display items of the proposal's table (prio C, no
+home in the manual) were skipped as planned.
 
 1. `MakeRefs.java`: replace `writeExploration()` by a page "Exploration keys" generated
    from `explore.feature.ExploreKey` and its setting kinds (name, explanation, content
