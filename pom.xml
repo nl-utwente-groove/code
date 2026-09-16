@@ -176,8 +176,12 @@
 					     The extension directory is pointed away from the real one
 					     (which need not exist), so that an installed add-on cannot
 					     change what the tests see, and the Simulator's question
-					     about the yFiles add-on is suppressed. -->
-					<argLine>@{coverageAgent} -Djava.util.prefs.PreferencesFactory=nl.utwente.groove.test.gui.InMemoryPreferencesFactory --add-exports=nl.utwente.groove/nl.utwente.groove.test.gui=java.prefs -Dgroove.extensions.dir=${project.build.directory}/test-extensions -Dgroove.addon.prompt=false</argLine>
+					     about the yFiles add-on is suppressed. The native access
+					     grant keeps JDK 24+ (JEP 472) from warning when FlatLaf
+					     loads its window-decoration library in the GUI tests; it
+					     names the module, since Surefire puts flatlaf on the module
+					     path (ALL-UNNAMED would not cover it). -->
+					<argLine>@{coverageAgent} -Djava.util.prefs.PreferencesFactory=nl.utwente.groove.test.gui.InMemoryPreferencesFactory --add-exports=nl.utwente.groove/nl.utwente.groove.test.gui=java.prefs -Dgroove.extensions.dir=${project.build.directory}/test-extensions -Dgroove.addon.prompt=false --enable-native-access=com.formdev.flatlaf</argLine>
 					<excludes>
 						<!-- TestSuite aggregates the whole package tree as the
 						     entry point of the "GROOVE - all JUnit tests"
