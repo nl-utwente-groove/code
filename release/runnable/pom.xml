@@ -46,6 +46,17 @@
 							<classpathPrefix>../lib/</classpathPrefix>
 							<mainClass>${project.groupId}.${project.artifactId}</mainClass>
 						</manifest>
+						<manifestEntries>
+							<!-- FlatLaf loads a native library for the window
+							     decorations, which JDK 24+ (JEP 472) reports with
+							     a warning unless native access has been granted.
+							     The java launcher honours this attribute in the
+							     main jar of a java -jar start (and so in the
+							     jpackage launchers, which start the same way),
+							     for all code on the class path; older JDKs
+							     ignore it. -->
+							<Enable-Native-Access>ALL-UNNAMED</Enable-Native-Access>
+						</manifestEntries>
 					</archive>
 			    </configuration>  
 			</plugin>
