@@ -21,7 +21,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.management.ManagementFactory;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -58,6 +58,7 @@ import nl.utwente.groove.test.SlowTest;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.Reporter;
+import nl.utwente.groove.util.parse.FormatException;
 
 /**
  * Throughput harness for state-space exploration.
@@ -70,11 +71,22 @@ import nl.utwente.groove.util.Reporter;
  * counts are asserted on every measured run, so it doubles as a regression
  * check for changes that touch matching, isomorphism or transformation.
  * <p>
- * The grammar of a configuration is loaded and compiled once, outside the
- * measured region; each run builds a fresh {@link GTS} and {@link Exploration}
- * and measures nothing but {@link Exploration#play()}. The timing counters
- * ({@link Exploration#getRunningTime()} and friends) are static and accumulate
- * over the JVM's lifetime, so the harness reports deltas.
+ * The grammar files of a configuration are read once, but the grammar is
+ * <em>compiled afresh for every run</em>, warm-up runs included, outside the
+ * measured region; each run then builds a fresh {@link GTS} and
+ * {@link Exploration} and measures nothing but {@link Exploration#play()}. A
+ * compiled grammar is not reused because a run leaves state behind in it: as
+ * of 2026-09 every rule application is retained for the lifetime of the
+ * {@link Grammar} (about 1.4 KB each), so a later run would explore with the
+ * leavings of the earlier ones on the heap. The price is that search plans,
+ * which are built lazily on the first match of a rule, are now built inside
+ * the measured region of every run rather than only of the first; that is
+ * milliseconds against seconds and falls on every run alike, so it is
+ * accepted rather than worked around.
+ * <p>
+ * The timing counters ({@link Exploration#getRunningTime()} and friends) are
+ * static and accumulate over the JVM's lifetime, so the harness reports
+ * deltas.
  * <p>
  * <b>Running it.</b> The intended entry point is {@link #main(String[])}, run
  * outside Surefire so that assertions are off (the assertion-only costs listed
@@ -207,12 +219,15 @@ public class ExplorationBenchmark {
      * everything else. Switching persistence off saves less than one would
      * hope: {@code binary-tree-dfs-unstored} allocates 3.3 GB and still
      * retains 1.4 GB after the run, although the GTS it leaves behind holds
-     * nine states — out of all proportion to what was stored, so the
-     * discovered states survive through something other than the state set
-     * (the unbounded interning map of finding 3.4 is the obvious candidate).
-     * It is also the most
-     * variable configuration of the set, 25 s maximum against a 2.4 s
-     * minimum over five runs. Neither was investigated.
+     * nine states. That is finding 3.11, the rule applications a single run
+     * leaks into its grammar; compiling the grammar afresh per run keeps it
+     * from accumulating but does not make one run cheaper. It is still the
+     * most variable configuration of the set — 19 s to 25 s maximum against a
+     * 1.9 s minimum over five runs — and the spread is that same live set
+     * meeting the heap: the run alone spends about two thirds of the JVM's
+     * uptime in the collector, over some forty unforced full collections, and
+     * which run draws the long straw is a matter of timing. So the figure to
+     * read for this configuration is the minimum, until 3.11 is fixed.
      */
     private static final List<Config> CONFIGS = List
         .of(
@@ -390,7 +405,8 @@ public class ExplorationBenchmark {
 
     /**
      * Runs a single configuration.
-     * The grammar is loaded and compiled once; every run gets a fresh GTS and
+     * The grammar files are read once; every run gets a freshly compiled
+     * {@link Grammar} (see the class comment) and with it a fresh GTS and
      * exploration. Warm-up measurements are discarded.
      * @param config the configuration to run
      * @param warmups number of discarded warm-up runs
@@ -400,12 +416,14 @@ public class ExplorationBenchmark {
      */
     public static Result run(Config config, int warmups, int runs, int timeoutSeconds) {
         try {
-            GrammarModel model = loadGrammar(config.grammar(), config.startGraph());
-            Grammar grammar = model.toGrammar();
+            SystemStore store = SystemStore
+                .newStore(new File(INPUT_DIR, config.grammar()), false, true);
             ExploreType exploreType = ExploreTypeConverter
                 .toExploreType(ExploreConfig.parse(config.exploreConfig()));
             List<Measurement> measured = new ArrayList<>();
             for (int i = 0; i < warmups + runs; i++) {
+                // outside the measured region, which starts in singleRun
+                Grammar grammar = newGrammar(store, config.startGraph());
                 Measurement measurement = singleRun(grammar, exploreType, timeoutSeconds);
                 if (i >= warmups) {
                     measured.add(measurement);
@@ -482,16 +500,29 @@ public class ExplorationBenchmark {
             retained, factoryNodes, factoryEdges);
     }
 
-    /** Loads a grammar model, as {@code ExplorationTest} does. */
-    private static GrammarModel loadGrammar(String grammarName,
-                                            @Nullable String startGraphName) throws IOException {
-        GrammarModel result = SystemStore
-            .newStore(new File(INPUT_DIR, grammarName), false, true)
-            .toGrammarModel();
+    /**
+     * Compiles a fresh grammar from an already loaded store.
+     * <p>
+     * A fresh {@link GrammarModel} rather than the store's own
+     * ({@link SystemStore#toGrammarModel()}) because both that and
+     * {@link GrammarModel#toGrammar()} cache their result: asking the same
+     * model for a grammar twice hands back the same object, rules and all, so
+     * it would not detach the previous run's leaked rule applications. The
+     * constructor is the documented way to build a model over a store, and
+     * unlike {@code toGrammarModel()} it does not register the model as a
+     * store observer — which is right here, since the benchmark never edits
+     * the store.
+     * @param store the loaded store holding the grammar's sources
+     * @param startGraphName name of the start graph; {@code null} for the
+     * grammar's default one
+     */
+    private static Grammar newGrammar(SystemStore store,
+                                      @Nullable String startGraphName) throws FormatException {
+        GrammarModel model = new GrammarModel(store);
         if (startGraphName != null) {
-            result.setLocalActiveNames(ResourceKind.HOST, QualName.parse(startGraphName));
+            model.setLocalActiveNames(ResourceKind.HOST, QualName.parse(startGraphName));
         }
-        return result;
+        return model.toGrammar();
     }
 
     /** Returns the used heap after two collections. */
@@ -517,12 +548,11 @@ public class ExplorationBenchmark {
 
     /** Prints the run's provenance: JVM, flags, assertion status and shape. */
     private static void printHeader(int warmups, int runs, int timeout) {
-        var runtimeBean = ManagementFactory.getRuntimeMXBean();
         System.out.printf(Locale.ROOT, "%n=== GROOVE exploration benchmark ===%n");
         System.out
             .printf(Locale.ROOT, "JVM:        %s %s (%s)%n", System.getProperty("java.vm.name"),
                     System.getProperty("java.version"), System.getProperty("java.vm.vendor"));
-        System.out.printf(Locale.ROOT, "VM args:    %s%n", runtimeBean.getInputArguments());
+        System.out.printf(Locale.ROOT, "VM args:    %s%n", Management.getInputArguments());
         System.out
             .printf(Locale.ROOT, "Assertions: %s%n",
                     ExplorationBenchmark.class.desiredAssertionStatus()
@@ -675,7 +705,13 @@ public class ExplorationBenchmark {
      * @param allocatedBytes bytes allocated on the exploring thread, or
      * {@code -1} if the JVM does not support the measurement
      * @param retainedBytes used heap after the run minus used heap before it,
-     * both after two collections and with the GTS still referenced
+     * both after two collections and with the GTS still referenced. It is an
+     * upper bound on what the run really needs to keep, for two reasons:
+     * {@link System#gc()} does not clear soft references, so the figure
+     * includes the state caches (in {@code binary-tree-dfs-unstored} about
+     * 60 % of it), which a collector under real memory pressure would reclaim;
+     * and it includes whatever the run leaked into its {@link Grammar}, which
+     * is a per-run object precisely so that this does not accumulate
      * @param factoryNodes number of host nodes the GTS's host factory holds
      * @param factoryEdges number of host edges the GTS's host factory holds
      */
@@ -737,27 +773,17 @@ public class ExplorationBenchmark {
 
         @Override
         public void run() {
-            long before = allocatedBytes();
+            long before = Management.getAllocatedBytes();
             try {
                 this.exploration.play();
             } catch (Throwable exc) {
                 this.error = exc;
             } finally {
-                long after = allocatedBytes();
+                long after = Management.getAllocatedBytes();
                 this.allocated = before < 0 || after < 0
                     ? -1
                     : after - before;
             }
-        }
-
-        /** Returns the bytes allocated by this thread, or {@code -1} if unsupported. */
-        private static long allocatedBytes() {
-            var bean = ManagementFactory.getThreadMXBean();
-            if (bean instanceof com.sun.management.ThreadMXBean sunBean
-                && sunBean.isThreadAllocatedMemoryEnabled()) {
-                return sunBean.getThreadAllocatedBytes(Thread.currentThread().threadId());
-            }
-            return -1;
         }
 
         /** Returns the failure of the run, if any. */
@@ -774,6 +800,93 @@ public class ExplorationBenchmark {
         }
 
         private long allocated = -1;
+    }
+
+    /**
+     * Reflective access to the platform management beans.
+     * <p>
+     * The test tree is patched into the product module
+     * {@code nl.utwente.groove} — by Surefire and by Eclipse alike — so a
+     * direct reference to {@code java.lang.management} or
+     * {@code com.sun.management} would oblige the product's
+     * {@code module-info} to carry a {@code requires} for a test-only need,
+     * which is not wanted. Reflection sidesteps that: the access check on
+     * {@link Method#invoke} asks only whether the member's package is exported
+     * (both are, unqualified), not whether the calling module reads the
+     * defining one. Compilation therefore needs nothing; only run-time module
+     * <em>resolution</em> does, since the two modules are not roots when the
+     * application module is. On the module path that takes
+     * {@code --add-modules java.management,jdk.management}, which the Surefire
+     * {@code argLine} and the Eclipse launch configuration both pass; on the
+     * class path the unnamed module resolves {@code java.se} and needs no
+     * flag. Nothing here throws: a missing class or method yields
+     * {@code "n/a"} for the arguments and {@code -1} for the allocation count.
+     */
+    private static final class Management {
+        private Management() {
+            // no instances
+        }
+
+        /**
+         * Returns the JVM's input arguments in list form, or {@code "n/a"} if
+         * {@code java.management} is not resolved.
+         */
+        static String getInputArguments() {
+            try {
+                Class<?> factoryClass = Class.forName("java.lang.management.ManagementFactory");
+                Class<?> beanClass = Class.forName("java.lang.management.RuntimeMXBean");
+                Object bean = factoryClass.getMethod("getRuntimeMXBean").invoke(null);
+                return String.valueOf(beanClass.getMethod("getInputArguments").invoke(bean));
+            } catch (ReflectiveOperationException | RuntimeException | LinkageError exc) {
+                return "n/a";
+            }
+        }
+
+        /**
+         * Returns the number of bytes allocated by the current thread since it
+         * started, or {@code -1} if {@code jdk.management} is not resolved or
+         * the measurement is switched off.
+         */
+        static long getAllocatedBytes() {
+            Object bean = THREAD_BEAN;
+            Method method = ALLOCATED_METHOD;
+            if (bean == null || method == null) {
+                return -1;
+            }
+            try {
+                Object result = method.invoke(bean, Thread.currentThread().threadId());
+                // a long-returning method always yields a box, never null
+                assert result != null;
+                return (Long) result;
+            } catch (ReflectiveOperationException | RuntimeException | LinkageError exc) {
+                return -1;
+            }
+        }
+
+        /** The {@code com.sun.management.ThreadMXBean}, or {@code null} if unavailable. */
+        private static final @Nullable Object THREAD_BEAN;
+
+        /** {@code getThreadAllocatedBytes(long)} of {@link #THREAD_BEAN}, or {@code null}. */
+        private static final @Nullable Method ALLOCATED_METHOD;
+
+        static {
+            Object bean = null;
+            Method method = null;
+            try {
+                Class<?> factoryClass = Class.forName("java.lang.management.ManagementFactory");
+                Class<?> beanClass = Class.forName("com.sun.management.ThreadMXBean");
+                Object candidate = factoryClass.getMethod("getThreadMXBean").invoke(null);
+                if (beanClass.isInstance(candidate) && Boolean.TRUE
+                    .equals(beanClass.getMethod("isThreadAllocatedMemoryEnabled").invoke(candidate))) {
+                    bean = candidate;
+                    method = beanClass.getMethod("getThreadAllocatedBytes", long.class);
+                }
+            } catch (ReflectiveOperationException | RuntimeException | LinkageError exc) {
+                // both stay null, and the allocation column reports -1
+            }
+            THREAD_BEAN = bean;
+            ALLOCATED_METHOD = method;
+        }
     }
 
     /** Exception signalling that a configuration could not be measured. */

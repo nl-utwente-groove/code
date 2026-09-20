@@ -26,6 +26,6 @@
     <stringAttribute key="org.eclipse.jdt.launching.MODULE_NAME" value="nl.utwente.groove"/>
     <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="groove"/>
     <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
-    <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-da&#10;-Xmx4g&#10;-XX:+UseParallelGC"/>
+    <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-da&#10;-Xmx4g&#10;-XX:+UseParallelGC&#10;--add-modules=java.management,jdk.management"/>
     <stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${project_loc:groove}"/>
 </launchConfiguration>
