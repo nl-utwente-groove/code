@@ -1,6 +1,6 @@
 # Module exports: what the library promises
 
-*Branch `worktree-module-exports`, 2026-09-20. Context: 8.0.0 is the first
+*Branch `module-exports`, 2026-09-20. Context: 8.0.0 is the first
 release whose jar keeps its `module-info` (earlier releases stripped it because of
 the shadowed libraries), so the export list becomes the API contract of the
 library for the first time. Retracting an export later is a breaking change,
@@ -37,7 +37,7 @@ the first cut here).
 
 | Tier | Packages |
 |---|---|
-| Pipeline | root, `io.store`, `io.graph`, `io.external`, `grammar`, `grammar.model/aspect/host/type/rule`, `graph`, `graph.plain/iso/layout`, `match`, `transform`, `transform.oracle`, `lts`, `explore`, `explore.config/feature/result`, `verify`, `prolog`, `prolog.builtin` |
+| Pipeline | root, `io.store`, `io.graph`, `io.external`, `grammar`, `grammar.model/aspect/host/type/rule`, `graph`, `graph.plain/iso/layout`, `match`, `transform`, `transform.oracle`, `lts`, `explore`, `explore.config/feature/result/engine`, `verify`, `prolog`, `prolog.builtin` |
 | Data values | `algebra`, `algebra.syntax`, `annotation` |
 | Control | `control`, `control.term/template/instance/graph` |
 | Utilities | `util`, `util.parse/line/cache/collect/cli` |
@@ -103,10 +103,16 @@ Not exported, deliberately:
   but it is one more reason to do item 3 before anyone embeds the Simulator
   from the module path.
 - `match.plan`, `match.automaton`: engines are selected through `match`.
-- `control.parse`: ANTLR 3 generated classes plus the tree; see open item.
-- `explore.engine`, `explore.util`: rewritten in 2026-08, least settled code.
-  `explore.verify` (the LTL strategies and cycle acceptor) turned out to be
-  engine-side too and is not exported either.
+- `control.parse`: ANTLR 3 generated classes plus the tree and the name space.
+  `CtrlLoader` used to leak all three; see the fixes below.
+- `explore.util` and `explore.verify` (the LTL strategies and cycle acceptor):
+  engine-side code rewritten in 2026-08. `explore.engine` itself *is* exported,
+  as the strategy extension point: a custom strategy extends `GTSStrategy` or
+  `ClosingStrategy` and needs a `Pool`, so the abstract bases and the pools are
+  the extension kit; the four concrete strategies alongside them were not worth
+  a package split. The stable part is the protected hook set of the bases
+  (`prepare`, `computeNextState`, `addExplorable`, `isStop`,
+  `createExploreListener`); the concrete classes are reference implementations.
 - `io.external.format`, `io.external.format.ecore`, `prolog.builtin.*`,
   `prolog.util`, `prolog.exception`, `transform.criticalpair`, `util.antlr`,
   `util.io`, `io`.
@@ -134,88 +140,120 @@ export:
   `algebra`, the rule-system cluster and `util` in the layering `LayeringTest`
   guards, and `FileType` is used from all three tiers. `ExtensionFilter` had
   to move too: it is `FileType.getFilter()`'s return type.
+- `CtrlLoader` no longer mentions `control.parse`: `addControl` returns nothing
+  (its tree went into a map `CompositeControlModel` never read, and
+  `ControlModel` only checked it, which `buildProgram` does anyway);
+  `getNamespace` became `getTermPrototype`, the one thing a test needed from
+  it; and the invisibility reason that the two control models pass is the
+  top-level enum `control.Invisibility`, while the record carrying it
+  (`Namespace.InvisibleDecl`, with the message formatting) stays in the parser
+  package. Two tests that used the returned tree now parse through
+  `CtrlTree.parse` on a name space they build themselves.
 
 ## Open items, in recommended order
 
-Thirty `-Xlint:exports` warnings remain on the branch, all in the first three
-items, and are left visible on purpose: they are the measured debt.
+Twenty-six `-Xlint:exports` warnings remain on the branch, all from item 1,
+and are left visible on purpose: they are the measured debt.
 
-1. **`control.parse` leaks through `CtrlLoader`** (3 warnings): `addControl`
-   returns `CtrlTree` (used by `ControlModel` and `CompositeControlModel`, which
-   keeps a tree map), `getNamespace()` returns `Namespace`, and
-   `addInvisibleControl` takes `Namespace.InvisibleDecl.Reason` (used by both
-   models). `Namespace` is the declaration table, a semantic object; move it to
-   `control`. The tree must stop crossing the loader boundary: let the loader
-   own its trees and offer the two models what they do with them (`check()`,
-   `toFragment()`) by name.
-2. **`explore.engine` leaks through `ExploreType.Realisation`** (1 warning):
-   the public record has a `Strategy` component, consumed by `Exploration`
-   (same package) and by tests (`.strategy()` for `assertInstanceOf`). Decide
-   whether custom strategies are a supported extension point. If yes, export
-   `explore.engine` and accept the instability. If no, make `Realisation` a class
-   with package-private accessors and let the tests assert differently.
-3. **`gui.view` as a backend SPI tier.** Needs a backend-facing controller
-   interface that mentions no Simulator type: actions as `javax.swing.Action`,
-   options as a small `gui.view`-level interface implemented by `Options`, the
-   label tree behind a filter interface, `createPopupMenu`/`getModeButton`
-   returning plain Swing types. The yFiles side has to move at the same time,
-   since it is compiled against the controller. See the session proposal below.
-   Until then the SPI tier is exported with its 30 warnings, and the packages
-   it leaks (`gui`, `gui.action`, `gui.tree`, `gui.menu`, `gui.display`) are not.
-4. **CLI tools into one `cli` package** together with `util.cli`: `Generator`,
+1. **`gui.view` as a backend SPI tier.** The controller classes are the
+   Simulator's glue but the backends compile against them. See the session
+   proposal below for the design. Until it is done the SPI tier is exported
+   with its 26 warnings, and the packages it leaks (`gui`, `gui.action`,
+   `gui.tree`, `gui.menu`, `gui.display`) are not.
+2. **CLI tools into one `cli` package** together with `util.cli`: `Generator`,
    `CTLModelChecker`, `PrologChecker`, `OperatorLister`, `Imager`. `explore`,
    `prolog` and `algebra` then stop mentioning picocli, `util.cli` goes
    unexported, and the exported CLI surface is one package. This is the `cli`
    seam of the module-split plan.
-5. **`control.template` mixes compile time and run time**: `Program`,
+3. **`control.template` mixes compile time and run time**: `Program`,
    `Fragment`, `TemplateBuilder` (terms in, template out) sit next to `Template`,
    `Switch`, `Location` (what the LTS refers to). Separating them, and moving
    `Procedure`'s term accessors (used by `control.parse`, `control.template`,
    `control.term`) to the compiler side, would let `control.term` go unexported.
-6. **`util.collect`**: narrow the four leaking signatures listed above, then
+4. **`util.collect`**: narrow the four leaking signatures listed above, then
    unexport.
 
 Not verified: whether `requires transitive java.desktop` is still needed by an
 exported signature once `gui` is out (exported core types do use `java.awt`
 geometry in `graph.layout`/`io.graph`, so presumably yes).
 
-## Session proposal for `yfiles-lib`
+## Session proposal: the backend-facing controller interface (item 1)
 
-To be run in the private repository (`../yfiles-lib`), paired with a `code`
-branch of the same name for item 3 above. Prompt:
+Two sessions, in order, on branches of the same name in both repositories
+(the cross-repository workflows pair them by name; the first push runs red
+until the second exists).
 
-> The `code` branch `<name>` makes `gui.view` exportable as the backend SPI
-> tier: `GraphViewController` gets a backend-facing interface without Simulator
-> types (actions typed `javax.swing.Action`, options behind a `gui.view`
-> interface, label-tree filtering behind an interface, popup menu and mode
-> buttons as plain Swing). Adapt the yFiles backend to that interface: replace
-> the direct uses of `ActionStore`, `Options.SHOW_BIDIRECTIONAL_EDGES_OPTION`,
-> `getLayoutAction`, `getAddPointAction`, `getRemovePointAction`,
-> `getLabelTree`, `getSimulatorModel`, `getModeButton` and `createPopupMenu`
-> in `YFilesCanvas`, `YFilesAspectCanvas` and siblings. The backend must import
-> only `gui.view`, `gui.view.cell`, `gui.look`, `gui.layout`, `graph.layout`,
-> `util.line`, `control.graph` and the core packages listed in
-> `claude/module-exports.md` of the `code` repository. Verify with the unit's
-> tests (`mvn -q -f pom.xml "-Dgroove.dir=<code checkout>" test`, 65 tests,
-> 4 Robot skips) and by checking that `mvn clean compile` in `code` reports no
-> `exports` warnings from `gui.view` any more (30 on the branch this note
-> belongs to).
+**Design.** Neither backend constructs a controller; both only call one. So
+`GraphViewController`, `AspectGraphViewController`, `LTSGraphViewController`
+and `CtrlGraphViewController` become interfaces in `gui.view`, keeping their
+names so backend code does not move, and the classes move to the Simulator
+side (`gui.display`, where the displays that own them live) with the
+Simulator-typed constructors. The interfaces carry what the two backends
+demonstrably use, in exported types only:
 
-The `code` side of that pair is the larger half and belongs to gh #909; the
-backend session only makes sense once the controller interface exists on a
-branch.
+- lifecycle and model: `attachCanvas`, `getCanvas`, `removeListeners`,
+  `getGraphRole`, `getGraph`, `isEditing`, and `getGrammar()` returning
+  `GrammarModel` (the only use of `getSimulatorModel` in either backend is
+  `.getGrammar()`);
+- options: `getOptionValue`, `addOptionListener`, the `isShow*` queries;
+  `getOptions()` returns a small `ViewOptions` interface (selected-state query
+  plus listener registration) that `Options` implements, and the `SHOW_*` keys
+  move to `gui.view` so the yFiles bidirectional-edge listener stops importing
+  `gui.Options`;
+- actions: `getLayoutAction`/`getExportAction` typed `javax.swing.Action`;
+  the point actions, used only as `execute(edge, at)`, become
+  `addPoint(ViewEdge, Point2D)`/`removePoint(...)`; the single `ActionStore`
+  use (registering the select-colour action as a canvas listener) moves into
+  the controller's `attachCanvas`; the `getActions() != null` checks become
+  `isInteractive()`;
+- label tree: only `setEnabled` is called on it, so `setLabelTreeEnabled(boolean)`;
+- Swing surface unchanged: `createPopupMenu`, `getModeButton`,
+  `setModeButtonsEnabled`, `setToolTipEnabled`;
+- layout and LTS methods are already in exported types (`Layouter`, `Filter`,
+  `GraphState`, `GraphTransition`).
+
+Constructors, `getSimulator`, `getActions`, `getSimulatorModel`, the concrete
+menu and action types, `DisplayKind` and `RuleLevelTree` stay on the classes.
+
+**Session A, `code` repository.** Prompt:
+
+> Read `claude/module-exports.md` (section "Session proposal") and
+> `claude/yfiles-migration.md`. On a fresh branch off `master`, turn the four
+> `gui.view` controller classes into interfaces as designed there, with the
+> implementations in `gui.display`, so that `mvn clean compile` reports no
+> `-Xlint:exports` warnings at all (26 on `module-exports`, all from those
+> classes). Adapt the JGraph backend in `gui.jgraph` to the interfaces; it is
+> the in-tree reference for what a backend may call. Gates: the fast suite,
+> the GUI tests, the `null-check` skill on touched files, and the yFiles unit
+> compiled against the branch (`mvn -q -f ../yfiles-lib/pom.xml
+> "-Dgroove.dir=<worktree>" test`), which is expected to fail until session B
+> and whose failures must be limited to the members listed in the design.
+
+**Session B, `yfiles-lib` repository**, after A is on a branch. Prompt:
+
+> The `code` branch `<name>` makes the `gui.view` controllers interfaces
+> without Simulator types (see `claude/module-exports.md` there). Adapt the
+> yFiles backend: replace the uses of `ActionStore`,
+> `Options.SHOW_BIDIRECTIONAL_EDGES_OPTION`, `getSimulatorModel().getGrammar()`,
+> `getAddPointAction`/`getRemovePointAction`, `getLabelTree().setEnabled` and
+> the `getActions() != null` checks in `YFilesCanvas`, `YFilesAspectCanvas`,
+> `YFilesAspectEditorCanvas` and siblings by the interface members. The backend
+> must import only `gui.view`, `gui.view.cell`, `gui.look`, `gui.layout`,
+> `graph.layout`, `util.line`, `control.graph` and packages exported by the
+> `code` descriptor. Verify with the unit's tests against the `code` branch
+> (65 tests, 4 Robot skips).
 
 ## Verification
 
-- `mvn clean compile`: 30 `exports` warnings (`gui.view` 27, `CtrlLoader` 3
-  lines, `ExploreType` 1), nothing else.
-- Fast test suite: 876 tests, all pass after the SPI-tier and Prolog exports
-  were added (before them: `ExtensionsTest` 1 error, `PredicateTests` 11
-  failures, as described under Principle).
-- Null analysis (`null-check` skill, ecj `-All`): 0 errors; the two Javadoc
-  warnings caused by widening `TokenFamily` and `CompositeEventCache` were
-  fixed by adding the comments; ecj's own "type not exported" infos on
-  `CtrlLoader` mirror the javac warnings.
+- `mvn clean compile`: 26 `exports` warnings, all `gui.view`, nothing else.
+- Fast test suite: 876 tests, all pass at the branch tip (before the SPI-tier
+  and Prolog exports were added: `ExtensionsTest` 1 error, `PredicateTests` 11
+  failures, as described under Principle). The `FileType` move to `io` was
+  tried and failed `LayeringTest` with six violations, hence `util`.
+- Null analysis (`null-check` skill, ecj `-All`): 0 errors, no new warnings in
+  touched files; the two Javadoc warnings caused by widening `TokenFamily` and
+  `CompositeEventCache` were fixed by adding the comments. ecj's own "type not
+  exported" infos mirror the javac warnings on `gui.view`.
 - GUI and yFiles gates: not run; no source change under `gui/`, and the
   yFiles unit compiles against GROOVE on the class path, where the descriptor
   is ignored.
