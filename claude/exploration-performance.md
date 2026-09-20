@@ -797,11 +797,22 @@ not done, open for review.
 
 Calibration facts, single cold runs at `-Xmx2g` unless noted:
 
-- **`collapse=none` cannot be configured**: `ExploreKey.COLLAPSE` accepts
-  `grammar|equality|isomorphism|hash`, and `ConfiguredExploreType:116` rejects
-  `COLLAPSE_NONE` and `COLLAPSE_ISO_WEAK` as unrealisable. The "long delta chains without
-  collapsing" case for 2.5 to 2.7 is therefore not expressible from a configuration;
-  `binary-tree-dfs12` (depth-first with a depth bound) is the nearest substitute.
+- **There is no `collapse=none` value, by design.** The collapse feature
+  (`explore/feature/Collapse`) offers `grammar|equality|isomorphism|hash`, where `hash`
+  is still converter-rejected as unsupported. Not collapsing is a consequence of other
+  features, not a choice (feature-model decisions of 2026-07-31, see
+  `claude/archive/exploration-feature-model-plan.md`): the linear strategies
+  (`frontier=single successor=single`) switch the record's collapse flag off in
+  `LinearStrategy.prepare`, and `persistence=none` never enters discovered states into
+  the state set, so there is no revisit detection at all. `GTS.CollapseMode.COLLAPSE_NONE`
+  is the internal state those two produce; `ConfiguredExploreType.stateExploration`
+  throws on it only because it reconstructs a configuration from a GTS and no
+  configuration expresses that mode. Consequences for the findings: `sierpinsky-11`
+  (linear) runs with collapse off in the record, so `StateCache.freezeGraphs` is false
+  there and 2.5 applies; `binary-tree-dfs-unstored` (`persistence=none`) explores the
+  full tree unfolding, but `setPersistent` only flips the GTS storing switch and leaves
+  the record's collapse flag on, so freezing stays enabled and only the chain findings
+  2.6 and 2.7 apply to it.
 - **Depth-first rejects a node bound** (`ExploreTypeConverter:168`); the only DFS-compatible
   bound is `next=newest cost=uniform bound=cost:N`. `bound=size:` is unsupported.
 - **Dead candidates**: every `leader-election` start graph except `start-2` (including
@@ -831,7 +842,24 @@ append-4-list-8          31104   114008   4379.0   4364.7   4427.4      7103    
 append-4-list-8-equality 73792   268912  10971.6   9606.6  26068.7      6726    2030       0       0    8208   5634.6    804.4      74      357
 mark-unmark              24576   368640   9552.0   8838.2   9848.2      2573    1666    2120    1898    7152   6236.6    483.1      15       30
 car-platooning-05       110366   369601  12046.6  10248.2  85255.8      9162    2955       0       0    7392   7927.2    815.0       5      215
+binary-tree-dfs-unstored 409114  409113   2794.1   2416.1  25184.6    146419     120       0       0    2371   3342.5   1440.6    1023     2556
 ```
+
+The last row was measured separately (same JVM flags, its own JVM); its state and
+transition columns are the *discovered* counts from a `GTSListener`, since with
+`persistence=none` the GTS retains only the nine states of the written-back trace. The
+harness reports stored and discovered counts side by side and asserts the pinned counts
+against the discovered ones; for the nine persistent configurations the two are equal.
+`bound=cost:N` still terminates the run under `persistence=none`, at a pure tree unfolding
+(transitions = states − 1), growing about eightfold per level: depth 8 takes 3 s, depth 9
+about 140 s, so there is nothing in between.
+
+**Open observation from that row**: 1.44 GB retained after two GCs, with the GTS
+referenced, for nine stored states. Something other than the state set keeps the 409 k
+discovered states or their derived data alive. Candidates: the per-GTS event pool
+(`Record.eventMap`, every event ever normalised, see 4.2.5), the created-node map of
+3.4, and the transition stubs of the retained trace. Not investigated; it is the
+configuration with the largest run-to-run spread as well (2.4 s to 25 s).
 
 The confluent-diamond count is 0 in every row, as 2.1 predicts. The factory edge count
 of `car-platooning-05` (215 edges minted for a 5-node factory) and `pacman` (196) is

@@ -49,6 +49,9 @@ import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.graph.iso.IsoChecker;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.lts.GTS;
+import nl.utwente.groove.lts.GTSListener;
+import nl.utwente.groove.lts.GraphState;
+import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.lts.MatchApplier;
 import nl.utwente.groove.match.plan.PlanSearchStrategy;
 import nl.utwente.groove.test.SlowTest;
@@ -147,9 +150,10 @@ public class ExplorationBenchmark {
      * grammar's default one
      * @param exploreConfig exploration configuration in {@link ExploreConfig}
      * text form; {@code ""} is the default (breadth-first, full) exploration
-     * @param expectedStates expected state count, or {@code -1} if unknown
-     * @param expectedTransitions expected transition count, or {@code -1} if
-     * unknown
+     * @param expectedStates expected number of <em>discovered</em> states, or
+     * {@code -1} if unknown
+     * @param expectedTransitions expected number of <em>discovered</em>
+     * transitions, or {@code -1} if unknown
      * @param smoke whether this configuration is fast enough for
      * {@link #smoke()}
      */
@@ -164,6 +168,11 @@ public class ExplorationBenchmark {
      * calibration run of 2026-09-20 (exploration is deterministic, so they are
      * exact), and each configuration carries a comment saying which of the
      * findings in {@code claude/exploration-performance.md} it is there for.
+     * They are the <em>discovered</em> counts, taken from a
+     * {@link DiscoveryCounter} rather than from the GTS: under
+     * {@code persistence=none} the GTS retains almost nothing, so its own
+     * counts describe the storage policy rather than the work done. For the
+     * persistent configurations the two coincide.
      * <p>
      * Sizing is limited by what the sample grammars offer: the calibration run
      * showed a cliff rather than a range. Everything below
@@ -175,7 +184,12 @@ public class ExplorationBenchmark {
      * the review note asked for, and the small
      * entries are kept for mechanism coverage rather than for throughput.
      * Closing the gap needs the dedicated large-graph and symmetric grammars
-     * the note proposes, not another start graph.
+     * the note proposes, not another start graph. The same cliff bounds the
+     * unstored configuration: the tree unfolding of
+     * {@code generate-binary-tree} grows by a factor of about eight per depth
+     * level, from 5.9k discovered states at depth 6 through 46k at depth 7 to
+     * 409k at depth 8, so the depth chosen (8, about 3 s) is the last one that
+     * fits; depth 9 was still at 2.4M of its roughly 3.7M states after 90 s.
      * <p>
      * Several candidates from the note turned out to be dead ends: the
      * {@code -init} start graphs of {@code leader-election}, {@code pacman
@@ -190,7 +204,15 @@ public class ExplorationBenchmark {
      * the benchmark wants {@code -Xmx4g}. Note that a configuration which does
      * not fit the heap does <em>not</em> reliably hit the timeout: under
      * near-OOM collector thrashing the watchdog thread is starved along with
-     * everything else.
+     * everything else. Switching persistence off saves less than one would
+     * hope: {@code binary-tree-dfs-unstored} allocates 3.3 GB and still
+     * retains 1.4 GB after the run, although the GTS it leaves behind holds
+     * nine states — out of all proportion to what was stored, so the
+     * discovered states survive through something other than the state set
+     * (the unbounded interning map of finding 3.4 is the obvious candidate).
+     * It is also the most
+     * variable configuration of the set, 25 s maximum against a 2.4 s
+     * minimum over five runs. Neither was investigated.
      */
     private static final List<Config> CONFIGS = List
         .of(
@@ -222,7 +244,16 @@ public class ExplorationBenchmark {
             // NACs, injective matching and the dangling-edge check; watch the
             // factory edge count for the interning probe edge of finding 3.3
             new Config("car-platooning-05", "car-platooning.gps", "start-05", "", 110366, 369601,
-                false));
+                false),
+            // the same depth-bounded depth-first run without persistence:
+            // unstored states never enter the state set, so nothing collapses
+            // and the full tree unfolding is explored — 100 times the states
+            // of the stored run two depth levels deeper. The GTS keeps only
+            // the retained trace (9 states), so the discovered counts are the
+            // only description of the work; pinned from the calibration run
+            // 2026-09-20
+            new Config("binary-tree-dfs-unstored", "generate-binary-tree.gps", "start",
+                "next=newest cost=uniform bound=cost:8 persistence=none", 409114, 409113, true));
 
     /** Returns the benchmark set. */
     public static List<Config> getConfigs() {
@@ -247,11 +278,12 @@ public class ExplorationBenchmark {
             }
             for (Measurement run : result.measured()) {
                 if (config.expectedStates() >= 0) {
-                    assertEquals(config.name() + " states", config.expectedStates(), run.states());
+                    assertEquals(config.name() + " discovered states", config.expectedStates(),
+                                 run.discoveredStates());
                 }
                 if (config.expectedTransitions() >= 0) {
-                    assertEquals(config.name() + " transitions", config.expectedTransitions(),
-                                 run.transitions());
+                    assertEquals(config.name() + " discovered transitions",
+                                 config.expectedTransitions(), run.discoveredTransitions());
                 }
             }
         }
@@ -338,18 +370,19 @@ public class ExplorationBenchmark {
     private static List<String> checkCounts(Config config, Result result) {
         List<String> problems = new ArrayList<>();
         for (Measurement run : result.measured()) {
-            if (config.expectedStates() >= 0 && config.expectedStates() != run.states()) {
+            if (config.expectedStates() >= 0 && config.expectedStates() != run.discoveredStates()) {
                 problems
                     .add(String
-                        .format(Locale.ROOT, "%s: expected %d states, found %d", config.name(),
-                                config.expectedStates(), run.states()));
+                        .format(Locale.ROOT, "%s: expected %d discovered states, found %d",
+                                config.name(), config.expectedStates(), run.discoveredStates()));
             }
             if (config.expectedTransitions() >= 0
-                && config.expectedTransitions() != run.transitions()) {
+                && config.expectedTransitions() != run.discoveredTransitions()) {
                 problems
                     .add(String
-                        .format(Locale.ROOT, "%s: expected %d transitions, found %d", config.name(),
-                                config.expectedTransitions(), run.transitions()));
+                        .format(Locale.ROOT, "%s: expected %d discovered transitions, found %d",
+                                config.name(), config.expectedTransitions(),
+                                run.discoveredTransitions()));
             }
         }
         return problems;
@@ -400,6 +433,10 @@ public class ExplorationBenchmark {
                                          int timeoutSeconds) throws Exception {
         long heapBefore = settledHeap();
         GTS gts = new GTS(grammar);
+        // registered before the exploration is created, because that
+        // materialises the start state and so fires the first add update
+        DiscoveryCounter counter = new DiscoveryCounter();
+        gts.addLTSListener(counter);
         Exploration exploration = exploreType.newExploration(gts, null);
         long runningBefore = Exploration.getRunningTime();
         long matchingBefore = PlanSearchStrategy.searchFindReporter.getTotalTime();
@@ -426,7 +463,7 @@ public class ExplorationBenchmark {
         if (timedOut) {
             throw new BenchmarkException(String
                 .format(Locale.ROOT, "TIMEOUT after %d s at %d states (alive=%b, interrupted=%b)",
-                        timeoutSeconds, gts.getStateCount(), thread.isAlive(),
+                        timeoutSeconds, counter.getStates(), thread.isAlive(),
                         exploration.isInterrupted()));
         }
         int states = gts.getStateCount();
@@ -434,8 +471,8 @@ public class ExplorationBenchmark {
         int factoryNodes = gts.getHostFactory().getNodeCount();
         int factoryEdges = gts.getHostFactory().getEdgeCount();
         long retained = settledHeap() - heapBefore;
-        return new Measurement(wallNanos, states, transitions,
-            Exploration.getRunningTime() - runningBefore,
+        return new Measurement(wallNanos, states, transitions, counter.getStates(),
+            counter.getTransitions(), Exploration.getRunningTime() - runningBefore,
             PlanSearchStrategy.searchFindReporter.getTotalTime() - matchingBefore,
             IsoChecker.getTotalTime() - isoBefore,
             IsoChecker.getCertifyingTime() - certifyingBefore,
@@ -504,35 +541,40 @@ public class ExplorationBenchmark {
 
     /** Format of the table rows, with every column taken as a string. */
     private static final String HEAD_FORMAT
-        = "%-22s %7s %8s %8s %8s %8s %9s %9s %7s %7s %7s %7s %6s %7s %8s %8s %7s %8s";
+        = "%-22s %7s %8s %8s %9s %8s %8s %8s %9s %9s %7s %7s %7s %7s %6s %7s %8s %8s %7s %8s";
 
     /** Format of a data row, matching {@link #HEAD_FORMAT} column for column. */
     private static final String ROW_FORMAT
-        = "%-22s %7d %8d %8.1f %8.1f %8.1f %9.0f %9.0f %7d %7d %7d %7d %6d %7d %8.1f %8.1f %7d %8d";
+        = "%-22s %7d %8d %8d %9d %8.1f %8.1f %8.1f %9.0f %9.0f %7d %7d %7d %7d %6d %7d %8.1f %8.1f %7d %8d";
 
     /** Format of a CSV row, in the same column order. */
     private static final String CSV_FORMAT
-        = "%s,%d,%d,%.3f,%.3f,%.3f,%.1f,%.1f,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d%n";
+        = "%s,%d,%d,%d,%d,%.3f,%.3f,%.3f,%.1f,%.1f,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d%n";
 
     /** Column headers of the report table. */
     private static final String HEADER_ROW = String
-        .format(Locale.ROOT, HEAD_FORMAT, "config", "states", "trans", "med ms", "min ms", "max ms",
-                "states/s", "trans/s", "match", "iso", "cert", "gen", "rep", "confl", "allocMB",
-                "retMB", "fNodes", "fEdges");
+        .format(Locale.ROOT, HEAD_FORMAT, "config", "states", "trans", "disc.st", "disc.tr",
+                "med ms", "min ms", "max ms", "states/s", "trans/s", "match", "iso", "cert", "gen",
+                "rep", "confl", "allocMB", "retMB", "fNodes", "fEdges");
 
     /** Separator below the column headers. */
     private static final String RULE_ROW = "-".repeat(HEADER_ROW.length());
 
-    /** Formats one report row from the median measurement of a result. */
+    /**
+     * Formats one report row from the median measurement of a result. The
+     * throughput columns are computed from the discovered rather than the
+     * stored counts, since those are what the run did work for.
+     */
     private static String formatRow(Config config, Result result, Measurement median) {
         double medianSeconds = median.wallNanos() / 1e9;
         return String
-            .format(Locale.ROOT, ROW_FORMAT, config.name(), median.states(),
-                    median.transitions(), median.wallNanos() / 1e6, result.minNanos() / 1e6,
-                    result.maxNanos() / 1e6,
-                    median.states() / medianSeconds, median.transitions() / medianSeconds,
-                    median.matching(), median.isoTotal(), median.certifying(), median.generate(),
-                    median.reporter(), median.confluent(), median.allocatedBytes() / 1048576.0,
+            .format(Locale.ROOT, ROW_FORMAT, config.name(), median.states(), median.transitions(),
+                    median.discoveredStates(), median.discoveredTransitions(),
+                    median.wallNanos() / 1e6, result.minNanos() / 1e6, result.maxNanos() / 1e6,
+                    median.discoveredStates() / medianSeconds,
+                    median.discoveredTransitions() / medianSeconds, median.matching(),
+                    median.isoTotal(), median.certifying(), median.generate(), median.reporter(),
+                    median.confluent(), median.allocatedBytes() / 1048576.0,
                     median.retainedBytes() / 1048576.0, median.factoryNodes(),
                     median.factoryEdges());
     }
@@ -550,20 +592,22 @@ public class ExplorationBenchmark {
                                StandardOpenOption.APPEND))) {
             if (fresh) {
                 writer
-                    .println("config,states,transitions,medianMs,minMs,maxMs,statesPerSec,"
+                    .println("config,states,transitions,discoveredStates,discoveredTransitions,"
+                        + "medianMs,minMs,maxMs,statesPerSec,"
                         + "transPerSec,matchingMs,isoMs,certifyingMs,generateMs,reporterMs,"
                         + "confluent,allocBytes,retainedBytes,factoryNodes,factoryEdges");
             }
             double medianSeconds = median.wallNanos() / 1e9;
             writer
                 .printf(Locale.ROOT, CSV_FORMAT, config.name(), median.states(),
-                        median.transitions(), median.wallNanos() / 1e6, result.minNanos() / 1e6,
-                        result.maxNanos() / 1e6,
-                        median.states() / medianSeconds, median.transitions() / medianSeconds,
-                        median.matching(), median.isoTotal(), median.certifying(),
-                        median.generate(), median.reporter(), median.confluent(),
-                        median.allocatedBytes(), median.retainedBytes(), median.factoryNodes(),
-                        median.factoryEdges());
+                        median.transitions(), median.discoveredStates(),
+                        median.discoveredTransitions(), median.wallNanos() / 1e6,
+                        result.minNanos() / 1e6, result.maxNanos() / 1e6,
+                        median.discoveredStates() / medianSeconds,
+                        median.discoveredTransitions() / medianSeconds, median.matching(),
+                        median.isoTotal(), median.certifying(), median.generate(),
+                        median.reporter(), median.confluent(), median.allocatedBytes(),
+                        median.retainedBytes(), median.factoryNodes(), median.factoryEdges());
         } catch (IOException exc) {
             System.out
                 .printf(Locale.ROOT, "Could not append to %s: %s%n", fileName, exc.getMessage());
@@ -613,8 +657,13 @@ public class ExplorationBenchmark {
      * are deltas of the corresponding static counters, which accumulate over
      * the JVM's lifetime.
      * @param wallNanos wall time of {@link Exploration#play()}
-     * @param states number of states in the resulting GTS
-     * @param transitions number of transitions in the resulting GTS
+     * @param states number of states retained in the resulting GTS
+     * @param transitions number of transitions retained in the resulting GTS
+     * @param discoveredStates number of states the exploration discovered,
+     * counted by a {@link DiscoveryCounter}; equals {@link #states()} unless
+     * the configuration switches persistence off
+     * @param discoveredTransitions number of transitions the exploration
+     * discovered, likewise
      * @param running delta of {@link Exploration#getRunningTime()}
      * @param matching delta of the matcher's {@code Search.find()} reporter
      * @param isoTotal delta of {@link IsoChecker#getTotalTime()}
@@ -630,11 +679,49 @@ public class ExplorationBenchmark {
      * @param factoryNodes number of host nodes the GTS's host factory holds
      * @param factoryEdges number of host edges the GTS's host factory holds
      */
-    public record Measurement(long wallNanos, int states, int transitions, long running,
-                              long matching, long isoTotal, long certifying, long generate,
-                              long reporter, int confluent, long allocatedBytes, long retainedBytes,
-                              int factoryNodes, int factoryEdges) {
+    public record Measurement(long wallNanos, int states, int transitions, int discoveredStates,
+                              int discoveredTransitions, long running, long matching, long isoTotal,
+                              long certifying, long generate, long reporter, int confluent,
+                              long allocatedBytes, long retainedBytes, int factoryNodes,
+                              int factoryEdges) {
         // no additional members
+    }
+
+    /**
+     * GTS listener that counts discovered states and transitions.
+     * <p>
+     * The GTS notifies its listeners of every state and transition added,
+     * whether or not it is stored (see {@link GTS#setStoring}), so this is
+     * the only source of the exploration's true size under
+     * {@code persistence=none}. Deliberately two unsynchronised {@code int}
+     * increments: the exploration path already pays a listener notification
+     * per state and per transition, and the counter must not add measurable
+     * weight to it.
+     */
+    private static final class DiscoveryCounter implements GTSListener {
+        @Override
+        public void addUpdate(GTS gts, GraphState state) {
+            this.states++;
+        }
+
+        @Override
+        public void addUpdate(GTS gts, GraphTransition transition) {
+            this.transitions++;
+        }
+
+        /** Returns the number of states discovered since construction. */
+        int getStates() {
+            return this.states;
+        }
+
+        private int states;
+
+        /** Returns the number of transitions discovered since construction. */
+        int getTransitions() {
+            return this.transitions;
+        }
+
+        private int transitions;
     }
 
     /**
