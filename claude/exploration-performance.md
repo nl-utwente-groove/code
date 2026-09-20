@@ -32,8 +32,11 @@ implementation step should be.
 
 ## Suggested order of attack
 
-1. Build the throughput harness, so the rest can be measured.
-2. Section 1 (always-on instrumentation and locks): two-line changes in the innermost
+1. Build the throughput harness, so the rest can be measured. Done 2026-09-20.
+2. Fix the `Factory` user leak (3.11): a genuine unbounded leak, found by the harness,
+   which also caps how long any benchmark run can be. Its own branch, since it is a
+   bug fix independent of the rest.
+3. Section 1 (always-on instrumentation and locks): two-line changes in the innermost
    loops, no design risk.
 3. Section 2 (dead or broken optimisations): the confluent-diamond key fix and the
    certifier reference; each restores an optimisation that exists but does not work.
@@ -270,6 +273,30 @@ interrupted explorations leak them for the run. Track only the count. Also
 to medium (GUI) / small / high. `explore/engine/Strategy.java:80,132-136`; the GUI
 re-invokes `play()` on a large GTS every time the user continues exploring. Skip when
 the GTS holds only the start state, or keep a "known up to number n" watermark.
+
+**3.11 `Factory` dependency tracking leaks every rule application into the `Grammar`.**
+High (memory, unbounded) / small / verified by measurement. `util/Factory.java:46-55,
+111-119,127-133,172-186`: `Factory.lazy` registers the factory being built in the static
+`builders` set for the duration of `create()`, and every `Factory.get()` executed
+meanwhile calls `addBuilders()`, which adds the builder to the read factory's strong
+`users` set (and the read factory to the builder's `used` set), so that `reset()` can
+propagate. `RuleApplication` wraps `match`, `morphism`, `effect` and `comatch` in
+`Factory.lazy` (`transform/RuleApplication.java:296,317,436,720`), and `applyDelta`
+(`:466`) and `getTarget` (`:249`) call `getRule().isModifying()` inside those builds, a
+grammar-lifetime factory (`grammar/Rule.java:689`; `creatorNodes`, `creatorEdges`,
+`eraserNodes`, `eraserEdges`, `mergers` likewise). So every rule application becomes a
+permanent strong user of seven `Rule` factories, about 1.4 KB retained per application,
+and nothing on any exploration path calls `reset()`. Measured on `generate-binary-tree`:
+537 MB after one run of 409 k applications with only the `Grammar` alive, 1074 MB after
+two, 1587 MB after three; 78 % of the persistent `binary-tree-dfs12` run's retained
+heap is the same leak. It outlives the GTS, so the GUI, which keeps one grammar across
+explorations, leaks across every Explore. Suggestion: the dependency tracking is meant
+for grammar-level factories that reset each other; per-application memo fields should
+not take part. Either give `RuleApplication` plain lazily-initialised fields, or add a
+`Factory` variant that neither registers as a builder nor records users, and use it for
+every factory whose owner is shorter-lived than the factories it reads. Also worth a
+`DEBUG`-guarded size assertion on `users`, since the leak was invisible at test scale.
+Related: 1.3 (the same `get()` also takes the global lock).
 
 ## 4. Allocation on the per-state and per-match path
 
@@ -788,12 +815,24 @@ GTS still referenced, and the per-GTS `HostFactory` node and edge counts (the si
   `enableAssertions=false` (the header line says `Assertions: disabled`); the pom's
   `argLine` is untouched.
 
-The product `module-info` gained `requires java.management; requires jdk.management;`
-for the harness alone: Surefire and Eclipse patch the test tree into the module, and
-there is no test-only way to add a `requires` that both accept. Nothing in `src/main`
-uses either module. `requires static` plus `--add-modules` in the Surefire `argLine` and
-the launch would keep the product module clean at the cost of two more moving parts;
-not done, open for review.
+The harness reaches the two management beans it uses (`RuntimeMXBean.getInputArguments`
+for the JVM flags, `com.sun.management.ThreadMXBean.getThreadAllocatedBytes` for the
+allocation column) reflectively, in a small helper that degrades to "n/a" and -1. The
+test tree is patched into the product module, so direct use would have needed
+`requires java.management; requires jdk.management;` in the product `module-info` for a
+test-only purpose (tried, rejected). Reflective access needs the packages exported,
+which they are, but no readability. At run time both modules resolve under Surefire and
+under a plain class-path launch without flags, since the booter starts from the class
+path and `java.se` is then a root; only the Eclipse launch, where the application module
+is the root, carries `--add-modules=java.management,jdk.management`.
+
+The harness loads the `SystemStore` once per configuration and builds `new
+GrammarModel(store).toGrammar()` for every run, outside the timed region, so each run
+starts without the state that 3.11 leaks into the `Rule` objects. `GrammarModel.toGrammar()`
+caches its `Grammar`, and the `RuleModel`s cache their `Rule`s for the model's lifetime,
+so a fresh model is the only unit that isolates runs. Consequence: search plans, built
+lazily on first match, are built inside the timed region on every run; milliseconds
+against seconds, equal for all runs, accepted.
 
 Calibration facts, single cold runs at `-Xmx2g` unless noted:
 
@@ -826,40 +865,77 @@ Calibration facts, single cold runs at `-Xmx2g` unless noted:
 - **Run order matters**: `car-platooning-05` measures 5.2 s as the first configuration in
   a JVM and 12 s as the ninth, consistent with the megamorphic dispatch of 4.1.9 being
   polluted by the preceding grammars. Compare like-for-like orderings only, or one
-  configuration per JVM.
+  configuration per JVM. (Part of the effect measured before the fresh-`Grammar`-per-run
+  change was the 3.11 leak accumulating across configurations; re-measure.)
+- **A long-run tier is wanted but blocked by 3.11.** Runs of two to five minutes would
+  show the wrong-quantity findings (3.1, 3.3, 3.4) and average out GC and JIT noise
+  better than repeated short runs; candidates are `car-platooning start-06`,
+  `sierpinsky start12`, the unstored binary tree at depth 9 (about 140 s) and As-and-Bs
+  under `collapse=equality` (223 k states in 60 s). But at 1.4 KB leaked per rule
+  application a 3 M-application run leaks over 4 GB before it ends, so the tier is
+  added once the leak is fixed, calibrated at a larger heap, with fewer repetitions.
 
 Baseline, 2 warm-ups and 3 measured runs, OpenJDK 25.0.4, `-da -Xmx4g -XX:+UseParallelGC`,
-all nine configurations in one JVM in table order (non-timing columns from the median run):
+all ten configurations in one JVM in table order, fresh grammar per run (state and
+transition columns are the *discovered* counts; non-timing columns from the median run):
 
 ```
-config                  states    trans   med ms   min ms   max ms  states/s   match     iso    cert     gen  allocMB    retMB  fNodes   fEdges
-inheritance                756     5374     71.1     65.7    106.5     10630       0       8       5      62     52.1      9.5       7       10
-pacman                     256     1536     47.6     41.7     50.5      5380       2      19       9      33     41.9      4.5      20      196
-as-and-bs                 8240    44774    615.2    497.3    623.8     13395      83     150      80     451    519.8     72.2       6       27
-sierpinsky-11               12       11   1811.7   1798.4   2449.4         7     175       0       0    1497    920.2    417.3  265734   841476
-binary-tree-dfs12         4012    22188   1238.4   1173.3   1325.5      3240      11     920     658    1193    583.3     39.9     239      596
-append-4-list-8          31104   114008   4379.0   4364.7   4427.4      7103     979    1174    1092    3062   3141.3    351.4      67      293
-append-4-list-8-equality 73792   268912  10971.6   9606.6  26068.7      6726    2030       0       0    8208   5634.6    804.4      74      357
-mark-unmark              24576   368640   9552.0   8838.2   9848.2      2573    1666    2120    1898    7152   6236.6    483.1      15       30
-car-platooning-05       110366   369601  12046.6  10248.2  85255.8      9162    2955       0       0    7392   7927.2    815.0       5      215
-binary-tree-dfs-unstored 409114  409113   2794.1   2416.1  25184.6    146419     120       0       0    2371   3342.5   1440.6    1023     2556
+config                   states    trans   med ms   min ms   max ms  states/s   match     iso    cert     gen  allocMB    retMB  fNodes   fEdges
+inheritance                 756     5374     78.2     74.6     87.7      9662       3      11       8      51     52.2      7.8       7       10
+pacman                      256     1536     61.7     33.1     81.1      4147       7      31      13      41     41.2      3.8      20      196
+as-and-bs                  8240    44774    665.4    606.9    681.6     12384      88     182      88     493    528.4     73.2       6       27
+sierpinsky-11                12       11   2112.4   1586.6   2171.5         6     181       0       0    1788    920.3    418.2  265734   841476
+binary-tree-dfs12          4012    22188   1605.0   1485.4   1624.8      2500      20    1181     846    1539    591.5     40.0     239      596
+append-4-list-8           31104   114008   5127.8   5051.3   5338.4      6066    1206    1573    1490    3617   3128.8    349.5      67      293
+append-4-list-8-equality  73792   268912  11128.2  10045.3  24740.9      6631    2430       0       0    7960   5659.0    812.3      74      357
+mark-unmark               24576   368640   8158.5   7372.5   8388.6      3012    1287    2463    2148    6360   6093.3    471.5      15       30
+car-platooning-05        110366   369601   8995.9   8675.0  74108.4     12269    2661       0       0    5087   7734.5    816.5       5      215
+binary-tree-dfs-unstored 409114   409113   5547.1   4264.5  27049.6     73752     238       0       0    4821   3297.6   1416.0    1023     2556
 ```
 
-The last row was measured separately (same JVM flags, its own JVM); its state and
-transition columns are the *discovered* counts from a `GTSListener`, since with
-`persistence=none` the GTS retains only the nine states of the written-back trace. The
-harness reports stored and discovered counts side by side and asserts the pinned counts
-against the discovered ones; for the nine persistent configurations the two are equal.
+With `persistence=none` the GTS retains only the nine states of the written-back trace,
+so the harness counts discovered states and transitions through a `GTSListener`
+registered before the start state materialises, reports stored and discovered side by
+side, and asserts the pinned counts against the discovered ones; for the nine
+persistent configurations the two are equal.
+
+**The maxima of the last three rows are GC thrash, not noise.** A single run of
+`binary-tree-dfs-unstored` makes about 1.4 GB live (the 3.11 leak plus soft caches) in a
+3.6 GB heap; `-Xlog:gc` shows 48 full collections and 26 s of pause in a 40 s JVM, no
+single pause above a second. The fresh grammar per run stops the leak accumulating
+across runs (the previous baseline's spread), but it does not make one run fit; until
+3.11 is fixed, `min ms` is the only stable column for those rows.
 `bound=cost:N` still terminates the run under `persistence=none`, at a pure tree unfolding
 (transitions = states − 1), growing about eightfold per level: depth 8 takes 3 s, depth 9
 about 140 s, so there is nothing in between.
 
-**Open observation from that row**: 1.44 GB retained after two GCs, with the GTS
-referenced, for nine stored states. Something other than the state set keeps the 409 k
-discovered states or their derived data alive. Candidates: the per-GTS event pool
-(`Record.eventMap`, every event ever normalised, see 4.2.5), the created-node map of
-3.4, and the transition stubs of the retained trace. Not investigated; it is the
-configuration with the largest run-to-run spread as well (2.4 s to 25 s).
+**The 1.44 GB retained by that row** (after two GCs, GTS referenced, nine stored states)
+was investigated with a three-point retention measurement and a class histogram. It is
+not the frontier pool (empty after `play()`), not the event pool (511 entries), not the
+created-node map of 3.4 (511 entries) and not `ExploreResult` (empty). Every one of the
+409 114 discovered states is alive with its cache, plus one `RuleApplication` and
+`RuleEffect` per transition. Two holders, independent of each other:
+
+- **Soft, about 880 MB, rooted in the surviving states** (`Exploration.lastState` and the
+  trace tip). `AbstractGraphState.setClosed` correctly skips storing transition stubs
+  under `persistence=none`, so a closed state does not pin its successors. Its cache
+  does: `StateCache.stateMatches` → `StateMatches.matcher` → `MatchCollector.parentTransMap`
+  (finding 3.6) holds the parent's whole transition map, so from one surviving leaf the
+  path climbs via `source`, fans out through the parent's map to every sibling, and
+  descends through each sibling's cache: the entire tree. All links are soft
+  (`setFull` → `setCacheCollectable`), and forcing soft-reference clearing drops the
+  figure from 1416 MB to 536 MB, so this is reclaimable, but it is exactly the waste
+  3.6 describes, kept for a diamond check that 2.1 shows never fires.
+- **Hard, about 537 MB, rooted in the `Grammar`: finding 3.11 below.** Survives the
+  GTS and the exploration; grows linearly with rule applications across every run that
+  shares the `Grammar`.
+
+Per state the two runs are alike: 2.3 KB per stored state in `binary-tree-dfs12`
+(of whose 40 MB, 31 MB is the same hard leak) against 2.25 KB per discovered state
+unstored. The harness's `retMB` column therefore overstates hard retention by the
+softly reachable part, and the run-to-run spread of the unstored row (2.4 s to 25 s)
+is the leak accumulating over seven runs on one compiled grammar; the harness now
+compiles a fresh `Grammar` per run.
 
 The confluent-diamond count is 0 in every row, as 2.1 predicts. The factory edge count
 of `car-platooning-05` (215 edges minted for a 5-node factory) and `pacman` (196) is
