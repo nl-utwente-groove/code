@@ -466,7 +466,7 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
     private List<String> startGraphs;
 
     /** Returns the exploration reporters enabled on the basis of the options. */
-    public ExplorationReporter getReporter() {
+    private ExplorationReporter getReporter() {
         if (this.reporter == null) {
             this.reporter = computeReporter();
         }

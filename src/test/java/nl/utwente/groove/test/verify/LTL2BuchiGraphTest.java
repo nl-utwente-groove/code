@@ -152,8 +152,7 @@ public class LTL2BuchiGraphTest {
     /** Tests the graph to be created from a given formula, using a given factory. */
     private void testGraph(String formula, String[] rules) {
         try {
-            BuchiGraph buchiGraph = this.prototype.newBuchiGraph(Formula.parse(formula)
-                .toLtlFormula());
+            BuchiGraph buchiGraph = this.prototype.newBuchiGraph(Formula.parse(formula));
             Set<Proposition> set = Arrays.stream(rules)
                 .map(r -> toProp(r))
                 .collect(Collectors.toSet());
@@ -192,4 +191,4 @@ public class LTL2BuchiGraphTest {
 
     /** The ltl2buchi factory for creating  Buchi graphs. */
     private final BuchiGraph prototype = BuchiGraph.getPrototype();
-}
+}

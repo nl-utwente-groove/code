@@ -41,7 +41,7 @@ public class BuchiLabel extends TextLabel {
      * @param guard
      *          the guard for the label
      */
-    public BuchiLabel(String action, Guard<Proposition> guard) {
+    BuchiLabel(String action, Guard<Proposition> guard) {
         super(computeText(action, guard), EdgeRole.BINARY);
         this.action = action;
         this.guard = guard;
@@ -61,7 +61,7 @@ public class BuchiLabel extends TextLabel {
      *
      * @return the <code>guard</code> of this label
      */
-    public Guard<Proposition> guard() {
+    Guard<Proposition> guard() {
         return this.guard;
     }
 

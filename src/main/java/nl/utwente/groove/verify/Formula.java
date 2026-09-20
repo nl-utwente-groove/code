@@ -332,7 +332,7 @@ public class Formula extends ATermTree<LogicOp,Formula> {
      * @throws FormatException if this formula contains operators
      * that are illegal in LTL.
      */
-    public gov.nasa.ltl.trans.Formula<Proposition> toLtlFormula() throws FormatException {
+    gov.nasa.ltl.trans.Formula<Proposition> toLtlFormula() throws FormatException {
         getErrors().throwException();
         if (this.ltlFormula == null) {
             if (getLogic() == Logic.CTL) {

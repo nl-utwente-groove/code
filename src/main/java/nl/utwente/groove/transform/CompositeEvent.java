@@ -218,7 +218,8 @@ public class CompositeEvent extends AbstractRuleEvent<CompositeEvent.CompositeEv
     static private final CacheReference<CompositeEventCache> reference
         = CacheReference.<CompositeEventCache>newInstance(false);
 
-    class CompositeEventCache extends AbstractRuleEvent.AbstractEventCache {
+    /** Cache for composite events. */
+    public class CompositeEventCache extends AbstractRuleEvent.AbstractEventCache {
         /**
          * Reconstructs a set of events from the array stored in the composite
          * event.

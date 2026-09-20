@@ -672,7 +672,7 @@ final public class BasicEvent extends AbstractRuleEvent<BasicEvent.BasicEventCac
         = CacheReference.<BasicEventCache>newInstance(false);
 
     /** Cache holding auxiliary data structures for the event. */
-    final class BasicEventCache extends AbstractRuleEvent.AbstractEventCache {
+    public final class BasicEventCache extends AbstractRuleEvent.AbstractEventCache {
         /**
          * @return Returns the anchorMap.
          */
