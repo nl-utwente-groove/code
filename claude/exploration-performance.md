@@ -766,9 +766,80 @@ already computes a time breakdown from the static `Reporter` counters (matching 
 generation from `MatchApplier.getGenerateTime()`, self-time from
 `Reporter.getReportTime()`, `StatisticsReporter.java:325-350`), printed by
 `Generator -v 3`. `test/performance` holds collection micro-benchmarks with hand-rolled
-`currentTimeMillis` loops. There is no JMH dependency and no exploration timing anywhere.
+`currentTimeMillis` loops. There is no JMH dependency.
 
-### Shape of the harness
+### The harness (built 2026-09-20)
+
+`test/performance/ExplorationBenchmark` implements the shape described below: a fixed
+list of configurations over `junit/samples`, grammar compiled once per configuration,
+a fresh `GTS` and `Exploration` per run, `play()` on a watchdog-timed thread, warm-ups
+discarded, median/min/max wall time over the measured runs, deltas of the static
+`Reporter` counters, per-thread allocated bytes, retained heap after two GCs with the
+GTS still referenced, and the per-GTS `HostFactory` node and edge counts (the signal for
+3.3). Expected counts are asserted on every measured run. Three entry points:
+
+- `main` (config names as arguments, `-Dgroove.bench.warmups`, `-Dgroove.bench.runs`,
+  `-Dgroove.bench.timeout` in seconds, optional `-Dgroove.bench.csv=<file>`), with the
+  Eclipse launch `GROOVE - exploration benchmark` (`-da -Xmx4g -XX:+UseParallelGC`).
+- `@Test smoke()`: every `smoke` configuration once, no warm-up; runs in the full suite.
+- `@Test benchmark()`: inert unless `-Dgroove.bench.run=<names|true>`; the Maven route,
+  `mvn -q test "-Dexcluded.test.groups=" -Dtest=ExplorationBenchmark
+  -DenableAssertions=false "-Dgroove.bench.run=true" > bench.log 2>&1`. Surefire honours
+  `enableAssertions=false` (the header line says `Assertions: disabled`); the pom's
+  `argLine` is untouched.
+
+The product `module-info` gained `requires java.management; requires jdk.management;`
+for the harness alone: Surefire and Eclipse patch the test tree into the module, and
+there is no test-only way to add a `requires` that both accept. Nothing in `src/main`
+uses either module. `requires static` plus `--add-modules` in the Surefire `argLine` and
+the launch would keep the product module clean at the cost of two more moving parts;
+not done, open for review.
+
+Calibration facts, single cold runs at `-Xmx2g` unless noted:
+
+- **`collapse=none` cannot be configured**: `ExploreKey.COLLAPSE` accepts
+  `grammar|equality|isomorphism|hash`, and `ConfiguredExploreType:116` rejects
+  `COLLAPSE_NONE` and `COLLAPSE_ISO_WEAK` as unrealisable. The "long delta chains without
+  collapsing" case for 2.5 to 2.7 is therefore not expressible from a configuration;
+  `binary-tree-dfs12` (depth-first with a depth bound) is the nearest substitute.
+- **Depth-first rejects a node bound** (`ExploreTypeConverter:168`); the only DFS-compatible
+  bound is `next=newest cost=uniform bound=cost:N`. `bound=size:` is unsupported.
+- **Dead candidates**: every `leader-election` start graph except `start-2` (including
+  all `-init` graphs), `pacman start_four_ghosts`, `recipes`, `transactions`,
+  `attribute-count-to-n`, `fibonacci` and both `exploreCache` grammars explore to one to
+  six states. So the attribute-heavy, symmetric and recipe-transience cases are still
+  uncovered and need new grammars, as anticipated above.
+- **Heap**: `car-platooning start-06`, `sierpinsky start13`, `generate-binary-tree` at
+  depth 14 or more and `bound=nodes:40` thrash at 2 GB and never finish; under GC thrash
+  the watchdog thread is starved too, so the timeout does not fire. The launch uses 4 GB.
+- **Run order matters**: `car-platooning-05` measures 5.2 s as the first configuration in
+  a JVM and 12 s as the ninth, consistent with the megamorphic dispatch of 4.1.9 being
+  polluted by the preceding grammars. Compare like-for-like orderings only, or one
+  configuration per JVM.
+
+Baseline, 2 warm-ups and 3 measured runs, OpenJDK 25.0.4, `-da -Xmx4g -XX:+UseParallelGC`,
+all nine configurations in one JVM in table order (non-timing columns from the median run):
+
+```
+config                  states    trans   med ms   min ms   max ms  states/s   match     iso    cert     gen  allocMB    retMB  fNodes   fEdges
+inheritance                756     5374     71.1     65.7    106.5     10630       0       8       5      62     52.1      9.5       7       10
+pacman                     256     1536     47.6     41.7     50.5      5380       2      19       9      33     41.9      4.5      20      196
+as-and-bs                 8240    44774    615.2    497.3    623.8     13395      83     150      80     451    519.8     72.2       6       27
+sierpinsky-11               12       11   1811.7   1798.4   2449.4         7     175       0       0    1497    920.2    417.3  265734   841476
+binary-tree-dfs12         4012    22188   1238.4   1173.3   1325.5      3240      11     920     658    1193    583.3     39.9     239      596
+append-4-list-8          31104   114008   4379.0   4364.7   4427.4      7103     979    1174    1092    3062   3141.3    351.4      67      293
+append-4-list-8-equality 73792   268912  10971.6   9606.6  26068.7      6726    2030       0       0    8208   5634.6    804.4      74      357
+mark-unmark              24576   368640   9552.0   8838.2   9848.2      2573    1666    2120    1898    7152   6236.6    483.1      15       30
+car-platooning-05       110366   369601  12046.6  10248.2  85255.8      9162    2955       0       0    7392   7927.2    815.0       5      215
+```
+
+The confluent-diamond count is 0 in every row, as 2.1 predicts. The factory edge count
+of `car-platooning-05` (215 edges minted for a 5-node factory) and `pacman` (196) is
+3.3 showing. `sierpinsky-11` is the large-graph case (265 k nodes, 841 k edges in the
+final graph) and is dominated by `gen`, i.e. transformation and reconstruction, not
+matching.
+
+### Shape of the harness (as designed)
 
 A runner in the test tree, `test/performance/ExplorationBenchmark` or similar, with a
 `main` so it runs outside Surefire (no `-ea`) and a JUnit entry under `SlowTest` for
