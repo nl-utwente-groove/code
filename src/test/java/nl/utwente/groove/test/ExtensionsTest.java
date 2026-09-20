@@ -44,6 +44,7 @@ import java.util.stream.Collectors;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.io.TempDir;
 
 import nl.utwente.groove.gui.view.GraphBackend;
@@ -72,6 +73,9 @@ import nl.utwente.groove.util.Version;
 @AIGenerated("Claude Fable 5.1, 2026-09")
 @NonNullByDefault
 public class ExtensionsTest {
+    @RegisterExtension
+    static final QuietLogging QUIET_LOGGING = new QuietLogging();
+
     @Test
     void defaultDirIsAbsoluteAndNamedExtensions() {
         Path dir = Extensions.defaultDir();
