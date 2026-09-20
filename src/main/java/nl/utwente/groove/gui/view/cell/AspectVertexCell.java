@@ -155,7 +155,7 @@ public class AspectVertexCell extends AViewVertex<AspectGraph> implements Aspect
     @Override
     public void setNodeFixed() {
         getNode().setFixed();
-        if (getNode().hasErrors()) {
+        if (!getNode().getErrors().isEmpty()) {
             getErrors().addErrors(getNode().getErrors(), true);
             setStale(VisualKey.ERROR);
         }

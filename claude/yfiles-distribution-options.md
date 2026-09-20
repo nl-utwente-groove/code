@@ -223,7 +223,7 @@ Each independently mergeable, in this order:
   standard app image (built with the reverted installer script) rendered on the add-on
   loaded from an extension directory, without a warning.
 - The macOS location is `~/Library/Application Support/GROOVE/extensions`, the platform
-  convention; Linux and other systems use `~/.groove/extensions`, Windows
+  convention; Linux and other systems use `~/.local/share/groove/extensions`, Windows
   `%APPDATA%\GROOVE\extensions`.
 
 ### After implementation

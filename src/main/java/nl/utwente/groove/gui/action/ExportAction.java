@@ -1,7 +1,6 @@
 package nl.utwente.groove.gui.action;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -92,15 +91,10 @@ public class ExportAction extends SimulatorAction {
             try {
                 // Get exporter
                 FileType fileType = chooser.getFileType();
-                // the Ecore formats have encoding options, which have to be settled
-                // (and stored) before the exporter reads them from the grammar
-                if (!askEcoreOptions(fileType)) {
-                    return;
-                }
                 Exporter exporter = exporters.get(fileType);
                 assert exporter != null; // the chooser only offers file types from the exporter map
                 exporter.doExport(exportable, selectedFile, fileType);
-            } catch (PortException | IOException e) {
+            } catch (PortException e) {
                 showErrorDialog(e, "Error while exporting to " + selectedFile);
             }
         }

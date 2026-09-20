@@ -52,8 +52,12 @@ public class FormatError implements Comparable<FormatError>, Fixable, Cloneable 
      * Constructs an error of severity {@link Severity#ERROR}, consisting of a
      * message to be formatted.
      * The actual message is constructed by calling {@link String#format(String, Object...)}
-     * The parameters are interpreted as giving information about the error;
-     * in particular, a {@link Severity} parameter sets the severity level.
+     * with <i>all</i> parameters, after which the parameters are interpreted as
+     * giving information about the error (see {@link #addContext}).
+     * A {@link Severity} among the parameters does set the severity level, but
+     * is also consumed by the next format specifier of the message, which
+     * garbles the text; to set the severity, use
+     * {@link #FormatError(Severity, String, Object...)} instead.
      */
     public FormatError(String message, @Nullable Object... pars) {
         this.message = String.format(message, pars);
@@ -64,7 +68,9 @@ public class FormatError implements Comparable<FormatError>, Fixable, Cloneable 
 
     /**
      * Constructs an error of a given severity, consisting of a message to be formatted.
-     * Equivalent to passing the severity among the parameters.
+     * The severity is not a format parameter, so the message is formatted with
+     * the remaining parameters only. This is the way to construct a non-blocking
+     * error.
      * @see #FormatError(String, Object...)
      */
     public FormatError(Severity severity, String message, @Nullable Object... pars) {

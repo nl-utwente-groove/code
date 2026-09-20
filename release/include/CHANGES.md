@@ -8,7 +8,7 @@ Upcoming release (8.0.0)
 Major release; `CHANGES-8_0_0.md` expands on every item below
 
 - Graph views run on a swappable backend; yFiles for Java is available as an optional add-on (gh #909)
-- Platform-native installers (`.msi`, `.dmg`, `.deb`, `.rpm`) with bundled Java runtime; the zips need Java 21+
+- Platform-native installers (`.msi`, `.dmg`, `.deb`, `.rpm`) with a bundled Java 25 runtime; the zips need Java 21+ and start without warnings on Java 24+
 - Multigraph transformation: new `semantics` property (`SPO-simple`, `SPO-multi`, `DPO`) and `mult=k:` host aspect
 - Regular expressions are no longer witnessed by edges the rule erases (`regExpMatching` property, gh #900)
 - Exploration is configured in settings resources (`explore` folder) and a reworked dialog; Generator `-x`

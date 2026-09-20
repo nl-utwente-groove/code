@@ -293,10 +293,10 @@ public class AspectNode extends ANode implements AspectElement, Fixable {
         this.aspects = Aspect.normalise(this.aspects);
         // generate derived terms before errors are fixed
         this.expression.get();
-        if (hasErrors()) {
-            this.errors.setFixed();
-        } else {
+        if (this.errors.isEmpty()) {
             this.errors = FormatErrorSet.EMPTY;
+        } else {
+            this.errors.setFixed();
         }
         if (this.nestedMap.isEmpty()) {
             this.nestedMap = EMPTY_MAP;

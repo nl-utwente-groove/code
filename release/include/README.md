@@ -6,7 +6,9 @@ Installation and use
 
 The bin subdirectory of the GROOVE directory (into which you unzipped the
 downloaded archive) contains jar files for each of the toolkit programs:
-e.g., Simulator.jar, Generator.jar. You can use these in either of the
+e.g., Simulator.jar, Generator.jar. Running them requires Java 21 or newer on
+your machine; the native installers offered on the release page bundle a Java
+runtime of their own instead. You can use the jar files in either of the
 following ways:
 
 *  In a file manager window opened on the bin directory, double-click the jar file;
@@ -30,7 +32,8 @@ non-commercial use only (see YFILES-ADDON.md inside). The Simulator offers to
 download and install it at the first start of a new version, and at any later
 time under View > yFiles add-on; by hand, unzip it into GROOVE's extension
 directory (`%APPDATA%\GROOVE\extensions` on Windows,
-`~/Library/Application Support/GROOVE/extensions` on macOS, `~/.groove/extensions`
+`~/Library/Application Support/GROOVE/extensions` on macOS,
+`$XDG_DATA_HOME/groove/extensions`, normally `~/.local/share/groove/extensions`,
 elsewhere), from which GROOVE loads it at the next start.
 
 Features

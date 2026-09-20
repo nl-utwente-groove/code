@@ -35,6 +35,7 @@ import nl.utwente.groove.graph.AGraphMap;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.ElementFactory;
 import nl.utwente.groove.graph.Node;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
@@ -64,6 +65,18 @@ abstract public class GraphBasedModel<R> extends NamedResourceModel<R> {
     @Override
     public AspectGraph getSource() {
         return this.source;
+    }
+
+    /**
+     * The diagnostics of a graph-based model are those of its source graph;
+     * on the success path of a build, these are all non-blocking.
+     */
+    @Override
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    FormatErrorSet getSourceDiagnostics() {
+        var result = getSource().getErrors();
+        assert !result.hasErrors(); // a blocking error would have failed the build
+        return result;
     }
 
     /**

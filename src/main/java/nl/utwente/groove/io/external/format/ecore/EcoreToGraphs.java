@@ -54,7 +54,9 @@ import nl.utwente.groove.io.external.format.ecore.EcoreMapping.Kind;
 import nl.utwente.groove.io.external.format.ecore.EcoreMapping.Ordering;
 import nl.utwente.groove.io.external.format.ecore.EcoreMapping.PackageData;
 import nl.utwente.groove.util.AIGenerated;
+import nl.utwente.groove.util.parse.FormatError;
 import nl.utwente.groove.util.parse.IdValidator;
+import nl.utwente.groove.util.parse.Severity;
 import nl.utwente.groove.util.parse.StringHandler;
 
 /**
@@ -67,12 +69,14 @@ import nl.utwente.groove.util.parse.StringHandler;
  * The approximations the encoding makes by design — a custom
  * {@link EDataType} becomes a string, and under
  * {@link Ordering#NONE} the order and the duplicates of a many-valued feature
- * are dropped — are silent: they are documented behaviour, and the information
- * needed to reverse them is kept in the round-trip metadata. Format errors are
- * reserved for input that the encoding cannot represent at all, such as a
- * reference to a class outside the imported packages; since GROOVE has no
- * warning severity, an error keeps the resulting graph from compiling, which is
- * only appropriate for input that really is broken.
+ * are dropped — are reported as {@link Severity#WARNING} diagnostics on the
+ * type graph, once per affected feature: they are documented behaviour, and
+ * the information needed to reverse them is kept in the round-trip metadata,
+ * but the user should see what the encoding did. Blocking errors are reserved
+ * for input that the encoding cannot represent at all, such as a reference to
+ * a class outside the imported packages, since an error keeps the resulting
+ * graph from compiling. The warnings live on the in-memory graph only: they
+ * are not persisted, so they disappear when the grammar is reloaded.
  * @author Arend Rensink
  */
 @NonNullByDefault
@@ -192,11 +196,15 @@ public class EcoreToGraphs {
             // a custom data type is approximated by a string; the data type itself
             // is recorded in the metadata, so the approximation is reversible
             sort = Sort.STRING;
+            addWarning(graph,
+                       "Data type '%s' of attribute '%s' has no GROOVE sort; its values are encoded as strings",
+                       dataType.getName(), attribute.getName(), node);
         }
         if (isIndexed(attribute)) {
             PlainNode interNode = addIntermediateNode(graph, node, eClass, attribute);
             graph.addEdge(interNode, sort.getName() + SEP + VALUE, interNode);
         } else {
+            warnIfLossy(graph, node, attribute);
             graph.addEdge(node, sort.getName() + SEP + label, node);
         }
     }
@@ -225,6 +233,7 @@ public class EcoreToGraphs {
     /** Adds a (multiplicity-annotated) feature edge between two type nodes. */
     private void addFeatureEdge(PlainGraph graph, PlainNode source, PlainNode target,
                                 EStructuralFeature feature, String label) {
+        warnIfLossy(graph, source, feature);
         StringBuilder text = new StringBuilder();
         String mult = multiplicityOf(feature);
         if (mult != null) {
@@ -650,6 +659,36 @@ public class EcoreToGraphs {
     /** Indicates if a feature is many-valued. */
     private static boolean isMultiple(EStructuralFeature feature) {
         return feature.getUpperBound() > 1 || feature.getUpperBound() == -1;
+    }
+
+    /**
+     * Adds a warning to a type graph if a feature is encoded directly although
+     * the order or the duplicates of its values matter, since the direct
+     * encoding drops them. Called once per feature, from the direct-edge paths.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    private void warnIfLossy(PlainGraph graph, PlainNode node, EStructuralFeature feature) {
+        if (isLossy(feature) && !isIndexed(feature)) {
+            String lost = feature.isOrdered()
+                ? (feature.isUnique()
+                    ? "order"
+                    : "order and duplicates")
+                : "duplicates";
+            addWarning(graph,
+                       "Direct encoding of feature '%s' drops the %s of its values; ordering '%s' keeps them",
+                       feature.getName(), lost, Ordering.INDEX.text(), node);
+        }
+    }
+
+    /**
+     * Adds a non-blocking diagnostic of severity {@link Severity#WARNING} to a
+     * graph. The message and parameters are as for
+     * {@link FormatError#FormatError(String, Object...)}; the severity cannot
+     * be passed among them, since it would be consumed as a format argument.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    private static void addWarning(PlainGraph graph, String message, @Nullable Object... pars) {
+        graph.getErrors().add(new FormatError(Severity.WARNING, message, pars));
     }
 
     /** Indicates if the order or the duplicates of a feature's values matter.

@@ -1,12 +1,13 @@
 # Release 8.0.0: preparation state
 
 Handoff note for the release of GROOVE 8.0.0 from `yworks-migration` (merged into
-`master`). Written 2026-09-14, re-checked 2026-09-15; the Maven module split (gh #887)
-is out of scope.
+`master`). Written 2026-09-14, re-checked 2026-09-15, merged with `master` on 2026-09-20;
+the Maven module split (gh #887) is out of scope.
 
 ## Branches and worktrees
 
-All off the `yworks-migration` tip 103f6b74d, worktrees under `.claude/worktrees/`:
+Originally all off the `yworks-migration` tip 103f6b74d; `master` has moved on since and
+was merged back in on 2026-09-20. Worktrees under `.claude/worktrees/`:
 
 - `release-8_0_0-prep` (worktree of the same name): everything for the code repository,
   with `changelog-8_0_0` and `release-8_0_0-usage-fix` merged in (2026-09-15): the change
@@ -15,15 +16,24 @@ All off the `yworks-migration` tip 103f6b74d, worktrees under `.claude/worktrees
   items 4 and 8 below, the Generator `-x` usage text synchronised with `ExploreKey`
   (bare number forms `<n>` are accepted and are what `unparse` writes), this note.
 - Website repository `nl-utwente-groove.github.io`: worktree `.claude/worktrees/release-8_0_0`,
-  branch `release-8_0_0` off `main`, detached for review. Commits: fb02d3a `installing.md`
+  branch `release-8_0_0` off `main`. Commits: fb02d3a `installing.md`
   (installers first, generic `x_y_z` asset names, add-on section linking `YFILES-ADDON.md`),
   `mac.md` (blocked `.dmg`), `index.md` (ModelChecker restored), `manual.md` (legacy PDF
   section gone), `manual/introduction.md` (8.0.0, installers bundle Java); 455cd12 the
   generated exploration-key reference (manual plan step 1); 2238066 the multigraph
   documentation for gh #896 (step 3, with the fixture grammar and two new figures from
   step 4); 5578456 temporal goals left out of the reference; 68cbc2f the verification
-  chapter rewrite (step 2); e26b4c2 all figures re-rendered (step 4). Branch `quick-reference-drop` (worktree of the same name) is
-  subsumed by this and can be deleted.
+  chapter rewrite (step 2); e26b4c2 all figures re-rendered (step 4); 17860f6 the basics
+  and advanced chapters; 0064990 the `.rpm` row of the asset table. Tip bd30077, which
+  merged and retired `quick-reference-drop`.
+- Merged into `master` since (2026-09-16 to 09-20): `flatlaf-native-access` (launcher-jar
+  manifest grants native access, silencing FlatLaf's JEP 472 warning on Java 24+; Surefire
+  argLine grant; installers job on JDK 25; same-named branch in `yfiles-lib`),
+  `java-requirement-docs` (zip README states Java 21+, change notes and release-page text
+  name the Java 25 runtime and the native-access grant), `ecore-dialog-skip` (gh #558,
+  #907) and `retire-transient-yfiles-notes`. The website half of `java-requirement-docs`
+  (`installing.md`, `manual/introduction.md`) is in neither website branch of this clone,
+  so it is presumably still on the other machine; `installing.md` still names Java 21 only.
 - Quick reference chart: dropped 2026-09-14 (2012 tutorial poster by Tim Molderez for
   GROOVE 4.x, source never in a repository, Simulator screenshot unrenderable). The copy in
   the usermanual repo is left in place.
@@ -36,34 +46,34 @@ settings resource, rpm installer); PDF manual and quick reference removal; websi
 draft; manual pass (all six chapters checked against 8.0.0); release-page texts;
 `Version` javadoc for 3.12; grammar version already 3.12 (no bump needed);
 `yfiles-lib` branch `yworks-migration` merged into `main` (2026-09-14, in sync with
-origin); gh #819, #846, #851 closed; gh #911 settled by reinstating the ban.
+origin); gh #819, #846, #851 closed; gh #911 settled by reinstating the ban; gh #558 and
+#907 resolved on `master` (`ecore-dialog-skip`).
 
 Before the tag, in order:
 
-1. Website: branch `release-8_0_0` stops at 6dd7135, but the worktree's detached HEAD
-   17860f6 ("Finished the basics and advanced chapters for 8.0.0") is on no branch;
-   `git branch -f release-8_0_0 17860f6` in the website repository. Then add the `.rpm`
-   row to the asset table of `installing.md` (only the `.deb` is listed), and reword the
-   transition-label paragraph of `manual/basics.md`, which still calls the syntax
-   String.format-like (now `%s`, `%i$s`, `%%` only, gh #877).
+1. Website: reword the transition-label paragraph of `manual/basics.md`, which still
+   calls the syntax String.format-like (now `%s`, `%i$s`, `%%` only, gh #877), and carry
+   the Java-requirement wording over from the other machine (or redo it): `installing.md`
+   still gives Java 21 as the requirement and says nothing of the bundled Java 25 runtime.
+   The branch pointer and the `.rpm` asset row, open in the 09-15 version of this note,
+   are done (0064990, bd30077).
 2. Check `YFILES_LIB_TOKEN` has not expired (no skip guard in `release.yml`).
 3. `revision` 7.5.4-SNAPSHOT -> 8.0.0 in `pom.xml` and `yfiles-lib/pom.xml`;
    `GROOVE_BUILD` (still 20260702); CHANGES.md heading "Upcoming release (8.0.0)" ->
    release form with date (underline style feeds `release-notes.sh`).
 4. Full suite, GUI tests, yFiles backend tests on the merged tip (not run since the
    merge of master).
-5. Remaining issue decisions: gh #558 and #907 are being looked at in a parallel
-   session (2026-09-15); #917, #915, the remainders of #877 and #898, and the old bugs
-   #869 and #828 are not version-sensitive. Decide whether #909 closes with the release
-   or stays open for the JGraph removal.
+5. Remaining issue decisions: #917, #915, the remainders of #877 and #898, and the old
+   bugs #869 and #828 are not version-sensitive. Decide whether #909 closes with the
+   release or stays open for the JGraph removal.
 6. Test-release residue: tags `release-99_0_1` to `_6` locally, `_3`, `_4`, `_6` on
    origin, pre-release 99.0.6 on GitHub; delete before or after tagging.
 7. Website: merge `release-8_0_0` when the release is out (it names 8.0.0 as current);
    regenerate the figures and reference pages at the tag (see the manual plan); close
    gh #896.
 8. Post-release: bump to 8.0.1-SNAPSHOT, Maven Central deploy, close the issues in the
-   change notes, delete `claude/yfiles-private-move-state.md`, download-stats SourceForge
-   import (the website page is on the website's `main`).
+   change notes, download-stats SourceForge import (the website page is on the website's
+   `main`).
 
 ## Manual plan
 
@@ -72,7 +82,7 @@ worktree `release-8_0_0`, one commit per step; the `manual.md` *Checked against*
 chapter moves to 8.0.0 in the commit that revises the chapter (see the last open decision).
 
 Progress, 2026-09-15: all seven steps are committed on the website branch `release-8_0_0`
-(tip 17860f6, nine commits ahead of `main`); every chapter is checked against 8.0.0. Two
+(tip 0064990, ten commits ahead of `main`, the last one adding the `.rpm` installer to `installing.md`); every chapter is checked against 8.0.0. Two
 things remain: the figures were rendered with a 7.5.4-SNAPSHOT candidate and are to be
 regenerated at the tag with the release classpath (`make-figures.sh`, then `make-refs.sh`
 for the version string on the reference pages), and the optional yFiles-rendered figure of

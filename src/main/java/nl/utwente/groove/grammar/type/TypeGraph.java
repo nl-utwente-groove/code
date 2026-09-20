@@ -679,7 +679,7 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
                 : edgeLabel;
             RegExpr expr = checkLabel.getMatchExpr();
             Result typeResult = expr.apply(regExprTyper);
-            if (typeResult.hasErrors()) {
+            if (!typeResult.getErrors().isEmpty()) {
                 // if the source type is the top type, we must be in a
                 // graph editor where a new edge label has been used and
                 // the graph has not yet been saved. This will be solved
@@ -688,7 +688,8 @@ public class TypeGraph extends NodeSetEdgeSetGraph<@NonNull TypeNode,@NonNull Ty
                 if (!sourceImage.getType().isTopType()) {
                     errors.addAll(typeResult.getErrors().extend(edge));
                 }
-            } else {
+            }
+            if (!typeResult.hasErrors()) {
                 // check if source and target type fit
                 boolean fit;
                 if (checkLabel.isAtom() && (isImplicit() || checkLabel.getRole() != NODE_TYPE)) {

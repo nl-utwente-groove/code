@@ -237,6 +237,21 @@ PERL
 # MSI and DMG version numbers must be plain x.y.z: strip any -SNAPSHOT suffix
 APP_VERSION=${VERSION%%-*}
 
+# Compact object headers (JEP 519, a product option since JDK 25) shrink
+# every object by four bytes, which for GROOVE's small-object heaps means
+# 7-10% less memory during exploration. The option goes to every launcher:
+# the additional launchers inherit the main launcher's java options unless
+# their properties file sets its own. A JDK below 25 does not know the
+# option and its JVM would refuse to start, so the option is tied to the
+# jpackage JDK; the release workflow builds with 25.
+JPACKAGE_MAJOR=$("$JPACKAGE" --version | tr -d '' | cut -d. -f1)
+java_options=()
+if [[ $JPACKAGE_MAJOR -ge 25 ]]; then
+    java_options=(--java-options -XX:+UseCompactObjectHeaders)
+else
+    echo "warning: jpackage $JPACKAGE_MAJOR predates compact object headers; the launchers go without them" >&2
+fi
+
 args=(
     --type "$TYPE"
     --name GROOVE
@@ -247,6 +262,7 @@ args=(
     --dest "$(native_path "$DIST")"
     --vendor "University of Twente"
     --description "GROOVE graph transformation and verification tool"
+    "${java_options[@]}"
     "${add_launcher_args[@]}"
 )
 case $OS in

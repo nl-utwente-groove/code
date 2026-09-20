@@ -491,10 +491,10 @@ public class AspectEdge extends AEdge<@NonNull AspectNode,@NonNull AspectLabel>
         if (isAssign()) {
             this.assign.get();
         }
-        if (hasErrors()) {
-            this.errors.setFixed();
-        } else {
+        if (this.errors.isEmpty()) {
             this.errors = FormatErrorSet.EMPTY;
+        } else {
+            this.errors.setFixed();
         }
     }
 

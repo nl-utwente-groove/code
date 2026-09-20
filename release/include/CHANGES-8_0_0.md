@@ -17,8 +17,9 @@ Graph visualisation backends and the yFiles add-on
   add-on (`groove-x_y_z-yfiles-addon.zip`, for non-commercial use only, see
   `YFILES-ADDON.md` inside), which is unzipped into GROOVE's new extension
   directory: `%APPDATA%\GROOVE\extensions` on Windows, `~/Library/Application
-  Support/GROOVE/extensions` on macOS, `~/.groove/extensions` elsewhere, overridable
-  with the system property `groove.extensions.dir`. Jars there are loaded at
+  Support/GROOVE/extensions` on macOS, `$XDG_DATA_HOME/groove/extensions` (normally
+  `~/.local/share/groove/extensions`) elsewhere, overridable with the system
+  property `groove.extensions.dir`. Jars there are loaded at
   start-up; a jar built for another GROOVE version is skipped with a warning.
 - The Simulator offers to download and install the add-on at the first start of a
   release version (once per version; never for snapshot builds; suppressed with
@@ -51,11 +52,21 @@ Installers and distribution
 
 - GitHub releases now carry platform-native installers built with jpackage:
   Windows `.msi`, macOS `.dmg` (Intel and Apple silicon) and Linux `.deb` and
-  `.rpm`, each with a bundled Java runtime, so no Java installation is needed.
-  The start menu group lists GROOVE (the main launcher), Simulator, Generator,
-  ModelChecker, Imager and Viewer. The installers are not code-signed; the
-  release page explains how to get past the Windows and macOS warnings. The
-  `-bin.zip` remains available and needs Java 21 or newer.
+  `.rpm`, each with a bundled Java 25 runtime, so no Java installation is
+  needed. The launchers run with compact object headers, which trims the heap
+  of an exploration by roughly a tenth. The start menu group lists GROOVE (the
+  main launcher), Simulator, Generator, ModelChecker, Imager and Viewer. The
+  installers are not code-signed; the release page explains how to get past
+  the Windows and macOS warnings. The `-bin.zip` remains available and needs
+  Java 21 or newer.
+- The launcher jars in `bin` (and so the installers, which start the same
+  way) declare native access for the class path in their manifest
+  (`Enable-Native-Access: ALL-UNNAMED`), so a `java -jar` start on Java 24 or
+  newer no longer warns when FlatLaf loads its window-decoration library
+  (JEP 472). The attribute is honoured only for the main jar of a `java -jar`
+  start: an application that starts the Simulator from the class path, for
+  instance through the Maven artifact, on such a Java needs
+  `--enable-native-access=ALL-UNNAMED` to keep the warning away.
 - The Windows installer does not offer an install-folder chooser (the MSI would
   not remember the choice across upgrades); use the zip for a custom location.
 - The Windows installer asks to close a running GROOVE before it touches anything

@@ -189,10 +189,14 @@ public class CompositeTypeModel extends ResourceModel<TypeGraph> {
             ResourceModel<?> typeModel = getGrammar().getResource(TYPE, activeTypeName);
             result.add((TypeModel) typeModel);
             for (FormatError error : typeModel.getErrors()) {
-                errors.add("Error in type '%s': %s", activeTypeName, error, typeModel.getSource());
+                errors
+                    .add("%s in type '%s': %s", error.getSeverity().getCapText(), activeTypeName,
+                         error, typeModel.getSource());
             }
         }
         errors.throwException();
+        // the type models built, but may carry non-blocking diagnostics
+        addErrors(errors);
         return result;
     }
 
