@@ -22,8 +22,10 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
+import java.security.CodeSource;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.junit.Test;
@@ -50,7 +52,8 @@ import nl.utwente.groove.util.AIGenerated;
 public class CrossJvmDeterminismTest {
     /** Asserts that shifted identity-hash sequences leave the probe signature unchanged. */
     @Test
-    public void testIdentityHashInsensitivity() throws IOException, InterruptedException {
+    public void testIdentityHashInsensitivity()
+        throws IOException, InterruptedException, URISyntaxException {
         String base = runProbe(0);
         // guard against vacuous success on an empty or truncated dump
         assertTrue("probe produced no anchor dump", base.contains("anchor "));
@@ -66,7 +69,8 @@ public class CrossJvmDeterminismTest {
      * identity-hash pre-draws, inheriting this JVM's classpath and working
      * directory, and returns its standard output.
      */
-    private String runProbe(int draws) throws IOException, InterruptedException {
+    private String runProbe(int draws)
+        throws IOException, InterruptedException, URISyntaxException {
         String javaHome = System.getProperty("java.home");
         assert javaHome != null; // always set by the JVM
         String java = Path.of(javaHome, "bin", "java").toString();
@@ -82,6 +86,13 @@ public class CrossJvmDeterminismTest {
         if (modulePath != null) {
             classPath = classPath + File.pathSeparator + modulePath;
         }
+        // the test classes are on neither path when they are patched into the
+        // module, as the Eclipse launch does; the module reader resolves a
+        // patched class to the patch directory, so its own code source names
+        // the location whichever way the run is configured
+        CodeSource source = IdentityHashProbe.class.getProtectionDomain().getCodeSource();
+        assert source != null; // the probe is not loaded from the boot class path
+        classPath = classPath + File.pathSeparator + Path.of(source.getLocation().toURI());
         pb.environment().put("CLASSPATH", classPath);
         Process process = pb.start();
         // the output is small (well below the pipe buffer size), so the
