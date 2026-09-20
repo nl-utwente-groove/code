@@ -98,6 +98,11 @@ module nl.utwente.groove {
     requires transitive java.desktop;
     requires transitive java.prefs;
     requires java.logging;
+    // read by the exploration benchmark in the test tree, which Surefire
+    // and Eclipse patch into this module: RuntimeMXBean for the JVM flags,
+    // com.sun.management.ThreadMXBean for the per-thread allocation count
+    requires java.management;
+    requires jdk.management;
     requires java.net.http;
     requires java.xml;
     requires com.formdev.flatlaf;
