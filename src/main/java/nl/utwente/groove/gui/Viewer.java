@@ -37,9 +37,9 @@ import nl.utwente.groove.gui.dialog.GraphPreviewDialog.GraphPreviewPanel;
 import nl.utwente.groove.gui.export.CanvasExporters;
 import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.io.graph.GraphIO;
+import nl.utwente.groove.util.FileType;
 import nl.utwente.groove.util.cli.ExistingFileHandler;
 import nl.utwente.groove.util.cli.GrooveCmdLineTool;
-import nl.utwente.groove.util.io.FileType;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

@@ -24,7 +24,7 @@ import org.junit.Test;
 
 import nl.utwente.groove.explore.Transformer;
 import nl.utwente.groove.explore.config.LegacySyntaxParser;
-import nl.utwente.groove.util.io.FileType;
+import nl.utwente.groove.util.FileType;
 
 /**
  * Loads and partially explores all grammars provided with the GROOVE release.

@@ -42,8 +42,8 @@ import nl.utwente.groove.gui.display.StateDisplay;
 import nl.utwente.groove.io.store.EditType;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.util.AIGenerated;
+import nl.utwente.groove.util.FileType;
 import nl.utwente.groove.util.QualName;
-import nl.utwente.groove.util.io.FileType;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

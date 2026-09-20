@@ -41,6 +41,7 @@ import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvException;
 
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.FileType;
 
 /**
  * Useful file system functionalities for performing I/O.

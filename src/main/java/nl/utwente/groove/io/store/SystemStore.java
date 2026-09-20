@@ -18,7 +18,7 @@ package nl.utwente.groove.io.store;
 
 import static nl.utwente.groove.grammar.model.ResourceKind.PROPERTIES;
 import static nl.utwente.groove.io.store.EditType.LAYOUT;
-import static nl.utwente.groove.util.io.FileType.GRAMMAR;
+import static nl.utwente.groove.util.FileType.GRAMMAR;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -67,12 +67,12 @@ import nl.utwente.groove.io.graph.AttrGraph;
 import nl.utwente.groove.io.graph.GxlIO;
 import nl.utwente.groove.io.graph.NodeNrDispenser;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.ExtensionFilter;
+import nl.utwente.groove.util.FileType;
 import nl.utwente.groove.util.ModuleName;
 import nl.utwente.groove.util.Observable;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.Unzipper;
-import nl.utwente.groove.util.io.ExtensionFilter;
-import nl.utwente.groove.util.io.FileType;
 import nl.utwente.groove.util.io.FileUtils;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;

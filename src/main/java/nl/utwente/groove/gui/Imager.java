@@ -16,13 +16,13 @@
  */
 package nl.utwente.groove.gui;
 
+import static nl.utwente.groove.util.FileType.GRAMMAR;
+import static nl.utwente.groove.util.FileType.GXL;
+import static nl.utwente.groove.util.FileType.RULE;
+import static nl.utwente.groove.util.FileType.STATE;
+import static nl.utwente.groove.util.FileType.TYPE;
 import static nl.utwente.groove.util.cli.Verbosity.LOW;
 import static nl.utwente.groove.util.cli.Verbosity.MEDIUM;
-import static nl.utwente.groove.util.io.FileType.GRAMMAR;
-import static nl.utwente.groove.util.io.FileType.GXL;
-import static nl.utwente.groove.util.io.FileType.RULE;
-import static nl.utwente.groove.util.io.FileType.STATE;
-import static nl.utwente.groove.util.io.FileType.TYPE;
 
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -76,12 +76,12 @@ import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.FileType;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.cli.CmdLineException;
 import nl.utwente.groove.util.cli.ExistingFileHandler;
 import nl.utwente.groove.util.cli.GrooveCmdLineTool;
 import nl.utwente.groove.util.cli.Verbosity;
-import nl.utwente.groove.util.io.FileType;
 import nl.utwente.groove.util.parse.FormatException;
 import picocli.CommandLine.ITypeConverter;
 import picocli.CommandLine.Option;

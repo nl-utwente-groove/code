@@ -30,7 +30,7 @@ import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Node;
 import nl.utwente.groove.util.AIGenerated;
-import nl.utwente.groove.util.io.FileType;
+import nl.utwente.groove.util.FileType;
 
 /**
  * Streaming writer for graphs in a text format.

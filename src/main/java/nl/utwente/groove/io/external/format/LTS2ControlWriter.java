@@ -35,7 +35,7 @@ import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSFragment;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
-import nl.utwente.groove.util.io.FileType;
+import nl.utwente.groove.util.FileType;
 
 /**
  * Writer that exports an LTS to a control program that enforces precisely the transitions in that LTS.

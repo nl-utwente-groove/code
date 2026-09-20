@@ -23,8 +23,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 import nl.utwente.groove.util.AIGenerated;
+import nl.utwente.groove.util.FileType;
 import nl.utwente.groove.util.cli.Verbosity;
-import nl.utwente.groove.util.io.FileType;
 
 /**
  * Reporter that writes a record of the exploration run to a file

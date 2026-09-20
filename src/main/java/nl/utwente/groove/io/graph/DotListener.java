@@ -28,8 +28,8 @@ import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Node;
+import nl.utwente.groove.util.FileType;
 import nl.utwente.groove.util.HTMLConverter;
-import nl.utwente.groove.util.io.FileType;
 
 /**
  * Listener class for the {@link FileType#DOT} format.

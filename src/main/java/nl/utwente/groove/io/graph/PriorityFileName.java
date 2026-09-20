@@ -21,7 +21,7 @@ import java.net.URL;
 
 import nl.utwente.groove.grammar.Action;
 import nl.utwente.groove.grammar.Rule;
-import nl.utwente.groove.util.io.FileType;
+import nl.utwente.groove.util.FileType;
 import nl.utwente.groove.util.io.FileUtils;
 
 /**

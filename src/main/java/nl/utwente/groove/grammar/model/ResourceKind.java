@@ -23,9 +23,9 @@ import java.util.Optional;
 import java.util.Set;
 
 import nl.utwente.groove.graph.GraphRole;
+import nl.utwente.groove.util.FileType;
 import nl.utwente.groove.util.NoNonNull;
 import nl.utwente.groove.util.QualName;
-import nl.utwente.groove.util.io.FileType;
 
 /**
  * Abstract type of the resources that make up a grammar.

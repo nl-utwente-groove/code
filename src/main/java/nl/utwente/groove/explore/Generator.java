@@ -50,6 +50,7 @@ import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.lts.ExploreResult;
 import nl.utwente.groove.lts.Filter;
 import nl.utwente.groove.lts.LTSLabels;
+import nl.utwente.groove.util.FileType;
 import nl.utwente.groove.util.Randomness;
 import nl.utwente.groove.util.Resources;
 import nl.utwente.groove.util.cli.CmdLineException;
@@ -57,7 +58,6 @@ import nl.utwente.groove.util.cli.DirectoryHandler;
 import nl.utwente.groove.util.cli.GrammarHandler;
 import nl.utwente.groove.util.cli.GrooveCmdLineParser;
 import nl.utwente.groove.util.cli.GrooveCmdLineTool;
-import nl.utwente.groove.util.io.FileType;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

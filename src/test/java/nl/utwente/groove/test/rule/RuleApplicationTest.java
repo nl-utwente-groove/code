@@ -48,8 +48,8 @@ import nl.utwente.groove.match.Proof;
 import nl.utwente.groove.transform.RuleApplication;
 import nl.utwente.groove.transform.RuleEvent;
 import nl.utwente.groove.transform.oracle.ValueOracle;
+import nl.utwente.groove.util.FileType;
 import nl.utwente.groove.util.QualName;
-import nl.utwente.groove.util.io.FileType;
 import nl.utwente.groove.util.parse.FormatException;
 
 /** Set of tests for rule application. */

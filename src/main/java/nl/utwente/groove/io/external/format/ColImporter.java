@@ -35,8 +35,8 @@ import nl.utwente.groove.io.external.Imported;
 import nl.utwente.groove.io.external.Importer;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.io.graph.ColIO;
+import nl.utwente.groove.util.FileType;
 import nl.utwente.groove.util.QualName;
-import nl.utwente.groove.util.io.FileType;
 
 /**
  * Class that implements loading of graphs in the DIMACS .col graph format.

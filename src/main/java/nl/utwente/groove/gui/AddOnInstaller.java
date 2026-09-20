@@ -51,8 +51,8 @@ import nl.utwente.groove.util.AddOn.Outcome;
 import nl.utwente.groove.util.AddOn.Pending;
 import nl.utwente.groove.util.AddOn.Status;
 import nl.utwente.groove.util.Extensions;
+import nl.utwente.groove.util.FileType;
 import nl.utwente.groove.util.Version;
-import nl.utwente.groove.util.io.FileType;
 
 /**
  * The Simulator's front for installing an {@link AddOn}: a menu with the download,

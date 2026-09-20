@@ -29,7 +29,7 @@ import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.plain.PlainGraph;
 import nl.utwente.groove.graph.plain.PlainNode;
 import nl.utwente.groove.util.AIGenerated;
-import nl.utwente.groove.util.io.FileType;
+import nl.utwente.groove.util.FileType;
 
 /**
  * Plain graph reader/writer for the CADP {@code .aut} format.

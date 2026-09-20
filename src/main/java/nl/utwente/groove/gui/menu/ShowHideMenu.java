@@ -56,8 +56,8 @@ import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.match.automaton.NodeRelation;
 import nl.utwente.groove.match.automaton.RelationCalculator;
+import nl.utwente.groove.util.FileType;
 import nl.utwente.groove.util.HTMLConverter;
-import nl.utwente.groove.util.io.FileType;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
