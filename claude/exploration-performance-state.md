@@ -11,7 +11,7 @@ order of attack" and "Building a throughput harness" sections first).
 
 ## State as of 2026-09-20
 
-Branch `worktree-exploration-performance`, worktree `.claude/worktrees/exploration-performance`,
+Branch `exploration-performance`, worktree `.claude/worktrees/exploration-performance`,
 based on master `c5406f917`, detached for review. Five commits: the review note, the
 benchmark harness, the baseline, the unstored depth-first configuration, the reflection
 route for the management beans plus fresh grammar per run, and the retention
