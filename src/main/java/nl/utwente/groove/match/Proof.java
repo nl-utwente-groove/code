@@ -85,7 +85,9 @@ public class Proof {
         return this.patternMap == null;
     }
 
-    /** Returns the pattern map of this proof, if the condition is a quantifier. */
+    /** Returns the pattern map of this proof, if the condition is a quantifier.
+     * The pattern map is {@code null} if and only if the proof is composite.
+     */
     public @Nullable RuleToHostMap getPatternMap() {
         return this.patternMap;
     }
@@ -145,8 +147,7 @@ public class Proof {
             return false;
         }
         var patternMap = getPatternMap();
-        assert patternMap != null;
-        if (!patternMap.equals(other.getPatternMap())) {
+        if (patternMap != null && !patternMap.equals(other.getPatternMap())) {
             return false;
         }
         return getSubProofs().equals(other.getSubProofs());
