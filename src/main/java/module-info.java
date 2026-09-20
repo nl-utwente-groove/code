@@ -37,6 +37,7 @@ module nl.utwente.groove {
     exports nl.utwente.groove.explore.config;
     exports nl.utwente.groove.explore.feature;
     exports nl.utwente.groove.explore.result;
+    exports nl.utwente.groove.explore.engine;
     exports nl.utwente.groove.verify;
     exports nl.utwente.groove.prolog;
     exports nl.utwente.groove.prolog.builtin;
