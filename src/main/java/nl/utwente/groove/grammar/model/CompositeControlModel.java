@@ -25,7 +25,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,8 +32,7 @@ import org.eclipse.jdt.annotation.NonNull;
 
 import nl.utwente.groove.control.CtrlLoader;
 import nl.utwente.groove.control.instance.Automaton;
-import nl.utwente.groove.control.parse.CtrlTree;
-import nl.utwente.groove.control.parse.Namespace;
+import nl.utwente.groove.control.Invisibility;
 import nl.utwente.groove.control.template.Program;
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.Rule;
@@ -96,16 +94,13 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
     Automaton compute() throws FormatException {
         Collection<QualName> controlNames = getGrammar().getActiveNames(CONTROL);
         // first build the trees, then check to avoid errors due to unresolved dependencies
-        Map<ControlModel,CtrlTree> treeMap = new LinkedHashMap<>();
         for (QualName controlName : controlNames) {
             ControlModel controlModel = getGrammar().getControlModel(controlName);
             if (controlModel == null) {
                 getPartErrors(controlName).add("Control program cannot be found");
             } else {
                 try {
-                    treeMap
-                        .put(controlModel,
-                             getLoader().addControl(controlName, controlModel.getProgram()));
+                    getLoader().addControl(controlName, controlModel.getProgram());
                 } catch (FormatException exc) {
                     getPartErrors(controlName).addAll(exc.getErrors());
                 }
@@ -120,7 +115,7 @@ public class CompositeControlModel extends ResourceModel<Automaton> {
                 if (controlModel != null) {
                     getLoader()
                         .addInvisibleControl(controlName, controlModel.getProgram(),
-                                             Namespace.InvisibleDecl.Reason.DISABLED);
+                                             Invisibility.DISABLED);
                 }
             }
         }

@@ -349,7 +349,7 @@ public class AutomatonBuildTest {
         try {
             QualName qualControlName = QualName.parse(controlName);
             Fragment fragment
-                = createLoader().addControl(qualControlName, program).check().toFragment();
+                = CtrlTester.parse(this.testGrammar, qualControlName, program).check().toFragment();
             prog.add(fragment);
             prog.setFixed();
             result = new Automaton(prog);

@@ -28,6 +28,7 @@ import java.util.TreeSet;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.control.Invisibility;
 import nl.utwente.groove.control.Procedure;
 import nl.utwente.groove.control.term.Term;
 import nl.utwente.groove.grammar.Action;
@@ -113,12 +114,12 @@ public class Namespace implements ParseInfo, Fallible {
      */
     @AIGenerated("Claude Fable 5, 2026-08")
     public void addInvisible(QualName name, Callable.Kind kind, @Nullable QualName controlName,
-                             InvisibleDecl.Reason reason) {
+                             Invisibility reason) {
         this.invisibleMap.put(name, new InvisibleDecl(kind, controlName, reason));
     }
 
     /** Returns the invisible declaration registered for a given name, if any.
-     * @see #addInvisible(QualName, Callable.Kind, QualName, Namespace.InvisibleDecl.Reason)
+     * @see #addInvisible(QualName, Callable.Kind, QualName, Invisibility)
      */
     @AIGenerated("Claude Fable 5, 2026-08")
     public @Nullable InvisibleDecl getInvisible(QualName name) {
@@ -137,24 +138,13 @@ public class Namespace implements ParseInfo, Fallible {
      * @param reason the reason for the invisibility
      */
     @AIGenerated("Claude Fable 5, 2026-08")
-    public record InvisibleDecl(Callable.Kind kind, @Nullable QualName controlName, Reason reason) {
+    public record InvisibleDecl(Callable.Kind kind, @Nullable QualName controlName, Invisibility reason) {
 
     /** Overrides the generated hash code, which would use identity-based enum hashes. */
     @Override
     public int hashCode() {
         return Objects.hash(this.kind.ordinal(), this.controlName, this.reason.ordinal());
     }
-        /** Reason for the invisibility of a declared callable unit. */
-        public enum Reason {
-            /** The declaring resource is not enabled in the grammar. */
-            DISABLED,
-            /** The unit (a rule) is enabled but has errors. */
-            ERRONEOUS,
-            /** The unit is declared in another (enabled) control program, which is
-             * not visible because the program under scrutiny is checked in isolation. */
-            ISOLATED;
-        }
-
         /** Returns an error message phrase explaining why the unit is not available.
          * @param name the name by which the unit was called or imported
          * @param upper if {@code true}, the phrase starts with a capital letter

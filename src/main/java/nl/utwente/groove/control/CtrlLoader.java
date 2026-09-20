@@ -41,6 +41,7 @@ import nl.utwente.groove.control.parse.CtrlTree;
 import nl.utwente.groove.control.parse.Namespace;
 import nl.utwente.groove.control.template.Fragment;
 import nl.utwente.groove.control.template.Program;
+import nl.utwente.groove.control.term.Term;
 import nl.utwente.groove.grammar.Callable;
 import nl.utwente.groove.grammar.Callable.Kind;
 import nl.utwente.groove.grammar.Grammar;
@@ -73,19 +74,19 @@ public class CtrlLoader {
     }
 
     /**
-     * Parses a given, named control program and returns the corresponding control tree.
-     * The parse result is stored internally; a later call to {@link #buildProgram(Collection)}
+     * Parses a given, named control program.
+     * The resulting control tree is stored internally; a later call to {@link #buildProgram(Collection)}
      * will collect all parse trees and build a control program object.
      * The tree is not yet checked.
      * @param controlName the qualified name of the control program to be parsed
      * @param program the control program
      */
-    public CtrlTree addControl(QualName controlName, String program) throws FormatException {
-        return addControl(controlName, program, false);
+    public void addControl(QualName controlName, String program) throws FormatException {
+        addControl(controlName, program, false);
     }
 
     /**
-     * Parses a given, named control program and returns the corresponding control tree.
+     * Parses a given, named control program.
      * With respect to {@link #addControl(QualName, String)}, has a flag to indicate
      * that the control program is artificially synthesised.
      */
@@ -118,7 +119,7 @@ public class CtrlLoader {
      */
     @AIGenerated("Claude Fable 5, 2026-08")
     public void addInvisibleControl(QualName controlName, String program,
-                                    Namespace.InvisibleDecl.Reason reason) {
+                                    Invisibility reason) {
         Namespace scratch = new Namespace(this.namespace.getGrammarProperties());
         scratch.setControlInfo(controlName, false);
         try {
@@ -145,8 +146,8 @@ public class CtrlLoader {
         for (QualName ruleName : allRuleNames) {
             if (!this.namespace.hasCallable(ruleName)) {
                 var reason = activeRuleNames.contains(ruleName)
-                    ? Namespace.InvisibleDecl.Reason.ERRONEOUS
-                    : Namespace.InvisibleDecl.Reason.DISABLED;
+                    ? Invisibility.ERRONEOUS
+                    : Invisibility.DISABLED;
                 this.namespace.addInvisible(ruleName, Kind.RULE, null, reason);
             }
         }
@@ -235,7 +236,7 @@ public class CtrlLoader {
         for (Map.Entry<QualName,Integer> entry : prioMap.entrySet()) {
             QualName recipeName = entry.getKey();
             int newPriority = entry.getValue();
-            QualName controlName = getNamespace().getDeclaringName(recipeName);
+            QualName controlName = this.namespace.getDeclaringName(recipeName);
             if (controlName == null) {
                 continue;
             }
@@ -308,9 +309,9 @@ public class CtrlLoader {
         return rewriter;
     }
 
-    /** Returns the name space of this loader. */
-    public Namespace getNamespace() {
-        return this.namespace;
+    /** Returns the term prototype shared by all programs built by this loader. */
+    public Term getTermPrototype() {
+        return this.namespace.getPrototype();
     }
 
     /** Namespace of this loader. */

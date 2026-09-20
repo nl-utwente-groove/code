@@ -23,6 +23,7 @@ import org.junit.Assert;
 import nl.utwente.groove.control.CtrlLoader;
 import nl.utwente.groove.control.instance.Automaton;
 import nl.utwente.groove.control.parse.CtrlTree;
+import nl.utwente.groove.control.parse.Namespace;
 import nl.utwente.groove.control.template.Fragment;
 import nl.utwente.groove.control.template.Program;
 import nl.utwente.groove.grammar.Grammar;
@@ -159,12 +160,25 @@ abstract public class CtrlTester {
      */
     protected CtrlTree buildTree(String program) {
         try {
-            return createLoader().addControl(DUMMY, program)
+            return parse(this.testGrammar, DUMMY, program)
                 .check();
         } catch (FormatException e) {
             Assert.fail(e.getMessage());
             return null;
         }
+    }
+
+    /** Parses a control program against the rules and properties of a grammar,
+     * as {@link CtrlLoader#addControl} does internally.
+     */
+    static protected CtrlTree parse(Grammar grammar, QualName controlName,
+                                    String program) throws FormatException {
+        Namespace namespace = new Namespace(grammar.getProperties());
+        for (Rule rule : grammar.getAllRules()) {
+            namespace.addRule(rule);
+        }
+        namespace.setControlInfo(controlName, false);
+        return CtrlTree.parse(namespace, program);
     }
 
     /** Callback factory method for a loader of the test grammar. */
