@@ -40,7 +40,7 @@ the first cut here).
 | Pipeline | root, `io.store`, `io.graph`, `io.external`, `grammar`, `grammar.model/aspect/host/type/rule`, `graph`, `graph.plain/iso/layout`, `match`, `transform`, `transform.oracle`, `lts`, `explore`, `explore.config/feature/result`, `verify`, `prolog`, `prolog.builtin` |
 | Data values | `algebra`, `algebra.syntax`, `annotation` |
 | Control | `control`, `control.term/template/instance/graph` |
-| Utilities | `util`, `util.parse/line/cache/collect/io/cli` |
+| Utilities | `util`, `util.parse/line/cache/collect/cli` |
 | Backend SPI | `gui.view`, `gui.view.cell`, `gui.look`, `gui.layout` |
 | Qualified | `prolog.builtin.algebra/graph/lts/rule/trans/type` to `gnuprologjava` only |
 
@@ -66,8 +66,9 @@ Reasons for the less obvious ones, all forced by signature reachability:
   `Properties.QUAL_NAME_DELTA_MAP`), `SmallCollection` (`PartitionMap.get`),
   `AbstractComparator` (the `Action` comparator constants). Narrowing those four
   signatures would let the whole 31-class package go unexported; not done.
-- `util.io`: `FileType` occurs in 20 signatures of `io.external`, `io.graph`,
-  `grammar.model`. See the open item.
+- `util`: besides the obvious (`QualName`, `Property`, `Pair`, …) it now holds
+  `FileType`, which occurs in 20 signatures of `io.external`, `io.graph` and
+  `grammar.model`, and its `ExtensionFilter`.
 - `util.cli`: the CLI tools `explore.Generator`, `explore.CTLModelChecker`,
   `prolog.PrologChecker`, `algebra.OperatorLister` extend `GrooveCmdLineTool`.
   picocli was already `requires transitive`, so the package adds no new
@@ -107,7 +108,8 @@ Not exported, deliberately:
   `explore.verify` (the LTL strategies and cycle acceptor) turned out to be
   engine-side too and is not exported either.
 - `io.external.format`, `io.external.format.ecore`, `prolog.builtin.*`,
-  `prolog.util`, `prolog.exception`, `transform.criticalpair`, `util.antlr`, `io`.
+  `prolog.util`, `prolog.exception`, `transform.criticalpair`, `util.antlr`,
+  `util.io`, `io`.
 
 ## Fixes made on the branch
 
@@ -126,6 +128,12 @@ export:
 - `BasicEvent.BasicEventCache`, `CompositeEvent.CompositeEventCache` public and
   `ATermTreeParser.TokenFamily`/`LineFragment` protected: they occurred in
   protected signatures of public classes.
+- `FileType` and `ExtensionFilter` moved from `util.io` to `util`, which
+  unexports `util.io` without adding an exported package. The open item had
+  proposed `io` as the destination; that is wrong, because `io` ranks above
+  `algebra`, the rule-system cluster and `util` in the layering `LayeringTest`
+  guards, and `FileType` is used from all three tiers. `ExtensionFilter` had
+  to move too: it is `FileType.getFilter()`'s return type.
 
 ## Open items, in recommended order
 
@@ -154,20 +162,17 @@ items, and are left visible on purpose: they are the measured debt.
    since it is compiled against the controller. See the session proposal below.
    Until then the SPI tier is exported with its 30 warnings, and the packages
    it leaks (`gui`, `gui.action`, `gui.tree`, `gui.menu`, `gui.display`) are not.
-4. **`FileType` to `io`**: mechanical (50 importing files), then `util.io`
-   (which otherwise holds a Swing file filter and file utilities) goes
-   unexported. Opus-grade sub-agent work.
-5. **CLI tools into one `cli` package** together with `util.cli`: `Generator`,
+4. **CLI tools into one `cli` package** together with `util.cli`: `Generator`,
    `CTLModelChecker`, `PrologChecker`, `OperatorLister`, `Imager`. `explore`,
    `prolog` and `algebra` then stop mentioning picocli, `util.cli` goes
    unexported, and the exported CLI surface is one package. This is the `cli`
    seam of the module-split plan.
-6. **`control.template` mixes compile time and run time**: `Program`,
+5. **`control.template` mixes compile time and run time**: `Program`,
    `Fragment`, `TemplateBuilder` (terms in, template out) sit next to `Template`,
    `Switch`, `Location` (what the LTS refers to). Separating them, and moving
    `Procedure`'s term accessors (used by `control.parse`, `control.template`,
    `control.term`) to the compiler side, would let `control.term` go unexported.
-7. **`util.collect`**: narrow the four leaking signatures listed above, then
+6. **`util.collect`**: narrow the four leaking signatures listed above, then
    unexport.
 
 Not verified: whether `requires transitive java.desktop` is still needed by an
