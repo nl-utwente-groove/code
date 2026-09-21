@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
@@ -30,6 +31,13 @@ import org.eclipse.jdt.annotation.Nullable;
 
 /**
  * Class implementing a lazy create pattern.
+ * <p>
+ * Factories track their dependencies: every factory read while another one is being
+ * built records the latter as a user, so that {@link #reset()} of the read factory
+ * propagates to everything built from its value. Users are held weakly: a factory
+ * that is otherwise unreachable is not kept alive by the factories it read, and
+ * a reset simply no longer reaches it. The reverse references, from a factory to
+ * the ones it read, are strong.
  * @author Arend Rensink
  * @version $Revision$
  */
@@ -123,10 +131,22 @@ public abstract class Factory<T> implements Supplier<T> {
         return this.users;
     }
 
+    /**
+     * Returns the number of factories recorded as depending on this one,
+     * not counting those that have been garbage collected.
+     * Intended for tests and diagnostics.
+     */
+    public int getUserCount() {
+        synchronized (lock) {
+            return this.users.size();
+        }
+    }
+
     /** Adds a user that depends on the value of this factory. */
     private void addUser(Factory<?> user) {
         if (this.users == EMPTY_SET) {
-            this.users = new HashSet<>();
+            // weakly held, so that a user is not kept alive by what it read
+            this.users = Collections.newSetFromMap(new WeakHashMap<>());
         }
         this.users.add(user);
     }
