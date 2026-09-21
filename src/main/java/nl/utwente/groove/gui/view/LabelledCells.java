@@ -22,6 +22,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Label;
+import nl.utwente.groove.util.AIGenerated;
 
 /**
  * The cells of a graph view carrying a given label.
@@ -31,6 +32,7 @@ import nl.utwente.groove.graph.Label;
  * @author Arend Rensink
  * @version $Revision$
  */
+@AIGenerated("Claude Opus 5, 2026-09")
 @NonNullByDefault
 public record LabelledCells<G extends Graph>(Label label, Set<ViewCell<G>> cells) {
     // empty

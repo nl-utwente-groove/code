@@ -32,6 +32,7 @@ import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.lts.ExploreResult;
 import nl.utwente.groove.lts.GraphTransition;
+import nl.utwente.groove.util.AIGenerated;
 
 /**
  * What a {@link GraphViewController} asks of the tool that hosts its graph view:
@@ -46,6 +47,7 @@ import nl.utwente.groove.lts.GraphTransition;
  * @author Arend Rensink
  * @version $Revision$
  */
+@AIGenerated("Claude Opus 5, 2026-09")
 @NonNullByDefault
 public interface GraphViewContext<G extends Graph> {
     /**

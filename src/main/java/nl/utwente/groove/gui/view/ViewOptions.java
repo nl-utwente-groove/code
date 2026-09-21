@@ -15,6 +15,7 @@
 package nl.utwente.groove.gui.view;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import nl.utwente.groove.util.AIGenerated;
 
 /**
  * The display options as a graph view sees them: the keys of the options that
@@ -26,6 +27,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
  * @author Arend Rensink
  * @version $Revision$
  */
+@AIGenerated("Claude Opus 5, 2026-09")
 @NonNullByDefault
 public interface ViewOptions {
     /**
