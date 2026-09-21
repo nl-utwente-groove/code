@@ -490,8 +490,11 @@ public abstract class GraphViewController<G extends Graph> {
         result.add(getSetLayoutMenu().getCurrentLayoutItem());
         result.add(getSetLayoutMenu());
         var context = getContext();
-        if (context != null) {
-            result.add(context.getLayoutDialogAction());
+        var dialogAction = context == null
+            ? null
+            : context.getLayoutDialogAction();
+        if (dialogAction != null) {
+            result.add(dialogAction);
         }
         return result;
     }

@@ -22,6 +22,7 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.JMenu;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -152,7 +153,7 @@ public class SimulatorViewContext<G extends Graph> implements GraphViewContext<G
      * The action is refreshed, as the graph it exports may have changed.
      */
     @Override
-    public ExportAction getExportAction(GraphCanvas<G> canvas) {
+    public @NonNull ExportAction getExportAction(GraphCanvas<G> canvas) {
         var result = this.exportAction;
         if (result == null) {
             this.exportAction = result = new ExportAction(getSimulator(), canvas, isForState());
@@ -165,7 +166,7 @@ public class SimulatorViewContext<G extends Graph> implements GraphViewContext<G
     private @Nullable ExportAction exportAction;
 
     @Override
-    public Action getLayoutDialogAction() {
+    public @NonNull Action getLayoutDialogAction() {
         return getActions().getLayoutDialogAction();
     }
 

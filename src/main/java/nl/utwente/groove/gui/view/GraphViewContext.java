@@ -63,6 +63,8 @@ public interface GraphViewContext<G extends Graph> {
     /**
      * Indicates if the context offers actions on the displayed graph.
      * A context that only provides a grammar is not interactive.
+     * A non-interactive context contributes no actions or menu items:
+     * the defaults of the members below are what it answers.
      */
     boolean isInteractive();
 
@@ -120,11 +122,23 @@ public interface GraphViewContext<G extends Graph> {
 
     // ---------- actions and menu items of the context ----------
 
-    /** The action exporting the graph shown on a given canvas. */
-    Action getExportAction(GraphCanvas<G> canvas);
+    /**
+     * The action exporting the graph shown on a given canvas;
+     * {@code null} if the context offers no export, as a non-interactive
+     * context does not.
+     */
+    default @Nullable Action getExportAction(GraphCanvas<G> canvas) {
+        return null;
+    }
 
-    /** The action opening the layout dialog of the context. */
-    Action getLayoutDialogAction();
+    /**
+     * The action opening the layout dialog of the context;
+     * {@code null} if the context offers none, as a non-interactive
+     * context does not.
+     */
+    default @Nullable Action getLayoutDialogAction() {
+        return null;
+    }
 
     /**
      * The items the context puts at the head of the popup menu of the graph view:
