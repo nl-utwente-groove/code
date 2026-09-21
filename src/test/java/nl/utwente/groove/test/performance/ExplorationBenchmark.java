@@ -203,13 +203,18 @@ public class ExplorationBenchmark {
      * 409k at depth 8, so the depth chosen (8, about 3 s) is the last one that
      * fits; depth 9 was still at 2.4M of its roughly 3.7M states after 90 s.
      * <p>
-     * Several candidates from the note turned out to be dead ends: the
-     * {@code -init} start graphs of {@code leader-election}, {@code pacman
-     * start_four_ghosts} and both {@code exploreCache} grammars explore to a
-     * single state, {@code petrinet start2} to 38, and
-     * {@code attribute-count-to-n}, {@code fibonacci}, {@code recipes} and
-     * {@code transactions} stay in the tens of states, so none of them
-     * measures anything.
+     * Several candidates from the note turned out to be dead ends: both
+     * {@code exploreCache} grammars explore to a single state,
+     * {@code petrinet start2} to 38, and {@code attribute-count-to-n},
+     * {@code fibonacci}, {@code recipes} and {@code transactions} stay in the
+     * tens of states, so none of them measures anything as they stand. The
+     * sample's {@code pacman start_four_ghosts} was likewise dead and has
+     * been replaced by a hand-made maze in the performance copy. The
+     * {@code -init} start graphs of {@code leader-election} also explore to
+     * a single state, for a repairable reason: they carry {@code type:} and
+     * {@code flag:} prefixes the rules do not use. The generated
+     * {@code ring-N} graphs are the same shape with plain labels and grow
+     * about fourfold in states and time per two processes.
      * <p>
      * Heap: {@code car-platooning-05}, {@code append-4-list-8-equality} and
      * {@code sierpinsky-11} retain 0.4 to 0.9 GB and allocate several GB, so
@@ -283,7 +288,18 @@ public class ExplorationBenchmark {
                 4008820, false),
             // hand-made four-ghost maze: 37 transitions per state
             new Config("pacman-four-ghosts", "pacman.gps", "start_four_ghosts", "", 210102,
-                7819623, false));
+                7819623, false),
+            // leader election on a generated ring of N processes with the
+            // numbers pre-assigned (junit/performance/generate-starts.py):
+            // the symmetric-ring case of finding 5.6; counts pinned from the
+            // desktop calibration of 2026-09-21
+            new Config("leader-election-8", "leader-election.gps", "ring-8", "", 820, 3405, true),
+            new Config("leader-election-14", "leader-election.gps", "ring-14", "", 49620, 386295,
+                false),
+            new Config("leader-election-16", "leader-election.gps", "ring-16", "", 197404,
+                1772291, false),
+            new Config("leader-election-18", "leader-election.gps", "ring-18", "", 787648,
+                7737099, false));
 
     /** Returns the benchmark set. */
     public static List<Config> getConfigs() {

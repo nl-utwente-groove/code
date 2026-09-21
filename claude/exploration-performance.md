@@ -1014,6 +1014,29 @@ serve the long tier, unmeasured. The pacman four-ghost graph at 20 positions was
 too large (247 k states and 5.2 M transitions after 3 minutes, 67 k open; about 21
 transitions per state against 3.3 for `car-platooning-05`).
 
+**leader-election (added 2026-09-21)**, the symmetric-ring case of finding 5.6. The
+sample's hand-drawn `-init` start graphs, meant to skip the factorial number-picking
+stage of the plain ones, carry `type:` and `flag:` prefixes that the rules do not use
+(the rules and the plain graphs have unprefixed `Process` and `active` self-loops), so
+they explore to a single state, in `junit/samples` as well; only `start-2` is pinned by
+a test. `generate-starts.py` now produces `ring-N`: the plain start graph after number
+picking, with the values assigned around the ring in a fixed pseudo-random order and the
+`Numbers` pool empty. The hand-drawn graphs were dropped from the copy. Desktop
+calibration, single cold runs at `-Xmx8g -da -XX:+UseParallelGC`, headless `Generator`,
+exploration time as reported:
+
+| start graph | states | transitions | s | kept |
+|---|---|---|---|---|
+| `ring-8` | 820 | 3 405 | 0.3 | smoke |
+| `ring-10` | 3 142 | 16 491 | 0.7 | dropped |
+| `ring-12` | 12 560 | 82 529 | 2.0 | dropped |
+| `ring-14` | 49 620 | 386 295 | 7.7 | quick tier |
+| `ring-16` | 197 404 | 1 772 291 | 31 | upper quick tier |
+| `ring-18` | 787 648 | 7 737 099 | 156 | long tier |
+
+States and time both grow about fourfold per two processes, so `ring-20` would take
+some ten minutes.
+
 ### Shape of the harness (as designed)
 
 A runner in the test tree, `test/performance/ExplorationBenchmark` or similar, with a
@@ -1079,7 +1102,8 @@ Scale is the gap, on three axes:
 3. **Symmetry.** 5.6 (individualise-and-refine without automorphism pruning) needs
    graphs with large automorphism groups: a ring of N identical processes
    (`leader-election` with N of 8 or more), N philosophers, or a set of N identical
-   unconnected components. The current `leader-election start-2` has none.
+   unconnected components. The current `leader-election start-2` has none. (Covered
+   since 2026-09-21 by the generated `ring-N` graphs of the performance grammar set.)
 
 Beyond scale, some individual findings need a configuration that the samples do not
 exercise together:

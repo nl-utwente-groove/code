@@ -3,7 +3,7 @@
 
 The grammars under junit/performance are copies of junit/samples grammars,
 kept only for the exploration benchmark (test/performance/ExplorationBenchmark).
-Four of them have start graphs with a regular structure, so larger instances
+Five of them have start graphs with a regular structure, so larger instances
 are generated here rather than drawn by hand. Run from the repository root:
 
     python junit/performance/generate-starts.py
@@ -126,11 +126,44 @@ def append(appenders, length):
     return g
 
 
+def leader_election(n):
+    """A ring of n active processes as the sample's plain start graphs look
+    after the number-picking stage: every process has `next` to its
+    successor, `number` and `max` to its own unique value in 1..n, and
+    `left` to a shared -1; a Scheduler has an `init` edge to every process,
+    and the `Numbers` pool is present but empty, so `pick-number` never
+    fires and the factorial assignment stage is skipped. (The sample's
+    hand-drawn `-init` graphs meant the same but carry `type:` and `flag:`
+    prefixes the rules do not use, so they explore to a single state.) The
+    values are assigned around the ring in a fixed pseudo-random order; a
+    sorted order would make the election trivially short."""
+    g = Graph("ring-%d" % n)
+    values = list(range(1, n + 1))
+    seed = 12345
+    for i in range(n - 1, 0, -1):  # Fisher-Yates with a fixed LCG
+        seed = (seed * 1103515245 + 12345) % 2 ** 31
+        j = seed % (i + 1)
+        values[i], values[j] = values[j], values[i]
+    scheduler = g.node("Scheduler")
+    g.node("Numbers")
+    left = g.node("int:-1")
+    procs = [g.node("Process", "active") for _ in range(n)]
+    for i, p in enumerate(procs):
+        v = g.node("int:%d" % values[i])
+        g.edge(p, "number", v)
+        g.edge(p, "max", v)
+        g.edge(p, "left", left)
+        g.edge(p, "next", procs[(i + 1) % n])
+        g.edge(scheduler, "init", p)
+    return g
+
+
 SIZES = [
     ("Mark-Unmark-List-regexp-benchmark.gps", mark_unmark, [(18,), (21,)]),
     ("As-and-Bs-reg-exp-benchmark.gps", as_and_bs, [(4, 3)]),
     ("inheritance.gps", inheritance, [(12,)]),
     ("append.gps", append, [(4, 10)]),
+    ("leader-election.gps", leader_election, [(8,), (14,), (16,), (18,)]),
 ]
 
 if __name__ == "__main__":

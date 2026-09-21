@@ -69,6 +69,31 @@ worktree root; no module path needed.
    grammars for the uncovered cases (attribute-heavy, symmetric ring, recipe
    transience), then section 3.
 
+## Grammar set extension (started 2026-09-21)
+
+Arend wants `junit/performance` to cover more of the performance-sensitive functionality
+than the eight copied samples do. Agreed order, by coverage gained per hour:
+
+1. Done: `leader-election` ring (symmetry, finding 5.6): `ring-8/14/16/18` generated,
+   hand-drawn graphs dropped (the `-init` ones were dead: `type:`/`flag:` prefixes the
+   rules do not use), four harness rows, calibration in the note.
+2. Attribute path: `attribute-count-to-n` bounded to a large N plus an `algebra=big` row;
+   a guarded-division rule in the copy so `ErrorValue` is on the path; `fibonacci` for
+   recipe parameters (4.2.1 to 4.2.3).
+3. Hub grammar, new: star of N spokes around one hub, k tokens moving through the hub,
+   states C(N,k); the only row for 3.1, 3.7, 4.3.2, 5.1, 5.2. Design first.
+4. Control with transience: `recipes` (scale the start graph) and `transactions`
+   (4.3.1, 1.5).
+5. Quantifiers over a large graph: `petrinet` with a generated larger net.
+6. Multigraph semantics and merging: `parallel-pump`, `mergers`, scaled.
+7. Key-variant rows on existing grammars as needed while fixing.
+
+Then one full re-baseline (all rows, table order) before the first fix. Per step: copy or
+write the grammar, extend `generate-starts.py`, calibrate with the headless `Generator`
+(quick tier 5 to 60 s, one long-tier candidate), pin counts, one commit per grammar.
+Only the harness reads `junit/performance`; new rows stay out of the smoke set unless
+small.
+
 ## Key files
 
 - `claude/exploration-performance.md`: the findings and the harness documentation.
