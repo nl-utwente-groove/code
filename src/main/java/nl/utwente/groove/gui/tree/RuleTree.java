@@ -67,6 +67,7 @@ import nl.utwente.groove.gui.display.ControlDisplay;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.display.RuleDisplay;
 import nl.utwente.groove.gui.display.TextTab;
+import nl.utwente.groove.gui.view.ViewOptions;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.lts.GraphTransition.Claz;
@@ -122,12 +123,12 @@ public class RuleTree extends AbstractResourceTree {
     void installListeners() {
         super.installListeners();
         getSimulatorModel().addListener(this, STATE, MATCH, RULE, TRACE);
-        getOptions().getItem(Options.SHOW_ANCHORS_OPTION).addItemListener(getOptionsListener());
+        getOptions().getItem(ViewOptions.SHOW_ANCHORS_OPTION).addItemListener(getOptionsListener());
         getOptions()
-            .getItem(Options.SHOW_RECIPE_STEPS_OPTION)
+            .getItem(ViewOptions.SHOW_RECIPE_STEPS_OPTION)
             .addItemListener(getOptionsListener());
         getOptions()
-            .getItem(Options.SHOW_ABSENT_STATES_OPTION)
+            .getItem(ViewOptions.SHOW_ABSENT_STATES_OPTION)
             .addItemListener(getOptionsListener());
     }
 
@@ -160,7 +161,7 @@ public class RuleTree extends AbstractResourceTree {
     private ItemListener computeOptionsListener() {
         return e -> {
             if (suspendListening()) {
-                if (e.getItem() == Options.SHOW_ANCHORS_OPTION) {
+                if (e.getItem() == ViewOptions.SHOW_ANCHORS_OPTION) {
                     refresh(getSimulatorModel().getState());
                 } else {
                     loadGrammar(getSimulatorModel().getGrammar());

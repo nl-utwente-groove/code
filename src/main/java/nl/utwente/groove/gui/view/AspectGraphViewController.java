@@ -255,14 +255,14 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
      * Indicates whether aspect prefixes should be shown for nodes and edges.
      */
     public final boolean isShowAspects() {
-        return getOptionValue(Options.SHOW_ASPECTS_OPTION);
+        return getOptionValue(ViewOptions.SHOW_ASPECTS_OPTION);
     }
 
     /**
      * Indicates whether user node identities should be shown for nodes and edges.
      */
     public final boolean isShowUserIds() {
-        return getOptionValue(Options.SHOW_USER_NODE_IDS_OPTION);
+        return getOptionValue(ViewOptions.SHOW_USER_NODE_IDS_OPTION);
     }
 
     /**
@@ -270,7 +270,7 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
      * This is certainly the case if the view is being edited.
      */
     public final boolean isShowValueNodes() {
-        return getCanvas().hasActiveEditor() || getOptionValue(Options.SHOW_VALUE_NODES_OPTION);
+        return getCanvas().hasActiveEditor() || getOptionValue(ViewOptions.SHOW_VALUE_NODES_OPTION);
     }
 
     /** Sets a level tree for this graph view. */

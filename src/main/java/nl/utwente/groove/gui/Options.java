@@ -62,6 +62,8 @@ import com.formdev.flatlaf.FlatLightLaf;
 
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.gui.display.DismissDelayer;
+import nl.utwente.groove.gui.view.OptionRefreshListener;
+import nl.utwente.groove.gui.view.ViewOptions;
 import nl.utwente.groove.io.store.EditType;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
@@ -74,7 +76,7 @@ import nl.utwente.groove.util.parse.StringHandler;
  * @author Arend Rensink
  * @version $Revision$
  */
-public class Options implements Cloneable {
+public class Options implements ViewOptions, Cloneable {
     static {
         /** Make sure default action names are all in English. */
         Locale.setDefault(Locale.ENGLISH);
@@ -118,7 +120,7 @@ public class Options implements Cloneable {
         Boolean defaultValue = boolOptionDefaults.get(name);
         assert defaultValue != null; // every checkbox option has a registered default
         boolean selected = userPrefs.getBoolean(name, defaultValue);
-        boolean enabled = isEnabled(name);
+        boolean enabled = isSupported(name);
         result.setSelected(selected & enabled);
         this.itemMap.put(name, result);
         if (enabled) {
@@ -134,8 +136,8 @@ public class Options implements Cloneable {
         return result;
     }
 
-    /** Tests if a given option is structurally enabled on this machine. */
-    private boolean isEnabled(String name) {
+    /** Tests if a given option is structurally supported on this machine. */
+    private boolean isSupported(String name) {
         boolean result = true;
         if (SHOW_ARROWS_ON_LABELS_OPTION.equals(name)) {
             result = isSupportsLabelArrows();
@@ -188,10 +190,41 @@ public class Options implements Cloneable {
      *        value
      * @return the value of the checkbox item with the given name
      */
+    @Override
     public boolean isSelected(String name) {
         JMenuItem item = this.itemMap.get(name);
         assert item != null; // the item map is filled for all option names
         return item.isSelected();
+    }
+
+    @Override
+    public boolean isEnabled(String name) {
+        JMenuItem item = this.itemMap.get(name);
+        assert item != null; // the item map is filled for all option names
+        return item.isEnabled();
+    }
+
+    @Override
+    public void addOptionListener(String name, OptionRefreshListener listener) {
+        JMenuItem item = getNonNullItem(name);
+        item.addItemListener(listener);
+        item.addPropertyChangeListener(listener);
+    }
+
+    @Override
+    public void removeOptionListener(String name, OptionRefreshListener listener) {
+        JMenuItem item = getNonNullItem(name);
+        item.removeItemListener(listener);
+        item.removePropertyChangeListener(listener);
+    }
+
+    /** Returns the menu item of a given option, which is required to exist. */
+    private JMenuItem getNonNullItem(String name) {
+        JMenuItem result = this.itemMap.get(name);
+        if (result == null) {
+            throw Exceptions.illegalArg("Unknown option: %s", name);
+        }
+        return result;
     }
 
     /**
@@ -868,39 +901,7 @@ public class Options implements Cloneable {
         .of(ResourceKind.CONTROL, ResourceKind.PROLOG, ResourceKind.TYPE, ResourceKind.GROOVY,
             ResourceKind.SETTINGS);
 
-    // Host graph show options
-    /** Show anchors option */
-    static public final String SHOW_ANCHORS_OPTION = "Show anchors";
-    /** Show aspects in graphs and rules option */
-    static public final String SHOW_ASPECTS_OPTION = "Show aspect prefixes";
-    /** Show bidirectional edges. */
-    static public final String SHOW_BIDIRECTIONAL_EDGES_OPTION = "Show bidirectional edges";
-    /** Show call nesting option */
-    static public final String SHOW_CALL_NESTING_OPTION = "Show call nesting on transitions";
-    /** Show internal node ids option */
-    static public final String SHOW_INTERNAL_NODE_IDS_OPTION = "Show internal node identities";
-    /** Show state ids option */
-    static public final String SHOW_STATE_IDS_OPTION = "Show state identities";
-    /** Show state status option */
-    static public final String SHOW_STATE_STATUS_OPTION = "Show state status";
-    /** Show used-defined node ids option */
-    static public final String SHOW_USER_NODE_IDS_OPTION = "Show user-defined node identities";
-    // LTS show options
-    /** Show control state option */
-    static public final String SHOW_CONTROL_STATE_OPTION = "Show control information";
-    /** Show system state properties option */
-    static public final String SHOW_SYSTEM_STATE_PROPERTIES_OPTION
-        = "Show system properties on the states";
-    /** Show invariants option */
-    static public final String SHOW_INVARIANTS_OPTION = "Show invariants on the states";
-    /** Show absent states option */
-    static public final String SHOW_ABSENT_STATES_OPTION = "Show absent states";
-    /** Show recipe steps option */
-    static public final String SHOW_RECIPE_STEPS_OPTION = "Show recipe steps";
-    /** Show data values as nodes rather than assignments. */
-    static public final String SHOW_VALUE_NODES_OPTION = "Show data values as nodes";
-    /** Show data values as nodes rather than assignments. */
-    static public final String SHOW_ARROWS_ON_LABELS_OPTION = "Show arrows on labels";
+    // the keys of the options that affect graph rendering are in ViewOptions
     /** Always delete resources without confirmation. */
     static public final String DELETE_RESOURCE_OPTION = "Delete seletected resource?";
     /**

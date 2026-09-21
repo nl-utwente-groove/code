@@ -16,15 +16,15 @@
  */
 package nl.utwente.groove.gui.jgraph;
 
-import static nl.utwente.groove.gui.Options.SHOW_ABSENT_STATES_OPTION;
-import static nl.utwente.groove.gui.Options.SHOW_ANCHORS_OPTION;
-import static nl.utwente.groove.gui.Options.SHOW_CALL_NESTING_OPTION;
-import static nl.utwente.groove.gui.Options.SHOW_CONTROL_STATE_OPTION;
-import static nl.utwente.groove.gui.Options.SHOW_INVARIANTS_OPTION;
-import static nl.utwente.groove.gui.Options.SHOW_RECIPE_STEPS_OPTION;
-import static nl.utwente.groove.gui.Options.SHOW_STATE_IDS_OPTION;
-import static nl.utwente.groove.gui.Options.SHOW_STATE_STATUS_OPTION;
-import static nl.utwente.groove.gui.Options.SHOW_SYSTEM_STATE_PROPERTIES_OPTION;
+import static nl.utwente.groove.gui.view.ViewOptions.SHOW_ABSENT_STATES_OPTION;
+import static nl.utwente.groove.gui.view.ViewOptions.SHOW_ANCHORS_OPTION;
+import static nl.utwente.groove.gui.view.ViewOptions.SHOW_CALL_NESTING_OPTION;
+import static nl.utwente.groove.gui.view.ViewOptions.SHOW_CONTROL_STATE_OPTION;
+import static nl.utwente.groove.gui.view.ViewOptions.SHOW_INVARIANTS_OPTION;
+import static nl.utwente.groove.gui.view.ViewOptions.SHOW_RECIPE_STEPS_OPTION;
+import static nl.utwente.groove.gui.view.ViewOptions.SHOW_STATE_IDS_OPTION;
+import static nl.utwente.groove.gui.view.ViewOptions.SHOW_STATE_STATUS_OPTION;
+import static nl.utwente.groove.gui.view.ViewOptions.SHOW_SYSTEM_STATE_PROPERTIES_OPTION;
 
 import java.awt.geom.Dimension2D;
 import java.io.Serializable;

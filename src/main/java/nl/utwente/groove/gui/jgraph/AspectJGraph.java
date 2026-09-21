@@ -16,8 +16,8 @@
  */
 package nl.utwente.groove.gui.jgraph;
 
-import static nl.utwente.groove.gui.Options.SHOW_ASPECTS_OPTION;
-import static nl.utwente.groove.gui.Options.SHOW_VALUE_NODES_OPTION;
+import static nl.utwente.groove.gui.view.ViewOptions.SHOW_ASPECTS_OPTION;
+import static nl.utwente.groove.gui.view.ViewOptions.SHOW_VALUE_NODES_OPTION;
 import static nl.utwente.groove.gui.view.GraphViewMode.EDIT_MODE;
 import static nl.utwente.groove.gui.view.GraphViewMode.PREVIEW_MODE;
 
@@ -52,6 +52,7 @@ import nl.utwente.groove.gui.view.AspectGraphViewModel;
 import nl.utwente.groove.gui.view.CellStore.Connection;
 import nl.utwente.groove.gui.view.AspectViewEdge;
 import nl.utwente.groove.gui.view.CellStore;
+import nl.utwente.groove.gui.view.ViewOptions;
 import nl.utwente.groove.gui.view.cell.AspectEdgeCell;
 import nl.utwente.groove.gui.view.cell.AspectVertexCell;
 import nl.utwente.groove.grammar.model.GraphBasedModel;
@@ -179,7 +180,7 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements Aspect
     /* Makes sure the JGraph is rebuilt rather than just refreshed, if necessary. */
     @Override
     public OptionRefreshListener getRefreshListener(String option) {
-        if (option.equals(Options.SHOW_BIDIRECTIONAL_EDGES_OPTION)) {
+        if (option.equals(ViewOptions.SHOW_BIDIRECTIONAL_EDGES_OPTION)) {
             return new RebuildListener();
         } else {
             return super.getRefreshListener(option);

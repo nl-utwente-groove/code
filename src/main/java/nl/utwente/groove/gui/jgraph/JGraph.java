@@ -16,11 +16,11 @@
  */
 package nl.utwente.groove.gui.jgraph;
 
-import static nl.utwente.groove.gui.Options.SHOW_ANCHORS_OPTION;
-import static nl.utwente.groove.gui.Options.SHOW_ARROWS_ON_LABELS_OPTION;
-import static nl.utwente.groove.gui.Options.SHOW_BIDIRECTIONAL_EDGES_OPTION;
-import static nl.utwente.groove.gui.Options.SHOW_INTERNAL_NODE_IDS_OPTION;
-import static nl.utwente.groove.gui.Options.SHOW_USER_NODE_IDS_OPTION;
+import static nl.utwente.groove.gui.view.ViewOptions.SHOW_ANCHORS_OPTION;
+import static nl.utwente.groove.gui.view.ViewOptions.SHOW_ARROWS_ON_LABELS_OPTION;
+import static nl.utwente.groove.gui.view.ViewOptions.SHOW_BIDIRECTIONAL_EDGES_OPTION;
+import static nl.utwente.groove.gui.view.ViewOptions.SHOW_INTERNAL_NODE_IDS_OPTION;
+import static nl.utwente.groove.gui.view.ViewOptions.SHOW_USER_NODE_IDS_OPTION;
 import static nl.utwente.groove.gui.view.GraphViewMode.EDIT_MODE;
 import static nl.utwente.groove.gui.view.GraphViewMode.SELECT_MODE;
 
@@ -81,12 +81,12 @@ import org.jgraph.graph.PortView;
 import org.jgraph.plaf.GraphUI;
 import org.jgraph.plaf.basic.BasicGraphUI;
 
+import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.view.GraphViewMode;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Node;
-import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.gui.action.ActionStore;
 import nl.utwente.groove.gui.action.ExportAction;
@@ -104,6 +104,7 @@ import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.tree.LabelTree;
+import nl.utwente.groove.gui.view.ViewOptions;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.gui.view.ViewCell;
@@ -206,7 +207,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
 
     /** Returns the object holding the display options for this {@link JGraph}. */
     @Override
-    public final Options getOptions() {
+    public final ViewOptions getOptions() {
         return getController().getOptions();
     }
 

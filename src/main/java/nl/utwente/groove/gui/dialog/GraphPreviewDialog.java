@@ -213,16 +213,11 @@ public class GraphPreviewDialog<G extends @NonNull Graph> extends JDialog {
 
     private static final boolean TIMER = true;
 
-    /** A panel showing a graph canvas, with functionality to retrieve the rendering options. */
+    /** A panel showing a graph canvas. */
     public static class GraphPreviewPanel extends GraphPanel<@NonNull Graph> {
         /** Creates a panel for a given canvas. */
         public GraphPreviewPanel(GraphCanvas<? extends Graph> canvas) {
             super(canvas);
-        }
-
-        /** Returns the options object used in rendering the canvas. */
-        public Options getOptions() {
-            return getCanvas().getOptions();
         }
     }
 }

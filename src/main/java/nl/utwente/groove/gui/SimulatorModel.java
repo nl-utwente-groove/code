@@ -39,6 +39,7 @@ import nl.utwente.groove.grammar.model.TextBasedModel;
 import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.grammar.ResourceProperties;
 import nl.utwente.groove.gui.display.DisplayKind;
+import nl.utwente.groove.gui.view.ViewOptions;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.lts.ExploreResult;
 import nl.utwente.groove.lts.GTS;
@@ -928,8 +929,8 @@ public class SimulatorModel implements Cloneable {
         if (state == null) {
             return true;
         }
-        return (isSelected(Options.SHOW_RECIPE_STEPS_OPTION) || !state.isInner())
-            && (isSelected(Options.SHOW_ABSENT_STATES_OPTION) || !state.isAbsent());
+        return (isSelected(ViewOptions.SHOW_RECIPE_STEPS_OPTION) || !state.isInner())
+            && (isSelected(ViewOptions.SHOW_ABSENT_STATES_OPTION) || !state.isAbsent());
     }
 
     /** Checks if a given match result is visible according to the current options setting. */
@@ -939,7 +940,7 @@ public class SimulatorModel implements Cloneable {
             if (trans == null) {
                 return true;
             } else {
-                return (isSelected(Options.SHOW_RECIPE_STEPS_OPTION) || !trans.isInnerStep())
+                return (isSelected(ViewOptions.SHOW_RECIPE_STEPS_OPTION) || !trans.isInnerStep())
                     && isVisible(trans.target());
             }
         } else {

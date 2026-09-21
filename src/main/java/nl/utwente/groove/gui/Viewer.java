@@ -35,6 +35,7 @@ import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.gui.dialog.GraphPreviewDialog;
 import nl.utwente.groove.gui.dialog.GraphPreviewDialog.GraphPreviewPanel;
 import nl.utwente.groove.gui.export.CanvasExporters;
+import nl.utwente.groove.gui.view.ViewOptions;
 import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.io.graph.GraphIO;
 import nl.utwente.groove.util.FileType;
@@ -163,7 +164,8 @@ public class Viewer extends GrooveCmdLineTool<Object> {
 
     private class NodeIdsButton extends JButton {
         NodeIdsButton(GraphPreviewPanel panel) {
-            this.nodeIdsItem = panel.getOptions().getItem(Options.SHOW_INTERNAL_NODE_IDS_OPTION);
+            this.nodeIdsItem
+                = Options.instance().getItem(ViewOptions.SHOW_INTERNAL_NODE_IDS_OPTION);
             setText();
             addActionListener(new ActionListener() {
                 @Override

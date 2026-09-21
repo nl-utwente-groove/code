@@ -37,6 +37,7 @@ import nl.utwente.groove.gui.look.EdgeEnd;
 import nl.utwente.groove.gui.view.AspectGraphViewController;
 import nl.utwente.groove.gui.view.AspectGraphViewModel;
 import nl.utwente.groove.gui.view.AspectViewEdge;
+import nl.utwente.groove.gui.view.ViewOptions;
 import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.QualName;
@@ -72,13 +73,13 @@ public class SubtypeLabelArrowTest {
     @BeforeEach
     void enableArrowsOnLabels() {
         Options options = Options.instance();
-        this.oldArrowsOnLabels = options.isSelected(Options.SHOW_ARROWS_ON_LABELS_OPTION);
-        options.setSelected(Options.SHOW_ARROWS_ON_LABELS_OPTION, true);
+        this.oldArrowsOnLabels = options.isSelected(ViewOptions.SHOW_ARROWS_ON_LABELS_OPTION);
+        options.setSelected(ViewOptions.SHOW_ARROWS_ON_LABELS_OPTION, true);
     }
 
     @AfterEach
     void restoreArrowsOnLabels() {
-        Options.instance().setSelected(Options.SHOW_ARROWS_ON_LABELS_OPTION, this.oldArrowsOnLabels);
+        Options.instance().setSelected(ViewOptions.SHOW_ARROWS_ON_LABELS_OPTION, this.oldArrowsOnLabels);
     }
 
     /**

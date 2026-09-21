@@ -69,6 +69,7 @@ import nl.utwente.groove.gui.export.CanvasExportable;
 import nl.utwente.groove.gui.export.CanvasExporters;
 import nl.utwente.groove.gui.view.AspectGraphViewController;
 import nl.utwente.groove.gui.view.GraphBackend;
+import nl.utwente.groove.gui.view.ViewOptions;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Exporter;
 import nl.utwente.groove.io.external.Exporters;
@@ -312,8 +313,8 @@ public class Imager extends GrooveCmdLineTool<Object> {
         case RESOURCE -> Exportable.resource(resourceModel);
         case CANVAS -> {
             Options options = Options.instance();
-            options.getItem(Options.SHOW_VALUE_NODES_OPTION).setSelected(isEditorView());
-            options.getItem(Options.SHOW_ASPECTS_OPTION).setSelected(isEditorView());
+            options.getItem(ViewOptions.SHOW_VALUE_NODES_OPTION).setSelected(isEditorView());
+            options.getItem(ViewOptions.SHOW_ASPECTS_OPTION).setSelected(isEditorView());
             DisplayKind displayKind
                 = DisplayKind.toDisplay(ResourceKind.toResource(aspectGraph.getRole()));
             var controller = new AspectGraphViewController(null, displayKind, false);

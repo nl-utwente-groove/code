@@ -27,7 +27,6 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ButtonGroup;
 import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import javax.swing.JToggleButton;
 import javax.swing.ToolTipManager;
 
@@ -150,43 +149,36 @@ public abstract class GraphViewController<G extends Graph> {
     }
 
     /** Returns the object holding the display options. */
-    public final Options getOptions() {
+    public final ViewOptions getOptions() {
         return this.options;
     }
 
     /** The options object of the display. */
-    private final Options options;
+    private final ViewOptions options;
 
     /**
-     * Retrieves the value for a given option from the options object, or
-     * <code>null</code> if the options are not set (i.e., <code>null</code>).
+     * Retrieves the value for a given option from the options object;
+     * an option that is not enabled counts as unselected.
      * @param option the name of the option
      */
     public boolean getOptionValue(String option) {
-        return getOptions().getItem(option).isEnabled() && getOptions().isSelected(option);
+        return getOptions().isEnabled(option) && getOptions().isSelected(option);
     }
 
     /**
-     * Adds a refresh listener to the menu item of an option
-     * with a given name.
+     * Adds a refresh listener for an option with a given name.
      * @see GraphCanvas#getRefreshListener
      */
     public void addOptionListener(String option) {
-        JMenuItem optionItem = getOptions().getItem(option);
-        if (optionItem == null) {
-            throw Exceptions.illegalArg("Unknown option: %s", option);
-        }
         OptionRefreshListener listener = getCanvas().getRefreshListener(option);
         if (listener != null) {
-            optionItem.addItemListener(listener);
-            optionItem.addPropertyChangeListener(listener);
-            this.optionListeners.add(Pair.newPair(optionItem, listener));
+            getOptions().addOptionListener(option, listener);
+            this.optionListeners.add(Pair.newPair(option, listener));
         }
     }
 
     /** The option listeners registered by this controller. */
-    private final List<Pair<JMenuItem,OptionRefreshListener>> optionListeners
-        = new LinkedList<>();
+    private final List<Pair<String,OptionRefreshListener>> optionListeners = new LinkedList<>();
 
     /**
      * Removes the listeners registered by this controller,
@@ -197,9 +189,8 @@ public abstract class GraphViewController<G extends Graph> {
         if (actions != null) {
             actions.removeRefreshable(getExportAction());
         }
-        for (Pair<JMenuItem,OptionRefreshListener> record : this.optionListeners) {
-            record.one().removeItemListener(record.two());
-            record.one().removePropertyChangeListener(record.two());
+        for (Pair<String,OptionRefreshListener> record : this.optionListeners) {
+            getOptions().removeOptionListener(record.one(), record.two());
         }
         this.optionListeners.clear();
         this.exportAction = null;
@@ -209,14 +200,14 @@ public abstract class GraphViewController<G extends Graph> {
      * Indicates whether node identities should be shown on node labels.
      */
     public boolean isShowNodeIdentities() {
-        return getOptionValue(Options.SHOW_INTERNAL_NODE_IDS_OPTION);
+        return getOptionValue(ViewOptions.SHOW_INTERNAL_NODE_IDS_OPTION);
     }
 
     /**
      * Indicates whether anchors should be shown in the rule and lts views.
      */
     public boolean isShowAnchors() {
-        return getOptionValue(Options.SHOW_ANCHORS_OPTION);
+        return getOptionValue(ViewOptions.SHOW_ANCHORS_OPTION);
     }
 
     /**
@@ -232,14 +223,14 @@ public abstract class GraphViewController<G extends Graph> {
      * on edges.
      */
     public boolean isShowArrowsOnLabels() {
-        return getOptionValue(Options.SHOW_ARROWS_ON_LABELS_OPTION);
+        return getOptionValue(ViewOptions.SHOW_ARROWS_ON_LABELS_OPTION);
     }
 
     /**
      * Indicates whether a single edge cell may stand for edges in two directions.
      */
     public boolean isShowBidirectionalEdges() {
-        return getOptionValue(Options.SHOW_BIDIRECTIONAL_EDGES_OPTION);
+        return getOptionValue(ViewOptions.SHOW_BIDIRECTIONAL_EDGES_OPTION);
     }
 
     /**

@@ -175,37 +175,37 @@ public class LTSGraphViewController extends GraphViewController<GTS> {
 
     /** Indicates if state identities should be shown on states. */
     public boolean isShowStateIdentities() {
-        return getOptionValue(Options.SHOW_STATE_IDS_OPTION);
+        return getOptionValue(ViewOptions.SHOW_STATE_IDS_OPTION);
     }
 
     /** Indicates if state status should be shown on states. */
     public boolean isShowStateStatus() {
-        return getOptionValue(Options.SHOW_STATE_STATUS_OPTION);
+        return getOptionValue(ViewOptions.SHOW_STATE_STATUS_OPTION);
     }
 
     /** Indicates if control state info should be shown on states. */
     public boolean isShowControlStates() {
-        return getOptionValue(Options.SHOW_CONTROL_STATE_OPTION);
+        return getOptionValue(ViewOptions.SHOW_CONTROL_STATE_OPTION);
     }
 
     /** Indicates if system properties should be shown on states. */
     public boolean isShowSystemProperties() {
-        return getOptionValue(Options.SHOW_SYSTEM_STATE_PROPERTIES_OPTION);
+        return getOptionValue(ViewOptions.SHOW_SYSTEM_STATE_PROPERTIES_OPTION);
     }
 
     /** Indicates if invariants should be shown on states. */
     public boolean isShowInvariants() {
-        return getOptionValue(Options.SHOW_INVARIANTS_OPTION);
+        return getOptionValue(ViewOptions.SHOW_INVARIANTS_OPTION);
     }
 
     /** Indicates if absent states should be shown. */
     public boolean isShowAbsentStates() {
-        return getOptionValue(Options.SHOW_ABSENT_STATES_OPTION);
+        return getOptionValue(ViewOptions.SHOW_ABSENT_STATES_OPTION);
     }
 
     /** Indicates if in-recipe states and transitions should be shown. */
     public boolean isShowRecipeSteps() {
-        return getOptionValue(Options.SHOW_RECIPE_STEPS_OPTION);
+        return getOptionValue(ViewOptions.SHOW_RECIPE_STEPS_OPTION);
     }
 
     /** Returns the class of transitions that is currently being shown in the LTS. */
