@@ -47,7 +47,6 @@ import nl.utwente.groove.match.Proof;
 import nl.utwente.groove.match.TreeMatch;
 import nl.utwente.groove.transform.oracle.ValueOracle;
 import nl.utwente.groove.util.Exceptions;
-import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.Visitor;
 import nl.utwente.groove.util.Visitor.Finder;
 
@@ -286,14 +285,18 @@ public class RuleApplication implements DeltaApplier {
      * derivation.
      */
     public Proof getMatch() {
-        return this.match.get();
+        var result = this.match;
+        if (result == null) {
+            result = this.match = computeMatch();
+        }
+        return result;
     }
 
     /**
      * Matching from the rule's LHS to the source. Created lazily in
      * {@link #getMatch()}.
      */
-    private Factory<Proof> match = Factory.lazy(this::computeMatch);
+    private @Nullable Proof match;
 
     /**
      * Callback method to create the matching from the rule's LHS to the source
@@ -308,13 +311,18 @@ public class RuleApplication implements DeltaApplier {
      * Returns the transformation morphism underlying this derivation.
      */
     public HostGraphMorphism getMorphism() {
-        return this.morphism.get();
+        var result = this.morphism;
+        if (result == null) {
+            result = this.morphism = computeMorphism();
+        }
+        return result;
     }
 
     /**
      * Underlying morphism from the source to the target.
+     * Created lazily in {@link #getMorphism()}.
      */
-    private Factory<HostGraphMorphism> morphism = Factory.lazy(this::computeMorphism);
+    private @Nullable HostGraphMorphism morphism;
 
     /**
      * Constructs the morphism between source and target graph from the
@@ -429,11 +437,15 @@ public class RuleApplication implements DeltaApplier {
     }
 
     private RuleEffect getEffect() {
-        return this.effect.get();
+        var result = this.effect;
+        if (result == null) {
+            result = this.effect = computeEffect();
+        }
+        return result;
     }
 
-    /** The application record. */
-    private Factory<RuleEffect> effect = Factory.lazy(this::computeEffect);
+    /** The application record. Created lazily in {@link #getEffect()}. */
+    private @Nullable RuleEffect effect;
 
     private RuleEffect computeEffect() {
         RuleEffect result;
@@ -709,15 +721,18 @@ public class RuleApplication implements DeltaApplier {
 
     /** Returns the relation between rule nodes and target graph nodes. */
     public Map<RuleNode,@Nullable HostNodeSet> getComatch() {
-        return this.comatch.get();
+        var result = this.comatch;
+        if (result == null) {
+            result = this.comatch = computeComatch();
+        }
+        return result;
     }
 
     /**
      * Mapping from selected RHS elements to target graph. The comatch is
      * constructed in the course of rule application.
      */
-    private Factory<Map<RuleNode,@Nullable HostNodeSet>> comatch
-        = Factory.lazy(this::computeComatch);
+    private @Nullable Map<RuleNode,@Nullable HostNodeSet> comatch;
 
     /** Computes the relation between rule nodes and target graph nodes. */
     private Map<RuleNode,@Nullable HostNodeSet> computeComatch() {
