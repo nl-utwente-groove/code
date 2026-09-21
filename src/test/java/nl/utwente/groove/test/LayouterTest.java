@@ -97,7 +97,7 @@ public class LayouterTest {
     private AspectGraphCanvas loadTypeGraph() throws IOException {
         GrammarModel grammar = Groove.loadGrammar(GRAMMAR);
         AspectGraph typeGraph = grammar.getTypeModel(QualName.parse(TYPE_GRAPH)).getSource();
-        var controller = new AspectGraphViewController(null, DisplayKind.TYPE.getGraphRole(), false, false);
+        var controller = new AspectGraphViewController(null, DisplayKind.TYPE.getGraphRole(), false);
         controller.setGrammar(grammar);
         AspectGraphCanvas result = controller.getCanvas();
         result.showGraph(typeGraph);

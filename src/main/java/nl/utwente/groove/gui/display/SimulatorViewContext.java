@@ -109,6 +109,11 @@ public class SimulatorViewContext<G extends Graph> implements GraphViewContext<G
         return true;
     }
 
+    /** Indicates if the graphs shown are graph states; {@code false} by default. */
+    protected boolean isForState() {
+        return false;
+    }
+
     @Override
     public boolean isFiltering() {
         return getLabelTree() != null;
@@ -150,7 +155,7 @@ public class SimulatorViewContext<G extends Graph> implements GraphViewContext<G
     public ExportAction getExportAction(GraphCanvas<G> canvas) {
         var result = this.exportAction;
         if (result == null) {
-            this.exportAction = result = new ExportAction(getSimulator(), canvas);
+            this.exportAction = result = new ExportAction(getSimulator(), canvas, isForState());
         }
         result.refresh();
         return result;

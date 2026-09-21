@@ -58,8 +58,8 @@ public class SimulatorAspectContext extends SimulatorViewContext<AspectGraph> {
     /** The display kind on which the graphs are shown. */
     private final DisplayKind kind;
 
-    /** Indicates if the graphs shown are graph states. */
-    private boolean isForState() {
+    @Override
+    protected boolean isForState() {
         return this.kind == DisplayKind.STATE;
     }
 

@@ -124,7 +124,7 @@ public class EditorCancelGuiTest {
             = (GraphBasedModel<?>) grammar.getResource(ResourceKind.TYPE, QualName.parse("type"));
         assertNotNull(typeModel, "the fixture grammar has a type graph");
         AspectGraph typeGraph = typeModel.getSource();
-        var controller = new AspectGraphViewController(null, DisplayKind.TYPE.getGraphRole(), false, true);
+        var controller = new AspectGraphViewController(null, DisplayKind.TYPE.getGraphRole(), true);
         controller.setGrammar(grammar);
         AspectJGraph canvas = (AspectJGraph) controller.getCanvas();
         AspectGraphViewModel model = canvas.newViewModel();

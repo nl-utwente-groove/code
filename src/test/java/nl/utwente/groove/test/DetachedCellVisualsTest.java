@@ -52,7 +52,7 @@ public class DetachedCellVisualsTest {
         GrammarModel grammar = Groove.loadGrammar(GRAMMAR);
         AspectGraph startGraph = grammar.getStartGraphModel().getSource();
         assert startGraph != null; // the fixture grammar has a start graph
-        var controller = new AspectGraphViewController(null, GraphRole.HOST, true, false);
+        var controller = new AspectGraphViewController(null, GraphRole.HOST, false);
         controller.setGrammar(grammar);
         AspectGraphViewModel model = controller.getCanvas().newViewModel();
         model.loadGraph(startGraph);

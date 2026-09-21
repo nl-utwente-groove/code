@@ -79,7 +79,7 @@ public class RegularLookTest {
         throws IOException {
         GrammarModel grammar = Groove.loadGrammar(grammarPath);
         var graph = grammar.getRuleModel(QualName.name(rule)).getSource();
-        var controller = new AspectGraphViewController(null, DisplayKind.RULE.getGraphRole(), false, false);
+        var controller = new AspectGraphViewController(null, DisplayKind.RULE.getGraphRole(), false);
         controller.setGrammar(grammar);
         var model = controller.getCanvas().newViewModel();
         model.loadGraph(graph);

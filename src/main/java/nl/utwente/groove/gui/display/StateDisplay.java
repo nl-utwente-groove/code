@@ -277,7 +277,7 @@ public class StateDisplay extends Display
             SimulatorAspectContext context = this.viewContext
                 = new SimulatorAspectContext(getSimulator(), getKind());
             result = this.controller
-                = new AspectGraphViewController(context, GraphRole.HOST, true, false);
+                = new AspectGraphViewController(context, GraphRole.HOST, false);
             context.setLabelTree(getLabelTree());
         }
         return result;

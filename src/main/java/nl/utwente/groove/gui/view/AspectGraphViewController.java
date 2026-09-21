@@ -53,13 +53,11 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
      * @param context the host of the display; {@code null} if the display is
      * shown outside a host tool
      * @param role role of the graphs that will be shown
-     * @param forState if {@code true}, the graphs shown are graph states
      * @param editing if {@code true}, the graphs are editable
      */
     public AspectGraphViewController(@Nullable GraphViewContext<AspectGraph> context, GraphRole role,
-                                     boolean forState, boolean editing) {
+                                     boolean editing) {
         super(context);
-        this.forState = forState;
         this.graphRole = role;
         this.editing = editing;
     }
@@ -74,14 +72,6 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
     public AspectGraphCanvas getCanvas() {
         return (AspectGraphCanvas) super.getCanvas();
     }
-
-    /** Indicates if the graphs being displayed are graph states. */
-    public boolean isForState() {
-        return this.forState;
-    }
-
-    /** Flag indicating that the graphs being displayed are graph states. */
-    private final boolean forState;
 
     @Override
     public GraphRole getGraphRole() {

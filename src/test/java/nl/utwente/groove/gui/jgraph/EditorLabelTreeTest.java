@@ -65,8 +65,7 @@ public class EditorLabelTreeTest {
         GrammarModel grammar = Groove.loadGrammar(GRAMMAR);
         AspectGraph startGraph = grammar.getStartGraphModel().getSource();
         assertNotNull(startGraph);
-        var controller = new AspectGraphViewController(null, DisplayKind.HOST.getGraphRole(),
-            false, true);
+        var controller = new AspectGraphViewController(null, DisplayKind.HOST.getGraphRole(), true);
         controller.setGrammar(grammar);
         AspectJGraph canvas = (AspectJGraph) controller.getCanvas();
         AspectGraphViewModel model = canvas.newViewModel();

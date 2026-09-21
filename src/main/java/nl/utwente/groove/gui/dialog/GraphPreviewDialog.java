@@ -130,7 +130,7 @@ public class GraphPreviewDialog<G extends @NonNull Graph> extends JDialog {
                 Simulator simulator = this.simulator;
                 var controller = new AspectGraphViewController(simulator == null
                     ? null
-                    : new SimulatorAspectContext(simulator, kind), kind.getGraphRole(), false, false);
+                    : new SimulatorAspectContext(simulator, kind), kind.getGraphRole(), false);
                 if (simulator == null) {
                     controller.setGrammar(this.grammar);
                 }
