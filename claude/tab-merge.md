@@ -1,7 +1,7 @@
 # Merging the view tab into the editor tab
 
 Proposal, written 2026-09-21 from a code survey; decided by Arend to be done **after the
-8.0.0 release**. Tracked in a GitHub issue (number to be filled in once filed).
+8.0.0 release**. Tracked as gh #921.
 
 ## Problem
 
