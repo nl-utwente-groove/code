@@ -148,7 +148,9 @@ public class ExploreAction extends SimulatorAction {
             // enabling changed from false to true
             assert grammar != null; // implied by enabled
             try {
-                exploreType.test(grammar.toGrammar());
+                // the grammar compiled under the exploration's overrides:
+                // errors those introduce are compatibility errors as well
+                exploreType.test(exploreType.toGrammar(grammar));
             } catch (FormatException exc) {
                 compatibilityError = exc;
                 enabled = false;

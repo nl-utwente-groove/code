@@ -46,21 +46,11 @@ public class Record {
      * The grammar is expected to be fixed; this is asserted, not enforced.
      */
     public Record(Grammar grammar, HostFactory hostFactory) {
-        this(grammar, hostFactory, grammar.getProperties().getAlgebraFamily());
-    }
-
-    /**
-     * Constructs a derivation record with an explicit algebra family,
-     * overriding the family of the grammar properties. Used when the GTS
-     * carries a per-GTS algebra override.
-     * The grammar is expected to be fixed; this is asserted, not enforced.
-     */
-    public Record(Grammar grammar, HostFactory hostFactory, AlgebraFamily family) {
         this.grammar = grammar;
         this.hostFactory = hostFactory;
         assert grammar.isFixed();
         this.checkIso = grammar.getProperties().isCheckIsomorphism();
-        this.family = family;
+        this.family = grammar.getProperties().getAlgebraFamily();
         this.valuator = new Valuator();
         this.valuator.setExprInfo(this.family, hostFactory);
     }

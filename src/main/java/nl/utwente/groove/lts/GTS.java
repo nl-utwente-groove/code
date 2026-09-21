@@ -188,30 +188,52 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     /** Unique factory for host elements, associated with this GTS. */
     private @Nullable HostFactory hostFactory;
 
-    /** Returns the algebra family of the GTS: the per-GTS override if set,
-     * otherwise the grammar's algebra family. */
+    /** Returns the algebra family of the GTS, which is that of its grammar. */
     public AlgebraFamily getAlgebraFamily() {
-        var result = this.algebraFamily;
+        return getGrammar().getProperties().getAlgebraFamily();
+    }
+
+    /**
+     * Returns the algebra family of the grammar model from which the grammar
+     * of this GTS was compiled. This differs from {@link #getAlgebraFamily()}
+     * precisely if the exploration that built the GTS overrode the family
+     * (see {@link nl.utwente.groove.explore.ExploreType#newGTS}), which a
+     * continued exploration must then do as well. Defaults to the grammar's
+     * family.
+     */
+    public AlgebraFamily getBaseAlgebraFamily() {
+        var result = this.baseAlgebraFamily;
         return result == null
-            ? getGrammar().getProperties().getAlgebraFamily()
+            ? getAlgebraFamily()
             : result;
     }
 
     /**
-     * Overrides the algebra family for this GTS. Only allowed on a fresh
-     * GTS: the family determines the data values in every state graph, so
-     * it must be constant for the lifetime of the GTS (it is baked into the
-     * start graph and the derivation record).
+     * Records the algebra family of the grammar model from which the grammar
+     * of this GTS was compiled. Only allowed on a fresh GTS.
+     * @see #getBaseAlgebraFamily()
      */
-    public void setAlgebraFamily(AlgebraFamily family) {
+    public void setBaseAlgebraFamily(AlgebraFamily family) {
         if (!isFresh() || this.record != null) {
-            throw Exceptions.illegalState("Algebra family must be set on a fresh GTS");
+            throw Exceptions.illegalState("Base algebra family must be set on a fresh GTS");
         }
-        this.algebraFamily = family;
+        this.baseAlgebraFamily = family;
     }
 
-    /** Per-GTS override of the grammar's algebra family, if any. */
-    private @Nullable AlgebraFamily algebraFamily;
+    /** Algebra family of the grammar model behind this GTS, if recorded. */
+    private @Nullable AlgebraFamily baseAlgebraFamily;
+
+    /**
+     * Returns the algebra family override under which this GTS was built,
+     * if any: the GTS's family if that differs from the base family,
+     * {@code null} otherwise.
+     */
+    public @Nullable AlgebraFamily getAlgebraOverride() {
+        var result = getAlgebraFamily();
+        return result == getBaseAlgebraFamily()
+            ? null
+            : result;
+    }
 
     /**
      * Indicates that nothing has been built on this GTS yet: no start state
@@ -798,7 +820,7 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     public final Record getRecord() {
         var result = this.record;
         if (result == null) {
-            this.record = result = new Record(this.grammar, getHostFactory(), getAlgebraFamily());
+            this.record = result = new Record(this.grammar, getHostFactory());
             var collapse = this.collapseMode;
             if (collapse != null) {
                 // keep the record's collapse flags consistent with the override

@@ -230,9 +230,11 @@ standard zips, so that a release needs no manual step. For that it checks out th
 private repository `nl-utwente-groove/yfiles-lib` next to the code checkout, at the
 branch of the same name as the branch being released if there is one and at `main`
 otherwise (see "Deploying" above, on pre-releases). That
-repository holds two files in its `lib/` directory: `yfiles-for-java-swing.jar`, the plain library
-jar from the `lib` directory of the licensed distribution, and the runtime license file
-(the `.xml` file that `yfiles.license.dir` points to); the rest of that repository is
+repository holds three files in its `lib/` directory: `yfiles-for-java-swing.jar`, the plain library
+jar from the `lib` directory of the licensed distribution, and the two license files
+yWorks issued with it, of which the backend's build packages the distribution license
+(`yfiles.license.file` in its `pom.xml`, by default `com.yworks.yfiles.java.license.xml`)
+and never the development license; the rest of that repository is
 the source of the backend itself, its root project, which the yFiles license
 does not allow to be public. The workflow installs the jar into
 the runner's local Maven repository under the coordinates of that repository's
@@ -246,7 +248,7 @@ The checkout authenticates with the repository secret `YFILES_LIB_TOKEN`, a
 fine-grained personal access token of the licensed developer with read access to
 `yfiles-lib` only (Contents: read). Under the one-seat project license, nobody but
 that developer and this token may read the private repository. A new library version
-means a new jar and license file there, and a new `yfiles.version` in both
+means a new jar and new license files there, and a new `yfiles.version` in both
 the `pom.xml` of that repository and `release/yfiles/pom.xml` (here).
 
 The pull-request build (`maven.yml`) does not use the profile: secrets are not

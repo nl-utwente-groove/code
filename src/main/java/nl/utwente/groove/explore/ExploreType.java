@@ -149,6 +149,37 @@ public abstract class ExploreType {
     });
 
     /**
+     * Compiles the grammar on which explorations of this type run: the
+     * grammar of a given model, compiled under any property overrides the
+     * type carries (the algebra family, see
+     * {@link GrammarModel#toGrammar(nl.utwente.groove.algebra.AlgebraFamily)}).
+     * A fresh GTS for this type must be built on the returned grammar,
+     * not on the model's own, as {@link #newGTS} does; {@link #prepareGTS}
+     * checks this. This implementation carries no overrides.
+     * @throws FormatException if the grammar has errors
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    public Grammar toGrammar(GrammarModel model) throws FormatException {
+        return model.toGrammar();
+    }
+
+    /**
+     * Creates a fresh GTS for explorations of this type over a given grammar
+     * model: the GTS is built on {@link #toGrammar(GrammarModel)}, records
+     * the model's algebra family as its base family (so that a continued
+     * exploration can tell whether the family was overridden), and has the
+     * per-GTS features of this type applied.
+     * @throws FormatException if the grammar has errors
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    public GTS newGTS(GrammarModel model) throws FormatException {
+        var result = new GTS(toGrammar(model));
+        result.setBaseAlgebraFamily(model.getProperties().getAlgebraFamily());
+        prepareGTS(result);
+        return result;
+    }
+
+    /**
      * Callback method allowing the exploration type to apply its per-GTS
      * features (collapse mode, algebra family, persistence) to a given GTS.
      * May only be called on a fresh GTS: the features are baked into the

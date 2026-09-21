@@ -26,7 +26,6 @@ import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreConfigSchema;
 import nl.utwente.groove.explore.util.StatisticsReporter;
-import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.aspect.AspectGraph;
@@ -715,12 +714,11 @@ public class SimulatorModel implements Cloneable {
      */
     public final boolean resetGTS(ExploreType exploreType) {
         try {
-            Grammar grammar = getGrammar().toGrammar();
-            GTS gts = new GTS(grammar);
-            // apply the per-GTS features of the exploration while
-            // the GTS is still fresh (before the record and start state are
-            // built below and by the GUI)
-            exploreType.prepareGTS(gts);
+            // the GTS is built on the grammar compiled under the exploration's
+            // property overrides (algebra family), with the per-GTS features
+            // of the exploration applied while the GTS is still fresh (before
+            // the record and start state are built below and by the GUI)
+            GTS gts = exploreType.newGTS(getGrammar());
             gts.getRecord().setRandomAccess(true);
             return setGTS(gts);
         } catch (FormatException e) {

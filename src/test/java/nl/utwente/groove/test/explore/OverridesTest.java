@@ -17,7 +17,11 @@
 package nl.utwente.groove.test.explore;
 
 import static nl.utwente.groove.test.explore.ExploreTestSupport.loadGrammar;
+import static nl.utwente.groove.test.explore.ExploreTestSupport.loadGrammarModel;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -28,6 +32,8 @@ import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.grammar.Grammar;
+import nl.utwente.groove.grammar.host.ValueNode;
+import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTS.CollapseMode;
 import nl.utwente.groove.test.MasterSeedGuard;
@@ -70,19 +76,59 @@ public class OverridesTest {
     }
 
     /**
-     * Tests the algebra override: the overridden family is recorded on the
-     * GTS and reaches the start graph and the derivation record.
+     * Tests the algebra override: the overridden family is realised by the
+     * grammar the GTS is built on, is recorded on the GTS, and reaches the
+     * start graph, the derivation record and the rules' search plans. The
+     * counter grammar has value nodes in the start graph and constants in
+     * the rules, so a family mismatch between the two leaves the start state
+     * without successors (gh #923).
      */
     @Test
     public void testAlgebraOverride() throws Exception {
-        Grammar grammar = loadGrammar("attributed-graphs");
-        GTS byDefault = explore(grammar, "");
+        GrammarModel model = loadGrammarModel("attribute-count-to-n");
+        GTS byDefault = explore(model, "");
         assertEquals(AlgebraFamily.DEFAULT, byDefault.getAlgebraFamily());
-        GTS point = explore(grammar, "algebra=point");
-        assertEquals(AlgebraFamily.POINT, point.getAlgebraFamily());
-        assertEquals(AlgebraFamily.POINT, point.getRecord().getFamily(),
+        assertNull(byDefault.getAlgebraOverride());
+        assertTrue(byDefault.nodeCount() > 1);
+        GTS big = explore(model, "algebra=big");
+        assertEquals(AlgebraFamily.BIG, big.getAlgebraFamily());
+        assertEquals(AlgebraFamily.BIG, big.getAlgebraOverride());
+        assertEquals(AlgebraFamily.BIG, big.getGrammar().getProperties().getAlgebraFamily(),
+                     "The override should be realised by the grammar");
+        assertEquals(AlgebraFamily.BIG, big.getRecord().getFamily(),
                      "The override should reach the derivation record");
+        var values = big.startState().getGraph().nodeSet().stream()
+            .filter(ValueNode.class::isInstance).map(ValueNode.class::cast).toList();
+        assertFalse(values.isEmpty());
+        for (var value : values) {
+            assertEquals(AlgebraFamily.BIG, value.getAlgebra().getFamily(),
+                         "The override should reach the start graph");
+        }
+        assertEquals(byDefault.nodeCount(), big.nodeCount(),
+                     "The big family should give the same state space as the default one");
+        // the point family collapses all values, so it can only shrink the state space
+        GTS point = explore(model, "algebra=point");
+        assertEquals(AlgebraFamily.POINT, point.getAlgebraOverride());
         assertTrue(point.nodeCount() > 0);
+        assertTrue(point.nodeCount() <= byDefault.nodeCount());
+        // an explicit override equal to the grammar's family is no override
+        // and needs no derived grammar
+        GTS explicit = explore(model, "algebra=default");
+        assertNull(explicit.getAlgebraOverride());
+        assertSame(model.toGrammar(), explicit.getGrammar());
+    }
+
+    /**
+     * Tests that a GTS built on the model's own grammar refuses an
+     * exploration overriding the algebra family: the override can only be
+     * realised by compiling the grammar through the exploration type.
+     */
+    @Test
+    public void testAlgebraOverrideNeedsDerivedGrammar() throws Exception {
+        GrammarModel model = loadGrammarModel("attribute-count-to-n");
+        GTS gts = new GTS(model.toGrammar());
+        var big = ExploreTypeConverter.toExploreType(ExploreConfig.parse("algebra=big"));
+        assertThrows(IllegalStateException.class, () -> big.newExploration(gts, null));
     }
 
     /**
@@ -105,11 +151,24 @@ public class OverridesTest {
         // and so is inheriting the grammar values
         var inherit = ExploreTypeConverter.toExploreType(new ExploreConfig());
         inherit.newExploration(gts, gts.startState());
+        // a GTS explored under an algebra override can only be continued
+        // under the same override, not by inheriting the grammar's family
+        GTS big = explore(loadGrammarModel("attribute-count-to-n"), "algebra=big");
+        assertThrows(FormatException.class, () -> inherit.newExploration(big, big.startState()));
+        assertThrows(FormatException.class, () -> point.newExploration(big, big.startState()));
+        var alsoBig = ExploreTypeConverter.toExploreType(ExploreConfig.parse("algebra=big"));
+        alsoBig.newExploration(big, big.startState());
     }
 
     /** Explores a fresh GTS with a given configuration, under a fixed
      * master seed, and returns the GTS. */
     private GTS explore(Grammar grammar, String config) throws Exception {
         return ExploreTestSupport.explore(grammar, config).getGTS();
+    }
+
+    /** Explores a fresh GTS over the grammar of a given model with a given
+     * configuration, under a fixed master seed, and returns the GTS. */
+    private GTS explore(GrammarModel model, String config) throws Exception {
+        return ExploreTestSupport.explore(model, config).getGTS();
     }
 }
