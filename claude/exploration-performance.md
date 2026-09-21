@@ -1165,6 +1165,46 @@ With the three rows already in the set that were long-tier sized (`append-4-list
 - As-and-Bs still has no long-tier size: `start-4-3` under equality collapse does not
   fit 8 GB, and the intermediate edge densities of the calibration note remain untried.
 
+**Long-tier baseline**, desktop, 2026-09-22, one JVM per row, `-da -Xmx8g
+-XX:+UseParallelGC`, one warm-up and two measured runs, fresh grammar per run, Oracle JDK
+26.0.2.1 (the machine's default `java`; the quick-tier baseline above ran on 25.0.4.1,
+so the two tables are not to be compared across). 44 minutes in all:
+
+```
+config                  states    trans  disc.st   disc.tr   med ms   min ms   max ms  states/s   trans/s   match     iso    cert     gen    rep   confl  allocMB    retMB  fNodes   fEdges
+append-4-list-10       1077000  4008820  1077000   4008820  76373.1  75683.3  76373.1     14102     52490   16248   24277   24272   53902     49       0 122216.4   2260.7     253     1599
+pacman-four-ghosts      210102  7819623   210102   7819623 135428.6 135387.7 135428.6      1551     57740    3162   73996   36642  117800    170       0 216911.7   1891.5      24      441
+leader-election-18      787648  7737099   787648   7737099 147697.0 146645.4 147697.0      5333     52385   20590   40043   40041  118437    105       0 277825.0   2765.6      79      472
+car-platooning-06      2988061 11929077  2988061  11929077 159772.4 155247.2 159772.4     18702     74663   44930       0       0   81919    160       0 222765.0   6205.6       6      306
+binary-tree-dfs-unstored-10      11       10 43954714  43954713 131190.0 125844.2 131190.0    335046    335046    7376       0       0   98668    190       0 271707.9   4974.7    4095    10236
+mark-unmark-22          338688  7451136   338688   7451136 135934.8 128748.0 135934.8      2492     54814   10750   97749   76504  120865    146       0 152759.1   2333.0      22       44
+count-600000            600001  1200001   600001   1200001 107110.1 106639.8 107110.1      5602     11203    1191     862     851  104407     15       0 1391868.9    461.4  600008   600005
+```
+
+What it says:
+
+- **The quick-tier figure for `append-4-list-10` was collector-bound.** Alone at 8 GB it
+  takes 76 s; inside the quick-tier run at 4 GB it took 206 s, with 2.3 GB retained and
+  the soft caches on top. `pacman-four-ghosts` (1.9 GB retained) moved from 143 to
+  135 s, so the cliff sits between those two retentions: a quick-tier row that retains
+  over about 2 GB at `-Xmx4g` measures the collector, not the exploration. That is one
+  more reason for the quick-tier re-baseline before the first fix, and for reading the
+  quick table's `retMB` column next to its times.
+- **Isomorphism checking dominates where it runs**: 72 % of `mark-unmark-22`, 55 % of
+  `pacman-four-ghosts`, 32 % of `append-4-list-10`, 27 % of `leader-election-18`, with
+  certification about a third to all of it. `car-platooning-06` (the grammar switches
+  isomorphism checking off) and the unstored tree (nothing collapses) spend it in `gen`
+  and matching instead.
+- **`count-600000` is `gen`**: 104 of 107 s, with 1.4 TB allocated; the superlinear
+  allocation of the counter lives in state generation, not in matching or the state set.
+- **`retMB` is not a stable figure in this tier.** `car-platooning-06` retained 6.2 GB
+  here against 1.3 GB in its calibration run, and `count-600000` 0.5 GB against 2.5 GB:
+  the softly reachable caches of 3.6 survive or not depending on how hard the collector
+  was pressed during the run. Compare `med ms`; treat `retMB` as a lower bound on the
+  live set only.
+- The spread is small: every `max ms` is within 6 % of `min ms` over the two measured
+  runs, which is what the tier was for.
+
 ### Shape of the harness (as designed)
 
 A runner in the test tree, `test/performance/ExplorationBenchmark` or similar, with a
