@@ -23,9 +23,10 @@ import nl.utwente.groove.grammar.Condition;
 import nl.utwente.groove.grammar.rule.Anchor;
 
 /**
- * This is the common interface among factory classes that generate
- * match strategies based on a specific algorithm, such as search plan,
- * or RETE.
+ * Factory for the match strategies of graph conditions. The only
+ * implementation is the search-plan engine
+ * ({@link nl.utwente.groove.match.plan.PlanSearchEngine PlanSearchEngine});
+ * the abstraction remains as the seam for an alternative matching algorithm.
  *
  * @author Arash Jalali
  * @version $Revision$
