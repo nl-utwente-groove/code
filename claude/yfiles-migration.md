@@ -529,8 +529,10 @@ add-on (two products to explain, macOS gap); a single installer with a yFiles qu
    except yWorks' own annotated exclusions and the methods GROOVE overrides), shipped
    next to GROOVE's unobfuscated backend jar, satisfies the clause, given that the
    backend jar's references reveal the renamed names of the API subset GROOVE uses;
-   (c) whether the development license file may ship inside the add-on as the runtime
-   license (it is what the library loads), or a deployment license is issued;
+   (c) dropped on 2026-09-21: the distribution license had been issued along with the
+   development license, and the developer guide (Deployment, Licensing) settles that
+   the add-on ships that one and never the development license, which the backend's
+   build now enforces (`yfiles.license.file`); the lettering of the rest is kept;
    (d) §2.1c/§2.4: whether an add-on distributed separately from GROOVE, as a public
    github release download with the non-commercial notice, is still "your own
    software applications" and acceptable;
