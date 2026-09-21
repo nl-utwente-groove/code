@@ -72,7 +72,7 @@ public class SaveGrammarAsGuiTest {
         var store = getModel().getStore();
         assertEquals(target, store.getLocation());
         var grammar = getModel().getGrammar();
-        assertTrue(grammar.getStartGraphModel().isImplicit(),
+        assertFalse(grammar.getStartGraphModel().isExternal(),
                    "Save As pinned an external start graph on the new grammar");
         assertFalse(grammar.toGrammar().getStartGraph().nodeSet().isEmpty());
         // replace the stored start graph by an empty one, as a save in the editor does
