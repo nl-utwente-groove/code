@@ -35,26 +35,26 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
-import javax.swing.SpringLayout;
+import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
-import javax.swing.text.html.HTMLEditorKit;
 
-import nl.utwente.groove.gui.layout.SpringUtilities;
+import org.eclipse.jdt.annotation.NonNullByDefault;
 
 /**
  * @author Eduardo Zambon
  * @version $Revision$
  */
+@NonNullByDefault
 public class BugReportDialog extends JDialog implements ActionListener, HyperlinkListener {
 
     private static final String DIALOG_TITLE = "Uncaught Exception in GROOVE";
 
     private static final String CANCEL_COMMAND = "Close GROOVE";
 
-    private static final String ERROR_MSG = "<HTML><BODY><FONT FACE=\"Arial\", SIZE=4>"
+    private static final String ERROR_MSG = "<HTML><BODY>"
         + "Oops, it seems that GROOVE just crashed on you. Sorry...<BR>"
         + "This undesired behaviour was probably caused by a bug in the code.<BR>"
         + "Please help the developers to improve the tool by submitting a "
@@ -62,7 +62,10 @@ public class BugReportDialog extends JDialog implements ActionListener, Hyperlin
         + "<A HREF=\"https://github.com/nl-utwente-groove/code/issues\">https://github.com/nl-utwente-groove/code/issues</A><BR>"
         + "In the link given, select 'New Issue' to create a new entry.<BR>"
         + "While submitting your report please describe the steps that led "
-        + "to the crash and include the exception stack trace shown below." + "</FONT></HTML>";
+        + "to the crash and include the exception stack trace shown below." + "</BODY></HTML>";
+
+    /** Width of the message and stack trace panes, in pixels. */
+    private static final int PANE_WIDTH = 700;
 
     /**
      * Create a bug reporting dialog.
@@ -71,12 +74,13 @@ public class BugReportDialog extends JDialog implements ActionListener, Hyperlin
     public BugReportDialog(Throwable e) {
         super((JFrame) null, DIALOG_TITLE, true);
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-        setResizable(false);
 
-        // Create the content panel, which is laid out as a single column.
+        // Create the content panel: the message on top, the stack trace in the
+        // middle and the button below. The stack trace pane takes up any extra
+        // space when the dialog is resized.
         // Add an empty space of 10 pixels between the dialog and the content
         // panel.
-        JPanel dialogContent = new JPanel(new SpringLayout());
+        JPanel dialogContent = new JPanel(new BorderLayout(0, 10));
         dialogContent.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         // Make sure that closeDialog is called whenever the dialog is closed.
@@ -88,12 +92,9 @@ public class BugReportDialog extends JDialog implements ActionListener, Hyperlin
         });
 
         // Fill the dialog.
-        dialogContent.add(this.getErrorMessage());
-        dialogContent.add(this.getStackTracePane(e));
-        dialogContent.add(this.getButtonPanel());
-
-        // Put the panels in a CompactGrid layout.
-        SpringUtilities.makeCompactGrid(dialogContent, 3, 1, 0, 0, 0, 0);
+        dialogContent.add(this.getErrorMessage(), BorderLayout.NORTH);
+        dialogContent.add(this.getStackTracePane(e), BorderLayout.CENTER);
+        dialogContent.add(this.getButtonPanel(), BorderLayout.SOUTH);
 
         // Add the dialogContent to the dialog.
         add(dialogContent);
@@ -102,20 +103,21 @@ public class BugReportDialog extends JDialog implements ActionListener, Hyperlin
     }
 
     private JEditorPane getErrorMessage() {
-        JEditorPane errorMsg = new JEditorPane();
-
+        JEditorPane errorMsg = new JEditorPane("text/html", ERROR_MSG);
         errorMsg.setEditable(false);
-        errorMsg.setPreferredSize(new Dimension(700, 130));
-        errorMsg.setBackground(null);
-        // Text font
-        Font font = new Font("Sans", Font.PLAIN, 6);
-        errorMsg.setFont(font);
-        // Handle HTML
-        errorMsg.setEditorKit(new HTMLEditorKit());
+        errorMsg.setOpaque(false);
+        // Render the HTML in the look-and-feel's message font, rather than in
+        // the default style sheet of the HTML kit
+        errorMsg.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+        Font font = UIManager.getFont("OptionPane.messageFont");
+        if (font != null) {
+            errorMsg.setFont(font);
+        }
         errorMsg.addHyperlinkListener(this);
-
-        errorMsg.setText(ERROR_MSG);
-
+        // Wrap the text at the pane width, and take the height that results
+        errorMsg.setSize(PANE_WIDTH, Integer.MAX_VALUE);
+        errorMsg
+            .setPreferredSize(new Dimension(PANE_WIDTH, errorMsg.getPreferredSize().height));
         return errorMsg;
     }
 
@@ -128,9 +130,12 @@ public class BugReportDialog extends JDialog implements ActionListener, Hyperlin
         // Create a text pane
         JTextPane stackTracePane = new JTextPane();
         stackTracePane.setEditable(false);
-        // Text font
-        Font font = new Font("Serif", Font.PLAIN, 12);
-        stackTracePane.setFont(font);
+        // Text font: monospaced, at the size of the look-and-feel's text font
+        Font textFont = UIManager.getFont("TextPane.font");
+        int fontSize = textFont == null
+            ? 12
+            : textFont.getSize();
+        stackTracePane.setFont(new Font(Font.MONOSPACED, Font.PLAIN, fontSize));
         // Get the message and the stack trace from the exception and put them
         // in text pane.
         StringWriter sw = new StringWriter();
@@ -143,7 +148,7 @@ public class BugReportDialog extends JDialog implements ActionListener, Hyperlin
 
         // Pane to create the scroll bars.
         JScrollPane scrollPane = new JScrollPane();
-        scrollPane.setPreferredSize(new Dimension(700, 300));
+        scrollPane.setPreferredSize(new Dimension(PANE_WIDTH, 300));
         scrollPane
             .setBorder(BorderFactory
                 .createTitledBorder(null, "Exception Stack Trace:",

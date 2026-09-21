@@ -321,7 +321,10 @@ public class LTSDisplay extends Display
         Iterator<GraphState> stateIter = counterExamples.iterator();
         GraphState current = stateIter.next();
         while (current != null) {
-            cells.add(viewModel.getCellForNode(current));
+            var stateCell = viewModel.getCellForNode(current);
+            if (stateCell != null) {
+                cells.add(stateCell);
+            }
             GraphState next = stateIter.hasNext()
                 ? stateIter.next()
                 : null;
@@ -329,7 +332,10 @@ public class LTSDisplay extends Display
                 for (GraphTransition trans : current
                     .getTransitions(getController().getTransitionClass())) {
                     if (trans.target() == next) {
-                        cells.add(viewModel.getCellForEdge(trans));
+                        var transCell = viewModel.getCellForEdge(trans);
+                        if (transCell != null) {
+                            cells.add(transCell);
+                        }
                         break;
                     }
                 }
