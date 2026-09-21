@@ -26,9 +26,14 @@ Done:
   --add-modules=java.management,jdk.management`). Product `module-info` and `pom.xml`
   untouched. Smoke test and null check pass.
 - Baseline table in the note (JDK 25, 2 warm-ups, 3 runs, one JVM, table order).
-- Finding 3.11, the `util.Factory` user leak, found through the harness; being fixed in
-  a separate session on its own branch with a GitHub issue (see the prompt Arend was
-  given on 2026-09-20; the issue number is not known here).
+- Finding 3.11, the `util.Factory` user leak, found through the harness; fixed as
+  gh #919, merged to master 2026-09-21 (`f9db84fda`). Not yet merged into this branch.
+- 2026-09-21: `junit/performance/` holds verbatim copies of the eight harness grammars
+  (commit `74c239d30`). Larger start graphs exist only for `sierpinsky` (up to `start13`)
+  and `car-platooning` (up to `start-18`); `generate-binary-tree` is bound-driven.
+  `inheritance`, `As-and-Bs`, `Mark-Unmark`, `append` and `pacman` need generated larger
+  start graphs (`pacman`'s `start_four_ghosts` lacks the turn node and explores to one
+  state). The harness `INPUT_DIR` still points at `junit/samples`.
 
 ## Blocked on the 3.11 fix
 
@@ -56,8 +61,9 @@ Done:
 4. Section 2 (dead optimisations): 2.1 stored `MatchResult` keys, confirm "Confluent:"
    goes non-zero on `inheritance`; 2.3 soft certifier reference; 2.4 refinement loop
    (gate with `grammar-smoke`); 2.5 to 2.7 freezing and chain replay.
-5. New benchmark grammars under `junit/performance/` for the uncovered cases
-   (attribute-heavy, symmetric ring, recipe transience), then section 3.
+5. Enlarge the `junit/performance/` set: generated larger start graphs for the five
+   grammars named above, switch the harness `INPUT_DIR`, then new grammars for the
+   uncovered cases (attribute-heavy, symmetric ring, recipe transience), then section 3.
 
 ## Key files
 
