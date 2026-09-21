@@ -43,6 +43,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.io.TempDir;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
@@ -53,6 +54,7 @@ import nl.utwente.groove.gui.BackendChooser;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.view.GraphBackend;
 import nl.utwente.groove.test.GuiTest;
+import nl.utwente.groove.test.QuietLogging;
 import nl.utwente.groove.test.SlowTest;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.AddOn;
@@ -76,6 +78,9 @@ import nl.utwente.groove.util.Version;
 @Tag(GuiTest.TAG)
 @ExtendWith(SimulatorFixture.class)
 public class AddOnGuiTest {
+    @RegisterExtension
+    static final QuietLogging QUIET_LOGGING = new QuietLogging();
+
     @Test
     void installsFromFileAndRemoves(@TempDir Path tmp) throws Exception {
         Path ext = Extensions.dir();

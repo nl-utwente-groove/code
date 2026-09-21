@@ -32,6 +32,7 @@ Status lines below are as of 2026-09-11.
 | [release-8_0_0-state.md](release-8_0_0-state.md) | Handoff state for the 8.0.0 release: branches, ordered checklist before the tag, open website and manual decisions. Transient: delete after the release. |
 | [exploration-performance.md](exploration-performance.md) | Code-reading review (2026-09-20) of the exploration hot path: always-on instrumentation, dead optimisations, wrong-quantity scaling, allocation churn, structural gaps, plus the throughput harness needed to measure any of it. Harness (`test/performance/ExplorationBenchmark`) and baseline done 2026-09-20; none of the findings implemented. |
 | [exploration-performance-state.md](exploration-performance-state.md) | Handoff state for continuing the above: what is done, what waits on the `Factory` leak fix (finding 3.11, separate branch), next steps in order. Transient: delete when merged. |
+| [factory-user-leak.md](factory-user-leak.md) | gh #919, memory leak in `util.Factory` dependency tracking: rule applications retained by the grammar (finding 3.11 of the exploration performance review). Fixed by weak user sets plus plain fields in `RuleApplication` on `factory-user-leak`, awaiting review; resettable-versus-frozen factories filed as gh #920. |
 ## Archive
 
 Finished work, kept for the design rationale and rejected alternatives. Grouped by theme.

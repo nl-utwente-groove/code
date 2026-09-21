@@ -32,8 +32,9 @@ was merged back in on 2026-09-20. Worktrees under `.claude/worktrees/`:
   `java-requirement-docs` (zip README states Java 21+, change notes and release-page text
   name the Java 25 runtime and the native-access grant), `ecore-dialog-skip` (gh #558,
   #907) and `retire-transient-yfiles-notes`. The website half of `java-requirement-docs`
-  (`installing.md`, `manual/introduction.md`) is in neither website branch of this clone,
-  so it is presumably still on the other machine; `installing.md` still names Java 21 only.
+  was made on the other machine and pushed; pulled here on 2026-09-20, it put the website
+  branch at 19b3a4a (6c633b1 the Java 25 runtime and the native-access flag, ffba46d the
+  compact-object-headers option for zip users, b73d534 the rpm unsigned-package prompt).
 - Quick reference chart: dropped 2026-09-14 (2012 tutorial poster by Tim Molderez for
   GROOVE 4.x, source never in a repository, Simulator screenshot unrenderable). The copy in
   the usermanual repo is left in place.
@@ -47,16 +48,20 @@ draft; manual pass (all six chapters checked against 8.0.0); release-page texts;
 `Version` javadoc for 3.12; grammar version already 3.12 (no bump needed);
 `yfiles-lib` branch `yworks-migration` merged into `main` (2026-09-14, in sync with
 origin); gh #819, #846, #851 closed; gh #911 settled by reinstating the ban; gh #558 and
-#907 resolved on `master` (`ecore-dialog-skip`).
+#907 resolved on `master` (`ecore-dialog-skip`); the Java-requirement wording of
+`installing.md` (Java 25 runtime bundled, Java 21 minimum for the zip,
+`--enable-native-access` for users of the Maven artifact).
 
 Before the tag, in order:
 
-1. Website: reword the transition-label paragraph of `manual/basics.md`, which still
-   calls the syntax String.format-like (now `%s`, `%i$s`, `%%` only, gh #877), and carry
-   the Java-requirement wording over from the other machine (or redo it): `installing.md`
-   still gives Java 21 as the requirement and says nothing of the bundled Java 25 runtime.
-   The branch pointer and the `.rpm` asset row, open in the 09-15 version of this note,
-   are done (0064990, bd30077).
+1. Website: finish the transition-label paragraph of `manual/basics.md`, which still
+   calls the syntax String.format-like (gh #877). A rewording is under way but not
+   committed (as of 2026-09-20 it restricts the specifiers to `s`); what it does not yet
+   cover is the explicit parameter index `%i$s`, which is what allows parameters to be
+   reordered, `%%`, and that a bad format is now an error on the rule instead of a silent
+   fallback to the rule name. The other three sub-items of this step are done: the branch
+   pointer and the `.rpm` asset row (0064990, bd30077), and the Java-requirement wording
+   (6c633b1).
 2. Check `YFILES_LIB_TOKEN` has not expired (no skip guard in `release.yml`).
 3. `revision` 7.5.4-SNAPSHOT -> 8.0.0 in `pom.xml` and `yfiles-lib/pom.xml`;
    `GROOVE_BUILD` (still 20260702); CHANGES.md heading "Upcoming release (8.0.0)" ->
