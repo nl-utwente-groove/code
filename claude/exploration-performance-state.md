@@ -9,7 +9,7 @@ Measurable performance improvement of state-space exploration, working down the
 findings of `claude/exploration-performance.md` (the review note; read its "Suggested
 order of attack" and "Building a throughput harness" sections first).
 
-## State as of 2026-09-21
+## State as of 2026-09-21 (evening)
 
 Branch `exploration-performance`, worktree `.claude/worktrees/exploration-performance`,
 based on master `c5406f917`, detached for review. Five commits: the review note, the
@@ -36,18 +36,22 @@ Done:
   the note, section "The performance grammar set"). Arend edited `pacman` (rules, both
   start graphs, properties) by hand; the four-ghost graph is his.
 
-## Measure on the desktop
+## Measured on the desktop
 
-All timings so far are from the laptop, which is not the measurement machine. The next
-session on the desktop should re-run the full baseline (`launch/GROOVE - exploration
-benchmark.launch`, same JVM flags) and replace the table in the note; expect `retMB` to
-drop sharply on every row now that 3.11 is fixed.
+2026-09-21: full baseline taken on the desktop (UT187312, JDK 25.0.4.1, launch flags,
+2 warm-ups and 3 runs, all 16 rows in table order, 39 minutes) and recorded in the note,
+replacing the laptop table. Maxima settled, `retMB` down a third to two thirds on the heavy
+rows, `iso` dominates the large rows. The run used a second, detached worktree
+`.claude/worktrees/exploration-performance-baseline` at `4f9f63bc5` so that the branch
+worktree stayed editable; it can be removed. Recipe: `mvn -q -DskipTests test-compile`,
+`dependency:build-classpath` for the class path, then `java -cp
+"target/classes;target/test-classes;<cp>"` with the launch flags and
+`-Dgroove.bench.warmups=2 -Dgroove.bench.runs=3 -Dgroove.bench.timeout=1200`, from the
+worktree root; no module path needed.
 
 ## Next, in order
 
-1. Re-run the baseline on the desktop (above); the pre-fix maxima of the heavy rows
-   (`append-4-list-8-equality`, `car-platooning-05`, `binary-tree-dfs-unstored`) were
-   GC thrash from leaked applications and should settle.
+1. Done: desktop baseline recorded (above).
 2. Add the long-run tier: a `tier` field on `Config` (QUICK/LONG), calibrate the four
    candidates above at `-Xmx8g` for 2 to 5 minutes each, 1 warm-up and 2 runs, run
    one configuration per JVM if run-order effects persist. Record a long-tier baseline.

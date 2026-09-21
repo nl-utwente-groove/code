@@ -875,23 +875,52 @@ Calibration facts, single cold runs at `-Xmx2g` unless noted:
   application a 3 M-application run leaks over 4 GB before it ends, so the tier is
   added once the leak is fixed, calibrated at a larger heap, with fewer repetitions.
 
-Baseline, 2 warm-ups and 3 measured runs, OpenJDK 25.0.4, `-da -Xmx4g -XX:+UseParallelGC`,
-all ten configurations in one JVM in table order, fresh grammar per run (state and
-transition columns are the *discovered* counts; non-timing columns from the median run):
+Baseline on the desktop (the measurement machine: 20 cores, 32 GB), 2 warm-ups and 3
+measured runs, OpenJDK 25.0.4.1, `-da -Xmx4g -XX:+UseParallelGC`, all sixteen
+configurations in one JVM in table order, fresh grammar per run, taken 2026-09-21 at
+`4f9f63bc5`, after the gh #919 fix (non-timing columns from the median run; `states` and
+`trans` are the stored counts, `disc.st` and `disc.tr` the discovered ones):
 
 ```
-config                   states    trans   med ms   min ms   max ms  states/s   match     iso    cert     gen  allocMB    retMB  fNodes   fEdges
-inheritance                 756     5374     78.2     74.6     87.7      9662       3      11       8      51     52.2      7.8       7       10
-pacman                      256     1536     61.7     33.1     81.1      4147       7      31      13      41     41.2      3.8      20      196
-as-and-bs                  8240    44774    665.4    606.9    681.6     12384      88     182      88     493    528.4     73.2       6       27
-sierpinsky-11                12       11   2112.4   1586.6   2171.5         6     181       0       0    1788    920.3    418.2  265734   841476
-binary-tree-dfs12          4012    22188   1605.0   1485.4   1624.8      2500      20    1181     846    1539    591.5     40.0     239      596
-append-4-list-8           31104   114008   5127.8   5051.3   5338.4      6066    1206    1573    1490    3617   3128.8    349.5      67      293
-append-4-list-8-equality  73792   268912  11128.2  10045.3  24740.9      6631    2430       0       0    7960   5659.0    812.3      74      357
-mark-unmark               24576   368640   8158.5   7372.5   8388.6      3012    1287    2463    2148    6360   6093.3    471.5      15       30
-car-platooning-05        110366   369601   8995.9   8675.0  74108.4     12269    2661       0       0    5087   7734.5    816.5       5      215
-binary-tree-dfs-unstored 409114   409113   5547.1   4264.5  27049.6     73752     238       0       0    4821   3297.6   1416.0    1023     2556
+config                  states    trans  disc.st   disc.tr   med ms   min ms   max ms  states/s   trans/s   match     iso    cert     gen    rep   confl  allocMB    retMB  fNodes   fEdges
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+inheritance                756     5374      756      5374     30.9     30.3     43.0     24494    174113       2       3       3      18      0       0     44.6      2.8       7       10
+pacman                     256     1536      256      1536     33.7     30.4     35.1      7588     45528       3      15       6      25      0       0     38.4      1.2      20      228
+as-and-bs                 8240    44774     8240     44774    226.7    204.8    233.5     36352    197528      28      90      43     166      3       0    480.8     34.1       6       27
+sierpinsky-11               12       11       12        11    688.5    682.0    795.1        17        16      85       0       0     531      0       0    876.4    418.2  265734   841476
+binary-tree-dfs12         4012    22188     4012     22188    568.8    566.9    597.6      7053     39005       9     461     333     550      0       0    547.4     16.9     239      596
+append-4-list-8          31104   114008    31104    114008   1755.1   1729.9   1773.8     17722     64958     455     600     551    1191      1       0   2954.9    228.8      67      293
+append-4-list-8-equality   73792   268912    73792    268912   3546.5   3520.8   3623.2     20807     75824     815       0       0    2387      7       0   5195.1    527.3      74      357
+mark-unmark              24576   368640    24576    368640   2350.4   2314.4   2629.9     10456    156840     414     712     616    1711      2       0   5496.9    146.4      15       30
+car-platooning-05       110366   369601   110366    369601   3212.5   3164.8   3544.5     34355    115050     953       0       0    1671      6       0   7449.7    539.9       5      215
+binary-tree-dfs-unstored       9        8   409114    409113   1331.0   1320.0   1477.7    307377    307377     108       0       0     963      1       0   2719.5   1111.1    1023     2556
+mark-unmark-18           48384   870912    48384    870912  11554.7  11261.0  11823.8      4187     75373    1103    7414    5695    9904     21       0  15650.7    366.4      18       36
+mark-unmark-21          169344  3556224   169344   3556224  61375.0  60199.0  62614.6      2759     57943    5069   43363   33369   54135     72       0  74976.7   1277.7      21       42
+as-and-bs-4-3           131505   947824   131505    947824   5724.5   5605.1   5818.8     22972    165574     868    2286    1280    4142     17       0  11029.6    569.7       7       35
+inheritance-12          297212  4317133   297212   4317133  21113.4  20954.1  21234.5     14077    204473     690    5061    4016   18449     63       0  37537.0   1738.1      12       21
+append-4-list-10       1077000  4008820  1077000   4008820 206111.9 205904.5 218017.8      5225     19450   30015   59844   59839  157800     49       0 123451.0    434.5     253     1599
+pacman-four-ghosts      210102  7819623   210102   7819623 143143.1 141930.7 143631.3      1468     54628    3057   78126   39730  124697    196       0 226271.6   1892.5      24      441
 ```
+
+The whole run took 39 minutes, 29 of them in the two long-tier rows `append-4-list-10`
+and `pacman-four-ghosts` (five runs each of 206 s and 143 s); the long tier of the next
+step should therefore run with fewer repetitions. Against the laptop table this
+replaces (in the history of this file, before `4f9f63bc5`), three things changed:
+
+- **The spread is gone.** The maxima of `append-4-list-8-equality`, `car-platooning-05`
+  and `binary-tree-dfs-unstored`, previously two to eight times the median, are now within
+  about 10 % of it; every row's `max ms` is within 12 % of `med ms`, and the ten shared
+  rows are 2.5 to 4 times faster, which is the machine, not the fix.
+- **Retained heap dropped by a third to two thirds on the heavy rows** (`mark-unmark`
+  472 to 146 MB, `append-4-list-8-equality` 812 to 527 MB, `car-platooning-05` 817 to
+  540 MB, `binary-tree-dfs-unstored` 1416 to 1111 MB), not to nothing: the remainder is
+  the softly reachable caches of finding 3.6, which the unstored row's retention
+  investigation below already put at about 60 % of its figure.
+- **Isomorphism checking dominates the large runs**: `iso` is 70 % of `mark-unmark-21`,
+  55 % of `pacman-four-ghosts` and 29 % of `append-4-list-10`, with certificates
+  (`cert`) about half to two thirds of that. This puts sections 2.3, 2.4 and 4.4 ahead of
+  the matching items for the large-state-space rows; `confl` is zero on every row, as
+  finding 2.1 predicts.
 
 With `persistence=none` the GTS retains only the nine states of the written-back trace,
 so the harness counts discovered states and transitions through a `GTSListener`
@@ -899,12 +928,12 @@ registered before the start state materialises, reports stored and discovered si
 side, and asserts the pinned counts against the discovered ones; for the nine
 persistent configurations the two are equal.
 
-**The maxima of the last three rows are GC thrash, not noise.** A single run of
-`binary-tree-dfs-unstored` makes about 1.4 GB live (the 3.11 leak plus soft caches) in a
-3.6 GB heap; `-Xlog:gc` shows 48 full collections and 26 s of pause in a 40 s JVM, no
-single pause above a second. The fresh grammar per run stops the leak accumulating
-across runs (the previous baseline's spread), but it does not make one run fit; until
-3.11 is fixed, `min ms` is the only stable column for those rows.
+**The maxima of the last three rows of the laptop table were GC thrash, not noise.** Before
+the gh #919 fix, a single run of `binary-tree-dfs-unstored` made about 1.4 GB live (the
+3.11 leak plus soft caches) in a 3.6 GB heap; `-Xlog:gc` showed 48 full collections and
+26 s of pause in a 40 s JVM, no single pause above a second. The fresh grammar per run
+stopped the leak accumulating across runs, but did not make one run fit. The desktop
+table above, taken after the fix, has the maxima back within noise.
 `bound=cost:N` still terminates the run under `persistence=none`, at a pure tree unfolding
 (transitions = states − 1), growing about eightfold per level: depth 8 takes 3 s, depth 9
 about 140 s, so there is nothing in between.
