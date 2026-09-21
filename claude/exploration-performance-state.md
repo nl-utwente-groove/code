@@ -77,9 +77,16 @@ than the eight copied samples do. Agreed order, by coverage gained per hour:
 1. Done: `leader-election` ring (symmetry, finding 5.6): `ring-8/14/16/18` generated,
    hand-drawn graphs dropped (the `-init` ones were dead: `type:`/`flag:` prefixes the
    rules do not use), four harness rows, calibration in the note.
-2. Attribute path: `attribute-count-to-n` bounded to a large N plus an `algebra=big` row;
-   a guarded-division rule in the copy so `ErrorValue` is on the path; `fibonacci` for
-   recipe parameters (4.2.1 to 4.2.3).
+2. Done except the `ErrorValue` rule: Arend's copies of `attribute-count-to-n` and
+   `fibonacci` take the size from a `let:` attribute of the start graph; generated
+   `bound-10000/100000/300000` and `fib-12/15`, five harness rows, calibration in the
+   note. Not done: a guarded-division rule so `ErrorValue` is on the path, and the
+   `algebra=big` row, because the exploration key `algebra=big` is broken (explores to
+   one state; the grammar property works). Bug not yet filed; ask Arend. Surprises,
+   both in the note: fibonacci's transient states cost hundreds of times a plain state
+   and `fib-17` exhausts 8 GB (ground of 4.3.1, investigate before a long-tier size);
+   the counter's allocation grows superlinearly (0.4 to 1.2 MB per state from 100k to
+   300k).
 3. Hub grammar, new: star of N spokes around one hub, k tokens moving through the hub,
    states C(N,k); the only row for 3.1, 3.7, 4.3.2, 5.1, 5.2. Design first.
 4. Control with transience: `recipes` (scale the start graph) and `transactions`

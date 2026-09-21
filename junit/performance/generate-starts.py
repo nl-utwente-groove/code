@@ -3,7 +3,7 @@
 
 The grammars under junit/performance are copies of junit/samples grammars,
 kept only for the exploration benchmark (test/performance/ExplorationBenchmark).
-Five of them have start graphs with a regular structure, so larger instances
+Seven of them have start graphs with a regular structure, so larger instances
 are generated here rather than drawn by hand. Run from the repository root:
 
     python junit/performance/generate-starts.py
@@ -158,12 +158,33 @@ def leader_election(n):
     return g
 
 
+def count_to_n(bound):
+    """The counter of attribute-count-to-n at 0 with the given bound: the
+    state space is one state per value, so it grows linearly in the bound
+    and measures the pure algebra path."""
+    g = Graph("bound-%d" % bound)
+    counter = g.node("counter", "let:bound=%d" % bound)
+    g.edge(counter, "this", g.node("int:0"))
+    return g
+
+
+def fibonacci(x):
+    """The single node of fibonacci carrying the argument x; the recipe
+    program computes fib(x) by recursion, so the state space grows with
+    fib(x) itself, about 1.6-fold per step."""
+    g = Graph("fib-%d" % x)
+    g.node("let:x=%d" % x)
+    return g
+
+
 SIZES = [
     ("Mark-Unmark-List-regexp-benchmark.gps", mark_unmark, [(18,), (21,)]),
     ("As-and-Bs-reg-exp-benchmark.gps", as_and_bs, [(4, 3)]),
     ("inheritance.gps", inheritance, [(12,)]),
     ("append.gps", append, [(4, 10)]),
     ("leader-election.gps", leader_election, [(8,), (14,), (16,), (18,)]),
+    ("attribute-count-to-n.gps", count_to_n, [(10000,), (100000,), (300000,)]),
+    ("fibonacci.gps", fibonacci, [(12,), (15,)]),
 ]
 
 if __name__ == "__main__":

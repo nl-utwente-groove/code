@@ -1037,6 +1037,43 @@ exploration time as reported:
 States and time both grow about fourfold per two processes, so `ring-20` would take
 some ten minutes.
 
+**attribute-count-to-n and fibonacci (added 2026-09-21)**, the attribute path of
+findings 4.2.1 to 4.2.3 and the recipe transience of 4.3.1. Arend's copies carry the
+size as a `let:` attribute of the start graph, so `generate-starts.py` produces
+`bound-N` (the counter at 0 with bound N) and `fib-N` (the argument node). Desktop
+calibration, single cold runs, headless `Generator`, `-Xmx8g` unless noted:
+
+| start graph | states | transitions | s | kept |
+|---|---|---|---|---|
+| `bound-10000` | 10 001 | 20 001 | 0.6 | smoke |
+| `bound-100000` | 100 001 | 200 001 | 5.9 | quick tier |
+| `bound-300000` (at `-Xmx4g`) | 300 001 | 600 001 | 34 | upper quick tier |
+| `bound-1000000` | | | out of heap | too large |
+| `fib-12` | 3 | 2 | 0.9 | smoke |
+| `fib-15` | 3 | 2 | 19 (same at `-Xmx4g`) | quick tier |
+| `fib-17` | | | out of heap at 8 GB | too large |
+| `fib-20` | | | out of heap after 8 500 transient states | too large |
+
+The counter is linear in states and cheap per state; the million is about 7 GB of live
+GTS, which is the ordinary per-state cost, not a leak. Its allocation is not linear,
+though: the harness reports 41 GB allocated for `bound-100000` and 352 GB for
+`bound-300000`, 0.4 against 1.2 MB per state, so something on the path allocates in
+proportion to the state count per step (the value-node factory, at 300 008 nodes, is the
+first suspect; unmeasured). A BigInteger row was planned on the same start graph, but
+**the exploration key `algebra=big` is broken**: with it the `Generator` explores
+`bound-10000` to a single state, while `-D algebraFamily=big` (the grammar property)
+gives the full 10 001; presumably the start graph keeps the grammar family's value nodes
+and the rules' constants are re-interpreted, so nothing matches. Not investigated; the
+row waits for the fix. **Fibonacci is a finding in itself.** The stored GTS has three
+states; all the work is in the transient states of the recipe, which the harness counts
+as discovered states (1 164 for `fib-12`, 4 934 for `fib-15`), and those cost hundreds
+of times a plain state in both time and memory: `fib-15` runs at some 270 states/s
+against 5 000 to 300 000 elsewhere in the table, and `fib-17`, with about 2.6 times the
+recursive calls, exhausts 8 GB. The time does not change between 4 and 8 GB, so it is
+not collector thrash; something on the recipe path is superlinear in the transient
+prefix, which is the ground of 4.3.1 (and possibly 3.6, the parent transition map) and
+needs its own investigation before a long-tier size exists for this family.
+
 ### Shape of the harness (as designed)
 
 A runner in the test tree, `test/performance/ExplorationBenchmark` or similar, with a

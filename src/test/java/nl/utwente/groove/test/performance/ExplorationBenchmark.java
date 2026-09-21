@@ -205,9 +205,11 @@ public class ExplorationBenchmark {
      * <p>
      * Several candidates from the note turned out to be dead ends: both
      * {@code exploreCache} grammars explore to a single state,
-     * {@code petrinet start2} to 38, and {@code attribute-count-to-n},
-     * {@code fibonacci}, {@code recipes} and {@code transactions} stay in the
-     * tens of states, so none of them measures anything as they stand. The
+     * {@code petrinet start2} to 38, and {@code recipes} and
+     * {@code transactions} stay in the tens of states, so none of them
+     * measures anything as they stand. {@code attribute-count-to-n} and
+     * {@code fibonacci} did too until their start graphs got a parameter
+     * ({@code bound-N}, {@code fib-N}, generated). The
      * sample's {@code pacman start_four_ghosts} was likewise dead and has
      * been replaced by a hand-made maze in the performance copy. The
      * {@code -init} start graphs of {@code leader-election} also explore to
@@ -299,7 +301,26 @@ public class ExplorationBenchmark {
             new Config("leader-election-16", "leader-election.gps", "ring-16", "", 197404,
                 1772291, false),
             new Config("leader-election-18", "leader-election.gps", "ring-18", "", 787648,
-                7737099, false));
+                7737099, false),
+            // a counter from 0 to a bound and back: one state per value, so
+            // the pure algebra path (findings 4.2.1 to 4.2.3) without matching
+            // or isomorphism costs. A BigInteger row is wanted but the
+            // exploration key "algebra=big" explores to a single state
+            // (2026-09-21) while the grammar property works, so it waits
+            // for that fix
+            new Config("count-10000", "attribute-count-to-n.gps", "bound-10000", "", 10001, 20001,
+                true),
+            new Config("count-100000", "attribute-count-to-n.gps", "bound-100000", "", 100001,
+                200001, false),
+            new Config("count-300000", "attribute-count-to-n.gps", "bound-300000", "", 300001,
+                600001, false),
+            // recursive fibonacci as a recipe: the stored GTS has three
+            // states, all the work is in the transient states of the recipe
+            // (finding 4.3.1), which cost hundreds of times a plain state in
+            // time and memory: fib-17 exhausts 8 GB, so there is no long-tier
+            // size until that is fixed
+            new Config("fib-12", "fibonacci.gps", "fib-12", "", 1164, 1164, true),
+            new Config("fib-15", "fibonacci.gps", "fib-15", "", 4934, 4934, false));
 
     /** Returns the benchmark set. */
     public static List<Config> getConfigs() {
