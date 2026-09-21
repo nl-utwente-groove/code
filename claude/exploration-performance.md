@@ -1063,16 +1063,43 @@ first suspect; unmeasured). A BigInteger row was planned on the same start graph
 **the exploration key `algebra=big` is broken**: with it the `Generator` explores
 `bound-10000` to a single state, while `-D algebraFamily=big` (the grammar property)
 gives the full 10 001; presumably the start graph keeps the grammar family's value nodes
-and the rules' constants are re-interpreted, so nothing matches. Not investigated; the
-row waits for the fix. **Fibonacci is a finding in itself.** The stored GTS has three
-states; all the work is in the transient states of the recipe, which the harness counts
-as discovered states (1 164 for `fib-12`, 4 934 for `fib-15`), and those cost hundreds
-of times a plain state in both time and memory: `fib-15` runs at some 270 states/s
-against 5 000 to 300 000 elsewhere in the table, and `fib-17`, with about 2.6 times the
-recursive calls, exhausts 8 GB. The time does not change between 4 and 8 GB, so it is
-not collector thrash; something on the recipe path is superlinear in the transient
-prefix, which is the ground of 4.3.1 (and possibly 3.6, the parent transition map) and
-needs its own investigation before a long-tier size exists for this family.
+and the rules' constants are re-interpreted, so nothing matches. Filed as gh #923; the
+row waits for the fix. **Fibonacci's transience cost is a finding; its state count is
+not.** The grammar computes fib(x) by the naive exponential recursion on purpose, so the
+number of states grows with fib(x), about 1.6-fold per step, under any of its three
+control programs. The default, `fibonacci-recipe`, wraps the recursion in a recipe: the
+stored GTS has three states and all the work is in transient states, which the harness
+counts as discovered states (1 164 for `fib-12`, 4 934 for `fib-15`; the `fib-N` rows
+above are this program). `fibonacci-function` runs the same recursion as a function, so
+the same states are plain stored states, and it is the control experiment for the
+transience cost (Arend's suggestion, 2026-09-21): same rules, same start graphs, the
+same state count and one transition fewer, no transience. (The third program,
+`fibonacci-expressions`, hard-codes its argument.) Desktop calibration as above, single
+cold runs at `-Xmx8g`, `-D controlProgram=fibonacci-function`, with the recipe program
+rerun in the same session for the ratio:
+
+| start graph | states | transitions | s | recipe s | kept |
+|---|---|---|---|---|---|
+| `fib-12` | 1 164 | 1 163 | 0.19 | 0.84 | |
+| `fib-15` | 4 934 | 4 933 | 0.30 | 17.9 | smoke |
+| `fib-17` | 12 919 | 12 918 | 0.57 | out of heap | |
+| `fib-20` | 54 729 | 54 728 | 1.2 | out of heap | |
+| `fib-22` | 143 284 | 143 283 | 2.6 | | quick tier |
+| `fib-25` | 606 964 | 606 963 | 10.4 | | fits 8 GB only |
+| `fib-27` | | | out of heap at 8 GB | | too large |
+
+`fib-25` is out of heap at `-Xmx4g` (the harness retains 5.2 GB after the run), so the
+quick-tier row is `fib-22`. The harness breakdown says where the recipe's time goes: of
+`fib-15`'s 17.7 s, 13.7 s is in the `gen` column (state generation, after matching),
+against 0.1 s for the function program; matching and isomorphism are under 40 ms in
+either. So a transient state costs 4.5 times a plain state at `fib-12` and 60 times at `fib-15`,
+and the ratio grows with the size: something on the recipe path is superlinear in the
+transient prefix. The recipe's time does not change between 4 and 8 GB, so it is not
+collector thrash. This is the ground of 4.3.1 (and possibly 3.6, the parent transition
+map) and needs its own investigation before a long-tier size exists for the recipe
+family. The function family has no long-tier size either, for the ordinary reason:
+`fib-27` is about 1.6 million states and, like the counter's million, does not fit 8 GB
+of live GTS.
 
 ### Shape of the harness (as designed)
 

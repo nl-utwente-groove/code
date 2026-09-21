@@ -169,9 +169,11 @@ def count_to_n(bound):
 
 
 def fibonacci(x):
-    """The single node of fibonacci carrying the argument x; the recipe
-    program computes fib(x) by recursion, so the state space grows with
-    fib(x) itself, about 1.6-fold per step."""
+    """The single node of fibonacci carrying the argument x; both the
+    recipe and the function control program compute fib(x) by the naive
+    exponential recursion, so the state space grows with fib(x) itself,
+    about 1.6-fold per step. The recipe keeps it in transient states, the
+    function in plain ones; the larger sizes are for the function."""
     g = Graph("fib-%d" % x)
     g.node("let:x=%d" % x)
     return g
@@ -184,7 +186,7 @@ SIZES = [
     ("append.gps", append, [(4, 10)]),
     ("leader-election.gps", leader_election, [(8,), (14,), (16,), (18,)]),
     ("attribute-count-to-n.gps", count_to_n, [(10000,), (100000,), (300000,)]),
-    ("fibonacci.gps", fibonacci, [(12,), (15,)]),
+    ("fibonacci.gps", fibonacci, [(12,), (15,), (22,)]),
 ]
 
 if __name__ == "__main__":

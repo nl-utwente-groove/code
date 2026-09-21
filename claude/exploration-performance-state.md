@@ -36,6 +36,12 @@ Done:
   the note, section "The performance grammar set"). Arend edited `pacman` (rules, both
   start graphs, properties) by hand; the four-ghost graph is his.
 
+2026-09-21, late: Arend holds `exploration-performance` in the main checkout, so the
+fibonacci control rows (`Config.controlProgram`, `fib-function-15/22`, note and script)
+were made on the scratch branch `exploration-performance-fib` in worktree
+`.claude/worktrees/exploration-performance-fib`, one commit on top of `26c720a0b`, to be
+fast-forwarded into `exploration-performance`; the worktree is detached.
+
 ## Measured on the desktop
 
 2026-09-21: full baseline taken on the desktop (UT187312, JDK 25.0.4.1, launch flags,
@@ -82,11 +88,13 @@ than the eight copied samples do. Agreed order, by coverage gained per hour:
    `bound-10000/100000/300000` and `fib-12/15`, five harness rows, calibration in the
    note. Not done: a guarded-division rule so `ErrorValue` is on the path, and the
    `algebra=big` row, because the exploration key `algebra=big` is broken (explores to
-   one state; the grammar property works). Bug not yet filed; ask Arend. Surprises,
-   both in the note: fibonacci's transient states cost hundreds of times a plain state
-   and `fib-17` exhausts 8 GB (ground of 4.3.1, investigate before a long-tier size);
-   the counter's allocation grows superlinearly (0.4 to 1.2 MB per state from 100k to
-   300k).
+   one state; the grammar property works). Filed as gh #923. Surprises, both in the
+   note: fibonacci's transient states cost hundreds of times a plain state and `fib-17`
+   exhausts 8 GB; the exponential state count is by design (Arend), the per-state cost
+   is not, and the `fibonacci-function` control rows added 2026-09-21 (same states as
+   plain states, 60 times faster at `fib-15`, time in the `gen` column) pin it on the
+   recipe path (ground of 4.3.1, investigate before a long-tier size); the counter's
+   allocation grows superlinearly (0.4 to 1.2 MB per state from 100k to 300k).
 3. Hub grammar, new: star of N spokes around one hub, k tokens moving through the hub,
    states C(N,k); the only row for 3.1, 3.7, 4.3.2, 5.1, 5.2. Design first.
 4. Control with transience: `recipes` (scale the start graph) and `transactions`

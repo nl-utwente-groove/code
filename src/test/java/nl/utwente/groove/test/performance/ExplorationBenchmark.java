@@ -160,6 +160,8 @@ public class ExplorationBenchmark {
      * @param grammar name of the grammar directory within {@link #INPUT_DIR}
      * @param startGraph name of the start graph; {@code null} for the
      * grammar's default one
+     * @param controlProgram name of the control program; {@code null} for
+     * the grammar's default one
      * @param exploreConfig exploration configuration in {@link ExploreConfig}
      * text form; {@code ""} is the default (breadth-first, full) exploration
      * @param expectedStates expected number of <em>discovered</em> states, or
@@ -170,9 +172,15 @@ public class ExplorationBenchmark {
      * {@link #smoke()}
      */
     public record Config(String name, String grammar, @Nullable String startGraph,
-                         String exploreConfig, int expectedStates, int expectedTransitions,
-                         boolean smoke) {
-        // no additional members
+                         @Nullable String controlProgram, String exploreConfig,
+                         int expectedStates, int expectedTransitions, boolean smoke) {
+        /** Constructs a configuration using the grammar's default control program. */
+        public Config(String name, String grammar, @Nullable String startGraph,
+                      String exploreConfig, int expectedStates, int expectedTransitions,
+                      boolean smoke) {
+            this(name, grammar, startGraph, null, exploreConfig, expectedStates,
+                 expectedTransitions, smoke);
+        }
     }
 
     /**
@@ -306,21 +314,33 @@ public class ExplorationBenchmark {
             // the pure algebra path (findings 4.2.1 to 4.2.3) without matching
             // or isomorphism costs. A BigInteger row is wanted but the
             // exploration key "algebra=big" explores to a single state
-            // (2026-09-21) while the grammar property works, so it waits
-            // for that fix
+            // (gh #923) while the grammar property works, so it waits for
+            // that fix
             new Config("count-10000", "attribute-count-to-n.gps", "bound-10000", "", 10001, 20001,
                 true),
             new Config("count-100000", "attribute-count-to-n.gps", "bound-100000", "", 100001,
                 200001, false),
             new Config("count-300000", "attribute-count-to-n.gps", "bound-300000", "", 300001,
                 600001, false),
-            // recursive fibonacci as a recipe: the stored GTS has three
-            // states, all the work is in the transient states of the recipe
-            // (finding 4.3.1), which cost hundreds of times a plain state in
-            // time and memory: fib-17 exhausts 8 GB, so there is no long-tier
-            // size until that is fixed
+            // recursive fibonacci, the naive exponential recursion by design,
+            // once as a recipe and once as a function over the same rules and
+            // start graphs. The recipe (the grammar's default program) keeps
+            // the whole recursion in transient states, so the stored GTS has
+            // three states and the discovered count is the transient work;
+            // the function program stores the same states as plain ones and
+            // is the control for the transience cost (finding 4.3.1): at
+            // fib-15 the recipe takes sixty times as long, and fib-17 as a
+            // recipe exhausts 8 GB where the function needs half a second,
+            // so there is no long-tier size for the recipe until that is
+            // fixed. The function family is bounded by the ordinary
+            // per-state cost: fib-25 (607k states) retains 5 GB and needs
+            // -Xmx8g, fib-27 (about 1.6M states) does not fit 8 GB
             new Config("fib-12", "fibonacci.gps", "fib-12", "", 1164, 1164, true),
-            new Config("fib-15", "fibonacci.gps", "fib-15", "", 4934, 4934, false));
+            new Config("fib-15", "fibonacci.gps", "fib-15", "", 4934, 4934, false),
+            new Config("fib-function-15", "fibonacci.gps", "fib-15", "fibonacci-function", "",
+                4934, 4933, true),
+            new Config("fib-function-22", "fibonacci.gps", "fib-22", "fibonacci-function", "",
+                143284, 143283, false));
 
     /** Returns the benchmark set. */
     public static List<Config> getConfigs() {
@@ -475,7 +495,8 @@ public class ExplorationBenchmark {
             List<Measurement> measured = new ArrayList<>();
             for (int i = 0; i < warmups + runs; i++) {
                 // outside the measured region, which starts in singleRun
-                Grammar grammar = newGrammar(store, config.startGraph());
+                Grammar grammar
+                    = newGrammar(store, config.startGraph(), config.controlProgram());
                 Measurement measurement = singleRun(grammar, exploreType, timeoutSeconds);
                 if (i >= warmups) {
                     measured.add(measurement);
@@ -567,12 +588,17 @@ public class ExplorationBenchmark {
      * @param store the loaded store holding the grammar's sources
      * @param startGraphName name of the start graph; {@code null} for the
      * grammar's default one
+     * @param controlName name of the control program; {@code null} for the
+     * grammar's default one
      */
-    private static Grammar newGrammar(SystemStore store,
-                                      @Nullable String startGraphName) throws FormatException {
+    private static Grammar newGrammar(SystemStore store, @Nullable String startGraphName,
+                                      @Nullable String controlName) throws FormatException {
         GrammarModel model = new GrammarModel(store);
         if (startGraphName != null) {
             model.setLocalActiveNames(ResourceKind.HOST, QualName.parse(startGraphName));
+        }
+        if (controlName != null) {
+            model.setLocalActiveNames(ResourceKind.CONTROL, QualName.parse(controlName));
         }
         return model.toGrammar();
     }
