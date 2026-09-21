@@ -148,11 +148,15 @@ public abstract class GraphViewController<G extends Graph> {
     }
 
     /**
-     * The properties of the grammar to which the displayed graph belongs.
-     * May return {@code null} if there is no grammar.
+     * The properties of the grammar of the context, if there is a context.
+     * Deliberately not derived from {@link #getGrammar()}: a grammar set by
+     * hand, as in the imager, does not determine the rendering.
      */
-    public @Nullable GrammarProperties getProperties() {
-        var grammar = getGrammar();
+    private @Nullable GrammarProperties getProperties() {
+        var context = getContext();
+        var grammar = context == null
+            ? null
+            : context.getGrammar();
         return grammar == null
             ? null
             : grammar.getProperties();
