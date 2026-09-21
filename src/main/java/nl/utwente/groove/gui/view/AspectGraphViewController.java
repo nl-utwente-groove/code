@@ -75,6 +75,25 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
         return backend.newAspectCanvas(this);
     }
 
+    /* Also registers the colour-selection action, which acts on the canvas selection. */
+    @Override
+    public void attachCanvas(GraphCanvas<AspectGraph> canvas) {
+        super.attachCanvas(canvas);
+        var actions = getActions();
+        if (actions != null) {
+            canvas.addCanvasListener(actions.getSelectColorAction());
+        }
+    }
+
+    @Override
+    public void removeListeners() {
+        var actions = getActions();
+        if (actions != null) {
+            getCanvas().removeCanvasListener(actions.getSelectColorAction());
+        }
+        super.removeListeners();
+    }
+
     /* Specialises the return type. */
     @Override
     public AspectGraphCanvas getCanvas() {
@@ -180,6 +199,24 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
 
     /** The permanent AddPointAction associated with the graph view. */
     private @Nullable AddPointAction addPointAction;
+
+    /**
+     * Adds a point to a given edge.
+     * @param edge the edge to which a point is to be added
+     * @param at the position of the new point, in graph coordinates
+     */
+    public void addPoint(AspectViewEdge edge, @Nullable Point2D at) {
+        getAddPointAction().execute(edge, at);
+    }
+
+    /**
+     * Removes the point of a given edge nearest to a given position.
+     * @param edge the edge from which a point is to be removed
+     * @param at the position near which the point is to be removed, in graph coordinates
+     */
+    public void removePoint(AspectViewEdge edge, @Nullable Point2D at) {
+        getRemovePointAction().execute(edge, at);
+    }
 
     /**
      * @return an action to edit the currently selected cell label.
@@ -300,9 +337,13 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
         return levelTree != null && !levelTree.isVisible(cell);
     }
 
-    /** Returns the grammar that has manually been set for this graph view. */
+    /* Falls back on the manually set grammar if there is no simulator. */
+    @Override
     public @Nullable GrammarModel getGrammar() {
-        return this.grammar;
+        var result = this.grammar;
+        return result == null
+            ? super.getGrammar()
+            : result;
     }
 
     /** Manually sets a new grammar in this graph view.

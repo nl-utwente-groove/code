@@ -35,6 +35,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.rule.RegExpr;
 import nl.utwente.groove.graph.Edge;
@@ -44,6 +45,7 @@ import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.dialog.FormulaDialog;
 import nl.utwente.groove.gui.dialog.GrooveFileChooser;
+import nl.utwente.groove.gui.tree.LabelTree;
 import nl.utwente.groove.gui.view.ViewCell;
 import nl.utwente.groove.gui.view.ViewEdge;
 import nl.utwente.groove.gui.view.GraphCanvas;
@@ -135,13 +137,19 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
      * edges based on selection or labels.
      * @param canvas the underlying canvas of which the display should be
      *        controlled
+     * @param labelTree the label tree from which the label sub-menus are built;
+     *        {@code null} if the display has no label tree
      */
-    public ShowHideMenu(GraphCanvas<G> canvas) {
+    public ShowHideMenu(GraphCanvas<G> canvas, @Nullable LabelTree<G> labelTree) {
         super(Options.SHOW_HIDE_MENU_NAME);
         setMnemonic(MENU_MNEMONIC);
         this.canvas = canvas;
+        this.labelTree = labelTree;
         fillOutMenu(getPopupMenu());
     }
+
+    /** The label tree from which the label sub-menus are built, if any. */
+    private final @Nullable LabelTree<G> labelTree;
 
     /** Fills a given menu with actions to show and hide elements. */
     protected void fillOutMenu(JPopupMenu menu) {
@@ -765,7 +773,7 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
             if (isIncluded) {
                 // now (re-)fill the menu
                 removeAll();
-                var labelTree = getCanvas().getController().getLabelTree();
+                var labelTree = ShowHideMenu.this.labelTree;
                 if (labelTree != null) {
                     for (var entry : labelTree.getLabels()) {
                         add(new LabelAction<>(getCanvas(), this.showMode, entry));

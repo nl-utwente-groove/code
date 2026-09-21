@@ -82,21 +82,8 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements Aspect
     @Override
     protected void installListeners() {
         super.installListeners();
-        var actions = getActions();
-        if (actions != null) {
-            addCanvasListener(actions.getSelectColorAction());
-        }
         addOptionListener(SHOW_ASPECTS_OPTION);
         addOptionListener(SHOW_VALUE_NODES_OPTION);
-    }
-
-    @Override
-    public void removeListeners() {
-        super.removeListeners();
-        var actions = getActions();
-        if (actions != null) {
-            removeCanvasListener(actions.getSelectColorAction());
-        }
     }
 
     @Override
@@ -169,10 +156,7 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements Aspect
     public AspectJModel newModel() {
         AspectJModel result = new AspectJModel(this);
         GrammarModel grammar = getController().getGrammar();
-        if (grammar == null) {
-            assert getSimulatorModel() != null : "Can't create AspectJGraphs without grammar model";
-            grammar = getSimulatorModel().getGrammar();
-        }
+        assert grammar != null : "Can't create AspectJGraphs without grammar model";
         result.setGrammar(grammar);
         return result;
     }

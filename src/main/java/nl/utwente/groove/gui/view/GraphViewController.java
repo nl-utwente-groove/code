@@ -34,6 +34,7 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.GrammarProperties;
+import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Label;
@@ -136,6 +137,25 @@ public abstract class GraphViewController<G extends Graph> {
         return simulator == null
             ? null
             : simulator.getActions();
+    }
+
+    /**
+     * Indicates if the graph view offers the actions of a simulator.
+     * A non-interactive view is one shown by a dialog or by the headless imager.
+     */
+    public boolean isInteractive() {
+        return getActions() != null;
+    }
+
+    /**
+     * The grammar to which the displayed graph belongs.
+     * May return {@code null} if the simulator is not set.
+     */
+    public @Nullable GrammarModel getGrammar() {
+        var simulatorModel = getSimulatorModel();
+        return simulatorModel == null
+            ? null
+            : simulatorModel.getGrammar();
     }
 
     /**
@@ -346,6 +366,14 @@ public abstract class GraphViewController<G extends Graph> {
     /** The label tree associated with the display. */
     private @Nullable LabelTree<G> labelTree;
 
+    /** Enables or disables the label tree associated with the display, if there is one. */
+    public void setLabelTreeEnabled(boolean enabled) {
+        var labelTree = getLabelTree();
+        if (labelTree != null) {
+            labelTree.setEnabled(enabled);
+        }
+    }
+
     /**
      * Indicates if the graph view filters its cells by label at all.
      * If it does not, {@link #isFiltered(ViewCell)} and {@link #isFiltered(Label)}
@@ -500,7 +528,7 @@ public abstract class GraphViewController<G extends Graph> {
      * Creates and returns a fresh show/hide menu for the graph view.
      */
     public ShowHideMenu<G> createShowHideMenu() {
-        return new ShowHideMenu<>(getCanvas());
+        return new ShowHideMenu<>(getCanvas(), getLabelTree());
     }
 
     private Action getShowLayoutDialogAction() {

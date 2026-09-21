@@ -87,10 +87,6 @@ import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Node;
-import nl.utwente.groove.gui.SimulatorModel;
-import nl.utwente.groove.gui.action.ActionStore;
-import nl.utwente.groove.gui.action.ExportAction;
-import nl.utwente.groove.gui.action.LayoutAction;
 import nl.utwente.groove.gui.view.GraphCanvas;
 import nl.utwente.groove.gui.view.CellStore;
 import nl.utwente.groove.gui.view.CellChange;
@@ -103,7 +99,6 @@ import nl.utwente.groove.gui.look.MultiLabel;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
 import nl.utwente.groove.gui.look.Values;
-import nl.utwente.groove.gui.tree.LabelTree;
 import nl.utwente.groove.gui.view.ViewOptions;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.util.Factory;
@@ -244,16 +239,6 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
 
     /** Change listener that refreshes the JGraph cells when activated. */
     private OptionRefreshListener refreshListener;
-
-    /** Convenience method to retrieve the state of the simulator, if any. */
-    final public SimulatorModel getSimulatorModel() {
-        return getController().getSimulatorModel();
-    }
-
-    /** Convenience method to retrieve the state of the simulator, if any. */
-    final public ActionStore getActions() {
-        return getController().getActions();
-    }
 
     /*
      * Overridden; we are being clever about constructing labels,
@@ -833,7 +818,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
                             : newJModel.getViewModel());
             }
             setEnabled(newJModel != null);
-            if (newJModel != null && getActions() != null) {
+            if (newJModel != null && getController().isInteractive()) {
                 // create the popup menu to create and activate the actions therein
                 getController().createPopupMenu(null);
             }
@@ -895,13 +880,11 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
             } else if (this.enabledBackground != null) {
                 setBackground(this.enabledBackground);
             }
-            if (getLabelTree() != null) {
-                getLabelTree().setEnabled(enabled);
-            }
+            getController().setLabelTreeEnabled(enabled);
             getController().setModeButtonsEnabled(enabled);
             getController().getModeButton(getDefaultMode()).setSelected(true);
             // retrieve the layout action to get its key accelerator working
-            getLayoutAction();
+            getController().getLayoutAction();
             super.setEnabled(enabled);
         }
     }
@@ -1116,22 +1099,6 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
     }
 
     /**
-     * Associates a label tree with this JGraph.
-     * Note: this method is called from the label tree constructor.
-     */
-    public void setLabelTree(LabelTree<G> labelTree) {
-        getController().setLabelTree(labelTree);
-    }
-
-    /**
-     * Returns the label tree associated with this JGraph.
-     * @return the associated label tree, or {@code null} if there is none
-     */
-    public LabelTree<G> getLabelTree() {
-        return getController().getLabelTree();
-    }
-
-    /**
      * Zooms and centres a given portion of the JGraph, as
      * defined by a certain rectangle.
      */
@@ -1212,16 +1179,6 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
         }
     }
 
-    /** Returns the action to export this JGraph in various formats. */
-    public ExportAction getExportAction() {
-        return getController().getExportAction();
-    }
-
-    /** Returns the action to layout this JGraph. */
-    public LayoutAction getLayoutAction() {
-        return getController().getLayoutAction();
-    }
-
     @Override
     public JGraphLayoutCache getGraphLayoutCache() {
         JGraphLayoutCache result;
@@ -1290,7 +1247,7 @@ abstract public class JGraph<G extends @NonNull Graph> extends org.jgraph.JGraph
 
     /** Shows a popup menu if the event is a popup trigger. */
     protected void maybeShowPopup(MouseEvent evt) {
-        if (isPopupMenuEvent(evt) && getActions() != null) {
+        if (isPopupMenuEvent(evt) && getController().isInteractive()) {
             getUI().cancelEdgeAdding();
             Point atPoint = evt.getPoint();
             Point2D graphPoint = fromScreen(new Point2D.Double(atPoint.x, atPoint.y));
