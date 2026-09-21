@@ -43,14 +43,14 @@ import nl.utwente.groove.util.AIGenerated;
  */
 @AIGenerated("Claude Opus 5, 2026-09")
 @NonNullByDefault
-public class AspectViewContext extends SimulatorViewContext<AspectGraph> {
+public class SimulatorAspectContext extends SimulatorViewContext<AspectGraph> {
     /**
      * Constructs a context for a graph view on a given display.
      * @param simulator the simulator hosting the graph view
      * @param kind display kind on which the graphs are shown; determines the
      * graph role, and whether the graphs are graph states
      */
-    public AspectViewContext(Simulator simulator, DisplayKind kind) {
+    public SimulatorAspectContext(Simulator simulator, DisplayKind kind) {
         super(simulator);
         this.kind = kind;
     }

@@ -25,7 +25,7 @@ import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.gui.Simulator;
-import nl.utwente.groove.gui.display.AspectViewContext;
+import nl.utwente.groove.gui.display.SimulatorAspectContext;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.display.GraphPanel;
 import nl.utwente.groove.gui.display.SimulatorViewContext;
@@ -130,7 +130,7 @@ public class GraphPreviewDialog<G extends @NonNull Graph> extends JDialog {
                 Simulator simulator = this.simulator;
                 var controller = new AspectGraphViewController(simulator == null
                     ? null
-                    : new AspectViewContext(simulator, kind), kind.getGraphRole(), false, false);
+                    : new SimulatorAspectContext(simulator, kind), kind.getGraphRole(), false, false);
                 if (simulator == null) {
                     controller.setGrammar(this.grammar);
                 }

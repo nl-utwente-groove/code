@@ -467,7 +467,7 @@ public class LTSDisplay extends Display
         if (result == null) {
             // the label tree is built on the canvas, so the context gets it
             // only after the controller (and with it the canvas) exists
-            LTSViewContext context = new LTSViewContext(getSimulator());
+            SimulatorLTSContext context = new SimulatorLTSContext(getSimulator());
             result = this.controller = new LTSGraphViewController(context);
             context.setLabelTree(getLabelTree());
         }

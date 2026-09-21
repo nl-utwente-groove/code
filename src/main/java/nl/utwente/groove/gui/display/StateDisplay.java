@@ -274,8 +274,8 @@ public class StateDisplay extends Display
         if (result == null) {
             // the label tree is built on the canvas, so the context gets it
             // only after the controller (and with it the canvas) exists
-            AspectViewContext context = this.viewContext
-                = new AspectViewContext(getSimulator(), getKind());
+            SimulatorAspectContext context = this.viewContext
+                = new SimulatorAspectContext(getSimulator(), getKind());
             result = this.controller
                 = new AspectGraphViewController(context, GraphRole.HOST, true, false);
             context.setLabelTree(getLabelTree());
@@ -287,15 +287,15 @@ public class StateDisplay extends Display
     private AspectGraphViewController controller;
 
     /** Returns the host context of the state graph view, created with the controller. */
-    final public AspectViewContext getViewContext() {
+    final public SimulatorAspectContext getViewContext() {
         getController();
-        AspectViewContext result = this.viewContext;
+        SimulatorAspectContext result = this.viewContext;
         assert result != null; // the controller creates the context
         return result;
     }
 
     /** The host context of the state graph view. */
-    private AspectViewContext viewContext;
+    private SimulatorAspectContext viewContext;
 
     /** Lazily creates and returns the label tree for the display. */
     private TypeTree getLabelTree() {

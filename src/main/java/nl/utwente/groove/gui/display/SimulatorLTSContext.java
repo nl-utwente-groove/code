@@ -40,9 +40,9 @@ import nl.utwente.groove.util.AIGenerated;
  */
 @AIGenerated("Claude Opus 5, 2026-09")
 @NonNullByDefault
-public class LTSViewContext extends SimulatorViewContext<GTS> {
+public class SimulatorLTSContext extends SimulatorViewContext<GTS> {
     /** Constructs a context for the LTS view of a given simulator. */
-    public LTSViewContext(Simulator simulator) {
+    public SimulatorLTSContext(Simulator simulator) {
         super(simulator);
     }
 
