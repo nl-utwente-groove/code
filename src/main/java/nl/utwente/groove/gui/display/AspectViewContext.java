@@ -75,7 +75,9 @@ public class AspectViewContext extends SimulatorViewContext<AspectGraph> {
      * filtered by the levels selected in it.
      */
     public void setLevelTree(@Nullable RuleLevelTree levelTree) {
-        assert levelTree == null || getGraphRole() == GraphRole.RULE;
+        var canvas = this.canvas;
+        assert levelTree == null
+            || getGraphRole() == GraphRole.RULE && (canvas == null || !canvas.hasActiveEditor());
         this.levelTree = levelTree;
     }
 
@@ -94,15 +96,20 @@ public class AspectViewContext extends SimulatorViewContext<AspectGraph> {
             && !levelTree.isVisible(aspectCell);
     }
 
+    /** The canvas of the graph view, between attachment and detachment. */
+    private @Nullable GraphCanvas<AspectGraph> canvas;
+
     /* Registers the colour-selection action, which acts on the canvas selection. */
     @Override
     public void canvasAttached(GraphCanvas<AspectGraph> canvas) {
+        this.canvas = canvas;
         canvas.addCanvasListener(getActions().getSelectColorAction());
     }
 
     @Override
     public void canvasDetached(GraphCanvas<AspectGraph> canvas) {
         canvas.removeCanvasListener(getActions().getSelectColorAction());
+        this.canvas = null;
         super.canvasDetached(canvas);
     }
 
