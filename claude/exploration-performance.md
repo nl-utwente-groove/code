@@ -808,7 +808,11 @@ GTS still referenced, and the per-GTS `HostFactory` node and edge counts (the si
 - `main` (config names as arguments, `-Dgroove.bench.warmups`, `-Dgroove.bench.runs`,
   `-Dgroove.bench.timeout` in seconds, optional `-Dgroove.bench.csv=<file>`), with the
   Eclipse launch `GROOVE - exploration benchmark` (`-da -Xmx4g -XX:+UseParallelGC`).
-- `@Test smoke()`: every `smoke` configuration once, no warm-up; runs in the full suite.
+  Without names, `-Dgroove.bench.tier=quick|long|all` selects the tier (added
+  2026-09-22, see "The long-run tier" below); `quick` is the default and excludes the
+  long tier.
+- `@Test smoke()`: every configuration of the `SMOKE` tier once, no warm-up; runs in
+  the full suite.
 - `@Test benchmark()`: inert unless `-Dgroove.bench.run=<names|true>`; the Maven route,
   `mvn -q test "-Dexcluded.test.groups=" -Dtest=ExplorationBenchmark
   -DenableAssertions=false "-Dgroove.bench.run=true" > bench.log 2>&1`. Surefire honours
@@ -826,9 +830,12 @@ under a plain class-path launch without flags, since the booter starts from the 
 path and `java.se` is then a root; only the Eclipse launch, where the application module
 is the root, carries `--add-modules=java.management,jdk.management`.
 
-The harness loads the `SystemStore` once per configuration and builds `new
-GrammarModel(store).toGrammar()` for every run, outside the timed region, so each run
-starts without the state that 3.11 leaks into the `Rule` objects. `GrammarModel.toGrammar()`
+The harness loads the `SystemStore` once per configuration and builds a fresh `new
+GrammarModel(store)` for every run, which `ExploreType.newGTS` compiles under the
+type's overrides (the algebra family, gh #923; since 2026-09-22, before that the
+harness compiled the model itself and built the `GTS` directly, which the fixed
+`algebra` key rejects), outside the timed region, so each run starts without the state
+that 3.11 leaks into the `Rule` objects. `GrammarModel.toGrammar()`
 caches its `Grammar`, and the `RuleModel`s cache their `Rule`s for the model's lifetime,
 so a fresh model is the only unit that isolates runs. Consequence: search plans, built
 lazily on first match, are built inside the timed region on every run; milliseconds
@@ -1100,6 +1107,63 @@ map) and needs its own investigation before a long-tier size exists for the reci
 family. The function family has no long-tier size either, for the ordinary reason:
 `fib-27` is about 1.6 million states and, like the counter's million, does not fit 8 GB
 of live GTS.
+
+### The long-run tier (2026-09-22)
+
+The tier the note asked for once 3.11 was fixed. `Config.smoke` became a three-valued
+`Tier` (`SMOKE` within `QUICK` within everything; `LONG` apart): `smoke()` runs the
+`SMOKE` rows, a plain `main` run the quick tier (that is, everything but `LONG`), and
+`-Dgroove.bench.tier=long` (or `all`) the rest, names given as arguments overriding the
+tier. The long rows are sized for two to five minutes at `-Xmx8g`, and are meant to run
+with one warm-up, two measured runs and one row per JVM, which sidesteps the run-order
+effect and lets a row that does not fit fail alone:
+
+```
+for c in $(names); do java -da -Xmx8g -XX:+UseParallelGC \
+  --add-modules=java.management,jdk.management -Dgroove.bench.warmups=1 \
+  -Dgroove.bench.runs=2 -Dgroove.bench.timeout=1200 -cp "<cp>" \
+  nl.utwente.groove.test.performance.ExplorationBenchmark $c; done
+```
+
+Calibration on the desktop, single cold runs through the harness (no warm-up) at
+`-Xmx8g`, one JVM per row; `retMB` is the harness's retained heap after the run:
+
+| row | states | transitions | s | retMB | kept |
+|---|---|---|---|---|---|
+| `car-platooning-06` | 2 988 061 | 11 929 077 | 170 | 1 310 | long tier |
+| `sierpinsky-12` (linear) | 13 | 12 | 3.6 | 1 234 | quick tier |
+| `sierpinsky-13` (linear) | 14 | 13 | 10.8 | 3 805 | dropped: too short for long, too heavy for quick |
+| `binary-tree-dfs-unstored-9` | 4 037 914 discovered | | 14 | 1 826 | quick tier |
+| `binary-tree-dfs-unstored-10` | 43 954 714 discovered | | 131 | 4 975 | long tier |
+| `as-and-bs-equality` (`start`) | 262 144 | 1 413 120 | 7.8 | 1 174 | quick tier |
+| `as-and-bs-4-3-equality` | | | out of heap at 8 GB | | too large |
+| `mark-unmark-22` | 338 688 | 7 451 136 | 122 | 2 388 | long tier |
+| `mark-unmark-23` | 151 704 | 3 489 192 | 72 | 1 271 | dropped: smaller than `tree-21` |
+| `count-600000` | 600 001 | 1 200 001 | 106 | 2 544 | long tier |
+| `count-100000-big` | 100 001 | 200 001 | 6.4 | 834 | quick tier |
+| `count-300000-big` | 300 001 | 600 001 | 38 | 2 634 | quick tier |
+| `inheritance-13` | 552 824 | 8 148 238 | 41 | 3 288 | dropped: between the tiers at 3.3 GB |
+
+With the three rows already in the set that were long-tier sized (`append-4-list-10`,
+`pacman-four-ghosts`, `leader-election-18`) the long tier has seven rows. Surprises:
+
+- The note's 140 s for the unstored tree at depth 9 was a laptop figure; here it is 14 s,
+  so the tier takes depth 10. Its 5 GB retained after a run whose GTS holds 11 states is
+  the softly reachable state caches of 3.6 at the scale of 44 M discovered states, and
+  the reason the row needs the 8 GB heap.
+- **BigInteger costs nothing extra on the counter**: 6.4 s against 7.3 s for the plain
+  row in the same session. The counter's time is allocation, not arithmetic, which is
+  consistent with 4.2.1 to 4.2.3 being about boxing and lookups rather than the
+  operations.
+- **The counter's allocation is superlinear at a third point**: 1.4 TB for
+  `bound-600000`, 2.3 MB per state, after 0.4 MB at 100 k and 1.2 MB at 300 k; the total
+  grows about quadratically, so something allocates in proportion to the states so far
+  on every step. Unmeasured beyond that; the value-node factory is the first suspect.
+- Mark-Unmark's state count is not monotonic in the tree size: `tree-23` is smaller than
+  `tree-21`, the generator's tree shape depending on the number. `tree-22` is twice
+  `tree-21` and serves.
+- As-and-Bs still has no long-tier size: `start-4-3` under equality collapse does not
+  fit 8 GB, and the intermediate edge densities of the calibration note remain untried.
 
 ### Shape of the harness (as designed)
 

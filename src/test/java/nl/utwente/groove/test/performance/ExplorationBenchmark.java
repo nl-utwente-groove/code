@@ -43,7 +43,6 @@ import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
-import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.graph.iso.IsoChecker;
@@ -58,7 +57,6 @@ import nl.utwente.groove.test.SlowTest;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.Reporter;
-import nl.utwente.groove.util.parse.FormatException;
 
 /**
  * Throughput harness for state-space exploration.
@@ -77,7 +75,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * {@link Exploration} and measures nothing but {@link Exploration#play()}. A
  * compiled grammar is not reused because a run leaves state behind in it: as
  * of 2026-09 every rule application is retained for the lifetime of the
- * {@link Grammar} (about 1.4 KB each), so a later run would explore with the
+ * {@code Grammar} (about 1.4 KB each), so a later run would explore with the
  * leavings of the earlier ones on the heap. The price is that search plans,
  * which are built lazily on the first match of a rule, are now built inside
  * the measured region of every run rather than only of the first; that is
@@ -99,7 +97,9 @@ import nl.utwente.groove.util.parse.FormatException;
  * all); the run shape is set through system properties {@code groove.bench.warmups} (default
  * {@value #DEFAULT_WARMUPS}), {@code groove.bench.runs} (default
  * {@value #DEFAULT_RUNS}) and {@code groove.bench.timeout} (seconds, default
- * {@value #DEFAULT_TIMEOUT}). If {@code groove.bench.csv} names a file, the rows
+ * {@value #DEFAULT_TIMEOUT}). Without names, {@code groove.bench.tier} selects
+ * the {@link Tier}: {@code quick} (the default: everything but the long tier),
+ * {@code long} or {@code all}. If {@code groove.bench.csv} names a file, the rows
  * are appended to it in CSV form as well.
  * <p>
  * From Maven the same {@code main} can be reached through the JUnit entry
@@ -154,6 +154,25 @@ public class ExplorationBenchmark {
     private static final long INTERRUPT_GRACE = 10_000L;
 
     /**
+     * Size class of a configuration. The tiers nest: the smoke tier is the
+     * part of the quick tier that is fast enough for {@link #smoke()}, and a
+     * plain run covers the quick tier (smoke included). The long tier holds
+     * the runs of two to five minutes that average out collector and JIT
+     * noise better than repetitions of short runs and show the findings
+     * whose cost is a wrong quantity; it wants {@code -Xmx8g}, fewer
+     * repetitions and one configuration per JVM, and is selected with
+     * {@code -Dgroove.bench.tier=long} (or {@code all}).
+     */
+    public enum Tier {
+        /** Sub-second to a few seconds; run by {@link #smoke()}. */
+        SMOKE,
+        /** Up to about a minute; the default selection of {@link #main}. */
+        QUICK,
+        /** Two to five minutes; selected explicitly. */
+        LONG;
+    }
+
+    /**
      * A single benchmark configuration.
      * @param name short identifier, used to select configurations on the
      * command line and as the first table column
@@ -168,18 +187,17 @@ public class ExplorationBenchmark {
      * {@code -1} if unknown
      * @param expectedTransitions expected number of <em>discovered</em>
      * transitions, or {@code -1} if unknown
-     * @param smoke whether this configuration is fast enough for
-     * {@link #smoke()}
+     * @param tier size class of this configuration
      */
     public record Config(String name, String grammar, @Nullable String startGraph,
                          @Nullable String controlProgram, String exploreConfig,
-                         int expectedStates, int expectedTransitions, boolean smoke) {
+                         int expectedStates, int expectedTransitions, Tier tier) {
         /** Constructs a configuration using the grammar's default control program. */
         public Config(String name, String grammar, @Nullable String startGraph,
                       String exploreConfig, int expectedStates, int expectedTransitions,
-                      boolean smoke) {
+                      Tier tier) {
             this(name, grammar, startGraph, null, exploreConfig, expectedStates,
-                 expectedTransitions, smoke);
+                 expectedTransitions, tier);
         }
     }
 
@@ -248,33 +266,33 @@ public class ExplorationBenchmark {
         .of(
             // diamond-rich lattice: the ground for the dead confluent-diamond
             // shortcut (finding 2.1); "confl" must turn non-zero when it is fixed
-            new Config("inheritance", "inheritance.gps", "start", "", 756, 5374, true),
+            new Config("inheritance", "inheritance.gps", "start", "", 756, 5374, Tier.SMOKE),
             // quantified rules over a small graph
-            new Config("pacman", "pacman.gps", "start", "", 256, 1536, true),
+            new Config("pacman", "pacman.gps", "start", "", 256, 1536, Tier.SMOKE),
             // regular-expression matching with a path cache
             new Config("as-and-bs", "As-and-Bs-reg-exp-benchmark.gps", "start", "", 8240, 44774,
-                true),
+                Tier.SMOKE),
             // linear exploration over graphs growing to ~800k elements: the
             // large-graph case for the certifier array (3.1) and the per-node
             // edge sets (4.3.2)
             new Config("sierpinsky-11", "sierpinsky.gps", "start11",
-                "frontier=single successor=single", 12, 11, true),
+                "frontier=single successor=single", 12, 11, Tier.SMOKE),
             // depth-first with a depth bound: long delta chains, certifying-heavy
             new Config("binary-tree-dfs12", "generate-binary-tree.gps", "start",
-                "next=newest cost=uniform bound=cost:12", 4012, 22188, true),
+                "next=newest cost=uniform bound=cost:12", 4012, 22188, Tier.SMOKE),
             // the largest breadth-first run among the samples
             new Config("append-4-list-8", "append.gps", "append-4-list-8", "", 31104, 114008,
-                false),
+                Tier.QUICK),
             // the same under equality collapse, for findings 4.4.4 and section 6
             new Config("append-4-list-8-equality", "append.gps", "append-4-list-8",
-                "collapse=equality", 73792, 268912, false),
+                "collapse=equality", 73792, 268912, Tier.QUICK),
             // regular expressions with a high transition-to-state ratio
             new Config("mark-unmark", "Mark-Unmark-List-regexp-benchmark.gps", "start", "", 24576,
-                368640, false),
+                368640, Tier.QUICK),
             // NACs, injective matching and the dangling-edge check; watch the
             // factory edge count for the interning probe edge of finding 3.3
             new Config("car-platooning-05", "car-platooning.gps", "start-05", "", 110366, 369601,
-                false),
+                Tier.QUICK),
             // the same depth-bounded depth-first run without persistence:
             // unstored states never enter the state set, so nothing collapses
             // and the full tree unfolding is explored — 100 times the states
@@ -283,33 +301,33 @@ public class ExplorationBenchmark {
             // only description of the work; pinned from the calibration run
             // 2026-09-20
             new Config("binary-tree-dfs-unstored", "generate-binary-tree.gps", "start",
-                "next=newest cost=uniform bound=cost:8 persistence=none", 409114, 409113, true),
+                "next=newest cost=uniform bound=cost:8 persistence=none", 409114, 409113, Tier.SMOKE),
             // generated larger start graphs (junit/performance/generate-starts.py);
             // counts pinned from the laptop calibration of 2026-09-21
             new Config("mark-unmark-18", "Mark-Unmark-List-regexp-benchmark.gps", "tree-18", "",
-                48384, 870912, false),
+                48384, 870912, Tier.QUICK),
             new Config("mark-unmark-21", "Mark-Unmark-List-regexp-benchmark.gps", "tree-21", "",
-                169344, 3556224, false),
+                169344, 3556224, Tier.QUICK),
             new Config("as-and-bs-4-3", "As-and-Bs-reg-exp-benchmark.gps", "start-4-3", "",
-                131505, 947824, false),
+                131505, 947824, Tier.QUICK),
             new Config("inheritance-12", "inheritance.gps", "start-12", "", 297212, 4317133,
-                false),
+                Tier.QUICK),
             new Config("append-4-list-10", "append.gps", "append-4-list-10", "", 1077000,
-                4008820, false),
+                4008820, Tier.LONG),
             // hand-made four-ghost maze: 37 transitions per state
             new Config("pacman-four-ghosts", "pacman.gps", "start_four_ghosts", "", 210102,
-                7819623, false),
+                7819623, Tier.LONG),
             // leader election on a generated ring of N processes with the
             // numbers pre-assigned (junit/performance/generate-starts.py):
             // the symmetric-ring case of finding 5.6; counts pinned from the
             // desktop calibration of 2026-09-21
-            new Config("leader-election-8", "leader-election.gps", "ring-8", "", 820, 3405, true),
+            new Config("leader-election-8", "leader-election.gps", "ring-8", "", 820, 3405, Tier.SMOKE),
             new Config("leader-election-14", "leader-election.gps", "ring-14", "", 49620, 386295,
-                false),
+                Tier.QUICK),
             new Config("leader-election-16", "leader-election.gps", "ring-16", "", 197404,
-                1772291, false),
+                1772291, Tier.QUICK),
             new Config("leader-election-18", "leader-election.gps", "ring-18", "", 787648,
-                7737099, false),
+                7737099, Tier.LONG),
             // a counter from 0 to a bound and back: one state per value, so
             // the pure algebra path (findings 4.2.1 to 4.2.3) without matching
             // or isomorphism costs. A BigInteger row is wanted but the
@@ -317,11 +335,11 @@ public class ExplorationBenchmark {
             // (gh #923) while the grammar property works, so it waits for
             // that fix
             new Config("count-10000", "attribute-count-to-n.gps", "bound-10000", "", 10001, 20001,
-                true),
+                Tier.SMOKE),
             new Config("count-100000", "attribute-count-to-n.gps", "bound-100000", "", 100001,
-                200001, false),
+                200001, Tier.QUICK),
             new Config("count-300000", "attribute-count-to-n.gps", "bound-300000", "", 300001,
-                600001, false),
+                600001, Tier.QUICK),
             // recursive fibonacci, the naive exponential recursion by design,
             // once as a recipe and once as a function over the same rules and
             // start graphs. The recipe (the grammar's default program) keeps
@@ -335,12 +353,49 @@ public class ExplorationBenchmark {
             // fixed. The function family is bounded by the ordinary
             // per-state cost: fib-25 (607k states) retains 5 GB and needs
             // -Xmx8g, fib-27 (about 1.6M states) does not fit 8 GB
-            new Config("fib-12", "fibonacci.gps", "fib-12", "", 1164, 1164, true),
-            new Config("fib-15", "fibonacci.gps", "fib-15", "", 4934, 4934, false),
+            new Config("fib-12", "fibonacci.gps", "fib-12", "", 1164, 1164, Tier.SMOKE),
+            new Config("fib-15", "fibonacci.gps", "fib-15", "", 4934, 4934, Tier.QUICK),
             new Config("fib-function-15", "fibonacci.gps", "fib-15", "fibonacci-function", "",
-                4934, 4933, true),
+                4934, 4933, Tier.SMOKE),
             new Config("fib-function-22", "fibonacci.gps", "fib-22", "fibonacci-function", "",
-                143284, 143283, false));
+                143284, 143283, Tier.QUICK),
+            // the BigInteger algebra on the counter, for the boxed-value path
+            // of 4.2.1 to 4.2.3 under arbitrary precision; unblocked by gh #923
+            new Config("count-100000-big", "attribute-count-to-n.gps", "bound-100000",
+                "algebra=big", 100001, 200001, Tier.QUICK),
+            new Config("count-300000-big", "attribute-count-to-n.gps", "bound-300000",
+                "algebra=big", 300001, 600001, Tier.QUICK),
+            // rows added 2026-09-22 with the long-run tier, calibrated on the
+            // desktop at -Xmx8g (single cold runs, table in the note); the
+            // quick ones first: a larger equality-collapse run than
+            // append-4-list-8-equality
+            new Config("as-and-bs-equality", "As-and-Bs-reg-exp-benchmark.gps", "start",
+                "collapse=equality", 262144, 1413120, Tier.QUICK),
+            // the next sierpinsky size (1.2 GB retained); start13 runs in 11 s
+            // but retains 3.8 GB, too much for the quick heap
+            new Config("sierpinsky-12", "sierpinsky.gps", "start12",
+                "frontier=single successor=single", 13, 12, Tier.QUICK),
+            // the unstored unfolding one level deeper: 4M discovered states in 14 s
+            new Config("binary-tree-dfs-unstored-9", "generate-binary-tree.gps", "start",
+                "next=newest cost=uniform bound=cost:9 persistence=none", 4037914, 4037913,
+                Tier.QUICK),
+            // the long tier proper, two to five minutes each, one JVM per row;
+            // car-platooning at 3M states is the largest breadth-first run
+            new Config("car-platooning-06", "car-platooning.gps", "start-06", "", 2988061,
+                11929077, Tier.LONG),
+            // the unstored unfolding at depth 10: 44M discovered states, and
+            // 5 GB retained afterwards although the GTS keeps 11 states (the
+            // softly reachable caches of finding 3.6)
+            new Config("binary-tree-dfs-unstored-10", "generate-binary-tree.gps", "start",
+                "next=newest cost=uniform bound=cost:10 persistence=none", 43954714, 43954713,
+                Tier.LONG),
+            // Mark-Unmark: tree-22 is twice tree-21; tree-23, a different
+            // shape, is smaller than either
+            new Config("mark-unmark-22", "Mark-Unmark-List-regexp-benchmark.gps", "tree-22", "",
+                338688, 7451136, Tier.LONG),
+            // the counter at twice the quick size, for its superlinear allocation
+            new Config("count-600000", "attribute-count-to-n.gps", "bound-600000", "", 600001,
+                1200001, Tier.LONG));
 
     /** Returns the benchmark set. */
     public static List<Config> getConfigs() {
@@ -355,7 +410,7 @@ public class ExplorationBenchmark {
     @Test
     public void smoke() {
         for (Config config : CONFIGS) {
-            if (!config.smoke()) {
+            if (config.tier() != Tier.SMOKE) {
                 continue;
             }
             Result result = run(config, 0, 1, SMOKE_TIMEOUT);
@@ -397,7 +452,8 @@ public class ExplorationBenchmark {
 
     /**
      * Command-line entry point.
-     * @param args names of the configurations to run; empty means all
+     * @param args names of the configurations to run; empty means the tier
+     * selected by {@code groove.bench.tier}
      */
     public static void main(String[] args) {
         System.exit(execute(args) == 0
@@ -407,7 +463,8 @@ public class ExplorationBenchmark {
 
     /**
      * Runs the selected configurations and prints the report.
-     * @param args names of the configurations to run; empty means all
+     * @param args names of the configurations to run; empty means the tier
+     * selected by {@code groove.bench.tier}
      * @return the number of configurations that failed or mismatched
      */
     private static int execute(String[] args) {
@@ -415,9 +472,17 @@ public class ExplorationBenchmark {
         int runs = intProperty("groove.bench.runs", DEFAULT_RUNS);
         int timeout = intProperty("groove.bench.timeout", DEFAULT_TIMEOUT);
         List<String> selection = Arrays.asList(args);
+        String tier = System.getProperty("groove.bench.tier", "quick");
         List<Config> configs = new ArrayList<>();
         for (Config config : CONFIGS) {
-            if (selection.isEmpty() || selection.contains(config.name())) {
+            boolean selected = selection.isEmpty()
+                ? switch (tier) {
+                case "long" -> config.tier() == Tier.LONG;
+                case "all" -> true;
+                default -> config.tier() != Tier.LONG;
+                }
+                : selection.contains(config.name());
+            if (selected) {
                 configs.add(config);
             }
         }
@@ -478,7 +543,7 @@ public class ExplorationBenchmark {
     /**
      * Runs a single configuration.
      * The grammar files are read once; every run gets a freshly compiled
-     * {@link Grammar} (see the class comment) and with it a fresh GTS and
+     * {@code Grammar} (see the class comment) and with it a fresh GTS and
      * exploration. Warm-up measurements are discarded.
      * @param config the configuration to run
      * @param warmups number of discarded warm-up runs
@@ -494,10 +559,9 @@ public class ExplorationBenchmark {
                 .toExploreType(ExploreConfig.parse(config.exploreConfig()));
             List<Measurement> measured = new ArrayList<>();
             for (int i = 0; i < warmups + runs; i++) {
-                // outside the measured region, which starts in singleRun
-                Grammar grammar
-                    = newGrammar(store, config.startGraph(), config.controlProgram());
-                Measurement measurement = singleRun(grammar, exploreType, timeoutSeconds);
+                GrammarModel model
+                    = newGrammarModel(store, config.startGraph(), config.controlProgram());
+                Measurement measurement = singleRun(model, exploreType, timeoutSeconds);
                 if (i >= warmups) {
                     measured.add(measurement);
                 }
@@ -518,12 +582,16 @@ public class ExplorationBenchmark {
      * Performs one measured exploration.
      * Nothing but {@link Exploration#play()} happens inside the measured
      * region; the counter deltas are taken around it and the heap is measured
-     * before and after, both times after two explicit collections.
+     * before and after, both times after two explicit collections. The
+     * grammar is compiled here rather than by the caller because the
+     * exploration type may override grammar properties (the algebra family),
+     * and {@link ExploreType#newGTS} is what compiles under them (gh #923);
+     * it happens before the heap is first measured.
      */
-    private static Measurement singleRun(Grammar grammar, ExploreType exploreType,
+    private static Measurement singleRun(GrammarModel model, ExploreType exploreType,
                                          int timeoutSeconds) throws Exception {
+        GTS gts = exploreType.newGTS(model);
         long heapBefore = settledHeap();
-        GTS gts = new GTS(grammar);
         // registered before the exploration is created, because that
         // materialises the start state and so fires the first add update
         DiscoveryCounter counter = new DiscoveryCounter();
@@ -574,7 +642,7 @@ public class ExplorationBenchmark {
     }
 
     /**
-     * Compiles a fresh grammar from an already loaded store.
+     * Builds a fresh grammar model over an already loaded store.
      * <p>
      * A fresh {@link GrammarModel} rather than the store's own
      * ({@link SystemStore#toGrammarModel()}) because both that and
@@ -591,8 +659,9 @@ public class ExplorationBenchmark {
      * @param controlName name of the control program; {@code null} for the
      * grammar's default one
      */
-    private static Grammar newGrammar(SystemStore store, @Nullable String startGraphName,
-                                      @Nullable String controlName) throws FormatException {
+    private static GrammarModel newGrammarModel(SystemStore store,
+                                                @Nullable String startGraphName,
+                                                @Nullable String controlName) {
         GrammarModel model = new GrammarModel(store);
         if (startGraphName != null) {
             model.setLocalActiveNames(ResourceKind.HOST, QualName.parse(startGraphName));
@@ -600,7 +669,7 @@ public class ExplorationBenchmark {
         if (controlName != null) {
             model.setLocalActiveNames(ResourceKind.CONTROL, QualName.parse(controlName));
         }
-        return model.toGrammar();
+        return model;
     }
 
     /** Returns the used heap after two collections. */
@@ -788,7 +857,7 @@ public class ExplorationBenchmark {
      * {@link System#gc()} does not clear soft references, so the figure
      * includes the state caches (in {@code binary-tree-dfs-unstored} about
      * 60 % of it), which a collector under real memory pressure would reclaim;
-     * and it includes whatever the run leaked into its {@link Grammar}, which
+     * and it includes whatever the run leaked into its {@code Grammar}, which
      * is a per-run object precisely so that this does not accumulate
      * @param factoryNodes number of host nodes the GTS's host factory holds
      * @param factoryEdges number of host edges the GTS's host factory holds
