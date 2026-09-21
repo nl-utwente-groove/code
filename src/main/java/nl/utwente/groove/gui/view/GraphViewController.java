@@ -18,6 +18,7 @@ package nl.utwente.groove.gui.view;
 
 import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -528,7 +529,18 @@ public abstract class GraphViewController<G extends Graph> {
      * Creates and returns a fresh show/hide menu for the graph view.
      */
     public ShowHideMenu<G> createShowHideMenu() {
-        return new ShowHideMenu<>(getCanvas(), getLabelTree());
+        return new ShowHideMenu<>(getCanvas(), this::getFilterLabels);
+    }
+
+    /**
+     * Returns the labelled cells of the label filter of this graph view,
+     * from which the label sub-menus of the show/hide menu are built.
+     */
+    private Collection<LabelledCells<G>> getFilterLabels() {
+        var labelTree = getLabelTree();
+        return labelTree == null
+            ? List.of()
+            : labelTree.getLabels();
     }
 
     private Action getShowLayoutDialogAction() {

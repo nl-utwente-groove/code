@@ -56,6 +56,7 @@ import nl.utwente.groove.gui.view.CellChange;
 import nl.utwente.groove.gui.view.GraphCanvas;
 import nl.utwente.groove.gui.view.GraphCanvasListener;
 import nl.utwente.groove.gui.view.GraphViewModel;
+import nl.utwente.groove.gui.view.LabelledCells;
 import nl.utwente.groove.gui.view.ViewCell;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.HTMLConverter;
@@ -373,7 +374,7 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
     private void addShowHideItems(JPopupMenu result) {
         // add the show/hide menu
         @SuppressWarnings({"unchecked", "rawtypes"})
-        JPopupMenu restMenu = new ShowHideMenu<>(this.canvas, this).getPopupMenu();
+        JPopupMenu restMenu = new ShowHideMenu<>(this.canvas, this::getLabels).getPopupMenu();
         while (restMenu.getComponentCount() > 0) {
             result.add(restMenu.getComponent(0));
         }
@@ -677,11 +678,6 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
             }
             return result;
         }
-    }
-
-    /** Labelled set of cells. */
-    public record LabelledCells<G extends Graph>(Label label, Set<ViewCell<G>> cells) {
-        // empty
     }
 
     /**

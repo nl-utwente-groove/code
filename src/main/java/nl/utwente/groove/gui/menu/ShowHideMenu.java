@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import javax.swing.AbstractAction;
 import javax.swing.JFileChooser;
@@ -45,13 +46,12 @@ import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.dialog.FormulaDialog;
 import nl.utwente.groove.gui.dialog.GrooveFileChooser;
-import nl.utwente.groove.gui.tree.LabelTree;
 import nl.utwente.groove.gui.view.ViewCell;
 import nl.utwente.groove.gui.view.ViewEdge;
 import nl.utwente.groove.gui.view.GraphCanvas;
 import nl.utwente.groove.gui.view.LTSViewCell;
 import nl.utwente.groove.gui.view.LTSGraphCanvas;
-import nl.utwente.groove.gui.tree.LabelTree.LabelledCells;
+import nl.utwente.groove.gui.view.LabelledCells;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSListener;
 import nl.utwente.groove.lts.GraphState;
@@ -137,19 +137,20 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
      * edges based on selection or labels.
      * @param canvas the underlying canvas of which the display should be
      *        controlled
-     * @param labelTree the label tree from which the label sub-menus are built;
-     *        {@code null} if the display has no label tree
+     * @param labels supplier of the labelled cells from which the label
+     *        sub-menus are built; yields nothing if the display does not
+     *        filter labels
      */
-    public ShowHideMenu(GraphCanvas<G> canvas, @Nullable LabelTree<G> labelTree) {
+    public ShowHideMenu(GraphCanvas<G> canvas, Supplier<Collection<LabelledCells<G>>> labels) {
         super(Options.SHOW_HIDE_MENU_NAME);
         setMnemonic(MENU_MNEMONIC);
         this.canvas = canvas;
-        this.labelTree = labelTree;
+        this.labels = labels;
         fillOutMenu(getPopupMenu());
     }
 
-    /** The label tree from which the label sub-menus are built, if any. */
-    private final @Nullable LabelTree<G> labelTree;
+    /** Supplier of the labelled cells from which the label sub-menus are built. */
+    private final Supplier<Collection<LabelledCells<G>>> labels;
 
     /** Fills a given menu with actions to show and hide elements. */
     protected void fillOutMenu(JPopupMenu menu) {
@@ -773,11 +774,8 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
             if (isIncluded) {
                 // now (re-)fill the menu
                 removeAll();
-                var labelTree = ShowHideMenu.this.labelTree;
-                if (labelTree != null) {
-                    for (var entry : labelTree.getLabels()) {
-                        add(new LabelAction<>(getCanvas(), this.showMode, entry));
-                    }
+                for (var entry : ShowHideMenu.this.labels.get()) {
+                    add(new LabelAction<>(getCanvas(), this.showMode, entry));
                 }
             }
             super.menuSelectionChanged(isIncluded);
