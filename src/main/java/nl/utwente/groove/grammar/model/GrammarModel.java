@@ -43,6 +43,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import nl.utwente.groove.algebra.AlgebraFamily;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.GrammarSource;
@@ -73,7 +74,7 @@ public class GrammarModel implements PropertyChangeListener {
      * Constructs a grammar model from a rule system store, using the start
      * graph(s) that are stored in the grammar properties.
      */
-    public GrammarModel(SystemStore store) {
+    public GrammarModel(GrammarSource store) {
         this.source = store;
         this.changeCount = new ChangeCount();
         String grammarVersion = store.getProperties().getGrammarVersion();
@@ -497,6 +498,49 @@ public class GrammarModel implements PropertyChangeListener {
         return result;
     }
 
+    /**
+     * Returns the grammar of this model compiled under a given algebra family,
+     * which overrides the grammar property. The family is a compilation
+     * parameter, not a run-time one: it decides which rules are well-formed
+     * (unresolved variables are only allowed under a symbolic family),
+     * whether user-defined operations are admissible, which value oracle
+     * applies, and how the constants in the rules' search plans are
+     * represented. A family other than the model's own is therefore realised
+     * by a derived model over the same store, with the same local overrides
+     * as this model and the property changed, compiled in the usual way. The
+     * derived models are cached per family and dropped whenever this model
+     * is invalidated.
+     * @throws FormatException if the grammar has errors, including errors
+     * that the overriding family introduces
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    public Grammar toGrammar(AlgebraFamily family) throws FormatException {
+        if (family == getProperties().getAlgebraFamily()) {
+            return toGrammar();
+        }
+        var derived = this.derivedModels.get(family);
+        if (derived == null) {
+            derived = new GrammarModel(getStore());
+            for (var entry : this.localActiveNamesMap.entrySet()) {
+                derived.setLocalActiveNames(entry.getKey(), entry.getValue());
+            }
+            if (this.isExternalStartGraphModel) {
+                var startGraph = getStartGraphModel().getSource();
+                assert startGraph != null; // external start graph models have a source
+                derived.setStartGraph(startGraph);
+            }
+            var properties = getProperties().clone();
+            properties.setAlgebraFamily(family);
+            derived.setProperties(properties);
+            this.derivedModels.put(family, derived);
+        }
+        return derived.toGrammar();
+    }
+
+    /** Models derived from this one for other algebra families,
+     * see {@link #toGrammar(AlgebraFamily)}; cleared on invalidation. */
+    private final Map<AlgebraFamily,GrammarModel> derivedModels = new EnumMap<>(AlgebraFamily.class);
+
     /** Initialises the {@link #grammar} and {@link #errors} fields. */
     private void initGrammar() {
         if (DEBUG) {
@@ -640,6 +684,7 @@ public class GrammarModel implements PropertyChangeListener {
      */
     private void invalidate() {
         this.changeCount.increase();
+        this.derivedModels.clear();
         this.grammar = null;
         this.errors = null;
         if (!this.isExternalStartGraphModel) {
