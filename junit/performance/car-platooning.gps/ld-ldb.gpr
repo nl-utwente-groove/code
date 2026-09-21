@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph edgemode="directed" edgeids="false" role="rule" id="ld-ldb">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="n0">
+            <attr name="layout">
+                <string>120 95 17 17</string>
+            </attr>
+        </node>
+        <node id="n1">
+            <attr name="layout">
+                <string>264 96 17 17</string>
+            </attr>
+        </node>
+        <edge to="n1" from="n0">
+            <attr name="label">
+                <string>del:req</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n1">
+            <attr name="label">
+                <string>new:ldb</string>
+            </attr>
+            <attr name="layout">
+                <string>500 0 272 104 255 149 286 150 272 104 12</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n1">
+            <attr name="label">
+                <string>new:ack</string>
+            </attr>
+            <attr name="layout">
+                <string>500 0 272 104 196 149 128 103 12</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n1">
+            <attr name="label">
+                <string>del:ld</string>
+            </attr>
+            <attr name="layout">
+                <string>500 0 272 104 291 60 260 57 272 104 12</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n1">
+            <attr name="label">
+                <string>new:bldr</string>
+            </attr>
+            <attr name="layout">
+                <string>500 0 272 104 200 64 128 103 12</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>

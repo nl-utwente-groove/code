@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph edgemode="directed" edgeids="false" role="rule" id="Ztop8a">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="n6">
+            <attr name="layout">
+                <string>595 96 26 21</string>
+            </attr>
+        </node>
+        <node id="n4">
+            <attr name="layout">
+                <string>598 26 26 21</string>
+            </attr>
+        </node>
+        <node id="n7">
+            <attr name="layout">
+                <string>474 86 31 21</string>
+            </attr>
+        </node>
+        <node id="n2">
+            <attr name="layout">
+                <string>67 133 26 21</string>
+            </attr>
+        </node>
+        <node id="n0">
+            <attr name="layout">
+                <string>207 94 26 21</string>
+            </attr>
+        </node>
+        <node id="n3">
+            <attr name="layout">
+                <string>134 226 26 21</string>
+            </attr>
+        </node>
+        <node id="n1">
+            <attr name="layout">
+                <string>107 35 26 21</string>
+            </attr>
+        </node>
+        <node id="n5">
+            <attr name="layout">
+                <string>566 200 26 21</string>
+            </attr>
+        </node>
+        <edge to="n7" from="n0">
+            <attr name="label">
+                <string>bldr</string>
+            </attr>
+        </edge>
+        <edge to="n5" from="n7">
+            <attr name="label">
+                <string>flws</string>
+            </attr>
+            <attr name="layout">
+                <string>500 0 485 97 509 187 580 211 12</string>
+            </attr>
+        </edge>
+        <edge to="n5" from="n5">
+            <attr name="label">
+                <string>flw</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n1">
+            <attr name="label">
+                <string>ldr</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n3">
+            <attr name="label">
+                <string>ldr</string>
+            </attr>
+        </edge>
+        <edge to="n6" from="n6">
+            <attr name="label">
+                <string>flw</string>
+            </attr>
+        </edge>
+        <edge to="n4" from="n7">
+            <attr name="label">
+                <string>flws</string>
+            </attr>
+            <attr name="layout">
+                <string>500 0 485 97 483 68 601 29 12</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n0">
+            <attr name="label">
+                <string>ldb</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n2">
+            <attr name="label">
+                <string>ldr</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n0">
+            <attr name="label">
+                <string>flws</string>
+            </attr>
+            <attr name="layout">
+                <string>500 0 218 105 165 150 81 144 12</string>
+            </attr>
+        </edge>
+        <edge to="n7" from="n6">
+            <attr name="label">
+                <string>ldr</string>
+            </attr>
+        </edge>
+        <edge to="n4" from="n4">
+            <attr name="label">
+                <string>flw</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n1">
+            <attr name="label">
+                <string>flw</string>
+            </attr>
+        </edge>
+        <edge to="n6" from="n7">
+            <attr name="label">
+                <string>flws</string>
+            </attr>
+            <attr name="layout">
+                <string>500 0 485 97 572 130 650 91 12</string>
+            </attr>
+        </edge>
+        <edge to="n7" from="n4">
+            <attr name="label">
+                <string>ldr</string>
+            </attr>
+        </edge>
+        <edge to="n7" from="n5">
+            <attr name="label">
+                <string>ldr</string>
+            </attr>
+        </edge>
+        <edge to="n1" from="n0">
+            <attr name="label">
+                <string>flws</string>
+            </attr>
+            <attr name="layout">
+                <string>500 0 218 105 169 108 121 46 12</string>
+            </attr>
+        </edge>
+        <edge to="n2" from="n2">
+            <attr name="label">
+                <string>flw</string>
+            </attr>
+        </edge>
+        <edge to="n0" from="n7">
+            <attr name="label">
+                <string>ldr</string>
+            </attr>
+            <attr name="layout">
+                <string>500 0 491 97 371 126 222 105 12</string>
+            </attr>
+        </edge>
+        <edge to="n7" from="n7">
+            <attr name="label">
+                <string>hob</string>
+            </attr>
+        </edge>
+        <edge to="n3" from="n0">
+            <attr name="label">
+                <string>flws</string>
+            </attr>
+            <attr name="layout">
+                <string>500 0 218 105 223 209 148 237 12</string>
+            </attr>
+        </edge>
+        <edge to="n3" from="n3">
+            <attr name="label">
+                <string>flw</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>
