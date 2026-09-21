@@ -291,6 +291,15 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
     /** The tree of rule levels, if any. */
     private @Nullable RuleLevelTree levelTree;
 
+    /**
+     * Indicates if a given cell is currently filtered out of the graph view
+     * by the rule level tree.
+     */
+    public boolean isLevelFiltered(AspectViewCell cell) {
+        var levelTree = getLevelTree();
+        return levelTree != null && !levelTree.isVisible(cell);
+    }
+
     /** Returns the grammar that has manually been set for this graph view. */
     public @Nullable GrammarModel getGrammar() {
         return this.grammar;

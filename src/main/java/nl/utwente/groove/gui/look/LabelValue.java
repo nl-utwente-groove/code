@@ -447,15 +447,13 @@ public class LabelValue implements VisualValue<MultiLabel> {
         }
         MultiLabel transLabels = new MultiLabel();
         // add state properties
-        var labelTree = controller.getLabelTree();
-        assert labelTree != null; // the LTS display always has a label tree
         var gts = controller.getGraph();
         assert gts != null;
         gts
             .getSatisfiedProps(state)
             .stream()
             .map(StateProperty::getLabel)
-            .filter(labelTree::isIncluded)
+            .filter(l -> !controller.isFiltered(l))
             .map(Label::toLine)
             .forEach(transLabels::add);
         // only add edges that have an unfiltered label
@@ -793,10 +791,9 @@ public class LabelValue implements VisualValue<MultiLabel> {
      */
     private boolean isVisible(GraphViewController<?> controller, ViewCell<?> cell, Edge edge) {
         boolean result = true;
-        LabelTree<?> labelTree = controller.getLabelTree();
-        if (edge != null && labelTree != null) {
+        if (edge != null) {
             Label key = cell.getKey(edge);
-            result = key == null || labelTree.isIncluded(key);
+            result = key == null || !controller.isFiltered(key);
         }
         return result;
     }

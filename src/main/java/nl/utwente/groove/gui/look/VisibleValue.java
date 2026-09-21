@@ -73,12 +73,10 @@ public class VisibleValue implements VisualValue<Boolean> {
 
     private <G extends @NonNull Graph> boolean getBasicVertexValue(GraphViewController<G> controller,
                                                                    ViewVertex<G> vertex) {
-        LabelTree<G> labelTree = controller.getLabelTree();
-        return labelTree == null || labelTree.isIncluded(vertex);
+        return !controller.isFiltered(vertex);
     }
 
     private <G extends @NonNull Graph> boolean getBasicEdgeValue(GraphViewController<G> controller, ViewEdge<G> edge) {
-        boolean result = true;
         ViewVertex<?> source = edge.getSourceVertex();
         ViewVertex<?> target = edge.getTargetVertex();
         if (source == null || !source.getVisuals().isVisible()) {
@@ -87,11 +85,7 @@ public class VisibleValue implements VisualValue<Boolean> {
         if (target == null || !target.getVisuals().isVisible()) {
             return false;
         }
-        LabelTree<G> labelTree = controller.getLabelTree();
-        if (labelTree != null) {
-            result = labelTree.isIncluded(edge);
-        }
-        return result;
+        return !controller.isFiltered(edge);
     }
 
     private boolean getAspectVertexValue(AspectGraphViewController controller, AspectViewVertex vertex) {
@@ -101,8 +95,7 @@ public class VisibleValue implements VisualValue<Boolean> {
             return true;
         }
         // anything explicitly filtered by the level tree is not visible
-        RuleLevelTree levelTree = controller.getLevelTree();
-        if (levelTree != null && !levelTree.isVisible(vertex)) {
+        if (controller.isLevelFiltered(vertex)) {
             return false;
         }
         // anything declared invisible by the super method is not visible
@@ -149,8 +142,7 @@ public class VisibleValue implements VisualValue<Boolean> {
 
     private boolean getAspectEdgeValue(AspectGraphViewController controller, AspectViewEdge edge) {
         // anything explicitly filtered by the level tree is not visible
-        RuleLevelTree levelTree = controller.getLevelTree();
-        if (levelTree != null && !levelTree.isVisible(edge)) {
+        if (controller.isLevelFiltered(edge)) {
             return false;
         }
         return getBasicEdgeValue(controller, edge);
@@ -199,17 +191,16 @@ public class VisibleValue implements VisualValue<Boolean> {
     private <G extends @NonNull Graph> boolean hasVisibleIncidentEdge(@NonNull GraphViewController<G> controller,
                                                                       ViewVertex<G> vertex) {
         boolean result = false;
-        LabelTree<G> labelTree = controller.getLabelTree();
-        if (labelTree == null) {
-            result = true;
-        } else {
+        if (controller.isFiltering()) {
             Iterator<? extends ViewEdge<G>> iter = vertex.getContext();
             while (iter.hasNext()) {
-                if (labelTree.isIncluded(iter.next())) {
+                if (!controller.isFiltered(iter.next())) {
                     result = true;
                     break;
                 }
             }
+        } else {
+            result = true;
         }
         return result;
     }

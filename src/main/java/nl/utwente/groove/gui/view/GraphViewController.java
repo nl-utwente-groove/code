@@ -36,6 +36,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphRole;
+import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.SimulatorModel;
@@ -344,6 +345,27 @@ public abstract class GraphViewController<G extends Graph> {
 
     /** The label tree associated with the display. */
     private @Nullable LabelTree<G> labelTree;
+
+    /**
+     * Indicates if the graph view filters its cells by label at all.
+     * If it does not, {@link #isFiltered(ViewCell)} and {@link #isFiltered(Label)}
+     * are invariably {@code false}.
+     */
+    public boolean isFiltering() {
+        return getLabelTree() != null;
+    }
+
+    /** Indicates if a given cell is currently filtered out of the graph view. */
+    public boolean isFiltered(ViewCell<G> cell) {
+        var labelTree = getLabelTree();
+        return labelTree != null && !labelTree.isIncluded(cell);
+    }
+
+    /** Indicates if a given label is currently filtered out of the graph view. */
+    public boolean isFiltered(Label label) {
+        var labelTree = getLabelTree();
+        return labelTree != null && !labelTree.isIncluded(label);
+    }
 
     /**
      * Indicates whether the display is currently registered at the tool tip
