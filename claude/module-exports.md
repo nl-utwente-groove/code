@@ -327,16 +327,43 @@ honest picture of how much of the Simulator the popup menus carry.
 
 > The `code` branch `view-controller-context` takes the Simulator out of the
 > `gui.view` controllers (see `claude/module-exports.md` there, "Item 1 as
-> built"). Adapt the yFiles backend: replace the uses of `ActionStore`,
-> `Options` (`getOptions()` returns `ViewOptions`),
-> `getSimulatorModel().getGrammar()`, `getAddPointAction`/`getRemovePointAction`
-> and `getLabelTree()` in `YFilesCanvas`, `YFilesAspectCanvas`,
-> `YFilesAspectEditorCanvas` and siblings by the controller members that remain:
-> `getGrammar`, `isInteractive`, `addPoint`/`removePoint`,
-> `setLabelTreeEnabled`, `isFiltered`. The backend must import only `gui.view`,
-> `gui.view.cell`, `gui.look`, `gui.layout`, `graph.layout`, `util.line`,
-> `control.graph` and packages exported by the `code` descriptor. Verify with
-> the unit's tests against the `code` branch (65 tests, 4 Robot skips).
+> built"). Create the backend branch under the same name,
+> `view-controller-context` (the paired workflows find it by name), and adapt
+> the backend at the six sites that fail to compile:
+>
+> - `YFilesCanvas` 424: `getOptions()` returns `ViewOptions`; the fifteen
+>   static `SHOW_*_OPTION` imports of the three canvases move from
+>   `gui.Options` to `gui.view.ViewOptions`.
+> - `YFilesCanvas` 429: delete the `getActions()` delegation; the two
+>   `getActions() != null` tests (497, 1310) become
+>   `getController().isInteractive()`.
+> - `YFilesCanvas` 1227: `getController().setLabelTreeEnabled(enabled)`.
+> - `YFilesAspectCanvas` 113: the grammar is `getController().getGrammar()`,
+>   asserted non-null as in `AspectJGraph.newModel`; the fallback through
+>   `getSimulatorModel()` goes.
+> - `YFilesAspectCanvas` 66-84: **delete** the registration of the
+>   colour-selection action in `installListeners`/`removeListeners`, do not
+>   replace it: the context registers that listener on attachment and removes
+>   it on detachment, so keeping it would register it twice.
+> - `YFilesAspectEditorCanvas` 498-500: `addPoint`/`removePoint`.
+>
+> Tests: the six `new AspectGraphViewController(null, DisplayKind.X, b)` calls
+> take `(null, X.getGraphRole(), false, b)`, except the `DisplayKind.STATE`
+> one in `YFilesCanvasTest` 168, which takes `GraphRole.HOST, true`, since
+> `STATE.getGraphRole()` throws (the constructor may still change, see the
+> open decision in `module-exports-state.md`). `YFilesEditorTest` 519 drops
+> its `setLabelTree` call, as the in-tree `EditorLabelTreeTest` did.
+> `YFilesCanvasTest` 172 tests visibility under a filter and needs a test
+> fixture implementing `GraphViewContext<AspectGraph>` over a `TypeTree`: the
+> filter members delegate to the tree, the rest keep their defaults; it is
+> created before the controller and handed the tree once the canvas exists.
+> `TypeTree` now takes a leading nullable `Simulator`.
+>
+> Of `gui`, the backend's main sources import only `gui.view`, `gui.view.cell`,
+> `gui.look` and `gui.layout`, plus `gui.Options` and `gui.Icons` for the
+> look-and-feel, the gesture predicates, the cancel key and a cursor: known
+> residuals outside item 1, to be listed in the note, not extended. Verify
+> with the unit's tests against the `code` branch (65 tests, 4 Robot skips).
 
 ## Verification
 
@@ -348,11 +375,12 @@ On `view-controller-context`:
 - GUI tests: all six `*GuiTest` classes run, none skipped, 18 tests, all pass
   (`EditorCancelGuiTest` 2, `AddOnGuiTest` 1, `DisplaySwitchGuiTest` 5,
   `LabelCountGuiTest` 2, `SimulatorGuiTest` 6, `WarningDisplayGuiTest` 2).
-- Null analysis (`null-check` skill, ecj `-All`): 0 errors, 0 infos, 16 main
-  and 8 test warnings, every one of them in a file this branch does not touch
-  or verified present at the base commit (the unused `gui.Options` import of
-  `GraphPreviewDialog`, left by the `ViewOptions` commit). The new code needed
-  three fixes to get there, recorded in its own commit.
+- Null analysis (`null-check` skill, ecj `-All`): 0 errors, 0 infos. The
+  Fable review of 2026-09-21 found five never-used imports that the decoupling
+  had left in files the branch changed, removed since; the remaining 11 main
+  and 8 test warnings are the skill's baseline plus four pre-existing ones in
+  `AddOnGuiTest` that the baseline does not list (and the `TypeTree` info of
+  the baseline no longer fires under the trimmed descriptor).
 - **yFiles unit against the branch: the backend's main sources do not
   compile**, at six sites — `getActions()` (`YFilesCanvas` 430, and the
   `getActions() != null` check at 497 through it), `getOptions()` returning
