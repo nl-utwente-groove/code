@@ -36,6 +36,7 @@ import java.util.zip.ZipOutputStream;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.io.TempDir;
 
 import nl.utwente.groove.util.AIGenerated;
@@ -57,6 +58,9 @@ import nl.utwente.groove.util.Version;
 @AIGenerated("Claude Fable 5.1, 2026-09")
 @NonNullByDefault
 public class AddOnTest {
+    @RegisterExtension
+    static final QuietLogging QUIET_LOGGING = new QuietLogging();
+
     @Test
     void namesDeriveFromTheVersion() {
         assertEquals("groove-7_5_4-yfiles-addon.zip", AddOn.YFILES.getZipName("7.5.4"));
