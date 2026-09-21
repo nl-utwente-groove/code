@@ -152,14 +152,14 @@ export:
 
 ## Open items, in recommended order
 
-Twenty-six `-Xlint:exports` warnings remain on the branch, all from item 1,
-and are left visible on purpose: they are the measured debt.
+Twenty-six `-Xlint:exports` warnings remained on this branch, all from item 1,
+and were left visible on purpose: they were the measured debt. Item 1 is done
+(branch `view-controller-context`, off this one); `mvn clean compile` now
+reports no `exports` warning at all.
 
-1. **`gui.view` as a backend SPI tier.** The controller classes are the
-   Simulator's glue but the backends compile against them. See the session
-   proposal below for the design. Until it is done the SPI tier is exported
-   with its 26 warnings, and the packages it leaks (`gui`, `gui.action`,
-   `gui.tree`, `gui.menu`, `gui.display`) are not.
+1. ~~**`gui.view` as a backend SPI tier.**~~ **Done**, 2026-09-21, on branch
+   `view-controller-context` off this one, by composition rather than by the
+   interfaces of the session proposal below: see "Item 1 as built".
 2. **CLI tools into one `cli` package** together with `util.cli`: `Generator`,
    `CTLModelChecker`, `PrologChecker`, `OperatorLister`, `Imager`. `explore`,
    `prolog` and `algebra` then stop mentioning picocli, `util.cli` goes
@@ -178,6 +178,11 @@ exported signature once `gui` is out (exported core types do use `java.awt`
 geometry in `graph.layout`/`io.graph`, so presumably yes).
 
 ## Session proposal: the backend-facing controller interface (item 1)
+
+*Superseded, kept for the record: this is the design that was built and then
+rejected. It states what the backends demonstrably call, which is still the
+authoritative list of the backend-facing surface; what it got wrong is the
+mechanism. See "Item 1 as built" below.*
 
 Two sessions, in order, on branches of the same name in both repositories
 (the cross-repository workflows pair them by name; the first push runs red
@@ -229,21 +234,141 @@ menu and action types, `DisplayKind` and `RuleLevelTree` stay on the classes.
 > "-Dgroove.dir=<worktree>" test`), which is expected to fail until session B
 > and whose failures must be limited to the members listed in the design.
 
+## Item 1 as built: the controller's host context (2026-09-21)
+
+Branch `view-controller-context`, off `module-exports` rather than off `master`,
+because the warning count it had to drive to zero only exists on this branch.
+It starts at the third commit of the abandoned `view-controller-interfaces`
+(`2678fe43c`), whose first three commits are the neutral members the backends
+call — `ViewOptions`, `isFiltered`/`isLevelFiltered` on the controller instead
+of its trees, `addPoint`/`removePoint`, `isInteractive`, `getGrammar` — and
+takes the rest a different way.
+
+**Why not interfaces.** The interface split (branch `view-controller-interfaces`,
+now **superseded**; delete it once this one is merged) was the textbook answer to
+"public for my module, hidden from clients", and the wrong trade here. The
+dependency problem is visibility only: there is no second implementation of any
+controller and no scenario that wants one — the headless users (`Imager`,
+`Viewer`, the preview dialogs) and the yFiles tests all construct the same
+classes. It produced five interfaces with one implementation each, sixty
+`@Override` tags, and `controllerOf`, a checked downcast at every place the
+Simulator wanted its own controller back. Decision (Arend): reach the same
+zero-warning state by composition.
+
+**What it does.** The five controllers stay classes in `gui.view`. The Simulator
+types leave them through one new interface `GraphViewContext<G>` in `gui.view`,
+which states what a graph view needs of the tool hosting it, in exported types
+only: the grammar as `GrammarModel`, the options as `ViewOptions`, whether the
+view is interactive, the answers of the label filter (`isFiltered(ViewCell)`,
+`isFiltered(Label)`, `setFilteringEnabled`, `getFilterLabels` and the level
+filter of a rule view), the actions and menu items the host contributes (the
+export action and the layout-dialog action as `javax.swing.Action`; the popup,
+export, selection, explore and goto items as `JMenu`), the LTS exploration
+result and trace, and a callback on canvas attachment and detachment. A
+controller takes a `@Nullable GraphViewContext<G>` where it took a
+`@Nullable Simulator`; a null context is a graph view outside a host tool, and
+every host-dependent member degrades to nothing.
+
+The implementation is `SimulatorViewContext<G>` in `gui.display`, with a
+subclass for each kind that needs more: `AspectViewContext` (the display kind,
+the rule level tree, the resource actions, the colour-selection listener) and
+`LTSViewContext` (exploration and traversal actions, the model-checking menu,
+the explore result and the trace). The displays and tabs that create a
+controller create its context and hand it the trees they build on the canvas —
+which is why `setLabelTree`/`setLevelTree` live on the context and are called
+after construction, exactly as before. The four places the interface branch
+served with `controllerOf` are served without a cast: the Simulator's display
+menu and the layout dialog ask the controller (see the deviations), the label
+tree and the LTS tree are handed the simulator by the display that builds them,
+and find/replace asks the graph tab for its label tree.
+
+**Deviations from the prompt's design**, all deliberate:
+
+- **The zoom, show/hide and layout-setting menus stay on the controller**,
+  typed `JMenu` and `Action` instead of `ZoomMenu`, `ShowHideMenu` and
+  `SetLayoutMenu`. They are graph-view state, not Simulator state: zooming and
+  showing/hiding act on the canvas, and choosing a layouter is a property of the
+  view. Moving them to the context would have made the host build the view's own
+  menus. The layout dialog, which pressed the layout button through the
+  set-layout menu it fetched, now asks the controller for
+  `selectLayouter(Layouter)`, which returns the action that runs it. The label
+  sub-menu of the show/hide menu, the one part that did need the tree, is served
+  by `getFilterLabels()`: the tree's own record of a label and its cells moved to
+  `gui.view` as `LabelledCells`, and `ShowHideMenu` takes a supplier of it.
+- **There is a detachment callback too.** The design named only
+  `canvasAttached`; `removeListeners` has to undo what it registered, and the
+  export action (owned by the context, since it needs the Simulator) has to be
+  unregistered as a refreshable, so `canvasDetached` mirrors it.
+- **The aspect controller takes a `GraphRole` and a state flag**, not a
+  `DisplayKind`, which is not an exported type. The kind itself lives in
+  `AspectViewContext`, the only place that needs it. Note that
+  `DisplayKind.STATE.getGraphRole()` throws, which is why the state display
+  passes `GraphRole.HOST` and `forState = true` explicitly, as the old
+  constructor computed.
+- **The point actions keep their logic where it was**, in the canvas-based
+  cell-edit actions of `gui.action` that the controller creates. They touch no
+  Simulator state, so composition has nothing to move; only their accessors
+  become private, `addPoint`/`removePoint` and a `javax.swing.Action`-typed
+  line-style accessor staying public. Rebuilding them on the view model would
+  rewrite working code without changing the exported surface.
+- **`SimulatorViewContext` has no `DisplayKind` constructor parameter**, unlike
+  the design's one class holding "Simulator, ActionStore, LabelTree,
+  RuleLevelTree and DisplayKind": the action store and the model come off the
+  Simulator, and the kind is only meaningful for aspect views.
+
+**One member that did not fit** and is worth watching: `getPopupItems`,
+`getExportItems`, `getExploreItems` and `getGotoItems` are four menu-shaped
+members on one interface, each empty by default and filled by one kind's
+subclass. That is the price of one interface for all kinds rather than one per
+kind; it reads as a wide interface with narrow implementations, which is the
+honest picture of how much of the Simulator the popup menus carry.
+
 **Session B, `yfiles-lib` repository**, after A is on a branch. Prompt:
 
-> The `code` branch `<name>` makes the `gui.view` controllers interfaces
-> without Simulator types (see `claude/module-exports.md` there). Adapt the
-> yFiles backend: replace the uses of `ActionStore`,
-> `Options.SHOW_BIDIRECTIONAL_EDGES_OPTION`, `getSimulatorModel().getGrammar()`,
-> `getAddPointAction`/`getRemovePointAction`, `getLabelTree().setEnabled` and
-> the `getActions() != null` checks in `YFilesCanvas`, `YFilesAspectCanvas`,
-> `YFilesAspectEditorCanvas` and siblings by the interface members. The backend
-> must import only `gui.view`, `gui.view.cell`, `gui.look`, `gui.layout`,
-> `graph.layout`, `util.line`, `control.graph` and packages exported by the
-> `code` descriptor. Verify with the unit's tests against the `code` branch
-> (65 tests, 4 Robot skips).
+> The `code` branch `view-controller-context` takes the Simulator out of the
+> `gui.view` controllers (see `claude/module-exports.md` there, "Item 1 as
+> built"). Adapt the yFiles backend: replace the uses of `ActionStore`,
+> `Options` (`getOptions()` returns `ViewOptions`),
+> `getSimulatorModel().getGrammar()`, `getAddPointAction`/`getRemovePointAction`
+> and `getLabelTree()` in `YFilesCanvas`, `YFilesAspectCanvas`,
+> `YFilesAspectEditorCanvas` and siblings by the controller members that remain:
+> `getGrammar`, `isInteractive`, `addPoint`/`removePoint`,
+> `setLabelTreeEnabled`, `isFiltered`. The backend must import only `gui.view`,
+> `gui.view.cell`, `gui.look`, `gui.layout`, `graph.layout`, `util.line`,
+> `control.graph` and packages exported by the `code` descriptor. Verify with
+> the unit's tests against the `code` branch (65 tests, 4 Robot skips).
 
 ## Verification
+
+On `view-controller-context`:
+
+- `mvn clean compile`: no `exports` warning at all (24 → 0; the 26 of
+  `module-exports` were already 24 after the three carried-over commits).
+- Fast test suite: 876 tests, 0 failures, 0 errors, 2 skipped.
+- GUI tests: all six `*GuiTest` classes run, none skipped, 18 tests, all pass
+  (`EditorCancelGuiTest` 2, `AddOnGuiTest` 1, `DisplaySwitchGuiTest` 5,
+  `LabelCountGuiTest` 2, `SimulatorGuiTest` 6, `WarningDisplayGuiTest` 2).
+- Null analysis (`null-check` skill, ecj `-All`): 0 errors, 0 infos, 16 main
+  and 8 test warnings, every one of them in a file this branch does not touch
+  or verified present at the base commit (the unused `gui.Options` import of
+  `GraphPreviewDialog`, left by the `ViewOptions` commit). The new code needed
+  three fixes to get there, recorded in its own commit.
+- **yFiles unit against the branch: the backend's main sources do not
+  compile**, at six sites — `getActions()` (`YFilesCanvas` 430, and the
+  `getActions() != null` check at 497 through it), `getOptions()` returning
+  `ViewOptions` where `Options` is declared (425), `getLabelTree()` (1227),
+  `getSimulatorModel()` (`YFilesAspectCanvas` 113) and
+  `getAddPointAction`/`getRemovePointAction` (`YFilesAspectEditorCanvas`
+  498-500). All six are session B's work, and none of them is specific to
+  composition: five of the members are ones the interface design dropped as
+  well, and the sixth (`getOptions`) was already incompatible at the base
+  commit `2678fe43c`, which is on `view-controller-interfaces`. **The record
+  on that branch, that its main sources compiled clean, is therefore wrong**;
+  whatever was measured there cannot have been the unit against that branch.
+  The test sources were not reached, so the expectation that their failures
+  are limited to constructors and `setLabelTree` is still unverified.
+
+On `module-exports`:
 
 - `mvn clean compile`: 26 `exports` warnings, all `gui.view`, nothing else.
 - Fast test suite: 876 tests, all pass at the branch tip (before the SPI-tier
