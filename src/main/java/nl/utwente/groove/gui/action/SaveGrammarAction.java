@@ -47,12 +47,13 @@ public class SaveGrammarAction extends SimulatorAction {
             GrammarModel oldGrammar = getSimulatorModel().getGrammar();
             GrammarModel newGrammar = newStore.toGrammarModel();
             var startGraphModel = oldGrammar.getStartGraphModel();
-            if (startGraphModel.isImplicit()) {
-                // remember external start graph, if grammar has one
-                var startGraph = oldGrammar.getStartGraphModel();
-                if (startGraph != null) {
-                    newGrammar.setStartGraph(startGraph.getSource());
-                }
+            if (!startGraphModel.isImplicit()) {
+                // remember external start graph, if grammar has one;
+                // an implicit start graph model is composed from the stored
+                // host graphs and must not be pinned on the new grammar
+                var startGraph = startGraphModel.getSource();
+                assert startGraph != null; // an external start graph model has a source
+                newGrammar.setStartGraph(startGraph);
             }
             getSimulatorModel().setGrammar(newStore);
             getSimulator().setTitle();
