@@ -83,7 +83,7 @@ CLI argument parsing uses picocli via `util.cli`.
   → GrammarModel.toGrammar()
   → grammar.Grammar                 compiled: Rules + type graph + control automaton + start graph
   → explore.Exploration             Strategy + Acceptor drive the run
-      match.Matcher                 finds rule matches (plan-based or RETE engine)
+      match.Matcher                 finds rule matches (plan-based search engine)
       transform.RuleApplication     applies them as deltas
       control.instance.Automaton    sequences rule calls
   → lts.GTS                         the resulting transition system (states = graphs)
@@ -96,10 +96,10 @@ CLI argument parsing uses picocli via `util.cli`.
 - **Aspect graphs** (`grammar/aspect`): the universal *editable* representation. An `AspectGraph` is a plain graph whose labels carry parsed aspect prefixes (`del:`, `new:`, `not:`, `forall:`, `int:`, `type:`, …, see `AspectKind`). All typed graphs are derived from aspect graphs.
 - **Resources** (`grammar/model`): a grammar is a set of named resources enumerated by `ResourceKind` — RULE (`.gpr`), HOST (`.gst`), TYPE (`.gty`), CONTROL (`.gcp`), PROLOG (`.pro`), GROOVY, PROPERTIES, CONFIG — each with a `ResourceModel` subclass. Graph-based kinds wrap `AspectGraph`; text-based kinds wrap source text.
 - **Rules** (`grammar`, `grammar/rule`): `Rule` is built from nested `Condition`s (quantified subconditions, embargoes/NACs). `grammar/host` holds typed host-graph elements (incl. `ValueNode` for data values); `grammar/type` holds type graphs with multiplicity/containment checking.
-- **Matching** (`match`): two selectable engines — `match/plan` (`PlanSearchEngine`, ordered search plan with backtracking) and `match/rete` (incremental RETE network).
+- **Matching** (`match`): a single engine, `match/plan` (`PlanSearchEngine`, ordered search plan with backtracking), behind the `SearchEngine` factory abstraction; the former RETE engine was retired in 2026-07 (see `claude/archive/rete-retirement.md`).
 - **Transformation** (`transform`): `RuleEvent` (rule + anchor image) → `RuleApplication` producing **deltas** (`DeltaStore`, `MergeMap`). Deltas are central to scalability: LTS states share structure and are reconstructed on demand (`lts.StateCache`, `grammar/host.DeltaHostGraph`).
 - **LTS** (`lts`): `GTS` extends `AGraph`; nodes are `GraphState`s, edges are `RuleTransition`/`RecipeTransition`.
-- **Exploration** (`explore`): `Exploration` combines a `Strategy` (BFS, DFS, linear, LTL-guided, RETE variants, symbolic, …) with an `Acceptor` (final states, cycles, predicates, …). Strategies/acceptors are registered in `StrategyEnumerator`/`AcceptorEnumerator` and are string-parseable for CLI/GUI use.
+- **Exploration** (`explore`): `Exploration` combines a `Strategy` (BFS, DFS, linear, LTL-guided, symbolic, …) with an `Acceptor` (final states, cycles, predicates, …). Strategies/acceptors are registered in `StrategyEnumerator`/`AcceptorEnumerator` and are string-parseable for CLI/GUI use.
 - **Control language** (`control`): steers which rules fire when (sequencing, choice, loops, recipes/functions with parameters). Compiled via `control/template` into an executable automaton (`control/instance.Automaton`) that exploration walks in lock-step with matching.
 - **Verification** (`verify`): CTL checking via `CTLMarker` over a `ModelFacade` (the CLI shell is `explore.CTLModelChecker`, since it generates the state space before checking it); LTL via Büchi automata (external `ltl2buchi` lib) and a product construction.
 - **Algebras** (`algebra`): data attribute semantics. `AlgebraFamily` selects the interpretation: DEFAULT/BIG (concrete Java/BigInteger), POINT (collapsed, for abstraction), TERM (symbolic).
