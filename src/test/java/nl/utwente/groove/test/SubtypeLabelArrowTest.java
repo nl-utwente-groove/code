@@ -118,7 +118,7 @@ public class SubtypeLabelArrowTest {
     private AspectGraphViewModel loadTypeGraph() throws IOException {
         GrammarModel grammar = Groove.loadGrammar(GRAMMAR);
         TypeModel typeModel = grammar.getTypeModel(QualName.parse(TYPE_GRAPH));
-        var controller = new AspectGraphViewController(null, DisplayKind.TYPE, false);
+        var controller = new AspectGraphViewController(null, DisplayKind.TYPE.getGraphRole(), false, false);
         controller.setGrammar(grammar);
         var canvas = controller.getCanvas();
         AspectGraphViewModel result = canvas.newViewModel();

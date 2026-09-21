@@ -317,7 +317,7 @@ public class Imager extends GrooveCmdLineTool<Object> {
             options.getItem(ViewOptions.SHOW_ASPECTS_OPTION).setSelected(isEditorView());
             DisplayKind displayKind
                 = DisplayKind.toDisplay(ResourceKind.toResource(aspectGraph.getRole()));
-            var controller = new AspectGraphViewController(null, displayKind, false);
+            var controller = new AspectGraphViewController(null, displayKind.getGraphRole(), false, false);
             var grammar = resourceModel.getGrammar();
             assert grammar != null; // the resource model was created from a grammar
             controller.setGrammar(grammar);

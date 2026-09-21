@@ -56,6 +56,7 @@ import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.HostModelMap;
 import nl.utwente.groove.grammar.rule.RuleNode;
 import nl.utwente.groove.graph.Element;
+import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.SimulatorListener;
@@ -271,14 +272,30 @@ public class StateDisplay extends Display
     final public AspectGraphViewController getController() {
         AspectGraphViewController result = this.controller;
         if (result == null) {
-            result = this.controller = new AspectGraphViewController(getSimulator(), getKind(), false);
-            result.setLabelTree(getLabelTree());
+            // the label tree is built on the canvas, so the context gets it
+            // only after the controller (and with it the canvas) exists
+            AspectViewContext context = this.viewContext
+                = new AspectViewContext(getSimulator(), getKind());
+            result = this.controller
+                = new AspectGraphViewController(context, GraphRole.HOST, true, false);
+            context.setLabelTree(getLabelTree());
         }
         return result;
     }
 
     /** The controller of the state graph view. */
     private AspectGraphViewController controller;
+
+    /** Returns the host context of the state graph view, created with the controller. */
+    final public AspectViewContext getViewContext() {
+        getController();
+        AspectViewContext result = this.viewContext;
+        assert result != null; // the controller creates the context
+        return result;
+    }
+
+    /** The host context of the state graph view. */
+    private AspectViewContext viewContext;
 
     /** Lazily creates and returns the label tree for the display. */
     private TypeTree getLabelTree() {

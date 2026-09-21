@@ -116,10 +116,14 @@ abstract public class AspectTab extends ResourceTab implements GraphDisplay<@Non
     public final @NonNull AspectGraphViewController getController() {
         AspectGraphViewController result = this.controller;
         if (result == null) {
-            result = this.controller
-                = new AspectGraphViewController(getSimulator(), getDisplay().getKind(), isEditor());
-            result.setLabelTree(getLabelTree());
-            result.setLevelTree(getLevelTree());
+            DisplayKind kind = getDisplay().getKind();
+            // the trees are built on the canvas, so the context gets them
+            // only after the controller (and with it the canvas) exists
+            AspectViewContext context = new AspectViewContext(getSimulator(), kind);
+            result = this.controller = new AspectGraphViewController(context, kind.getGraphRole(),
+                false, isEditor());
+            context.setLabelTree(getLabelTree());
+            context.setLevelTree(getLevelTree());
         }
         return result;
     }

@@ -465,8 +465,11 @@ public class LTSDisplay extends Display
     public LTSGraphViewController getController() {
         LTSGraphViewController result = this.controller;
         if (result == null) {
-            result = this.controller = new LTSGraphViewController(getSimulator());
-            result.setLabelTree(getLabelTree());
+            // the label tree is built on the canvas, so the context gets it
+            // only after the controller (and with it the canvas) exists
+            LTSViewContext context = new LTSViewContext(getSimulator());
+            result = this.controller = new LTSGraphViewController(context);
+            context.setLabelTree(getLabelTree());
         }
         return result;
     }

@@ -364,7 +364,8 @@ public class ActionStore implements SimulatorListener {
         if (this.exportStateAction == null) {
             StateDisplay display
                 = (StateDisplay) this.simulator.getDisplaysPanel().getDisplay(DisplayKind.STATE);
-            this.exportStateAction = display.getController().getExportAction();
+            this.exportStateAction
+                = display.getViewContext().getExportAction(display.getCanvas());
         }
         return this.exportStateAction;
     }

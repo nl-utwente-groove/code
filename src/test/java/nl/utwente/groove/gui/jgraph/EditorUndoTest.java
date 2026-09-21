@@ -365,7 +365,7 @@ public class EditorUndoTest {
         GrammarModel grammar = Groove.loadGrammar(GRAMMAR);
         AspectGraph startGraph = grammar.getStartGraphModel().getSource();
         assert startGraph != null; // the fixture grammar has a start graph
-        var controller = new AspectGraphViewController(null, DisplayKind.HOST, true);
+        var controller = new AspectGraphViewController(null, DisplayKind.HOST.getGraphRole(), false, true);
         controller.setGrammar(grammar);
         AspectJGraph canvas = (AspectJGraph) controller.getCanvas();
         AspectGraphViewModel model = canvas.newViewModel();

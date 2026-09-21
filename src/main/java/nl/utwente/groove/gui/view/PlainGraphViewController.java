@@ -20,7 +20,6 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.graph.Graph;
-import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.util.AIGenerated;
 
 /**
@@ -34,10 +33,11 @@ import nl.utwente.groove.util.AIGenerated;
 public class PlainGraphViewController extends GraphViewController<Graph> {
     /**
      * Constructs a controller.
-     * @param simulator simulator to which the display belongs; may be {@code null}
+     * @param context the host of the display; {@code null} if the display is
+     * shown outside a host tool
      */
-    public PlainGraphViewController(@Nullable Simulator simulator) {
-        super(simulator);
+    public PlainGraphViewController(@Nullable GraphViewContext<Graph> context) {
+        super(context);
     }
 
     @Override

@@ -28,11 +28,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
-import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.graph.GraphRole;
-import nl.utwente.groove.gui.Options;
-import nl.utwente.groove.gui.Simulator;
-import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.action.AddPointAction;
 import nl.utwente.groove.gui.action.EditLabelAction;
 import nl.utwente.groove.gui.action.CellEditAction;
@@ -41,7 +37,6 @@ import nl.utwente.groove.gui.action.ResetLabelPositionAction;
 import nl.utwente.groove.gui.action.SetLineStyleAction;
 import nl.utwente.groove.gui.menu.MyJMenu;
 import nl.utwente.groove.gui.menu.SetLineStyleMenu;
-import nl.utwente.groove.gui.tree.RuleLevelTree;
 import nl.utwente.groove.util.line.LineStyle;
 
 /**
@@ -54,44 +49,24 @@ import nl.utwente.groove.util.line.LineStyle;
 @NonNullByDefault
 public class AspectGraphViewController extends GraphViewController<AspectGraph> {
     /**
-     * Constructs a controller for graph views of a given display kind.
-     * @param simulator simulator to which the display belongs; may be {@code null}
-     * @param kind display kind on which the graphs will be shown; determines the
-     * graph role, and whether the graphs are graph states
+     * Constructs a controller for graph views of a given role.
+     * @param context the host of the display; {@code null} if the display is
+     * shown outside a host tool
+     * @param role role of the graphs that will be shown
+     * @param forState if {@code true}, the graphs shown are graph states
      * @param editing if {@code true}, the graphs are editable
      */
-    public AspectGraphViewController(@Nullable Simulator simulator, DisplayKind kind,
-                                     boolean editing) {
-        super(simulator);
-        this.forState = kind == DisplayKind.STATE;
-        this.graphRole = this.forState
-            ? GraphRole.HOST
-            : kind.getGraphRole();
+    public AspectGraphViewController(@Nullable GraphViewContext<AspectGraph> context, GraphRole role,
+                                     boolean forState, boolean editing) {
+        super(context);
+        this.forState = forState;
+        this.graphRole = role;
         this.editing = editing;
     }
 
     @Override
     protected AspectGraphCanvas createCanvas(GraphBackend backend) {
         return backend.newAspectCanvas(this);
-    }
-
-    /* Also registers the colour-selection action, which acts on the canvas selection. */
-    @Override
-    public void attachCanvas(GraphCanvas<AspectGraph> canvas) {
-        super.attachCanvas(canvas);
-        var actions = getActions();
-        if (actions != null) {
-            canvas.addCanvasListener(actions.getSelectColorAction());
-        }
-    }
-
-    @Override
-    public void removeListeners() {
-        var actions = getActions();
-        if (actions != null) {
-            getCanvas().removeCanvasListener(actions.getSelectColorAction());
-        }
-        super.removeListeners();
     }
 
     /* Specialises the return type. */
@@ -127,44 +102,12 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
     @Override
     public JMenu createPopupMenu(@Nullable Point2D atPoint) {
         MyJMenu result = new MyJMenu("Popup");
-        var actions = getActions();
-        assert actions != null; // the popup menu is only built with a simulator present
-        switch (getGraphRole()) {
-        case HOST:
-            result.add(actions.getApplyMatchAction());
-            result.addSeparator();
-            break;
-        default:
-            // do nothing
+        var context = getContext();
+        if (context != null) {
+            result.addMenuItems(context.getPopupItems(atPoint));
         }
-        Action editAction;
-        if (isForState()) {
-            editAction = actions.getEditStateAction();
-        } else {
-            editAction
-                = actions.getEditAction(ResourceKind.toResource(getGraphRole()));
-        }
-        result.add(editAction);
         result.addSubmenu(createEditMenu(atPoint));
         result.addSubmenu(super.createPopupMenu(atPoint));
-        return result;
-    }
-
-    @Override
-    public JMenu createExportMenu() {
-        // add a save graph action as the first action
-        MyJMenu result = new MyJMenu();
-        var actions = getActions();
-        if (actions != null) {
-            if (isForState()) {
-                result.add(actions.getSaveStateAction());
-            } else {
-                ResourceKind resource = ResourceKind.toResource(getGraphRole());
-                result.add(actions.getSaveAction(resource));
-                result.add(actions.getSaveAsAction(resource));
-            }
-        }
-        result.addMenuItems(super.createExportMenu());
         return result;
     }
 
@@ -310,34 +253,16 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
         return getCanvas().hasActiveEditor() || getOptionValue(ViewOptions.SHOW_VALUE_NODES_OPTION);
     }
 
-    /** Sets a level tree for this graph view. */
-    public void setLevelTree(@Nullable RuleLevelTree levelTree) {
-        assert levelTree == null
-            || getGraphRole() == GraphRole.RULE
-                && !getCanvas().hasActiveEditor();
-        this.levelTree = levelTree;
-    }
-
-    /**
-     * Returns the rule level tree associated with this graph view, if any.
-     */
-    public @Nullable RuleLevelTree getLevelTree() {
-        return this.levelTree;
-    }
-
-    /** The tree of rule levels, if any. */
-    private @Nullable RuleLevelTree levelTree;
-
     /**
      * Indicates if a given cell is currently filtered out of the graph view
      * by the rule level tree.
      */
     public boolean isLevelFiltered(AspectViewCell cell) {
-        var levelTree = getLevelTree();
-        return levelTree != null && !levelTree.isVisible(cell);
+        var context = getContext();
+        return context != null && context.isLevelFiltered(cell);
     }
 
-    /* Falls back on the manually set grammar if there is no simulator. */
+    /* Falls back on the manually set grammar if there is no host grammar. */
     @Override
     public @Nullable GrammarModel getGrammar() {
         var result = this.grammar;
@@ -347,14 +272,14 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
     }
 
     /** Manually sets a new grammar in this graph view.
-     * This should only be done if there is no underlying simulator.
+     * This should only be done if there is no host tool.
      * @param grammar the grammar to be used.
      */
     public void setGrammar(GrammarModel grammar) {
-        assert getSimulatorModel() == null;
+        assert getContext() == null;
         this.grammar = grammar;
     }
 
-    /** The manually-set grammar; used when there is no simulator. */
+    /** The manually-set grammar; used when there is no host tool. */
     private @Nullable GrammarModel grammar;
 }

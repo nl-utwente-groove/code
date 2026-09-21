@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
-import nl.utwente.groove.gui.display.DisplayKind;
+import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.gui.view.AspectGraphViewController;
 import nl.utwente.groove.gui.view.AspectGraphViewModel;
 import nl.utwente.groove.io.Groove;
@@ -52,7 +52,7 @@ public class DetachedCellVisualsTest {
         GrammarModel grammar = Groove.loadGrammar(GRAMMAR);
         AspectGraph startGraph = grammar.getStartGraphModel().getSource();
         assert startGraph != null; // the fixture grammar has a start graph
-        var controller = new AspectGraphViewController(null, DisplayKind.STATE, false);
+        var controller = new AspectGraphViewController(null, GraphRole.HOST, true, false);
         controller.setGrammar(grammar);
         AspectGraphViewModel model = controller.getCanvas().newViewModel();
         model.loadGraph(startGraph);

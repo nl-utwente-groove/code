@@ -65,7 +65,8 @@ public class EditorLabelTreeTest {
         GrammarModel grammar = Groove.loadGrammar(GRAMMAR);
         AspectGraph startGraph = grammar.getStartGraphModel().getSource();
         assertNotNull(startGraph);
-        var controller = new AspectGraphViewController(null, DisplayKind.HOST, true);
+        var controller = new AspectGraphViewController(null, DisplayKind.HOST.getGraphRole(),
+            false, true);
         controller.setGrammar(grammar);
         AspectJGraph canvas = (AspectJGraph) controller.getCanvas();
         AspectGraphViewModel model = canvas.newViewModel();
@@ -74,7 +75,6 @@ public class EditorLabelTreeTest {
         canvas.setViewModel(model);
         new JScrollPane(canvas);
         TypeTree tree = new TypeTree(null, canvas, false);
-        controller.setLabelTree(tree);
         // the tree takes its model from the canvas when the canvas gets one; here it had one
         tree.updateModel();
         assertTrue(labels(tree).contains(LABEL), "label in the tree before the edits");
