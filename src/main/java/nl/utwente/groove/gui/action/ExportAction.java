@@ -46,10 +46,10 @@ public class ExportAction extends SimulatorAction {
         this.isGraph = this.displayKind.isGraphBased();
     }
 
-    /** Constructs an instance of the action. */
-    public ExportAction(GraphCanvas<?> canvas) {
+    /** Constructs an instance of the action for a canvas of a given simulator. */
+    public ExportAction(Simulator simulator, GraphCanvas<?> canvas) {
         // fill in a generic name, as the canvas may not yet hold a graph.
-        super(getSimulator(canvas), Options.EXPORT_ACTION_NAME, Icons.EXPORT_ICON);
+        super(simulator, Options.EXPORT_ACTION_NAME, Icons.EXPORT_ICON);
         putValue(ACCELERATOR_KEY, Options.EXPORT_KEY);
         this.display = null;
         this.displayKind = null;
@@ -151,13 +151,6 @@ public class ExportAction extends SimulatorAction {
             return null;
         }
         return getGrammarModel().getResource(this.displayKind.getResource(), tab.getQualName());
-    }
-
-    /** Returns the simulator of a canvas, which must exist for the action to be created. */
-    private static Simulator getSimulator(GraphCanvas<?> canvas) {
-        var actions = canvas.getController().getActions();
-        assert actions != null; // the export action is only created with a simulator present
-        return actions.getSimulator();
     }
 
     // Get active graph canvas if any

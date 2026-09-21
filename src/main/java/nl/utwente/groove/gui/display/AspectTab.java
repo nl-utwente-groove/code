@@ -176,10 +176,10 @@ abstract public class AspectTab extends ResourceTab implements GraphDisplay<@Non
     private TitledPanel labelPanel;
 
     /** Lazily creates and returns the label tree; it filters labels only when viewing. */
-    protected final TypeTree getLabelTree() {
+    public final TypeTree getLabelTree() {
         TypeTree result = this.labelTree;
         if (result == null) {
-            result = this.labelTree = new TypeTree(getCanvas(), !isEditor());
+            result = this.labelTree = new TypeTree(getSimulator(), getCanvas(), !isEditor());
         }
         return result;
     }

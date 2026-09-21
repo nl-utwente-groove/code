@@ -483,7 +483,7 @@ public class LTSDisplay extends Display
     private LTSTree getLabelTree() {
         var result = this.labelTree;
         if (result == null) {
-            result = this.labelTree = new LTSTree(getCanvas());
+            result = this.labelTree = new LTSTree(getSimulator(), getCanvas());
         }
         return result;
     }

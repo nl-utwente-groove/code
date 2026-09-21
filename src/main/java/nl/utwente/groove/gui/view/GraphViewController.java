@@ -327,7 +327,9 @@ public abstract class GraphViewController<G extends Graph> {
     public Action getExportAction() {
         var result = this.exportAction;
         if (result == null) {
-            this.exportAction = result = new ExportAction(getCanvas());
+            var actions = getActions();
+            assert actions != null; // the export action is only created with a simulator present
+            this.exportAction = result = new ExportAction(actions.getSimulator(), getCanvas());
         }
         result.refresh();
         return result;

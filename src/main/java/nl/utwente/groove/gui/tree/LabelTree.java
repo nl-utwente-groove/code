@@ -48,6 +48,7 @@ import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.gui.Options;
+import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.action.ActionStore;
 import nl.utwente.groove.gui.display.DismissDelayer;
 import nl.utwente.groove.gui.menu.ShowHideMenu;
@@ -75,10 +76,13 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
     /**
      * Constructs a label list associated with a given graph canvas. A further
      * parameter indicates if the label tree should support subtypes.
+     * @param simulator the simulator whose actions the tree offers;
+     *        {@code null} if the tree is shown outside a simulator
      * @param canvas the canvas with which this list is to be associated
      * @param filtering if {@code true}, the panel has checkboxes to filter labels
      */
-    LabelTree(GraphCanvas<G> canvas, boolean filtering) {
+    LabelTree(@Nullable Simulator simulator, GraphCanvas<G> canvas, boolean filtering) {
+        this.simulator = simulator;
         this.canvas = canvas;
         this.filtering = filtering;
         // make sure tool tips get displayed
@@ -137,6 +141,24 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
      * The graph canvas permanently associated with this label list.
      */
     private final GraphCanvas<G> canvas;
+
+    /**
+     * Returns the simulator whose actions this tree offers, if any.
+     */
+    protected final @Nullable Simulator getSimulator() {
+        return this.simulator;
+    }
+
+    /** Returns the action store of the simulator, if there is one. */
+    protected final @Nullable ActionStore getActions() {
+        var simulator = getSimulator();
+        return simulator == null
+            ? null
+            : simulator.getActions();
+    }
+
+    /** The simulator to which this tree belongs; {@code null} if there is none. */
+    private final @Nullable Simulator simulator;
 
     /**
      * Returns the view model with which this label list is associated.
@@ -349,7 +371,7 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
     /** Adds menu items for colouring and find/replace actions. */
     private void addActionItems(JPopupMenu result) {
         TreePath[] selectedValues = getSelectionPaths();
-        ActionStore actions = getCanvas().getController().getActions();
+        ActionStore actions = getActions();
         if (selectedValues != null && selectedValues.length == 1 && actions != null) {
             result.add(actions.getFindReplaceAction());
             if (getCanvas() instanceof AspectGraphCanvas

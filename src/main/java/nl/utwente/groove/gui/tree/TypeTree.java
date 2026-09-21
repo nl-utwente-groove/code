@@ -53,6 +53,7 @@ import nl.utwente.groove.graph.EdgeRole;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.gui.Icons;
 import nl.utwente.groove.gui.Options;
+import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.action.CollapseAllAction;
 import nl.utwente.groove.gui.tree.TypeFilter.TypeEntry;
 import nl.utwente.groove.gui.view.AspectGraphCanvas;
@@ -71,11 +72,13 @@ public class TypeTree extends LabelTree<AspectGraph> {
     /**
      * Constructs a label list associated with a given graph canvas. A further
      * parameter indicates if the label tree should support subtypes.
+     * @param simulator the simulator whose actions the tree offers;
+     *        {@code null} if the tree is shown outside a simulator
      * @param canvas the canvas with which this list is to be associated
      * @param filtering if {@code true}, the panel has checkboxes to filter labels
      */
-    public TypeTree(AspectGraphCanvas canvas, boolean filtering) {
-        super(canvas, filtering);
+    public TypeTree(@Nullable Simulator simulator, AspectGraphCanvas canvas, boolean filtering) {
+        super(simulator, canvas, filtering);
     }
 
     @Override

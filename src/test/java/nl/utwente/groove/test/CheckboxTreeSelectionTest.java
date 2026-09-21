@@ -153,7 +153,7 @@ public class CheckboxTreeSelectionTest {
         var model = canvas.newViewModel();
         model.loadGraph(graph);
         canvas.setViewModel(model);
-        TypeTree result = new TypeTree(canvas, true);
+        TypeTree result = new TypeTree(null, canvas, true);
         result.synchroniseModel();
         assertTrue(result.getTopNode().getChildCount() > 0, "label tree is empty");
         return result;

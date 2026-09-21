@@ -73,7 +73,7 @@ public class EditorLabelTreeTest {
         model.loadGraph(startGraph);
         canvas.setViewModel(model);
         new JScrollPane(canvas);
-        TypeTree tree = new TypeTree(canvas, false);
+        TypeTree tree = new TypeTree(null, canvas, false);
         controller.setLabelTree(tree);
         // the tree takes its model from the canvas when the canvas gets one; here it had one
         tree.updateModel();

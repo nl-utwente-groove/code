@@ -284,7 +284,7 @@ public class StateDisplay extends Display
     private TypeTree getLabelTree() {
         TypeTree result = this.labelTree;
         if (result == null) {
-            result = this.labelTree = new TypeTree(getCanvas(), true) {
+            result = this.labelTree = new TypeTree(getSimulator(), getCanvas(), true) {
                 @Override
                 protected void paintComponent(Graphics g) {
                     super.paintComponent(g);

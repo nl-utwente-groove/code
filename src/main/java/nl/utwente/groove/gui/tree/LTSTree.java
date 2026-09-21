@@ -34,6 +34,8 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.graph.Label;
+import nl.utwente.groove.gui.Simulator;
+import nl.utwente.groove.gui.SimulatorModel;
 import nl.utwente.groove.gui.look.Values;
 import nl.utwente.groove.gui.tree.LTSEntry.Type;
 import nl.utwente.groove.gui.view.LTSGraphCanvas;
@@ -46,14 +48,18 @@ import nl.utwente.groove.lts.GTS;
  */
 @NonNullByDefault
 public class LTSTree extends LabelTree<GTS> {
-    /** Constructs a tree for a given graph. */
-    public LTSTree(LTSGraphCanvas canvas) {
-        super(canvas, true);
+    /** Constructs a tree for the LTS shown on a given canvas. */
+    public LTSTree(Simulator simulator, LTSGraphCanvas canvas) {
+        super(simulator, canvas, true);
+        this.simulatorModel = simulator.getModel();
         this.headerNodes = new EnumMap<>(LTSEntry.Type.class);
         for (var entryType : LTSEntry.Type.values()) {
             this.headerNodes.put(entryType, new HeaderNode(entryType));
         }
     }
+
+    /** The state of the simulator to which this tree belongs. */
+    private final SimulatorModel simulatorModel;
 
     @Override
     public LTSGraphCanvas getCanvas() {
@@ -138,9 +144,7 @@ public class LTSTree extends LabelTree<GTS> {
     @Override
     protected void paintComponent(@Nullable Graphics g) {
         super.paintComponent(g);
-        var simulatorModel = getCanvas().getController().getSimulatorModel();
-        assert simulatorModel != null; // LTS canvases always live in a simulator
-        if (simulatorModel.hasAbsentState()) {
+        if (this.simulatorModel.hasAbsentState()) {
             Values.paintHatch(this, g);
         }
     }

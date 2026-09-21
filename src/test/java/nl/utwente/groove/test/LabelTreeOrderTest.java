@@ -114,7 +114,7 @@ public class LabelTreeOrderTest {
         var model = canvas.newViewModel();
         model.loadGraph(graph);
         canvas.setViewModel(model);
-        TypeTree result = new TypeTree(canvas, true);
+        TypeTree result = new TypeTree(null, canvas, true);
         result.synchroniseModel();
         return result;
     }
