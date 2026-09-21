@@ -20,7 +20,6 @@ import java.awt.geom.Point2D;
 
 import javax.swing.JMenu;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -44,7 +43,7 @@ import nl.utwente.groove.util.AIGenerated;
  */
 @AIGenerated("Claude Opus 5, 2026-09")
 @NonNullByDefault
-public class AspectViewContext extends SimulatorViewContext<@NonNull AspectGraph> {
+public class AspectViewContext extends SimulatorViewContext<AspectGraph> {
     /**
      * Constructs a context for a graph view on a given display.
      * @param simulator the simulator hosting the graph view
@@ -89,7 +88,7 @@ public class AspectViewContext extends SimulatorViewContext<@NonNull AspectGraph
     private @Nullable RuleLevelTree levelTree;
 
     @Override
-    public boolean isLevelFiltered(ViewCell<@NonNull AspectGraph> cell) {
+    public boolean isLevelFiltered(ViewCell<AspectGraph> cell) {
         var levelTree = getLevelTree();
         return levelTree != null && cell instanceof AspectViewCell aspectCell
             && !levelTree.isVisible(aspectCell);
@@ -97,12 +96,12 @@ public class AspectViewContext extends SimulatorViewContext<@NonNull AspectGraph
 
     /* Registers the colour-selection action, which acts on the canvas selection. */
     @Override
-    public void canvasAttached(GraphCanvas<@NonNull AspectGraph> canvas) {
+    public void canvasAttached(GraphCanvas<AspectGraph> canvas) {
         canvas.addCanvasListener(getActions().getSelectColorAction());
     }
 
     @Override
-    public void canvasDetached(GraphCanvas<@NonNull AspectGraph> canvas) {
+    public void canvasDetached(GraphCanvas<AspectGraph> canvas) {
         canvas.removeCanvasListener(getActions().getSelectColorAction());
         super.canvasDetached(canvas);
     }

@@ -39,7 +39,6 @@ import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.gui.list.SearchResult;
 import nl.utwente.groove.gui.tree.LabelTree;
 import nl.utwente.groove.gui.tree.TypeTree.TypeTreeNode;
-import nl.utwente.groove.gui.view.AspectGraphCanvas;
 import nl.utwente.groove.gui.view.GraphCanvas;
 import nl.utwente.groove.gui.view.GraphCanvasListener;
 

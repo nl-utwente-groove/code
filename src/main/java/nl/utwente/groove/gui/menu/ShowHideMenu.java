@@ -36,7 +36,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 
 import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.rule.RegExpr;
 import nl.utwente.groove.graph.Edge;

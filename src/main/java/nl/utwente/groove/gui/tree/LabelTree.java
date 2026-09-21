@@ -395,7 +395,6 @@ abstract public class LabelTree<G extends Graph> extends CheckboxTree
     /** Adds menu items for graying out. */
     private void addShowHideItems(JPopupMenu result) {
         // add the show/hide menu
-        @SuppressWarnings({"unchecked", "rawtypes"})
         JPopupMenu restMenu = new ShowHideMenu<>(this.canvas, this::getLabels).getPopupMenu();
         while (restMenu.getComponentCount() > 0) {
             result.add(restMenu.getComponent(0));

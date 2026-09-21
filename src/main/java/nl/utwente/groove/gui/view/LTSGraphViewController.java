@@ -30,7 +30,6 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.graph.Element;
-import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.gui.action.ScrollToActiveAction;
 import nl.utwente.groove.gui.layout.ForestLayouter;

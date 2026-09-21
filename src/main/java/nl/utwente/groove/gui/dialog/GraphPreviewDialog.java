@@ -155,7 +155,7 @@ public class GraphPreviewDialog<G extends @NonNull Graph> extends JDialog {
      * Creates a host context for a graph view of this dialog,
      * or returns {@code null} if the dialog has no simulator.
      */
-    private <H extends Graph> SimulatorViewContext<H> createContext() {
+    private <H extends @NonNull Graph> SimulatorViewContext<H> createContext() {
         Simulator simulator = this.simulator;
         return simulator == null
             ? null

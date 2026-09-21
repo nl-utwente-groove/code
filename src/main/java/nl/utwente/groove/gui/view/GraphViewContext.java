@@ -118,18 +118,11 @@ public interface GraphViewContext<G extends Graph> {
 
     // ---------- actions and menu items of the host ----------
 
-    /**
-     * The action exporting the graph shown on a given canvas,
-     * or {@code null} if the host offers no export.
-     */
-    default @Nullable Action getExportAction(GraphCanvas<G> canvas) {
-        return null;
-    }
+    /** The action exporting the graph shown on a given canvas. */
+    Action getExportAction(GraphCanvas<G> canvas);
 
-    /** The action opening the layout dialog, or {@code null} if the host has none. */
-    default @Nullable Action getLayoutDialogAction() {
-        return null;
-    }
+    /** The action opening the layout dialog of the host. */
+    Action getLayoutDialogAction();
 
     /**
      * The items the host puts at the head of the popup menu of the graph view:
