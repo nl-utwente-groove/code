@@ -462,7 +462,9 @@ public class ExploreConfigDialog extends JDialog {
         if (explorable) {
             assert exploreType != null;
             try {
-                exploreType.test(grammar.toGrammar());
+                // the grammar compiled under the exploration's overrides:
+                // errors those introduce are compatibility errors as well
+                exploreType.test(exploreType.toGrammar(grammar));
             } catch (FormatException exc) {
                 explorable = false;
                 problem = exc.getMessage();

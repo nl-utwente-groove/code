@@ -118,8 +118,8 @@ public class ConfiguredExploreType extends ExploreType {
             };
             config.put(ExploreKey.COLLAPSE, collapse.createSetting());
         }
-        var family = gts.getAlgebraFamily();
-        if (family != properties.getAlgebraFamily()) {
+        var family = gts.getAlgebraOverride();
+        if (family != null) {
             var algebra = switch (family) {
             case DEFAULT -> Algebra.DEFAULT;
             case BIG -> Algebra.BIG;
@@ -202,11 +202,27 @@ public class ConfiguredExploreType extends ExploreType {
     }
 
     /**
+     * Compiles the grammar under the algebra feature of the configuration,
+     * if that overrides the grammar's family.
+     */
+    @Override
+    public Grammar toGrammar(GrammarModel model) throws FormatException {
+        var algebra = getAlgebraFamily();
+        return algebra == null
+            ? model.toGrammar()
+            : model.toGrammar(algebra);
+    }
+
+    /**
      * Applies the per-GTS features of the configuration: collapse mode,
      * algebra family and persistence. These determine what the state space
      * <i>is</i>, so they must be constant for the lifetime of the GTS;
      * they can only be applied to a fresh GTS (asserted by the super
-     * implementation).
+     * implementation). The algebra family is realised by the grammar, which
+     * must have been compiled through {@link #toGrammar(GrammarModel)}
+     * (as {@link #newGTS} does); here it is only verified.
+     * @throws IllegalStateException if the grammar of the GTS was not
+     * compiled under the configured algebra family
      */
     @Override
     public void prepareGTS(GTS gts) {
@@ -216,8 +232,10 @@ public class ConfiguredExploreType extends ExploreType {
             gts.setCollapseMode(collapse);
         }
         var algebra = getAlgebraFamily();
-        if (algebra != null) {
-            gts.setAlgebraFamily(algebra);
+        if (algebra != null && algebra != gts.getAlgebraFamily()) {
+            throw Exceptions
+                .illegalState("Grammar of the GTS was compiled under algebra family %s, not %s;"
+                    + " build the GTS through newGTS", gts.getAlgebraFamily(), algebra);
         }
         gts.setPersistent(isPersistent());
     }
@@ -255,7 +273,8 @@ public class ConfiguredExploreType extends ExploreType {
         }
         var algebra = getAlgebraFamily();
         if (algebra == null) {
-            algebra = gts.getGrammar().getProperties().getAlgebraFamily();
+            // inherit the family of the grammar model, as a fresh GTS would
+            algebra = gts.getBaseAlgebraFamily();
         }
         if (algebra != gts.getAlgebraFamily()) {
             errors

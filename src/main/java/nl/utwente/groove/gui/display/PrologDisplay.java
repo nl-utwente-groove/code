@@ -461,9 +461,17 @@ public class PrologDisplay extends ResourceDisplay {
             getResultsArea().setText("?- " + queryString + "\n");
 
             MatchResult match = getSimulatorModel().getMatch();
+            // the grammar must be the one the GTS runs on: under an algebra
+            // override of the exploration that is a derived grammar, whose
+            // rules and start graph differ from the model's own, and the
+            // Prolog engine unifies Java objects by identity
+            var gts = getSimulatorModel().getGTS();
+            var grammar = gts == null
+                ? getGrammar().toGrammar()
+                : gts.getGrammar();
             getEngine().setGrooveState(
-                new GrooveState(getGrammar().toGrammar(), getSimulatorModel().getGTS(),
-                    getSimulatorModel().getState(), match == null ? null : match.getEvent()));
+                new GrooveState(grammar, gts, getSimulatorModel().getState(),
+                    match == null ? null : match.getEvent()));
 
             this.solutionCount = 0;
             processResults(getEngine().newQuery(queryString));
