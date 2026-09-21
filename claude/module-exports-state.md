@@ -46,5 +46,5 @@ controller takes a `GraphRole` alone; whether the graphs are states is the
 context's knowledge, passed to the export action it creates. The context
 implementations are `SimulatorViewContext<G>`, `SimulatorAspectContext` and
 `SimulatorLTSContext`; the interface stays `GraphViewContext` ("host" was
-rejected as clashing with host graphs, and the javadoc still says it — a
-wording pass is open). No decision blocks session B.
+rejected as clashing with host graphs; the javadoc no longer says it).
+No decision blocks session B.
