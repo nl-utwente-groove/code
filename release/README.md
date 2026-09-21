@@ -169,7 +169,7 @@ elsewhere; the system property `groove.extensions.dir` overrides the location), 
 which GROOVE loads it at start-up
 (`nl.utwente.groove.util.Extensions`). The zip unpacks into a subdirectory `yfiles/`
 there, holding the two jars and the license notice. The yFiles license (an academic
-project license held by the University of Twente) has three consequences that shape
+project license held by the University of Twente) has four consequences that shape
 this build:
 
 - The library may be redistributed only in obfuscated form. The release reactor
@@ -186,6 +186,16 @@ this build:
 - The add-on may be used for non-commercial purposes only. `yfiles/include/YFILES-ADDON.md`
   states this and is placed in the add-on's directory; the download page must say
   the same next to the add-on.
+- The license file the add-on carries must itself be redistributable. The backend
+  packages the distribution license (`yfiles.license.file`, see below) and never the
+  development license, whose `<distribution>false</distribution>` forbids precisely
+  this. That property is meant to be overridable, for a development build with the
+  development watermark, so the `yfiles` module does not trust it: the `check-license`
+  execution of its `pom.xml` reads every license out of the obfuscated jars after the
+  obfuscation and before the assembly, and fails the build on one marked
+  non-distributable. The check exists because the public 99.0.x test releases of
+  2026-09 shipped the development license, in the days before the backend build chose
+  between the two.
 
 The add-on is built for one GROOVE version: the manifest of the backend jar records
 it (attribute `GROOVE-Version`, set by the backend's `pom.xml` from its `revision`), and a
