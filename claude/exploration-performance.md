@@ -943,6 +943,48 @@ of `car-platooning-05` (215 edges minted for a 5-node factory) and `pacman` (196
 final graph) and is dominated by `gen`, i.e. transformation and reconstruction, not
 matching.
 
+### The performance grammar set (2026-09-21)
+
+The harness now reads `junit/performance/`, a copy of the eight sample grammars it used,
+kept apart from `junit/samples` so that the correctness fixtures and their test
+expectations stay untouched and the performance copies can drift freely. Each copy holds
+its default start graph, the largest one the samples had, and the generated larger ones;
+the other sample start graphs were dropped. `junit/performance/generate-starts.py`
+generates the larger start graphs of the four grammars whose start graphs are regular
+(Mark-Unmark: a complete binary `next`-tree; As-and-Bs: complete bipartite `b` edges;
+inheritance: a typed ring with chords; append: a longer list with more appenders); its
+`SIZES` table is the record of what is generated.
+
+Calibration on the laptop (JDK 25, `-Xmx8g -da -XX:+UseParallelGC`, headless
+`Generator`, one run each, wall time including JVM start; the machine was shared with
+other builds, so the times are indicative only and the desktop baseline is the one to
+record):
+
+| start graph | states | transitions | s | kept |
+|---|---|---|---|---|
+| Mark-Unmark `tree-18` | 48 384 | 870 912 | 19 | quick tier |
+| Mark-Unmark `tree-20` | 112 896 | 2 257 920 | 55 | dropped |
+| Mark-Unmark `tree-21` | 169 344 | 3 556 224 | 84 | upper quick tier |
+| As-and-Bs `start-4-3` | 131 505 | 947 824 | 12 | quick tier |
+| As-and-Bs `start-5-3` | > 1.7 M | > 15 M | killed at 360 | too large |
+| As-and-Bs `start-4-4` | > 2.2 M | > 16 M | killed at 360 | too large |
+| inheritance `start-10` | 36 193 | 418 212 | 6 | dropped |
+| inheritance `start-11` | 74 868 | 939 355 | 10 | dropped |
+| inheritance `start-12` | 297 212 | 4 317 133 | 40 | quick tier |
+| append `append-4-list-10` | 1 077 000 | 4 008 820 | 153 | long tier |
+| append `append-5-list-6` | > 1.5 M | > 6.4 M | killed at 360 | too large |
+| append `append-5-list-8` | | | killed at 480 | too large |
+| append `append-4-list-12` | > 1.5 M | > 5.7 M | killed at 360 | too large |
+| pacman `start_four_ghosts` (hand-made, 24 nodes) | 210 102 | 7 819 623 | 203 | long tier |
+
+Growth is steep in every family: As-and-Bs jumps from 12 s to beyond 6 minutes at the
+next size in either direction, so the tiers cannot both be served from one family
+without an intermediate edge density; Mark-Unmark grows about 2.3 times in states and
+2.9 times in time per two levels, so `tree-22` (about 2 minutes) or `tree-23` would
+serve the long tier, unmeasured. The pacman four-ghost graph at 20 positions was far
+too large (247 k states and 5.2 M transitions after 3 minutes, 67 k open; about 21
+transitions per state against 3.3 for `car-platooning-05`).
+
 ### Shape of the harness (as designed)
 
 A runner in the test tree, `test/performance/ExplorationBenchmark` or similar, with a

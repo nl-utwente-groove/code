@@ -9,7 +9,7 @@ Measurable performance improvement of state-space exploration, working down the
 findings of `claude/exploration-performance.md` (the review note; read its "Suggested
 order of attack" and "Building a throughput harness" sections first).
 
-## State as of 2026-09-20
+## State as of 2026-09-21
 
 Branch `exploration-performance`, worktree `.claude/worktrees/exploration-performance`,
 based on master `c5406f917`, detached for review. Five commits: the review note, the
@@ -20,7 +20,8 @@ investigation write-up.
 Done:
 
 - Review note with rated findings, file:line references, gates.
-- `src/test/java/nl/utwente/groove/test/performance/ExplorationBenchmark.java`: ten pinned
+- `src/test/java/nl/utwente/groove/test/performance/ExplorationBenchmark.java`,
+  `junit/performance/generate-starts.py`. ten pinned
   configurations, `main` + `smoke` + `benchmark` entry points, Eclipse launch
   `launch/GROOVE - exploration benchmark.launch` (`-da -Xmx4g -XX:+UseParallelGC
   --add-modules=java.management,jdk.management`). Product `module-info` and `pom.xml`
@@ -28,27 +29,25 @@ Done:
 - Baseline table in the note (JDK 25, 2 warm-ups, 3 runs, one JVM, table order).
 - Finding 3.11, the `util.Factory` user leak, found through the harness; fixed as
   gh #919, merged to master 2026-09-21 (`f9db84fda`). Not yet merged into this branch.
-- 2026-09-21: `junit/performance/` holds verbatim copies of the eight harness grammars
-  (commit `74c239d30`). Larger start graphs exist only for `sierpinsky` (up to `start13`)
-  and `car-platooning` (up to `start-18`); `generate-binary-tree` is bound-driven.
-  `inheritance`, `As-and-Bs`, `Mark-Unmark`, `append` and `pacman` need generated larger
-  start graphs (`pacman`'s `start_four_ghosts` lacks the turn node and explores to one
-  state). The harness `INPUT_DIR` still points at `junit/samples`.
+- 2026-09-21: master (with the gh #919 fix) merged in. `junit/performance/` is the
+  benchmark grammar set: the eight harness grammars pruned to default + largest +
+  generated start graphs, `generate-starts.py` for the generated ones, the harness
+  `INPUT_DIR` switched and five rows added for the generated graphs (calibration table in
+  the note, section "The performance grammar set"). Arend edited `pacman` (rules, both
+  start graphs, properties) by hand; the four-ghost graph is his.
 
-## Blocked on the 3.11 fix
+## Measure on the desktop
 
-- The maxima of the three heavy rows (`append-4-list-8-equality`, `car-platooning-05`,
-  `binary-tree-dfs-unstored`) are GC thrash from a single run's leaked applications;
-  only `min ms` is stable there.
-- The long-run tier (2 to 5 minute configurations: `car-platooning start-06`,
-  `sierpinsky start12`, unstored binary tree depth 9, As-and-Bs under
-  `collapse=equality`) cannot run without leaking several GB.
+All timings so far are from the laptop, which is not the measurement machine. The next
+session on the desktop should re-run the full baseline (`launch/GROOVE - exploration
+benchmark.launch`, same JVM flags) and replace the table in the note; expect `retMB` to
+drop sharply on every row now that 3.11 is fixed.
 
 ## Next, in order
 
-1. Merge master (with the 3.11 fix) into the branch, or rebase; re-run the full baseline
-   with the same JVM flags and replace the table in the note. Expect `retMB` to drop
-   sharply on every row and the heavy rows' maxima to settle.
+1. Re-run the baseline on the desktop (above); the pre-fix maxima of the heavy rows
+   (`append-4-list-8-equality`, `car-platooning-05`, `binary-tree-dfs-unstored`) were
+   GC thrash from leaked applications and should settle.
 2. Add the long-run tier: a `tier` field on `Config` (QUICK/LONG), calibrate the four
    candidates above at `-Xmx8g` for 2 to 5 minutes each, 1 warm-up and 2 runs, run
    one configuration per JVM if run-order effects persist. Record a long-tier baseline.
@@ -61,14 +60,16 @@ Done:
 4. Section 2 (dead optimisations): 2.1 stored `MatchResult` keys, confirm "Confluent:"
    goes non-zero on `inheritance`; 2.3 soft certifier reference; 2.4 refinement loop
    (gate with `grammar-smoke`); 2.5 to 2.7 freezing and chain replay.
-5. Enlarge the `junit/performance/` set: generated larger start graphs for the five
-   grammars named above, switch the harness `INPUT_DIR`, then new grammars for the
-   uncovered cases (attribute-heavy, symmetric ring, recipe transience), then section 3.
+5. Long-tier candidates still missing for As-and-Bs (no size between 12 s and 6+ min in
+   the bipartite family) and Mark-Unmark (`tree-22`/`tree-23` unmeasured); then new
+   grammars for the uncovered cases (attribute-heavy, symmetric ring, recipe
+   transience), then section 3.
 
 ## Key files
 
 - `claude/exploration-performance.md`: the findings and the harness documentation.
-- `src/test/java/nl/utwente/groove/test/performance/ExplorationBenchmark.java`.
+- `src/test/java/nl/utwente/groove/test/performance/ExplorationBenchmark.java`,
+  `junit/performance/generate-starts.py`.
 - `util/Reporter.java`, `match/plan/PlanSearchStrategy.java`, `util/Factory.java`,
   `lts/AbstractGraphState.java`, `lts/MatchApplier.java`, `graph/iso/CertificateStrategy.java`,
   `graph/iso/PartitionRefiner.java`, `lts/StateCache.java`: the section 1 to 3 targets.

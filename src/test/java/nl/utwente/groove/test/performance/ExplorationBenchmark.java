@@ -64,7 +64,7 @@ import nl.utwente.groove.util.parse.FormatException;
  * Throughput harness for state-space exploration.
  * <p>
  * The harness explores a fixed set of {@link Config configurations} over the
- * grammars in {@code junit/samples}, and reports wall time plus the standing
+ * grammars in {@code junit/performance}, and reports wall time plus the standing
  * instrumentation counters as one fixed-width table. Its purpose is to give
  * before-and-after numbers for the findings collected in
  * {@code claude/exploration-performance.md}; the expected state and transition
@@ -140,7 +140,7 @@ import nl.utwente.groove.util.parse.FormatException;
 @Category(SlowTest.class)
 public class ExplorationBenchmark {
     /** Location of the sample grammars, as in {@code ExplorationTest}. */
-    public static final String INPUT_DIR = "junit/samples";
+    public static final String INPUT_DIR = "junit/performance";
 
     /** Default number of discarded warm-up runs per configuration. */
     public static final int DEFAULT_WARMUPS = 2;
@@ -268,7 +268,22 @@ public class ExplorationBenchmark {
             // only description of the work; pinned from the calibration run
             // 2026-09-20
             new Config("binary-tree-dfs-unstored", "generate-binary-tree.gps", "start",
-                "next=newest cost=uniform bound=cost:8 persistence=none", 409114, 409113, true));
+                "next=newest cost=uniform bound=cost:8 persistence=none", 409114, 409113, true),
+            // generated larger start graphs (junit/performance/generate-starts.py);
+            // counts pinned from the laptop calibration of 2026-09-21
+            new Config("mark-unmark-18", "Mark-Unmark-List-regexp-benchmark.gps", "tree-18", "",
+                48384, 870912, false),
+            new Config("mark-unmark-21", "Mark-Unmark-List-regexp-benchmark.gps", "tree-21", "",
+                169344, 3556224, false),
+            new Config("as-and-bs-4-3", "As-and-Bs-reg-exp-benchmark.gps", "start-4-3", "",
+                131505, 947824, false),
+            new Config("inheritance-12", "inheritance.gps", "start-12", "", 297212, 4317133,
+                false),
+            new Config("append-4-list-10", "append.gps", "append-4-list-10", "", 1077000,
+                4008820, false),
+            // hand-made four-ghost maze: 37 transitions per state
+            new Config("pacman-four-ghosts", "pacman.gps", "start_four_ghosts", "", 210102,
+                7819623, false));
 
     /** Returns the benchmark set. */
     public static List<Config> getConfigs() {
