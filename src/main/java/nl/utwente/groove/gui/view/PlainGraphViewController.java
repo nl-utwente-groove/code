@@ -33,8 +33,8 @@ import nl.utwente.groove.util.AIGenerated;
 public class PlainGraphViewController extends GraphViewController<Graph> {
     /**
      * Constructs a controller.
-     * @param context the host of the display; {@code null} if the display is
-     * shown outside a host tool
+     * @param context the context of the display; {@code null} if the display is
+     * shown outside any tool
      */
     public PlainGraphViewController(@Nullable GraphViewContext<Graph> context) {
         super(context);

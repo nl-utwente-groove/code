@@ -56,7 +56,7 @@ import nl.utwente.groove.util.Pair;
  * display-option machinery, layouter management, the layout action cache,
  * menu construction and tooltip registration — that was historically
  * bundled into the rendering component class itself. What the display
- * needs from the tool that hosts it, the controller asks of its
+ * needs from the tool in which it is shown, the controller asks of its
  * {@link GraphViewContext}.
  * <p>
  * The controller owns its canvas, which it obtains from the {@link GraphBackend}
@@ -70,8 +70,8 @@ import nl.utwente.groove.util.Pair;
 public abstract class GraphViewController<G extends Graph> {
     /**
      * Constructs a controller.
-     * @param context the host of the display; {@code null} if the display is
-     * shown outside a host tool
+     * @param context the context of the display; {@code null} if the display is
+     * shown outside any tool
      */
     public GraphViewController(@Nullable GraphViewContext<G> context) {
         this.context = context;
@@ -119,12 +119,12 @@ public abstract class GraphViewController<G extends Graph> {
     /** The canvas of this controller; {@code null} until created or attached. */
     private @Nullable GraphCanvas<G> canvas;
 
-    /** Returns the host of the display, if the display has one. */
+    /** Returns the context of the display, if it has one. */
     protected @Nullable GraphViewContext<G> getContext() {
         return this.context;
     }
 
-    /** The host of the display; {@code null} if the display is shown outside one. */
+    /** The context of the display; {@code null} if the display is shown outside any tool. */
     private final @Nullable GraphViewContext<G> context;
 
     /**
@@ -315,7 +315,7 @@ public abstract class GraphViewController<G extends Graph> {
 
     /**
      * Returns the action to export the displayed graph in various formats,
-     * or {@code null} if the host offers no export.
+     * or {@code null} if the context offers no export.
      */
     public @Nullable Action getExportAction() {
         var context = getContext();
@@ -418,7 +418,7 @@ public abstract class GraphViewController<G extends Graph> {
 
     /**
      * Returns a menu consisting of the export action of the graph view,
-     * preceded by the export items of the host.
+     * preceded by the export items of the context.
      */
     public JMenu createExportMenu() {
         MyJMenu result = new MyJMenu("Export");

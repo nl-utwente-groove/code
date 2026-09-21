@@ -41,7 +41,7 @@ import nl.utwente.groove.gui.view.ViewOptions;
 import nl.utwente.groove.util.AIGenerated;
 
 /**
- * The simulator as host of a graph view: it provides the grammar and options
+ * The simulator as context of a graph view: it provides the grammar and options
  * the view is shown under, the label tree it is filtered by, and the actions
  * of the simulator that the view offers in its menus.
  * <p>
@@ -59,12 +59,12 @@ public class SimulatorViewContext<G extends Graph> implements GraphViewContext<G
         this.simulator = simulator;
     }
 
-    /** Returns the simulator hosting the graph view. */
+    /** Returns the simulator showing the graph view. */
     protected final Simulator getSimulator() {
         return this.simulator;
     }
 
-    /** The simulator hosting the graph view. */
+    /** The simulator showing the graph view. */
     private final Simulator simulator;
 
     /** Returns the state of the simulator. */

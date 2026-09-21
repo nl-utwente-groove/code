@@ -50,8 +50,8 @@ import nl.utwente.groove.util.line.LineStyle;
 public class AspectGraphViewController extends GraphViewController<AspectGraph> {
     /**
      * Constructs a controller for graph views of a given role.
-     * @param context the host of the display; {@code null} if the display is
-     * shown outside a host tool
+     * @param context the context of the display; {@code null} if the display is
+     * shown outside any tool
      * @param role role of the graphs that will be shown
      * @param editing if {@code true}, the graphs are editable
      */
@@ -252,7 +252,7 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
         return context != null && context.isLevelFiltered(cell);
     }
 
-    /* Falls back on the manually set grammar if there is no host grammar. */
+    /* Falls back on the manually set grammar if the context provides none. */
     @Override
     public @Nullable GrammarModel getGrammar() {
         var result = this.grammar;
@@ -262,7 +262,7 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
     }
 
     /** Manually sets a new grammar in this graph view.
-     * This should only be done if there is no host tool.
+     * This should only be done if there is no context.
      * @param grammar the grammar to be used.
      */
     public void setGrammar(GrammarModel grammar) {
@@ -270,6 +270,6 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
         this.grammar = grammar;
     }
 
-    /** The manually-set grammar; used when there is no host tool. */
+    /** The manually-set grammar; used when there is no context. */
     private @Nullable GrammarModel grammar;
 }

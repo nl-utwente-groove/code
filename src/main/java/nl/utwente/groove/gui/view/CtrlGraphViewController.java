@@ -33,8 +33,8 @@ import nl.utwente.groove.gui.layout.Layouter;
 public class CtrlGraphViewController extends GraphViewController<ControlGraph> {
     /**
      * Constructs a controller.
-     * @param context the host of the display; {@code null} if the display is
-     * shown outside a host tool
+     * @param context the context of the display; {@code null} if the display is
+     * shown outside any tool
      */
     public CtrlGraphViewController(@Nullable GraphViewContext<ControlGraph> context) {
         super(context);

@@ -286,7 +286,7 @@ public class StateDisplay extends Display
     /** The controller of the state graph view. */
     private AspectGraphViewController controller;
 
-    /** Returns the host context of the state graph view, created with the controller. */
+    /** Returns the view context of the state graph view, created with the controller. */
     final public SimulatorAspectContext getViewContext() {
         getController();
         SimulatorAspectContext result = this.viewContext;
@@ -294,7 +294,7 @@ public class StateDisplay extends Display
         return result;
     }
 
-    /** The host context of the state graph view. */
+    /** The view context of the state graph view. */
     private SimulatorAspectContext viewContext;
 
     /** Lazily creates and returns the label tree for the display. */

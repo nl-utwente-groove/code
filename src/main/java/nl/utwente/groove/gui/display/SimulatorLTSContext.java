@@ -32,7 +32,7 @@ import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.util.AIGenerated;
 
 /**
- * The simulator as host of the graph view showing the LTS.
+ * The simulator as context of the graph view showing the LTS.
  * Adds the exploration and traversal actions, and the exploration result
  * and trace that the LTS view shows.
  * @author Arend Rensink

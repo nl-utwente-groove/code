@@ -35,7 +35,7 @@ import nl.utwente.groove.gui.view.ViewCell;
 import nl.utwente.groove.util.AIGenerated;
 
 /**
- * The simulator as host of a graph view showing aspect graphs.
+ * The simulator as context of a graph view showing aspect graphs.
  * Adds the resource actions for the graph shown, the rule level tree by which
  * a rule view is filtered, and the colour-selection listener on the canvas.
  * @author Arend Rensink
@@ -46,7 +46,7 @@ import nl.utwente.groove.util.AIGenerated;
 public class SimulatorAspectContext extends SimulatorViewContext<AspectGraph> {
     /**
      * Constructs a context for a graph view on a given display.
-     * @param simulator the simulator hosting the graph view
+     * @param simulator the simulator showing the graph view
      * @param kind display kind on which the graphs are shown; determines the
      * graph role, and whether the graphs are graph states
      */

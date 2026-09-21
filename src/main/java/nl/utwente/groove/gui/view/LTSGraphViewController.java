@@ -56,8 +56,8 @@ import nl.utwente.groove.lts.RuleTransition;
 public class LTSGraphViewController extends GraphViewController<GTS> {
     /**
      * Constructs a controller.
-     * @param context the host of the display; {@code null} if the display is
-     * shown outside a host tool
+     * @param context the context of the display; {@code null} if the display is
+     * shown outside any tool
      */
     public LTSGraphViewController(@Nullable GraphViewContext<GTS> context) {
         super(context);
@@ -402,7 +402,7 @@ public class LTSGraphViewController extends GraphViewController<GTS> {
         return result != null && !result.isEmpty();
     }
 
-    /** Convenience method to return the result object of the host, if any. */
+    /** Convenience method to return the result object of the context, if any. */
     private @Nullable ExploreResult getResult() {
         var context = getContext();
         return context == null
