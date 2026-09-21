@@ -18,8 +18,8 @@ tier `gui.view`.
    Reviewed by Arend.
 2. `view-controller-context` (9 commits over `2678fe43c`, plus the review's 5): the
    composition rework. `GraphViewContext<G>` in `gui.view` is what a graph view
-   needs of its host; `SimulatorViewContext` + `AspectViewContext` +
-   `LTSViewContext` in `gui.display` implement it; controllers stay classes.
+   needs of its host; `SimulatorViewContext` + `SimulatorAspectContext` +
+   `SimulatorLTSContext` in `gui.display` implement it; controllers stay classes.
    Warnings 24 → 0; fast suite, GUI tests and yFiles gate re-run by the Fable
    review of 2026-09-21, which committed four fixes on the branch (unused
    imports, `getProperties` back to the context's grammar and private,
@@ -31,8 +31,6 @@ tier `gui.view`.
 
 **Next.**
 
-- Decide the two open points below; the first changes the constructor that
-  session B's tests call, so decide before B starts.
 - Session B in `yfiles-lib`, branch `view-controller-context`, prompt in
   `module-exports.md` under "Session B", made concrete by the review: the six
   sites, the listener registration to delete, the test fixture.
@@ -41,22 +39,12 @@ tier `gui.view`.
 
 **Key files.** `src/main/java/module-info.java`; `gui/view/GraphViewContext.java`,
 `gui/view/GraphViewController.java` and kinds; `gui/display/SimulatorViewContext.java`,
-`AspectViewContext.java`, `LTSViewContext.java`; `claude/module-exports.md`.
+`SimulatorAspectContext.java`, `SimulatorLTSContext.java`; `claude/module-exports.md`.
 
-**Open decisions**, from the Fable review (2026-09-21), both Arend's:
-
-- The aspect controller's `GraphRole` + `forState` constructor (review
-  finding 3). Proposal: drop `forState` from the controller. Its only remaining
-  user is `ExportAction.getActionName`, and the context creates that action
-  and can tell it; the controller then takes a `GraphRole` alone, which is the
-  abstraction the look values and the cells already consume. `DisplayKind`
-  stays in `gui.display` by design, not by necessity: its only unexported
-  dependency is `gui.Icons`, in the body, so it could move without a warning,
-  but it enumerates the Simulator's tabs, which is not view API.
-- Naming. "Host" is rejected (clashes with host graph). Proposal: keep
-  `GraphViewContext`, and rename the implementations with a uniform prefix,
-  `SimulatorViewContext<G>`, `SimulatorAspectContext`, `SimulatorLTSContext`,
-  so that `AspectViewContext` no longer reads as part of the `AspectView*`
-  cell family of `gui.view`. Alternative word, if one is wanted:
-  `GraphViewSite`, after Eclipse's `IViewSite`, the workbench's handle given
-  to a view part. The javadoc says "host" throughout and follows the decision.
+**Decisions** (Arend, 2026-09-21, both applied on the branch): the aspect
+controller takes a `GraphRole` alone; whether the graphs are states is the
+context's knowledge, passed to the export action it creates. The context
+implementations are `SimulatorViewContext<G>`, `SimulatorAspectContext` and
+`SimulatorLTSContext`; the interface stays `GraphViewContext` ("host" was
+rejected as clashing with host graphs, and the javadoc still says it — a
+wording pass is open). No decision blocks session B.

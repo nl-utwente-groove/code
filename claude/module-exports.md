@@ -270,9 +270,9 @@ controller takes a `@Nullable GraphViewContext<G>` where it took a
 every host-dependent member degrades to nothing.
 
 The implementation is `SimulatorViewContext<G>` in `gui.display`, with a
-subclass for each kind that needs more: `AspectViewContext` (the display kind,
+subclass for each kind that needs more: `SimulatorAspectContext` (the display kind,
 the rule level tree, the resource actions, the colour-selection listener) and
-`LTSViewContext` (exploration and traversal actions, the model-checking menu,
+`SimulatorLTSContext` (exploration and traversal actions, the model-checking menu,
 the explore result and the trace). The displays and tabs that create a
 controller create its context and hand it the trees they build on the canvas —
 which is why `setLabelTree`/`setLevelTree` live on the context and are called
@@ -299,12 +299,16 @@ and find/replace asks the graph tab for its label tree.
   `canvasAttached`; `removeListeners` has to undo what it registered, and the
   export action (owned by the context, since it needs the Simulator) has to be
   unregistered as a refreshable, so `canvasDetached` mirrors it.
-- **The aspect controller takes a `GraphRole` and a state flag**, not a
-  `DisplayKind`, which is not an exported type. The kind itself lives in
-  `AspectViewContext`, the only place that needs it. Note that
+- **The aspect controller takes a `GraphRole`**, not a `DisplayKind`. Nothing
+  technical keeps `DisplayKind` out of `gui.view` (its one unexported
+  dependency, `gui.Icons`, is in the body), but it enumerates the Simulator's
+  tabs, which is not view API. The role is the abstraction the look values and
+  the cells already consume. Whether the graphs are states is known to the
+  context alone (`SimulatorAspectContext` holds the kind), which tells the
+  export action it creates; the first version of this branch also passed a
+  state flag to the controller, dropped in review as ad hoc. Note that
   `DisplayKind.STATE.getGraphRole()` throws, which is why the state display
-  passes `GraphRole.HOST` and `forState = true` explicitly, as the old
-  constructor computed.
+  passes `GraphRole.HOST` explicitly, as the old constructor computed.
 - **The point actions keep their logic where it was**, in the canvas-based
   cell-edit actions of `gui.action` that the controller creates. They touch no
   Simulator state, so composition has nothing to move; only their accessors
@@ -348,10 +352,9 @@ honest picture of how much of the Simulator the popup menus carry.
 > - `YFilesAspectEditorCanvas` 498-500: `addPoint`/`removePoint`.
 >
 > Tests: the six `new AspectGraphViewController(null, DisplayKind.X, b)` calls
-> take `(null, X.getGraphRole(), false, b)`, except the `DisplayKind.STATE`
-> one in `YFilesCanvasTest` 168, which takes `GraphRole.HOST, true`, since
-> `STATE.getGraphRole()` throws (the constructor may still change, see the
-> open decision in `module-exports-state.md`). `YFilesEditorTest` 519 drops
+> take `(null, X.getGraphRole(), b)`, except the `DisplayKind.STATE` one in
+> `YFilesCanvasTest` 168, which takes `GraphRole.HOST`, since
+> `STATE.getGraphRole()` throws. `YFilesEditorTest` 519 drops
 > its `setLabelTree` call, as the in-tree `EditorLabelTreeTest` did.
 > `YFilesCanvasTest` 172 tests visibility under a filter and needs a test
 > fixture implementing `GraphViewContext<AspectGraph>` over a `TypeTree`: the
