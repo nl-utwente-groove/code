@@ -39,8 +39,6 @@ import nl.utwente.groove.gui.view.LTSViewCell;
 import nl.utwente.groove.gui.view.LTSViewEdge;
 import nl.utwente.groove.gui.view.LTSGraphViewController;
 import nl.utwente.groove.gui.view.LTSViewVertex;
-import nl.utwente.groove.gui.tree.LabelTree;
-import nl.utwente.groove.gui.tree.RuleLevelTree;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 

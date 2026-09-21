@@ -45,7 +45,6 @@ import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Element;
-import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.view.AspectGraphCanvas;
 import nl.utwente.groove.gui.view.AspectGraphViewController;
 import nl.utwente.groove.gui.view.AspectGraphViewModel;

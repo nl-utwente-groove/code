@@ -24,7 +24,6 @@ import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphRole;
-import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.display.AspectViewContext;
 import nl.utwente.groove.gui.display.DisplayKind;
