@@ -90,7 +90,7 @@ local to the one per-transition owner. Identity-hash iteration order of the user
 unchanged from the previous `HashSet`, and reset order is irrelevant, so determinism is
 unaffected.
 
-**Follow-up idea (Arend, 2026-09-21): resettable versus frozen factories.** Edges are only
+**Follow-up, gh #920: resettable versus frozen factories (Arend, 2026-09-21).** Edges are only
 useful between two resettable factories. A frozen factory (`reset()` throws) needs no
 stored edges in either direction, but must still be registered as a builder so that every
 read inside its build can check that the read factory is frozen too; a frozen build reading
@@ -98,8 +98,8 @@ a resettable factory is exactly the stale-value hazard that plain fields hide, a
 check makes it fail loudly. It complements (c) rather than replacing it: the aspect-graph
 edge to `Sort.operatorMap` is legitimately resettable-to-resettable and only weak sets stop
 it retaining. The check would first flag `Rule.prover`, since the matchers read
-`AlgebraFamily.userOps`. Needs an audit of the 130 sites with a resettable default; its
-own issue and branch.
+`AlgebraFamily.userOps`. Needs an audit of the 130 sites with a resettable default; filed
+as gh #920, for its own branch.
 
 ## Tests
 
