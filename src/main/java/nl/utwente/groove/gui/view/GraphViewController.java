@@ -208,8 +208,9 @@ public abstract class GraphViewController<G extends Graph> {
      */
     public void removeListeners() {
         var actions = getActions();
-        if (actions != null) {
-            actions.removeRefreshable(getExportAction());
+        var exportAction = this.exportAction;
+        if (actions != null && exportAction != null) {
+            actions.removeRefreshable(exportAction);
         }
         for (Pair<String,OptionRefreshListener> record : this.optionListeners) {
             getOptions().removeOptionListener(record.one(), record.two());
@@ -323,7 +324,7 @@ public abstract class GraphViewController<G extends Graph> {
     }
 
     /** Returns the action to export the displayed graph in various formats. */
-    public ExportAction getExportAction() {
+    public Action getExportAction() {
         var result = this.exportAction;
         if (result == null) {
             this.exportAction = result = new ExportAction(getCanvas());
@@ -336,7 +337,7 @@ public abstract class GraphViewController<G extends Graph> {
     private @Nullable ExportAction exportAction;
 
     /** Returns the action to lay out the displayed graph. */
-    public LayoutAction getLayoutAction() {
+    public Action getLayoutAction() {
         var result = this.layoutAction;
         if (result == null) {
             this.layoutAction = result = new LayoutAction(getCanvas());
@@ -487,17 +488,22 @@ public abstract class GraphViewController<G extends Graph> {
      * Returns a menu consisting of the menu items from the layouter
      * setting menu of the graph view.
      */
-    public SetLayoutMenu getSetLayoutMenu() {
+    private SetLayoutMenu getSetLayoutMenu() {
         var result = this.setLayoutMenu;
         if (result == null) {
-            this.setLayoutMenu = result = createSetLayoutMenu();
+            this.setLayoutMenu = result = new SetLayoutMenu(this);
         }
         return result;
     }
 
-    /** Creates and returns a fresh layout setting menu for the graph view. */
-    public SetLayoutMenu createSetLayoutMenu() {
-        return new SetLayoutMenu(this);
+    /**
+     * Selects a layouter for the graph view, as the layouter setting menu does,
+     * and returns the action that runs it.
+     * @param prototypeLayouter prototype for the new layouter
+     * @see #setLayouter(Layouter)
+     */
+    public Action selectLayouter(Layouter prototypeLayouter) {
+        return getSetLayoutMenu().selectLayoutAction(prototypeLayouter);
     }
 
     /**
@@ -521,14 +527,14 @@ public abstract class GraphViewController<G extends Graph> {
     /**
      * Creates and returns a fresh zoom menu for the graph view.
      */
-    public ZoomMenu createZoomMenu() {
+    public JMenu createZoomMenu() {
         return new ZoomMenu(getCanvas());
     }
 
     /**
      * Creates and returns a fresh show/hide menu for the graph view.
      */
-    public ShowHideMenu<G> createShowHideMenu() {
+    public JMenu createShowHideMenu() {
         return new ShowHideMenu<>(getCanvas(), this::getFilterLabels);
     }
 

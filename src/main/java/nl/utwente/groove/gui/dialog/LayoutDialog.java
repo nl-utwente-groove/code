@@ -35,7 +35,6 @@ import javax.swing.SwingConstants;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.layout.Layouter;
-import nl.utwente.groove.gui.menu.SetLayoutMenu;
 import nl.utwente.groove.gui.view.GraphCanvas;
 
 /**
@@ -111,8 +110,9 @@ public class LayoutDialog extends JDialog implements ActionListener, WindowFocus
 
     private void refreshPanel(Layouter item) {
         if (getCanvas() != null) {
-            getLayoutMenu()
-                .selectLayoutAction(item)
+            getCanvas()
+                .getController()
+                .selectLayouter(item)
                 .actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "layout"));
             replacePanel(getCanvas().getController().getLayouter().getSettingsPanel());
         }
@@ -127,10 +127,6 @@ public class LayoutDialog extends JDialog implements ActionListener, WindowFocus
         }
         this.panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         this.pack();
-    }
-
-    private SetLayoutMenu getLayoutMenu() {
-        return getCanvas() == null ? null : getCanvas().getController().getSetLayoutMenu();
     }
 
     /**

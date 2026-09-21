@@ -360,7 +360,7 @@ public class ActionStore implements SimulatorListener {
     private final Map<DisplayKind,ExportAction> exportActionMap = new EnumMap<>(DisplayKind.class);
 
     /** Returns the export action appropriate for a given simulator tab kind. */
-    public ExportAction getExportStateAction() {
+    public Action getExportStateAction() {
         if (this.exportStateAction == null) {
             StateDisplay display
                 = (StateDisplay) this.simulator.getDisplaysPanel().getDisplay(DisplayKind.STATE);
@@ -369,7 +369,7 @@ public class ActionStore implements SimulatorListener {
         return this.exportStateAction;
     }
 
-    private ExportAction exportStateAction;
+    private Action exportStateAction;
 
     /**
      * Returns the forward (= repeat) simulation action permanently associated

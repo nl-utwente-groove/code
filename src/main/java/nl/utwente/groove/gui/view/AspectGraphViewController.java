@@ -188,7 +188,7 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
     /**
      * Initialises and returns an action to add a point to the currently selected edge.
      */
-    public AddPointAction getAddPointAction() {
+    private AddPointAction getAddPointAction() {
         var result = this.addPointAction;
         if (result == null) {
             this.addPointAction = result = new AddPointAction(getCanvas());
@@ -221,7 +221,7 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
     /**
      * @return an action to edit the currently selected cell label.
      */
-    public CellEditAction getEditLabelAction() {
+    private CellEditAction getEditLabelAction() {
         var result = this.editLabelAction;
         if (result == null) {
             this.editLabelAction = result = new EditLabelAction(getCanvas());
@@ -236,7 +236,7 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
     /**
      * Initialises and returns an action to remove a point from the currently selected edge.
      */
-    public RemovePointAction getRemovePointAction() {
+    private RemovePointAction getRemovePointAction() {
         var result = this.removePointAction;
         if (result == null) {
             this.removePointAction = result = new RemovePointAction(getCanvas());
@@ -252,7 +252,7 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
      * @return an action to reset the label position of the currently selected
      *         edge.
      */
-    public CellEditAction getResetLabelPositionAction() {
+    private CellEditAction getResetLabelPositionAction() {
         var result = this.resetLabelPositionAction;
         if (result == null) {
             this.resetLabelPositionAction = result = new ResetLabelPositionAction(getCanvas());
@@ -267,7 +267,7 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
      * @param lineStyle the lineStyle for which to get the set-action
      * @return an action to set the line style of the currently selected edge.
      */
-    public CellEditAction getSetLineStyleAction(LineStyle lineStyle) {
+    public Action getSetLineStyleAction(LineStyle lineStyle) {
         var result = this.setLineStyleActionMap.get(lineStyle);
         if (result == null) {
             result = new SetLineStyleAction(getCanvas(), lineStyle);
