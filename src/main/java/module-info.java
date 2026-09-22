@@ -117,9 +117,7 @@ module nl.utwente.groove {
     requires jdk.xml.dom;
     requires fop.core;
 
-    opens nl.utwente.groove.verify to info.picocli;
     opens nl.utwente.groove.gui to info.picocli;
-    opens nl.utwente.groove.util to info.picocli;
     opens nl.utwente.groove.cli to info.picocli;
 
     // the following opens clauses are required to allow GROOVE to access
