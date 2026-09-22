@@ -41,6 +41,8 @@ module nl.utwente.groove {
     exports nl.utwente.groove.verify;
     exports nl.utwente.groove.prolog;
     exports nl.utwente.groove.prolog.builtin;
+    // -- command-line tools
+    exports nl.utwente.groove.cli;
     // -- graph-backend SPI: an add-on jar is loaded into the unnamed module and
     //    implements/extends these types, so they must be exported for GROOVE
     //    to run from the module path (ExtensionsTest); GraphViewController still
@@ -72,7 +74,6 @@ module nl.utwente.groove {
     exports nl.utwente.groove.util.line;
     exports nl.utwente.groove.util.cache;
     exports nl.utwente.groove.util.collect;
-    exports nl.utwente.groove.util.cli;
 
     // service contributions; each provider is also declared in META-INF/services,
     // which takes over when GROOVE runs from the class path (as the installed
@@ -119,7 +120,7 @@ module nl.utwente.groove {
     opens nl.utwente.groove.gui to info.picocli;
     opens nl.utwente.groove.prolog to info.picocli;
     opens nl.utwente.groove.util to info.picocli;
-    opens nl.utwente.groove.util.cli to info.picocli;
+    opens nl.utwente.groove.cli to info.picocli;
 
     // the following opens clauses are required to allow GROOVE to access
     // these resources at runtime

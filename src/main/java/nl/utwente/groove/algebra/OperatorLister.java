@@ -26,8 +26,8 @@ import picocli.CommandLine.Parameters;
 import com.opencsv.CSVWriter;
 
 import nl.utwente.groove.algebra.Signature.OpValue;
+import nl.utwente.groove.cli.GrooveCmdLineTool;
 import nl.utwente.groove.util.FileType;
-import nl.utwente.groove.util.cli.GrooveCmdLineTool;
 
 /**
  * Command-line tool to list the available operators in a format that

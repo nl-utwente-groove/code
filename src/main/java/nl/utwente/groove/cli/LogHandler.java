@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.util.cli;
+package nl.utwente.groove.cli;
 
 import java.lang.System.Logger.Level;
 

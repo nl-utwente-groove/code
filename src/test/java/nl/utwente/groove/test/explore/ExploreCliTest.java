@@ -23,9 +23,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.Test;
 
+import nl.utwente.groove.cli.CmdLineException;
 import nl.utwente.groove.explore.Generator;
 import nl.utwente.groove.lts.Filter;
-import nl.utwente.groove.util.cli.CmdLineException;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

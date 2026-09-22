@@ -32,6 +32,11 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.Parameters;
 
+import nl.utwente.groove.cli.CmdLineException;
+import nl.utwente.groove.cli.DirectoryHandler;
+import nl.utwente.groove.cli.GrammarHandler;
+import nl.utwente.groove.cli.GrooveCmdLineParser;
+import nl.utwente.groove.cli.GrooveCmdLineTool;
 import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
@@ -53,11 +58,6 @@ import nl.utwente.groove.lts.LTSLabels;
 import nl.utwente.groove.util.FileType;
 import nl.utwente.groove.util.Randomness;
 import nl.utwente.groove.util.Resources;
-import nl.utwente.groove.util.cli.CmdLineException;
-import nl.utwente.groove.util.cli.DirectoryHandler;
-import nl.utwente.groove.util.cli.GrammarHandler;
-import nl.utwente.groove.util.cli.GrooveCmdLineParser;
-import nl.utwente.groove.util.cli.GrooveCmdLineTool;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

@@ -25,11 +25,11 @@ import picocli.CommandLine.Model.ArgSpec;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Option;
 
+import nl.utwente.groove.cli.GrooveCmdLineParser;
+import nl.utwente.groove.cli.GrooveCmdLineTool;
 import nl.utwente.groove.explore.Generator;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.lts.GTS;
-import nl.utwente.groove.util.cli.GrooveCmdLineParser;
-import nl.utwente.groove.util.cli.GrooveCmdLineTool;
 
 /**
  * Command-line tool for running Prolog queries after state space exploration.

@@ -29,14 +29,14 @@ import java.util.Stack;
 
 import org.eclipse.jdt.annotation.Nullable;
 
+import nl.utwente.groove.cli.GrooveCmdLineParser;
+import nl.utwente.groove.cli.GrooveCmdLineTool;
 import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.LTSLabels;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Strings;
-import nl.utwente.groove.util.cli.GrooveCmdLineParser;
-import nl.utwente.groove.util.cli.GrooveCmdLineTool;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.verify.CTLMarker;
