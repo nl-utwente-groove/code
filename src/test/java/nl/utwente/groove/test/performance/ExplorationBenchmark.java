@@ -43,7 +43,9 @@ import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.explore.ExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
+import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.grammar.model.GrammarModel;
+import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.graph.iso.IsoChecker;
 import nl.utwente.groove.io.store.SystemStore;
@@ -181,6 +183,9 @@ public class ExplorationBenchmark {
      * grammar's default one
      * @param controlProgram name of the control program; {@code null} for
      * the grammar's default one
+     * @param properties grammar property overrides as space-separated
+     * {@code key=value} pairs, like the {@code -D} option of the
+     * {@code Generator}; {@code null} for the grammar's own properties
      * @param exploreConfig exploration configuration in {@link ExploreConfig}
      * text form; {@code ""} is the default (breadth-first, full) exploration
      * @param expectedStates expected number of <em>discovered</em> states, or
@@ -190,8 +195,17 @@ public class ExplorationBenchmark {
      * @param tier size class of this configuration
      */
     public record Config(String name, String grammar, @Nullable String startGraph,
-                         @Nullable String controlProgram, String exploreConfig,
-                         int expectedStates, int expectedTransitions, Tier tier) {
+                         @Nullable String controlProgram, @Nullable String properties,
+                         String exploreConfig, int expectedStates, int expectedTransitions,
+                         Tier tier) {
+        /** Constructs a configuration using the grammar's own properties. */
+        public Config(String name, String grammar, @Nullable String startGraph,
+                      @Nullable String controlProgram, String exploreConfig,
+                      int expectedStates, int expectedTransitions, Tier tier) {
+            this(name, grammar, startGraph, controlProgram, null, exploreConfig,
+                 expectedStates, expectedTransitions, tier);
+        }
+
         /** Constructs a configuration using the grammar's default control program. */
         public Config(String name, String grammar, @Nullable String startGraph,
                       String exploreConfig, int expectedStates, int expectedTransitions,
@@ -632,8 +646,9 @@ public class ExplorationBenchmark {
                 .toExploreType(ExploreConfig.parse(config.exploreConfig()));
             List<Measurement> measured = new ArrayList<>();
             for (int i = 0; i < warmups + runs; i++) {
-                GrammarModel model
-                    = newGrammarModel(store, config.startGraph(), config.controlProgram());
+                GrammarModel model = newGrammarModel(store, config.startGraph(),
+                                                     config.controlProgram(),
+                                                     config.properties());
                 Measurement measurement = singleRun(model, exploreType, timeoutSeconds);
                 if (i >= warmups) {
                     measured.add(measurement);
@@ -731,16 +746,29 @@ public class ExplorationBenchmark {
      * grammar's default one
      * @param controlName name of the control program; {@code null} for the
      * grammar's default one
+     * @param properties grammar property overrides, see {@link Config#properties()};
+     * {@code null} for none
+     * @throws FormatException if the overridden properties do not fit the grammar
      */
     private static GrammarModel newGrammarModel(SystemStore store,
                                                 @Nullable String startGraphName,
-                                                @Nullable String controlName) {
+                                                @Nullable String controlName,
+                                                @Nullable String properties)
+        throws FormatException {
         GrammarModel model = new GrammarModel(store);
         if (startGraphName != null) {
             model.setLocalActiveNames(ResourceKind.HOST, QualName.parse(startGraphName));
         }
         if (controlName != null) {
             model.setLocalActiveNames(ResourceKind.CONTROL, QualName.parse(controlName));
+        }
+        if (properties != null) {
+            GrammarProperties overridden = new GrammarProperties(model.getProperties());
+            for (String setting : properties.split(" ")) {
+                int eq = setting.indexOf('=');
+                overridden.setProperty(setting.substring(0, eq), setting.substring(eq + 1));
+            }
+            model.setProperties(overridden);
         }
         return model;
     }
