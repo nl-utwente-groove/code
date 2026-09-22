@@ -9,7 +9,7 @@ Measurable performance improvement of state-space exploration, working down the
 findings of `claude/exploration-performance.md` (the review note; read its "Suggested
 order of attack" and "Building a throughput harness" sections first).
 
-## State as of 2026-09-22 (fibonacci investigation)
+## State as of 2026-09-22 (grammar-set item 6 done)
 
 Branch `exploration-performance`, worktree `.claude/worktrees/exploration-performance`,
 master merged in up to `ed8b740cf` (the explore-search-order-rules merge), re-attached
@@ -121,7 +121,17 @@ than the eight copied samples do. Agreed order, by coverage gained per hour:
    5.2 GB) and `join-f` (2f sub-matches per step on an unstored path: `join-100` and
    `join-1000` quick, 450 µs and 1.1 MB per step at f = 100, linear in f). Calibration
    table in the note.
-6. Multigraph semantics and merging: `parallel-pump`, `mergers`, scaled.
+6. Done (2026-09-22 late): `parallel-pump` (Arend's DPO copy) with generated `pump-k-m`
+   (`pump-8-4` smoke, `pump-12-6` quick under DPO and SPO-multi, `pump-16-8` long at
+   169 s and 6 GB) and `mergers` (hand copy of the sample, `system.properties` rewritten
+   to 3.12 with `semantics=SPO-simple`) with generated `ring-n` (`ring-6` smoke,
+   `ring-9` quick under simple and multi, `ring-10-multi` upper quick, `ring-11-dpo`
+   quick; no long size, `ring-11` under multi is 7.6 min and 5.6 GB). The variants use a
+   new per-row grammar-property override, `Config.properties` (`key=value` pairs like
+   the `Generator`'s `-D`). Calibration table and observations in the note: DPO and
+   SPO-multi cost the same on the pump (no node erasure, so 4.1.6 never runs; the
+   mergers DPO row is the one for it), multi costs 5 to 10 % over simple on mergers,
+   DPO cuts mergers' states tenfold through the identification condition.
 7. Key-variant rows on existing grammars as needed while fixing.
 
 Then the quick-tier re-baseline (item 2 above) before the first fix. Per step: copy or
@@ -151,6 +161,9 @@ small.
   `ExploreType.newExploration`, which materialises the start state.
 - The harness's `retMB` includes softly reachable state caches (about 60 % of the
   unstored row) and whatever the run leaked into the `Grammar`.
+- The harness `main` takes row names as arguments; `-Dgroove.bench.run=<name>` is the
+  JUnit route's selector and is ignored by `main` (a loop passing it ran the whole quick
+  tier per iteration, 2026-09-22).
 - Run order in one JVM changes timings (megamorphic call sites); compare like orders.
 - Surefire honours `-DenableAssertions=false`; the harness header prints the status.
 - Calibrate through the harness itself: a row with `-1` counts, no warm-up, one run, one
