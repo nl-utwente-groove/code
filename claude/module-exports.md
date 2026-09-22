@@ -40,7 +40,8 @@ the first cut here).
 | Pipeline | root, `io.store`, `io.graph`, `io.external`, `grammar`, `grammar.model/aspect/host/type/rule`, `graph`, `graph.plain/iso/layout`, `match`, `transform`, `transform.oracle`, `lts`, `explore`, `explore.config/feature/result/engine`, `verify`, `prolog`, `prolog.builtin` |
 | Data values | `algebra`, `algebra.syntax`, `annotation` |
 | Control | `control`, `control.term/template/instance/graph` |
-| Utilities | `util`, `util.parse/line/cache/collect/cli` |
+| Utilities | `util`, `util.parse/line/cache/collect` |
+| CLI | `cli` (since 2026-09-22; before that `util.cli` and the tools in `explore`, `prolog`, `algebra`) |
 | Backend SPI | `gui.view`, `gui.view.cell`, `gui.look`, `gui.layout` |
 | Qualified | `prolog.builtin.algebra/graph/lts/rule/trans/type` to `gnuprologjava` only |
 
@@ -69,10 +70,10 @@ Reasons for the less obvious ones, all forced by signature reachability:
 - `util`: besides the obvious (`QualName`, `Property`, `Pair`, …) it now holds
   `FileType`, which occurs in 20 signatures of `io.external`, `io.graph` and
   `grammar.model`, and its `ExtensionFilter`.
-- `util.cli`: the CLI tools `explore.Generator`, `explore.CTLModelChecker`,
-  `prolog.PrologChecker`, `algebra.OperatorLister` extend `GrooveCmdLineTool`.
-  picocli was already `requires transitive`, so the package adds no new
-  third-party surface. See the open item.
+- `cli`: the command-line tools and their picocli base `GrooveCmdLineTool`,
+  gathered from `util.cli`, `explore`, `prolog`, `algebra` and `io` on
+  2026-09-22 (see "Item 2 as built"). picocli was already `requires transitive`,
+  so the package adds no new third-party surface.
 - `prolog.builtin`: `GrooveEnvironment.addPredicates(Class<? extends GroovePredicates>)`
   is the extension point for predicate sets. The subpackages with the concrete
   predicates are exported to `gnuprologjava` only, which instantiates them.
