@@ -82,13 +82,17 @@ public class AddOnInstaller {
 
     /**
      * Creates the menu of this installer, for the options part of the View menu. The items
-     * are put in whenever the menu is opened, since the installer changes what applies:
-     * an add-on that is installed can only be removed, one with a pending removal only
-     * reactivated, one that is absent only installed; only a stale add-on can be both
-     * updated and removed.
+     * are put in whenever the menu is opened, since the installer changes what applies.
+     * The first item is a disabled line stating the status of the add-on, so that the
+     * actions below it can be read: an add-on that is installed can only be removed, one
+     * with a pending removal only reactivated, one that is absent only installed; only a
+     * stale add-on can be both updated and removed. A development version has no release
+     * to download from, so its menu offers only the installation from a file.
      */
     public JMenu createMenu() {
         JMenu result = new JMenu(Options.YFILES_ADDON_MENU_NAME);
+        JMenuItem statusItem = new JMenuItem();
+        statusItem.setEnabled(false);
         JMenuItem downloadItem = new JMenuItem(Options.DOWNLOAD_ADDON_ACTION_NAME);
         downloadItem.addActionListener(e -> download());
         downloadItem.setToolTipText("From " + this.addOn.getDownloadUri(Version.NUMBER));
@@ -107,22 +111,28 @@ public class AddOnInstaller {
                 AddOn addOn = AddOnInstaller.this.addOn;
                 Status status = getStatus();
                 boolean present = addOn.isPresent(ext);
-                String description = describeStatus(status, present);
+                statusItem.setText(describeStatus(status, present));
+                statusItem
+                    .setToolTipText(present
+                        ? "In " + addOn.getDir(ext)
+                        : null);
+                result.add(statusItem);
+                result.addSeparator();
                 if (addOn.getPending(ext) == Pending.REMOVE) {
-                    reactivateItem.setToolTipText(description);
                     result.add(reactivateItem);
                     return;
                 }
                 if (status == Status.STALE || !present) {
-                    downloadItem
-                        .setText(status == Status.STALE
-                            ? Options.UPDATE_ADDON_ACTION_NAME
-                            : Options.DOWNLOAD_ADDON_ACTION_NAME);
-                    result.add(downloadItem);
+                    if (!Version.isDevelopmentVersion()) {
+                        downloadItem
+                            .setText(status == Status.STALE
+                                ? Options.UPDATE_ADDON_ACTION_NAME
+                                : Options.DOWNLOAD_ADDON_ACTION_NAME);
+                        result.add(downloadItem);
+                    }
                     result.add(fileItem);
                 }
                 if (present) {
-                    removeItem.setToolTipText(description);
                     result.add(removeItem);
                 }
             }
@@ -295,23 +305,24 @@ public class AddOnInstaller {
     }
 
     /**
-     * Describes the status of the add-on in this run, and what changes at the next start.
+     * Describes the status of the add-on in this run, and what changes at the next start,
+     * in one line for the status item of the menu.
      * @param status the status in the scan of this run
      * @param present whether the add-on has files in the extension directory, which it
      * may have without being loaded in this run, e.g. when installed during the run
      */
     private String describeStatus(Status status, boolean present) {
-        Path dir = this.addOn.getDir(Extensions.dir());
         String result = switch (status) {
-        case INSTALLED -> "Installed in " + dir;
-        case STALE -> "Installed in " + dir + ", but built for another GROOVE version";
+        case INSTALLED -> "Installed and loaded";
+        case STALE -> "Installed for GROOVE "
+            + String.join(", ", this.addOn.getVersions(Extensions.instance())) + ", not loaded";
         case ABSENT -> present
-            ? "Installed in " + dir + ", but not loaded in this run"
+            ? "Installed, not loaded in this run"
             : "Not installed";
         };
         return switch (this.addOn.getPending(Extensions.dir())) {
         case NONE -> result;
-        case INSTALL -> result + "; a new version is installed at the next start";
+        case INSTALL -> result + "; new version installed at the next start";
         case REMOVE -> result + "; removed at the next start unless reactivated";
         };
     }

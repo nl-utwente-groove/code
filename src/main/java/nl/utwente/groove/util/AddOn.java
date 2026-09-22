@@ -174,6 +174,23 @@ public final class AddOn {
         return result;
     }
 
+    /**
+     * Returns the GROOVE versions declared by the jars of this add-on in a scan of the
+     * extension directory, in scan order and without duplicates; empty if the add-on is
+     * absent or none of its jars declares a version.
+     */
+    public List<String> getVersions(Extensions extensions) {
+        Path dir = getDir(extensions.getDir());
+        List<String> result = new ArrayList<>();
+        for (Jar jar : extensions.getJars()) {
+            String version = jar.version();
+            if (version != null && jar.path().startsWith(dir) && !result.contains(version)) {
+                result.add(version);
+            }
+        }
+        return result;
+    }
+
     /** Returns the file name of the zip of this add-on for a given GROOVE version. */
     public String getZipName(String version) {
         return "groove-" + version.replace('.', '_') + "-" + getName() + "-addon.zip";
