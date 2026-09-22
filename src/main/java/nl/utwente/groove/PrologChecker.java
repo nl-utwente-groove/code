@@ -18,7 +18,7 @@ package nl.utwente.groove;
 
 /**
  * Wrapper class for the Prolog checker.
- * @see nl.utwente.groove.prolog.PrologChecker
+ * @see nl.utwente.groove.cli.PrologChecker
  * @author Eduardo Zambon
  */
 public class PrologChecker {
@@ -27,6 +27,6 @@ public class PrologChecker {
      * @param args list of command-line arguments
      */
     public static void main(String[] args) {
-        nl.utwente.groove.prolog.PrologChecker.main(args);
+        nl.utwente.groove.cli.PrologChecker.main(args);
     }
 }

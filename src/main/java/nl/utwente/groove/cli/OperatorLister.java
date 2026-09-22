@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.algebra;
+package nl.utwente.groove.cli;
 
 import java.io.FileWriter;
 import java.util.ArrayList;
@@ -25,8 +25,9 @@ import picocli.CommandLine.Parameters;
 
 import com.opencsv.CSVWriter;
 
+import nl.utwente.groove.algebra.Operator;
 import nl.utwente.groove.algebra.Signature.OpValue;
-import nl.utwente.groove.cli.GrooveCmdLineTool;
+import nl.utwente.groove.algebra.Sort;
 import nl.utwente.groove.util.FileType;
 
 /**

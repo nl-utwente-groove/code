@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.explore;
+package nl.utwente.groove.cli;
 
 import static nl.utwente.groove.util.Verbosity.LOW;
 
@@ -29,8 +29,6 @@ import java.util.Stack;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-import nl.utwente.groove.cli.GrooveCmdLineParser;
-import nl.utwente.groove.cli.GrooveCmdLineTool;
 import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.lts.GTS;

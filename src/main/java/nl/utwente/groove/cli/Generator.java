@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.explore;
+package nl.utwente.groove.cli;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,11 +32,8 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.ParameterException;
 import picocli.CommandLine.Parameters;
 
-import nl.utwente.groove.cli.CmdLineException;
-import nl.utwente.groove.cli.DirectoryHandler;
-import nl.utwente.groove.cli.GrammarHandler;
-import nl.utwente.groove.cli.GrooveCmdLineParser;
-import nl.utwente.groove.cli.GrooveCmdLineTool;
+import nl.utwente.groove.explore.ExploreType;
+import nl.utwente.groove.explore.Transformer;
 import nl.utwente.groove.explore.config.ConfiguredExploreType;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;

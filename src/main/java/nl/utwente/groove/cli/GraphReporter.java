@@ -14,16 +14,16 @@
  * 
  * $Id$
  */
-package nl.utwente.groove.io;
+package nl.utwente.groove.cli;
 
 import java.util.Map;
 
 import picocli.CommandLine.Parameters;
 
-import nl.utwente.groove.cli.GrooveCmdLineTool;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Label;
+import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.util.collect.Bag;
 import nl.utwente.groove.util.collect.TreeBag;
 
