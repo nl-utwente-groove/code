@@ -97,6 +97,25 @@ public class SaveGrammarAsGuiTest {
                    "start graph edit did not survive a refresh");
     }
 
+    /**
+     * The file proposed by the Save As dialog used to be the one last saved
+     * through the chooser, which lagged behind the loaded grammar because
+     * Load Grammar sets its file on a different chooser (the one that also
+     * accepts archives).
+     */
+    @Test
+    void proposedFileFollowsLoadedGrammar() throws Exception {
+        for (String name : new String[] {"first.gps", "second.gps"}) {
+            Path grammar = copyGrammar(name);
+            loadGrammar(grammar);
+            SwingUtilities.invokeAndWait(() -> {
+                var chooser = simulator().getActions().getSaveGrammarAction().prepareFileChooser();
+                assertEquals(grammar.toFile(), chooser.getSelectedFile(),
+                             "Save As does not propose the name of the loaded grammar");
+            });
+        }
+    }
+
     private Path copyGrammar(String name) throws IOException {
         Path result = resolve(name);
         FileUtils.copyDirectory(new File(GRAMMAR), result.toFile(), false);

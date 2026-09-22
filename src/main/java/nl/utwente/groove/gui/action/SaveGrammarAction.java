@@ -22,16 +22,32 @@ public class SaveGrammarAction extends SimulatorAction {
 
     @Override
     public void execute() {
-        int approve = getGrammarFileChooser(false).showSaveDialog(getFrame());
+        JFileChooser chooser = prepareFileChooser();
+        int approve = chooser.showSaveDialog(getFrame());
         // now save, if so required
         if (approve == JFileChooser.APPROVE_OPTION) {
-            File selectedFile = getGrammarFileChooser(false).getSelectedFile();
+            File selectedFile = chooser.getSelectedFile();
             try {
                 save(selectedFile, true);
             } catch (IOException exc) {
                 showErrorDialog(exc, "Error while saving grammar to " + selectedFile);
             }
         }
+    }
+
+    /**
+     * Returns the grammar file chooser, with the location of the currently
+     * loaded grammar set as proposed file.
+     * Left to itself, the chooser only remembers the last grammar saved or
+     * created through it, which a subsequent Load Grammar does not update.
+     */
+    public JFileChooser prepareFileChooser() {
+        JFileChooser result = getGrammarFileChooser(false);
+        File currentFile = getLastGrammarFile();
+        if (currentFile != null) {
+            result.setSelectedFile(currentFile);
+        }
+        return result;
     }
 
     /**
@@ -57,7 +73,6 @@ public class SaveGrammarAction extends SimulatorAction {
             }
             getSimulatorModel().setGrammar(newStore);
             getSimulator().setTitle();
-            getGrammarFileChooser().setSelectedFile(grammarFile);
             result = true;
         }
         return result;
