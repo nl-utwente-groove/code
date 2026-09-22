@@ -44,10 +44,10 @@ import nl.utwente.groove.transform.RuleApplication;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.Strings;
+import nl.utwente.groove.util.TreeHashSet;
 import nl.utwente.groove.util.cache.Cache;
 import nl.utwente.groove.util.collect.KeySet;
 import nl.utwente.groove.util.collect.SetView;
-import nl.utwente.groove.util.collect.TreeHashSet;
 
 /**
  * Caches information of a state. Cached are the graph, the set of outgoing

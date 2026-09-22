@@ -32,7 +32,6 @@ import java.util.stream.Stream;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.util.HTMLConverter.HTMLTag;
-import nl.utwente.groove.util.collect.DeltaMap;
 import nl.utwente.groove.util.parse.FormatChecker;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.util.parse.ParsableKey;

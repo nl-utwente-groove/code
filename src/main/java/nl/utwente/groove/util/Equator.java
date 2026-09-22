@@ -1,4 +1,4 @@
-package nl.utwente.groove.util.collect;
+package nl.utwente.groove.util;
 
 /**
  * Interface for encoding hash codes and equality of objects of a given type.

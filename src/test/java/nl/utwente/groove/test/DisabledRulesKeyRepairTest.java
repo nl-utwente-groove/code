@@ -26,9 +26,9 @@ import org.junit.jupiter.api.Test;
 import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.util.AIGenerated;
+import nl.utwente.groove.util.DeltaMap;
+import nl.utwente.groove.util.DeltaMap.Delta;
 import nl.utwente.groove.util.QualName;
-import nl.utwente.groove.util.collect.DeltaMap;
-import nl.utwente.groove.util.collect.DeltaMap.Delta;
 
 /**
  * Tests the version repair of the legacy {@code disabledRules} property key,

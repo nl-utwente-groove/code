@@ -21,7 +21,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import nl.utwente.groove.util.Reporter;
-import nl.utwente.groove.util.collect.TreeHashSet;
+import nl.utwente.groove.util.TreeHashSet;
 
 /**
  * Class to test the various implementations of {@link nl.utwente.groove.util.collect.IntSet}
