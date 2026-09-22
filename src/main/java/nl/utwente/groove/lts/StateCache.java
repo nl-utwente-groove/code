@@ -81,8 +81,16 @@ public class StateCache implements Cache {
         assert this.initialised;
         assert trans.source() == getState();
         boolean result = getStubSet().add(trans.toStub());
-        if (result && this.transitionMap != null) {
-            this.transitionMap.add(trans);
+        if (result) {
+            if (this.transitionMap != null) {
+                this.transitionMap.add(trans);
+            }
+            if (getState().isClosed() && getState().getGTS().isStoring()) {
+                // the state copied its stubs at closure; a recipe transition
+                // arrives later, once its run is explored, and must be stored
+                // as well or it dies with the (by then collectable) cache
+                getState().addStoredTransitionStub(trans.toStub());
+            }
         }
         if (trans instanceof RuleTransition ruleTrans) {
             getMatches().remove(trans.getKey());
