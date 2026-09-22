@@ -1,62 +1,59 @@
 # StateCache transient closures (gh #924): handoff state
 
-Transient handoff note for a fresh session. Delete when the branch is merged.
+Transient handoff note. Delete when the branch is merged.
 
 ## Goal
 
 Make recipe and atomic-block exploration linear in the body length: replace the
-transitive closures that `lts.StateCache` keeps per transient/inner state by local
-propagation over direct transient predecessor edges. Issue: gh #924 (the full
-diagnosis, the proposed design and the gates). Finding 3.12 of
-`claude/exploration-performance.md` on branch `exploration-performance` has the
-file:line references and the profile breakdown; the fix lives here, on its own branch
-off master, because it is independent of the performance note.
+transitive closures that `lts.StateCache` kept per transient/inner state by local
+propagation over direct predecessor edges. Issue: gh #924 (diagnosis, design, gates).
 
-## State as of 2026-09-22
+## State as of 2026-09-22: ready for review
 
 Branch `statecache-transient-closures` off master `ed8b740cf`, worktree
-`.claude/worktrees/statecache-transient-closures`. Nothing implemented yet.
+`.claude/worktrees/statecache-transient-closures` (detached for review). Two commits:
 
-## Design constraints, from the diagnosis
+1. `Fixed the recipe target recomputation of recreated full-state caches`: a latent
+   master bug found on the way (`computeForwOuter` tested `known.add` inverted, so a
+   recreated cache of a full inner state had no recipe targets and later launches into it
+   got no recipe transitions; GC-timing dependent, never seen by a test), plus
+   `test/lts/RecipeCompletenessTest`, the gate for the redesign: every launch has a
+   recipe transition to every target reachable through inner states, every state ends
+   up full, for the recipe and atomic-block samples under bfs/dfs with and without a
+   simulated GC sweep of the collectable caches.
+2. `Replaced the transient closures of StateCache by local propagation (gh #924)`: the
+   redesign; the commit body explains the scheme, the cycle fallback, the deliberate
+   behaviour changes and the measurements (fib-15: 33 s to 0.27 s, 4.7 GB to 98 MB
+   allocated, identical counts).
 
-- Consumers of the bookkeeping: `getAbsence()` on the fly in
-  `lts/StateMatches.advanceFrame` (target absence against the frame transience);
-  `isFull` in `GTSCounter`, `RecipeTransition.getSteps` and the GUI trees; the
-  launch-to-target pairing that calls `addRecipeTransition`.
-- Absence of a state = lowest transience over its known reachable states (javadoc of
-  `GraphState.getAbsence`); it only decreases. Full = closed and every reachable
-  transient state closed; then the absence is final and stored in the status.
-- Property to preserve (Arend, from an earlier bug in this area): a recipe transition
-  must be created once the recipe run is fully explored, for every launch and every
-  target, including targets discovered after the launch state closed.
-- Cycles inside transient regions (`alap`/`while` in a recipe or atomic block) defeat
-  the local "all direct successors full" rule; see the fallback in the issue.
-- The closures came with the September 2024 transient/inner rework (`6d4fd0814`,
-  `68daacf6c`, `49fe72f87`); `9495647a2` (2025-03) only added commented-out assertions.
-  Read `49fe72f87` before redesigning: its message says "bugs removed".
+Gates run and green: fast suite, ExplorationTest, RecipeTest and the other control
+tests, DeterminismTest + CacheReconstructionTest, GUI tests (20 in 8 classes), full
+suite with slow tests (942, only the known GrammarsTest worktree skip), ecj null
+analysis on the touched files.
 
-## Next
+## Open points for the review
 
-1. Read `lts/StateCache.java` (init at 455, `registerOutPartial` at 564,
-   `registerClosure`/`testSetFull`/`registerTransienceChange` at 640-708) and
-   `lts/StateMatches.java`, and write down the invariants the sets encode.
-2. Design the local propagation (direct predecessor lists per transient state; full
-   notification; absence decrease propagation; target propagation to launches; the
-   cycle fallback), then implement in one or a few reviewable commits.
-3. Gates: `grammar-smoke`, `mvn test` (control and transactions tests), `DeterminismTest`
-   via the `determinism-check` skill, GUI tests (the trees read `isFull`), `null-check`.
-4. Measure before/after with the exploration benchmark on branch
-   `exploration-performance`: rows `fib-12`, `fib-15`, `fib-function-15`,
-   `recipes`-based rows if any; the harness recipe is in that branch's state file
-   (`claude/exploration-performance-state.md`, "Measured on the desktop" and the
-   profiling fact). Expect `fib-15` to drop from 23.5 s to about the function
-   variant's time.
+- **Verdict-terminated inner states with onward inner steps.** A state whose actual
+  frame leaves the recipe by a verdict (`sameVerdict` attempts, from `OrTerm`) may still
+  have outgoing inner steps generated by an earlier attempt. The new code, like
+  `RecipeTransition.computeSteps`, `computeForwOuter` and the test, counts only targets
+  reached through states that are inner at the time; the old live code propagated such
+  onward targets to *later* launches but not to earlier ones (inconsistent). Whether the
+  onward targets should count is a semantic decision; no sample grammar exercises it.
+- **Aborted fallback searches.** On cyclic transient regions the forward search can be
+  repeated once per successor notification and is bounded by the closed non-full region.
+  Not observed to matter (the samples with `alap` inside recipes are small); a
+  memoisation of the blocking open state would bound it if a case shows up.
+- **Null annotations.** `StateCache` is still unannotated (its lazily initialised fields
+  would need `@Nullable` throughout); left out of the diff as a drive-by. Could be a
+  follow-up commit.
+- **Explicit cache clearing of closed non-full transient states** (as `DeterminismTest`
+  does for all closed states) loses the predecessor lists, as it lost the old sets;
+  the GC cannot do this since non-full caches are strongly referenced. Documented in
+  the code comment.
 
-## Key files
+## After merging
 
-- `src/main/java/nl/utwente/groove/lts/StateCache.java`, `StateMatches.java`,
-  `AbstractGraphState.java` (`setFull`, status flags), `RecipeTransition.java`,
-  `GTSCounter.java`.
-- `src/main/java/nl/utwente/groove/control/instance/Frame.java` (transience, inner).
-- Tests: `src/test/java/nl/utwente/groove/test/control/`, `junit/control/`,
-  `junit/samples/recipes.gps`, `junit/samples/transactions.gps`.
+- Branch `exploration-performance`: finding 3.12 and the fibonacci rows can be
+  re-baselined; the recipe family can get a long-tier size.
+- Close gh #924 with the numbers from the commit body.
