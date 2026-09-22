@@ -412,6 +412,9 @@ All relocations are without deprecation.
   `Program` keeps the compiled templates and procedures and is built by it.
   `Procedure` lost `getTerm`/`setTerm`: procedure bodies are kept by the term
   pool (`Term.getBody`/`setBody`).
+- `util.collect` is no longer exported; `TreeHashSet` (with its `Equator`) and
+  `DeltaMap` moved to `util`. The `Action` comparator constants are typed as
+  plain `Comparator`s, and `PartitionMap.get` is package-private.
 - The top-level `automaton` package is dissolved into `grammar.rule`,
   `grammar.type` and `match.automaton`; `RuleLabel.getAutomaton` is replaced by
   `RegAutCalculator.instance()`.

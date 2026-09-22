@@ -75,7 +75,6 @@ module nl.utwente.groove {
     exports nl.utwente.groove.util.parse;
     exports nl.utwente.groove.util.line;
     exports nl.utwente.groove.util.cache;
-    exports nl.utwente.groove.util.collect;
 
     // service contributions; each provider is also declared in META-INF/services,
     // which takes over when GROOVE runs from the class path (as the installed

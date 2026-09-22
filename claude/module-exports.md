@@ -46,7 +46,7 @@ the first cut here).
 | Pipeline | root, `io.store`, `io.graph`, `io.external`, `grammar`, `grammar.model/aspect/host/type/rule`, `graph`, `graph.plain/iso/layout`, `match`, `transform`, `transform.oracle`, `lts`, `explore`, `explore.config/feature/result/engine`, `verify`, `prolog`, `prolog.builtin` |
 | Data values | `algebra`, `algebra.syntax`, `annotation` |
 | Control | `control`, `control.template/instance/graph` |
-| Utilities | `util`, `util.parse/line/cache/collect` |
+| Utilities | `util`, `util.parse/line/cache` |
 | CLI | `cli` (since 2026-09-22; before that `util.cli` and the tools in `explore`, `prolog`, `algebra`) |
 | Backend SPI | `gui.view`, `gui.view.cell`, `gui.look`, `gui.layout` |
 | Qualified | `prolog.builtin.algebra/graph/lts/rule/trans/type` to `gnuprologjava` only |
@@ -68,14 +68,14 @@ Reasons for the less obvious ones, all forced by signature reachability:
 - `match`: `Proof` is the anchor of `RuleEvent`/`RuleTransition`.
 - `util.cache`: `AGraph` extends `AbstractCacheHolder`. Four classes, the
   scalability mechanism, fine to export.
-- `util.collect`: only four types leak — `TreeHashSet` (`GTS.StateSet`,
-  `StoreFactory.createEdgeStore`), `DeltaMap` (`GrammarProperties.getRuleEnabling`,
-  `Properties.QUAL_NAME_DELTA_MAP`), `SmallCollection` (`PartitionMap.get`),
-  `AbstractComparator` (the `Action` comparator constants). Narrowing those four
-  signatures would let the whole 31-class package go unexported; not done.
 - `util`: besides the obvious (`QualName`, `Property`, `Pair`, …) it now holds
   `FileType`, which occurs in 20 signatures of `io.external`, `io.graph` and
-  `grammar.model`, and its `ExtensionFilter`.
+  `grammar.model`, and its `ExtensionFilter`. Since 2026-09-22 it also holds
+  `TreeHashSet` (the pooled set under `GTS.StateSet`, the host-element and event
+  sets and `StoreFactory.createEdgeStore`) with its `Equator`, and `DeltaMap`
+  (`GrammarProperties.getRuleEnabling`, `Properties.QUAL_NAME_DELTA_MAP`),
+  moved out of `util.collect` so that package could go unexported (see "Item 4
+  as built").
 - `cli`: the command-line tools and their picocli base `GrooveCmdLineTool`,
   gathered from `util.cli`, `explore`, `prolog`, `algebra` and `io` on
   2026-09-22 (see "Item 2 as built"). picocli was already `requires transitive`,
@@ -122,7 +122,7 @@ Not exported, deliberately:
   `createExploreListener`); the concrete classes are reference implementations.
 - `io.external.format`, `io.external.format.ecore`, `prolog.builtin.*`,
   `prolog.util`, `prolog.exception`, `transform.criticalpair`, `util.antlr`,
-  `util.io`, `io`.
+  `util.io`, `util.collect`, `io`.
 
 ## Fixes made on the branch
 
@@ -175,8 +175,9 @@ reports no `exports` warning at all.
    `Procedure`'s term accessors (used by `control.parse`, `control.template`,
    `control.term`) to the compiler side, would let `control.term` go unexported.~~
    **Done**, 2026-09-22, branch `control-term-split`: see "Item 3 as built".
-4. **`util.collect`**: narrow the four leaking signatures listed above, then
-   unexport.
+4. ~~**`util.collect`**: narrow the four leaking signatures listed above, then
+   unexport.~~ **Done**, 2026-09-22, branch `util-collect-exports`: see "Item 4
+   as built".
 
 Verified 2026-09-22: `requires transitive java.desktop` is still needed. With
 `transitive` dropped, javac hits its cap of 100 warnings before running out:
@@ -534,3 +535,42 @@ all pass. GUI tests: eight `*GuiTest` classes, 22 tests, none skipped.
 Null analysis (`-All`): 0 errors, 11 main and 8 test warnings, the same set as
 before. The yFiles backend mentions none of the changed names except
 `getProgram().getTemplate()` in one test, which is unchanged API.
+
+## Item 4 as built: util.collect unexported (2026-09-22)
+
+Branch `util-collect-exports`, off `master`, in two code commits plus the
+descriptor and these records.
+
+**The leak was larger than listed.** A compile with the export removed showed
+five leaking types over fifteen signatures, not the four types above:
+`TreeHashSet` as supertype or return type in seven places (`GTS.StateSet` and
+`NormalisedStateSet`, `MatchResultSet`, `RuleEventSet`, `HostEdgeTreeHashSet`,
+`HostNodeTreeHashSet`, `StoreFactory.createEdgeStore`), `DeltaMap` in three
+(`GrammarProperties.setRuleEnabling/getRuleEnabling`,
+`Properties.QUAL_NAME_DELTA_MAP`), `AbstractComparator` in the three `Action`
+comparator constants, `SmallCollection` in `PartitionMap.get`, and `KeySet` in
+the protected field `MatchCollector.parentTransMap`, which the note had missed.
+
+**What moved.** `TreeHashSet` and `DeltaMap` are real API and depend only on
+`util` (`Exceptions`, `util.parse`), so they went to `util` (`git mv`), like
+`FileType` before them. `Equator` had to go along: the brief said the two
+classes depend only on `util`, but `TreeHashSet`'s public constructors and its
+`equalsEquator`/`hashCodeEquator`/`identityEquator` factories mention it, and it
+has no other user. Imports changed in 19 files; the classes themselves only
+changed package (and `TreeHashSet` lost its now same-package `Exceptions`
+import).
+
+**What was narrowed.** `Action.PRIORITY_COMPARATOR`, `ACTION_COMPARATOR` and
+`PARTIAL_COMPARATOR` are declared as `Comparator`s (as
+`GraphTransitionKey.COMPARATOR` already was); their values are still the
+anonymous `AbstractComparator` subclasses. `PartitionMap.get` is
+package-private (its only caller is `IsoChecker`), `MatchCollector.parentTransMap`
+private (no subclasses, no other users).
+
+**Gates.** `mvn clean compile`: no `exports` warning. Fast suite: 883 tests,
+0 failures, 0 errors, 2 skipped; `DeterminismTest` 2, `LayeringTest` 1,
+`ExtensionsTest` 4 green. No file under `gui/` changed, so the GUI tests were
+not run. Null analysis (`-All`): 0 errors, 11 main and 8 test warnings, the same
+set as after item 3. The yFiles backend mentions none of `util.collect`,
+`TreeHashSet`, `DeltaMap`, `Equator`, the comparator constants, `PartitionMap`
+or `parentTransMap`.
