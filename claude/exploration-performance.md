@@ -1610,3 +1610,90 @@ grammars with the larger start graphs, plus two or three new grammars under
 `junit/performance/` (large graph with hubs, symmetric ring, attribute counter), each
 sized for 5 to 60 seconds on the development machine. Record the baseline numbers in
 this note before the first change lands.
+
+### Coverage reassessment (2026-09-22, after grammar-set item 6 and gh #924)
+
+The set is sixteen grammars and about forty rows. Mapped against the parts of state-space
+generation that run per state, per match or per transition, this is what the rows
+exercise and what they do not.
+
+Covered, with the row that carries the cost:
+
+- **Matching**: plain search (all rows); NACs (`as-and-bs`, `append`, `car-platooning`,
+  `pacman`, `leader-election`, `hub`); universal quantifiers, nested and with wide
+  domains (`petrinet-join`, `petrinet-pipe`, `pacman`, `sierpinsky`); regular expressions
+  (`mark-unmark`); attribute tests, `let:` and operations (`count`, `hub-ring-counted`,
+  `fib`), error values (`probe-odd` on every counter row), BigInteger (`count-*-big`);
+  rule priorities (`leader-election`, `car-platooning`); subtyping (`inheritance`,
+  `hub`); parameters in and out (`fib`); the candidate over-approximation at a hub
+  (`hub-field-hop`, `hub-field-jump`).
+- **Transformation**: creation and deletion (all); merging (`mergers`); parallel edges
+  under SPO-multi and DPO (`pump`, `mergers-*-multi`); the dangling check
+  (`mergers-11-dpo`); value nodes and factory growth (`count`, `hub-ring-counted`);
+  composite events of quantified rules (`petrinet`); large graphs (`sierpinsky`, `hub`).
+- **LTS and state cache**: many transitions per state (`pump`, `pipe`, `pacman`); delta
+  chains and reconstruction on a linear or depth-first path (`sierpinsky`,
+  `binary-tree-dfs12`); unstored runs (`binary-tree-dfs-unstored`, the hub field and
+  ring rows, `petrinet-join`); transient states of a deep acyclic recipe recursion
+  (`fib-*`, paired with the function rows); the confluence check (`inheritance`, dead).
+- **Isomorphism**: symmetry (`leader-election`, `hub-star`); diameter (`hub-chain`); edge
+  bundles (`pump`); equality collapse (`*-equality`); checking off (`car-platooning`).
+- **Driver**: breadth-first, depth-first, linear, cost-bounded, unstored.
+
+Not covered, ranked by how much of the generation path the gap hides and how cheap it
+is to close:
+
+1. **The Simulator's mode.** `SimulatorModel.resetGTS` sets `Record.randomAccess`, which
+   makes `DeltaHostGraph` materialise every state through a `CopyTarget` (fresh node and
+   edge sets per graph) instead of the `SwingTarget` that hands the parent's sets down a
+   lineage. Every row runs the headless swing mode, so the harness measures the
+   `Generator` and never the mode every interactive user runs in; the demotion of 3.7
+   above holds for swing mode only, and 4.3.2 (per-node edge sets) is a per-state cost
+   in copy mode. Closing it is a harness switch (`-Dgroove.bench.copy=true`, calling
+   `setRandomAccess(true)` on the fresh GTS before the start state), no new grammar, and
+   a second column of the baseline for the rows where the two modes differ.
+2. **Cyclic and wide transient regions.** The fibonacci recipe is a deep, acyclic
+   recursion with one recipe end per launch: the case gh #924 was measured on. The
+   redesign's forward-search fallback runs on cyclic transient regions, and its open
+   point (a search repeated per successor notification, bounded by the closed non-full
+   region) has no row that would show it; nor is there a region with many recipe ends
+   (a star-ended recipe, `r() { step; step* }`, as in the `recipes` sample's `star`
+   programs) or an atomic block. A `hub` control program on `chain-200-2` with a
+   backward step next to `moveNext` inside a star-ended recipe gives both shapes on an
+   existing graph: the transient region is the placement space itself, revisited from
+   many directions.
+3. **Many rules, few applicable.** The largest rule set is `car-platooning`'s twenty;
+   real grammars have hundreds, and without control every rule is tried in every state
+   (the per-rule fixed cost of `MatchCollector`: matcher lookup, plan, control frame
+   schedule). A generated grammar with a few hundred non-matching rules around one
+   working rule (the script can write `.gpr` files as it writes `.gst` files) would
+   isolate that cost; nothing in the set does.
+4. **Injective matching.** No grammar in the set has `matchInjective=true`; the
+   injectivity constraint is a per-candidate filter in the search plan. A
+   `Config.properties` variant row on `mergers` or `as-and-bs` costs nothing to add,
+   with new counts.
+5. **Cache collapse under memory pressure.** Reconstruction from the delta chain
+   (findings 2.5 to 2.7) is measured only where the collector happens to clear soft
+   caches, which the long tier's unstable `retMB` shows it does unpredictably. A harness
+   option that clears the collectable caches every N states, as `DeterminismTest` does,
+   would make the reconstruction cost a controlled column instead of noise.
+6. **Per-state acceptors and rule-condition bounds.** `goal=condition|fires|graph`,
+   `bound=upto|include|nodes|size|edges` and `count` each add a check per state (a rule
+   match, a graph size, an isomorphism test against a fixed graph); no row uses any of
+   them. One `goal=condition` row on an existing grammar would show whether the check
+   costs a rule's worth or more.
+7. **Randomised and restricted frontiers.** `next=random`, `successor=all-random`,
+   `frontier=beam` and `heuristic` (the seed machinery of gh #897) have no row; their
+   per-state cost is a shuffle or a pool operation, probably small, but unmeasured.
+8. **LTL model checking.** The nested depth-first strategies of `explore/verify` build
+   the product with the Büchi automaton during exploration and share nothing with the
+   frontier strategies; unmeasured. CTL checking runs over a finished GTS and is outside
+   the harness's scope.
+9. **Regular-expression variants.** `regExpMatching=sloppy` (gh #900) on the
+   `mark-unmark` rows is a one-line variant row.
+
+Items 1, 2 and 4 are the ones to close before the section 1 to 4 fixes are measured:
+1 because a fix measured in swing mode only may not carry to the Simulator, 2 because
+gh #924 has just rewritten that code and its own gate is a correctness test, 4 because
+it is free. Items 3 and 5 are harness or generator work of an hour each; 6 to 9 can
+wait for a finding that needs them.
