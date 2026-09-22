@@ -9,6 +9,7 @@ import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.io.store.SystemStore;
+import nl.utwente.groove.util.AIGenerated;
 
 /**
  * Action for saving a rule system.
@@ -36,16 +37,26 @@ public class SaveGrammarAction extends SimulatorAction {
     }
 
     /**
-     * Returns the grammar file chooser, with the location of the currently
+     * Returns the grammar file chooser, with a file derived from the currently
      * loaded grammar set as proposed file.
      * Left to itself, the chooser only remembers the last grammar saved or
      * created through it, which a subsequent Load Grammar does not update.
+     * The proposal takes its name from the grammar location and its directory
+     * from the grammar origin; the two differ for a grammar unpacked from an
+     * archive, whose location is a temporary directory. For a grammar loaded
+     * from a URL there is no directory to propose, so the chooser stays where
+     * it is.
      */
+    @AIGenerated("Claude Opus 5, 2026-09")
     public JFileChooser prepareFileChooser() {
         JFileChooser result = getGrammarFileChooser(false);
-        File currentFile = getLastGrammarFile();
-        if (currentFile != null) {
-            result.setSelectedFile(currentFile);
+        SystemStore store = getSimulatorModel().getStore();
+        if (store != null) {
+            File origin = store.getOriginFile();
+            File dir = origin == null
+                ? result.getCurrentDirectory()
+                : origin.getAbsoluteFile().getParentFile();
+            result.setSelectedFile(new File(dir, store.getLocation().getName()));
         }
         return result;
     }

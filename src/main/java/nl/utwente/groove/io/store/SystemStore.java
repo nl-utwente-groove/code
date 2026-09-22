@@ -53,6 +53,7 @@ import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoableEdit;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.algebra.UserSignature;
 import nl.utwente.groove.grammar.GrammarKey;
@@ -66,6 +67,7 @@ import nl.utwente.groove.grammar.type.TypeLabel;
 import nl.utwente.groove.io.graph.AttrGraph;
 import nl.utwente.groove.io.graph.GxlIO;
 import nl.utwente.groove.io.graph.NodeNrDispenser;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.ExtensionFilter;
 import nl.utwente.groove.util.FileType;
@@ -97,6 +99,18 @@ public class SystemStore implements GrammarSource {
      *         directory, or does not have the correct extension.
      */
     public SystemStore(File file, boolean create) throws IOException {
+        this(file, create, file.getPath(), file);
+    }
+
+    /**
+     * Constructs a store from a given file, with a possibly distinct origin.
+     * The origin differs from the file if the store was unpacked from an
+     * archive or a URL into a temporary directory.
+     * @param origin the archive or URL the store was obtained from
+     * @param originFile the origin as a file, or {@code null} if it is a URL
+     */
+    private SystemStore(File file, boolean create, String origin,
+                        @Nullable File originFile) throws IOException {
         if (!file.exists()) {
             if (create) {
                 if (!file.mkdirs()) {
@@ -114,6 +128,8 @@ public class SystemStore implements GrammarSource {
                 String.format("File '%s' does not refer to a production system", file));
         }
         this.file = file;
+        this.origin = origin;
+        this.originFile = originFile;
         this.name = GRAMMAR.stripExtension(this.file.getName());
         this.marshaller = GxlIO.instance();
         if (create) {
@@ -141,6 +157,34 @@ public class SystemStore implements GrammarSource {
 
     /** The file obtained from <code>location</code>. */
     private final @NonNull File file;
+
+    /**
+     * Returns the source from which this store was obtained, as a file path
+     * or a URL. This is the {@link #getLocation() location} itself for a
+     * store read from a grammar directory; for one read from an archive or a
+     * URL it is that archive or URL, the location then being the temporary
+     * directory into which it was unpacked.
+     * @return the origin of this store; cannot be <code>null</code>
+     */
+    @AIGenerated("Claude Opus 5, 2026-09")
+    public @NonNull String getOrigin() {
+        return this.origin;
+    }
+
+    /** The source this store was obtained from. */
+    private final @NonNull String origin;
+
+    /**
+     * Returns the {@link #getOrigin() origin} of this store as a file, or
+     * {@code null} if the store was obtained from a URL.
+     */
+    @AIGenerated("Claude Opus 5, 2026-09")
+    public @Nullable File getOriginFile() {
+        return this.originFile;
+    }
+
+    /** The origin as a file; {@code null} if the origin is a URL. */
+    private final @Nullable File originFile;
 
     @Override
     public boolean isEmpty() {
@@ -699,14 +743,19 @@ public class SystemStore implements GrammarSource {
     }
 
     /**
-     * Returns a human-readable combination of the name and location of this
-     * store.
+     * Returns a human-readable combination of the name and origin of this
+     * store. The origin rather than the location is used, since the location
+     * of a store unpacked from an archive is an uninformative temporary
+     * directory.
      * @see #getName()
-     * @see #getLocation()
+     * @see #getOrigin()
      */
     @Override
     public String toString() {
-        String location = this.file.getParent();
+        File originFile = this.originFile;
+        String location = originFile == null
+            ? getOrigin()
+            : originFile.getAbsoluteFile().getParent();
         return getName() + " - " + location;
     }
 
@@ -1472,7 +1521,7 @@ public class SystemStore implements GrammarSource {
             if (create) {
                 throw new IOException("Can't create zipped grammar " + file.toString());
             }
-            result = newStoreFromTmp(file.getPath(), Unzipper.instance().unzip(file));
+            result = newStoreFromTmp(file.getPath(), file, Unzipper.instance().unzip(file));
         } else {
             result = new SystemStore(file, create);
         }
@@ -1495,7 +1544,7 @@ public class SystemStore implements GrammarSource {
         try {
             result = newStore(new File(url.toURI()), false, false);
         } catch (IllegalArgumentException exc) {
-            result = newStoreFromTmp(url.toString(), Unzipper.instance().unzip(url));
+            result = newStoreFromTmp(url.toString(), null, Unzipper.instance().unzip(url));
         } catch (URISyntaxException exc) {
             throw Exceptions.unreachable();
         }
@@ -1523,15 +1572,19 @@ public class SystemStore implements GrammarSource {
     }
 
     /** Creates a systems store from the content of a temporary directory, as produced by unzipping.
-     * The resulting store has not been loaded.
+     * The resulting store has not been loaded, and remembers the archive or URL
+     * it was unpacked from as its origin.
+     * @param orig the archive or URL that was unpacked
+     * @param origFile {@code orig} as a file, or {@code null} if it is a URL
      */
-    static private SystemStore newStoreFromTmp(String orig, Path path) throws IOException {
+    static private SystemStore newStoreFromTmp(String orig, @Nullable File origFile,
+                                               Path path) throws IOException {
         File[] files = path.toFile().listFiles();
         if (files == null || files.length != 1) {
             throw new IOException(
                 String.format("Zip file %s should only contain production system", orig));
         }
-        return new SystemStore(files[0], false);
+        return new SystemStore(files[0], false, orig, origFile);
     }
 
     /**
