@@ -41,6 +41,7 @@ import nl.utwente.groove.control.template.Program;
 import nl.utwente.groove.control.template.Switch;
 import nl.utwente.groove.control.template.SwitchAttempt;
 import nl.utwente.groove.control.template.Template;
+import nl.utwente.groove.control.term.ProgramBuilder;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 
@@ -288,7 +289,9 @@ public class TemplateBuildTest extends CtrlTester {
 
     private void buildFunction(String program, String procName) {
         Program prog = buildProgram(program + procName + ";");
-        this.template = prog.getProc(QualName.parse(procName)).getTemplate();
+        Procedure proc = prog.getProc(QualName.parse(procName));
+        assert proc != null : String.format("Unknown procedure %s", procName);
+        this.template = proc.getTemplate();
     }
 
     private void build(String program) {
@@ -296,10 +299,11 @@ public class TemplateBuildTest extends CtrlTester {
     }
 
     private Program buildProgram(String program) {
-        Program result = new Program();
+        Program result = null;
         try {
-            result.add(buildFragment(program));
-            result.setFixed();
+            ProgramBuilder builder = new ProgramBuilder();
+            builder.add(buildFragment(program));
+            result = builder.build();
         } catch (FormatException exc) {
             Assert.fail(exc.getMessage());
         }

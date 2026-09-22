@@ -21,6 +21,10 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -29,15 +33,18 @@ import nl.utwente.groove.control.Call;
 import nl.utwente.groove.control.CtrlLoader;
 import nl.utwente.groove.control.CtrlArg;
 import nl.utwente.groove.control.Procedure;
+import nl.utwente.groove.control.parse.CtrlTree;
+import nl.utwente.groove.control.parse.Namespace;
 import nl.utwente.groove.control.template.Location;
-import nl.utwente.groove.control.template.Program;
 import nl.utwente.groove.control.template.Template;
+import nl.utwente.groove.control.term.ProgramBuilder;
 import nl.utwente.groove.control.term.Term;
 import nl.utwente.groove.grammar.Callable;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.Rule;
 import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.util.QualName;
+import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -56,7 +63,7 @@ public class ProgramBuildTest {
 
     @Test
     public void testNoProcedures() {
-        Program p = build("ab", "a; b;");
+        ProgramBuilder p = build("ab", "a; b;");
         assertEquals(call("a").seq(call("b")), p.getMain());
         assertEquals(0, p.getProcs()
             .size());
@@ -133,13 +140,13 @@ public class ProgramBuildTest {
 
     @Test
     public void testRecursion() {
-        Program p = build("recurse", "function f() { a; r; } function r() { if (b) f; }");
+        ProgramBuilder p = build("recurse", "function f() { a; r; } function r() { if (b) f; }");
         assertEquals(2, p.getProcs()
             .size());
         Procedure fProc = proc("f");
-        Term fTerm = prot.getBody(fProc);
+        Term fTerm = this.prog.getBody(fProc);
         Procedure rProc = proc("r");
-        Term rTerm = prot.getBody(rProc);
+        Term rTerm = this.prog.getBody(rProc);
         assertEquals(call("a").seq(call(rProc)), fTerm);
         assertEquals(call("b").ifOnly(call(fProc)), rTerm);
         // circular
@@ -151,7 +158,7 @@ public class ProgramBuildTest {
         p = build("forward-call", "f; function f() { a;f; }");
         fProc = proc("f");
         assertEquals(call(fProc), p.getMain());
-        assertEquals(call("a").seq(call("f")), prot.getBody(fProc));
+        assertEquals(call("a").seq(call("f")), this.prog.getBody(fProc));
     }
 
     @Test
@@ -164,7 +171,7 @@ public class ProgramBuildTest {
         CtrlArg n2In = CtrlArg.inVar(QualName.parse("f"), "n2", "node");
         CtrlArg n2Out = CtrlArg.outVar(QualName.parse("f"), "n2", "node");
         assertEquals(call(rule("iInt"), xIn).seq(call(rule("oNode"), n2Out))
-            .seq(call(rule("bNode-oNode"), n2In, nOut)), prot.getBody(fProc));
+            .seq(call(rule("bNode-oNode"), n2In, nOut)), this.prog.getBody(fProc));
         //
         build("r",
             "recipe r(int p, out node q) { choice oNode(out q); or { bNode(out q); bInt(p); } }");
@@ -180,15 +187,15 @@ public class ProgramBuildTest {
         add("main", "import sub.f; int n; f(out n);");
         add("sub.defF", "package sub; import bInt; function f(out int x) { bInt(out x); g(x); }");
         add("sub.getG", "package sub; import bInt; function g(int y) { bInt(y); }");
-        Program p = build();
+        ProgramBuilder p = build();
         Procedure fProc = proc("sub.f");
         Procedure gProc = proc("sub.g");
         assertEquals(call(fProc, CtrlArg.outVar(null, "n", "int")), p.getMain());
         CtrlArg xIn = CtrlArg.inVar(QualName.parse("sub.f"), "x", "int");
         CtrlArg xOut = CtrlArg.outVar(QualName.parse("sub.f"), "x", "int");
-        assertEquals(call(rule("bInt"), xOut).seq(call(gProc, xIn)), prot.getBody(fProc));
+        assertEquals(call(rule("bInt"), xOut).seq(call(gProc, xIn)), this.prog.getBody(fProc));
         CtrlArg yIn = CtrlArg.inVar(QualName.parse("sub.g"), "y", "int");
-        assertEquals(call(rule("bInt"), yIn), prot.getBody(gProc));
+        assertEquals(call(rule("bInt"), yIn), this.prog.getBody(gProc));
     }
 
     @Test
@@ -259,18 +266,16 @@ public class ProgramBuildTest {
      * @param controlName name of the control program
      * @param program control expression; non-{@code null}
      */
-    protected Program build(String controlName, String program) {
-        Program result = null;
+    protected ProgramBuilder build(String controlName, String program) {
+        ProgramBuilder result = null;
         try {
             QualName qualControlName = QualName.parse(controlName);
-            CtrlLoader loader = createLoader();
-            loader.setDefaultMain("{}");
-            loader.addControl(qualControlName, program);
-            result = loader.buildProgram();
+            Namespace namespace = createNamespace();
+            CtrlTree tree = parse(namespace, qualControlName, program, false);
+            result = buildProgram(namespace, Collections.singleton(tree));
         } catch (FormatException e) {
             fail(e.toString());
         }
-        this.prog = result;
         return result;
     }
 
@@ -282,10 +287,9 @@ public class ProgramBuildTest {
     protected void buildWrong(String controlName, String program) {
         try {
             QualName qualControlName = QualName.parse(controlName);
-            CtrlLoader loader = createLoader();
-            loader.setDefaultMain("{}");
-            loader.addControl(qualControlName, program);
-            loader.buildProgram();
+            Namespace namespace = createNamespace();
+            CtrlTree tree = parse(namespace, qualControlName, program, false);
+            buildProgram(namespace, Collections.singleton(tree));
             fail(String.format("Expected %s to be erronous, but it isn't", program));
         } catch (FormatException e) {
             // this is the expected outcome
@@ -299,32 +303,70 @@ public class ProgramBuildTest {
      * The result can be retrieve by {@link #build()}.
      */
     protected void add(String controlName, String program) {
-        if (this.loader == null) {
-            this.loader = createLoader();
+        if (this.namespace == null) {
+            this.namespace = createNamespace();
         }
         try {
             QualName qualControlName = QualName.parse(controlName);
-            this.loader.addControl(qualControlName, program);
+            this.trees.put(qualControlName, parse(this.namespace, qualControlName, program, false));
         } catch (FormatException e) {
             fail(e.toString());
         }
     }
 
     /** Returns the program built in successive calls to {@link #add(String, String)}. */
-    protected Program build() {
-        Program result = null;
+    protected ProgramBuilder build() {
+        ProgramBuilder result = null;
         try {
-            result = this.loader.buildProgram();
-            this.loader = null;
-            result.setFixed();
+            result = buildProgram(this.namespace, this.trees.values());
+            this.namespace = null;
+            this.trees.clear();
         } catch (FormatException e) {
             fail(e.toString());
         }
-        this.prog = result;
         return result;
     }
 
-    private CtrlLoader loader;
+    /** Name space of the programs added by {@link #add(String, String)}. */
+    private Namespace namespace;
+    /** Parse trees of the programs added by {@link #add(String, String)}, ordered by name. */
+    private final Map<QualName,CtrlTree> trees = new TreeMap<>();
+
+    /** Parses a control program in a given name space, as {@link CtrlLoader#addControl} does internally. */
+    private CtrlTree parse(Namespace namespace, QualName controlName, String program,
+                           boolean artificial) throws FormatException {
+        namespace.setControlInfo(controlName, artificial);
+        CtrlTree result = CtrlTree.parse(namespace, program);
+        result.setArtificial(artificial);
+        return result;
+    }
+
+    /**
+     * Checks a number of parsed control programs and builds a program from them,
+     * as {@link CtrlLoader#buildProgram()} does internally, with the empty block as default main.
+     * The builder becomes the most recently built program if building succeeds.
+     */
+    private ProgramBuilder buildProgram(Namespace namespace,
+                                        Collection<CtrlTree> trees) throws FormatException {
+        FormatErrorSet errors = new FormatErrorSet();
+        ProgramBuilder result = new ProgramBuilder();
+        for (CtrlTree tree : trees) {
+            try {
+                result.add(tree.check().toFragment());
+            } catch (FormatException e) {
+                errors.addAll(e.getErrors());
+            }
+        }
+        errors.throwException();
+        if (result.getMain() == null) {
+            QualName mainName = new QualName(CtrlLoader.DEFAULT_MAIN_NAME);
+            result.add(parse(namespace, mainName, "{}", true).check().toFragment());
+        }
+        result.setProperties(namespace.getProperties());
+        result.build();
+        this.prog = result;
+        return result;
+    }
 
     protected Term call(String name) {
         Callable unit = rule(name);
@@ -338,20 +380,22 @@ public class ProgramBuildTest {
         return prot.call(new Call(proc, Arrays.asList(pars)));
     }
 
-    /** Callback factory method for a loader of the test grammar. */
-    protected CtrlLoader createLoader() {
-        CtrlLoader result =
-            new CtrlLoader(this.testGrammar.getProperties(), this.testGrammar.getAllRules());
-        prot = result.getTermPrototype();
+    /** Callback factory method for a name space of the test grammar. */
+    protected Namespace createNamespace() {
+        Namespace result = new Namespace(this.testGrammar.getProperties());
+        for (Rule rule : this.testGrammar.getAllRules()) {
+            result.addRule(rule);
+        }
+        prot = result.getPrototype();
         return result;
     }
 
     private Procedure proc(String name) {
-        return this.prog.getProc(QualName.parse(name));
+        return this.prog.getProcs().get(QualName.parse(name));
     }
 
     /** Most recently built program. */
-    private Program prog;
+    private ProgramBuilder prog;
 
     static private Term prot = Term.prototype();
 

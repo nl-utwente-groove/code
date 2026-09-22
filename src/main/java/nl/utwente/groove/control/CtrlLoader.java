@@ -41,7 +41,7 @@ import nl.utwente.groove.control.parse.CtrlTree;
 import nl.utwente.groove.control.parse.Namespace;
 import nl.utwente.groove.control.template.Program;
 import nl.utwente.groove.control.term.Fragment;
-import nl.utwente.groove.control.term.Term;
+import nl.utwente.groove.control.term.ProgramBuilder;
 import nl.utwente.groove.grammar.Callable;
 import nl.utwente.groove.grammar.Callable.Kind;
 import nl.utwente.groove.grammar.Grammar;
@@ -161,13 +161,13 @@ public class CtrlLoader {
     /** Returns a control program constructed from a set of previously parsed program names. */
     public Program buildProgram(Collection<QualName> progNames) throws FormatException {
         FormatErrorSet errors = new FormatErrorSet();
-        Program result = new Program();
+        ProgramBuilder builder = new ProgramBuilder();
         for (QualName name : progNames) {
             try {
                 CtrlTree controlTree = this.controlTreeMap.get(name);
                 assert controlTree != null; // the program names have been parsed by addControl
                 CtrlTree tree = controlTree.check();
-                result.add(tree.toFragment());
+                builder.add(tree.toFragment());
             } catch (FormatException e) {
                 for (FormatError error : e.getErrors()) {
                     errors.add(error, ResourceId.control(name));
@@ -175,14 +175,13 @@ public class CtrlLoader {
             }
         }
         errors.throwException();
-        if (!result.hasMain()) {
+        if (builder.getMain() == null) {
             // try to parse "any" for static semantic checks
             Fragment main = addDefaultMain().check().toFragment();
-            result.add(main);
+            builder.add(main);
         }
-        result.setProperties(this.namespace.getProperties());
-        result.setFixed();
-        return result;
+        builder.setProperties(this.namespace.getProperties());
+        return builder.build();
     }
 
     /**
@@ -309,11 +308,6 @@ public class CtrlLoader {
         return rewriter;
     }
 
-    /** Returns the term prototype shared by all programs built by this loader. */
-    public Term getTermPrototype() {
-        return this.namespace.getPrototype();
-    }
-
     /** Namespace of this loader. */
     private final Namespace namespace;
     /** Mapping from program names to corresponding control trees. */
@@ -343,9 +337,7 @@ public class CtrlLoader {
         CtrlLoader instance = new CtrlLoader(grammar.getProperties(), grammar.getAllRules());
         QualName qualName = QualName.parse(programName).testValid();
         instance.addControl(qualName, program);
-        Program result = instance.buildProgram(Collections.singleton(qualName));
-        result.setFixed();
-        return result;
+        return instance.buildProgram(Collections.singleton(qualName));
     }
 
     /** Parses a single control program on the basis of a given grammar. */
@@ -362,8 +354,6 @@ public class CtrlLoader {
             scanner.useDelimiter("\\A");
             instance.addControl(qualName, scanner.next());
         }
-        Program result = instance.buildProgram(Collections.singleton(qualName));
-        result.setFixed();
-        return result;
+        return instance.buildProgram(Collections.singleton(qualName));
     }
 }

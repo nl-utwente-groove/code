@@ -42,7 +42,6 @@ import nl.utwente.groove.control.Position.Type;
 import nl.utwente.groove.control.Procedure;
 import nl.utwente.groove.control.template.Location;
 import nl.utwente.groove.control.template.NestedSwitch;
-import nl.utwente.groove.control.template.Program;
 import nl.utwente.groove.control.template.Relocation;
 import nl.utwente.groove.control.template.Switch;
 import nl.utwente.groove.control.template.SwitchAttempt;
@@ -80,10 +79,10 @@ public class TemplateBuilder {
     private final List<Action> properties;
 
     /**
-     * Construct an automata template for a given program.
+     * Construct an automata template for the program collected by a given builder.
      * As a side effect, all procedure templates are also constructed.
      */
-    public Template build(Program prog) {
+    public Template build(ProgramBuilder prog) {
         newBuilder(prog.getMainName(), null, prog.getMain());
         for (Procedure proc : prog.getProcs().values()) {
             Builder builder = newBuilder(null, proc, prog.getBody(proc));

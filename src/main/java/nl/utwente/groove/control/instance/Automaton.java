@@ -34,10 +34,9 @@ import nl.utwente.groove.util.collect.Pool;
  */
 public class Automaton {
     /**
-     * Instantiates a given (fixed) control program.
+     * Instantiates a given control program.
      */
     public Automaton(Program program) {
-        assert program.isFixed();
         this.program = program;
         this.framePool = new Pool<>();
         this.start
