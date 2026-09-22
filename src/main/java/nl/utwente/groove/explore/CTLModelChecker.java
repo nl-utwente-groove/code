@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.explore;
 
-import static nl.utwente.groove.util.cli.Verbosity.LOW;
+import static nl.utwente.groove.util.Verbosity.LOW;
 
 import java.io.File;
 import java.io.IOException;

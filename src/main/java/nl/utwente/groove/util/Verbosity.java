@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.util.cli;
+package nl.utwente.groove.util;
 
 /** Verbosity in reporting an exploration. */
 public enum Verbosity {
