@@ -9,75 +9,57 @@ Measurable performance improvement of state-space exploration, working down the
 findings of `claude/exploration-performance.md` (the review note; read its "Suggested
 order of attack" and "Building a throughput harness" sections first).
 
-## State as of 2026-09-22 (grammar-set item 6 done)
+## State as of 2026-09-22 (quick-tier re-baseline done)
 
 Branch `exploration-performance`, worktree `.claude/worktrees/exploration-performance`,
-master merged in up to `ed8b740cf` (the explore-search-order-rules merge), re-attached
-2026-09-22. Commits since
-the 2026-09-21 state: the fibonacci-function control rows (via a scratch branch, merged
-by Arend), the long-run tier with its calibration, and the long-tier baseline.
+master merged in up to `4eb233649` (the gh #924 merge), re-attached 2026-09-22 evening.
 
-Done:
+**gh #924 landed in between.** A parallel session took finding 3.12 (the quadratic
+transient closures of `StateCache`, the fibonacci recipe anomaly of this note) on its own
+branch `statecache-transient-closures`; merged to master and into this branch at
+`da54faa44`. Consequences here: every recipe figure before the merge is void (`fib-15` as
+a recipe: 19 s to 0.29 s cold, 63 ms warm, level with the function program), the recipe
+rows were recalibrated and re-pinned (`fib-15` smoke, `fib-22` quick, `fib-12` dropped;
+no long-tier size for either family, the ordinary per-state cost), and the A/B in the
+note shows no cost on the non-recipe path. The gh #924 handoff file
+`claude/statecache-transient-closures-state.md` that the merge brought in is that
+session's; master has since deleted it, and the next master merge takes it away here.
 
-- Review note with rated findings, file:line references, gates.
-- `src/test/java/nl/utwente/groove/test/performance/ExplorationBenchmark.java`,
-  `junit/performance/generate-starts.py`. ten pinned
-  configurations, `main` + `smoke` + `benchmark` entry points, Eclipse launch
-  `launch/GROOVE - exploration benchmark.launch` (`-da -Xmx4g -XX:+UseParallelGC
-  --add-modules=java.management,jdk.management`). Product `module-info` and `pom.xml`
-  untouched. Smoke test and null check pass.
-- Baseline table in the note (JDK 25, 2 warm-ups, 3 runs, one JVM, table order).
-- Finding 3.11, the `util.Factory` user leak, found through the harness; fixed as
-  gh #919, merged to master 2026-09-21 (`f9db84fda`). Not yet merged into this branch.
-- 2026-09-21: master (with the gh #919 fix) merged in. `junit/performance/` is the
-  benchmark grammar set: the eight harness grammars pruned to default + largest +
-  generated start graphs, `generate-starts.py` for the generated ones, the harness
-  `INPUT_DIR` switched and five rows added for the generated graphs (calibration table in
-  the note, section "The performance grammar set"). Arend edited `pacman` (rules, both
-  start graphs, properties) by hand; the four-ghost graph is his.
+Done, in addition to the 2026-09-22 morning state (grammar set complete through item 6,
+long tier with baseline):
 
-## Measured on the desktop
-
-2026-09-21: full baseline taken on the desktop (UT187312, JDK 25.0.4.1, launch flags,
-2 warm-ups and 3 runs, all 16 rows in table order, 39 minutes) and recorded in the note,
-replacing the laptop table. Maxima settled, `retMB` down a third to two thirds on the heavy
-rows, `iso` dominates the large rows. The run used a second, detached worktree
-`.claude/worktrees/exploration-performance-baseline` at `4f9f63bc5` so that the branch
-worktree stayed editable; it can be removed. Recipe: `mvn -q -DskipTests test-compile`,
-`dependency:build-classpath` for the class path, then `java -cp
-"target/classes;target/test-classes;<cp>"` with the launch flags and
-`-Dgroove.bench.warmups=2 -Dgroove.bench.runs=3 -Dgroove.bench.timeout=1200`, from the
-worktree root; no module path needed.
+- Quick-tier re-baseline: all 46 quick rows, one JVM, table order, launch flags, JDK 25,
+  35 minutes; table and observations in the note ("Quick-tier re-baseline"). Every
+  count asserted. Findings: run-order effects of up to 20 % (bigger than thought; fixes
+  under 20 % need the one-JVM-per-row A/B shape), `binary-tree-dfs-unstored-9` is
+  collector-bound at 4 GB (29.7 s against 14 s at 8 GB) and should move to the long tier
+  or a larger heap, all other rows within 15 % of their 8 GB calibration.
+- Coverage reassessment (note, last section): nine gaps ranked. Close before measuring
+  fixes: (1) the Simulator's random-access copy mode (`SimulatorModel.resetGTS` sets
+  `Record.randomAccess`; the harness runs swing mode only), a harness switch; (2) cyclic
+  and wide transient regions for gh #924's forward-search fallback, a `hub` control
+  program with a backward step in a star-ended recipe on `chain-200-2`; (4) a
+  `matchInjective=true` variant row. Then (3) a many-rules grammar, (5) a cache-clearing
+  harness option; 6 to 9 on demand.
 
 ## Next, in order
 
-0. Decided 2026-09-22: the fibonacci recipe-path anomaly is finding 3.12, the quadratic
-   transient closures in `StateCache` (JFR profile of `fib-15`: 97 % of samples in
-   `HashMap` operations under `registerOutPartial` and `testSetFull`). Its fix is a
-   redesign of the transient bookkeeping (local propagation over direct predecessor
-   edges plus a cycle fallback, see the finding) and belongs on its own branch, like
-   gh #919; the recipe family gets no long-tier size before it. Grammar-set item 4
-   (`recipes`, `transactions`) is dropped as covered by the fibonacci rows.
-1. Done: desktop baseline; long-run tier (`Tier` SMOKE/QUICK/LONG, seven long rows,
-   `-Dgroove.bench.tier=long`, one JVM per row at `-Xmx8g`) with calibration and
-   baseline, note section "The long-run tier (2026-09-22)"; BigInteger counter rows.
-2. Re-baseline the quick tier (all rows, table order, launch flags): its table predates
-   the tier split and the five new quick rows, and the long-tier baseline showed that
-   `append-4-list-10` was collector-bound at `-Xmx4g` (206 s there, 76 s alone at 8 GB),
-   so read `retMB` next to the times.
+1. Close coverage gaps 1, 2 and 4 of the reassessment (harness copy-mode switch with a
+   second baseline column for the rows where the modes differ; the cyclic-transient hub
+   recipe row, calibrated and pinned; the injective variant row). One commit each.
+2. Move `binary-tree-dfs-unstored-9` out of the quick tier (long tier, or drop: the long
+   tier has depth 10).
 3. Section 1 of the note (always-on `Reporter`, `CHECK_IMAGES`, `Factory.get()` lock,
    the `synchronized` accessors, `java.util.Stack`): one commit per item, each with
-   before/after harness numbers in the commit body. `Reporter` first: it is on the
-   innermost loop and also the harness's own breakdown source, so gate it on a system
-   property and run the harness once with it on (for the breakdown) and once off (for
-   the headline).
+   before/after numbers measured one JVM per row (the A/B shape in the note), not from
+   the tier table. `Reporter` first: it is on the innermost loop and also the harness's
+   own breakdown source, so gate it on a system property and run the harness once with it
+   on (for the breakdown) and once off (for the headline).
 4. Section 2 (dead optimisations): 2.1 stored `MatchResult` keys, confirm "Confluent:"
    goes non-zero on `inheritance`; 2.3 soft certifier reference; 2.4 refinement loop
    (gate with `grammar-smoke`); 2.5 to 2.7 freezing and chain replay.
 5. A long-tier size for As-and-Bs is still missing (`start-4-3` under equality collapse
-   does not fit 8 GB; intermediate edge densities untried); then new grammars for the
-   uncovered cases (attribute-heavy, symmetric ring, recipe
-   transience), then section 3.
+   does not fit 8 GB; intermediate edge densities untried); then section 3.
 
 ## Grammar set extension (started 2026-09-21)
 
@@ -113,8 +95,9 @@ than the eight copied samples do. Agreed order, by coverage gained per hour:
    systems, since the linear traversal admits no bound. Outcome in the note: 3.7 is
    demoted to Low for exploration (swing mode carries the in-edge store along the
    chain); a new lead is the 1.3 KB allocated per attribute-test candidate in `hop`.
-4. Control with transience: `recipes` (scale the start graph) and `transactions`
-   (4.3.1, 1.5).
+4. Dropped 2026-09-22 as covered by the fibonacci rows: `recipes` and `transactions`
+   (4.3.1, 1.5). Coverage gap 2 of the reassessment (cyclic and wide transient regions)
+   revives the shape on the `hub` chain instead.
 5. Done (2026-09-22 night): Arend copied `petrinet` over; four of the five hand-drawn
    nets deleted (1 to 38 states), `start2` kept as default. Generated `pipe-k-n`
    (C(n+k, k) markings: `pipe-8-8` and `pipe-9-9` quick, `pipe-11-11` long at 4 min and
@@ -134,7 +117,7 @@ than the eight copied samples do. Agreed order, by coverage gained per hour:
    DPO cuts mergers' states tenfold through the identification condition.
 7. Key-variant rows on existing grammars as needed while fixing.
 
-Then the quick-tier re-baseline (item 2 above) before the first fix. Per step: copy or
+Per step: copy or
 write the grammar, extend `generate-starts.py`, calibrate with the headless `Generator`
 (quick tier 5 to 60 s, one long-tier candidate), pin counts, one commit per grammar.
 Only the harness reads `junit/performance`; new rows stay out of the smoke set unless
