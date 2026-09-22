@@ -1,0 +1,8 @@
+// creates an A and then consumes taken Bs, any number of times
+recipe r() {
+  newA;
+  delB*;
+}
+
+newB;
+r;

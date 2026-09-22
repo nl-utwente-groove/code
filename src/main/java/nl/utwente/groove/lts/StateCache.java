@@ -496,8 +496,8 @@ public class StateCache implements Cache {
 
     /**
      * Recomputes the reachable recipe targets of a full state whose prime frame
-     * is inner, by a forward search over the inner states; used when the cache
-     * of such a state is recreated after having been collected.
+     * is inner, by a forward search over the states created inside the recipe;
+     * used when the cache of such a state is recreated after having been collected.
      */
     private Set<RecipeTarget> computeForwOuter() {
         assert getState().isFull() && getState().getPrimeFrame().isInner();
@@ -510,20 +510,26 @@ public class StateCache implements Cache {
             assert source != null; // queue is non-empty
             var state = source.getState();
             assert state.getPrimeFrame().isInner();
-            if (state.isInner()) {
-                for (var trans : source.getState().getTransitions(Claz.NON_ABSENT)) {
-                    assert trans.isInnerStep();
-                    var target = trans.target();
-                    if (known.add(target)) {
-                        if (target.getPrimeFrame().isInner()) {
-                            queue.add(target.getCache());
-                        } else {
-                            result.add(new RecipeTarget((RuleTransition) trans));
-                        }
+            if (!state.isInner()) {
+                // the state left the recipe through a verdict
+                result.add(new RecipeTarget(state));
+            }
+            // follow the steps of this recipe run, also from a state that left
+            // the recipe through a verdict after having generated them; the
+            // launches of other recipes from such a state do not belong to it
+            for (var trans : state.getTransitions(Claz.NON_ABSENT)) {
+                if (!(trans instanceof RuleTransition ruleTrans) || !ruleTrans.isInnerStep()
+                    || ruleTrans.getStep().isLaunch()) {
+                    continue;
+                }
+                var target = ruleTrans.target();
+                if (known.add(target)) {
+                    if (target.getPrimeFrame().isInner()) {
+                        queue.add(target.getCache());
+                    } else {
+                        result.add(new RecipeTarget(ruleTrans));
                     }
                 }
-            } else {
-                result.add(new RecipeTarget(state));
             }
         }
         return result;
@@ -612,7 +618,12 @@ public class StateCache implements Cache {
                 // it's a single-step recipe transition
                 addRecipeTransition(partial, new RecipeTarget(partial));
             }
-        } else if (partial.isInnerStep() && getState().isInner()) {
+        } else if (partial.isInnerStep()) {
+            // a non-launch inner step starts from a state created inside the
+            // recipe, which may meanwhile have left it through a verdict;
+            // the targets reached through the step count for the recipe
+            // transitions all the same
+            assert getState().getPrimeFrame().isInner();
             if (target.getPrimeFrame().isInner()) {
                 var targetCache = target.getCache();
                 if (!targetFull) {

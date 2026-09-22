@@ -78,6 +78,7 @@ public class RecipeCompletenessTest {
         .of(new Case("junit/samples/recipes.gps", "ab-recipes", "start-small", true),
             new Case("junit/samples/recipes.gps", "alap-recipes", "start-small", true),
             new Case("junit/samples/recipes.gps", "atomic", "start-small", false),
+            new Case("junit/samples/recipes.gps", "star", "start-small", true),
             new Case("junit/samples/recipes_conditions.gps", "recipe", "start", true),
             new Case("junit/samples/transactions.gps", "control", "start", true),
             new Case("junit/samples/transactions.gps", "control1", "start", true),
@@ -117,6 +118,18 @@ public class RecipeCompletenessTest {
         for (GraphState state : gts.nodeSet()) {
             assertTrue(state.isClosed(), descr + ": state " + state + " is not closed");
             assertTrue(state.isFull(), descr + ": state " + state + " is not full");
+        }
+        // every public state is reached by a public transition
+        Set<GraphState> reached = new LinkedHashSet<>();
+        reached.add(gts.startState());
+        for (GraphTransition trans : gts.edgeSet()) {
+            if (trans.isPublicStep()) {
+                reached.add(trans.target());
+            }
+        }
+        for (GraphState state : gts.nodeSet()) {
+            assertTrue(!state.isPublic() || reached.contains(state),
+                       descr + ": public state " + state + " has no incoming public transition");
         }
         for (GraphState state : gts.nodeSet()) {
             // recipe transitions per launch, as created during exploration
@@ -158,13 +171,17 @@ public class RecipeCompletenessTest {
             if (!visited.add(next)) {
                 continue;
             }
-            if (!next.isInner()) {
-                if (!next.isAbsent()) {
-                    result.add(next);
-                }
-            } else {
+            if (!next.isInner() && !next.isAbsent()) {
+                // the recipe has ended here, possibly through a verdict
+                result.add(next);
+            }
+            if (next.getPrimeFrame().isInner()) {
+                // the state was created inside the recipe: its inner steps
+                // belong to the run, even if it has meanwhile ended here;
+                // launches of other recipes do not
                 for (RuleTransition trans : next.getRuleTransitions()) {
-                    if (trans.isInnerStep() && !trans.target().getActualFrame().isRemoved()) {
+                    if (trans.isInnerStep() && !trans.getStep().isLaunch()
+                        && !trans.target().getActualFrame().isRemoved()) {
                         queue.add(trans.target());
                     }
                 }
