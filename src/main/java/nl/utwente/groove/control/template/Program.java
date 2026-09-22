@@ -46,7 +46,7 @@ public class Program {
      * @param procs the procedures of the program, whose templates have been set
      * @param properties the property actions to be checked at each steady state
      */
-    @AIGenerated("Claude Opus 5.5, 2026-09")
+    @AIGenerated("Claude Opus 5, 2026-09")
     public Program(QualName mainName, Template template, Map<QualName,Procedure> procs,
                    List<Action> properties) {
         this.mainName = mainName;

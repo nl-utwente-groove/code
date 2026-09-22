@@ -497,7 +497,7 @@ abstract public class Term implements Position<Term,Derivation> {
      * @param proc the procedure whose body is set
      * @param body the body; should share the term pool of this term
      */
-    @AIGenerated("Claude Opus 5.5, 2026-09")
+    @AIGenerated("Claude Opus 5, 2026-09")
     public void setBody(Procedure proc, Term body) {
         assert body.getPool() == getPool();
         assert !proc.isFixed();
@@ -512,7 +512,7 @@ abstract public class Term implements Position<Term,Derivation> {
      * Returns the body of a procedure declared in the name space of this term.
      * Should only be invoked after the body has been set by {@link #setBody}.
      */
-    @AIGenerated("Claude Opus 5.5, 2026-09")
+    @AIGenerated("Claude Opus 5, 2026-09")
     public Term getBody(Procedure proc) {
         Term result = getTermPool().getBody(proc);
         assert result != null : String
@@ -521,7 +521,7 @@ abstract public class Term implements Position<Term,Derivation> {
     }
 
     /** Returns the term pool of this term, which also holds the procedure bodies. */
-    @AIGenerated("Claude Opus 5.5, 2026-09")
+    @AIGenerated("Claude Opus 5, 2026-09")
     private TermPool getTermPool() {
         // every pool is created by {@link #prototype()}
         return (TermPool) getPool();

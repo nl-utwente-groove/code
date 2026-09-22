@@ -103,11 +103,11 @@ Not exported, deliberately:
   `getAddPointAction`, `getLabelTree`, `getOptions`, `getModeButton`,
   `createPopupMenu`). Two consequences. Exporting the packages those signatures
   mention would drag in the whole Simulator, so they stay unexported and the
-  warnings stay visible until the controller seam is cleaned (open item 3).
+  warnings stay visible until the controller seam is cleaned (item 1, since done).
   And on the module path the yFiles add-on itself would hit `IllegalAccessError`
   the moment it touches `ActionStore` or `Options`; it does not today, because
   the installed application and the add-on's own tests run from the class path,
-  but it is one more reason to do item 3 before anyone embeds the Simulator
+  but it is one more reason item 1 had to be done before anyone embeds the Simulator
   from the module path.
 - `match.plan`, `match.automaton`: engines are selected through `match`.
 - `control.parse`: ANTLR 3 generated classes plus the tree and the name space.

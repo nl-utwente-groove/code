@@ -35,7 +35,7 @@ import nl.utwente.groove.util.collect.Pool;
  * @version $Revision$
  */
 @NonNullByDefault
-@AIGenerated("Claude Opus 5.5, 2026-09")
+@AIGenerated("Claude Opus 5, 2026-09")
 class TermPool extends Pool<Term> {
     /** Registers the body of a procedure. */
     void putBody(Procedure proc, Term body) {
