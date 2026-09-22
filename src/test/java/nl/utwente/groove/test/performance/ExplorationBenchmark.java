@@ -482,6 +482,49 @@ public class ExplorationBenchmark {
                 Tier.QUICK),
             // the pipeline at the long-tier size: four minutes, 5.2 GB retained
             new Config("petrinet-pipe-11-11", "petrinet.gps", "pipe-11-11", "", 705432, 7113106,
+                Tier.LONG),
+            // Arend's parallel-pump copy (2026-09-22), the multigraph grammar
+            // under DPO semantics: one hub with k parallel "c" loops and a "b"
+            // edge to each of m targets. "pump" turns a "c" into an "a" edge
+            // to a target, "drain" deletes one, "trim" deletes one of two
+            // parallel "a" edges and "fold" merges two targets, so the states
+            // are the distributions of the pumped edges over the targets that
+            // are left, on a graph of at most m+1 nodes: parallel edges in
+            // matching, in the deltas and in the certifier's edge bundles
+            // (gh #906), at 33 transitions per state. The SPO-multi twin
+            // (a property override) differs only in the identification
+            // condition; since no rule erases a node the dangling check of
+            // finding 4.1.6 never runs here, see the mergers DPO row for that
+            new Config("pump-8-4", "parallel-pump.gps", "pump-8-4", "", 2143, 38891, Tier.SMOKE),
+            new Config("pump-12-6-dpo", "parallel-pump.gps", "pump-12-6", "", 36894, 1231379,
+                Tier.QUICK),
+            new Config("pump-12-6-spo", "parallel-pump.gps", "pump-12-6", null,
+                "semantics=SPO-multi", "", 37026, 1267481, Tier.QUICK),
+            // the mergers sample (2026-09-22), scaled to a ring of n nodes
+            // flagged a, b, c in turn with chords, under the sample's own
+            // SPO-simple semantics and under SPO-multi and DPO by property
+            // override. The rules merge a-nodes into b- and c-nodes and
+            // delete a-nodes, so the states are the reachable quotients of
+            // the ring, about 8.5 times more per node: the merge path of the
+            // rule application (MergeMap, the merge branch of finding 4.2.13)
+            // and, under SPO-multi, the parallel edges that merging nodes with
+            // shared neighbours creates (4 % more states, 5 to 10 % more
+            // time than simple). Under DPO the identification condition
+            // excludes every match that identifies the deleted node with
+            // another, a tenth of the states, and the dangling check of
+            // finding 4.1.6 runs per candidate of merge-and-del
+            new Config("mergers-6", "mergers.gps", "ring-6", null, "semantics=SPO-multi", "",
+                202, 681, Tier.SMOKE),
+            new Config("mergers-9-simple", "mergers.gps", "ring-9", "", 25145, 255596,
+                Tier.QUICK),
+            new Config("mergers-9-multi", "mergers.gps", "ring-9", null, "semantics=SPO-multi",
+                "", 26217, 259850, Tier.QUICK),
+            new Config("mergers-10-multi", "mergers.gps", "ring-10", null,
+                "semantics=SPO-multi", "", 222508, 3320992, Tier.QUICK),
+            new Config("mergers-11-dpo", "mergers.gps", "ring-11", null, "semantics=DPO", "",
+                70065, 735888, Tier.QUICK),
+            // the pump at the long-tier size: three minutes, 6 GB retained
+            new Config("pump-16-8-dpo", "parallel-pump.gps", "pump-16-8", "", 479787, 24438977,
                 Tier.LONG));
 
     /** Returns the benchmark set. */

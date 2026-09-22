@@ -1321,6 +1321,81 @@ constant of about 2.5 µs and 5.5 KB per sub-match, which is where 4.1.2 (a
 cost per state is a constant 250 to 350 µs across the sizes, and its GTS retains 7.4 KB
 per state at the long size, the transition-heavy shape.
 
+**parallel-pump and mergers (added 2026-09-22)**, the multigraph and merging rows of
+grammar-set item 6. Their variants come from a new per-row grammar-property override in
+the harness: `Config.properties` takes space-separated `key=value` pairs like the
+`Generator`'s `-D` option, applied to a copy of the grammar's own properties through
+`GrammarModel.setProperties`, so one directory serves the DPO, SPO-multi and SPO-simple
+rows where the samples keep a second copy (`parallel-pump-spo`) for the purpose.
+
+- **parallel-pump**, Arend's copy under DPO semantics: `pump` turns one of the hub's
+  parallel `c` loops into an `a` edge to a `b`-target, `drain` deletes one, `trim` deletes
+  one of two parallel `a` edges to the same target and flags the hub, `fold` merges two
+  targets. `generate-starts.py` produces `pump-k-m`, the hub with a `mult=k:c` loop and
+  m targets, so the states are the distributions of the pumped edges over the targets
+  that are left, on a graph of at most m+1 nodes, and the transitions run 24 to 51 per
+  state: parallel edges in matching, in the deltas and in the certifier's edge bundles
+  (gh #906), with the iso check and generation as the main costs and matching under 3 %.
+  States grow 3.7-fold and time 4.6-fold per step of k+2, m+1. The SPO-multi twin differs
+  by under one per cent in states (the `trim` matches that identify its deleted with its
+  preserved `a` edge, which DPO's identification condition forbids) and by nothing in
+  time, since no rule erases a node: the dangling check of finding 4.1.6 never runs on
+  this grammar. The mergers DPO row covers that.
+- **mergers**, the sample copied by hand (its `system.properties` rewritten to 3.12 with
+  the explicit `semantics=SPO-simple` that the version conversion would give it; the
+  sample's `enableControl` is no longer a key), scaled to `ring-n`: n nodes flagged a, b, c
+  in turn, every node with an edge to its successor and every second node with a chord to
+  the node three further on, the edges labelled by the flags of their endpoints as in the
+  sample. The rules merge a-nodes into b- and c-nodes (`merge-a-b`, `merge-and-merge`) and
+  delete an a-node while merging (`merge-and-del`), so every step shrinks the graph and
+  the states are the reachable quotients of the ring: the merge path of the rule
+  application (`MergeMap`, the merge branch of 4.2.13), and about 8.5 times more states
+  per node. Under SPO-multi the parallel edges that merging nodes with shared neighbours
+  creates survive: 4 % more states and 5 to 10 % more time than under simple, and a third
+  more distinct edges in the factory (`fEdges`). Under DPO the identification condition
+  rules out the non-injective matches that identify a deleted with a preserved element
+  (`merge-and-del`'s deleted a-node with the merged one, presumably the bulk), a tenth of
+  the states, and the dangling check runs per candidate of `merge-and-del`.
+
+Desktop calibration, single cold runs through the harness, one JVM per row, `-Xmx8g`
+(the rows marked "shared" ran while a stray second harness loop was competing for the
+machine and are indicative only):
+
+| row | states | transitions | s | match ms | iso ms | gen ms | allocMB | retMB | kept |
+|---|---|---|---|---|---|---|---|---|---|
+| `pump-6-3-dpo` | 431 | 5 091 | 0.28 | 20 | 60 | 159 | 48 | 2 | dropped |
+| `pump-6-3-spo` | 449 | 5 523 | 0.27 | 17 | 41 | 166 | 51 | 2 | dropped |
+| `pump-8-4` (DPO) | 2 143 | 38 891 | 0.55 | 25 | 134 | 390 | 347 | 14 | smoke |
+| `pump-8-4-spo` (shared) | 2 183 | 40 988 | 0.73 | 26 | 242 | 535 | 369 | 14 | dropped |
+| `pump-10-5-dpo` (shared) | 9 274 | 236 314 | 1.55 | 61 | 494 | 1 251 | 2 250 | 74 | dropped |
+| `pump-10-5-spo` (shared) | 9 344 | 245 191 | 1.65 | 55 | 604 | 1 357 | 2 250 | 75 | dropped |
+| `pump-12-6-dpo` | 36 894 | 1 231 379 | 6.7 | 125 | 2 726 | 5 907 | 11 945 | 345 | quick |
+| `pump-12-6-spo` | 37 026 | 1 267 481 | 6.9 | 163 | 2 891 | 6 108 | 12 154 | 352 | quick |
+| `pump-14-7-dpo` | 136 731 | 5 731 438 | 31.4 | 621 | 13 850 | 28 253 | 59 169 | 1 502 | dropped |
+| `pump-14-7-spo` | 136 941 | 5 870 069 | 32.0 | 594 | 14 454 | 28 917 | 60 505 | 1 518 | dropped |
+| `pump-16-8-dpo` | 479 787 | 24 438 977 | 168.6 | 3 845 | 76 288 | 152 314 | 268 792 | 6 010 | long |
+| mergers `start` (simple) | 66 | 143 | 0.08 | 2 | 6 | 32 | 5 | 0 | default graph |
+| `mergers-6` (simple and multi alike) | 202 | 681 | 0.10 | 5 | 8 | 50 | 12 | 1 | smoke (multi) |
+| `mergers-9-simple` | 25 145 | 255 596 | 2.2 | 94 | 478 | 1 793 | 2 832 | 172 | quick |
+| `mergers-9-multi` | 26 217 | 259 850 | 2.4 | 123 | 605 | 1 875 | 3 015 | 181 | quick |
+| `mergers-9-dpo` | 2 818 | 18 693 | 0.52 | 43 | 63 | 331 | 275 | 20 | dropped |
+| `mergers-10-simple` | 213 582 | 3 226 347 | 23.0 | 822 | 6 132 | 19 935 | 36 009 | 1 711 | dropped |
+| `mergers-10-multi` | 222 508 | 3 320 992 | 25.2 | 875 | 7 071 | 21 932 | 38 966 | 1 791 | upper quick |
+| `mergers-10-dpo` | 11 085 | 81 084 | 1.1 | 69 | 159 | 826 | 1 270 | 86 | dropped |
+| `mergers-11-simple` | | | timeout at 600, 977 878 states | | | | | | too large |
+| `mergers-11-multi` | 1 084 025 | 19 356 013 | 456 | 7 638 | 127 947 | 398 622 | 240 387 | 5 640 | too large |
+| `mergers-11-dpo` | 70 065 | 735 888 | 7.2 | 281 | 1 435 | 5 889 | 10 463 | 517 | quick |
+| `mergers-12-simple` | | | timeout at 600, 1 480 776 states | | | | | | too large |
+
+The mergers family has no long-tier size: `ring-11` is a million states and 19 million
+transitions, 5.6 GB retained and 7.6 minutes under SPO-multi, and under simple it did not
+finish in ten minutes at fewer states, which at that heap is the collector rather than the
+semantics (the run alive at the timeout was well into its second half). So the pump at
+`pump-16-8` (three minutes, 6 GB) is the item's long row, next to `pipe-11-11` the second
+transition-heavy one; `ring-11-dpo` at 7 s and `ring-10-multi` at 25 s bound the quick
+tier for mergers. `ring-6` explores to the same 202 states under simple and multi, so the
+smoke row runs it under multi for the code path alone.
+
 ### The long-run tier (2026-09-22)
 
 The tier the note asked for once 3.11 was fixed. `Config.smoke` became a three-valued

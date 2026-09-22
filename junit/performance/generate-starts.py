@@ -3,7 +3,7 @@
 
 The grammars under junit/performance are copies of junit/samples grammars,
 kept only for the exploration benchmark (test/performance/ExplorationBenchmark).
-Seven of them have start graphs with a regular structure, so larger instances
+Nine of them have start graphs with a regular structure, so larger instances
 are generated here rather than drawn by hand. Run from the repository root:
 
     python junit/performance/generate-starts.py
@@ -285,6 +285,42 @@ def petri_join(f):
     return g
 
 
+def parallel_pump(k, m):
+    """The parallel-pump grammar's start graph: one hub carrying k parallel
+    "c" loops (a single mult=k edge) and a "b" edge to each of m target
+    nodes. "pump" turns a "c" into an "a" edge from the hub to a target,
+    "drain" deletes one, "trim" deletes one of two parallel "a" edges to
+    the same target and "fold" merges two targets, so the states are the
+    distributions of the pumped edges over the targets that are left, and
+    the graph never has more than m+1 nodes: the parallel-edge machinery
+    per match, application and certificate, under DPO (the grammar's own
+    semantics) and SPO-multi (a row override)."""
+    g = Graph("pump-%d-%d" % (k, m))
+    hub = g.node("mult=%d:c" % k)
+    for _ in range(m):
+        g.edge(hub, "b", g.node())
+    return g
+
+
+def mergers(n):
+    """The mergers grammar's start graph scaled up: a ring of n nodes flagged
+    a, b, c in turn, every node with an edge to its successor and every
+    second node with a chord to the node three further on, the edges
+    labelled by the flags of their endpoints as in the sample (a_to_b and
+    so on). The rules merge a-nodes into b- and c-nodes and delete a-nodes,
+    so every step shrinks the graph and the states are the reachable
+    quotients of the ring; merging nodes with shared neighbours creates
+    parallel edges, which the SPO-simple semantics of the sample collapses
+    and the SPO-multi override keeps."""
+    g = Graph("ring-%d" % n)
+    flags = ["abc"[i % 3] for i in range(n)]
+    nodes = [g.node("flag:" + f) for f in flags]
+    for i in range(n):
+        for j in [(i + 1) % n] + ([(i + 3) % n] if i % 2 == 0 else []):
+            g.edge(nodes[i], "%s_to_%s" % (flags[i], flags[j]), nodes[j])
+    return g
+
+
 SIZES = [
     ("Mark-Unmark-List-regexp-benchmark.gps", mark_unmark, [(18,), (21,), (22,)]),
     ("As-and-Bs-reg-exp-benchmark.gps", as_and_bs, [(4, 3)]),
@@ -298,6 +334,8 @@ SIZES = [
     ("hub.gps", field, [(2, 100, 2500)]),
     ("petrinet.gps", petri_pipe, [(8, 8), (9, 9), (11, 11)]),
     ("petrinet.gps", petri_join, [(100,), (1000,)]),
+    ("parallel-pump.gps", parallel_pump, [(8, 4), (12, 6), (16, 8)]),
+    ("mergers.gps", mergers, [(6,), (9,), (10,), (11,)]),
 ]
 
 if __name__ == "__main__":
