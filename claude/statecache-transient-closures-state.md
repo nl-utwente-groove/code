@@ -8,7 +8,7 @@ Make recipe and atomic-block exploration linear in the body length: replace the
 transitive closures that `lts.StateCache` kept per transient/inner state by local
 propagation over direct predecessor edges. Issue: gh #924 (diagnosis, design, gates).
 
-## State as of 2026-09-22: ready for review (second round)
+## State as of 2026-09-22: ready for review (third round)
 
 Branch `statecache-transient-closures` off master `ed8b740cf`, worktree
 `.claude/worktrees/statecache-transient-closures` (detached for review). Commits, in order:
@@ -33,8 +33,15 @@ Branch `statecache-transient-closures` off master `ed8b740cf`, worktree
    recipe end; both are results now. Master created a spurious recipe transition out
    of the verdict-ended state instead. New fixture `junit/samples/recipes.gps/star.gcp`
    (`newB; r;` main), in the completeness test.
+5. `Added null annotations to StateCache`: `@NonNullByDefault`, lazy fields `@Nullable`
+   behind accessors; two asserts document unreachable nulls (delta of a start state,
+   out-values of a target without recipe call).
+6. `Added star-loop and star-launch fixtures for verdict-ended recipe runs`: the star
+   looping twice (chain of verdict-ended states, 8 ends from one launch state) and a
+   verdict-ended state launching a second recipe; cases of the completeness test plus
+   exact-count rows for all three star programs in `RecipeTest.testStar`.
 
-Gates on the tip (commit 4), all green: ExplorationTest (25), GUI tests (20 in 8
+Gates on the tip (commit 6), all green: ExplorationTest (25), GUI tests (20 in 8
 classes), full suite with slow tests (942, only the known GrammarsTest worktree skip),
 DeterminismTest + CacheReconstructionTest, PersistenceTest, TraceShapeTest, ecj null
 analysis on the touched files.
@@ -44,8 +51,6 @@ analysis on the touched files.
 - **Aborted fallback searches.** On cyclic transient regions the forward search can be
   repeated once per successor notification, bounded by the closed non-full region. Not
   observed to matter; a memoisation of the blocking open state would bound it.
-- **Null annotations.** `StateCache` is still unannotated (its lazily initialised fields
-  would need `@Nullable` throughout); left out as a drive-by. Possible follow-up.
 - **Explicit cache clearing of closed non-full transient states** (as `DeterminismTest`
   does for all closed states) loses the predecessor lists, as it lost the old sets; the
   GC cannot do this since non-full caches are strongly referenced. Documented in the
