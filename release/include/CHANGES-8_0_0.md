@@ -405,6 +405,13 @@ All relocations are without deprecation.
   exported package `cli`; `explore`, `prolog`, `algebra` and `io` no longer
   mention picocli. The root-package wrappers `Generator`, `ModelChecker` and
   `PrologChecker` are unchanged.
+- `control.term`, the term level of the control compiler, is no longer
+  exported. `control.template.Fragment` and `control.template.TemplateBuilder`
+  moved there, together with the new `ProgramBuilder`, which now holds the
+  compile-time half of `Program` (fragment merging, body analyses and checks);
+  `Program` keeps the compiled templates and procedures and is built by it.
+  `Procedure` lost `getTerm`/`setTerm`: procedure bodies are kept by the term
+  pool (`Term.getBody`/`setBody`).
 - The top-level `automaton` package is dissolved into `grammar.rule`,
   `grammar.type` and `match.automaton`; `RuleLabel.getAutomaton` is replaced by
   `RegAutCalculator.instance()`.

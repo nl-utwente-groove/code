@@ -45,7 +45,7 @@ the first cut here).
 |---|---|
 | Pipeline | root, `io.store`, `io.graph`, `io.external`, `grammar`, `grammar.model/aspect/host/type/rule`, `graph`, `graph.plain/iso/layout`, `match`, `transform`, `transform.oracle`, `lts`, `explore`, `explore.config/feature/result/engine`, `verify`, `prolog`, `prolog.builtin` |
 | Data values | `algebra`, `algebra.syntax`, `annotation` |
-| Control | `control`, `control.term/template/instance/graph` |
+| Control | `control`, `control.template/instance/graph` |
 | Utilities | `util`, `util.parse/line/cache/collect` |
 | CLI | `cli` (since 2026-09-22; before that `util.cli` and the tools in `explore`, `prolog`, `algebra`) |
 | Backend SPI | `gui.view`, `gui.view.cell`, `gui.look`, `gui.layout` |
@@ -62,9 +62,9 @@ Reasons for the less obvious ones, all forced by signature reachability:
   the user-signature feature need anyway.
 - `control.instance` (`Frame`, `Step`, `Automaton`) and `control.template`
   (`Switch`, `Template`) are exposed by `lts` (`GraphState.getFrame`,
-  `RuleTransition.getStep/getSwitch`) and `Grammar.getControl`. `control.term` is
-  exposed by `Procedure.getTerm` and by `Program`/`Fragment` in `control.template`
-  (see the open item on that package). `control.graph` is `Automaton.toGraph`.
+  `RuleTransition.getStep/getSwitch`) and `Grammar.getControl`; `control.template`
+  holds only the run-time side of the compiler since 2026-09-22 (see "Item 3 as
+  built"). `control.graph` is `Automaton.toGraph`.
 - `match`: `Proof` is the anchor of `RuleEvent`/`RuleTransition`.
 - `util.cache`: `AGraph` extends `AbstractCacheHolder`. Four classes, the
   scalability mechanism, fine to export.
@@ -169,11 +169,12 @@ reports no `exports` warning at all.
    interfaces of the session proposal below: see "Item 1 as built".
 2. ~~**CLI tools into one `cli` package**~~ **Done**, 2026-09-22, branch
    `cli-package`: see "Item 2 as built".
-3. **`control.template` mixes compile time and run time**: `Program`,
+3. ~~**`control.template` mixes compile time and run time**: `Program`,
    `Fragment`, `TemplateBuilder` (terms in, template out) sit next to `Template`,
    `Switch`, `Location` (what the LTS refers to). Separating them, and moving
    `Procedure`'s term accessors (used by `control.parse`, `control.template`,
-   `control.term`) to the compiler side, would let `control.term` go unexported.
+   `control.term`) to the compiler side, would let `control.term` go unexported.~~
+   **Done**, 2026-09-22, branch `control-term-split`: see "Item 3 as built".
 4. **`util.collect`**: narrow the four leaking signatures listed above, then
    unexport.
 
@@ -484,3 +485,52 @@ Null analysis (`null-check` skill, ecj `-All`): 0 errors, 11 main and 8 test
 warnings — the same set as on `view-controller-context`, so nothing new. The
 yFiles backend needed no run: its sources mention none of the moved names,
 only `gui.Imager`, which did not move.
+
+## Item 3 as built: the term level unexported (2026-09-22)
+
+Branch `control-term-split`, off `master`, in three code commits plus the
+descriptor and these records.
+
+**What moved.** `Fragment` and `TemplateBuilder` went from `control.template`
+to `control.term` (`git mv`). `Program` was split: the compile-time half
+(fragment merging with the duplicate-main and duplicate-procedure errors, the
+recursion/finality/termination analyses, the body checks) is relocated
+unchanged into the new `control.term.ProgramBuilder`, whose `build()` runs the
+checks and the `TemplateBuilder` and returns the `Program`. `Program` keeps the
+run-time half: a constructor from main name, main template, procedure map and
+property list, and `getMainName`, `getTemplate`, `getProcs`, `getProc`,
+`hasProperties`, `getProperties`. It is no longer `Fixable` (a `Program` only
+exists after a successful build), which removed the `isFixed` asserts in
+`Automaton` and `PreviewControlAction` and the redundant `setFixed` calls in
+`CtrlLoader.run`; `hasMain` went too, since the builder rejects a program
+without main and `CtrlLoader` supplies the default main, so it was always true.
+`CtrlLoader.getTermPrototype` is gone; its one user, `ProgramBuildTest`, parses
+through `CtrlTree` on its own name space and asserts on the builder.
+
+**Procedure bodies live in the term pool.** `Procedure.getTerm/setTerm` were
+the leak through `Recipe` and `Function`. Three packages need the bodies —
+`control.parse` sets them, `control.term` reads them for nested derivations,
+the compiler analyses and compiles them — so `Procedure` could not keep a
+package-private accessor. The pool of the name space is the natural owner:
+every body is a term of that pool and every consumer holds such a term.
+`Term.prototype()` now creates a package-private `TermPool` with a lookup-only
+procedure-to-body map; `Term.setBody` (recipe bodies made atomic, procedure
+fixed) and `Term.getBody` replace the accessors. A `Fragment` receives the
+name-space prototype at construction, because its main may be absent.
+
+**`Template` visibility.** The constructors `Template(QualName)` and
+`Template(Procedure)` and `Template.initVars()` became public for the moved
+`TemplateBuilder`; none of them mentions a term type.
+
+**Not annotated.** `ProgramBuilder` is not `@NonNullByDefault`: its analyses
+pass arity-dependent nullable argument locals around in some twenty places,
+and annotating would have meant rewriting relocated code. `Program` is
+annotated; its `getProc` is `@Nullable`, which cost three asserts in tests.
+
+**Gates.** `mvn clean compile`: no `exports` warning. Fast suite: 883 tests,
+0 failures, 0 errors, 2 skipped, all `test.control` classes and
+`ExtensionsTest` 4 and `LayeringTest` 1 green. `ExplorationTest`: 25 tests,
+all pass. GUI tests: eight `*GuiTest` classes, 22 tests, none skipped.
+Null analysis (`-All`): 0 errors, 11 main and 8 test warnings, the same set as
+before. The yFiles backend mentions none of the changed names except
+`getProgram().getTemplate()` in one test, which is unchanged API.

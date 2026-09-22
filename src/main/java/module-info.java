@@ -10,7 +10,8 @@ module nl.utwente.groove {
     // or for a real client need. Not exported: the Simulator and its view layer
     // (gui.*, under reconstruction for gh #909), the matching engines
     // (match.plan, match.automaton), the control compiler (control.parse, with
-    // its generated ANTLR classes), the exploration engine's internals
+    // its generated ANTLR classes, and control.term as its term level), the
+    // exploration engine's internals
     // (explore.util, explore.verify; explore.engine itself is exported as the
     // strategy extension point), the concrete import/export formats, the
     // Prolog predicate implementations and the remaining utility packages.
@@ -66,7 +67,6 @@ module nl.utwente.groove {
     exports nl.utwente.groove.annotation;
     // -- control programs: declarations, compiled templates, runtime automata
     exports nl.utwente.groove.control;
-    exports nl.utwente.groove.control.term;
     exports nl.utwente.groove.control.template;
     exports nl.utwente.groove.control.instance;
     exports nl.utwente.groove.control.graph;
