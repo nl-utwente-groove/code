@@ -14,9 +14,9 @@
  *
  * $Id$
  */
-package nl.utwente.groove.explore;
+package nl.utwente.groove.cli;
 
-import static nl.utwente.groove.util.cli.Verbosity.LOW;
+import static nl.utwente.groove.util.Verbosity.LOW;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,8 +35,6 @@ import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.LTSLabels;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Strings;
-import nl.utwente.groove.util.cli.GrooveCmdLineParser;
-import nl.utwente.groove.util.cli.GrooveCmdLineTool;
 import nl.utwente.groove.util.parse.FormatErrorSet;
 import nl.utwente.groove.util.parse.FormatException;
 import nl.utwente.groove.verify.CTLMarker;

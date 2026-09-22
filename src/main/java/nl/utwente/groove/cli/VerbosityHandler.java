@@ -14,7 +14,9 @@
  *
  * $Id$
  */
-package nl.utwente.groove.util.cli;
+package nl.utwente.groove.cli;
+
+import nl.utwente.groove.util.Verbosity;
 
 import picocli.CommandLine.ITypeConverter;
 import picocli.CommandLine.TypeConversionException;

@@ -27,7 +27,7 @@ import java.util.List;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.junit.jupiter.api.Test;
 
-import nl.utwente.groove.explore.CTLModelChecker;
+import nl.utwente.groove.cli.CTLModelChecker;
 import nl.utwente.groove.grammar.GrammarKey;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.io.store.SystemStore;

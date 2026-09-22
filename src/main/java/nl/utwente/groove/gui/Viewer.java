@@ -30,6 +30,8 @@ import javax.swing.WindowConstants;
 
 import picocli.CommandLine.Parameters;
 
+import nl.utwente.groove.cli.ExistingFileHandler;
+import nl.utwente.groove.cli.GrooveCmdLineTool;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.gui.dialog.GraphPreviewDialog;
@@ -39,8 +41,6 @@ import nl.utwente.groove.gui.view.ViewOptions;
 import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.io.graph.GraphIO;
 import nl.utwente.groove.util.FileType;
-import nl.utwente.groove.util.cli.ExistingFileHandler;
-import nl.utwente.groove.util.cli.GrooveCmdLineTool;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

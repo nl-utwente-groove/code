@@ -25,9 +25,9 @@ import java.util.stream.Collectors;
 import org.junit.Test;
 
 import org.junit.Assert;
+import nl.utwente.groove.cli.Generator;
 import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.explore.ExploreType;
-import nl.utwente.groove.explore.Generator;
 import nl.utwente.groove.explore.LTLExploreType;
 import nl.utwente.groove.lts.ExploreResult;
 import nl.utwente.groove.lts.ExploreResult.Lasso;
