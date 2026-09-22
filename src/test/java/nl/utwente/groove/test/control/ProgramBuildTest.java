@@ -137,9 +137,9 @@ public class ProgramBuildTest {
         assertEquals(2, p.getProcs()
             .size());
         Procedure fProc = proc("f");
-        Term fTerm = fProc.getTerm();
+        Term fTerm = prot.getBody(fProc);
         Procedure rProc = proc("r");
-        Term rTerm = rProc.getTerm();
+        Term rTerm = prot.getBody(rProc);
         assertEquals(call("a").seq(call(rProc)), fTerm);
         assertEquals(call("b").ifOnly(call(fProc)), rTerm);
         // circular
@@ -151,7 +151,7 @@ public class ProgramBuildTest {
         p = build("forward-call", "f; function f() { a;f; }");
         fProc = proc("f");
         assertEquals(call(fProc), p.getMain());
-        assertEquals(call("a").seq(call("f")), fProc.getTerm());
+        assertEquals(call("a").seq(call("f")), prot.getBody(fProc));
     }
 
     @Test
@@ -164,7 +164,7 @@ public class ProgramBuildTest {
         CtrlArg n2In = CtrlArg.inVar(QualName.parse("f"), "n2", "node");
         CtrlArg n2Out = CtrlArg.outVar(QualName.parse("f"), "n2", "node");
         assertEquals(call(rule("iInt"), xIn).seq(call(rule("oNode"), n2Out))
-            .seq(call(rule("bNode-oNode"), n2In, nOut)), fProc.getTerm());
+            .seq(call(rule("bNode-oNode"), n2In, nOut)), prot.getBody(fProc));
         //
         build("r",
             "recipe r(int p, out node q) { choice oNode(out q); or { bNode(out q); bInt(p); } }");
@@ -186,9 +186,9 @@ public class ProgramBuildTest {
         assertEquals(call(fProc, CtrlArg.outVar(null, "n", "int")), p.getMain());
         CtrlArg xIn = CtrlArg.inVar(QualName.parse("sub.f"), "x", "int");
         CtrlArg xOut = CtrlArg.outVar(QualName.parse("sub.f"), "x", "int");
-        assertEquals(call(rule("bInt"), xOut).seq(call(gProc, xIn)), fProc.getTerm());
+        assertEquals(call(rule("bInt"), xOut).seq(call(gProc, xIn)), prot.getBody(fProc));
         CtrlArg yIn = CtrlArg.inVar(QualName.parse("sub.g"), "y", "int");
-        assertEquals(call(rule("bInt"), yIn), gProc.getTerm());
+        assertEquals(call(rule("bInt"), yIn), prot.getBody(gProc));
     }
 
     @Test

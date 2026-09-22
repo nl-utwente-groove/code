@@ -34,11 +34,21 @@ import nl.utwente.groove.util.parse.FormatException;
 public class Fragment {
     /**
      * Constructs an unnamed, initially empty program.
+     * @param prototype the prototype term of the name space against which the
+     * fragment is compiled
      */
-    public Fragment(QualName controlName) {
+    public Fragment(QualName controlName, Term prototype) {
         this.controlName = controlName;
+        this.prototype = prototype;
         this.procs = new LinkedHashMap<>();
     }
+
+    /** Returns the prototype term of the name space against which this fragment is compiled. */
+    public Term getPrototype() {
+        return this.prototype;
+    }
+
+    private final Term prototype;
 
     /** Returns the control name of this program fragment. */
     public QualName getControlName() {

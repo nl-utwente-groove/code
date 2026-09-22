@@ -363,7 +363,7 @@ public class TermDerivationTest {
         QualName controlName = QualName.name("control");
         GrammarProperties properties = this.grammar.getProperties();
         Function result = new Function(fullName, sig, controlName, 0, properties);
-        result.setTerm(body);
+        this.p.setBody(result, body);
         result.setFixed();
         return result;
     }

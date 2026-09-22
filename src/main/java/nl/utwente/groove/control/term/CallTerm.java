@@ -48,9 +48,7 @@ public class CallTerm extends Term {
         Derivation deriv = new Derivation(getCall(), epsilon());
         DerivationAttempt result;
         if (nested && getCall().getUnit() instanceof Procedure p) {
-            Term inner = p.getTerm();
-            assert inner != null : String
-                .format("Procedure %s has not been declared", getCall().getUnit().getQualName());
+            Term inner = getBody(p);
             result = body(inner, deriv).getAttempt(nested);
         } else {
             result = createAttempt();

@@ -144,6 +144,10 @@ public class Program implements Fixable {
      */
     public void add(Fragment other) throws FormatException {
         assert !isFixed();
+        if (this.prototype == null) {
+            this.prototype = other.getPrototype();
+        }
+        assert this.prototype == other.getPrototype();
         FormatErrorSet errors = new FormatErrorSet();
         if (this.main == null) {
             this.main = other.getMain();
@@ -160,6 +164,14 @@ public class Program implements Fixable {
         }
         errors.throwException();
     }
+
+    /** Returns the body of a procedure of this program. */
+    Term getBody(Procedure proc) {
+        return this.prototype.getBody(proc);
+    }
+
+    /** The prototype term of the name space against which the fragments are compiled. */
+    private Term prototype;
 
     /**
      * Adds a procedure to this program.
@@ -191,7 +203,7 @@ public class Program implements Fixable {
                 if (getRecursion().contains(name)) {
                     errors.add(error + " has unguarded recursion", proc);
                 }
-                Term body = proc.getTerm();
+                Term body = getBody(proc);
                 if (body.isFinal()) {
                     errors.add(error + " is empty", proc);
                 }
@@ -264,7 +276,7 @@ public class Program implements Fixable {
     /** Returns the set of procedure names that appear on initial call switches. */
     private Set<QualName> getUnguardedCalls(Procedure proc) {
         Set<QualName> result = new HashSet<>();
-        for (Call call : getInitCalls(proc.getTerm())) {
+        for (Call call : getInitCalls(getBody(proc))) {
             Callable unit = call.getUnit();
             if (unit instanceof Procedure) {
                 result.add(unit.getQualName());
@@ -402,7 +414,7 @@ public class Program implements Fixable {
     private boolean iterateFinality(Map<Procedure,Finality> finalityMap) {
         boolean result = false;
         for (Procedure proc : this.procs.values()) {
-            Finality newResult = getFinality(proc.getTerm(), finalityMap);
+            Finality newResult = getFinality(getBody(proc), finalityMap);
             Finality oldResult = finalityMap.put(proc, newResult);
             result |= !newResult.equals(oldResult);
         }
@@ -544,7 +556,7 @@ public class Program implements Fixable {
             Iterator<Procedure> procIter = remaining.iterator();
             while (procIter.hasNext()) {
                 Procedure proc = procIter.next();
-                if (mayTerminate(proc.getTerm(), result)) {
+                if (mayTerminate(getBody(proc), result)) {
                     // proc will certainly terminate
                     result.add(proc);
                     procIter.remove();
@@ -560,7 +572,7 @@ public class Program implements Fixable {
             Iterator<Procedure> procIter = result.iterator();
             while (procIter.hasNext()) {
                 Procedure proc = procIter.next();
-                if (!willTerminate(proc.getTerm(), result)) {
+                if (!willTerminate(getBody(proc), result)) {
                     // proc does not always terminate
                     procIter.remove();
                     modified = true;

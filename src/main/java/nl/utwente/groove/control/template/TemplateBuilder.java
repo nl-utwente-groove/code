@@ -82,7 +82,7 @@ public class TemplateBuilder {
     public Template build(Program prog) {
         newBuilder(prog.getMainName(), null, prog.getMain());
         for (Procedure proc : prog.getProcs().values()) {
-            Builder builder = newBuilder(null, proc, proc.getTerm());
+            Builder builder = newBuilder(null, proc, prog.getBody(proc));
             proc.setTemplate(builder.getResult());
         }
         for (Builder builder : this.builderMap.values()) {
