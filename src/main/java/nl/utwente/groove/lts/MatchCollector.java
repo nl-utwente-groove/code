@@ -387,7 +387,7 @@ public class MatchCollector {
     /** Possibly {@code null} mapping from rules to sets of outgoing
      * transitions for the parent of this state.
      */
-    protected final KeySet<GraphTransitionKey,GraphTransition> parentTransMap;
+    private final KeySet<GraphTransitionKey,GraphTransition> parentTransMap;
     /** The rules that may be enabled. */
     protected final Set<Rule> enabledRules;
     /** The rules that may be disabled. */
