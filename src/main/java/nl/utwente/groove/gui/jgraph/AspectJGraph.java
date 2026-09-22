@@ -198,11 +198,12 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements Aspect
         AspectVertexCell vertex = viewModel.newVertex(viewModel.createAspectNode());
         vertex.setNodeFixed();
         vertex.putVisual(VisualKey.NODE_POS, atPoint);
-        var jVertex = JCell.of(vertex);
+        // the JGraph item of the vertex only exists once the vertex is inserted
         if (this.startEditingNewNode) {
             // the vertex and its first label are one edit, settled when the
             // in-place editor closes (see JGraphUI.completeEditing)
             viewModel.insertPending(List.of(vertex), List.of(), List.of());
+            var jVertex = JCell.of(vertex);
             setSelectionCell(jVertex);
             startEditingAtCell(jVertex);
             if (!isEditing()) {
@@ -211,7 +212,7 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements Aspect
         } else {
             // add the cell through the view model, which records the edit
             viewModel.insert(List.of(vertex), List.of(), List.of());
-            setSelectionCell(jVertex);
+            setSelectionCell(JCell.of(vertex));
         }
     }
 
