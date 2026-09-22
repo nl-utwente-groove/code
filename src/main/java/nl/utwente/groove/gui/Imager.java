@@ -16,13 +16,13 @@
  */
 package nl.utwente.groove.gui;
 
+import static nl.utwente.groove.util.FileType.GRAMMAR;
+import static nl.utwente.groove.util.FileType.GXL;
+import static nl.utwente.groove.util.FileType.RULE;
+import static nl.utwente.groove.util.FileType.STATE;
+import static nl.utwente.groove.util.FileType.TYPE;
 import static nl.utwente.groove.util.cli.Verbosity.LOW;
 import static nl.utwente.groove.util.cli.Verbosity.MEDIUM;
-import static nl.utwente.groove.util.io.FileType.GRAMMAR;
-import static nl.utwente.groove.util.io.FileType.GXL;
-import static nl.utwente.groove.util.io.FileType.RULE;
-import static nl.utwente.groove.util.io.FileType.STATE;
-import static nl.utwente.groove.util.io.FileType.TYPE;
 
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -69,6 +69,7 @@ import nl.utwente.groove.gui.export.CanvasExportable;
 import nl.utwente.groove.gui.export.CanvasExporters;
 import nl.utwente.groove.gui.view.AspectGraphViewController;
 import nl.utwente.groove.gui.view.GraphBackend;
+import nl.utwente.groove.gui.view.ViewOptions;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Exporter;
 import nl.utwente.groove.io.external.Exporters;
@@ -76,12 +77,12 @@ import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.io.store.SystemStore;
 import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
+import nl.utwente.groove.util.FileType;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.cli.CmdLineException;
 import nl.utwente.groove.util.cli.ExistingFileHandler;
 import nl.utwente.groove.util.cli.GrooveCmdLineTool;
 import nl.utwente.groove.util.cli.Verbosity;
-import nl.utwente.groove.util.io.FileType;
 import nl.utwente.groove.util.parse.FormatException;
 import picocli.CommandLine.ITypeConverter;
 import picocli.CommandLine.Option;
@@ -312,11 +313,11 @@ public class Imager extends GrooveCmdLineTool<Object> {
         case RESOURCE -> Exportable.resource(resourceModel);
         case CANVAS -> {
             Options options = Options.instance();
-            options.getItem(Options.SHOW_VALUE_NODES_OPTION).setSelected(isEditorView());
-            options.getItem(Options.SHOW_ASPECTS_OPTION).setSelected(isEditorView());
+            options.getItem(ViewOptions.SHOW_VALUE_NODES_OPTION).setSelected(isEditorView());
+            options.getItem(ViewOptions.SHOW_ASPECTS_OPTION).setSelected(isEditorView());
             DisplayKind displayKind
                 = DisplayKind.toDisplay(ResourceKind.toResource(aspectGraph.getRole()));
-            var controller = new AspectGraphViewController(null, displayKind, false);
+            var controller = new AspectGraphViewController(null, displayKind.getGraphRole(), false);
             var grammar = resourceModel.getGrammar();
             assert grammar != null; // the resource model was created from a grammar
             controller.setGrammar(grammar);

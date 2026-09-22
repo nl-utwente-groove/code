@@ -18,22 +18,22 @@ package nl.utwente.groove.gui;
 
 import static nl.utwente.groove.gui.Options.DELETE_RESOURCE_OPTION;
 import static nl.utwente.groove.gui.Options.HELP_MENU_NAME;
-import static nl.utwente.groove.gui.Options.SHOW_ABSENT_STATES_OPTION;
-import static nl.utwente.groove.gui.Options.SHOW_ANCHORS_OPTION;
-import static nl.utwente.groove.gui.Options.SHOW_ARROWS_ON_LABELS_OPTION;
-import static nl.utwente.groove.gui.Options.SHOW_ASPECTS_OPTION;
-import static nl.utwente.groove.gui.Options.SHOW_BIDIRECTIONAL_EDGES_OPTION;
-import static nl.utwente.groove.gui.Options.SHOW_CALL_NESTING_OPTION;
-import static nl.utwente.groove.gui.Options.SHOW_CONTROL_STATE_OPTION;
-import static nl.utwente.groove.gui.Options.SHOW_INTERNAL_NODE_IDS_OPTION;
-import static nl.utwente.groove.gui.Options.SHOW_INVARIANTS_OPTION;
-import static nl.utwente.groove.gui.Options.SHOW_RECIPE_STEPS_OPTION;
-import static nl.utwente.groove.gui.Options.SHOW_STATE_IDS_OPTION;
-import static nl.utwente.groove.gui.Options.SHOW_STATE_STATUS_OPTION;
-import static nl.utwente.groove.gui.Options.SHOW_SYSTEM_STATE_PROPERTIES_OPTION;
-import static nl.utwente.groove.gui.Options.SHOW_USER_NODE_IDS_OPTION;
-import static nl.utwente.groove.gui.Options.SHOW_VALUE_NODES_OPTION;
-import static nl.utwente.groove.util.io.FileType.GRAMMAR;
+import static nl.utwente.groove.gui.view.ViewOptions.SHOW_ABSENT_STATES_OPTION;
+import static nl.utwente.groove.gui.view.ViewOptions.SHOW_ANCHORS_OPTION;
+import static nl.utwente.groove.gui.view.ViewOptions.SHOW_ARROWS_ON_LABELS_OPTION;
+import static nl.utwente.groove.gui.view.ViewOptions.SHOW_ASPECTS_OPTION;
+import static nl.utwente.groove.gui.view.ViewOptions.SHOW_BIDIRECTIONAL_EDGES_OPTION;
+import static nl.utwente.groove.gui.view.ViewOptions.SHOW_CALL_NESTING_OPTION;
+import static nl.utwente.groove.gui.view.ViewOptions.SHOW_CONTROL_STATE_OPTION;
+import static nl.utwente.groove.gui.view.ViewOptions.SHOW_INTERNAL_NODE_IDS_OPTION;
+import static nl.utwente.groove.gui.view.ViewOptions.SHOW_INVARIANTS_OPTION;
+import static nl.utwente.groove.gui.view.ViewOptions.SHOW_RECIPE_STEPS_OPTION;
+import static nl.utwente.groove.gui.view.ViewOptions.SHOW_STATE_IDS_OPTION;
+import static nl.utwente.groove.gui.view.ViewOptions.SHOW_STATE_STATUS_OPTION;
+import static nl.utwente.groove.gui.view.ViewOptions.SHOW_SYSTEM_STATE_PROPERTIES_OPTION;
+import static nl.utwente.groove.gui.view.ViewOptions.SHOW_USER_NODE_IDS_OPTION;
+import static nl.utwente.groove.gui.view.ViewOptions.SHOW_VALUE_NODES_OPTION;
+import static nl.utwente.groove.util.FileType.GRAMMAR;
 
 import java.awt.Component;
 import java.awt.Desktop;
@@ -94,6 +94,7 @@ import nl.utwente.groove.gui.menu.MyJMenu;
 import nl.utwente.groove.gui.view.AspectGraphCanvas;
 import nl.utwente.groove.gui.view.GraphCanvas;
 import nl.utwente.groove.gui.prolog.GuiPredicates;
+import nl.utwente.groove.gui.view.ViewOptions;
 import nl.utwente.groove.lts.GraphNextState;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.RuleTransitionLabel;
@@ -150,10 +151,10 @@ public class Simulator implements SimulatorListener {
     private void installListeners() {
         this.model.addListener(this, Change.GRAMMAR, Change.DISPLAY);
         getOptions()
-            .getItem(Options.SHOW_RECIPE_STEPS_OPTION)
+            .getItem(ViewOptions.SHOW_RECIPE_STEPS_OPTION)
             .addItemListener(getOptionsListener());
         getOptions()
-            .getItem(Options.SHOW_ABSENT_STATES_OPTION)
+            .getItem(ViewOptions.SHOW_ABSENT_STATES_OPTION)
             .addItemListener(getOptionsListener());
     }
 
@@ -172,7 +173,7 @@ public class Simulator implements SimulatorListener {
             var currentState = getModel().getState();
             if (currentState != null && e.getStateChange() == ItemEvent.DESELECTED) {
                 GraphState newState = currentState;
-                Predicate<GraphState> stateNOK = e.getSource() == Options.SHOW_ABSENT_STATES_OPTION
+                Predicate<GraphState> stateNOK = e.getSource() == ViewOptions.SHOW_ABSENT_STATES_OPTION
                     ? s -> s.isAbsent()
                     : s -> s.isInner();
                 while (stateNOK.test(newState)) {

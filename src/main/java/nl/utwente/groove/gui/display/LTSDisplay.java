@@ -471,8 +471,11 @@ public class LTSDisplay extends Display
     public LTSGraphViewController getController() {
         LTSGraphViewController result = this.controller;
         if (result == null) {
-            result = this.controller = new LTSGraphViewController(getSimulator());
-            result.setLabelTree(getLabelTree());
+            // the label tree is built on the canvas, so the context gets it
+            // only after the controller (and with it the canvas) exists
+            SimulatorLTSContext context = new SimulatorLTSContext(getSimulator());
+            result = this.controller = new LTSGraphViewController(context);
+            context.setLabelTree(getLabelTree());
         }
         return result;
     }
@@ -489,7 +492,7 @@ public class LTSDisplay extends Display
     private LTSTree getLabelTree() {
         var result = this.labelTree;
         if (result == null) {
-            result = this.labelTree = new LTSTree(getCanvas());
+            result = this.labelTree = new LTSTree(getSimulator(), getCanvas());
         }
         return result;
     }
@@ -571,9 +574,7 @@ public class LTSDisplay extends Display
         if (changes.contains(STATE) || changes.contains(MATCH)) {
             if (getViewModel() != null) {
                 GraphState state = source.getState();
-                var error = state != null && state.isError();
-                var internal = state != null && state.isInner();
-                getCanvas().setBackground(Values.getStateBackground(error, internal));
+                refreshBackground();
                 GraphTransition transition = source.getTransition();
                 if (getController().setActive(state, transition)) {
                     getController().doLayout(false);
@@ -605,13 +606,22 @@ public class LTSDisplay extends Display
     private final MyLTSListener ltsListener = new MyLTSListener();
 
     /**
-     * Refreshes the background colour, based on the question whether the LTS is
-     * filtered or incompletely displayed.
+     * Refreshes the background colour: the filter colour if the LTS is
+     * filtered or incompletely displayed, otherwise the colour reflecting
+     * the status (error, internal) of the selected state.
+     * This is the only place that sets the canvas background, so that the
+     * two aspects cannot overwrite each other.
      */
     public void refreshBackground() {
-        Color background = getController().isComplete()
-            ? Values.STATE_BACKGROUND
-            : Values.FILTER_BACKGROUND;
+        Color background;
+        if (getController().isComplete()) {
+            GraphState state = getSimulatorModel().getState();
+            var error = state != null && state.isError();
+            var internal = state != null && state.isInner();
+            background = Values.getStateBackground(error, internal);
+        } else {
+            background = Values.FILTER_BACKGROUND;
+        }
         getGraphPanel().setEnabledBackground(background);
         ((NumberEditor) getBoundSpinner().getEditor())
             .getTextField()

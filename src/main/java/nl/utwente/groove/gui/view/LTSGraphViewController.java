@@ -30,13 +30,10 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.graph.Element;
-import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.graph.GraphRole;
-import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.action.ScrollToActiveAction;
 import nl.utwente.groove.gui.layout.ForestLayouter;
 import nl.utwente.groove.gui.layout.Layouter;
-import nl.utwente.groove.gui.menu.ModelCheckingMenu;
 import nl.utwente.groove.gui.menu.MyJMenu;
 import nl.utwente.groove.lts.ExploreResult;
 import nl.utwente.groove.lts.Filter;
@@ -59,10 +56,11 @@ import nl.utwente.groove.lts.RuleTransition;
 public class LTSGraphViewController extends GraphViewController<GTS> {
     /**
      * Constructs a controller.
-     * @param simulator simulator to which the display belongs; may be {@code null}
+     * @param context the context of the display; {@code null} if the display is
+     * shown outside any tool
      */
-    public LTSGraphViewController(@Nullable Simulator simulator) {
-        super(simulator);
+    public LTSGraphViewController(@Nullable GraphViewContext<GTS> context) {
+        super(context);
     }
 
     @Override
@@ -107,56 +105,24 @@ public class LTSGraphViewController extends GraphViewController<GTS> {
         return result;
     }
 
-    @Override
-    public JMenu createExportMenu() {
-        MyJMenu result = new MyJMenu();
-        var actions = getActions();
-        assert actions != null; // the LTS view only exists with a simulator present
-        result.add(actions.getSaveLTSAsAction());
-        result.add(actions.getSaveStateAction());
-        result.addMenuItems(super.createExportMenu());
-        return result;
-    }
-
     /** Creates a state exploration sub-menu. */
     public JMenu createExploreMenu() {
-        JMenu result = new JMenu("Explore");
-        var actions = getActions();
-        assert actions != null; // the LTS view only exists with a simulator present
-        result.add(actions.getExplorationDialogAction());
-        result.add(actions.getApplyMatchAction());
-        result.add(actions.getExploreAction());
-        result.addSeparator();
-        result.add(getCheckerMenu());
+        MyJMenu result = new MyJMenu("Explore");
+        var context = getContext();
+        assert context != null; // the LTS view only exists with a simulator present
+        result.addMenuItems(context.getExploreItems());
         return result;
     }
 
     /** Creates a traversal sub-menu. */
     public JMenu createGotoMenu() {
-        JMenu result = new JMenu("Go To");
-        var actions = getActions();
-        assert actions != null; // the LTS view only exists with a simulator present
-        result.add(actions.getGotoStartStateAction());
-        result.add(actions.getGotoFinalStateAction());
+        MyJMenu result = new MyJMenu("Go To");
+        var context = getContext();
+        assert context != null; // the LTS view only exists with a simulator present
+        result.addMenuItems(context.getGotoItems());
         result.add(getScrollToActiveAction());
         return result;
     }
-
-    /**
-     * Lazily creates and returns the model-checking menu.
-     */
-    private JMenu getCheckerMenu() {
-        var result = this.checkerMenu;
-        if (result == null) {
-            var simulator = getSimulator();
-            assert simulator != null; // the LTS view only exists with a simulator present
-            this.checkerMenu = result = new ModelCheckingMenu(simulator);
-        }
-        return result;
-    }
-
-    /** The lazily created model-checking menu. */
-    private @Nullable JMenu checkerMenu;
 
     /** Initialises and returns the action to scroll to the active state or transition. */
     private Action getScrollToActiveAction() {
@@ -175,37 +141,37 @@ public class LTSGraphViewController extends GraphViewController<GTS> {
 
     /** Indicates if state identities should be shown on states. */
     public boolean isShowStateIdentities() {
-        return getOptionValue(Options.SHOW_STATE_IDS_OPTION);
+        return getOptionValue(ViewOptions.SHOW_STATE_IDS_OPTION);
     }
 
     /** Indicates if state status should be shown on states. */
     public boolean isShowStateStatus() {
-        return getOptionValue(Options.SHOW_STATE_STATUS_OPTION);
+        return getOptionValue(ViewOptions.SHOW_STATE_STATUS_OPTION);
     }
 
     /** Indicates if control state info should be shown on states. */
     public boolean isShowControlStates() {
-        return getOptionValue(Options.SHOW_CONTROL_STATE_OPTION);
+        return getOptionValue(ViewOptions.SHOW_CONTROL_STATE_OPTION);
     }
 
     /** Indicates if system properties should be shown on states. */
     public boolean isShowSystemProperties() {
-        return getOptionValue(Options.SHOW_SYSTEM_STATE_PROPERTIES_OPTION);
+        return getOptionValue(ViewOptions.SHOW_SYSTEM_STATE_PROPERTIES_OPTION);
     }
 
     /** Indicates if invariants should be shown on states. */
     public boolean isShowInvariants() {
-        return getOptionValue(Options.SHOW_INVARIANTS_OPTION);
+        return getOptionValue(ViewOptions.SHOW_INVARIANTS_OPTION);
     }
 
     /** Indicates if absent states should be shown. */
     public boolean isShowAbsentStates() {
-        return getOptionValue(Options.SHOW_ABSENT_STATES_OPTION);
+        return getOptionValue(ViewOptions.SHOW_ABSENT_STATES_OPTION);
     }
 
     /** Indicates if in-recipe states and transitions should be shown. */
     public boolean isShowRecipeSteps() {
-        return getOptionValue(Options.SHOW_RECIPE_STEPS_OPTION);
+        return getOptionValue(ViewOptions.SHOW_RECIPE_STEPS_OPTION);
     }
 
     /** Returns the class of transitions that is currently being shown in the LTS. */
@@ -424,9 +390,9 @@ public class LTSGraphViewController extends GraphViewController<GTS> {
                 state = trans.source();
             }
         }
-        var simulatorModel = getSimulatorModel();
-        assert simulatorModel != null; // traces are only computed from the simulator UI
-        simulatorModel.setTrace(result);
+        var context = getContext();
+        assert context != null; // traces are only computed from the simulator UI
+        context.setTrace(result);
         return result;
     }
 
@@ -436,12 +402,12 @@ public class LTSGraphViewController extends GraphViewController<GTS> {
         return result != null && !result.isEmpty();
     }
 
-    /** Convenience method to return the result object from the simulator model, if any. */
+    /** Convenience method to return the result object of the context, if any. */
     private @Nullable ExploreResult getResult() {
-        var simulatorModel = getSimulatorModel();
-        return simulatorModel == null
+        var context = getContext();
+        return context == null
             ? null
-            : simulatorModel.getExploreResult();
+            : context.getExploreResult();
     }
 
     /** Convenience method to test whether a given state is included in the result object. */
@@ -516,7 +482,7 @@ public class LTSGraphViewController extends GraphViewController<GTS> {
             assert model != null;
             if (getCanvas().getStateBound() < model.nodeCount()) {
                 result = false;
-            } else if (getFilter() == Filter.RESULT && getSimulatorModel() != null) {
+            } else if (getFilter() == Filter.RESULT && getContext() != null) {
                 result = !hasResult();
             }
         }

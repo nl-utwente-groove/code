@@ -118,6 +118,10 @@
 	                <parameters>true</parameters>
                     <compilerArgs>
 			            <arg>-Xlint:unchecked</arg>
+			            <!-- flag exported signatures that mention types of unexported
+			                 packages or non-transitive modules: the exported set
+			                 must be closed under signature reachability -->
+			            <arg>-Xlint:exports</arg>
 			            <!-- module-info deliberately has requires transitive
 			                 directives on automatic modules (their types occur
 			                 in the exported API); the warning flags the risk

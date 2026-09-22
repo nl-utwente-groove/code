@@ -50,6 +50,7 @@ import nl.utwente.groove.grammar.GrammarProperties;
 import nl.utwente.groove.lts.ExploreResult;
 import nl.utwente.groove.lts.Filter;
 import nl.utwente.groove.lts.LTSLabels;
+import nl.utwente.groove.util.FileType;
 import nl.utwente.groove.util.Randomness;
 import nl.utwente.groove.util.Resources;
 import nl.utwente.groove.util.cli.CmdLineException;
@@ -57,7 +58,6 @@ import nl.utwente.groove.util.cli.DirectoryHandler;
 import nl.utwente.groove.util.cli.GrammarHandler;
 import nl.utwente.groove.util.cli.GrooveCmdLineParser;
 import nl.utwente.groove.util.cli.GrooveCmdLineTool;
-import nl.utwente.groove.util.io.FileType;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -466,7 +466,7 @@ public class Generator extends GrooveCmdLineTool<ExploreResult> {
     private List<String> startGraphs;
 
     /** Returns the exploration reporters enabled on the basis of the options. */
-    public ExplorationReporter getReporter() {
+    private ExplorationReporter getReporter() {
         if (this.reporter == null) {
             this.reporter = computeReporter();
         }

@@ -34,7 +34,7 @@ import nl.utwente.groove.io.external.Exporter;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.io.graph.GraphWriter;
 import nl.utwente.groove.lts.GTS;
-import nl.utwente.groove.util.io.FileType;
+import nl.utwente.groove.util.FileType;
 
 /**
  * Exporter that saves graphs through a {@link GraphWriter}.

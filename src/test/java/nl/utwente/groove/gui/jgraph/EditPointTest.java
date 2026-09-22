@@ -28,6 +28,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JScrollPane;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -35,6 +37,7 @@ import org.junit.jupiter.api.Test;
 
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
+import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.look.VisualKey;
 import nl.utwente.groove.gui.look.VisualMap;
@@ -70,7 +73,7 @@ public class EditPointTest {
         // closer to the vertical segment than to the horizontal one, though the
         // distances to the corner and the start sum to less
         Point2D at = new Point2D.Double(190, 150);
-        canvas.getController().getAddPointAction().execute(edge, at);
+        canvas.getController().addPoint(edge, at);
         assertEquals(List.of(BENT.get(0), BENT.get(1), at, BENT.get(2)),
                      edge.getVisuals().getPoints());
     }
@@ -81,13 +84,13 @@ public class EditPointTest {
         AspectEdgeCell edge = bentEdge(canvas);
         canvas.setSelectionCell(JCell.of(edge));
         Point2D at = new Point2D.Double(190, 150);
-        var action = canvas.getController().getAddPointAction();
-        action.createMenuItem(at).doClick();
+        var item = editItem(canvas, at, Options.ADD_POINT_ACTION);
+        item.doClick();
         assertEquals(List.of(BENT.get(0), BENT.get(1), at, BENT.get(2)),
                      edge.getVisuals().getPoints());
         // invoked again without a location (nor a pointer, headless): the point goes
         // beside the first segment, not to the menu location again
-        action.actionPerformed(new ActionEvent(canvas, ActionEvent.ACTION_PERFORMED, ""));
+        item.getAction().actionPerformed(new ActionEvent(canvas, ActionEvent.ACTION_PERFORMED, ""));
         List<Point2D> points = edge.getVisuals().getPoints();
         assertEquals(5, points.size());
         assertNotEquals(at, points.get(1));
@@ -99,12 +102,12 @@ public class EditPointTest {
         AspectJGraph canvas = editorCanvas();
         AspectEdgeCell edge = bentEdge(canvas);
         Point2D added = new Point2D.Double(190, 150);
-        canvas.getController().getAddPointAction().execute(edge, added);
+        canvas.getController().addPoint(edge, added);
         // nearer to the corner than to the added point
-        canvas.getController().getRemovePointAction().execute(edge, new Point2D.Double(205, 95));
+        canvas.getController().removePoint(edge, new Point2D.Double(205, 95));
         assertEquals(List.of(BENT.get(0), added, BENT.get(2)), edge.getVisuals().getPoints());
         // an end point is never removed
-        canvas.getController().getRemovePointAction().execute(edge, new Point2D.Double(100, 100));
+        canvas.getController().removePoint(edge, new Point2D.Double(100, 100));
         assertEquals(List.of(BENT.get(0), BENT.get(2)), edge.getVisuals().getPoints());
     }
 
@@ -201,6 +204,21 @@ public class EditPointTest {
                                                              targetVisuals));
     }
 
+    /**
+     * Returns the item with a given name from the edit menu of the canvas,
+     * invoked at a given location.
+     */
+    private static JMenuItem editItem(AspectJGraph canvas, Point2D at, String name) {
+        JMenu menu = canvas.getController().createEditMenu(at);
+        for (int i = 0; i < menu.getItemCount(); i++) {
+            JMenuItem item = menu.getItem(i);
+            if (item != null && name.equals(item.getText())) {
+                return item;
+            }
+        }
+        throw new AssertionError("no edit menu item named " + name);
+    }
+
     /** Returns a binary edge cell without parallels. */
     private static AspectEdgeCell loneEdge(AspectJGraph canvas) {
         for (var cell : canvas.getNonNullModel().getViewModel().getCells()) {
@@ -217,7 +235,7 @@ public class EditPointTest {
         GrammarModel grammar = Groove.loadGrammar(GRAMMAR);
         AspectGraph startGraph = grammar.getStartGraphModel().getSource();
         assert startGraph != null; // the fixture grammar has a start graph
-        var controller = new AspectGraphViewController(null, DisplayKind.HOST, true);
+        var controller = new AspectGraphViewController(null, DisplayKind.HOST.getGraphRole(), true);
         controller.setGrammar(grammar);
         AspectJGraph canvas = (AspectJGraph) controller.getCanvas();
         AspectGraphViewModel model = canvas.newViewModel();

@@ -18,14 +18,13 @@ import nl.utwente.groove.gui.display.GraphDisplay;
 import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.gui.display.ResourceTab;
 import nl.utwente.groove.gui.export.CanvasExportable;
-import nl.utwente.groove.gui.view.AspectGraphCanvas;
 import nl.utwente.groove.gui.view.GraphCanvas;
 import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Exporter;
 import nl.utwente.groove.io.external.Exporters;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.util.Exceptions;
-import nl.utwente.groove.util.io.FileType;
+import nl.utwente.groove.util.FileType;
 
 /**
  * Action to save the content of a graph canvas,
@@ -44,17 +43,22 @@ public class ExportAction extends SimulatorAction {
         this.display = simulator.getDisplaysPanel().getDisplay(displayKind);
         this.canvas = null;
         this.isGraph = this.displayKind.isGraphBased();
+        this.forState = displayKind == DisplayKind.STATE;
     }
 
-    /** Constructs an instance of the action. */
-    public ExportAction(GraphCanvas<?> canvas) {
+    /**
+     * Constructs an instance of the action for a canvas of a given simulator.
+     * @param forState if {@code true}, the graphs on the canvas are graph states
+     */
+    public ExportAction(Simulator simulator, GraphCanvas<?> canvas, boolean forState) {
         // fill in a generic name, as the canvas may not yet hold a graph.
-        super(getSimulator(canvas), Options.EXPORT_ACTION_NAME, Icons.EXPORT_ICON);
+        super(simulator, Options.EXPORT_ACTION_NAME, Icons.EXPORT_ICON);
         putValue(ACCELERATOR_KEY, Options.EXPORT_KEY);
         this.display = null;
         this.displayKind = null;
         this.canvas = canvas;
         this.isGraph = true;
+        this.forState = forState;
     }
 
     @Override
@@ -130,7 +134,7 @@ public class ExportAction extends SimulatorAction {
             Graph graph = canvas.getGraph();
             assert graph != null;
             GraphRole role = graph.getRole();
-            boolean isState = canvas instanceof AspectGraphCanvas ag && ag.getController().isForState();
+            boolean isState = this.forState;
             type = isState
                 ? "State"
                 : role.getDescription();
@@ -151,13 +155,6 @@ public class ExportAction extends SimulatorAction {
             return null;
         }
         return getGrammarModel().getResource(this.displayKind.getResource(), tab.getQualName());
-    }
-
-    /** Returns the simulator of a canvas, which must exist for the action to be created. */
-    private static Simulator getSimulator(GraphCanvas<?> canvas) {
-        var actions = canvas.getController().getActions();
-        assert actions != null; // the export action is only created with a simulator present
-        return actions.getSimulator();
     }
 
     // Get active graph canvas if any
@@ -197,4 +194,7 @@ public class ExportAction extends SimulatorAction {
     private final DisplayKind displayKind;
     /** True if exporter for graph canvases, false otherwise. */
     private boolean isGraph;
+
+    /** Indicates if the exported graph is a graph state. */
+    private final boolean forState;
 }

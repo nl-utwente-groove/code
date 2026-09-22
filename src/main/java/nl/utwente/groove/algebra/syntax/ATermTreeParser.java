@@ -1019,7 +1019,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
      * @author Arend Rensink
      * @version $Revision$
      */
-    static class TokenFamily extends EnumMap<TokenClaz,TokenType> {
+    protected static class TokenFamily extends EnumMap<TokenClaz,TokenType> {
         /**
          * Constructs an initially empty family.
          */
@@ -1035,6 +1035,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
             add(type);
         }
 
+        /** Adds a token type to this family. */
         public void add(TokenType type) {
             TokenType old = put(type.claz(), type);
             assert old == null;
@@ -1054,7 +1055,7 @@ abstract public class ATermTreeParser<O extends Op,X extends ATermTree<O,X>>
     }
 
     /** A string fragment, consisting of an input line with start and end position. */
-    static record LineFragment(String line, int start, int end) {
+    protected static record LineFragment(String line, int start, int end) {
         /**
          * Constructs a string fragment.
          * @param line the input line

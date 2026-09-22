@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.util.io;
+package nl.utwente.groove.util;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -26,9 +26,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.Nullable;
-
-import nl.utwente.groove.util.Exceptions;
-import nl.utwente.groove.util.Factory;
 
 /**
  * Enumeration of file types supported by Groove.

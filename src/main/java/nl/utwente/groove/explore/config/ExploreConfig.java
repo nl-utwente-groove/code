@@ -34,12 +34,10 @@ import nl.utwente.groove.explore.feature.Count;
 import nl.utwente.groove.explore.feature.ExploreKey;
 import nl.utwente.groove.explore.feature.Frontier;
 import nl.utwente.groove.explore.feature.Goal;
-import nl.utwente.groove.explore.feature.NextState;
 import nl.utwente.groove.explore.feature.Outcome;
 import nl.utwente.groove.explore.feature.Setting;
 import nl.utwente.groove.explore.feature.Shape;
 import nl.utwente.groove.explore.ExploreType;
-import nl.utwente.groove.explore.feature.Successor;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.Settings;
 import nl.utwente.groove.grammar.model.SettingsContent;
@@ -120,22 +118,9 @@ public class ExploreConfig {
      */
     public FormatErrorSet check() {
         var result = new FormatErrorSet();
-        var next = getKind(ExploreKey.NEXT);
-        var successor = getKind(ExploreKey.SUCCESSOR);
-        if (getKind(ExploreKey.FRONTIER) != Frontier.SINGLE) {
-            // with a single-state frontier, the next-state selection is irrelevant
-            if (next == NextState.OLDEST && successor != Successor.ALL
-                && successor != Successor.ALL_RANDOM) {
-                result
-                    .add("Next-state selection '%s' requires all successors to be generated",
-                         NextState.OLDEST.getName());
-            }
-            if (next == NextState.RANDOM && successor != Successor.ALL) {
-                result
-                    .add("Next-state selection '%s' requires successor selection '%s'",
-                         NextState.RANDOM.getName(), Successor.ALL.getName());
-            }
-        }
+        // the search-order keys (next, successor, frontier) are independent
+        // dimensions: no combination is inconsistent, though not every one is
+        // realised yet (the converter reports those)
         if (getKind(ExploreKey.FRONTIER) == Frontier.BEAM
             && get(ExploreKey.FRONTIER).content() instanceof Integer size && size < 2) {
             result.add("Beam frontier size %s should be larger than 1", size);

@@ -42,8 +42,8 @@ import nl.utwente.groove.graph.layout.EdgeLayout;
 import nl.utwente.groove.graph.layout.LayoutMap;
 import nl.utwente.groove.graph.layout.NodeLayout;
 import nl.utwente.groove.util.AIGenerated;
+import nl.utwente.groove.util.FileType;
 import nl.utwente.groove.util.Version;
-import nl.utwente.groove.util.io.FileType;
 
 /**
  * Listener class for the GXL format used by {@link GxlIO}.

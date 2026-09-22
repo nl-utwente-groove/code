@@ -116,10 +116,13 @@ abstract public class AspectTab extends ResourceTab implements GraphDisplay<@Non
     public final @NonNull AspectGraphViewController getController() {
         AspectGraphViewController result = this.controller;
         if (result == null) {
-            result = this.controller
-                = new AspectGraphViewController(getSimulator(), getDisplay().getKind(), isEditor());
-            result.setLabelTree(getLabelTree());
-            result.setLevelTree(getLevelTree());
+            DisplayKind kind = getDisplay().getKind();
+            // the trees are built on the canvas, so the context gets them
+            // only after the controller (and with it the canvas) exists
+            SimulatorAspectContext context = new SimulatorAspectContext(getSimulator(), kind);
+            result = this.controller = new AspectGraphViewController(context, kind.getGraphRole(), isEditor());
+            context.setLabelTree(getLabelTree());
+            context.setLevelTree(getLevelTree());
         }
         return result;
     }
@@ -176,10 +179,10 @@ abstract public class AspectTab extends ResourceTab implements GraphDisplay<@Non
     private TitledPanel labelPanel;
 
     /** Lazily creates and returns the label tree; it filters labels only when viewing. */
-    protected final TypeTree getLabelTree() {
+    public final TypeTree getLabelTree() {
         TypeTree result = this.labelTree;
         if (result == null) {
-            result = this.labelTree = new TypeTree(getCanvas(), !isEditor());
+            result = this.labelTree = new TypeTree(getSimulator(), getCanvas(), !isEditor());
         }
         return result;
     }

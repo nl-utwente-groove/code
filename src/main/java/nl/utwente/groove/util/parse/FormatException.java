@@ -16,7 +16,6 @@
  */
 package nl.utwente.groove.util.parse;
 
-import org.antlr.runtime.RecognitionException;
 
 import nl.utwente.groove.util.Strings;
 
@@ -52,11 +51,6 @@ public class FormatException extends Exception {
     public FormatException(FormatError err) {
         this.errors = new FormatErrorSet();
         this.errors.add(err);
-    }
-
-    /** Constructs a format exception from an (ANTLR) recognition exception. */
-    public FormatException(RecognitionException exc) {
-        this(exc.getMessage(), exc.line, exc.charPositionInLine);
     }
 
     /**

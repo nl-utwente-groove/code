@@ -48,8 +48,8 @@ import nl.utwente.groove.io.external.Exportable;
 import nl.utwente.groove.io.external.Imported;
 import nl.utwente.groove.io.external.Importer;
 import nl.utwente.groove.io.external.PortException;
+import nl.utwente.groove.util.FileType;
 import nl.utwente.groove.util.QualName;
-import nl.utwente.groove.util.io.FileType;
 
 /**
  * Importer and exporter for Ecore meta-models ({@code .ecore}) and XMI instance

@@ -21,7 +21,6 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.control.graph.ControlGraph;
 import nl.utwente.groove.graph.GraphRole;
-import nl.utwente.groove.gui.Simulator;
 import nl.utwente.groove.gui.layout.ForestLayouter;
 import nl.utwente.groove.gui.layout.Layouter;
 
@@ -34,10 +33,11 @@ import nl.utwente.groove.gui.layout.Layouter;
 public class CtrlGraphViewController extends GraphViewController<ControlGraph> {
     /**
      * Constructs a controller.
-     * @param simulator simulator to which the display belongs; may be {@code null}
+     * @param context the context of the display; {@code null} if the display is
+     * shown outside any tool
      */
-    public CtrlGraphViewController(@Nullable Simulator simulator) {
-        super(simulator);
+    public CtrlGraphViewController(@Nullable GraphViewContext<ControlGraph> context) {
+        super(context);
     }
 
     @Override

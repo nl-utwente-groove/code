@@ -28,11 +28,7 @@ import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
-import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.graph.GraphRole;
-import nl.utwente.groove.gui.Options;
-import nl.utwente.groove.gui.Simulator;
-import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.action.AddPointAction;
 import nl.utwente.groove.gui.action.EditLabelAction;
 import nl.utwente.groove.gui.action.CellEditAction;
@@ -41,7 +37,6 @@ import nl.utwente.groove.gui.action.ResetLabelPositionAction;
 import nl.utwente.groove.gui.action.SetLineStyleAction;
 import nl.utwente.groove.gui.menu.MyJMenu;
 import nl.utwente.groove.gui.menu.SetLineStyleMenu;
-import nl.utwente.groove.gui.tree.RuleLevelTree;
 import nl.utwente.groove.util.line.LineStyle;
 
 /**
@@ -54,19 +49,16 @@ import nl.utwente.groove.util.line.LineStyle;
 @NonNullByDefault
 public class AspectGraphViewController extends GraphViewController<AspectGraph> {
     /**
-     * Constructs a controller for graph views of a given display kind.
-     * @param simulator simulator to which the display belongs; may be {@code null}
-     * @param kind display kind on which the graphs will be shown; determines the
-     * graph role, and whether the graphs are graph states
+     * Constructs a controller for graph views of a given role.
+     * @param context the context of the display; {@code null} if the display is
+     * shown outside any tool
+     * @param role role of the graphs that will be shown
      * @param editing if {@code true}, the graphs are editable
      */
-    public AspectGraphViewController(@Nullable Simulator simulator, DisplayKind kind,
+    public AspectGraphViewController(@Nullable GraphViewContext<AspectGraph> context, GraphRole role,
                                      boolean editing) {
-        super(simulator);
-        this.forState = kind == DisplayKind.STATE;
-        this.graphRole = this.forState
-            ? GraphRole.HOST
-            : kind.getGraphRole();
+        super(context);
+        this.graphRole = role;
         this.editing = editing;
     }
 
@@ -80,14 +72,6 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
     public AspectGraphCanvas getCanvas() {
         return (AspectGraphCanvas) super.getCanvas();
     }
-
-    /** Indicates if the graphs being displayed are graph states. */
-    public boolean isForState() {
-        return this.forState;
-    }
-
-    /** Flag indicating that the graphs being displayed are graph states. */
-    private final boolean forState;
 
     @Override
     public GraphRole getGraphRole() {
@@ -108,44 +92,12 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
     @Override
     public JMenu createPopupMenu(@Nullable Point2D atPoint) {
         MyJMenu result = new MyJMenu("Popup");
-        var actions = getActions();
-        assert actions != null; // the popup menu is only built with a simulator present
-        switch (getGraphRole()) {
-        case HOST:
-            result.add(actions.getApplyMatchAction());
-            result.addSeparator();
-            break;
-        default:
-            // do nothing
+        var context = getContext();
+        if (context != null) {
+            result.addMenuItems(context.getPopupItems(atPoint));
         }
-        Action editAction;
-        if (isForState()) {
-            editAction = actions.getEditStateAction();
-        } else {
-            editAction
-                = actions.getEditAction(ResourceKind.toResource(getGraphRole()));
-        }
-        result.add(editAction);
         result.addSubmenu(createEditMenu(atPoint));
         result.addSubmenu(super.createPopupMenu(atPoint));
-        return result;
-    }
-
-    @Override
-    public JMenu createExportMenu() {
-        // add a save graph action as the first action
-        MyJMenu result = new MyJMenu();
-        var actions = getActions();
-        if (actions != null) {
-            if (isForState()) {
-                result.add(actions.getSaveStateAction());
-            } else {
-                ResourceKind resource = ResourceKind.toResource(getGraphRole());
-                result.add(actions.getSaveAction(resource));
-                result.add(actions.getSaveAsAction(resource));
-            }
-        }
-        result.addMenuItems(super.createExportMenu());
         return result;
     }
 
@@ -169,7 +121,7 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
     /**
      * Initialises and returns an action to add a point to the currently selected edge.
      */
-    public AddPointAction getAddPointAction() {
+    private AddPointAction getAddPointAction() {
         var result = this.addPointAction;
         if (result == null) {
             this.addPointAction = result = new AddPointAction(getCanvas());
@@ -182,9 +134,27 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
     private @Nullable AddPointAction addPointAction;
 
     /**
+     * Adds a point to a given edge.
+     * @param edge the edge to which a point is to be added
+     * @param at the position of the new point, in graph coordinates
+     */
+    public void addPoint(AspectViewEdge edge, @Nullable Point2D at) {
+        getAddPointAction().execute(edge, at);
+    }
+
+    /**
+     * Removes the point of a given edge nearest to a given position.
+     * @param edge the edge from which a point is to be removed
+     * @param at the position near which the point is to be removed, in graph coordinates
+     */
+    public void removePoint(AspectViewEdge edge, @Nullable Point2D at) {
+        getRemovePointAction().execute(edge, at);
+    }
+
+    /**
      * @return an action to edit the currently selected cell label.
      */
-    public CellEditAction getEditLabelAction() {
+    private CellEditAction getEditLabelAction() {
         var result = this.editLabelAction;
         if (result == null) {
             this.editLabelAction = result = new EditLabelAction(getCanvas());
@@ -199,7 +169,7 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
     /**
      * Initialises and returns an action to remove a point from the currently selected edge.
      */
-    public RemovePointAction getRemovePointAction() {
+    private RemovePointAction getRemovePointAction() {
         var result = this.removePointAction;
         if (result == null) {
             this.removePointAction = result = new RemovePointAction(getCanvas());
@@ -215,7 +185,7 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
      * @return an action to reset the label position of the currently selected
      *         edge.
      */
-    public CellEditAction getResetLabelPositionAction() {
+    private CellEditAction getResetLabelPositionAction() {
         var result = this.resetLabelPositionAction;
         if (result == null) {
             this.resetLabelPositionAction = result = new ResetLabelPositionAction(getCanvas());
@@ -230,7 +200,7 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
      * @param lineStyle the lineStyle for which to get the set-action
      * @return an action to set the line style of the currently selected edge.
      */
-    public CellEditAction getSetLineStyleAction(LineStyle lineStyle) {
+    public Action getSetLineStyleAction(LineStyle lineStyle) {
         var result = this.setLineStyleActionMap.get(lineStyle);
         if (result == null) {
             result = new SetLineStyleAction(getCanvas(), lineStyle);
@@ -255,14 +225,14 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
      * Indicates whether aspect prefixes should be shown for nodes and edges.
      */
     public final boolean isShowAspects() {
-        return getOptionValue(Options.SHOW_ASPECTS_OPTION);
+        return getOptionValue(ViewOptions.SHOW_ASPECTS_OPTION);
     }
 
     /**
      * Indicates whether user node identities should be shown for nodes and edges.
      */
     public final boolean isShowUserIds() {
-        return getOptionValue(Options.SHOW_USER_NODE_IDS_OPTION);
+        return getOptionValue(ViewOptions.SHOW_USER_NODE_IDS_OPTION);
     }
 
     /**
@@ -270,41 +240,36 @@ public class AspectGraphViewController extends GraphViewController<AspectGraph> 
      * This is certainly the case if the view is being edited.
      */
     public final boolean isShowValueNodes() {
-        return getCanvas().hasActiveEditor() || getOptionValue(Options.SHOW_VALUE_NODES_OPTION);
-    }
-
-    /** Sets a level tree for this graph view. */
-    public void setLevelTree(@Nullable RuleLevelTree levelTree) {
-        assert levelTree == null
-            || getGraphRole() == GraphRole.RULE
-                && !getCanvas().hasActiveEditor();
-        this.levelTree = levelTree;
+        return getCanvas().hasActiveEditor() || getOptionValue(ViewOptions.SHOW_VALUE_NODES_OPTION);
     }
 
     /**
-     * Returns the rule level tree associated with this graph view, if any.
+     * Indicates if a given cell is currently filtered out of the graph view
+     * by the rule level tree.
      */
-    public @Nullable RuleLevelTree getLevelTree() {
-        return this.levelTree;
+    public boolean isLevelFiltered(AspectViewCell cell) {
+        var context = getContext();
+        return context != null && context.isLevelFiltered(cell);
     }
 
-    /** The tree of rule levels, if any. */
-    private @Nullable RuleLevelTree levelTree;
-
-    /** Returns the grammar that has manually been set for this graph view. */
+    /* Falls back on the manually set grammar if the context provides none. */
+    @Override
     public @Nullable GrammarModel getGrammar() {
-        return this.grammar;
+        var result = this.grammar;
+        return result == null
+            ? super.getGrammar()
+            : result;
     }
 
     /** Manually sets a new grammar in this graph view.
-     * This should only be done if there is no underlying simulator.
+     * This should only be done if there is no context.
      * @param grammar the grammar to be used.
      */
     public void setGrammar(GrammarModel grammar) {
-        assert getSimulatorModel() == null;
+        assert getContext() == null;
         this.grammar = grammar;
     }
 
-    /** The manually-set grammar; used when there is no simulator. */
+    /** The manually-set grammar; used when there is no context. */
     private @Nullable GrammarModel grammar;
 }

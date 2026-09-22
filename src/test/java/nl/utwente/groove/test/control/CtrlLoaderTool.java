@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.test.control;
 
-import static nl.utwente.groove.util.io.FileType.CONTROL;
+import static nl.utwente.groove.util.FileType.CONTROL;
 
 import java.io.File;
 

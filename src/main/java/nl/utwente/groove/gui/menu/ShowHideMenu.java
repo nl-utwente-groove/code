@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import javax.swing.AbstractAction;
 import javax.swing.JFileChooser;
@@ -49,15 +50,15 @@ import nl.utwente.groove.gui.view.ViewEdge;
 import nl.utwente.groove.gui.view.GraphCanvas;
 import nl.utwente.groove.gui.view.LTSViewCell;
 import nl.utwente.groove.gui.view.LTSGraphCanvas;
-import nl.utwente.groove.gui.tree.LabelTree.LabelledCells;
+import nl.utwente.groove.gui.view.LabelledCells;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GTSListener;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
 import nl.utwente.groove.match.automaton.NodeRelation;
 import nl.utwente.groove.match.automaton.RelationCalculator;
+import nl.utwente.groove.util.FileType;
 import nl.utwente.groove.util.HTMLConverter;
-import nl.utwente.groove.util.io.FileType;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**
@@ -135,13 +136,20 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
      * edges based on selection or labels.
      * @param canvas the underlying canvas of which the display should be
      *        controlled
+     * @param labels supplier of the labelled cells from which the label
+     *        sub-menus are built; yields nothing if the display does not
+     *        filter labels
      */
-    public ShowHideMenu(GraphCanvas<G> canvas) {
+    public ShowHideMenu(GraphCanvas<G> canvas, Supplier<Collection<LabelledCells<G>>> labels) {
         super(Options.SHOW_HIDE_MENU_NAME);
         setMnemonic(MENU_MNEMONIC);
         this.canvas = canvas;
+        this.labels = labels;
         fillOutMenu(getPopupMenu());
     }
+
+    /** Supplier of the labelled cells from which the label sub-menus are built. */
+    private final Supplier<Collection<LabelledCells<G>>> labels;
 
     /** Fills a given menu with actions to show and hide elements. */
     protected void fillOutMenu(JPopupMenu menu) {
@@ -765,11 +773,8 @@ public class ShowHideMenu<G extends @NonNull Graph> extends JMenu {
             if (isIncluded) {
                 // now (re-)fill the menu
                 removeAll();
-                var labelTree = getCanvas().getController().getLabelTree();
-                if (labelTree != null) {
-                    for (var entry : labelTree.getLabels()) {
-                        add(new LabelAction<>(getCanvas(), this.showMode, entry));
-                    }
+                for (var entry : ShowHideMenu.this.labels.get()) {
+                    add(new LabelAction<>(getCanvas(), this.showMode, entry));
                 }
             }
             super.menuSelectionChanged(isIncluded);

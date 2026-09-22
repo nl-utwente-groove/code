@@ -37,9 +37,9 @@ import nl.utwente.groove.lts.ExploreResult;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.transform.Model;
+import nl.utwente.groove.util.FileType;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.collect.TransformCollection;
-import nl.utwente.groove.util.io.FileType;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

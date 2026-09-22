@@ -32,7 +32,7 @@ import org.junit.experimental.categories.Category;
 
 import nl.utwente.groove.gui.Imager;
 import nl.utwente.groove.gui.view.GraphBackend;
-import nl.utwente.groove.util.io.FileType;
+import nl.utwente.groove.util.FileType;
 
 /**
  * Test for the Imager command-line facility

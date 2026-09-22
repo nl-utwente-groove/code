@@ -16,8 +16,8 @@
  */
 package nl.utwente.groove.gui.jgraph;
 
-import static nl.utwente.groove.gui.Options.SHOW_ASPECTS_OPTION;
-import static nl.utwente.groove.gui.Options.SHOW_VALUE_NODES_OPTION;
+import static nl.utwente.groove.gui.view.ViewOptions.SHOW_ASPECTS_OPTION;
+import static nl.utwente.groove.gui.view.ViewOptions.SHOW_VALUE_NODES_OPTION;
 import static nl.utwente.groove.gui.view.GraphViewMode.EDIT_MODE;
 import static nl.utwente.groove.gui.view.GraphViewMode.PREVIEW_MODE;
 
@@ -45,13 +45,13 @@ import nl.utwente.groove.grammar.aspect.AspectGraph;
 import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.graph.Edge;
 import nl.utwente.groove.graph.Element;
-import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.view.AspectGraphCanvas;
 import nl.utwente.groove.gui.view.AspectGraphViewController;
 import nl.utwente.groove.gui.view.AspectGraphViewModel;
 import nl.utwente.groove.gui.view.CellStore.Connection;
 import nl.utwente.groove.gui.view.AspectViewEdge;
 import nl.utwente.groove.gui.view.CellStore;
+import nl.utwente.groove.gui.view.ViewOptions;
 import nl.utwente.groove.gui.view.cell.AspectEdgeCell;
 import nl.utwente.groove.gui.view.cell.AspectVertexCell;
 import nl.utwente.groove.grammar.model.GraphBasedModel;
@@ -81,21 +81,8 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements Aspect
     @Override
     protected void installListeners() {
         super.installListeners();
-        var actions = getActions();
-        if (actions != null) {
-            addCanvasListener(actions.getSelectColorAction());
-        }
         addOptionListener(SHOW_ASPECTS_OPTION);
         addOptionListener(SHOW_VALUE_NODES_OPTION);
-    }
-
-    @Override
-    public void removeListeners() {
-        super.removeListeners();
-        var actions = getActions();
-        if (actions != null) {
-            removeCanvasListener(actions.getSelectColorAction());
-        }
     }
 
     @Override
@@ -168,10 +155,7 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements Aspect
     public AspectJModel newModel() {
         AspectJModel result = new AspectJModel(this);
         GrammarModel grammar = getController().getGrammar();
-        if (grammar == null) {
-            assert getSimulatorModel() != null : "Can't create AspectJGraphs without grammar model";
-            grammar = getSimulatorModel().getGrammar();
-        }
+        assert grammar != null : "Can't create AspectJGraphs without grammar model";
         result.setGrammar(grammar);
         return result;
     }
@@ -179,7 +163,7 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements Aspect
     /* Makes sure the JGraph is rebuilt rather than just refreshed, if necessary. */
     @Override
     public OptionRefreshListener getRefreshListener(String option) {
-        if (option.equals(Options.SHOW_BIDIRECTIONAL_EDGES_OPTION)) {
+        if (option.equals(ViewOptions.SHOW_BIDIRECTIONAL_EDGES_OPTION)) {
             return new RebuildListener();
         } else {
             return super.getRefreshListener(option);
@@ -214,11 +198,12 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements Aspect
         AspectVertexCell vertex = viewModel.newVertex(viewModel.createAspectNode());
         vertex.setNodeFixed();
         vertex.putVisual(VisualKey.NODE_POS, atPoint);
-        var jVertex = JCell.of(vertex);
+        // the JGraph item of the vertex only exists once the vertex is inserted
         if (this.startEditingNewNode) {
             // the vertex and its first label are one edit, settled when the
             // in-place editor closes (see JGraphUI.completeEditing)
             viewModel.insertPending(List.of(vertex), List.of(), List.of());
+            var jVertex = JCell.of(vertex);
             setSelectionCell(jVertex);
             startEditingAtCell(jVertex);
             if (!isEditing()) {
@@ -227,7 +212,7 @@ public class AspectJGraph extends JGraph<@NonNull AspectGraph> implements Aspect
         } else {
             // add the cell through the view model, which records the edit
             viewModel.insert(List.of(vertex), List.of(), List.of());
-            setSelectionCell(jVertex);
+            setSelectionCell(JCell.of(vertex));
         }
     }
 

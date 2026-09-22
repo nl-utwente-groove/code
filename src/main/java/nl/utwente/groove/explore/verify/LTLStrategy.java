@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
-import gov.nasa.ltl.trans.Formula;
+import nl.utwente.groove.verify.Formula;
 import nl.utwente.groove.explore.engine.ExploreStateStrategy;
 import nl.utwente.groove.explore.engine.Strategy;
 import nl.utwente.groove.graph.EdgeRole;
@@ -135,9 +135,8 @@ public class LTLStrategy extends Strategy {
     public void setProperty(String property) {
         this.property = property;
         try {
-            Formula<Proposition> formula
-                = nl.utwente.groove.verify.Formula.parse(property).toLtlFormula();
-            BuchiGraph buchiGraph = BuchiGraph.getPrototype().newBuchiGraph(Formula.Not(formula));
+            BuchiGraph buchiGraph
+                = BuchiGraph.getPrototype().newBuchiGraph(Formula.parse(property).neg());
             this.startLocation = buchiGraph.getInitial();
         } catch (FormatException e) {
             throw new IllegalStateException(String.format("Error in property '%s'", property), e);

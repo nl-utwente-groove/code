@@ -233,9 +233,9 @@ public class JGraphUI<G extends @NonNull Graph> extends BasicGraphUI {
                         && selectedItem.getViewCell() instanceof AspectViewEdge selectedEdge) {
                         Point2D at = jGraph.fromScreen(new Point2D.Double(e.getX(), e.getY()));
                         if (selectedEdge == jEdge) {
-                            jGraph.getController().getRemovePointAction().execute(selectedEdge, at);
+                            jGraph.getController().removePoint(selectedEdge, at);
                         } else {
-                            jGraph.getController().getAddPointAction().execute(selectedEdge, at);
+                            jGraph.getController().addPoint(selectedEdge, at);
                         }
                     }
                 } else if (getJCellAt(e.getPoint()) != null) {

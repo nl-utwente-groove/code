@@ -108,13 +108,13 @@ public class LabelTreeOrderTest {
     /** Loads a graph into a headless canvas of a given display kind and
      * returns the label tree built for it. */
     private TypeTree buildTree(GrammarModel grammar, DisplayKind kind, AspectGraph graph) {
-        var controller = new AspectGraphViewController(null, kind, false);
+        var controller = new AspectGraphViewController(null, kind.getGraphRole(), false);
         controller.setGrammar(grammar);
         var canvas = controller.getCanvas();
         var model = canvas.newViewModel();
         model.loadGraph(graph);
         canvas.setViewModel(model);
-        TypeTree result = new TypeTree(canvas, true);
+        TypeTree result = new TypeTree(null, canvas, true);
         result.synchroniseModel();
         return result;
     }

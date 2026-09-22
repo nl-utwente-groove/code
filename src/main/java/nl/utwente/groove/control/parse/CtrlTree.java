@@ -465,7 +465,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
                 result.setChecked();
                 return result;
             } catch (RecognitionException e) {
-                throw new FormatException(e);
+                throw new FormatException(e.getMessage(), e.line, e.charPositionInLine);
             }
         }
     }
@@ -504,7 +504,7 @@ public class CtrlTree extends ParseTree<CtrlTree,Namespace> {
             namespace.getErrors().throwException();
             return result;
         } catch (RecognitionException e) {
-            throw new FormatException(e);
+            throw new FormatException(e.getMessage(), e.line, e.charPositionInLine);
         }
     }
 

@@ -373,22 +373,14 @@ public class ExploreConfigDialog extends JDialog {
         }
         this.refreshing = true;
         try {
-            // dependency rules: an irrelevant key is reset and disabled
-            KeyRow next = getRow(ExploreKey.NEXT);
-            if (getRow(ExploreKey.FRONTIER).getKind() == Frontier.SINGLE) {
-                next.reset();
-                next.setEnabled(false);
-            } else {
-                next.setEnabled(true);
-            }
-            KeyRow outcome = getRow(ExploreKey.OUTCOME);
+            // dependency rules: an irrelevant key is disabled; its widgets keep
+            // their value, so that it survives a temporary irrelevance, but the
+            // composed configuration uses the key's default instead
+            getRow(ExploreKey.NEXT)
+                .setEnabled(getRow(ExploreKey.FRONTIER).getKind() != Frontier.SINGLE);
             var goal = getRow(ExploreKey.GOAL).getKind();
-            if (goal == Goal.NONE || goal == Goal.ANY || goal == Goal.FINAL) {
-                outcome.reset();
-                outcome.setEnabled(false);
-            } else {
-                outcome.setEnabled(true);
-            }
+            getRow(ExploreKey.OUTCOME)
+                .setEnabled(goal != Goal.NONE && goal != Goal.ANY && goal != Goal.FINAL);
             for (var row : this.rows.values()) {
                 row.refreshContentCard();
             }
@@ -400,7 +392,9 @@ public class ExploreConfigDialog extends JDialog {
             for (var key : ExploreKey.values()) {
                 var rowErrors = new FormatErrorSet();
                 try {
-                    Setting setting = getRow(key).getSetting();
+                    Setting setting = getRow(key).isEnabled()
+                        ? getRow(key).getSetting()
+                        : key.getDefaultSetting();
                     if (setting != null) {
                         config.put(key, setting);
                         rowErrors.addAll(ExploreConfigChecker.check(getGrammar(), key, setting));
@@ -1140,16 +1134,16 @@ public class ExploreConfigDialog extends JDialog {
             refreshContentCard();
         }
 
-        /** Resets the row to the key's default setting. */
-        void reset() {
-            loadSetting(this.key.getDefaultSetting());
-        }
-
         /** Enables or disables the entire row. */
         void setEnabled(boolean enabled) {
             this.kindBox.setEnabled(enabled);
             this.textField.setEnabled(enabled);
             this.namesBox.setEnabled(enabled);
+        }
+
+        /** Indicates if the row is enabled, i.e., its key is currently relevant. */
+        boolean isEnabled() {
+            return this.kindBox.isEnabled();
         }
 
         /**

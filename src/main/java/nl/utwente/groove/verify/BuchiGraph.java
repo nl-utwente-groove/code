@@ -30,9 +30,11 @@ import gov.nasa.ltl.graph.Edge;
 import gov.nasa.ltl.graph.Graph;
 import gov.nasa.ltl.graph.Node;
 import gov.nasa.ltl.trans.LTL2Buchi;
+
 import nl.utwente.groove.graph.AGraph;
 import nl.utwente.groove.graph.GraphRole;
 import nl.utwente.groove.util.collect.NestedIterator;
+import nl.utwente.groove.util.parse.FormatException;
 
 /**
  * @author Harmen Kastenberg
@@ -104,11 +106,22 @@ public class BuchiGraph extends AGraph<BuchiLocation,BuchiTransition> implements
      *        {@link BuchiGraph}
      * @return the {@link BuchiGraph}
      */
-    public BuchiGraph newBuchiGraph(gov.nasa.ltl.trans.Formula<Proposition> formula) {
+    BuchiGraph newBuchiGraph(gov.nasa.ltl.trans.Formula<Proposition> formula) {
         final BuchiGraph result = new BuchiGraph(formula.toString());
         Graph<Proposition> graph = LTL2Buchi.translate(formula);
         newBuchiGraph(graph, result);
         return result;
+    }
+
+    /**
+     * Creates a {@link BuchiGraph} from a GROOVE formula.
+     * @param formula the formula for which to create an equivalent
+     *        {@link BuchiGraph}; must be a valid LTL formula
+     * @throws FormatException if the formula contains operators
+     * that are illegal in LTL
+     */
+    public BuchiGraph newBuchiGraph(Formula formula) throws FormatException {
+        return newBuchiGraph(formula.toLtlFormula());
     }
 
     /**

@@ -481,6 +481,13 @@ public class ExploreAction extends SimulatorAction {
             return new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent evt) {
+                    // the exploration halts at the next transition, which may
+                    // take a moment on a large state; show that the request
+                    // was taken, and keep it from being repeated
+                    JButton button = getCancelButton();
+                    button.setEnabled(false);
+                    button.setText("Cancelling...");
+                    ExploreThread.this.cancelDialog.pack();
                     ExploreThread.this.interrupt();
                 }
             };

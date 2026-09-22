@@ -34,7 +34,6 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphRole;
-import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.layout.Layouter;
 import nl.utwente.groove.gui.look.VisualKey.Nature;
 import nl.utwente.groove.gui.look.VisualMap;
@@ -91,7 +90,7 @@ public interface GraphCanvas<G extends Graph> {
     }
 
     /** Returns the display options. */
-    Options getOptions();
+    ViewOptions getOptions();
 
     // ---------- content ----------
 

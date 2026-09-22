@@ -37,8 +37,8 @@ import nl.utwente.groove.io.external.Imported;
 import nl.utwente.groove.io.external.Importer;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.io.graph.AutIO;
+import nl.utwente.groove.util.FileType;
 import nl.utwente.groove.util.QualName;
-import nl.utwente.groove.util.io.FileType;
 
 /**
  * Class that implements load/save of graphs in the CADP .aut format.

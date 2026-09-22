@@ -46,6 +46,7 @@ import nl.utwente.groove.gui.SimulatorModel.Change;
 import nl.utwente.groove.gui.action.ActionStore;
 import nl.utwente.groove.gui.display.DismissDelayer;
 import nl.utwente.groove.gui.display.ResourceDisplay;
+import nl.utwente.groove.gui.view.ViewOptions;
 import nl.utwente.groove.util.Factory;
 import nl.utwente.groove.util.QualName;
 
@@ -178,21 +179,21 @@ public abstract class AbstractResourceTree extends JTree implements SimulatorLis
      * @see Options#SHOW_RECIPE_STEPS_OPTION
      */
     boolean isShowInternal() {
-        return getOptions().isSelected(Options.SHOW_RECIPE_STEPS_OPTION);
+        return getOptions().isSelected(ViewOptions.SHOW_RECIPE_STEPS_OPTION);
     }
 
     /** Indicates if absent states and transitions should be included.
      * @see Options#SHOW_ABSENT_STATES_OPTION
      */
     boolean isShowAbsent() {
-        return getOptions().isSelected(Options.SHOW_ABSENT_STATES_OPTION);
+        return getOptions().isSelected(ViewOptions.SHOW_ABSENT_STATES_OPTION);
     }
 
     /** Indicates if anchors should be shown
      * @see Options#SHOW_ANCHORS_OPTION
      */
     boolean isShowAnchors() {
-        return getOptions().isSelected(Options.SHOW_ANCHORS_OPTION);
+        return getOptions().isSelected(ViewOptions.SHOW_ANCHORS_OPTION);
     }
 
     /**

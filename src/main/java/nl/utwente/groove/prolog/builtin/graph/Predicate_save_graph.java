@@ -25,7 +25,7 @@ import gnu.prolog.vm.Interpreter;
 import gnu.prolog.vm.PrologException;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.io.graph.GxlIO;
-import nl.utwente.groove.util.io.FileType;
+import nl.utwente.groove.util.FileType;
 
 import java.io.File;
 import java.io.IOException;

@@ -131,19 +131,17 @@ public class ExploreConfigTest {
     /** Tests the cross-key consistency checks of the feature model. */
     @Test
     public void testCheck() {
+        // the search-order keys are independent: no combination of next-state,
+        // successor and frontier selection is inconsistent (though not every
+        // one is realised, which is for the converter to report)
         var config = new ExploreConfig();
-        // oldest next-state selection requires all successors
         config.put(ExploreKey.SUCCESSOR, Successor.SINGLE.createSetting());
-        assertFalse(config.check().isEmpty());
-        // ... but not with a single-state frontier
-        config.put(ExploreKey.FRONTIER, Frontier.SINGLE.createSetting());
         assertTrue(config.check().isEmpty());
-
-        // random next-state selection requires in-order successors
-        config = new ExploreConfig();
         config.put(ExploreKey.NEXT, NextState.RANDOM.createSetting());
         config.put(ExploreKey.SUCCESSOR, Successor.ALL_RANDOM.createSetting());
-        assertFalse(config.check().isEmpty());
+        assertTrue(config.check().isEmpty());
+        config.put(ExploreKey.FRONTIER, Frontier.SINGLE.createSetting());
+        assertTrue(config.check().isEmpty());
 
         // a beam frontier must be larger than 1
         config = new ExploreConfig();

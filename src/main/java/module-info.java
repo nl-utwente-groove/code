@@ -2,79 +2,77 @@
  * Module declaration for GROOVE
  */
 module nl.utwente.groove {
-    exports nl.utwente.groove.control.template;
-    exports nl.utwente.groove.gui.menu;
-    exports nl.utwente.groove.gui.display;
-    exports nl.utwente.groove.algebra;
-    exports nl.utwente.groove.prolog;
-    exports nl.utwente.groove.gui.prolog;
-    exports nl.utwente.groove.prolog.util;
-    exports nl.utwente.groove.io.external.format;
-    exports nl.utwente.groove.io.external.format.ecore;
-    exports nl.utwente.groove.match.automaton;
+    // Exported packages form the API contract of the library. The set is kept
+    // deliberately small: extending it on request is cheap, retracting an export
+    // is a breaking change. -Xlint:exports (pom.xml) reports every exported
+    // signature that mentions a type of an unexported package, so the set must
+    // stay closed under signature reachability; extend it only for that reason
+    // or for a real client need. Not exported: the Simulator and its view layer
+    // (gui.*, under reconstruction for gh #909), the matching engines
+    // (match.plan, match.automaton), the control compiler (control.parse, with
+    // its generated ANTLR classes), the exploration engine (explore.engine,
+    // explore.util), the concrete import/export formats, the Prolog predicate
+    // implementations and the remaining utility packages.
+    //
+    // -- the pipeline from grammar on disk to state space
+    exports nl.utwente.groove;
+    exports nl.utwente.groove.io.store;
+    exports nl.utwente.groove.io.graph;
+    exports nl.utwente.groove.io.external;
     exports nl.utwente.groove.grammar;
-    exports nl.utwente.groove.gui.action;
-    exports nl.utwente.groove.control.parse;
-    exports nl.utwente.groove.prolog.builtin.lts;
-    exports nl.utwente.groove.gui.dialog;
-    exports nl.utwente.groove.control.instance;
-    exports nl.utwente.groove.gui.list;
-    exports nl.utwente.groove.gui.look;
-    exports nl.utwente.groove.gui.tree;
-    exports nl.utwente.groove.gui.view;
-    exports nl.utwente.groove.gui.view.cell;
-    exports nl.utwente.groove.algebra.syntax;
-    exports nl.utwente.groove.explore;
-    exports nl.utwente.groove.util.line;
-    exports nl.utwente.groove.match.plan;
+    exports nl.utwente.groove.grammar.model;
+    exports nl.utwente.groove.grammar.aspect;
+    exports nl.utwente.groove.grammar.host;
+    exports nl.utwente.groove.grammar.type;
+    exports nl.utwente.groove.grammar.rule;
     exports nl.utwente.groove.graph;
+    exports nl.utwente.groove.graph.plain;
+    exports nl.utwente.groove.graph.iso;
     exports nl.utwente.groove.graph.layout;
+    exports nl.utwente.groove.match;
+    exports nl.utwente.groove.transform;
+    exports nl.utwente.groove.transform.oracle;
+    exports nl.utwente.groove.lts;
+    exports nl.utwente.groove.explore;
     exports nl.utwente.groove.explore.config;
     exports nl.utwente.groove.explore.feature;
-    exports nl.utwente.groove.gui.export;
-    exports nl.utwente.groove.explore.engine;
     exports nl.utwente.groove.explore.result;
-    exports nl.utwente.groove.io.external;
-    exports nl.utwente.groove.explore.verify;
-    exports nl.utwente.groove.grammar.rule;
-    exports nl.utwente.groove.transform.oracle;
-    exports nl.utwente.groove.io.graph;
-    exports nl.utwente.groove;
-    exports nl.utwente.groove.util.parse;
-    exports nl.utwente.groove.io.store;
-    exports nl.utwente.groove.transform.criticalpair;
-    exports nl.utwente.groove.gui.layout;
-    exports nl.utwente.groove.transform;
-    exports nl.utwente.groove.graph.iso;
-    exports nl.utwente.groove.match;
-    exports nl.utwente.groove.prolog.builtin.type;
-    exports nl.utwente.groove.gui;
-    exports nl.utwente.groove.prolog.builtin.trans;
-    exports nl.utwente.groove.grammar.type;
-    exports nl.utwente.groove.annotation;
-    exports nl.utwente.groove.graph.plain;
+    exports nl.utwente.groove.explore.engine;
     exports nl.utwente.groove.verify;
+    exports nl.utwente.groove.prolog;
     exports nl.utwente.groove.prolog.builtin;
-    exports nl.utwente.groove.grammar.aspect;
-    exports nl.utwente.groove.io;
-    exports nl.utwente.groove.util.antlr;
-    exports nl.utwente.groove.control.graph;
-    exports nl.utwente.groove.control.term;
-    exports nl.utwente.groove.grammar.model;
-    exports nl.utwente.groove.util.cli;
+    // -- graph-backend SPI: an add-on jar is loaded into the unnamed module and
+    //    implements/extends these types, so they must be exported for GROOVE
+    //    to run from the module path (ExtensionsTest); GraphViewController still
+    //    leaks Simulator types into this tier, see claude/module-exports.md
+    exports nl.utwente.groove.gui.view;
+    exports nl.utwente.groove.gui.view.cell;
+    exports nl.utwente.groove.gui.look;
+    exports nl.utwente.groove.gui.layout;
+    // -- Prolog predicate classes are instantiated by the Prolog engine
+    exports nl.utwente.groove.prolog.builtin.algebra to gnuprologjava;
+    exports nl.utwente.groove.prolog.builtin.graph to gnuprologjava;
+    exports nl.utwente.groove.prolog.builtin.lts to gnuprologjava;
+    exports nl.utwente.groove.prolog.builtin.rule to gnuprologjava;
+    exports nl.utwente.groove.prolog.builtin.trans to gnuprologjava;
+    exports nl.utwente.groove.prolog.builtin.type to gnuprologjava;
+    // -- data values and their expressions
+    exports nl.utwente.groove.algebra;
+    exports nl.utwente.groove.algebra.syntax;
+    exports nl.utwente.groove.annotation;
+    // -- control programs: declarations, compiled templates, runtime automata
     exports nl.utwente.groove.control;
-    exports nl.utwente.groove.grammar.host;
-    exports nl.utwente.groove.prolog.builtin.algebra;
-    exports nl.utwente.groove.prolog.exception;
+    exports nl.utwente.groove.control.term;
+    exports nl.utwente.groove.control.template;
+    exports nl.utwente.groove.control.instance;
+    exports nl.utwente.groove.control.graph;
+    // -- utilities reachable from the above
     exports nl.utwente.groove.util;
-    exports nl.utwente.groove.gui.export.util;
-    exports nl.utwente.groove.prolog.builtin.graph;
-    exports nl.utwente.groove.explore.util;
-    exports nl.utwente.groove.prolog.builtin.rule;
-    exports nl.utwente.groove.lts;
+    exports nl.utwente.groove.util.parse;
+    exports nl.utwente.groove.util.line;
     exports nl.utwente.groove.util.cache;
     exports nl.utwente.groove.util.collect;
-    exports nl.utwente.groove.util.io;
+    exports nl.utwente.groove.util.cli;
 
     // service contributions; each provider is also declared in META-INF/services,
     // which takes over when GROOVE runs from the class path (as the installed
@@ -111,10 +109,10 @@ module nl.utwente.groove {
     requires org.apache.groovy;
     requires transitive org.eclipse.jdt.annotation;
     requires org.fife.RSyntaxTextArea;
-    requires transitive xmlgraphics.commons;
-    requires transitive batik.all;
-    requires transitive jdk.xml.dom;
-    requires transitive fop.core;
+    requires xmlgraphics.commons;
+    requires batik.all;
+    requires jdk.xml.dom;
+    requires fop.core;
 
     opens nl.utwente.groove.explore to info.picocli;
     opens nl.utwente.groove.verify to info.picocli;

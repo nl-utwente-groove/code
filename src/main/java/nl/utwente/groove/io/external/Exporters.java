@@ -32,7 +32,7 @@ import nl.utwente.groove.io.graph.DotListener;
 import nl.utwente.groove.io.graph.FsmListener;
 import nl.utwente.groove.io.graph.GxlListener;
 import nl.utwente.groove.util.Factory;
-import nl.utwente.groove.util.io.FileType;
+import nl.utwente.groove.util.FileType;
 
 /**
  * Registry of the known {@link Exporter}s.

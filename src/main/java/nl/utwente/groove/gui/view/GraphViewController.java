@@ -18,6 +18,7 @@ package nl.utwente.groove.gui.view;
 
 import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -27,7 +28,6 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ButtonGroup;
 import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import javax.swing.JToggleButton;
 import javax.swing.ToolTipManager;
 
@@ -35,13 +35,11 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.grammar.GrammarProperties;
+import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphRole;
+import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.gui.Options;
-import nl.utwente.groove.gui.Simulator;
-import nl.utwente.groove.gui.SimulatorModel;
-import nl.utwente.groove.gui.action.ActionStore;
-import nl.utwente.groove.gui.action.ExportAction;
 import nl.utwente.groove.gui.action.LayoutAction;
 import nl.utwente.groove.gui.layout.Layouter;
 import nl.utwente.groove.gui.layout.SpringLayouter;
@@ -49,17 +47,17 @@ import nl.utwente.groove.gui.menu.MyJMenu;
 import nl.utwente.groove.gui.menu.SetLayoutMenu;
 import nl.utwente.groove.gui.menu.ShowHideMenu;
 import nl.utwente.groove.gui.menu.ZoomMenu;
-import nl.utwente.groove.gui.tree.LabelTree;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Pair;
 
 /**
  * Display controller associated with a single {@link GraphCanvas}.
  * Holds the library-independent controller state of a graph display —
- * simulator wiring, display-option machinery, layouter management,
- * the export/layout action caches, label-tree association and tooltip
- * registration — that was historically bundled into the rendering
- * component class itself.
+ * display-option machinery, layouter management, the layout action cache,
+ * menu construction and tooltip registration — that was historically
+ * bundled into the rendering component class itself. What the display
+ * needs from the tool in which it is shown, the controller asks of its
+ * {@link GraphViewContext}.
  * <p>
  * The controller owns its canvas, which it obtains from the {@link GraphBackend}
  * selected at start-up on first request; it talks to the canvas only through the
@@ -72,11 +70,14 @@ import nl.utwente.groove.util.Pair;
 public abstract class GraphViewController<G extends Graph> {
     /**
      * Constructs a controller.
-     * @param simulator simulator to which the display belongs; may be {@code null}
+     * @param context the context of the display; {@code null} if the display is
+     * shown outside any tool
      */
-    public GraphViewController(@Nullable Simulator simulator) {
-        this.simulator = simulator;
-        this.options = Options.instance();
+    public GraphViewController(@Nullable GraphViewContext<G> context) {
+        this.context = context;
+        this.options = context == null
+            ? Options.instance()
+            : context.getOptions();
     }
 
     /**
@@ -106,6 +107,10 @@ public abstract class GraphViewController<G extends Graph> {
             throw Exceptions.illegalState("Controller already has a canvas");
         }
         this.canvas = canvas;
+        var context = getContext();
+        if (context != null) {
+            context.canvasAttached(canvas);
+        }
     }
 
     /** Callback factory method creating the canvas of this controller through a backend. */
@@ -114,109 +119,108 @@ public abstract class GraphViewController<G extends Graph> {
     /** The canvas of this controller; {@code null} until created or attached. */
     private @Nullable GraphCanvas<G> canvas;
 
-    /** Returns the (possibly {@code null}) simulator associated with the display. */
-    protected @Nullable Simulator getSimulator() {
-        return this.simulator;
+    /** Returns the context of the display, if it has one. */
+    protected @Nullable GraphViewContext<G> getContext() {
+        return this.context;
     }
 
-    /** Simulator tool to which the display belongs. */
-    private final @Nullable Simulator simulator;
+    /** The context of the display; {@code null} if the display is shown outside any tool. */
+    private final @Nullable GraphViewContext<G> context;
 
-    /** Convenience method to retrieve the state of the simulator, if any. */
-    public @Nullable SimulatorModel getSimulatorModel() {
-        var simulator = getSimulator();
-        return simulator == null
-            ? null
-            : simulator.getModel();
-    }
-
-    /** Convenience method to retrieve the action store of the simulator, if any. */
-    public @Nullable ActionStore getActions() {
-        var simulator = getSimulator();
-        return simulator == null
-            ? null
-            : simulator.getActions();
+    /**
+     * Indicates if the graph view offers the actions of a simulator.
+     * A non-interactive view is one shown by a dialog or by the headless imager.
+     */
+    public boolean isInteractive() {
+        var context = getContext();
+        return context != null && context.isInteractive();
     }
 
     /**
-     * The properties of the grammar to which the displayed graph belongs.
-     * May return {@code null} if the simulator is not set.
+     * The grammar to which the displayed graph belongs.
+     * May return {@code null} if there is no grammar.
      */
-    public @Nullable GrammarProperties getProperties() {
-        var simulatorModel = getSimulatorModel();
-        return simulatorModel == null
+    public @Nullable GrammarModel getGrammar() {
+        var context = getContext();
+        return context == null
             ? null
-            : simulatorModel.getGrammar().getProperties();
+            : context.getGrammar();
+    }
+
+    /**
+     * The properties of the grammar of the context, if there is a context.
+     * Deliberately not derived from {@link #getGrammar()}: a grammar set by
+     * hand, as in the imager, does not determine the rendering.
+     */
+    private @Nullable GrammarProperties getProperties() {
+        var context = getContext();
+        var grammar = context == null
+            ? null
+            : context.getGrammar();
+        return grammar == null
+            ? null
+            : grammar.getProperties();
     }
 
     /** Returns the object holding the display options. */
-    public final Options getOptions() {
+    public final ViewOptions getOptions() {
         return this.options;
     }
 
     /** The options object of the display. */
-    private final Options options;
+    private final ViewOptions options;
 
     /**
-     * Retrieves the value for a given option from the options object, or
-     * <code>null</code> if the options are not set (i.e., <code>null</code>).
+     * Retrieves the value for a given option from the options object;
+     * an option that is not enabled counts as unselected.
      * @param option the name of the option
      */
     public boolean getOptionValue(String option) {
-        return getOptions().getItem(option).isEnabled() && getOptions().isSelected(option);
+        return getOptions().isEnabled(option) && getOptions().isSelected(option);
     }
 
     /**
-     * Adds a refresh listener to the menu item of an option
-     * with a given name.
+     * Adds a refresh listener for an option with a given name.
      * @see GraphCanvas#getRefreshListener
      */
     public void addOptionListener(String option) {
-        JMenuItem optionItem = getOptions().getItem(option);
-        if (optionItem == null) {
-            throw Exceptions.illegalArg("Unknown option: %s", option);
-        }
         OptionRefreshListener listener = getCanvas().getRefreshListener(option);
         if (listener != null) {
-            optionItem.addItemListener(listener);
-            optionItem.addPropertyChangeListener(listener);
-            this.optionListeners.add(Pair.newPair(optionItem, listener));
+            getOptions().addOptionListener(option, listener);
+            this.optionListeners.add(Pair.newPair(option, listener));
         }
     }
 
     /** The option listeners registered by this controller. */
-    private final List<Pair<JMenuItem,OptionRefreshListener>> optionListeners
-        = new LinkedList<>();
+    private final List<Pair<String,OptionRefreshListener>> optionListeners = new LinkedList<>();
 
     /**
      * Removes the listeners registered by this controller,
      * so as to avoid memory leaks.
      */
     public void removeListeners() {
-        var actions = getActions();
-        if (actions != null) {
-            actions.removeRefreshable(getExportAction());
+        var context = getContext();
+        if (context != null) {
+            context.canvasDetached(getCanvas());
         }
-        for (Pair<JMenuItem,OptionRefreshListener> record : this.optionListeners) {
-            record.one().removeItemListener(record.two());
-            record.one().removePropertyChangeListener(record.two());
+        for (Pair<String,OptionRefreshListener> record : this.optionListeners) {
+            getOptions().removeOptionListener(record.one(), record.two());
         }
         this.optionListeners.clear();
-        this.exportAction = null;
     }
 
     /**
      * Indicates whether node identities should be shown on node labels.
      */
     public boolean isShowNodeIdentities() {
-        return getOptionValue(Options.SHOW_INTERNAL_NODE_IDS_OPTION);
+        return getOptionValue(ViewOptions.SHOW_INTERNAL_NODE_IDS_OPTION);
     }
 
     /**
      * Indicates whether anchors should be shown in the rule and lts views.
      */
     public boolean isShowAnchors() {
-        return getOptionValue(Options.SHOW_ANCHORS_OPTION);
+        return getOptionValue(ViewOptions.SHOW_ANCHORS_OPTION);
     }
 
     /**
@@ -232,14 +236,14 @@ public abstract class GraphViewController<G extends Graph> {
      * on edges.
      */
     public boolean isShowArrowsOnLabels() {
-        return getOptionValue(Options.SHOW_ARROWS_ON_LABELS_OPTION);
+        return getOptionValue(ViewOptions.SHOW_ARROWS_ON_LABELS_OPTION);
     }
 
     /**
      * Indicates whether a single edge cell may stand for edges in two directions.
      */
     public boolean isShowBidirectionalEdges() {
-        return getOptionValue(Options.SHOW_BIDIRECTIONAL_EDGES_OPTION);
+        return getOptionValue(ViewOptions.SHOW_BIDIRECTIONAL_EDGES_OPTION);
     }
 
     /**
@@ -309,21 +313,19 @@ public abstract class GraphViewController<G extends Graph> {
         return result;
     }
 
-    /** Returns the action to export the displayed graph in various formats. */
-    public ExportAction getExportAction() {
-        var result = this.exportAction;
-        if (result == null) {
-            this.exportAction = result = new ExportAction(getCanvas());
-        }
-        result.refresh();
-        return result;
+    /**
+     * Returns the action to export the displayed graph in various formats,
+     * or {@code null} if the context offers no export.
+     */
+    public @Nullable Action getExportAction() {
+        var context = getContext();
+        return context == null
+            ? null
+            : context.getExportAction(getCanvas());
     }
 
-    /** The permanent ExportAction associated with the display. */
-    private @Nullable ExportAction exportAction;
-
     /** Returns the action to lay out the displayed graph. */
-    public LayoutAction getLayoutAction() {
+    public Action getLayoutAction() {
         var result = this.layoutAction;
         if (result == null) {
             this.layoutAction = result = new LayoutAction(getCanvas());
@@ -335,24 +337,35 @@ public abstract class GraphViewController<G extends Graph> {
     /** The permanent layout action associated with the display. */
     private @Nullable LayoutAction layoutAction;
 
-    /**
-     * Associates a label tree with the display.
-     * Note: this method is called from the label tree constructor.
-     */
-    public void setLabelTree(@Nullable LabelTree<G> labelTree) {
-        this.labelTree = labelTree;
+    /** Enables or disables the label filter of the display, if there is one. */
+    public void setLabelTreeEnabled(boolean enabled) {
+        var context = getContext();
+        if (context != null) {
+            context.setFilteringEnabled(enabled);
+        }
     }
 
     /**
-     * Returns the label tree associated with the display.
-     * @return the associated label tree, or {@code null} if there is none
+     * Indicates if the graph view filters its cells by label at all.
+     * If it does not, {@link #isFiltered(ViewCell)} and {@link #isFiltered(Label)}
+     * are invariably {@code false}.
      */
-    public @Nullable LabelTree<G> getLabelTree() {
-        return this.labelTree;
+    public boolean isFiltering() {
+        var context = getContext();
+        return context != null && context.isFiltering();
     }
 
-    /** The label tree associated with the display. */
-    private @Nullable LabelTree<G> labelTree;
+    /** Indicates if a given cell is currently filtered out of the graph view. */
+    public boolean isFiltered(ViewCell<G> cell) {
+        var context = getContext();
+        return context != null && context.isFiltered(cell);
+    }
+
+    /** Indicates if a given label is currently filtered out of the graph view. */
+    public boolean isFiltered(Label label) {
+        var context = getContext();
+        return context != null && context.isFiltered(label);
+    }
 
     /**
      * Indicates whether the display is currently registered at the tool tip
@@ -403,10 +416,20 @@ public abstract class GraphViewController<G extends Graph> {
         return result;
     }
 
-    /** Returns a menu consisting of the export action of the graph view. */
+    /**
+     * Returns a menu consisting of the export action of the graph view,
+     * preceded by the export items of the context.
+     */
     public JMenu createExportMenu() {
-        JMenu result = new JMenu("Export");
-        result.add(getExportAction());
+        MyJMenu result = new MyJMenu("Export");
+        var context = getContext();
+        if (context != null) {
+            result.addMenuItems(context.getExportItems());
+        }
+        var exportAction = getExportAction();
+        if (exportAction != null) {
+            result.add(exportAction);
+        }
         return result;
     }
 
@@ -414,24 +437,13 @@ public abstract class GraphViewController<G extends Graph> {
      * Returns a menu consisting of all the display menu items of the graph view.
      */
     public JMenu createDisplayMenu() {
-        JMenu result = new JMenu("Display");
+        MyJMenu result = new MyJMenu("Display");
         var cells = getCanvas().getSelection();
-        boolean itemAdded = false;
-        var actions = getActions();
-        if (!cells.isEmpty() && actions != null) {
-            result.add(actions.getFindReplaceAction());
-            result.add(actions.getSelectColorAction());
-            itemAdded = true;
+        var context = getContext();
+        if (!cells.isEmpty() && context != null) {
+            result.addMenuItems(context.getSelectionItems(cells));
         }
-        var labelTree = getLabelTree();
-        if (labelTree != null && !cells.isEmpty()) {
-            Action filterAction = labelTree.createFilterAction(cells.toArray());
-            if (filterAction != null) {
-                result.add(filterAction);
-                itemAdded = true;
-            }
-        }
-        if (itemAdded) {
+        if (result.getItemCount() > 0) {
             result.addSeparator();
         }
         result.add(getModeAction(GraphViewMode.SELECT_MODE));
@@ -445,17 +457,22 @@ public abstract class GraphViewController<G extends Graph> {
      * Returns a menu consisting of the menu items from the layouter
      * setting menu of the graph view.
      */
-    public SetLayoutMenu getSetLayoutMenu() {
+    private SetLayoutMenu getSetLayoutMenu() {
         var result = this.setLayoutMenu;
         if (result == null) {
-            this.setLayoutMenu = result = createSetLayoutMenu();
+            this.setLayoutMenu = result = new SetLayoutMenu(this);
         }
         return result;
     }
 
-    /** Creates and returns a fresh layout setting menu for the graph view. */
-    public SetLayoutMenu createSetLayoutMenu() {
-        return new SetLayoutMenu(this);
+    /**
+     * Selects a layouter for the graph view, as the layouter setting menu does,
+     * and returns the action that runs it.
+     * @param prototypeLayouter prototype for the new layouter
+     * @see #setLayouter(Layouter)
+     */
+    public Action selectLayouter(Layouter prototypeLayouter) {
+        return getSetLayoutMenu().selectLayoutAction(prototypeLayouter);
     }
 
     /**
@@ -472,28 +489,39 @@ public abstract class GraphViewController<G extends Graph> {
         JMenu result = new JMenu("Layout");
         result.add(getSetLayoutMenu().getCurrentLayoutItem());
         result.add(getSetLayoutMenu());
-        result.add(getShowLayoutDialogAction());
+        var context = getContext();
+        var dialogAction = context == null
+            ? null
+            : context.getLayoutDialogAction();
+        if (dialogAction != null) {
+            result.add(dialogAction);
+        }
         return result;
     }
 
     /**
      * Creates and returns a fresh zoom menu for the graph view.
      */
-    public ZoomMenu createZoomMenu() {
+    public JMenu createZoomMenu() {
         return new ZoomMenu(getCanvas());
     }
 
     /**
      * Creates and returns a fresh show/hide menu for the graph view.
      */
-    public ShowHideMenu<G> createShowHideMenu() {
-        return new ShowHideMenu<>(getCanvas());
+    public JMenu createShowHideMenu() {
+        return new ShowHideMenu<>(getCanvas(), this::getFilterLabels);
     }
 
-    private Action getShowLayoutDialogAction() {
-        var actions = getActions();
-        assert actions != null; // the layout menu is only built with a simulator present
-        return actions.getLayoutDialogAction();
+    /**
+     * Returns the labelled cells of the label filter of this graph view,
+     * from which the label sub-menus of the show/hide menu are built.
+     */
+    private Collection<LabelledCells<G>> getFilterLabels() {
+        var context = getContext();
+        return context == null
+            ? List.of()
+            : context.getFilterLabels();
     }
 
     /**

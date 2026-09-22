@@ -21,7 +21,7 @@ import java.util.Collections;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
 import nl.utwente.groove.control.CtrlLoader;
-import nl.utwente.groove.control.parse.Namespace;
+import nl.utwente.groove.control.Invisibility;
 import nl.utwente.groove.control.template.Program;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.Factory;
@@ -72,8 +72,8 @@ public class ControlModel extends TextBasedModel<Program> {
                     ControlModel sibling = grammar.getControlModel(name);
                     if (sibling != null) {
                         var reason = activeControlNames.contains(name)
-                            ? Namespace.InvisibleDecl.Reason.ISOLATED
-                            : Namespace.InvisibleDecl.Reason.DISABLED;
+                            ? Invisibility.ISOLATED
+                            : Invisibility.DISABLED;
                         getLoader().addInvisibleControl(name, sibling.getProgram(), reason);
                     }
                 }
@@ -81,7 +81,7 @@ public class ControlModel extends TextBasedModel<Program> {
             getLoader()
                 .addInvisibleRules(grammar.getNames(ResourceKind.RULE),
                                    grammar.getActiveNames(ResourceKind.RULE));
-            getLoader().addControl(getQualName(), getProgram()).check();
+            getLoader().addControl(getQualName(), getProgram());
             result = getLoader().buildProgram(Collections.singleton(getQualName()));
         }
         return result;

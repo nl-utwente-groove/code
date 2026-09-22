@@ -147,13 +147,13 @@ public class CheckboxTreeSelectionTest {
         GrammarModel grammar = Groove.loadGrammar(GRAMMAR);
         AspectGraph graph = grammar.getStartGraphModel().getSource();
         assert graph != null; // the grammar has a single start graph
-        var controller = new AspectGraphViewController(null, DisplayKind.HOST, false);
+        var controller = new AspectGraphViewController(null, DisplayKind.HOST.getGraphRole(), false);
         controller.setGrammar(grammar);
         var canvas = controller.getCanvas();
         var model = canvas.newViewModel();
         model.loadGraph(graph);
         canvas.setViewModel(model);
-        TypeTree result = new TypeTree(canvas, true);
+        TypeTree result = new TypeTree(null, canvas, true);
         result.synchroniseModel();
         assertTrue(result.getTopNode().getChildCount() > 0, "label tree is empty");
         return result;

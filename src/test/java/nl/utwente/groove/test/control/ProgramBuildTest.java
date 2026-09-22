@@ -342,8 +342,7 @@ public class ProgramBuildTest {
     protected CtrlLoader createLoader() {
         CtrlLoader result =
             new CtrlLoader(this.testGrammar.getProperties(), this.testGrammar.getAllRules());
-        prot = result.getNamespace()
-            .getPrototype();
+        prot = result.getTermPrototype();
         return result;
     }
 

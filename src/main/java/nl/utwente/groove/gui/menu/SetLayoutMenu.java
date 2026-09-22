@@ -26,7 +26,6 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 import nl.utwente.groove.gui.Options;
-import nl.utwente.groove.gui.action.LayoutAction;
 import nl.utwente.groove.gui.view.GraphViewController;
 import nl.utwente.groove.gui.layout.ForestLayouter;
 import nl.utwente.groove.gui.layout.Layouter;
@@ -89,9 +88,9 @@ public class SetLayoutMenu extends JMenu {
      * action. Also notifies the underlying canvas.
      * @param prototypeLayout the new layout action
      */
-    public LayoutAction selectLayoutAction(Layouter prototypeLayout) {
+    public Action selectLayoutAction(Layouter prototypeLayout) {
         this.controller.setLayouter(prototypeLayout);
-        LayoutAction result = this.controller.getLayoutAction();
+        Action result = this.controller.getLayoutAction();
         this.layoutItem.setAction(result);
         for (int i = 0; i < getMenuComponentCount(); i++) {
             Component item = getMenuComponent(i);

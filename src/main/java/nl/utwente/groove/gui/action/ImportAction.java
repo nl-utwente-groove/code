@@ -24,8 +24,8 @@ import nl.utwente.groove.io.external.Importer;
 import nl.utwente.groove.io.external.Importers;
 import nl.utwente.groove.io.external.PortException;
 import nl.utwente.groove.io.external.format.ecore.EcoreMapping;
+import nl.utwente.groove.util.FileType;
 import nl.utwente.groove.util.QualName;
-import nl.utwente.groove.util.io.FileType;
 import nl.utwente.groove.util.parse.FormatException;
 
 /**

@@ -70,6 +70,7 @@ import nl.utwente.groove.gui.action.ActionStore;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.display.ResourceDisplay;
 import nl.utwente.groove.gui.look.Values;
+import nl.utwente.groove.gui.view.ViewOptions;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.lts.GraphState;
 import nl.utwente.groove.lts.GraphTransition;
@@ -165,9 +166,9 @@ public class StateTree extends JTree implements SimulatorListener {
                 }
             }
         };
-        getOptions().getItem(Options.SHOW_ANCHORS_OPTION).addItemListener(refreshListener);
-        getOptions().getItem(Options.SHOW_RECIPE_STEPS_OPTION).addItemListener(refreshListener);
-        getOptions().getItem(Options.SHOW_ABSENT_STATES_OPTION).addItemListener(refreshListener);
+        getOptions().getItem(ViewOptions.SHOW_ANCHORS_OPTION).addItemListener(refreshListener);
+        getOptions().getItem(ViewOptions.SHOW_RECIPE_STEPS_OPTION).addItemListener(refreshListener);
+        getOptions().getItem(ViewOptions.SHOW_ABSENT_STATES_OPTION).addItemListener(refreshListener);
         activateListening();
     }
 
@@ -218,17 +219,17 @@ public class StateTree extends JTree implements SimulatorListener {
 
     /** Indicates if internal states and transitions should be included. */
     private boolean isShowInternal() {
-        return getOptions().isSelected(Options.SHOW_RECIPE_STEPS_OPTION);
+        return getOptions().isSelected(ViewOptions.SHOW_RECIPE_STEPS_OPTION);
     }
 
     /** Indicates if absent states and transitions should be included. */
     private boolean isShowAbsent() {
-        return getOptions().isSelected(Options.SHOW_ABSENT_STATES_OPTION);
+        return getOptions().isSelected(ViewOptions.SHOW_ABSENT_STATES_OPTION);
     }
 
     /** Indicates if absent states and transitions should be included. */
     private boolean isShowAnchored() {
-        return getOptions().isSelected(Options.SHOW_ANCHORS_OPTION);
+        return getOptions().isSelected(ViewOptions.SHOW_ANCHORS_OPTION);
     }
 
     /**
@@ -461,7 +462,7 @@ public class StateTree extends JTree implements SimulatorListener {
             }
             recipeKeys.add(init);
         }
-        boolean anchored = getOptions().isSelected(Options.SHOW_ANCHORS_OPTION);
+        boolean anchored = getOptions().isSelected(ViewOptions.SHOW_ANCHORS_OPTION);
         for (Map.Entry<Action,Set<GraphTransitionKey>> keyEntry : keyMap.entrySet()) {
             Action action = keyEntry.getKey();
             ActionTreeNode actionNode;

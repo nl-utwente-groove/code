@@ -23,6 +23,8 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,8 +32,10 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 import org.jgraph.graph.ConnectionSet;
 import org.junit.jupiter.api.Test;
 
@@ -112,6 +116,81 @@ public class EditorUndoTest {
         assertState(model, edge, true, "next");
         assertSame(jEdge, JCell.of(edge), "the edge cell got a new item on re-insertion");
         assertFalse(history.canRedo());
+    }
+
+    /**
+     * Creating a vertex on the canvas (a double-click on empty space) shows it as
+     * a pending insertion, selects it and opens the in-place editor on it; the
+     * label typed there settles the insertion, so that creating and labelling the
+     * vertex is one undo step. The vertex gets its JGraph item on insertion only,
+     * so the canvas must not ask for the item before inserting (the regression of
+     * gh #913, which silently kept the vertex without opening the editor).
+     */
+    @Test
+    void addVertexAndEditLabelIsOneStep() throws IOException {
+        AspectJGraph canvas = editorCanvas();
+        AspectGraphViewModel model = canvas.getNonNullModel().getViewModel();
+        EditHistory<AspectGraph> history = model.getEditHistory();
+        assertNotNull(history, "an edited model has a history");
+        int[] changes = {0};
+        history.addListener(() -> changes[0]++);
+        var graph = model.getGraph();
+        assertNotNull(graph);
+        int nodeCount = graph.nodeCount();
+        int cellCount = model.getCells().size();
+        canvas.addVertex(new Point2D.Double(300, 300));
+        assertEquals(cellCount + 1, model.getCells().size(), "the new vertex is shown");
+        assertTrue(model.hasPendingInsertion(), "the new vertex awaits its first label");
+        assertFalse(history.canUndo(), "a pending insertion is not in the history");
+        assertEquals(0, changes[0]);
+        Object selected = canvas.getSelectionCell();
+        assertTrue(selected instanceof JVertex, "the new vertex is selected: " + selected);
+        JVertex<?> jVertex = (JVertex<?>) selected;
+        assertTrue(jVertex.getViewCell() instanceof AspectVertexCell,
+                   "the new vertex is an aspect vertex");
+        AspectVertexCell vertex = (AspectVertexCell) jVertex.getViewCell();
+        assertSame(jVertex, JCell.of(vertex), "the new vertex has its item");
+        assumeTrue(canvas.isEditing(), "in-place editing needs a displayable canvas");
+        assertSame(jVertex, canvas.getEditingCell(), "the editor opened on the new vertex");
+        // type a label and commit the editor
+        JTextArea editor = findEditor(canvas);
+        assertNotNull(editor, "the in-place editor is on the canvas");
+        editor.setText("flag:fresh");
+        canvas.stopEditing();
+        assertFalse(canvas.isEditing());
+        assertFalse(model.hasPendingInsertion());
+        assertEquals(1, changes[0], "creating and labelling the vertex is one edit");
+        assertTrue(history.isDirty());
+        graph = model.getGraph();
+        assertNotNull(graph);
+        assertEquals(nodeCount + 1, graph.nodeCount(), "the graph has the new vertex");
+        assertEquals(List.of("flag:fresh"), List.copyOf(vertex.getEditableLabels()));
+        history.undo();
+        assertFalse(model.getCells().contains(vertex), "one undo removes the vertex");
+        assertFalse(history.canUndo());
+        graph = model.getGraph();
+        assertNotNull(graph);
+        assertEquals(nodeCount, graph.nodeCount());
+        history.redo();
+        assertTrue(model.getCells().contains(vertex));
+        assertSame(jVertex, JCell.of(vertex), "the vertex cell kept its item on re-insertion");
+        assertEquals(List.of("flag:fresh"), List.copyOf(vertex.getEditableLabels()));
+    }
+
+    /** Returns the text area of the in-place editor on a canvas, if any. */
+    private static @Nullable JTextArea findEditor(Container container) {
+        for (Component child : container.getComponents()) {
+            if (child instanceof JTextArea result) {
+                return result;
+            }
+            if (child instanceof Container nested) {
+                JTextArea result = findEditor(nested);
+                if (result != null) {
+                    return result;
+                }
+            }
+        }
+        return null;
     }
 
     @Test
@@ -365,7 +444,7 @@ public class EditorUndoTest {
         GrammarModel grammar = Groove.loadGrammar(GRAMMAR);
         AspectGraph startGraph = grammar.getStartGraphModel().getSource();
         assert startGraph != null; // the fixture grammar has a start graph
-        var controller = new AspectGraphViewController(null, DisplayKind.HOST, true);
+        var controller = new AspectGraphViewController(null, DisplayKind.HOST.getGraphRole(), true);
         controller.setGrammar(grammar);
         AspectJGraph canvas = (AspectJGraph) controller.getCanvas();
         AspectGraphViewModel model = canvas.newViewModel();

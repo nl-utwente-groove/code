@@ -24,10 +24,11 @@ import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.grammar.model.ResourceKind;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.GraphRole;
-import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.Simulator;
+import nl.utwente.groove.gui.display.SimulatorAspectContext;
 import nl.utwente.groove.gui.display.DisplayKind;
 import nl.utwente.groove.gui.display.GraphPanel;
+import nl.utwente.groove.gui.display.SimulatorViewContext;
 import nl.utwente.groove.gui.view.AspectGraphViewController;
 import nl.utwente.groove.gui.view.CtrlGraphViewController;
 import nl.utwente.groove.gui.view.GraphCanvas;
@@ -114,7 +115,7 @@ public class GraphPreviewDialog<G extends @NonNull Graph> extends JDialog {
         switch (this.graph.getRole()) {
         case CTRL:
             if (shownGraph instanceof ControlGraph) {
-                canvas = new CtrlGraphViewController(this.simulator).getCanvas();
+                canvas = new CtrlGraphViewController(createContext()).getCanvas();
             } else {
                 canvas = null;
             }
@@ -126,8 +127,11 @@ public class GraphPreviewDialog<G extends @NonNull Graph> extends JDialog {
                 shownGraph = GraphConverter.toAspect(this.graph);
                 DisplayKind kind
                     = DisplayKind.toDisplay(ResourceKind.toResource(this.graph.getRole()));
-                var controller = new AspectGraphViewController(this.simulator, kind, false);
-                if (this.simulator == null) {
+                Simulator simulator = this.simulator;
+                var controller = new AspectGraphViewController(simulator == null
+                    ? null
+                    : new SimulatorAspectContext(simulator, kind), kind.getGraphRole(), false);
+                if (simulator == null) {
                     controller.setGrammar(this.grammar);
                 }
                 canvas = controller.getCanvas();
@@ -139,11 +143,22 @@ public class GraphPreviewDialog<G extends @NonNull Graph> extends JDialog {
             canvas = null;
         }
         if (canvas == null) {
-            canvas = new PlainGraphViewController(this.simulator).getCanvas();
+            canvas = new PlainGraphViewController(createContext()).getCanvas();
         }
         canvas.showGraph(shownGraph);
         canvas.getController().doLayout(false);
         return canvas;
+    }
+
+    /**
+     * Creates a view context for a graph view of this dialog,
+     * or returns {@code null} if the dialog has no simulator.
+     */
+    private <H extends @NonNull Graph> SimulatorViewContext<H> createContext() {
+        Simulator simulator = this.simulator;
+        return simulator == null
+            ? null
+            : new SimulatorViewContext<>(simulator);
     }
 
     private GraphCanvas<G> canvas;
@@ -213,16 +228,11 @@ public class GraphPreviewDialog<G extends @NonNull Graph> extends JDialog {
 
     private static final boolean TIMER = true;
 
-    /** A panel showing a graph canvas, with functionality to retrieve the rendering options. */
+    /** A panel showing a graph canvas. */
     public static class GraphPreviewPanel extends GraphPanel<@NonNull Graph> {
         /** Creates a panel for a given canvas. */
         public GraphPreviewPanel(GraphCanvas<? extends Graph> canvas) {
             super(canvas);
-        }
-
-        /** Returns the options object used in rendering the canvas. */
-        public Options getOptions() {
-            return getCanvas().getOptions();
         }
     }
 }
