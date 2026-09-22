@@ -28,6 +28,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.jar.Attributes;
 import java.util.jar.JarOutputStream;
@@ -36,7 +37,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
+import javax.swing.event.MenuEvent;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -50,6 +53,7 @@ import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 
+import nl.utwente.groove.gui.AddOnInstaller;
 import nl.utwente.groove.gui.BackendChooser;
 import nl.utwente.groove.gui.Options;
 import nl.utwente.groove.gui.view.GraphBackend;
@@ -67,7 +71,9 @@ import nl.utwente.groove.util.Version;
  * the extension directory after each. In between, the graph backend submenu is
  * checked: it appears with the installation, marks the JGraph backend as the one in
  * use and the add-on's as the one selected for the next start, and follows the
- * choices made through it. The extension directory of the test JVM is
+ * choices made through it. The add-on submenu's status line is checked at each
+ * stage, as is the absence of the download action in a development version.
+ * The extension directory of the test JVM is
  * the empty one under {@code target} that the test configuration points to.
  * @author Arend Rensink
  * @version $Revision$
@@ -91,6 +97,8 @@ public class AddOnGuiTest {
         try {
             // only the JGraph backend is available, so there is nothing to choose
             assertNull(createChooserMenu());
+            assertInstallerShows("Not installed", Options.INSTALL_ADDON_FILE_ACTION_NAME,
+                                 Options.REMOVE_ADDON_ACTION_NAME);
 
             new JMenuBarOperator(frame())
                 .pushMenuNoBlock(Options.DISPLAY_MENU_NAME + "|" + Options.YFILES_ADDON_MENU_NAME
@@ -102,6 +110,9 @@ public class AddOnGuiTest {
             assertTrue(addOn.isPresent(ext));
             assertTrue(Files.isRegularFile(addOn.getDir(ext).resolve("groove-yfiles.jar")));
             assertTrue(Files.isRegularFile(addOn.getDir(ext).resolve(addOn.getNoticeName())));
+            assertInstallerShows("Installed, not loaded in this run",
+                                 Options.REMOVE_ADDON_ACTION_NAME,
+                                 Options.INSTALL_ADDON_FILE_ACTION_NAME);
 
             // the installation selects the add-on's backend for the next start
             assertEquals(addOn.getName(), Options.userPrefs.get(Options.GRAPH_BACKEND_OPTION, null));
@@ -136,6 +147,8 @@ public class AddOnGuiTest {
             new JButtonOperator(removed, "OK").push();
             removed.waitClosed();
             assertFalse(addOn.isPresent(ext));
+            assertInstallerShows("Not installed", Options.INSTALL_ADDON_FILE_ACTION_NAME,
+                                 Options.REMOVE_ADDON_ACTION_NAME);
             // the choice is left as it is, but there is nothing to choose any more
             assertNull(createChooserMenu());
         } finally {
@@ -151,6 +164,42 @@ public class AddOnGuiTest {
             .invokeAndWait(() -> result
                 .set(new BackendChooser(simulator().getFrame(), AddOn.YFILES).createMenu()));
         return result.get();
+    }
+
+    /**
+     * Asserts that the add-on submenu, as populated on opening, starts with a disabled
+     * status line with a given text, has an action with a given text and lacks another;
+     * in a development version, the download action is always absent.
+     */
+    private static void assertInstallerShows(String status, String present,
+                                             String absent) throws Exception {
+        var result = new AtomicReference<@Nullable JMenu>();
+        SwingUtilities.invokeAndWait(() -> {
+            JMenu menu = new AddOnInstaller(simulator().getFrame(), AddOn.YFILES).createMenu();
+            for (var listener : menu.getMenuListeners()) {
+                listener.menuSelected(new MenuEvent(menu));
+            }
+            result.set(menu);
+        });
+        JMenu menu = result.get();
+        assertNotNull(menu);
+        JMenuItem statusItem = menu.getItem(0);
+        assertNotNull(statusItem);
+        assertFalse(statusItem.isEnabled());
+        assertEquals(status, statusItem.getText());
+        var texts = new ArrayList<String>();
+        for (int i = 1; i < menu.getItemCount(); i++) {
+            JMenuItem item = menu.getItem(i);
+            if (item != null) {
+                texts.add(item.getText());
+            }
+        }
+        assertTrue(texts.contains(present), texts.toString());
+        assertFalse(texts.contains(absent), texts.toString());
+        if (Version.isDevelopmentVersion()) {
+            assertFalse(texts.contains(Options.DOWNLOAD_ADDON_ACTION_NAME), texts.toString());
+            assertFalse(texts.contains(Options.UPDATE_ADDON_ACTION_NAME), texts.toString());
+        }
     }
 
     /** Asserts that the chooser menu shows two items with given texts and selection states. */

@@ -25,6 +25,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.jar.Attributes;
@@ -117,6 +118,7 @@ public class AddOnTest {
         Files.delete(dir.resolve("groove-yfiles.jar"));
         Files.write(dir.resolve("groove-yfiles.jar"), jar("0.0.0"));
         assertEquals(Status.STALE, addOn.getStatus(Extensions.scan(ext)));
+        assertEquals(List.of("0.0.0"), addOn.getVersions(Extensions.scan(ext)));
         assertEquals(Outcome.DONE, addOn.install(zip, ext));
         assertEquals(Status.INSTALLED, addOn.getStatus(Extensions.scan(ext)));
 
