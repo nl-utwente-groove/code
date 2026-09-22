@@ -161,8 +161,14 @@ public class RecipeTransition extends ALabelEdge<GraphState>
         while (!pool.isEmpty()) {
             GraphState next = pool.pop();
             for (RuleTransition trans : next.getRuleTransitions()) {
+                // follow the steps of this recipe run, also from a state that
+                // left the recipe through a verdict after having generated
+                // them; launches of other recipes from such a state are not
+                if (!trans.isInnerStep() || trans.getStep().isLaunch()) {
+                    continue;
+                }
                 GraphState target = trans.target();
-                if (target.isInner() || target == target()) {
+                if (target.getPrimeFrame().isInner() || target == target()) {
                     var inSet = inMap.get(target);
                     boolean fresh = inSet == null;
                     if (fresh) {

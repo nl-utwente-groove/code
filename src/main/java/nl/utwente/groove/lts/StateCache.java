@@ -16,13 +16,21 @@
  */
 package nl.utwente.groove.lts;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
 
 import nl.utwente.groove.control.Assignment;
 import nl.utwente.groove.control.NestedCall;
@@ -55,6 +63,7 @@ import nl.utwente.groove.util.collect.TreeHashSet;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public class StateCache implements Cache {
     /**
      * Constructs a cache for a given state.
@@ -76,13 +85,21 @@ public class StateCache implements Cache {
         assert this.initialised;
         assert trans.source() == getState();
         boolean result = getStubSet().add(trans.toStub());
-        if (result && this.transitionMap != null) {
-            this.transitionMap.add(trans);
+        if (result) {
+            if (this.transitionMap != null) {
+                this.transitionMap.add(trans);
+            }
+            if (getState().isClosed() && getState().getGTS().isStoring()) {
+                // the state copied its stubs at closure; a recipe transition
+                // arrives later, once its run is explored, and must be stored
+                // as well or it dies with the (by then collectable) cache
+                getState().addStoredTransitionStub(trans.toStub());
+            }
         }
-        if (trans instanceof RuleTransition) {
+        if (trans instanceof RuleTransition ruleTrans) {
             getMatches().remove(trans.getKey());
-            if (trans.isPartialStep()) {
-                registerOutPartial((RuleTransition) trans);
+            if (result && trans.isPartialStep()) {
+                registerOutPartial(ruleTrans);
             }
         }
         if (getMatches().isFinished()) {
@@ -97,8 +114,8 @@ public class StateCache implements Cache {
         } else {
             return new SetView<>(getTransitionMap()) {
                 @Override
-                public boolean approves(Object obj) {
-                    return obj instanceof GraphTransition && claz.admits((GraphTransition) obj);
+                public boolean approves(@Nullable Object obj) {
+                    return obj instanceof GraphTransition trans && claz.admits(trans);
                 }
             };
         }
@@ -118,10 +135,11 @@ public class StateCache implements Cache {
      *         {@link GraphNextState}
      */
     final DeltaHostGraph getGraph() {
-        if (this.graph == null) {
-            this.graph = computeGraph();
+        var result = this.graph;
+        if (result == null) {
+            result = this.graph = computeGraph();
         }
-        return this.graph;
+        return result;
     }
 
     /** Indicates if this cache currently stores a graph. */
@@ -130,27 +148,29 @@ public class StateCache implements Cache {
     }
 
     /** Cached graph for this state. */
-    private DeltaHostGraph graph;
+    private @Nullable DeltaHostGraph graph;
 
     /**
      * Lazily creates and returns the delta with respect to the
      * parent state.
      */
     final DeltaApplier getDelta() {
-        if (this.delta == null) {
-            this.delta = createDelta();
+        var result = this.delta;
+        if (result == null) {
+            result = this.delta = createDelta();
         }
-        return this.delta;
+        assert result != null : "State %s has no parent, hence no delta".formatted(this.state);
+        return result;
     }
 
     /** The delta with respect to the state's parent. */
-    private DeltaApplier delta;
+    private @Nullable DeltaApplier delta;
 
     /**
      * Callback factory method for a rule application on the basis of this
-     * state.
+     * state; returns {@code null} if the state has no parent.
      */
-    private DeltaApplier createDelta() {
+    private @Nullable DeltaApplier createDelta() {
         DeltaApplier result = null;
         if (this.state instanceof DefaultGraphNextState state) {
             HostGraph source = state.source().getGraph();
@@ -322,14 +342,15 @@ public class StateCache implements Cache {
      * outgoing transitions of this state.
      */
     KeySet<GraphTransitionKey,GraphTransition> getTransitionMap() {
-        if (this.transitionMap == null) {
-            this.transitionMap = computeTransitionMap();
+        var result = this.transitionMap;
+        if (result == null) {
+            result = this.transitionMap = computeTransitionMap();
         }
-        return this.transitionMap;
+        return result;
     }
 
     /** Cached map from events to target transitions. */
-    private KeySet<GraphTransitionKey,GraphTransition> transitionMap;
+    private @Nullable KeySet<GraphTransitionKey,GraphTransition> transitionMap;
 
     /**
      * Computes a mapping from the events to the
@@ -339,7 +360,8 @@ public class StateCache implements Cache {
         assert this.initialised;
         KeySet<GraphTransitionKey,GraphTransition> result = new KeySet<>() {
             @Override
-            protected GraphTransitionKey getKey(Object value) {
+            protected GraphTransitionKey getKey(@Nullable Object value) {
+                assert value != null; // the set holds transitions only
                 return ((GraphTransition) value).getKey();
             }
         };
@@ -357,10 +379,11 @@ public class StateCache implements Cache {
      * initialised.
      */
     Set<GraphTransitionStub> getStubSet() {
-        if (this.stubSet == null) {
-            this.stubSet = computeStubSet();
+        var result = this.stubSet;
+        if (result == null) {
+            result = this.stubSet = computeStubSet();
         }
-        return this.stubSet;
+        return result;
     }
 
     /**
@@ -380,7 +403,7 @@ public class StateCache implements Cache {
      * The set of outgoing transitions computed for the underlying graph,
      * for every class of graph transitions.
      */
-    private Set<GraphTransitionStub> stubSet;
+    private @Nullable Set<GraphTransitionStub> stubSet;
 
     /**
      * Reconstructs the set of {@link nl.utwente.groove.lts.RuleTransitionStub}s from the
@@ -405,10 +428,7 @@ public class StateCache implements Cache {
 
             @Override
             protected int getCode(GraphTransitionStub stub) {
-                GraphTransitionKey keyEvent = getKey(stub);
-                return keyEvent == null
-                    ? 0
-                    : keyEvent.hashCode();
+                return getKey(stub).hashCode();
             }
 
             private GraphTransitionKey getKey(GraphTransitionStub stub) {
@@ -419,13 +439,14 @@ public class StateCache implements Cache {
 
     /** Returns the object keeping track of the explored matches of this state. */
     StateMatches getMatches() {
-        if (this.stateMatches == null) {
-            this.stateMatches = new StateMatches(this);
+        var result = this.stateMatches;
+        if (result == null) {
+            result = this.stateMatches = new StateMatches(this);
         }
-        return this.stateMatches;
+        return result;
     }
 
-    private StateMatches stateMatches;
+    private @Nullable StateMatches stateMatches;
 
     /** Factory method for a match collector. */
     protected MatchCollector createMatchCollector() {
@@ -461,51 +482,31 @@ public class StateCache implements Cache {
         boolean stateIsFull = state.isFull();
         assert stateIsFull
             || state.getActualFrame().getTransience() == state.getPrimeFrame().getTransience();
-        var knownInner = this.knownInner = state.isInner();
-        if (!knownInner || stateIsFull) {
-            this.backInner = this.forwInner = EMPTY_CACHE_SET;
-            this.backLaunch = EMPTY_TRANS_SET;
-        } else {
-            this.backInner = new HashSet<>();
-            this.backInner.add(this);
-            this.forwInner = new HashSet<>();
-            this.forwInner.add(this);
-            this.backLaunch = new HashSet<>();
-        }
+        this.knownInner = state.isInner();
         if (!state.getPrimeFrame().isInner()) {
             this.forwTarget = EMPTY_TARGET_SET;
-        } else if (stateIsFull) {
-            this.forwTarget = computeForwOuter();
-        } else {
-            this.forwTarget = new HashSet<>();
-            if (!knownInner) {
+        } else if (!stateIsFull) {
+            this.forwTarget = new LinkedHashSet<>();
+            if (!this.knownInner) {
                 this.forwTarget.add(new RecipeTarget(state));
             }
         }
-        this.backTransient = new HashSet<>();
-        int knownTransience = this.knownTransience = state.getActualFrame().getTransience();
+        // for a full state with an inner prime frame, the targets are
+        // recomputed on demand (see #getForwTarget)
+        this.knownTransience = state.getActualFrame().getTransience();
         this.knownAbsence = stateIsFull
             ? state.getAbsence()
-            : knownTransience;
-        if (!stateIsFull) {
-            this.forwTransient = new HashSet<>();
-            this.forwTransientOpen = new HashSet<>();
-            if (knownTransience > 0) {
-                this.backTransient.add(this);
-                this.forwTransient.add(this);
-                if (!state.isClosed()) {
-                    this.forwTransientOpen.add(this);
-                }
-            }
-        } else {
-            this.forwTransient = EMPTY_CACHE_SET;
-            this.forwTransientOpen = EMPTY_CACHE_SET;
-        }
+            : this.knownTransience;
     }
 
     /** Flag indicating that {@link #init()} has been invoked. */
     private boolean initialised = false;
 
+    /**
+     * Recomputes the reachable recipe targets of a full state whose prime frame
+     * is inner, by a forward search over the states created inside the recipe;
+     * used when the cache of such a state is recreated after having been collected.
+     */
     private Set<RecipeTarget> computeForwOuter() {
         assert getState().isFull() && getState().getPrimeFrame().isInner();
         Set<RecipeTarget> result = new LinkedHashSet<>();
@@ -517,45 +518,89 @@ public class StateCache implements Cache {
             assert source != null; // queue is non-empty
             var state = source.getState();
             assert state.getPrimeFrame().isInner();
-            if (state.isInner()) {
-                for (var trans : source.getState().getTransitions(Claz.NON_ABSENT)) {
-                    assert trans.isInnerStep();
-                    var target = trans.target();
-                    if (!known.add(target)) {
-                        if (target.getPrimeFrame().isInner()) {
-                            queue.add(target.getCache());
-                        } else {
-                            result.add(new RecipeTarget((RuleTransition) trans));
-                        }
+            if (!state.isInner()) {
+                // the state left the recipe through a verdict
+                result.add(new RecipeTarget(state));
+            }
+            // follow the steps of this recipe run, also from a state that left
+            // the recipe through a verdict after having generated them; the
+            // launches of other recipes from such a state do not belong to it
+            for (var trans : state.getTransitions(Claz.NON_ABSENT)) {
+                if (!(trans instanceof RuleTransition ruleTrans) || !ruleTrans.isInnerStep()
+                    || ruleTrans.getStep().isLaunch()) {
+                    continue;
+                }
+                var target = ruleTrans.target();
+                if (known.add(target)) {
+                    if (target.getPrimeFrame().isInner()) {
+                        queue.add(target.getCache());
+                    } else {
+                        result.add(new RecipeTarget(ruleTrans));
                     }
                 }
-            } else {
-                result.add(new RecipeTarget(state));
             }
         }
         return result;
     }
 
-    /** The backward reachable inner states. */
-    private Set<StateCache> backInner;
+    /*
+     * Bookkeeping of the transient region behind this state (gh #924).
+     *
+     * Full-ness and absence are derived from the direct successors only, and
+     * changes are propagated backwards over the direct predecessors: a state
+     * is full when it is closed and every transient successor is full or has
+     * become steady; its absence is the minimum of its own transience and the
+     * absence of its successors, which only ever decreases. Recipe targets
+     * are propagated backwards over the direct inner predecessors, to the
+     * launches. Cycles inside a transient region (loops in a recipe or atomic
+     * block) defeat the local full-ness rule, since no member of the cycle
+     * ever sees all its successors full; a closed state whose successors are
+     * all closed therefore searches forward and, if it finds no open state,
+     * declares the entire visited set full.
+     *
+     * The predecessor lists live in the caches of the non-full states, which
+     * are strongly referenced until they are full, so a garbage collection
+     * cannot lose them; an explicit clearing of the cache of a closed but not
+     * yet full transient state does lose them, as it did before.
+     */
 
-    /** The forward reachable inner states. */
-    private Set<StateCache> forwInner;
+    /**
+     * Sources of the partial transitions into this state that were registered
+     * while this state was transient and not full; they wait for this state to
+     * close and to become full or steady, and take over decreases of its absence.
+     */
+    private List<StateCache> preds = Collections.emptyList();
 
-    /** The backward reachable recipe launches. */
-    private Set<RuleTransition> backLaunch;
+    /** Number of registered transient successors that are not yet full or steady. */
+    private int pendingCount;
 
-    /** The forward reachable recipe targets. */
-    private Set<RecipeTarget> forwTarget;
+    /** Number of registered transient successors that are not yet closed, full or steady. */
+    private int openCount;
 
-    /** The backward reachable transient states, up to and including the first steady state. */
-    private Set<StateCache> backTransient;
+    /** Inner states with an inner step into this (inner-prime, non-full) state. */
+    private List<StateCache> innerPreds = Collections.emptyList();
 
-    /** The forward reachable transient states. */
-    private Set<StateCache> forwTransient;
+    /** Recipe launches into this (inner-prime, non-full) state. */
+    private List<RuleTransition> launches = Collections.emptyList();
 
-    /** The forward reachable transient open states. */
-    private Set<StateCache> forwTransientOpen;
+    /**
+     * Returns the recipe targets known to be reachable from this state; complete
+     * once the state is full. For a full state whose cache has been recreated,
+     * the targets are recomputed on first demand rather than at initialisation,
+     * so that the recreation of one cache does not recursively recompute the
+     * targets of all reachable inner states.
+     */
+    private Set<RecipeTarget> getForwTarget() {
+        var result = this.forwTarget;
+        if (result == null) {
+            result = this.forwTarget = computeForwOuter();
+        }
+        return result;
+    }
+
+    /** The recipe targets known to be reachable from this state; see {@link #getForwTarget()}.
+     * Only {@code null} for a full state with an inner prime frame, until first demanded. */
+    private @Nullable Set<RecipeTarget> forwTarget;
 
     /**
      * Notifies the cache of the addition of an outgoing partial transition.
@@ -569,69 +614,56 @@ public class StateCache implements Cache {
         if (target.getActualFrame().isRemoved()) {
             return;
         }
-        var targetCache = target.getCache();
-        // add recipe transitions
-        if (this.knownInner) {
-            for (var back : this.backLaunch) {
-                if (target.getPrimeFrame().isInner()) {
-                    targetCache.forwTarget.forEach(t -> addRecipeTransition(back, t));
-                } else {
-                    addRecipeTransition(back, new RecipeTarget(partial));
-                }
-            }
-        } else if (partial.getStep().isLaunch()) {
+        boolean targetFull = target.isFull();
+        // recipe transitions and targets
+        if (partial.getStep().isLaunch()) {
             if (target.getPrimeFrame().isInner()) {
-                targetCache.forwTarget.forEach(t -> addRecipeTransition(partial, t));
+                var targetCache = target.getCache();
+                targetCache.getForwTarget().forEach(t -> addRecipeTransition(partial, t));
+                if (!targetFull) {
+                    targetCache.launches = add(targetCache.launches, partial);
+                }
             } else {
                 // it's a single-step recipe transition
                 addRecipeTransition(partial, new RecipeTarget(partial));
             }
-        }
-        // modify the reachable inner and outer sets
-        if (target.getPrimeFrame().isInner()) {
-            var backInner = new HashSet<>(this.backInner);
-            if (!this.state.isInner()) {
-                for (var forw : targetCache.forwInner) {
-                    forw.backLaunch.add(partial);
-                }
-            } else if (!this.forwInner.contains(targetCache)) {
-                // if targetCache is already known, then the assignments below
-                // will have no effect
-                for (var forw : targetCache.forwInner) {
-                    forw.backInner.addAll(backInner);
-                    forw.backLaunch.addAll(this.backLaunch);
-                }
-                for (var back : backInner) {
-                    back.forwInner.addAll(targetCache.forwInner);
-                    back.forwTarget.addAll(targetCache.forwTarget);
-                }
-            }
         } else if (partial.isInnerStep()) {
-            var rTarget = new RecipeTarget(partial);
-            this.backInner.forEach(back -> back.forwTarget.add(rTarget));
-        }
-        // modify the absence level
-        var targetAbsence = target.getAbsence();
-        this.backTransient.forEach(back -> back.setAbsence(targetAbsence));
-        // modify the reachable transient sets
-        if (target.isTransient()) {
-            var targetForwTransient = new HashSet<>(targetCache.forwTransient);
-            if (getState().isTransient()) {
-                for (var back : this.backTransient) {
-                    back.forwTransient.addAll(targetForwTransient);
-                    back.forwTransientOpen.addAll(targetCache.forwTransientOpen);
+            // a non-launch inner step starts from a state created inside the
+            // recipe, which may meanwhile have left it through a verdict;
+            // the targets reached through the step count for the recipe
+            // transitions all the same
+            assert getState().getPrimeFrame().isInner();
+            if (target.getPrimeFrame().isInner()) {
+                var targetCache = target.getCache();
+                if (!targetFull) {
+                    targetCache.innerPreds = add(targetCache.innerPreds, this);
                 }
-                for (var forw : targetForwTransient) {
-                    forw.backTransient.addAll(this.backTransient);
-                }
+                targetCache.getForwTarget().forEach(this::addTarget);
             } else {
-                this.forwTransient.addAll(targetForwTransient);
-                this.forwTransientOpen.addAll(targetCache.forwTransientOpen);
-                for (var forw : targetForwTransient) {
-                    forw.backTransient.add(this);
-                }
+                // the step finishes the recipe
+                addTarget(new RecipeTarget(partial));
             }
         }
+        // absence
+        lowerAbsence(target.getAbsence());
+        // full-ness
+        if (target.isTransient() && !targetFull) {
+            var targetCache = target.getCache();
+            targetCache.preds = add(targetCache.preds, this);
+            this.pendingCount++;
+            if (!target.isClosed()) {
+                this.openCount++;
+            }
+        }
+    }
+
+    /** Adds an element to a list, replacing the shared empty list by a fresh one. */
+    static private <T> List<T> add(List<T> list, T elem) {
+        List<T> result = list.isEmpty()
+            ? new ArrayList<>(2)
+            : list;
+        result.add(elem);
+        return result;
     }
 
     /**
@@ -640,71 +672,182 @@ public class StateCache implements Cache {
      */
     void registerClosure() {
         init();
+        Deque<StateCache> agenda = new ArrayDeque<>();
+        // the predecessors are notified of the closure before a possible
+        // steadiness, which drops them
+        for (var pred : this.preds) {
+            pred.openCount--;
+        }
+        agenda.add(this);
+        agenda.addAll(this.preds);
         int transience = getState().getActualFrame().getTransience();
         if (transience < this.knownTransience) {
-            registerTransienceChange();
+            registerTransienceChange(agenda);
         }
-        testSetFull();
-        registerSteadyOrClosed();
-    }
-
-    /** Removes this cache from the {@link #forwTransientOpen} of all backward transients. */
-    private void registerSteadyOrClosed() {
-        this.backTransient.forEach(back -> back.removeFromForwTransientOpen(this));
-        removeFromForwTransientOpen(this);
-    }
-
-    /** Remove a given state from the {@link #forwTransientOpen} and possibly sets this state to full. */
-    private void removeFromForwTransientOpen(StateCache forw) {
-        if (this.forwTransientOpen.remove(forw)) {
-            testSetFull();
-        }
-    }
-
-    /**
-     * Sets this state to full, also modifying the inner and transient reachable sets.
-     */
-    private void testSetFull() {
-        assert !getState().isFull();
-        if (getState().isClosed() && this.forwTransientOpen.isEmpty()) {
-            getState().setFull(this.knownAbsence);
-            // reset the auxiliary sets, they are no longer needed
-            this.backInner.forEach(d -> d.forwInner.remove(this));
-            this.backInner = EMPTY_CACHE_SET;
-            //            assert this.forwInner.isEmpty() : "Full state %s reports reachable inner states %s"
-            //                .formatted(this, this.forwInner);
-            this.forwInner = EMPTY_CACHE_SET;
-            this.backLaunch = EMPTY_TRANS_SET;
-            this.backTransient.forEach(d -> d.forwTransient.remove(this));
-            this.backTransient = EMPTY_CACHE_SET;
-            //            assert this.forwTransient
-            //                .isEmpty() : "Full state %s reports reachable transient states %s"
-            //                    .formatted(this, this.forwTransient);
-            this.forwTransient = EMPTY_CACHE_SET;
-            this.forwTransientOpen = EMPTY_CACHE_SET;
-        }
+        runAgenda(agenda);
     }
 
     /** Notifies the cache of a decrease in transient depth of the control frame. */
     final void registerTransienceChange() {
         init();
-        var transience = getState().getActualFrame().getTransience();
+        Deque<StateCache> agenda = new ArrayDeque<>();
+        registerTransienceChange(agenda);
+        runAgenda(agenda);
+    }
+
+    /**
+     * Registers a decrease in transient depth, adding the caches whose
+     * full-ness may have changed as a consequence to a given agenda.
+     */
+    private void registerTransienceChange(Deque<StateCache> agenda) {
+        var state = getState();
+        var transience = state.getActualFrame().getTransience();
         assert transience < this.knownTransience;
         this.knownTransience = transience;
-        var state = getState();
         if (this.knownInner && !state.isInner()) {
-            // the state changed from inner to outer
+            // the state changed from inner to outer, so it is a recipe target itself
             this.knownInner = false;
-            // add incoming recipe transitions
-            var target = new RecipeTarget(state);
-            this.backLaunch.forEach(launch -> addRecipeTransition(launch, target));
-            // update reachable recipe targets
-            this.backInner.forEach(back -> back.forwTarget.add(target));
+            addTarget(new RecipeTarget(state));
         }
-        this.backTransient.forEach(back -> back.setAbsence(transience));
+        lowerAbsence(transience);
         if (transience == 0) {
-            registerSteadyOrClosed();
+            // the predecessors no longer wait for this state
+            notifyDone(agenda);
         }
+    }
+
+    /**
+     * Lowers the known absence to a given level, if that is lower than the
+     * current level, and propagates the decrease to the predecessors.
+     */
+    private void lowerAbsence(int absence) {
+        if (absence < this.knownAbsence) {
+            this.knownAbsence = absence;
+            Deque<StateCache> agenda = new ArrayDeque<>(this.preds);
+            while (!agenda.isEmpty()) {
+                var next = agenda.poll();
+                assert next != null; // agenda is non-empty
+                if (absence < next.knownAbsence) {
+                    next.knownAbsence = absence;
+                    agenda.addAll(next.preds);
+                }
+            }
+        }
+    }
+
+    /**
+     * Adds a recipe target to the known reachable targets of this state, and
+     * propagates it to the launches and inner predecessors.
+     */
+    private void addTarget(RecipeTarget target) {
+        if (!getForwTarget().add(target)) {
+            return;
+        }
+        Deque<StateCache> agenda = new ArrayDeque<>();
+        agenda.add(this);
+        while (!agenda.isEmpty()) {
+            var next = agenda.poll();
+            assert next != null; // agenda is non-empty
+            for (var launch : next.launches) {
+                addRecipeTransition(launch, target);
+            }
+            for (var pred : next.innerPreds) {
+                if (!pred.getState().isFull() && pred.getForwTarget().add(target)) {
+                    agenda.add(pred);
+                }
+            }
+        }
+    }
+
+    /** Tests the full-ness of the caches on a given agenda, until it is empty. */
+    private void runAgenda(Deque<StateCache> agenda) {
+        while (!agenda.isEmpty()) {
+            var next = agenda.poll();
+            assert next != null; // agenda is non-empty
+            next.testFull(agenda);
+        }
+    }
+
+    /**
+     * Sets this state to full if it is closed and its transient successors
+     * are done; if they are all closed but not all done, searches forward
+     * for a cycle of closed states.
+     * @param agenda receives the predecessors whose full-ness is to be retested
+     */
+    private void testFull(Deque<StateCache> agenda) {
+        var state = getState();
+        if (state.isFull() || !state.isClosed()) {
+            return;
+        }
+        if (this.pendingCount == 0) {
+            setFull(agenda);
+        } else if (this.openCount == 0) {
+            searchFull(agenda);
+        }
+    }
+
+    /**
+     * Searches forward from this (closed) state over the transient states
+     * that are not yet full; if none of them is open, they are all full.
+     */
+    private void searchFull(Deque<StateCache> agenda) {
+        assert getState().isClosed() && this.openCount == 0 && this.pendingCount > 0;
+        Set<StateCache> visited = new LinkedHashSet<>();
+        Deque<StateCache> stack = new ArrayDeque<>();
+        visited.add(this);
+        stack.push(this);
+        while (!stack.isEmpty()) {
+            var next = stack.pop();
+            if (next.openCount > 0) {
+                return;
+            }
+            for (var trans : next.getTransitionMap()) {
+                var target = trans.target();
+                if (!target.isTransient() || target.isFull()
+                    || target.getActualFrame().isRemoved()) {
+                    continue;
+                }
+                if (!target.isClosed()) {
+                    return;
+                }
+                var targetCache = target.getCache();
+                if (visited.add(targetCache)) {
+                    stack.push(targetCache);
+                }
+            }
+        }
+        for (var cache : visited) {
+            cache.setFull(agenda);
+        }
+    }
+
+    /** Sets this state to full, with the known absence, and notifies the predecessors. */
+    private void setFull(Deque<StateCache> agenda) {
+        assert getState().isClosed();
+        getState().setFull(this.knownAbsence);
+        notifyDone(agenda);
+        // no new targets can be found from a full state
+        this.innerPreds = Collections.emptyList();
+        this.launches = Collections.emptyList();
+    }
+
+    /**
+     * Notifies the predecessors that this state is done, i.e., full or steady,
+     * and drops them; if the state is not yet closed, its closure is thereby
+     * pre-empted.
+     */
+    private void notifyDone(Deque<StateCache> agenda) {
+        boolean closed = getState().isClosed();
+        for (var pred : this.preds) {
+            if (!pred.getState().isFull()) {
+                pred.pendingCount--;
+                if (!closed) {
+                    pred.openCount--;
+                }
+                agenda.add(pred);
+            }
+        }
+        this.preds = Collections.emptyList();
     }
 
     /** Adds a new recipe transition to the GTS, with a given initial (partial) rule transition
@@ -713,14 +856,6 @@ public class StateCache implements Cache {
     private void addRecipeTransition(RuleTransition partial, RecipeTarget target) {
         var trans = new RecipeTransition(partial, target.outValues(), target.state());
         getState().getGTS().addTransition(trans);
-    }
-
-    /** Sets the known absence to a given level, if it is lower than the current level. */
-    private void setAbsence(int newAbsence) {
-        init();
-        if (newAbsence < this.knownAbsence) {
-            this.knownAbsence = newAbsence;
-        }
     }
 
     /**
@@ -741,15 +876,25 @@ public class StateCache implements Cache {
     /** Known absence level. */
     private int knownAbsence;
 
-    /** Shared unmodifiable empty set of states. */
-    static private final Set<StateCache> EMPTY_CACHE_SET = Collections.emptySet();
-    /** Shared unmodifiable empty set of transitions. */
-    static private final Set<RuleTransition> EMPTY_TRANS_SET = Collections.emptySet();
     /** Shared unmodifiable empty set of recipe targets. */
     static private final Set<RecipeTarget> EMPTY_TARGET_SET = Collections.emptySet();
 
-    /** Combination of target state and out-parameter values. */
+    /** Combination of target state and out-parameter values.
+     * Equality is by content, including the out-parameter values, so that a
+     * target reached along different paths is propagated only once.
+     */
     private record RecipeTarget(Recipe recipe, HostNode[] outValues, GraphState state) {
+        @Override
+        public boolean equals(@Nullable Object obj) {
+            return this == obj || obj instanceof RecipeTarget other && this.recipe.equals(other.recipe)
+                && this.state.equals(other.state) && Arrays.equals(this.outValues, other.outValues);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(this.recipe, this.state, Arrays.hashCode(this.outValues));
+        }
+
         /** Creates a recipe target from a graph state whose prime call stack contains the
          * out-parameter values.
          */
@@ -833,7 +978,7 @@ public class StateCache implements Cache {
             if (primeFrame.getRecipe().get().getSignature().isEmpty()) {
                 result = EMPTY_OUT_VALUES;
             } else {
-                result = null;
+                HostNode @Nullable [] found = null;
                 // look for the last frame between the state's prime and actual frames
                 // that was still internal
                 var stack = target.getPrimeStack();
@@ -841,13 +986,16 @@ public class StateCache implements Cache {
                 var loc = primeFrame.getLocation();
                 for (var call : context.outIterable()) {
                     if (call.getCall().getUnit().getKind() == Kind.RECIPE) {
-                        result = loc.assignFinal2Par().lookup(stack);
+                        found = loc.assignFinal2Par().lookup(stack);
                         break;
                     } else {
                         stack = call.assignFinal2Target(loc).toPop().apply(stack);
                         loc = call.onFinish();
                     }
                 }
+                // the prime frame is inner, so the context stack holds a recipe call
+                assert found != null;
+                result = found;
             }
             return result;
         }

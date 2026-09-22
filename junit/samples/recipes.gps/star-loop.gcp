@@ -1,0 +1,9 @@
+// consumes taken Bs after creating an A; both Bs of the start graph are taken first,
+// so the star can end the recipe after zero, one or two delB steps
+recipe r() {
+  newA;
+  delB*;
+}
+
+newB; newB;
+r;

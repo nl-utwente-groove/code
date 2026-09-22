@@ -77,6 +77,17 @@ public class RecipeTest {
         testExploration("start-small", "alap-recipes", 6, 28, 24, 60);
     }
 
+    /** Recipes ending in a star: the recipe ends by verdict in a state that
+     * still has inner steps to further recipe ends (see the control programs). */
+    @Test
+    public void testStar() {
+        testExploration("start-small", "star", 4, 4, 3, 3);
+        testExploration("start-small", "star-launch", 6, 6, 5, 5);
+        // two Bs, taken in either order, then newA on either A and delB on
+        // either B: 8 recipe ends, reached after 0, 1 or 2 delB steps
+        testExploration("start", "star-loop", 12, 12, 12, 14);
+    }
+
     @Test
     public void testFull() {
         testExploration("start", "ab-recipes", 224, 736, 1888, 2368);
