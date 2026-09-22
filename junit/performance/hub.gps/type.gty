@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph role="type" edgeids="true" edgemode="directed" id="type">
+        <attr name="$version">
+            <string>curly</string>
+        </attr>
+        <node id="n0">
+            <attr name="layout">
+                <string>181 243 19 19</string>
+            </attr>
+        </node>
+        <node id="n1">
+            <attr name="layout">
+                <string>352 242 19 19</string>
+            </attr>
+        </node>
+        <edge from="n0" to="n0" id="e0">
+            <attr name="label">
+                <string>type:Hub</string>
+            </attr>
+        </edge>
+        <edge from="n0" to="n0" id="e1">
+            <attr name="label">
+                <string>int:leaves</string>
+            </attr>
+        </edge>
+        <edge from="n0" to="n0" id="e2">
+            <attr name="label">
+                <string>int:tokens</string>
+            </attr>
+        </edge>
+        <edge from="n0" to="n1" id="e3">
+            <attr name="label">
+                <string>to</string>
+            </attr>
+        </edge>
+        <edge from="n1" to="n1" id="e4">
+            <attr name="label">
+                <string>type:Leaf</string>
+            </attr>
+        </edge>
+        <edge from="n1" to="n1" id="e5">
+            <attr name="label">
+                <string>flag:token</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>
