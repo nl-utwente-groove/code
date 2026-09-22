@@ -1186,6 +1186,29 @@ recipe family. The function family has no long-tier size either, for the ordinar
 `fib-27` is about 1.6 million states and, like the counter's million, does not fit 8 GB
 of live GTS.
 
+**After gh #924 (2026-09-22 evening).** The parallel session that took finding 3.12
+replaced the transient closures of `StateCache` by local propagation over direct
+predecessor edges (branch `statecache-transient-closures`, merged to master and into this
+branch at `da54faa44`; the design and gates are in gh #924 and the commit body). The
+recipe family recalibrated on the desktop, single cold runs through the harness, one JVM
+per row, JDK 25.0.4.1, `-Xmx8g`, with the function program in the same session for the
+ratio:
+
+| start graph | discovered states | recipe s | function s | recipe retMB | kept |
+|---|---|---|---|---|---|
+| `fib-15` | 4 934 | 0.29 (was 19) | 0.30 | 42 | smoke (both) |
+| `fib-17` | 12 919 | 0.52 (was out of heap) | | 111 | |
+| `fib-20` | 54 729 | 1.13 | | 474 | |
+| `fib-22` | 143 284 | 2.49 | 2.21 | 1 256 | quick tier (both) |
+| `fib-25` | 606 964 | 12.3 | | 5 429 | fits 8 GB only |
+
+So the transient state now costs the same as a plain state (the `gen` column of `fib-22`
+is 1.7 s against 1.4 s, matching and isomorphism under 100 ms in both), and the recipe
+rows mirror the function rows: `fib-15` smoke and `fib-22` quick, the `fib-12` row
+dropped. Neither family has a long-tier size, for the ordinary reason above. Every
+fibonacci figure earlier in this note, and the recipe rows of the quick-tier table before
+the re-baseline below, predate the fix.
+
 **hub (added 2026-09-22)**, Arend's grammar for the large-graph axis: a star of `Leaf`
 nodes around one `Hub`, tokens as flags on the leaves, a `build` program that grows the
 star from a proto graph carrying the wanted sizes as attributes, and `run`, which moves

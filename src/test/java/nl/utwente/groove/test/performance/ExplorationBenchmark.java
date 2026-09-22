@@ -362,15 +362,16 @@ public class ExplorationBenchmark {
             // the whole recursion in transient states, so the stored GTS has
             // three states and the discovered count is the transient work;
             // the function program stores the same states as plain ones and
-            // is the control for the transience cost (finding 4.3.1): at
-            // fib-15 the recipe takes sixty times as long, and fib-17 as a
-            // recipe exhausts 8 GB where the function needs half a second,
-            // so there is no long-tier size for the recipe until that is
-            // fixed. The function family is bounded by the ordinary
-            // per-state cost: fib-25 (607k states) retains 5 GB and needs
-            // -Xmx8g, fib-27 (about 1.6M states) does not fit 8 GB
-            new Config("fib-12", "fibonacci.gps", "fib-12", "", 1164, 1164, Tier.SMOKE),
-            new Config("fib-15", "fibonacci.gps", "fib-15", "", 4934, 4934, Tier.QUICK),
+            // is the control for the transience cost (finding 4.3.1). Before
+            // gh #924 (the quadratic transient closures of StateCache, fixed
+            // on master 2026-09-22) the recipe took sixty times as long at
+            // fib-15 and exhausted 8 GB at fib-17; since the fix the two
+            // programs cost the same, so the pairs mirror each other. Both
+            // families are bounded by the ordinary per-state cost: fib-25
+            // (607k states) retains 5 GB and needs -Xmx8g, fib-27 (about
+            // 1.6M states) does not fit 8 GB, so neither has a long-tier size
+            new Config("fib-15", "fibonacci.gps", "fib-15", "", 4934, 4934, Tier.SMOKE),
+            new Config("fib-22", "fibonacci.gps", "fib-22", "", 143284, 143284, Tier.QUICK),
             new Config("fib-function-15", "fibonacci.gps", "fib-15", "fibonacci-function", "",
                 4934, 4933, Tier.SMOKE),
             new Config("fib-function-22", "fibonacci.gps", "fib-22", "fibonacci-function", "",
