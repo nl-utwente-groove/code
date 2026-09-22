@@ -85,15 +85,18 @@ public class ExploreSchemaTest {
     /** Tests that the schema check includes the cross-key consistency rules. */
     @Test
     public void testConsistencyCheck() throws Exception {
-        // structurally fine but inconsistent: next=random needs successor=all
-        var props = properties("next = random\nsuccessor = single\n");
+        // structurally fine but inconsistent: goal=none yields no results
+        var props = properties("goal = none\ncount = first\n");
         var errors = ExploreConfigSchema.INSTANCE.check(props);
         // pin the message, so that a structural error cannot satisfy this test
-        assertTrue(errors
-            .stream()
-            .anyMatch(e -> e.toString().contains("requires successor selection")),
+        assertTrue(errors.stream().anyMatch(e -> e.toString().contains("yields no results")),
                    errors.toString());
-        assertTrue(ExploreConfigSchema.INSTANCE.check(properties("next = random\n")).isEmpty());
+        assertTrue(ExploreConfigSchema.INSTANCE.check(properties("goal = none\n")).isEmpty());
+        // consistent but not realised by the engine: the schema check reports
+        // that as well, so the settings resource shows the error
+        errors = ExploreConfigSchema.INSTANCE.check(properties("successor = single\n"));
+        assertTrue(errors.stream().anyMatch(e -> e.toString().contains("not yet supported")),
+                   errors.toString());
     }
 
     /**
