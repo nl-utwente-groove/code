@@ -33,6 +33,8 @@ import nl.utwente.groove.control.Procedure;
 import nl.utwente.groove.control.term.CallTerm;
 import nl.utwente.groove.control.term.Derivation;
 import nl.utwente.groove.control.term.DerivationAttempt;
+import nl.utwente.groove.control.term.Fragment;
+import nl.utwente.groove.control.term.TemplateBuilder;
 import nl.utwente.groove.control.term.Term;
 import nl.utwente.groove.grammar.Action;
 import nl.utwente.groove.grammar.Callable;
@@ -166,7 +168,7 @@ public class Program implements Fixable {
     }
 
     /** Returns the body of a procedure of this program. */
-    Term getBody(Procedure proc) {
+    public Term getBody(Procedure proc) {
         return this.prototype.getBody(proc);
     }
 

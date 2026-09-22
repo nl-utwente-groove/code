@@ -14,14 +14,13 @@
  *
  * $Id: Program.java 5781 2016-08-02 14:27:32Z rensink $
  */
-package nl.utwente.groove.control.template;
+package nl.utwente.groove.control.term;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import nl.utwente.groove.control.Procedure;
-import nl.utwente.groove.control.term.Term;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.parse.FormatException;
 

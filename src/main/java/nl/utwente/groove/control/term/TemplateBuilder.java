@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.control.template;
+package nl.utwente.groove.control.term;
 
 import java.util.Objects;
 import java.util.ArrayList;
@@ -40,9 +40,13 @@ import nl.utwente.groove.control.NestedCall;
 import nl.utwente.groove.control.Position;
 import nl.utwente.groove.control.Position.Type;
 import nl.utwente.groove.control.Procedure;
-import nl.utwente.groove.control.term.Derivation;
-import nl.utwente.groove.control.term.DerivationAttempt;
-import nl.utwente.groove.control.term.Term;
+import nl.utwente.groove.control.template.Location;
+import nl.utwente.groove.control.template.NestedSwitch;
+import nl.utwente.groove.control.template.Program;
+import nl.utwente.groove.control.template.Relocation;
+import nl.utwente.groove.control.template.Switch;
+import nl.utwente.groove.control.template.SwitchAttempt;
+import nl.utwente.groove.control.template.Template;
 import nl.utwente.groove.grammar.Action;
 import nl.utwente.groove.grammar.CheckPolicy;
 import nl.utwente.groove.grammar.Rule;

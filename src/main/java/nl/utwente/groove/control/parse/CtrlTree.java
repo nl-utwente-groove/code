@@ -16,7 +16,7 @@ import nl.utwente.groove.control.CtrlArg;
 import nl.utwente.groove.control.CtrlType;
 import nl.utwente.groove.control.CtrlVar;
 import nl.utwente.groove.control.Procedure;
-import nl.utwente.groove.control.template.Fragment;
+import nl.utwente.groove.control.term.Fragment;
 import nl.utwente.groove.control.term.Term;
 import nl.utwente.groove.grammar.Action;
 import nl.utwente.groove.grammar.Callable;
