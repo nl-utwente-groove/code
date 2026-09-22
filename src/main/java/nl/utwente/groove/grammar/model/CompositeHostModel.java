@@ -36,16 +36,16 @@ public class CompositeHostModel extends ResourceModel<HostGraph> {
     /**
      * Constructs a composite type model from a single aspect graph.
      * @param grammar the underlying graph grammar
-     * @param source the explicit source aspect graph; if {@code null}, the source
-     * is implicit and derived from the active host graphs of the grammar.
+     * @param source the external source aspect graph; if {@code null}, the model
+     * is composed from the active host graphs stored in the grammar.
      */
     CompositeHostModel(GrammarModel grammar, @Nullable AspectGraph source) {
         super(grammar, HOST);
         addDependencies(TYPE, PROPERTIES);
-        this.implicit = source == null;
-        this.hostModels = this.implicit
-            ? null // to be initialised later
-            : Collections.<HostModel>singletonList(new HostModel(grammar, source));
+        this.external = source != null;
+        this.hostModels = this.external
+            ? Collections.<HostModel>singletonList(new HostModel(grammar, source))
+            : null; // to be initialised later
     }
 
     @Override
@@ -55,14 +55,16 @@ public class CompositeHostModel extends ResourceModel<HostGraph> {
         return result;
     }
 
-    /** Indicates if this composite model is implicit, i.e., derived from the active host graphs
-     * in the grammar.
+    /** Indicates if this composite model has an external source, i.e., a start graph
+     * that is not among the host graphs stored in the grammar (see
+     * {@link GrammarModel#setStartGraph}). If not, the model is composed from
+     * the active host graphs stored in the grammar, and follows their changes.
      */
-    public boolean isImplicit() {
-        return this.implicit;
+    public boolean isExternal() {
+        return this.external;
     }
 
-    private final boolean implicit;
+    private final boolean external;
 
     /** Indicates if there are multiple active host graphs underlying this composite one. */
     public boolean isMultiple() {
@@ -133,7 +135,7 @@ public class CompositeHostModel extends ResourceModel<HostGraph> {
     @Override
     void notifyWillRebuild() {
         super.notifyWillRebuild();
-        if (isImplicit()) {
+        if (!isExternal()) {
             this.hostModels = null;
             this.combinedModel.reset();
             this.source.reset();

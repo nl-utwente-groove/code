@@ -153,10 +153,67 @@
 							</target>
 						</configuration>
 					</execution>
+					<execution>
+						<!-- Release guard. The backend jar carries a yFiles licence
+						     at its class-path root, selected by yfiles.license.file
+						     in the backend pom and copied through unchanged by
+						     yGuard; it is what licenses the obfuscated library at
+						     run time. That property defaults to the distribution
+						     licence but is meant to be overridable, for a
+						     development build with the development watermark, and
+						     the development licence says
+						     <distribution>false</distribution>: the SLA does not
+						     allow it to be redistributed, so packaging one publishes
+						     it to everyone who downloads the zip. That is what
+						     reached the public 99.0.x test releases between
+						     2026-09-14 and 2026-09-21, when the backend build still
+						     packaged every .xml in the licence directory. The check
+						     therefore inspects what is about to be zipped, the
+						     obfuscated jars in target/lib that addon.xml takes,
+						     rather than trusting the property, and fails before the
+						     assembly runs. A distribution licence, saying true,
+						     passes; so does a jar with no licence at all, that being
+						     a run-time defect rather than a licence breach. -->
+						<id>check-license</id>
+						<phase>package</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<!-- extracted afresh, so that a stale extraction can
+								     neither mask nor fake a finding -->
+								<delete dir="${project.build.directory}/license-check" />
+								<unzip dest="${project.build.directory}/license-check">
+									<fileset dir="${project.build.directory}/lib" includes="*.jar" />
+									<patternset>
+										<include name="*.xml" />
+									</patternset>
+								</unzip>
+								<fileset id="nondistributable" dir="${project.build.directory}/license-check" erroronmissingdir="false">
+									<include name="*.xml" />
+									<containsregexp expression="&lt;distribution&gt;\s*false\s*&lt;/distribution&gt;" casesensitive="false" />
+								</fileset>
+								<pathconvert property="nondistributable.licenses" refid="nondistributable" pathsep="${line.separator}  " setonempty="false" />
+								<fail if="nondistributable.licenses">
+
+The add-on would carry a yFiles licence marked &lt;distribution&gt;false&lt;/distribution&gt;,
+which the yFiles SLA does not allow to be redistributed:
+
+  ${nondistributable.licenses}
+
+Only the distribution licence may be packaged. Rebuild the backend with
+yfiles.license.file left at its default; see the "How to build the yFiles
+add-on" section of release/README.md.
+								</fail>
+							</target>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 			<plugin>
-				<!-- declared after the obfuscation, which runs first in the same phase -->
+				<!-- declared after the obfuscation and the licence check, which run
+				     first in the same phase -->
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>3.3.0</version>
 				<executions>

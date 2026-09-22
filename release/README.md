@@ -169,7 +169,7 @@ elsewhere; the system property `groove.extensions.dir` overrides the location), 
 which GROOVE loads it at start-up
 (`nl.utwente.groove.util.Extensions`). The zip unpacks into a subdirectory `yfiles/`
 there, holding the two jars and the license notice. The yFiles license (an academic
-project license held by the University of Twente) has three consequences that shape
+project license held by the University of Twente) has four consequences that shape
 this build:
 
 - The library may be redistributed only in obfuscated form. The release reactor
@@ -186,6 +186,16 @@ this build:
 - The add-on may be used for non-commercial purposes only. `yfiles/include/YFILES-ADDON.md`
   states this and is placed in the add-on's directory; the download page must say
   the same next to the add-on.
+- The license file the add-on carries must itself be redistributable. The backend
+  packages the distribution license (`yfiles.license.file`, see below) and never the
+  development license, whose `<distribution>false</distribution>` forbids precisely
+  this. That property is meant to be overridable, for a development build with the
+  development watermark, so the `yfiles` module does not trust it: the `check-license`
+  execution of its `pom.xml` reads every license out of the obfuscated jars after the
+  obfuscation and before the assembly, and fails the build on one marked
+  non-distributable. The check exists because the public 99.0.x test releases of
+  2026-09 shipped the development license, in the days before the backend build chose
+  between the two.
 
 The add-on is built for one GROOVE version: the manifest of the backend jar records
 it (attribute `GROOVE-Version`, set by the backend's `pom.xml` from its `revision`), and a
@@ -230,9 +240,11 @@ standard zips, so that a release needs no manual step. For that it checks out th
 private repository `nl-utwente-groove/yfiles-lib` next to the code checkout, at the
 branch of the same name as the branch being released if there is one and at `main`
 otherwise (see "Deploying" above, on pre-releases). That
-repository holds two files in its `lib/` directory: `yfiles-for-java-swing.jar`, the plain library
-jar from the `lib` directory of the licensed distribution, and the runtime license file
-(the `.xml` file that `yfiles.license.dir` points to); the rest of that repository is
+repository holds three files in its `lib/` directory: `yfiles-for-java-swing.jar`, the plain library
+jar from the `lib` directory of the licensed distribution, and the two license files
+yWorks issued with it, of which the backend's build packages the distribution license
+(`yfiles.license.file` in its `pom.xml`, by default `com.yworks.yfiles.java.license.xml`)
+and never the development license; the rest of that repository is
 the source of the backend itself, its root project, which the yFiles license
 does not allow to be public. The workflow installs the jar into
 the runner's local Maven repository under the coordinates of that repository's
@@ -246,7 +258,7 @@ The checkout authenticates with the repository secret `YFILES_LIB_TOKEN`, a
 fine-grained personal access token of the licensed developer with read access to
 `yfiles-lib` only (Contents: read). Under the one-seat project license, nobody but
 that developer and this token may read the private repository. A new library version
-means a new jar and license file there, and a new `yfiles.version` in both
+means a new jar and new license files there, and a new `yfiles.version` in both
 the `pom.xml` of that repository and `release/yfiles/pom.xml` (here).
 
 The pull-request build (`maven.yml`) does not use the profile: secrets are not

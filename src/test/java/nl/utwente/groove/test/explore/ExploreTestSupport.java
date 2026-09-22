@@ -22,6 +22,7 @@ import nl.utwente.groove.explore.Exploration;
 import nl.utwente.groove.explore.config.ExploreConfig;
 import nl.utwente.groove.explore.config.ExploreTypeConverter;
 import nl.utwente.groove.grammar.Grammar;
+import nl.utwente.groove.grammar.model.GrammarModel;
 import nl.utwente.groove.io.Groove;
 import nl.utwente.groove.lts.GTS;
 import nl.utwente.groove.util.AIGenerated;
@@ -45,15 +46,22 @@ public class ExploreTestSupport {
     /** Location of the sample grammars used by the exploration tests. */
     public static final String INPUT_DIR = "junit/samples";
 
+    /** Loads a sample grammar model by name. */
+    public static GrammarModel loadGrammarModel(String name) throws Exception {
+        return Groove.loadGrammar(INPUT_DIR + "/" + name);
+    }
+
     /** Loads a sample grammar by name. */
     public static Grammar loadGrammar(String name) throws Exception {
-        return Groove.loadGrammar(INPUT_DIR + "/" + name).toGrammar();
+        return loadGrammarModel(name).toGrammar();
     }
 
     /**
      * Explores a fresh GTS over a given grammar with a given (parsed)
      * configuration, under a fixed master seed (relevant for the random
-     * orders), and returns the played exploration.
+     * orders), and returns the played exploration. The configuration
+     * must not override the algebra family, which is realised by the
+     * grammar (use {@link #explore(GrammarModel, String)} for that).
      */
     public static Exploration explore(Grammar grammar, String config) throws Exception {
         Randomness.setMasterSeed(42);
@@ -62,5 +70,17 @@ public class ExploreTestSupport {
             .toExploreType(ExploreConfig.parse(config))
             .newExploration(gts, null)
             .play();
+    }
+
+    /**
+     * Explores a fresh GTS over the grammar of a given model with a given
+     * (parsed) configuration, under a fixed master seed, and returns the
+     * played exploration. The grammar is compiled through the exploration
+     * type, so that the configuration's algebra feature takes effect.
+     */
+    public static Exploration explore(GrammarModel model, String config) throws Exception {
+        Randomness.setMasterSeed(42);
+        var type = ExploreTypeConverter.toExploreType(ExploreConfig.parse(config));
+        return type.newExploration(type.newGTS(model), null).play();
     }
 }

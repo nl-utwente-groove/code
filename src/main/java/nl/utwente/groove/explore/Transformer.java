@@ -116,8 +116,12 @@ public class Transformer {
      * exploration was halted because the match bound was exceeded
      */
     public ExploreResult explore() throws FormatException {
-        Grammar grammar = getGrammarModel().toGrammar();
+        // the grammar is compiled under the exploration's property
+        // overrides (algebra family); the GTS records the model's own family
+        // so that the override can be told apart later
+        Grammar grammar = getExploreType().toGrammar(getGrammarModel());
         GTS gts = getFreshGTS(grammar);
+        gts.setBaseAlgebraFamily(getGrammarModel().getProperties().getAlgebraFamily());
         Exploration exploration = getExploreType().newExploration(gts, null);
         for (ExplorationListener listener : getListeners()) {
             exploration.addListener(listener);
