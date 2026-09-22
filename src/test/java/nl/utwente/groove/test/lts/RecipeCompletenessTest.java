@@ -79,6 +79,8 @@ public class RecipeCompletenessTest {
             new Case("junit/samples/recipes.gps", "alap-recipes", "start-small", true),
             new Case("junit/samples/recipes.gps", "atomic", "start-small", false),
             new Case("junit/samples/recipes.gps", "star", "start-small", true),
+            new Case("junit/samples/recipes.gps", "star-loop", "start", true),
+            new Case("junit/samples/recipes.gps", "star-launch", "start-small", true),
             new Case("junit/samples/recipes_conditions.gps", "recipe", "start", true),
             new Case("junit/samples/transactions.gps", "control", "start", true),
             new Case("junit/samples/transactions.gps", "control1", "start", true),

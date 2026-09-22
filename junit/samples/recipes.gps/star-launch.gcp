@@ -1,0 +1,14 @@
+// the state in which r ends by the star verdict also launches q;
+// the delA step of q must not count as a step of r
+recipe r() {
+  newA;
+  delB*;
+}
+
+recipe q() {
+  delA;
+}
+
+newB;
+r;
+q;
