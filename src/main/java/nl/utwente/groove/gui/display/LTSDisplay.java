@@ -574,9 +574,7 @@ public class LTSDisplay extends Display
         if (changes.contains(STATE) || changes.contains(MATCH)) {
             if (getViewModel() != null) {
                 GraphState state = source.getState();
-                var error = state != null && state.isError();
-                var internal = state != null && state.isInner();
-                getCanvas().setBackground(Values.getStateBackground(error, internal));
+                refreshBackground();
                 GraphTransition transition = source.getTransition();
                 if (getController().setActive(state, transition)) {
                     getController().doLayout(false);
@@ -608,13 +606,22 @@ public class LTSDisplay extends Display
     private final MyLTSListener ltsListener = new MyLTSListener();
 
     /**
-     * Refreshes the background colour, based on the question whether the LTS is
-     * filtered or incompletely displayed.
+     * Refreshes the background colour: the filter colour if the LTS is
+     * filtered or incompletely displayed, otherwise the colour reflecting
+     * the status (error, internal) of the selected state.
+     * This is the only place that sets the canvas background, so that the
+     * two aspects cannot overwrite each other.
      */
     public void refreshBackground() {
-        Color background = getController().isComplete()
-            ? Values.STATE_BACKGROUND
-            : Values.FILTER_BACKGROUND;
+        Color background;
+        if (getController().isComplete()) {
+            GraphState state = getSimulatorModel().getState();
+            var error = state != null && state.isError();
+            var internal = state != null && state.isInner();
+            background = Values.getStateBackground(error, internal);
+        } else {
+            background = Values.FILTER_BACKGROUND;
+        }
         getGraphPanel().setEnabledBackground(background);
         ((NumberEditor) getBoundSpinner().getEditor())
             .getTextField()
