@@ -29,6 +29,9 @@ import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 
+import org.eclipse.jdt.annotation.NonNullByDefault;
+import org.eclipse.jdt.annotation.Nullable;
+
 import nl.utwente.groove.control.Assignment;
 import nl.utwente.groove.control.NestedCall;
 import nl.utwente.groove.grammar.Action;
@@ -60,6 +63,7 @@ import nl.utwente.groove.util.collect.TreeHashSet;
  * @author Arend Rensink
  * @version $Revision$
  */
+@NonNullByDefault
 public class StateCache implements Cache {
     /**
      * Constructs a cache for a given state.
@@ -110,8 +114,8 @@ public class StateCache implements Cache {
         } else {
             return new SetView<>(getTransitionMap()) {
                 @Override
-                public boolean approves(Object obj) {
-                    return obj instanceof GraphTransition && claz.admits((GraphTransition) obj);
+                public boolean approves(@Nullable Object obj) {
+                    return obj instanceof GraphTransition trans && claz.admits(trans);
                 }
             };
         }
@@ -131,10 +135,11 @@ public class StateCache implements Cache {
      *         {@link GraphNextState}
      */
     final DeltaHostGraph getGraph() {
-        if (this.graph == null) {
-            this.graph = computeGraph();
+        var result = this.graph;
+        if (result == null) {
+            result = this.graph = computeGraph();
         }
-        return this.graph;
+        return result;
     }
 
     /** Indicates if this cache currently stores a graph. */
@@ -143,27 +148,29 @@ public class StateCache implements Cache {
     }
 
     /** Cached graph for this state. */
-    private DeltaHostGraph graph;
+    private @Nullable DeltaHostGraph graph;
 
     /**
      * Lazily creates and returns the delta with respect to the
      * parent state.
      */
     final DeltaApplier getDelta() {
-        if (this.delta == null) {
-            this.delta = createDelta();
+        var result = this.delta;
+        if (result == null) {
+            result = this.delta = createDelta();
         }
-        return this.delta;
+        assert result != null : "State %s has no parent, hence no delta".formatted(this.state);
+        return result;
     }
 
     /** The delta with respect to the state's parent. */
-    private DeltaApplier delta;
+    private @Nullable DeltaApplier delta;
 
     /**
      * Callback factory method for a rule application on the basis of this
-     * state.
+     * state; returns {@code null} if the state has no parent.
      */
-    private DeltaApplier createDelta() {
+    private @Nullable DeltaApplier createDelta() {
         DeltaApplier result = null;
         if (this.state instanceof DefaultGraphNextState state) {
             HostGraph source = state.source().getGraph();
@@ -335,14 +342,15 @@ public class StateCache implements Cache {
      * outgoing transitions of this state.
      */
     KeySet<GraphTransitionKey,GraphTransition> getTransitionMap() {
-        if (this.transitionMap == null) {
-            this.transitionMap = computeTransitionMap();
+        var result = this.transitionMap;
+        if (result == null) {
+            result = this.transitionMap = computeTransitionMap();
         }
-        return this.transitionMap;
+        return result;
     }
 
     /** Cached map from events to target transitions. */
-    private KeySet<GraphTransitionKey,GraphTransition> transitionMap;
+    private @Nullable KeySet<GraphTransitionKey,GraphTransition> transitionMap;
 
     /**
      * Computes a mapping from the events to the
@@ -352,7 +360,8 @@ public class StateCache implements Cache {
         assert this.initialised;
         KeySet<GraphTransitionKey,GraphTransition> result = new KeySet<>() {
             @Override
-            protected GraphTransitionKey getKey(Object value) {
+            protected GraphTransitionKey getKey(@Nullable Object value) {
+                assert value != null; // the set holds transitions only
                 return ((GraphTransition) value).getKey();
             }
         };
@@ -370,10 +379,11 @@ public class StateCache implements Cache {
      * initialised.
      */
     Set<GraphTransitionStub> getStubSet() {
-        if (this.stubSet == null) {
-            this.stubSet = computeStubSet();
+        var result = this.stubSet;
+        if (result == null) {
+            result = this.stubSet = computeStubSet();
         }
-        return this.stubSet;
+        return result;
     }
 
     /**
@@ -393,7 +403,7 @@ public class StateCache implements Cache {
      * The set of outgoing transitions computed for the underlying graph,
      * for every class of graph transitions.
      */
-    private Set<GraphTransitionStub> stubSet;
+    private @Nullable Set<GraphTransitionStub> stubSet;
 
     /**
      * Reconstructs the set of {@link nl.utwente.groove.lts.RuleTransitionStub}s from the
@@ -418,10 +428,7 @@ public class StateCache implements Cache {
 
             @Override
             protected int getCode(GraphTransitionStub stub) {
-                GraphTransitionKey keyEvent = getKey(stub);
-                return keyEvent == null
-                    ? 0
-                    : keyEvent.hashCode();
+                return getKey(stub).hashCode();
             }
 
             private GraphTransitionKey getKey(GraphTransitionStub stub) {
@@ -432,13 +439,14 @@ public class StateCache implements Cache {
 
     /** Returns the object keeping track of the explored matches of this state. */
     StateMatches getMatches() {
-        if (this.stateMatches == null) {
-            this.stateMatches = new StateMatches(this);
+        var result = this.stateMatches;
+        if (result == null) {
+            result = this.stateMatches = new StateMatches(this);
         }
-        return this.stateMatches;
+        return result;
     }
 
-    private StateMatches stateMatches;
+    private @Nullable StateMatches stateMatches;
 
     /** Factory method for a match collector. */
     protected MatchCollector createMatchCollector() {
@@ -590,8 +598,9 @@ public class StateCache implements Cache {
         return result;
     }
 
-    /** The recipe targets known to be reachable from this state; see {@link #getForwTarget()}. */
-    private Set<RecipeTarget> forwTarget;
+    /** The recipe targets known to be reachable from this state; see {@link #getForwTarget()}.
+     * Only {@code null} for a full state with an inner prime frame, until first demanded. */
+    private @Nullable Set<RecipeTarget> forwTarget;
 
     /**
      * Notifies the cache of the addition of an outgoing partial transition.
@@ -731,7 +740,7 @@ public class StateCache implements Cache {
      * propagates it to the launches and inner predecessors.
      */
     private void addTarget(RecipeTarget target) {
-        if (!this.forwTarget.add(target)) {
+        if (!getForwTarget().add(target)) {
             return;
         }
         Deque<StateCache> agenda = new ArrayDeque<>();
@@ -743,7 +752,7 @@ public class StateCache implements Cache {
                 addRecipeTransition(launch, target);
             }
             for (var pred : next.innerPreds) {
-                if (!pred.getState().isFull() && pred.forwTarget.add(target)) {
+                if (!pred.getState().isFull() && pred.getForwTarget().add(target)) {
                     agenda.add(pred);
                 }
             }
@@ -876,7 +885,7 @@ public class StateCache implements Cache {
      */
     private record RecipeTarget(Recipe recipe, HostNode[] outValues, GraphState state) {
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             return this == obj || obj instanceof RecipeTarget other && this.recipe.equals(other.recipe)
                 && this.state.equals(other.state) && Arrays.equals(this.outValues, other.outValues);
         }
@@ -969,7 +978,7 @@ public class StateCache implements Cache {
             if (primeFrame.getRecipe().get().getSignature().isEmpty()) {
                 result = EMPTY_OUT_VALUES;
             } else {
-                result = null;
+                HostNode @Nullable [] found = null;
                 // look for the last frame between the state's prime and actual frames
                 // that was still internal
                 var stack = target.getPrimeStack();
@@ -977,13 +986,16 @@ public class StateCache implements Cache {
                 var loc = primeFrame.getLocation();
                 for (var call : context.outIterable()) {
                     if (call.getCall().getUnit().getKind() == Kind.RECIPE) {
-                        result = loc.assignFinal2Par().lookup(stack);
+                        found = loc.assignFinal2Par().lookup(stack);
                         break;
                     } else {
                         stack = call.assignFinal2Target(loc).toPop().apply(stack);
                         loc = call.onFinish();
                     }
                 }
+                // the prime frame is inner, so the context stack holds a recipe call
+                assert found != null;
+                result = found;
             }
             return result;
         }
