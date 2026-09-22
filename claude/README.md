@@ -22,7 +22,6 @@ Status lines below are as of 2026-09-11.
 | [phase-3-editor.md](phase-3-editor.md) | Phase 3 of gh #909: the editor. Design and slice record, in progress. |
 | [yfiles-distribution-options.md](yfiles-distribution-options.md) | What a release consists of now that a license-restricted yFiles edition exists: facts, options, decision. |
 | [module-split-plan.md](module-split-plan.md) | gh #887, Maven module split. Phases 1–4 (preparatory decoupling) on master; phase 5, the split itself, not started. The yFiles add-on built the service-discovery and second-artifact machinery along a different seam; rescope proposed on the issue. |
-| [module-exports.md](module-exports.md) | What `module-info` exports now that 8.0.0 keeps it: the export list, why each forced export is there, how the `gui.view` leak was closed by giving the controllers a host context (item 1, merged 2026-09-21 with `view-controller-context`), and the restructurings that would trim further: item 2 (one `cli` package) in progress on branch `cli-package`, items 3 and 4 open. |
 | [io-refactor-plan.md](io-refactor-plan.md) | Four-phase `io` plan of 2026-07-26. Phases 1–3 (conceptual layer removed, io simplified, Ecore porter) on master; phase 4 (constraint rules) not started. gh #907, #558 open. |
 | [gh763-810-plan.md](gh763-810-plan.md) | Composite-graph error tracing, gh #763 (gh #810 closed as duplicate). Plan only, none of its six commits done. |
 | [priority-symmetric-choice.md](priority-symmetric-choice.md) | gh #880, priority-aware symmetric choice in control. Design points only, not started; interim gh #756 guard is on master. |
@@ -51,6 +50,7 @@ Finished work, kept for the design rationale and rejected alternatives. Grouped 
 | [created-edge-pooling.md](archive/created-edge-pooling.md) | Cross-event pooling of content-equal created edges, gh #905. Merged 2026-08-31. |
 | [rete-retirement.md](archive/rete-retirement.md) | RETE matching engine removed 2026-07-20; tag `rete-final` marks the last tree with it. |
 | [module-exports-state.md](archive/module-exports-state.md) | Hand-over state for the export work (three branches, merge order, session B). All landed by 2026-09-22; superseded by `module-exports.md`. |
+| [module-exports.md](archive/module-exports.md) | What `module-info` exports now that 8.0.0 keeps it, the reasoning per package, and the four restructurings that trimmed it (controller context, `cli` package, `control.term` split, `util.collect` unexported). All merged by 2026-09-22. |
 
 **Exploration**
 

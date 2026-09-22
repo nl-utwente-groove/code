@@ -17,7 +17,7 @@ decision has since been taken: keep, see the update below.*
 deliberate contract: exports cut from 74 to about 50, no `gui.*` but the backend
 SPI tier (`gui.view`, `gui.view.cell`, `gui.look`, `gui.layout`), `prolog.builtin.*`
 qualified to `gnuprologjava`, `-Xlint:exports` in the pom as the guard; the
-reasoning per package is in `claude/module-exports.md`. For phase 5 this means the
+reasoning per package is in `claude/archive/module-exports.md`. For phase 5 this means the
 descriptor is load-bearing rather than inert: the SPI tier must be exported for
 GROOVE to run on the module path with an extension jar, the Prolog engine needs
 the qualified exports, and the three services are declared in it. A split has to

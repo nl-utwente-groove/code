@@ -1,10 +1,12 @@
 # Module exports: what the library promises
 
-*Status (2026-09-22): `module-exports` and its follow-up `view-controller-context`
-(item 1) are merged to master, session B is merged into yfiles-lib `main`, and
-master compiles with no `exports` warning; the descriptor comment was brought in
-line with this note the same day. Items 2 to 4 under "Open items" remain open;
-item 2 is in progress on branch `cli-package`.*
+*Status (2026-09-22): all landed. The export trim (`module-exports`), the
+controller context (`view-controller-context`, item 1), the housekeeping, the
+`cli` package (item 2, `cli-package`), the `control.term` split (item 3,
+`control-term-split`) and the `util.collect` narrowing (item 4,
+`util-collect-exports`) are on master, session B is merged into yfiles-lib
+`main`, and the descriptor compiles with no `exports` warning. Nothing here is
+open; the only expected follow-up is extending the export list on request.*
 
 *Branch `module-exports`, 2026-09-20. Context: 8.0.0 is the first
 release whose jar keeps its `module-info` (earlier releases stripped it because of

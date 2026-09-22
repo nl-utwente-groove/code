@@ -49,7 +49,7 @@ module nl.utwente.groove {
     //    implements/extends these types, so they must be exported for GROOVE
     //    to run from the module path (ExtensionsTest). The controllers reach the
     //    hosting tool only through GraphViewContext, so no Simulator type occurs
-    //    in this tier; see claude/module-exports.md
+    //    in this tier; see claude/archive/module-exports.md
     exports nl.utwente.groove.gui.view;
     exports nl.utwente.groove.gui.view.cell;
     exports nl.utwente.groove.gui.look;
