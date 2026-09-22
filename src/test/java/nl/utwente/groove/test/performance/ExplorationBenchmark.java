@@ -330,16 +330,18 @@ public class ExplorationBenchmark {
                 7737099, Tier.LONG),
             // a counter from 0 to a bound and back: one state per value, so
             // the pure algebra path (findings 4.2.1 to 4.2.3) without matching
-            // or isomorphism costs. A BigInteger row is wanted but the
+            // or isomorphism costs. Since 2026-09-22 the probe-odd rule adds a
+            // self-loop per odd state and constructs an ErrorValue (division
+            // by zero) per even one, which puts 4.2.3 on the path. A BigInteger row is wanted but the
             // exploration key "algebra=big" explores to a single state
             // (gh #923) while the grammar property works, so it waits for
             // that fix
-            new Config("count-10000", "attribute-count-to-n.gps", "bound-10000", "", 10001, 20001,
+            new Config("count-10000", "attribute-count-to-n.gps", "bound-10000", "", 10001, 25001,
                 Tier.SMOKE),
             new Config("count-100000", "attribute-count-to-n.gps", "bound-100000", "", 100001,
-                200001, Tier.QUICK),
+                250001, Tier.QUICK),
             new Config("count-300000", "attribute-count-to-n.gps", "bound-300000", "", 300001,
-                600001, Tier.QUICK),
+                750001, Tier.QUICK),
             // recursive fibonacci, the naive exponential recursion by design,
             // once as a recipe and once as a function over the same rules and
             // start graphs. The recipe (the grammar's default program) keeps
@@ -362,9 +364,9 @@ public class ExplorationBenchmark {
             // the BigInteger algebra on the counter, for the boxed-value path
             // of 4.2.1 to 4.2.3 under arbitrary precision; unblocked by gh #923
             new Config("count-100000-big", "attribute-count-to-n.gps", "bound-100000",
-                "algebra=big", 100001, 200001, Tier.QUICK),
+                "algebra=big", 100001, 250001, Tier.QUICK),
             new Config("count-300000-big", "attribute-count-to-n.gps", "bound-300000",
-                "algebra=big", 300001, 600001, Tier.QUICK),
+                "algebra=big", 300001, 750001, Tier.QUICK),
             // rows added 2026-09-22 with the long-run tier, calibrated on the
             // desktop at -Xmx8g (single cold runs, table in the note); the
             // quick ones first: a larger equality-collapse run than
@@ -395,7 +397,7 @@ public class ExplorationBenchmark {
                 338688, 7451136, Tier.LONG),
             // the counter at twice the quick size, for its superlinear allocation
             new Config("count-600000", "attribute-count-to-n.gps", "bound-600000", "", 600001,
-                1200001, Tier.LONG));
+                1500001, Tier.LONG));
 
     /** Returns the benchmark set. */
     public static List<Config> getConfigs() {

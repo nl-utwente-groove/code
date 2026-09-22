@@ -1070,9 +1070,37 @@ first suspect; unmeasured). A BigInteger row was planned on the same start graph
 **the exploration key `algebra=big` is broken**: with it the `Generator` explores
 `bound-10000` to a single state, while `-D algebraFamily=big` (the grammar property)
 gives the full 10 001; presumably the start graph keeps the grammar family's value nodes
-and the rules' constants are re-interpreted, so nothing matches. Filed as gh #923; the
-row waits for the fix. **Fibonacci's transience cost is a finding; its state count is
-not.** The grammar computes fib(x) by the naive exponential recursion on purpose, so the
+and the rules' constants are re-interpreted, so nothing matches. Filed as gh #923, fixed the same
+day; the rows are in (see "The long-run tier").
+
+**The `probe-odd` rule (added 2026-09-22)** puts `ErrorValue` construction on the path
+of every counter row, for 4.2.3. It tests that the value is odd by dividing 1 by
+`value mod 2`, so every even state constructs an error (a division by zero: the
+`ArithmeticException` thrown by the algebra plus the `ErrorValue` wrapping it, two stack
+traces) and every odd state gets a self-loop, the rule modifying nothing. States are
+unchanged, transitions rose by half the states (re-pinned). Cost of the probe:
+`count-100000` and its BigInteger twin with and without the rule, desktop, 2 warm-ups
+and 3 runs at `-Xmx8g`, one JVM per pair, the with-probe pair run before and after the
+without-probe pair:
+
+| | without | with, before | with, after |
+|---|---|---|---|
+| `count-100000` med ms | 5 145 | 5 518 | 5 328 |
+| `count-100000` match ms | 301 | 504 | 451 |
+| `count-100000` allocMB | 41 126 | 41 581 | 41 583 |
+| `count-100000-big` med ms | 5 598 | 5 936 | 6 211 |
+| `count-100000-big` match ms | 257 | 646 | 605 |
+| `count-100000-big` allocMB | 41 157 | 41 656 | 41 655 |
+
+So the probe costs 4 to 11 % of the row: 150 to 350 ms in the matching column for
+100 000 match attempts and 50 000 errors, and 450 to 500 MB of allocation, some 9 KB
+per error, which is the two stack traces. That is the size of the signal a fix of 4.2.3
+can show here, a few per cent of time and half a gigabyte per 50 000 errors; the rest
+of the probe's cost is the 50 000 extra transitions. Every counter figure earlier in
+this note, including the `count-600000` row of the long-tier baseline, predates the
+probe (`count-600000` with it: 131 s in a single cold run, transitions 1 500 001); the
+quick-tier re-baseline of the state file replaces them. **Fibonacci's transience cost is a
+finding; its state count is not.** The grammar computes fib(x) by the naive exponential recursion on purpose, so the
 number of states grows with fib(x), about 1.6-fold per step, under any of its three
 control programs. The default, `fibonacci-recipe`, wraps the recursion in a recipe: the
 stored GTS has three states and all the work is in transient states, which the harness
@@ -1286,6 +1314,8 @@ exercise together:
 - **Attribute-heavy state spaces** for 4.2.1 to 4.2.3: `attribute-count-to-n` and
   `fibonacci` bounded to large N, plus a grammar whose guards probe undefined
   operations (division, `ite` over errors) so `ErrorValue` construction is on the path.
+  (Covered since 2026-09-22: the counter's `probe-odd` rule, see "The performance
+  grammar set".)
 - **NAC-heavy matching** for 3.3 and 4.1.1: `car-platooning start-18`,
   `circular-buffer`, `ferryman`; monitor `HostFactory` edge count growth across the run
   for 3.3.

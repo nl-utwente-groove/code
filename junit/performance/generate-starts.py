@@ -161,7 +161,8 @@ def leader_election(n):
 def count_to_n(bound):
     """The counter of attribute-count-to-n at 0 with the given bound: the
     state space is one state per value, so it grows linearly in the bound
-    and measures the pure algebra path."""
+    and measures the pure algebra path. The probe-odd rule adds a self-loop
+    per odd state and an ErrorValue (division by zero) per even one."""
     g = Graph("bound-%d" % bound)
     counter = g.node("counter", "let:bound=%d" % bound)
     g.edge(counter, "this", g.node("int:0"))

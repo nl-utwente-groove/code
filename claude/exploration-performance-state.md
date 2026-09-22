@@ -79,11 +79,13 @@ than the eight copied samples do. Agreed order, by coverage gained per hour:
 1. Done: `leader-election` ring (symmetry, finding 5.6): `ring-8/14/16/18` generated,
    hand-drawn graphs dropped (the `-init` ones were dead: `type:`/`flag:` prefixes the
    rules do not use), four harness rows, calibration in the note.
-2. Done except the `ErrorValue` rule: Arend's copies of `attribute-count-to-n` and
+2. Done: Arend's copies of `attribute-count-to-n` and
    `fibonacci` take the size from a `let:` attribute of the start graph; generated
    `bound-10000/100000/300000` and `fib-12/15`, five harness rows, calibration in the
-   note. Not done: a guarded-division rule so `ErrorValue` is on the path, and the
-   `algebra=big` row, which waited for gh #923; the fix landed and the rows
+   note. The guarded-division rule `probe-odd` (2026-09-22) puts `ErrorValue`
+   construction on the path of every counter row (a self-loop per odd state, an error
+   per even one; states unchanged, transitions re-pinned). The
+   `algebra=big` row waited for gh #923; the fix landed and the rows
    `count-100000-big` and `count-300000-big` are in since 2026-09-22 (the harness builds
    its GTS through `ExploreType.newGTS` now). Surprises, both in the
    note: fibonacci's transient states cost hundreds of times a plain state and `fib-17`
