@@ -160,11 +160,8 @@ reports no `exports` warning at all.
 1. ~~**`gui.view` as a backend SPI tier.**~~ **Done**, 2026-09-21, on branch
    `view-controller-context` off this one, by composition rather than by the
    interfaces of the session proposal below: see "Item 1 as built".
-2. **CLI tools into one `cli` package** together with `util.cli`: `Generator`,
-   `CTLModelChecker`, `PrologChecker`, `OperatorLister`, `Imager`. `explore`,
-   `prolog` and `algebra` then stop mentioning picocli, `util.cli` goes
-   unexported, and the exported CLI surface is one package. This is the `cli`
-   seam of the module-split plan.
+2. ~~**CLI tools into one `cli` package**~~ **Done**, 2026-09-22, branch
+   `cli-package`: see "Item 2 as built".
 3. **`control.template` mixes compile time and run time**: `Program`,
    `Fragment`, `TemplateBuilder` (terms in, template out) sit next to `Template`,
    `Switch`, `Location` (what the LTS refers to). Separating them, and moving
@@ -413,3 +410,61 @@ On `module-exports`:
 - GUI and yFiles gates: not run; no source change under `gui/`, and the
   yFiles unit compiles against GROOVE on the class path, where the descriptor
   is ignored.
+
+## Item 2 as built: the cli package (2026-09-22)
+
+Branch `cli-package`, off `master` (item 1 was already merged), in three moves
+plus this note, each move compiling on its own.
+
+**What moved.** `nl.utwente.groove.cli` now holds the nine former `util.cli`
+classes (`CmdLineException`, `DirectoryHandler`, `ExistingFileHandler`,
+`GrammarHandler`, `GrooveCmdLineParser`, `GrooveCmdLineTool`, `HelpHandler`,
+`LogHandler`, `VerbosityHandler`) and the five command-line tools that were
+parked in the package of the subsystem they drive: `explore.Generator`,
+`explore.CTLModelChecker`, `prolog.PrologChecker`, `algebra.OperatorLister` and
+`io.GraphReporter`. `util.cli` is gone; `explore`, `prolog`, `algebra` and `io`
+no longer mention picocli. The exported CLI surface is the single package
+`cli`, listed in the descriptor under its own heading after the pipeline block.
+
+**`Verbosity` went to `util`, not to `cli`.** It is the one member of the old
+`util.cli` that is not a command-line concept: the four exploration reporters in
+`explore.util` use it to decide how much to print. Since `cli` ranks *above*
+`explore` in the layering, leaving the enum with the CLI classes would have
+inverted that edge. Its picocli converter `VerbosityHandler` stayed behind with
+the rest. This corrects the layering bullet of `CHANGES-8_0_0.md`, which had
+recorded the 2026-08 move as going to `util.cli`.
+
+**`Imager` and `Viewer` stay in `gui`**, against the wording of the open item:
+both open windows, so moving them would pull Swing into an exported package that
+is otherwise headless, and `gui` already sits above `cli`. They keep using
+`GrooveCmdLineTool` across that edge, as does `GuiShutdownHook`.
+
+**The root-package shims stay** (`nl.utwente.groove.Generator`, `ModelChecker`,
+`PrologChecker`) — maintainer's decision; they are the documented launcher class
+names and the main classes of the runnable jars. Only their delegation and
+`@see` javadoc were retargeted.
+
+**Layering.** `LayeringTest` gains `cli` at rank 10, between `prolog` (9) and
+`gui` (now 11, root 12). `cli` may use every pipeline package and uses no `gui`;
+`gui` and the root shims may use `cli`. The whitelist is untouched.
+
+**`opens` lines dropped**: `nl.utwente.groove.explore` and
+`nl.utwente.groove.prolog`, which existed for the picocli-annotated fields of
+`Generator`/`CTLModelChecker` and `PrologChecker` respectively; neither package
+contains a picocli-annotated class any more. Note that `opens
+nl.utwente.groove.verify` and `opens nl.utwente.groove.util` are stale for the
+same reason and were *already* stale before this branch — neither package
+mentions picocli — but they are outside the scope of this change and were left
+alone.
+
+**Gates.** `mvn clean compile`: no `exports` warning (the only warnings are the
+pre-existing automodule notice). Fast suite: 881 tests, 0 failures, 0 errors, 2
+skipped, with `LayeringTest` 1, `ExploreCliTest` 7, `CTLModelCheckerTest` 5,
+`ExtensionsTest` 4 and `PredicateTests` 11 all green. GUI tests: all seven
+`*GuiTest` classes run, 19 tests, none skipped (`EditorCancelGuiTest` 2,
+`AddOnGuiTest` 1, `DisplaySwitchGuiTest` 5, `LabelCountGuiTest` 2,
+`SaveGrammarAsGuiTest` 1, `SimulatorGuiTest` 6, `WarningDisplayGuiTest` 2).
+Null analysis (`null-check` skill, ecj `-All`): 0 errors, 11 main and 8 test
+warnings — the same set as on `view-controller-context`, so nothing new. The
+yFiles backend needed no run: its sources mention none of the moved names,
+only `gui.Imager`, which did not move.
