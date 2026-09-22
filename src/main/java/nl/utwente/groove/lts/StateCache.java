@@ -521,7 +521,7 @@ public class StateCache implements Cache {
                 for (var trans : source.getState().getTransitions(Claz.NON_ABSENT)) {
                     assert trans.isInnerStep();
                     var target = trans.target();
-                    if (!known.add(target)) {
+                    if (known.add(target)) {
                         if (target.getPrimeFrame().isInner()) {
                             queue.add(target.getCache());
                         } else {
