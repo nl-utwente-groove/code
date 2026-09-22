@@ -10,9 +10,10 @@ module nl.utwente.groove {
     // or for a real client need. Not exported: the Simulator and its view layer
     // (gui.*, under reconstruction for gh #909), the matching engines
     // (match.plan, match.automaton), the control compiler (control.parse, with
-    // its generated ANTLR classes), the exploration engine (explore.engine,
-    // explore.util), the concrete import/export formats, the Prolog predicate
-    // implementations and the remaining utility packages.
+    // its generated ANTLR classes), the exploration engine's internals
+    // (explore.util, explore.verify; explore.engine itself is exported as the
+    // strategy extension point), the concrete import/export formats, the
+    // Prolog predicate implementations and the remaining utility packages.
     //
     // -- the pipeline from grammar on disk to state space
     exports nl.utwente.groove;
@@ -43,8 +44,9 @@ module nl.utwente.groove {
     exports nl.utwente.groove.prolog.builtin;
     // -- graph-backend SPI: an add-on jar is loaded into the unnamed module and
     //    implements/extends these types, so they must be exported for GROOVE
-    //    to run from the module path (ExtensionsTest); GraphViewController still
-    //    leaks Simulator types into this tier, see claude/module-exports.md
+    //    to run from the module path (ExtensionsTest). The controllers reach the
+    //    hosting tool only through GraphViewContext, so no Simulator type occurs
+    //    in this tier; see claude/module-exports.md
     exports nl.utwente.groove.gui.view;
     exports nl.utwente.groove.gui.view.cell;
     exports nl.utwente.groove.gui.look;

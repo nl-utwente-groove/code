@@ -1,5 +1,11 @@
 # Module exports: what the library promises
 
+*Status (2026-09-22): `module-exports` and its follow-up `view-controller-context`
+(item 1) are merged to master, session B is merged into yfiles-lib `main`, and
+master compiles with no `exports` warning; the descriptor comment was brought in
+line with this note the same day. Items 2 to 4 under "Open items" remain open;
+item 2 is in progress on branch `cli-package`.*
+
 *Branch `module-exports`, 2026-09-20. Context: 8.0.0 is the first
 release whose jar keeps its `module-info` (earlier releases stripped it because of
 the shadowed libraries), so the export list becomes the API contract of the
@@ -173,9 +179,14 @@ reports no `exports` warning at all.
 4. **`util.collect`**: narrow the four leaking signatures listed above, then
    unexport.
 
-Not verified: whether `requires transitive java.desktop` is still needed by an
-exported signature once `gui` is out (exported core types do use `java.awt`
-geometry in `graph.layout`/`io.graph`, so presumably yes).
+Verified 2026-09-22: `requires transitive java.desktop` is still needed. With
+`transitive` dropped, javac hits its cap of 100 warnings before running out:
+`java.awt.Color` in `util.line.Line`/`LineFormat`, `util.HTMLConverter`,
+`grammar.Action` and `grammar.aspect.AspectContent`, and
+`java.beans.PropertyChangeListener` in `util.Observable`, before any geometry
+type. `java.prefs` was tested in the same run and hidden behind the cap; no
+`java.util.prefs` type occurs outside `gui`, so it could probably be plain
+`requires`, not verified separately.
 
 ## Session proposal: the backend-facing controller interface (item 1)
 
@@ -398,6 +409,10 @@ On `view-controller-context`:
   whatever was measured there cannot have been the unit against that branch.
   The test sources were not reached, so the expectation that their failures
   are limited to constructors and `setLabelTree` is still unverified.
+- Session B landed afterwards on the yfiles-lib branch of the same name and
+  was reviewed on 2026-09-21: 70 tests, 5 Robot skips against the code tip; the
+  paired workflows `backend.yml` (master) and `test.yml` (main) are green since
+  the merges.
 
 On `module-exports`:
 
