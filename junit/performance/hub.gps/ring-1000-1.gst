@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
-    <graph edgemode="directed" edgeids="false" role="graph" id="chain-1000-1">
+    <graph edgemode="directed" edgeids="false" role="graph" id="ring-1000-1">
         <attr name="$version">
             <string>curly</string>
         </attr>
@@ -20025,6 +20025,11 @@
             </attr>
         </edge>
         <edge from="n999" to="n1000">
+            <attr name="label">
+                <string>next</string>
+            </attr>
+        </edge>
+        <edge from="n1000" to="n1">
             <attr name="label">
                 <string>next</string>
             </attr>

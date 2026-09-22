@@ -1524,6 +1524,11 @@
                 <string>let:tokens=0</string>
             </attr>
         </edge>
+        <edge from="n0" to="n0">
+            <attr name="label">
+                <string>let:moves=0</string>
+            </attr>
+        </edge>
         <edge from="n1" to="n1">
             <attr name="label">
                 <string>type:Leaf</string>

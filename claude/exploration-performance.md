@@ -253,7 +253,12 @@ a materialised `nodeInEdgeStore` that runs `computeInEdgeStore`
 `source.edgeSet(node)` (served from the always-present `nodeEdgeStore`, `:351-356`) on
 `e.target() == node`. Related: `computeInEdgeStore`/`computeOutEdgeStore` (`:258-311`)
 use `equals` where `==` suffices for canonical host nodes, and size per-node sets at the
-default capacity.
+default capacity. *Measured 2026-09-22* (`hub-ring-1000-counted` against `-unstored`,
+section "The hub field and ring rows"): in the exploration's swing mode the store, once
+built, travels along the materialisation chain, so the walk runs once per chain rather
+than once per erase, and a `let:` per move costs 4 µs on a 7 µs step with nothing of it
+attributable to the store. Demoted to Low for exploration; the filter remains a
+simplification worth making when the file is touched.
 
 **3.8 `StatisticsReporter.GraphCounter` materialises every state's graph at add time.**
 Medium / small / medium. `explore/util/StatisticsReporter.java:487-490`, registered at
@@ -1172,10 +1177,65 @@ superlinear in the graph on the chain too: 0.5 ms per certificate at 201 nodes, 
 at 301, 7.2 ms at 1 001, about quadratic, which is the refinement running one round per
 step of the chain's diameter with each round a pass over the graph. So the chain rows
 measure the certifier's dependence on graph diameter, the star row its dependence on
-symmetry (5.6, 2.4), and neither yet measures 5.1, 5.2 or 3.7; those want mixed edge
-labels at the hub, a rule with an unconnected typed node, and a `let:` per move, on an
-unstored variant where nothing is certified (see the hub advice of 2026-09-22 in the
-session notes; not done).
+symmetry (5.6, 2.4), and neither measures 5.1, 5.2 or 3.7; those are the field and ring
+rows below.
+
+**The hub field and ring rows (added 2026-09-22)**, the 5.1, 5.2 and 3.7 rows on
+unstored runs where nothing is certified. The linear traversal admits no depth bound
+(`Traversal.isSearch`), so the rows use the recipe of `binary-tree-dfs-unstored`
+(`next=newest cost=uniform bound=cost:N persistence=none`) on *deterministic* systems,
+one successor per state, so that the depth-first run is a single path of N steps with
+collapsing off. The type graph grew a `from` edge from `Leaf` to `Hub`, a `pos` attribute
+on `Leaf`, a `token` flag and a `moves` attribute on `Hub`, and a `Stub` type linked to
+`Hub` by `stub` edges in both directions; the generated graphs of the earlier rows were
+regenerated with `let:moves=0` on the hub (their counts are unchanged). Two new shapes:
+
+- `field-2-100-2500`: two stars, each hub with 100 leaves linked both ways and numbered by
+  `pos`, plus 2 500 stubs, half pointing at the hub and half away from it, which nothing
+  ever touches; a token on the first leaf of the first hub and one on that hub. 5 202
+  nodes, 10 810 edges, 2.3 MB of GXL, the largest fixture in the set. `hop` moves the leaf
+  token to the leaf at `(pos + 1) % leaves`, both leaves bound to the hub by `from`; the
+  plan (printed by flipping `PlanSearchEngine.PRINT`) is token, `from` n1 to hub with the
+  source bound, `from` n2 to hub with the *target* bound, the NAC, then the `pos` test per
+  leaf. The target-bound item enumerates the hub's whole incident set of 2 703 edges (the
+  target branch never consults the label set), 100 of which carry the label, for one
+  match: finding 5.1 as stated. `jump` moves the hub token to the other hub, a typed
+  node without edges in the rule; the plan is token, `Find node n1:[Hub]` over the node
+  set of 5 400 (nodes plus value nodes), then the NAC: finding 5.2, two hits.
+- `ring-1000-1`: the chain closed, so that a single token walks for ever. `chain`
+  (`moveNext`) against `counted` (`moveCounted`: the same rule plus `let:moves = moves + 1`
+  on the hub, bound through `to`), the `let:` per move of 3.7.
+
+Desktop calibration, single cold runs through the harness, one JVM per row, `-Xmx8g`:
+
+| row | steps | s | match ms | gen ms | allocMB | retMB |
+|---|---|---|---|---|---|---|
+| `hub-field-hop` | 100 000 | 6.08 | 5 557 | 230 | 13 504 | 263 |
+| `hub-field-jump` | 200 000 | 5.49 | 4 375 | 631 | 1 686 | 522 |
+| `hub-ring-1000-unstored` | 200 000 | 1.39 | 162 | 756 | 1 651 | 523 |
+| `hub-ring-1000-counted` | 200 000 | 2.21 | 581 | 1 000 | 2 733 | 1 068 |
+
+`hop` is 61 µs per step, 91 % of it matching: 2 703 candidates for one match. Under 5.1(b)
+(the size comparison restored) the label route offers 200 candidates, under (a) the 1 350
+in-edges, under (c) the 100 `from` edges. The row carries a second lead: it allocates
+135 KB per step, and since `jump` allocates 8 bytes per visited node, the garbage is on
+the attribute path, about 1.3 KB per leaf candidate that reaches the `pos` test
+(`Compute add`, `mod`, `eq` and the value-node lookups behind them). Not yet a numbered
+finding. `jump` is 27 µs per step, 80 % matching, 4 ns per visited node; a type index
+makes the 5 400 visits two.
+
+The ring pair measures the `let:` at 4 µs on a 7 µs step, split evenly between matching
+(the `to`, `moves` and `add` items) and generation (the erase, the fresh value node, the
+factory), and none of it is 3.7: in the exploration's swing mode (`Record.copyGraphs`
+false) the in-edge store, once built by the first attribute erase, moves along the
+materialisation chain with the other three stores (`SwingTarget` takes over the parent's
+references), so the O(V+E) walk runs once per chain, not once per erase; it recurs only
+after a reconstruction from the delta chain, whose root graph has no store. In copy mode
+(the Simulator, `randomAccess`) every child copies all four stores anyway. So 3.7 is
+demoted to Low for exploration; the suggested filter stands as a simplification. The
+counted row also retains 5 KB per step: the host factory keeps every value node and
+`moves` edge it ever made (200 k and 400 k by the `fNodes`/`fEdges` columns, which are
+the factory's counts, not the final graph's), which is the counter grammar's growth too.
 
 ### The long-run tier (2026-09-22)
 

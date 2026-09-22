@@ -414,6 +414,32 @@ public class ExplorationBenchmark {
             new Config("hub-chain-1000-1", "hub.gps", "chain-1000-1", "chain", "", 1000, 999,
                 Tier.QUICK),
             new Config("hub-chain-200-2", "hub.gps", "chain-200-2", "chain", "", 19900, 39402,
+                Tier.QUICK),
+            // the unstored hub rows (2026-09-22): deterministic systems (one
+            // successor per state) explored depth-first without storing and
+            // with a depth bound, so that the run is a single path with no
+            // certification and the per-step cost is matching and
+            // application only. The field graph is two stars whose hubs
+            // carry 2500 stub nodes each besides their 100 leaves. "hop"
+            // moves the token to the leaf with the next position, found
+            // through the hub's incident edges, 2700 candidates for one
+            // match: finding 5.1. "jump" moves a token between the hubs;
+            // the target hub is a typed node without edges in the rule, so
+            // it is found by enumerating all 5200 nodes: finding 5.2. The
+            // ring rows compare "moveNext" with "moveCounted", which also
+            // increments a counter on the hub: the attribute-edge erasure
+            // of finding 3.7
+            new Config("hub-field-hop", "hub.gps", "field-2-100-2500", "hop",
+                "next=newest cost=uniform bound=cost:100000 persistence=none", 100002, 100001,
+                Tier.QUICK),
+            new Config("hub-field-jump", "hub.gps", "field-2-100-2500", "jump",
+                "next=newest cost=uniform bound=cost:200000 persistence=none", 200002, 200001,
+                Tier.QUICK),
+            new Config("hub-ring-1000-unstored", "hub.gps", "ring-1000-1", "chain",
+                "next=newest cost=uniform bound=cost:200000 persistence=none", 200002, 200001,
+                Tier.QUICK),
+            new Config("hub-ring-1000-counted", "hub.gps", "ring-1000-1", "counted",
+                "next=newest cost=uniform bound=cost:200000 persistence=none", 200002, 200001,
                 Tier.QUICK));
 
     /** Returns the benchmark set. */

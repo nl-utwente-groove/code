@@ -180,26 +180,67 @@ def fibonacci(x):
     return g
 
 
-def hub(n, k, chain):
+def hub(n, k, shape):
     """The hub grammar's star: one Hub with a "to" edge to each of n Leaf
     nodes, a "token" flag on the first k. Under "run" the tokens move
     between leaves through the hub, and since the leaves are
     interchangeable every move yields an isomorphic graph: a one-state LTS
     whose k(n-k) transitions each certify an n+1-node graph with an
-    (n-k)-fold symmetric leaf class, the row for finding 5.6. With chain,
-    consecutive leaves are linked by "next" and the "chain" program moves
-    tokens along the chain only, never onto an occupied leaf: the leaves are
-    then distinguishable and the states are the token placements, n for one
-    token and about n^2/2 for two, each a graph of n+1 nodes."""
-    g = Graph("%s-%d-%d" % ("chain" if chain else "star", n, k))
-    hub = g.node("type:Hub", "let:leaves=0", "let:tokens=0")
-    prev = None
+    (n-k)-fold symmetric leaf class, the row for finding 5.6. With shape
+    "chain", consecutive leaves are linked by "next" and the "chain"
+    program moves tokens along the chain only, never onto an occupied
+    leaf: the leaves are then distinguishable and the states are the token
+    placements, n for one token and about n^2/2 for two, each a graph of
+    n+1 nodes. Shape "ring" closes the chain, so that a single token walks
+    for ever: the shape for the unstored, bounded rows. The hub carries the
+    "moves" counter that "moveCounted" increments (finding 3.7)."""
+    g = Graph("%s-%d-%d" % (shape, n, k))
+    hub = g.node("type:Hub", "let:leaves=0", "let:tokens=0", "let:moves=0")
+    first = prev = None
     for i in range(n):
         leaf = g.node("type:Leaf", "flag:token") if i < k else g.node("type:Leaf")
         g.edge(hub, "to", leaf)
-        if chain and prev is not None:
+        if shape != "star" and prev is not None:
             g.edge(prev, "next", leaf)
+        if first is None:
+            first = leaf
         prev = leaf
+    if shape == "ring":
+        g.edge(prev, "next", first)
+    return g
+
+
+def field(hubs, n, m):
+    """The hub grammar's field: several stars, each Hub with n Leaf nodes
+    linked both ways ("to" and "from") and numbered by a "pos" attribute,
+    plus m Stub nodes hanging off the hub by "stub" edges, half of them
+    pointing towards the hub and half away from it. The stubs give the hub
+    mixed incident edges (finding 5.1) and the graph a large majority of
+    nodes of a type no rule binds (finding 5.2); nothing ever touches them.
+    A token sits on the first leaf of the first hub, for "hop", which moves
+    it to the leaf with the next position modulo the hub's "leaves" count,
+    and another on the first hub itself, for "jump", which moves it to any
+    other hub. Both rules have exactly one match per state with one token
+    and two hubs, so a bounded unstored run is a single path."""
+    g = Graph("field-%d-%d-%d" % (hubs, n, m))
+    for h in range(hubs):
+        labels = ["type:Hub", "let:leaves=%d" % n, "let:tokens=0", "let:moves=0"]
+        if h == 0:
+            labels.append("flag:token")
+        hub = g.node(*labels)
+        for i in range(n):
+            labels = ["type:Leaf", "let:pos=%d" % i]
+            if h == 0 and i == 0:
+                labels.append("flag:token")
+            leaf = g.node(*labels)
+            g.edge(hub, "to", leaf)
+            g.edge(leaf, "from", hub)
+        for i in range(m):
+            stub = g.node("type:Stub")
+            if i % 2 == 0:
+                g.edge(hub, "stub", stub)
+            else:
+                g.edge(stub, "stub", hub)
     return g
 
 
@@ -211,7 +252,9 @@ SIZES = [
     ("leader-election.gps", leader_election, [(8,), (14,), (16,), (18,)]),
     ("attribute-count-to-n.gps", count_to_n, [(10000,), (100000,), (300000,), (600000,)]),
     ("fibonacci.gps", fibonacci, [(12,), (15,), (22,)]),
-    ("hub.gps", hub, [(300, 3, False), (1000, 1, True), (200, 2, True)]),
+    ("hub.gps", hub, [(300, 3, "star"), (1000, 1, "chain"), (200, 2, "chain"),
+                      (1000, 1, "ring")]),
+    ("hub.gps", field, [(2, 100, 2500)]),
 ]
 
 if __name__ == "__main__":
