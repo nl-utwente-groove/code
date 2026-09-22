@@ -115,7 +115,12 @@ than the eight copied samples do. Agreed order, by coverage gained per hour:
    chain); a new lead is the 1.3 KB allocated per attribute-test candidate in `hop`.
 4. Control with transience: `recipes` (scale the start graph) and `transactions`
    (4.3.1, 1.5).
-5. Quantifiers over a large graph: `petrinet` with a generated larger net.
+5. Done (2026-09-22 night): Arend copied `petrinet` over; four of the five hand-drawn
+   nets deleted (1 to 38 states), `start2` kept as default. Generated `pipe-k-n`
+   (C(n+k, k) markings: `pipe-8-8` and `pipe-9-9` quick, `pipe-11-11` long at 4 min and
+   5.2 GB) and `join-f` (2f sub-matches per step on an unstored path: `join-100` and
+   `join-1000` quick, 450 µs and 1.1 MB per step at f = 100, linear in f). Calibration
+   table in the note.
 6. Multigraph semantics and merging: `parallel-pump`, `mergers`, scaled.
 7. Key-variant rows on existing grammars as needed while fixing.
 

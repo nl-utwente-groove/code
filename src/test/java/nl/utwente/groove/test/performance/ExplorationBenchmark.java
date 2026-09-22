@@ -440,7 +440,35 @@ public class ExplorationBenchmark {
                 Tier.QUICK),
             new Config("hub-ring-1000-counted", "hub.gps", "ring-1000-1", "counted",
                 "next=newest cost=uniform bound=cost:200000 persistence=none", 200002, 200001,
-                Tier.QUICK));
+                Tier.QUICK),
+            // Arend's petrinet copy (2026-09-22): one rule with two forall
+            // levels, every input place of a transition holds a token, which
+            // is consumed, and every output place receives one. The pipeline
+            // pipe-k-n has k transitions in a row and n tokens at the head;
+            // the states are the C(n+k, k) distributions of the tokens over
+            // the k+1 places, and every token on an input place is a separate
+            // exists match, so the transitions run seven to ten times the
+            // states: quantified matching at a known state count, with the
+            // iso check and state generation as the main costs. The join net
+            // join-f has one transition with f input and f output places and
+            // a second one firing the tokens back; only one of them is ever
+            // enabled, so the unstored bounded run is a single path whose
+            // every step matches 2f sub-conditions (a context map each,
+            // finding 4.1.2) and applies a composite event of 2f changes:
+            // 450 us and 1.1 MB per step at f = 100, linear in f
+            new Config("petrinet-pipe-8-8", "petrinet.gps", "pipe-8-8", "", 12870, 91520,
+                Tier.QUICK),
+            new Config("petrinet-pipe-9-9", "petrinet.gps", "pipe-9-9", "", 48620, 393822,
+                Tier.QUICK),
+            new Config("petrinet-join-100", "petrinet.gps", "join-100",
+                "next=newest cost=uniform bound=cost:20000 persistence=none", 20002, 20001,
+                Tier.QUICK),
+            new Config("petrinet-join-1000", "petrinet.gps", "join-1000",
+                "next=newest cost=uniform bound=cost:2000 persistence=none", 2002, 2001,
+                Tier.QUICK),
+            // the pipeline at the long-tier size: four minutes, 5.2 GB retained
+            new Config("petrinet-pipe-11-11", "petrinet.gps", "pipe-11-11", "", 705432, 7113106,
+                Tier.LONG));
 
     /** Returns the benchmark set. */
     public static List<Config> getConfigs() {

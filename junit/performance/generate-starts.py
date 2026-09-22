@@ -244,6 +244,47 @@ def field(hubs, n, m):
     return g
 
 
+def petri_pipe(k, n):
+    """The petrinet grammar's pipeline: k transitions in a row between k+1
+    places, and n tokens on the first place. Every token moves forward
+    independently, so the reachable markings are the ways of distributing
+    n tokens over k+1 distinguishable places, C(n+k, k) of them, every
+    marking a state; the graph stays at 2k+n+1 nodes. The quantified rule
+    fires with a one-place universal domain per transition, so the row
+    measures the nested-condition machinery per match and the composite
+    events, at a known state count."""
+    g = Graph("pipe-%d-%d" % (k, n))
+    places = [g.node("place") for _ in range(k + 1)]
+    for i in range(k):
+        t = g.node("transition")
+        g.edge(places[i], "in", t)
+        g.edge(t, "out", places[i + 1])
+    for _ in range(n):
+        g.edge(places[0], "mark", g.node("token"))
+    return g
+
+
+def petri_join(f):
+    """The petrinet grammar's join: one transition with f input places, each
+    holding a token, and f output places, plus a second transition firing
+    the tokens back. Exactly one transition is enabled at any time, so an
+    unstored bounded run is a single path alternating the two, and every
+    step matches a universal domain of f places on each side and applies
+    a delta of 2f tokens: the fan-in axis of the quantifier cost."""
+    g = Graph("join-%d" % f)
+    fwd = g.node("transition")
+    back = g.node("transition")
+    for _ in range(f):
+        src = g.node("place")
+        tgt = g.node("place")
+        g.edge(src, "in", fwd)
+        g.edge(fwd, "out", tgt)
+        g.edge(tgt, "in", back)
+        g.edge(back, "out", src)
+        g.edge(src, "mark", g.node("token"))
+    return g
+
+
 SIZES = [
     ("Mark-Unmark-List-regexp-benchmark.gps", mark_unmark, [(18,), (21,), (22,)]),
     ("As-and-Bs-reg-exp-benchmark.gps", as_and_bs, [(4, 3)]),
@@ -255,6 +296,8 @@ SIZES = [
     ("hub.gps", hub, [(300, 3, "star"), (1000, 1, "chain"), (200, 2, "chain"),
                       (1000, 1, "ring")]),
     ("hub.gps", field, [(2, 100, 2500)]),
+    ("petrinet.gps", petri_pipe, [(8, 8), (9, 9), (11, 11)]),
+    ("petrinet.gps", petri_join, [(100,), (1000,)]),
 ]
 
 if __name__ == "__main__":

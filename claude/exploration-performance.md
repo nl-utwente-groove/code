@@ -1282,6 +1282,45 @@ counted row also retains 5 KB per step: the host factory keeps every value node 
 `moves` edge it ever made (200 k and 400 k by the `fNodes`/`fEdges` columns, which are
 the factory's counts, not the final graph's), which is the counter grammar's growth too.
 
+**petrinet (added 2026-09-22)**, Arend's copy of the sample: one rule, `smartRule`, a
+transition firing when every input place holds a token, consuming one per input place
+and producing one per output place, as two `forall:` levels with an `exists:` token level
+inside the first. The five hand-drawn nets explore to 1 to 38 states; four were deleted
+and `start2` stays as the readable default start graph. Two generated families:
+
+- `pipe-k-n`: k transitions in a row between k+1 places, n tokens on the first. Every
+  token moves forward independently, so the states are the distributions of n tokens
+  over k+1 places, C(n+k, k) of them, all distinguishable since the pipeline has a
+  direction, on a graph of 2k+n+1 nodes. Each token on an input place is a separate
+  `exists:` match, so a place holding m tokens gives its transition m parallel
+  transitions to isomorphic targets: transitions run seven to ten times the states, and
+  the rows are iso-check and generation rows more than matching rows (matching is 13 %
+  of `pipe-8-8`). The family grows about 3.8-fold per step of k = n.
+- `join-f`: one transition with f input places, each holding a token, and f output
+  places; a second transition fires the tokens back. Exactly one of the two is enabled
+  at any time, so an unstored bounded depth-first run is a single path alternating
+  them, and every step matches a universal domain of f places on each side, 2f
+  sub-matches each with its own context map (4.1.2), then applies a composite event of
+  2f deletions and creations (4.2.4, 4.2.6).
+
+Desktop calibration, single cold runs through the harness, one JVM per row, `-Xmx8g`:
+
+| row | states | transitions | s | match ms | iso ms | cert ms | gen ms | allocMB | retMB | kept |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `pipe-8-8` | 12 870 | 91 520 | 3.3 | 417 | 1 906 | 906 | 2 499 | 4 029 | 85 | quick |
+| `pipe-9-9` | 48 620 | 393 822 | 12.0 | 1 272 | 8 240 | 4 666 | 9 731 | 17 829 | 341 | quick |
+| `pipe-10-10` | 184 756 | 1 679 600 | 58.2 | 5 546 | 42 681 | 24 075 | 49 423 | 80 646 | 1 296 | not kept |
+| `pipe-11-11` | 705 432 | 7 113 106 | 248.9 | 21 122 | 188 283 | 111 583 | 214 524 | 366 535 | 5 240 | long |
+| `join-100`, 20 000 steps | 20 002 | 20 001 | 9.0 | 4 827 | 0 | 0 | 1 998 | 22 765 | 484 | quick |
+| `join-1000`, 2 000 steps | 2 002 | 2 001 | 10.8 | 5 747 | 0 | 0 | 2 570 | 22 316 | 419 | quick |
+
+`join-100` is 450 µs and 1.1 MB per step for 200 sub-matches, `join-1000` 5.4 ms and
+11 MB per step: linear in f, so the nested search has no superlinear term, only a heavy
+constant of about 2.5 µs and 5.5 KB per sub-match, which is where 4.1.2 (a
+`RuleToHostMap` per candidate) and the composite-event path will show. The pipeline's
+cost per state is a constant 250 to 350 µs across the sizes, and its GTS retains 7.4 KB
+per state at the long size, the transition-heavy shape.
+
 ### The long-run tier (2026-09-22)
 
 The tier the note asked for once 3.11 was fixed. `Config.smoke` became a three-valued
