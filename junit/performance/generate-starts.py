@@ -180,6 +180,29 @@ def fibonacci(x):
     return g
 
 
+def hub(n, k, chain):
+    """The hub grammar's star: one Hub with a "to" edge to each of n Leaf
+    nodes, a "token" flag on the first k. Under "run" the tokens move
+    between leaves through the hub, and since the leaves are
+    interchangeable every move yields an isomorphic graph: a one-state LTS
+    whose k(n-k) transitions each certify an n+1-node graph with an
+    (n-k)-fold symmetric leaf class, the row for finding 5.6. With chain,
+    consecutive leaves are linked by "next" and the "chain" program moves
+    tokens along the chain only, never onto an occupied leaf: the leaves are
+    then distinguishable and the states are the token placements, n for one
+    token and about n^2/2 for two, each a graph of n+1 nodes."""
+    g = Graph("%s-%d-%d" % ("chain" if chain else "star", n, k))
+    hub = g.node("type:Hub", "let:leaves=0", "let:tokens=0")
+    prev = None
+    for i in range(n):
+        leaf = g.node("type:Leaf", "flag:token") if i < k else g.node("type:Leaf")
+        g.edge(hub, "to", leaf)
+        if chain and prev is not None:
+            g.edge(prev, "next", leaf)
+        prev = leaf
+    return g
+
+
 SIZES = [
     ("Mark-Unmark-List-regexp-benchmark.gps", mark_unmark, [(18,), (21,), (22,)]),
     ("As-and-Bs-reg-exp-benchmark.gps", as_and_bs, [(4, 3)]),
@@ -188,6 +211,7 @@ SIZES = [
     ("leader-election.gps", leader_election, [(8,), (14,), (16,), (18,)]),
     ("attribute-count-to-n.gps", count_to_n, [(10000,), (100000,), (300000,), (600000,)]),
     ("fibonacci.gps", fibonacci, [(12,), (15,), (22,)]),
+    ("hub.gps", hub, [(300, 3, False), (1000, 1, True), (200, 2, True)]),
 ]
 
 if __name__ == "__main__":

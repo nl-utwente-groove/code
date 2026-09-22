@@ -397,7 +397,24 @@ public class ExplorationBenchmark {
                 338688, 7451136, Tier.LONG),
             // the counter at twice the quick size, for its superlinear allocation
             new Config("count-600000", "attribute-count-to-n.gps", "bound-600000", "", 600001,
-                1500001, Tier.LONG));
+                1500001, Tier.LONG),
+            // Arend's hub grammar (2026-09-22): a star of Leaf nodes around
+            // one Hub, tokens as flags on the leaves. Under "run" the leaves
+            // are interchangeable, so the LTS has one state and every
+            // transition certifies a 301-node graph with a 297-fold
+            // symmetric leaf class: the row for the symmetry cost of finding
+            // 5.6 (at 1000 leaves and 10 tokens it took 30 ms per transition,
+            // 295 s in all; sized down to run in seconds). The chain variants
+            // link consecutive leaves by "next" and move tokens along the
+            // chain only, never onto an occupied leaf, so the states are the
+            // token placements and every state is a graph of n+1 nodes: the
+            // many-states, large-graph rows for 3.1, 4.3.2 and the certifier
+            // without symmetry
+            new Config("hub-star-300-3", "hub.gps", "star-300-3", "run", "", 1, 891, Tier.SMOKE),
+            new Config("hub-chain-1000-1", "hub.gps", "chain-1000-1", "chain", "", 1000, 999,
+                Tier.QUICK),
+            new Config("hub-chain-200-2", "hub.gps", "chain-200-2", "chain", "", 19900, 39402,
+                Tier.QUICK));
 
     /** Returns the benchmark set. */
     public static List<Config> getConfigs() {
