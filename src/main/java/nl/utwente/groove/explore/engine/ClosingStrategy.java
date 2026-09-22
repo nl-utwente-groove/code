@@ -93,6 +93,13 @@ abstract public class ClosingStrategy extends GTSStrategy {
             setExploring(false);
         }
         for (MatchResult next : matches) {
+            if (testInterrupted()) {
+                // stop applying matches, so that a cancellation from the GUI
+                // takes effect per transition rather than per state; the
+                // state stays open with the remaining matches outstanding,
+                // and a later exploration resumes it from there
+                break;
+            }
             state.applyMatch(next);
         }
         if (stopAfter) {

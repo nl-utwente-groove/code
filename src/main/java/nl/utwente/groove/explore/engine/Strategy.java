@@ -142,9 +142,10 @@ public abstract class Strategy {
 
     /**
      * Tests if the thread has been interrupted, and stores the
-     * result.
+     * result. Consulted before every exploration step; a step that
+     * applies many matches may consult it between matches as well.
      */
-    private boolean testInterrupted() {
+    protected final boolean testInterrupted() {
         boolean result = this.interrupted;
         if (!result) {
             result = this.interrupted = Thread.currentThread()
