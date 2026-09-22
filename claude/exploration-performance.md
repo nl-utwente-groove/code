@@ -303,6 +303,50 @@ every factory whose owner is shorter-lived than the factories it reads. Also wor
 `DEBUG`-guarded size assertion on `users`, since the leak was invisible at test scale.
 Related: 1.3 (the same `get()` also takes the global lock).
 
+**3.12 `StateCache` keeps the transitive closure of every transient region.** High
+(time and memory, quadratic) / medium (design) / verified by profile.
+`lts/StateCache.java:455-503,560-640,651-686`. Every transient or inner state's cache
+holds seven `HashSet`s of caches: `backInner`, `forwInner`, `backLaunch`, `forwTarget`,
+`backTransient`, `forwTransient` and `forwTransientOpen`, and `registerOutPartial`
+maintains them as full transitive closures: a new partial transition adds the target's
+forward closure to every backward-reachable state and the source's backward closure to
+every forward-reachable state (`:601-605,621-625`), and closing a state removes it
+again from the sets of its whole backward closure (`:653,659,672,678`). A transient
+region of n states with a path through it therefore costs O(n²) set entries and O(n²)
+insertions plus removals. The closures serve `getAbsence()` (read on the fly by
+`StateMatches.advanceFrame`, `lts/StateMatches.java:136`), fullness (`isFull`, read by
+`GTSCounter`, `RecipeTransition.getSteps` and the GUI) and the launch-to-target pairing
+that creates recipe transitions.
+
+Measured on the fibonacci recipe rows, where the outer `fib(result, out result)` call
+makes the whole run one recipe invocation with a near-linear chain of transient inner
+states: `fib-15` (4 934 discovered states, a final GTS of 3 states) takes 23.5 s, 16.4 s
+of it in the `gen` column, and allocates 4.7 GB; a JFR profile of that run puts 97 % of
+the samples in `HashMap.putVal`/`removeNode`/`resize` under `registerOutPartial`
+(50 %: the inner closure at `:601-605` 19 %, the transient closure at `:621-625` 28 %)
+and `testSetFull` (27 %, the removal lambdas at `:672,678`) plus
+`removeFromForwTransientOpen` (10 %); allocation is 97 % `HashMap$Node`,
+`HashMap$KeyIterator` and `HashMap$Node[]`. This is the recipe-path superlinearity noted
+under "The performance grammar set" (4.5 times a plain state at `fib-12`, 60 times at
+`fib-15`, out of heap at `fib-17`), and it is why the function variant of the same
+recursion is 60 times faster. Any recipe or atomic block whose body runs for many
+steps pays it (a loop inside a recipe over a large graph, a recipe that builds a
+structure); recipes of a few steps do not, which is why the samples never showed it.
+Suggestion: replace the eager closures by propagation over direct transient
+predecessor edges: a state is full when closed and all its direct transient successors
+are full (notify predecessors on becoming full); absence is the minimum over direct
+successors, propagated backwards on decrease (monotone, so it terminates); a newly
+discovered recipe target is propagated backwards through inner predecessors to the
+launches. That is O(transitions) amortised on acyclic regions. Cycles inside a
+transient region (`alap`/`while` in a recipe or atomic block) defeat the local
+fullness rule, so a fallback is needed: on closing a state whose direct successors are
+all closed but not all full, search forward over closed non-full transient states and,
+if no open state is found, mark the whole visited set full. 9495647a2 (2025-03-24,
+"Resolved transience bug in recipe exploration") introduced the current closures
+without a message; the bug it fixed must be identified before a redesign, since the
+local rule may be what it replaced. Gates: `grammar-smoke`, the `control` and
+`transactions` tests, `DeterminismTest`, and the fibonacci and `recipes` rows.
+
 ## 4. Allocation on the per-state and per-match path
 
 ### 4.1 Matching
@@ -1135,9 +1179,10 @@ against 0.1 s for the function program; matching and isomorphism are under 40 ms
 either. So a transient state costs 4.5 times a plain state at `fib-12` and 60 times at `fib-15`,
 and the ratio grows with the size: something on the recipe path is superlinear in the
 transient prefix. The recipe's time does not change between 4 and 8 GB, so it is not
-collector thrash. This is the ground of 4.3.1 (and possibly 3.6, the parent transition
-map) and needs its own investigation before a long-tier size exists for the recipe
-family. The function family has no long-tier size either, for the ordinary reason:
+collector thrash. This was the ground of 4.3.1 (and possibly 3.6, the parent transition
+map); the investigation of 2026-09-22 found it in the transient closures of
+`StateCache`, finding 3.12, which must be fixed before a long-tier size exists for the
+recipe family. The function family has no long-tier size either, for the ordinary reason:
 `fib-27` is about 1.6 million states and, like the counter's million, does not fit 8 GB
 of live GTS.
 

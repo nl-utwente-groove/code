@@ -9,10 +9,11 @@ Measurable performance improvement of state-space exploration, working down the
 findings of `claude/exploration-performance.md` (the review note; read its "Suggested
 order of attack" and "Building a throughput harness" sections first).
 
-## State as of 2026-09-22 (late night)
+## State as of 2026-09-22 (fibonacci investigation)
 
 Branch `exploration-performance`, worktree `.claude/worktrees/exploration-performance`,
-master merged in up to `2fd008217` (the gh #923 fix), detached for review. Commits since
+master merged in up to `ed8b740cf` (the explore-search-order-rules merge), re-attached
+2026-09-22. Commits since
 the 2026-09-21 state: the fibonacci-function control rows (via a scratch branch, merged
 by Arend), the long-run tier with its calibration, and the long-tier baseline.
 
@@ -50,6 +51,13 @@ worktree root; no module path needed.
 
 ## Next, in order
 
+0. Decided 2026-09-22: the fibonacci recipe-path anomaly is finding 3.12, the quadratic
+   transient closures in `StateCache` (JFR profile of `fib-15`: 97 % of samples in
+   `HashMap` operations under `registerOutPartial` and `testSetFull`). Its fix is a
+   redesign of the transient bookkeeping (local propagation over direct predecessor
+   edges plus a cycle fallback, see the finding) and belongs on its own branch, like
+   gh #919; the recipe family gets no long-tier size before it. Grammar-set item 4
+   (`recipes`, `transactions`) is dropped as covered by the fibonacci rows.
 1. Done: desktop baseline; long-run tier (`Tier` SMOKE/QUICK/LONG, seven long rows,
    `-Dgroove.bench.tier=long`, one JVM per row at `-Xmx8g`) with calibration and
    baseline, note section "The long-run tier (2026-09-22)"; BigInteger counter rows.
@@ -149,6 +157,11 @@ small.
 - The linear traversal (`successor=single frontier=single`) rejects a depth bound; an
   unstored path of N steps is `next=newest cost=uniform bound=cost:N persistence=none`
   on a system with one successor per state.
+- Profiling a row: the JDK 25 binary is `C:/Program Files/Java/jdk-25.0.4.1/bin/java`
+  (plain `java` is 26 here); add `-XX:StartFlightRecording=filename=<f>.jfr,settings=profile`
+  to the harness command with `warmups=0 runs=1`, then `jfr view hot-methods`,
+  `jfr view allocation-by-site` and `jfr print --events jdk.ExecutionSample` with an awk
+  count of the first `StateCache` frame per sample give the breakdown in a minute.
 - `PlanSearchEngine.PRINT` (a compile-time constant) prints every search plan on
   construction; flip it, run one row, flip it back. The planner is greedy and prefers
   the item that binds the fewest unbound nodes, so an edge to an already bound node
