@@ -55,10 +55,10 @@ public class Step implements Attempt.Stage<Frame,Step>, Comparable<Step> {
      */
     public Step(Frame source, NestedSwitch stack, Frame onFinish) {
         assert stack.getInnermost().getUnit().getKind() == Callable.Kind.RULE;
-        this.stack = new NestedSwitch(stack);
-        var fullStack = new NestedSwitch(source.getContextStack());
+        this.stack = stack;
+        var fullStack = source.getContextStack().toBuilder();
         stack.forEach(fullStack::push);
-        this.fullStack = fullStack;
+        this.fullStack = fullStack.build();
         this.onFinish = onFinish;
         this.source = source;
     }

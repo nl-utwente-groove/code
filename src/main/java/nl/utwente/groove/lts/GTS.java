@@ -835,6 +835,19 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     private @Nullable Record record;
 
     /**
+     * Returns the next free index for a recipe launch of this GTS. Used by the
+     * launch bookkeeping of the state caches (see {@link StateCache}) to test
+     * membership by bit set rather than by hashing.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    int newLaunchIndex() {
+        return this.launchCount++;
+    }
+
+    /** Number of recipe launches numbered so far; see {@link #newLaunchIndex}. */
+    private int launchCount;
+
+    /**
      * Normalises a given rule transition label with respect to this GTS.
      * @see Pool#canonical(Object)
      */

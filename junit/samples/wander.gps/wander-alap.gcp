@@ -1,0 +1,7 @@
+// a recipe whose region is the whole placement space, cyclic (a step back
+// returns to the same graph and frame) and with every state a recipe end
+recipe wander() {
+  moveNext;
+  (moveNext | movePrev)*;
+}
+alap wander;

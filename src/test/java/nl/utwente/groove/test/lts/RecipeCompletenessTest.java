@@ -85,7 +85,9 @@ public class RecipeCompletenessTest {
             new Case("junit/samples/transactions.gps", "control", "start", true),
             new Case("junit/samples/transactions.gps", "control1", "start", true),
             new Case("junit/samples/transactions.gps", "control2", "start", true),
-            new Case("junit/samples/transactions.gps", "try", "start", false));
+            new Case("junit/samples/transactions.gps", "try", "start", false),
+            new Case("junit/samples/wander.gps", "wander", "chain-20-2", true),
+            new Case("junit/samples/wander.gps", "wander-alap", "chain-20-2", true));
 
     /** Breadth-first exploration. */
     @Test

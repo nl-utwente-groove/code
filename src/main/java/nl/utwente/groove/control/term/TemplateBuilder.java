@@ -229,8 +229,9 @@ public class TemplateBuilder {
                 for (Action prop : getProperties()) {
                     assert prop.isProperty() && prop instanceof Rule;
                     if (prop.getPolicy() != CheckPolicy.OFF) {
-                        NestedSwitch sw = new NestedSwitch();
-                        sw.push(new Switch(loc, new Call(prop), 0, loc));
+                        NestedSwitch sw = new NestedSwitch.Builder()
+                            .push(new Switch(loc, new Call(prop), 0, loc))
+                            .build();
                         switches.add(sw);
                     }
                 }
@@ -329,7 +330,7 @@ public class TemplateBuilder {
             if (result == null) {
                 // only switches from this template or initial switches can be requested
                 assert source.getTemplate().get() == getResult();
-                var swt = result = new NestedSwitch();
+                var swt = new NestedSwitch.Builder();
                 Location target = addLocation(deriv.onFinish(), null, deriv.getOuterCall());
                 swt.push(new Switch(source, deriv.getOuterCall(), deriv.getTransience(), target));
                 deriv.getNested().ifPresent(nd -> {
@@ -338,8 +339,9 @@ public class TemplateBuilder {
                     NestedSwitch nested = getExternalSwitch(callerTemplate.getStart(), nd);
                     nested.forEach(swt::push);
                 });
-                assert swt.getOuter().getSource() == source;
-                switchMap.put(deriv, swt);
+                result = swt.build();
+                assert result.getOuter().getSource() == source;
+                switchMap.put(deriv, result);
             }
             return result;
         }

@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -49,6 +50,7 @@ import nl.utwente.groove.grammar.host.ValueNode;
 import nl.utwente.groove.lts.GraphTransition.Claz;
 import nl.utwente.groove.transform.Record;
 import nl.utwente.groove.transform.RuleApplication;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.QualName;
 import nl.utwente.groove.util.Strings;
@@ -483,16 +485,6 @@ public class StateCache implements Cache {
         assert stateIsFull
             || state.getActualFrame().getTransience() == state.getPrimeFrame().getTransience();
         this.knownInner = state.isInner();
-        if (!state.getPrimeFrame().isInner()) {
-            this.forwTarget = EMPTY_TARGET_SET;
-        } else if (!stateIsFull) {
-            this.forwTarget = new LinkedHashSet<>();
-            if (!this.knownInner) {
-                this.forwTarget.add(new RecipeTarget(state));
-            }
-        }
-        // for a full state with an inner prime frame, the targets are
-        // recomputed on demand (see #getForwTarget)
         this.knownTransience = state.getActualFrame().getTransience();
         this.knownAbsence = stateIsFull
             ? state.getAbsence()
@@ -503,9 +495,10 @@ public class StateCache implements Cache {
     private boolean initialised = false;
 
     /**
-     * Recomputes the reachable recipe targets of a full state whose prime frame
-     * is inner, by a forward search over the states created inside the recipe;
-     * used when the cache of such a state is recreated after having been collected.
+     * Computes the reachable recipe targets of a full state whose prime frame
+     * is inner, by a forward search over the states created inside the recipe.
+     * Since the state is full, every state reached is done, so the search is
+     * complete and its result can be cached (see {@link #getForwTarget()}).
      */
     private Set<RecipeTarget> computeForwOuter() {
         assert getState().isFull() && getState().getPrimeFrame().isInner();
@@ -548,47 +541,90 @@ public class StateCache implements Cache {
      *
      * Full-ness and absence are derived from the direct successors only, and
      * changes are propagated backwards over the direct predecessors: a state
-     * is full when it is closed and every transient successor is full or has
-     * become steady; its absence is the minimum of its own transience and the
-     * absence of its successors, which only ever decreases. Recipe targets
-     * are propagated backwards over the direct inner predecessors, to the
-     * launches. Cycles inside a transient region (loops in a recipe or atomic
+     * is full when it is closed and every successor is done, i.e., full or
+     * steady outside a recipe run (see {@link #isDone}); its absence is the
+     * minimum of its own transience and the absence of its successors, which
+     * only ever decreases.
+     * Cycles inside a transient region (loops in a recipe or atomic
      * block) defeat the local full-ness rule, since no member of the cycle
      * ever sees all its successors full; a closed state whose successors are
      * all closed therefore searches forward and, if it finds no open state,
      * declares the entire visited set full.
      *
-     * The predecessor lists live in the caches of the non-full states, which
-     * are strongly referenced until they are full, so a garbage collection
-     * cannot lose them; an explicit clearing of the cache of a closed but not
-     * yet full transient state does lose them, as it did before.
+     * Recipe transitions are found by propagating the launches forwards over
+     * the inner steps (gh #925): every non-full state created inside a recipe
+     * run keeps the set of launches whose runs pass through it, with the
+     * invariant that for every such launch, the recipe transition to every
+     * target reachable over the inner steps registered so far exists. A
+     * launch arriving at a state walks forward until it meets states it has
+     * already reached (see {@link #propagate}); a newly registered inner step
+     * carries the launches of its source into its target; a state that leaves
+     * the recipe through a verdict becomes a target for its launches. Each
+     * (launch, state) pair is thus visited once. A full state drops its
+     * launches and instead computes its complete target set on demand
+     * (see {@link #getForwTarget()}); for that to be complete, full-ness must
+     * imply that every reachable inner state is full, which is why a state
+     * that left its recipe through a verdict but still carries the run (its
+     * prime frame is inner, so its rule transitions are inner steps) is only
+     * done when it is full.
+     *
+     * The predecessor lists, launch sets and step lists live in the caches of
+     * the non-full states. Those caches are strongly referenced until the state
+     * is full (see {@link AbstractGraphState#setFull}), so a garbage collection
+     * cannot lose them, and a full state has dropped them and recomputes its
+     * targets from the stored transition stubs. An explicit
+     * {@link AbstractGraphState#clearCache} of a closed but not yet full
+     * transient state does lose them, as it lost the predecessor lists before:
+     * {@link CacheReference#clear} replaces the reference regardless of its
+     * strength. Only the statistics reporter (after the exploration) and the
+     * determinism test (deliberately) clear caches that way.
      */
 
     /**
      * Sources of the partial transitions into this state that were registered
-     * while this state was transient and not full; they wait for this state to
-     * close and to become full or steady, and take over decreases of its absence.
+     * while this state was not done; they wait for this state to close and to
+     * become done, and take over decreases of its absence.
      */
     private List<StateCache> preds = Collections.emptyList();
 
-    /** Number of registered transient successors that are not yet full or steady. */
+    /** Number of registered successors that are not yet done. */
     private int pendingCount;
 
-    /** Number of registered transient successors that are not yet closed, full or steady. */
+    /** Number of registered successors that are not yet closed or done. */
     private int openCount;
 
-    /** Inner states with an inner step into this (inner-prime, non-full) state. */
-    private List<StateCache> innerPreds = Collections.emptyList();
-
-    /** Recipe launches into this (inner-prime, non-full) state. */
-    private List<RuleTransition> launches = Collections.emptyList();
+    /**
+     * Tests if a state is done from the point of view of its predecessors,
+     * meaning that it can contribute no further absence decrease or recipe
+     * target: it is full, or it is steady and its prime frame is outer, so
+     * that it is not part of a recipe run.
+     */
+    static private boolean isDone(GraphState state) {
+        return state.isFull()
+            || !state.isTransient() && !state.getPrimeFrame().isInner();
+    }
 
     /**
-     * Returns the recipe targets known to be reachable from this state; complete
-     * once the state is full. For a full state whose cache has been recreated,
-     * the targets are recomputed on first demand rather than at initialisation,
-     * so that the recreation of one cache does not recursively recompute the
-     * targets of all reachable inner states.
+     * Launches of the recipe runs that pass through this (inner-prime,
+     * non-full) state, in order of arrival; see {@link #propagate}.
+     * {@code null} until the first launch arrives.
+     */
+    private @Nullable LaunchSet launches;
+
+    /**
+     * Registered inner non-launch steps from this (inner-prime, non-full)
+     * state, kept apart from the transition map so that the walk of
+     * {@link #propagate} does not scan the recipe transitions of the state,
+     * whose number is the output size.
+     */
+    private List<RuleTransition> innerSteps = Collections.emptyList();
+
+    /**
+     * Returns the recipe targets reachable from this full state with an inner
+     * prime frame. The targets are computed on first demand rather than when
+     * the state becomes full, so that neither full-ness nor the recreation of
+     * a collected cache recursively computes the targets of all reachable
+     * inner states.
      */
     private Set<RecipeTarget> getForwTarget() {
         var result = this.forwTarget;
@@ -598,8 +634,7 @@ public class StateCache implements Cache {
         return result;
     }
 
-    /** The recipe targets known to be reachable from this state; see {@link #getForwTarget()}.
-     * Only {@code null} for a full state with an inner prime frame, until first demanded. */
+    /** The recipe targets reachable from this full state; see {@link #getForwTarget()}. */
     private @Nullable Set<RecipeTarget> forwTarget;
 
     /**
@@ -614,15 +649,11 @@ public class StateCache implements Cache {
         if (target.getActualFrame().isRemoved()) {
             return;
         }
-        boolean targetFull = target.isFull();
         // recipe transitions and targets
         if (partial.getStep().isLaunch()) {
             if (target.getPrimeFrame().isInner()) {
-                var targetCache = target.getCache();
-                targetCache.getForwTarget().forEach(t -> addRecipeTransition(partial, t));
-                if (!targetFull) {
-                    targetCache.launches = add(targetCache.launches, partial);
-                }
+                var launch = new Launch(partial, getState().getGTS().newLaunchIndex());
+                target.getCache().propagate(launch);
             } else {
                 // it's a single-step recipe transition
                 addRecipeTransition(partial, new RecipeTarget(partial));
@@ -633,21 +664,27 @@ public class StateCache implements Cache {
             // the targets reached through the step count for the recipe
             // transitions all the same
             assert getState().getPrimeFrame().isInner();
-            if (target.getPrimeFrame().isInner()) {
-                var targetCache = target.getCache();
-                if (!targetFull) {
-                    targetCache.innerPreds = add(targetCache.innerPreds, this);
+            this.innerSteps = add(this.innerSteps, partial);
+            var launches = this.launches;
+            if (launches != null) {
+                if (target.getPrimeFrame().isInner()) {
+                    var targetCache = target.getCache();
+                    for (var launch : launches) {
+                        targetCache.propagate(launch);
+                    }
+                } else {
+                    // the step finishes the recipe
+                    var recipeTarget = new RecipeTarget(partial);
+                    for (var launch : launches) {
+                        addRecipeTransition(launch.trans(), recipeTarget);
+                    }
                 }
-                targetCache.getForwTarget().forEach(this::addTarget);
-            } else {
-                // the step finishes the recipe
-                addTarget(new RecipeTarget(partial));
             }
         }
         // absence
         lowerAbsence(target.getAbsence());
         // full-ness
-        if (target.isTransient() && !targetFull) {
+        if (!isDone(target)) {
             var targetCache = target.getCache();
             targetCache.preds = add(targetCache.preds, this);
             this.pendingCount++;
@@ -707,11 +744,19 @@ public class StateCache implements Cache {
         if (this.knownInner && !state.isInner()) {
             // the state changed from inner to outer, so it is a recipe target itself
             this.knownInner = false;
-            addTarget(new RecipeTarget(state));
+            var launches = this.launches;
+            if (launches != null) {
+                var target = new RecipeTarget(state);
+                for (var launch : launches) {
+                    addRecipeTransition(launch.trans(), target);
+                }
+            }
         }
         lowerAbsence(transience);
-        if (transience == 0) {
-            // the predecessors no longer wait for this state
+        if (transience == 0 && !state.getPrimeFrame().isInner()) {
+            // the predecessors no longer wait for this state; if the prime
+            // frame is inner, the state still carries the recipe run and
+            // they wait for it to become full (see #isDone)
             notifyDone(agenda);
         }
     }
@@ -736,24 +781,46 @@ public class StateCache implements Cache {
     }
 
     /**
-     * Adds a recipe target to the known reachable targets of this state, and
-     * propagates it to the launches and inner predecessors.
+     * Propagates a recipe launch to this state, whose prime frame is inner,
+     * adding the recipe transitions from the launch to the targets reachable
+     * from here over the inner steps registered so far. The walk stops at a
+     * full state, whose targets are complete, and at a state the launch has
+     * already reached, which has delivered its known targets and delivers
+     * later ones through {@link #registerOutPartial} and
+     * {@link #registerTransienceChange}.
      */
-    private void addTarget(RecipeTarget target) {
-        if (!getForwTarget().add(target)) {
-            return;
-        }
-        Deque<StateCache> agenda = new ArrayDeque<>();
-        agenda.add(this);
-        while (!agenda.isEmpty()) {
-            var next = agenda.poll();
-            assert next != null; // agenda is non-empty
-            for (var launch : next.launches) {
-                addRecipeTransition(launch, target);
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    private void propagate(Launch launch) {
+        Deque<StateCache> stack = new ArrayDeque<>();
+        stack.push(this);
+        while (!stack.isEmpty()) {
+            var next = stack.pop();
+            var state = next.getState();
+            assert state.getPrimeFrame().isInner();
+            if (state.isFull()) {
+                next.getForwTarget().forEach(t -> addRecipeTransition(launch.trans(), t));
+                continue;
             }
-            for (var pred : next.innerPreds) {
-                if (!pred.getState().isFull() && pred.getForwTarget().add(target)) {
-                    agenda.add(pred);
+            var launches = next.launches;
+            if (launches == null) {
+                launches = next.launches = new LaunchSet();
+            }
+            if (!launches.add(launch)) {
+                continue;
+            }
+            if (!next.knownInner) {
+                // the state left the recipe through a verdict
+                addRecipeTransition(launch.trans(), new RecipeTarget(state));
+            }
+            // follow the steps of this recipe run, also from a state that left
+            // the recipe through a verdict after having generated them; the
+            // launches of other recipes from such a state do not belong to it
+            for (var step : next.innerSteps) {
+                var target = step.target();
+                if (target.getPrimeFrame().isInner()) {
+                    stack.push(target.getCache());
+                } else {
+                    addRecipeTransition(launch.trans(), new RecipeTarget(step));
                 }
             }
         }
@@ -787,8 +854,8 @@ public class StateCache implements Cache {
     }
 
     /**
-     * Searches forward from this (closed) state over the transient states
-     * that are not yet full; if none of them is open, they are all full.
+     * Searches forward from this (closed) state over the successors that are
+     * not yet done; if none of them is open, they are all full.
      */
     private void searchFull(Deque<StateCache> agenda) {
         assert getState().isClosed() && this.openCount == 0 && this.pendingCount > 0;
@@ -803,8 +870,7 @@ public class StateCache implements Cache {
             }
             for (var trans : next.getTransitionMap()) {
                 var target = trans.target();
-                if (!target.isTransient() || target.isFull()
-                    || target.getActualFrame().isRemoved()) {
+                if (isDone(target) || target.getActualFrame().isRemoved()) {
                     continue;
                 }
                 if (!target.isClosed()) {
@@ -826,13 +892,14 @@ public class StateCache implements Cache {
         assert getState().isClosed();
         getState().setFull(this.knownAbsence);
         notifyDone(agenda);
-        // no new targets can be found from a full state
-        this.innerPreds = Collections.emptyList();
-        this.launches = Collections.emptyList();
+        // no new targets can be found from a full state; later launches
+        // receive its complete targets (see #propagate)
+        this.launches = null;
+        this.innerSteps = Collections.emptyList();
     }
 
     /**
-     * Notifies the predecessors that this state is done, i.e., full or steady,
+     * Notifies the predecessors that this state is done (see {@link #isDone})
      * and drops them; if the state is not yet closed, its closure is thereby
      * pre-empted.
      */
@@ -876,8 +943,106 @@ public class StateCache implements Cache {
     /** Known absence level. */
     private int knownAbsence;
 
-    /** Shared unmodifiable empty set of recipe targets. */
-    static private final Set<RecipeTarget> EMPTY_TARGET_SET = Collections.emptySet();
+    /**
+     * A recipe launch together with its index among the launches of the GTS
+     * (see {@link GTS#newLaunchIndex}), assigned once when the launch is
+     * registered so that the membership tests of {@link #propagate} need
+     * neither a lookup nor a hash of the transition.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    private record Launch(RuleTransition trans, int index) {
+        // no additional functionality
+    }
+
+    /**
+     * Insertion-ordered set of launches whose membership test is a bit array
+     * over the launch indices, laid out circularly relative to the first index
+     * inserted: index {@code n} sits at position {@code n - base}, wrapped
+     * around the capacity when negative. Positions are distinct as long as
+     * the range of indices in the set is below the capacity, whichever order
+     * the indices arrive in; when the range reaches the capacity, the array
+     * doubles and the then-lowest index moves to position zero. Memory is
+     * thus proportional to the range of indices present rather than to the
+     * launch count of the GTS, and the first launch costs a single word
+     * wherever it arrives.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    static private class LaunchSet implements Iterable<Launch> {
+        /** Adds a launch; returns {@code false} if it was already present. */
+        boolean add(Launch launch) {
+            int index = launch.index();
+            if (this.launches.isEmpty()) {
+                this.base = this.lowest = this.highest = index;
+            } else {
+                int lowest = Math.min(this.lowest, index);
+                int highest = Math.max(this.highest, index);
+                if (highest - lowest >= capacity()) {
+                    grow(lowest, highest);
+                }
+                this.lowest = lowest;
+                this.highest = highest;
+            }
+            int pos = position(index);
+            long mask = 1L << (pos & 63);
+            int word = pos >>> 6;
+            if ((this.words[word] & mask) != 0) {
+                return false;
+            }
+            this.words[word] |= mask;
+            this.launches.add(launch);
+            return true;
+        }
+
+        /** Returns the position of an index in the (circular) bit array. */
+        private int position(int index) {
+            int result = index - this.base;
+            return result < 0
+                ? result + capacity()
+                : result;
+        }
+
+        /** Returns the capacity of the bit array, in bits. */
+        private int capacity() {
+            return this.words.length << 6;
+        }
+
+        /**
+         * Doubles the bit array until it holds a given range of indices, and
+         * lays the launches out afresh with the lowest index at position zero.
+         */
+        private void grow(int lowest, int highest) {
+            int capacity = capacity();
+            while (highest - lowest >= capacity) {
+                capacity <<= 1;
+            }
+            this.words = new long[capacity >>> 6];
+            this.base = lowest;
+            for (var launch : this.launches) {
+                int pos = launch.index() - lowest;
+                this.words[pos >>> 6] |= 1L << (pos & 63);
+            }
+        }
+
+        @Override
+        public Iterator<Launch> iterator() {
+            return this.launches.iterator();
+        }
+
+        /** The launches, in order of insertion. */
+        private final List<Launch> launches = new ArrayList<>(2);
+
+        /** Circular bit array of the launch indices; see {@link #position}. */
+        private long[] words = new long[1];
+
+        /** Index at position zero of the bit array. */
+        private int base;
+
+        /** Lowest index in the set (undefined while empty). */
+        private int lowest;
+
+        /** Highest index in the set (undefined while empty). */
+        private int highest;
+    }
 
     /** Combination of target state and out-parameter values.
      * Equality is by content, including the out-parameter values, so that a

@@ -16,7 +16,6 @@
  */
 package nl.utwente.groove.control;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -29,10 +28,9 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.grammar.Action;
 import nl.utwente.groove.grammar.Recipe;
 import nl.utwente.groove.grammar.Rule;
-import nl.utwente.groove.util.Factory;
 
 /**
- * Stack of nested calls.
+ * Immutable stack of nested calls.
  * The outer element is the original call; the inner element is the eventual
  * rule call.
  * All but the inner element are procedure calls; all but the outer element
@@ -42,19 +40,28 @@ import nl.utwente.groove.util.Factory;
  */
 @NonNullByDefault
 public class NestedCall implements Iterable<Call> {
-    /** Constructs in initially empty nested call. */
-    public NestedCall() {
-        // empty
+    /**
+     * Constructs a nested call from a given list of calls, from outer to inner.
+     */
+    public NestedCall(List<Call> calls) {
+        this.calls = List.copyOf(calls);
+        this.recipe = this.calls
+            .stream()
+            .map(c -> c.getUnit())
+            .filter(u -> u instanceof Recipe)
+            .findFirst()
+            .map(u -> (Recipe) u);
     }
 
     /**
-     * Constructs a nested call from a given stream of calls.
+     * Constructs a nested call from a given stream of calls, from outer to inner.
      */
     public NestedCall(Stream<Call> calls) {
-        calls.forEach(this.calls::add);
+        this(calls.toList());
     }
 
-    private final List<Call> calls = new ArrayList<>();
+    /** The calls, from outer to inner. */
+    private final List<Call> calls;
 
     /** Returns the stream of calls in this nested call, from outer to inner. */
     public Stream<Call> stream() {
@@ -65,19 +72,6 @@ public class NestedCall implements Iterable<Call> {
     @Override
     public Iterator<Call> iterator() {
         return this.calls.iterator();
-    }
-
-    /** Pushes a new inner call onto this nested call. */
-    public void push(Call call) {
-        this.calls.add(call);
-        this.recipe.reset();
-    }
-
-    /** Removes and returns the inner element of this nested call. */
-    public synchronized Call pop() {
-        var result = this.calls.remove(this.calls.size());
-        this.recipe.reset();
-        return result;
     }
 
     /** Returns the depth of this nested call. */
@@ -105,7 +99,7 @@ public class NestedCall implements Iterable<Call> {
      * @see #getRecipe()
      */
     public boolean inRecipe() {
-        return getRecipe().isPresent();
+        return this.recipe.isPresent();
     }
 
     /**
@@ -113,16 +107,11 @@ public class NestedCall implements Iterable<Call> {
      * @see #inRecipe()
      */
     public Optional<Recipe> getRecipe() {
-        return this.recipe.get();
+        return this.recipe;
     }
 
-    /** The first recipe in this nested call, or {@code null} if there is none. */
-    private Factory<Optional<Recipe>> recipe = Factory
-        .lazy(() -> stream()
-            .map(c -> c.getUnit())
-            .filter(u -> u instanceof Recipe)
-            .findFirst()
-            .map(u -> (Recipe) u));
+    /** The first recipe in this nested call, if any. */
+    private final Optional<Recipe> recipe;
 
     /**
      * Returns the top-level visible action in this nested call.

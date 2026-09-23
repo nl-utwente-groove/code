@@ -227,12 +227,13 @@ public class AutomatonBuildTest {
         //
         p = build("nested", "function f() { a; alap a; } recipe r() { f; alap f; } r;");
         p.explore();
-        NestedSwitch swt = new NestedSwitch();
-        swt.push(this.prog.getTemplate().getStart().getAttempt().get(0).getOuter());
+        var swtBuilder = new NestedSwitch.Builder();
+        swtBuilder.push(this.prog.getTemplate().getStart().getAttempt().get(0).getOuter());
         Switch r0Switch = proc("r").getTemplate().getStart().getAttempt().get(0).getOuter();
-        swt.push(r0Switch);
+        swtBuilder.push(r0Switch);
         Switch f0Switch = proc("f").getTemplate().getStart().getAttempt().get(0).getOuter();
-        swt.push(f0Switch);
+        swtBuilder.push(f0Switch);
+        NestedSwitch swt = swtBuilder.build();
         Frame f0 = p.getStart();
         StepAttempt a0 = f0.getAttempt();
         assertEquals(1, a0.size());
@@ -247,8 +248,7 @@ public class AutomatonBuildTest {
         Step s1 = a1.get(0);
         Switch f1Switch = f0Switch.onFinish().getAttempt().get(0).getOuter();
         assertDistinct(f1Switch, f0Switch);
-        NestedSwitch f1Stack = new NestedSwitch();
-        f1Stack.push(f1Switch);
+        NestedSwitch f1Stack = new NestedSwitch.Builder().push(f1Switch).build();
         assertEquals(f1Stack, s1.getStack());
         assertEquals(f1, s1.onFinish());
         Frame f2 = a1.onFailure();
@@ -256,9 +256,7 @@ public class AutomatonBuildTest {
         Step s2 = a2.get(0);
         Switch r2Switch = r0Switch.onFinish().getAttempt().get(0).getOuter();
         assertDistinct(r2Switch, r0Switch);
-        NestedSwitch r2Stack = new NestedSwitch();
-        r2Stack.push(r2Switch);
-        r2Stack.push(f0Switch);
+        NestedSwitch r2Stack = new NestedSwitch.Builder().push(r2Switch).push(f0Switch).build();
         assertEquals(r2Stack, s2.getStack());
         assertDistinct(f1, s2.onFinish());
         assertTrue(a2.onSuccess().isDead());
