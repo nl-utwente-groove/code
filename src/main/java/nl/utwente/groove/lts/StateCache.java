@@ -548,11 +548,16 @@ public class StateCache implements Cache {
      *
      * Full-ness and absence are derived from the direct successors only, and
      * changes are propagated backwards over the direct predecessors: a state
-     * is full when it is closed and every transient successor is full or has
-     * become steady; its absence is the minimum of its own transience and the
-     * absence of its successors, which only ever decreases. Recipe targets
-     * are propagated backwards over the direct inner predecessors, to the
-     * launches. Cycles inside a transient region (loops in a recipe or atomic
+     * is full when it is closed and every successor is done, i.e., full or
+     * steady outside a recipe run (see {@link #isDone}); its absence is the
+     * minimum of its own transience and the absence of its successors, which
+     * only ever decreases. Recipe targets are propagated backwards over the
+     * direct inner predecessors, to the launches; since a full state drops
+     * that bookkeeping, full-ness must imply that the targets are complete,
+     * which is why a state that left its recipe through a verdict but still
+     * carries the run (its prime frame is inner, so its rule transitions are
+     * inner steps) is only done when it is full (gh #925).
+     * Cycles inside a transient region (loops in a recipe or atomic
      * block) defeat the local full-ness rule, since no member of the cycle
      * ever sees all its successors full; a closed state whose successors are
      * all closed therefore searches forward and, if it finds no open state,
@@ -566,16 +571,27 @@ public class StateCache implements Cache {
 
     /**
      * Sources of the partial transitions into this state that were registered
-     * while this state was transient and not full; they wait for this state to
-     * close and to become full or steady, and take over decreases of its absence.
+     * while this state was not done; they wait for this state to close and to
+     * become done, and take over decreases of its absence.
      */
     private List<StateCache> preds = Collections.emptyList();
 
-    /** Number of registered transient successors that are not yet full or steady. */
+    /** Number of registered successors that are not yet done. */
     private int pendingCount;
 
-    /** Number of registered transient successors that are not yet closed, full or steady. */
+    /** Number of registered successors that are not yet closed or done. */
     private int openCount;
+
+    /**
+     * Tests if a state is done from the point of view of its predecessors,
+     * meaning that it can contribute no further absence decrease or recipe
+     * target: it is full, or it is steady and its prime frame is outer, so
+     * that it is not part of a recipe run.
+     */
+    static private boolean isDone(GraphState state) {
+        return state.isFull()
+            || !state.isTransient() && !state.getPrimeFrame().isInner();
+    }
 
     /** Inner states with an inner step into this (inner-prime, non-full) state. */
     private List<StateCache> innerPreds = Collections.emptyList();
@@ -647,7 +663,7 @@ public class StateCache implements Cache {
         // absence
         lowerAbsence(target.getAbsence());
         // full-ness
-        if (target.isTransient() && !targetFull) {
+        if (!isDone(target)) {
             var targetCache = target.getCache();
             targetCache.preds = add(targetCache.preds, this);
             this.pendingCount++;
@@ -710,8 +726,10 @@ public class StateCache implements Cache {
             addTarget(new RecipeTarget(state));
         }
         lowerAbsence(transience);
-        if (transience == 0) {
-            // the predecessors no longer wait for this state
+        if (transience == 0 && !state.getPrimeFrame().isInner()) {
+            // the predecessors no longer wait for this state; if the prime
+            // frame is inner, the state still carries the recipe run and
+            // they wait for it to become full (see #isDone)
             notifyDone(agenda);
         }
     }
@@ -787,8 +805,8 @@ public class StateCache implements Cache {
     }
 
     /**
-     * Searches forward from this (closed) state over the transient states
-     * that are not yet full; if none of them is open, they are all full.
+     * Searches forward from this (closed) state over the successors that are
+     * not yet done; if none of them is open, they are all full.
      */
     private void searchFull(Deque<StateCache> agenda) {
         assert getState().isClosed() && this.openCount == 0 && this.pendingCount > 0;
@@ -803,8 +821,7 @@ public class StateCache implements Cache {
             }
             for (var trans : next.getTransitionMap()) {
                 var target = trans.target();
-                if (!target.isTransient() || target.isFull()
-                    || target.getActualFrame().isRemoved()) {
+                if (isDone(target) || target.getActualFrame().isRemoved()) {
                     continue;
                 }
                 if (!target.isClosed()) {
@@ -832,7 +849,7 @@ public class StateCache implements Cache {
     }
 
     /**
-     * Notifies the predecessors that this state is done, i.e., full or steady,
+     * Notifies the predecessors that this state is done (see {@link #isDone})
      * and drops them; if the state is not yet closed, its closure is thereby
      * pre-empted.
      */

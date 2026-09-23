@@ -82,8 +82,9 @@ public class Status {
         FINAL(false, false),
         /**
          * Indicates that exploration of a graph state is complete.
-         * This is the case if and only if it is closed, and if it is transient,
-         * then all outgoing transitions lead to full or steady states.
+         * This is the case if and only if it is closed, and all outgoing
+         * transitions lead to full states, or to steady states that are not
+         * part of a recipe run (i.e., whose prime frame is not inner).
          */
         FULL(false, true),
         /** Indicates that a state is inner, i.e., a recipe state. */
