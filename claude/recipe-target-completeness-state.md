@@ -89,13 +89,20 @@ bit set). A cleared cache of a closed-but-not-full state loses `launches` and
 | hub `chain-60-2` wander-alap (1771 states, 6.07 M trans) | 3.6 s | 3.9 s | 4.1 s |
 | hub `chain-200-2` wander (19 901 states) | 90 s (incomplete) | out of heap at 6 GB | 21 s, 98 705 trans |
 
-Residual on wander-alap: `RecipeTarget(state)` is rebuilt per (launch, state) visit
-(3% in the profile). An earlier version of this paragraph also blamed an allocation
-in `Factory.get` under `Frame.isInner` (5%); re-profiling with
-`-XX:+DebugNonSafepoints` showed no allocation but two uncontended monitors per query
-(the global `Factory` lock in `NestedCall.getRecipe` and the synchronized
-`NestedSwitch.getCall`, together 14%), removed on branch `nested-call-recipe-lookup`
-by making both classes immutable.
+Residual on wander-alap, as measured after merging `nested-call-recipe-lookup` into
+this branch (tip 3.7–3.9 s warm, five runs): caching `RecipeTarget(state)` per state
+was investigated and refuted. With the recipe lookup cheap, the constructor is fully
+inlined and never appears as a frame in a `-XX:+DebugNonSafepoints` profile; all of
+`propagate`'s own time is 34 of 1018 samples, so the ceiling of the gain is under 3%
+and the realistic figure about 1%, below the run-to-run noise. The cache owner would
+have been the visited state's own cache (no parameter passing), and the step targets
+could have been cached in the source state's cache just as well, so the asymmetry is
+avoidable but pointless. The same profile showed `GTS.getLaunchIndex` at 7% (one hash
+lookup per `propagate` call, of which there are about 24 million: one per registered
+step and launch of its source); numbering the launch once at registration in a
+`Launch` record replaced the GTS map by a counter, but gave no measurable wall-time
+gain either (3.8–3.9 s). Kept as a simplification. Remaining top frames are the GTS
+transition set (`TreeHashSet.put`) and `CacheReference.incFrequency`, i.e. the output.
 
 Harness: a scratch `main` that loads the grammar with `SystemStore.newGrammar`, sets
 the host and control resources active with `setLocalActiveNames`, and plays
