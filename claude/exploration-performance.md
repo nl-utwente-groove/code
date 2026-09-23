@@ -393,6 +393,24 @@ Two outcomes:
   passed to full predecessors. The fix belongs on its own branch; the pinned transition
   counts of the three wander rows include the shortfall and will rise with it.
 
+**Outcome (gh #925, fixed and merged 2026-09-23).** The reading above was right in
+substance: a region state leaves the recipe through the star's same-verdict exit as soon
+as its matches are computed, so it is steady before it is closed, and the gh #924
+bookkeeping counted a steady successor as done; predecessors became full early and
+dropped the target propagation. Waiting for steady states whose prime frame is inner
+(`StateCache.isDone`) made the counts right but the backward target propagation
+quadratic on exactly this shape (every region state accumulating every reachable
+target: `chain-100-2` 4.4 s → 8.9 s, `chain-200-2` out of a 6 GB heap), so it was
+replaced by forward propagation of the launches (a `LaunchSet` per region state, launch
+indices from `GTS.newLaunchIndex`), which visits each (launch, region state) pair once.
+Warm scratch-harness timings under bfs, master → merged: `chain-100-2` wander 4.4 s and
+19 602 transitions (incomplete) → 1.5 s and 24 355; `chain-200-2` wander 90 s and 79 202
+→ 21 s and 98 705; `chain-60-2` wander-alap 3.6 s → 4.1 s at 6 068 977 transitions;
+`fib-22` unchanged. So the first outcome above, the per-state cost of the recipe
+traversal, was largely the propagation and has shrunk about four-fold; the table and the
+pinned counts of the three rows date from before the fix and are to be re-measured
+through the harness (state file, next item 1).
+
 ### petrinet (`petrinet.gps`)
 
 Arend's copy of the sample: one rule, `smartRule`, a transition firing when every input
@@ -1819,8 +1837,8 @@ times slower in the Simulator's mode, all in `match`: 4.3.2 measured); gap 2 by 
 breadth- and depth-first exploration, see the hub grammar); gap 4 by
 `mergers-9-injective` and `leader-election-14-injective` (the filter costs 1 to 4 % where
 it rejects nothing). New since: a long-tier row for `hub-wander-200` is the candidate for
-the recipe traversal cost; the recipe-target bug needs its fix before the wander counts
-are final.
+the recipe traversal cost; the recipe-target bug is fixed and merged (gh #925), and the
+wander counts and times are to be re-pinned against it.
 
 Section 6 (assertion-only costs) is outside the harness by construction, since it runs
 with assertions off; those costs show only under `-ea`, in `ExplorationTest` and in

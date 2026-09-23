@@ -33,18 +33,30 @@ Done 2026-09-23, all in the note:
   strength; stored large-graph rows retain 5 to 18 times more); (2) `movePrev`, the
   `wander` and `wander-alap` programs, rows `hub-wander-alap-20` (smoke), `hub-wander-100`
   and `hub-wander-alap-60` (quick); (4) `mergers-9-injective`, `leader-election-14-injective`.
-- **Master bug found by the wander rows**: recipe launches under bfs/dfs miss most end
-  states (2n − 3 of n(n−1)/2 on `chain-n-2`; linear finds all). Reproduced with
-  `RecipeCompletenessTest` cases `junit/performance/hub.gps` / `wander` and
-  `wander-alap` on `chain-20-2` (all four variants fail; the cases are not committed).
-  Pre-gh #924 erred the other way. Own branch, like gh #924; the wander rows' pinned
-  transition counts rise with the fix.
+- **Master bug found by the wander rows, gh #925, fixed and merged 2026-09-23**: recipe
+  launches under bfs/dfs missed most end states (2n − 3 of n(n−1)/2 on `chain-n-2`;
+  linear found all). Cause: a region state that leaves the recipe through the star's
+  same-verdict exit becomes steady before it is closed, and the gh #924 bookkeeping
+  treated it as done for its predecessors, which then dropped the target propagation.
+  Fix: `StateCache.isDone` waits for steady states with an inner prime frame; and since
+  the correct backward propagation was quadratic on this shape (every region state
+  accumulating every target: `chain-100-2` 4.4 s → 8.9 s, `chain-200-2` out of a 6 GB
+  heap), it was replaced by forward launch propagation (`LaunchSet` per region state,
+  `GTS.newLaunchIndex`). Warm scratch-harness timings, bfs: `chain-100-2` wander 4.4 s /
+  19 602 trans (incomplete) → 1.5 s / 24 355; `chain-200-2` wander 90 s / 79 202 → 21 s /
+  98 705; `chain-60-2` wander-alap 3.6 s / 6 068 150 → 4.1 s / 6 068 977; `fib-22` 1.0 →
+  0.9 s. The gate cases live in `RecipeCompletenessTest` on `junit/samples/wander.gps`
+  (a copy of the hub wander programs). The wander rows' pinned counts here still include
+  the shortfall and the "recipe traversal is expensive per state" outcome in the note was
+  measured before the redesign.
 
 ## Next, in order
 
-1. The recipe-target bug (above) on its own branch off master: add the two wander cases
-   to `RecipeCompletenessTest` as its gate, fix `StateCache`, then re-pin the three wander
-   rows here.
+1. Merge master (gh #925 fix + redesign), then re-pin the three wander rows through the
+   harness, one JVM per row: `hub-wander-100` becomes 4951 / 24 355, `hub-wander-alap-60`
+   1771 / 6 068 977, `hub-wander-alap-20` 191 / (to be measured; 190 recipe transitions
+   from the start state alone); update the row comment in `ExplorationBenchmark` and the
+   wander table and outcomes in the note (the traversal cost dropped about four-fold).
 2. A long-tier row `hub-wander-200` (161 s, 65 GB allocated, pairs with `hub-chain-200-2`)
    once the counts are final; move `binary-tree-dfs-unstored-9` out of the quick tier
    (collector-bound at 4 GB).
