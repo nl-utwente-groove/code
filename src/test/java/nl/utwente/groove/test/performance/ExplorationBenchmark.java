@@ -462,6 +462,29 @@ public class ExplorationBenchmark {
             new Config("hub-ring-1000-counted", "hub.gps", "ring-1000-1", "counted",
                 "next=newest cost=uniform bound=cost:200000 persistence=none", 200002, 200001,
                 Tier.QUICK),
+            // the wander recipe on the two-token chain (2026-09-23): moveNext
+            // once, then moveNext or movePrev any number of times, so the
+            // recipe's transient region is the whole placement space, cyclic
+            // (every step can be undone) and with every state a recipe end.
+            // Under "wander" there is one launch, from the start state, and
+            // the row is the cost of traversing the region: at 100 leaves 5 s
+            // for 4951 states, where the plain chain program does 19900 in
+            // 10.7 s (hub-chain-200-2); retaining 0.85 GB. Under
+            // "wander-alap" every public state launches again into the
+            // existing region, whose targets must be found again for every
+            // launch: states squared recipe transitions, the propagation and
+            // forward search of gh #924 under stress. The pinned transition
+            // counts include recipe transitions that are currently missing:
+            // under breadth- and depth-first exploration a launch gets only
+            // part of the recipe ends as targets (37 of 190 at 20 leaves,
+            // where the linear strategy finds all 190), a bug in the target
+            // bookkeeping of StateCache; its fix will raise these counts
+            new Config("hub-wander-alap-20", "hub.gps", "chain-20-2", "wander-alap", "", 191,
+                66120, Tier.SMOKE),
+            new Config("hub-wander-100", "hub.gps", "chain-100-2", "wander", "", 4951, 19602,
+                Tier.QUICK),
+            new Config("hub-wander-alap-60", "hub.gps", "chain-60-2", "wander-alap", "", 1771,
+                6068150, Tier.QUICK),
             // Arend's petrinet copy (2026-09-22): one rule with two forall
             // levels, every input place of a transition holds a token, which
             // is consumed, and every output place receives one. The pipeline

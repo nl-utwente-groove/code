@@ -330,7 +330,7 @@ SIZES = [
     ("attribute-count-to-n.gps", count_to_n, [(10000,), (100000,), (300000,), (600000,)]),
     ("fibonacci.gps", fibonacci, [(12,), (15,), (22,)]),
     ("hub.gps", hub, [(300, 3, "star"), (1000, 1, "chain"), (200, 2, "chain"),
-                      (1000, 1, "ring")]),
+                      (1000, 1, "ring"), (20, 2, "chain"), (60, 2, "chain"), (100, 2, "chain")]),
     ("hub.gps", field, [(2, 100, 2500)]),
     ("petrinet.gps", petri_pipe, [(8, 8), (9, 9), (11, 11)]),
     ("petrinet.gps", petri_join, [(100,), (1000,)]),
