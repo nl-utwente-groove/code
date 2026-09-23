@@ -46,32 +46,30 @@ Done 2026-09-23, all in the note:
   19 602 trans (incomplete) → 1.5 s / 24 355; `chain-200-2` wander 90 s / 79 202 → 21 s /
   98 705; `chain-60-2` wander-alap 3.6 s / 6 068 150 → 4.1 s / 6 068 977; `fib-22` 1.0 →
   0.9 s. The gate cases live in `RecipeCompletenessTest` on `junit/samples/wander.gps`
-  (a copy of the hub wander programs). The wander rows' pinned counts here still include
-  the shortfall and the "recipe traversal is expensive per state" outcome in the note was
-  measured before the redesign.
+  (a copy of the hub wander programs). Master merged into this branch and the three tier
+  rows re-pinned through the harness 2026-09-23 (single cold runs, one JVM per row):
+  `hub-wander-alap-20` 191 / 66 197 (0.24 s), `hub-wander-100` 4951 / 24 355 (1.9 s, was
+  5.0; retains 22 MB, was 845), `hub-wander-alap-60` 1771 / 6 068 977 (4.8 s, was 4.4);
+  benchmark comment, note table and outcomes updated.
 
 ## Next, in order
 
-1. Merge master (gh #925 fix + redesign), then re-pin the three wander rows through the
-   harness, one JVM per row: `hub-wander-100` becomes 4951 / 24 355, `hub-wander-alap-60`
-   1771 / 6 068 977, `hub-wander-alap-20` 191 / (to be measured; 190 recipe transitions
-   from the start state alone); update the row comment in `ExplorationBenchmark` and the
-   wander table and outcomes in the note (the traversal cost dropped about four-fold).
-2. A long-tier row `hub-wander-200` (161 s, 65 GB allocated, pairs with `hub-chain-200-2`)
-   once the counts are final; move `binary-tree-dfs-unstored-9` out of the quick tier
+1. A row `hub-wander-200` (pairs with `hub-chain-200-2`; pre-fix 161 s and 65 GB
+   allocated, post-fix 21 s warm in the scratch harness, so calibrate first: it may now
+   be a quick-tier row rather than long); move `binary-tree-dfs-unstored-9` out of the quick tier
    (collector-bound at 4 GB).
-3. Section 1 of the note (always-on `Reporter`, `CHECK_IMAGES`, `Factory.get()` lock,
+2. Section 1 of the note (always-on `Reporter`, `CHECK_IMAGES`, `Factory.get()` lock,
    the `synchronized` accessors, `java.util.Stack`): one commit per item, each with
    before/after numbers measured one JVM per row (the A/B shape in the note), in both
    modes where the row is mode-sensitive. `Reporter` first: it is on the innermost loop
    and also the harness's own breakdown source, so gate it on a system property and run
    the harness once with it on (for the breakdown) and once off (for the headline).
-4. Finding 4.3.2 (per-node edge sets) has moved up: it is the whole of the Simulator-mode
+3. Finding 4.3.2 (per-node edge sets) has moved up: it is the whole of the Simulator-mode
    cost on large graphs, 11 to 33 times on the hub rows.
-5. Section 2 (dead optimisations): 2.1 stored `MatchResult` keys, confirm "Confluent:"
+4. Section 2 (dead optimisations): 2.1 stored `MatchResult` keys, confirm "Confluent:"
    goes non-zero on `inheritance`; 2.3 soft certifier reference; 2.4 refinement loop
    (gate with `grammar-smoke`); 2.5 to 2.7 freezing and chain replay.
-6. A long-tier size for As-and-Bs is still missing; then section 3.
+5. A long-tier size for As-and-Bs is still missing; then section 3.
 
 ## Grammar set extension (started 2026-09-21)
 

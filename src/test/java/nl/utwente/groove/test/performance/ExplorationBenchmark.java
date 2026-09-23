@@ -478,24 +478,24 @@ public class ExplorationBenchmark {
             // recipe's transient region is the whole placement space, cyclic
             // (every step can be undone) and with every state a recipe end.
             // Under "wander" there is one launch, from the start state, and
-            // the row is the cost of traversing the region: at 100 leaves 5 s
-            // for 4951 states, where the plain chain program does 19900 in
-            // 10.7 s (hub-chain-200-2); retaining 0.85 GB. Under
-            // "wander-alap" every public state launches again into the
-            // existing region, whose targets must be found again for every
-            // launch: states squared recipe transitions, the propagation and
-            // forward search of gh #924 under stress. The pinned transition
-            // counts include recipe transitions that are currently missing:
-            // under breadth- and depth-first exploration a launch gets only
-            // part of the recipe ends as targets (37 of 190 at 20 leaves,
-            // where the linear strategy finds all 190), a bug in the target
-            // bookkeeping of StateCache; its fix will raise these counts
+            // the row is the cost of traversing the region: at 100 leaves
+            // 1.9 s cold for 4951 states and 4950 recipe transitions,
+            // retaining 22 MB, where the plain chain program does 19900
+            // states in 10.7 s (hub-chain-200-2). Under "wander-alap" every
+            // public state launches again into the existing region, whose
+            // targets must be found for every launch: states squared recipe
+            // transitions, the launch propagation of StateCache under
+            // stress. These rows found gh #925 (a launch got 2n-3 of its
+            // n(n-1)/2 recipe ends under breadth- and depth-first
+            // exploration); the counts were re-pinned after its fix, which
+            // also replaced the backward target propagation by forward
+            // launch propagation and cut the wander-100 time from 5 s.
             new Config("hub-wander-alap-20", "hub.gps", "chain-20-2", "wander-alap", "", 191,
-                66120, Tier.SMOKE),
-            new Config("hub-wander-100", "hub.gps", "chain-100-2", "wander", "", 4951, 19602,
+                66197, Tier.SMOKE),
+            new Config("hub-wander-100", "hub.gps", "chain-100-2", "wander", "", 4951, 24355,
                 Tier.QUICK),
             new Config("hub-wander-alap-60", "hub.gps", "chain-60-2", "wander-alap", "", 1771,
-                6068150, Tier.QUICK),
+                6068977, Tier.QUICK),
             // Arend's petrinet copy (2026-09-22): one rule with two forall
             // levels, every input place of a transition holds a token, which
             // is consumed, and every output place receives one. The pipeline

@@ -352,18 +352,20 @@ needs its recipe targets recomputed over a cyclic region, which is the propagati
 forward-search fallback of gh #924 under stress, at about states² recipe transitions.
 Desktop calibration, single cold runs through the harness, one JVM per row, `-Xmx8g`
 (`trans` is the stored count, here the recipe transitions; `disc.tr` adds the rule
-transitions inside the region):
+transitions inside the region). The three tier rows were re-pinned the same way after
+the gh #925 fix (see the outcome below); the other rows still show the pre-fix
+measurements, with the shortfall in their transition counts:
 
 | row | states | trans | disc.tr | s | iso ms | gen ms | allocMB | retMB | kept |
 |---|---|---|---|---|---|---|---|---|---|
 | `hub-wander-20` | 191 | 37 | 722 | 0.16 | 16 | 79 | 20 | 2 | |
 | `hub-wander-50` | 1 226 | 97 | 4 802 | 0.48 | 105 | 378 | 352 | 54 | |
-| `hub-wander-100` | 4 951 | 197 | 19 602 | 5.0 | 1 430 | 4 749 | 4 495 | 845 | quick |
+| `hub-wander-100` | 4 951 | 4 950 | 24 355 | 1.9 | 1 355 | 1 752 | 969 | 22 | quick, re-pinned |
 | `hub-wander-150` | 11 176 | 297 | 44 402 | 28 | 7 381 | 27 100 | 21 409 | 4 246 | too heavy for 4 GB |
 | `hub-wander-200` | 19 901 | 397 | 79 202 | 161 | 22 790 | 159 107 | 65 546 | 1 529 | long candidate |
-| `hub-wander-alap-20` | 191 | 65 093 | 66 120 | 0.22 | 15 | 106 | 64 | 15 | smoke |
+| `hub-wander-alap-20` | 191 | 65 170 | 66 197 | 0.24 | 11 | 124 | 67 | 13 | smoke, re-pinned |
 | `hub-wander-alap-40` | 781 | 1 156 388 | 1 160 835 | 0.99 | 64 | 468 | 879 | 259 | |
-| `hub-wander-alap-60` | 1 771 | 6 057 883 | 6 068 150 | 4.4 | 305 | 1 651 | 4 289 | 1 332 | quick |
+| `hub-wander-alap-60` | 1 771 | 6 058 710 | 6 068 977 | 4.8 | 442 | 2 964 | 4 553 | 1 186 | quick, re-pinned |
 | `hub-wander-alap-80` | 3 161 | 19 473 578 | 19 492 065 | 16 | 927 | 5 891 | 13 530 | 4 288 | too heavy for 4 GB |
 
 The states are n(n−1)/2 + 1 as predicted, the region is cyclic (about four rule
@@ -407,9 +409,14 @@ Warm scratch-harness timings under bfs, master → merged: `chain-100-2` wander 
 19 602 transitions (incomplete) → 1.5 s and 24 355; `chain-200-2` wander 90 s and 79 202
 → 21 s and 98 705; `chain-60-2` wander-alap 3.6 s → 4.1 s at 6 068 977 transitions;
 `fib-22` unchanged. So the first outcome above, the per-state cost of the recipe
-traversal, was largely the propagation and has shrunk about four-fold; the table and the
-pinned counts of the three rows date from before the fix and are to be re-measured
-through the harness (state file, next item 1).
+traversal, was largely the propagation and has shrunk about four-fold. The three tier
+rows were re-pinned through the harness the same day (single cold runs, one JVM per row,
+JDK 26.0.2.1): `hub-wander-100` 1.9 s against 5.0, `gen` 1.75 s against 4.7, retaining
+22 MB against 845 (the region's states no longer hold target sets), with the complete
+4 950 recipe transitions; `hub-wander-alap-20` 0.24 s; `hub-wander-alap-60` 4.8 s
+against 4.4, single cold runs, consistent with the warm A/B of 3.6 against 4.1 s, i.e.
+the output-bound `alap` row pays a little for the complete answer. The other rows of the
+table date from before the fix.
 
 ### petrinet (`petrinet.gps`)
 
@@ -1837,8 +1844,8 @@ times slower in the Simulator's mode, all in `match`: 4.3.2 measured); gap 2 by 
 breadth- and depth-first exploration, see the hub grammar); gap 4 by
 `mergers-9-injective` and `leader-election-14-injective` (the filter costs 1 to 4 % where
 it rejects nothing). New since: a long-tier row for `hub-wander-200` is the candidate for
-the recipe traversal cost; the recipe-target bug is fixed and merged (gh #925), and the
-wander counts and times are to be re-pinned against it.
+the recipe traversal cost, now to be recalibrated after gh #925; the recipe-target bug is
+fixed and merged and the three wander rows re-pinned against it (2026-09-23).
 
 Section 6 (assertion-only costs) is outside the harness by construction, since it runs
 with assertions off; those costs show only under `-ea`, in `ExplorationTest` and in
