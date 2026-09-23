@@ -19,10 +19,10 @@ package nl.utwente.groove.lts;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.BitSet;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -607,14 +607,9 @@ public class StateCache implements Cache {
     /**
      * Launches of the recipe runs that pass through this (inner-prime,
      * non-full) state, in order of arrival; see {@link #propagate}.
+     * {@code null} until the first launch arrives.
      */
-    private List<Launch> launches = Collections.emptyList();
-
-    /**
-     * Indices (see {@link Launch#index}) of the launches in
-     * {@link #launches}, for a membership test without hashing.
-     */
-    private @Nullable BitSet launchIndices;
+    private @Nullable LaunchSet launches;
 
     /**
      * Registered inner non-launch steps from this (inner-prime, non-full)
@@ -670,16 +665,17 @@ public class StateCache implements Cache {
             // transitions all the same
             assert getState().getPrimeFrame().isInner();
             this.innerSteps = add(this.innerSteps, partial);
-            if (!this.launches.isEmpty()) {
+            var launches = this.launches;
+            if (launches != null) {
                 if (target.getPrimeFrame().isInner()) {
                     var targetCache = target.getCache();
-                    for (var launch : this.launches) {
+                    for (var launch : launches) {
                         targetCache.propagate(launch);
                     }
                 } else {
                     // the step finishes the recipe
                     var recipeTarget = new RecipeTarget(partial);
-                    for (var launch : this.launches) {
+                    for (var launch : launches) {
                         addRecipeTransition(launch.trans(), recipeTarget);
                     }
                 }
@@ -748,9 +744,10 @@ public class StateCache implements Cache {
         if (this.knownInner && !state.isInner()) {
             // the state changed from inner to outer, so it is a recipe target itself
             this.knownInner = false;
-            if (!this.launches.isEmpty()) {
+            var launches = this.launches;
+            if (launches != null) {
                 var target = new RecipeTarget(state);
-                for (var launch : this.launches) {
+                for (var launch : launches) {
                     addRecipeTransition(launch.trans(), target);
                 }
             }
@@ -794,7 +791,6 @@ public class StateCache implements Cache {
      */
     @AIGenerated("Claude Fable 5.1, 2026-09")
     private void propagate(Launch launch) {
-        int index = launch.index();
         Deque<StateCache> stack = new ArrayDeque<>();
         stack.push(this);
         while (!stack.isEmpty()) {
@@ -805,15 +801,13 @@ public class StateCache implements Cache {
                 next.getForwTarget().forEach(t -> addRecipeTransition(launch.trans(), t));
                 continue;
             }
-            var indices = next.launchIndices;
-            if (indices == null) {
-                indices = next.launchIndices = new BitSet();
+            var launches = next.launches;
+            if (launches == null) {
+                launches = next.launches = new LaunchSet();
             }
-            if (indices.get(index)) {
+            if (!launches.add(launch)) {
                 continue;
             }
-            indices.set(index);
-            next.launches = add(next.launches, launch);
             if (!next.knownInner) {
                 // the state left the recipe through a verdict
                 addRecipeTransition(launch.trans(), new RecipeTarget(state));
@@ -900,8 +894,7 @@ public class StateCache implements Cache {
         notifyDone(agenda);
         // no new targets can be found from a full state; later launches
         // receive its complete targets (see #propagate)
-        this.launches = Collections.emptyList();
-        this.launchIndices = null;
+        this.launches = null;
         this.innerSteps = Collections.emptyList();
     }
 
@@ -953,12 +946,86 @@ public class StateCache implements Cache {
     /**
      * A recipe launch together with its index among the launches of the GTS
      * (see {@link GTS#newLaunchIndex}), assigned once when the launch is
-     * registered so that the membership tests of {@link #propagate} need no
-     * lookup.
+     * registered so that the membership tests of {@link #propagate} need
+     * neither a lookup nor a hash of the transition.
      */
     @AIGenerated("Claude Fable 5.1, 2026-09")
     private record Launch(RuleTransition trans, int index) {
         // no additional functionality
+    }
+
+    /**
+     * Insertion-ordered set of launches whose membership test is an
+     * open-addressing table over the launch indices, so that neither a test
+     * nor an insertion allocates per element and the memory is proportional
+     * to the number of launches in the set. A bit set over the indices would
+     * instead be proportional to the launch count of the GTS at the time of
+     * the last insertion, for every non-full inner state reached by a launch.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    static private class LaunchSet implements Iterable<Launch> {
+        /** Adds a launch; returns {@code false} if it was already present. */
+        boolean add(Launch launch) {
+            int index = launch.index();
+            var table = this.table;
+            int mask = table.length - 1;
+            int slot = hash(index) & mask;
+            for (int found; (found = table[slot]) >= 0; slot = (slot + 1) & mask) {
+                if (found == index) {
+                    return false;
+                }
+            }
+            table[slot] = index;
+            this.launches.add(launch);
+            if (this.launches.size() * 2 > table.length) {
+                grow();
+            }
+            return true;
+        }
+
+        /** Doubles the table and reinserts the indices. */
+        private void grow() {
+            var newTable = newTable(this.table.length * 2);
+            int mask = newTable.length - 1;
+            for (int index : this.table) {
+                if (index >= 0) {
+                    int slot = hash(index) & mask;
+                    while (newTable[slot] >= 0) {
+                        slot = (slot + 1) & mask;
+                    }
+                    newTable[slot] = index;
+                }
+            }
+            this.table = newTable;
+        }
+
+        @Override
+        public Iterator<Launch> iterator() {
+            return this.launches.iterator();
+        }
+
+        /** The launches, in order of insertion. */
+        private final List<Launch> launches = new ArrayList<>(2);
+
+        /**
+         * Open-addressing table (linear probing, load factor at most one half)
+         * of the indices of the launches in {@link #launches}; empty slots
+         * hold {@code -1}.
+         */
+        private int[] table = newTable(4);
+
+        /** Creates an empty table of a given (power of two) size. */
+        static private int[] newTable(int size) {
+            var result = new int[size];
+            Arrays.fill(result, -1);
+            return result;
+        }
+
+        /** Spreads the high bits of an index into the slot; consecutive indices
+         * keep consecutive slots, which linear probing rewards. */
+        static private int hash(int index) {
+            return index ^ (index >>> 16);
+        }
     }
 
     /** Combination of target state and out-parameter values.
