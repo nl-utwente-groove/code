@@ -1516,91 +1516,115 @@ What it says:
 - The spread is small: every `max ms` is within 6 % of `min ms` over the two measured
   runs, which is what the tier was for.
 
-### Quick-tier re-baseline (2026-09-22)
+### Quick-tier re-baseline (2026-09-23)
 
 The quick tier as it stands after grammar-set item 6 and the gh #924 merge, replacing
 the sixteen-row table of 2026-09-21 above (whose rows it repeats in the same order, so
 the two are comparable row by row; the counter rows carry the `probe-odd` transitions
 now, the fibonacci rows the fixed recipe path). Desktop, JDK 25.0.4.1, the launch flags
 `-da -Xmx4g -XX:+UseParallelGC`, two warm-ups and three measured runs, all rows in one
-JVM in table order, fresh grammar per run, at `fe5a2887e`; 35 minutes in all:
+JVM in table order, fresh grammar per run, at `dd4c851e0`, on a quiet machine, 34 minutes:
 
 ```
 config                  states    trans  disc.st   disc.tr   med ms   min ms   max ms  states/s   trans/s   match     iso    cert     gen    rep   confl  allocMB    retMB  fNodes   fEdges
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-inheritance                756     5374      756      5374     31.4     29.7     34.2     24057    171005       3       1       1      22      1       0     43.6      2.8       7       10
-pacman                     256     1536      256      1536     33.7     29.8     34.4      7600     45597       5      13       7      23      0       0     38.0      1.2      20      228
-as-and-bs                 8240    44774     8240     44774    224.0    210.0    229.7     36786    199887      43      74      29     145      0       0    476.9     34.0       6       27
-sierpinsky-11               12       11       12        11    709.9    701.4    766.2        17        15      84       0       0     554      0       0    900.7    418.2  265734   841476
-binary-tree-dfs12         4012    22188     4012     22188    555.7    553.4    566.1      7220     39932       3     455     321     540      0       0    548.1     16.5     239      596
-append-4-list-8          31104   114008    31104    114008   1759.6   1740.1   1939.3     17677     64793     435     617     576    1214      3       0   2940.3    228.6      67      293
-append-4-list-8-equality   73792   268912    73792    268912   3517.5   3514.9   3566.9     20979     76450     839       0       0    2385      4       0   5179.3    526.8      74      357
-mark-unmark              24576   368640    24576    368640   2852.1   2827.4   2900.2      8617    129254     497     890     784    2080      2       0   5479.1    143.5      15       30
-car-platooning-05       110366   369601   110366    369601   3777.6   3774.2   3800.1     29216     97840    1147       0       0    2049      6       0   7451.9    539.0       5      215
-binary-tree-dfs-unstored       9        8   409114    409113   1472.2   1432.0   1569.3    277897    277897     119       0       0    1055      3       0   2657.8   1041.5    1023     2556
-mark-unmark-18           48384   870912    48384    870912  12056.3  12033.8  12110.9      4013     72237    1199    7796    6018   10289     20       0  15739.1    370.9      18       36
-mark-unmark-21          169344  3556224   169344   3556224  63447.8  63383.9  63521.0      2669     56050    4993   45275   34899   56201     66       0  73736.5   1276.7      21       42
-as-and-bs-4-3           131505   947824   131505    947824   5606.6   5586.6   5650.8     23455    169054     910    2196    1265    4046     17       0  10936.1    568.7       7       35
-inheritance-12          297212  4317133   297212   4317133  21553.3  21376.8  21962.6     13790    200300     701    5563    4526   18786     46       0  36971.2   1735.6      12       21
-leader-election-8          820     3405      820      3405    417.7    387.1    436.8      1963      8151     159      48      48     183      0       0     87.1      4.5      39      196
-leader-election-14       49620   386295    49620    386295   5852.5   5804.8   5903.4      8478     66005    1139    1717    1717    4318      7       0  11248.8    405.9      63      375
-leader-election-16      197404  1772291   197404   1772291  30605.0  29029.8  30824.8      6450     57908    4902    8424    8423   23729     21       0  56881.8   1584.3      71      414
-count-10000              10001    25001    10001     25001    556.1    498.8    630.2     17983     44955     231      16      16     398      1       0    725.2     79.7   10008    10005
-count-100000            100001   250001   100001    250001   4020.8   4006.4   4046.8     24871     62177     356     133     133    3666      4       0  41576.1    836.3  100008   100005
-count-300000            300001   750001   300001    750001  34231.1  33904.3  34303.9      8764     21910    1592     456     456   32689      5       0 354044.9   2641.5  300008   300005
-fib-15                       3        2     4934      4934    425.7    420.1    466.4     11591     11591      33      11      11     266      0       0    111.4     41.9      27        2
-fib-22                       3        2   143284    143284   2049.7   2032.0   2152.1     69904     69904      84      38      38    1207      3       0   3121.8   1256.2      40        2
-fib-function-15           4934     4933     4934      4933     42.9     38.5     44.6    115115    115092       3       1       1      25      0       0     99.5     41.0      27        2
-fib-function-22         143284   143283   143284    143283   1771.5   1753.9   1804.0     80885     80884     110      38      38     983      4       0   2995.3   1212.7      40        2
-count-100000-big        100001   250001   100001    250001   5590.4   5033.7   5696.7     17888     44720     602     140     140    5087      6       0  41659.5    840.9  100008   100005
-count-300000-big        300001   750001   300001    750001  35665.6  35451.0  36275.9      8411     21029    1841     503     481   34147     11       0 354325.9   2655.2  300008   300005
-as-and-bs-equality      262144  1413120   262144   1413120   9146.2   9062.2   9220.9     28661    154503    1148       0       0    6767      7       0  16501.7   1171.4       6       27
-sierpinsky-12               13       12       13        12   2773.2   2697.0   2784.4         5         4     331       0       0    2214      0       0   2570.1   1233.9  797176  2524375
-binary-tree-dfs-unstored-9      10        9  4037914   4037913  29723.6  29019.8  30642.5    135849    135849    1068       0       0   23066     29       0  25514.6   1710.1    2047     5116
-hub-star-300-3               1      891        1       891   2354.4   2237.5   2482.2         0       378       2    2246    1679    2326      0       0    389.3      1.3     303     1200
-hub-chain-1000-1          1000      999     1000       999   7602.0   7246.4   7633.3       132       131       4    7460    7460    7561      0       0    317.2      4.6    1003     3005
-hub-chain-200-2          19900    39402    19900     39402  11290.3  10798.0  11290.8      1763      3490      80   10476   10476   11130      2       0   2852.7     80.8     203      606
-hub-field-hop           100001   100000   100002    100001   6628.8   6575.0   6690.9     15086     15086    6178       0       0     256      1       0  13490.4    262.4    5405     5914
-hub-field-jump          200001   200000   200002    200001   7982.3   7681.8   8055.4     25056     25055    7173       0       0     407      3       0   1689.0    521.8    5404     5816
-hub-ring-1000-unstored  200001   200000   200002    200001   1256.0   1252.3   1291.9    159238    159238     196       0       0     687      0       0   1673.0    521.2    1003     3007
-hub-ring-1000-counted   200001   200000   200002    200001   1506.7   1429.4   1507.6    132740    132739     303       0       0     743      1       0   2713.4   1066.5  201004   402009
-petrinet-pipe-8-8        12870    91520    12870     91520   2422.7   2418.9   2441.6      5312     37775     286    1673     945    1938      4       0   3948.0     85.1      89      177
-petrinet-pipe-9-9        48620   393822    48620    393822  11835.0  11822.5  12628.2      4108     33276    1167    8541    4844    9869     17       0  17796.2    340.3     109      217
-petrinet-join-100        20001    20000    20002     20001   8042.7   8035.2   8279.7      2487      2487    4305       0       0    1844     22       0  22942.7    483.2     502     1202
-petrinet-join-1000        2001     2000     2002      2001   9504.8   9490.8   9516.6       211       211    4906       0       0    2229     17       0  22484.8    418.4    5002    12002
-pump-8-4                  2143    38891     2143     38891    813.4    205.8    865.5      2635     47812      14     327     273     716      2       0    336.1     13.5       5       82
-pump-12-6-dpo            36894  1231379    36894   1231379   6820.3   6716.9   6919.9      5409    180547     151    2821    2032    6055     21       0  12030.9    344.8       7      180
-pump-12-6-spo            37026  1267481    37026   1267481   7625.3   7609.4   7754.6      4856    166220     144    3173    2263    6826     30       0  12108.7    351.2       7      180
-mergers-6                  202      681      202       681     87.7     76.4    118.4      2304      7766      11      18      11      64      3       0      9.3      0.8       6       83
-mergers-9-simple         25145   255596    25145    255596   1715.2   1711.4   1722.6     14660    149017      92     471     321    1437      3       0   2866.2    181.7       9      245
-mergers-9-multi          26217   259850    26217    259850   1867.5   1853.9   1879.4     14038    139143     110     561     388    1574      5       0   3048.0    190.3       9      314
-mergers-10-multi        222508  3320992   222508   3320992  28257.7  28173.8  28277.8      7874    117525     882    7953    5681   24782     88       0  40117.7   1786.3      10      520
-mergers-11-dpo           70065   735888    70065    735888   7723.9   7697.2   7890.7      9071     95274     283    1550    1550    6497     17       0  10930.0    555.9      11      208
+inheritance                756     5374      756      5374     39.9     30.5     50.7     18952    134723       4       7       6      29      0       0     44.3      2.8       7       10
+pacman                     256     1536      256      1536     32.1     25.9     38.1      7979     47874       7      10       5      17      1       0     37.7      1.2      20      228
+as-and-bs                 8240    44774     8240     44774    196.5    196.3    218.8     41939    227886      39      54      29     117      0       0    468.2     34.0       6       27
+sierpinsky-11               12       11       12        11    680.1    677.0    730.6        18        16      69       0       0     540      0       0    900.7    418.2  265734   841476
+binary-tree-dfs12         4012    22188     4012     22188    558.1    558.0    568.3      7188     39755       5     435     323     541      1       0    545.8     16.5     239      596
+append-4-list-8          31104   114008    31104    114008   1669.0   1634.6   1683.9     18636     68308     434     578     541    1139      0       0   2941.1    228.5      67      293
+append-4-list-8-equality   73792   268912    73792    268912   3394.4   3387.4   3408.9     21740     79223     806       0       0    2311      3       0   5170.9    526.8      74      357
+mark-unmark              24576   368640    24576    368640   2315.9   2311.6   2364.2     10612    159175     414     730     649    1718      8       0   5573.0    145.1      15       30
+car-platooning-05       110366   369601   110366    369601   3048.4   3027.7   3104.0     36205    121244     971       0       0    1539      7       0   7448.4    539.0       5      215
+binary-tree-dfs-unstored       9        8   409114    409113   1097.1   1096.1   1107.8    372905    372904      72       0       0     838      1       0   2651.2   1041.5    1023     2556
+mark-unmark-18           48384   870912    48384    870912  12148.2  12074.0  13433.6      3983     71690    1249    7611    5887   10296     19       0  15376.0    364.8      18       36
+mark-unmark-21          169344  3556224   169344   3556224  62388.8  61206.9  63436.2      2714     57001    5020   44737   34428   55184     60       0  74327.7   1272.4      21       42
+as-and-bs-4-3           131505   947824   131505    947824   5120.3   5099.1   5130.8     25683    185110     731    2067    1201    3804     18       0  10842.8    568.4       7       35
+inheritance-12          297212  4317133   297212   4317133  20019.5  19861.1  20133.3     14846    215646     668    5147    4089   17385     43       0  36727.0   1734.7      12       21
+leader-election-8          820     3405      820      3405    286.2    249.4    325.1      2865     11899     106      47      47     131      1       0     86.9      4.5      39      196
+leader-election-14       49620   386295    49620    386295   5379.2   5350.1   5411.5      9224     71813    1005    1498    1498    3950      5       0  11229.9    400.9      63      375
+leader-election-16      197404  1772291   197404   1772291  28803.3  28749.0  28927.3      6854     61531    4416    7995    7995   22504     33       0  56720.4   1635.3      71      414
+count-10000              10001    25001    10001     25001    486.8    455.9    495.5     20545     51359     178      32      32     357      0       0    723.4     79.7   10008    10005
+count-100000            100001   250001   100001    250001   4151.8   4130.8   4154.7     24086     60215     402     136     136    3787      3       0  41576.3    836.3  100008   100005
+count-300000            300001   750001   300001    750001  34096.9  33461.2  37094.0      8798     21996    1374     453     433   32784     11       0 353954.8   2641.5  300008   300005
+fib-15                       3        2     4934      4934    388.0    312.6    427.2     12716     12716      15       6       6     221      1       0    111.8     41.9      27        2
+fib-22                       3        2   143284    143284   2011.9   2007.0   2130.2     71219     71219      70      44      44    1259      1       0   3097.2   1256.2      40        2
+fib-function-15           4934     4933     4934      4933     42.2     37.1     42.3    116791    116767       1       2       2      30      0       0     98.8     40.4      27        2
+fib-function-22         143284   143283   143284    143283   1777.7   1731.4   1779.0     80600     80599      41      48      48    1089      1       0   2972.6   1212.7      40        2
+count-100000-big        100001   250001   100001    250001   5214.0   5041.5   5311.0     19179     47948     406     137     137    4805      4       0  41618.1    840.9  100008   100005
+count-300000-big        300001   750001   300001    750001  38689.5  35440.6  38690.9      7754     19385    1554     455     432   37281     11       0 354279.4   2655.2  300008   300005
+as-and-bs-equality      262144  1413120   262144   1413120   9164.6   9152.7   9474.6     28604    154193    1196       0       0    6712     20       0  16464.6   1171.4       6       27
+sierpinsky-12               13       12       13        12   2665.5   2639.0   2733.6         5         5     339       0       0    2112      0       0   2572.3   1233.9  797176  2524375
+binary-tree-dfs-unstored-9      10        9  4037914   4037913  28909.2  28633.7  29745.0    139676    139676    1503       0       0   21913     23       0  25164.0   1709.5    2047     5116
+hub-star-300-3               1      891        1       891   2557.6   2439.5   2724.9         0       348      13    2423    1654    2513      3       0    365.4      1.3     303     1200
+hub-chain-1000-1          1000      999     1000       999   7958.3   7867.3   8113.2       126       126      12    7769    7769    7909      1       0    317.4      4.6    1003     3005
+hub-chain-200-2          19900    39402    19900     39402  10707.3  10640.9  11347.0      1859      3680      59    9956    9956   10584      0       0   2857.9     80.8     203      606
+hub-field-hop           100001   100000   100002    100001   6490.9   6455.0   6580.5     15407     15406    6026       0       0     273      0       0  13487.5    262.4    5405     5914
+hub-field-jump          200001   200000   200002    200001   7541.6   7536.1   7572.2     26520     26520    6590       0       0     572      1       0   1688.5    521.8    5404     5816
+hub-ring-1000-unstored  200001   200000   200002    200001   1242.7   1179.0   1263.2    160943    160942     216       0       0     600      3       0   1686.3    521.2    1003     3007
+hub-ring-1000-counted   200001   200000   200002    200001   1488.0   1457.9   1503.9    134408    134407     379       0       0     690      0       0   2736.3   1066.5  201004   402009
+petrinet-pipe-8-8        12870    91520    12870     91520   2955.4   2450.6   3035.9      4355     30968     326    1964     980    2385      2       0   4020.1     85.1      89      177
+petrinet-pipe-9-9        48620   393822    48620    393822  12547.1  12397.9  12635.5      3875     31388    1190    8988    5110   10553     22       0  18274.3    340.3     109      217
+petrinet-join-100        20001    20000    20002     20001   8012.2   7958.7   8143.7      2496      2496    4353       0       0    1806     19       0  22950.0    483.2     502     1202
+petrinet-join-1000        2001     2000     2002      2001   9294.9   9189.2   9306.9       215       215    4866       0       0    2117     11       0  22490.1    418.4    5002    12002
+pump-8-4                  2143    38891     2143     38891    758.1    189.9    791.4      2827     51303      15     319     259     672      6       0    337.1     13.5       5       82
+pump-12-6-dpo            36894  1231379    36894   1231379   6581.6   6570.4   6585.0      5606    187095     121    2787    2026    5880     17       0  11962.3    344.8       7      180
+pump-12-6-spo            37026  1267481    37026   1267481   7310.0   7304.4   7347.2      5065    173389     155    3161    2176    6545     18       0  12215.3    351.2       7      180
+mergers-6                  202      681      202       681     85.8     62.3    108.5      2355      7939       9       9       6      57      2       0      9.4      0.8       6       83
+mergers-9-simple         25145   255596    25145    255596   1632.1   1609.2   1695.4     15407    156606     102     410     278    1368      4       0   2875.7    181.9       9      245
+mergers-9-multi          26217   259850    26217    259850   1771.4   1759.0   1790.0     14800    146689     105     528     377    1492      2       0   3055.9    190.2       9      314
+mergers-10-multi        222508  3320992   222508   3320992  27814.1  27615.5  27890.6      8000    119400     963    7590    5496   24197     66       0  40352.3   1791.3      10      520
+mergers-11-dpo           70065   735888    70065    735888   7657.5   7601.2   7781.7      9150     96100     311    1493    1493    6478     14       0  10999.0    555.0      11      208
 ```
 
-Read against the 2026-09-21 table and the calibration figures:
+This is the second run of the table. The first, on the evening of 2026-09-22, ran while
+the main checkout was being switched for review, so Eclipse was rebuilding the project
+on the same machine: three rows came out 11 to 21 % slower than on 2026-09-21
+(`mark-unmark` 2 852 ms, `car-platooning-05` 3 778 ms, `binary-tree-dfs-unstored`
+1 472 ms), which looked like a cost of the gh #924 merge, and was neither that nor run
+order. The checks that showed it:
 
-- **Eleven of the fourteen shared rows agree within 3 %**; `mark-unmark` (2 350 to
-  2 852 ms), `car-platooning-05` (3 213 to 3 778 ms) and `binary-tree-dfs-unstored`
-  (1 331 to 1 472 ms) are 11 to 21 % slower, the other Mark-Unmark sizes only 3 to 4 %.
-  The merge in between brought gh #924, which touches `StateCache` on every state, so the
-  three rows were rerun one JVM per row on the pre-merge tip `2546ab571` and on
-  `fe5a2887e`, with `append-4-list-8` and the fibonacci pair as controls; see the A/B
-  paragraph below.
-- **Collector-bound at 4 GB**: `binary-tree-dfs-unstored-9` takes 29.7 s here against
-  14 s in its cold calibration at 8 GB, with 1.7 GB retained plus the soft caches of
-  4 M discovered states; it is the one quick row that measures the collector
-  rather than the exploration, and belongs in the long tier or at a larger heap. The
-  other rows above 1 GB retained (`count-300000` and its BigInteger twin at 2.6 GB,
+- **A/B one JVM per row**, two warm-ups and three runs at `-Xmx4g`, the pre-merge tip
+  `2546ab571` against `fe5a2887e`, alternating per row: `mark-unmark` 2 204 against
+  2 205 ms, `car-platooning-05` 3 411 against 3 409, `binary-tree-dfs-unstored` 1 033
+  against 962, `append-4-list-8` 1 702 against 1 699, `fib-15` as a recipe 16 701 against
+  63, `fib-function-15` 56 against 55. So gh #924 costs nothing on the non-recipe path
+  and the fixed recipe path is 265 times faster at `fib-15`, level with the function twin.
+- **The first nine rows in tier order on the quiet machine**: `mark-unmark` 2 332 ms in
+  its tier position, against 2 350 on 2026-09-21. The position was innocent.
+- **The re-run above**: every row of the first table within 10 % except the three
+  loaded ones (now 19 to 25 % faster), `leader-election-8` (−31 %, a 0.3 s row),
+  `inheritance` (+27 %, the first row, 8 ms) and `petrinet-pipe-8-8` (+22 %, cause
+  unknown).
+
+What the tier table is good for, then: pinned counts, the breakdown columns, and the
+order of magnitude of every row; not for deciding whether a change of under about
+10 % helped, since two clean runs of the table a day apart differ by that much on
+individual rows. A fix is measured one JVM per row on the rows it targets, in the A/B
+shape above, and the table is re-run only to refresh the breakdown.
+
+Read against the calibration figures:
+
+- **Collector-bound at 4 GB**: `binary-tree-dfs-unstored-9` takes 28.9 s here against
+  14 s in its cold calibration at 8 GB, with 1.7 GB retained plus the soft caches of 4 M
+  discovered states; it is the one quick row that measures the collector rather than
+  the exploration, and belongs in the long tier or at a larger heap. The other rows
+  above 1 GB retained (`count-300000` and its BigInteger twin at 2.6 GB,
   `mergers-10-multi`, `inheritance-12`, `leader-election-16`, `as-and-bs-equality`,
   `fib-22`, `sierpinsky-12`) are within 15 % of their calibration at 8 GB, so the cliff
   the long tier found sits above 2.6 GB for stored runs and lower for unstored ones,
   whose live set is all soft.
-- **Run order still shows.** `fib-15` measures 426 ms here against 43 ms for
-  `fib-function-15` and 285 ms in its own JVM, and it ran directly after
-  `count-300000` had left 2.6 GB to collect; `pump-8-4` has a minimum of 206 ms under a
-  median of 813 ms. Rows that follow a heavy row inherit its collection; compare like
-  orders, or one JVM per row, as before.
+- **One genuine order effect, unexplained**: `fib-15` measures 388 ms in the tier (426 in
+  the first run) against 42 ms for `fib-function-15` two rows later and 44 to 48 ms in
+  its own JVM, also directly after `count-100000` or `count-300000` with ten runs (where
+  only the first run is slow, at 340 to 350 ms, paying the previous row's collection).
+  All three tier runs are slow (`min ms` 380 and 420), so it is not the collection; it
+  is something the twenty preceding rows leave behind that a single preceding row does
+  not, presumably the JIT state (the recipe branches of the state cache are first taken
+  here, after fifteen minutes of compiled code built on profiles in which they were
+  never taken, and three runs of 50 ms are not long enough for the recompilation to
+  land). A 0.4 s row; noted, not pursued.
 - **Certification is the whole of the hub chain rows** (98 % of `hub-chain-1000-1` and
   93 % of `hub-chain-200-2`), 70 % of `mark-unmark-21` and the petrinet pipeline, and
   40 % of the pump rows; matching is the whole of the hub field rows and 60 % of the
@@ -1608,27 +1632,6 @@ Read against the 2026-09-21 table and the calibration figures:
   function rows. The section order of the note (isomorphism and reconstruction before
   matching for the large-state-space rows) stands.
 - The confluence count is zero on every row, as before.
-
-**A/B of the moved rows (2026-09-22).** The three rows and three controls, one JVM per
-row, two warm-ups and three runs at `-Xmx4g`, the pre-merge tip `2546ab571` (A) against
-`fe5a2887e` (B), alternating per row:
-
-| row | A med ms | B med ms |
-|---|---|---|
-| `mark-unmark` | 2 204 | 2 205 |
-| `car-platooning-05` | 3 411 | 3 409 |
-| `binary-tree-dfs-unstored` | 1 033 | 962 |
-| `append-4-list-8` | 1 702 | 1 699 |
-| `fib-15` (recipe) | 16 701 | 63 |
-| `fib-function-15` | 56 | 55 |
-
-So gh #924 costs nothing on the non-recipe path and the in-table differences are run
-order: `mark-unmark` alone measures 2.2 s against 2.85 s as the eighth row of the tier
-(and 2.35 s in the same position on 2026-09-21), `car-platooning-05` 3.4 s against 3.8 s.
-The fixed recipe path is 265 times faster at `fib-15` and level with the function twin
-once warm (the 426 ms of the table is the collection inherited from `count-300000`).
-The position effect is larger than the 10 % the earlier tables suggested; a fix under
-20 % must be measured one JVM per row, in the shape of this A/B.
 
 ### Shape of the harness (as designed)
 

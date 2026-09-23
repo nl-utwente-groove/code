@@ -12,7 +12,7 @@ order of attack" and "Building a throughput harness" sections first).
 ## State as of 2026-09-22 (quick-tier re-baseline done)
 
 Branch `exploration-performance`, worktree `.claude/worktrees/exploration-performance`,
-master merged in up to `4eb233649` (the gh #924 merge), re-attached 2026-09-22 evening.
+master merged in up to `f8ab8a880` (2026-09-23, by Arend), re-attached 2026-09-23.
 
 **gh #924 landed in between.** A parallel session took finding 3.12 (the quadratic
 transient closures of `StateCache`, the fibonacci recipe anomaly of this note) on its own
@@ -21,19 +21,20 @@ branch `statecache-transient-closures`; merged to master and into this branch at
 a recipe: 19 s to 0.29 s cold, 63 ms warm, level with the function program), the recipe
 rows were recalibrated and re-pinned (`fib-15` smoke, `fib-22` quick, `fib-12` dropped;
 no long-tier size for either family, the ordinary per-state cost), and the A/B in the
-note shows no cost on the non-recipe path. The gh #924 handoff file
-`claude/statecache-transient-closures-state.md` that the merge brought in is that
-session's; master has since deleted it, and the next master merge takes it away here.
+note shows no cost on the non-recipe path. (The gh #924 handoff file that the first merge brought in was that session's; master
+deleted it and the merge of 2026-09-23 took it away here.)
 
 Done, in addition to the 2026-09-22 morning state (grammar set complete through item 6,
 long tier with baseline):
 
 - Quick-tier re-baseline: all 46 quick rows, one JVM, table order, launch flags, JDK 25,
-  35 minutes; table and observations in the note ("Quick-tier re-baseline"). Every
-  count asserted. Findings: run-order effects of up to 20 % (bigger than thought; fixes
-  under 20 % need the one-JVM-per-row A/B shape), `binary-tree-dfs-unstored-9` is
-  collector-bound at 4 GB (29.7 s against 14 s at 8 GB) and should move to the long tier
-  or a larger heap, all other rows within 15 % of their 8 GB calibration.
+  34 minutes on a quiet machine (the first run, during an Eclipse rebuild, is discarded);
+  table and observations in the note ("Quick-tier re-baseline"). Every count asserted.
+  Findings: two clean runs of the table differ by up to 10 % per row (a few rows 20 %),
+  so fixes are judged one JVM per row in the A/B shape of the note, the table only
+  refreshes the breakdown; `binary-tree-dfs-unstored-9` is collector-bound at 4 GB
+  (28.9 s against 14 s at 8 GB) and should move to the long tier or a larger heap; one
+  unexplained order effect on `fib-15` (388 ms in the tier, 45 ms alone), noted only.
 - Coverage reassessment (note, last section): nine gaps ranked. Close before measuring
   fixes: (1) the Simulator's random-access copy mode (`SimulatorModel.resetGTS` sets
   `Record.randomAccess`; the harness runs swing mode only), a harness switch; (2) cyclic
