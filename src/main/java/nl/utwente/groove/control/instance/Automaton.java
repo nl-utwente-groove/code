@@ -40,7 +40,7 @@ public class Automaton {
         this.program = program;
         this.framePool = new Pool<>();
         this.start
-            = new Frame(this, program.getTemplate().getStart(), new NestedSwitch(), null)
+            = new Frame(this, program.getTemplate().getStart(), NestedSwitch.empty(), null)
                 .normalise();
     }
 

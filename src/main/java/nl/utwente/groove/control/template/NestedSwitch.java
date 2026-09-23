@@ -42,11 +42,6 @@ import nl.utwente.groove.util.AIGenerated;
 @NonNullByDefault
 public class NestedSwitch implements Attempt.Stage<Location,NestedSwitch>, Comparable<NestedSwitch>,
     Relocatable, Iterable<Switch> {
-    /** Constructs an empty nested switch. */
-    public NestedSwitch() {
-        this(List.of());
-    }
-
     /** Constructs a nested switch from an unmodifiable list of switches, from outer to inner. */
     private NestedSwitch(List<Switch> switches) {
         this.switches = switches;
@@ -62,6 +57,14 @@ public class NestedSwitch implements Attempt.Stage<Location,NestedSwitch>, Compa
 
     /** The stack of switches, from outer to inner. All of them, except possibly the inner, are procedure calls. */
     private final List<Switch> switches;
+
+    /** Returns the empty nested switch. */
+    public static NestedSwitch empty() {
+        return EMPTY;
+    }
+
+    /** The single empty nested switch; every empty stack is built as this instance. */
+    private static final NestedSwitch EMPTY = new NestedSwitch(List.of());
 
     /** Returns a builder initialised with the switches of this nested switch. */
     public Builder toBuilder() {
@@ -241,7 +244,9 @@ public class NestedSwitch implements Attempt.Stage<Location,NestedSwitch>, Compa
 
         /** Builds the nested switch consisting of the switches currently in this builder. */
         public NestedSwitch build() {
-            return new NestedSwitch(List.copyOf(this.switches));
+            return isEmpty()
+                ? EMPTY
+                : new NestedSwitch(List.copyOf(this.switches));
         }
     }
 }
