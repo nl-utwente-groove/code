@@ -569,10 +569,15 @@ public class StateCache implements Cache {
      * done when it is full.
      *
      * The predecessor lists, launch sets and step lists live in the caches of
-     * the non-full states, which are strongly referenced until they are full,
-     * so a garbage collection cannot lose them; an explicit clearing of the
-     * cache of a closed but not yet full transient state does lose them, as it
-     * did before.
+     * the non-full states. Those caches are strongly referenced until the state
+     * is full (see {@link AbstractGraphState#setFull}), so a garbage collection
+     * cannot lose them, and a full state has dropped them and recomputes its
+     * targets from the stored transition stubs. An explicit
+     * {@link AbstractGraphState#clearCache} of a closed but not yet full
+     * transient state does lose them, as it lost the predecessor lists before:
+     * {@link CacheReference#clear} replaces the reference regardless of its
+     * strength. Only the statistics reporter (after the exploration) and the
+     * determinism test (deliberately) clear caches that way.
      */
 
     /**
