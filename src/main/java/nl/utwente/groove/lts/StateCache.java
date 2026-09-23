@@ -603,10 +603,10 @@ public class StateCache implements Cache {
      * Launches of the recipe runs that pass through this (inner-prime,
      * non-full) state, in order of arrival; see {@link #propagate}.
      */
-    private List<RuleTransition> launches = Collections.emptyList();
+    private List<Launch> launches = Collections.emptyList();
 
     /**
-     * Indices (see {@link GTS#getLaunchIndex}) of the launches in
+     * Indices (see {@link Launch#index}) of the launches in
      * {@link #launches}, for a membership test without hashing.
      */
     private @Nullable BitSet launchIndices;
@@ -652,7 +652,8 @@ public class StateCache implements Cache {
         // recipe transitions and targets
         if (partial.getStep().isLaunch()) {
             if (target.getPrimeFrame().isInner()) {
-                target.getCache().propagate(partial);
+                var launch = new Launch(partial, getState().getGTS().newLaunchIndex());
+                target.getCache().propagate(launch);
             } else {
                 // it's a single-step recipe transition
                 addRecipeTransition(partial, new RecipeTarget(partial));
@@ -674,7 +675,7 @@ public class StateCache implements Cache {
                     // the step finishes the recipe
                     var recipeTarget = new RecipeTarget(partial);
                     for (var launch : this.launches) {
-                        addRecipeTransition(launch, recipeTarget);
+                        addRecipeTransition(launch.trans(), recipeTarget);
                     }
                 }
             }
@@ -745,7 +746,7 @@ public class StateCache implements Cache {
             if (!this.launches.isEmpty()) {
                 var target = new RecipeTarget(state);
                 for (var launch : this.launches) {
-                    addRecipeTransition(launch, target);
+                    addRecipeTransition(launch.trans(), target);
                 }
             }
         }
@@ -787,8 +788,8 @@ public class StateCache implements Cache {
      * {@link #registerTransienceChange}.
      */
     @AIGenerated("Claude Fable 5.1, 2026-09")
-    private void propagate(RuleTransition launch) {
-        int index = getState().getGTS().getLaunchIndex(launch);
+    private void propagate(Launch launch) {
+        int index = launch.index();
         Deque<StateCache> stack = new ArrayDeque<>();
         stack.push(this);
         while (!stack.isEmpty()) {
@@ -796,7 +797,7 @@ public class StateCache implements Cache {
             var state = next.getState();
             assert state.getPrimeFrame().isInner();
             if (state.isFull()) {
-                next.getForwTarget().forEach(t -> addRecipeTransition(launch, t));
+                next.getForwTarget().forEach(t -> addRecipeTransition(launch.trans(), t));
                 continue;
             }
             var indices = next.launchIndices;
@@ -810,7 +811,7 @@ public class StateCache implements Cache {
             next.launches = add(next.launches, launch);
             if (!next.knownInner) {
                 // the state left the recipe through a verdict
-                addRecipeTransition(launch, new RecipeTarget(state));
+                addRecipeTransition(launch.trans(), new RecipeTarget(state));
             }
             // follow the steps of this recipe run, also from a state that left
             // the recipe through a verdict after having generated them; the
@@ -820,7 +821,7 @@ public class StateCache implements Cache {
                 if (target.getPrimeFrame().isInner()) {
                     stack.push(target.getCache());
                 } else {
-                    addRecipeTransition(launch, new RecipeTarget(step));
+                    addRecipeTransition(launch.trans(), new RecipeTarget(step));
                 }
             }
         }
@@ -943,6 +944,17 @@ public class StateCache implements Cache {
 
     /** Known absence level. */
     private int knownAbsence;
+
+    /**
+     * A recipe launch together with its index among the launches of the GTS
+     * (see {@link GTS#newLaunchIndex}), assigned once when the launch is
+     * registered so that the membership tests of {@link #propagate} need no
+     * lookup.
+     */
+    @AIGenerated("Claude Fable 5.1, 2026-09")
+    private record Launch(RuleTransition trans, int index) {
+        // no additional functionality
+    }
 
     /** Combination of target state and out-parameter values.
      * Equality is by content, including the out-parameter values, so that a

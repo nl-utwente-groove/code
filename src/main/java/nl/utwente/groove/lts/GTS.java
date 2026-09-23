@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -836,23 +835,17 @@ public class GTS extends AGraph<GraphState,GraphTransition> implements Cloneable
     private @Nullable Record record;
 
     /**
-     * Returns the index of a recipe launch among the launches of this GTS,
-     * assigning the next free index on first request. Used by the launch
-     * bookkeeping of the state caches (see {@link StateCache}) to test
+     * Returns the next free index for a recipe launch of this GTS. Used by the
+     * launch bookkeeping of the state caches (see {@link StateCache}) to test
      * membership by bit set rather than by hashing.
      */
     @AIGenerated("Claude Fable 5.1, 2026-09")
-    int getLaunchIndex(RuleTransition launch) {
-        var result = this.launchIndexMap.get(launch);
-        if (result == null) {
-            result = this.launchIndexMap.size();
-            this.launchIndexMap.put(launch, result);
-        }
-        return result;
+    int newLaunchIndex() {
+        return this.launchCount++;
     }
 
-    /** Map from recipe launches to their indices; see {@link #getLaunchIndex}. */
-    private final Map<RuleTransition,@Nullable Integer> launchIndexMap = new HashMap<>();
+    /** Number of recipe launches numbered so far; see {@link #newLaunchIndex}. */
+    private int launchCount;
 
     /**
      * Normalises a given rule transition label with respect to this GTS.
