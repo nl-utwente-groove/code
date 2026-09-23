@@ -119,12 +119,13 @@ cyclic region still open would cost gigabytes. First replaced by an insertion-or
 list plus an open-addressing int table of the indices (memory proportional to the
 launches in the set, but 4.1–4.3 s against 3.7–3.9 s on the dense extreme `chain-60-2`
 wander-alap, every probe a cache miss), then, on Arend's design, by a bit array laid
-out circularly around the first index inserted: index n at position top − n, negative
+out circularly around the first index inserted: index n at position n − base, negative
 positions wrapped around the capacity, distinct while the index range stays below the
-capacity, doubled and re-laid out with the then-highest index at zero when it reaches
+capacity, doubled and re-laid out with the then-lowest index at zero when it reaches
 it. Launches arrive newest-first (the launch that reaches a state, then the older ones
 through the steps from its predecessors) and later-registered ones in increasing order,
-so both directions are absorbed without shifting. A plain `long[]`, since the wrap
+so both directions are absorbed without shifting, and the order of the layout is
+immaterial (an inverted layout was tried and dropped). A plain `long[]`, since the wrap
 needs a capacity the class controls and `BitSet` grows implicitly on `set`. Memory is
 the index range over eight, one word for a singly reached state; wander-alap back at
 3.7–3.8 s, other cases unchanged.
