@@ -338,6 +338,12 @@ public class ExplorationBenchmark {
             new Config("leader-election-8", "leader-election.gps", "ring-8", "", 820, 3405, Tier.SMOKE),
             new Config("leader-election-14", "leader-election.gps", "ring-14", "", 49620, 386295,
                 Tier.QUICK),
+            // the same under injective matching: no match of these rules
+            // identifies two nodes, so the filter rejects nothing (the counts
+            // equal the base row's) and the row shows its per-candidate cost
+            // alone, 1 to 4 % in the calibration of 2026-09-23
+            new Config("leader-election-14-injective", "leader-election.gps", "ring-14", null,
+                "matchInjective=true", "", 49620, 386295, Tier.QUICK),
             new Config("leader-election-16", "leader-election.gps", "ring-16", "", 197404,
                 1772291, Tier.QUICK),
             new Config("leader-election-18", "leader-election.gps", "ring-18", "", 787648,
@@ -518,6 +524,13 @@ public class ExplorationBenchmark {
                 202, 681, Tier.SMOKE),
             new Config("mergers-9-simple", "mergers.gps", "ring-9", "", 25145, 255596,
                 Tier.QUICK),
+            // the same under injective matching: the non-injective matches,
+            // which merge nodes, are the bulk here, so the filter rejects
+            // and the state space shrinks to half the states and a quarter
+            // of the transitions (1 s against 2.3 s in the calibration of
+            // 2026-09-23)
+            new Config("mergers-9-injective", "mergers.gps", "ring-9", null,
+                "matchInjective=true", "", 12775, 60718, Tier.QUICK),
             new Config("mergers-9-multi", "mergers.gps", "ring-9", null, "semantics=SPO-multi",
                 "", 26217, 259850, Tier.QUICK),
             new Config("mergers-10-multi", "mergers.gps", "ring-10", null,
