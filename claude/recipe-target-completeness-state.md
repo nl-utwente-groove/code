@@ -90,8 +90,12 @@ bit set). A cleared cache of a closed-but-not-full state loses `launches` and
 | hub `chain-200-2` wander (19 901 states) | 90 s (incomplete) | out of heap at 6 GB | 21 s, 98 705 trans |
 
 Residual on wander-alap: `RecipeTarget(state)` is rebuilt per (launch, state) visit
-(3% in the profile) and `Frame.isInner` goes through `NestedCall.getRecipe`, whose
-`Factory.get` allocates on every call (5%, pre-existing, outside this branch).
+(3% in the profile). An earlier version of this paragraph also blamed an allocation
+in `Factory.get` under `Frame.isInner` (5%); re-profiling with
+`-XX:+DebugNonSafepoints` showed no allocation but two uncontended monitors per query
+(the global `Factory` lock in `NestedCall.getRecipe` and the synchronized
+`NestedSwitch.getCall`, together 14%), removed on branch `nested-call-recipe-lookup`
+by making both classes immutable.
 
 Harness: a scratch `main` that loads the grammar with `SystemStore.newGrammar`, sets
 the host and control resources active with `setLocalActiveNames`, and plays
