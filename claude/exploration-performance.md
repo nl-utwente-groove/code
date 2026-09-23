@@ -905,10 +905,31 @@ that moved (the full table takes 95 minutes to regenerate):
 - **Rows near the heap limit fall off the collector cliff**: `leader-election-16` at 3.9
   times with 73 % more allocation, the 300 k counter rows at 1.3 to 1.4.
 - **Everything else is within 10 % in time but allocates 20 to 70 % more** and retains up
-  to twice as much (the append rows 1.8 to 1.9). The recipe rows (`fib`, `wander`) do not
-  move. The few ratios below 0.9 (`mergers-6`, `pump-8-4`, `as-and-bs-equality`) are
-  sub-second rows with outliers in the swing table or the first-position effect of the
-  two-row rerun, not gains.
+  to twice as much (the append rows 1.8 to 1.9). The recipe rows are re-measured below
+  after gh #925. The few ratios below 0.9 (`mergers-6`, `pump-8-4`,
+  `as-and-bs-equality`) are sub-second rows with outliers in the swing table or the
+  first-position effect of the two-row rerun, not gains.
+
+**The recipe rows after gh #925** (2026-09-23, at `733a78d5c`): one JVM per row and
+mode, the modes alternating per row, two warm-ups and three runs, `-Xmx4g`, JDK 25; the
+swing median and the ratios random access over swing:
+
+| row | swing ms | time | alloc | retained |
+|---|---|---|---|---|
+| `fib-15` | 78 | 0.84 | 1.07 | 0.93 |
+| `fib-22` | 1 857 | 1.12 | 1.07 | 0.93 |
+| `fib-function-15` | 70 | 0.80 | 1.07 | 0.92 |
+| `fib-function-22` | 1 646 | 1.00 | 1.07 | 0.93 |
+| `hub-wander-alap-20` | 42 | 0.99 | 1.08 | 1.04 |
+| `hub-wander-100` | 1 508 | 1.03 | 1.40 | 3.7 |
+| `hub-wander-alap-60` | 3 221 | 1.03 | 1.02 | 1.01 |
+| `hub-wander-200` | 22 607 | 1.02 | 1.24 | 3.7 |
+
+The recipe path is mode-neutral in time: every row over a second is within 3 % but
+`fib-22` at 1.12, and the sub-100 ms rows are noise. The single-launch wander rows
+allocate 24 to 40 % more and retain 3.7 times as much (18 to 67 MB at 100 leaves, 119 to
+435 MB at 200), the stored-state sets of `hub-chain-200-2` again; the `alap` rows, whose
+retention is their transitions, do not move.
 
 ### Outcomes across both tiers
 
