@@ -957,17 +957,14 @@ public class StateCache implements Cache {
     /**
      * Insertion-ordered set of launches whose membership test is a bit array
      * over the launch indices, laid out circularly relative to the first index
-     * inserted: index {@code n} sits at position {@code top - n}, wrapped
-     * around the capacity when negative. Launches usually arrive in
-     * decreasing index order (a state is reached by the newest launch first,
-     * the older ones follow through the steps from its predecessors), so the
-     * positions grow upwards from zero; the launches registered later, which
-     * arrive in increasing order, wrap around and use the top of the array.
-     * Positions are distinct as long as the range of indices is below the
-     * capacity; when it is reached the array doubles and the then-highest
-     * index moves to position zero. Memory is thus proportional to the range
-     * of indices present rather than to the launch count of the GTS, and the
-     * first launch costs a single word wherever it arrives.
+     * inserted: index {@code n} sits at position {@code n - base}, wrapped
+     * around the capacity when negative. Positions are distinct as long as
+     * the range of indices in the set is below the capacity, whichever order
+     * the indices arrive in; when the range reaches the capacity, the array
+     * doubles and the then-lowest index moves to position zero. Memory is
+     * thus proportional to the range of indices present rather than to the
+     * launch count of the GTS, and the first launch costs a single word
+     * wherever it arrives.
      */
     @AIGenerated("Claude Fable 5.1, 2026-09")
     static private class LaunchSet implements Iterable<Launch> {
@@ -975,7 +972,7 @@ public class StateCache implements Cache {
         boolean add(Launch launch) {
             int index = launch.index();
             if (this.launches.isEmpty()) {
-                this.top = this.lowest = this.highest = index;
+                this.base = this.lowest = this.highest = index;
             } else {
                 int lowest = Math.min(this.lowest, index);
                 int highest = Math.max(this.highest, index);
@@ -998,7 +995,7 @@ public class StateCache implements Cache {
 
         /** Returns the position of an index in the (circular) bit array. */
         private int position(int index) {
-            int result = this.top - index;
+            int result = index - this.base;
             return result < 0
                 ? result + capacity()
                 : result;
@@ -1011,7 +1008,7 @@ public class StateCache implements Cache {
 
         /**
          * Doubles the bit array until it holds a given range of indices, and
-         * lays the launches out afresh with the highest index at position zero.
+         * lays the launches out afresh with the lowest index at position zero.
          */
         private void grow(int lowest, int highest) {
             int capacity = capacity();
@@ -1019,9 +1016,9 @@ public class StateCache implements Cache {
                 capacity <<= 1;
             }
             this.words = new long[capacity >>> 6];
-            this.top = highest;
+            this.base = lowest;
             for (var launch : this.launches) {
-                int pos = highest - launch.index();
+                int pos = launch.index() - lowest;
                 this.words[pos >>> 6] |= 1L << (pos & 63);
             }
         }
@@ -1038,7 +1035,7 @@ public class StateCache implements Cache {
         private long[] words = new long[1];
 
         /** Index at position zero of the bit array. */
-        private int top;
+        private int base;
 
         /** Lowest index in the set (undefined while empty). */
         private int lowest;
