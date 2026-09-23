@@ -156,7 +156,7 @@ retained heap is the softly reachable state caches of 3.6. Default start graph o
 |---|---|---|---|---|---|
 | `binary-tree-dfs12` (stored) | 12 | 4 012 | | | smoke |
 | `binary-tree-dfs-unstored` | 8 | 409 114 | | | smoke |
-| `binary-tree-dfs-unstored-9` | 9 | 4 037 914 | 14 | 1 826 | quick |
+| `binary-tree-dfs-unstored-9` | 9 | 4 037 914 | 14 | 1 826 | dropped: collector-bound at 4 GB |
 | `binary-tree-dfs-unstored-10` | 10 | 43 954 714 | 131 | 4 975 | long |
 
 ### leader-election (`leader-election.gps`)
@@ -506,7 +506,7 @@ row is below the quick tier's 5 s floor but pairs with `mergers-9-simple`;
 
 ### All rows
 
-63 rows: 14 smoke, 40 quick, 9 long. The explore configuration is the default
+62 rows: 14 smoke, 39 quick, 9 long. The explore configuration is the default
 (breadth-first, full) where the column is empty; `dfs(N)` abbreviates
 `next=newest cost=uniform bound=cost:N`, `unstored(N)` the same plus `persistence=none`,
 `linear` is `frontier=single successor=single`.
@@ -545,7 +545,6 @@ row is below the quick tier's 5 s floor but pairs with `mergers-9-simple`;
 | `count-300000-big` | attribute-count-to-n | `bound-300000` | `algebra=big` | quick |
 | `as-and-bs-equality` | As-and-Bs | `start` | `collapse=equality` | quick |
 | `sierpinsky-12` | sierpinsky | `start12` | linear | quick |
-| `binary-tree-dfs-unstored-9` | generate-binary-tree | `start` | unstored(9) | quick |
 | `car-platooning-06` | car-platooning | `start-06` | | long |
 | `binary-tree-dfs-unstored-10` | generate-binary-tree | `start` | unstored(10) | long |
 | `mark-unmark-22` | Mark-Unmark | `tree-22` | | long |
@@ -909,9 +908,10 @@ that moved (the full table takes 95 minutes to regenerate):
   `hub-field-hop` and `hub-field-jump` (5.1, 5.2), and over half of the petrinet join rows
   (4.1.2).
 - **The collector cliff.** A row retaining over about 2 GB at `-Xmx4g` measures the
-  collector. `binary-tree-dfs-unstored-9` is the quick row affected: 28.9 s in the table
-  against 14 s in its cold calibration at 8 GB, with 1.7 GB retained plus the soft caches
-  of 4 M discovered states; it belongs in the long tier or at a larger heap. The other
+  collector. `binary-tree-dfs-unstored-9` was the quick row affected (28.9 s in the
+  2026-09-23 table against 14 s in its cold calibration at 8 GB, with 1.7 GB retained
+  plus the soft caches of 4 M discovered states) and was dropped from the tier for it;
+  depths 8 (smoke) and 10 (long) cover the family. The other
   quick rows above 1 GB retained (`count-300000` and its BigInteger twin at 2.6 GB,
   `mergers-10-multi`, `inheritance-12`, `leader-election-16`, `as-and-bs-equality`,
   `fib-22`, `sierpinsky-12`) are within 15 % of their calibration at 8 GB, so for stored

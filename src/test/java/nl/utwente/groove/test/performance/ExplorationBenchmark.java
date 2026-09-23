@@ -409,10 +409,6 @@ public class ExplorationBenchmark {
             // but retains 3.8 GB, too much for the quick heap
             new Config("sierpinsky-12", "sierpinsky.gps", "start12",
                 "frontier=single successor=single", 13, 12, Tier.QUICK),
-            // the unstored unfolding one level deeper: 4M discovered states in 14 s
-            new Config("binary-tree-dfs-unstored-9", "generate-binary-tree.gps", "start",
-                "next=newest cost=uniform bound=cost:9 persistence=none", 4037914, 4037913,
-                Tier.QUICK),
             // the long tier proper, two to five minutes each, one JVM per row;
             // car-platooning at 3M states is the largest breadth-first run
             new Config("car-platooning-06", "car-platooning.gps", "start-06", "", 2988061,
