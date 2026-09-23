@@ -1,5 +1,5 @@
 # Runs the headless GROOVE Generator (state-space exploration) on a grammar.
-# All arguments are passed through to nl.utwente.groove.explore.Generator.
+# All arguments are passed through to nl.utwente.groove.cli.Generator.
 # See SKILL.md in this directory.
 param(
     [Parameter(Mandatory = $true, ValueFromRemainingArguments = $true)]
@@ -19,5 +19,5 @@ if (-not (Test-Path $cpFile)) {
 }
 $cp = (Get-Content $cpFile -Raw).Trim()
 
-java -cp "target/classes;$cp" nl.utwente.groove.explore.Generator @Args_
+java -cp "target/classes;$cp" nl.utwente.groove.cli.Generator @Args_
 exit $LASTEXITCODE

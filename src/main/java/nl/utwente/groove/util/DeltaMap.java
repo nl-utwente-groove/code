@@ -14,7 +14,7 @@
  *
  * $Id$
  */
-package nl.utwente.groove.util.collect;
+package nl.utwente.groove.util;
 
 import java.util.Arrays;
 import java.util.EnumMap;

@@ -76,14 +76,14 @@ public class Template {
     /**
      * Constructs a named automaton.
      */
-    protected Template(QualName name) {
+    public Template(QualName name) {
         this(name, null);
     }
 
     /**
      * Constructs a automaton for a given procedure.
      */
-    protected Template(@NonNull Procedure proc) {
+    public Template(@NonNull Procedure proc) {
         this(proc.getQualName(), proc);
     }
 
@@ -237,7 +237,7 @@ public class Template {
      * at run time all frames within a verdict-connected region share one
      * (unmodified) call stack level.
      */
-    void initVars() {
+    public void initVars() {
         // mapping from locations to be processed to the variable sets to be added
         Map<Location,Set<CtrlVar>> changeMap = new LinkedHashMap<>();
         // seed the variable uses

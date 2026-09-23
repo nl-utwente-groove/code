@@ -9,7 +9,23 @@ that one artifact; `src/main/java/module-info.java` is still one descriptor
 exporting every `nl.utwente.groove.gui.*` package; all six root shims still sit
 together in `nl.utwente.groove`; `ImagerTest`/`SimulatorModelTest` are still in
 the single test tree. No `groove-core` exists. The `module-info` keep-or-drop
-decision is still open.*
+decision has since been taken: keep, see the update below.*
+
+*Update (2026-09-22): the descriptor question is settled, and not the way the
+"Open decision" and "Devil's advocate" sections below lean. 8.0.0 keeps
+`module-info`, and branch `module-exports` (merged 2026-09-21) turned it into a
+deliberate contract: exports cut from 74 to about 50, no `gui.*` but the backend
+SPI tier (`gui.view`, `gui.view.cell`, `gui.look`, `gui.layout`), `prolog.builtin.*`
+qualified to `gnuprologjava`, `-Xlint:exports` in the pom as the guard; the
+reasoning per package is in `claude/archive/module-exports.md`. For phase 5 this means the
+descriptor is load-bearing rather than inert: the SPI tier must be exported for
+GROOVE to run on the module path with an extension jar, the Prolog engine needs
+the qualified exports, and the three services are declared in it. A split has to
+carry those exports, `uses`/`provides` clauses and the resource `opens` across
+the module boundary, with the split-package constraint on the root shims
+unchanged. The "cli second" scoping shrinks independently: the CLI tools are
+being gathered into one `cli` package (item 2 of the exports note), which is the
+seam a cli module would need but does not create one.*
 
 *What did happen, on branch `yworks-migration` (gh #909, 134 commits ahead of
 master and unmerged), is a different split along a different seam, and it
@@ -190,6 +206,9 @@ the project explicitly (`PROJECT_ATTR` and, in `GROOVE - all JUnit tests`, a
 at which point the launch that runs the whole suite has to span three projects.
 
 ## Open decision: keep or drop `module-info` (2026-08-17)
+
+*Decided: keep. See the update of 2026-09-22 at the top; the arguments below are
+kept for the record.*
 
 **To be settled before phase 5 starts**, because the deferred root-shim move
 depends on the answer. Undecided; Arend's call.

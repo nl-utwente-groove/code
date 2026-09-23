@@ -1,5 +1,13 @@
 # Module exports: what the library promises
 
+*Status (2026-09-22): all landed. The export trim (`module-exports`), the
+controller context (`view-controller-context`, item 1), the housekeeping, the
+`cli` package (item 2, `cli-package`), the `control.term` split (item 3,
+`control-term-split`) and the `util.collect` narrowing (item 4,
+`util-collect-exports`) are on master, session B is merged into yfiles-lib
+`main`, and the descriptor compiles with no `exports` warning. Nothing here is
+open; the only expected follow-up is extending the export list on request.*
+
 *Branch `module-exports`, 2026-09-20. Context: 8.0.0 is the first
 release whose jar keeps its `module-info` (earlier releases stripped it because of
 the shadowed libraries), so the export list becomes the API contract of the
@@ -39,8 +47,9 @@ the first cut here).
 |---|---|
 | Pipeline | root, `io.store`, `io.graph`, `io.external`, `grammar`, `grammar.model/aspect/host/type/rule`, `graph`, `graph.plain/iso/layout`, `match`, `transform`, `transform.oracle`, `lts`, `explore`, `explore.config/feature/result/engine`, `verify`, `prolog`, `prolog.builtin` |
 | Data values | `algebra`, `algebra.syntax`, `annotation` |
-| Control | `control`, `control.term/template/instance/graph` |
-| Utilities | `util`, `util.parse/line/cache/collect/cli` |
+| Control | `control`, `control.template/instance/graph` |
+| Utilities | `util`, `util.parse/line/cache` |
+| CLI | `cli` (since 2026-09-22; before that `util.cli` and the tools in `explore`, `prolog`, `algebra`) |
 | Backend SPI | `gui.view`, `gui.view.cell`, `gui.look`, `gui.layout` |
 | Qualified | `prolog.builtin.algebra/graph/lts/rule/trans/type` to `gnuprologjava` only |
 
@@ -55,24 +64,24 @@ Reasons for the less obvious ones, all forced by signature reachability:
   the user-signature feature need anyway.
 - `control.instance` (`Frame`, `Step`, `Automaton`) and `control.template`
   (`Switch`, `Template`) are exposed by `lts` (`GraphState.getFrame`,
-  `RuleTransition.getStep/getSwitch`) and `Grammar.getControl`. `control.term` is
-  exposed by `Procedure.getTerm` and by `Program`/`Fragment` in `control.template`
-  (see the open item on that package). `control.graph` is `Automaton.toGraph`.
+  `RuleTransition.getStep/getSwitch`) and `Grammar.getControl`; `control.template`
+  holds only the run-time side of the compiler since 2026-09-22 (see "Item 3 as
+  built"). `control.graph` is `Automaton.toGraph`.
 - `match`: `Proof` is the anchor of `RuleEvent`/`RuleTransition`.
 - `util.cache`: `AGraph` extends `AbstractCacheHolder`. Four classes, the
   scalability mechanism, fine to export.
-- `util.collect`: only four types leak — `TreeHashSet` (`GTS.StateSet`,
-  `StoreFactory.createEdgeStore`), `DeltaMap` (`GrammarProperties.getRuleEnabling`,
-  `Properties.QUAL_NAME_DELTA_MAP`), `SmallCollection` (`PartitionMap.get`),
-  `AbstractComparator` (the `Action` comparator constants). Narrowing those four
-  signatures would let the whole 31-class package go unexported; not done.
 - `util`: besides the obvious (`QualName`, `Property`, `Pair`, …) it now holds
   `FileType`, which occurs in 20 signatures of `io.external`, `io.graph` and
-  `grammar.model`, and its `ExtensionFilter`.
-- `util.cli`: the CLI tools `explore.Generator`, `explore.CTLModelChecker`,
-  `prolog.PrologChecker`, `algebra.OperatorLister` extend `GrooveCmdLineTool`.
-  picocli was already `requires transitive`, so the package adds no new
-  third-party surface. See the open item.
+  `grammar.model`, and its `ExtensionFilter`. Since 2026-09-22 it also holds
+  `TreeHashSet` (the pooled set under `GTS.StateSet`, the host-element and event
+  sets and `StoreFactory.createEdgeStore`) with its `Equator`, and `DeltaMap`
+  (`GrammarProperties.getRuleEnabling`, `Properties.QUAL_NAME_DELTA_MAP`),
+  moved out of `util.collect` so that package could go unexported (see "Item 4
+  as built").
+- `cli`: the command-line tools and their picocli base `GrooveCmdLineTool`,
+  gathered from `util.cli`, `explore`, `prolog`, `algebra` and `io` on
+  2026-09-22 (see "Item 2 as built"). picocli was already `requires transitive`,
+  so the package adds no new third-party surface.
 - `prolog.builtin`: `GrooveEnvironment.addPredicates(Class<? extends GroovePredicates>)`
   is the extension point for predicate sets. The subpackages with the concrete
   predicates are exported to `gnuprologjava` only, which instantiates them.
@@ -96,11 +105,11 @@ Not exported, deliberately:
   `getAddPointAction`, `getLabelTree`, `getOptions`, `getModeButton`,
   `createPopupMenu`). Two consequences. Exporting the packages those signatures
   mention would drag in the whole Simulator, so they stay unexported and the
-  warnings stay visible until the controller seam is cleaned (open item 3).
+  warnings stay visible until the controller seam is cleaned (item 1, since done).
   And on the module path the yFiles add-on itself would hit `IllegalAccessError`
   the moment it touches `ActionStore` or `Options`; it does not today, because
   the installed application and the add-on's own tests run from the class path,
-  but it is one more reason to do item 3 before anyone embeds the Simulator
+  but it is one more reason item 1 had to be done before anyone embeds the Simulator
   from the module path.
 - `match.plan`, `match.automaton`: engines are selected through `match`.
 - `control.parse`: ANTLR 3 generated classes plus the tree and the name space.
@@ -115,7 +124,7 @@ Not exported, deliberately:
   `createExploreListener`); the concrete classes are reference implementations.
 - `io.external.format`, `io.external.format.ecore`, `prolog.builtin.*`,
   `prolog.util`, `prolog.exception`, `transform.criticalpair`, `util.antlr`,
-  `util.io`, `io`.
+  `util.io`, `util.collect`, `io`.
 
 ## Fixes made on the branch
 
@@ -160,22 +169,26 @@ reports no `exports` warning at all.
 1. ~~**`gui.view` as a backend SPI tier.**~~ **Done**, 2026-09-21, on branch
    `view-controller-context` off this one, by composition rather than by the
    interfaces of the session proposal below: see "Item 1 as built".
-2. **CLI tools into one `cli` package** together with `util.cli`: `Generator`,
-   `CTLModelChecker`, `PrologChecker`, `OperatorLister`, `Imager`. `explore`,
-   `prolog` and `algebra` then stop mentioning picocli, `util.cli` goes
-   unexported, and the exported CLI surface is one package. This is the `cli`
-   seam of the module-split plan.
-3. **`control.template` mixes compile time and run time**: `Program`,
+2. ~~**CLI tools into one `cli` package**~~ **Done**, 2026-09-22, branch
+   `cli-package`: see "Item 2 as built".
+3. ~~**`control.template` mixes compile time and run time**: `Program`,
    `Fragment`, `TemplateBuilder` (terms in, template out) sit next to `Template`,
    `Switch`, `Location` (what the LTS refers to). Separating them, and moving
    `Procedure`'s term accessors (used by `control.parse`, `control.template`,
-   `control.term`) to the compiler side, would let `control.term` go unexported.
-4. **`util.collect`**: narrow the four leaking signatures listed above, then
-   unexport.
+   `control.term`) to the compiler side, would let `control.term` go unexported.~~
+   **Done**, 2026-09-22, branch `control-term-split`: see "Item 3 as built".
+4. ~~**`util.collect`**: narrow the four leaking signatures listed above, then
+   unexport.~~ **Done**, 2026-09-22, branch `util-collect-exports`: see "Item 4
+   as built".
 
-Not verified: whether `requires transitive java.desktop` is still needed by an
-exported signature once `gui` is out (exported core types do use `java.awt`
-geometry in `graph.layout`/`io.graph`, so presumably yes).
+Verified 2026-09-22: `requires transitive java.desktop` is still needed. With
+`transitive` dropped, javac hits its cap of 100 warnings before running out:
+`java.awt.Color` in `util.line.Line`/`LineFormat`, `util.HTMLConverter`,
+`grammar.Action` and `grammar.aspect.AspectContent`, and
+`java.beans.PropertyChangeListener` in `util.Observable`, before any geometry
+type. `java.prefs` was tested in the same run and hidden behind the cap; no
+`java.util.prefs` type occurs outside `gui`, so it could probably be plain
+`requires`, not verified separately.
 
 ## Session proposal: the backend-facing controller interface (item 1)
 
@@ -398,6 +411,10 @@ On `view-controller-context`:
   whatever was measured there cannot have been the unit against that branch.
   The test sources were not reached, so the expectation that their failures
   are limited to constructors and `setLabelTree` is still unverified.
+- Session B landed afterwards on the yfiles-lib branch of the same name and
+  was reviewed on 2026-09-21: 70 tests, 5 Robot skips against the code tip; the
+  paired workflows `backend.yml` (master) and `test.yml` (main) are green since
+  the merges.
 
 On `module-exports`:
 
@@ -413,3 +430,149 @@ On `module-exports`:
 - GUI and yFiles gates: not run; no source change under `gui/`, and the
   yFiles unit compiles against GROOVE on the class path, where the descriptor
   is ignored.
+
+## Item 2 as built: the cli package (2026-09-22)
+
+Branch `cli-package`, off `master` (item 1 was already merged), in three moves
+plus this note, each move compiling on its own.
+
+**What moved.** `nl.utwente.groove.cli` now holds the nine former `util.cli`
+classes (`CmdLineException`, `DirectoryHandler`, `ExistingFileHandler`,
+`GrammarHandler`, `GrooveCmdLineParser`, `GrooveCmdLineTool`, `HelpHandler`,
+`LogHandler`, `VerbosityHandler`) and the five command-line tools that were
+parked in the package of the subsystem they drive: `explore.Generator`,
+`explore.CTLModelChecker`, `prolog.PrologChecker`, `algebra.OperatorLister` and
+`io.GraphReporter`. `util.cli` is gone; `explore`, `prolog`, `algebra` and `io`
+no longer mention picocli. The exported CLI surface is the single package
+`cli`, listed in the descriptor under its own heading after the pipeline block.
+
+**`Verbosity` went to `util`, not to `cli`.** It is the one member of the old
+`util.cli` that is not a command-line concept: the four exploration reporters in
+`explore.util` use it to decide how much to print. Since `cli` ranks *above*
+`explore` in the layering, leaving the enum with the CLI classes would have
+inverted that edge. Its picocli converter `VerbosityHandler` stayed behind with
+the rest. This corrects the layering bullet of `CHANGES-8_0_0.md`, which had
+recorded the 2026-08 move as going to `util.cli`.
+
+**`Imager` and `Viewer` stay in `gui`**, against the wording of the open item:
+both open windows, so moving them would pull Swing into an exported package that
+is otherwise headless, and `gui` already sits above `cli`. They keep using
+`GrooveCmdLineTool` across that edge, as does `GuiShutdownHook`.
+
+**The root-package shims stay** (`nl.utwente.groove.Generator`, `ModelChecker`,
+`PrologChecker`) — maintainer's decision; they are the documented launcher class
+names and the main classes of the runnable jars. Only their delegation and
+`@see` javadoc were retargeted.
+
+**Layering.** `LayeringTest` gains `cli` at rank 10, between `prolog` (9) and
+`gui` (now 11, root 12). `cli` may use every pipeline package and uses no `gui`;
+`gui` and the root shims may use `cli`. The whitelist is untouched.
+
+**`opens` lines dropped**: `nl.utwente.groove.explore` and
+`nl.utwente.groove.prolog`, which existed for the picocli-annotated fields of
+`Generator`/`CTLModelChecker` and `PrologChecker` respectively; neither package
+contains a picocli-annotated class any more. Note that `opens
+nl.utwente.groove.verify` and `opens nl.utwente.groove.util` are stale for the
+same reason and were *already* stale before this branch — neither package
+mentions picocli — but they are outside the scope of this change and were left
+alone.
+
+**Gates.** `mvn clean compile`: no `exports` warning (the only warnings are the
+pre-existing automodule notice). Fast suite: 881 tests, 0 failures, 0 errors, 2
+skipped, with `LayeringTest` 1, `ExploreCliTest` 7, `CTLModelCheckerTest` 5,
+`ExtensionsTest` 4 and `PredicateTests` 11 all green. GUI tests: all seven
+`*GuiTest` classes run, 19 tests, none skipped (`EditorCancelGuiTest` 2,
+`AddOnGuiTest` 1, `DisplaySwitchGuiTest` 5, `LabelCountGuiTest` 2,
+`SaveGrammarAsGuiTest` 1, `SimulatorGuiTest` 6, `WarningDisplayGuiTest` 2).
+Null analysis (`null-check` skill, ecj `-All`): 0 errors, 11 main and 8 test
+warnings — the same set as on `view-controller-context`, so nothing new. The
+yFiles backend needed no run: its sources mention none of the moved names,
+only `gui.Imager`, which did not move.
+
+## Item 3 as built: the term level unexported (2026-09-22)
+
+Branch `control-term-split`, off `master`, in three code commits plus the
+descriptor and these records.
+
+**What moved.** `Fragment` and `TemplateBuilder` went from `control.template`
+to `control.term` (`git mv`). `Program` was split: the compile-time half
+(fragment merging with the duplicate-main and duplicate-procedure errors, the
+recursion/finality/termination analyses, the body checks) is relocated
+unchanged into the new `control.term.ProgramBuilder`, whose `build()` runs the
+checks and the `TemplateBuilder` and returns the `Program`. `Program` keeps the
+run-time half: a constructor from main name, main template, procedure map and
+property list, and `getMainName`, `getTemplate`, `getProcs`, `getProc`,
+`hasProperties`, `getProperties`. It is no longer `Fixable` (a `Program` only
+exists after a successful build), which removed the `isFixed` asserts in
+`Automaton` and `PreviewControlAction` and the redundant `setFixed` calls in
+`CtrlLoader.run`; `hasMain` went too, since the builder rejects a program
+without main and `CtrlLoader` supplies the default main, so it was always true.
+`CtrlLoader.getTermPrototype` is gone; its one user, `ProgramBuildTest`, parses
+through `CtrlTree` on its own name space and asserts on the builder.
+
+**Procedure bodies live in the term pool.** `Procedure.getTerm/setTerm` were
+the leak through `Recipe` and `Function`. Three packages need the bodies —
+`control.parse` sets them, `control.term` reads them for nested derivations,
+the compiler analyses and compiles them — so `Procedure` could not keep a
+package-private accessor. The pool of the name space is the natural owner:
+every body is a term of that pool and every consumer holds such a term.
+`Term.prototype()` now creates a package-private `TermPool` with a lookup-only
+procedure-to-body map; `Term.setBody` (recipe bodies made atomic, procedure
+fixed) and `Term.getBody` replace the accessors. A `Fragment` receives the
+name-space prototype at construction, because its main may be absent.
+
+**`Template` visibility.** The constructors `Template(QualName)` and
+`Template(Procedure)` and `Template.initVars()` became public for the moved
+`TemplateBuilder`; none of them mentions a term type.
+
+**Not annotated.** `ProgramBuilder` is not `@NonNullByDefault`: its analyses
+pass arity-dependent nullable argument locals around in some twenty places,
+and annotating would have meant rewriting relocated code. `Program` is
+annotated; its `getProc` is `@Nullable`, which cost three asserts in tests.
+
+**Gates.** `mvn clean compile`: no `exports` warning. Fast suite: 883 tests,
+0 failures, 0 errors, 2 skipped, all `test.control` classes and
+`ExtensionsTest` 4 and `LayeringTest` 1 green. `ExplorationTest`: 25 tests,
+all pass. GUI tests: eight `*GuiTest` classes, 22 tests, none skipped.
+Null analysis (`-All`): 0 errors, 11 main and 8 test warnings, the same set as
+before. The yFiles backend mentions none of the changed names except
+`getProgram().getTemplate()` in one test, which is unchanged API.
+
+## Item 4 as built: util.collect unexported (2026-09-22)
+
+Branch `util-collect-exports`, off `master`, in two code commits plus the
+descriptor and these records.
+
+**The leak was larger than listed.** A compile with the export removed showed
+five leaking types over fifteen signatures, not the four types above:
+`TreeHashSet` as supertype or return type in seven places (`GTS.StateSet` and
+`NormalisedStateSet`, `MatchResultSet`, `RuleEventSet`, `HostEdgeTreeHashSet`,
+`HostNodeTreeHashSet`, `StoreFactory.createEdgeStore`), `DeltaMap` in three
+(`GrammarProperties.setRuleEnabling/getRuleEnabling`,
+`Properties.QUAL_NAME_DELTA_MAP`), `AbstractComparator` in the three `Action`
+comparator constants, `SmallCollection` in `PartitionMap.get`, and `KeySet` in
+the protected field `MatchCollector.parentTransMap`, which the note had missed.
+
+**What moved.** `TreeHashSet` and `DeltaMap` are real API and depend only on
+`util` (`Exceptions`, `util.parse`), so they went to `util` (`git mv`), like
+`FileType` before them. `Equator` had to go along: the brief said the two
+classes depend only on `util`, but `TreeHashSet`'s public constructors and its
+`equalsEquator`/`hashCodeEquator`/`identityEquator` factories mention it, and it
+has no other user. Imports changed in 19 files; the classes themselves only
+changed package (and `TreeHashSet` lost its now same-package `Exceptions`
+import).
+
+**What was narrowed.** `Action.PRIORITY_COMPARATOR`, `ACTION_COMPARATOR` and
+`PARTIAL_COMPARATOR` are declared as `Comparator`s (as
+`GraphTransitionKey.COMPARATOR` already was); their values are still the
+anonymous `AbstractComparator` subclasses. `PartitionMap.get` is
+package-private (its only caller is `IsoChecker`), `MatchCollector.parentTransMap`
+private (no subclasses, no other users).
+
+**Gates.** `mvn clean compile`: no `exports` warning. Fast suite: 883 tests,
+0 failures, 0 errors, 2 skipped; `DeterminismTest` 2, `LayeringTest` 1,
+`ExtensionsTest` 4 green. No file under `gui/` changed, so the GUI tests were
+not run. Null analysis (`-All`): 0 errors, 11 main and 8 test warnings, the same
+set as after item 3. The yFiles backend mentions none of `util.collect`,
+`TreeHashSet`, `DeltaMap`, `Equator`, the comparator constants, `PartitionMap`
+or `parentTransMap`.

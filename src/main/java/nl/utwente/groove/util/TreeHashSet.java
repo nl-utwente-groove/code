@@ -14,7 +14,7 @@
 /**
  *
  */
-package nl.utwente.groove.util.collect;
+package nl.utwente.groove.util;
 
 import java.util.AbstractSet;
 import java.util.Arrays;
@@ -27,8 +27,6 @@ import java.util.Set;
 import java.util.Stack;
 
 import org.eclipse.jdt.annotation.Nullable;
-
-import nl.utwente.groove.util.Exceptions;
 
 /**
  * Set implementation that uses a search tree over "hash" code. If the number of

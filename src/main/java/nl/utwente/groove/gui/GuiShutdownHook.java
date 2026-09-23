@@ -20,8 +20,8 @@ import java.awt.Window;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
+import nl.utwente.groove.cli.GrooveCmdLineTool;
 import nl.utwente.groove.util.AIGenerated;
-import nl.utwente.groove.util.cli.GrooveCmdLineTool;
 
 /**
  * Shutdown hook for GUI-based command-line tools, delaying JVM exit

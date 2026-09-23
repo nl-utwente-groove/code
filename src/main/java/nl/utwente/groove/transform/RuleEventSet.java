@@ -16,7 +16,7 @@
  */
 package nl.utwente.groove.transform;
 
-import nl.utwente.groove.util.collect.TreeHashSet;
+import nl.utwente.groove.util.TreeHashSet;
 
 /**
  * Dedicated set of rule events.

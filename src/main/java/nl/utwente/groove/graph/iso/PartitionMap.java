@@ -57,7 +57,7 @@ public class PartitionMap<C extends ElementCertificate<?>> {
      * @return the certificates equal to <code>certificate</code>, or
      *         <code>null</code> if there are none
      */
-    public SmallCollection<C> get(C certificate) {
+    SmallCollection<C> get(C certificate) {
         return this.partitionMap.get(certificate);
     }
 

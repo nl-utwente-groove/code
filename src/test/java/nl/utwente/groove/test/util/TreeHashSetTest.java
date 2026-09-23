@@ -29,7 +29,7 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 
-import nl.utwente.groove.util.collect.TreeHashSet;
+import nl.utwente.groove.util.TreeHashSet;
 
 /**
  * @author Arend Rensink

@@ -2,7 +2,7 @@ package nl.utwente.groove.grammar.host;
 
 import java.util.Collection;
 
-import nl.utwente.groove.util.collect.TreeHashSet;
+import nl.utwente.groove.util.TreeHashSet;
 
 /**
  * Specialisation of a set of edges that relies on the 

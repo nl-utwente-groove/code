@@ -29,6 +29,9 @@ import org.eclipse.jdt.annotation.Nullable;
 import nl.utwente.groove.control.Call;
 import nl.utwente.groove.control.CtrlVar;
 import nl.utwente.groove.control.Position;
+import nl.utwente.groove.control.Procedure;
+import nl.utwente.groove.grammar.Callable.Kind;
+import nl.utwente.groove.util.AIGenerated;
 import nl.utwente.groove.util.Exceptions;
 import nl.utwente.groove.util.collect.Pool;
 
@@ -487,9 +490,46 @@ abstract public class Term implements Position<Term,Derivation> {
         return Collections.emptyList();
     }
 
+    /**
+     * Sets the body of a procedure declared in the name space of this term.
+     * Should only be invoked once per procedure, before the procedure is fixed.
+     * A recipe body is made atomic; the call fixes the procedure.
+     * @param proc the procedure whose body is set
+     * @param body the body; should share the term pool of this term
+     */
+    @AIGenerated("Claude Opus 5, 2026-09")
+    public void setBody(Procedure proc, Term body) {
+        assert body.getPool() == getPool();
+        assert !proc.isFixed();
+        // make the body atomic if it is a recipe
+        getTermPool().putBody(proc, proc.getKind() == Kind.RECIPE
+            ? body.atom()
+            : body);
+        proc.setFixed();
+    }
+
+    /**
+     * Returns the body of a procedure declared in the name space of this term.
+     * Should only be invoked after the body has been set by {@link #setBody}.
+     */
+    @AIGenerated("Claude Opus 5, 2026-09")
+    public Term getBody(Procedure proc) {
+        Term result = getTermPool().getBody(proc);
+        assert result != null : String
+            .format("Procedure %s has not been declared", proc.getQualName());
+        return result;
+    }
+
+    /** Returns the term pool of this term, which also holds the procedure bodies. */
+    @AIGenerated("Claude Opus 5, 2026-09")
+    private TermPool getTermPool() {
+        // every pool is created by {@link #prototype()}
+        return (TermPool) getPool();
+    }
+
     /** Creates a prototype term. */
     public static Term prototype() {
-        return new Term(new Pool<>()) {
+        return new Term(new TermPool()) {
             @Override
             protected DerivationAttempt computeAttempt(boolean nested) {
                 throw new UnsupportedOperationException();

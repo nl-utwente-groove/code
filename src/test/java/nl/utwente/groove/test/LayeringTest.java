@@ -49,7 +49,7 @@ import nl.utwente.groove.util.AIGenerated;
  * <pre>
  * util, annotation, graph, algebra,
  * {grammar+control+match+transform} (the rule-system cluster),
- * lts, io, verify, explore, prolog, gui
+ * lts, io, verify, explore, prolog, cli, gui
  * </pre>
  * where the braced cluster counts as a single layer. Every remaining
  * upward reference is listed in {@link #WHITELIST}; the whitelist is
@@ -203,7 +203,8 @@ public class LayeringTest {
         .ofEntries(Map.entry("util", 0), Map.entry("annotation", 1), Map.entry("graph", 2),
                    Map.entry("algebra", 3), Map.entry(CLUSTER_NAME, 4), Map.entry("lts", 5),
                    Map.entry("io", 6), Map.entry("verify", 7), Map.entry("explore", 8),
-                   Map.entry("prolog", 9), Map.entry("gui", 10), Map.entry(ROOT, 11));
+                   Map.entry("prolog", 9), Map.entry("cli", 10), Map.entry("gui", 11),
+                   Map.entry(ROOT, 12));
     /** jdeps package-level dependency line. */
     private static final Pattern EDGE_PATTERN
         = Pattern.compile("^\\s+(\\S+)\\s+->\\s+(\\S+)\\s+\\S+\\s*$");

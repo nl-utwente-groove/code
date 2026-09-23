@@ -42,7 +42,7 @@ import nl.utwente.groove.util.Factory;
  * Location in a control template.
  * <p>
  * For a template with a procedure as owner, construction (see
- * {@link TemplateBuilder}) guarantees the following invariants relating
+ * {@link nl.utwente.groove.control.term.TemplateBuilder}) guarantees the following invariants relating
  * locations' control variables to the procedure's signature:
  * <ul>
  * <li>the variables of the start location are among the procedure's

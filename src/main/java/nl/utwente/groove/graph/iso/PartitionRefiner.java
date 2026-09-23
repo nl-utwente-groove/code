@@ -24,7 +24,7 @@ import nl.utwente.groove.graph.Element;
 import nl.utwente.groove.graph.Graph;
 import nl.utwente.groove.graph.Label;
 import nl.utwente.groove.graph.Node;
-import nl.utwente.groove.util.collect.TreeHashSet;
+import nl.utwente.groove.util.TreeHashSet;
 
 /**
  * Implements an algorithm to partition a given graph into sets of symmetric

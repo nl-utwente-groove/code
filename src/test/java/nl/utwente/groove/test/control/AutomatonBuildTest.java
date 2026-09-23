@@ -43,10 +43,11 @@ import nl.utwente.groove.control.instance.CallStackChange;
 import nl.utwente.groove.control.instance.Frame;
 import nl.utwente.groove.control.instance.Step;
 import nl.utwente.groove.control.instance.StepAttempt;
-import nl.utwente.groove.control.template.Fragment;
 import nl.utwente.groove.control.template.NestedSwitch;
 import nl.utwente.groove.control.template.Program;
 import nl.utwente.groove.control.template.Switch;
+import nl.utwente.groove.control.term.Fragment;
+import nl.utwente.groove.control.term.ProgramBuilder;
 import nl.utwente.groove.grammar.Callable;
 import nl.utwente.groove.grammar.Grammar;
 import nl.utwente.groove.grammar.Rule;
@@ -344,14 +345,15 @@ public class AutomatonBuildTest {
      * @param program control expression; non-{@code null}
      */
     protected Automaton build(String controlName, String program) {
-        Program prog = new Program();
+        ProgramBuilder builder = new ProgramBuilder();
+        Program prog = null;
         Automaton result = null;
         try {
             QualName qualControlName = QualName.parse(controlName);
             Fragment fragment
                 = CtrlTester.parse(this.testGrammar, qualControlName, program).check().toFragment();
-            prog.add(fragment);
-            prog.setFixed();
+            builder.add(fragment);
+            prog = builder.build();
             result = new Automaton(prog);
         } catch (FormatException e) {
             fail(e.toString());
@@ -400,6 +402,7 @@ public class AutomatonBuildTest {
         if (unit == null) {
             unit = this.prog.getProc(QualName.parse(name));
         }
+        assert unit != null : String.format("Unknown unit %s", name);
         return new Call(unit);
     }
 
@@ -408,6 +411,7 @@ public class AutomatonBuildTest {
         if (unit == null) {
             unit = this.prog.getProc(QualName.parse(name));
         }
+        assert unit != null : String.format("Unknown unit %s", name);
         return new Call(unit, Arrays.asList(pars));
     }
 

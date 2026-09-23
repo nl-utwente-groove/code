@@ -17,6 +17,7 @@
 package nl.utwente.groove.grammar;
 
 import java.awt.Color;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -162,7 +163,7 @@ public interface Action extends Callable, Comparable<Action> {
      * A comparator for priorities, encoded as {@link Integer} objects. This
      * implementation orders priorities from high to low.
      */
-    public static final AbstractComparator<Integer> PRIORITY_COMPARATOR
+    public static final Comparator<Integer> PRIORITY_COMPARATOR
         = new AbstractComparator<>() {
             @Override
             public int compare(Integer o1, Integer o2) {
@@ -176,7 +177,7 @@ public interface Action extends Callable, Comparable<Action> {
      * implementation orders priorities from high to low, and within priority,
      * according to the action (full) name.
      */
-    public static final AbstractComparator<Action> ACTION_COMPARATOR = new AbstractComparator<>() {
+    public static final Comparator<Action> ACTION_COMPARATOR = new AbstractComparator<>() {
         @Override
         public int compare(Action o1, Action o2) {
             if (o1 == o2) {
@@ -199,7 +200,7 @@ public interface Action extends Callable, Comparable<Action> {
     /** A comparator for actions that orders all non-partial rules before
      * partial rules, and otherwise behaves like @{link #ACTION_COMPARATOR}.
      */
-    public static final AbstractComparator<Action> PARTIAL_COMPARATOR = new AbstractComparator<>() {
+    public static final Comparator<Action> PARTIAL_COMPARATOR = new AbstractComparator<>() {
         @Override
         public int compare(Action o1, Action o2) {
             int result = compare(!o1.isPartial(), !o2.isPartial());

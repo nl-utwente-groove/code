@@ -18,6 +18,7 @@ package nl.utwente.groove.test.io;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -115,6 +116,9 @@ public class SystemStoreTest {
         SystemStore fresh = SystemStore.newStore(freshDir, true, true);
         assertEquals("fresh", fresh.getName());
         assertEquals(freshDir, fresh.getLocation());
+        // a store read from a directory originates in that same directory
+        assertEquals(freshDir.getPath(), fresh.getOrigin());
+        assertEquals(freshDir, fresh.getOriginFile());
         assertFalse(fresh.isEmpty());
         assertTrue(fresh.toString().contains("fresh"));
         // location determines equality
@@ -350,6 +354,13 @@ public class SystemStoreTest {
         assertEquals("mczip", zipStore.getName());
         assertEquals(2, zipStore.getGraphs(ResourceKind.HOST).size());
         assertEquals(3, zipStore.getGraphs(ResourceKind.RULE).size());
+        // the store is located in the temporary directory it was unpacked
+        // into, but remembers the archive it came from
+        assertNotEquals(zip, zipStore.getLocation());
+        assertEquals(zip.getPath(), zipStore.getOrigin());
+        assertEquals(zip, zipStore.getOriginFile());
+        // and names that archive's directory, not the temporary one
+        assertTrue(zipStore.toString().endsWith(tmp.toString()));
         // a zip whose root holds more than one entry is rejected
         File badZip = tmp.resolve("bad.zip").toFile();
         try (ZipOutputStream out = new ZipOutputStream(new FileOutputStream(badZip))) {

@@ -24,8 +24,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import javax.swing.SwingUtilities;
 
@@ -97,10 +101,69 @@ public class SaveGrammarAsGuiTest {
                    "start graph edit did not survive a refresh");
     }
 
+    /**
+     * The file proposed by the Save As dialog used to be the one last saved
+     * through the chooser, which lagged behind the loaded grammar because
+     * Load Grammar sets its file on a different chooser (the one that also
+     * accepts archives).
+     */
+    @Test
+    void proposedFileFollowsLoadedGrammar() throws Exception {
+        for (String name : new String[] {"first.gps", "second.gps"}) {
+            Path grammar = copyGrammar(name);
+            loadGrammar(grammar);
+            SwingUtilities.invokeAndWait(() -> {
+                var chooser = simulator().getActions().getSaveGrammarAction().prepareFileChooser();
+                assertEquals(grammar.toFile(), chooser.getSelectedFile(),
+                             "Save As does not propose the name of the loaded grammar");
+            });
+        }
+    }
+
+    /**
+     * For a grammar loaded from an archive, the proposal must combine the
+     * grammar name with the directory of the archive: the grammar's own
+     * location is the temporary directory it was unpacked into.
+     */
+    @Test
+    void proposedFileForArchivedGrammar() throws Exception {
+        File zip = zipGrammar("archived.gps", resolve("archived.zip").toFile());
+        SwingUtilities.invokeAndWait(() -> {
+            try {
+                simulator().getActions().getLoadGrammarAction().load(zip);
+            } catch (IOException e) {
+                throw new IllegalStateException(e);
+            }
+        });
+        SwingUtilities.invokeAndWait(() -> {
+            var chooser = simulator().getActions().getSaveGrammarAction().prepareFileChooser();
+            assertEquals(new File(zip.getParentFile(), "archived.gps"), chooser.getSelectedFile(),
+                         "Save As does not propose the directory the archive came from");
+        });
+    }
+
     private Path copyGrammar(String name) throws IOException {
         Path result = resolve(name);
         FileUtils.copyDirectory(new File(GRAMMAR), result.toFile(), false);
         return result;
+    }
+
+    /** Zips the fixture grammar, under a given name, into a given zip file. */
+    private File zipGrammar(String name, File zip) throws IOException {
+        try (ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zip))) {
+            // the extractor does not create parent directories on its own,
+            // so the grammar directory needs an explicit entry
+            out.putNextEntry(new ZipEntry(name + "/"));
+            out.closeEntry();
+            File[] files = new File(GRAMMAR).listFiles();
+            assert files != null; // the fixture grammar is a directory
+            for (File file : files) {
+                out.putNextEntry(new ZipEntry(name + "/" + file.getName()));
+                Files.copy(file.toPath(), out);
+                out.closeEntry();
+            }
+        }
+        return zip;
     }
 
     private Path resolve(String name) {

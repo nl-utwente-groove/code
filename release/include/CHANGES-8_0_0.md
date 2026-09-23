@@ -393,12 +393,28 @@ All relocations are without deprecation.
   `explore.ExploreResult` and `explore.util.LTSLabels` to `lts`;
   `transform.Proof` and `grammar.Prover` to `match`; `transform.Phase` to `lts`;
   the delta classes from `transform` to `grammar.host`; `explore.Verbosity` to
-  `util.cli`; `graph.GraphProperties` to `grammar.ResourceProperties`; the
+  `util`; `graph.GraphProperties` to `grammar.ResourceProperties`; the
   static grab-bag `util.Groove` is dissolved into `io.Groove`, `util.Resources`,
   `util.Strings`, `util.Trace` and others; `io.Util` into `util.Unicode` and
   `io.FileUtils`. The `explore` package is reorganised into `explore.engine`,
   `explore.feature`, `explore.config` and `explore.verify` (formerly
   `explore.strategy`).
+- The command-line tools `explore.Generator`, `explore.CTLModelChecker`,
+  `prolog.PrologChecker`, `algebra.OperatorLister` and `io.GraphReporter`, and
+  the former `util.cli` classes they are built on, now live in the single
+  exported package `cli`; `explore`, `prolog`, `algebra` and `io` no longer
+  mention picocli. The root-package wrappers `Generator`, `ModelChecker` and
+  `PrologChecker` are unchanged.
+- `control.term`, the term level of the control compiler, is no longer
+  exported. `control.template.Fragment` and `control.template.TemplateBuilder`
+  moved there, together with the new `ProgramBuilder`, which now holds the
+  compile-time half of `Program` (fragment merging, body analyses and checks);
+  `Program` keeps the compiled templates and procedures and is built by it.
+  `Procedure` lost `getTerm`/`setTerm`: procedure bodies are kept by the term
+  pool (`Term.getBody`/`setBody`).
+- `util.collect` is no longer exported; `TreeHashSet` (with its `Equator`) and
+  `DeltaMap` moved to `util`. The `Action` comparator constants are typed as
+  plain `Comparator`s, and `PartitionMap.get` is package-private.
 - The top-level `automaton` package is dissolved into `grammar.rule`,
   `grammar.type` and `match.automaton`; `RuleLabel.getAutomaton` is replaced by
   `RegAutCalculator.instance()`.
