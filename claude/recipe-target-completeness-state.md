@@ -50,8 +50,8 @@ orders, which gh #924 deliberately avoided).
 
 Per inner-prime, non-full state cache S (`lts/StateCache`):
 
-- `launches` (`LaunchSet`: arrival-ordered list plus an open-addressing int table of
-  the launch indices, which `GTS.newLaunchIndex` hands out once per launch at
+- `launches` (`LaunchSet`: arrival-ordered list plus a circular bit array over the
+  launch indices, which `GTS.newLaunchIndex` hands out once per launch at
   registration, carried in a `Launch` record): the launches whose runs pass through S.
 - `innerSteps`: the registered inner non-launch steps out of S.
 - Invariant: for every L in `launches(S)` and every recipe target t reachable from S
@@ -115,13 +115,19 @@ launches did. Allocation churn thus grew as launches × region states / 16 bytes
 launches × long-lived non-full inner states / 8: 78 000 launches on `chain-200-2`
 under `alap` of a two-step recipe stayed below the sampling threshold of a JFR
 allocation profile (about 400 MB in a 46 GB run), a million launches with a large
-cyclic region still open would cost gigabytes. Replaced by `LaunchSet`, an
-insertion-ordered list plus an open-addressing int table of the indices (load at most
-one half, HashMap-style mixing so consecutive indices probe consecutive slots): memory
-proportional to the launches in the set. Cost on the dense extreme, `chain-60-2`
-wander-alap, where the bit set is ideal: 4.1–4.3 s against 3.7–3.9 s; a multiplicative
-scramble was 5% worse still. Other cases unchanged. Reverting to the bit set is a
-one-commit decision if the dense case is judged the only one that matters.
+cyclic region still open would cost gigabytes. First replaced by an insertion-ordered
+list plus an open-addressing int table of the indices (memory proportional to the
+launches in the set, but 4.1–4.3 s against 3.7–3.9 s on the dense extreme `chain-60-2`
+wander-alap, every probe a cache miss), then, on Arend's design, by a bit array laid
+out circularly around the first index inserted: index n at position top − n, negative
+positions wrapped around the capacity, distinct while the index range stays below the
+capacity, doubled and re-laid out with the then-highest index at zero when it reaches
+it. Launches arrive newest-first (the launch that reaches a state, then the older ones
+through the steps from its predecessors) and later-registered ones in increasing order,
+so both directions are absorbed without shifting. A plain `long[]`, since the wrap
+needs a capacity the class controls and `BitSet` grows implicitly on `set`. Memory is
+the index range over eight, one word for a singly reached state; wander-alap back at
+3.7–3.8 s, other cases unchanged.
 
 Harness: a scratch `main` that loads the grammar with `SystemStore.newGrammar`, sets
 the host and control resources active with `setLocalActiveNames`, and plays
