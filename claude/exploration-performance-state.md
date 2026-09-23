@@ -52,24 +52,30 @@ Done 2026-09-23, all in the note:
   5.0; retains 22 MB, was 845), `hub-wander-alap-60` 1771 / 6 068 977 (4.8 s, was 4.4);
   benchmark comment, note table and outcomes updated.
 
+Realigned with gh #925, 2026-09-23 (all in the note): the wander family recalibrated
+post-fix (20 to 400 leaves, alap 20 to 80); no size lands in the long tier (300 leaves
+115 s, 400 leaves 355 s; alap-80 already retains 3.8 GB), so the new row is
+`hub-wander-200` in the quick tier (19 901 / 98 705, 23 s against 10.7 s for
+`hub-chain-200-2`, the difference being isomorphism checks). `binary-tree-dfs-unstored-9`
+dropped (collector-bound at 4 GB). Quick tier re-run at `733a78d5c`: no non-recipe row
+moved with the fix (the drifting ones checked alone). Recipe rows re-measured in
+random-access mode: time within 3 % (`fib-22` 1.12), the wander rows retaining 3.7 times
+as much.
+
 ## Next, in order
 
-1. A row `hub-wander-200` (pairs with `hub-chain-200-2`; pre-fix 161 s and 65 GB
-   allocated, post-fix 21 s warm in the scratch harness, so calibrate first: it may now
-   be a quick-tier row rather than long); move `binary-tree-dfs-unstored-9` out of the quick tier
-   (collector-bound at 4 GB).
-2. Section 1 of the note (always-on `Reporter`, `CHECK_IMAGES`, `Factory.get()` lock,
+1. Section 1 of the note (always-on `Reporter`, `CHECK_IMAGES`, `Factory.get()` lock,
    the `synchronized` accessors, `java.util.Stack`): one commit per item, each with
    before/after numbers measured one JVM per row (the A/B shape in the note), in both
    modes where the row is mode-sensitive. `Reporter` first: it is on the innermost loop
    and also the harness's own breakdown source, so gate it on a system property and run
    the harness once with it on (for the breakdown) and once off (for the headline).
-3. Finding 4.3.2 (per-node edge sets) has moved up: it is the whole of the Simulator-mode
+2. Finding 4.3.2 (per-node edge sets) has moved up: it is the whole of the Simulator-mode
    cost on large graphs, 11 to 33 times on the hub rows.
-4. Section 2 (dead optimisations): 2.1 stored `MatchResult` keys, confirm "Confluent:"
+3. Section 2 (dead optimisations): 2.1 stored `MatchResult` keys, confirm "Confluent:"
    goes non-zero on `inheritance`; 2.3 soft certifier reference; 2.4 refinement loop
    (gate with `grammar-smoke`); 2.5 to 2.7 freezing and chain replay.
-5. A long-tier size for As-and-Bs is still missing; then section 3.
+4. A long-tier size for As-and-Bs is still missing; then section 3.
 
 ## Grammar set extension (started 2026-09-21)
 
