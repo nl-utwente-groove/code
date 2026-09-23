@@ -9,58 +9,57 @@ Measurable performance improvement of state-space exploration, working down the
 findings of `claude/exploration-performance.md` (the review note; read its "Suggested
 order of attack" and "Building a throughput harness" sections first).
 
-## State as of 2026-09-22 (quick-tier re-baseline done)
+## State as of 2026-09-23 (coverage gaps 1, 2, 4 closed; note restructured)
 
 Branch `exploration-performance`, worktree `.claude/worktrees/exploration-performance`,
-master merged in up to `f8ab8a880` (2026-09-23, by Arend), re-attached 2026-09-23.
+master merged in up to `f8ab8a880` (2026-09-23, by Arend). The note
+`claude/exploration-performance.md` was restructured 2026-09-23 (test cases, harness,
+runs and outcomes, findings with unchanged numbering, coverage); superseded run data and
+the gh #919 leak investigation are gone from it (the latter lives in
+`claude/factory-user-leak.md`).
 
-**gh #924 landed in between.** A parallel session took finding 3.12 (the quadratic
-transient closures of `StateCache`, the fibonacci recipe anomaly of this note) on its own
-branch `statecache-transient-closures`; merged to master and into this branch at
-`da54faa44`. Consequences here: every recipe figure before the merge is void (`fib-15` as
-a recipe: 19 s to 0.29 s cold, 63 ms warm, level with the function program), the recipe
-rows were recalibrated and re-pinned (`fib-15` smoke, `fib-22` quick, `fib-12` dropped;
-no long-tier size for either family, the ordinary per-state cost), and the A/B in the
-note shows no cost on the non-recipe path. (The gh #924 handoff file that the first merge brought in was that session's; master
-deleted it and the merge of 2026-09-23 took it away here.)
+**gh #924 landed in between** (the parallel session that took finding 3.12, merged
+2026-09-22): every recipe figure before it is void; the recipe rows mirror the function
+rows now (`fib-15` smoke, `fib-22` quick), and an A/B showed no cost on the non-recipe
+path.
 
-Done, in addition to the 2026-09-22 morning state (grammar set complete through item 6,
-long tier with baseline):
+Done 2026-09-23, all in the note:
 
-- Quick-tier re-baseline: all 46 quick rows, one JVM, table order, launch flags, JDK 25,
-  34 minutes on a quiet machine (the first run, during an Eclipse rebuild, is discarded);
-  table and observations in the note ("Quick-tier re-baseline"). Every count asserted.
-  Findings: two clean runs of the table differ by up to 10 % per row (a few rows 20 %),
-  so fixes are judged one JVM per row in the A/B shape of the note, the table only
-  refreshes the breakdown; `binary-tree-dfs-unstored-9` is collector-bound at 4 GB
-  (28.9 s against 14 s at 8 GB) and should move to the long tier or a larger heap; one
-  unexplained order effect on `fib-15` (388 ms in the tier, 45 ms alone), noted only.
-- Coverage reassessment (note, last section): nine gaps ranked. Close before measuring
-  fixes: (1) the Simulator's random-access copy mode (`SimulatorModel.resetGTS` sets
-  `Record.randomAccess`; the harness runs swing mode only), a harness switch; (2) cyclic
-  and wide transient regions for gh #924's forward-search fallback, a `hub` control
-  program with a backward step in a star-ended recipe on `chain-200-2`; (4) a
-  `matchInjective=true` variant row. Then (3) a many-rules grammar, (5) a cache-clearing
-  harness option; 6 to 9 on demand.
+- Quick-tier re-baseline on a quiet machine (a first run during an Eclipse rebuild was
+  discarded: machine load, not run order, was the 20 %). Lesson: the tier table serves
+  counts, breakdown and order of magnitude; a fix is judged one JVM per row.
+- Coverage gaps closed: (1) `-Dgroove.bench.randomAccess=true` and the Simulator-mode
+  table (unstored large-graph rows 11 to 33 times slower, all in `match`: 4.3.2 at full
+  strength; stored large-graph rows retain 5 to 18 times more); (2) `movePrev`, the
+  `wander` and `wander-alap` programs, rows `hub-wander-alap-20` (smoke), `hub-wander-100`
+  and `hub-wander-alap-60` (quick); (4) `mergers-9-injective`, `leader-election-14-injective`.
+- **Master bug found by the wander rows**: recipe launches under bfs/dfs miss most end
+  states (2n − 3 of n(n−1)/2 on `chain-n-2`; linear finds all). Reproduced with
+  `RecipeCompletenessTest` cases `junit/performance/hub.gps` / `wander` and
+  `wander-alap` on `chain-20-2` (all four variants fail; the cases are not committed).
+  Pre-gh #924 erred the other way. Own branch, like gh #924; the wander rows' pinned
+  transition counts rise with the fix.
 
 ## Next, in order
 
-1. Close coverage gaps 1, 2 and 4 of the reassessment (harness copy-mode switch with a
-   second baseline column for the rows where the modes differ; the cyclic-transient hub
-   recipe row, calibrated and pinned; the injective variant row). One commit each.
-2. Move `binary-tree-dfs-unstored-9` out of the quick tier (long tier, or drop: the long
-   tier has depth 10).
+1. The recipe-target bug (above) on its own branch off master: add the two wander cases
+   to `RecipeCompletenessTest` as its gate, fix `StateCache`, then re-pin the three wander
+   rows here.
+2. A long-tier row `hub-wander-200` (161 s, 65 GB allocated, pairs with `hub-chain-200-2`)
+   once the counts are final; move `binary-tree-dfs-unstored-9` out of the quick tier
+   (collector-bound at 4 GB).
 3. Section 1 of the note (always-on `Reporter`, `CHECK_IMAGES`, `Factory.get()` lock,
    the `synchronized` accessors, `java.util.Stack`): one commit per item, each with
-   before/after numbers measured one JVM per row (the A/B shape in the note), not from
-   the tier table. `Reporter` first: it is on the innermost loop and also the harness's
-   own breakdown source, so gate it on a system property and run the harness once with it
-   on (for the breakdown) and once off (for the headline).
-4. Section 2 (dead optimisations): 2.1 stored `MatchResult` keys, confirm "Confluent:"
+   before/after numbers measured one JVM per row (the A/B shape in the note), in both
+   modes where the row is mode-sensitive. `Reporter` first: it is on the innermost loop
+   and also the harness's own breakdown source, so gate it on a system property and run
+   the harness once with it on (for the breakdown) and once off (for the headline).
+4. Finding 4.3.2 (per-node edge sets) has moved up: it is the whole of the Simulator-mode
+   cost on large graphs, 11 to 33 times on the hub rows.
+5. Section 2 (dead optimisations): 2.1 stored `MatchResult` keys, confirm "Confluent:"
    goes non-zero on `inheritance`; 2.3 soft certifier reference; 2.4 refinement loop
    (gate with `grammar-smoke`); 2.5 to 2.7 freezing and chain replay.
-5. A long-tier size for As-and-Bs is still missing (`start-4-3` under equality collapse
-   does not fit 8 GB; intermediate edge densities untried); then section 3.
+6. A long-tier size for As-and-Bs is still missing; then section 3.
 
 ## Grammar set extension (started 2026-09-21)
 

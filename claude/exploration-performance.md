@@ -176,6 +176,12 @@ minutes.
 | `ring-16` | 197 404 | 1 772 291 | 31 | upper quick |
 | `ring-18` | 787 648 | 7 737 099 | 156 | long |
 
+**`leader-election-14-injective` (added 2026-09-23)**, coverage gap 4: the same row with
+`matchInjective=true` through the properties override. The counts are identical to the
+base row, so the injectivity filter rejects nothing here and the row isolates its
+per-candidate cost: 1 to 4 % of wall time and 5 to 8 % of the `match` column (1 204 to
+1 250 ms against 1 110 to 1 184 ms in alternating one-JVM runs), 2 % more allocation.
+
 ### attribute-count-to-n (`attribute-count-to-n.gps`)
 
 A counter from 0 to a bound and back, one state per value: the attribute path of
@@ -335,6 +341,58 @@ The counted row also retains 5 KB per step: the host factory keeps every value n
 `moves` edge it ever made (200 k and 400 k by `fNodes`/`fEdges`), the counter grammar's
 growth too.
 
+**The wander recipe rows (added 2026-09-23)**, coverage gap 2: cyclic and wide
+transient regions. `movePrev` mirrors `moveNext` (the token one step back along `next`),
+and the recipe of `wander.gcp` is `moveNext; (moveNext | movePrev)*`, so on `chain-n-2`
+its region is the whole placement space of the two tokens, cyclic (a step back returns to
+the same graph and frame) and with every state a recipe end. The main program `wander;`
+launches once from the start state (the cost of traversing the region); `wander-alap.gcp`
+runs `alap wander;`, so every public state launches again, finds the existing region and
+needs its recipe targets recomputed over a cyclic region, which is the propagation and
+forward-search fallback of gh #924 under stress, at about states² recipe transitions.
+Desktop calibration, single cold runs through the harness, one JVM per row, `-Xmx8g`
+(`trans` is the stored count, here the recipe transitions; `disc.tr` adds the rule
+transitions inside the region):
+
+| row | states | trans | disc.tr | s | iso ms | gen ms | allocMB | retMB | kept |
+|---|---|---|---|---|---|---|---|---|---|
+| `hub-wander-20` | 191 | 37 | 722 | 0.16 | 16 | 79 | 20 | 2 | |
+| `hub-wander-50` | 1 226 | 97 | 4 802 | 0.48 | 105 | 378 | 352 | 54 | |
+| `hub-wander-100` | 4 951 | 197 | 19 602 | 5.0 | 1 430 | 4 749 | 4 495 | 845 | quick |
+| `hub-wander-150` | 11 176 | 297 | 44 402 | 28 | 7 381 | 27 100 | 21 409 | 4 246 | too heavy for 4 GB |
+| `hub-wander-200` | 19 901 | 397 | 79 202 | 161 | 22 790 | 159 107 | 65 546 | 1 529 | long candidate |
+| `hub-wander-alap-20` | 191 | 65 093 | 66 120 | 0.22 | 15 | 106 | 64 | 15 | smoke |
+| `hub-wander-alap-40` | 781 | 1 156 388 | 1 160 835 | 0.99 | 64 | 468 | 879 | 259 | |
+| `hub-wander-alap-60` | 1 771 | 6 057 883 | 6 068 150 | 4.4 | 305 | 1 651 | 4 289 | 1 332 | quick |
+| `hub-wander-alap-80` | 3 161 | 19 473 578 | 19 492 065 | 16 | 927 | 5 891 | 13 530 | 4 288 | too heavy for 4 GB |
+
+The states are n(n−1)/2 + 1 as predicted, the region is cyclic (about four rule
+transitions per state, each undone by the opposite move), and `alap` costs a constant
+1.2 to 1.6 M recipe transitions per second with about 220 bytes retained per transition.
+Two outcomes:
+
+- **The recipe traversal is expensive per state.** `hub-wander-200` has the state space of
+  `hub-chain-200-2` (the same 19 900 placements on the same graph), which the plain
+  `#moveNext` program explores in 10.7 s allocating 2.9 GB; under the recipe it takes
+  161 s and allocates 65 GB, 99 % of it in `gen`, growing from 5 s at n = 100 through 28 s
+  at 150. The region is explored once, so this is the per-state cost of transient
+  bookkeeping on a cyclic region, after gh #924. A long-tier row for it (paired with
+  `hub-chain-200-2`) is the natural next addition.
+- **A master bug (2026-09-23): recipe launches under breadth- and depth-first exploration
+  miss most of their end states.** Under `wander` the start state should get a recipe
+  transition per placement (190 at n = 20) and gets 2n − 3 (37, 57, 77, 97, 197, 297, 397
+  for n = 20 to 200); the linear strategy finds all 190. `RecipeCompletenessTest` with the
+  cases `junit/performance/hub.gps` / `wander` and `wander-alap` on `chain-20-2` added to
+  its list fails all four variants ("public state s38 has no incoming public
+  transition"), reproduced independently of the session that found it. The commit before
+  the gh #924 fix (`b94a0b20a`) errs the other way (343 targets at n = 20, the
+  over-approximation its own commit message describes), so this is not a regression of
+  gh #924 but the other half of the same defect. Unverified reading of `StateCache`: a
+  region state leaves the recipe when it is closed, its predecessors then become full
+  and drop their launch bookkeeping, and targets found deeper in the region are no longer
+  passed to full predecessors. The fix belongs on its own branch; the pinned transition
+  counts of the three wander rows include the shortfall and will rise with it.
+
 ### petrinet (`petrinet.gps`)
 
 Arend's copy of the sample: one rule, `smartRule`, a transition firing when every input
@@ -428,9 +486,17 @@ in ten minutes at fewer states, which at that heap is the collector rather than 
 semantics. `ring-6` explores to the same 202 states under simple and multi, so the smoke
 row runs it under multi for the code path alone.
 
+**`mergers-9-injective` (added 2026-09-23)**, coverage gap 4: `ring-9` under
+`matchInjective=true`. Here the filter rejects the non-injective merges that are the
+bulk of the grammar's matches: 12 775 states and 60 718 transitions against 25 145 and
+255 596, a third of the allocation, 1.0 s against 2.3 s in alternating one-JVM runs. The
+row is below the quick tier's 5 s floor but pairs with `mergers-9-simple`;
+`mergers-10-injective` (118 923 states, 8.7 s) would need a `mergers-10-simple` base at
+23 s, and `mergers-11-injective` (54 s) retains 4.8 GB.
+
 ### All rows
 
-57 rows: 13 smoke, 35 quick, 9 long. The explore configuration is the default
+62 rows: 14 smoke, 39 quick, 9 long. The explore configuration is the default
 (breadth-first, full) where the column is empty; `dfs(N)` abbreviates
 `next=newest cost=uniform bound=cost:N`, `unstored(N)` the same plus `persistence=none`,
 `linear` is `frontier=single successor=single`.
@@ -455,6 +521,7 @@ row runs it under multi for the code path alone.
 | `pacman-four-ghosts` | pacman | `start_four_ghosts` | | long |
 | `leader-election-8` | leader-election | `ring-8` | | smoke |
 | `leader-election-14` | leader-election | `ring-14` | | quick |
+| `leader-election-14-injective` | leader-election | `ring-14` | `matchInjective=true` | quick |
 | `leader-election-16` | leader-election | `ring-16` | | quick |
 | `leader-election-18` | leader-election | `ring-18` | | long |
 | `count-10000` | attribute-count-to-n | `bound-10000` | | smoke |
@@ -480,6 +547,9 @@ row runs it under multi for the code path alone.
 | `hub-field-jump` | hub | `field-2-100-2500` | program `jump`, unstored(200000) | quick |
 | `hub-ring-1000-unstored` | hub | `ring-1000-1` | program `chain`, unstored(200000) | quick |
 | `hub-ring-1000-counted` | hub | `ring-1000-1` | program `counted`, unstored(200000) | quick |
+| `hub-wander-alap-20` | hub | `chain-20-2` | program `wander-alap` | smoke |
+| `hub-wander-100` | hub | `chain-100-2` | program `wander` | quick |
+| `hub-wander-alap-60` | hub | `chain-60-2` | program `wander-alap` | quick |
 | `petrinet-pipe-8-8` | petrinet | `pipe-8-8` | | quick |
 | `petrinet-pipe-9-9` | petrinet | `pipe-9-9` | | quick |
 | `petrinet-join-100` | petrinet | `join-100` | unstored(20000) | quick |
@@ -490,6 +560,7 @@ row runs it under multi for the code path alone.
 | `pump-12-6-spo` | parallel-pump | `pump-12-6` | `semantics=SPO-multi` | quick |
 | `mergers-6` | mergers | `ring-6` | `semantics=SPO-multi` | smoke |
 | `mergers-9-simple` | mergers | `ring-9` | | quick |
+| `mergers-9-injective` | mergers | `ring-9` | `matchInjective=true` | quick |
 | `mergers-9-multi` | mergers | `ring-9` | `semantics=SPO-multi` | quick |
 | `mergers-10-multi` | mergers | `ring-10` | `semantics=SPO-multi` | quick |
 | `mergers-11-dpo` | mergers | `ring-11` | `semantics=DPO` | quick |
@@ -519,8 +590,14 @@ plain runner reuses the `ExplorationTest` plumbing.
 System properties: `groove.bench.warmups` (default 2), `groove.bench.runs` (default 5;
 the baselines use 3 or 2), `groove.bench.timeout` (seconds per run, default 300),
 `groove.bench.tier=quick|long|all` (default `quick`, which is everything but `LONG`),
-`groove.bench.csv=<file>` (rows appended in CSV form as well) and `groove.bench.run`
-(the JUnit route's selector, above).
+`groove.bench.csv=<file>` (rows appended in CSV form as well), `groove.bench.run`
+(the JUnit route's selector, above) and `groove.bench.randomAccess=true` (since
+2026-09-23: puts every GTS record into random-access mode before the start state
+materialises, as `SimulatorModel.resetGTS` does, so that each state graph is a fresh copy
+(`CopyTarget`) instead of the parent's sets handed down (`SwingTarget`); the header line
+`Record:` names the mode. In that mode the harness materialises the start state itself
+before `newExploration`, as the GUI does after its reset, since the exploration would
+otherwise re-apply the per-GTS features to a GTS that already has a record).
 
 ### What a run measures
 
@@ -761,6 +838,49 @@ What it says:
   live set only.
 - The spread is small: every `max ms` is within 6 % of `min ms` over the two measured
   runs, which is what the tier was for.
+
+### Random-access (Simulator) mode (2026-09-23)
+
+The quick tier once more under `-Dgroove.bench.randomAccess=true`, otherwise as the
+swing-mode baseline above (JDK 25, `-Xmx4g`, two warm-ups, three runs, one JVM, at
+`0cabf1217`; about 95 minutes; the two `collapse=equality` rows reran in a JVM of their
+own after the harness ordering fix). No discovered count differs from swing mode. Ratios
+of the median time, allocation and retained heap, random access over swing, for the rows
+that moved (the full table takes 95 minutes to regenerate):
+
+| row | time | alloc | retained | where |
+|---|---|---|---|---|
+| `hub-ring-1000-counted` | 33.4 | 16.0 | 2.4 | `match` 47 of 50 s |
+| `hub-ring-1000-unstored` | 22.2 | 14.8 | 1.9 | `match` 26 of 28 s |
+| `hub-field-jump` | 16.8 | 77.7 | 2.9 | `match` 126 of 127 s |
+| `hub-field-hop` | 10.8 | 4.4 | 3.4 | `match` 69 of 70 s |
+| `leader-election-16` | 3.9 | 1.7 | 0.6 | runs 75 to 130 s: collector at 4 GB |
+| `petrinet-join-100`, `-1000` | 3.0, 2.8 | 1.4 | 0.3, 0.4 | `match` 16 s against 4.4 to 4.9 |
+| `count-300000`, `-big` | 1.4, 1.3 | 1.0 | 1.1 | 2.9 GB retained of 3.6 |
+| `sierpinsky-11`, `-12` | 1.25, 1.3 | 1.5 | 1.1 | `gen` |
+| `binary-tree-dfs-unstored` | 1.27 | 1.1 | 1.1 | |
+| `hub-chain-200-2`, `-1000-1` | 1.1, 1.0 | 1.4 | 5.2, 18.4 | retained per stored state |
+| `leader-election-14` | 1.2 | 1.7 | 2.1 | |
+| everything else | 0.9 to 1.1 | 1.1 to 1.7 | 1.0 to 1.9 | |
+
+- **The unstored single-path rows over large graphs are 11 to 33 times slower, all of it
+  in `match`.** Each step's graph is a fresh copy of 1 000 to 5 400 nodes, and the
+  `match` column includes the lazy materialisation of that graph, so what it shows is
+  finding 4.3.2 at full strength: the per-node edge sets rebuilt at graph size on every
+  step, where swing mode hands them down with the delta. `petrinet-join` (300 to 3 000
+  nodes) shows the same at 3 times. This is the mode every Simulator user explores in,
+  and the demotion of 3.7 above holds for swing mode only.
+- **Stored large-graph rows keep their time but retain 5 to 18 times as much**
+  (`hub-chain-200-2` 81 to 423 MB, `hub-chain-1000-1` 4.6 to 85 MB): a stored state keeps
+  its own sets. `sierpinsky` (graphs of up to 800 k elements on a linear path) is 25 to
+  30 % slower with 55 % more allocation.
+- **Rows near the heap limit fall off the collector cliff**: `leader-election-16` at 3.9
+  times with 73 % more allocation, the 300 k counter rows at 1.3 to 1.4.
+- **Everything else is within 10 % in time but allocates 20 to 70 % more** and retains up
+  to twice as much (the append rows 1.8 to 1.9). The recipe rows (`fib`, `wander`) do not
+  move. The few ratios below 0.9 (`mergers-6`, `pump-8-4`, `as-and-bs-equality`) are
+  sub-second rows with outliers in the swing table or the first-position effect of the
+  two-row rerun, not gains.
 
 ### Outcomes across both tiers
 
@@ -1692,9 +1812,15 @@ gh #924 has just rewritten that code and its own gate is a correctness test, 4 b
 it is free. Items 3 and 5 are harness or generator work of an hour each; 6 to 9 can
 wait for a finding that needs them.
 
-As of 2026-09-23 gaps 1, 2 and 4 are being closed on this branch: a harness switch for
-the random-access copy mode, the wander recipe rows on the hub chain, and the injective
-variant rows. Their results are not in this note yet.
+Closed 2026-09-23 on this branch: gap 1 by the `groove.bench.randomAccess` switch and the
+random-access table under "Runs and outcomes" (the unstored large-graph rows are 11 to 33
+times slower in the Simulator's mode, all in `match`: 4.3.2 measured); gap 2 by the
+`wander` rows on the hub chain (which found the master bug of the recipe targets under
+breadth- and depth-first exploration, see the hub grammar); gap 4 by
+`mergers-9-injective` and `leader-election-14-injective` (the filter costs 1 to 4 % where
+it rejects nothing). New since: a long-tier row for `hub-wander-200` is the candidate for
+the recipe traversal cost; the recipe-target bug needs its fix before the wander counts
+are final.
 
 Section 6 (assertion-only costs) is outside the harness by construction, since it runs
 with assertions off; those costs show only under `-ea`, in `ExplorationTest` and in
