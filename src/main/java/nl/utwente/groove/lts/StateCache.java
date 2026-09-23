@@ -955,48 +955,75 @@ public class StateCache implements Cache {
     }
 
     /**
-     * Insertion-ordered set of launches whose membership test is an
-     * open-addressing table over the launch indices, so that neither a test
-     * nor an insertion allocates per element and the memory is proportional
-     * to the number of launches in the set. A bit set over the indices would
-     * instead be proportional to the launch count of the GTS at the time of
-     * the last insertion, for every non-full inner state reached by a launch.
+     * Insertion-ordered set of launches whose membership test is a bit array
+     * over the launch indices, laid out circularly relative to the first index
+     * inserted: index {@code n} sits at position {@code top - n}, wrapped
+     * around the capacity when negative. Launches usually arrive in
+     * decreasing index order (a state is reached by the newest launch first,
+     * the older ones follow through the steps from its predecessors), so the
+     * positions grow upwards from zero; the launches registered later, which
+     * arrive in increasing order, wrap around and use the top of the array.
+     * Positions are distinct as long as the range of indices is below the
+     * capacity; when it is reached the array doubles and the then-highest
+     * index moves to position zero. Memory is thus proportional to the range
+     * of indices present rather than to the launch count of the GTS, and the
+     * first launch costs a single word wherever it arrives.
      */
     @AIGenerated("Claude Fable 5.1, 2026-09")
     static private class LaunchSet implements Iterable<Launch> {
         /** Adds a launch; returns {@code false} if it was already present. */
         boolean add(Launch launch) {
             int index = launch.index();
-            var table = this.table;
-            int mask = table.length - 1;
-            int slot = hash(index) & mask;
-            for (int found; (found = table[slot]) >= 0; slot = (slot + 1) & mask) {
-                if (found == index) {
-                    return false;
+            if (this.launches.isEmpty()) {
+                this.top = this.lowest = this.highest = index;
+            } else {
+                int lowest = Math.min(this.lowest, index);
+                int highest = Math.max(this.highest, index);
+                if (highest - lowest >= capacity()) {
+                    grow(lowest, highest);
                 }
+                this.lowest = lowest;
+                this.highest = highest;
             }
-            table[slot] = index;
+            int pos = position(index);
+            long mask = 1L << (pos & 63);
+            int word = pos >>> 6;
+            if ((this.words[word] & mask) != 0) {
+                return false;
+            }
+            this.words[word] |= mask;
             this.launches.add(launch);
-            if (this.launches.size() * 2 > table.length) {
-                grow();
-            }
             return true;
         }
 
-        /** Doubles the table and reinserts the indices. */
-        private void grow() {
-            var newTable = newTable(this.table.length * 2);
-            int mask = newTable.length - 1;
-            for (int index : this.table) {
-                if (index >= 0) {
-                    int slot = hash(index) & mask;
-                    while (newTable[slot] >= 0) {
-                        slot = (slot + 1) & mask;
-                    }
-                    newTable[slot] = index;
-                }
+        /** Returns the position of an index in the (circular) bit array. */
+        private int position(int index) {
+            int result = this.top - index;
+            return result < 0
+                ? result + capacity()
+                : result;
+        }
+
+        /** Returns the capacity of the bit array, in bits. */
+        private int capacity() {
+            return this.words.length << 6;
+        }
+
+        /**
+         * Doubles the bit array until it holds a given range of indices, and
+         * lays the launches out afresh with the highest index at position zero.
+         */
+        private void grow(int lowest, int highest) {
+            int capacity = capacity();
+            while (highest - lowest >= capacity) {
+                capacity <<= 1;
             }
-            this.table = newTable;
+            this.words = new long[capacity >>> 6];
+            this.top = highest;
+            for (var launch : this.launches) {
+                int pos = highest - launch.index();
+                this.words[pos >>> 6] |= 1L << (pos & 63);
+            }
         }
 
         @Override
@@ -1007,25 +1034,17 @@ public class StateCache implements Cache {
         /** The launches, in order of insertion. */
         private final List<Launch> launches = new ArrayList<>(2);
 
-        /**
-         * Open-addressing table (linear probing, load factor at most one half)
-         * of the indices of the launches in {@link #launches}; empty slots
-         * hold {@code -1}.
-         */
-        private int[] table = newTable(4);
+        /** Circular bit array of the launch indices; see {@link #position}. */
+        private long[] words = new long[1];
 
-        /** Creates an empty table of a given (power of two) size. */
-        static private int[] newTable(int size) {
-            var result = new int[size];
-            Arrays.fill(result, -1);
-            return result;
-        }
+        /** Index at position zero of the bit array. */
+        private int top;
 
-        /** Spreads the high bits of an index into the slot; consecutive indices
-         * keep consecutive slots, which linear probing rewards. */
-        static private int hash(int index) {
-            return index ^ (index >>> 16);
-        }
+        /** Lowest index in the set (undefined while empty). */
+        private int lowest;
+
+        /** Highest index in the set (undefined while empty). */
+        private int highest;
     }
 
     /** Combination of target state and out-parameter values.
