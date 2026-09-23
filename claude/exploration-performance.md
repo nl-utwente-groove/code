@@ -348,75 +348,60 @@ its region is the whole placement space of the two tokens, cyclic (a step back r
 the same graph and frame) and with every state a recipe end. The main program `wander;`
 launches once from the start state (the cost of traversing the region); `wander-alap.gcp`
 runs `alap wander;`, so every public state launches again, finds the existing region and
-needs its recipe targets recomputed over a cyclic region, which is the propagation and
-forward-search fallback of gh #924 under stress, at about states² recipe transitions.
-Desktop calibration, single cold runs through the harness, one JVM per row, `-Xmx8g`
-(`trans` is the stored count, here the recipe transitions; `disc.tr` adds the rule
-transitions inside the region). The three tier rows were re-pinned the same way after
-the gh #925 fix (see the outcome below); the other rows still show the pre-fix
-measurements, with the shortfall in their transition counts:
+needs its recipe targets recomputed over a cyclic region, which is the launch propagation
+of `StateCache` under stress, at about states² recipe transitions.
+Desktop calibration after the gh #925 fix (see below), single cold runs through the
+harness, one JVM per row, JDK 25.0.4.1, `-Xmx8g` (`trans` is the stored count, here the
+recipe transitions; `disc.tr` adds the rule transitions inside the region):
 
 | row | states | trans | disc.tr | s | iso ms | gen ms | allocMB | retMB | kept |
 |---|---|---|---|---|---|---|---|---|---|
-| `hub-wander-20` | 191 | 37 | 722 | 0.16 | 16 | 79 | 20 | 2 | |
-| `hub-wander-50` | 1 226 | 97 | 4 802 | 0.48 | 105 | 378 | 352 | 54 | |
-| `hub-wander-100` | 4 951 | 4 950 | 24 355 | 1.9 | 1 355 | 1 752 | 969 | 22 | quick, re-pinned |
-| `hub-wander-150` | 11 176 | 297 | 44 402 | 28 | 7 381 | 27 100 | 21 409 | 4 246 | too heavy for 4 GB |
-| `hub-wander-200` | 19 901 | 397 | 79 202 | 161 | 22 790 | 159 107 | 65 546 | 1 529 | long candidate |
-| `hub-wander-alap-20` | 191 | 65 170 | 66 197 | 0.24 | 11 | 124 | 67 | 13 | smoke, re-pinned |
-| `hub-wander-alap-40` | 781 | 1 156 388 | 1 160 835 | 0.99 | 64 | 468 | 879 | 259 | |
-| `hub-wander-alap-60` | 1 771 | 6 058 710 | 6 068 977 | 4.8 | 442 | 2 964 | 4 553 | 1 186 | quick, re-pinned |
-| `hub-wander-alap-80` | 3 161 | 19 473 578 | 19 492 065 | 16 | 927 | 5 891 | 13 530 | 4 288 | too heavy for 4 GB |
+| `hub-wander-20` | 191 | 190 | 875 | 0.15 | 10 | 78 | 14 | 0 | |
+| `hub-wander-50` | 1 226 | 1 225 | 5 930 | 0.35 | 112 | 245 | 127 | 5 | |
+| `hub-wander-100` | 4 951 | 4 950 | 24 355 | 1.9 | 1 357 | 1 721 | 961 | 21 | quick |
+| `hub-wander-150` | 11 176 | 11 175 | 55 280 | 7.7 | 6 689 | 7 516 | 3 276 | 52 | |
+| `hub-wander-200` | 19 901 | 19 900 | 98 705 | 22.7 | 20 428 | 22 330 | 7 636 | 111 | quick |
+| `hub-wander-300` | 44 851 | 44 850 | 223 055 | 115 | 106 713 | 113 849 | 27 629 | 313 | under 2 min |
+| `hub-wander-400` | 79 801 | 79 800 | 397 405 | 355 | 335 051 | 352 611 | 66 283 | 660 | over 5 min |
+| `hub-wander-alap-20` | 191 | 65 170 | 66 197 | 0.22 | 10 | 90 | 66 | 14 | smoke |
+| `hub-wander-alap-40` | 781 | 1 156 740 | 1 161 187 | 0.97 | 58 | 586 | 914 | 230 | |
+| `hub-wander-alap-60` | 1 771 | 6 058 710 | 6 068 977 | 4.4 | 292 | 2 629 | 4 584 | 1 185 | quick |
+| `hub-wander-alap-80` | 3 161 | 19 475 080 | 19 493 567 | 15 | 935 | 8 068 | 14 558 | 3 809 | too heavy for 4 GB |
 
-The states are n(n−1)/2 + 1 as predicted, the region is cyclic (about four rule
-transitions per state, each undone by the opposite move), and `alap` costs a constant
-1.2 to 1.6 M recipe transitions per second with about 220 bytes retained per transition.
-Two outcomes:
+The states are n(n−1)/2 + 1 as predicted, the single launch of `wander` gets every one of
+them as a recipe end, the region is cyclic (about four rule transitions per state, each
+undone by the opposite move), and `alap` costs a constant 1.2 to 1.4 M recipe transitions
+per second with about 200 bytes retained per transition. So `alap` has no long size:
+`hub-wander-alap-80` already retains 3.8 GB, and at 100 leaves, about 48 M transitions,
+it would need some 9 GB. Two outcomes:
 
-- **The recipe traversal is expensive per state.** `hub-wander-200` has the state space of
-  `hub-chain-200-2` (the same 19 900 placements on the same graph), which the plain
-  `#moveNext` program explores in 10.7 s allocating 2.9 GB; under the recipe it takes
-  161 s and allocates 65 GB, 99 % of it in `gen`, growing from 5 s at n = 100 through 28 s
-  at 150. The region is explored once, so this is the per-state cost of transient
-  bookkeeping on a cyclic region, after gh #924. A long-tier row for it (paired with
-  `hub-chain-200-2`) is the natural next addition.
-- **A master bug (2026-09-23): recipe launches under breadth- and depth-first exploration
-  miss most of their end states.** Under `wander` the start state should get a recipe
-  transition per placement (190 at n = 20) and gets 2n − 3 (37, 57, 77, 97, 197, 297, 397
-  for n = 20 to 200); the linear strategy finds all 190. `RecipeCompletenessTest` with the
-  cases `junit/performance/hub.gps` / `wander` and `wander-alap` on `chain-20-2` added to
-  its list fails all four variants ("public state s38 has no incoming public
-  transition"), reproduced independently of the session that found it. The commit before
-  the gh #924 fix (`b94a0b20a`) errs the other way (343 targets at n = 20, the
-  over-approximation its own commit message describes), so this is not a regression of
-  gh #924 but the other half of the same defect. Unverified reading of `StateCache`: a
-  region state leaves the recipe when it is closed, its predecessors then become full
-  and drop their launch bookkeeping, and targets found deeper in the region are no longer
-  passed to full predecessors. The fix belongs on its own branch; the pinned transition
-  counts of the three wander rows include the shortfall and will rise with it.
-
-**Outcome (gh #925, fixed and merged 2026-09-23).** The reading above was right in
-substance: a region state leaves the recipe through the star's same-verdict exit as soon
-as its matches are computed, so it is steady before it is closed, and the gh #924
-bookkeeping counted a steady successor as done; predecessors became full early and
-dropped the target propagation. Waiting for steady states whose prime frame is inner
-(`StateCache.isDone`) made the counts right but the backward target propagation
-quadratic on exactly this shape (every region state accumulating every reachable
-target: `chain-100-2` 4.4 s → 8.9 s, `chain-200-2` out of a 6 GB heap), so it was
-replaced by forward propagation of the launches (a `LaunchSet` per region state, launch
-indices from `GTS.newLaunchIndex`), which visits each (launch, region state) pair once.
-Warm scratch-harness timings under bfs, master → merged: `chain-100-2` wander 4.4 s and
-19 602 transitions (incomplete) → 1.5 s and 24 355; `chain-200-2` wander 90 s and 79 202
-→ 21 s and 98 705; `chain-60-2` wander-alap 3.6 s → 4.1 s at 6 068 977 transitions;
-`fib-22` unchanged. So the first outcome above, the per-state cost of the recipe
-traversal, was largely the propagation and has shrunk about four-fold. The three tier
-rows were re-pinned through the harness the same day (single cold runs, one JVM per row,
-JDK 26.0.2.1): `hub-wander-100` 1.9 s against 5.0, `gen` 1.75 s against 4.7, retaining
-22 MB against 845 (the region's states no longer hold target sets), with the complete
-4 950 recipe transitions; `hub-wander-alap-20` 0.24 s; `hub-wander-alap-60` 4.8 s
-against 4.4, single cold runs, consistent with the warm A/B of 3.6 against 4.1 s, i.e.
-the output-bound `alap` row pays a little for the complete answer. The other rows of the
-table date from before the fix.
+- **The recipe traversal costs what its transitions cost.** `hub-wander-200` has the
+  state space of `hub-chain-200-2` (the same 19 900 placements on the same graph), which
+  the plain `#moveNext` program explores in 10.7 s allocating 2.9 GB; under the recipe it
+  takes 22.7 s (23.6 s on a second run) and allocates 7.6 GB, of which isomorphism
+  checking is 20.4 s against 10.0 s in the chain row. The region has twice the chain's
+  rule transitions (78 805 against 39 402, `movePrev` doubling the moves) plus the 19 900
+  recipe transitions, each checked at about the same 0.2 to 0.25 ms, which leaves about
+  2 s and 111 MB retained for the transient bookkeeping; before gh #925 the row took 161 s
+  and allocated 65 GB. Time grows as about n⁴ (n² states, a certificate about n² on the
+  chain): 7.7 s at 150, 115 s at 300, 355 s at 400, so no size lands in the long tier's
+  two to five minutes, and the row kept is `hub-wander-200` in the quick tier, next to
+  `hub-chain-200-2`.
+- **The rows found a master bug, gh #925 (fixed and merged 2026-09-23).** Under breadth-
+  and depth-first exploration a `wander` launch got 2n − 3 of its n(n−1)/2 recipe ends (37
+  of 190 at n = 20; linear exploration found all), and `RecipeCompletenessTest` failed on
+  `chain-20-2`. Cause: a region state leaves the recipe through the star's same-verdict
+  exit as soon as its matches are computed, so it is steady before it is closed, and the
+  gh #924 bookkeeping counted a steady successor as done; predecessors became full early
+  and dropped the target propagation. Waiting for steady states with an inner prime frame
+  (`StateCache.isDone`) made the counts right but the backward target propagation
+  quadratic on this shape (`chain-100-2` 4.4 s → 8.9 s, `chain-200-2` out of a 6 GB heap),
+  so it was replaced by forward launch propagation (a `LaunchSet` per region state), which
+  visits each (launch, region state) pair once. Warm bfs timings, master → fix:
+  `chain-100-2` `wander` 4.4 s and 19 602 transitions → 1.5 s and 24 355; `chain-200-2`
+  90 s and 79 202 → 21 s and 98 705; `chain-60-2` `wander-alap` 3.6 → 4.1 s; `fib-22`
+  unchanged. Re-pinned, `hub-wander-100` went from 5.0 to 1.9 s (`gen` 4.7 to 1.75 s),
+  retaining 22 MB against 845.
 
 ### petrinet (`petrinet.gps`)
 
@@ -521,7 +506,7 @@ row is below the quick tier's 5 s floor but pairs with `mergers-9-simple`;
 
 ### All rows
 
-62 rows: 14 smoke, 39 quick, 9 long. The explore configuration is the default
+63 rows: 14 smoke, 40 quick, 9 long. The explore configuration is the default
 (breadth-first, full) where the column is empty; `dfs(N)` abbreviates
 `next=newest cost=uniform bound=cost:N`, `unstored(N)` the same plus `persistence=none`,
 `linear` is `frontier=single successor=single`.
@@ -574,6 +559,7 @@ row is below the quick tier's 5 s floor but pairs with `mergers-9-simple`;
 | `hub-ring-1000-counted` | hub | `ring-1000-1` | program `counted`, unstored(200000) | quick |
 | `hub-wander-alap-20` | hub | `chain-20-2` | program `wander-alap` | smoke |
 | `hub-wander-100` | hub | `chain-100-2` | program `wander` | quick |
+| `hub-wander-200` | hub | `chain-200-2` | program `wander` | quick |
 | `hub-wander-alap-60` | hub | `chain-60-2` | program `wander-alap` | quick |
 | `petrinet-pipe-8-8` | petrinet | `pipe-8-8` | | quick |
 | `petrinet-pipe-9-9` | petrinet | `pipe-9-9` | | quick |
@@ -1843,9 +1829,10 @@ times slower in the Simulator's mode, all in `match`: 4.3.2 measured); gap 2 by 
 `wander` rows on the hub chain (which found the master bug of the recipe targets under
 breadth- and depth-first exploration, see the hub grammar); gap 4 by
 `mergers-9-injective` and `leader-election-14-injective` (the filter costs 1 to 4 % where
-it rejects nothing). New since: a long-tier row for `hub-wander-200` is the candidate for
-the recipe traversal cost, now to be recalibrated after gh #925; the recipe-target bug is
-fixed and merged and the three wander rows re-pinned against it (2026-09-23).
+it rejects nothing). New since: the recipe-target bug is fixed and merged, the wander
+family recalibrated against it, and `hub-wander-200` added as the quick row for the
+recipe traversal cost, next to `hub-chain-200-2` (23 s against 10.7 s; no size of the
+family lands in the long tier) (2026-09-23).
 
 Section 6 (assertion-only costs) is outside the harness by construction, since it runs
 with assertions off; those costs show only under `-ea`, in `ExplorationTest` and in

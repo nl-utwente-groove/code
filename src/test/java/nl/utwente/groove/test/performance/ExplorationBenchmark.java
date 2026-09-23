@@ -480,19 +480,26 @@ public class ExplorationBenchmark {
             // Under "wander" there is one launch, from the start state, and
             // the row is the cost of traversing the region: at 100 leaves
             // 1.9 s cold for 4951 states and 4950 recipe transitions,
-            // retaining 22 MB, where the plain chain program does 19900
-            // states in 10.7 s (hub-chain-200-2). Under "wander-alap" every
-            // public state launches again into the existing region, whose
-            // targets must be found for every launch: states squared recipe
-            // transitions, the launch propagation of StateCache under
-            // stress. These rows found gh #925 (a launch got 2n-3 of its
-            // n(n-1)/2 recipe ends under breadth- and depth-first
+            // retaining 21 MB; at 200 leaves 23 s for 19900 states, against
+            // 10.7 s for the same states under the plain chain program
+            // (hub-chain-200-2), the difference being the isomorphism checks
+            // of twice the rule transitions (movePrev) plus the recipe
+            // transitions. The next sizes, 300 and 400 leaves, take 115 s
+            // and 355 s, so the family has no long-tier row. Under
+            // "wander-alap" every public state launches again into the
+            // existing region, whose targets must be found for every launch:
+            // states squared recipe transitions, the launch propagation of
+            // StateCache under stress. These rows found gh #925 (a launch got
+            // 2n-3 of its n(n-1)/2 recipe ends under breadth- and depth-first
             // exploration); the counts were re-pinned after its fix, which
             // also replaced the backward target propagation by forward
-            // launch propagation and cut the wander-100 time from 5 s.
+            // launch propagation and cut the wander-100 time from 5 s and
+            // the wander-200 time from 161 s.
             new Config("hub-wander-alap-20", "hub.gps", "chain-20-2", "wander-alap", "", 191,
                 66197, Tier.SMOKE),
             new Config("hub-wander-100", "hub.gps", "chain-100-2", "wander", "", 4951, 24355,
+                Tier.QUICK),
+            new Config("hub-wander-200", "hub.gps", "chain-200-2", "wander", "", 19901, 98705,
                 Tier.QUICK),
             new Config("hub-wander-alap-60", "hub.gps", "chain-60-2", "wander-alap", "", 1771,
                 6068977, Tier.QUICK),
